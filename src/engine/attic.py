@@ -26,7 +26,9 @@ def pack(source: Path, name: str) -> Path:
         partial.unlink()
         raise OSError(f"{source.name} did not pack whole; it is left where it was")
     partial.rename(target)
-    removed(source)
+    aside = attic / f".{name}.removing"
+    source.rename(aside)
+    removed(aside)
     return target
 
 
@@ -45,7 +47,7 @@ def removed(source: Path) -> None:
 def compress(root: Path) -> list[str]:
     attic = folder(root)
     done = []
-    for kept in sorted(p for p in attic.iterdir() if p.is_dir()) if attic.is_dir() else ():
+    for kept in sorted(p for p in attic.iterdir() if p.is_dir() and not p.name.startswith(".")) if attic.is_dir() else ():
         pack(kept, kept.name)
         done.append(kept.name)
     return done
