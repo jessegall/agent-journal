@@ -137,12 +137,9 @@ class Controller(Files, Links, Discussed):
             raise Refused(f"{self.type} {n} is {ended}")
         return row
 
-    def _handled(self, action: str, /, **args):
+    def _handled(self, action: str, /, **args) -> None:
         for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
-            taken = fn(self, **args)
-            if taken is not None:
-                return taken
-        return None
+            fn(self, **args)
 
     def _field_choices(self, r: Resource) -> dict:
         return {}
@@ -169,9 +166,7 @@ class Controller(Files, Links, Discussed):
         twin = self._twin(title, brief, data.get("about"), data.get("idempotency", ""))
         if twin is not None:
             return twin
-        taken = self._handled("create", title=title, abstract=abstract, brief=brief, **data)
-        if taken is not None:
-            return taken
+        self._handled("create", title=title, abstract=abstract, brief=brief, **data)
         for name in self.resource.required:
             if not data.get(name):
                 self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
