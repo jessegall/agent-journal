@@ -18,3 +18,16 @@ export function replyQuote(text) {
         .join(" ")
         .slice(0, 200);
 }
+
+export const linesWord = ({first, last}) => (first ? (first === last ? `line ${first}` : `lines ${first}-${last}`) : "a selection");
+
+export function aboutLines(file, picked, words) {
+    const source = picked.first
+        ? file.text
+              .split("\n")
+              .slice(picked.first - 1, picked.last)
+              .join("\n")
+        : picked.text;
+    const path = file.root ? `${file.root}/${file.path}` : file.path;
+    return `About ${path}, ${linesWord(picked)}:\n\n${withQuote(source, words.trim())}`;
+}

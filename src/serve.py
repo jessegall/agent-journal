@@ -16,7 +16,8 @@ from features.auto_update.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
-from features.routing import Reply  # noqa: E402
+from commands.dispatch import reached_by_phone  # noqa: E402
+from features.routing import PHONE_ENVIRONMENT, Reply  # noqa: E402
 from engine import runtime  # noqa: E402
 from features.switches import WARMERS  # noqa: E402
 from engine.stop import asked  # noqa: E402
@@ -77,7 +78,7 @@ class Handler(BaseHTTPRequestHandler):
         except (json.JSONDecodeError, UnicodeDecodeError) as error:
             reply = Reply(400, {"error": f"the request body is not JSON: {error}"})
         else:
-            reply = dispatch(method, url.path, self.root, dict(parse_qsl(url.query)), body)
+            reply = self.answered(method, url, body)
         self.send_response(reply.code)
         self.sibling()
         self.send_header("Content-Type", reply.kind)
@@ -100,6 +101,13 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.flush()
         except (BrokenPipeError, ConnectionResetError, OSError):
             reply.chunks.close()
+
+    def answered(self, method: str, url, body: dict) -> Reply:
+        query = dict(parse_qsl(url.query))
+        within = self.headers.get(PHONE_ENVIRONMENT)
+        if within is not None and not reached_by_phone(self.root, method, url.path, query, body, within):
+            return Reply(403, {"error": "a phone reaches only the pages its app uses, in its own environment"})
+        return dispatch(method, url.path, self.root, query, body)
 
     def do_GET(self):
         self.handle_one("GET")

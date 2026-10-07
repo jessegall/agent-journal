@@ -1,5 +1,6 @@
 import json
 import os
+import socket
 import subprocess
 import sys
 import threading
@@ -14,15 +15,19 @@ import pytest
 
 from controllers.base import Controller
 from controllers.features import Features
-from controllers.types import CONTROLLERS, Agents, Comments, Docs, Messages, Notices, Questions, Todos
+from controllers.types import CONTROLLERS, Agents, Comments, Docs, Environments, Messages, Notices, Questions, Todos
 from engine.record import Record
+from features.phone import allow_list
 from features.phone.controller import Phones
 from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
+from features.tickets.controller import Tickets
 from features.sharing.controller import Shares
 from features.suggestions.controller import Suggestions
 from features.sharing.details import SharingDetails
 from features.sharing.server import ShareHandler
+from engine.viewer import SERVING
+from serve import Handler, JournalServer
 from features.sharing.services import wanted
 from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh
@@ -163,7 +168,7 @@ def test_a_message_from_the_phone_is_the_users_own(served):
         "a message sent to a subagent names it on the phone"
 
 
-def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):
+def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch, tmp_path):
     record, base = served
     _, key = paired(record, base)
     words = {"brief": "Delete everything", "idempotency": "x"}
@@ -173,6 +178,73 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served):
     assert call(base, "/p/message", words, "not-a-key")[0] == 401, "a guessed key opens nothing"
     assert call(base, "/p/", {}, key)[0] == 404, "a phone post without an action has no route"
     assert not [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "x"]
+    desk = JournalServer(("127.0.0.1", 0), type("Desk", (Handler,), {"root": record.root}))
+    threading.Thread(target=desk.serve_forever, daemon=True).start()
+    SERVING[str(record.root.resolve())] = f"http://127.0.0.1:{desk.server_port}/"
+    try:
+        made = {"title": "From the phone"}
+        assert call(base, f"/p/api/{record.env}/todo", made)[0] == 401, "the desktop's pages need the phone's key"
+        assert call(base, f"/p/api/{record.env}/todo", made, "not-a-key")[0] == 401
+        assert call(base, f"/p/api/{record.env}/todo", made, key, Origin="https://evil.example")[0] == 403
+        assert call(base, "/p/api/elsewhere/todo", made, key)[0] == 403, "another environment stays closed"
+        assert call(base, "/p/api/summary?env=elsewhere", key=key)[0] == 403
+        assert call(base, "/p/api/run", made, key)[0] == 403, "a page the phone app never calls is refused"
+        assert [call(base, f"/p/api/{record.env}/{page}", {**made, "entry": "touch x"}, key)[0] for page in ("tool", "agent/main/shell", "phone/connect")] == [403] * 3, \
+            "running commands stays off for a phone, and phones are never its to change"
+        seed = {"name": "critique", "key": "seed", "value": "touch x"}
+        assert [call(base, f"/p/api/{record.env}/{page}", asked, key)[0] for page, asked in (
+            ("critique/round", {"what": "the phone"}), ("feature/configure", seed), ("settings", {"critique": {"seed": "touch x"}}),
+            ("sequence/run", {"n": 1}), ("agent/main/relaunch", {"skip": True}))] == [403] * 5, \
+            "a phone neither runs nor sets a command, in any shape of the page, nor restarts the agent without permission prompts"
+        assert call(base, f"/p/api/{record.env}/agent/main/relaunch", {}, key)[0] != 403, "a restart that keeps the prompts passes"
+        assert [call(base, f"/p/api/{record.env}/settings", written, key)[0] for written in (
+            {"form_of_address": {"title": "Captain"}}, {"viewer": {"chat_hidden": ["thoughts"], "color_scheme": "dark"}}, {"viewer": {"open_with": "sh"}},
+            {"critique": {"login": "state.json", "seed": ""}})] == [200, 200, 403, 200], \
+            "the phone writes the settings it names, and a command it sends back unchanged sets nothing"
+        assert call(base, f"/p/api/{record.env}/settings", {"boards": {"filler_model": "opus\ntools: Bash"}}, key)[0] == 400, \
+            "a model the provider does not offer is not written"
+        kept = Controller.create(CONTROLLERS["worktree"](record, actor=SYSTEM), "shed", path="/kept")
+        assert call(base, f"/p/api/{record.env}/worktree/{kept.n}/update", {"path": "/"}, key)[0] == 400 \
+            and CONTROLLERS["worktree"](record, actor=SYSTEM).load(kept.n).path == "/kept", "a path the journal sets is never written by hand"
+        place = Environments(record, actor=SYSTEM).create("placed", folder="/kept")
+        agent = Agents(record, actor=SYSTEM).create("hooked", transcript="/kept.jsonl")
+        ticket = Tickets(record, actor=SYSTEM).create("carded", work_environment="placed")
+        assert [call(base, f"/p/api/{record.env}/{page}", written, key)[0] for page, written in (
+            ("environment", {"title": "elsewhere", "folder": "/"}), (f"environment/{place.n}/update", {"folder": "/"}),
+            (f"environment/{place.n}/update", {"owner": "helper:1"}), (f"agent/{agent.n}/update", {"transcript": "/etc/passwd"}),
+            (f"agent/{agent.n}/update", {"cwd": "/"}), (f"ticket/{ticket.n}/update", {"work_environment": "main"}),
+            (f"ticket/{ticket.n}/update", {"bases": {"x": "y"}}), (f"ticket/{ticket.n}/update", {"provider": "nope"}))] == [400] * 8 \
+            and (Environments(record, actor=SYSTEM).load(place.n).folder, Agents(record, actor=SYSTEM).load(agent.n).transcript,
+                 Tickets(record, actor=SYSTEM).load(ticket.n).provider) == ("/kept", "/kept.jsonl", "claude"), \
+            "a phone sets no folder, transcript, work environment or base, and no provider the journal cannot start"
+        status, answered, _ = call(base, f"/p/api/{record.env}/todo", made, key)
+        assert status == 201 and Todos(record, actor=SYSTEM).load(answered["n"]).seen[:1] == [USER], "the phone writes as the user"
+        row = f"/p/api/{record.env}/todo/{answered['n']}"
+        assert call(base, row, key=key).body["title"] == "From the phone"
+        assert call(base, "/p/api/changelog", key=key).body["changelog"], "About on the phone reads the changelog"
+        assert call(base, f"{row}/move", {"env": "elsewhere"}, key)[0] == 403 and Todos(record, actor=SYSTEM).load(answered["n"]), \
+            "a body that names an environment outside this journal is refused"
+        for name in ("page.html", "face.png"):
+            (tmp_path / name).write_text("<script src=x.js></script>")
+            Todos(record, actor=SYSTEM).attach(answered["n"], str(tmp_path / name))
+        assert call(base, f"{row}/files/page.html", key=key)[0] == 403, "a page the phone app does not call is refused"
+        monkeypatch.setattr(allow_list, "NAMED", allow_list.NAMED | {allow_list.Action("todo", "files")})
+        sent = {"Cookie": f"__Host-phone={key}"}
+        with urllib.request.urlopen(urllib.request.Request(f"{base}{row}/files/page.html", headers=sent), timeout=5) as got:
+            assert (got.headers["X-Content-Type-Options"], got.headers["Content-Disposition"].split(";")[0]) == ("nosniff", "attachment"), \
+                "a forwarded file is downloaded, never opened on the phone's own origin"
+        with urllib.request.urlopen(urllib.request.Request(f"{base}{row}/files/face.png", headers=sent), timeout=5) as got:
+            assert got.headers["Content-Disposition"].split(";")[0] == "inline", "a picture still shows in place"
+        with socket.create_connection(("127.0.0.1", int(base.rsplit(":", 1)[1])), timeout=5) as raw:
+            raw.sendall(f"GET {row}/files/caf\xe9\x01 HTTP/1.1\r\nHost: x\r\nCookie: __Host-phone={key}\r\nConnection: close\r\n\r\n".encode("latin-1"))
+            assert raw.recv(64).split(b" ")[1] == b"404", "a path with a raw or control character is answered, not dropped"
+        CONTROLLERS["environment"](record, actor=SYSTEM).create("garden")
+        moved = call(base, f"{row}/move", {"env": "garden"}, key)
+        assert moved.status == 200 and Todos(Record(record.root, "garden"), actor=SYSTEM).load(moved.body["n"]).title == "From the phone", \
+            "a row moves to another environment of the same journal"
+    finally:
+        SERVING.pop(str(record.root.resolve()))
+        desk.shutdown()
 
 
 def test_a_disconnected_or_expired_phone_is_refused_on_its_next_tap(served):
@@ -415,6 +487,11 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     shown = [(item["type"], item.get("label", "")) for item in fed["items"]]
     assert ("thought", "Weighing it") in shown and any(kind == "card" and label.startswith("Agent committed") for kind, label in shown), \
         "the agent's thoughts and chat marks reach the phone"
+    record.set_setting("viewer", {"chat_hidden": ["thoughts", "notes"]})
+    kept = [(item["type"], item.get("label", "")) for item in call(base, "/p/feed", key=key).body["items"]]
+    assert ("thought", "Weighing it") not in kept and not any(label.startswith("Agent committed") for _, label in kept), \
+        "a kind hidden in the viewer's chat setting is left out of the phone's feed too"
+    record.set_setting("viewer", {})
     assert call(base, "/p/stop", {}, key).status == 422 and call(base, "/p/pause", {}, key).status == 422, "with no agent running there is nothing to stop or pause"
     running = call(base, "/p/feed", key=key).body["running"]
     assert (running["state"], running["paused"], running["usage"]) == ("offline", False, []), "the phone sees the agent's state, pause, context and usage"

@@ -18,6 +18,11 @@ export class ApiClient {
         this.base = base;
     }
 
+    point(base, env) {
+        this.base = base;
+        this.env = env;
+    }
+
     at(base, env = this.env) {
         return new ApiClient({base, env: typeof env === "function" ? env : () => env});
     }
@@ -290,6 +295,10 @@ export class ApiClient {
         return this.command("todo", "tasks", {agent});
     }
 
+    touched(n) {
+        return this.command("todo", "touched", {n});
+    }
+
     board({plan, agent} = {}) {
         return this.command("todo", "board", {plan: plan || 0, agent: agent || ""});
     }
@@ -428,6 +437,14 @@ export class ApiClient {
 
     closeNotice(n) {
         return this.act("notice", n, "close");
+    }
+
+    pinNotice(text, about = "") {
+        return this.create("notice", {brief: text, about: about || undefined});
+    }
+
+    deleteTurn(type, n) {
+        return this.act(type, n, "delete", {why: "deleted from the viewer"});
     }
 
     editMessage(n, text) {
@@ -725,5 +742,5 @@ export const api = new ApiClient();
 export const onWrite = (fn) =>
     transport.onWrite((url) => {
         const where = new URL(url, location.origin);
-        if (where.origin === location.origin) fn(where.pathname.split("/")[3]);
+        if (where.origin === location.origin) fn(where.pathname.slice(api.base.length).split("/")[3]);
     });

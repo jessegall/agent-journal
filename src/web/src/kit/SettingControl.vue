@@ -1,6 +1,6 @@
 <script setup>
 import {computed, useId} from "vue";
-import {same} from "../domain/settingsCatalog.js";
+import {resets, resettable as canReset} from "../domain/settingsCatalog.js";
 import Btn from "./Btn.vue";
 import Chip from "./Chip.vue";
 import ChoiceList from "./ChoiceList.vue";
@@ -22,11 +22,10 @@ const field = computed(() => ["number", "text", "choice"].includes(props.row.kin
 const LONG = 50;
 const stacked = computed(() => props.sheet || props.row.options.reduce((n, o) => n + o.label.length, 0) > LONG);
 const choices = computed(() => props.row.options.map((o) => ({value: o.key, label: o.label, current: o.key === props.row.value})));
-const resettable = computed(() => props.row.changed && (props.row.shipped !== undefined || props.row.timing));
+const resettable = computed(() => canReset(props.row));
 
 function reset() {
-    if (props.row.shipped !== undefined && !same(props.row.value, props.row.shipped)) emit("change", props.row.shipped);
-    if (props.row.timing && props.row.timing.changed) emit("timing", props.row.timing.shipped);
+    resets(props.row).forEach(([name, value]) => emit(name, value));
 }
 </script>
 

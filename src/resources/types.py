@@ -5,7 +5,7 @@ from typing import ClassVar
 
 from engine.fields import Loaded
 
-from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Pruned, Resource, ResourceDetails
+from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Pruned, Ref, Refused, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows
 
 
@@ -310,13 +310,13 @@ class AgentRow(Shape, Resource):
         Field(default="", name="tool"),
         Field(default="", name="file"),
         Field(name="wrote"),
-        Field(default="", name="cwd"),
+        Field(default="", name="cwd", journal_only=True),
         Field(default=0, name="at"),
-        Field(default="", name="provider"),
+        Field(default="", name="provider", journal_only=True),
         Field(default=0, name="uses"),
-        Field(default="", name="transcript"),
-        Field(default="", name="inbox"),
-        Field(default="", name="model"),
+        Field(default="", name="transcript", journal_only=True),
+        Field(default="", name="inbox", journal_only=True),
+        Field(default="", name="model", journal_only=True),
         Field(default="", name="effort"),
         Field(default=dict, name="pending"),
         Field(default=0, name="paused"),
@@ -325,7 +325,7 @@ class AgentRow(Shape, Resource):
         Field(default="", name="prompted"),
         Field(default=list, name="delivered"),
         Field(default="", name="failure"),
-        Field(name="started"),
+        Field(default=0, name="started"),
         Field(default=0, name="context"),
         Field(default=dict, name="usage"),
         Field(default=list, name="skills"),
@@ -452,7 +452,7 @@ class Tool(Shape, Resource):
         help="A tool names its entry (how to run it), its usage and what it does; run executes it from the project root.",
     )
     data_fields: ClassVar[list[Field]] = [
-        Field(TEXT, name="entry"),
+        Field(TEXT, name="entry", runs_commands=True),
         Field(TEXT, name="usage"),
     ]
     type = "tool"
@@ -485,14 +485,14 @@ class Plugin(Shape, Resource):
         help="Installed from a GitHub URL or a local path, fixed at one exact version; its manifest says what it listens to, what it runs and which pages it shows.",
     )
     data_fields: ClassVar[list[Field]] = [
-        Field(TEXT, name="source"),
+        Field(TEXT, name="source", runs_commands=True),
         Field(TEXT, name="revision"),
         Field(TEXT, name="commit"),
         Field(TEXT, name="version"),
         Field(FLAG, name="linked"),
         Field(FLAG, name="enabled"),
-        Field(name="manifest"),
-        Field(name="settings"),
+        Field(name="manifest", runs_commands=True),
+        Field(name="settings", runs_commands=True),
         Field(name="token"),
         Field(NUMBER, 0.0, name="read_at"),
     ]
@@ -512,7 +512,10 @@ class Environment(Shape, Resource):
         abstract="One line of work with its own record: messages, to-dos, facts, plans, settings",
         help="An agent works in one environment at a time. It can switch to a free one, or claim a taken one by giving a reason.",
     )
-    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner"), Field(TEXT, "", name="launched_from"), Field(NUMBER, 0, name="launched"), Field(TEXT, "", name="folder")]
+    data_fields: ClassVar[list[Field]] = [
+        Field(TEXT, "", name="owner", journal_only=True), Field(TEXT, "", name="launched_from", journal_only=True), Field(NUMBER, 0, name="launched"),
+        Field(TEXT, "", name="folder", journal_only=True),
+    ]
     listed_open = True
     type = "environment"
     event_labels = {"created": "Environment prepared", "completed": "Environment closed"}
@@ -604,6 +607,17 @@ def register(*classes) -> None:
 
 TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Fact, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Connection, Plugin, Environment, Ask, Nudge, FeatureRow)}
 LISTED = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "fact", "rule", "reminder", "notice", "reaction", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge", "feature")
+
+
+def ref_named(text: str) -> Ref:
+    """A row named as type:number, or the way a person writes it: to-do 12, doc 4."""
+    if ":" in text:
+        return Ref.parse(text)
+    name, _, n = text.strip().rpartition(" ")
+    kind = next((key for key, kind in TYPES.items() if name.lower() in (key, kind.details.title.lower())), "")
+    if not kind or not n.isdigit():
+        raise Refused(f"{text!r} names no item: write it like to-do 12 or doc 4")
+    return Ref(kind, int(n))
 
 
 def priority() -> list[str]:

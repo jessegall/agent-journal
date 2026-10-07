@@ -4,7 +4,9 @@ import {computed, inject, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
 import {announce, tell} from "./announce.js";
 import {ended} from "./outbox.js";
+import Button from "./kit/Button.vue";
 import PhoneSheet from "./PhoneSheet.vue";
+import PhoneShareLinks from "./PhoneShareLinks.vue";
 import PhoneShareRow from "./PhoneShareRow.vue";
 
 const props = defineProps({target: {type: String, required: true}, title: {type: String, required: true}});
@@ -114,10 +116,11 @@ async function sendDocument(close) {
                 </template>
             </li>
         </ul>
+        <PhoneShareLinks :target="target" />
         <template v-if="told">
             <p class="share-told">{{ told }}</p>
         </template>
-        <button type="button" class="share-cancel" @click="close">Cancel</button>
+        <Button kind="plain" fill @click="close">Cancel</Button>
     </PhoneSheet>
 </template>
 
@@ -148,16 +151,5 @@ async function sendDocument(close) {
 .share-told {
     margin: 0 0 12px;
     color: var(--text-2);
-}
-
-.share-cancel {
-    width: 100%;
-    min-height: 50px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--hover);
-    color: var(--text);
-    font: inherit;
-    font-weight: 600;
 }
 </style>

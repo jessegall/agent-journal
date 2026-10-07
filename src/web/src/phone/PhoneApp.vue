@@ -1,6 +1,9 @@
 <script setup>
-import {computed, onMounted, onUnmounted, provide, ref} from "vue";
+import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
+import {loadViewerSettings} from "../composables/colorScheme.js";
+import {api} from "../api/client.js";
 import {phone, PhoneError} from "../api/phone.js";
+import {transport} from "../api/transport.js";
 import Btn from "../kit/Btn.vue";
 import Spinner from "../kit/Spinner.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -10,8 +13,11 @@ import {waitingActions, waitingToSend} from "./outbox.js";
 import {wanted} from "./wanted.js";
 import {useKeyboard} from "./keyboard.js";
 import {usePoll} from "../composables/poll.js";
+import {runsAllowed} from "./runs.js";
+import {store} from "../state/store.js";
 
 const OPEN = "open=";
+const BASE = "/p";
 
 const STATES = {401: "unknown", 410: "ended"};
 const RETRY_EVERY = 10000;
@@ -28,6 +34,18 @@ const waitsLine = computed(() => {
         ? "1 thing waits to send and goes once you are back."
         : `${waiting.value} things wait to send and go once you are back.`;
 });
+transport.carry({"X-Phone": "1"});
+watch(
+    connection,
+    (now) => {
+        if (!now) return;
+        api.point(BASE, () => now.environment);
+        loadViewerSettings();
+    },
+    {flush: "sync"}
+);
+watch(connection, (now) => (runsAllowed.value = Boolean(now && now.runs)));
+
 const dropped = computed(() => Boolean(connection.value) || waiting.value > 0);
 
 function failed(error) {
@@ -53,6 +71,7 @@ async function load() {
     try {
         await connect();
         connection.value = await phone.state();
+        store.spec = await api.manifest();
         state.value = "connected";
     } catch (error) {
         failed(error);

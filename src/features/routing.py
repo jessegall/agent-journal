@@ -17,6 +17,8 @@ JSON = "application/json"
 
 PLAIN = "text/plain; charset=utf-8"
 
+PHONE_ENVIRONMENT = "X-Phone-Environment"
+
 
 @dataclass(frozen=True)
 class Named(Loaded):

@@ -33,14 +33,16 @@ const other = (data = {}, row = {}) => ({
     data,
 });
 
-function shown(suggestion, props = {}) {
+function shown(suggestion, props = {}, given = {}) {
     const acts = {
         complete: vi.fn().mockResolvedValue({}),
         install: vi.fn().mockResolvedValue({}),
+        installBlocked: () => "",
         noteWindow: vi.fn().mockResolvedValue({}),
         offerUndo: vi.fn(),
         speak: vi.fn(),
         open: vi.fn(),
+        ...given,
     };
     const into = document.createElement("div");
     document.body.append(into);
@@ -69,6 +71,13 @@ describe("a suggestion in the chat", () => {
         finish({});
         await flush();
         expect(acts.complete).not.toHaveBeenCalled();
+    });
+
+    test("a plugin suggestion offers no yes where it cannot be installed, and says why", () => {
+        const why = "Running commands from the phone is off. Do it on your computer.";
+        const {button, text} = shown(plugin(), {}, {installBlocked: () => why});
+        expect(button(YES)).toBeUndefined();
+        expect(text()).toContain(why);
     });
 
     test("a failed install gives its reason, the network tip only for the network, and Try again or No", () => {

@@ -62,7 +62,7 @@ export function useEdgeBack(stack, {depth, back}) {
                 if (pending) rest();
                 return covered ? {held: true} : null;
             }
-            if (!depth() || first.clientX > EDGE || event.target.closest(CONTROLS)) return null;
+            if (!depth() || first.clientX > EDGE || event.target.closest(CONTROLS) || document.documentElement.classList.contains("typing")) return null;
             if (sidewaysScroller(event.target, stack.value)?.scrollLeft > 0) return null;
             return {};
         },

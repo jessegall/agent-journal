@@ -1,27 +1,10 @@
 <script setup>
 import {computed} from "vue";
 import TextDisplay from "../kit/TextDisplay.vue";
-import {span} from "../format/time.js";
+import {loopRows, loopSet as set, loopWhen as when} from "../domain/loops.js";
 
 const props = defineProps({loops: {type: Object, default: () => ({})}});
-const listed = computed(() =>
-    Object.entries(props.loops || {})
-        .map(([id, loop]) => ({id, ...loop}))
-        .sort((a, b) => (a.at || 0) - (b.at || 0))
-);
-
-const pad = (m) => `:${String(m).padStart(2, "0")}`;
-
-function when(schedule) {
-    const [minute, hour, day, month, week] = (schedule || "").trim().split(/\s+/);
-    if ([hour, day, month, week].some((part) => part !== "*")) return schedule;
-    if (/^\*\/\d+$/.test(minute)) return `every ${minute.slice(2)} minutes`;
-    if (minute === "*") return "every minute";
-    if (/^\d+(,\d+)*$/.test(minute)) return `each hour at ${minute.split(",").map(pad).join(", ")}`;
-    return schedule;
-}
-
-const set = (at) => (at ? `set ${span(Date.now() / 1000 - at)} ago` : "");
+const listed = computed(() => loopRows(props.loops));
 </script>
 
 <template>

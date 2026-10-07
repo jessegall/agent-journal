@@ -1,10 +1,11 @@
 import inspect
 import shutil
 import time
-from dataclasses import asdict
+from dataclasses import asdict, dataclass, field
 from functools import cache, partial
 
 from engine import bus
+from engine.fields import Loaded
 from engine.markers import plain
 from engine.record import Record
 from resources.base import PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
@@ -17,8 +18,28 @@ from controllers.stored import RowStore
 from engine.wording import noun
 
 WORDS = ("title", "abstract", "brief")
+FIELD_WRITES = ("create", "update", "set")
 LAST = 25
 SEARCHABLE: dict[str, dict[int, tuple[float, str]]] = {}
+
+
+@dataclass(frozen=True)
+class Arguments(Loaded):
+    """What a call to an action names: every argument, its row, and the feature, key and value it sets."""
+
+    values: dict = field(default_factory=dict)
+    n: str = ""
+    name: str = ""
+    key: str = ""
+    value: object = ""
+
+    @classmethod
+    def given(cls, body: dict, params: dict) -> "Arguments":
+        return cls.from_json({**body, **params, "values": body})
+
+    def writes(self) -> dict:
+        """The fields the call writes, with their new values: every argument it names, and the key it sets."""
+        return {**self.values, self.key: self.value} if self.key else dict(self.values)
 
 
 def searchable(r: Resource) -> str:
@@ -297,6 +318,17 @@ class Controller(Files, Links, Discussed):
     def named(self, method: str) -> str:
         return self.resource.command_names.get(method, method)
 
+    def _runs_commands(self, word: str, arguments: Arguments) -> bool:
+        """Whether calling the action with these arguments changes a field or setting that decides what runs."""
+        command = COMMANDS.get(self.type, {}).get(word)
+        if command:
+            return command.runs_commands(self, arguments)
+        written = {name: value for name, value in arguments.writes().items() if name in self.resource.command_fields}
+        if not written:
+            return False
+        stored = self.load(arguments.n).data if arguments.n else {}
+        return any(value != stored.get(name, "") for name, value in written.items())
+
     def method(self, name: str):
         if name in self.resource.command_names and name not in self.resource.command_names.values():
             raise Refused(f"a {self.type} calls that {self.resource.command_names[name]}")
@@ -308,8 +340,19 @@ class Controller(Files, Links, Discussed):
         command = COMMANDS.get(self.type, {}).get(name)
         if command:
             return bus.commanded(self.type, name, partial(command, self))
-        method = next((method for method, alias in self.resource.command_names.items() if alias == name), name)
+        method = self._method_called(name)
         return bus.commanded(self.type, method, getattr(self, method))
+
+    def _method_called(self, word: str) -> str:
+        return next((method for method, alias in self.resource.command_names.items() if alias == word), word)
+
+    def _refuse_journal_fields(self, word: str, arguments: Arguments) -> None:
+        """Refuses a create, update or set from outside that writes a field only the journal sets, such as a path or a process."""
+        if self._method_called(word) not in FIELD_WRITES:
+            return
+        written = sorted(arguments.writes().keys() & self.resource.journal_fields)
+        if written:
+            self._refuse(f"the journal sets {', '.join(written)} of a {self.type} itself; it is not written by hand")
 
     @marks.action
     def restore(self, n: int) -> Resource:

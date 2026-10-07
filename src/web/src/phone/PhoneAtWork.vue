@@ -1,4 +1,5 @@
 <script setup>
+import Button from "./kit/Button.vue";
 import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {agentCounts, agentsInOrder, FINISHED_STATES} from "../domain/helpers.js";
 import {counted} from "../format/number.js";
@@ -99,10 +100,10 @@ function read(target) {
                         </section>
                     </template>
                     <template v-if="olderCount && !older">
-                        <button type="button" class="at-work-older" @click="older = true">Show {{ olderCount }} older</button>
+                        <Button kind="plain" fill class="at-work-older" @click="older = true">Show {{ olderCount }} older</Button>
                     </template>
                 </div>
-                <footer class="at-work-foot"><button type="button" @click="emit('close')">Close</button></footer>
+                <footer class="at-work-foot"><Button kind="plain" fill @click="emit('close')">Close</Button></footer>
             </section>
             <template v-if="helper">
                 <section :class="['at-work-layer', 'at-work-detail', {departing: edge.leaving.value}]">
@@ -129,7 +130,7 @@ function read(target) {
     inset: 0;
     display: flex;
     flex-direction: column;
-    padding: 0 var(--side) max(14px, env(safe-area-inset-bottom));
+    padding: 0 var(--side) max(14px, var(--safe-bottom));
     background: var(--raised);
     transition: transform var(--pop) var(--push);
 }
@@ -222,21 +223,8 @@ function read(target) {
     border: 1px solid var(--tone-warn);
 }
 
-.at-work-older,
-.at-work-foot button {
-    width: 100%;
-    min-height: 50px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--hover);
-    color: var(--text);
-    font: inherit;
-    font-weight: 600;
-}
-
 .at-work-older {
     margin-bottom: 14px;
-    color: var(--accent-text);
 }
 
 .at-work-foot {

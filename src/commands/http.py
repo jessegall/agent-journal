@@ -20,7 +20,7 @@ from overview.summary import lately_summarized
 from engine.color import identity, set_color
 from engine.upgrades import check_now
 from agents.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
-from features.permission_prompts.skipping import set_skipped
+from features.permission_prompts.skipping import Relaunch, set_skipped
 from engine.files import found_files
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments
@@ -268,7 +268,7 @@ def post_agent_keys(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/agent/{session}/relaunch")
 def post_agent_relaunch(req: Request) -> Reply:
-    skip = bool(req.body.get("skip"))
+    skip = req.body_as(Relaunch).skip
     set_skipped(req.record(), skip)
     return Reply(200, {**relaunch(req.root, req.params["env"], req.params["session"]), "skip": skip})
 

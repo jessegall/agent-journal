@@ -8,10 +8,12 @@ from http.cookies import SimpleCookie
 
 from engine.record import Record
 from engine.fields import Loaded
+from features.phone.allow_list import RUNS_ALLOWED
 from features.phone.controller import Phones
+from features.phone.desktop import Desktop
 from features.phone.surface import PhoneSurface
 from engine.color import identity
-from features.sharing.page import PICTURES, unshared
+from features.sharing.page import disposition, unshared
 from features.sharing.preview import icon
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused, Stale
@@ -149,6 +151,7 @@ class Connection(TypedDict):
     home: list[str]
     project: str
     color: str
+    runs: bool
 
 
 def made(row) -> dict:
@@ -177,7 +180,7 @@ def read_body(phones: Phones, phone, rest: list[str], query: dict[str, list[str]
     if rest == ["state"]:
         known = identity(surface.home.root)
         return Connection(phone=phone.title, n=phone.n, environment=phone.environment, expires=phone.expires, home=phone.home,
-                          project=known["project"], color=known["color"])
+                          project=known["project"], color=known["color"], runs=RUNS_ALLOWED)
     if rest == ["feed"]:
         try:
             return {**surface.feed(float(asked.get("before", "inf"))), "build": built()}
@@ -212,6 +215,8 @@ class PhoneRoutes:
             return handler.asset(rest[1])
         if rest[:1] == ["file"] and len(rest) == 4:
             return self.file(handler, rest)
+        if rest[:1] == ["api"]:
+            return self.desktop(handler)
         if rest == [WORKER]:
             return handler.send(200, (APP_DIR / WORKER_FILE).read_bytes(), {"Content-Type": "text/javascript", "Cache-Control": "no-cache",
                                                                           "Service-Worker-Allowed": "/p/", **APP_HEADERS})
@@ -238,9 +243,7 @@ class PhoneRoutes:
         except Refused as refused:
             return handler.answer(404, str(refused))
         kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
-        shown = found.suffix.lower() in PICTURES
-        return handler.send(200, found.read_bytes(), {"Content-Type": kind, "Cache-Control": "private, max-age=3600",
-                                                      "Content-Disposition": f"{'inline' if shown else 'attachment'}; filename*=UTF-8''{quote(found.name)}"})
+        return handler.send(200, found.read_bytes(), {"Content-Type": kind, "Cache-Control": "private, max-age=3600", "Content-Disposition": disposition(found.name)})
 
     def read(self, handler, rest: list[str]) -> None:
         phone = self.phone(handler)
@@ -272,6 +275,8 @@ class PhoneRoutes:
             return handler.answer(404, "no such action")
         if rest[:1] == ["attach"]:
             return self.attach(handler, rest[1:])
+        if rest[:1] == ["api"]:
+            return self.desktop(handler)
         if not self.trusted(handler):
             return handler.answer(403, "refused")
         body = self.body(handler)
@@ -319,6 +324,18 @@ class PhoneRoutes:
                 "start": lambda: made(phones._start(phone, Starting.from_json(body))),
                 "arrange": lambda: made(phones._arrange(phone, list(Arranging.from_json(body).cards))),
                 "push": lambda: made(phones._subscribe(phone, Subscribing.from_json(body).endpoint))}
+
+    def desktop(self, handler) -> None:
+        if handler.command == "POST" and not self.trusted(handler, ""):
+            return handler.answer(403, "refused")
+        length = handler.headers.get("Content-Length", "")
+        size = int(length) if length.isdigit() else 0
+        if size > UPLOAD_LIMIT:
+            return handler.answer(413, "too large")
+        phone = self.phone(handler)
+        if phone is None:
+            return None
+        return Desktop(handler, phone.environment).forward(handler.rfile.read(size) if size else b"")
 
     def attach(self, handler, rest: list[str]) -> None:
         if not self.trusted(handler, UPLOADED):

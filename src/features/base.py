@@ -135,7 +135,7 @@ class Feature(ABC):
     def wire(self) -> None:
         self.register(self.journal)
         if self.settings:
-            SETTING_KEYS.add(None, tuple(setting.name for setting in self.settings), key=self.name)
+            SETTING_KEYS.add(None, tuple(self.settings), key=self.name)
         if self.nudges:
             from features.nudges import SendOnTheClock, SendOnToolUse
             self.journal.events.handler(SendOnTheClock(self.nudges))

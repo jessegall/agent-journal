@@ -4,6 +4,7 @@ import CommentToggle from "./CommentToggle.vue";
 import Priority from "./Priority.vue";
 import ResourceActions from "./ResourceActions.vue";
 import ShareButton from "./ShareButton.vue";
+import {SHARED} from "../domain/spec.js";
 
 defineProps({
     resource: {type: Object, required: true},
@@ -12,7 +13,6 @@ defineProps({
     ranked: {type: Boolean, default: false},
 });
 const emit = defineEmits(["edit", "close"]);
-const SHARED = ["doc", "collection", "report"];
 </script>
 
 <template>

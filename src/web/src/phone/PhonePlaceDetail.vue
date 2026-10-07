@@ -5,7 +5,7 @@ import {computed, nextTick, onMounted, ref} from "vue";
 import Spinner from "../kit/Spinner.vue";
 import {AGENTS} from "./agents.js";
 import {ago} from "../format/time.js";
-import {kindCard, kindWord} from "./kinds.js";
+import {waitsOf} from "./places/journals.js";
 import PhoneAgent from "./PhoneAgent.vue";
 import Icon from "../kit/Icon.vue";
 
@@ -19,12 +19,7 @@ const emit = defineEmits(["back", "open", "start"]);
 const detail = computed(() => props.place.details?.[props.name] || {});
 const running = computed(() => props.place.working.includes(props.name));
 const state = computed(() => detail.value.agent || (running.value ? "idle" : "offline"));
-const waits = computed(() =>
-    Object.entries(detail.value.waiting || {})
-        .filter(([, count]) => count > 0)
-        .map(([kind, count]) => counted(count, kindWord(kind), kindCard(kind).toLowerCase()))
-        .join(", ")
-);
+const waits = computed(() => waitsOf(detail.value));
 const heading = ref(null);
 
 onMounted(() => nextTick(() => heading.value?.focus({preventScroll: true})));

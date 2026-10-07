@@ -43,7 +43,7 @@ from commands import http  # noqa: F401
 VIEWER = Path(__file__).resolve().parents[1] / "src" / "web" / "src"
 RECORDER = Path(__file__).with_name("viewer_calls.mjs")
 UNBOUND = ("unexpected keyword argument", "missing a required argument", "positional argument")
-BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "page", "origin", "journal", "pluginUrl", "markdownUrl", "fileUrl",
+BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "point", "page", "origin", "journal", "pluginUrl", "markdownUrl", "fileUrl",
          "extensionZip", "stream", "layoutFrom"}
 REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin", "tunnelLogout", "updateTunler", "installTunler",
         "tunnelAnswering", "tunnelDomains", "tunnelRelease", "tunnelReaddress", "tunnelCause", "restartTunnel", "setService", "installPlugin", "installSuggested", "upgradePlugin", "previewPlugin",
@@ -68,7 +68,8 @@ CALLS = {
     "buildBoard": [1, "a board", "steer it"], "startBoard": [1], "retryBoard": [1], "archiveBoard": [1], "restoreBoard": [1],
     "addedToBoard": [1, [1]], "markStage": [1, "Done", "done"], "stopShare": [1], "approveShare": [1], "tunnelStatus": [], "tunnelRecheck": [],
     "shareReachable": [1], "shareOpens": ["doc:1"], "questionsLinkedTo": ["todo:1"], "planFromDoc": [1], "keepDoc": [1],
-    "runCheck": [1], "setCheck": [1, "every", 5], "closeNotice": [1], "editMessage": [1, "reworded"],
+    "runCheck": [1], "setCheck": [1, "every", 5], "closeNotice": [1], "pinNotice": ["Pinned from a message", "message:1"], "editMessage": [1, "reworded"],
+    "deleteTurn": ["message", 1], "touched": [1],
     "stopTask": [AGENT_N, "task-1", "a background run"], "updateComment": [1, "reworded"], "deleteComment": [1], "addToCollection": [1, ["todo:1"]],
     "setStartsOn": [1, "todo.created"], "setSteps": [1, ["one step"]], "pinRule": [1], "profiles": [], "profileCallings": [], "profileSamples": [], "profileWords": [], "createProfile": [{"title": "walked", "brief": "x"}], "updateProfile": [1, {"brief": "y"}],
     "duplicateProfile": [1], "deleteProfile": [1], "configurePlugin": [1, "key", "value"],
@@ -221,7 +222,7 @@ def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
     code(record.root).mkdir(parents=True, exist_ok=True)
     (code(record.root) / "CHANGELOG.md").write_text("# changes\n")
     keys = {
-        "/api/manifest": {"actions", "actors", "build", "environment", "features", "fields", "groups", "methods", "priority", "project", "scopes", "types", "version", "views"},
+        "/api/manifest": {"actions", "actors", "build", "chat_kinds", "environment", "features", "fields", "groups", "methods", "priority", "project", "scopes", "types", "version", "views"},
         "/api/summary": {"color", "environments", "helpers", "project", "root", "start", "version"},
         "/api/{env}/bar": {"queue"},
         "/api/{env}/family": {"links", "members"},

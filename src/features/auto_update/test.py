@@ -80,8 +80,10 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(routes, "upstream", lambda root: "99.0.0")
     release = dispatch("GET", "/api/upstream", record.root, {}, {}).body
     assert (release["latest"], release["newer"], release["changed"]) == ("99.0.0", True, []), "the viewer is told the newest release, that it is newer, and which managed files were changed"
-    monkeypatch.setattr(routes, "code", lambda root: record.root)
-    assert dispatch("GET", "/api/changelog", record.root, {}, {}).code == 404, "an install without a changelog says so"
+    assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changelog"] == routes.data("CHANGELOG.md").read_text(), \
+        "the changelog is the running code's own, whatever journal it serves"
+    monkeypatch.setattr(routes, "CHANGELOG", record.root / "CHANGELOG.md")
+    assert dispatch("GET", "/api/changelog", record.root, {}, {}).code == 404, "running code without a changelog says so"
     (record.root / "CHANGELOG.md").write_text("# 99.0.0\n")
     page = dispatch("GET", "/api/changelog", record.root, {}, {}).body
     assert (page["changelog"], page["updating"], page["repository"]) == ("# 99.0.0\n", False, False), "the viewer reads the changelog with whether an update is running"

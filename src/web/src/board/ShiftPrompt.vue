@@ -2,16 +2,12 @@
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
+import {shiftQuestion} from "./moves.js";
 
 const props = defineProps({ask: Object});
 const emit = defineEmits(["send", "close"]);
 const text = ref("");
-const QUESTIONS = {
-    held: {title: "Why is it held?", word: "why", required: true},
-    done: {title: "How did it land?", word: "how", required: false},
-    todo: {title: "Why reopen it?", word: "why", required: true},
-};
-const question = computed(() => QUESTIONS[props.ask.lane]);
+const question = computed(() => shiftQuestion(props.ask.card, props.ask.lane));
 const ready = computed(() => !question.value.required || text.value.trim());
 
 function send() {
@@ -32,7 +28,7 @@ function send() {
         />
         <div class="actions">
             <Btn small @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" small :disabled="!ready" @click="send">Move it</Btn>
+            <Btn kind="primary" small :disabled="!ready" @click="send">Move</Btn>
         </div>
     </Dialog>
 </template>

@@ -139,6 +139,12 @@ class Page:
         return f'<h1>{self.title(c.title)}</h1>{about}<ul class="cards">{cards}</ul>'
 
 
+def disposition(name: str) -> str:
+    """How a file is handed over: a picture shows in place, anything else is downloaded."""
+    shown = "inline" if name.lower().endswith(PICTURES) else "attachment"
+    return f"{shown}; filename*=UTF-8''{quote(name)}"
+
+
 def ending(expires: float) -> str:
     if not expires:
         return "View only"

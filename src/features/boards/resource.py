@@ -24,7 +24,7 @@ class Board(Shape, Resource):
         Field(default=dict, name="building"),
         Field(default=dict, name="added"),
         Field(TEXT, "", name="branch"),
-        Field(TEXT, "", name="after_merge"),
+        Field(TEXT, "", name="after_merge", runs_commands=True),
         Field(TEXT, "", name="goal"),
         Field(LIST, list, name="done_when"),
         Field(NUMBER, 0.0, name="started"),

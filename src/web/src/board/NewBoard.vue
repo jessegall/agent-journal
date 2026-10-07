@@ -2,13 +2,13 @@
 import {useFileHandIn} from "../composables/fileHandIn.js";
 import {useWindowEvent} from "../composables/windowEvent.js";
 import {computed, nextTick, ref, watch} from "vue";
-import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import FocusStage from "../kit/FocusStage.vue";
 import TextInput from "../kit/TextInput.vue";
 import DocumentChoice from "./DocumentChoice.vue";
 import PresetCard from "./PresetCard.vue";
-import {PRESETS, boardBody} from "./presets.js";
+import {makeBoard} from "./makeBoard.js";
+import {PRESETS} from "./presets.js";
 
 const props = defineProps({open: Boolean});
 const emit = defineEmits(["close", "made"]);
@@ -25,7 +25,6 @@ const fromDocument = computed(() => chosen.value === DOCUMENT && Boolean(documen
 const preset = computed(() => PRESETS[chosen.value] || null);
 const ready = computed(() => Boolean(preset.value) || fromDocument.value);
 const hint = `1 to ${DOCUMENT + 1} picks · a dropped or pasted document picks ${DOCUMENT + 1} · Enter makes the board · Esc goes back`;
-const stem = (file) => file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
 
 watch(
     () => props.open,
@@ -63,13 +62,6 @@ function clear() {
     chosen.value = -1;
 }
 
-async function build() {
-    const made = await api.create("board", {title: name.value.trim() || stem(document.value), stages: []});
-    await api.upload("board", made.n, document.value);
-    await api.buildBoard(made.n, name.value.trim(), steer.value.trim());
-    return made;
-}
-
 async function create() {
     if (making.value) return;
     if (!ready.value) {
@@ -78,9 +70,7 @@ async function create() {
     }
     making.value = true;
     try {
-        const made = fromDocument.value
-            ? await build()
-            : await api.create("board", boardBody(preset.value, name.value.trim() || preset.value.suggest));
+        const made = await makeBoard({preset: preset.value, file: fromDocument.value ? document.value : null, name: name.value.trim(), steer: steer.value});
         emit("made", made.n);
     } catch (e) {
         warning.value = e.message;

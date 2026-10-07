@@ -1,4 +1,5 @@
 import features
+from controllers.features import check_choices
 from controllers.types import Features, Nudges
 from engine.record import Record
 from features.boards.agent_types import written
@@ -27,6 +28,9 @@ def settings(record: Record) -> dict:
 
 
 def apply(record: Record, body: dict, actor: str) -> dict:
+    for name, values in body.items():
+        if isinstance(values, dict):
+            check_choices(name, values)
     before = switches(record)
     for key, value in body.items():
         if key == Record.features and isinstance(value, dict):

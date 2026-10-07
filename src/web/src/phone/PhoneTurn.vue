@@ -1,6 +1,6 @@
 <script setup>
+import {computed, ref} from "vue";
 import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
-import {computed} from "vue";
 import PhoneButtons from "./PhoneButtons.vue";
 import PhoneQuestion from "./PhoneQuestion.vue";
 import SuggestionCard from "../chat/SuggestionCard.vue";
@@ -21,6 +21,7 @@ import PhoneMeta from "./PhoneMeta.vue";
 import {EARLIER, IN_CHAT, answered} from "../domain/replies.js";
 import {clock} from "../format/time.js";
 import {kindWord} from "./kinds.js";
+import MoreButton from "./kit/MoreButton.vue";
 
 const props = defineProps({
     item: {type: Object, required: true},
@@ -71,11 +72,17 @@ const onlyFiles = computed(
 );
 const quoted = computed(() => (answers.value ? props.briefs.get(answers.value) || EARLIER : ""));
 const emit = defineEmits(["hold"]);
-function pressed(event) {
-    if (!holdable.value) return;
-    const bubble = event.currentTarget.closest(".turn");
+function held(from) {
+    const bubble = from.closest(".turn");
     emit("hold", props.item, bubble.getBoundingClientRect(), bubble);
 }
+
+function pressed(event) {
+    if (holdable.value) held(event.currentTarget);
+}
+
+const turn = ref(null);
+const more = () => held(turn.value);
 </script>
 
 <template>
@@ -98,6 +105,7 @@ function pressed(event) {
             <div
                 :class="['turn', between ? 'peer' : item.who, {arriving, joined}]"
                 :style="arrival"
+                ref="turn"
                 :data-hold="holdable ? item.type + item.n : undefined"
                 :data-noswipe="between ? '' : undefined"
                 @contextmenu.prevent="pressed"
@@ -107,6 +115,12 @@ function pressed(event) {
                 </template>
                 <template v-if="between">
                     <PhonePeer :label="betweenLabel" />
+                </template>
+                <template v-else-if="holdable">
+                    <span class="turn-head">
+                        <span class="turn-who">{{ joined ? "" : `${item.who === "user" ? "You" : "Agent"}, ${clock(item.created)}` }}</span>
+                        <MoreButton class="turn-more" :about="item.who === 'user' ? 'your message' : 'this message'" @more="more" />
+                    </span>
                 </template>
                 <template v-else-if="item.who !== 'user' && !joined">
                     <span class="turn-who">Agent, {{ clock(item.created) }}</span>
@@ -277,6 +291,21 @@ function pressed(event) {
     color: var(--text-2);
     opacity: var(--pull, 0);
     transform: scale(calc(0.6 + 0.4 * var(--pull, 0)));
+}
+
+.turn-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 28px;
+    margin: -6px -6px 0 0;
+}
+
+.turn-more {
+    width: 44px;
+    height: 44px;
+    margin: -8px -10px -8px 0;
 }
 
 .turn-who {

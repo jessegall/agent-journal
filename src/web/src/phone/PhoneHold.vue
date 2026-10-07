@@ -2,6 +2,8 @@
 import {plainText} from "../text/words.js";
 import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
+import Button from "./kit/Button.vue";
+import Cell from "./kit/Cell.vue";
 import {firstTime} from "./once.js";
 import {useTrap} from "../composables/trap.js";
 
@@ -29,7 +31,7 @@ function cloned() {
     copy.setAttribute("aria-hidden", "true");
     preview.value.replaceChildren(copy);
 }
-const emit = defineEmits(["react", "reply", "copy", "close"]);
+const emit = defineEmits(["react", "reply", "copy", "pin", "delete", "close"]);
 const box = ref(null);
 const strip = ref(null);
 const edges = ref({left: false, right: false});
@@ -41,6 +43,7 @@ function scrolled() {
 }
 const top = ref(0);
 const mine = computed(() => props.item.who === "user");
+const deletable = computed(() => mine.value && !props.item.completed);
 const hint = firstTime("phone-reply-hint");
 const side = computed(() => {
     const rect = props.rect;
@@ -111,27 +114,37 @@ onUnmounted(() => {
                 @scroll.passive="scrolled"
             >
                 <template v-for="face in FACES" :key="face">
-                    <button type="button" class="hold-face" :aria-label="`React ${face}`" @click="emit('react', face)">{{ face }}</button>
+                    <Button kind="icon" class="hold-face" :aria-label="`React ${face}`" @click="emit('react', face)">{{ face }}</Button>
                 </template>
             </div>
             <ul class="hold-menu" aria-label="Actions">
                 <li>
-                    <button type="button" class="hold-action" @click="emit('reply')">
-                        Reply
-                        <Icon name="reply" :size="18" />
-                    </button>
+                    <Cell label="Reply" :chevron="false" @pick="emit('reply')">
+                        <template #end><Icon name="reply" :size="18" /></template>
+                    </Cell>
                 </li>
                 <li>
-                    <button type="button" class="hold-action" @click="emit('copy')">
-                        Copy
-                        <Icon name="copy" :size="18" />
-                    </button>
+                    <Cell label="Copy" :chevron="false" @pick="emit('copy')">
+                        <template #end><Icon name="copy" :size="18" /></template>
+                    </Cell>
                 </li>
+                <li>
+                    <Cell label="Pin to the chat" :chevron="false" @pick="emit('pin')">
+                        <template #end><Icon name="pin" :size="18" /></template>
+                    </Cell>
+                </li>
+                <template v-if="deletable">
+                    <li>
+                        <Cell label="Delete" tone="danger" :chevron="false" @pick="emit('delete')">
+                            <template #end><Icon name="trash" :size="18" /></template>
+                        </Cell>
+                    </li>
+                </template>
                 <template v-if="hint">
                     <li class="hold-hint">Tip: swipe a message to the right to reply.</li>
                 </template>
             </ul>
-            <button type="button" class="hold-close" @click="emit('close')">Close</button>
+            <Button kind="plain" class="hold-close" @click="emit('close')">Close</Button>
         </div>
     </div>
 </template>
@@ -198,16 +211,8 @@ onUnmounted(() => {
 
 .hold-face {
     flex: none;
-    width: 44px;
-    height: 44px;
-    border: 0;
     border-radius: 50%;
-    background: transparent;
     font-size: 1.5rem;
-}
-
-.hold-face:active {
-    background: var(--hover);
 }
 
 .hold-preview {
@@ -242,26 +247,6 @@ onUnmounted(() => {
 
 .hold-menu li + li {
     border-top: 1px solid var(--line);
-}
-
-.hold-action {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    min-height: 44px;
-    padding: 10px 16px;
-    border: 0;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    font-size: 1rem;
-    text-align: left;
-}
-
-.hold-action:active {
-    background: var(--hover);
-    opacity: 1;
 }
 
 .hold-close {

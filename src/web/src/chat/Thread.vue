@@ -18,6 +18,7 @@ import {openInChat, route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
+import {DUMP_OFFER} from "../domain/dumpPile.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
@@ -94,9 +95,7 @@ const dumpIdle = computed(() => ({
 }));
 const dumpOffer = {
     icon: "inbox",
-    title: (n) => `${n} files. Send as a dump instead?`,
-    text: "The agent reads them together and files each subject as its own document with a proper name, in a new collection you can remove in one step.",
-    action: "Send as a dump",
+    ...DUMP_OFFER,
     take: (files) => {
         store.dumpFiles = files;
         openDump(0);
@@ -402,7 +401,7 @@ async function promised(body, files, idempotency) {
 }
 
 async function pin(text, about = "") {
-    await scope.api.create("notice", {brief: text, about: about || undefined});
+    await scope.api.pinNotice(text, about);
 }
 
 watch(busy, async () => {

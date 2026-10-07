@@ -1,8 +1,8 @@
 <script setup>
+import {CHANGE_WORDS, PREVIEW_KINDS, SAME_VERSION} from "../domain/pluginWords.js";
 import Btn from "../kit/Btn.vue";
 import Console from "../kit/Console.vue";
 import Dialog from "../kit/Dialog.vue";
-import {PLUGIN_KINDS} from "../domain/pluginKinds.js";
 
 defineProps({
     previewed: {type: Object, required: true},
@@ -37,7 +37,7 @@ const emit = defineEmits(["close", "back", "install"]);
                 <p class="preview-lead">
                     {{
                         previewed.current
-                            ? "It is already at this commit. Run goes through its install steps again."
+                            ? SAME_VERSION
                             : previewed.changes.length
                               ? "What it runs changes:"
                               : "It runs the same commands as the version you have."
@@ -47,7 +47,7 @@ const emit = defineEmits(["close", "back", "install"]);
                     <div class="preview-rows changes">
                         <template v-for="(c, i) in previewed.changes" :key="i">
                             <div class="preview-row">
-                                <span :class="['preview-kind', c.kind]">{{ c.kind === "new" ? "Now also" : "No longer" }}</span>
+                                <span :class="['preview-kind', c.kind]">{{ CHANGE_WORDS[c.kind] }}</span>
                                 <code class="preview-command">{{ c.line }}</code>
                             </div>
                         </template>
@@ -58,7 +58,7 @@ const emit = defineEmits(["close", "back", "install"]);
             <div class="preview-rows">
                 <template v-for="(row, i) in previewed.rows" :key="i">
                     <div class="preview-row">
-                        <span :class="['preview-kind', row.kind]">{{ PLUGIN_KINDS[row.kind] || row.kind }}</span>
+                        <span :class="['preview-kind', row.kind]">{{ PREVIEW_KINDS[row.kind] }}</span>
                         <span class="preview-label">{{ row.label }}</span>
                         <code class="preview-command">{{ row.command }}</code>
                     </div>

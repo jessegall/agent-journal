@@ -6,7 +6,7 @@ import DumpAddFiles from "./DumpAddFiles.vue";
 import DumpAnswer from "./DumpAnswer.vue";
 import DumpEyebrow from "./DumpEyebrow.vue";
 import DumpNarration from "./DumpNarration.vue";
-import {fileKind} from "./dumpPile.js";
+import {fileKind} from "../domain/dumpPile.js";
 import {counted} from "../format/number.js";
 
 defineProps({
