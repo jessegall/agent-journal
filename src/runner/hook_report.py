@@ -12,10 +12,11 @@ from resources.types import IDLE
 
 def report(provider, record: Record, hook: Hook) -> None:
     agents = Agents(record, actor=SYSTEM)
-    row = agents.by_session(hook.session)
+    row = agents._shared(hook.session)
     wrote = hook.event == HookEvent.POST_TOOL_USE and command_effects.writes(hook)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.path, "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
-               status=provider.status(hook) or row.status or IDLE, **merged(provider, row, hook, provider.facts(hook, record.root)), **command_effects.shell(row, hook), wrote=wrote)
+               status=provider.status(hook) or row.status or IDLE, **merged(provider, row, hook, provider.facts(hook, record.root)), **command_effects.shell(row, hook), wrote=wrote,
+               turn_wrote=hook.event != HookEvent.USER_PROMPT_SUBMIT and bool(row.turn_wrote or wrote))
     if hook.event == HookEvent.POST_TOOL_USE:
         bus.defer(lambda: ran.tool_ran(record, row.n, hook.tool))
     if wrote:

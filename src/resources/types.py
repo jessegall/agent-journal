@@ -310,6 +310,7 @@ class AgentRow(Shape, Resource):
         Field(default="", name="tool"),
         Field(default="", name="file"),
         Field(name="wrote"),
+        Field(FLAG, False, name="turn_wrote"),
         Field(default="", name="cwd", journal_only=True),
         Field(default=0, name="at"),
         Field(default="", name="provider", journal_only=True),

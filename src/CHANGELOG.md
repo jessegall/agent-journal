@@ -4,6 +4,8 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.254.10 — A turn that only answers a journal line stays out of the chat; hooks do less after they answer
+A reply to a line from the journal is now left out of the chat whenever that turn changed nothing, whatever words it used; it is kept as a message the chat's Shown menu brings back. A turn that failed, changed files, asks you something, or answers your message, a question, a comment or a line that asks about a stall still reaches the chat. Every hook now does about a third less work after it answers: the open messages are read from a kept list instead of scanning every message, and the agent's own row is copied once per hook instead of several times, so replies and other commands wait less behind it. Nothing to do.
 ## 2.254.9 — The choice card no longer explains what the others do
 The note under a choice card's buttons said the others go away once you choose; it now says only "Choose one.". Nothing to do.
 
