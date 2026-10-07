@@ -4,7 +4,7 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
-## 2.254.5 — A pressed option shows a spinner at once, on the desktop and the phone
+## 2.254.6 — A pressed option shows a spinner at once, on the desktop and the phone
 Pressing an option button on a document, a report or the chat's choice card now shows a spinner on that button and disables the others of the same choice until the server answers; a failure returns the buttons and says the error. The desktop choice card and the phone's buttons share one pending state. Nothing to do.
 
 ## 2.254.4 — The voice profile's helper words stay in the chat; the screens say helper and subagent again
