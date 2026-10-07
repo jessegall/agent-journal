@@ -192,7 +192,7 @@ class Provider(ABC):
     def usage(self, path: Path, now: float | None = None) -> list[UsageWindow] | None:
         return None
 
-    def dispatch(self, tool) -> Dispatch | None:
+    def dispatch(self, tool, project: Path) -> Dispatch | None:
         return None
 
     def shell_wrapper(self, script: Path) -> dict:

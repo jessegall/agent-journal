@@ -8,7 +8,7 @@ from features.work_modes.details import ORCHESTRATOR, SOLO
 from features.work_modes.modes import mode_of
 from providers.payload import WriteCall
 
-REFUSED = "the user set this environment to solo: do the work yourself, with no subagents and no helpers"
+REFUSED = "the user set this environment to solo: do the writing yourself; only a subagent that reads, such as Explore or Plan, may be dispatched, and no helper"
 
 
 class RefuseDispatchInSolo(Canceler):
@@ -16,7 +16,7 @@ class RefuseDispatchInSolo(Canceler):
     event = DISPATCHING
 
     def cancel(self, context: AgentContext, data) -> str:
-        return REFUSED if mode_of(context.record) == SOLO else ""
+        return REFUSED if mode_of(context.record) == SOLO and not data.read_only else ""
 
 
 class RefuseHelperInSolo(ToolInterceptor):

@@ -44,7 +44,18 @@ def test_solo_refuses_a_subagent_and_a_helper_and_hands_on_lets_both_through():
     assert called(record, "Agent", DISPATCH) == {}, "builder lets a subagent through"
     assert "solo" not in called(record, "Bash", helper).get("reason", ""), "builder lets a helper through"
     pick(record, "solo", USER)
-    assert "set this environment to solo" in called(record, "Agent", DISPATCH).get("reason", ""), "solo refuses a subagent"
+    agents = record.root.parent / ".claude" / "agents"
+    agents.mkdir(parents=True, exist_ok=True)
+    (agents / "auditor.md").write_text("---\nname: auditor\ntools: Bash, Read, Grep, Glob\n---\n")
+    (agents / "fixer.md").write_text("---\nname: fixer\ntools: Bash, Read, Edit, Write\n---\n")
+
+    def solo_refuses(kind: str) -> bool:
+        return "set this environment to solo" in called(record, "Agent", {**DISPATCH, "subagent_type": kind}).get("reason", "")
+
+    assert (solo_refuses("Explore"), solo_refuses("Plan"), solo_refuses("auditor")) == (False, False, False), \
+        "solo lets a subagent that only reads through: a built-in reader, or an agent file whose tools cannot edit"
+    assert (solo_refuses("general-purpose"), solo_refuses("fixer"), solo_refuses("nobody-knows")) == (True, True, True), \
+        "solo refuses a subagent that can write, and one whose tools it cannot read"
     assert "set this environment to solo" in called(record, "Bash", helper).get("reason", ""), "solo refuses a helper"
 
 

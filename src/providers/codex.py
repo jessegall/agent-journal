@@ -20,6 +20,7 @@ SHELL_TOOLS = ("exec", "exec_command", "shell", "shell_command")
 TOOLS = {**dict.fromkeys(SHELL_TOOLS, "Bash"), "apply_patch": "Edit"}
 SKILL_LOOP = re.compile(r"for\s+\w+\s+in\s+([^;]+);\s*do")
 TAIL_BYTES = 262144
+READ_ONLY_SANDBOX = 'sandbox_mode = "read-only"'
 WINDOW_LABELS = {300: "5h", 1440: "1d", 10080: "7d"}
 SPAWN_IN_SCRIPT = re.compile(r"tools\.\w*spawn_agent\(")
 SCRIPT_FIELD = r"\b{}:\s*\"([^\"]*)\""
@@ -328,11 +329,15 @@ class Codex(Provider):
         return {"hooks": {event: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}]
                           for event in EVENTS if event != PERMISSION}}
 
-    def dispatch(self, tool) -> Dispatch | None:
+    def dispatch(self, tool, project: Path) -> Dispatch | None:
         if not isinstance(tool, AgentCall):
             return None
         return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip(), model_supported=True, models=self.models(),
-                        prompt=tool.prompt)
+                        prompt=tool.prompt, read_only=self.reads_only(project, tool.kind.strip()))
+
+    def reads_only(self, project: Path, kind: str) -> bool:
+        profile = self.agent_file(project, kind)
+        return profile.is_file() and READ_ONLY_SANDBOX in profile.read_text()
 
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)

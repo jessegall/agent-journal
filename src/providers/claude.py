@@ -19,6 +19,9 @@ from engine.proc import run
 from engine.stored import JsonFiles, read_json, write_text
 
 SENDS = "SendMessage"
+READING_KINDS = ("explore", "plan", "claude-code-guide")
+WRITING_TOOLS = {"Edit", "Write", "NotebookEdit", "*"}
+AGENT_TOOLS = re.compile(r"^tools:\s*(.+)$", re.M)
 SESSIONS = "uds:"
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 STATUS_SCRIPT = "claude-status.sh"
@@ -364,12 +367,19 @@ class Claude(Provider):
         found = EVALED.search(command)
         return found[1].replace("'\"'\"'", "'") if found else command
 
-    def dispatch(self, tool) -> Dispatch | None:
+    def dispatch(self, tool, project: Path) -> Dispatch | None:
         if not isinstance(tool, AgentCall) or tool.name != "Agent":
             return None
         kind = tool.kind.strip().lower()
         return Dispatch(kind=kind, model=tool.model.strip(), model_supported=kind != "fork", description=tool.task.strip(), name_supported=True,
-                        prompt=tool.prompt)
+                        prompt=tool.prompt, read_only=self.reads_only(project, tool.kind.strip()))
+
+    def reads_only(self, project: Path, kind: str) -> bool:
+        if kind.lower() in READING_KINDS:
+            return True
+        profile = self.agent_file(project, kind)
+        tools = AGENT_TOOLS.search(profile.read_text()) if profile.is_file() else None
+        return bool(tools) and not WRITING_TOOLS & {tool.strip() for tool in tools[1].split(",")}
 
     def model(self, hook: Hook) -> str:
         chosen = self.reported(hook.transcript, "model").get("id")

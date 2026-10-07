@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.257.0 — Solo mode lets reading subagents through, the phone opens at the newest message, and nested repositories count for plugins
+- In solo mode only the main agent writes: a subagent that only reads (Explore, Plan, or an agent whose tools cannot edit files) is dispatched as usual, and one that can write, or a helper, is still refused.
+- The phone's chat always opens at the newest message. The line that marks what is new since you last looked stays where it is when you scroll back.
+- A project that is not a git repository itself but holds repositories inside it is judged by their files, so its languages count when the journal suggests plugins that fit.
+
 ## 2.256.0 — After a compaction the agent reads the latest messages before it changes anything
 - When the agent's context is compacted, its writes wait until it runs journal message recent, which prints the latest 50 messages in full, yours and its own, oldest first, each with its number and time. Reading is never held. Settings › Catch up after a compaction sets how many messages, and switches it off.
 - The steps handed over after a compaction now start with that command.
