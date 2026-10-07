@@ -142,7 +142,7 @@ function press(button) {
                                     </button>
                                 </template>
                             </div>
-                            <p class="note">Choose one of these. The others go away once you choose.</p>
+                            <p class="note">Choose one.</p>
                         </div>
                     </template>
                 </section>
