@@ -370,6 +370,9 @@ class Claude(Provider):
         return Dispatch(kind=kind, model=tool.model.strip(), model_supported=kind != "fork", description=tool.task.strip(), name_supported=True)
 
     def model(self, hook: Hook) -> str:
+        chosen = self.reported(hook.transcript, "model").get("id")
+        if isinstance(chosen, str) and chosen:
+            return chosen
         path = hook.transcript
         if not path or not path.is_file():
             return hook.model

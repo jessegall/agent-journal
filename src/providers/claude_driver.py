@@ -13,7 +13,7 @@ from providers.claude_rows import Row
 from providers.drivers import CHOICE, LINE_START, Driver, joined, squeezed
 
 ASKS_BEFORE = ("/model",)
-CONFIRM_PROMPT = b"Entertoconfirm"
+CONFIRM_PROMPTS = (b"Entertoconfirm", b"Switchmodel?")
 CONFIRM_WAIT = 4.0
 CONFIRM_POLL = 0.25
 HANDED = "channel-handed.json"
@@ -101,7 +101,7 @@ class ClaudeDriver(Driver):
         until = time.time() + CONFIRM_WAIT
         while time.time() < until:
             time.sleep(CONFIRM_POLL)
-            if CONFIRM_PROMPT in self._shown_since(start):
+            if any(prompt in self._shown_since(start) for prompt in CONFIRM_PROMPTS):
                 self._entered()
                 return
 

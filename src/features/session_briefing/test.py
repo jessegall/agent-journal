@@ -301,6 +301,17 @@ def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
     sent.clear()
     driver.run_command("/effort high")
     assert sent.count(b"\r") == 1, "a command that asks nothing gets no second Enter, even with an old prompt on screen"
+    sent.clear()
+    screen.write_bytes(b"")
+
+    def asked(raw):
+        sent.append(raw)
+        if raw.startswith(b"/model"):
+            screen.write_bytes(b"Switch model?\r\n Your next response will be slower and use more tokens\r\n \xe2\x9d\xaf 1. Yes, switch to Sonnet 5.5\r\n   2. No, go back")
+        return True
+
+    driver._wrote = asked
+    assert driver.run_command("/model sonnet") and sent.count(b"\r") == 2, "Claude's Switch model? question is answered with Enter, which takes Yes"
 
 
 def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):

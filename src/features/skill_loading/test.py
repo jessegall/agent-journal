@@ -3,7 +3,7 @@ import features
 
 from controllers.types import Agents, Messages
 from features.session_briefing.start import start_block
-from features.skill_loading.catalogue import SKILL, always, catalogue, handed, skills
+from features.skill_loading.catalogue import SKILL, always, catalogue, chosen, handed, skills
 from features.skill_loading.required import load_now
 from resources.base import USER
 from tests.conftest import fresh
@@ -43,6 +43,11 @@ def test_the_catalogue_reads_skills_from_the_library_and_agent_homes_and_tracks_
     assert (record.skills, handed(record)) == ([], ""), "always off takes it out, and the choice is now the setting"
     always(record, "journal-work-tracking", True)
     assert record.skills == ["journal-work-tracking"], "always on puts it back"
+    plugins = project / ".agents" / "skills" / "commandments-python-flow"
+    plugins.mkdir(parents=True)
+    (plugins / "SKILL.md").write_text('---\nname: commandments-python-flow\ndescription: "Flow"\n---\n\n# Flow\n')
+    always(record, "commandments-python-flow", True)
+    assert "commandments-python-flow" in chosen(record), "a skill a plugin ships can be loaded at every start too, not only the journal's own"
     from controllers.types import Agents
     from features.skill_loading.required import outstanding
     report(record, "working", "PreToolUse", skills=[])

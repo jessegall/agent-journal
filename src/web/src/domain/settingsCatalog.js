@@ -285,6 +285,15 @@ function looseRows(settings, context) {
                     target: {path: ["viewer", "away"]},
                 }),
                 row({
+                    key: "flash",
+                    kind: "switch",
+                    label: "Show the journal's name when you come back",
+                    hint: "Its name and colour fill the window for a moment, so you know which journal you are in",
+                    value: viewer.flash !== false,
+                    shipped: true,
+                    target: {path: ["viewer", "flash"]},
+                }),
+                row({
                     key: "tour",
                     kind: "switch",
                     label: "Show the Home tour",

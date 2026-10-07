@@ -39,7 +39,7 @@ const tint = computed(() => ({
             <TextDisplay class="detail" :text="mark.detail" inline />
         </template>
         <template v-if="mark.command">
-            <code class="detail command">{{ mark.command }}</code>
+            <code class="detail command" :title="mark.command">{{ mark.command }}</code>
         </template>
         <template v-if="mark.card">
             <TextDisplay class="card" :text="mark.card" />
@@ -166,7 +166,11 @@ button.mark:hover {
 }
 
 .mark .command {
+    min-width: 0;
+    overflow: hidden;
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .mark .card {

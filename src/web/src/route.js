@@ -54,9 +54,10 @@ export function showFile(env, path, line = 0) {
 const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment}` : ""}${open.env ? `@${open.env}` : ""}`;
 
 export function opening(stack, sub = "") {
-    const [path] = location.hash.replace(/^#/, "").split("?");
-    const query = [...(stack.length ? [`open=${stack.map(entry).join(",")}`] : []), ...(sub ? [`sub=${sub}`] : [])].join("&");
-    location.replace(`#${path}${query ? `?${query}` : ""}`);
+    const [path, query = ""] = location.hash.replace(/^#/, "").split("?");
+    const kept = [...new URLSearchParams(query)].filter(([key]) => key !== "open" && key !== "sub").map(([key, value]) => `${key}=${encodeURIComponent(value)}`);
+    const parts = [...kept, ...(stack.length ? [`open=${stack.map(entry).join(",")}`] : []), ...(sub ? [`sub=${sub}`] : [])].join("&");
+    location.replace(`#${path}${parts ? `?${parts}` : ""}`);
 }
 
 const inChat = {};
@@ -67,6 +68,7 @@ export function openInChat(type, open) {
 }
 
 export function peek(type, n, comment = 0, sub = "") {
+    if (type === "plugin") return (location.hash = `#/${route.value.env}/plugins?plugin=${n}`);
     if (!comment && !sub && inChat[type]?.(n)) return;
     const stack = route.value.stack;
     const at = stack.findIndex((open) => open.type === type && open.n === n);
