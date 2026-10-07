@@ -7,6 +7,7 @@ import Btn from "../kit/Btn.vue";
 import {store} from "../state/store.js";
 
 import Icon from "../kit/Icon.vue";
+import WaitEdge from "../kit/WaitEdge.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
 const props = defineProps({
@@ -22,8 +23,9 @@ const props = defineProps({
     note: {type: String, default: ""},
     many: {type: Object, default: null},
     idle: {type: Object, default: null},
+    waiting: {type: Object, default: null},
 });
-const emit = defineEmits(["unquote", "typing"]);
+const emit = defineEmits(["unquote", "typing", "waiting-list"]);
 const draft = reactive({text: "", files: [], sending: false, error: "", over: false});
 const writing = computed(() => !!draft.text.trim());
 watch(writing, (is) => {
@@ -202,75 +204,77 @@ async function use(tool) {
                 </div>
             </div>
         </Transition>
-        <div class="compose-box floating">
-            <template v-if="draft.files.length">
-                <div class="compose-files">
-                    <template v-for="(f, i) in draft.files" :key="i">
-                        <span class="chip">
-                            {{ f.name }}
-                            <button type="button" class="chip-x" title="Remove" @click="unpick(i)">×</button>
-                        </span>
-                    </template>
-                </div>
-            </template>
-            <textarea
-                ref="area"
-                v-model="draft.text"
-                class="box-area"
-                rows="3"
-                :placeholder="placeholder"
-                :aria-label="submit"
-                @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), go())"
-                @keydown.up="arrowUp"
-                @keydown.down="arrowDown"
-                @keydown.esc="escaped"
-                @keydown.meta.enter.prevent="go"
-                @keydown.ctrl.enter.prevent="go"
-                @beforeinput="keepRecordedWords"
-                @paste="pasted"
-            />
-            <div class="compose-foot">
-                <label class="compose-attach" title="Attach files" aria-label="Attach files">
-                    <Icon name="paperclip" />
-                    <input type="file" multiple hidden @change="picked" />
-                </label>
-                <template v-for="action in tools" :key="action.icon">
-                    <button type="button" class="compose-attach" :title="action.title" :aria-label="action.title" @click="use(action)">
-                        <Icon :name="action.icon" />
-                        <template v-if="action.badge">
-                            <CountBadge :count="action.badge" />
+        <WaitEdge :waiting="waiting" @list="emit('waiting-list', $event)">
+            <div class="compose-box floating">
+                <template v-if="draft.files.length">
+                    <div class="compose-files">
+                        <template v-for="(f, i) in draft.files" :key="i">
+                            <span class="chip">
+                                {{ f.name }}
+                                <button type="button" class="chip-x" title="Remove" @click="unpick(i)">×</button>
+                            </span>
                         </template>
-                    </button>
+                    </div>
                 </template>
-                <button
-                    type="submit"
-                    :class="['compose-send', {resting, ready}]"
-                    :disabled="!resting && !ready"
-                    :title="resting ? idle.title : ''"
-                    @click="pressed"
-                >
-                    <span class="compose-send-face" :style="faceWidth ? {width: `${faceWidth}px`} : null">
-                        <Transition name="swap" mode="out-in">
-                            <span :key="label" class="compose-send-label">
-                                <template v-if="resting">
+                <textarea
+                    ref="area"
+                    v-model="draft.text"
+                    class="box-area"
+                    rows="3"
+                    :placeholder="placeholder"
+                    :aria-label="submit"
+                    @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), go())"
+                    @keydown.up="arrowUp"
+                    @keydown.down="arrowDown"
+                    @keydown.esc="escaped"
+                    @keydown.meta.enter.prevent="go"
+                    @keydown.ctrl.enter.prevent="go"
+                    @beforeinput="keepRecordedWords"
+                    @paste="pasted"
+                />
+                <div class="compose-foot">
+                    <label class="compose-attach" title="Attach files" aria-label="Attach files">
+                        <Icon name="paperclip" />
+                        <input type="file" multiple hidden @change="picked" />
+                    </label>
+                    <template v-for="action in tools" :key="action.icon">
+                        <button type="button" class="compose-attach" :title="action.title" :aria-label="action.title" @click="use(action)">
+                            <Icon :name="action.icon" />
+                            <template v-if="action.badge">
+                                <CountBadge :count="action.badge" />
+                            </template>
+                        </button>
+                    </template>
+                    <button
+                        type="submit"
+                        :class="['compose-send', {resting, ready}]"
+                        :disabled="!resting && !ready"
+                        :title="resting ? idle.title : ''"
+                        @click="pressed"
+                    >
+                        <span class="compose-send-face" :style="faceWidth ? {width: `${faceWidth}px`} : null">
+                            <Transition name="swap" mode="out-in">
+                                <span :key="label" class="compose-send-label">
+                                    <template v-if="resting">
+                                        <Icon :name="idle.icon" :size="13" />
+                                    </template>
+                                    {{ label }}
+                                </span>
+                            </Transition>
+                        </span>
+                        <span ref="measures" class="compose-send-measure" aria-hidden="true">
+                            <template v-if="idle">
+                                <span class="compose-send-label">
                                     <Icon :name="idle.icon" :size="13" />
-                                </template>
-                                {{ label }}
-                            </span>
-                        </Transition>
-                    </span>
-                    <span ref="measures" class="compose-send-measure" aria-hidden="true">
-                        <template v-if="idle">
-                            <span class="compose-send-label">
-                                <Icon :name="idle.icon" :size="13" />
-                                {{ idle.label }}
-                            </span>
-                        </template>
-                        <span class="compose-send-label">{{ submit }}</span>
-                    </span>
-                </button>
+                                    {{ idle.label }}
+                                </span>
+                            </template>
+                            <span class="compose-send-label">{{ submit }}</span>
+                        </span>
+                    </button>
+                </div>
             </div>
-        </div>
+        </WaitEdge>
         <template v-if="draft.error">
             <p class="error">{{ draft.error }}</p>
         </template>
