@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.255.0 — The agent says Waiting, the phone runs commands after Face ID, and settings are kept once per project
+- While the agent waits on helpers, subagents or a run it says Waiting and what it waits on, the message box shows a slowly travelling edge, and the list of what it waits on opens from the status.
+- The phone can run the actions that run commands on your computer (the terminal, plugin installs, tool runs, services, update and stop) right after it unlocks again with Face ID or its passcode; setting up Face ID on a phone needs your Allow on the computer.
+- Settings about the project or about you (the voice, the viewer's preferences, board and ticket limits, the switches of project-wide features and more) are kept once for the project, and every environment says what kind it is, so only main environments are listed.
+- A line that asks the agent to act is said again every few minutes until it acts, and a helper that went quiet or whose process died is named.
+- One tooltip for the viewer: it shows at once below its button with an arrow, and stays while the screen updates.
+- The Journals hub can start an agent in a stopped journal.
+- Opening a search result keeps the search; the model shown is the one in use, and a switch from the viewer answers Claude Code's "Switch model?"; files dropped on the chat box are attached; any installed skill can load at session start; opening a plugin goes to the Plugins page; a command mark shows one line; the journal's name flash can be switched off; vanished journals leave the machine's list.
+Nothing to do: the upgrade moves each environment's settings into the project and keeps the old files in the attic.
+
 ## 2.254.12 — A large project no longer hangs the viewer
 Text that names a file by its bare name, such as a to-do brief that says queue.php, is linked by looking the name up in a list of the project's files. When no list was held yet, every request built it itself by walking the whole project, several requests at once; in a project with a few hundred thousand files, such as one with Xcode build folders, every environment page then waited minutes and the server stayed busy. The list is now built only in the background, one walk at a time, rests ten times as long as its last walk took, stops at 200,000 files and reads each file with one check instead of resolving its path. A page answers at once; a bare file name links once the list is ready, and until then the record check calls no file gone. Nothing to do.
 

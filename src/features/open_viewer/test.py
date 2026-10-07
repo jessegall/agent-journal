@@ -438,10 +438,9 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     listed = ask("GET", "/api/journals").body
     assert [(j["project"], j["running"]) for j in listed if j["root"] == str(elsewhere)] == [("other", False)], "a journal that is not running is listed as stopped"
     assert all(j["project"] != "gone" for j in listed), "one whose folder is gone is not listed"
-    from controllers.base import Controller
-    from controllers.types import CONTROLLERS
+    from controllers.types import Environments
     from features.starting_agents import launch
-    Controller.create(CONTROLLERS["environment"](record, actor=SYSTEM), "main")
+    Environments(record, actor=SYSTEM).create("main")
     launched = []
     monkeypatch.setattr(launch, "detached", lambda root, cwd, env, agent, args, conversation="": launched.append((env, agent)))
     assert ask("POST", "/api/journals/start", None, {"root": str(record.root.resolve()), "agent": "codex"}).code == 200

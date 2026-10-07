@@ -104,6 +104,7 @@ await runScenarios(
             await sheet(page).getByLabel("Name").fill("Garden voice");
             await sheet(page).getByLabel("How the agent talks").fill("Short and warm");
             await sheet(page).getByLabel("A sample line").fill("The roses are watered.");
+            await sheet(page).getByLabel("How it answers a meme, a joke, criticism or anger").fill("With a quiet smile");
             await sheet(page).getByRole("button", {name: "Add"}).click();
             await top(page).getByRole("button", {name: /Garden voice/}).first().click();
             await act(page, "Edit the profile");
