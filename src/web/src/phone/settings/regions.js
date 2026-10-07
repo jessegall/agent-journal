@@ -12,7 +12,7 @@ export const REGIONS = [
     region("system", "System", "settings", "Updates, the project folder and shutting down."),
     region("developer", "Developer", "terminal", tabLine("developer")),
     region("chatshows", "What the chat shows", "chat", "Choose what appears in the chat and what stays out of it."),
-    region("scheme", "Colors", "palette", "Light, dark, or like this phone."),
+    region("scheme", "Colors", "palette", "Light, dark, or follow this phone."),
     region("voice", "Your title and name", "smile", "What the agent calls you, and how it talks to you."),
     region("tips", "Tour", "help", "Show the tour again."),
     region("about", "About this journal", "info", "Version and what changed."),

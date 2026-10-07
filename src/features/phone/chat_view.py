@@ -1,9 +1,8 @@
 from engine.record import Record
+from features.chat_kinds import MARKED, RECALLED
 
 SETTING = "chat_hidden"
 DEFAULT_HIDDEN = ["acknowledgements"]
-RECALLED = {"rule": "rules", "fact": "facts", "reminder": "reminders"}
-MARKED = {"terminal": "commands", "branch": "commits", "list": "sequences", "bolt": "triggers"}
 
 
 def hidden(home: Record) -> list[str]:

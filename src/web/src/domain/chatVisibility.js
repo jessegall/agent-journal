@@ -1,3 +1,5 @@
+import {store} from "../state/store.js";
+
 export const VISIBILITY_GROUPS = [
     {
         title: "Agent",
@@ -33,8 +35,7 @@ export const VISIBILITY_GROUPS = [
     },
 ];
 
-const RECALLED = {rule: "rules", fact: "facts", reminder: "reminders"};
-const MARKED = {terminal: "commands", branch: "commits", list: "sequences", bolt: "triggers"};
+const chatKinds = () => store.spec.chat_kinds;
 export const HIDDEN_KEY = "chat_hidden";
 export const DEFAULT_HIDDEN = ["acknowledgements"];
 
@@ -46,8 +47,8 @@ const KINDS = {
     compacted: () => "compactions",
     made: () => "made",
     receipt: () => "filed",
-    whisper: (t) => RECALLED[(t.data.row || "").split(":")[0]] || "rules",
-    card: (t) => (t.data.visitor ? "visitors" : t.data.name && t.data.side !== "user" ? "plugins" : MARKED[t.data.icon] || "notes"),
+    whisper: (t) => chatKinds().recalled[(t.data.row || "").split(":")[0]] || "rules",
+    card: (t) => (t.data.visitor ? "visitors" : t.data.name && t.data.side !== "user" ? "plugins" : chatKinds().marked[t.data.icon] || "notes"),
 };
 
 export const kindOf = (turn) => (KINDS[turn.type] ? KINDS[turn.type](turn) : "");
