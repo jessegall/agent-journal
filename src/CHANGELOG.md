@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.21 — test coverage of production code 98.2% to 98.9% with its bug fixes, and a slow start no longer rolls back a good build
+Test coverage of production code rises from 98.2% to 98.9%, with the bug fixes it turned up. A server that does not answer within 20 seconds is stopped, and that is no longer counted as a crash: only a server that exits on its own counts toward rolling back to the previous build, so a loaded machine cannot undo a good build. Nothing to do. The boot tests read the released and installed versions from one snapshot taken once.
+
 ## 2.253.20 — finishing a helper and a helper's report answer first and do their slow work afterwards
 `journal helper finish` marks the helper finished and answers; packing its environment and dropping its worktree now run right after the answer. `journal helper report` records the report and answers; the message to the dispatcher and the nudge follow. Nothing to do. The walk test in the viewer's tests no longer fails when the background walk ends before the check.
 
