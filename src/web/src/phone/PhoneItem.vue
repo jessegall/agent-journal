@@ -1,6 +1,7 @@
 <script setup>
 import {cache, cached} from "./cache.js";
-import {computed, inject, nextTick, onMounted, ref} from "vue";
+import {computed, inject, nextTick, onMounted, ref, watch} from "vue";
+import {api} from "../api/client.js";
 import {phone} from "../api/phone.js";
 import Btn from "../kit/Btn.vue";
 import Notice from "../kit/Notice.vue";
@@ -137,8 +138,15 @@ const first = computed(() => firstKeys.value.map((key) => actions.value.find((ac
 const second = computed(() => actions.value.filter((action) => action !== first.value && SECOND.includes(action.key)));
 const linked = computed(() => (row.value?.refs || []).map((ref) => ({ref, label: `${kindTitle(ref.split(":")[0])} ${ref.split(":")[1]}`})));
 const files = computed(() => Object.keys(row.value?.data.files || {}));
-const touched = computed(() => row.value?.data.changed || []);
-const commits = computed(() => row.value?.data.commits || []);
+const todoTrace = ref(null);
+watch(
+    () => row.value?.type === "todo" && row.value.n,
+    async (n) => (todoTrace.value = n ? await api.touched(n) : null),
+    {immediate: true}
+);
+const trace = computed(() => todoTrace.value || row.value?.data || {});
+const touched = computed(() => trace.value.changed || []);
+const commits = computed(() => trace.value.commits || []);
 
 async function changed() {
     await load();
@@ -267,16 +275,21 @@ onMounted(async () => {
                         </CellGroup>
                     </template>
                     <template v-if="touched.length">
-                        <CellGroup head="Files changed">
-                            <template v-for="path in touched" :key="path">
-                                <Cell :label="path.split('/').pop()" :sub="path" icon="file" still />
+                        <CellGroup :head="`Files changed · ${touched.length}`">
+                            <template v-for="file in touched" :key="file.path">
+                                <Cell
+                                    :label="file.path.split('/').pop()"
+                                    :sub="[file.created ? 'New' : '', `+${file.added} −${file.removed}`, file.path.includes('/') ? file.path : ''].filter(Boolean).join(' · ')"
+                                    icon="file"
+                                    @pick="emit('open', `file:${file.path}`)"
+                                />
                             </template>
                         </CellGroup>
                     </template>
                     <template v-if="commits.length">
-                        <CellGroup head="Git commits">
-                            <template v-for="commit in commits" :key="commit">
-                                <Cell :label="String(commit)" icon="branch" still />
+                        <CellGroup :head="`Commits · ${commits.length}`">
+                            <template v-for="commit in commits" :key="commit.sha">
+                                <Cell :label="commit.subject" :sub="commit.sha.slice(0, 7)" icon="branch" @pick="emit('open', `commit:${commit.sha}`)" />
                             </template>
                         </CellGroup>
                     </template>

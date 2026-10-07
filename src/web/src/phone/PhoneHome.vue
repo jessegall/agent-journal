@@ -7,6 +7,8 @@ import {plainText} from "../text/words.js";
 import {copyText} from "../platform/clipboard.js";
 import {computed, inject, nextTick, onMounted, onUnmounted, provide, reactive, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
+import {api} from "../api/client.js";
+import {store} from "../state/store.js";
 import {usePoll} from "../composables/poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
 import PhoneHold from "./PhoneHold.vue";
@@ -24,6 +26,7 @@ import PhoneTurn from "./PhoneTurn.vue";
 import {atThisPlace, discard, ended, flush, justSent, perform, setPlace, settle, waitingActions, waitingToSend} from "./outbox.js";
 import PhoneSkeleton from "./PhoneSkeleton.vue";
 import PhoneNotices from "./PhoneNotices.vue";
+import PhoneDumpDock from "./PhoneDumpDock.vue";
 import {useFades} from "./fades.js";
 import {wanted} from "./wanted.js";
 import {lastLooked, looked} from "./looked.js";
@@ -588,6 +591,35 @@ function copy() {
     setTimeout(() => announce("Copied"), SPOKEN_AFTER);
 }
 
+function dumpThem(files) {
+    store.dumpFiles = files;
+    open("dump:0");
+}
+
+async function pinIt() {
+    const item = held.value.item;
+    held.value = null;
+    try {
+        await api.pinNotice(plainText(item.brief || item.title), item.ref);
+        announce("Pinned to the chat");
+        refresh();
+    } catch {
+        noticed("That pin didn't go through. Try again.");
+    }
+}
+
+async function deleteIt() {
+    const item = held.value.item;
+    held.value = null;
+    try {
+        await api.deleteTurn(item.type, item.n);
+        announce("Deleted");
+        refresh();
+    } catch {
+        noticed("That message wasn't deleted. Try again.");
+    }
+}
+
 function holding(key, rect, el) {
     const item = findTurn(key);
     if (item) held.value = {item, rect, el};
@@ -729,6 +761,7 @@ onMounted(startTourOnce);
                     </template>
                     <div ref="dock" class="home-dock">
                         <PhoneNotices :notices="notices" @open="openNotice" @close="closeNotice" />
+                        <PhoneDumpDock @open="open" />
                         <template v-if="screen === 'chat'">
                             <PhoneStatus :working="feed.agent === 'working'" />
                         </template>
@@ -747,6 +780,7 @@ onMounted(startTourOnce);
                             @sent="sent"
                             @unabout="about = ''"
                             @unquote="((quote = ''), (about = ''))"
+                            @dump="dumpThem"
                         />
                     </div>
                 </section>
@@ -862,6 +896,8 @@ onMounted(startTourOnce);
             @react="react"
             @reply="quoteIt(held.item)"
             @copy="copy"
+            @pin="pinIt"
+            @delete="deleteIt"
             @close="held = null"
         />
     </template>

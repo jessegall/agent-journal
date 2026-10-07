@@ -17,7 +17,10 @@ export const GROUPS = [
         key: "environment",
         head: (environment) => `Only in ${environment}`,
         line: "Only in this environment; each environment has its own.",
-        places: ["plan", "suggestion", "question", "collection", "work", "agent"].map(kind),
+        places: [
+            ...["plan", "suggestion", "question", "collection", "work", "agent"].map(kind),
+            place("dumps", "Dumps", "Many files at once, sorted by subject into a collection", "inbox", "dump:0"),
+        ],
     },
     {
         key: "project",
