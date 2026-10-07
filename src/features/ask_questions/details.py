@@ -84,7 +84,7 @@ class AskQuestionsDetails(FeatureDetails):
                 the answer: {{answer}}. Carry it out now, or file what it asks for later with journal todo
                 create
             """,
-            until=("work.created", "work.updated", "work.completed", "todo.created"),
+            until=("work.created", "work.updated", "work.completed", "todo.created", "question.updated", "question.deleted"),
             while_waiting=True,
         ),
         Line(

@@ -1,8 +1,9 @@
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from typing import ClassVar
 
-from controllers.types import Nudges
+from controllers.types import Agents, Nudges
+from features import FEATURES
 from engine.events.engine import ClockTicked
 from engine.events.resources import AnyEvent, ResourceEvent
 from engine.fields import Loaded
@@ -36,26 +37,41 @@ class Standing(Loaded):
     until: tuple[str, ...] = ()
     rows: tuple[str, ...] = ()
     session: str = ""
-    yields: bool = False
     at: float = 0.0
 
     @classmethod
     def of(cls, nudge: Nudge) -> "Standing":
         return cls(n=nudge.n, asks=nudge.asks, until=tuple(nudge.until), rows=tuple(map(str, nudge.data.get("rows") or ())),
-                   session=nudge.session, yields=bool(nudge.data.get("yields")), at=nudge.created)
+                   session=nudge.session, at=nudge.created)
 
     @property
-    def key(self) -> str:
-        return " ".join((self.asks, *self.rows))
+    def feature(self) -> str:
+        return self.asks.partition(".")[0]
+
+    @property
+    def line(self) -> str:
+        return self.asks.partition(".")[2]
+
+    def is_replaced_by(self, newer: "Standing") -> bool:
+        return newer.asks == self.asks and (newer.rows == self.rows or bool(set(newer.rows) & set(self.rows)))
 
     def is_answered_by(self, event: ResourceEvent) -> bool:
         if f"{event.type}.{event.action}" not in self.until:
             return False
-        named = [ref for ref in self.rows if ref.startswith(f"{event.type}:")]
+        named = self.named(event.type)
         return not named or f"{event.type}:{event.n}" in named
+
+    def named(self, kind: str) -> list[str]:
+        return [ref for ref in self.rows if ref.startswith(f"{kind}:")]
+
+    def struck(self, event: ResourceEvent) -> "Standing":
+        return replace(self, rows=tuple(ref for ref in self.rows if ref != f"{event.type}:{event.n}"))
 
     def is_due(self, every: float) -> bool:
         return time.time() - self.at >= every
+
+    def is_owed(self, record) -> bool:
+        return self.feature in FEATURES and FEATURES[self.feature].is_owed(record, self.line, self.rows)
 
 
 def standing(context: Context) -> list[Standing]:
@@ -83,8 +99,9 @@ class StandUntilAnswered(Handler):
         if not nudge.until:
             return
         made, before = Standing.of(nudge), standing(context)
-        keep(context, [*(s for s in before if s.key != made.key), made])
-        close(context, [s for s in before if s.key == made.key], f"replaced by nudge {made.n}")
+        replaced = [s for s in before if s.is_replaced_by(made)]
+        keep(context, [*(s for s in before if s not in replaced), made])
+        close(context, replaced, f"replaced by nudge {made.n}")
 
 
 class ClearWhenAnswered(Handler):
@@ -94,26 +111,33 @@ class ClearWhenAnswered(Handler):
             if event.action in GONE:
                 keep(context, [s for s in before if s.n != event.n])
             return
-        answered = [s for s in before if s.is_answered_by(event)]
-        if not answered:
+        touched = [s for s in before if s.is_answered_by(event)]
+        if not touched:
             return
-        keep(context, [s for s in before if s not in answered])
+        narrowed = {s.n: s.struck(event) for s in touched}
+        answered = [s for s in touched if not narrowed[s.n].named(event.type)]
+        keep(context, [narrowed.get(s.n, s) for s in before if s not in answered])
         close(context, answered, f"answered by {event.type} {event.n}, {event.action}")
 
 
 class AskAgain(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        every, before = float(context.settings.every) * MINUTE, standing(context)
-        if not before:
+        before = standing(context)
+        primary = context.journal.get(Agents).primary_to_read()
+        if not before or not primary or primary.n != context.agent.row.n:
             return
         nudges = context.journal.get(Nudges)
         standing_rows = still_open(nudges)
-        kept = [s for s in before if s.n in standing_rows]
+        elsewhere = [s for s in before if s.session != primary.title]
+        gone = [s for s in before if s not in elsewhere and not s.is_owed(context.record)]
+        kept = [s for s in before if s.n in standing_rows and s not in elsewhere and s not in gone]
         if len(kept) < len(before):
             keep(context, kept)
-        due = [s for s in kept if s.session == context.agent.session and s.is_due(every)] if every else []
-        if due and waiting(context.record, context.agent.row):
-            due = [s for s in due if not s.yields]
-        for s in due:
+            close(context, elsewhere, "said to a session that is no longer the agent's")
+            close(context, gone, "what it asked about is gone")
+        every = float(context.settings.every) * MINUTE
+        if not every or waiting(context.record, primary):
+            return
+        for s in [s for s in kept if s.is_due(every)]:
             asked = nudges.load(s.n)
-            nudges.create(asked.title, abstract=asked.abstract, brief=asked.brief, **asked.data)
+            nudges.create(asked.title, abstract=asked.abstract, brief=asked.brief, **{**asked.data, "rows": list(s.rows)})

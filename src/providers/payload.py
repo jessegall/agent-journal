@@ -134,6 +134,7 @@ class Dispatch:
     description: str = ""
     name_supported: bool = False
     models: tuple[str, ...] = ()
+    prompt: str = ""
 
     def offers_model(self) -> bool:
         return not self.models or self.model in self.models

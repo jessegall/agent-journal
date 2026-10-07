@@ -1,11 +1,11 @@
 from features.base import Feature
 from features.journal import Journal
-from features.repeat_until_done.details import RepeatUntilDoneDetails
-from features.repeat_until_done.handlers import AskAgain, ClearWhenAnswered, StandUntilAnswered
+from features.nudges.details import NudgesDetails
+from features.nudges.standing import AskAgain, ClearWhenAnswered, StandUntilAnswered
 
 
-class RepeatUntilDone(Feature):
-    details = RepeatUntilDoneDetails
+class NudgesFeature(Feature):
+    details = NudgesDetails
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(StandUntilAnswered())

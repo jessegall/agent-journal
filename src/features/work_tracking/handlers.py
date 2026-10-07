@@ -7,7 +7,7 @@ from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted, WorkCreated
 from features import trigger
-from features.nudges import Sent
+from features.nudges.sending import Sent
 from features.trigger import MINUTE
 from providers.payload import HookEvent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
@@ -234,20 +234,17 @@ def next_row(standing: bool):
         open_work = working(context)
         if bool(open_work) != standing or (open_work and open_work[0].awaiting):
             return []
-        return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": open_work[0].n} if standing else {"n": row.n}) for row in ready(context.record)]
+        return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": open_work[0].n, "rows": [row.ref, open_work[0].ref]} if standing else
+                     {"n": row.n, "rows": [row.ref]}) for row in ready(context.record)[:1]]
     return about
 
 
 
 
 def stopped_with_work(context, agent) -> list[Sent]:
-    every = float(context.feature.cadence(context.record, "carry on").every) * MINUTE
-    carried = carried_on(context.record)[:1]
-    late = agent.idle_for - FIRST_AFTER * MINUTE
-    if not carried or late < 0 or late // every >= CARRY_ON_TIMES:
+    if agent.idle_for < FIRST_AFTER * MINUTE:
         return []
-    work = carried[0]
-    return [Sent(f"{work.n}:{work.updated}:{int(late // every)}", {"n": work.n, "title": work.title, "minutes": int(agent.idle_for // MINUTE)})]
+    return [Sent(f"{work.n}:{work.updated}", {"n": work.n, "title": work.title, "rows": [work.ref]}) for work in carried_on(context.record)[:1]]
 
 
 def nothing_ready(context, agent) -> list[Sent]:

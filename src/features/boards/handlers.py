@@ -6,7 +6,7 @@ from engine.events.engine import ClockTicked
 from engine.events.resources import ResourceEvent
 from features.boards.controller import Boards
 from features.boards.resource import DRAFTING_PHASE
-from features.nudges import Sent
+from features.nudges.sending import Sent
 from features.parts import AgentContext, Context, Handler
 from resources.base import SYSTEM
 from features.boards.controller import Boards

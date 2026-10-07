@@ -5,7 +5,7 @@ from controllers.types import Todos, Works
 from engine.events.engine import ClockTicked
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING, Plans
-from features.nudges import Sent
+from features.nudges.sending import Sent
 from features.trigger import MINUTE
 from features.plans.resource import PHASE, PHASE_FIELDS
 from features.work_tracking.auto import passes_checkpoints
