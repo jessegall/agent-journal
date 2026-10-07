@@ -2,6 +2,8 @@ import json
 
 from controllers.base import Arguments, Controller
 from engine.extension import Extension
+from engine.record import Record
+from engine.settings_file import PROJECT_PARTS
 from resources.base import Refused
 from resources import types
 from controllers.marks import action
@@ -15,11 +17,16 @@ class Features(Controller):
 
     @action
     def switch(self, name: str, on: bool = True):
+        if name in PROJECT_PARTS.of(Record.features):
+            self.record.set_setting(Record.features, {**self.record.features, name: bool(on)})
+            return {name: bool(on)}
         row = self.rows.by_title(name)
         return self.update(row.n, enabled=bool(on)) if row else self.create(name, enabled=bool(on))
 
     @action
     def on(self, name: str, default: bool = True) -> bool:
+        if name in PROJECT_PARTS.of(Record.features):
+            return bool(self.record.features.get(name, default))
         row = self.rows.by_title(name)
         return bool(row.enabled) if row else default
 

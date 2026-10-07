@@ -15,7 +15,9 @@ from features.groups import Group
 from features.journal import Journal
 from features.settings import Setting, Settings
 from resources.text import paragraphs
-from resources.base import Refused, SYSTEM
+from engine.record import Record
+from engine.settings_file import PROJECT_PARTS
+from resources.base import ENVIRONMENT, PROJECT, Refused, SYSTEM
 
 REGISTRY: dict[str, type] = {}
 
@@ -79,6 +81,7 @@ class FeatureDetails:
     has_skill: ClassVar[bool] = True
     skill_of: ClassVar[str] = ""
     default: ClassVar[bool] = True
+    scope: ClassVar[str] = ENVIRONMENT
 
     @classmethod
     def values(cls, record) -> Settings:
@@ -109,6 +112,7 @@ class Feature(ABC):
     fixed: ClassVar[bool] = False
     nudges: ClassVar[tuple] = ()
     sequences: ClassVar[tuple] = ()
+    scope: ClassVar[str] = ENVIRONMENT
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
@@ -118,7 +122,8 @@ class Feature(ABC):
             cls.title, cls.abstract, cls.help, cls.explains, cls.when = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help), paragraphs(d.explains), d.when
             cls.label, cls.hint, cls.group, cls.trigger_label = paragraphs(d.label), paragraphs(d.hint), d.group, paragraphs(d.trigger_label)
             cls.position = d.position
-            cls.aliases, cls.fixed, cls.default = d.aliases, d.fixed, d.default
+            cls.aliases, cls.fixed, cls.default, cls.scope = d.aliases, d.fixed, d.default, d.scope
+            cls.kept_in_project()
             named = d.name.split("_") + [a for a in d.aliases if isinstance(a, str)]
             cls.speaks_while_waiting = d.speaks_while_waiting
             for line in cls.lines.values():
@@ -128,6 +133,13 @@ class Feature(ABC):
             cls.keywords = d.keywords or tuple(dict.fromkeys(w for word in named for w in (word, word[:-1] if word.endswith("s") else f"{word}s")))
         if cls.name:
             REGISTRY[cls.name] = cls
+
+    @classmethod
+    def kept_in_project(cls) -> None:
+        if cls.scope == PROJECT:
+            PROJECT_PARTS.keep(Record.features, cls.name)
+        if shared := [s.name for s in cls.settings if s.scope == PROJECT]:
+            PROJECT_PARTS.keep(cls.name, *shared)
 
     def register(self, journal: Journal) -> None:
         pass
@@ -235,7 +247,7 @@ class Feature(ABC):
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "explains": self.explains, "default": self.default, "fixed": self.fixed,
-                "label": self.label, "hint": self.hint, "position": self.position, "group": self.group.key, "trigger_label": self.trigger_label,
+                "label": self.label, "hint": self.hint, "position": self.position, "group": self.group.key, "scope": self.scope, "trigger_label": self.trigger_label,
                 "keywords": list(self.keywords), "when": self.when,
                 "listens": sorted(set(self.journal.events.names)), "trigger": self.trigger.described(),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},

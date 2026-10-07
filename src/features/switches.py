@@ -2,6 +2,8 @@ import os
 
 from controllers.stored import CHANGES
 from engine import bus
+from engine.record import Record
+from engine.settings_file import PROJECT_PARTS
 from controllers.types import Environments, Features
 from resources.base import SYSTEM
 
@@ -29,7 +31,8 @@ def written(record) -> int:
 
 def booted(record) -> dict[str, bool]:
     rows = Features(record, actor=SYSTEM)
-    SWITCHES[str(record.home)] = (written(record) if UNEVENTED[0] else 0, {row.title: bool(row.enabled) for row in rows.rows.viewed()})
+    kept = PROJECT_PARTS.of(Record.features)
+    SWITCHES[str(record.home)] = (written(record) if UNEVENTED[0] else 0, {row.title: bool(row.enabled) for row in rows.rows.viewed() if row.title not in kept})
     return SWITCHES[str(record.home)][1]
 
 

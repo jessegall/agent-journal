@@ -2,6 +2,7 @@ import features
 from controllers.features import check_choices
 from controllers.types import Features, Nudges
 from engine.record import Record
+from engine.settings_file import PROJECT_PARTS
 from features.boards.agent_types import written
 from features.session_briefing.block import rebuild
 
@@ -38,7 +39,7 @@ def apply(record: Record, body: dict, actor: str) -> dict:
             asked = {**{moved[name]: on for name, on in value.items() if name in moved}, **{name: on for name, on in value.items() if name not in moved}}
             for name in (name for name in asked if "." not in name):
                 rows.switch(name, asked[name])
-            record.set_setting(key, {**{n: o for n, o in record.features.items() if "." in n},
+            record.set_setting(key, {**{n: o for n, o in record.features.items() if "." in n or n in PROJECT_PARTS.of(key)},
                                      **{n: o for n, o in asked.items() if "." in n}})
             continue
         if key == Record.viewer and isinstance(value, dict):

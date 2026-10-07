@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.base import Behaviour, FeatureDetails, Line
 from features.triggers.resource import DOES
 from features.groups import Group
@@ -6,7 +7,8 @@ from features.groups import Group
 class TriggersDetails(FeatureDetails):
     explains = 'The journal watches for words you choose and starts the matching action. You can edit or test each trigger.'
     name = "triggers"
-    group = Group.RECORDS
+    group = Group.SHARED_RECORDS
+    scope = PROJECT
     label = "Triggers"
     hint = "Words you choose, and what happens when they come up"
     when = "the user wants words watched for, or a trigger fires"
