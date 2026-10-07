@@ -45,9 +45,6 @@ class Field:
         self.spec, self.default, self.name, self.required = spec, default, name, required
         self.runs_commands, self.journal_only = runs_commands, journal_only
 
-    def __set_name__(self, owner, name: str) -> None:
-        self.name = name
-
     def __get__(self, obj, owner=None):
         if obj is None:
             return self.name
@@ -136,14 +133,6 @@ class Event:
 
     def to_json(self) -> dict:
         return dict(vars(self))
-
-    def __init_subclass__(cls, **kw):
-        super().__init_subclass__(**kw)
-        declare(cls)
-
-    @property
-    def ref(self) -> str:
-        return f"{self.type}:{self.n}"
 
 
 class Pruned(Enum):

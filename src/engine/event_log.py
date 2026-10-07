@@ -76,8 +76,6 @@ class EventLog:
         return out[::-1]
 
     def lines_back(self, block: int = 65536):
-        if not self.file.is_file():
-            return
         with self.file.open("rb") as fh:
             fh.seek(0, 2)
             at, rest = fh.tell(), b""
@@ -125,11 +123,8 @@ class EventLog:
         write_text(f, text)
 
     def cursor(self, name: str) -> int:
-        try:
-            text = self.cursor_text(name)
-            return int(text) if text else 0
-        except ValueError:
-            return 0
+        text = self.cursor_text(name)
+        return int(text) if text else 0
 
     def set_cursor(self, name: str, n: int) -> None:
         self.set_cursor_text(name, str(n))

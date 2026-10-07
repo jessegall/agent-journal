@@ -19,6 +19,7 @@ from commands.http import dispatch, unanswered  # noqa: E402
 from commands.dispatch import reached_by_phone  # noqa: E402
 from features.routing import PHONE_ENVIRONMENT, Reply  # noqa: E402
 from engine import runtime  # noqa: E402
+from features.switches import WARMERS  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
 from controllers.types import warm  # noqa: E402
@@ -190,9 +191,17 @@ def warm_commands() -> None:
         parser(noun)
 
 
+def warm_changed(root: Path) -> None:
+    from commands.parser import parser
+    from surfaces.manifest import manifest
+    parser()
+    manifest(root)
+
+
 def warmed(root: Path) -> None:
     try:
         warm_viewer(root, default_env(root))
+        WARMERS.append(lambda: warm_changed(root))
         read_transcripts(root)
     except Exception:
         traceback.print_exc()

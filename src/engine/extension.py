@@ -18,12 +18,8 @@ class Extension:
         self.version = 0
         EXTENSIONS.append(self)
 
-    def add(self, owner, value, key=None, first: bool = False) -> None:
-        entry = Entry(owner, key, value)
-        if first:
-            self.entries.insert(0, entry)
-        else:
-            self.entries.append(entry)
+    def add(self, owner, value, key=None) -> None:
+        self.entries.append(Entry(owner, key, value))
         self.version += 1
 
     def remove(self, value) -> None:

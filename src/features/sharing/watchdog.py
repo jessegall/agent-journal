@@ -14,6 +14,14 @@ from features.sharing.services import SERVER, TUNNEL, wanted
 from features.sharing.tunnel import ADDRESS_REFUSED, READDRESSED, SIGNED_OUT, alerts, default_route, held_by_server, refused_address, tunler_status
 from resources.base import SYSTEM, Refused
 
+
+def clock() -> float:
+    return time.time()
+
+
+def stopwatch() -> float:
+    return time.monotonic()
+
 MISSES_BEFORE_RESTART = 2
 CHECK_SECONDS = 5.0
 PARTS = {SERVER: "server", TUNNEL: "tunnel"}
@@ -30,10 +38,10 @@ HOLD_FOR = 60.0
 class TunnelWatch:
     def __init__(self, feature):
         self.feature = feature
-        self.wall, self.steady, self.route = time.time(), time.monotonic(), ""
+        self.wall, self.steady, self.route = clock(), stopwatch(), ""
 
     def moved(self) -> bool:
-        wall, steady, route = time.time(), time.monotonic(), default_route()
+        wall, steady, route = clock(), stopwatch(), default_route()
         slept = abs((wall - self.wall) - (steady - self.steady)) > JUMP_SECONDS or wall - self.wall > SLEEP_GAP
         rerouted = bool(route and self.route and route != self.route)
         self.wall, self.steady, self.route = wall, steady, route or self.route
@@ -50,7 +58,7 @@ class TunnelWatch:
         state.set(TUNLER_UNUSABLE, 0)
         if state.get(SIGNED_OUT):
             state.set(SIGNED_OUT, 0)
-            want(record.root, TUNNEL, UP, nonce=time.time())
+            want(record.root, TUNNEL, UP, nonce=clock())
         if refused_address(log_file(record.root, TUNNEL)):
             self.refused(shares, state)
             return
@@ -68,7 +76,7 @@ class TunnelWatch:
             for key in (MISSES, HOST_IS_DOWN, UNREACHABLE_SINCE, RESTARTS, READDRESSED):
                 state.set(key, 0)
             return
-        state.set(UNREACHABLE_SINCE, float(state.get(UNREACHABLE_SINCE, 0)) or time.time())
+        state.set(UNREACHABLE_SINCE, float(state.get(UNREACHABLE_SINCE, 0)) or clock())
         misses = int(state.get(MISSES, 0)) + 1
         state.set(MISSES, misses)
         if not moved and not self.due(state, misses, record.root):
@@ -78,8 +86,8 @@ class TunnelWatch:
             alert_once(state, HOST_IS_DOWN, lambda: self.feature.to_primary(record, HOST_DOWN, host=shares._host()))
             return
         down = TUNNEL if serving(record.root) else SERVER
-        want(record.root, down, UP, nonce=time.time())
-        state.set(RESTARTED_AT, time.time())
+        want(record.root, down, UP, nonce=clock())
+        state.set(RESTARTED_AT, clock())
         state.set(RESTARTS, int(state.get(RESTARTS, 0)) + 1)
         self.feature.to_primary(record, RESTARTED, misses=misses, part=PARTS[down])
 
@@ -90,7 +98,7 @@ class TunnelWatch:
                 "The tunnel address is owned by another user", buttons=[READDRESS],
                 brief="The new address was refused as well. Choosing another one changes the phone's address, so it has to be paired again."))
             return
-        state.set(READDRESSED, time.time())
+        state.set(READDRESSED, clock())
         name = shares._readdress()
         if relied_on(record):
             Messages(record, actor=SYSTEM).create("The tunnel moved to a new address", brief=(
@@ -98,7 +106,7 @@ class TunnelWatch:
                 "Share links sent before now stop working: send them again. A paired phone has to be paired again."))
 
     def due(self, state: State, misses: int, root) -> bool:
-        since = time.time() - float(state.get(RESTARTED_AT, 0))
+        since = clock() - float(state.get(RESTARTED_AT, 0))
         if tunnel_holding(root):
             return since >= HELD_RETRY
         return misses >= MISSES_BEFORE_RESTART and since >= RESTART_GAPS[min(int(state.get(RESTARTS, 0)), len(RESTART_GAPS) - 1)]
@@ -106,13 +114,13 @@ class TunnelWatch:
 
 def alert_once(state: State, key: str, alert) -> None:
     if not state.get(key):
-        state.set(key, time.time())
+        state.set(key, clock())
         alert()
 
 
 def tunnel_holding(root) -> bool:
     kept, log = status(root, TUNNEL), log_file(root, TUNNEL)
-    fresh = time.time() - mtime(log) / 1e9 < HOLD_FOR
+    fresh = clock() - mtime(log) / 1e9 < HOLD_FOR
     return fresh and held_by_server(log) and kept.state in (STARTING, READY) and alive(kept.pgid)
 
 

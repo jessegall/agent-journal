@@ -10,6 +10,7 @@ import {computed, inject, nextTick, onMounted, onUnmounted, provide, reactive, r
 import {phone} from "../api/phone.js";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
+import {words} from "../composables/helperWords.js";
 import {usePoll} from "../composables/poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
 import PhoneHold from "./PhoneHold.vue";
@@ -74,6 +75,10 @@ const sentHere = computed(() => atThisPlace(justSent.value));
 const actionsHere = computed(() => atThisPlace(waitingActions.value).length);
 const failed = inject("phoneFailed");
 const feed = ref({items: [], waiting: [], agent: "offline"});
+watch(
+    () => feed.value.running && feed.value.running.words,
+    (given) => given && (words.value = given)
+);
 const emit = defineEmits(["moved"]);
 const picking = ref(false);
 const listing = ref(false);

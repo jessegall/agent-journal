@@ -7,7 +7,7 @@ import tty
 from dataclasses import dataclass
 
 UP, DOWN = ("\x1b[A", "k", "\x1bOA"), ("\x1b[B", "j", "\x1bOB")
-ENTER, ESCAPE, INTERRUPT = ("\r", "\n"), "\x1b", "\x03"
+ENTER, ESCAPE = ("\r", "\n"), "\x1b"
 ACCENT, DIM, BADGE, BOLD, RESET = "\x1b[36m", "\x1b[2m", "\x1b[35m", "\x1b[1m", "\x1b[0m"
 KEYS = re.compile(r"\x1b[\[O][A-Za-z]|\x1b|[^\x1b]")
 MORE_KEYS_WITHIN = 0.05
@@ -63,8 +63,6 @@ def pick(heading: str, notes: list[str], given: list, default: int) -> int:
             for key in read_keys(fd):
                 if key in ENTER:
                     return at
-                if key == INTERRUPT:
-                    raise KeyboardInterrupt
                 if key == ESCAPE:
                     raise SystemExit("journal: left without starting")
                 if key in UP:

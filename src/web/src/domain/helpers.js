@@ -1,3 +1,4 @@
+import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {providerName} from "./agents.js";
 export const helperState = (row) => row.state || (row.completed ? "finished" : row.data?.report ? "reported" : "running");
 
@@ -51,7 +52,7 @@ export function helpersInOrder(rows, keepFinished = 5) {
     return [...open.filter((row) => helperState(row) === "running"), ...open.filter((row) => helperState(row) === "reported"), ...done];
 }
 
-export const helperName = (row) => row.data?.name || `Helper ${row.n}`;
+export const helperName = (row) => row.data?.name || `${capitalised(helperWord())} ${row.n}`;
 export const helperEnvironment = (row) => row.data?.environment;
 export const helperReport = (row) => row.data?.report || "";
 

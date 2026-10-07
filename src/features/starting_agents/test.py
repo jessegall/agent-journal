@@ -259,6 +259,9 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
     assert (json.loads(argv[-1])["adopt"]["pid"], os.get_inheritable(held)) == (5, True), "the supervisor is handed the launch as its last argument, with the terminal it adopts"
     os.close(held)
     os.close(spare)
+    terminal.supervise(record.root, record.root.parent, "t", "claude", ["--model", "x"])
+    assert ("journal: environment t" in capsys.readouterr().out, json.loads(executed[-1][1][-1])["env"]) == (True, "t"), \
+        "a fresh start says which environment it works and hands the supervisor a launch of its own"
     popped = []
     class Child:
         pid = 4242
@@ -282,6 +285,14 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
     out = capsys.readouterr().out
     assert (handed[-1][:2], "carrying on with" in out, "the viewer did not start" in out) == ((record.env, ["--model", "x"]), True, True), \
         "it says which update waits, and when the viewer did not come up"
+    from controllers.types import Environments
+    from engine.sessions import Sessions
+    if not Environments(record, actor="system").rows.by_title(record.env):
+        Environments(record, actor="system").create(record.env)
+    Sessions(record.root).write("someone-else", environment=record.env, provider="claude", pid=os.getpid())
+    assert launching.launch(record, "claude", [launching.NO_INTERACTION]) == "" and handed[-1][0] == record.env, \
+        "a start that asks nothing never waits for a name, even when another agent holds every environment"
+    Sessions(record.root).unbind("someone-else")
     monkeypatch.setenv(terminal.CARRIED, json.dumps({"env": "t", "args": ["--resume"], "pid": 7}))
     launching.launch(record, "claude", None)
     assert handed[-1] == ("t", ["--resume"], {"env": "t", "args": ["--resume"], "pid": 7}), "an agent an older build carried over is handed on as it was, with nothing asked"
@@ -352,6 +363,7 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
     assert [picked((b"j",), (b"\r",)), picked((b"k",), (b"\r",)), picked((b"3",), (b"\r",)), picked((b"\x1b", b"[", b"B"), (b"\r",))] == [1, 2, 2, 1], \
         "the start menu moves with the keys typed in a real terminal, wrapping at the ends, and takes a number or an arrow sent in pieces"
     assert picked((b"\x1b",)) == "SystemExit", "Escape leaves the menu without choosing"
+    assert picked((b"9",), (b"\r",)) == 0, "a number past the last choice changes nothing"
     from commands.menu import read_keys
     try:
         read_keys(2 ** 20)

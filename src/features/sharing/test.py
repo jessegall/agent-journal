@@ -1,6 +1,7 @@
 import base64
 import json
 import shutil
+from pathlib import Path
 import threading
 import time
 import urllib.error
@@ -331,17 +332,13 @@ def test_stopping_the_last_share_stops_the_server_and_its_tunnel(monkeypatch):
             return False
 
         def serve_forever(self):
-            finished.wait(5)
-
-    def sleeping(seconds):
-        if ticked:
+            while len(ticked) < 2 and not finished.wait(0.01):
+                pass
             finished.set()
-            raise SystemExit
-        return None
 
     monkeypatch.setattr(module, "ThreadingHTTPServer", Listening)
     monkeypatch.setattr(module, "TICKS", SimpleNamespace(each=lambda found: [lambda given: ticked.append(given), lambda given: 1 / 0]))
-    monkeypatch.setattr(module.time, "sleep", sleeping)
+    monkeypatch.setattr(module, "TICK_EVERY", 0.01)
     monkeypatch.setattr(module, "threw", lambda root, env, where: ticked.append(where))
     module.serve(watched, 8123)
     assert served == [(("127.0.0.1", 8123), watched)], "the share server listens on its own port, for its own journal only"
@@ -633,10 +630,13 @@ def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_p
     shares = Shares(record, actor=USER)
     asked = []
     monkeypatch.setattr(tunnel, "LOCAL_BIN", tmp_path / "bin" / "tunler")
-    monkeypatch.setattr(tunnel.platform, "system", lambda: "Darwin")
-    monkeypatch.setattr(tunnel.platform, "machine", lambda: "x86_64")
+    monkeypatch.setattr(tunnel, "system", lambda: "Darwin")
+    monkeypatch.setattr(tunnel, "machine", lambda: "x86_64")
+    from types import SimpleNamespace
+    answered = lambda code, out="", err="": SimpleNamespace(returncode=code, stdout=out, stderr=err)
     working = b"#!/bin/sh\necho 'tunler v0.2.2'\n"
-    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: asked.append(url) or io.BytesIO(working))
+    monkeypatch.setattr(tunnel, "ran_command", lambda args, **kwargs: answered(0, "tunler v0.2.2\n" if Path(args[0]).read_bytes() == working else "<html>404 Not Found</html>"))
+    monkeypatch.setattr(tunnel, "urlopen", lambda url, timeout: asked.append(url) or io.BytesIO(working))
     assert SharingDetails.values(record).host == "", "no tunler server is assumed"
     assert "address of the tunler server" in refused_with(lambda: shares.install_tunler("  "))
     assert shares.install_tunler("https://tunler.example/") == "tunler v0.2.2 is installed"
@@ -644,11 +644,11 @@ def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_p
     assert SharingDetails.values(record).host == "tunler.example", "the server it came from is the one the journal connects to"
     assert (tunnel.LOCAL_BIN.read_bytes(), stat.S_IMODE(tunnel.LOCAL_BIN.stat().st_mode), sorted(p.name for p in tunnel.LOCAL_BIN.parent.iterdir())) == \
         (working, 0o700, ["tunler"]), "executable by the user alone, with nothing half-written left beside it"
-    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: io.BytesIO(b"<html>404 Not Found</html>"))
+    monkeypatch.setattr(tunnel, "urlopen", lambda url, timeout: io.BytesIO(b"<html>404 Not Found</html>"))
     assert "not a working tunler" in refused_with(lambda: shares.install_tunler("tunler.example"))
     assert (tunnel.LOCAL_BIN.read_bytes(), sorted(p.name for p in tunnel.LOCAL_BIN.parent.iterdir())) == (working, ["tunler"]), "a download that does not run never replaces the tunler that does"
     untrusted = urllib.error.URLError(tunnel.ssl.SSLCertVerificationError("unable to get local issuer certificate"))
-    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: (_ for _ in ()).throw(untrusted))
+    monkeypatch.setattr(tunnel, "urlopen", lambda url, timeout: (_ for _ in ()).throw(untrusted))
     monkeypatch.setattr(tunnel.shutil, "which", lambda name: None)
     assert "Install Certificates" in refused_with(lambda: shares.install_tunler("tunler.example")), "a Python without root certificates is named, with its fix"
     monkeypatch.undo()
@@ -659,21 +659,18 @@ def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_p
     monkeypatch.setattr(tunnel, "ELSEWHERE_BINS", (tmp_path / "opt" / "tunler", elsewhere))
     monkeypatch.setattr(tunnel.shutil, "which", lambda name: None)
     assert tunnel.tunler() == str(elsewhere), "tunler is found outside the PATH too, and the path is the one shown"
-    elsewhere.write_text("#!/bin/sh\necho '{\"host\":\"t.example\",\"user\":\"me\",\"logged_in\":true}'\n")
-    elsewhere.chmod(0o755)
+    monkeypatch.setattr(tunnel, "ran_command", lambda *args, **kwargs: answered(0, '{"host":"t.example","user":"me","logged_in":true}'))
     tunnel.KEPT_STATUS.clear()
     from features.sharing.controller import OUTDATED
     assert Shares(record, actor=USER).tunnel()["problems"] == [OUTDATED], "a tunler too old to report its login is named, with the update as the fix"
     tunnel.KEPT_STATUS.clear()
     monkeypatch.undo()
     monkeypatch.setattr(tunnel, "LOCAL_BIN", tmp_path / "bin" / "tunler")
-    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: (_ for _ in ()).throw(urllib.error.URLError("no such host")))
+    monkeypatch.setattr(tunnel, "urlopen", lambda url, timeout: (_ for _ in ()).throw(urllib.error.URLError("no such host")))
     assert "could not be downloaded from tunler.typo" in refused_with(lambda: shares.install_tunler("tunler.typo"))
     assert SharingDetails.values(record).host == "tunler.example", "a server that sent nothing is not kept"
     assert "install tunler" in refused_with(lambda: Shares(record, actor=AGENT).install_tunler("tunler.example"))
     monkeypatch.undo()
-    from types import SimpleNamespace
-    answered = lambda code, out="", err="": SimpleNamespace(returncode=code, stdout=out, stderr=err)
     monkeypatch.setattr(tunnel, "tunler", lambda: "")
     assert tunnel.ran("version") == (False, "tunler isn't installed on this machine"), "a machine without tunler says so"
     monkeypatch.setattr(tunnel, "tunler", lambda: "tunler")
@@ -688,13 +685,13 @@ def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_p
     monkeypatch.setattr(tunnel, "ran_command", lambda *args, **kwargs: answered(0, json.dumps({"update_available": True, "current": "1", "latest": "2"})))
     assert tunnel.versions("t.example") == {"current": "1", "latest": "2", "update_available": True}, "tunler's own report of a newer version is passed on"
     monkeypatch.setattr(tunnel, "ran_command", lambda *args, **kwargs: answered(0, "tunler v1"))
-    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: io.BytesIO(json.dumps({"version": "v2"}).encode()))
+    monkeypatch.setattr(tunnel, "urlopen", lambda url, timeout: io.BytesIO(json.dumps({"version": "v2"}).encode()))
     assert tunnel.versions("t.example") == {"current": "v1", "latest": "v2", "update_available": True}, "a tunler that reports nothing is compared with the server's version"
-    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: io.BytesIO(b"not json"))
+    monkeypatch.setattr(tunnel, "urlopen", lambda url, timeout: io.BytesIO(b"not json"))
     assert tunnel.latest("t.example") == "", "a server that answers garbage has no version to compare"
-    monkeypatch.setattr(tunnel.urllib.request, "urlopen", lambda url, timeout: (_ for _ in ()).throw(OSError("down")))
+    monkeypatch.setattr(tunnel, "urlopen", lambda url, timeout: (_ for _ in ()).throw(OSError("down")))
     assert tunnel.latest("t.example") == "", "a server that cannot be reached has no version to compare"
-    monkeypatch.setattr(tunnel.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(tunnel, "system", lambda: "Darwin")
     monkeypatch.setattr(tunnel, "ran_command", lambda *args, **kwargs: answered(0, "  gateway: 10.0.0.1\n  flags: <UP>\ninterface: en0\n"))
     assert tunnel.default_route() == "gateway: 10.0.0.1\ninterface: en0", "the route to the internet is its gateway and interface, nothing else"
     monkeypatch.setattr(tunnel, "ran_command", lambda *args, **kwargs: answered(1))
@@ -726,6 +723,15 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     assert '<a href="/s/key/doc/1">docs 1</a>' in linked and '<a href="/s/key/todo/12">to-do 12, 13</a>' in linked, \
         "a row the page holds is linked, however its mention is spelled"
     assert "doc 16" in linked and "/doc/16" not in linked, "a row outside the page stays text"
+    import subprocess
+    import sys
+    from engine.package import entry
+    entered = subprocess.run([sys.executable, "-c", "import runpy, sys; sys.argv = sys.argv[1:]; runpy.run_path(sys.argv[0], run_name='__main__'); import features; "
+                              "from features.format import formatted; features.load(); print(formatted('run journal todo done 3'))", *entry("features.sharing.page")[1:]],
+                             capture_output=True, text=True, timeout=60)
+    assert entered.stdout.strip() == "run `journal todo done` 3", \
+        "a module the journal starts in a process of its own, as the share server is, has the command line wired, so a journal command in a shared page is set as code: " \
+        + entered.stderr[-300:]
     illustrated = Docs(record := fresh(), actor=USER).create("Pictured", abstract="A short line", brief="Words")
     picture = record.root / "chart.png"
     picture.write_bytes(b"\x89PNG")
@@ -882,8 +888,8 @@ def machine_on(monkeypatch, record) -> Machine:
     monkeypatch.setattr(watchdog, "reached", lambda url, wait=0: machine.reaches)
     monkeypatch.setattr(watchdog, "default_route", lambda: machine.route)
     monkeypatch.setattr(watchdog, "wanted", lambda root: True)
-    monkeypatch.setattr(watchdog.time, "time", lambda: machine.now)
-    monkeypatch.setattr(watchdog.time, "monotonic", lambda: machine.now)
+    monkeypatch.setattr(watchdog, "clock", lambda: machine.now)
+    monkeypatch.setattr(watchdog, "stopwatch", lambda: machine.now)
     monkeypatch.setattr(Shares, "_answering", lambda shares, wait=0: machine.waited.append(wait) or machine.answers)
     machine.watch = watchdog.TunnelWatch(running(SharingFeature))
     return machine

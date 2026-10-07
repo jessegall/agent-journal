@@ -281,6 +281,7 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
     assert [run["step"] for run in drafting.runs.values()] == [1], "and the drafting sequence starts, for the board-filler to follow"
     assert "past exploring" in refused(lambda: agent.score(board.n, "3")), "no more scores once drafting"
     agent.expect(board.n, "2", fewer="a two-card test")
+    assert "placeholders already show" in refused(lambda: agent.expect(board.n, "1", fewer="fewer still")), "while drafting, the count only grows"
     Tickets(record, actor=AGENT).create("Share a link", abstract="Share a link", board=board.n, draft=True)
     assert "draft the rest" in refused(lambda: agent.say(board.n, "Done.")), "it cannot finish with fewer cards than it guessed"
     boards.request(board.n, "Something vague")

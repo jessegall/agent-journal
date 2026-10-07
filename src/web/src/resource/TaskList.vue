@@ -1,4 +1,5 @@
 <script setup>
+import {capitalised, helperCount, helperWord} from "../composables/helperWords.js";
 import {computed} from "vue";
 
 const props = defineProps({tasks: {type: Array, required: true}});
@@ -20,7 +21,7 @@ const done = computed(() => props.tasks.filter((task) => task.state === "done").
             </template>
         </template>
         <template v-else>
-            <p class="none">No tasks handed to this subagent.</p>
+            <p class="none">No tasks handed to this {{ helperWord() }}.</p>
         </template>
     </div>
 </template>

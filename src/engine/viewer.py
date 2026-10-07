@@ -30,7 +30,7 @@ SERVING: dict[str, str] = {}
 HEARTBEAT = 2.0
 LAUNCHING = "viewer.launching"
 COMING_UP = 20.0
-HUNG = -signal.SIGKILL
+STOPPED_BY_US = 0
 PORT_WAIT = 30.0
 SERVED_ON = 8430
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
@@ -156,11 +156,6 @@ def lately_running(root: Path) -> str:
     return url
 
 
-def marked(root: Path) -> str:
-    url = candidates(root)[:1]
-    return url[0] if url and answers(url[0], root, timeout=0.2) else ""
-
-
 def waited(port: int, seconds: float = PORT_WAIT) -> bool:
     until = time.time() + seconds
     while not free(port):
@@ -195,14 +190,6 @@ def free_from(start: int) -> int:
 
 def last(root: Path) -> ViewerMark:
     return read_json(marker(root), ViewerMark.from_json, ViewerMark.from_json({}))
-
-
-def restart(root: Path, project: Path) -> str:
-    was = last(root)
-    if was.pid and (reply := identity(was.url, timeout=0.2)) and reply.serves(root) and reply.pid == was.pid and alive(was.pid):
-        os.kill(was.pid, signal.SIGTERM)
-        waited(was.port)
-    return start(root, project)
 
 
 def elsewhere(root: Path) -> str:
@@ -243,11 +230,15 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
         return url, code
 
 
+def busy() -> bool:
+    return os.getloadavg()[0] > (os.cpu_count() or 1)
+
+
 def stopped(server: subprocess.Popen, log: Path) -> int:
     server.kill()
     server.wait()
     append_text(log, f"journal: the server did not answer within {COMING_UP:g}s and was stopped\n")
-    return HUNG
+    return STOPPED_BY_US
 
 
 def answered(root: Path, server: subprocess.Popen) -> tuple[str, int | None]:

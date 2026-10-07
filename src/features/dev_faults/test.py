@@ -280,3 +280,7 @@ def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_
     assert (switches.UNEVENTED, switches.switches(record).get("dev_faults", False)) == ([True], not held), \
         "a process that watches the change log sees a switch another process turned, without waiting for an event"
     assert switches.written(Record(record.root, "never-written")) == 0, "an environment with no change log has written nothing"
+    warmed = []
+    monkeypatch.setattr(switches, "WARMERS", [lambda: warmed.append(1)])
+    turned(record, held)
+    assert warmed == [1], "what a switch clears, such as the command parser, is built again once the change is made, never by the next request"

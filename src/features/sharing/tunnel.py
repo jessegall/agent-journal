@@ -5,8 +5,8 @@ import secrets
 import shutil
 import ssl
 import time
-import urllib.request
 from pathlib import Path
+from urllib.request import urlopen
 
 from engine.proc import ran as ran_command
 from engine.stored import write_json
@@ -34,6 +34,14 @@ SERVER, TUNNEL = "sharing.server", "sharing.tunnel"
 ARCHES = {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm64"}
 DOWNLOAD_SECONDS = 60
 ROUTE_LINES = ("gateway", "interface")
+
+
+def system() -> str:
+    return platform.system()
+
+
+def machine() -> str:
+    return platform.machine().lower()
 
 
 def read_address(path: Path) -> dict:
@@ -116,7 +124,7 @@ def tunler_build(command: str) -> str:
 
 
 def default_route() -> str:
-    asking = ["route", "-n", "get", "default"] if platform.system() == "Darwin" else ["ip", "route", "show", "default"]
+    asking = ["route", "-n", "get", "default"] if system() == "Darwin" else ["ip", "route", "show", "default"]
     done = ran_command(asking, timeout=3)
     if not done or done.returncode:
         return ""
@@ -214,7 +222,7 @@ def installed() -> str:
 
 def latest(host: str) -> str:
     try:
-        with urllib.request.urlopen(f"https://{host}/_tunler/version", timeout=STATUS_SECONDS) as answer:
+        with urlopen(f"https://{host}/_tunler/version", timeout=STATUS_SECONDS) as answer:
             return str(json.loads(answer.read()).get("version", ""))
     except (OSError, ValueError):
         return ""
@@ -240,8 +248,8 @@ def server_name(address: str) -> str:
 
 
 def install(host: str) -> str:
-    machine = platform.machine().lower()
-    build = f"tunler-{platform.system().lower()}-{ARCHES.get(machine, machine)}"
+    arch = machine()
+    build = f"tunler-{system().lower()}-{ARCHES.get(arch, arch)}"
     part = LOCAL_BIN.with_name("tunler.part")
     LOCAL_BIN.parent.mkdir(parents=True, exist_ok=True)
     download(f"https://{host}/dl/{build}", part, host)
@@ -254,7 +262,7 @@ def install(host: str) -> str:
 
 def download(url: str, part: Path, host: str) -> None:
     try:
-        with urllib.request.urlopen(url, timeout=DOWNLOAD_SECONDS) as answer:
+        with urlopen(url, timeout=DOWNLOAD_SECONDS) as answer:
             part.write_bytes(answer.read())
         return
     except OSError as error:
@@ -270,7 +278,7 @@ def download(url: str, part: Path, host: str) -> None:
 
 def verified(binary: Path) -> str:
     done = ran_command([str(binary), "version"], timeout=STATUS_SECONDS)
-    if done and done.returncode == KILLED and platform.system() == "Darwin":
+    if done and done.returncode == KILLED and system() == "Darwin":
         ran_command(["codesign", "--force", "--sign", "-", str(binary)], timeout=STATUS_SECONDS)
         done = ran_command([str(binary), "version"], timeout=STATUS_SECONDS)
     if done and done.returncode == 0 and done.stdout.startswith("tunler "):

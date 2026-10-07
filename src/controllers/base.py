@@ -234,9 +234,7 @@ class Controller(Files, Links, Discussed):
 
     @marks.action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data) -> Resource:
-        taken = self._handled("update", n=n, title=title, abstract=abstract, brief=brief, outcome=outcome, **data)
-        if taken is not None:
-            return taken
+        self._handled("update", n=n, title=title, abstract=abstract, brief=brief, outcome=outcome, **data)
         with self.record.locked(self.resource.scope):
             r = self.load(n)
             if title is not None:
@@ -285,9 +283,7 @@ class Controller(Files, Links, Discussed):
 
     @marks.action
     def delete(self, n: int, why: str = "") -> Resource:
-        taken = self._handled("delete", n=n, why=why)
-        if taken is not None:
-            return taken
+        self._handled("delete", n=n, why=why)
         with self.record.locked(self.resource.scope):
             r = self.load(n)
             r.deleted = time.time()
@@ -295,9 +291,7 @@ class Controller(Files, Links, Discussed):
 
     @marks.action
     def complete(self, n: int, how: str = "", **data) -> Resource:
-        taken = self._handled("complete", n=n, how=how, **data)
-        if taken is not None:
-            return taken
+        self._handled("complete", n=n, how=how, **data)
         with self.record.locked(self.resource.scope):
             r = self.load(n)
             if r.completed:

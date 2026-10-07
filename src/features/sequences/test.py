@@ -365,9 +365,12 @@ def test_only_a_starting_trigger_starts_a_sequence_and_each_message_gets_its_own
     from engine.sessions import Sessions
     dispatching = sequences.create("Dispatching", dispatch="filler")
     sequences.section(dispatching.n, "Fill <board n>", "fill it")
+    sequences.section(dispatching.n, "Check <board n>", "check it")
     sequences.run(dispatching.n, about="board:3")
     assert ("board 3 waits for the filler (a new request) - dispatch it now" in nudges(record), Sessions(record.root).granted("claude-1", record.env)) == (True, True), \
         "a sequence that dispatches tells the working agent to dispatch, about the board, and lends it the environment"
+    handed = CONTROLLERS["sequence"](record, actor=AGENT, agent="filler").next(dispatching.n, about="board:3")
+    assert "check it" in str(handed), "the agent the sequence dispatched moves it on and is handed the next step at once"
     asked = CONTROLLERS["question"](record, actor=AGENT).create("Which one?", about="board:3")
     CONTROLLERS["question"](record, actor=USER).complete(asked.n, how="the first")
     assert f"board 3 waits for the filler (question {asked.n} answered - the first) - dispatch it now" in nudges(record), "an answer to a question about the board dispatches it again"

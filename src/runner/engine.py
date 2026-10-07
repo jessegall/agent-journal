@@ -80,7 +80,6 @@ class Engine:
         driver.waiting = self.waiting
         self.actors: list[Actor] = [User(record), self.agent, System(record)]
         self.report = SeatReport(record, self.agent)
-        self.running = False
         self.born = time.time()
         self.relayed = None
         self.peer_growth = Growth()
@@ -100,10 +99,6 @@ class Engine:
         features.load(self.record.root)
         row = self.agent.driver.last_report()
         self.paused = row is not None and bool(row.paused)
-        self.running = True
-
-    def stop(self) -> None:
-        self.running = False
 
     def tick(self) -> str:
         self.agent.driver.pump()
@@ -468,9 +463,3 @@ class Engine:
         except Exception:
             self.clean = 0
             threw(self.record.root, self.record.env, "the engine", self.agent.driver)
-
-    def run(self) -> None:
-        self.start()
-        while self.running:
-            self.step()
-            time.sleep(TICK)

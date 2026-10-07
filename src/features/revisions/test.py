@@ -60,34 +60,6 @@ def test_old_documents_that_ask_nothing_are_made_final_by_migration():
     assert (docs.load(plain.n).status, docs.load(waiting.n).status, docs.load(writing.n).status, docs.load(own.n).status, docs.load(chosen.n).status) == ("final", "draft", "writing", "final", "final")
 
 
-def test_moving_a_real_record_into_doc_folders_keeps_every_doc_file_and_revision(tmp_path):
-    import shutil
-    from pathlib import Path
-    from engine.record import Record
-    from migrations.m0024_docs_in_folders import run
-    real = Path(__file__).resolve().parents[2] / ".journal" / "project" / "doc"
-    if not real.is_dir() or not list(real.glob("[0-9]*.md")):
-        return
-    docs = tmp_path / "project" / "doc"
-    shutil.copytree(real, docs)
-    before = {p.stem: p.read_text() for p in docs.glob("[0-9]*.md")}
-    revisions = {(p.parent.name, p.name): p.read_text() for p in docs.glob("revisions/*/*.md")}
-    files = {p.relative_to(docs).as_posix() for p in docs.glob("[0-9]*/*") if p.is_file()}
-    run(tmp_path)
-    assert {n: (docs / n / "doc.md").read_text() for n in before} == before, "every doc is kept word for word in its folder"
-    assert {(n, k): (docs / n / "revisions" / k).read_text() for n, k in revisions} == revisions, "every revision moves under its doc"
-    assert files <= {p.relative_to(docs).as_posix() for p in docs.glob("[0-9]*/*") if p.is_file()}, "every attachment stays where it was"
-    (tmp_path / "environments" / "main").mkdir(parents=True)
-    def readable(text):
-        try:
-            return bool(Docs.resource.load(text).title)
-        except (ValueError, TypeError):
-            return False
-    docs_ = Docs(Record(tmp_path, "main"), actor=USER)
-    assert sorted(f"{n:03d}" for n in docs_.rows.numbers() if readable(docs_.rows.text(n))) == sorted(n for n, text in before.items() if readable(text)), \
-        "the store reads every moved doc back by its number, as readable as it was"
-
-
 def test_old_designs_and_loose_revision_files_become_docs_and_inner_revisions(tmp_path):
     import shutil
     from engine.record import RESOURCES

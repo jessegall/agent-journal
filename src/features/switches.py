@@ -1,6 +1,7 @@
 import os
 
 from controllers.stored import CHANGES
+from engine import bus
 from controllers.types import Environments, Features
 from resources.base import SYSTEM
 
@@ -9,6 +10,7 @@ GENERATION = [0]
 CHANGE_LOGS: dict[str, str] = {}
 UNEVENTED = [False]
 ENVIRONMENT_NAMES: dict[str, tuple] = {}
+WARMERS: list = []
 
 
 def watch_change_log() -> None:
@@ -44,6 +46,12 @@ def rebooted(event=None, record=None) -> None:
         SWITCHES.clear()
     else:
         booted(record)
+    bus.defer_once("warm what a change cleared", warmed)
+
+
+def warmed() -> None:
+    for warm in WARMERS:
+        warm()
 
 
 def environments_changed(event=None, record=None) -> None:

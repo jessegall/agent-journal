@@ -46,7 +46,7 @@ class TagMissingAtStart(Handler):
     behaviour = "tagging"
 
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
-        untagged = ((type_, row, name) for type_ in CONTROLLERS for row in context.journal.get(CONTROLLERS[type_]).rows.every()
+        untagged = ((type_, row, name) for type_ in CONTROLLERS for row in context.journal.get(CONTROLLERS[type_]).rows.attached()
                     for name, tags in row.files.items() if (not tags or str(tags).startswith(TAGGED)) and media(name))
         for type_, row, name in untagged:
             tell(context, type_, row, name)
