@@ -109,6 +109,10 @@ class Setting(Loaded):
             return f"reads {self.env}"
         return self.title if self.title else self.key
 
+    @property
+    def runs_commands(self) -> bool:
+        return self.kind == "command"
+
     def check(self, value: str) -> None:
         if self.kind == "flag" and value not in ("true", "false"):
             raise Refused(f"{self.key} is a switch: true or false")

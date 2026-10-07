@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {pluginFrom} from "../../composables/plugins.js";
 import {pluginRequest} from "../../domain/plugins.js";
 import {usePluginInstall} from "../../composables/pluginInstall.js";
@@ -12,6 +12,7 @@ import {toast} from "../kit/toast.js";
 import {hold} from "../outbox.js";
 import FormSheet from "../kit/FormSheet.vue";
 import PhonePluginPreview from "./PhonePluginPreview.vue";
+import {runsAllowed} from "../runs.js";
 
 defineProps({target: {type: String, default: ""}, back: {type: String, default: ""}});
 const emit = defineEmits(["back", "open"]);
@@ -25,11 +26,11 @@ const {previewText, previewed, outcome, live, preview, install, closePreview} = 
 const load = newestFirst("plugin");
 const empty = {icon: "plug", title: "No plugins installed", reason: "A plugin adds pages, settings and services to the journal.", action: "Add a plugin"};
 
-const ADDING = [
-    {key: "install", label: "Install a plugin", sub: "From owner/repo, a GitHub link or a folder", run: () => (asking.value = "install")},
+const ADDING = computed(() => [
+    ...(runsAllowed.value ? [{key: "install", label: "Install a plugin", sub: "From owner/repo, a GitHub link or a folder", run: () => (asking.value = "install")}] : []),
     {key: "guide", label: "Read how to make one", sub: "The plugin guide", run: () => emit("open", "guide:plugin")},
     {key: "make", label: "Make a plugin", sub: "Describe it and the agent builds it", run: () => (asking.value = "make")},
-];
+]);
 
 async function check(text) {
     source.value = text;

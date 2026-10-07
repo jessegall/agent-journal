@@ -21,7 +21,7 @@ PAGE = ("name", "title", "icon", "service", "path", "status")
 DASHBOARD = ("name", "title", "icon")
 TONES = ("", "warn", "good")
 SETTING = ("title", "default", "help", "env", "type", "options", "group", "when", "detail", "parent")
-KINDS = ("text", "textarea", "list", "number", "flag", "options")
+KINDS = ("text", "textarea", "list", "number", "flag", "options", "command")
 RESTARTS = ("always", "on-failure", "never")
 FITS = {"languages": '["PHP", "Python"]', "files": '["composer.json", "*.csproj"]'}
 

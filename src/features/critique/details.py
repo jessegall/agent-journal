@@ -34,9 +34,9 @@ class CritiqueDetails(FeatureDetails):
     """
 
     settings = [
-        Setting(name="app", default="", title="Address of the app the critics open"),
+        Setting(name="app", default="", title="Address of the app the critics open", runs_commands=True),
         Setting(name="login", default="", title="Login file the critics' browser starts with"),
-        Setting(name="seed", default="", title="Command that loads the demo data"),
-        Setting(name="browsers", default="", title="Folder with Playwright installed"),
+        Setting(name="seed", default="", title="Command that loads the demo data", runs_commands=True),
+        Setting(name="browsers", default="", title="Folder with Playwright installed", runs_commands=True),
     ]
 

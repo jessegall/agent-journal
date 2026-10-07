@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
+from controllers.base import Arguments
 from controllers.types import Agents, Environments
 from engine.events.resources import AgentChanged
 from engine.reach import Reach
@@ -172,6 +173,9 @@ class Command:
 
     def run(self, context: Context, controller, *args, **kwargs):
         raise NotImplementedError
+
+    def runs_commands(self, controller, arguments: Arguments) -> bool:
+        return False
 
 
 class ActionInterceptor:

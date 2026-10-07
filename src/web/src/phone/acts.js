@@ -7,6 +7,7 @@ import {stopLinksOf} from "../composables/shares.js";
 import {CALLINGS} from "../domain/callings.js";
 import {kindWord} from "./kinds.js";
 import {place} from "./outbox.js";
+import {runsAllowed} from "./runs.js";
 import {todoLane} from "./todo.js";
 
 const HIDDEN = new Set([
@@ -376,7 +377,7 @@ const OWN = {
     suggestion: {complete: null},
     sequence: {
         abandon: {label: "Stop the run", danger: true, fields: [optional("why", "Why stop it?")], body: {sure: true}, result: () => "Stopped"},
-        run: {label: "Run it now", fields: [optional("about", "What is it about?")], result: () => "Started"},
+        run: {label: "Run it now", runs: true, fields: [optional("about", "What is it about?")], result: () => "Started"},
         steps: {
             label: "Edit the steps",
             fields: [text("steps", "The steps: a title line, then what to do; a blank line between steps", {value: stepsText, area: true})],
@@ -384,8 +385,8 @@ const OWN = {
             result: () => "Steps saved",
         },
     },
-    check: {run: {label: "Run it now", result: () => "Running"}},
-    tool: {run: {label: "Run it", fields: [optional("args", "With what?")], result: () => "Ran"}},
+    check: {run: {label: "Run it now", runs: true, result: () => "Running"}},
+    tool: {run: {label: "Run it", runs: true, fields: [optional("args", "With what?")], result: () => "Ran"}},
     profile: {
         duplicate: {label: "Make a copy", result: () => "Copied"},
         update: {
@@ -407,8 +408,8 @@ const OWN = {
     },
     helper: {say: {label: "Send it a message", fields: [text("text", "Your words", {area: true})], result: () => "Sent"}, stop: {label: "Stop it", danger: true, result: () => "Stopped"}},
     plugin: {
-        upgrade: {label: "Check for updates", body: {yes: true}, result: updated},
-        purge: {label: "Remove it with its data", danger: true, confirm: true, result: () => "Removed"}, enable: {label: "Turn on", result: () => "Turned on"}, disable: {label: "Turn off", result: () => "Turned off"}, clear_log: {label: "Clear its log", result: () => "Log cleared"}},
+        upgrade: {label: "Check for updates", runs: true, body: {yes: true}, result: updated},
+        purge: {label: "Remove it with its data", danger: true, confirm: true, result: () => "Removed"}, enable: {label: "Turn on", runs: true, result: () => "Turned on"}, disable: {label: "Turn off", result: () => "Turned off"}, clear_log: {label: "Clear its log", result: () => "Log cleared"}},
 };
 
 const EXTRA = [
@@ -475,7 +476,7 @@ export function itemActions(row) {
     if (!kind) return [];
     const words = Object.entries(kind.row_actions || {})
         .map(([word, parameters]) => ({word, entry: described(row, word, parameters)}))
-        .filter(({entry}) => entry && (!entry.when || entry.when(row)))
+        .filter(({entry}) => entry && (!entry.runs || runsAllowed.value) && (!entry.when || entry.when(row)))
         .map(({word, entry}) => ({key: word, word, ...entry, label: labelOf(entry, row, word)}));
     const extra = EXTRA.filter((entry) => entry.when(row)).map((entry) => ({...entry, label: labelOf(entry, row, entry.key)}));
     return [...words, ...extra].sort((one, other) => rankOf(one, row) - rankOf(other, row));

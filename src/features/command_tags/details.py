@@ -57,6 +57,7 @@ class CommandTagsDetails(FeatureDetails):
             default=dict(RUNS),
             title="What each tag runs",
             abstract="A tag's name and the journal command it runs; your entries add to the built-in ones.",
+            runs_commands=True,
         ),
     ]
 

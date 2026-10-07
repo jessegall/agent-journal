@@ -8,6 +8,7 @@ import {CHANGE} from "../../domain/suggestions.js";
 import ActionSheet from "../kit/ActionSheet.vue";
 import FormSheet from "../kit/FormSheet.vue";
 import {toast} from "../kit/toast.js";
+import {runsAllowed} from "../runs.js";
 
 const MOVABLE = ["todo", "plan", "suggestion", "collection", "report", "fact", "reminder"];
 const COLLECTABLE = ["todo", "plan", "suggestion", "doc", "report", "message", "fact", "rule", "ticket"];
@@ -172,7 +173,7 @@ const ending = computed(() => {
 const actions = computed(() => [
     {key: "open", label: "Open", run: () => emit("open", props.row.ref)},
     ...answers.value,
-    ...(props.row.type === "check" ? [{key: "run", label: "Run this check now", run}] : []),
+    ...(props.row.type === "check" && runsAllowed.value ? [{key: "run", label: "Run this check now", run}] : []),
     ...(props.row.seen && !props.row.seen.includes("user") ? [{key: "read", label: "Mark as read", run: read}] : []),
     ...(COLLECTABLE.includes(props.row.type) ? [{key: "collect", label: "Add to a collection", run: collect}] : []),
     ...(MOVABLE.includes(props.row.type) && environments.value.length && !props.row.data.system

@@ -15,6 +15,7 @@ import PhoneRowActions from "./places/PhoneRowActions.vue";
 import PhoneShelves from "./places/PhoneShelves.vue";
 import {dotOf, linesOf} from "./places/rowLines.js";
 import {holding, onShelf} from "./places/shelves.js";
+import {runsAllowed} from "./runs.js";
 
 const CLOSED_AT_MOST = 50;
 const ORDERS = {
@@ -41,7 +42,7 @@ const docs = computed(() => (props.target === "doc" ? list.value?.rows || [] : [
 const shelves = computed(() => holding(collections.value, docs.value));
 const keep = computed(() => (props.target === "doc" ? onShelf(shelf.value, shelves.value) : () => true));
 const closedCount = computed(() => counts.value.all - counts.value.open);
-const makes = computed(() => Boolean(spec.value && kind.value.make && meta(props.target)?.created_in_viewer));
+const makes = computed(() => Boolean(spec.value && kind.value.make && (!kind.value.runs || runsAllowed.value) && meta(props.target)?.created_in_viewer));
 const empty = computed(() => ({
     icon: kind.value.icon,
     title: `No open ${kind.value.many.toLowerCase()}`,

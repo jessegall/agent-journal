@@ -164,6 +164,7 @@ const KINDS = {
         intro: "Commands the agent may run for this project.",
         description: "Commands the agent may run",
         make: "New tool",
+        runs: true,
     },
     template: {
         one: "Template",

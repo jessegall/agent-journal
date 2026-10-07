@@ -1,5 +1,5 @@
 import {runScenarios} from "../harness.mjs";
-import {home, PAIR, PHONE, pairedState, SHOWN, tab} from "./paired.mjs";
+import {allowRuns, home, PAIR, PHONE, pairedState, SHOWN, tab} from "./paired.mjs";
 
 const state = await pairedState();
 const sheet = (page) => page.getByRole("dialog");
@@ -36,7 +36,13 @@ await runScenarios(
             await more(page, "Skills loaded");
             await top(page).getByRole("button", {name: /^journal/}).waitFor({timeout: SHOWN});
         },
+        async "the agent's terminal offers no command while the phone may not run commands"(page) {
+            await more(page, "Agent terminal");
+            await top(page).getByText("Nothing has run yet.").waitFor({timeout: SHOWN});
+            if (await top(page).getByRole("button", {name: /^Run a command/}).count()) throw new Error("the terminal offers a command the phone may not run");
+        },
         async "the agent's terminal queues a command"(page) {
+            await allowRuns(page);
             const sent = [];
             await page.route(/\/shell$/, (route) => (sent.push(route.request().postDataJSON()), route.fulfill({status: 200, body: "{}"})));
             await more(page, "Agent terminal");
@@ -48,6 +54,7 @@ await runScenarios(
             if (sent[0]?.command !== "npm test") throw new Error(`the terminal was sent: ${JSON.stringify(sent)}`);
         },
         async "the agent terminal shows what ran and runs a waiting command now"(page) {
+            await allowRuns(page);
             const sent = [];
             await page.route(/\/agent\/\d+\/terminal/, (route) =>
                 route.fulfill({

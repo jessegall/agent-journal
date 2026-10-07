@@ -1,10 +1,11 @@
 import inspect
 import shutil
 import time
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from functools import cache, partial
 
 from engine import bus
+from engine.fields import Loaded
 from engine.markers import plain
 from engine.record import Record
 from resources.base import PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
@@ -19,6 +20,20 @@ from engine.wording import noun
 WORDS = ("title", "abstract", "brief")
 LAST = 25
 SEARCHABLE: dict[str, dict[int, tuple[float, str]]] = {}
+
+
+@dataclass(frozen=True)
+class Arguments(Loaded):
+    """What a call to an action names: every argument, its row, and the feature and key it sets."""
+
+    names: tuple[str, ...] = ()
+    n: str = ""
+    name: str = ""
+    key: str = ""
+
+    @classmethod
+    def given(cls, body: dict, params: dict) -> "Arguments":
+        return cls.from_json({**body, **params, "names": tuple(body)})
 
 
 def searchable(r: Resource) -> str:
@@ -302,6 +317,13 @@ class Controller(Files, Links, Discussed):
 
     def named(self, method: str) -> str:
         return self.resource.command_names.get(method, method)
+
+    def _runs_commands(self, word: str, arguments: Arguments) -> bool:
+        """Whether calling the action with these arguments writes a field or setting that decides what runs."""
+        command = COMMANDS.get(self.type, {}).get(word)
+        if command:
+            return command.runs_commands(self, arguments)
+        return bool({*arguments.names, arguments.key} & self.resource.command_fields)
 
     def method(self, name: str):
         if name in self.resource.command_names and name not in self.resource.command_names.values():

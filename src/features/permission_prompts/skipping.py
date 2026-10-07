@@ -1,7 +1,17 @@
+from dataclasses import dataclass
+
+from engine.fields import Loaded
 from features.work_tracking.auto import automatic
 from providers import DRIVERS
 
 SETTING = "permission_prompts"
+
+
+@dataclass(frozen=True)
+class Relaunch(Loaded):
+    """A restart of the agent, with permission prompts skipped or not."""
+
+    skip: bool = False
 
 
 def skipped(record) -> bool:

@@ -325,7 +325,7 @@ function looseRows(settings, context) {
             ],
         },
         danger: {
-            stop: context.demo
+            stop: !context.stoppable
                 ? []
                 : [
                       row({

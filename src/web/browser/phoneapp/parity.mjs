@@ -1,5 +1,5 @@
 import {runScenarios} from "../harness.mjs";
-import {home, PAIR, PHONE, pairedState, SHOWN, tab} from "./paired.mjs";
+import {allowRuns, home, PAIR, PHONE, pairedState, SHOWN, tab} from "./paired.mjs";
 
 const state = await pairedState();
 const sheet = (page) => page.getByRole("dialog");
@@ -100,6 +100,7 @@ await runScenarios(
             if (Math.abs(opened - typed) > 1) throw new Error(`the sheet grew from ${opened} to ${typed}`);
         },
         async "adding a plugin uses the kit field and its Cancel"(page) {
+            await allowRuns(page);
             await everything(page, "Plugins");
             await page.getByRole("button", {name: "Add a plugin"}).last().click();
             await page.getByRole("button", {name: /Install a plugin/}).click();

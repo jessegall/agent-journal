@@ -8,6 +8,7 @@ import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
 import FormSheet from "../kit/FormSheet.vue";
 import {toast} from "../kit/toast.js";
+import {runsAllowed} from "../runs.js";
 
 const emit = defineEmits(["open"]);
 const domains = ref([]);
@@ -28,16 +29,18 @@ const fields = computed(() => [
     {key: "master", label: asking.value ? "Master password" : "Master password, only to create a new account", required: Boolean(asking.value), secret: true},
 ]);
 const account = computed(() => `Connected as ${tunnelStatus.value.account} on ${tunnelStatus.value.host}`);
-const accountActions = [
-    {key: "switch", label: "Use another account", run: () => (open.value = "switch")},
+const accountActions = computed(() => [
+    ...(runsAllowed.value ? [{key: "switch", label: "Use another account", run: () => (open.value = "switch")}] : []),
     {key: "leave", label: "Log out", danger: true, run: () => (open.value = "leave")},
-];
-const own = computed(() => domain.value === tunnelStatus.value?.address);
-const domainActions = computed(() => [
-    own.value
-        ? {key: "move", label: "Move to a new address", sub: "The old address stops working for this journal.", run: () => (open.value = "release")}
-        : {key: "release", label: "Give up this address", sub: "Anyone can claim it afterwards.", danger: true, run: () => (open.value = "release")},
 ]);
+const own = computed(() => domain.value === tunnelStatus.value?.address);
+const domainActions = computed(() =>
+    own.value
+        ? runsAllowed.value
+            ? [{key: "move", label: "Move to a new address", sub: "The old address stops working for this journal.", run: () => (open.value = "release")}]
+            : []
+        : [{key: "release", label: "Give up this address", sub: "Anyone can claim it afterwards.", danger: true, run: () => (open.value = "release")}]
+);
 
 async function load() {
     [domains.value, version.value] = await Promise.all([tunnelDomains(), api.tunlerVersion().catch(() => null)]);
@@ -87,19 +90,24 @@ onMounted(() => load().catch(() => null));
             <Cell label="tunler account" sub="Checking…" still />
         </template>
         <template v-else-if="!tunnelStatus.installed">
-            <Cell label="Install tunler" sub="tunler is not installed on your computer" icon="download" @pick="open = 'install'" />
+            <template v-if="runsAllowed">
+                <Cell label="Install tunler" sub="tunler is not installed on your computer" icon="download" @pick="open = 'install'" />
+            </template>
+            <template v-else>
+                <Cell label="tunler" sub="Not installed on your computer" still />
+            </template>
         </template>
         <template v-else-if="tunnelStatus.logged_in">
             <Cell label="tunler account" :sub="account" @pick="open = 'account'" />
         </template>
         <template v-else>
-            <Cell label="Connect a tunler account" sub="Not connected on your computer" @pick="open = 'login'" />
+            <Cell label="Connect a tunler account" sub="Not connected on your computer" :still="!runsAllowed" @pick="open = 'login'" />
         </template>
         <template v-if="version && version.current">
             <Cell
                 :label="`tunler ${version.current}`"
                 :sub="version.update_available ? `${version.latest || 'A newer version'} is available` : 'Up to date'"
-                :still="!version.update_available"
+                :still="!version.update_available || !runsAllowed"
                 @pick="open = 'update'"
             />
         </template>
@@ -108,7 +116,12 @@ onMounted(() => load().catch(() => null));
     <template v-if="domains.length">
         <CellGroup head="Addresses" foot="Addresses your tunler account holds">
             <template v-for="name in domains" :key="name">
-                <Cell :label="name" :sub="name === tunnelStatus?.address ? 'In use by this journal' : ''" @pick="pickDomain(name)" />
+                <Cell
+                    :label="name"
+                    :sub="name === tunnelStatus?.address ? 'In use by this journal' : ''"
+                    :still="name === tunnelStatus?.address && !runsAllowed"
+                    @pick="pickDomain(name)"
+                />
             </template>
         </CellGroup>
     </template>
