@@ -3,7 +3,7 @@ import binascii
 import hashlib
 import hmac
 import json
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from typing import TypedDict
 
 from engine.fields import Loaded
@@ -76,9 +76,12 @@ class Cbor:
                 raise Unverified.because("the authenticator's answer holds a value it may not use")
             return self.SIMPLE[extra]
         size = self.size(extra)
-        return {0: lambda: size, 1: lambda: -1 - size, 2: lambda: self.take(size), 3: lambda: self.text(size),
-                4: lambda: [self.item(depth + 1) for _ in range(size)],
-                5: lambda: self.mapping(size, depth)}[major]()
+        readers = {0: lambda: size, 1: lambda: -1 - size, 2: lambda: self.take(size), 3: lambda: self.text(size),
+                   4: lambda: [self.item(depth + 1) for _ in range(size)],
+                   5: lambda: self.mapping(size, depth)}
+        if major not in readers:
+            raise Unverified.because("the authenticator's answer holds a tag or another kind of value it may not use")
+        return readers[major]()
 
     def mapping(self, size: int, depth: int) -> dict:
         found = {}
@@ -164,6 +167,19 @@ class Unlock(Loaded):
 
 
 @dataclass(frozen=True)
+class PendingPasskey(Loaded):
+    """A passkey the phone made that is kept only once the user allows it on the computer: the passkey, the notice that asks, and until when."""
+
+    passkey: dict = field(default_factory=dict)
+    environment: str = ""
+    notice: int = 0
+    until: float = 0.0
+
+    def waits(self, now: float) -> bool:
+        return bool(self.passkey) and self.until > now
+
+
+@dataclass(frozen=True)
 class Authenticated:
     """The authenticator's own data: which site, whether the user was there and verified, its counter and what follows."""
 
@@ -235,6 +251,8 @@ def signature(raw: bytes) -> bytes:
 def integer(raw: bytes) -> tuple[int, bytes]:
     if len(raw) < 3 or raw[0] != 0x02 or not 0 < raw[1] <= 33 or len(raw) < 2 + raw[1] or raw[2] & 0x80:
         raise Unverified.because("the signature is not readable")
+    if raw[1] > 1 and raw[2] == 0 and raw[3] < 0x80:
+        raise Unverified.because("the signature pads a number with a zero it does not need")
     return int.from_bytes(raw[2:2 + raw[1]], "big"), raw[2 + raw[1]:]
 
 

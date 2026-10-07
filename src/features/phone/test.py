@@ -21,7 +21,7 @@ from controllers.types import CONTROLLERS, Agents, Comments, Docs, Environments,
 from engine.record import Record
 from features.phone import allow_list, push
 from features.phone import controller as phone_controller
-from features.phone.passkey import Assertion, Enrolment, encoded, requested
+from features.phone.passkey import Assertion, Cbor, Enrolment, Unverified, encoded, integer, requested
 from features.phone.controller import Phones
 from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
@@ -105,7 +105,8 @@ class Authenticator:
     def signed(self, challenge: str) -> Assertion:
         data, client = self.data(0x05), self.client("webauthn.get", challenge)
         raw = self.keys.signed(data + hashlib.sha256(client).digest())
-        der = b"".join(b"\x02" + bytes([len(part)]) + part for part in (b"\x00" + raw[:32], b"\x00" + raw[32:]))
+        parts = [b"\x00" * (part[0] >= 0x80) + part.lstrip(b"\x00") for part in (raw[:32], raw[32:])]
+        der = b"".join(b"\x02" + bytes([len(part)]) + part for part in parts)
         return Assertion(encoded(self.id), encoded(client), encoded(data), encoded(b"\x30" + bytes([len(der)]) + der))
 
 
@@ -213,7 +214,7 @@ def test_a_message_from_the_phone_is_the_users_own(served):
 
 def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch, tmp_path):
     record, base = served
-    _, key = paired(record, base)
+    n, key = paired(record, base)
     words = {"brief": "Delete everything", "idempotency": "x"}
     assert call(base, "/p/message", words, key, Origin="https://evil.example")[0] == 403, "another site cannot make the phone act"
     assert call(base, "/p/message", words, key, **{"X-Phone": ""})[0] == 403, "a write needs the phone page's header"
@@ -252,8 +253,39 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
 
         assert call(base, run, {}, key).body["unlock"] and call(base, "/p/unlock/begin", {"request": "x"}, key).status == 422, \
             "a command run waits for Face ID, and a phone without its passkey has nothing to unlock with"
-        assert call(base, "/p/passkey", asdict(face.made(call(base, "/p/passkey/begin", {}, key).body["challenge"])), key).body == {"passkey": True} \
-            and call(base, "/p/passkey/begin", {}, key).status == 422, "the phone makes its passkey once"
+        def enrolled() -> Answer:
+            return call(base, "/p/passkey", asdict(face.made(call(base, "/p/passkey/begin", {}, key).body["challenge"])), key)
+
+        def asking() -> list[str]:
+            return [row.title for row in Notices(record, actor=SYSTEM).rows.standing() if row.data.get("action") == "passkey"]
+
+        users = Phones(record, actor=USER)
+        assert enrolled().body == {"passkey": False, "allow_within": 120} and not users.load(n).passkey \
+            and call(base, "/p/unlock/begin", {"request": "x"}, key).status == 422 and enrolled().status == 422, \
+            "a phone's cookie alone sets up no passkey, and a second ask waits for the first"
+        assert asking() == ["Set up Face ID for phone iPhone, Safari?"] and call(base, "/p/state", key=key).body["passkey_asked"]
+        assert [call(base, f"/p/api/{record.env}/phone/{n}/{word}", {}, key).status for word in ("allow_passkey", "refuse_passkey")] == [403, 403], \
+            "the phone cannot answer its own ask"
+        with pytest.raises(Refused):
+            Phones(record, actor=AGENT).allow_passkey(n)
+        users.refuse_passkey(n)
+        assert not users.load(n).passkey and asking() == [], "a refused passkey is dropped with its card"
+        enrolled()
+        later = time.time() + 121
+        monkeypatch.setattr(phone_controller, "time", type("Later", (), {"time": staticmethod(lambda: later)}))
+        with pytest.raises(Refused):
+            users.allow_passkey(n)
+        monkeypatch.undo()
+        enrolled()
+        assert users.allow_passkey(n).passkey and asking() == [] and call(base, "/p/passkey/begin", {}, key).status == 422 \
+            and "Face ID was set up for phone iPhone, Safari" in [row.title for row in Notices(record, actor=SYSTEM).rows.standing()], \
+            "Allow on the computer within two minutes keeps the passkey once, and says so"
+        for broken in (b"\xc0\x00", b"\xa1\x01\xc1\x00", b"\x1c"):
+            with pytest.raises(Unverified):
+                Cbor(broken).item()
+        with pytest.raises(Unverified):
+            integer(b"\x02\x02\x00\x7f")
+        assert integer(b"\x02\x02\x00\x80") == (0x80, b""), "a tag or a padded number is refused, a needed zero is not"
         other.id = face.id
         assert unlocked(by=other)[0] == "", "another key answering for this phone's passkey unlocks nothing"
         unlock, signed = unlocked()

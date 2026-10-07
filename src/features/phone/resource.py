@@ -1,6 +1,7 @@
 import time
 from typing import ClassVar
 
+from features.phone.passkey import PendingPasskey
 from resources.base import PROJECT, Resource, ResourceDetails
 from resources.shapes import NUMBER, TEXT, Field, Shape
 
@@ -29,6 +30,7 @@ class Phone(Shape, Resource):
         Field(default=dict, name="passkey", journal_only=True),
         Field(default=dict, name="challenge", journal_only=True),
         Field(default=dict, name="unlock", journal_only=True),
+        Field(default=dict, name="pending_passkey", journal_only=True),
     ]
     type = "phone"
     icon = "phone"
@@ -41,3 +43,7 @@ class Phone(Shape, Resource):
     @property
     def connected(self) -> bool:
         return bool(self.key) and not self.completed and self.expires > time.time()
+
+    @property
+    def waiting_passkey(self) -> PendingPasskey:
+        return PendingPasskey.from_json(self.pending_passkey)

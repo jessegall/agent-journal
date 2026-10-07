@@ -159,6 +159,14 @@ export class ApiClient {
         return this.act("phone", n, "disconnect");
     }
 
+    allowPhonePasskey(n) {
+        return this.act("phone", n, "allow_passkey");
+    }
+
+    refusePhonePasskey(n) {
+        return this.act("phone", n, "refuse_passkey");
+    }
+
     shareLayout(name, layout, {expires = "7d", once = false} = {}) {
         return this.command("share", "share_layout", {name, layout: JSON.stringify(layout), expires, once});
     }
