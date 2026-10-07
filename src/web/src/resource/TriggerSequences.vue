@@ -82,7 +82,7 @@ const reason = (sequence) =>
                         <template v-if="!readonly && !sequence.data.system">
                             <Btn
                                 small
-                                title="This trigger no longer starts it. It then starts only when you or the agent start it."
+                                v-tip="'This trigger no longer starts it. It then starts only when you or the agent start it.'"
                                 @click="stop(sequence)"
                             >
                                 Stop this trigger starting it

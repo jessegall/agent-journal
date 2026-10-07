@@ -27,7 +27,7 @@ const empty = computed(() => props.doc && !props.doc.abstract && !props.doc.brie
             <header class="preview-top">
                 <span>This is a preview. Open the whole document to edit, comment, share or close it.</span>
                 <Btn kind="primary" @click="emit('open', doc)">Open the whole document</Btn>
-                <Btn kind="icon" title="Hide the preview" aria-label="Hide the preview" @click="emit('hide')">×</Btn>
+                <Btn kind="icon" v-tip="'Hide the preview'" aria-label="Hide the preview" @click="emit('hide')">×</Btn>
             </header>
             <div class="preview-content">
                 <p class="preview-meta">Document {{ doc.n }} · {{ state.label }} · changed {{ ago(doc.updated || doc.created) }}</p>

@@ -69,7 +69,7 @@ async function start() {
                     small
                     class="plan-card-start"
                     :disabled="building"
-                    :title="building ? 'You can approve it once the plan is ready' : 'Approve the plan; the agent starts it'"
+                    v-tip="building ? 'You can approve it once the plan is ready' : 'Approve the plan; the agent starts it'"
                     @click="start"
                 >
                     <Icon name="start" />

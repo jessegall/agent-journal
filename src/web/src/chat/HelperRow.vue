@@ -45,7 +45,7 @@ onMounted(() =>
     <div :class="['helper', state()]">
         <div class="helper-head">
             <span :class="['helper-dot', state()]" />
-            <Btn kind="text" class="helper-what" title="Open this helper's inspector" @click="emit('inspect')">
+            <Btn kind="text" class="helper-what" v-tip="`Open this helper's inspector`" @click="emit('inspect')">
                 <strong class="helper-name">{{ name() }}</strong>
                 <span class="helper-job" :title="row.title">{{ row.title }}</span>
                 <small>{{ helperLine(row) }}</small>

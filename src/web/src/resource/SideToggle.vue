@@ -19,7 +19,7 @@ const talk = inject("talk", null);
             small
             :class="['side-toggle', {on: talk.talking.value && talk.aside.value === mode}]"
             :disabled="!!off"
-            :title="off || undefined"
+            v-tip="off || undefined"
             @click="talk.toggle(mode)"
         >
             <Icon :name="icon" :size="12" />

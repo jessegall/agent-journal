@@ -48,7 +48,7 @@ const helpersAnchor = ref(null);
 const modeOptions = computed(() =>
     MODES.map((one) => ({
         ...one,
-        title: one.key === "solo" && helpersOut.value ? `${one.note} Helpers already out keep going until they finish.` : one.note,
+        tip: {title: one.label, line: one.key === "solo" && helpersOut.value ? `${one.note} Helpers already out keep going until they finish.` : one.note},
     }))
 );
 
@@ -120,7 +120,7 @@ async function runBar(p) {
                 :is="current ? 'button' : 'span'"
                 :type="current ? 'button' : null"
                 :class="['statusbar-roll', {link: current}]"
-                :title="current ? 'Open this work' : null"
+                v-tip:roll="current ? {title: 'Open this work', line: 'Shows what the agent is doing now.'} : null"
                 @click="current && inspect()"
             >
                 <template v-if="sentence.head">
@@ -137,7 +137,11 @@ async function runBar(p) {
             <Btn
                 kind="icon"
                 :class="['statusbar-pause', {paused}]"
-                :title="paused ? 'Resume: tell the agent to carry on' : 'Pause: stop the agent\'s current turn and hold back the journal\'s reminders'"
+                v-tip:pause="
+                    paused
+                        ? {title: 'Resume', line: 'Tells the agent to carry on.'}
+                        : {title: 'Pause', line: 'Stops the agent\'s current turn and holds back the journal\'s reminders.'}
+                "
                 @click="pauseOrResume"
             >
                 <template v-if="wanted !== null">
@@ -155,10 +159,10 @@ async function runBar(p) {
                         :on="autoOn"
                         word="auto"
                         labelled
-                        :title="
+                        v-tip:auto="
                             autoOn
-                                ? 'The agent works through the to-do list without asking'
-                                : 'The agent asks before picking up the next to-do'
+                                ? {title: 'Auto is on', line: 'The agent works through the to-do list without asking.'}
+                                : {title: 'Auto is off', line: 'The agent asks before picking up the next to-do.'}
                         "
                         @change="setAuto"
                     />
@@ -166,10 +170,10 @@ async function runBar(p) {
                     <button
                         type="button"
                         :class="['statusbar-helpers', {none: !helpers.length}]"
-                        :title="
+                        v-tip:helpers="
                             helpersOut
-                                ? `${helpersOut} helper(s) out: see what they do`
-                                : 'Helpers: agents on other providers this environment dispatched'
+                                ? {title: `${helpersOut} helpers out`, line: 'Opens the list of what they are doing.'}
+                                : {title: 'Helpers', line: 'Agents on other providers this environment dispatched.'}
                         "
                         :aria-expanded="helpersOpen"
                         @click.stop="toggleHelpers"
@@ -197,7 +201,7 @@ async function runBar(p) {
                 kind="icon"
                 class="statusbar-square"
                 data-step="fullscreen"
-                :title="`${store.wide ? 'Show the sidebar and the top bar' : 'Hide the sidebar and the top bar'} (${FULLSCREEN_KEYS})`"
+                v-tip:wide="{title: store.wide ? 'Show the sidebar and the top bar' : 'Hide the sidebar and the top bar', keys: FULLSCREEN_KEYS}"
                 @click="store.wide = !store.wide"
             >
                 <Icon :name="store.wide ? 'narrow' : 'wide'" />

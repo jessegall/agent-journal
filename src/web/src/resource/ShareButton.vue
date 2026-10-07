@@ -17,7 +17,7 @@ const waiting = computed(() => waitingOf(`${props.resource.type}:${props.resourc
         small
         :class="['share-toggle', {live: open.length}]"
         :disabled="demo"
-        :title="unlessDemo(open.length ? `${open.length} open link` : 'Share a link to this')"
+        v-tip="unlessDemo(open.length ? `${open.length} open link` : 'Share a link to this')"
         @click="asking = true"
     >
         <Icon name="share" :size="12" />

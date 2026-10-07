@@ -31,7 +31,7 @@ watchEffect(() => {
                     Dock back
                 </Btn>
                 <template v-if="framed">
-                    <Btn small title="Close" @click="tellShell('close')">
+                    <Btn small v-tip="'Close'" @click="tellShell('close')">
                         <Icon name="x" :size="13" />
                     </Btn>
                 </template>

@@ -97,7 +97,7 @@ async function submit() {
                         <template v-for="(file, i) in files" :key="file.name + i">
                             <span class="file">
                                 {{ file.name }}
-                                <Btn class="file-x" title="Leave this file out" @click="files.splice(i, 1)">×</Btn>
+                                <Btn class="file-x" v-tip="'Leave this file out'" @click="files.splice(i, 1)">×</Btn>
                             </span>
                         </template>
                     </div>

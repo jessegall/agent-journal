@@ -24,7 +24,7 @@ onUnmounted(() => clearTimeout(timer));
 </script>
 
 <template>
-    <button type="button" :class="['copy-button', {copied, labelled: label}]" :title="copied ? 'Copied' : hint" @click.stop="copy">
+    <button type="button" :class="['copy-button', {copied, labelled: label}]" v-tip="copied ? 'Copied' : hint" @click.stop="copy">
         <Icon :name="copied ? 'tick' : icon" :size="12" />
         <template v-if="label">
             <span>{{ copied ? "Copied" : label }}</span>

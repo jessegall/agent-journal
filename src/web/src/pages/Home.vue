@@ -416,7 +416,7 @@ watch(
                                 <Btn
                                     :class="['pane-menu-btn', {on: menu && menu.id === id, hinted: hinted === id}]"
                                     :data-pane-menu="id"
-                                    title="Pane menu"
+                                    v-tip="'Pane menu'"
                                     @click.stop="toggleMenu($event, id)"
                                 >
                                     <Icon name="dots" />

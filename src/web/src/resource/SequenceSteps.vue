@@ -109,7 +109,7 @@ async function save() {
                                 </template>
                             </span>
                             <template v-if="s.from && s.from.n !== track[i - 1]?.from?.n">
-                                <Btn small kind="ghost" class="stop-from" :title="`Open sequence ${s.from.n}`" @click="peek('sequence', s.from.n)">
+                                <Btn small kind="ghost" class="stop-from" v-tip="`Open sequence ${s.from.n}`" @click="peek('sequence', s.from.n)">
                                     From {{ s.from.title }}
                                 </Btn>
                             </template>

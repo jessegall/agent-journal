@@ -75,7 +75,7 @@ const counting = ref(false);
                     <Btn
                         small
                         :class="['run-filter', {on: only === 'waiting'}]"
-                        title="Show only the cards waiting to start"
+                        v-tip="'Show only the cards waiting to start'"
                         @click="emit('only', 'waiting')"
                     >
                         <StateDot state="queued" />
@@ -86,7 +86,7 @@ const counting = ref(false);
                     <Btn
                         small
                         :class="['run-filter', {on: only === 'you'}]"
-                        title="Show only the cards that need you"
+                        v-tip="'Show only the cards that need you'"
                         @click="emit('only', 'you')"
                     >
                         <StateDot state="you" />
@@ -101,7 +101,7 @@ const counting = ref(false);
                 <Btn
                     small
                     :class="['run-count', {open: counting}]"
-                    title="How many agents may run at once"
+                    v-tip="'How many agents may run at once'"
                     @click.stop="counting = !counting"
                 >
                     <template v-if="pips.length">
@@ -141,7 +141,7 @@ const counting = ref(false);
                 </Btn>
             </template>
             <template #run>
-                <Btn small :busy="busy" title="No new ticket starts; running agents finish their step" @click="emit('pause')">
+                <Btn small :busy="busy" v-tip="'No new ticket starts; running agents finish their step'" @click="emit('pause')">
                     <Icon name="pause" />
                     Pause
                 </Btn>

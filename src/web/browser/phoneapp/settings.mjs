@@ -95,7 +95,7 @@ await runScenarios(PAIR, {
         await thoughts.waitFor({timeout: SHOWN});
         const before = await thoughts.getAttribute("aria-checked");
         await thoughts.click();
-        await page.waitForFunction(([label, was]) => document.querySelector(`[role=switch][title="${label}"]`)?.getAttribute("aria-checked") !== was, ["Thoughts", before], {timeout: SHOWN});
+        await page.waitForFunction(([label, was]) => document.querySelector(`[role=switch][aria-label="${label}"]`)?.getAttribute("aria-checked") !== was, ["Thoughts", before], {timeout: SHOWN});
     },
     async "the colors choice follows the pick and keeps it after a reload"(page) {
         await region(page, "Colors");
