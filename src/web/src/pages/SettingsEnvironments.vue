@@ -13,6 +13,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
+import {isMain} from "../domain/environments.js";
 import {matches} from "../domain/settingsCatalog.js";
 
 const props = defineProps({query: {type: String, default: ""}});
@@ -24,7 +25,7 @@ const here = (e) => e.title === route.value.env;
 
 const envRows = computed(() =>
     rows("environment")
-        .filter((e) => !e.completed)
+        .filter((e) => !e.completed && isMain(e))
         .map((e) => {
             const got = summaryOf(e.title);
             return {

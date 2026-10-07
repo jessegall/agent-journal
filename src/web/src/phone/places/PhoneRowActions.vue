@@ -5,6 +5,7 @@ import {answer} from "../../chat/answers.js";
 import {markSeen} from "../../sync/seen.js";
 import {DELETE_NOTE, closeNote, closeWord, word} from "../../domain/spec.js";
 import {CHANGE} from "../../domain/suggestions.js";
+import {isMain} from "../../domain/environments.js";
 import ActionSheet from "../kit/ActionSheet.vue";
 import FormSheet from "../kit/FormSheet.vue";
 import {toast} from "../kit/toast.js";
@@ -88,7 +89,7 @@ const openRows = async (type) => (await api.list(type).catch(() => ({rows: []}))
 onMounted(async () => {
     if (COLLECTABLE.includes(props.row.type)) collections.value = await openRows("collection");
     if (MOVABLE.includes(props.row.type))
-        environments.value = (await openRows("environment")).filter((one) => !one.data.owner && one.title !== api.env());
+        environments.value = (await openRows("environment")).filter((one) => isMain(one) && one.title !== api.env());
 });
 
 function collect() {

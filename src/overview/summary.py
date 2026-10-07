@@ -125,7 +125,7 @@ class JournalSummary(TypedDict):
 def summarize(root: Path) -> JournalSummary:
     start = runtime.env(root)
     every = Environments(Record(root, start), actor=SYSTEM).rows.standing()
-    standing = [e for e in every if not e.helping]
+    standing = [e for e in every if e.is_main()]
     owners = {e.title: e.owner for e in standing}
     names = dict.fromkeys([start, *(e.title for e in standing)])
     return {"project": root.resolve().parent.name, "root": str(root), "version": version(), "start": start, "color": identity(root)["color"],

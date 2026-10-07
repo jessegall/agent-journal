@@ -12,6 +12,7 @@ from engine.sessions import Sessions, alive
 from engine.stop import ask_session
 from resources import types
 from resources.base import ENVIRONMENT, SYSTEM, UNTITLED, Refused, check_title
+from resources.types import EnvironmentKind
 from engine import runtime
 from engine.paths import ROUTED, environment_home, environments
 from engine.wording import plural
@@ -33,6 +34,13 @@ def seeded(folder) -> bool:
     return not any(row.parent.name != SEED for row in folder.glob("*/[0-9]*.md"))
 
 
+def kind_of(given: str) -> EnvironmentKind:
+    try:
+        return EnvironmentKind(given)
+    except ValueError as error:
+        raise Refused(f"an environment is one of {', '.join(EnvironmentKind)}, not {given!r}") from error
+
+
 class Environments(Controller):
     OPEN_BEFORE_REMOVING = (Todos, Facts, Reminders, Messages, Questions)
     PICKED_UP = (Works, Todos, Questions, Messages)
@@ -42,6 +50,8 @@ class Environments(Controller):
     def update(self, n: int, title: str | None = None, **data):
         if title is not None:
             raise Refused("rename an environment with journal environment rename")
+        if "kind" in data:
+            data["kind"] = kind_of(data["kind"])
         return super().update(n, **data)
 
     def _seat(self, name: str, session: str):
@@ -81,12 +91,12 @@ class Environments(Controller):
         return self._stopping(env.n, session=holder)
 
     @action
-    def create(self, title: str, abstract: str = "", brief: str = "", **data):
+    def create(self, title: str, abstract: str = "", brief: str = "", kind: str = EnvironmentKind.MAIN, **data):
         if title.strip() in ("", UNTITLED):
             self._refuse("an environment needs a name")
         name = self.unused(check_title(title), ": switch to it")
         home = environment_home(self.record.root, name)
-        made = super().create(name, abstract, brief, **data)
+        made = super().create(name, abstract, brief, kind=kind_of(kind), **data)
         home.mkdir(parents=True, exist_ok=True)
         runtime.forget_rename(self.record.root, name)
         return made

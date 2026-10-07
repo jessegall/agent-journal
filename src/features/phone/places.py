@@ -60,11 +60,11 @@ class Place:
                    {name: detail(root, name) for name in names})
 
     def row(self, name: str) -> int:
-        return next(env.n for env in Environments(Record(Path(self.root), MAIN), actor=SYSTEM).rows.standing() if env.title == name and not env.helping)
+        return next(env.n for env in Environments(Record(Path(self.root), MAIN), actor=SYSTEM).rows.standing() if env.title == name and env.is_main())
 
 
 def shown(root: Path) -> tuple[str, ...]:
-    return tuple(env.title for env in Environments(Record(root, MAIN), actor=SYSTEM).rows.standing() if not env.owner)
+    return tuple(env.title for env in Environments(Record(root, MAIN), actor=SYSTEM).rows.standing() if env.is_main())
 
 
 def running(root: Path) -> bool:

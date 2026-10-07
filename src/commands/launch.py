@@ -18,11 +18,6 @@ SAVED_CURSOR = "\x1b7"
 QUESTION_SCREEN = "\x1b8\x1b[J"
 
 
-def helper_name(record: Record, place) -> str:
-    from features.helpers.controller import Helpers
-    return Helpers(Record(record.root, place.launched_from), actor=SYSTEM).load(place.owned_by("helper")).name
-
-
 def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> str:
     answering = sys.stdin.isatty() if answering is None else answering
     if "--env" in sys.argv or worktree:
@@ -30,9 +25,7 @@ def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> 
     from controllers.types import Environments
     from engine.sessions import Sessions
     from engine.worktree import linked
-    places = Environments(record, actor=SYSTEM).rows.standing()
-    names = [place.title for place in places]
-    helpers = {place.title: f"helper {helper_name(record, place)}" for place in places if place.helping}
+    names = [place.title for place in Environments(record, actor=SYSTEM).rows.standing() if place.is_main()]
     if not answering:
         sessions = Sessions(record.root)
         return record.env if not sessions.holder(record.env) else next((name for name in names if not sessions.holder(name)), record.env)
@@ -40,8 +33,7 @@ def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> 
         return record.env
     sessions = Sessions(record.root)
     worktrees = linked(record.root.parent)
-    choices = [Choice(name, tuple(badge for badge, on in (("worktree", name in worktrees), (helpers.get(name), name in helpers),
-                                                         ("agent working", sessions.holder(name) and name not in helpers)) if on))
+    choices = [Choice(name, tuple(badge for badge, on in (("worktree", name in worktrees), ("agent working", sessions.holder(name))) if on))
                for name in names] + [Choice("A new environment")]
     free = [i for i, name in enumerate(names) if not sessions.holder(name)]
     default = names.index(record.env) if record.env in names and names.index(record.env) in free else (free or [len(names)])[0]
