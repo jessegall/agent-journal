@@ -7,7 +7,7 @@ from providers.payload import HookEvent
 from agents.terminal import seat_session
 from engine import runtime
 from engine.record import Record
-from engine.sessions import SessionsSnapshot, agent_pid, alive
+from engine.sessions import SessionRecord, SessionsSnapshot, agent_pid, alive
 from engine.stored import Growth, write_json
 from engine.proc import git
 from engine.seats import seat_file
@@ -155,15 +155,16 @@ class HookBinding:
         session = hook.session
         held = self.sessions.read(session)
         worked = "" if prefer in self.owned else self.worked_in(hook)
-        stays = bool(held.environment and held.provider) and (hook.event != HookEvent.SESSION_START or not self.moving(session, held.environment, worked))
+        stays = bool(held.environment and held.provider) and (hook.event != HookEvent.SESSION_START or self.provider.compacted(hook)
+                                                               or not self.moving(session, held, worked))
         env = held.environment if stays else self.bound(session, worked, prefer)
         if stays and not alive(held.pid):
             self.relaunched(session, held.pid)
-        self.sessions.touch(session)
+        self.sessions.touch(session, held.worked_in if self.provider.is_subagent(hook) else worked)
         return env
 
-    def moving(self, session: str, env: str, worked: str) -> bool:
-        if not worked or worked == env or worked in self.owned:
+    def moving(self, session: str, held: SessionRecord, worked: str) -> bool:
+        if not worked or worked in (held.environment, held.worked_in) or worked in self.owned:
             return False
         own = {session, self.sessions.terminal(self.provider.name, self.pid)}
         return not set(self.sessions.holders(worked)) - own

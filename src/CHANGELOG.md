@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.255.1 — A restarted session keeps its environment
+- A session that Claude Code resumes in the worktree folder it was already running in keeps the environment it held, instead of moving to a new environment named after the folder. A session resumed in a different worktree still moves there, and the start after a compaction always keeps its environment.
+
 ## 2.255.0 — The agent says Waiting, the phone runs commands after Face ID, and settings are kept once per project
 - While the agent waits on helpers, subagents or a run it says Waiting and what it waits on, the message box shows a slowly travelling edge, and the list of what it waits on opens from the status.
 - The phone can run the actions that run commands on your computer (the terminal, plugin installs, tool runs, services, update and stop) right after it unlocks again with Face ID or its passcode; setting up Face ID on a phone needs your Allow on the computer.

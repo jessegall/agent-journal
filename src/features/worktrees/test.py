@@ -102,6 +102,11 @@ def test_a_resumed_conversation_in_a_worktree_moves_there_with_its_terminal(tmp_
     assert sessions.environment("resumed") == "feature-z", "a subagent's hook outside the worktree never moves the main conversation"
     hooked(record, "resumed", worktree_of(tmp_path, "feature-y") / "src", 5151, event="PostToolUse")
     assert sessions.environment("resumed") == "feature-z", "a tool call run from another folder never moves a running conversation out of its environment"
+    hooked(record, "resumed", worktree_of(tmp_path, "feature-w") / "src", 5151, source="compact")
+    assert sessions.environment("resumed") == "feature-z", "the start after a compaction keeps the conversation's environment, wherever its folder now is"
+    hooked(record, "resumed", worktree_of(tmp_path, "feature-v") / "src", 5151, event="PostToolUse")
+    hooked(record, "resumed", tmp_path / "feature-v" / "src", 5151, source="resume")
+    assert sessions.environment("resumed") == "feature-z", "a restart that resumes the conversation in the folder it already ran in keeps its environment"
     sessions.bind("claude-999991", "feature-z", pid=999991, provider="claude")
     sessions.write("resumed", pid=999991)
     hooked(record, "resumed", tmp_path / "feature-z" / "src", 5151, event="PostToolUse")
