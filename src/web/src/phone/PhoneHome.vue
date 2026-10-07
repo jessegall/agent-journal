@@ -1,4 +1,5 @@
 <script setup>
+import Button from "./kit/Button.vue";
 import {waitingInOrder} from "./waiting.js";
 import {scrollIntoRoom} from "./reveal.js";
 import {ui} from "../state/ui.js";
@@ -745,8 +746,8 @@ onMounted(startTourOnce);
                                 </template>
                             </div>
                             <template v-if="far">
-                                <button
-                                    type="button"
+                                <Button
+                                    kind="round"
                                     class="home-newest"
                                     :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'"
                                     @click="newest"
@@ -755,7 +756,7 @@ onMounted(startTourOnce);
                                     <template v-if="unseen">
                                         <span class="home-unseen" aria-hidden="true">{{ unseen }}</span>
                                     </template>
-                                </button>
+                                </Button>
                             </template>
                         </div>
                     </template>
@@ -787,7 +788,9 @@ onMounted(startTourOnce);
                 <template v-if="screen === 'home'">
                     <section id="pane-home" role="tabpanel" aria-label="Home" class="pane">
                         <NavBar title="Home" :under="homeUnder">
-                            <button type="button" class="home-change" @click="homeEditing = !homeEditing">{{ homeEditing ? "Done" : "Change Home" }}</button>
+                            <Button kind="link" class="home-change" @click="homeEditing = !homeEditing">
+                                {{ homeEditing ? "Done" : "Change Home" }}
+                            </Button>
                         </NavBar>
                         <PhoneBoard
                             v-model:editing="homeEditing"
@@ -906,13 +909,9 @@ onMounted(startTourOnce);
 </template>
 
 <style scoped>
-.home-change {
+.home-change.link {
     min-height: 44px;
     padding: 0 8px;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
     font-size: 1.0625rem;
 }
 
@@ -1083,23 +1082,13 @@ onMounted(startTourOnce);
     min-height: 0;
 }
 
-.home-newest {
+.home-newest.round {
     position: absolute;
     bottom: calc(var(--dock, 140px) + 14px + var(--keyboard, 0px));
     left: 50%;
     z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
     margin-left: -22px;
-    padding: 0;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    background: var(--raised);
     color: var(--text);
-    box-shadow: var(--shadow-1);
     animation: newest-in 200ms ease-out;
 }
 

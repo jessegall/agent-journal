@@ -1,4 +1,5 @@
 <script setup>
+import FilePicker from "./kit/FilePicker.vue";
 import {ref} from "vue";
 import {api} from "../api/client.js";
 import ActionSheet from "./kit/ActionSheet.vue";
@@ -55,12 +56,16 @@ function chosen(action, choice) {
     const body = action.name ? {[action.name]: choice.value} : {value: choice.value};
     const question = action.ask ? laneQuestion(choice) : null;
     if (!question) return go(action, body, choice.label);
-    return ask({...action, body: {...(action.body || {}), ...body}}, [{key: question.word, label: question.title, required: question.required}], choice);
+    return ask(
+        {...action, body: {...(action.body || {}), ...body}},
+        [{key: question.word, label: question.title, required: question.required}],
+        choice
+    );
 }
 
 function begin(action) {
     if (action.share) return emit("share");
-    if (action.upload) return picker.value.click();
+    if (action.upload) return picker.value.open();
     if (action.pick) return list(action);
     const fields = action.fields || [];
     if (fields.length || action.confirm) return ask(action, fields);
@@ -69,10 +74,7 @@ function begin(action) {
 
 const sent = (values) => go(form.value.action, values, form.value.choice?.label || "");
 
-async function attach(event) {
-    const files = [...event.target.files];
-    event.target.value = "";
-    if (!files.length) return;
+async function attach(files) {
     try {
         for (const file of files) await api.upload(props.row.type, props.row.n, file);
         toast(files.length === 1 ? `Attached ${files[0].name}` : `Attached ${files.length} files`);
@@ -86,7 +88,7 @@ defineExpose({begin});
 </script>
 
 <template>
-    <input ref="picker" class="phone-hidden" type="file" multiple aria-label="Files to attach" @change="attach" />
+    <FilePicker ref="picker" multiple label="Files to attach" @pick="attach" />
     <template v-if="choices">
         <ActionSheet :title="choices.action.label" :about="about()" line="pick one" :actions="choices.actions" @close="choices = null" />
     </template>

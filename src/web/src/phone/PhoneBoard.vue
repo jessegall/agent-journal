@@ -1,4 +1,5 @@
 <script setup>
+import Button from "./kit/Button.vue";
 import {scrollIntoRoom} from "./reveal.js";
 import {cache, cached} from "./cache.js";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
@@ -109,25 +110,20 @@ function moved(i, by) {
                             </template>
                             <template v-if="editing">
                                 <span class="board-tools">
-                                    <button
-                                        type="button"
-                                        :aria-label="`Move ${kindCard(kind)} up`"
-                                        :disabled="i === 0"
-                                        @click="moved(i, -1)"
-                                    >
+                                    <Button kind="icon" :aria-label="`Move ${kindCard(kind)} up`" :disabled="i === 0" @click="moved(i, -1)">
                                         <Icon name="up" :size="16" />
-                                    </button>
-                                    <button
-                                        type="button"
+                                    </Button>
+                                    <Button
+                                        kind="icon"
                                         :aria-label="`Move ${kindCard(kind)} down`"
                                         :disabled="i === cards.length - 1"
                                         @click="moved(i, 1)"
                                     >
                                         <Icon name="down" :size="16" />
-                                    </button>
-                                    <button type="button" :aria-label="`Remove ${kindCard(kind)}`" @click="remove(kind)">
+                                    </Button>
+                                    <Button kind="icon" :aria-label="`Remove ${kindCard(kind)}`" @click="remove(kind)">
                                         <Icon name="close" :size="16" />
-                                    </button>
+                                    </Button>
                                 </span>
                             </template>
                         </header>
@@ -152,10 +148,10 @@ function moved(i, by) {
                 </header>
                 <div class="board-kinds">
                     <template v-for="kind in missing" :key="kind">
-                        <button type="button" class="board-kind" @click="arranged([...cards, kind])">
+                        <Button kind="chip" @click="arranged([...cards, kind])">
                             <Icon name="plus" :size="12" />
                             {{ kindCard(kind) }}
-                        </button>
+                        </Button>
                     </template>
                 </div>
             </section>
@@ -213,7 +209,6 @@ function moved(i, by) {
     font-size: 0.794rem;
 }
 
-
 .board-cards {
     position: relative;
     display: flex;
@@ -262,8 +257,6 @@ function moved(i, by) {
     font-size: 0.824rem;
 }
 
-
-
 .board-card {
     display: flex;
     flex-direction: column;
@@ -296,35 +289,9 @@ function moved(i, by) {
     margin-left: auto;
 }
 
-.board-tools button {
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    border: 0;
-    border-radius: 8px;
-    background: var(--hover);
-    color: var(--text-2);
-    font: inherit;
-    font-size: 16px;
-}
-
 .board-kinds {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-}
-
-.board-kind {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 40px;
-    padding: 0 14px;
-    border: 0;
-    border-radius: 20px;
-    background: var(--raised);
-    color: var(--text-2);
-    font: inherit;
-    font-size: 0.882rem;
 }
 </style>

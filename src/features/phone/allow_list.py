@@ -27,7 +27,7 @@ class Page:
 
 @dataclass(frozen=True)
 class Action:
-    """A controller action reached through the generic pages, named by its type and the word that calls it."""
+    """A controller action, named by its type and word."""
 
     type: str
     word: str
@@ -125,7 +125,6 @@ ALLOWED = (
     *actions("worktree", "all attach comment delete detach drop link move read_all reopen show unlink update"),
 )
 
-# Allowed until question 206 is answered, then weighed with RUNS.
 TO_WEIGH = (*actions("board", "build"), *actions("ticket", "start"), *actions("worktree", "take"), post("/api/{env}/settings"))
 
 RUNS = (
@@ -164,7 +163,7 @@ def allowed(root: Path, environment: str, route: Route, params: dict, body: dict
 
 
 def reached(root: Path, route: Route, params: dict, query: dict, body: dict, environment: str) -> bool:
-    """Whether a phone in this environment may reach the page: the path and query name its own environment, and a target the body names is one of this journal's."""
+    """Whether a phone in this environment may reach the page."""
     here = {Named.from_json(given).env for given in (params, query)} - {""}
     target = Named.from_json(body).env
     if not here <= {environment} or (target and not known_environment(root, target)):

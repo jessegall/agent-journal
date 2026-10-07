@@ -142,7 +142,7 @@ defineExpose({close});
     flex-direction: column;
     width: 100%;
     max-width: none;
-    max-height: calc(100dvh * 0.5);
+    height: calc(100dvh * 0.5);
     padding-bottom: var(--safe-bottom);
     border-radius: 12px 12px 0 0;
     outline: none;
@@ -170,14 +170,10 @@ defineExpose({close});
 }
 
 .sheet-root.lifted .sheet {
-    max-height: calc(100% - 12px);
+    height: calc(100% - 12px);
 }
 
 .sheet.large {
-    max-height: calc(100dvh * 0.92);
-}
-
-.sheet.fixed {
     height: calc(100dvh * 0.92);
 }
 
@@ -219,6 +215,7 @@ defineExpose({close});
 
 .sheet-body {
     display: flex;
+    flex: 1;
     flex-direction: column;
     min-height: 0;
     padding: 4px var(--side) 14px;

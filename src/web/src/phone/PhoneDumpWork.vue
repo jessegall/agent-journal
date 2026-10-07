@@ -1,4 +1,5 @@
 <script setup>
+import FilePicker from "./kit/FilePicker.vue";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {useDump} from "../composables/dump.js";
@@ -84,9 +85,8 @@ async function sent(text) {
     }
 }
 
-async function added(event) {
-    await addMore(event.target.files);
-    event.target.value = "";
+async function added(files) {
+    await addMore(files);
     emit("changed");
 }
 
@@ -149,13 +149,13 @@ async function merge() {
             <Cell :label="name" sub="Adding…" icon="file" still />
         </template>
         <template v-if="working">
-            <Cell icon="plus" label="Add more files" @pick="picker.click()" />
+            <Cell icon="plus" label="Add more files" @pick="picker.open()" />
         </template>
     </CellGroup>
     <template v-if="more.error">
         <p class="dump-error" role="alert">{{ more.error }}</p>
     </template>
-    <input ref="picker" type="file" multiple hidden aria-label="More files to send" @change="added" />
+    <FilePicker ref="picker" multiple label="More files to send" @pick="added" />
     <div class="dump-foot">
         <template v-if="merging">
             <Button :disabled="merging.size < 2" @click="merge">Merge into one document</Button>

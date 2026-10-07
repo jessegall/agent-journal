@@ -4,7 +4,7 @@ from pathlib import Path
 
 import features
 from engine.record import Record
-from features.chat_kinds import MARKED, RECALLED
+from features.phone.chat_view import MARKED, RECALLED
 from features.format import catalogue
 from features import groups
 from controllers.base import actions
