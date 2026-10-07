@@ -91,12 +91,12 @@ class Environments(Controller):
         return self._stopping(env.n, session=holder)
 
     @action
-    def create(self, title: str, abstract: str = "", brief: str = "", kind: str = EnvironmentKind.MAIN, **data):
+    def create(self, title: str, abstract: str = "", brief: str = "", **data):
         if title.strip() in ("", UNTITLED):
             self._refuse("an environment needs a name")
         name = self.unused(check_title(title), ": switch to it")
         home = environment_home(self.record.root, name)
-        made = super().create(name, abstract, brief, kind=kind_of(kind), **data)
+        made = super().create(name, abstract, brief, **{**data, "kind": kind_of(data.get("kind", EnvironmentKind.MAIN))})
         home.mkdir(parents=True, exist_ok=True)
         runtime.forget_rename(self.record.root, name)
         return made
