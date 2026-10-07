@@ -295,6 +295,10 @@ export class ApiClient {
         return this.command("todo", "tasks", {agent});
     }
 
+    touched(n) {
+        return this.command("todo", "touched", {n});
+    }
+
     board({plan, agent} = {}) {
         return this.command("todo", "board", {plan: plan || 0, agent: agent || ""});
     }
@@ -433,6 +437,14 @@ export class ApiClient {
 
     closeNotice(n) {
         return this.act("notice", n, "close");
+    }
+
+    pinNotice(text, about = "") {
+        return this.create("notice", {brief: text, about: about || undefined});
+    }
+
+    deleteTurn(type, n) {
+        return this.act(type, n, "delete", {why: "deleted from the viewer"});
     }
 
     editMessage(n, text) {

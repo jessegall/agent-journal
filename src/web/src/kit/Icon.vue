@@ -34,6 +34,7 @@ const alias = {
 };
 const shapes = {
     terminal: '<path d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>',
+    trash: '<path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/>',
     chat: '<path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/>',
     edits: '<path d="M8 3v6M5 6h6M5 12.5h6"/>',
     gauge: '<path d="M2.6 11.5a5.4 5.4 0 1 1 10.8 0"/><path d="M8 11.5 10.4 7.4"/><circle cx="8" cy="11.5" r=".6" fill="currentColor"/>',

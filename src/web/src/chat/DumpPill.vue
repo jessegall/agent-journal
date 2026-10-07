@@ -1,16 +1,8 @@
 <script setup>
+import {PHASE_WORDS} from "../domain/dumpPile.js";
+
 defineProps({phase: {type: String, required: true}});
 
-const PILLS = {
-    removed: "Removed",
-    stopped: "Stopped",
-    done: "Filed",
-    queued: "Queued",
-    asking: "Needs you",
-    quiet: "Quiet",
-    filing: "Filing",
-    waiting: "Filing",
-};
 const TONES = {
     removed: "idle",
     stopped: "idle",
@@ -24,7 +16,7 @@ const TONES = {
 </script>
 
 <template>
-    <span :class="['dump-pill', TONES[phase]]">{{ PILLS[phase] }}</span>
+    <span :class="['dump-pill', TONES[phase]]">{{ PHASE_WORDS[phase] }}</span>
 </template>
 
 <style scoped>

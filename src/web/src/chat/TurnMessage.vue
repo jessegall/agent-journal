@@ -152,7 +152,7 @@ async function react(face) {
 }
 
 async function drop() {
-    await scope.api.act(props.turn.type, props.turn.n, "delete", {why: "deleted from the viewer"});
+    await scope.api.deleteTurn(props.turn.type, props.turn.n);
 }
 </script>
 
