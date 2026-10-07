@@ -22,6 +22,9 @@
         --tone-good: #2e8a4e;
         --tone-warn: #a4731a;
         --danger: #bf4f3d;
+        --tip-bg: #ffffff;
+        --tip-edge: var(--border-2);
+        --tip-shadow: 0 6px 20px rgba(20, 22, 30, 0.13);
     }
 
     .tok-string {

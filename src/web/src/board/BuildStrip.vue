@@ -51,7 +51,7 @@ async function act(action) {
                 <Btn kind="primary" small :disabled="busy" @click="act('keep')">Keep the board</Btn>
             </template>
             <template v-else>
-                <Btn small :disabled="busy" title="Stops the agent and removes the board" @click="act('discard')">Cancel</Btn>
+                <Btn small :disabled="busy" v-tip="'Stops the agent and removes the board'" @click="act('discard')">Cancel</Btn>
             </template>
         </div>
         <template v-if="listing">

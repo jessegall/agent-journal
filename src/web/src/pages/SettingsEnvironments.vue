@@ -113,14 +113,14 @@ const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothin
                                 </template>
                             </template>
                             <template #idle>
-                                <Btn small title="Moves old messages and closed items into the archive" @click="sweep(row.env)">
+                                <Btn small v-tip="'Moves old messages and closed items into the archive'" @click="sweep(row.env)">
                                     Archive old items
                                 </Btn>
                                 <Btn
                                     kind="danger"
                                     small
                                     :disabled="here(row.env)"
-                                    :title="
+                                    v-tip="
                                         here(row.env)
                                             ? 'Switch to another environment to archive this one'
                                             : 'Move this environment into the archive'

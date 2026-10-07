@@ -9,7 +9,7 @@ const emit = defineEmits(["change"]);
         :class="['switch-button', {framed}]"
         role="switch"
         :aria-checked="on ? 'true' : 'false'"
-        :title="title"
+        v-tip="title"
         @click="emit('change', !on)"
     >
         <span :class="['switch', {on, labelled, large}]">

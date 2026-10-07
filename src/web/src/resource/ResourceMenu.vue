@@ -46,7 +46,7 @@ function sure() {
 
 <template>
     <span class="resource-menu" @click.stop>
-        <Btn ref="anchor" kind="icon" small :title="`Actions for ${resource.title}`" @click="open = !open">
+        <Btn ref="anchor" kind="icon" small v-tip="`Actions for ${resource.title}`" @click="open = !open">
             <Icon name="dots" :size="14" />
         </Btn>
         <template v-if="refusal">

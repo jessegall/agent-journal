@@ -23,7 +23,7 @@ function open(card) {
             <Btn
                 small
                 :class="['agent', agentState(card).key]"
-                :title="`#${card.n} ${card.title}: ${agentState(card).word}, ${card.reason}`"
+                v-tip="`#${card.n} ${card.title}: ${agentState(card).word}, ${card.reason}`"
                 @click="open(card)"
             >
                 <StateDot :state="agentState(card).dot" />
@@ -36,7 +36,7 @@ function open(card) {
         </template>
         <template v-if="props.cards.length > props.visible">
             <span ref="more" class="more-agents">
-                <Btn small title="The other agents working on this board" @click.stop="menu = !menu">
+                <Btn small v-tip="'The other agents working on this board'" @click.stop="menu = !menu">
                     +{{ props.cards.length - props.visible }} more
                 </Btn>
             </span>

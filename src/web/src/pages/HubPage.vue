@@ -90,7 +90,7 @@ function toggleStopped() {
                 <template v-for="j in stopped" :key="j.root">
                     <ListRow :kind="stoppedNote(j)" :title="j.project" :text="`Start it with journal claude in ${projectPath(j)}`">
                         <template v-if="!j.running" #end>
-                            <Btn small title="Remove this journal from the list until its viewer runs again" @click="forget(j)">Remove</Btn>
+                            <Btn small v-tip="'Remove this journal from the list until its viewer runs again'" @click="forget(j)">Remove</Btn>
                         </template>
                     </ListRow>
                 </template>
