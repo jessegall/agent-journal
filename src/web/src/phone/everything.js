@@ -60,7 +60,6 @@ export const GROUPS = [
 
 export const PLACES = GROUPS.flatMap((group) => group.places);
 export const KIND_PLACES = PLACES.filter((one) => one.type);
-export const placeOf = (key) => PLACES.find((one) => one.key === key) || place(key, key, "", "dot");
 
 export const COMMANDS = [
     {key: "message", label: "Message the agent"},

@@ -7,6 +7,7 @@ import Switch from "../../kit/Switch.vue";
 import SwitchCase from "../../kit/SwitchCase.vue";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
+import Field from "../kit/Field.vue";
 import {toast} from "../kit/toast.js";
 import PhonePage from "./PhonePage.vue";
 
@@ -61,13 +62,15 @@ onMounted(load);
                             </template>
                         </template>
                         <template #text>
-                            <label class="setting-field">
-                                <span>{{ setting.title }}</span>
-                                <input :type="setting.type === 'number' ? 'number' : 'text'" :value="setting.value" @change="change(setting, $event.target.value)" />
-                                <template v-if="setting.help">
-                                    <small>{{ setting.help }}</small>
-                                </template>
-                            </label>
+                            <Field
+                                class="setting-field"
+                                :model-value="setting.value"
+                                :label="setting.title"
+                                label-size="large"
+                                :type="setting.type === 'number' ? 'number' : 'text'"
+                                :hint="setting.help"
+                                @change="change(setting, $event.target.value)"
+                            />
                         </template>
                     </SwitchCase>
                 </template>
@@ -83,31 +86,6 @@ onMounted(load);
 }
 
 .setting-field {
-    display: block;
     padding: 10px 14px 12px;
-}
-
-.setting-field span {
-    display: block;
-    font-size: 1.0625rem;
-}
-
-.setting-field input {
-    width: 100%;
-    min-height: 44px;
-    margin-top: 6px;
-    padding: 0 12px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--bg);
-    color: var(--text);
-    font: inherit;
-}
-
-.setting-field small {
-    display: block;
-    margin-top: 6px;
-    color: var(--text-3);
-    font-size: 0.875rem;
 }
 </style>

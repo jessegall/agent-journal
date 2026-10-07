@@ -2,6 +2,7 @@
 import {computed, onMounted, ref} from "vue";
 import {useScope} from "../composables/scope.js";
 import {sendMessage} from "../chat/outbox.js";
+import {CRITIQUE_AGENTS, CRITIQUE_SIZES, critiqueBrief, critiqueTemplates} from "../domain/critique.js";
 import {route} from "../route.js";
 import Btn from "../kit/Btn.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
@@ -11,11 +12,8 @@ const props = defineProps({plan: {type: Object, required: true}});
 const emit = defineEmits(["close"]);
 const scope = useScope();
 
-const AGENTS = [1, 2, 3, 5];
-const SIZES = ["a quick look", "a normal read", "a thorough review"];
-
 const agents = ref(2);
-const size = ref(SIZES[1]);
+const size = ref(CRITIQUE_SIZES[1]);
 const template = ref(0);
 const templates = ref([]);
 const sending = ref(false);
@@ -29,15 +27,12 @@ const templateChoices = computed(() => [
 
 onMounted(async () => {
     const rows = await scope.api.all("template").catch(() => []);
-    templates.value = rows.filter((t) => !t.completed && !t.deleted && t.data?.purpose === "critique");
+    templates.value = critiqueTemplates(rows);
 });
 
 async function send() {
     sending.value = true;
-    const guide = picked.value ? `, following template ${picked.value.n} (${picked.value.title})` : "";
-    const brief =
-        `Please have ${agents.value === 1 ? "one agent" : `${agents.value} agents`} give plan ${props.plan.n} ${size.value}${guide}, ` +
-        `and compile what they find into a report linked to the plan.`;
+    const brief = critiqueBrief({agents: agents.value, size: size.value, plan: props.plan, template: picked.value});
     try {
         await sendMessage(scope.env || route.value.env, {brief, about: props.plan.ref});
         emit("close");
@@ -51,9 +46,9 @@ async function send() {
     <Dialog title="Ask for a critique" @close="emit('close')">
         <p class="plan">plan {{ plan.n }} · {{ plan.title }}</p>
         <p class="label">How many agents</p>
-        <ChoiceList :choices="choices(AGENTS, agents)" @pick="(v) => (agents = v)" />
+        <ChoiceList :choices="choices(CRITIQUE_AGENTS, agents)" @pick="(v) => (agents = v)" />
         <p class="label">How thorough</p>
-        <ChoiceList :choices="choices(SIZES, size)" @pick="(v) => (size = v)" />
+        <ChoiceList :choices="choices(CRITIQUE_SIZES, size)" @pick="(v) => (size = v)" />
         <p class="label">Template</p>
         <ChoiceList :choices="templateChoices" @pick="(v) => (template = v)" />
         <template v-if="picked">

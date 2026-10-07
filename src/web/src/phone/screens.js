@@ -1,5 +1,4 @@
 import PhoneKindList from "./PhoneKindList.vue";
-import PhonePlaceSoon from "./PhonePlaceSoon.vue";
 import PhoneSearch from "./PhoneSearch.vue";
 import PhoneAttachedFiles from "./places/PhoneAttachedFiles.vue";
 import PhoneEnvironments from "./places/PhoneEnvironments.vue";
@@ -13,7 +12,6 @@ import {SETTINGS_SCREENS} from "./settings/screens.js";
 
 export const SCREENS = {
     list: PhoneKindList,
-    place: PhonePlaceSoon,
     search: PhoneSearch,
     organization: PhoneOrganization,
     journals: PhoneJournals,

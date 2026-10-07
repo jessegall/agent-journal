@@ -96,7 +96,7 @@ defineExpose({close});
             <button type="button" class="sheet-backdrop" aria-hidden="true" tabindex="-1" :style="{opacity: shade}" @click="tapped" />
             <div
                 ref="sheet"
-                :class="['sheet', {large: large || tall, dragging, leaving, nudged}]"
+                :class="['sheet', {large: large || tall, fixed: tall, dragging, leaving, nudged}]"
                 role="dialog"
                 aria-modal="true"
                 :aria-label="label"
@@ -175,6 +175,10 @@ defineExpose({close});
 
 .sheet.large {
     max-height: calc(100dvh * 0.92);
+}
+
+.sheet.fixed {
+    height: calc(100dvh * 0.92);
 }
 
 .sheet.dragging {

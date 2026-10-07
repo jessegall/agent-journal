@@ -4,6 +4,7 @@ import {pluginFrom} from "../../composables/plugins.js";
 import {pluginRequest} from "../../domain/plugins.js";
 import {usePluginInstall} from "../../composables/pluginInstall.js";
 import ActionSheet from "../kit/ActionSheet.vue";
+import Button from "../kit/Button.vue";
 import Cell from "../kit/Cell.vue";
 import ListScreen from "../kit/ListScreen.vue";
 import {newestFirst} from "../kit/listed.js";
@@ -48,7 +49,7 @@ function make(wish) {
             <Cell :label="row.title" :sub="pluginFrom(row).description" :count="pluginFrom(row).enabled ? pluginFrom(row).version : 'Off'" @pick="emit('open', `plugin:${row.n}`)" />
         </template>
         <template #foot>
-            <button type="button" class="plugins-add" @click="adding = true">Add a plugin</button>
+            <Button fill @click="adding = true">Add a plugin</Button>
         </template>
     </ListScreen>
     <template v-if="adding">
@@ -85,15 +86,3 @@ function make(wish) {
         />
     </template>
 </template>
-
-<style scoped>
-.plugins-add {
-    min-height: 44px;
-    width: 100%;
-    border: 0;
-    border-radius: 12px;
-    background: var(--accent);
-    color: #fff;
-    font: inherit;
-}
-</style>

@@ -33,6 +33,7 @@ import PhoneReaderBar from "./PhoneReaderBar.vue";
 import PhoneReaderFacts from "./PhoneReaderFacts.vue";
 import PhoneReaderPhases from "./PhoneReaderPhases.vue";
 import PhoneReaderReview from "./PhoneReaderReview.vue";
+import {critiqueBrief} from "../domain/critique.js";
 import {DEPTHS, SIZES} from "./readerChoices.js";
 
 const props = defineProps({
@@ -80,13 +81,10 @@ async function pressed() {
 const reviewing = ref(false);
 const agents = ref(2);
 const depth = ref(DEPTHS[1]);
+const template = ref(null);
 
 async function review() {
-    const who = agents.value === 1 ? "one agent" : `${agents.value} agents`;
-    hold(
-        `Please have ${who} give plan ${row.value.n} ${depth.value}, and compile what they find into a report linked to the plan.`,
-        `plan:${row.value.n}`
-    );
+    hold(critiqueBrief({agents: agents.value, size: depth.value, plan: row.value, template: template.value}), `plan:${row.value.n}`);
     reviewing.value = false;
     tell(notice, "Asked for a review. The findings come back as a report linked to this plan.");
     try {
@@ -329,7 +327,7 @@ onMounted(async () => {
                     <Btn kind="plain" large @click="reviewing = true">Ask for a review</Btn>
                 </template>
                 <template v-if="row.type === 'plan' && reviewing">
-                    <PhoneReaderReview v-model:agents="agents" v-model:depth="depth" @review="review" />
+                    <PhoneReaderReview v-model:agents="agents" v-model:depth="depth" v-model:template="template" @review="review" />
                 </template>
             </footer>
         </template>

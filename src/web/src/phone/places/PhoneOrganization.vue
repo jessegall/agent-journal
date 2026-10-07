@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
+import Button from "../kit/Button.vue";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
 import EmptyList from "../kit/EmptyList.vue";
@@ -117,7 +118,7 @@ const workingRef = (agent) => (agent.plan ? `plan:${agent.plan}` : `ticket:${age
             </template>
         </template>
         <template v-if="domains && domains.length && !domain" #foot>
-            <button type="button" class="org-draft" :disabled="asked" @click="draft(ANOTHER)">Ask the agent to draft a domain</button>
+            <Button kind="plain" fill :disabled="asked" @click="draft(ANOTHER)">Ask the agent to draft a domain</Button>
         </template>
     </PlaceScreen>
 </template>
@@ -127,20 +128,5 @@ const workingRef = (agent) => (agent.plan ? `plan:${agent.plan}` : `ticket:${age
     margin: 12px 4px 0;
     color: var(--text-3);
     font-size: 0.8125rem;
-}
-
-.org-draft {
-    width: 100%;
-    min-height: 44px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--sel);
-    color: var(--accent-text);
-    font: inherit;
-    font-weight: 600;
-}
-
-.org-draft:disabled {
-    opacity: 0.5;
 }
 </style>

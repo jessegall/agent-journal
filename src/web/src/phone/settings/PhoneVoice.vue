@@ -3,8 +3,10 @@ import {computed, onMounted, ref, watch} from "vue";
 import {saveSettings} from "../../actions/settings.js";
 import {callings, loadProfiles} from "../../composables/profiles.js";
 import {store} from "../../state/store.js";
+import Button from "../kit/Button.vue";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
+import Field from "../kit/Field.vue";
 import {toast} from "../kit/toast.js";
 
 const emit = defineEmits(["open"]);
@@ -31,16 +33,10 @@ onMounted(() => loadProfiles().catch(() => {}));
 </script>
 
 <template>
-    <label class="voice-field">
-        <span>Your title</span>
-        <input v-model="title" type="text" />
-    </label>
-    <label class="voice-field">
-        <span>Your name</span>
-        <input v-model="name" type="text" />
-    </label>
+    <Field v-model="title" class="voice-field" label="Your title" />
+    <Field v-model="name" class="voice-field" label="Your name" />
     <p class="voice-foot">Profiles that use your title and name call you “{{ callings["title and name"] }}”.</p>
-    <button type="button" class="voice-save" :disabled="busy" @click="save">Save</button>
+    <Button class="voice-save" fill :busy="busy" @click="save">Save</Button>
     <CellGroup>
         <Cell label="Profiles" sub="How the agent writes to you" icon="smile" @pick="emit('open', 'list:profile')" />
     </CellGroup>
@@ -52,24 +48,6 @@ onMounted(() => loadProfiles().catch(() => {}));
     margin-bottom: 12px;
 }
 
-.voice-field span {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--text-3);
-    font-size: 0.8125rem;
-}
-
-.voice-field input {
-    width: 100%;
-    min-height: 44px;
-    padding: 0 12px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--raised);
-    color: var(--text);
-    font: inherit;
-}
-
 .voice-foot {
     margin: -4px 4px 14px;
     color: var(--text-3);
@@ -77,13 +55,6 @@ onMounted(() => loadProfiles().catch(() => {}));
 }
 
 .voice-save {
-    width: 100%;
-    min-height: 44px;
     margin-bottom: 18px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--accent);
-    color: #fff;
-    font: inherit;
 }
 </style>

@@ -2,6 +2,7 @@ import {api} from "../api/client.js";
 import {phone} from "../api/phone.js";
 import {closeWord, meta, SHARED} from "../domain/spec.js";
 import {shiftQuestion} from "../board/moves.js";
+import {stopLinksOf} from "../composables/shares.js";
 import {kindWord} from "./kinds.js";
 import {place} from "./outbox.js";
 import {todoLane} from "./todo.js";
@@ -112,6 +113,7 @@ const ORDER = [
     "shift",
     "after",
     "share",
+    "unshare",
     "plan",
     "collect",
     "link",
@@ -400,6 +402,14 @@ const EXTRA = [
         result: () => "Added to the collection",
     },
     {key: "share", label: "Share", when: (row) => SHARED.includes(row.type), share: true},
+    {
+        key: "unshare",
+        label: "Stop sharing",
+        when: (row) => SHARED.includes(row.type),
+        confirm: true,
+        run: (row) => stopLinksOf(row.ref),
+        result: () => "Its links are stopped",
+    },
     {
         key: "plan",
         label: "Make a plan from it",
