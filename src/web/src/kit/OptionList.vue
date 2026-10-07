@@ -1,8 +1,10 @@
 <script setup>
 import {computed, ref, useSlots} from "vue";
 import {useHeldSend} from "../composables/heldSend.js";
+import {usePressing} from "../composables/pressing.js";
 import Btn from "./Btn.vue";
 import PickTag from "./PickTag.vue";
+import Spinner from "./Spinner.vue";
 
 const props = defineProps({
     options: {type: Array, default: () => []},
@@ -27,7 +29,9 @@ const ticked = ref([]);
 const isChosen = (o) => (props.chosen && props.chosen === o.title) || props.chosenMany.includes(o.title);
 const tick = (i) => (ticked.value = ticked.value.includes(i) ? ticked.value.filter((t) => t !== i) : [...ticked.value, i]);
 const settle = () => ticked.value.length && props.send([...ticked.value].sort((a, b) => a - b).map((i) => props.options[i].title));
-const pressed = ref(-1);
+const {pressing, run} = usePressing();
+const sent = ref("");
+const pressed = computed(() => pressing.value || sent.value);
 const {
     value: holding,
     left,
@@ -46,13 +50,9 @@ const heldSlot = (title) => Boolean(slots.held) && holding.value === title;
 const heldOwn = computed(() => holding.value !== null && !props.options.some((o) => o.title === holding.value));
 
 async function press(i) {
-    if (pressed.value >= 0) return;
-    pressed.value = i;
-    try {
-        await props.send(props.options[i].title);
-    } catch {
-        pressed.value = -1;
-    }
+    const title = props.options[i].title;
+    if (pressed.value) return;
+    if (await run(title, () => props.send(title))) sent.value = title;
 }
 
 function choose(i) {
@@ -81,11 +81,11 @@ defineExpose({undo});
                             chosen: isChosen(o),
                             ticked: multiple && ticked.includes(i),
                             holding: holding === o.title,
-                            pressed: pressed === i,
+                            pressed: pressed === o.title,
                         },
                     ]"
                     :style="{'--i': i}"
-                    :disabled="disabled"
+                    :disabled="disabled || Boolean(pressed && pressed !== o.title)"
                     @click="choose(i)"
                 >
                     <template v-if="tiles">
@@ -100,7 +100,12 @@ defineExpose({undo});
                     <template v-if="chosen && chosen === o.title">
                         <PickTag class="pick">{{ chosenBy === "agent" ? "The agent's answer" : "Your answer" }}</PickTag>
                     </template>
-                    <span class="label">{{ o.title }}</span>
+                    <span class="label">
+                        <template v-if="pressing === o.title">
+                            <Spinner />
+                        </template>
+                        {{ o.title }}
+                    </span>
                     <template v-if="o.description">
                         <span class="desc">{{ o.description }}</span>
                     </template>

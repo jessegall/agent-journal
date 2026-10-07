@@ -60,3 +60,22 @@ test("a failed press restores the options and says the error plainly", async () 
     expect(button("Ship it").disabled).toBe(false);
     expect(into.querySelector(".error").textContent).toContain("The server is down");
 });
+
+test("a pressed question option shows a spinner and the others wait before the answer is sent, and a failure restores them", async () => {
+    const {default: OptionList} = await import("../src/kit/OptionList.vue");
+    let fail;
+    const send = vi.fn(() => new Promise((_, reject) => (fail = reject)));
+    const into = document.createElement("div");
+    document.body.append(into);
+    createApp(OptionList, {options: [{title: "Yes"}, {title: "No"}], send, immediate: true}).mount(into);
+    const button = (label) => [...into.querySelectorAll("button")].find((b) => b.textContent.includes(label));
+    button("Yes").click();
+    await flush();
+    expect(send).toHaveBeenCalledWith("Yes");
+    expect(button("Yes").querySelector(".spinner")).not.toBeNull();
+    expect(button("No").disabled).toBe(true);
+    fail(new Error("down"));
+    await flush();
+    expect(button("Yes").querySelector(".spinner")).toBeNull();
+    expect(button("No").disabled).toBe(false);
+});
