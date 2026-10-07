@@ -1,5 +1,5 @@
 import {runScenarios} from "../harness.mjs";
-import {allowRuns, home, PAIR, PHONE, pairedState, SHOWN, tab} from "./paired.mjs";
+import {allowOnComputer, allowRuns, home, PAIR, PHONE, pairedState, SHOWN, tab} from "./paired.mjs";
 
 const state = await pairedState();
 const sheet = (page) => page.getByRole("dialog");
@@ -51,7 +51,11 @@ await runScenarios(
             await top(page).getByRole("button", {name: /^Run a command/}).click();
             await sheet(page).getByLabel("Command").fill("npm test");
             const unlocked = page.waitForResponse((got) => /\/shell$/.test(got.url()) && Boolean(got.request().headers()["x-phone-unlock"]));
+            const held = page.waitForResponse((got) => /\/p\/passkey$/.test(got.url()));
             await sheet(page).getByRole("button", {name: "Run", exact: true}).click();
+            await held;
+            await page.getByRole("dialog", {name: "Allow Face ID on your computer"}).waitFor({timeout: SHOWN});
+            await allowOnComputer(page);
             await unlocked;
             const [refused, passed] = shells;
             if (refused?.[0] !== 428 || refused[1] || !passed?.[1] || [403, 428].includes(passed[0])) throw new Error(`the terminal was answered: ${JSON.stringify(shells)}`);

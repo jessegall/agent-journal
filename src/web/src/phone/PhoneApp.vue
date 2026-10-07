@@ -15,7 +15,7 @@ import {useKeyboard} from "./keyboard.js";
 import {usePoll} from "../composables/poll.js";
 import {runsAllowed} from "./runs.js";
 import PhoneUnlockSheet from "./PhoneUnlockSheet.vue";
-import {asking, enrolled, unlockable, unlocked} from "./unlock.js";
+import {allowing, asking, enrolled, unlockable, unlocked} from "./unlock.js";
 import {store} from "../state/store.js";
 
 const OPEN = "open=";
@@ -187,7 +187,7 @@ onUnmounted(() => {
                 </div>
             </template>
         </SwitchCase>
-        <template v-if="asking">
+        <template v-if="asking || allowing">
             <PhoneUnlockSheet />
         </template>
     </main>

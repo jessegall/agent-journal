@@ -1,7 +1,7 @@
 <script setup>
 import PhoneSheet from "./PhoneSheet.vue";
 import Cell from "./kit/Cell.vue";
-import {asking} from "./unlock.js";
+import {allowing, asking} from "./unlock.js";
 
 let picked = false;
 
@@ -19,13 +19,24 @@ function closed() {
 </script>
 
 <template>
-    <PhoneSheet v-slot="{close}" label="Unlock to run a command" @close="closed">
-        <h2 class="unlock-title">Unlock to run a command</h2>
-        <p class="unlock-sub">A command runs on your computer only right after this phone unlocks again.</p>
-        <div class="unlock-group">
-            <Cell :label="asking.label" icon="lock" :chevron="false" @pick="unlock(close)" />
-        </div>
-    </PhoneSheet>
+    <template v-if="allowing">
+        <PhoneSheet label="Allow Face ID on your computer" @close="allowing?.cancel()">
+            <h2 class="unlock-title">Allow Face ID on your computer</h2>
+            <p class="unlock-sub">
+                On your computer, the journal's chat asks to set up Face ID for this phone. Press Allow there within two minutes; then this
+                phone unlocks and the command runs.
+            </p>
+        </PhoneSheet>
+    </template>
+    <template v-else>
+        <PhoneSheet v-slot="{close}" label="Unlock to run a command" @close="closed">
+            <h2 class="unlock-title">Unlock to run a command</h2>
+            <p class="unlock-sub">A command runs on your computer only right after this phone unlocks again.</p>
+            <div class="unlock-group">
+                <Cell :label="asking.label" icon="lock" :chevron="false" @pick="unlock(close)" />
+            </div>
+        </PhoneSheet>
+    </template>
 </template>
 
 <style scoped>

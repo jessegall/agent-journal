@@ -3,7 +3,11 @@ import {phone} from "../api/phone.js";
 
 export const enrolled = ref(false);
 export const asking = ref(null);
+export const allowing = ref(null);
 export const NOT_UNLOCKED = "Nothing ran: the phone was not unlocked.";
+export const NOT_ALLOWED = "Nothing ran: Face ID for this phone was not allowed on your computer.";
+
+const ALLOW_POLL_MS = 2000;
 
 const bytes = (text) => Uint8Array.from(atob(text.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
 const text = (buffer) =>
@@ -45,8 +49,25 @@ async function enrol() {
     const made = await withFace("Set up Face ID or the passcode for commands", () =>
         navigator.credentials.create({publicKey: {...asked, challenge: bytes(asked.challenge), user: {...asked.user, id: bytes(asked.user.id)}}})
     );
-    await phone.passkey({client_data: text(made.response.clientDataJSON), attestation: text(made.response.attestationObject)});
+    const held = await phone.passkey({client_data: text(made.response.clientDataJSON), attestation: text(made.response.attestationObject)});
+    await allowedOnComputer(Date.now() + held.allow_within * 1000);
     enrolled.value = true;
+}
+
+async function allowedOnComputer(until) {
+    let cancelled = false;
+    allowing.value = {cancel: () => (cancelled = true)};
+    try {
+        while (!cancelled && Date.now() < until) {
+            await new Promise((resolve) => setTimeout(resolve, ALLOW_POLL_MS));
+            const now = await phone.state();
+            if (now.passkey) return;
+            if (!now.passkey_asked) break;
+        }
+        throw new Error(NOT_ALLOWED);
+    } finally {
+        allowing.value = null;
+    }
 }
 
 export async function unlocked(method, url, body) {

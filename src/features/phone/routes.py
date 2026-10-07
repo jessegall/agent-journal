@@ -1,6 +1,7 @@
 import json
 import mimetypes
 import re
+import time
 from urllib.parse import parse_qs, quote, urlsplit
 from dataclasses import asdict, dataclass
 from typing import TypedDict
@@ -159,6 +160,7 @@ class Connection(TypedDict):
     project: str
     color: str
     passkey: bool
+    passkey_asked: bool
 
 
 def made(row) -> dict:
@@ -187,7 +189,7 @@ def read_body(phones: Phones, phone, rest: list[str], query: dict[str, list[str]
     if rest == ["state"]:
         known = identity(surface.home.root)
         return Connection(phone=phone.title, n=phone.n, environment=phone.environment, expires=phone.expires, home=phone.home,
-                          project=known["project"], color=known["color"], passkey=bool(phone.passkey))
+                          project=known["project"], color=known["color"], passkey=bool(phone.passkey), passkey_asked=phone.waiting_passkey.waits(time.time()))
     if rest == ["feed"]:
         try:
             return {**surface.feed(float(asked.get("before", "inf"))), "build": built()}
@@ -310,7 +312,7 @@ class PhoneRoutes:
     def acts(self, handler, phones: Phones, phone, body: dict) -> dict:
         surface = PhoneSurface(phones, phone)
         return {"passkey/begin": lambda: phones._enrolling(phone, self.relying(handler)),
-                "passkey": lambda: {"passkey": bool(phones._enrol(phone, self.relying(handler), Enrolment.from_json(body)).passkey)},
+                "passkey": lambda: {"passkey": False, "allow_within": round(phones._enrol(phone, self.relying(handler), Enrolment.from_json(body)).until - time.time())},
                 "unlock/begin": lambda: phones._unlocking(phone, self.relying(handler), Unlocking.from_json(body).request),
                 "unlock": lambda: {"unlock": phones._unlock(phone, self.relying(handler), Assertion.from_json(body))},
                 "pause": lambda: done("pause", surface.pause()),
