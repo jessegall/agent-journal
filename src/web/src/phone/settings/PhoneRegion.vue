@@ -6,6 +6,8 @@ import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
 import EmptyList from "../kit/EmptyList.vue";
 import PhoneAbout from "./PhoneAbout.vue";
+import PhoneChatShows from "./PhoneChatShows.vue";
+import PhoneColorScheme from "./PhoneColorScheme.vue";
 import PhoneAlerts from "./PhoneAlerts.vue";
 import PhoneGroupRows from "./PhoneGroupRows.vue";
 import PhonePage from "./PhonePage.vue";
@@ -73,6 +75,12 @@ onMounted(() => loaded.value || loadCatalog());
             </template>
             <template #pluginsettings>
                 <PhonePluginSettings @open="emit('open', $event)" />
+            </template>
+            <template #chatshows>
+                <PhoneChatShows />
+            </template>
+            <template #scheme>
+                <PhoneColorScheme />
             </template>
             <template #voice>
                 <PhoneVoice @open="emit('open', $event)" />
