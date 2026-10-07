@@ -2,7 +2,8 @@
 import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Notice from "../kit/Notice.vue";
-import {onMounted, ref} from "vue";
+import SwitchCase from "../kit/SwitchCase.vue";
+import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 
@@ -26,6 +27,9 @@ async function run(action) {
 
 const force = () => run(() => api.forceAgent(props.notice.data.session));
 const permit = (allow) => run(() => api.permitAgent(props.notice.data.session, allow));
+const allowPasskey = () => run(() => api.allowPhonePasskey(props.notice.data.phone));
+const refusePasskey = () => run(() => api.refusePhonePasskey(props.notice.data.phone));
+const controls = computed(() => props.notice.data.action || "none");
 
 const ARMED_AFTER = 1500;
 const armed = ref(false);
@@ -43,13 +47,24 @@ async function close() {
         <template v-if="notice.data.link">
             <a class="chat-notice-go" :href="notice.data.link" target="_blank" rel="noopener">{{ notice.data.label || "open" }}</a>
         </template>
-        <template v-if="notice.data.action === 'permission' && notice.data.session">
-            <Btn small :disabled="working" @click="permit(true)">Allow</Btn>
-            <Btn small :disabled="working" @click="permit(false)">Deny</Btn>
-        </template>
-        <template v-else-if="notice.data.action && notice.data.session">
-            <Btn small :busy="working" @click="force">Send now</Btn>
-        </template>
+        <SwitchCase :value="controls">
+            <template #none />
+            <template #permission>
+                <template v-if="notice.data.session">
+                    <Btn small :disabled="working" @click="permit(true)">Allow</Btn>
+                    <Btn small :disabled="working" @click="permit(false)">Deny</Btn>
+                </template>
+            </template>
+            <template #passkey>
+                <Btn small :disabled="working" @click="allowPasskey">Allow</Btn>
+                <Btn small :disabled="working" @click="refusePasskey">Refuse</Btn>
+            </template>
+            <template #default>
+                <template v-if="notice.data.session">
+                    <Btn small :busy="working" @click="force">Send now</Btn>
+                </template>
+            </template>
+        </SwitchCase>
         <template v-if="!fixed">
             <CloseButton :class="{unarmed: !armed}" :disabled="working" title="Close this" @click="close" />
         </template>

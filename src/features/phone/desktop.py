@@ -2,7 +2,7 @@ from http.client import HTTPConnection, HTTPException
 from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit
 
 from engine.viewer import lately_running
-from features.routing import JSON, PHONE_ENVIRONMENT
+from features.routing import JSON, PHONE_ENVIRONMENT, PHONE_UNLOCKED
 from features.sharing.page import disposition
 from features.sharing.server import APP_HEADERS
 
@@ -22,9 +22,10 @@ def encoded(asked) -> str:
 class Desktop:
     """The desktop viewer's /api on this computer, reached for a paired phone in its own environment."""
 
-    def __init__(self, handler, environment: str) -> None:
+    def __init__(self, handler, environment: str, unlocked: bool) -> None:
         self.handler = handler
         self.environment = environment
+        self.unlocked = unlocked
 
     def forward(self, body: bytes) -> None:
         reached = urlsplit(lately_running(self.handler.shares.record.root))
@@ -49,7 +50,7 @@ class Desktop:
 
     def carried(self) -> dict:
         given = {name: self.handler.headers[name] for name in CARRIED if name in self.handler.headers}
-        return {**given, PHONE_ENVIRONMENT: self.environment}
+        return {**given, PHONE_ENVIRONMENT: self.environment, PHONE_UNLOCKED: "1" if self.unlocked else "0"}
 
     def stream(self, reply, headers: dict) -> None:
         self.handler.send_response(reply.status)

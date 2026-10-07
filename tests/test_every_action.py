@@ -54,7 +54,7 @@ CALLS = {
     "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
     "extension": [], "tunnelLogin": [{"endpoint": "127.0.0.1:9", "username": "walker", "password": "a password"}],
     "tunnelLogout": [], "tunlerVersion": [], "updateTunler": [], "installTunler": ["127.0.0.1:9"], "tunnelAnswering": [],
-    "tunnelDomains": [], "tunnelRelease": ["walk.127.0.0.1"], "tunnelReaddress": [], "tunnelCause": [], "restartTunnel": [], "connectPhone": [7], "disconnectPhone": [1],
+    "tunnelDomains": [], "tunnelRelease": ["walk.127.0.0.1"], "tunnelReaddress": [], "tunnelCause": [], "restartTunnel": [], "connectPhone": [7], "disconnectPhone": [1], "allowPhonePasskey": [1], "refusePhonePasskey": [1],
     "shareLayout": ["a layout", {"panels": []}], "services": [], "serviceLog": ["sharing.server"], "setService": ["sharing.server", "up"],
     "pluginDashboard": [1, "main"], "pluginLog": ["works"], "onlineAgents": [], "agentControls": ["claude"], "agentHooks": ["claude"],
     "saveAgentHooks": ["claude", {}], "list": ["todo"], "all": ["todo"], "dashboard": [["todo", "plan"]], "show": ["todo", 1],

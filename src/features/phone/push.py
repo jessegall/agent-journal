@@ -13,6 +13,7 @@ from engine.stored import read_json, write_json
 
 P = 0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF
 A = P - 3
+B = 0x5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B
 N = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
 G = (0x6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296, 0x4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5)
 KEYS_FILE = "phone-push.json"
@@ -92,9 +93,19 @@ class Keys:
         return f"{signed}.{unpadded(self.signed(signed.encode()))}"
 
 
+def on_curve(public: bytes) -> bool:
+    """Whether an uncompressed public key is a point of P-256."""
+    if len(public) != 65 or public[0] != 4:
+        return False
+    x, y = int.from_bytes(public[1:33], "big"), int.from_bytes(public[33:], "big")
+    return x < P and y < P and (y * y - x * x * x - A * x - B) % P == 0
+
+
 def verified(public: bytes, message: bytes, signature: bytes) -> bool:
-    point = (int.from_bytes(public[1:33], "big"), int.from_bytes(public[33:], "big"))
     r, s = int.from_bytes(signature[:32], "big"), int.from_bytes(signature[32:], "big")
+    if not on_curve(public) or len(signature) != 64 or not (0 < r < N and 0 < s < N):
+        return False
+    point = (int.from_bytes(public[1:33], "big"), int.from_bytes(public[33:], "big"))
     digest = int.from_bytes(hashlib.sha256(message).digest(), "big")
     inverse = pow(s, -1, N)
     found = added(times(digest * inverse % N, G), times(r * inverse % N, point))

@@ -3,6 +3,7 @@ const UPLOAD_WAIT_MS = 300000;
 export const LONG_WAIT_MS = 600000;
 const RELOAD_TRIES = 6;
 const RELOAD_PAUSE_MS = 500;
+const LOCKED = 428;
 
 const failure = (status, message) => Object.assign(new Error(message), {status});
 
@@ -12,6 +13,8 @@ export async function answered(response, fallback, failed = failure) {
     return body;
 }
 
+const payload = (body) => (body === undefined || body instanceof FormData ? body : JSON.stringify(body));
+
 class Transport {
     constructor() {
         this.flying = new Map();
@@ -20,6 +23,11 @@ class Transport {
         this.watcher = () => {};
         this.tries = RELOAD_TRIES;
         this.carried = {};
+        this.unlocker = null;
+    }
+
+    unlockWith(fn) {
+        this.unlocker = fn;
     }
 
     carry(headers) {
@@ -43,26 +51,32 @@ class Transport {
         this.written = fn;
     }
 
-    async reach(method, url, body, wait, tries) {
+    async reach(method, url, body, wait, tries, unlocked = {}) {
         const raw = body instanceof FormData;
         try {
             return await fetch(url, {
                 method,
-                headers: body === undefined || raw ? this.carried : {...this.carried, "Content-Type": "application/json"},
-                body: body === undefined || raw ? body : JSON.stringify(body),
+                headers: {...this.carried, ...unlocked, ...(body === undefined || raw ? {} : {"Content-Type": "application/json"})},
+                body: payload(body),
                 signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : WAIT_MS)),
             });
         } catch (error) {
             if (method !== "GET" || !(error instanceof TypeError) || tries <= 1) throw error;
             await new Promise((resolve) => setTimeout(resolve, RELOAD_PAUSE_MS));
-            return this.reach(method, url, body, wait, tries - 1);
+            return this.reach(method, url, body, wait, tries - 1, unlocked);
         }
     }
 
     async send(method, url, body, wait = 0, tries = RELOAD_TRIES) {
         this.watcher("sent", method, url, body);
-        const res = await this.reach(method, url, body, wait, tries).finally(() => this.watcher("answered", method, url, body));
+        const res = await this.reach(method, url, body, wait, tries)
+            .then((got) => (got.status === LOCKED && this.unlocker ? this.unlockedReach(method, url, body, wait, tries) : got))
+            .finally(() => this.watcher("answered", method, url, body));
         return answered(res, `${res.status} ${res.statusText}`);
+    }
+
+    async unlockedReach(method, url, body, wait, tries) {
+        return this.reach(method, url, body, wait, tries, await this.unlocker(method, url, payload(body)));
     }
 
     request(method, url, body, wait = 0) {

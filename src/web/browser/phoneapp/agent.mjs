@@ -1,5 +1,5 @@
 import {runScenarios} from "../harness.mjs";
-import {allowRuns, home, PAIR, PHONE, pairedState, SHOWN, tab} from "./paired.mjs";
+import {allowOnComputer, allowRuns, home, PAIR, PHONE, pairedState, SHOWN, tab} from "./paired.mjs";
 
 const state = await pairedState();
 const sheet = (page) => page.getByRole("dialog");
@@ -36,23 +36,29 @@ await runScenarios(
             await more(page, "Skills loaded");
             await top(page).getByRole("button", {name: /^journal/}).waitFor({timeout: SHOWN});
         },
-        async "the agent's terminal offers no command while the phone may not run commands"(page) {
+        async "the agent's terminal offers no command on a phone that cannot ask for Face ID"(page) {
             await more(page, "Agent terminal");
             await top(page).getByText("Nothing has run yet.").waitFor({timeout: SHOWN});
             if (await top(page).getByRole("button", {name: /^Run a command/}).count()) throw new Error("the terminal offers a command the phone may not run");
-            await top(page).getByText("Running commands from the phone is off. Do it on your computer.").waitFor({timeout: SHOWN});
+            await top(page).getByText("This phone or browser cannot ask for Face ID or a passcode, so commands run only on your computer.").waitFor({timeout: SHOWN});
         },
-        async "the agent's terminal queues a command"(page) {
+        async "a command reaches the computer only after Face ID unlocks the phone"(page) {
             await allowRuns(page);
-            const sent = [];
-            await page.route(/\/shell$/, (route) => (sent.push(route.request().postDataJSON()), route.fulfill({status: 200, body: "{}"})));
+            const shells = [];
+            page.on("response", (got) => /\/shell$/.test(got.url()) && shells.push([got.status(), Boolean(got.request().headers()["x-phone-unlock"])]));
             await more(page, "Agent terminal");
             await top(page).getByText("Nothing has run yet.").waitFor({timeout: SHOWN});
             await top(page).getByRole("button", {name: /^Run a command/}).click();
             await sheet(page).getByLabel("Command").fill("npm test");
+            const unlocked = page.waitForResponse((got) => /\/shell$/.test(got.url()) && Boolean(got.request().headers()["x-phone-unlock"]));
+            const held = page.waitForResponse((got) => /\/p\/passkey$/.test(got.url()));
             await sheet(page).getByRole("button", {name: "Run", exact: true}).click();
-            await page.getByText("Runs after the agent's turn: npm test").waitFor({timeout: SHOWN});
-            if (sent[0]?.command !== "npm test") throw new Error(`the terminal was sent: ${JSON.stringify(sent)}`);
+            await held;
+            await page.getByRole("dialog", {name: "Allow Face ID on your computer"}).waitFor({timeout: SHOWN});
+            await allowOnComputer(page);
+            await unlocked;
+            const [refused, passed] = shells;
+            if (refused?.[0] !== 428 || refused[1] || !passed?.[1] || [403, 428].includes(passed[0])) throw new Error(`the terminal was answered: ${JSON.stringify(shells)}`);
         },
         async "the agent terminal shows what ran and runs a waiting command now"(page) {
             await allowRuns(page);
