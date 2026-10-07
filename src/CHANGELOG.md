@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.20 — finishing a helper and a helper's report answer first and do their slow work afterwards
+`journal helper finish` marks the helper finished and answers; packing its environment and dropping its worktree now run right after the answer. `journal helper report` records the report and answers; the message to the dispatcher and the nudge follow. Nothing to do. The walk test in the viewer's tests no longer fails when the background walk ends before the check.
+
 ## 2.253.19 — the manifest and a session start no longer wait on work a change could have done, and the share server formats commands again
 After a feature is switched or an environment is added, the server now rebuilds the command parser and the manifest once, right then, instead of the next viewer request doing it (the manifest took 50 to 100 ms on that request, now about 2 ms). A session start no longer reads every row of every type to look for untagged pictures and videos: it reads only the rows that hold files, which cut the work after a session start from over a second to a fraction of that. The share server's own process was missing the command line since 2.253.17, so a shared page with a journal command in its words logged a formatter error; it is wired again. A plugin that needs a newer journal is now told "needs journal X or newer; this is Y: upgrade the journal" before its keys are checked, so a new key is never refused as unknown. Two sharing tests that failed under load no longer patch the process-wide url opener, platform, clock or sleep, or run a real script, and the share server's clock thread stops with the server. Nothing to do.
 

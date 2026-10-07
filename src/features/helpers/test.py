@@ -251,3 +251,21 @@ def test_a_helper_in_a_checkout_named_unlike_its_environment_can_be_told_somethi
     assert place != "platform"
     answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "SessionStart", "session_id": "ada-session", "cwd": str(project / "platform")}, os.getpid(), place)
     assert Sessions(record.root).holder(place) == "ada-session", "its session binds to the environment it was launched for, so it is found and can be told"
+
+
+def test_a_report_and_a_finish_answer_first_and_do_their_slow_work_after_the_answer(monkeypatch):
+    features.load()
+    started(monkeypatch)
+    record = fresh()
+    Agents(record, actor=SYSTEM).create("claude-1")
+    helpers = Helpers(record, actor=AGENT)
+    helpers.dispatch("Rhea", "Profile the slow hooks", "codex", "gpt-5.5")
+    from engine import bus
+    with bus.held() as queue:
+        Helpers(Record(record.root, f"{record.env}-rhea"), actor=AGENT).report("Done")
+        assert not Messages(record, actor=SYSTEM).all() and Helpers(record, actor=AGENT).load(1).report == "Done", "the answer holds the report, not yet its message"
+        helpers.complete(1)
+        assert Environments(record, actor=SYSTEM).rows.by_title(f"{record.env}-rhea"), "the environment is still unpacked when finish answers"
+    bus.release(queue)
+    assert Messages(record, actor=SYSTEM).all()[-1].brief == "Done", "the message follows the answer"
+    assert not Environments(record, actor=SYSTEM).rows.by_title(f"{record.env}-rhea"), "the packing follows the answer"

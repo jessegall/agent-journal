@@ -150,8 +150,23 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     assert [p.name for p in project_files.project_paths(project)] == [p.name for p in walked] and "guide.txt" in names, "the project is walked once and its files are listed by name"
     assert project_files.walked(project) == (walked, names), "a recent walk is reused"
     project_files.WALKED[str(project)] = (time.time() - project_files.WALK_FOR - 1, walked, names)
+    import threading
+    walking, release, refresher = threading.Event(), threading.Event(), []
+    real_walk = project_files.walk
+
+    def held_walk(folder):
+        refresher.append(threading.current_thread())
+        walking.set()
+        release.wait()
+        return real_walk(folder)
+    monkeypatch.setattr(project_files, "walk", held_walk)
     project_files.walked(project)
+    walking.wait()
     assert str(project) in project_files.WALKING, "an old walk is refreshed in the background"
+    release.set()
+    refresher[0].join()
+    monkeypatch.setattr(project_files, "walk", real_walk)
+    assert str(project) not in project_files.WALKING and project_files.WALKED[str(project)][0] > time.time() - 5, "the refreshed walk is kept and no longer under way"
     assert project_files.matching(project, "guide.txt") == ["docs/guide.txt"] and project_files.matching(project, "./sub/twin.txt") == ["docs/sub/twin.txt"], \
         "a file is found by its name or by the end of its path"
     assert project_files.read_source(project, "guide.txt").text == "one", "a bare file name is found anywhere in the project"
