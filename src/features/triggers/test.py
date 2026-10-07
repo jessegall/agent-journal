@@ -130,6 +130,10 @@ def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_sett
     from types import SimpleNamespace
     assert send(SimpleNamespace(to_primary=lambda: None), (Nudge("line", "behaviour", lambda context, agent: [1]),)) is None, \
         "with no agent to speak to, a nudge says nothing and asks nothing"
+    from features import actions, trigger
+    own = Nudge("line", "behaviour", lambda context, agent: [], timing=trigger.Trigger(unit=trigger.MINUTES, every=1), action=actions.MESSAGE)
+    assert (own.action, bool(own.timing), bool(Nudge("line", "behaviour", lambda context, agent: []).timing)) == (actions.MESSAGE, True, False), \
+        "a nudge keeps its own timing and action, and has neither unless given"
 
 
 def test_every_kind_of_tool_call_says_what_it_is_doing_and_which_words_a_trigger_may_read(monkeypatch):

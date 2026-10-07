@@ -3,7 +3,7 @@ from typing import Callable, ClassVar
 
 from engine.events.agents import AgentReported
 from engine.events.engine import ClockTicked
-from features import trigger
+from features import actions, trigger
 from features.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Handler
 
 
@@ -23,13 +23,15 @@ class Nudge:
     once: bool = False
     most: int = 0
     first: bool = False
+    timing: trigger.Trigger = trigger.NEVER
+    action: str = actions.SAY
 
     def __post_init__(self) -> None:
         if self.first and not self.most:
             raise ValueError(f"nudge {self.line} offers the first row under a cap, so it needs most")
 
     def cadence(self, context) -> trigger.Trigger:
-        cadence = context.feature.cadence(context.record, self.behaviour)
+        cadence = self.timing or context.feature.cadence(context.record, self.behaviour)
         return cadence if self.pace is None else replace(cadence, every=self.pace(context))
 
     def due(self, context, agent) -> list[Sent]:
@@ -54,7 +56,7 @@ def send(context, nudges: tuple) -> None:
         return
     for nudge in nudges:
         for found in nudge.due(speaking, speaking.agent.row):
-            speaking.agent.say(nudge.line, private=nudge.private, **found.values)
+            actions.perform(speaking, speaking.agent.row, nudge.action, nudge.line, nudge.private, **found.values)
 
 
 @dataclass
