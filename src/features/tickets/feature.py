@@ -3,7 +3,7 @@ from features.journal import Journal
 from features.tickets.commands import ShowTicketTodos
 from features.tickets.controller import Tickets
 from features.tickets.details import TicketsDetails
-from features.nudges import Nudge
+from features.nudges.sending import Nudge
 from features.tickets.orchestration import DRAFTS, WAITS
 from features.tickets.handlers import (
     FinishTheBoardWithItsLastTicket,

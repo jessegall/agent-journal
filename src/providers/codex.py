@@ -201,6 +201,7 @@ class ModelControls(TypedDict):
 
 class Codex(Provider):
     name = "codex"
+    follow_up = 'send_input({{id: "{id}", message: "<the new work>"}})'
     question_tools = frozenset({"request_user_input", "request_user_input_async"})
     tool_kinds = {**Provider.tool_kinds, **dict.fromkeys((*SHELL_TOOLS, "apply_patch"), CodexShell), "spawn_agent": AgentCall,
                   "request_user_input": AskCall, "request_user_input_async": AskCall}
@@ -330,7 +331,8 @@ class Codex(Provider):
     def dispatch(self, tool) -> Dispatch | None:
         if not isinstance(tool, AgentCall):
             return None
-        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip(), model_supported=True, models=self.models())
+        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip(), model_supported=True, models=self.models(),
+                        prompt=tool.prompt)
 
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)

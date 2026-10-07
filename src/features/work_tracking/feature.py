@@ -5,18 +5,16 @@ from features.journal import Journal
 from features.work_tracking.auto import steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
-from features.nudges import Nudge
+from features.nudges.sending import Nudge
 from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_ready, stopped_with_work, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import RefuseHeldWrites
 
-OFFERS = 3
-
 
 class WorkFeature(Feature):
     details = WorkDetails
-    nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, most=OFFERS, first=True),
-              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, most=OFFERS, first=True),
+    nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, most=1),
+              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, most=1),
               Nudge("carry on", behaviour="carry on", about=stopped_with_work, once=True),
               Nudge("nothing ready", behaviour="carry on", about=nothing_ready, most=CARRY_ON_TIMES))
 

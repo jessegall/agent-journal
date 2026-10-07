@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import controllers.types as types_module
+import features
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Environments, Messages, Nudges, Todos
@@ -10,6 +11,7 @@ from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared, tell_in
 from features.helper_worktrees.controller import Worktrees
 from features.helpers.resource import Helper
+from features.helpers.reuse import HELPER_KIND, kept, knowing, named_paths, refusal
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
 from controllers.marks import action
@@ -70,8 +72,12 @@ class Helpers(Controller):
     @action(network=True)
     def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False, checkout: str = "",
                  todos: str = "") -> str:
+        census, paths = kept(self.record, self.rows.standing()), named_paths(f"{job}\n{brief}")
+        held_back = refusal(census, int(features.FEATURES["helpers"].values(self.record).kept), HELPER_KIND, paths)
+        if held_back:
+            raise Refused(held_back)
         row = self._dispatched(name, job, provider, model, brief, worktree, checkout, numbers_in(todos))
-        return f"helper {row.n}, {name}, started on {provider} {model}; you are told when it reports"
+        return f"helper {row.n}, {name}, started on {provider} {model}; you are told when it reports{knowing(census, paths)}"
 
     def _dispatched(self, name: str, job: str, provider: str, model: str, brief: str = "", worktree: bool = False, checkout: str = "",
                     todos: tuple[int, ...] = ()):
@@ -189,10 +195,10 @@ class Helpers(Controller):
 
     @staticmethod
     def _relayed(home: Record, row: Helper, text: str, given_back_text: str) -> None:
-        told = Messages(home, actor=AGENT).create(titled(text), brief=f"{text}{given_back_text}", peer=row.name)
-        Nudges(home, actor=SYSTEM).to_primary(titled(f"helper {row.n}, {row.name}, reported in message {told.n}"),
+        message = Messages(home, actor=AGENT).create(titled(text), brief=f"{text}{given_back_text}", peer=row.name)
+        Nudges(home, actor=SYSTEM).to_primary(titled(f"helper {row.n}, {row.name}, reported in message {message.n}"),
                                                f"read it, then journal helper finish {row.n} once its work is taken or dropped",
-                                               asks="helpers.reported", until=["helper.completed"], rows=[row.ref])
+                                               asks="helpers.reported", until=["helper.completed", "helper.deleted"], rows=[row.ref])
 
     @action(network=True)
     def stop(self, n: int):

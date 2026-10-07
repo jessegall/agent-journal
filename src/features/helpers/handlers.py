@@ -21,6 +21,10 @@ class TellAFailedTurnOnChange(OnAgentUpdated, TellAFailedTurn):
     pass
 
 
+def still_unreported(journal, rows: tuple[str, ...]) -> bool:
+    return any(row.ref in rows and not (row.report or row.stopped_by_user) for row in journal.get(Helpers).rows.standing())
+
+
 class NameStoppedOrQuietHelpers(Handler):
     behaviour = "watch"
 
@@ -34,9 +38,9 @@ class NameStoppedOrQuietHelpers(Handler):
             theirs = [s for s in sessions if s.environment == row.environment]
             if row.report or row.stopped_by_user or not theirs:
                 continue
-            heard = max(s.last_heard for s in theirs)
+            last_seen = max(s.last_heard for s in theirs)
             stopped = all(s.pid and not alive(s.pid) for s in theirs)
-            if stopped and speaking.once("helper stopped", f"{row.n}:{heard}"):
+            if stopped and speaking.once("helper stopped", f"{row.n}:{last_seen}"):
                 speaking.agent.say("stopped", n=row.n, name=row.name, rows=[row.ref])
-            elif not stopped and time.time() - heard >= quiet_after and speaking.once("helper quiet", f"{row.n}:{heard}"):
-                speaking.agent.say("quiet", n=row.n, name=row.name, minutes=int((time.time() - heard) // MINUTE))
+            elif not stopped and time.time() - last_seen >= quiet_after and speaking.once("helper quiet", f"{row.n}:{last_seen}"):
+                speaking.agent.say("quiet", n=row.n, name=row.name, minutes=int((time.time() - last_seen) // MINUTE))

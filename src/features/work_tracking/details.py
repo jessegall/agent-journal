@@ -1,10 +1,12 @@
 from features.base import Behaviour, FeatureDetails, Line
+from features.work_tracking.next import still_next, still_stopped
 from features.settings import Setting
 from features.trigger import IDLE, MINUTES, Trigger, WORKED
 from features.groups import Group
 
 STARTED = ("work.created",)
 MOVED = ("work.created", "work.updated", "work.completed")
+ROW_CHANGED = ("todo.updated", "todo.completed", "todo.deleted")
 
 
 class WorkDetails(FeatureDetails):
@@ -152,11 +154,13 @@ class WorkDetails(FeatureDetails):
         Line(
             name="next",
             title="todo {{n}} next",
-            until=STARTED,
+            until=(*STARTED, *ROW_CHANGED),
+            owed=still_next,
         ),
         Line(
             name="next while waiting",
-            until=MOVED,
+            until=(*MOVED, *ROW_CHANGED),
+            owed=still_next,
             title="auto mode is on and work {{work}} stands still while todo {{n}} is ready",
             brief="""
                 if work {{work}} waits on the user, decide it yourself when you can; otherwise put the question on
@@ -177,7 +181,8 @@ class WorkDetails(FeatureDetails):
             name="carry on",
             reply_kept=True,
             until=MOVED,
-            title="you stopped {{minutes}} minutes ago with work {{n}}, {{title}}, in hand",
+            owed=still_stopped,
+            title="you stopped with work {{n}}, {{title}}, in hand",
             brief="""
                 carry on with it now. If it waits on something outside your hands, say journal work await
                 "<what you wait for>"; if it waits on the user, put the question on its row with journal todo ask
