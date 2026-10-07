@@ -17,7 +17,8 @@ def test_a_dump_is_read_and_filed_item_by_item_and_closes_when_every_item_is_set
     agent.note(dump.n, "text", "a transcript of Tuesday's planning meeting")
     named = agent.name(dump.n, "Q3 planning meeting")
     doc, task = Docs(record, actor=AGENT).create("Tuesday's meeting"), Todos(record, actor=AGENT).create("send the recap")
-    agent.filed(dump.n, "text", "summarised into a doc, one follow-up filed", f"{doc.ref}, {task.ref}")
+    agent.filed(dump.n, "text", "summarised into a doc, one follow-up filed", f"{doc.ref}, to-do {task.n}")
+    assert agent.load(dump.n).data["items"]["text"]["refs"] == [doc.ref, task.ref], "a row named the way a person writes it is kept as its ref"
     assert (agent.items(dump.n)[0], set(agent.load(dump.n).refs) >= {doc.ref, task.ref}) == \
         ("text: filed - summarised into a doc, one follow-up filed", True), "filed records what was done and links what it made"
     collection = CONTROLLERS["collection"](record, actor=USER).load(named.n)
@@ -199,6 +200,7 @@ def a_dump_refuses_what_it_cannot_do(record, dump):
     assert "no question waiting" in refused(lambda: user.answer(user.create("Quiet").n, "yes")), "an answer needs a question to answer"
     assert "say what was done" in refused(lambda: agent.filed(dump.n, "Summary", " ")), "a filed item says what was done with it"
     assert "also list in refs" in refused(lambda: agent.filed(dump.n, "Summary", "Filed", refs="doc:1", added="doc:2")), "an item names as added only rows it also lists"
+    assert "names no item" in refused(lambda: agent.filed(dump.n, "Summary", "Filed", refs="commit abc")), "a filed item links rows, never free words"
     assert "say why" in refused(lambda: agent.failed(dump.n, "Summary", " ")), "a failed item says why"
     assert "only the user stops" in refused(lambda: agent.stop(dump.n)), "the agent never stops a dump"
     loose = user.create("Loose")

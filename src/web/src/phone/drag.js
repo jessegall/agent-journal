@@ -22,7 +22,7 @@ function speed(samples) {
     return (last.d - first.d) / (last.t - first.t);
 }
 
-export function useDrag(area, {axis = "x", begin, accepts = () => true, move, end, drop = () => {}}) {
+export function useDrag(area, {axis = "x", begin, accepts = () => true, move, end, drop = () => {}, slip = () => {}}) {
     let touch = null;
 
     const ours = (list) => [...list].find((one) => one.identifier === touch.id);
@@ -43,6 +43,7 @@ export function useDrag(area, {axis = "x", begin, accepts = () => true, move, en
         const d = axis === "y" ? dy : dx;
         if (touch.context.held) return event.preventDefault();
         if (!touch.claimed) {
+            slip(Math.max(Math.abs(dx), Math.abs(dy)), touch.context);
             if (Math.max(Math.abs(dx), Math.abs(dy)) < DECIDE) return;
             const along = Math.abs(axis === "y" ? dy : dx);
             const across = Math.abs(axis === "y" ? dx : dy);

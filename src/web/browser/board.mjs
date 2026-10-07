@@ -7,7 +7,7 @@ async function why(page, question, words, asked = true) {
     const dialog = page.getByRole("dialog", {name: question});
     if (!asked && !(await dialog.waitFor({timeout: 2000}).then(() => true, () => false))) return;
     if (words) await dialog.getByRole("textbox").fill(words);
-    await dialog.getByRole("button", {name: "Move it"}).click();
+    await dialog.getByRole("button", {name: "Move"}).click();
 }
 
 async function openBoard(page, url) {
@@ -24,7 +24,7 @@ await runScenarios(process.argv[2], {
         await openBoard(page, url);
         await lane(page, "To do").locator(".card", {hasText: title}).waitFor();
         await drag(page, card(page, title), lane(page, "Held"));
-        await why(page, "Why is it held?", "waiting on a part");
+        await why(page, "Why is it blocked?", "waiting on a part");
         await lane(page, "Held").locator(".card", {hasText: title}).waitFor();
         await page.reload();
         await page.getByRole("tab", {name: "To-dos"}).click();
@@ -39,7 +39,7 @@ await runScenarios(process.argv[2], {
         await page.keyboard.press("m");
         await page.getByText("Move to").waitFor();
         await page.getByText("Held", {exact: true}).last().click();
-        await why(page, "Why is it held?", "waiting on a part");
+        await why(page, "Why is it blocked?", "waiting on a part");
         await page.getByText(/Moved #\d+ to Held/).waitFor();
         await lane(page, "Held").locator(".card", {hasText: title}).waitFor();
         await page.getByRole("button", {name: "Undo"}).click();
@@ -53,7 +53,7 @@ await runScenarios(process.argv[2], {
         await lane(page, "To do").locator(".card", {hasText: title}).waitFor();
         await page.route(/\/api\/main\/todo\/\d+\//, (route) => route.request().method() !== "POST" ? route.fallback() : route.fulfill({status: 409, contentType: "application/json", body: JSON.stringify({error: "no move today"})}));
         await drag(page, card(page, title), lane(page, "Held"));
-        await why(page, "Why is it held?", "waiting on a part");
+        await why(page, "Why is it blocked?", "waiting on a part");
         await page.getByText(/no move today/).waitFor();
         await lane(page, "To do").locator(".card", {hasText: title}).waitFor();
     },

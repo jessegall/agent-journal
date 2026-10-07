@@ -41,8 +41,9 @@ def names(*columns: str) -> SimpleNamespace:
 
 
 class Field:
-    def __init__(self, spec=None, default=None, name: str = "", required: bool = False):
+    def __init__(self, spec=None, default=None, name: str = "", required: bool = False, runs_commands: bool = False, journal_only: bool = False):
         self.spec, self.default, self.name, self.required = spec, default, name, required
+        self.runs_commands, self.journal_only = runs_commands, journal_only
 
     def __get__(self, obj, owner=None):
         if obj is None:

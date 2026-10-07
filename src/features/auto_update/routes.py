@@ -1,7 +1,7 @@
 import features
 import threading
 from engine import runtime
-from engine.package import code
+from engine.package import data
 from engine.record import Record
 from engine.upgrades import FETCHING, newer, upstream
 from engine.version import version
@@ -9,16 +9,17 @@ from features.routing import Reply, Request, handles
 from resources.base import Refused
 from install import changed_managed, changed_message
 
+CHANGELOG = data("CHANGELOG.md")
+
 
 @handles("GET", "/api/changelog")
 def get_changelog(req: Request) -> Reply:
     from features.auto_update.check import journal_repository
-    log = code(req.root) / "CHANGELOG.md"
-    if not log.is_file():
+    if not CHANGELOG.is_file():
         return Reply(404, {"error": "this install carries no changelog"})
     cache = runtime.upstream_cache(req.root)
     latest = cache.read_text().strip() if cache.is_file() else ""
-    return Reply(200, {"version": version(), "changelog": log.read_text(), "latest": latest, "newer": newer(latest, version()),
+    return Reply(200, {"version": version(), "changelog": CHANGELOG.read_text(), "latest": latest, "newer": newer(latest, version()),
                        "checking": FETCHING.locked(), "updating": runtime.upgrade_mark(req.root).exists(),
                        "repository": journal_repository(req.root.parent)})
 

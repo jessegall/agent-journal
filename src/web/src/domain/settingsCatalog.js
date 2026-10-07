@@ -1,3 +1,5 @@
+export const DIAGNOSTICS_LINE = "Slow pages and errors, saved on your computer for the developer";
+
 export const COUNTED = ["percent", "uses", "minutes"];
 export const EVENTS = ["idle", "worked", "start"];
 
@@ -316,14 +318,14 @@ function looseRows(settings, context) {
                     key: "diagnostics",
                     kind: "buttons",
                     label: "Developer error log",
-                    hint: "Slow requests and errors, saved in .journal/runtime/diagnostics.log",
+                    hint: DIAGNOSTICS_LINE,
                     words: "diagnostics log errors slow",
                     buttons: [{key: "diagnostics", label: "Show the log"}],
                 }),
             ],
         },
         danger: {
-            stop: context.demo
+            stop: !context.stoppable
                 ? []
                 : [
                       row({
@@ -425,4 +427,13 @@ export function navMark(g, searching) {
     if (searching) return {kind: "count", text: String(counted(g))};
     if (g.head && g.head.off) return {kind: "off", text: "Off"};
     return groupRows(g).some((r) => r.changed) ? {kind: "changed", text: ""} : {kind: "", text: ""};
+}
+
+export const resettable = (row) => Boolean(row.changed) && (row.shipped !== undefined || Boolean(row.timing));
+
+export function resets(row) {
+    const steps = [];
+    if (row.shipped !== undefined && !same(row.value, row.shipped)) steps.push(["change", row.shipped]);
+    if (row.timing && row.timing.changed) steps.push(["timing", row.timing.shipped]);
+    return steps;
 }

@@ -12,6 +12,7 @@ import BoardStrips from "./BoardStrips.vue";
 import ShiftPrompt from "./ShiftPrompt.vue";
 import {useBoardShift} from "./boardShift.js";
 import {lens, named, visibleLanes} from "./lanes.js";
+import {shiftQuestion} from "./moves.js";
 
 const props = defineProps({
     text: {type: String, default: ""},
@@ -21,7 +22,6 @@ const props = defineProps({
     notify: {type: Function, required: true},
 });
 const MEANINGS = {doing: "start", asked: "review", done: "done"};
-const ASKS = {held: true, done: true};
 const adding = ref("");
 const asking = ref(null);
 const plans = computed(() => rows("plan").filter((plan) => !plan.completed && !plan.deleted));
@@ -39,7 +39,7 @@ const {moving, shift} = useBoardShift({
 });
 
 function move(card, lane) {
-    if (card.type === "todo" && (ASKS[lane] || (card.lane === "done" && lane === "todo"))) asking.value = {card, lane};
+    if (shiftQuestion(card, lane)) asking.value = {card, lane};
     else return shift(card, lane);
     return null;
 }

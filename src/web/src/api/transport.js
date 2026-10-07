@@ -19,6 +19,11 @@ class Transport {
         this.written = () => {};
         this.watcher = () => {};
         this.tries = RELOAD_TRIES;
+        this.carried = {};
+    }
+
+    carry(headers) {
+        this.carried = headers;
     }
 
     attemptOnce(ask) {
@@ -43,7 +48,7 @@ class Transport {
         try {
             return await fetch(url, {
                 method,
-                headers: body === undefined || raw ? {} : {"Content-Type": "application/json"},
+                headers: body === undefined || raw ? this.carried : {...this.carried, "Content-Type": "application/json"},
                 body: body === undefined || raw ? body : JSON.stringify(body),
                 signal: AbortSignal.timeout(wait || (raw ? UPLOAD_WAIT_MS : WAIT_MS)),
             });

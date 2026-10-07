@@ -23,5 +23,6 @@ const STOPS = {trigger: "It stops running.", sequence: "It stops starting by its
 
 export const closeWord = (type) => NAMED_CLOSES[type] || `Close the ${meta(type).title.toLowerCase()}`;
 export const closeNote = (type) => `Moves it to Closed. ${STOPS[type] ? `${STOPS[type]} ` : ""}You can reopen it.`;
+export const SHARED = ["doc", "collection", "report"];
 export const MENUED = ["rule", "fact", "trigger"];
 export const DELETE_NOTE = "It leaves every list. Its history stays in Activity.";

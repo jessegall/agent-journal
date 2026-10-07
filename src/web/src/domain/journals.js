@@ -143,3 +143,21 @@ export function totalsOf(j) {
 export const projectPath = (j) => j.root.replace(/\/\.journal$/, "");
 
 export const stoppedNote = (j) => (j.running ? "its viewer stopped answering" : `last seen ${ago(j.at)}`);
+
+export const removeWords = (row) =>
+    [
+        row.live ? "An agent is running here." : "",
+        `Removing moves all of ${row.title} into the archive.`,
+        `Bring it back with journal environment unarchive ${row.title}.`,
+    ]
+        .filter(Boolean)
+        .join(" ");
+
+export function sweepWords(reply) {
+    const found = /packs (.+) into the attic/.exec(String(reply));
+    if (!found) return String(reply);
+    if (found[1] === "nothing") return "There is nothing to archive.";
+    return `Archiving moves ${found[1]} into the archive. Facts, rules, reminders, docs and open work stay.`;
+}
+
+export const sentence = (text) => String(text).charAt(0).toUpperCase() + String(text).slice(1) + ".";

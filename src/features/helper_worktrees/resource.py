@@ -11,7 +11,7 @@ class Worktree(Shape, Resource):
         help="journal worktree cut <name> makes one from the working branch's current tip; drift says what that branch gained since, take cherry-picks the helper's commits onto it once the helper has rebased, and drop removes the worktree and its branch.",
     )
     data_fields: ClassVar[list[Field]] = [
-        Field(default="", name="path"),
+        Field(default="", name="path", journal_only=True),
         Field(default="", name="branch"),
         Field(default="", name="working"),
         Field(default="", name="base"),

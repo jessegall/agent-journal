@@ -5,6 +5,7 @@ import {api} from "../api/client.js";
 import {href, route} from "../route.js";
 import {clock} from "../format/time.js";
 import Diff from "../kit/Diff.vue";
+import {renamedTo, statBlocks, statFiles} from "../domain/commits.js";
 
 const commit = ref(null);
 const error = ref("");
@@ -20,28 +21,9 @@ async function load() {
 onMounted(load);
 watch(() => route.value.n, load);
 
-const files = computed(() =>
-    (commit.value ? commit.value.stat : "")
-        .split("\n")
-        .filter((l) => l.includes("|"))
-        .map((l) => {
-            const [path, change] = l.split("|").map((x) => x.trim());
-            return {
-                path,
-                adds: (change.match(/\+/g) || []).length,
-                dels: (change.match(/-/g) || []).length,
-                count: Number(change.split(" ")[0]) || 0,
-            };
-        })
-);
-const BLOCKS = 5;
+const files = computed(() => statFiles(commit.value?.stat));
 const largest = computed(() => Math.max(1, ...files.value.map((f) => f.count)));
-function blocks(f) {
-    const filled = Math.max(f.count ? 1 : 0, Math.round((BLOCKS * f.count) / largest.value));
-    const marks = f.adds + f.dels;
-    const green = marks ? Math.round((filled * f.adds) / marks) : 0;
-    return Array.from({length: BLOCKS}, (_, i) => (i < green ? "adds" : i < filled ? "dels" : "none"));
-}
+const blocks = (f) => statBlocks(f, largest.value);
 </script>
 
 <template>
@@ -61,7 +43,7 @@ function blocks(f) {
             <div class="files">
                 <template v-for="f in files" :key="f.path">
                     <div class="file">
-                        <a class="path" :href="href.file(route.env, f.path.replace(/\{.*=> (.*)\}/, '$1'))" :title="`Open ${f.path}`">
+                        <a class="path" :href="href.file(route.env, renamedTo(f.path))" :title="`Open ${f.path}`">
                             {{ f.path }}
                         </a>
                         <span class="count">{{ f.count }}</span>

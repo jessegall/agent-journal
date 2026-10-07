@@ -15,7 +15,7 @@ from features import running  # noqa: E402
 from features.sharing.controller import HEALTH, HEALTH_MARKER, LAYOUT_FILE  # noqa: E402
 from features.sharing.passwords import unlocked  # noqa: E402
 from features.sharing.visiting import SharedComment  # noqa: E402
-from features.sharing.page import PICTURES, Page, document, unshared  # noqa: E402
+from features.sharing.page import PICTURES, Page, disposition, document, unshared  # noqa: E402
 from features.format import SHARED, formatted
 from features.sharing.preview import card, tags  # noqa: E402
 from features.sharing.routes import ROUTES, TICKS  # noqa: E402
@@ -219,8 +219,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         if found is None:
             return self.page(404, unshared())
         kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
-        inline = found.suffix.lower() in PICTURES
-        headers = {"Content-Type": kind, "Content-Disposition": f"{'inline' if inline else 'attachment'}; filename*=UTF-8''{quote(found.name)}"}
+        headers = {"Content-Type": kind, "Content-Disposition": disposition(found.name)}
         self.send(200, found.read_bytes(), headers)
 
     def asset(self, name: str) -> None:

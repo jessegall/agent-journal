@@ -65,8 +65,11 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return made
 
     def save(self, r: Resource, action: str, **event) -> Resource:
+        from providers import DRIVERS
         if r.board and r.stage not in self._stages(r.board):
             raise Refused(f"board {r.board} has no stage {r.stage!r}")
+        if r.provider not in DRIVERS:
+            raise Refused(f"no provider {r.provider!r}; one of {', '.join(DRIVERS)}")
         return super().save(r, action, **event)
 
     def _limit(self) -> int:
@@ -404,8 +407,6 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         if missing:
             where = "" if missing == ["."] else f" in {', '.join(missing)}"
             self._refuse(f"its board works on the branch {into}, which does not exist{where}; make it, or change the board's branch")
-        if provider is not None and provider not in DRIVERS:
-            self._refuse(f"no provider {provider!r}; one of {', '.join(DRIVERS)}")
         self._modelled(ticket, model, f"journal ticket start {ticket.n} --model <model>")
         ticket = self.update(ticket.n, provider=provider or ticket.provider, model=model or ticket.model, halted=False)
         with State(self.record.root / "runtime" / "ticket-starts.json").changing():

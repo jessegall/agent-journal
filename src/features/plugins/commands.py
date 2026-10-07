@@ -1,5 +1,6 @@
 import shutil
 
+from controllers.base import Arguments
 from engine.version import version
 from features.parts import Command, Context
 from features.plugins.answer import Posting, raised
@@ -111,6 +112,11 @@ class Configure(Command):
         updated = plugins.update(row.n, settings=settings_choosing(row, {key: value}))
         restarted(plugins.record.root, manifest)
         return updated
+
+    def runs_commands(self, controller, arguments: Arguments) -> bool:
+        row = controller.load(arguments.n)
+        setting = declared(row).setting(arguments.key)
+        return setting is not None and setting.runs_commands and str(arguments.value) != str(settings_of(row).chosen.get(arguments.key, setting.default))
 
 
 class Raise(Command):

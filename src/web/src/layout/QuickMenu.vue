@@ -6,6 +6,7 @@ import QuickRow from "./QuickRow.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import Compose from "../chat/Compose.vue";
 import {api} from "../api/client.js";
+import {fileSize} from "../format/files.js";
 import {sendMessage} from "../chat/outbox.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -77,12 +78,6 @@ const matchingFiles = computed(() => {
     return [...up, ...files.value.filter((file) => !needle || file.name.toLowerCase().includes(needle))];
 });
 const selectedFile = computed(() => matchingFiles.value[fileIndex.value] || null);
-
-function size(bytes) {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1048576) return `${(bytes / 1024).toFixed(0)} KB`;
-    return `${(bytes / 1048576).toFixed(1)} MB`;
-}
 
 function findFiles() {
     clearTimeout(finding);
@@ -402,7 +397,7 @@ function onFileKey(e) {
                                         <template v-if="wholeProject && fileQuery.trim()">
                                             <span class="quick-file-dir">{{ file.path.slice(0, -file.name.length - 1) }}</span>
                                         </template>
-                                        <span class="quick-file-size">{{ size(file.size) }}</span>
+                                        <span class="quick-file-size">{{ fileSize(file.size) }}</span>
                                     </template>
                                 </QuickRow>
                             </template>

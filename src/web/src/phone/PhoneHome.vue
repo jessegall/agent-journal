@@ -1,17 +1,20 @@
 <script setup>
+import Button from "./kit/Button.vue";
 import {waitingInOrder} from "./waiting.js";
 import {scrollIntoRoom} from "./reveal.js";
 import {ui} from "../state/ui.js";
 import {replyQuote} from "../format/quote.js";
 import {plainText} from "../text/words.js";
 import {copyText} from "../platform/clipboard.js";
-import {computed, inject, nextTick, onMounted, onUnmounted, provide, ref, watch} from "vue";
+import {computed, inject, nextTick, onMounted, onUnmounted, provide, reactive, ref, watch} from "vue";
 import {phone} from "../api/phone.js";
+import {api} from "../api/client.js";
+import {store} from "../state/store.js";
 import {words} from "../composables/helperWords.js";
 import {usePoll} from "../composables/poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
 import PhoneHold from "./PhoneHold.vue";
-import PhoneReader from "./PhoneReader.vue";
+import PhoneItem from "./PhoneItem.vue";
 import PhonePlaces from "./PhonePlaces.vue";
 import PhoneViewer from "./PhoneViewer.vue";
 import PhoneBoard from "./PhoneBoard.vue";
@@ -25,11 +28,22 @@ import PhoneTurn from "./PhoneTurn.vue";
 import {atThisPlace, discard, ended, flush, justSent, perform, setPlace, settle, waitingActions, waitingToSend} from "./outbox.js";
 import PhoneSkeleton from "./PhoneSkeleton.vue";
 import PhoneNotices from "./PhoneNotices.vue";
+import PhoneDumpDock from "./PhoneDumpDock.vue";
 import {useFades} from "./fades.js";
 import {wanted} from "./wanted.js";
 import {lastLooked, looked} from "./looked.js";
 import {useBubbles} from "./bubbles.js";
 import PhoneHomeBar from "./PhoneHomeBar.vue";
+import PhoneEverything from "./PhoneEverything.vue";
+import PhoneTodos from "./PhoneTodos.vue";
+import PhoneUpdateBand from "./PhoneUpdateBand.vue";
+import PhoneAway from "./PhoneAway.vue";
+import PhonePermit from "./PhonePermit.vue";
+import NavBar from "./kit/NavBar.vue";
+import Toast from "./kit/Toast.vue";
+import Tour from "./kit/Tour.vue";
+import {startTour, startTourOnce} from "./kit/tour.js";
+import {screenOf, targetOf} from "./screens.js";
 import PhoneHomeOlder from "./PhoneHomeOlder.vue";
 import PhoneHomeSending from "./PhoneHomeSending.vue";
 import PhoneAtWork from "./PhoneAtWork.vue";
@@ -46,12 +60,13 @@ import {IN_CHAT} from "../domain/replies.js";
 const FEED_EVERY = 5000;
 const NEAR_BOTTOM = 120;
 const MOVING = 800;
-const LABELS = {chat: "Chat", home: "Home"};
+const LABELS = {chat: "Chat", home: "Home", todos: "To-dos", everything: "Everything"};
 const props = defineProps({connection: {type: Object, required: true}});
 const here = () => `${props.connection.project}/${props.connection.environment}`;
 setPlace(here());
 const placeKey = here();
 const lookedAt = ref(lastLooked(placeKey));
+const awaySince = lookedAt.value || 0;
 const switching = ref(false);
 const notice = ref("");
 let noticeTimer = 0;
@@ -71,9 +86,13 @@ const agentOpen = ref(false);
 const atWorkOpen = ref(false);
 const planOpen = ref(false);
 const lastActive = computed(() => items.value.findLast((item) => item.who !== "user")?.created || 0);
-const pages = ref([]);
 const direction = ref("push");
 const screen = ref("chat");
+const stacks = reactive({chat: [], home: [], todos: [], everything: []});
+const pages = computed({get: () => stacks[screen.value], set: (list) => (stacks[screen.value] = list)});
+let arriving = "";
+let afterSwitch = () => {};
+const homeEditing = ref(false);
 const VIEWED = ["source", "attachment"];
 const about = ref("");
 const quote = ref("");
@@ -120,8 +139,7 @@ const LOADED = (document.querySelector('script[src*="phone-"]')?.src || "").spli
 const newer = ref(false);
 const reload = () => window.location.reload();
 const reading = computed(() => pages.value.at(-1)?.ref || "");
-const chatUnder = useUnder(top);
-const under = computed(() => (screen.value === "chat" ? chatUnder.value : homeUnder.value));
+const under = useUnder(top);
 
 async function asked() {
     if (switching.value) return null;
@@ -147,7 +165,14 @@ const unseen = ref(0);
 const TALKING = ["message", "question", "comment"];
 let scrollFrame = 0;
 let stuck = true;
-const keptDown = () => stuck && toBottom();
+let boxFocused = false;
+const keptDown = () => (stuck || boxFocused) && toBottom();
+const boxFocus = () => {
+    boxFocused = true;
+    stuck = true;
+    toBottom();
+};
+const boxBlur = () => (boxFocused = false);
 const OLDER_AT = 400;
 const earlier = ref([]);
 const olderBusy = ref(false);
@@ -408,12 +433,13 @@ function flashTo(key) {
 }
 
 function open(target) {
+    if (target.startsWith("tab:")) return pick(target.slice(4));
+    if (target.startsWith("place:")) return pick("everything");
     const key = target.replace(":", "");
     if (IN_CHAT.test(target) && findTurn(key)) {
-        screen.value = "chat";
-        if (!pages.value.length) return nextTick(() => flashTo(key));
+        if (screen.value === "chat" && !pages.value.length) return nextTick(() => flashTo(key));
         flashing = key;
-        return history.go(-pages.value.length);
+        return toChat();
     }
     const next = [...pages.value, entry(target)];
     direction.value = "push";
@@ -438,15 +464,36 @@ function next() {
     pages.value = stay;
 }
 
+function flashLater() {
+    if (!flashing || pages.value.length) return;
+    const key = flashing;
+    flashing = "";
+    setTimeout(() => flashTo(key), 320);
+}
+
+function show(key) {
+    arriving = "";
+    direction.value = "tab";
+    screen.value = key;
+    stacks[key].forEach((_, i) => history.pushState(saved(stacks[key].slice(0, i + 1)), ""));
+    flashLater();
+    switched();
+}
+
+function switched() {
+    const then = afterSwitch;
+    afterSwitch = () => {};
+    then();
+}
+
 function popped(event) {
+    if (arriving) return show(arriving);
     const now = event.state?.pages || [];
     const swiped = edge.landed(now.length);
     direction.value = swiped ? "swiped" : now.length >= pages.value.length ? "push" : "pop";
     pages.value = now;
-    if (!flashing || now.length) return;
-    const key = flashing;
-    flashing = "";
-    setTimeout(() => flashTo(key), 320);
+    flashLater();
+    switched();
 }
 
 onMounted(() => {
@@ -486,8 +533,7 @@ const fade = useFades(list);
 function reply(target, start = "") {
     about.value = target;
     draft.value = start;
-    screen.value = "chat";
-    if (pages.value.length) history.go(-pages.value.length);
+    toChat();
     toBottom();
 }
 
@@ -503,7 +549,7 @@ async function react(face) {
     item.reactions = removing ? had.filter((r) => !mine(r, face)) : [...had, {face, who: "user"}];
     try {
         const went = await perform({kind: "react", n: item.n, face, type: item.type});
-        announce(went === "held" ? "Reaction waits to send" : removing ? `Removed ${face}` : `Reacted ${face}`);
+        announce(went === "held" ? "Your reaction sends when you are back online" : removing ? `Removed ${face}` : `Reacted ${face}`);
         refresh();
     } catch (error) {
         item.reactions = had;
@@ -558,6 +604,35 @@ function copy() {
     setTimeout(() => announce("Copied"), SPOKEN_AFTER);
 }
 
+function dumpThem(files) {
+    store.dumpFiles = files;
+    open("dump:0");
+}
+
+async function pinIt() {
+    const item = held.value.item;
+    held.value = null;
+    try {
+        await api.pinNotice(plainText(item.brief || item.title), item.ref);
+        announce("Pinned to the chat");
+        refresh();
+    } catch {
+        noticed("That pin didn't go through. Try again.");
+    }
+}
+
+async function deleteIt() {
+    const item = held.value.item;
+    held.value = null;
+    try {
+        await api.deleteTurn(item.type, item.n);
+        announce("Message deleted");
+        refresh();
+    } catch {
+        noticed("That message wasn't deleted. Try again.");
+    }
+}
+
 function holding(key, rect, el) {
     const item = findTurn(key);
     if (item) held.value = {item, rect, el};
@@ -577,10 +652,30 @@ function sent() {
     refresh();
 }
 
-function pick(key) {
-    if (key === "chat" && screen.value === "chat") toBottom();
-    screen.value = key;
+function pick(key, then = () => {}) {
+    afterSwitch = then;
+    if (key === screen.value && pages.value.length) return history.go(-pages.value.length);
+    if (key === screen.value) return (key === "chat" && toBottom(), switched());
+    if (!pages.value.length) return show(key);
+    arriving = key;
+    history.go(-pages.value.length);
 }
+
+function toChat(then = () => {}) {
+    if (screen.value !== "chat") stacks.chat = [];
+    pick("chat", then);
+}
+
+const COMMANDS = {
+    message: () => toChat(() => nextTick(() => compose.value?.focus())),
+    places: () => (picking.value = true),
+    agent: () => (agentOpen.value = true),
+    needs: () => (listing.value = true),
+    tour: () => toChat(startTour),
+};
+const command = (key) => COMMANDS[key]();
+
+onMounted(startTourOnce);
 </script>
 
 <template>
@@ -594,26 +689,26 @@ function pick(key) {
             :class="['layer', 'base', pages.length === 1 ? 'beneath' : pages.length > 1 ? 'buried' : '']"
             :inert="pages.length > (edge.leaving.value ? 1 : 0)"
         >
-            <PhoneHomeBar
-                :connection="connection"
-                :feed="feed"
-                :under="under"
-                :offline="offline"
-                :current="current"
-                :newer="newer"
-                :notice="notice"
-                :actions-here="actionsHere"
-                :go="go"
-                :away="far"
-                :chat="screen === 'chat'"
-                @places="picking = true"
-                @agent="agentOpen = true"
-                @at-work="atWorkOpen = true"
-                @plan="planOpen = true"
-                @reload="reload"
-                @open="open"
-                @list="listing = true"
-            />
+            <PhoneUpdateBand :newer="newer" @reload="reload" />
+            <template v-if="screen === 'chat'">
+                <PhoneHomeBar
+                    :connection="connection"
+                    :feed="feed"
+                    :under="under"
+                    :offline="offline"
+                    :current="current"
+                    :notice="notice"
+                    :actions-here="actionsHere"
+                    :go="go"
+                    :away="far"
+                    @places="picking = true"
+                    @agent="agentOpen = true"
+                    @at-work="atWorkOpen = true"
+                    @plan="planOpen = true"
+                    @open="open"
+                    @list="listing = true"
+                />
+            </template>
             <div class="panes">
                 <section
                     id="pane-chat"
@@ -639,6 +734,7 @@ function pick(key) {
                                 @load.capture="loaded"
                             >
                                 <span ref="top" class="home-edge" />
+                                <PhoneAway :items="items" :since="awaySince" :waiting="feed.waiting.length" @needs="listing = true" />
                                 <PhoneHomeOlder :busy="olderBusy" :failed="olderFailed" :beginning="beginning" @retry="retryOlder" />
                                 <template v-for="(item, i) in items" :key="keyOf(item)">
                                     <template v-if="keyOf(item) === newFrom">
@@ -657,10 +753,13 @@ function pick(key) {
                                     />
                                 </template>
                                 <PhoneHomeSending :sent="sentHere" :held="heldHere" :offline="offline" @discard="discard" />
+                                <template v-if="feed.running?.prompt">
+                                    <PhonePermit :prompt="feed.running.prompt" @answered="refresh()" />
+                                </template>
                             </div>
                             <template v-if="far">
-                                <button
-                                    type="button"
+                                <Button
+                                    kind="round"
                                     class="home-newest"
                                     :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'"
                                     @click="newest"
@@ -669,12 +768,13 @@ function pick(key) {
                                     <template v-if="unseen">
                                         <span class="home-unseen" aria-hidden="true">{{ unseen }}</span>
                                     </template>
-                                </button>
+                                </Button>
                             </template>
                         </div>
                     </template>
                     <div ref="dock" class="home-dock">
                         <PhoneNotices :notices="notices" @open="openNotice" @close="closeNotice" />
+                        <PhoneDumpDock @open="open" />
                         <template v-if="screen === 'chat'">
                             <PhoneStatus :working="feed.agent === 'working'" />
                         </template>
@@ -688,27 +788,45 @@ function pick(key) {
                             :quote="quote"
                             :draft="draft"
                             @sending="toBottom"
-                            @focused="keptDown"
+                            @focused="boxFocus"
+                            @blurred="boxBlur"
                             @typing="toBottom"
                             @sent="sent"
                             @unabout="about = ''"
                             @unquote="((quote = ''), (about = ''))"
+                            @dump="dumpThem"
                         />
                     </div>
                 </section>
                 <template v-if="screen === 'home'">
                     <section id="pane-home" role="tabpanel" aria-label="Home" class="pane">
+                        <NavBar title="Home" :under="homeUnder">
+                            <Button kind="link" class="home-change" @click="homeEditing = !homeEditing">
+                                {{ homeEditing ? "Done" : "Change Home" }}
+                            </Button>
+                        </NavBar>
                         <PhoneBoard
+                            v-model:editing="homeEditing"
                             :home="connection.home || []"
                             :waiting="feed.waiting"
                             :place="placeKey"
+                            :sub="`${connection.project} · ${connection.environment}`"
                             @open="open"
                             @under="homeUnder = $event"
                         />
                     </section>
                 </template>
+                <template v-if="screen === 'todos'">
+                    <section id="pane-todos" role="tabpanel" aria-label="To-dos" class="pane">
+                        <PhoneTodos @open="open" />
+                    </section>
+                </template>
+                <template v-if="screen === 'everything'">
+                    <section id="pane-everything" role="tabpanel" aria-label="Everything" class="pane">
+                        <PhoneEverything :connection="connection" @open="open" />
+                    </section>
+                </template>
             </div>
-            <PhoneTabs :screen="screen" :count="feed.waiting.length" @pick="pick" />
         </div>
         <TransitionGroup :name="direction">
             <template v-for="(page, i) in pages" :key="page.id">
@@ -719,8 +837,21 @@ function pick(key) {
                     <template v-if="VIEWED.includes(page.ref.split(':')[0])">
                         <PhoneViewer :target="page.ref" :back="backLabel(i)" @close="back" />
                     </template>
+                    <template v-else-if="screenOf(page.ref)">
+                        <component
+                            :is="screenOf(page.ref)"
+                            :target="targetOf(page.ref)"
+                            :back="backLabel(i)"
+                            @back="back"
+                            @open="open"
+                            @command="command"
+                            @switching="leaving"
+                            @stayed="staying"
+                            @moved="arrived"
+                        />
+                    </template>
                     <template v-else>
-                        <PhoneReader
+                        <PhoneItem
                             :target="page.ref"
                             :back="backLabel(i)"
                             :up-next="nextAfter(page.ref)"
@@ -734,6 +865,9 @@ function pick(key) {
             </template>
         </TransitionGroup>
     </div>
+    <PhoneTabs :screen="screen" :count="feed.waiting.length" @pick="pick" />
+    <Toast />
+    <Tour :tab="screen" @tab="pick" />
     <template v-if="picking">
         <PhonePlaces
             :environment="connection.environment"
@@ -752,6 +886,7 @@ function pick(key) {
             @changed="refresh()"
             @close="agentOpen = false"
             @started="((agentOpen = false), refresh())"
+            @read="(target) => ((agentOpen = false), open(target))"
         />
     </template>
     <template v-if="atWorkOpen">
@@ -777,6 +912,8 @@ function pick(key) {
             @react="react"
             @reply="quoteIt(held.item)"
             @copy="copy"
+            @pin="pinIt"
+            @delete="deleteIt"
             @close="held = null"
         />
     </template>
@@ -785,6 +922,12 @@ function pick(key) {
 </template>
 
 <style scoped>
+.home-change.link {
+    min-height: 44px;
+    padding: 0 8px;
+    font-size: 1.0625rem;
+}
+
 .stack {
     --dx: 0px;
     --p: 0;
@@ -952,23 +1095,13 @@ function pick(key) {
     min-height: 0;
 }
 
-.home-newest {
+.home-newest.round {
     position: absolute;
     bottom: calc(var(--dock, 140px) + 14px + var(--keyboard, 0px));
     left: 50%;
     z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
     margin-left: -22px;
-    padding: 0;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    background: var(--raised);
     color: var(--text);
-    box-shadow: var(--shadow-1);
     animation: newest-in 200ms ease-out;
 }
 

@@ -1,4 +1,5 @@
 <script setup>
+import Button from "./kit/Button.vue";
 import {scrollIntoRoom} from "./reveal.js";
 import {cache, cached} from "./cache.js";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
@@ -8,6 +9,7 @@ import Icon from "../kit/Icon.vue";
 import {CARDS, kindCard} from "./kinds.js";
 import PhoneBoardList from "./PhoneBoardList.vue";
 import {useUnder} from "./under.js";
+import {toast} from "./kit/toast.js";
 
 const LIST_EVERY = 15000;
 const PREVIEW_ROWS = 5;
@@ -17,7 +19,9 @@ const props = defineProps({
     home: {type: Array, required: true},
     waiting: {type: Array, required: true},
     place: {type: String, default: ""},
+    sub: {type: String, default: ""},
 });
+const editing = defineModel("editing", {type: Boolean, default: false});
 const CACHE = `board:${props.place}`;
 const emit = defineEmits(["open", "under"]);
 const heading = ref(null);
@@ -26,7 +30,6 @@ watch(under, (now) => emit("under", now), {immediate: true});
 const cards = ref(props.home.length ? [...props.home] : [...DEFAULT]);
 const lists = ref(cached(CACHE) || {});
 const loaded = (kind) => kind === WAITING || kind in lists.value;
-const editing = ref(false);
 const opened = ref(new Set());
 const told = ref("");
 const missing = computed(() => CARDS.filter((kind) => !cards.value.includes(kind)));
@@ -52,21 +55,11 @@ onMounted(() => {
 const listed = (kind) => lists.value[kind]?.rows || [];
 const rows = (kind) => (kind === WAITING ? props.waiting.map((item) => ({...item, updated: item.created})) : listed(kind));
 const total = (kind) => (kind === WAITING ? props.waiting.length : Math.max(lists.value[kind]?.total || 0, rows(kind).length));
-const removed = ref(null);
-let removedTimer = 0;
 
 function remove(kind) {
-    clearTimeout(removedTimer);
-    removed.value = {kind, before: [...cards.value]};
+    const before = [...cards.value];
     arranged(cards.value.filter((card) => card !== kind));
-    removedTimer = setTimeout(() => (removed.value = null), 5000);
-}
-
-function undoRemove() {
-    clearTimeout(removedTimer);
-    const before = removed.value.before;
-    removed.value = null;
-    arranged(before);
+    toast(`Removed ${kindCard(kind)} from Home`, () => arranged(before));
 }
 const visibleRows = (kind) => (opened.value.has(kind) ? rows(kind) : rows(kind).slice(0, PREVIEW_ROWS));
 
@@ -96,15 +89,12 @@ function moved(i, by) {
     <div ref="board" class="board" data-scroller>
         <div class="board-bar">
             <h1 ref="heading" class="board-large">Home</h1>
+            <template v-if="sub">
+                <p class="board-sub">{{ sub }}</p>
+            </template>
         </div>
         <template v-if="told">
             <p class="board-told" role="status">{{ told }}</p>
-        </template>
-        <template v-if="removed">
-            <p class="board-removed" role="status">
-                Removed {{ kindCard(removed.kind) }}
-                <button type="button" class="board-undo" @click="undoRemove">Undo</button>
-            </p>
         </template>
         <TransitionGroup name="card" tag="div" class="board-cards">
             <template v-for="(kind, i) in cards" :key="kind">
@@ -120,25 +110,20 @@ function moved(i, by) {
                             </template>
                             <template v-if="editing">
                                 <span class="board-tools">
-                                    <button
-                                        type="button"
-                                        :aria-label="`Move ${kindCard(kind)} up`"
-                                        :disabled="i === 0"
-                                        @click="moved(i, -1)"
-                                    >
+                                    <Button kind="icon" :aria-label="`Move ${kindCard(kind)} up`" :disabled="i === 0" @click="moved(i, -1)">
                                         <Icon name="up" :size="16" />
-                                    </button>
-                                    <button
-                                        type="button"
+                                    </Button>
+                                    <Button
+                                        kind="icon"
                                         :aria-label="`Move ${kindCard(kind)} down`"
                                         :disabled="i === cards.length - 1"
                                         @click="moved(i, 1)"
                                     >
                                         <Icon name="down" :size="16" />
-                                    </button>
-                                    <button type="button" :aria-label="`Remove ${kindCard(kind)}`" @click="remove(kind)">
+                                    </Button>
+                                    <Button kind="icon" :aria-label="`Remove ${kindCard(kind)}`" @click="remove(kind)">
                                         <Icon name="close" :size="16" />
-                                    </button>
+                                    </Button>
                                 </span>
                             </template>
                         </header>
@@ -156,7 +141,6 @@ function moved(i, by) {
                 </template>
             </template>
         </TransitionGroup>
-        <button type="button" class="board-edit-end" @click="editing = !editing">{{ editing ? "Done" : "Edit cards" }}</button>
         <template v-if="editing && missing.length">
             <section class="board-card" aria-label="Add a card">
                 <header class="board-head">
@@ -164,10 +148,10 @@ function moved(i, by) {
                 </header>
                 <div class="board-kinds">
                     <template v-for="kind in missing" :key="kind">
-                        <button type="button" class="board-kind" @click="arranged([...cards, kind])">
+                        <Button kind="chip" @click="arranged([...cards, kind])">
                             <Icon name="plus" :size="12" />
                             {{ kindCard(kind) }}
-                        </button>
+                        </Button>
                     </template>
                 </div>
             </section>
@@ -182,7 +166,7 @@ function moved(i, by) {
     flex-direction: column;
     gap: 28px;
     min-height: 0;
-    padding: 0 0 calc(32px + env(safe-area-inset-bottom));
+    padding: 0 0 calc(32px + var(--safe-bottom));
     overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
@@ -190,11 +174,16 @@ function moved(i, by) {
 
 .board-bar {
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px;
+    flex-direction: column;
+    gap: 2px;
     padding-top: 4px;
     margin-bottom: -16px;
+}
+
+.board-sub {
+    margin: 0;
+    color: var(--text-3);
+    font-size: 0.9375rem;
 }
 
 .board-large {
@@ -218,19 +207,6 @@ function moved(i, by) {
     margin: 0;
     color: var(--text-3);
     font-size: 0.794rem;
-}
-
-.board-edit-end {
-    align-self: center;
-    min-height: 44px;
-    margin-top: -12px;
-    padding: 0 18px;
-    border: 0;
-    border-radius: 22px;
-    background: var(--raised);
-    color: var(--accent-text);
-    font: inherit;
-    font-weight: 600;
 }
 
 .board-cards {
@@ -281,29 +257,6 @@ function moved(i, by) {
     font-size: 0.824rem;
 }
 
-.board-removed {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin: 0;
-    padding: 6px 6px 6px 16px;
-    border-radius: 12px;
-    background: var(--raised);
-    color: var(--text-2);
-}
-
-.board-undo {
-    min-height: 36px;
-    padding: 0 14px;
-    border: 0;
-    border-radius: 10px;
-    background: color-mix(in oklab, var(--accent) 14%, transparent);
-    color: var(--accent-text);
-    font: inherit;
-    font-weight: 600;
-}
-
 .board-card {
     display: flex;
     flex-direction: column;
@@ -336,35 +289,9 @@ function moved(i, by) {
     margin-left: auto;
 }
 
-.board-tools button {
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    border: 0;
-    border-radius: 8px;
-    background: var(--hover);
-    color: var(--text-2);
-    font: inherit;
-    font-size: 16px;
-}
-
 .board-kinds {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-}
-
-.board-kind {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 40px;
-    padding: 0 14px;
-    border: 0;
-    border-radius: 20px;
-    background: var(--raised);
-    color: var(--text-2);
-    font: inherit;
-    font-size: 0.882rem;
 }
 </style>

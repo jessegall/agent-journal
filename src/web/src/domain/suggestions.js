@@ -1,4 +1,5 @@
 export const YES = "Yes, I want this";
+export const CHANGE = "Change it first";
 export const NO = "No, don't do this";
 export const NO_CAP = "The agent won't suggest it again";
 export const CLOSE_NOTE = "Close it and it won't open again. The suggestion stays in the chat.";
@@ -60,7 +61,7 @@ export function choicesFor(s, phase) {
         ];
     return [
         {act: "yes", primary: true, label: YES, caption: s.data.plugin ? "Installs it now" : "Adds it as a to-do"},
-        {act: "change", label: "Change it first", caption: "Write your version as a to-do"},
+        {act: "change", label: CHANGE, caption: "Write your version as a to-do"},
         {act: "no", label: NO, caption: NO_CAP},
     ];
 }

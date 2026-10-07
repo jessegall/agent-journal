@@ -19,7 +19,7 @@ def test_a_collection_holds_rows_of_any_type_and_a_row_can_sit_in_several():
     assert collections.members(launch.n) == ["todo 1  a task"], "a removed row and a deleted one are left out"
 
     assert "already open" in refused(lambda: collections.create("launch")), "an open collection's name is not taken twice"
-    assert "type:number" in refused(lambda: collections.add(launch.n, ["nothing"])), "a ref that is not a row is refused"
+    assert "names no item" in refused(lambda: collections.add(launch.n, ["nothing"])), "a ref that is not a row is refused"
     assert refused(lambda: collections.add(launch.n, ["todo:99"])) != "", "a row that does not exist is refused"
     collections.add(later.n, [doc.ref])
     Docs(record, actor=AGENT).force_delete(doc.n)

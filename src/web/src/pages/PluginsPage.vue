@@ -1,4 +1,5 @@
 <script setup>
+import {pluginRequest} from "../domain/plugins.js";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -18,6 +19,7 @@ import PluginRemoveDialog from "./PluginRemoveDialog.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {installedPlugins} from "../composables/plugins.js";
+import {usePluginInstall} from "../composables/pluginInstall.js";
 import {usePoll} from "../composables/poll.js";
 import {sendMessage} from "../chat/outbox.js";
 
@@ -28,10 +30,7 @@ const servicesFor = ref("");
 const repository = ref("");
 const wish = ref("");
 const asked = ref(false);
-const previewText = ref("");
-const previewed = ref(null);
 const removing = ref(null);
-const outcome = ref(null);
 const viewing = ref(null);
 const busy = ref("");
 const plugins = installedPlugins();
@@ -57,71 +56,17 @@ const look = usePoll(
 );
 watch(busy, () => look());
 
-async function preview() {
-    busy.value = "preview";
-    previewText.value = "";
-    previewed.value = null;
-    try {
-        previewed.value = await api.previewPlugin(source.value);
-    } catch (e) {
-        previewText.value = e.message;
+function installed(name, got) {
+    source.value = "";
+    if (got && got.n) {
+        closePreview();
+        settingsOf(name);
     }
-    busy.value = "";
 }
 
-const LOG_EVERY = 1000;
-const LOG_LINES = 5000;
-const live = ref("");
-let following = false;
-
-async function logLines(name) {
-    return (await api.pluginLog(name, LOG_LINES).catch(() => ({log: ""}))).log.split("\n");
-}
-
-async function follow(name, skipped) {
-    live.value = (await logLines(name)).slice(skipped).join("\n");
-    if (following) setTimeout(() => follow(name, skipped), LOG_EVERY);
-}
-
-async function install() {
-    busy.value = "install";
-    live.value = "";
-    const name = previewed.value.name;
-    const skipped = (await logLines(name)).length;
-    following = true;
-    follow(name, skipped);
-    try {
-        const upgrading = previewed.value.upgrading;
-        const installed = upgrading ? await api.upgradePlugin(upgrading, previewed.value.current) : await api.installPlugin(source.value);
-        outcome.value = {ok: true, text: typeof installed === "string" ? installed : `${previewed.value.title} is up to date.`};
-        if (!upgrading) source.value = "";
-        if (!upgrading && installed && installed.n) {
-            closePreview();
-            settingsOf(name);
-        }
-    } catch (e) {
-        outcome.value = {ok: false, text: e.message};
-    }
-    following = false;
-    await follow(name, skipped);
-    busy.value = "";
-}
-
-async function upgrade(p) {
-    busy.value = `${p.n}`;
-    try {
-        previewed.value = {...(await api.previewUpgrade(p.n)), upgrading: p.n};
-        outcome.value = null;
-    } catch (e) {
-        previewText.value = e.message;
-    }
-    busy.value = "";
-}
-
-function closePreview() {
-    previewed.value = null;
-    outcome.value = null;
-}
+const {previewText, previewed, outcome, live, preview: checkSource, install: runInstall, upgrade, closePreview} = usePluginInstall(busy, installed);
+const preview = () => checkSource(source.value);
+const install = () => runInstall(source.value);
 
 async function act(p, action, body = {}) {
     busy.value = `${p.n}`;
@@ -176,10 +121,7 @@ function readGuide() {
 }
 
 async function askAgent() {
-    const text = repository.value.trim()
-        ? `Please make a journal plugin for ${repository.value.trim()}. First check that you can reach the repository and tell me whether you can build the integration there, then build it.${wish.value.trim() ? ` It should: ${wish.value.trim()}` : ""}`
-        : `Please make a new journal plugin: ${wish.value.trim()}`;
-    await sendMessage(route.value.env, {brief: text});
+    await sendMessage(route.value.env, {brief: pluginRequest(repository.value, wish.value)});
     making.value = false;
     repository.value = "";
     wish.value = "";

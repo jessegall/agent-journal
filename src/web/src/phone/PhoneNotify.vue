@@ -1,9 +1,9 @@
 <script setup>
 import {onMounted, ref} from "vue";
-import {phone} from "../api/phone.js";
+import Button from "./kit/Button.vue";
+import {pushPossible as possible, subscribed} from "./push.js";
 
 const SKIPPED = "phone-notify-skipped";
-const possible = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 const asking = ref(false);
 const offered = ref(false);
 const told = ref("");
@@ -14,19 +14,6 @@ function remembered() {
     } catch (error) {
         return false;
     }
-}
-
-function bytes(key) {
-    const padded = (key + "===".slice((key.length + 3) % 4)).replace(/-/g, "+").replace(/_/g, "/");
-    return Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
-}
-
-async function subscribed() {
-    const worker = await navigator.serviceWorker.register("./sw.js", {scope: "./"});
-    const held = await worker.pushManager.getSubscription();
-    const made =
-        held || (await worker.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: bytes((await phone.pushKey()).key)}));
-    await phone.subscribe(made.endpoint);
 }
 
 async function turnOn() {
@@ -67,8 +54,8 @@ onMounted(() => {
         <div class="notify">
             <p class="notify-words">Get a notification when the agent needs you, even with the app closed.</p>
             <div class="notify-actions">
-                <button type="button" class="notify-on" :disabled="asking" @click="turnOn">Turn on notifications</button>
-                <button type="button" class="notify-skip" @click="skip">Not now</button>
+                <Button :disabled="asking" @click="turnOn">Turn on notifications</Button>
+                <Button kind="plain" @click="skip">Not now</Button>
             </div>
             <template v-if="told">
                 <p class="notify-told" role="status">{{ told }}</p>
@@ -102,24 +89,4 @@ onMounted(() => {
     gap: 8px;
 }
 
-.notify-on,
-.notify-skip {
-    min-height: 40px;
-    padding: 0 14px;
-    border-radius: 12px;
-    font: inherit;
-    font-size: 0.824rem;
-}
-
-.notify-on {
-    border: 0;
-    background: var(--accent);
-    color: #fff;
-}
-
-.notify-skip {
-    border: 1px solid var(--border-2);
-    background: transparent;
-    color: var(--text-2);
-}
 </style>

@@ -5,7 +5,7 @@ import {store} from "../src/state/store.js";
 const TYPES = {todo: {title: "To-do"}, message: {title: "Message"}, comment: {title: "Comment"}, doc: {title: "Doc"}};
 
 beforeEach(() => {
-    store.spec = {types: TYPES, priority: Object.keys(TYPES)};
+    store.spec = {types: TYPES, priority: Object.keys(TYPES), chat_kinds: {recalled: {rule: "rules"}, marked: {terminal: "commands"}}};
 });
 
 const base = {deleted: 0, completed: 0, refs: [], sections: [], brief: "", title: "", abstract: "", updated: 0};

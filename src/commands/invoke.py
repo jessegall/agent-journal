@@ -1,5 +1,6 @@
 import inspect
 
+from controllers.base import Arguments
 from engine import bus
 from resources.base import Refused
 
@@ -20,6 +21,12 @@ def spread(fn, positional: tuple, named: dict, extra: dict) -> tuple[list, dict]
     return ordered, {**keyed, **{key: value for key, value in extra.items() if key not in moved}}
 
 
+def passed(call: inspect.BoundArguments) -> dict:
+    """Every argument a call names, with the keyword arguments it gathers spread out beside the rest."""
+    gathered = next((p.name for p in call.signature.parameters.values() if p.kind is inspect.Parameter.VAR_KEYWORD), "")
+    return {**{name: value for name, value in call.arguments.items() if name != gathered}, **call.arguments.get(gathered, {})}
+
+
 def takes_row(fn) -> bool:
     return next(iter(inspect.signature(fn).parameters), "") == "n"
 
@@ -31,5 +38,6 @@ def invoked(controller, word: str, positional: tuple = (), named: dict | None = 
         call = inspect.signature(fn).bind(*ordered, **keyed)
     except TypeError as error:
         raise Refused(f"{controller.type} {word}: {error}") from error
+    controller._refuse_journal_fields(word, Arguments.given(passed(call), {}))
     with bus.unit():
         return fn(*call.args, **call.kwargs)

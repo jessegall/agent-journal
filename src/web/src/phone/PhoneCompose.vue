@@ -1,15 +1,18 @@
 <script setup>
+import FilePicker from "./kit/FilePicker.vue";
 import {remember, remembered} from "../platform/storage.js";
 import {keepRecordedWords} from "../platform/demo.js";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import CloseButton from "../kit/CloseButton.vue";
+import {DUMP_OFFER} from "../domain/dumpPile.js";
+import Button from "./kit/Button.vue";
 import Icon from "../kit/Icon.vue";
 import {ended, flush, hold, place, waitingToSend} from "./outbox.js";
 import {announce} from "./announce.js";
 
 const MOST_LINES = 5;
 const props = defineProps({about: {type: String, default: ""}, quote: {type: String, default: ""}, draft: {type: String, default: ""}});
-const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused", "typing"]);
+const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused", "typing", "dump", "blurred"]);
 const SHORT = 420;
 const SHORT_LINES = 2;
 const failed = inject("phoneFailed");
@@ -25,6 +28,11 @@ const messageText = computed(() => words.value.trim());
 const ready = computed(() => Boolean(messageText.value || files.value.length));
 
 const focus = () => box.value?.focus({preventScroll: true});
+
+function dumpThem() {
+    emit("dump", files.value);
+    files.value = [];
+}
 const tapped = (event) => !event.target.closest("button, textarea") && focus();
 
 defineExpose({focus});
@@ -56,9 +64,8 @@ watch(files, (now) => {
     [...previews.keys()].filter((file) => !now.includes(file)).forEach((file) => previews.delete(file));
 });
 
-function picked(event) {
-    files.value = [...files.value, ...event.target.files];
-    event.target.value = "";
+function picked(added) {
+    files.value = [...files.value, ...added];
 }
 
 function grow() {
@@ -130,6 +137,12 @@ async function send() {
                 </template>
             </div>
         </template>
+        <template v-if="files.length > 1">
+            <div class="compose-dump">
+                <span class="compose-dump-title">{{ DUMP_OFFER.title(files.length) }}</span>
+                <Button kind="plain" @click="dumpThem">{{ DUMP_OFFER.action }}</Button>
+            </div>
+        </template>
         <textarea
             ref="box"
             v-model="words"
@@ -140,12 +153,13 @@ async function send() {
             @beforeinput="keepRecordedWords"
             @input="grow"
             @focus="emit('focused')"
+            @blur="emit('blurred')"
         />
         <div class="compose-controls">
-            <button type="button" class="compose-clip" aria-label="Attach files or photos" @mousedown.prevent @click="picker.click()">
+            <button type="button" class="compose-clip" aria-label="Attach files or photos" @mousedown.prevent @click="picker.open()">
                 <Icon name="paperclip" :size="20" />
             </button>
-            <input ref="picker" type="file" multiple hidden @change="picked" />
+            <FilePicker ref="picker" multiple label="Files to attach" @pick="picked" />
             <template v-if="ready">
                 <button type="submit" class="compose-send" :disabled="sending" aria-label="Send to the agent" @mousedown.prevent>
                     <Icon name="up" :size="20" />
@@ -196,6 +210,20 @@ async function send() {
     overflow: hidden;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+}
+
+.compose-dump {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 4px 6px 8px;
+    color: var(--text-2);
+    font-size: 0.875rem;
+}
+
+.compose-dump .phone-button {
+    flex: none;
 }
 
 .compose-files {
