@@ -47,6 +47,30 @@ await runScenarios(
             await page.getByText("Runs after the agent's turn: npm test").waitFor({timeout: SHOWN});
             if (sent[0]?.command !== "npm test") throw new Error(`the terminal was sent: ${JSON.stringify(sent)}`);
         },
+        async "the agent terminal shows what ran and runs a waiting command now"(page) {
+            const sent = [];
+            await page.route(/\/agent\/\d+\/terminal/, (route) =>
+                route.fulfill({
+                    status: 200,
+                    contentType: "application/json",
+                    body: JSON.stringify({lines: [{at: 1, tool: "Bash", command: "npm run lint", output: "all clean"}]}),
+                })
+            );
+            await page.route(/\/api\/[^/]+\/agent\?/, async (route) => {
+                const got = await (await route.fetch()).json();
+                got.rows.forEach((row) => (row.data.queued_commands = [{at: 2, command: "npm run build"}]));
+                await route.fulfill({status: 200, contentType: "application/json", body: JSON.stringify(got)});
+            });
+            await page.route(/\/shell$/, (route) => (sent.push(route.request().postDataJSON()), route.fulfill({status: 200, body: "{}"})));
+            await more(page, "Agent terminal");
+            await top(page).getByText("npm run lint").waitFor({timeout: SHOWN});
+            await top(page)
+                .getByRole("button", {name: /^npm run build/})
+                .click();
+            await sheet(page).getByRole("button", {name: "Run now", exact: true}).click();
+            await page.getByText("Running now: npm run build").waitFor({timeout: SHOWN});
+            if (!sent[0]?.now) throw new Error(`the waiting command did not run now: ${JSON.stringify(sent)}`);
+        },
         async "the agent's repeating prompts say when they run"(page) {
             await more(page, "Repeating prompts");
             await top(page).getByText("every 10 minutes").waitFor({timeout: SHOWN});
