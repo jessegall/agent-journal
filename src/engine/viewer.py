@@ -30,7 +30,7 @@ SERVING: dict[str, str] = {}
 HEARTBEAT = 2.0
 LAUNCHING = "viewer.launching"
 COMING_UP = 20.0
-HUNG = -signal.SIGKILL
+STOPPED_BY_US = 0
 PORT_WAIT = 30.0
 SERVED_ON = 8430
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
@@ -230,11 +230,15 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
         return url, code
 
 
+def busy() -> bool:
+    return os.getloadavg()[0] > (os.cpu_count() or 1)
+
+
 def stopped(server: subprocess.Popen, log: Path) -> int:
     server.kill()
     server.wait()
     append_text(log, f"journal: the server did not answer within {COMING_UP:g}s and was stopped\n")
-    return HUNG
+    return STOPPED_BY_US
 
 
 def answered(root: Path, server: subprocess.Popen) -> tuple[str, int | None]:
