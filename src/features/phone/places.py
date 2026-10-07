@@ -11,7 +11,7 @@ from engine.viewer import known, last
 from features.message_buttons.pressing import unspent
 from features.plans.resource import READY
 from features.status_bar.bar import current
-from resources.base import SYSTEM, USER
+from resources.base import SYSTEM, USER, Refused, Stale
 
 MAIN = "main"
 WAITED = ("question", "plan", "report", "doc")
@@ -59,6 +59,19 @@ class Place:
         return cls(str(root), named["project"], named["color"], names, root == hub or running(root), tuple(name for name in names if sessions.holder(name)),
                    {name: detail(root, name) for name in names})
 
+    @property
+    def start_environment(self) -> str:
+        if not self.environments:
+            raise Refused(f"the journal at {self.root!r} has no environment to start an agent in")
+        return MAIN if MAIN in self.environments else self.environments[0]
+
+    def start(self, environment: str, agent: str) -> None:
+        if environment not in self.environments:
+            raise Refused(f"no journal at {self.root!r} with an environment {environment!r} on this machine")
+        if environment in self.working:
+            raise Stale(f"an agent is already working in {environment}")
+        Environments(Record(Path(self.root), MAIN), actor=USER).action("launch")(self.row(environment), agent=agent)
+
     def row(self, name: str) -> int:
         return next(env.n for env in Environments(Record(Path(self.root), MAIN), actor=SYSTEM).rows.standing() if env.title == name and env.is_main())
 
@@ -79,3 +92,10 @@ def places(hub: Path) -> list[Place]:
     here = hub.resolve()
     roots = dict.fromkeys([here, *(Path(j.root).resolve() for j in known())])
     return [Place.at(root, here) for root in roots if (root / "environments").is_dir() and (root == here or not throwaway(root))]
+
+
+def place_at(hub: Path, root: str) -> Place:
+    found = next((place for place in places(hub) if place.root == root), None)
+    if found is None:
+        raise Refused(f"no journal at {root!r} on this machine")
+    return found

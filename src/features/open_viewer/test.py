@@ -438,6 +438,15 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     listed = ask("GET", "/api/journals").body
     assert [(j["project"], j["running"]) for j in listed if j["root"] == str(elsewhere)] == [("other", False)], "a journal that is not running is listed as stopped"
     assert all(j["project"] != "gone" for j in listed), "one whose folder is gone is not listed"
+    from controllers.base import Controller
+    from controllers.types import CONTROLLERS
+    from features.starting_agents import launch
+    Controller.create(CONTROLLERS["environment"](record, actor=SYSTEM), "main")
+    launched = []
+    monkeypatch.setattr(launch, "detached", lambda root, cwd, env, agent, args, conversation="": launched.append((env, agent)))
+    assert ask("POST", "/api/journals/start", None, {"root": str(record.root.resolve()), "agent": "codex"}).code == 200
+    assert launched == [("main", "codex")], "the hub starts a stopped journal's agent in its main environment, as the phone does"
+    assert ask("POST", "/api/journals/start", None, {"root": str(tmp_path / "nowhere")}).code == 400, "a journal this machine does not hold is refused"
     monkeypatch.setattr(http, "found_files", lambda project, asked: [SimpleNamespace(path="../outside.txt", name="x"), SimpleNamespace(path="inside.txt", name="y")])
     monkeypatch.setattr(http, "project_path", lambda project, path: (_ for _ in ()).throw(http.Refused("outside")) if path.startswith("..") else path)
     monkeypatch.setattr(http, "asdict", lambda found: {"path": found.path})
