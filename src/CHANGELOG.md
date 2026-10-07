@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.253.18 — each voice profile names its own word for helpers and subagents
+The Butler calls them footmen, the Homie crewmates, the Colleague teammates and the Coach players. The word shows wherever the viewer and the phone name helpers and subagents: the at-work chip, the list and its rows, the inspector, the work-mode notes and the filters. The agent is told the same word in its voice text, so it says it in the chat too. A profile you copy keeps the word, and you can change it in the profile panel. Commands and internal names stay as they are. Nothing to do.
+
 ## 2.253.17 — the installer's git never acts on the repository it is pushed from
 A git hook hands its commands GIT_DIR and the other variables that point git at a repository. The pre-push hook runs the boot guard, which installs a journal, and the installer's git init, fetch and checkout inherited those variables. So they acted on the repository being pushed instead of a temporary folder: it was marked bare, cut to a shallow history, and a checkout's HEAD moved to a detached FETCH_HEAD. Every git command the journal runs now drops the variables git itself lists as pointing at a repository, and the boot guard starts everything without them. If your repository says it must be run in a work tree, run git config core.bare false; if it has a .git/shallow file, run git fetch --unshallow.
 
