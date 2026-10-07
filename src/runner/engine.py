@@ -447,8 +447,8 @@ class Engine:
         for type_ in priority():
             if AGENT not in TYPES[type_].notified or TYPES[type_].typed_as_title:
                 continue
-            unread = [row["n"] for row in CONTROLLERS[type_](self.record, actor=AGENT).rows.summaries()
-                      if AGENT not in row["seen"] and not row["completed"] and not row["deleted"]
+            unread = [row["n"] for row in CONTROLLERS[type_](self.record, actor=AGENT).rows.standing_summaries()
+                      if AGENT not in row["seen"]
                       and (type_ != "worktree" or row.get("environment") == self.record.env)]
             if unread:
                 waiting.append(f"{plural(len(unread), f'unread {type_}')} {', '.join(map(str, unread[-5:]))}")

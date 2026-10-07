@@ -57,7 +57,7 @@ def warmed() -> None:
 def environments_changed(event=None, record=None) -> None:
     if record is None:
         return rebooted(event, record)
-    names = tuple(sorted(row["title"] for row in Environments(record, actor=SYSTEM).rows.summaries() if not row["deleted"] and not row["completed"]))
+    names = tuple(sorted(row["title"] for row in Environments(record, actor=SYSTEM).rows.standing_summaries()))
     if ENVIRONMENT_NAMES.get(str(record.root)) != names:
         ENVIRONMENT_NAMES[str(record.root)] = names
         rebooted(event, record)

@@ -3,22 +3,24 @@ from features.groups import Group
 
 
 class AcknowledgementsDetails(FeatureDetails):
-    explains = "The agent's replies that only acknowledge a reminder are hidden from the chat. You can show them from the Shown menu."
+    explains = "The agent's replies to the journal's own lines are hidden from the chat when they change nothing. You can show them from the Shown menu."
     name = "acknowledgements"
     group = Group.CHAT
-    label = "Hide replies that only say a reminder was seen"
+    label = "Hide replies to the journal's own lines"
     hint = "The chat's Shown menu brings them back"
     has_skill = False
 
-    title = "Hide acknowledgement replies"
+    title = "Hide replies to journal lines"
 
-    abstract = "Agent replies that only say they saw a journal reminder are left out of the chat. The chat's Shown menu brings them back."
+    abstract = "Agent replies to a journal line that change nothing are left out of the chat. The chat's Shown menu brings them back."
 
     help = """
-        When the journal hands the agent a line and the agent's whole answer is an
-        acknowledgement, such as Noted or Carrying on, that answer is kept as a message but
-        left out of the chat. Turn on Acknowledgements under the chat's Shown menu to see them.
+        When the journal hands the agent a line and the agent answers it without changing
+        anything, such as Noted or a remark about what the line meant, that answer is kept as a
+        message but left out of the chat. Turn on Acknowledgements under the chat's Shown menu to
+        see them.
 
-        It never hides an answer to a message from you, a question, a comment, a failure, or a
-        line that asks the agent about a stall, a block or a decision; those always reach the chat.
+        It never hides an answer to a message from you, a question, a comment, a failure, a turn
+        that changed files, a reply that asks you something, or a line that asks the agent about
+        a stall, a block or a decision; those always reach the chat.
     """

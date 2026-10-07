@@ -52,7 +52,7 @@ class RecordCompactions(Handler):
 
 class AskToStop(Handler):
     def handle(self, context: Context, event: AgentChanged) -> None:
-        row = context.journal.get(Agents).load(event.agent)
+        row = context.journal.get(Agents).rows.peek(event.agent)
         stopping = row.data.get("stopping") or {}
         provider = PROVIDERS.get(row.provider)
         if not stopping or not provider:

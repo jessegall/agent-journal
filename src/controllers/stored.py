@@ -20,6 +20,7 @@ ARCHIVE = "zip"
 def wholes(rows: list, part_of) -> list:
     return [row for row in rows if not part_of(row)]
 SUMMARIES: dict[str, tuple] = {}
+STANDING: dict[str, tuple] = {}
 HELD = Memo()
 PACKS = Memo()
 INDEXED: dict[str, dict] = {}
@@ -167,6 +168,15 @@ class RowStore:
             if len(touched) < FLUSH_ROWS:
                 return self._patched(folder, moved, held[1], loose, touched)
         return self._summarised(folder, moved, [loose[n] for n in sorted(loose) if not loose[n].get(DAMAGED)])
+
+    def standing_summaries(self) -> list[dict]:
+        rows = self.summaries()
+        held = STANDING.get(str(self.folder()))
+        if held and held[0] is rows:
+            return held[1]
+        standing = [row for row in rows if not row["completed"] and not row["deleted"]]
+        STANDING[str(self.folder())] = (rows, standing)
+        return standing
 
     def _differing(self, held: list[dict], loose: dict[int, dict]) -> set[int]:
         listed = {row["n"]: row for row in held}
@@ -425,7 +435,9 @@ class RowStore:
         return [*own, *self.also()]
 
     def kept(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
-        rows = [row for row in self.summaries() if not row["deleted"]]
-        closed = [row for row in rows if row["completed"] and closed_since and row["completed"] >= closed_since]
+        standing = [self.peek(row["n"]) for row in self.standing_summaries()]
+        if not closed_since:
+            return self.order(standing)
+        closed = [row for row in self.summaries() if row["completed"] and not row["deleted"] and row["completed"] >= closed_since]
         kept = sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed
-        return self.order([self.peek(row["n"]) for row in rows if not row["completed"]] + [self.peek(row["n"]) for row in kept])
+        return self.order(standing + [self.peek(row["n"]) for row in kept])

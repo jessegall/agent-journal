@@ -5,7 +5,9 @@ from tests.conftest import fresh
 from tests.kit import report
 
 
-def test_an_acknowledgement_of_a_delivered_line_is_kept_out_of_the_chat_unless_its_answer_must_be_read():
+def test_a_turn_that_only_answers_a_journal_line_is_kept_out_of_the_chat_unless_it_tells_something():
+    from runner.hooks import handle
+    from providers import PROVIDERS
     record = fresh()
     report(record, "idle", "Stop")
     agents = Agents(record, actor=SYSTEM)
@@ -13,21 +15,27 @@ def test_an_acknowledgement_of_a_delivered_line_is_kept_out_of_the_chat_unless_i
     nudges = Nudges(record, actor=SYSTEM)
     plain, kept = nudges.create("a reminder"), nudges.create("plan 3 stands still", reply_kept=True)
 
-    def answered(text, prompted="journal", delivered=(f"nudge:{plain.n}",), failure=""):
-        agents.update(row.n, prompted=prompted, delivered=list(delivered), failure=failure)
+    def hook(event, **more):
+        handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": event, "session_id": "claude-1", **more})
+
+    def answered(text, prompt="[journal] todo 5 next", delivered=(f"nudge:{plain.n}",), failure="", writes=False):
+        hook("UserPromptSubmit", prompt=prompt)
+        agents.update(row.n, delivered=list(delivered), failure=failure)
+        if writes:
+            hook("PostToolUse", tool_name="Write", cwd=str(record.root.parent), tool_input={"file_path": "src/app.py", "content": "x"})
         chat.send(record, agents.load(row.n), text)
         found = [m for m in Messages(record).all() if m.brief == text]
         return [bool(m.data.get("acknowledgement")) for m in found]
 
     assert answered("Noted.") == [True], "a bare acknowledgement of a journal line is kept as a message the chat leaves out"
+    assert answered("Understood; I will keep quiet on journal lines from here.") == [True], "so is any answer to a journal line that changes nothing"
+    assert answered("Fixed the build and committed it.", writes=True) == [False], "a turn that changed files reports finished work"
+    assert answered("That is another helper's worktree, nothing to do.") == [True], "whatever words it uses, once a new line starts the next turn"
     assert answered("Carrying on with it.", delivered=(f"nudge:{kept.n}",)) == [False], "a line whose answer must be read keeps the answer in the chat"
     assert answered("Okay, on it.", delivered=("message:7",)) == [False], "an answer to a message is never hidden"
-    assert answered("Understood.", prompted="person") == [False], "a turn the person started is never hidden"
-    assert answered("Done.", failure="the turn failed") == [False], "a failed turn is never hidden"
-    assert answered("Fixed the build and pushed it to main.") == [False], "a turn that says something is never hidden"
-    assert answered("Got it, but which branch should I use?") == [False], "a question is never hidden"
-    assert answered("Done, the release shipped.") == [False], "an answer that starts with an acknowledgement but says more is never hidden"
-    assert answered("Carrying on, Sir Jesse.") == [True], "a bare acknowledgement with a greeting is hidden"
+    assert answered("Understood.", prompt="carry on") == [False], "a turn the person started is never hidden"
+    assert answered("The suite broke on the gate.", failure="the turn failed") == [False], "a failed turn is never hidden"
+    assert answered("Got it, but which branch should I use?") == [False], "a question waiting on the person is never hidden"
 
 
 def test_a_line_delivered_mid_turn_keeps_the_message_the_turn_answers():

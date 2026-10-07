@@ -30,7 +30,10 @@ class Agents(Controller):
         return memo[self.type, session]
 
     def saw(self, n: int, fact: dict, **data):
-        return self._changed(n, "reported", data, **fact)
+        row = self._changed(n, "reported", data, **fact)
+        if self.record.memo is not None:
+            self.record.memo[self.type, row.title] = row
+        return row
 
     def subagent(self, n: int, action: str, **data):
         return self._emit(int(n), action, **data)
@@ -68,7 +71,7 @@ class Agents(Controller):
         return self.rows.peek(n) if n is not None else None
 
     def _primary_n(self) -> int | None:
-        standing = [row for row in self.rows.summaries() if not row["deleted"] and not row["completed"] and not row.get("parent")]
+        standing = [row for row in self.rows.standing_summaries() if not row.get("parent")]
         latest = max(standing, key=lambda row: 0.0 if row["at"] is None else float(row["at"]), default=None)
         return latest["n"] if latest is not None else None
 

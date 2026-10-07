@@ -188,8 +188,8 @@ class Phones(Controller):
 
     def _live(self) -> list[dict]:
         now = time.time()
-        return [row for row in self.rows.summaries() if not row["completed"] and not row["deleted"]
-                and ((row.get("key") and row.get("expires", 0) > now) or row.get("code_until", 0) > now)]
+        return [row for row in self.rows.standing_summaries()
+                if ((row.get("key") and row.get("expires", 0) > now) or row.get("code_until", 0) > now)]
 
 
 def phones_live(root) -> bool:
