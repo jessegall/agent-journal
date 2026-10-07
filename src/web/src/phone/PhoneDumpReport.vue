@@ -1,6 +1,6 @@
 <script setup>
-import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
+import Button from "./kit/Button.vue";
 import Cell from "./kit/Cell.vue";
 import CellGroup from "./kit/CellGroup.vue";
 
@@ -34,10 +34,10 @@ const emit = defineEmits(["take", "leave"]);
                 <Cell :label="offer.ask || offer.label" :sub="ANSWERED[offer.state] || ''" still>
                     <template v-if="!offer.state" #end>
                         <span class="dump-offer">
-                            <Btn kind="primary" :busy="offer.busy" @click="emit('take', offer.pick)">
+                            <Button :busy="offer.busy" @click="emit('take', offer.pick)">
                                 {{ offer.ask ? offer.label : "Yes, do it" }}
-                            </Btn>
-                            <Btn @click="emit('leave', offer.pick)">Not now</Btn>
+                            </Button>
+                            <Button kind="plain" @click="emit('leave', offer.pick)">Not now</Button>
                         </span>
                     </template>
                 </Cell>
@@ -55,9 +55,5 @@ const emit = defineEmits(["take", "leave"]);
     display: flex;
     flex: none;
     gap: 6px;
-}
-
-.dump-offer :deep(.btn) {
-    min-height: 44px;
 }
 </style>
