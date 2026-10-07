@@ -8,7 +8,7 @@ from engine import bus
 from engine.fields import Loaded
 from engine.markers import plain
 from engine.record import Record
-from resources.base import PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
+from resources.base import OWNER, PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
 from controllers.discussion import TWICE_WITHIN, Discussed
 from controllers.files import Files
@@ -158,12 +158,15 @@ class Controller(Files, Links, Discussed):
             raise Refused(f"{self.type} {n} is {ended}")
         return row
 
-    def _handled(self, action: str, /, **args):
+    def _handled(self, action: str, /, **args) -> None:
         for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
-            taken = fn(self, **args)
-            if taken is not None:
-                return taken
-        return None
+            fn(self, **args)
+
+    def _plugin_twin(self, title: str, data: dict) -> dict | None:
+        name = data.get(OWNER)
+        if not name:
+            return None
+        return next((row for row in self.rows.summaries() if row.get(OWNER) == name and row["title"] == title and not row["deleted"]), None)
 
     def _field_choices(self, r: Resource) -> dict:
         return {}
@@ -190,9 +193,10 @@ class Controller(Files, Links, Discussed):
         twin = self._twin(title, brief, data.get("about"), data.get("idempotency", ""))
         if twin is not None:
             return twin
-        taken = self._handled("create", title=title, abstract=abstract, brief=brief, **data)
-        if taken is not None:
-            return taken
+        found = self._plugin_twin(title, data)
+        if found is not None:
+            return self.update(found["n"], abstract=abstract or None, brief=brief or None, **data)
+        self._handled("create", title=title, abstract=abstract, brief=brief, **data)
         for name in self.resource.required:
             if not data.get(name):
                 self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
