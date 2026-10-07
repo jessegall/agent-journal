@@ -25,8 +25,7 @@ const blank = () => ({
     brief: "",
     calling: "title and name",
     sample: "",
-    helper: words.value.helper,
-    helpers: words.value.helpers,
+    humour: "",
 });
 const draft = reactive(blank());
 const start = ref(0);
@@ -38,8 +37,7 @@ const copyOf = (row) => ({
     brief: row.brief,
     calling: row.data.calling,
     sample: sampleOf(row),
-    helper: row.data.helper,
-    helpers: row.data.helpers,
+    humour: row.data.humour,
 });
 const resetDraft = (row) => Object.assign(draft, row ? copyOf(row) : blank());
 
@@ -111,7 +109,7 @@ function startFrom(row) {
         <div class="profile-panel">
             <template v-if="locked">
                 <Notice>
-                    Comes with the journal, so it can't be changed, and an update may change its wording. Duplicate it to make a version
+                    Comes with the journal, so it can't be changed, and an update may change its wording. Make a copy to have a version
                     of your own.
                 </Notice>
             </template>
@@ -139,13 +137,24 @@ function startFrom(row) {
             </FormField>
             <FormField
                 label="Style"
-                :help="`Plain words, as you would brief a person: the tone, the humour, how it uses your name and when it reacts to your messages. The agent reads this when it starts${isNew || locked ? '' : ', and is told as soon as you change it'}.`"
+                :help="`Plain words, as you would brief a person: the tone, how it uses your name and when it reacts to your messages. The agent reads this when it starts${isNew || locked ? '' : ', and is told as soon as you change it'}.`"
             >
                 <TextArea
                     :value="draft.brief"
                     :disabled="locked"
                     placeholder="For example: Talk like a calm colleague. Keep answers short. Use my first name now and then. No jokes."
                     @input="edit('brief', $event.target.value)"
+                />
+            </FormField>
+            <FormField
+                label="Humour"
+                help="How it answers a meme, a joke, criticism of its work or anger: one line in its own manner, then it puts the matter right. Only in the chat."
+            >
+                <TextArea
+                    :value="draft.humour"
+                    :disabled="locked"
+                    placeholder="For example: When I send a meme or am cross with you, answer with one dry line, then fix it."
+                    @input="edit('humour', $event.target.value)"
                 />
             </FormField>
             <FormField label="Address" help="Your title and first name are set in Settings › Agent, under Your title and name.">
@@ -177,7 +186,7 @@ function startFrom(row) {
                 <template v-if="!inUse">
                     <Btn small @click="$emit('use', row)">Use this profile</Btn>
                 </template>
-                <Btn small kind="primary" @click="$emit('duplicate', row)">Duplicate to change it</Btn>
+                <Btn small kind="primary" @click="$emit('duplicate', row)">Make a copy to change it</Btn>
             </template>
             <template v-else-if="inUse">
                 <span class="profile-panel-status">You're editing the profile in use. Each change is saved and the agent is told at once.</span>

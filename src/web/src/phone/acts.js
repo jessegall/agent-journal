@@ -148,9 +148,10 @@ export const PROFILE_FIELDS = [
     text("title", "Name", {value: (row) => row.title}),
     text("brief", "How the agent talks", {value: (row) => row.brief, area: true}),
     text("calling", "What the agent calls you", {value: (row) => row.data.calling, options: CALLINGS}),
+    text("humour", "How it answers a meme, a joke, criticism or anger", {value: (row) => row.data.humour, area: true}),
     text("sample", "A sample line", {value: (row) => row.data.sample, area: true}),
 ];
-export const NEW_PROFILE = {title: "", brief: "", data: {calling: "title and name", sample: ""}};
+export const NEW_PROFILE = {title: "", brief: "", data: {calling: "title and name", sample: "", humour: ""}};
 const closed = (row) => Boolean(row.completed);
 const standing = (row) => !row.completed;
 const named = (row) => `${kindWord(row.type)} ${row.n}`;

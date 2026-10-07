@@ -24,9 +24,14 @@ class FormOfAddressDetails(FeatureDetails):
         here, or else the first name git knows you by; the title is only ever what you set here. A change here
         reaches the running agent at once.
 
-        The voice is for your speech in the chat and nowhere else. Code, any text written into a project that
-        a person will read, commit messages, docs and briefs to other agents always use plain words: helper and
-        subagent, never the profile's word for them, and never the profile's tone.
+        A profile holds how the agent talks, what it calls you, its humour (how it answers a meme, a joke,
+        criticism or anger: one line in its own manner, then the matter put right) and a sample line. The four
+        that ship with the journal are locked; make a copy of one to change it, or write your own.
+
+        The voice changes only the tone of the chat and how the agent addresses you, never the journal's own
+        words: even in the chat it says helper, subagent, to-do and environment, whatever voice is active.
+        Code, any text written into a project, commit messages, docs, reports and briefs to other agents are
+        always in plain language, never in the profile's tone.
     """
 
     settings = [
