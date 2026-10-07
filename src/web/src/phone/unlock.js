@@ -20,8 +20,8 @@ export async function unlockable() {
 
 async function requested(method, url, body) {
     const where = new URL(url, location.href);
-    const named = new TextEncoder().encode(`${method} ${where.pathname}${where.search}\n${body ?? ""}`);
-    return hex(await crypto.subtle.digest("SHA-256", named));
+    const encodedRequest = new TextEncoder().encode(`${method} ${where.pathname}${where.search}\n${body ?? ""}`);
+    return hex(await crypto.subtle.digest("SHA-256", encodedRequest));
 }
 
 function confirmed(label, act) {
