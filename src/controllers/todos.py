@@ -1,11 +1,18 @@
 import time
+from typing import TypedDict
+
 from controllers.base import Controller, CONTROLLERS
 from controllers.prioritised import Prioritised
 from resources import types
 from resources.base import SYSTEM, Refused
-from resources.shapes import LEVELS, rank_before
+from resources.shapes import CHANGE, COMMIT, LEVELS, rank_before
 from controllers.questions import Questions
 from controllers.marks import action
+
+
+class Touched(TypedDict):
+    changed: list[dict]
+    commits: list[dict]
 
 
 def task_state(row, works: dict) -> str:
@@ -49,6 +56,16 @@ class Todos(Prioritised, Controller):
         works = {int(w.todo): w for w in Works(self.record, actor=SYSTEM).rows.standing() if w.todo}
         rows = [self.load(row["n"]) for row in self.rows.summaries() if row.get("assigned") == agent and not row["deleted"]]
         return [{"n": r.n, "title": r.title, "hidden": bool(r.hidden), "state": task_state(r, works)} for r in rows]
+
+    @action
+    def touched(self, n: int) -> Touched:
+        """The files the to-do's work changed and the commits made while it ran, newest work last."""
+        from controllers.works import Works
+        works = Works(self.record, actor=SYSTEM)
+        own = sorted((works.load(row["n"]) for row in works.rows.summaries() if row.get("todo") == n and not row["deleted"]), key=lambda w: w.created)
+        changed = {f[CHANGE.path]: f for w in own for f in w.changed}
+        commits = {c[COMMIT.sha]: c for w in own for c in w.commits}
+        return Touched(changed=list(changed.values()), commits=list(commits.values()))
 
     @action
     def report(self, n: int, how: str):
