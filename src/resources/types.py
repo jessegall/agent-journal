@@ -325,7 +325,7 @@ class AgentRow(Shape, Resource):
         Field(default="", name="prompted"),
         Field(default=list, name="delivered"),
         Field(default="", name="failure"),
-        Field(name="started"),
+        Field(default=0, name="started"),
         Field(default=0, name="context"),
         Field(default=dict, name="usage"),
         Field(default=list, name="skills"),

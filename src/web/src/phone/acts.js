@@ -2,7 +2,9 @@ import {api} from "../api/client.js";
 import {phone} from "../api/phone.js";
 import {closeWord, meta, SHARED} from "../domain/spec.js";
 import {shiftQuestion} from "../board/moves.js";
+import {deleteReason, profileInUse, useProfile} from "../composables/profiles.js";
 import {stopLinksOf} from "../composables/shares.js";
+import {CALLINGS} from "../domain/callings.js";
 import {kindWord} from "./kinds.js";
 import {place} from "./outbox.js";
 import {todoLane} from "./todo.js";
@@ -140,6 +142,14 @@ const LINK_HINT = "For example: to-do 12 or doc 4";
 
 const text = (key, label, more = {}) => ({key, label, required: true, ...more});
 const optional = (key, label, more = {}) => ({key, label, required: false, ...more});
+
+export const PROFILE_FIELDS = [
+    text("title", "Name", {value: (row) => row.title}),
+    text("brief", "How it talks", {value: (row) => row.brief, area: true}),
+    text("calling", "What it calls you", {value: (row) => row.data.calling, options: CALLINGS}),
+    text("sample", "A sample line", {value: (row) => row.data.sample, area: true}),
+];
+export const NEW_PROFILE = {title: "", brief: "", data: {calling: "title and name", sample: ""}};
 const closed = (row) => Boolean(row.completed);
 const standing = (row) => !row.completed;
 const named = (row) => `${kindWord(row.type)} ${row.n}`;
@@ -376,7 +386,16 @@ const OWN = {
     },
     check: {run: {label: "Run it now", result: () => "Running"}},
     tool: {run: {label: "Run it", fields: [optional("args", "With what?")], result: () => "Ran"}},
-    profile: {duplicate: {label: "Make a copy", result: () => "Copied"}},
+    profile: {
+        duplicate: {label: "Make a copy", result: () => "Copied"},
+        update: {
+            label: "Edit the profile",
+            when: (row) => !row.data.system,
+            fields: PROFILE_FIELDS,
+            result: () => "Profile saved",
+        },
+        delete: {...COMMON.delete, when: (row) => !deleteReason(row)},
+    },
     collection: {
         add: {
             label: "Add items",
@@ -409,6 +428,13 @@ const EXTRA = [
         confirm: true,
         run: (row) => stopLinksOf(row.ref),
         result: () => "Its share links no longer work",
+    },
+    {
+        key: "use",
+        label: "Use this profile",
+        when: (row) => row.type === "profile" && row.n !== profileInUse.value,
+        run: (row) => useProfile(row),
+        result: (row) => `The agent now talks as ${row.title}`,
     },
     {
         key: "plan",

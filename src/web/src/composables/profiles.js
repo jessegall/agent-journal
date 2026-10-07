@@ -29,7 +29,10 @@ export async function loadProfiles() {
     samples.value = lines;
 }
 
-export const useProfile = (row) => saveSettings({form_of_address: {...form(), profile: row.n}});
+export async function useProfile(row) {
+    store.settings ||= await api.settings();
+    return saveSettings({form_of_address: {...form(), profile: row.n}});
+}
 
 export const deleteReason = (row) => {
     if (row.data.system) return "Built in, so it can't be deleted.";

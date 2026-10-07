@@ -1,4 +1,5 @@
 <script setup>
+import {commandMark} from "../composables/terminal.js";
 import {useToggledSet} from "../composables/toggledSet.js";
 import Console from "../kit/Console.vue";
 import {MOD} from "../platform/keys.js";
@@ -11,14 +12,13 @@ const emit = defineEmits(["now"]);
 
 const {members: opened, toggle} = useToggledSet();
 
-const MARKS = {Bash: "$", Journal: "#"};
 </script>
 
 <template>
     <Console>
         <template v-for="c in lines" :key="c.at">
             <div :class="['log-line', {shell: c.tool === 'Bash', noted: c.tool === 'Journal'}]">
-                <span class="log-mark">{{ MARKS[c.tool] || "›" }}</span>
+                <span class="log-mark">{{ commandMark(c.tool) }}</span>
                 <span class="log-text">{{ c.command }}</span>
             </div>
             <template v-if="c.output">

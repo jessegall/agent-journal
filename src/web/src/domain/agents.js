@@ -22,6 +22,13 @@ export const usageWindows = (data) => (data && data.usage && data.usage.windows)
 
 export const loadedSkills = (data) => (data && data.skills) || [];
 
+const stopped = (a) => (a.data.status === "stopped" ? 1 : 0);
+
+export const leadOf = (agents) =>
+    [...agents].filter((a) => !a.data.parent).sort((a, b) => stopped(a) - stopped(b) || (b.data.at || 0) - (a.data.at || 0))[0] || null;
+
+export const runningData = (agent) => (agent && agent.data.status !== "stopped" ? agent.data : null);
+
 const PAST = {pause: "paused", resume: "resumed", stop: "stopped", remove: "removed"};
 
 export function plainRefusal(message, action) {
