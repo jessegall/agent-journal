@@ -12,7 +12,7 @@ import {announce} from "./announce.js";
 
 const MOST_LINES = 5;
 const props = defineProps({about: {type: String, default: ""}, quote: {type: String, default: ""}, draft: {type: String, default: ""}});
-const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused", "typing", "dump"]);
+const emit = defineEmits(["sending", "sent", "unabout", "unquote", "focused", "typing", "dump", "blurred"]);
 const SHORT = 420;
 const SHORT_LINES = 2;
 const failed = inject("phoneFailed");
@@ -153,6 +153,7 @@ async function send() {
             @beforeinput="keepRecordedWords"
             @input="grow"
             @focus="emit('focused')"
+            @blur="emit('blurred')"
         />
         <div class="compose-controls">
             <button type="button" class="compose-clip" aria-label="Attach files or photos" @mousedown.prevent @click="picker.open()">

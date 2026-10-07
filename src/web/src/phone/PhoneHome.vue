@@ -165,7 +165,14 @@ const unseen = ref(0);
 const TALKING = ["message", "question", "comment"];
 let scrollFrame = 0;
 let stuck = true;
-const keptDown = () => stuck && toBottom();
+let boxFocused = false;
+const keptDown = () => (stuck || boxFocused) && toBottom();
+const boxFocus = () => {
+    boxFocused = true;
+    stuck = true;
+    toBottom();
+};
+const boxBlur = () => (boxFocused = false);
 const OLDER_AT = 400;
 const earlier = ref([]);
 const olderBusy = ref(false);
@@ -781,7 +788,8 @@ onMounted(startTourOnce);
                             :quote="quote"
                             :draft="draft"
                             @sending="toBottom"
-                            @focused="keptDown"
+                            @focused="boxFocus"
+                            @blurred="boxBlur"
                             @typing="toBottom"
                             @sent="sent"
                             @unabout="about = ''"
