@@ -31,6 +31,7 @@ import {store} from "../state/store.js";
 
 const TAB = "journal.settings.tab";
 const LISTED = ["features", "system", "sharing", "developer"];
+const FLUSH = ["plugins", "environments"];
 const known = (key) => TABS.some((t) => t.key === key);
 const tab = ref(known(route.value.sub) ? route.value.sub : remembered(TAB, "features"));
 const query = ref("");
@@ -182,7 +183,7 @@ onMounted(async () => {
                 <div class="settings-phone-group">
                     <template v-if="phoneGroup">
                         <SettingGroup sheet :group="phoneGroup" @change="save" @timing="saveTiming" @act="act">
-                            <template v-if="phoneGroup.key === 'agent'" #before>
+                            <template v-if="phoneGroup.key === 'voice'" #before>
                                 <AgentVoice />
                             </template>
                         </SettingGroup>
@@ -197,7 +198,7 @@ onMounted(async () => {
                     <template v-if="!narrow && listed">
                         <SettingNav class="settings-nav" :sections="navSections" :current="current" :searching="searching" @pick="pick" />
                     </template>
-                    <div :class="['settings-content', {flush: tab === 'plugins'}]">
+                    <div :class="['settings-content', {flush: FLUSH.includes(tab)}]">
                         <SwitchCase :value="tab">
                             <template #environments>
                                 <p class="settings-line">{{ tabLine("environments") }}</p>
@@ -278,6 +279,11 @@ onMounted(async () => {
 
 .settings-content.flush {
     padding: 0;
+}
+
+.settings-content.flush > .settings-line {
+    margin: 0;
+    padding: 20px 16px 14px;
 }
 
 .settings-body.plain .settings-content {
