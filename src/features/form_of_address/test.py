@@ -94,3 +94,47 @@ def test_each_profile_names_its_own_word_for_helpers_for_the_chat_only():
         block = start_block(record)
         assert f"In the chat, and only there, call your helpers {voice.helpers}, each a {voice.helper}." in block, "the chat word is given"
         assert "In code, in text written into a project, in commit messages, in docs and in briefs to other agents, always write helper and subagent." in block, "plain words everywhere else"
+
+
+def test_the_voice_and_every_project_wide_setting_and_switch_are_set_once_for_every_environment():
+    from controllers.types import Features
+    from engine.record import Record
+    record = shipped_record()
+    other = Record(record.root, "other")
+    other.home.mkdir(parents=True)
+    choose(record, number_of(record, "Coach"))
+    record.set_setting("viewer", {"color_scheme": "dark", "zoom": 2})
+    record.set_setting("boards", {"filler_model": "opus", "orchestrating": True})
+    Features(record, actor=SYSTEM).switch("boards", False)
+    assert other.setting("form_of_address") == {**PERSON, "profile": number_of(record, "Coach")}, "a new environment has the voice already, so it never asks"
+    assert (other.viewer, other.setting("boards")) == ({"color_scheme": "dark"}, {"filler_model": "opus"}), \
+        "the project's parts are shared and the rest stays with the environment that set it"
+    assert record.setting("boards") == {"filler_model": "opus", "orchestrating": True}, "the environment reads its own parts and the project's together"
+    assert not features.FEATURES["boards"].enabled(other), "a project-wide switch is turned once for every environment"
+    assert "\"form_of_address\"" in (record.root / "settings.json").read_text(), "the voice is written in the project's settings"
+
+
+def test_the_upgrade_folds_every_environments_settings_into_the_project_with_the_start_environment_first():
+    import json
+    from controllers.types import Features
+    from engine import runtime
+    from engine.record import Record
+    from migrations.m0067_settings_kept_once_per_project import run
+    features.load()
+    root = fresh("aside").root
+    homes = {name: Record(root, name) for name in ("aside", "start")}
+    for record in homes.values():
+        record.home.mkdir(parents=True, exist_ok=True)
+    runtime.set_env(root, "start")
+    values = {"aside": {"form_of_address": {"title": "Madam", "first_name": "Ada"}, "viewer": {"away": False, "zoom": 1}},
+              "start": {"form_of_address": {"title": "Captain"}, "boards": {"orchestrating": True}}}
+    for name, settings in values.items():
+        (homes[name].home / "settings.json").write_text(json.dumps(settings))
+    Features(homes["aside"], actor=SYSTEM).create("tickets", enabled=False)
+    run(root)
+    project = json.loads((root / "settings.json").read_text())
+    assert project["form_of_address"] == {"title": "Captain", "first_name": "Ada"}, "the start environment wins a clash and the others fill what it left unset"
+    assert (project["viewer"], project["features"]) == ({"away": False}, {"tickets": False}), "viewer preferences and project-wide switches move with them"
+    assert json.loads((homes["aside"].home / "settings.json").read_text()) == {"form_of_address": {}, "viewer": {"zoom": 1}}, \
+        "what moved to the project leaves the environment, and the rest stays"
+    assert json.loads((root / "attic" / "settings-before-project" / "aside.json").read_text()) == values["aside"], "the old file is kept in the attic"

@@ -1,3 +1,4 @@
+from resources.base import PROJECT
 from features.trigger import MINUTES, Trigger
 from features.base import FeatureDetails, Line
 from features.groups import Group
@@ -47,6 +48,7 @@ class AutoUpdateDetails(FeatureDetails):
         Setting(
             name="installs",
             default="always",
+            scope=PROJECT,
             title="Which updates install by themselves",
             abstract="A bigger update waits on Home with an Update button",
             choices=("patches", "minor versions", "major versions", "always"),

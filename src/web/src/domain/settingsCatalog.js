@@ -273,8 +273,6 @@ function looseRows(settings, context) {
                           ]
                         : [],
                 }),
-            ],
-            browser: [
                 row({
                     key: "away",
                     kind: "switch",

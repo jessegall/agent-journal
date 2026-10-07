@@ -8,6 +8,7 @@ from controllers.types import Agents, CONTROLLERS
 import features
 from commands.launch import launch
 from engine.record import Record
+from resources.base import PROJECT
 from engine.seats import seats
 from engine.transcript import Turn, search as search_transcript
 from features.command_tags.reading import visible
@@ -94,9 +95,9 @@ def verify(ctx) -> str:
 
 def settings_text(ctx) -> str:
     record = ctx["record"]
-    out = [f"settings on {record.env} ({record.home / 'settings.json'})"]
+    out = [f"settings on {record.env} ({record.home / 'settings.json'}); the project's own are in {record.root / 'settings.json'}"]
     for name, f in features.FEATURES.items():
-        out.append(f"  features.{name:<14} {'on' if f.enabled(record) else 'off'}   {f.trigger or ''}")
+        out.append(f"  features.{name:<14} {'on' if f.enabled(record) else 'off'}   {f.trigger or ''}{'   whole project' if f.scope == PROJECT else ''}")
     for key in Record.SETTINGS:
         if key != Record.features and record.setting(key):
             out.append(f"  {key}: {record.setting(key)}")
