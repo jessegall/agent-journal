@@ -2,6 +2,7 @@
 import {onUnmounted, ref, watch} from "vue";
 import {ink, project, tint} from "../state/identity.js";
 import {ui} from "../state/ui.js";
+import {store} from "../state/store.js";
 import {route} from "../route.js";
 
 const MARKED_FOR = 2000;
@@ -11,6 +12,7 @@ let timer = 0;
 watch(
     [() => ui.flash.at, () => ui.away.hidden],
     () => {
+        if (store.settings?.viewer?.flash === false) return;
         showing.value = true;
         if (document.visibilityState !== "visible") {
             clearTimeout(timer);

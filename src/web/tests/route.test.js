@@ -47,6 +47,19 @@ describe("addresses the viewer builds", () => {
         expect(await settled()).toBe("#/main/todo");
     });
 
+    test("opening a search result keeps the search", async () => {
+        at("#/main/search?q=roses");
+        await settled();
+        peek("message", 12);
+        expect(await settled()).toBe("#/main/search?q=roses&open=message:12");
+        expect(route.value.q).toBe("roses");
+    });
+
+    test("a plugin opens on the Plugins page, not in a side panel", async () => {
+        peek("plugin", 3);
+        expect(await settled()).toBe("#/main/plugins?plugin=3");
+    });
+
     test("peeking at another environment names it", async () => {
         peekThere("other", "todo", 4);
         expect(await settled()).toBe("#/main/todo?open=todo:4@other");

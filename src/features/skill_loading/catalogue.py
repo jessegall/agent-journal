@@ -89,22 +89,12 @@ def skill_files(home: Path) -> list[Path]:
 
 
 @cache
-def subjects() -> set[str]:
-    folder = data("skills")
-    return {"journal", *(skill_name(path.stem) for path in folder.glob("*.md") if path.name != "journal.md")}
-
-
-@cache
 def marked_primary() -> frozenset[str]:
     return frozenset(skill_name(path.stem) for path in data("skills").glob("*.md") if frontmatter(path.read_text(errors="replace")).get("primary") == "true")
 
 
 def primary() -> set[str]:
     return {"journal", *marked_primary(), *(skill_name(name) for name, f in features.FEATURES.items() if f.details and f.details.primary)}
-
-
-def managed() -> set[str]:
-    return subjects() | {skill_name(name) for name in features.names()}
 
 
 def available(root: Path) -> set[str]:
@@ -128,7 +118,7 @@ def recent_before_compaction(agent, count: int) -> set[str]:
 
 def chosen(record: Record) -> list[str]:
     named = record.setting(Record.skills)
-    current = managed() & available(record.root.parent)
+    current = available(record.root.parent)
     return sorted(current & (primary() if named is None else set(named) | primary()))
 
 

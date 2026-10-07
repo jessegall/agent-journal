@@ -1,6 +1,6 @@
 <script setup>
 import {pluginRequest} from "../domain/plugins.js";
-import {computed, ref, watch} from "vue";
+import {computed, nextTick, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Console from "../kit/Console.vue";
@@ -127,6 +127,19 @@ async function askAgent() {
     wish.value = "";
     asked.value = true;
 }
+
+watch(
+    () => [route.value.plugin, plugins.value.length],
+    async ([n]) => {
+        if (!n) return;
+        await nextTick();
+        const card = document.querySelector(`[data-plugin="${n}"]`);
+        if (!card) return;
+        card.scrollIntoView({block: "center", behavior: "smooth"});
+        card.animate([{outline: "2px solid var(--accent)"}, {outline: "2px solid transparent"}], {duration: 1600});
+    },
+    {immediate: true}
+);
 </script>
 
 <template>
@@ -166,6 +179,7 @@ async function askAgent() {
             <div class="cards">
                 <template v-for="p in plugins" :key="p.n">
                     <PluginCard
+                        :data-plugin="p.n"
                         :plugin="p"
                         :services="servicesOf(p)"
                         :pages="pagesOf(p)"

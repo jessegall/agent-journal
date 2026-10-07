@@ -300,7 +300,7 @@ def test_running_out_of_viewer_ports_is_refused_in_words_with_the_hooks_put_back
     assert moved(record) == [] and hooks.read_text() == before, "nothing stays set aside"
 
 
-def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_and_lists_the_journals_running(monkeypatch):
+def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_and_lists_the_journals_running(tmp_path, monkeypatch):
     import socket
     held = socket.socket()
     held.bind(("127.0.0.1", 0))
@@ -318,6 +318,12 @@ def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_a
         "a page is opened when no tab has it"
     assert viewer.show("http://x/", opener=opened.append, focuser=lambda url: True) == "http://x/" and opened == ["http://x/#/dev"], "a tab that already has it is brought forward instead"
     assert viewer.show("", "dev", opener=opened.append, focuser=lambda url: True) == "" and opened == ["http://x/#/dev"], "nothing is opened with no address"
+
+    monkeypatch.setenv("AGENT_JOURNAL_HOME", str(tmp_path))
+    kept = tmp_path / "kept" / ".journal"
+    kept.mkdir(parents=True)
+    viewer.keep([viewer.KnownJournal(str(kept), "kept", "http://127.0.0.1:1/", 2.0), viewer.KnownJournal(str(tmp_path / "gone" / ".journal"), "gone", "http://127.0.0.1:2/", 1.0)])
+    assert [j.project for j in viewer.known()] == ["kept"], "a journal whose folder is gone is no longer listed"
 
     probed = []
     monkeypatch.setattr(viewer, "probe", lambda: probed.append("probe"))

@@ -24,7 +24,7 @@ const props = defineProps({
     idle: {type: Object, default: null},
 });
 const emit = defineEmits(["unquote", "typing"]);
-const draft = reactive({text: "", files: [], sending: false, error: ""});
+const draft = reactive({text: "", files: [], sending: false, error: "", over: false});
 const writing = computed(() => !!draft.text.trim());
 watch(writing, (is) => {
     store.drafting += is ? 1 : -1;
@@ -123,6 +123,16 @@ function pasted(e) {
     draft.files.push(...files);
 }
 
+function dropped(e) {
+    draft.over = false;
+    draft.files.push(...Array.from(e.dataTransfer?.files || []));
+    area.value && area.value.focus();
+}
+
+function dragging(e) {
+    draft.over = Array.from(e.dataTransfer?.types || []).includes("Files");
+}
+
 function picked(e) {
     draft.files.push(...e.target.files);
     e.target.value = "";
@@ -165,7 +175,13 @@ async function use(tool) {
 </script>
 
 <template>
-    <form class="compose" @submit.prevent="go">
+    <form
+        :class="['compose', {over: draft.over}]"
+        @submit.prevent="go"
+        @dragover.prevent="dragging"
+        @dragleave.self="draft.over = false"
+        @drop.prevent="dropped"
+    >
         <template v-if="quote">
             <div class="compose-quote">
                 <span class="compose-quote-label">{{ quoteLabel }}</span>
@@ -270,6 +286,12 @@ async function use(tool) {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.compose.over {
+    border-radius: 12px;
+    outline: 2px dashed var(--accent);
+    outline-offset: 4px;
 }
 
 .compose-quote {

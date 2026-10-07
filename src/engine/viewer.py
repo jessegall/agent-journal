@@ -77,7 +77,7 @@ class Identity(Loaded):
 
 def known() -> list[KnownJournal]:
     found = (KnownJournal.from_json(j) for j in read_json(machine(), list, []) if isinstance(j, dict))
-    return [j for j in found if j.root]
+    return [j for j in found if j.root and Path(j.root).is_dir()]
 
 
 def keep(entries: list[KnownJournal]) -> None:

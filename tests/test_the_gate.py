@@ -4,6 +4,7 @@ import os
 import threading
 import time
 from dataclasses import replace
+from pathlib import Path
 
 import features
 from commands.cli import context
@@ -248,6 +249,14 @@ def test_a_session_start_reads_session_model_and_context_from_each_providers_own
         assert (row.provider, row.model, row.context, row.parent, row.transcript) == (name, *EXPECTED[name], "", str(path)), \
             f"{name}: the row is the transcript's session, with the model and the percent of the window its transcript says"
     claude = PROVIDERS["claude"]()
+    switched = tmp_path / "claude" / FIXTURES["claude"][0]
+    status = Path.home().joinpath(".journal", "claude-status", f"{switched.stem}.json")
+    status.parent.mkdir(parents=True, exist_ok=True)
+    status.write_text(json.dumps({"model": {"id": "claude-switched-model", "display_name": "Switched"}}))
+    handle(claude, record.root, record.env, {"hook_event_name": "UserPromptSubmit", "session_id": "ignored", "transcript_path": str(switched),
+                                             "cwd": str(record.root.parent)})
+    assert Agents(record, actor=SYSTEM).by_session(switched.stem).model == "claude-switched-model", \
+        "claude: a model switched in the session shows at once, from Claude Code's own status, before the transcript names it"
     child = tmp_path / "claude" / "main" / "subagents" / "agent-sub1.jsonl"
     child.parent.mkdir(parents=True)
     child.write_text(transcript_lines(FIXTURES["claude"][1][1]))
