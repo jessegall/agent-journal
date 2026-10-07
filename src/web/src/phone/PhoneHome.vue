@@ -613,7 +613,7 @@ async function deleteIt() {
     held.value = null;
     try {
         await api.deleteTurn(item.type, item.n);
-        announce("Deleted");
+        announce("Message deleted");
         refresh();
     } catch {
         noticed("That message wasn't deleted. Try again.");

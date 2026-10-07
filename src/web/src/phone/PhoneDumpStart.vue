@@ -69,7 +69,7 @@ async function send() {
     <template v-if="draft.error">
         <p class="dump-start-error" role="alert">{{ draft.error }}</p>
     </template>
-    <Button fill :busy="draft.sending" :disabled="!ready" @click="send">Send to sort</Button>
+    <Button fill :busy="draft.sending" :disabled="!ready" @click="send">Send to the agent to sort</Button>
     <template v-if="earlier.length">
         <CellGroup head="Earlier dumps">
             <template v-for="row in earlier" :key="row.n">

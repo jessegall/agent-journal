@@ -17,10 +17,10 @@ await runScenarios(
             await page.getByLabel("Files to send").setInputFiles(NOTES);
             await page.getByText("Files · 2").waitFor({timeout: SHOWN});
             await page.getByLabel("Notes for the agent").fill("Garden notes from the weekend");
-            await page.getByRole("button", {name: "Send to sort"}).click();
+            await page.getByRole("button", {name: "Send to the agent to sort"}).click();
             await page.getByText("Files · 0 of 3 done").waitFor({timeout: SHOWN});
             await page.getByText("tulips.txt").first().waitFor();
-            await page.getByRole("button", {name: "Say how to sort it"}).click();
+            await page.getByRole("button", {name: "Tell the agent how to sort"}).click();
             await page.getByRole("dialog").getByRole("textbox").fill("One document per flower");
             await page.getByRole("dialog").getByRole("button", {name: "Send", exact: true}).click();
             await page.getByText("Sent to the agent").waitFor({timeout: SHOWN});
@@ -31,7 +31,7 @@ await runScenarios(
             await page.getByText("2 files. Send as a dump instead?").waitFor({timeout: SHOWN});
             await page.getByRole("button", {name: "Send as a dump"}).click();
             await page.getByText("Files · 2").waitFor({timeout: SHOWN});
-            await page.getByRole("button", {name: "Send to sort"}).click();
+            await page.getByRole("button", {name: "Send to the agent to sort"}).click();
             await page.getByText("Files · 0 of 2 done").waitFor({timeout: SHOWN});
         },
         async "a dump being sorted shows above the chat and opens"(page) {

@@ -103,7 +103,7 @@ async function merge() {
     merging.value = null;
     const list = picked.map((m) => `“${m.row.title}” (${m.ref})`).join(" and ");
     await say(`Merge ${list} into one document, named for both, and file it where the first one is.`);
-    toast("The agent merges them");
+    toast("Asked the agent to merge them");
 }
 </script>
 
@@ -162,7 +162,7 @@ async function merge() {
             <Button kind="plain" @click="merging = null">Cancel</Button>
         </template>
         <template v-else>
-            <Button @click="form = 'say'">{{ working ? "Say how to sort it" : "Ask about it" }}</Button>
+            <Button @click="form = 'say'">{{ working ? "Tell the agent how to sort" : "Ask the agent" }}</Button>
             <Button kind="plain" aria-haspopup="dialog" @click="moreOpen = true">More</Button>
         </template>
     </div>
