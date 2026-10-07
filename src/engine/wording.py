@@ -41,10 +41,8 @@ def counted(groups: dict[tuple, dict], record) -> list[str]:
 
 
 def fill(value, values: dict):
-    if isinstance(value, str):
-        return PLACEHOLDER.sub(lambda m: str(values.get(m.group(1), m.group(0))), value)
     if isinstance(value, list):
         return [fill(part, values) for part in value]
     if isinstance(value, dict):
         return {key: fill(part, values) for key, part in value.items()}
-    return value
+    return PLACEHOLDER.sub(lambda m: str(values.get(m.group(1), m.group(0))), value)

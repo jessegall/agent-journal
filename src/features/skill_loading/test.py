@@ -98,6 +98,11 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
         publish(tmp_path, ("claude", "codex"))
     assert ((tmp_path / "skills" / "journal").is_symlink(), (tmp_path / "skills" / "journal" / "SKILL.md").is_file()) == (False, True), \
         "a self-pointing link is replaced by the real folder, and linking onto the same folder is skipped"
+    from providers.skill_homes import RETIRED
+    old_copy = tmp_path / "retired" / RETIRED[0] / "journal-todos"
+    old_copy.mkdir(parents=True)
+    publish(tmp_path / "retired", ("claude", "codex"))
+    assert not old_copy.exists(), "a journal skill copied into a home the provider no longer reads is taken away"
     project = tmp_path / "project"
     (project / ".claude" / "skills" / "journal").mkdir(parents=True)
     (project / ".claude" / "skills" / "journal" / "SKILL.md").write_text("committed\n")
@@ -178,6 +183,11 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
     from controllers.types import Agents
     assert [load["skill"] for load in Agents(record, actor="system").by_session("codex-1").data["skill_loads"]] == ["journal-work-tracking"], \
         "the load is kept on the agent, for the chat to show"
+    from providers.codex_rows import Row
+    looped = Row.from_payload({"timestamp": "2026-10-01T10:00:00Z", "type": "response_item", "payload": {"type": "custom_tool_call", "call_id": "c9", "name": "exec",
+                               "input": 'const r=await tools.exec_command({cmd:"for s in journal journal-todos notes; do cat .agents/skills/$s/SKILL.md; done"});'}})
+    assert [use.skill for use in codex.tool_uses(looped) if use.name == "Skill"] == ["journal", "journal-todos"], \
+        "skills read in a loop over their names are each a load, and only the journal's own"
     later = ("journal-plans", "journal-docs", "journal-facts", "journal-rules", "journal-tickets")
     for name in (*later, "journal-early"):
         (record.root.parent / ".agents" / "skills" / name).mkdir(parents=True)
