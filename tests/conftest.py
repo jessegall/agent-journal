@@ -9,8 +9,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from tests import isolation  # noqa: E402
 
-isolation.settle()
-
 import pytest  # noqa: E402
 
 from engine.record import Record  # noqa: E402
@@ -102,7 +100,6 @@ def ports_of_its_own(monkeypatch):
 def outside_the_callers_session(monkeypatch):
     for name in ("JOURNAL_ENV", "JOURNAL_SESSION", "JOURNAL_AGENT", "JOURNAL_ACTOR"):
         monkeypatch.delenv(name, raising=False)
-    monkeypatch.setenv("AGENT_JOURNAL_REPO", str(Path(tempfile.gettempdir()) / "no-journal-releases"))
 
 
 @pytest.fixture(autouse=True)

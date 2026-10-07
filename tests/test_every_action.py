@@ -52,9 +52,9 @@ SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
 CALLS = {
     "changelog": [], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
     "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
-    "extension": [], "tunnelLogin": [{"endpoint": "tunler.example", "username": "walker", "password": "a password"}],
-    "tunnelLogout": [], "tunlerVersion": [], "updateTunler": [], "installTunler": ["tunler.example"], "tunnelAnswering": [],
-    "tunnelDomains": [], "tunnelRelease": ["walk.tunler.example"], "tunnelReaddress": [], "tunnelCause": [], "restartTunnel": [], "connectPhone": [7], "disconnectPhone": [1],
+    "extension": [], "tunnelLogin": [{"endpoint": "127.0.0.1:9", "username": "walker", "password": "a password"}],
+    "tunnelLogout": [], "tunlerVersion": [], "updateTunler": [], "installTunler": ["127.0.0.1:9"], "tunnelAnswering": [],
+    "tunnelDomains": [], "tunnelRelease": ["walk.127.0.0.1"], "tunnelReaddress": [], "tunnelCause": [], "restartTunnel": [], "connectPhone": [7], "disconnectPhone": [1],
     "shareLayout": ["a layout", {"panels": []}], "services": [], "serviceLog": ["sharing.server"], "setService": ["sharing.server", "up"],
     "pluginDashboard": [1, "main"], "pluginLog": ["works"], "onlineAgents": [], "agentControls": ["claude"], "agentHooks": ["claude"],
     "saveAgentHooks": ["claude", {}], "list": ["todo"], "all": ["todo"], "dashboard": [["todo", "plan"]], "show": ["todo", 1],

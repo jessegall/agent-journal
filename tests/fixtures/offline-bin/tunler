@@ -1,0 +1,6 @@
+#!/bin/sh
+case "$1" in
+    version) echo "tunler v0.0.0-offline" ;;
+    status) echo '{"logged_in":false,"auth_ok":false,"tunnels":0}'; exit 1 ;;
+    *) echo "this tunler stands in for tests and reaches no server" >&2; exit 1 ;;
+esac

@@ -267,10 +267,17 @@ def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tm
     from tests.kit import launch_update as launch
     from controllers.types import Notices
     from engine.record import Record
+    from install import git_env, version_file
     here = Path(__file__).resolve().parents[2]
+    release = tmp_path / "release"
+    shutil.copytree(here, release / "src", ignore=shutil.ignore_patterns("__pycache__", "node_modules"))
+    shutil.copy2(version_file(here), release / "VERSION")
+    for step in (["init", "-q"], ["add", "-A"], ["commit", "-q", "-m", "release"], ["tag", f"v{version_file(here).read_text().strip()}"]):
+        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *step], cwd=release, capture_output=True, timeout=60, env=git_env())
+    monkeypatch.setenv("AGENT_JOURNAL_REPO", str(release))
     project = tmp_path / "project"
     project.mkdir()
-    subprocess.run([sys.executable, str(here / "install.py"), "upgrade", str(project)], env={"HOME": str(tmp_path), "PATH": "/usr/bin:/bin", "AGENT_JOURNAL_BOOTSTRAPPED": "1"},
+    subprocess.run([sys.executable, str(here / "install.py"), "upgrade", str(project)], env={"HOME": str(tmp_path), "PATH": "/usr/bin:/bin", "AGENT_JOURNAL_BOOTSTRAPPED": "1", "AGENT_JOURNAL_REPO": str(release)},
                    capture_output=True, timeout=120)
     root = project / ".journal"
     shutil.copy2(here / "__main__.py", root / "src" / "__main__.py")

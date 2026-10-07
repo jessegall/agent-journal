@@ -6,7 +6,7 @@ from resources.base import AGENT
 from tests.conftest import fresh, refused
 
 
-def test_a_round_hands_out_one_read_only_critic_per_lens_and_a_report_for_their_findings(monkeypatch):
+def test_a_round_hands_out_one_read_only_critic_per_lens_and_a_report_for_their_findings(tmp_path, monkeypatch):
     features.load()
     up = {"answers": False}
     monkeypatch.setattr("features.critique.controller.answers", lambda url: up["answers"])
@@ -26,8 +26,11 @@ def test_a_round_hands_out_one_read_only_critic_per_lens_and_a_report_for_their_
         "each brief names the round's page and asks for findings as the answer, with no journal command"
     assert "continue each subagent" in critiques.recheck(row.n, "the empty state has a line now"), "a recheck goes back to the same critics"
     from tests.kit import report
+    monkeypatch.setenv("HOME", str(tmp_path))
+    (tmp_path / ".codex").mkdir()
+    (tmp_path / ".codex" / "config.toml").write_text('model = "gpt-6-sol"\n')
     report(record, "working", "PreToolUse", session="codex-1", provider="codex")
     by_codex = Critiques(record, actor=AGENT, session="codex-1").round("the helper list", lenses="words")
-    assert "model sonnet" not in by_codex, "a Codex agent is told a model it can dispatch, not Claude's"
+    assert "model gpt-6-sol" in by_codex, "a Codex agent is told the model Codex is set to, not Claude's"
     critiques.complete(row.n)
     assert critiques.load(row.n).completed > 0, "finishing closes the round"

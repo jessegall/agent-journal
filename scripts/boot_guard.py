@@ -19,6 +19,7 @@ from providers import DRIVERS
 
 STANDIN = ("#!/bin/sh\ntouch \"$0.started\"\necho \"Ask Codex to do anything\"\n(read line; echo \"$line\" > \"$0.typed\") &\n"
            "while [ ! -f \"$0.quit\" ]; do sleep 0.1; done\n")
+OFFLINE = HERE.parent / "tests" / "fixtures" / "offline-bin"
 WAIT = 45.0
 PROJECT = "Project builds"
 LIMIT = 15.0
@@ -30,7 +31,7 @@ def launches(place: Path, entry: Path, name: str, during=None, alone: bool = Tru
     standin = place / "bin" / name
     standin.write_text(STANDIN)
     standin.chmod(0o755)
-    env = {**git_env(), "PATH": f"{place / 'bin'}{os.pathsep}{os.environ['PATH']}", "AGENT_JOURNAL_HOME": str(place / "home"), "HOME": str(place / "home"),
+    env = {**git_env(), "PATH": os.pathsep.join([str(place / "bin"), str(OFFLINE), os.environ["PATH"]]), "AGENT_JOURNAL_HOME": str(place / "home"), "HOME": str(place / "home"),
            "AGENT_JOURNAL_REPO": str(place / "no-journal-releases")}
     env.pop("JOURNAL_ENV", None)
     journal = [sys.executable, str(entry), "--root", str(place / PROJECT / ".journal")]
@@ -101,7 +102,7 @@ def guard() -> float:
     place = Path(tempfile.mkdtemp(prefix="guard-"))
     try:
         (place / PROJECT).mkdir()
-        env = {**git_env(), "HOME": str(place / "home"), "AGENT_JOURNAL_HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1",
+        env = {**git_env(), "PATH": f"{OFFLINE}{os.pathsep}{os.environ['PATH']}", "HOME": str(place / "home"), "AGENT_JOURNAL_HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1",
                "AGENT_JOURNAL_REPO": str(place / "no-journal-releases")}
         env.pop("JOURNAL_ENV", None)
         installed = subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, text=True, timeout=WAIT)

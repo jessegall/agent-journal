@@ -25,7 +25,7 @@ LISTED = "plugins.json"
 KEPT = "plugin-offers.json"
 FRESH_FOR = 86400
 LANGUAGES = {".php": "PHP", ".py": "Python", ".ts": "TypeScript", ".vue": "Vue", ".cs": "C#"}
-REFRESHING = threading.Lock()
+REFRESHING: dict[Path, threading.Lock] = {}
 
 
 @dataclass(frozen=True)
@@ -120,12 +120,13 @@ def suggest(record, offers: list[Offer]) -> None:
 
 
 def refresh(record) -> None:
-    if not REFRESHING.acquire(blocking=False):
+    refreshing = REFRESHING.setdefault(Path(record.root), threading.Lock())
+    if not refreshing.acquire(blocking=False):
         return
     try:
         suggest(record, offers_read(record.root))
     finally:
-        REFRESHING.release()
+        refreshing.release()
 
 
 @dataclass(frozen=True)
