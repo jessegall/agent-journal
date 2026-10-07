@@ -1,6 +1,15 @@
-import pytest
+import sys
+from pathlib import Path
 
-import features
+sys.path.append(str(Path(__file__).resolve().parent))
+
+from tests import isolation  # noqa: E402
+
+isolation.settle()
+
+import pytest  # noqa: E402
+
+import features  # noqa: E402
 
 
 @pytest.fixture(scope="module", autouse=True)

@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.254.2 — tests stay off the live tunnel server, and two tests no longer fail now and then
+A test run no longer reaches the network or uses your tunler login. Every test, the feature tests included, runs with a home folder of its own and a stand-in tunler that answers locally, so a suite run no longer opens tunnels on your account or knocks the phone's address off; the boot guard uses the same stand-in. The half-done upgrade test fetches its release from a repository it builds instead of GitHub, so it no longer fails on a release commit. Finding plugins that fit a project is held per journal, so one journal's search no longer skips another's. Nothing to do.
+
 ## 2.254.1 — Reading a to-do no longer rebuilds the start block, and an interceptor refuses only by raising
 Marking a row as read no longer rebuilds the start block each session begins with, so a first read of a to-do answers in a few milliseconds instead of over the 50 ms budget. A plugin's repeated create of a row with the same title now returns that row from create itself, and no interceptor answers with a row any more: raising is the one way an interceptor refuses. Nothing to do.
 

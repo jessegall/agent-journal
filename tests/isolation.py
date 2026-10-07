@@ -2,11 +2,13 @@ import os
 import shutil
 import signal
 import socket
+import sys
 import tempfile
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 HOME = "AGENT_JOURNAL_HOME"
+OFFLINE = REPO / "tests" / "fixtures" / "offline-bin"
 BAND = 6
 SERIAL = {
     "tests/test_viewer_port.py": "viewer",
@@ -43,7 +45,7 @@ def world() -> Path:
 
 
 def home() -> Path:
-    where = world() / "home"
+    where = world() / "home" / "sandboxer"
     where.mkdir(parents=True, exist_ok=True)
     return where
 
@@ -55,11 +57,23 @@ def claimed() -> Path:
 
 
 def settle() -> None:
+    os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(browsers()))
     os.environ[HOME] = str(home())
+    os.environ["HOME"] = str(home())
     os.environ["CLAUDE_CONFIG_DIR"] = str(home())
+    os.environ["PATH"] = offline(os.environ["PATH"])
     os.environ["JOURNAL_ENV"] = "main"
+    os.environ["AGENT_JOURNAL_REPO"] = str(Path(tempfile.gettempdir()) / "no-journal-releases")
     for away in ("CLAUDE_CODE_MESSAGING_SOCKET", "JOURNAL_ROOT", "AGENT_JOURNAL_ROOT"):
         os.environ.pop(away, None)
+
+
+def browsers() -> Path:
+    return Path.home() / ("Library/Caches" if sys.platform == "darwin" else ".cache") / "ms-playwright"
+
+
+def offline(path: str) -> str:
+    return os.pathsep.join([str(OFFLINE), *(part for part in path.split(os.pathsep) if part != str(OFFLINE))])
 
 
 def reserve() -> int:
