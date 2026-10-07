@@ -1,12 +1,12 @@
 from engine.events.engine import AgentMessageSent
 from engine.events.resources import MessageCreated
+from features import actions
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.recital import COMMANDS, mentioned, searched
 from features.triggers.controller import Triggers
 from features.triggers.resource import DENY, FROM_USER, INSTRUCT, MESSAGE, NUDGE, START, Trigger
 from resources.base import SYSTEM, USER
 from engine.reach import Reach
-from features.triggers.controller import Triggers
 from controllers.types import Agents, Messages
 
 WATCHING = "watching"
@@ -24,9 +24,9 @@ def fire(context, agent, row, done: str = "", about: str = "") -> None:
         context.journal.acting(SYSTEM).get(Agents).card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
                                                    tone="danger" if row.does == DENY else "note", title=row.wording, ref=row.ref)
     if row.does == MESSAGE:
-        context.journal.acting(USER).get(Messages).create(row.title, brief=row.brief or row.text, trigger=row.n)
+        actions.post_as_user(context, row.title, row.brief or row.text, trigger=row.n)
     elif row.does in (NUDGE, INSTRUCT):
-        context.feature.journal.whisper(context.record, agent, row.does, title=row.title, text=row.wording)
+        actions.say(context, agent, row.does, title=row.title, text=row.wording)
     Triggers(context.record, actor=SYSTEM).fired(row.n, about)
 
 
