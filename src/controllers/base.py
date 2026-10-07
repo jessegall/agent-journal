@@ -1,7 +1,7 @@
 import inspect
 import shutil
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from functools import cache, partial
 
 from engine import bus
@@ -24,16 +24,21 @@ SEARCHABLE: dict[str, dict[int, tuple[float, str]]] = {}
 
 @dataclass(frozen=True)
 class Arguments(Loaded):
-    """What a call to an action names: every argument, its row, and the feature and key it sets."""
+    """What a call to an action names: every argument, its row, and the feature, key and value it sets."""
 
-    names: tuple[str, ...] = ()
+    values: dict = field(default_factory=dict)
     n: str = ""
     name: str = ""
     key: str = ""
+    value: object = ""
 
     @classmethod
     def given(cls, body: dict, params: dict) -> "Arguments":
-        return cls.from_json({**body, **params, "names": tuple(body)})
+        return cls.from_json({**body, **params, "values": body})
+
+    def writes(self) -> dict:
+        """The fields the call writes, with their new values: every argument it names, and the key it sets."""
+        return {**self.values, self.key: self.value} if self.key else dict(self.values)
 
 
 def searchable(r: Resource) -> str:
@@ -319,11 +324,15 @@ class Controller(Files, Links, Discussed):
         return self.resource.command_names.get(method, method)
 
     def _runs_commands(self, word: str, arguments: Arguments) -> bool:
-        """Whether calling the action with these arguments writes a field or setting that decides what runs."""
+        """Whether calling the action with these arguments changes a field or setting that decides what runs."""
         command = COMMANDS.get(self.type, {}).get(word)
         if command:
             return command.runs_commands(self, arguments)
-        return bool({*arguments.names, arguments.key} & self.resource.command_fields)
+        written = {name: value for name, value in arguments.writes().items() if name in self.resource.command_fields}
+        if not written:
+            return False
+        stored = self.load(arguments.n).data if arguments.n else {}
+        return any(value != stored.get(name, "") for name, value in written.items())
 
     def method(self, name: str):
         if name in self.resource.command_names and name not in self.resource.command_names.values():

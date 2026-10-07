@@ -190,7 +190,10 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
             ("sequence/run", {"n": 1}), ("agent/main/relaunch", {"skip": True}))] == [403] * 5, \
             "a phone neither runs nor sets a command, in any shape of the page, nor restarts the agent without permission prompts"
         assert call(base, f"/p/api/{record.env}/agent/main/relaunch", {}, key)[0] != 403, "a restart that keeps the prompts passes"
-        assert call(base, f"/p/api/{record.env}/settings", {"form_of_address": {"title": "Captain"}}, key)[0] == 200
+        assert [call(base, f"/p/api/{record.env}/settings", written, key)[0] for written in (
+            {"form_of_address": {"title": "Captain"}}, {"viewer": {"chat_hidden": ["thoughts"], "color_scheme": "dark"}}, {"viewer": {"open_with": "sh"}},
+            {"critique": {"login": "state.json", "seed": ""}})] == [200, 200, 403, 200], \
+            "the phone writes the settings it names, and a command it sends back unchanged sets nothing"
         status, answered, _ = call(base, f"/p/api/{record.env}/todo", made, key)
         assert status == 201 and Todos(record, actor=SYSTEM).load(answered["n"]).seen[:1] == [USER], "the phone writes as the user"
         row = f"/p/api/{record.env}/todo/{answered['n']}"

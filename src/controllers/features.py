@@ -36,16 +36,18 @@ class Features(Controller):
     def _runs_commands(self, word: str, arguments: Arguments) -> bool:
         if word != "configure":
             return super()._runs_commands(word, arguments)
-        return runs_commands(arguments.name, arguments.key)
+        return changes_a_command(self.record, arguments.name, arguments.key, setting_value(str(arguments.value)))
 
 
-def runs_commands(name: str, key: str) -> bool:
-    return any(setting.name == key and setting.runs_commands for setting in SETTING_KEYS.keyed().get(name, ()))
+def changes_a_command(record, name: str, key: str, value) -> bool:
+    """Whether the value differs from what a feature setting that decides what runs holds now."""
+    return any(value != record.setting(name, {}).get(key, setting.default)
+               for setting in SETTING_KEYS.keyed().get(name, ()) if setting.name == key and setting.runs_commands)
 
 
-def writes_what_runs(settings: dict) -> bool:
-    """Whether a settings write sets a feature setting that decides what runs."""
-    return any(runs_commands(name, key) for name, values in settings.items() if isinstance(values, dict) for key in values)
+def writes_what_runs(record, settings: dict) -> bool:
+    """Whether a settings write changes a feature setting that decides what runs."""
+    return any(changes_a_command(record, name, key, value) for name, values in settings.items() if isinstance(values, dict) for key, value in values.items())
 
 
 def setting_value(value: str) -> bool | int | float | str:
