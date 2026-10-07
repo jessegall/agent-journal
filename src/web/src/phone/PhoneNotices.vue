@@ -1,4 +1,5 @@
 <script setup>
+import Button from "./kit/Button.vue";
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import DockRow from "./kit/DockRow.vue";
@@ -31,10 +32,10 @@ const spokenLabel = (notice) => `${TONE_WORDS[tone(notice)]}${notice.title}${not
                 />
             </template>
             <template v-if="notices.length > ALL_UP_TO">
-                <button type="button" class="notices-fold" :aria-expanded="opened" @click="opened = !opened">
+                <Button kind="block" class="notices-fold" :aria-expanded="opened" @click="opened = !opened">
                     <span class="notices-count">{{ opened ? "Show fewer" : `+${notices.length - 1} more` }}</span>
                     <Icon name="chevronRight" bold :facing="opened ? 'down' : 'up'" :size="14" />
-                </button>
+                </Button>
             </template>
         </div>
     </template>
@@ -50,17 +51,15 @@ const spokenLabel = (notice) => `${TONE_WORDS[tone(notice)]}${notice.title}${not
     overscroll-behavior: contain;
 }
 
-.notices-fold {
-    display: flex;
+.notices-fold.block {
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     min-height: 44px;
     padding: 0 14px;
     border: 1px solid var(--border-2);
-    border-radius: 14px;
     background: var(--raised);
     color: var(--text);
-    font: inherit;
     font-size: 0.882rem;
     font-weight: 600;
 }

@@ -1,4 +1,5 @@
 <script setup>
+import Button from "./kit/Button.vue";
 import {computed} from "vue";
 import {SILENT, SILENT_WORD} from "../domain/agentState.js";
 import {agentCounts} from "../domain/helpers.js";
@@ -38,7 +39,12 @@ const agentTone = computed(() => (paused.value ? "paused" : jobs.value ? "workin
 <template>
     <div :class="['home-top', {under}]">
         <header class="home-bar chat-top">
-            <button type="button" class="top-btn" :aria-label="`Switch journal or environment, now ${connection.project}, ${connection.environment}`" @click="emit('places')">
+            <Button
+                kind="block"
+                class="top-btn"
+                :aria-label="`Switch journal or environment, now ${connection.project}, ${connection.environment}`"
+                @click="emit('places')"
+            >
                 <span class="top-line">
                     <span class="top-dot" :style="{background: connection.color}" />
                     <span class="top-name">{{ connection.project }}</span>
@@ -50,8 +56,14 @@ const agentTone = computed(() => (paused.value ? "paused" : jobs.value ? "workin
                     </template>
                     {{ connection.environment }}{{ offline ? " · Offline, waiting to reconnect" : current ? "" : " · Updating…" }}
                 </span>
-            </button>
-            <button type="button" class="top-btn" aria-haspopup="dialog" :aria-label="`Main agent, ${agentWords}. Open the agent's controls`" @click="emit('agent')">
+            </Button>
+            <Button
+                kind="block"
+                class="top-btn"
+                aria-haspopup="dialog"
+                :aria-label="`Main agent, ${agentWords}. Open the agent's controls`"
+                @click="emit('agent')"
+            >
                 <span class="top-line">
                     <span class="top-name">Main agent</span>
                     <Icon name="chevronRight" bold :size="12" class="top-chevron" />
@@ -60,7 +72,7 @@ const agentTone = computed(() => (paused.value ? "paused" : jobs.value ? "workin
                     <span :class="['top-live', agentTone]" aria-hidden="true" />
                     {{ agentWords }}
                 </span>
-            </button>
+            </Button>
         </header>
         <div class="top-chips">
             <PhoneAtWorkChip :live="feed.running || {}" @open="emit('at-work')" />
@@ -103,20 +115,11 @@ const agentTone = computed(() => (paused.value ? "paused" : jobs.value ? "workin
     padding: 4px 0;
 }
 
-.top-btn {
-    display: flex;
+.top-btn.block {
     flex: 1;
-    flex-direction: column;
-    justify-content: center;
     min-width: 0;
-    min-height: 48px;
-    padding: 4px 10px;
-    border: 0;
-    border-radius: 14px;
     background: var(--sel);
     color: inherit;
-    font: inherit;
-    text-align: left;
 }
 
 .top-line {
@@ -189,17 +192,6 @@ const agentTone = computed(() => (paused.value ? "paused" : jobs.value ? "workin
 .top-chips:empty {
     display: none;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 .home-pending {
     margin: 0 0 6px;

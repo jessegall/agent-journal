@@ -1,4 +1,5 @@
 <script setup>
+import Button from "./kit/Button.vue";
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {meta} from "../domain/spec.js";
@@ -42,7 +43,9 @@ const docs = computed(() => (props.target === "doc" ? list.value?.rows || [] : [
 const shelves = computed(() => holding(collections.value, docs.value));
 const keep = computed(() => (props.target === "doc" ? onShelf(shelf.value, shelves.value) : () => true));
 const closedCount = computed(() => counts.value.all - counts.value.open);
-const makes = computed(() => Boolean(spec.value && kind.value.make && (!kind.value.runs || runsAllowed.value) && meta(props.target)?.created_in_viewer));
+const makes = computed(() =>
+    Boolean(spec.value && kind.value.make && (!kind.value.runs || runsAllowed.value) && meta(props.target)?.created_in_viewer)
+);
 const empty = computed(() => ({
     icon: kind.value.icon,
     title: `No open ${kind.value.many.toLowerCase()}`,
@@ -153,9 +156,9 @@ onMounted(async () => {
         </template>
         <template #bottom>
             <template v-if="closedCount > 0">
-                <button type="button" class="kind-closed" @click="toggleClosed">
+                <Button kind="link" fill class="kind-closed" @click="toggleClosed">
                     {{ showClosed ? `Hide the closed ${kind.many.toLowerCase()}` : `Show ${closedCount} closed` }}
-                </button>
+                </Button>
                 <template v-if="showClosed && closed.length">
                     <div class="kind-group">
                         <template v-for="row in closed" :key="row.n">
@@ -180,7 +183,7 @@ onMounted(async () => {
                 <template v-else>
                     <span />
                 </template>
-                <button type="button" class="kind-order" @click="choosing = true">Order: {{ ORDERS[order].label }}</button>
+                <Button kind="link" @click="choosing = true">Order: {{ ORDERS[order].label }}</Button>
             </div>
         </template>
     </ListScreen>
@@ -201,13 +204,7 @@ onMounted(async () => {
 }
 
 .kind-closed {
-    width: 100%;
-    min-height: 44px;
     margin-top: 10px;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
 }
 
 .kind-group {
@@ -220,13 +217,5 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
-
-.kind-order {
-    min-height: 44px;
-    border: 0;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
 }
 </style>

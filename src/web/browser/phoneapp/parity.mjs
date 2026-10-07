@@ -93,7 +93,7 @@ await runScenarios(
             await page.getByRole("button", {name: /^New/}).click();
             const form = sheet(page);
             await form.getByLabel("Title").waitFor({timeout: SHOWN});
-            await page.waitForTimeout(500);
+            await form.evaluate((el) => Promise.all(el.getAnimations().map((animation) => animation.finished)));
             const opened = (await form.boundingBox()).height;
             await form.getByLabel("Details").fill("A long\nnote\n".repeat(30));
             const typed = (await form.boundingBox()).height;

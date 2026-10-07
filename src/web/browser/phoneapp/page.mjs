@@ -20,9 +20,10 @@ await runScenarios(
         },
         async "a tap on an option answers the question for good"(page) {
             await home(page);
+            const delivered = page.waitForResponse(ANSWERS);
             await card(page, "Which road?").getByText("Hill road", {exact: true}).click();
             await page.getByText("Answered: Hill road").waitFor({timeout: SHOWN});
-            await page.waitForTimeout(1500);
+            await delivered;
             await page.reload();
             await page.getByText("Answered: Hill road").waitFor({timeout: SHOWN});
             if (await page.getByText(/waits? to send/).count()) throw new Error("the answer was still waiting to send after a reload");
@@ -30,22 +31,18 @@ await runScenarios(
         async "own words answer the other question"(page) {
             await home(page);
             await card(page, "Which hat?").getByPlaceholder("Or answer in your own words").fill("A green hat, see [[chip question:1|Question 1]]");
+            const delivered = page.waitForResponse(ANSWERS);
             await card(page, "Which hat?").getByRole("button", {name: "Answer"}).click();
             await page.getByText("Answered: A green hat").waitFor({timeout: SHOWN});
             await page.locator(".question-answer .row-pill", {hasText: "Question 1"}).waitFor({timeout: SHOWN});
             if (await page.getByText("[[chip").count()) throw new Error("the answer showed its chip as raw text");
-            await page.waitForTimeout(1500);
+            await delivered;
             await page.reload();
             await page.getByText("Answered: A green hat").waitFor({timeout: SHOWN});
         },
         async "typing the first words brings the chat to the newest message"(page) {
             await home(page);
             await page.locator(".home-feed").waitFor({timeout: SHOWN});
-            const gap = () =>
-                page.evaluate(() => {
-                    const s = document.querySelector(".home-feed");
-                    return s.scrollHeight - s.clientHeight - s.scrollTop;
-                });
             await page.evaluate(() => {
                 const s = document.querySelector(".home-feed");
                 const filler = document.createElement("div");
@@ -54,8 +51,10 @@ await runScenarios(
                 s.scrollTop = 0;
             });
             await page.getByPlaceholder("Message the agent").pressSequentially("hello");
-            await page.waitForTimeout(500);
-            if ((await gap()) > 40) throw new Error("typing did not bring the chat to the bottom");
+            await page.waitForFunction(() => {
+                const s = document.querySelector(".home-feed");
+                return s.scrollHeight - s.clientHeight - s.scrollTop <= 40;
+            }, null, {timeout: SHOWN});
         },
         async "a message sent while the computer cannot be reached waits, and arrives once when it can"(page) {
             const words = `from the train ${Date.now()}`;

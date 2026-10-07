@@ -1,4 +1,5 @@
 <script setup>
+import FilePicker from "./kit/FilePicker.vue";
 import {computed, reactive, ref, watch} from "vue";
 import {startDump} from "../composables/dump.js";
 import {PHASE_WORDS} from "../domain/dumpPile.js";
@@ -26,9 +27,8 @@ watch(
     {immediate: true}
 );
 
-function picked(event) {
-    draft.files = [...draft.files, ...event.target.files];
-    event.target.value = "";
+function picked(added) {
+    draft.files = [...draft.files, ...added];
 }
 
 async function send() {
@@ -56,9 +56,9 @@ async function send() {
                 </template>
             </Cell>
         </template>
-        <Cell icon="plus" label="Add files" @pick="picker.click()" />
+        <Cell icon="plus" label="Add files" @pick="picker.open()" />
     </CellGroup>
-    <input ref="picker" type="file" multiple hidden aria-label="Files to send" @change="picked" />
+    <FilePicker ref="picker" multiple label="Files to send" @pick="picked" />
     <Field
         v-model="draft.text"
         class="dump-start-text"

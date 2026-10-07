@@ -1,4 +1,5 @@
 <script setup>
+import FilePicker from "./kit/FilePicker.vue";
 import {computed, ref} from "vue";
 import {makeBoard} from "../board/makeBoard.js";
 import {PRESETS} from "../board/presets.js";
@@ -28,7 +29,12 @@ const ready = computed(() => Boolean(preset.value) || Boolean(file.value));
 async function create() {
     making.value = true;
     try {
-        const made = await makeBoard({preset: preset.value, file: preset.value ? null : file.value, name: name.value.trim(), steer: steer.value});
+        const made = await makeBoard({
+            preset: preset.value,
+            file: preset.value ? null : file.value,
+            name: name.value.trim(),
+            steer: steer.value,
+        });
         toast(`Created board ${made.title || name.value.trim() || ""}`.trim());
         emit("made", made);
         sheet.value.close();
@@ -46,14 +52,16 @@ async function create() {
         <Segmented class="board-presets" :options="options" :value="chosen" wrap aria-label="Kind of board" @pick="chosen = $event" />
         <p class="board-lead">{{ lead }}</p>
         <template v-if="!preset">
-            <Button kind="plain" fill @click="picker.click()">{{ file ? file.name : "Choose a document" }}</Button>
-            <input ref="picker" type="file" hidden @change="file = $event.target.files[0] || null" />
+            <Button kind="plain" fill @click="picker.open()">{{ file ? file.name : "Choose a document" }}</Button>
+            <FilePicker ref="picker" label="Document to turn into a board" @pick="file = $event[0]" />
             <Field v-model="steer" label="Notes for the agent" placeholder="Keep stages simple, five at most" />
         </template>
-        <Field v-model="name" label="Name" :placeholder="preset ? preset.suggest : 'The agent names it from the document, or type your own'" />
-        <Button class="board-make" fill :busy="making" :disabled="!ready" @click="create">
-            Create board
-        </Button>
+        <Field
+            v-model="name"
+            label="Name"
+            :placeholder="preset ? preset.suggest : 'The agent names it from the document, or type your own'"
+        />
+        <Button class="board-make" fill :busy="making" :disabled="!ready" @click="create">Create board</Button>
     </PhoneSheet>
 </template>
 

@@ -1,4 +1,5 @@
 <script setup>
+import FilePicker from "./kit/FilePicker.vue";
 import {remember, remembered} from "../platform/storage.js";
 import {keepRecordedWords} from "../platform/demo.js";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
@@ -63,9 +64,8 @@ watch(files, (now) => {
     [...previews.keys()].filter((file) => !now.includes(file)).forEach((file) => previews.delete(file));
 });
 
-function picked(event) {
-    files.value = [...files.value, ...event.target.files];
-    event.target.value = "";
+function picked(added) {
+    files.value = [...files.value, ...added];
 }
 
 function grow() {
@@ -155,10 +155,10 @@ async function send() {
             @focus="emit('focused')"
         />
         <div class="compose-controls">
-            <button type="button" class="compose-clip" aria-label="Attach files or photos" @mousedown.prevent @click="picker.click()">
+            <button type="button" class="compose-clip" aria-label="Attach files or photos" @mousedown.prevent @click="picker.open()">
                 <Icon name="paperclip" :size="20" />
             </button>
-            <input ref="picker" type="file" multiple hidden @change="picked" />
+            <FilePicker ref="picker" multiple label="Files to attach" @pick="picked" />
             <template v-if="ready">
                 <button type="submit" class="compose-send" :disabled="sending" aria-label="Send to the agent" @mousedown.prevent>
                     <Icon name="up" :size="20" />

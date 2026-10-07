@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
+import Button from "./kit/Button.vue";
 import {kindTitle} from "./kinds.js";
 
 const AWAY_FOR = 1800;
@@ -41,9 +42,9 @@ const shown = computed(() => !closed.value && props.since > 0 && away >= AWAY_FO
                 <p class="away-more">And {{ more }} more in the chat below.</p>
             </template>
             <div class="away-buttons">
-                <button type="button" class="away-btn" @click="closed = true">Close</button>
+                <Button kind="plain" fill @click="closed = true">Close</Button>
                 <template v-if="waiting">
-                    <button type="button" class="away-btn primary" @click="emit('needs')">See what needs you</button>
+                    <Button fill @click="emit('needs')">See what needs you</Button>
                 </template>
             </div>
         </section>
@@ -85,20 +86,5 @@ const shown = computed(() => !closed.value && props.since > 0 && away >= AWAY_FO
     grid-auto-columns: minmax(0, 1fr);
     grid-auto-flow: column;
     gap: 8px;
-}
-
-.away-btn {
-    min-height: 44px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--sel);
-    color: var(--text);
-    font: inherit;
-    font-weight: 600;
-}
-
-.away-btn.primary {
-    background: var(--accent);
-    color: #fff;
 }
 </style>

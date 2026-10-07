@@ -2,7 +2,7 @@
 import {line} from "../domain/statusQueue.js";
 import {computed, inject, onMounted, ref} from "vue";
 import {phone} from "../api/phone.js";
-import Spinner from "../kit/Spinner.vue";
+import Button from "./kit/Button.vue";
 import {AGENTS} from "./agents.js";
 import {plainDoing} from "./doing.js";
 import {ago} from "../format/time.js";
@@ -96,16 +96,13 @@ async function start(agent) {
         <template v-if="!running && root">
             <div class="agent-starts">
                 <template v-for="agent in AGENTS" :key="agent.key">
-                    <button type="button" class="agent-start" :disabled="Boolean(starting)" @click="start(agent)">
-                        <template v-if="starting === agent.key">
-                            <Spinner />
-                        </template>
+                    <Button class="agent-start" fill :busy="starting === agent.key" :disabled="Boolean(starting)" @click="start(agent)">
                         Start {{ agent.label }}
-                    </button>
+                    </Button>
                 </template>
             </div>
         </template>
-        <button type="button" class="agent-close" @click="close">Close</button>
+        <Button kind="plain" fill @click="close">Close</Button>
     </PhoneSheet>
 </template>
 
@@ -165,30 +162,5 @@ async function start(agent) {
     display: flex;
     gap: 8px;
     margin-bottom: 12px;
-}
-
-.agent-start {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 50px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--accent);
-    color: #fff;
-    font: inherit;
-    font-weight: 600;
-}
-
-.agent-close {
-    min-height: 50px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--hover);
-    color: var(--text);
-    font: inherit;
-    font-weight: 600;
 }
 </style>
