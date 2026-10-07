@@ -152,7 +152,6 @@ class ToolInterceptor:
     refuses: ClassVar[bool] = True
     limit: ClassVar[str] = ""
     steps_aside: ClassVar[str] = ""
-    before_checks: ClassVar[bool] = False
 
     def intercept(self, context: "AgentContext", call) -> str:
         raise NotImplementedError

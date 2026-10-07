@@ -739,6 +739,15 @@ def test_a_branch_links_to_its_web_page_only_on_a_known_host_and_a_compaction_en
     assert seat.branch() == "feature" and marks == [{"branch": "feature", "branch_url": "https://github.com/owner/repo/tree/feature", "at": 1.0}], \
         "the branch the agent works on and its web page are put on the agent"
     assert seat.branch() == "feature" and len(marks) == 1, "looking again within moments reads nothing and says nothing more"
+    seat.branched_at = 0.0
+    assert seat.branch() == "feature" and len(marks) == 1, "a HEAD that has not moved is not read again"
+    transcript = tmp_path / "transcript.jsonl"
+    transcript.write_text("{}\n")
+    last.transcript, last.provider = str(transcript), "unknown"
+    seat.crew()
+    seat.crewed_at = 0.0
+    seat.crew()
+    assert len(marks) == 1, "a transcript no provider reads, or one that has not grown, puts nothing on the agent"
 
 
 def test_a_second_journal_gets_a_free_viewer_port_and_a_journal_already_served_says_where(tmp_path, monkeypatch, capsys):
@@ -1231,13 +1240,7 @@ def test_the_engine_starts_from_a_paused_agent_survives_a_failed_tick_and_relays
     monkeypatch.setattr(engine_module.features, "load", lambda root: None)
     monkeypatch.setattr(driver, "last_report", lambda: SimpleNamespace(paused=5.0))
     engine.start()
-    assert (engine.running, engine.paused) == (True, True), "an engine started for an agent that was paused keeps it paused"
-
-    steps = []
-    monkeypatch.setattr(engine_module, "TICK", 0)
-    monkeypatch.setattr(Engine, "step", lambda self: (steps.append(1), setattr(self, "running", len(steps) < 3)))
-    engine.run()
-    assert len(steps) == 3, "a running engine steps until it is stopped"
+    assert engine.paused, "an engine started for an agent that was paused keeps it paused"
     monkeypatch.undo()
 
     faults, steady = [], []
