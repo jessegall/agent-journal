@@ -2,7 +2,7 @@ import {execFileSync} from "node:child_process";
 import {chromium} from "playwright-core";
 
 const FIRST_CHOICE_WAIT = 8000;
-const LOCAL = /^http:\/\/127\.0\.0\.1[:/]/;
+const LOCAL = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/;
 
 const JOURNAL_WAIT = 60000;
 

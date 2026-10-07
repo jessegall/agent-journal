@@ -14,6 +14,8 @@ import {wanted} from "./wanted.js";
 import {useKeyboard} from "./keyboard.js";
 import {usePoll} from "../composables/poll.js";
 import {runsAllowed} from "./runs.js";
+import PhoneUnlockSheet from "./PhoneUnlockSheet.vue";
+import {asking, enrolled, unlockable, unlocked} from "./unlock.js";
 import {store} from "../state/store.js";
 
 const OPEN = "open=";
@@ -35,6 +37,7 @@ const waitsLine = computed(() => {
         : `${waiting.value} things wait to send and go once you are back.`;
 });
 transport.carry({"X-Phone": "1"});
+transport.unlockWith(unlocked);
 watch(
     connection,
     (now) => {
@@ -44,7 +47,10 @@ watch(
     },
     {flush: "sync"}
 );
-watch(connection, (now) => (runsAllowed.value = Boolean(now && now.runs)));
+watch(connection, async (now) => {
+    enrolled.value = Boolean(now?.passkey);
+    runsAllowed.value = Boolean(now) && (await unlockable());
+});
 
 const dropped = computed(() => Boolean(connection.value) || waiting.value > 0);
 
@@ -181,5 +187,8 @@ onUnmounted(() => {
                 </div>
             </template>
         </SwitchCase>
+        <template v-if="asking">
+            <PhoneUnlockSheet />
+        </template>
     </main>
 </template>

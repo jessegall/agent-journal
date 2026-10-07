@@ -83,7 +83,7 @@ def served() -> Iterator[PhonePage]:
     add_committed_roses(record)
     code = Phones(record, actor=USER).connect(7)["link"].split("#", 1)[1]
     try:
-        yield PhonePage(f"http://127.0.0.1:{server.server_port}/p/#{code}")
+        yield PhonePage(f"http://localhost:{server.server_port}/p/#{code}")
     finally:
         SERVING.pop(str(record.root.resolve()))
         desk.shutdown()

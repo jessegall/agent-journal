@@ -26,6 +26,9 @@ class Phone(Shape, Resource):
         Field(NUMBER, default=7, name="days"),
         Field(NUMBER, default=0, name="expires"),
         Field(NUMBER, default=0, name="last_seen"),
+        Field(default=dict, name="passkey", journal_only=True),
+        Field(default=dict, name="challenge", journal_only=True),
+        Field(default=dict, name="unlock", journal_only=True),
     ]
     type = "phone"
     icon = "phone"

@@ -17,10 +17,10 @@ export async function pairedState() {
 }
 
 export async function allowRuns(page) {
-    await page.route(/\/p\/state$/, async (route) => {
-        const response = await route.fetch();
-        await route.fulfill({response, json: {...(await response.json()), runs: true}});
-    });
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("WebAuthn.enable");
+    const options = {protocol: "ctap2", transport: "internal", hasResidentKey: true, hasUserVerification: true, isUserVerified: true};
+    await cdp.send("WebAuthn.addVirtualAuthenticator", {options: {...options, automaticPresenceSimulation: true}});
 }
 
 export const tab = (page, name) => page.getByRole("tab", {name: new RegExp(`^${name}`)}).click();

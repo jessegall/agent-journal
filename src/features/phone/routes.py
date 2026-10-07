@@ -8,11 +8,12 @@ from http.cookies import SimpleCookie
 
 from engine.record import Record
 from engine.fields import Loaded
-from features.phone.allow_list import RUNS_ALLOWED
 from features.phone.controller import Phones
 from features.phone.desktop import Desktop
+from features.phone.passkey import Assertion, Enrolment, Relying, requested
 from features.phone.surface import PhoneSurface
 from engine.color import identity
+from features.sharing.controller import Shares
 from features.sharing.page import disposition, unshared
 from features.sharing.preview import icon
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
@@ -28,6 +29,7 @@ ICONS = {"icon-180.png": 180, "icon-192.png": 192, "icon-512.png": 512}
 PAGE_HEADERS = {**APP_HEADERS, "Content-Security-Policy": APP_HEADERS["Content-Security-Policy"] + "; manifest-src 'self'"}
 COOKIE = "__Host-phone"
 HEADER = "X-Phone"
+UNLOCK = "X-Phone-Unlock"
 UPLOAD_LIMIT = 25 * 1024 * 1024
 UPLOADED = "application/octet-stream"
 LOCAL = ("127.0.0.1", "localhost")
@@ -129,6 +131,11 @@ class Permitting(Loaded):
 
 
 @dataclass(frozen=True)
+class Unlocking(Loaded):
+    request: str = ""
+
+
+@dataclass(frozen=True)
 class Approval(Loaded):
     n: int = 0
     updated: float = 0.0
@@ -151,7 +158,7 @@ class Connection(TypedDict):
     home: list[str]
     project: str
     color: str
-    runs: bool
+    passkey: bool
 
 
 def made(row) -> dict:
@@ -180,7 +187,7 @@ def read_body(phones: Phones, phone, rest: list[str], query: dict[str, list[str]
     if rest == ["state"]:
         known = identity(surface.home.root)
         return Connection(phone=phone.title, n=phone.n, environment=phone.environment, expires=phone.expires, home=phone.home,
-                          project=known["project"], color=known["color"], runs=RUNS_ALLOWED)
+                          project=known["project"], color=known["color"], passkey=bool(phone.passkey))
     if rest == ["feed"]:
         try:
             return {**surface.feed(float(asked.get("before", "inf"))), "build": built()}
@@ -288,7 +295,7 @@ class PhoneRoutes:
         if phone is None:
             return None
         phones = self.phones(handler)
-        acts = self.acts(phones, phone, body)
+        acts = self.acts(handler, phones, phone, body)
         name = "/".join(rest)
         if name not in acts:
             return handler.answer(404, "no such action")
@@ -300,9 +307,13 @@ class PhoneRoutes:
             return handler.answer(422, str(refused))
         return self.json(handler, 201, reply)
 
-    def acts(self, phones: Phones, phone, body: dict) -> dict:
+    def acts(self, handler, phones: Phones, phone, body: dict) -> dict:
         surface = PhoneSurface(phones, phone)
-        return {"pause": lambda: done("pause", surface.pause()),
+        return {"passkey/begin": lambda: phones._enrolling(phone, self.relying(handler)),
+                "passkey": lambda: {"passkey": bool(phones._enrol(phone, self.relying(handler), Enrolment.from_json(body)).passkey)},
+                "unlock/begin": lambda: phones._unlocking(phone, self.relying(handler), Unlocking.from_json(body).request),
+                "unlock": lambda: {"unlock": phones._unlock(phone, self.relying(handler), Assertion.from_json(body))},
+                "pause": lambda: done("pause", surface.pause()),
                 "resume": lambda: done("resume", surface.resume()),
                 "stop": lambda: done("stop", surface.stop()),
                 "auto": lambda: {"auto": surface.auto(Switching.from_json(body).on)},
@@ -335,7 +346,9 @@ class PhoneRoutes:
         phone = self.phone(handler)
         if phone is None:
             return None
-        return Desktop(handler, phone.environment).forward(handler.rfile.read(size) if size else b"")
+        body = handler.rfile.read(size) if size else b""
+        unlocked = self.phones(handler)._spend(phone, handler.headers.get(UNLOCK, ""), requested(handler.command, handler.path, body))
+        return Desktop(handler, phone.environment, unlocked).forward(body)
 
     def attach(self, handler, rest: list[str]) -> None:
         if not self.trusted(handler, UPLOADED):
@@ -371,6 +384,14 @@ class PhoneRoutes:
             handler.answer(410, "this phone was disconnected" if phone.completed else "this phone's connection has run out")
             return None
         return phone
+
+    def relying(self, handler) -> Relying:
+        """The site a passkey answers for: this computer under its own name, or else the tunnel address the journal knows, never one the request names."""
+        host = handler.headers.get("Host", "")
+        if local(host):
+            return Relying(host.split(":", 1)[0], f"http://{host}")
+        address = Shares(handler.shares.record, actor=SYSTEM)._address()
+        return Relying(address, f"https://{address}")
 
     def trusted(self, handler, kind: str = "application/json") -> bool:
         host = handler.headers.get("Host", "")

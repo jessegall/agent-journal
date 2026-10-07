@@ -9,7 +9,7 @@ from features.format import shaped
 from resources.base import Missing, Refused
 from engine.package import data
 from engine.memo import Memo
-from features.phone.allow_list import reached
+from features.phone.allow_list import Reach, reached
 from features.routing import FEATURE_ROUTES, Reply, Request, Route
 from engine.paths import contained, known_environment
 
@@ -42,9 +42,9 @@ def resolve(method: str, path: str) -> tuple[Route, dict] | None:
     return None
 
 
-def reached_by_phone(root: Path, method: str, path: str, query: dict, body: dict, environment: str) -> bool:
+def reached_by_phone(root: Path, method: str, path: str, query: dict, body: dict, environment: str, unlocked: bool) -> Reach:
     found = resolve(method, path)
-    return found is not None and reached(root, *found, query, body, environment)
+    return Reach.CLOSED if found is None else reached(root, *found, query, body, environment, unlocked)
 
 
 def later(reply: Reply, then) -> Reply:

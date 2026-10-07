@@ -17,7 +17,8 @@ from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
 from commands.dispatch import reached_by_phone  # noqa: E402
-from features.routing import PHONE_ENVIRONMENT, Reply  # noqa: E402
+from features.phone.allow_list import Reach  # noqa: E402
+from features.routing import PHONE_ENVIRONMENT, PHONE_UNLOCKED, Reply  # noqa: E402
 from engine import runtime  # noqa: E402
 from features.switches import WARMERS  # noqa: E402
 from engine.stop import asked  # noqa: E402
@@ -105,8 +106,11 @@ class Handler(BaseHTTPRequestHandler):
     def answered(self, method: str, url, body: dict) -> Reply:
         query = dict(parse_qsl(url.query))
         within = self.headers.get(PHONE_ENVIRONMENT)
-        if within is not None and not reached_by_phone(self.root, method, url.path, query, body, within):
-            return Reply(403, {"error": "a phone reaches only the pages its app uses, in its own environment"})
+        if within is None:
+            return dispatch(method, url.path, self.root, query, body)
+        reach = reached_by_phone(self.root, method, url.path, query, body, within, self.headers.get(PHONE_UNLOCKED) == "1")
+        if reach is not Reach.OPEN:
+            return reach.refusal()
         return dispatch(method, url.path, self.root, query, body)
 
     def do_GET(self):
