@@ -194,6 +194,11 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
             {"form_of_address": {"title": "Captain"}}, {"viewer": {"chat_hidden": ["thoughts"], "color_scheme": "dark"}}, {"viewer": {"open_with": "sh"}},
             {"critique": {"login": "state.json", "seed": ""}})] == [200, 200, 403, 200], \
             "the phone writes the settings it names, and a command it sends back unchanged sets nothing"
+        assert call(base, f"/p/api/{record.env}/settings", {"boards": {"filler_model": "opus\ntools: Bash"}}, key)[0] == 400, \
+            "a model the provider does not offer is not written"
+        kept = Controller.create(CONTROLLERS["worktree"](record, actor=SYSTEM), "shed", path="/kept")
+        assert call(base, f"/p/api/{record.env}/worktree/{kept.n}/update", {"path": "/"}, key)[0] == 400 \
+            and CONTROLLERS["worktree"](record, actor=SYSTEM).load(kept.n).path == "/kept", "a path the journal sets is never written by hand"
         status, answered, _ = call(base, f"/p/api/{record.env}/todo", made, key)
         assert status == 201 and Todos(record, actor=SYSTEM).load(answered["n"]).seen[:1] == [USER], "the phone writes as the user"
         row = f"/p/api/{record.env}/todo/{answered['n']}"

@@ -40,6 +40,7 @@ await runScenarios(
             await more(page, "Agent terminal");
             await top(page).getByText("Nothing has run yet.").waitFor({timeout: SHOWN});
             if (await top(page).getByRole("button", {name: /^Run a command/}).count()) throw new Error("the terminal offers a command the phone may not run");
+            await top(page).getByText("Running commands from the phone is off. Do it on your computer.").waitFor({timeout: SHOWN});
         },
         async "the agent's terminal queues a command"(page) {
             await allowRuns(page);

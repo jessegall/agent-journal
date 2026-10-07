@@ -80,6 +80,7 @@ class Shape:
     required: ClassVar[list[str]] = []
     labels: ClassVar[dict] = {}
     command_fields: ClassVar[frozenset[str]] = frozenset()
+    journal_fields: ClassVar[frozenset[str]] = frozenset()
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
@@ -87,6 +88,7 @@ class Shape:
         cls.fields = {k: v.spec for base in reversed(cls.__mro__) for k, v in vars(base).items() if isinstance(v, Field) and v.spec}
         cls.required = [k for base in reversed(cls.__mro__) for k, v in vars(base).items() if isinstance(v, Field) and v.required]
         cls.command_fields = frozenset(k for base in cls.__mro__ for k, v in vars(base).items() if isinstance(v, Field) and v.runs_commands)
+        cls.journal_fields = frozenset(k for base in cls.__mro__ for k, v in vars(base).items() if isinstance(v, Field) and v.journal_only)
         cls.labels = {k: v for base in reversed(cls.__mro__) for k, v in vars(base).get("labels", {}).items()}
 
 

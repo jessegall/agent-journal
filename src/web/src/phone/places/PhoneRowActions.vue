@@ -8,6 +8,7 @@ import {CHANGE} from "../../domain/suggestions.js";
 import ActionSheet from "../kit/ActionSheet.vue";
 import FormSheet from "../kit/FormSheet.vue";
 import {toast} from "../kit/toast.js";
+import {runsOffLine} from "../acts.js";
 import {runsAllowed} from "../runs.js";
 
 const MOVABLE = ["todo", "plan", "suggestion", "collection", "report", "fact", "reminder"];
@@ -208,6 +209,6 @@ const shut = () => nextTick(() => form.value || emit("close"));
         />
     </template>
     <template v-else>
-        <ActionSheet :title="row.title" :about="name" :actions="actions" @close="shut" />
+        <ActionSheet :title="row.title" :about="name" :actions="actions" :foot="runsOffLine(row)" @close="shut" />
     </template>
 </template>

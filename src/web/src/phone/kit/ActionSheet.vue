@@ -9,6 +9,7 @@ defineProps({
     about: {type: String, required: true},
     actions: {type: Array, required: true},
     line: {type: String, default: "everything you can do with it"},
+    foot: {type: String, default: ""},
 });
 const emit = defineEmits(["close"]);
 const sheet = ref(null);
@@ -46,6 +47,9 @@ function closed() {
                 </Cell>
             </template>
         </div>
+        <template v-if="foot">
+            <p class="actions-foot">{{ foot }}</p>
+        </template>
     </PhoneSheet>
 </template>
 
@@ -57,6 +61,12 @@ function closed() {
 
 .actions-sub {
     margin: 2px 0 0;
+    color: var(--text-3);
+    font-size: 0.8125rem;
+}
+
+.actions-foot {
+    margin: 0 4px 8px;
     color: var(--text-3);
     font-size: 0.8125rem;
 }

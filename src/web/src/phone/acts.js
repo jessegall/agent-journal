@@ -7,7 +7,7 @@ import {stopLinksOf} from "../composables/shares.js";
 import {CALLINGS} from "../domain/callings.js";
 import {kindWord} from "./kinds.js";
 import {place} from "./outbox.js";
-import {runsAllowed} from "./runs.js";
+import {runsAllowed, runsOff} from "./runs.js";
 import {todoLane} from "./todo.js";
 
 const HIDDEN = new Set([
@@ -203,7 +203,8 @@ const PRIORITY = {
     name: "value",
     result: (row, level) => `Priority of ${named(row)} is ${level.toLowerCase()}`,
 };
-const updated = (row, value, got) => (typeof got === "string" ? "No update" : `Updated to ${got.data.version || String(got.data.commit).slice(0, 12)}`);
+const versionOf = (got) => (typeof got === "string" ? "" : got.data.version || String(got.data.commit || "").slice(0, 12));
+const updated = (row, value, got) => (versionOf(got) ? `Updated to ${versionOf(got)}` : "No update");
 const refsOf = (row) => row.refs.map((ref) => ({value: ref, label: ref}));
 const filesOf = (row) => Object.keys(row.data.files || {}).map((name) => ({value: name, label: name}));
 
@@ -385,8 +386,8 @@ const OWN = {
             result: () => "Steps saved",
         },
     },
-    check: {run: {label: "Run it now", runs: true, result: () => "Running"}},
-    tool: {run: {label: "Run it", runs: true, fields: [optional("args", "With what?")], result: () => "Ran"}},
+    check: {run: {label: "Run this check now", runs: true, result: () => "Running"}},
+    tool: {run: {label: "Run this tool", runs: true, fields: [optional("args", "With what?")], result: () => "Ran"}},
     profile: {
         duplicate: {label: "Make a copy", result: () => "Copied"},
         update: {
@@ -486,6 +487,12 @@ function rankOf(action, row) {
     const method = action.word ? methodOf(row.type, action.word) : action.key;
     if (LAST.includes(method)) return 1000 + LAST.indexOf(method);
     return ORDER.includes(method) ? ORDER.indexOf(method) : 500;
+}
+
+export function runsOffLine(row) {
+    const kind = row && meta(row.type);
+    const hides = kind && Object.entries(kind.row_actions || {}).some(([word, parameters]) => described(row, word, parameters)?.runs);
+    return hides ? runsOff.value : "";
 }
 
 export const filled = (fields, row) => fields.map((field) => ({...field, value: field.value ? field.value(row) || "" : ""}));

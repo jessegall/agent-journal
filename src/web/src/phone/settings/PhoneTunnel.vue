@@ -8,7 +8,7 @@ import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
 import FormSheet from "../kit/FormSheet.vue";
 import {toast} from "../kit/toast.js";
-import {runsAllowed} from "../runs.js";
+import {runsAllowed, runsOff} from "../runs.js";
 
 const emit = defineEmits(["open"]);
 const domains = ref([]);
@@ -85,7 +85,7 @@ onMounted(() => load().catch(() => null));
 </script>
 
 <template>
-    <CellGroup head="Reaching the journal from outside" foot="Every journal on your computer uses this tunler login, this phone too.">
+    <CellGroup head="Reaching the journal from outside" :foot="runsOff || 'Every journal on your computer uses this tunler login, this phone too.'">
         <template v-if="!tunnelStatus">
             <Cell label="tunler account" sub="Checking…" still />
         </template>
@@ -126,7 +126,7 @@ onMounted(() => load().catch(() => null));
         </CellGroup>
     </template>
     <template v-if="open === 'account'">
-        <ActionSheet title="tunler account" :about="account" line="what you can do with it" :actions="accountActions" @close="open = ''" />
+        <ActionSheet title="tunler account" :about="account" line="what you can do with it" :actions="accountActions" :foot="runsOff" @close="open = ''" />
     </template>
     <template v-if="open === 'domain'">
         <ActionSheet :title="domain" about="Address" line="what you can do with it" :actions="domainActions" @close="open = ''" />

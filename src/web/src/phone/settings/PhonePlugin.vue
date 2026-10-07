@@ -13,7 +13,7 @@ import FormSheet from "../kit/FormSheet.vue";
 import PhonePage from "./PhonePage.vue";
 import PhonePluginPreview from "./PhonePluginPreview.vue";
 import PhoneTerm from "./PhoneTerm.vue";
-import {runsAllowed} from "../runs.js";
+import {runsAllowed, runsOff} from "../runs.js";
 
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: ""}});
 const emit = defineEmits(["back", "open"]);
@@ -115,7 +115,7 @@ onMounted(load);
                     </template>
                 </CellGroup>
             </template>
-            <CellGroup head="Manage">
+            <CellGroup head="Manage" :foot="runsOff">
                 <template v-if="runsAllowed">
                     <Cell label="Check for updates" sub="Shows what changes before anything runs" tone="accent" :chevron="false" @pick="upgrade(plugin)" />
                     <Cell label="Run setup again" sub="Its settings stay. Its services restart." :chevron="false" @pick="asking = 'setup'" />

@@ -2,7 +2,7 @@
 import {computed, onMounted, ref} from "vue";
 import {api} from "../../api/client.js";
 import {useServiceAction} from "../../composables/service.js";
-import {runsAllowed} from "../runs.js";
+import {runsAllowed, runsOff} from "../runs.js";
 import {RUNNING, stateWord} from "../../domain/services.js";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
@@ -50,11 +50,11 @@ onMounted(load);
             <template v-if="error">
                 <p class="page-why">{{ error }}</p>
             </template>
-            <template v-if="runsAllowed">
-                <CellGroup>
+            <CellGroup :foot="runsOff">
+                <template v-if="runsAllowed">
                     <Cell :label="busy(page.service, 'up') ? 'Starting…' : 'Start it'" tone="accent" :chevron="false" @pick="set(page.service, 'up')" />
-                </CellGroup>
-            </template>
+                </template>
+            </CellGroup>
         </template>
     </PhonePage>
 </template>
