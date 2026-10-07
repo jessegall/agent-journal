@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.254.0 — The phone app offers everything the desktop viewer does
+The phone app now offers everything the desktop viewer does. Four tabs, Chat, Home, To-dos and Everything, reach every place the desktop has and every action in it. Each item opens on its own page with the actions of its type. The board, dumps and commits are there, and the agent sheet carries the terminal, skills and activity. Settings holds plugins, services, the tunnel and unpair. The phone reaches the desktop API only through a named allow list. Actions that run commands on the computer stay off on the phone for now. The message box stays above the keyboard when you focus it. Nothing to do.
+
 ## 2.253.21 — test coverage of production code 98.2% to 98.9% with its bug fixes, and a slow start no longer rolls back a good build
 Test coverage of production code rises from 98.2% to 98.9%, with the bug fixes it turned up. A server that does not answer within 20 seconds is stopped, and that is no longer counted as a crash: only a server that exits on its own counts toward rolling back to the previous build, so a loaded machine cannot undo a good build. Nothing to do. The boot tests read the released and installed versions from one snapshot taken once.
 
