@@ -56,7 +56,7 @@ usePoll(pollKey(), ask, EVERY, ({got, open}) => {
 
 <template>
     <PhonePage title="Activity" line="What happened in the journal, newest first." :back="back" @back="emit('back')">
-        <CellGroup head="The agent now">
+        <CellGroup head="What the agent is doing now">
             <Cell icon="work" label="The agent" :sub="now" :still="!work" @pick="emit('open', `work:${work.n}`)" />
         </CellGroup>
         <template v-if="loaded && !items.length">

@@ -26,7 +26,7 @@ const line = computed(() => {
     if (props.target === "effort") return `Effort ${data.value.effort || "not reported"}`;
     const marks = data.value.compactions || [];
     const summarized = marks.length ? `last summarized ${age(marks[marks.length - 1].at)}` : "not summarized yet";
-    return `${Math.round(Number(data.value.context || 0))}% of what it can hold in mind; the conversation was ${summarized}`;
+    return `${Math.round(Number(data.value.context || 0))}% of the agent's memory is used; the conversation was ${summarized}`;
 });
 
 watch(

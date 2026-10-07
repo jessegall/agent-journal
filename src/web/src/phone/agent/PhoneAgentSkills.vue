@@ -15,7 +15,7 @@ const skills = computed(() => loadedSkills(data.value));
 </script>
 
 <template>
-    <PhonePage title="Skills loaded" line="Loaded in this window, newest last. Shortening the conversation empties it." :back="back" @back="emit('back')">
+    <PhonePage title="Skills loaded" line="Loaded in the current conversation, newest last. Shortening the conversation unloads them." :back="back" @back="emit('back')">
         <template v-if="loaded && !data">
             <PhoneNoAgent />
         </template>

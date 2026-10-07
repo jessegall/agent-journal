@@ -69,7 +69,7 @@ await runScenarios(PAIR, {
         await top(page).getByRole("button", {name: /Unpair this phone/}).click();
         await page.getByRole("dialog").getByText("Unpair this phone?").waitFor({timeout: SHOWN});
         await page.getByRole("dialog").getByRole("button", {name: "Keep it paired"}).click();
-        await top(page).getByRole("button", {name: /^(Install tunler|Tunler account|Connect a tunler account)/}).click();
+        await top(page).getByRole("button", {name: /^(Install tunler|tunler account|Connect a tunler account)/}).click();
         await page.getByRole("dialog").getByRole("button", {name: /^(Install tunler|Use another account|Connect)/}).first().waitFor({timeout: SHOWN});
         await region(page, "Alerts on this phone");
         await top(page).getByRole("button", {name: /Alerts key/}).waitFor({timeout: SHOWN});

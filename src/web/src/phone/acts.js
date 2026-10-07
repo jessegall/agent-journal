@@ -145,8 +145,8 @@ const optional = (key, label, more = {}) => ({key, label, required: false, ...mo
 
 export const PROFILE_FIELDS = [
     text("title", "Name", {value: (row) => row.title}),
-    text("brief", "How it talks", {value: (row) => row.brief, area: true}),
-    text("calling", "What it calls you", {value: (row) => row.data.calling, options: CALLINGS}),
+    text("brief", "How the agent talks", {value: (row) => row.brief, area: true}),
+    text("calling", "What the agent calls you", {value: (row) => row.data.calling, options: CALLINGS}),
     text("sample", "A sample line", {value: (row) => row.data.sample, area: true}),
 ];
 export const NEW_PROFILE = {title: "", brief: "", data: {calling: "title and name", sample: ""}};

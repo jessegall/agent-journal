@@ -39,7 +39,7 @@ await runScenarios(
         async "the agent's terminal queues a command"(page) {
             const sent = [];
             await page.route(/\/shell$/, (route) => (sent.push(route.request().postDataJSON()), route.fulfill({status: 200, body: "{}"})));
-            await more(page, "Its terminal");
+            await more(page, "Agent terminal");
             await top(page).getByText("Nothing has run yet.").waitFor({timeout: SHOWN});
             await top(page).getByRole("button", {name: /^Run a command/}).click();
             await sheet(page).getByLabel("Command").fill("npm test");
@@ -54,7 +54,7 @@ await runScenarios(
         },
         async "the activity feed lists what happened and opens it"(page) {
             await more(page, "Activity");
-            await top(page).getByText("The agent now").waitFor({timeout: SHOWN});
+            await top(page).getByText("What the agent is doing now").waitFor({timeout: SHOWN});
             await top(page).getByRole("button", {name: /Water the plants/}).first().click();
             await page.locator(".layer.page").last().getByText("Water the plants").first().waitFor({timeout: SHOWN});
         },
@@ -64,7 +64,7 @@ await runScenarios(
             await page.getByRole("button", {name: /^Profiles/}).click();
             await top(page).getByRole("button", {name: /^New profile/}).first().click();
             await sheet(page).getByLabel("Name").fill("Garden voice");
-            await sheet(page).getByLabel("How it talks").fill("Short and warm");
+            await sheet(page).getByLabel("How the agent talks").fill("Short and warm");
             await sheet(page).getByLabel("A sample line").fill("The roses are watered.");
             await sheet(page).getByRole("button", {name: "Add"}).click();
             await top(page).getByRole("button", {name: /Garden voice/}).first().click();

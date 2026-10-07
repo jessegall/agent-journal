@@ -15,12 +15,12 @@ const waiting = (key, now) => (pendingChoice(data.value, key) ? `${pendingChoice
 
 <template>
     <template v-if="data">
-        <CellGroup head="More about it">
+        <CellGroup head="More about the agent">
             <Cell icon="model" label="Model" :sub="waiting('model', data.model || 'Not reported')" @pick="emit('read', 'agentcontrol:model')" />
             <Cell icon="bolt" label="Reasoning effort" :sub="waiting('effort', data.effort || 'Not reported')" @pick="emit('read', 'agentcontrol:effort')" />
-            <Cell icon="gauge" label="Memory used" :sub="waiting('context', `${filled}% of what it can hold in mind`)" @pick="emit('read', 'agentcontrol:context')" />
+            <Cell icon="gauge" label="Memory used" :sub="waiting('context', `${filled}% of the agent's memory is used`)" @pick="emit('read', 'agentcontrol:context')" />
             <Cell icon="book" label="Skills loaded" :count="loadedSkills(data).length" @pick="emit('read', 'agentskills:')" />
-            <Cell icon="terminal" label="Its terminal" :count="running(data.shell_rows) || ''" @pick="emit('read', 'terminal:')" />
+            <Cell icon="terminal" label="Agent terminal" :count="running(data.shell_rows) || ''" @pick="emit('read', 'terminal:')" />
             <Cell icon="loop" label="Repeating prompts" :count="Object.keys(data.loops || {}).length" @pick="emit('read', 'loops:')" />
             <Cell icon="activity" label="Activity" sub="What happened in the journal, newest first" @pick="emit('read', 'activity:')" />
             <template v-if="data.branch">
@@ -30,7 +30,7 @@ const waiting = (key, now) => (pendingChoice(data.value, key) ? `${pendingChoice
         </CellGroup>
     </template>
     <template v-else-if="loaded">
-        <CellGroup head="More about it">
+        <CellGroup head="More about the agent">
             <Cell icon="agents" label="Assign a running agent" sub="A session that runs without an environment" @pick="emit('read', 'appoint:')" />
             <Cell icon="activity" label="Activity" sub="What happened in the journal, newest first" @pick="emit('read', 'activity:')" />
         </CellGroup>

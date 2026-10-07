@@ -41,6 +41,6 @@ export function itemFacts(row) {
     const facts = [{label: "State", value: stateOf(row)}, {label: "Made", value: ago(row.created)}];
     if (row.updated && row.updated !== row.created) facts.push({label: "Changed", value: ago(row.updated)});
     if (row.completed) facts.push({label: "Closed", value: ago(row.completed)});
-    if (row.type === "profile") facts.push({label: "What it calls you", value: callingLabel(row.data.calling)}, {label: "A sample line", value: row.data.sample || "None yet"});
+    if (row.type === "profile") facts.push({label: "What the agent calls you", value: callingLabel(row.data.calling)}, {label: "A sample line", value: row.data.sample || "None yet"});
     return {facts, after: []};
 }
