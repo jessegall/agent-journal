@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 from commands.menu import Choice, choices_of, pick
 from engine.record import Record
@@ -65,8 +66,9 @@ def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> 
             print(f"    {e}")
 
 
-def defaults(_: str) -> None:
-    """Takes every default without asking: choose answers with the default before it would call this."""
+def defaults(_: str) -> NoReturn:
+    """Takes every default without asking: choose answers with the default first; a free-text prompt has none, so it ends the input."""
+    raise EOFError
 
 
 def choose(heading: str, notes: list[str], choices: list, default: int, ask=input) -> int | None:
