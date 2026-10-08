@@ -10,6 +10,8 @@ import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
 from controllers.notices import Notices
+from controllers.requests import request
+from engine.outbox import Request
 from engine import runtime
 from engine.record import Record
 from features.phone.feed import waiting
@@ -135,8 +137,7 @@ class Phones(Controller):
             key = secrets.token_urlsafe(32)
             named = titled(" ".join(str(device).split())[:DEVICE_LONGEST] or "A phone")
             paired = self._kept(phone.n, title=named, key=hashed(key), code="", short="", code_until=0, expires=now + phone.days * DAY, last_seen=now)
-        Notices(Record(self.record.root, paired.environment), actor=SYSTEM).create(
-            f"A phone connected, {named}", brief="If that was not you, disconnect it from the phone button in the top bar.", tone="warn")
+        self._warn_desk(paired.environment, f"A phone connected, {named}")
         return paired, key
 
     def _missed(self) -> None:
@@ -244,8 +245,7 @@ class Phones(Controller):
             if not phone.connected or not pending.waits(time.time()):
                 raise Refused("the phone's request ran out: ask again from the phone")
             allowed = self._kept(phone.n, passkey=pending.passkey)
-        Notices(Record(self.record.root, pending.environment), actor=SYSTEM).create(
-            f"Face ID was set up for phone {phone.title}", brief="If that was not you, disconnect it from the phone button in the top bar.", tone="warn")
+        self._warn_desk(pending.environment, f"Face ID was set up for phone {phone.title}")
         return allowed
 
     @action
@@ -267,8 +267,12 @@ class Phones(Controller):
         if not pending.passkey:
             raise Refused(f"phone {phone.n} has not asked to set up Face ID")
         self._kept(phone.n, pending_passkey={})
-        Notices(Record(self.record.root, pending.environment), actor=SYSTEM).complete(pending.notice, how=how)
+        request(self.record.root, Request(pending.environment, Notices.resource.type, "complete", [pending.notice], {"how": how}))
         return pending
+
+    def _warn_desk(self, environment: str, title: str) -> None:
+        brief = "If that was not you, disconnect it from the phone button in the top bar."
+        request(self.record.root, Request(environment, Notices.resource.type, "create", [title], {"brief": brief, "tone": "warn"}))
 
     def _desk(self, phone: Phone) -> Record:
         """The environment on this computer whose chat asks about this phone."""

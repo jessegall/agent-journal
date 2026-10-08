@@ -6,8 +6,10 @@ import controllers.types as types_module
 import features
 import resources.types as resources_module
 from controllers.base import Controller
+from controllers.requests import request
 from controllers.types import Agents, Environments, Messages, Nudges, Todos
 from engine import attic, bus
+from engine.outbox import Request
 from engine.record import Record
 from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared, tell_in
@@ -65,10 +67,11 @@ def give_back(record, todos: list[Todo]) -> None:
         listed.unassign(todo.n)
 
 
-def stop_helpers(record: Record) -> list[str]:
+def stop_helpers(record: Record) -> None:
     root = record.root
     standing = [place for place in Environments(record, actor=SYSTEM).rows.standing() if place.helping and Sessions(root).holder(place.title)]
-    return [Helpers(Record(root, place.launched_from), actor=SYSTEM).stop(place.owned_by(HELPER)) for place in standing]
+    for place in standing:
+        request(root, Request(place.launched_from, Helpers.resource.type, "stop", [place.owned_by(HELPER)]))
 
 
 def given_back(todos: list[Todo]) -> str:
@@ -166,9 +169,9 @@ class Helpers(Controller):
         for copy in (t for t in Todos(self.record, actor=SYSTEM).rows.standing() if t.handed == str(row.n)):
             Todos(self.record, actor=SYSTEM).complete(copy.n, how)
         if not helper.worktree:
-            listed.complete(row.n, how)
+            request(self.record.root, Request(home.env, Todos.resource.type, "complete", [row.n], {"how": how}))
             return f"todo {row.n} is done"
-        listed.update(row.n, pending=MergeWait(how, helper.worktree).to_json())
+        request(self.record.root, Request(home.env, Todos.resource.type, "update", [row.n], {"pending": MergeWait(how, helper.worktree).to_json()}))
         return f"todo {row.n} shows as done; it closes once your work is taken"
 
     @staticmethod

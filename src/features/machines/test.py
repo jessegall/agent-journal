@@ -2,12 +2,14 @@ import importlib
 import shutil
 
 from controllers import stored
+from controllers.requests import deliver, request
 from controllers.types import Rules, Todos
 from engine.event_log import EventLog
-from engine.machines import Lease
+from engine.machines import Lease, this_machine
 from engine.numbers import BLOCK, Leases, Numbers, rows
+from engine.outbox import Request
 from engine.record import Record
-from resources.base import AGENT
+from resources.base import AGENT, PROJECT, USER
 from tests.conftest import fresh, refused
 
 
@@ -83,4 +85,25 @@ def test_a_machine_that_handed_an_environment_over_is_refused_when_it_writes_aga
     Todos(server, actor=AGENT).create("the new owner writes")
     assert [r.title for r in Todos(laptop, actor=AGENT).all()] == ["written before anyone leased it", "the laptop holds it", "the new owner writes"], \
         "nothing the stale writer tried landed, and it can still read"
+
+
+def test_a_write_into_an_environment_another_machine_holds_waits_for_it_as_a_request():
+    record = fresh("here")
+    there = Record(record.root, "there")
+    there.home.mkdir(parents=True)
+    there.hand_over("", "server")
+    request(record.root, Request("there", "todo", "create", ["filed from here"]))
+    assert Todos(there, actor=AGENT).all() == [], "nothing is written into the environment another machine holds"
+    assert deliver(record.root) == 0, "while the other machine holds it, the request waits"
+
+    rule = Rules(record, actor=AGENT).create("Keep it plain", brief="why", keywords="plain")
+    record.hand_over(PROJECT, "server")
+    assert Rules(record, actor=USER).read(rule.n).n == rule.n, "a row of a scope held elsewhere can be read"
+    assert USER not in Rules(record, actor=AGENT).load(rule.n).seen, "and reading it writes nothing there"
+
+    there.hand_over("", this_machine())
+    record.hand_over(PROJECT, this_machine())
+    assert deliver(record.root) == 2, "once this machine holds both, the waiting writes run"
+    assert [r.title for r in Todos(there, actor=AGENT).all()] == ["filed from here"], "the to-do lands where it was meant"
+    assert USER in Rules(record, actor=AGENT).load(rule.n).seen, "and the read mark with it"
 

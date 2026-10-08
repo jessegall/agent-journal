@@ -5,6 +5,8 @@ from pathlib import Path
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
+from engine import runtime
+from engine.state import State
 from engine.wording import plural
 from features.agent_sessions.launch import running_at
 from engine.worktree import contains, current_branch, git, included, lines, link_folders, present, share_journal, tip
@@ -20,6 +22,7 @@ KEPT = "refs/journal/helpers"
 SHOWN = 5
 VIEWER_TEXT = ("src/web/src/*.vue", "src/web/src/*.js", "src/features/*/details.py")
 WORDED = re.compile(r"^\+(?!\+\+).*[\"'`][A-Z][a-z]+ [a-z][^\"'`]{6,}[\"'`]")
+CHECKED_TIPS = "worktree-tips.json"
 
 
 @dataclass(frozen=True)
@@ -155,14 +158,18 @@ class Worktrees(Controller):
 
     def _drifted(self, places: tuple[Path, ...], commands: tuple[str, ...]):
         project = self._project()
+        checked = self._checked_tips()
         for row in self.rows.standing():
-            if not row.path or not within(Path(row.path), places, commands) or row.checked_tip == tip(project, row.working):
+            if not row.path or not within(Path(row.path), places, commands) or checked.get(str(row.n)) == tip(project, row.working):
                 continue
             found = self._drift(row)
-            self.update(row.n, checked_tip=found.tip)
+            checked.set(str(row.n), found.tip)
             if not found.current:
                 return row, found
         return None
+
+    def _checked_tips(self) -> State:
+        return State(runtime.folder(self.record.root) / CHECKED_TIPS)
 
     def _project(self) -> Path:
         return self.record.root.resolve().parent

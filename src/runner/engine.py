@@ -3,6 +3,7 @@ from dataclasses import asdict, dataclass, field, replace
 
 from pathlib import Path
 
+from controllers.requests import deliver
 from controllers.types import CONTROLLERS, Agents, Messages, Notices, Notifications
 import features
 from engine import bus, chat, clock, ran, runtime
@@ -102,6 +103,7 @@ class Engine:
 
     def tick(self) -> str:
         self.agent.driver.pump()
+        deliver(self.record.root)
         self.relay()
         self.relay_peers()
         self.ran()
