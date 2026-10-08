@@ -70,3 +70,8 @@ def test_a_document_carries_buttons_that_say_something_for_the_user():
     assert len(unspent(Reports(record, actor=AGENT).load(report.n))) == 2, "an open choice offers both of its buttons"
     Reports(record, actor=AGENT).action("set")(report.n, key="answered_own", value="Yep, and in Docker")
     assert unspent(Reports(record, actor=AGENT).load(report.n)) == [], "an answer in your own words settles the choice like a pressed button"
+    from controllers.types import Questions
+    from tests.conftest import refused
+    asking = Reports(record, actor=AGENT).create("Another choice", buttons=choice)
+    assert f"report {asking.n} already asks this" in refused(lambda: Questions(record, actor=AGENT).create("Reshape it?", about=asking.ref, options=[{"title": "Yes", "text": "Reshape it"}, {"title": "No", "text": "Keep it"}], pick=1)), \
+        "a row that asks through its buttons is not asked the same thing again as a question"
