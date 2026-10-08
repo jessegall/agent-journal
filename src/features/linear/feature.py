@@ -100,7 +100,7 @@ class Linear(IntegrationFeature):
             return
         state = self.choices(record).state_of(ticket.stage)
         sending = bool(self.values(record).send_status) and bool(state)
-        tickets.update(ticket.n, linear_stage=ticket.stage)
+        tickets.update(ticket.n, linear_stage=ticket.stage, **({"linear_state": state} if sending else {}))
         if sending:
             bus.defer(lambda: self.push(record, lambda client: send_status(client, ticket.source_id, state)))
 
