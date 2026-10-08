@@ -20,8 +20,8 @@ import {place} from "./outbox.js";
 import PhoneActs from "./PhoneActs.vue";
 import PhoneNew from "./PhoneNew.vue";
 import PhoneNewBoard from "./PhoneNewBoard.vue";
-import PhoneSkeletonRows from "./PhoneSkeletonRows.vue";
 import PhoneTodoRow from "./PhoneTodoRow.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
 const BOARD_EVERY = 15000;
 const UNDONE = "Undone on the phone right after it was marked done";
@@ -161,7 +161,7 @@ const made = (row) => (refresh(), emit("open", `todo:${row.n}`));
             <Segmented class="todos-views" :options="VIEWS" :value="view" fill aria-label="Show the to-dos as" @pick="view = $event" />
             <SearchField v-model="words" :label="view === 'list' ? 'Search to-dos' : 'Find a card on the board'" />
             <template v-if="!loaded">
-                <CellGroup aria-busy="true" aria-label="Loading"><PhoneSkeletonRows :count="5" /></CellGroup>
+                <CellGroup><Skeleton :count="5" /></CellGroup>
             </template>
             <template v-else-if="empty">
                 <EmptyList icon="todos" title="No open to-dos" reason="When you or the agent add a to-do, it shows here." />

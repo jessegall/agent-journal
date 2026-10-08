@@ -1,12 +1,12 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import PagedList from "../../kit/PagedList.vue";
-import PhoneSkeletonRows from "../PhoneSkeletonRows.vue";
 import BigTitle from "./BigTitle.vue";
 import EmptyList from "./EmptyList.vue";
 import NavBar from "./NavBar.vue";
 import SearchField from "./SearchField.vue";
 import {useScrolled} from "./scrolled.js";
+import Skeleton from "../../kit/Skeleton.vue";
 
 const SKELETON_AFTER = 150;
 
@@ -90,7 +90,7 @@ defineExpose({reload, rows});
             <template v-if="loading">
                 <div class="list-loading" aria-busy="true" aria-label="Loading">
                     <template v-if="skeleton">
-                        <div class="list-group"><PhoneSkeletonRows :count="5" /></div>
+                        <div class="list-group"><Skeleton :count="5" /></div>
                     </template>
                 </div>
             </template>

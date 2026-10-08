@@ -30,6 +30,11 @@ const ROW = [
     {width: "32%", height: 9},
 ];
 const TEXT = ["94%", "88%", "91%", "62%"].map((width) => ({width, height: 10}));
+const HEADING = [
+    {width: "110px", height: 12},
+    {width: "86%", height: 24},
+    {width: "52%", height: 24},
+];
 </script>
 
 <template>
@@ -52,6 +57,14 @@ const TEXT = ["94%", "88%", "91%", "62%"].map((width) => ({width, height: 10}));
                             <SkeletonLine :bars="line.bars" />
                         </template>
                     </div>
+                </template>
+            </div>
+        </template>
+        <template #page>
+            <div class="skeleton-text" aria-busy="true" :aria-label="label">
+                <SkeletonLine class="skeleton-heading" :bars="HEADING" />
+                <template v-for="index in count" :key="index">
+                    <SkeletonLine :bars="TEXT" />
                 </template>
             </div>
         </template>
@@ -136,6 +149,10 @@ const TEXT = ["94%", "88%", "91%", "62%"].map((width) => ({width, height: 10}));
 
 .skeleton-text > * {
     height: 64px;
+}
+
+.skeleton-text > .skeleton-heading {
+    height: 84px;
 }
 
 @keyframes skeleton-shimmer {

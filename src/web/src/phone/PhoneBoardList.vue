@@ -1,7 +1,7 @@
 <script setup>
 import PhoneNavRow from "./PhoneNavRow.vue";
 import {ago} from "../format/time.js";
-import PhoneSkeletonRows from "./PhoneSkeletonRows.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
 defineProps({
     loaded: {type: Boolean, required: true},
@@ -17,7 +17,7 @@ const emit = defineEmits(["open", "more"]);
 <template>
     <div class="board-group">
         <template v-if="!loaded">
-            <PhoneSkeletonRows :count="3" />
+            <Skeleton :count="3" />
         </template>
         <template v-else-if="rows.length">
             <ul class="board-rows">

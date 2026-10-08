@@ -8,7 +8,7 @@ import Cell from "./kit/Cell.vue";
 import CellGroup from "./kit/CellGroup.vue";
 import EmptyList from "./kit/EmptyList.vue";
 import PlaceScreen from "./kit/PlaceScreen.vue";
-import PhoneSkeletonRows from "./PhoneSkeletonRows.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: ""}});
 const emit = defineEmits(["back", "open"]);
@@ -35,7 +35,7 @@ onMounted(load);
             <EmptyList icon="warn" title="The commit did not load" :reason="failed" action="Try again" @act="load" />
         </template>
         <template v-else-if="!commit">
-            <CellGroup aria-busy="true" aria-label="Loading"><PhoneSkeletonRows :count="3" /></CellGroup>
+            <CellGroup><Skeleton :count="3" /></CellGroup>
         </template>
         <template v-else>
             <h2 class="commit-subject">{{ commit.subject }}</h2>

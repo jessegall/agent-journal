@@ -28,7 +28,6 @@ import {chipOpener} from "./peeked.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
 import {atThisPlace, discard, ended, flush, justSent, perform, setPlace, settle, waitingActions, waitingToSend} from "./outbox.js";
-import PhoneSkeleton from "./PhoneSkeleton.vue";
 import PhoneNotices from "./PhoneNotices.vue";
 import PhoneDumpDock from "./PhoneDumpDock.vue";
 import {useFades} from "./fades.js";
@@ -58,6 +57,7 @@ import {useUnder} from "./under.js";
 import {announce, spoken} from "./announce.js";
 import {tick} from "./haptic.js";
 import {IN_CHAT} from "../domain/replies.js";
+import Skeleton from "../kit/Skeleton.vue";
 
 const FEED_EVERY = 5000;
 const NEAR_BOTTOM = 120;
@@ -696,7 +696,7 @@ onMounted(startTourOnce);
                     :style="{'--dock': `${dockHeight}px`}"
                 >
                     <template v-if="switching || !ready">
-                        <PhoneSkeleton />
+                        <Skeleton class="home-skeleton" shape="messages" label="Loading messages" />
                     </template>
                     <template v-else>
                         <div class="home-feed-box">
@@ -902,6 +902,10 @@ onMounted(startTourOnce);
 </template>
 
 <style scoped>
+.home-skeleton {
+    padding-bottom: calc(var(--dock, 0px) + 12px + var(--keyboard, 0px));
+}
+
 .home-change.link {
     min-height: 44px;
     padding: 0 8px;
