@@ -4,7 +4,7 @@ from controllers.base import Arguments, Controller
 from engine.extension import Extension
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
-from resources.base import AGENT, Refused, USER
+from resources.base import AGENT, Refused, SYSTEM, USER
 from resources import types
 from controllers.marks import action
 
@@ -39,8 +39,11 @@ class Features(Controller):
             raise Refused(f"{name} has no setting {key!r}; its settings are {', '.join(known)}")
         check_choices(name, {key: setting_value(value)})
         refuse_a_secret(name, [key], self.actor)
+        refuse_a_secret_that_runs_commands(self.record, name, {key: value})
         before = self._held(name, key)
         self.record.change_setting(name, {key: setting_value(value)})
+        import features
+        features.settings_changed(self.record, [name], self.actor)
         if self.actor == AGENT and self._held(name, key) != before:
             from controllers.types import Agents
             Agents(self.record, actor=self.actor)._mark_primary(f"Changed {name}.{key} from {before} to {self._held(name, key)}", icon="settings")
@@ -72,6 +75,16 @@ def refuse_a_secret(name: str, keys, actor: str) -> None:
     """Only the person picks which secret a feature uses; an agent never does."""
     if actor != USER and secrets_in(name, keys):
         raise Refused(f"only you pick the key of {name}, under Integrations in the viewer")
+
+
+def refuse_a_secret_that_runs_commands(record, name: str, values: dict) -> None:
+    """The key of an integration is for that integration alone: a secret that lets commands use it is not picked for one."""
+    from controllers.types import Secrets
+    from features.secrets.resource import SecretField
+    for key in secrets_in(name, values):
+        for secret in Secrets(record, actor=SYSTEM).rows.standing():
+            if secret.programs and any(SecretField.from_json(raw).variable == values[key] for raw in secret.secret_fields):
+                raise Refused(f"the secret {secret.title} lets commands use it, so it cannot be the key of {name}; make one for {name} alone, with no command")
 
 
 def writes_a_secret(body: dict) -> bool:

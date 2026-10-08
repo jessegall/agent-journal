@@ -131,6 +131,13 @@ def unload() -> None:
     rebooted()
 
 
+def settings_changed(record, names, actor: str) -> None:
+    """Tells each feature named that its settings changed: the one funnel the settings write and journal feature configure both use."""
+    for name in names:
+        if name in FEATURES:
+            FEATURES[name].settings_changed(record, actor)
+
+
 def describe() -> dict:
     return {name: f.describe() for name, f in FEATURES.items()}
 

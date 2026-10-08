@@ -26,7 +26,7 @@ from features.tickets.orchestration import DRAFTS, PLANS, WAITS, TicketOrchestra
 from features.tickets.resource import CONFIRMED, PROPOSED, Ticket, card_back
 from controllers.types import Comments
 from features.plans.controller import ACTIVE, DONE as PLAN_DONE, READY, WAITING, Plans
-from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM
+from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM, USER
 from resources.shapes import rank_before
 from controllers.marks import action
 from resources.types import EnvironmentKind
@@ -67,8 +67,17 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             made = self.depend(made.n, int(other))
         return made
 
+    def _kept_from_outside(self, r: Resource) -> None:
+        """An agent can neither mark a ticket from an integration as started by you nor change where it came from."""
+        stored = self.rows.peek(r.n) if self.rows.exists(r.n) else None
+        if self.actor != AGENT or stored is None or not self._from_outside(stored):
+            return
+        if r.source != stored.source or (r.data.get("user_started") and not stored.data.get("user_started")):
+            self._refuse(f"only you start or change the source of a ticket from {stored.source}, in the viewer")
+
     def save(self, r: Resource, action: str, **event) -> Resource:
         from providers import DRIVERS
+        self._kept_from_outside(r)
         if r.board and r.stage not in self._stages(r.board):
             raise Refused(f"board {r.board} has no stage {r.stage!r}")
         if r.provider not in DRIVERS:
@@ -392,9 +401,23 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def _at(self, ref: str):
         return self.load(ref.split(":")[1])
 
+    def _from_outside(self, ticket) -> bool:
+        """Whether the ticket comes from an integration, such as Linear, whose words are not the journal's own."""
+        import features
+        from features.groups import Group
+        made = features.FEATURES.get(ticket.source)
+        return bool(made) and made.group == Group.INTEGRATIONS
+
+    def _only_you(self, ticket, doing: str, once_asked: bool = False) -> None:
+        """A ticket from an integration is started and confirmed only by you; an agent and auto mode are refused, and the queue carries on only what you already started."""
+        if not self._from_outside(ticket) or self.actor == USER or (once_asked and self.actor == SYSTEM and ticket.data.get("user_started")):
+            return
+        self._refuse(f"only you {doing} a ticket from {ticket.source}, in the viewer: its words come from outside, so an agent or auto mode never does")
+
     @action
     def confirm(self, n: int, why: str = ""):
         ticket = self.load(n)
+        self._only_you(ticket, "confirm")
         self._as_orchestrator(ticket, DRAFTS, f"confirms a drafted {self.type}, with its button or in the viewer", "Confirmed the draft", why)
         return self.update(ticket.n, draft=False)
 
@@ -402,6 +425,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def start(self, n: int, provider: str | None = None, model: str | None = None):
         from agents.terminal import detached, prompted
         from providers import DRIVERS, PROVIDERS
+        self._only_you(self.load(n), "start", once_asked=True)
         self._confirmed(self.load(n))
         self.mark_seen()
         ticket = self.bind(int(n))
@@ -411,7 +435,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             where = "" if missing == ["."] else f" in {', '.join(missing)}"
             self._refuse(f"its board works on the branch {into}, which does not exist{where}; make it, or change the board's branch")
         self._modelled(ticket, model, f"journal ticket start {ticket.n} --model <model>")
-        ticket = self.update(ticket.n, provider=provider or ticket.provider, model=model or ticket.model, halted=False)
+        you_started = bool(ticket.data.get("user_started")) or (self.actor == USER and self._from_outside(ticket))
+        ticket = self.update(ticket.n, provider=provider or ticket.provider, model=model or ticket.model, halted=False, user_started=you_started)
         with State(self.record.root / "runtime" / "ticket-starts.json").changing():
             ticket = self.load(ticket.n)
             if self._in_plan_worktree(ticket):
@@ -487,6 +512,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     @action
     def start_next(self, n: int):
         ticket = self.load(n)
+        self._only_you(ticket, "start", once_asked=True)
         if not ticket.queued:
             self._refuse(f"{self.type} {ticket.n} is not queued")
         first = min((self.load(m).queued_at for m in self._queue()), default=time.time())
