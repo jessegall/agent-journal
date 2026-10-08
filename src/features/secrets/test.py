@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 
 import features
+from controllers.notices import Notices
 from controllers.types import Messages
 from features.secrets.controller import Secrets
 from features.secrets.sessions import BrowserLogins
@@ -74,6 +75,11 @@ def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch
     assert "has no value yet" in refused(lambda: Secrets(record, actor=AGENT).run("GitHub", "cat")), "a secret without its value is never run"
     Secrets(record, actor=USER).fill(row.n, "key", VALUE)
     agent = Secrets(record, actor=AGENT)
+    assert "lists no programs" in refused(lambda: agent.run("GitHub", "cat")), "a secret that lists no programs is given to none"
+    from migrations.m0074_secrets_name_their_programs import run as tell_unlisted
+    assert len(tell_unlisted(record.root)) == 1 and any("GitHub (secret" in notice.brief for notice in Notices(record, actor=SYSTEM).all()), \
+        "an upgrade tells the user which secrets list no programs"
+    Secrets(record, actor=SYSTEM).update(row.n, programs=["cat", "base64", "printenv", "bash"])
     capsys.readouterr()
     agent.run("github", "cat")
     agent.run("GitHub", "base64")
