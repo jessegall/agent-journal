@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.264.2 — A transcript is never read whole by accident, and the skills check never judges from a stale reading
+- Every read of a conversation goes through one place that starts where the last read stopped; a read from the very start needs a named reason (only a search has one) and is logged.
+- A conversation read for the first time after an upgrade is read from its last 64 MB, not its whole length.
+- The check that skills are loaded never refuses a tool call while its reading of the conversation is behind.
+
 ## 2.264.1 — Hooks answer at once and never hold the agent
 - A hook answers before anything that only tells the agent something; nudges, marks, whispers and the agent's report run after the answer, on worker threads.
 - A long transcript is folded in the background, so a hook never waits minutes behind it after an upgrade, and the viewer's connections are no longer left open until the server runs out of files.
