@@ -24,12 +24,13 @@ export async function throughProxy(target) {
     let server = make();
     await new Promise((done) => server.listen(0, "127.0.0.1", done));
     const port = server.address().port;
+    const closed = () => {
+        sockets.forEach((socket) => socket.destroy());
+        return new Promise((done) => server.close(done));
+    };
     return {
         url: `http://127.0.0.1:${port}/`,
-        away() {
-            sockets.forEach((socket) => socket.destroy());
-            return new Promise((done) => server.close(done));
-        },
+        away: closed,
         back() {
             server = make();
             return new Promise((done, fail) => {
@@ -38,9 +39,6 @@ export async function throughProxy(target) {
                 server.listen(port, "127.0.0.1", () => (clearTimeout(timer), done()));
             });
         },
-        stop() {
-            sockets.forEach((socket) => socket.destroy());
-            return new Promise((done) => server.close(done));
-        },
+        stop: closed,
     };
 }

@@ -1,13 +1,11 @@
-import {createApp, h, nextTick} from "vue";
+import {createApp, h} from "vue";
 import {afterEach, beforeEach, describe, expect, test, vi} from "vitest";
 import SuggestionWindow from "../src/chat/SuggestionWindow.vue";
 import {GAP_MS, IDLE_MS, useSuggestionWindow} from "../src/composables/suggestionWindow.js";
 import {dueNow} from "../src/domain/suggestions.js";
+import {flush} from "./flush.js";
 
 const HOUR = 3600;
-const flush = async () => {
-    for (let i = 0; i < 5; i++) await nextTick();
-};
 const row = (n, created, data = {}, completed = 0) => ({n, title: `Suggestion ${n}`, brief: "", outcome: "", created, completed, data});
 
 function scheduled(list, hours = 3, graceUntil = () => 0) {

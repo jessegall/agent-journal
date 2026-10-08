@@ -1,5 +1,6 @@
-import {createApp, nextTick} from "vue";
+import {createApp} from "vue";
 import {beforeEach, expect, test, vi} from "vitest";
+import {flush} from "./flush.js";
 
 const press = vi.fn();
 const act = vi.fn();
@@ -8,9 +9,6 @@ vi.mock("../src/sync/rows.js", () => ({rows: () => []}));
 
 const {default: ChoiceCard} = await import("../src/resource/ChoiceCard.vue");
 
-const flush = async () => {
-    for (let i = 0; i < 5; i++) await nextTick();
-};
 const report = {
     ref: "report:5",
     type: "report",

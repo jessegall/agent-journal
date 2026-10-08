@@ -1,14 +1,11 @@
-import {createApp, nextTick} from "vue";
+import {createApp} from "vue";
 import {beforeEach, describe, expect, test, vi} from "vitest";
+import {flush} from "./flush.js";
 
 const tunnelLogin = vi.fn();
 vi.mock("../src/api/client.js", () => ({api: {tunnelLogin: (...a) => tunnelLogin(...a)}, onWrite: vi.fn()}));
 
 const {default: TunnelLogin} = await import("../src/pages/TunnelLogin.vue");
-
-const flush = async () => {
-    for (let i = 0; i < 5; i++) await nextTick();
-};
 
 async function open(host = "tunler.test") {
     const ready = vi.fn();

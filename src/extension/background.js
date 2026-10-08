@@ -156,7 +156,7 @@ async function inject(file, mode) {
   try {
     // the picker reads its mode off the window: "shot" sends a picture and little else
     if (mode) await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: (m) => { window.__journalPickMode = m; }, args: [mode] });
-    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: [file] });
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["ask.js", file] });
     return { ok: true };
   } catch (e) {
     return { ok: false, why: e.message };           // chrome:// pages and the Web Store refuse every extension
@@ -182,7 +182,7 @@ async function docking() {
 
 async function run(tabId, mode) {
   await chrome.scripting.executeScript({ target: { tabId }, func: (m) => { window.__journalRun = m; }, args: [mode] });
-  await chrome.scripting.executeScript({ target: { tabId }, files: ["chat.js"] });
+  await chrome.scripting.executeScript({ target: { tabId }, files: ["ask.js", "chat.js"] });
 }
 
 async function hold(msg, tab) {

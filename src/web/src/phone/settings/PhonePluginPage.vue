@@ -7,7 +7,7 @@ import {RUNNING, stateWord} from "../../domain/services.js";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
 import EmptyList from "../kit/EmptyList.vue";
-import {toast} from "../kit/toast.js";
+import {copyShown} from "../kit/toast.js";
 import PhonePage from "./PhonePage.vue";
 
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: ""}});
@@ -22,14 +22,7 @@ async function load() {
 
 const {error, set, busy} = useServiceAction(load);
 
-async function copyLink() {
-    try {
-        await navigator.clipboard.writeText(src.value);
-        toast("The link to this page is copied");
-    } catch {
-        toast("Could not copy the link");
-    }
-}
+const copyLink = () => copyShown(src.value, "link to this page");
 
 onMounted(load);
 </script>

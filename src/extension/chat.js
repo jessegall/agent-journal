@@ -8,7 +8,7 @@
 
   // NOTHING HERE MAY THROW. An extension reloaded under an open page leaves this script with a dead
   // chrome.*: every call would throw "context invalidated", so each one is wrapped.
-  const ask = (msg, cb) => { try { chrome.runtime.sendMessage(msg, (got) => { void chrome.runtime.lastError; if (cb) cb(got); }); } catch (e) { if (cb) cb(null); } };
+  const ask = globalThis.journalAsk;
   const stored = (key) => { try { return chrome.storage.local.get(key).catch(() => ({})); } catch (e) { return Promise.resolve({}); } };
   const store = (value) => { try { chrome.storage.local.set(value).catch(() => {}); } catch (e) { /* not remembered, not fatal */ } };
   const onJournal = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(window.location.origin);

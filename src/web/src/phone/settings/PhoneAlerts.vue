@@ -3,7 +3,7 @@ import {onMounted, ref} from "vue";
 import {phone} from "../../api/phone.js";
 import Cell from "../kit/Cell.vue";
 import CellGroup from "../kit/CellGroup.vue";
-import {toast} from "../kit/toast.js";
+import {copyShown, toast} from "../kit/toast.js";
 import {pushPossible, subscribed} from "../push.js";
 
 const key = ref("");
@@ -26,14 +26,7 @@ async function turnOn() {
     }
 }
 
-async function copyKey() {
-    try {
-        await navigator.clipboard.writeText(key.value);
-        toast("The alerts key is copied");
-    } catch {
-        toast("Could not copy the alerts key");
-    }
-}
+const copyKey = () => copyShown(key.value, "alerts key");
 
 onMounted(async () => {
     key.value = await phone.pushKey().then((got) => got.key).catch(() => "");

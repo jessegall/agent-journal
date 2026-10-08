@@ -4,8 +4,7 @@
 (() => {
   const SOURCE = "journal-extension";
 
-  // a dead extension (reloaded under this page) throws on every chrome.* call: asked safely, it answers nothing
-  const ask = (msg, cb) => { try { chrome.runtime.sendMessage(msg, (got) => { void chrome.runtime.lastError; if (cb) cb(got); }); } catch (e) { if (cb) cb(null); } };
+  const ask = globalThis.journalAsk;
   function tell(kind, extra) {
     window.postMessage({ source: SOURCE, kind, ...(extra || {}) }, window.location.origin);
   }

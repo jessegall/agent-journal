@@ -45,6 +45,7 @@
         "http://localhost/*"
       ],
       "js": [
+        "ask.js",
         "bridge.js"
       ],
       "all_frames": true,

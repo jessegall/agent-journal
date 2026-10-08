@@ -79,19 +79,20 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
             >
                 <Icon name="chat" />
             </button>
-            <button
-                v-if="familyOn"
-                type="button"
-                :class="['icon-btn', {on: floatingFamily}]"
-                v-tip="
-                    floatingFamily
-                        ? 'Close the agent family tree'
-                        : 'Open the agent family tree: who started, sent out or messaged which agent'
-                "
-                @click="toggleFamily"
-            >
-                <Icon name="family" />
-            </button>
+            <template v-if="familyOn">
+                <button
+                    type="button"
+                    :class="['icon-btn', {on: floatingFamily}]"
+                    v-tip="
+                        floatingFamily
+                            ? 'Close the agent family tree'
+                            : 'Open the agent family tree: who started, sent out or messaged which agent'
+                    "
+                    @click="toggleFamily"
+                >
+                    <Icon name="family" />
+                </button>
+            </template>
             <template v-if="sharingOn">
                 <ShareTunnel />
                 <button

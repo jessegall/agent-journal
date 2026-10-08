@@ -1,11 +1,8 @@
-import {createApp, nextTick} from "vue";
+import {createApp} from "vue";
 import {beforeEach, describe, expect, test, vi} from "vitest";
 import SuggestionCard from "../src/chat/SuggestionCard.vue";
 import {NO, YES} from "../src/domain/suggestions.js";
-
-const flush = async () => {
-    for (let i = 0; i < 5; i++) await nextTick();
-};
+import {flush} from "./flush.js";
 
 const plugin = (data = {}, row = {}) => ({
     n: 41,

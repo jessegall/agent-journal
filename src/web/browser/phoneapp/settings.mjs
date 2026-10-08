@@ -1,22 +1,7 @@
-import {chromium} from "playwright-core";
 import {runScenarios} from "../harness.mjs";
-import {allowRuns} from "./paired.mjs";
+import {allowRuns, PAIR, PHONE, pairedState, SHOWN} from "./paired.mjs";
 
-const PAIR = process.argv[2];
-const PHONE = {viewport: {width: 390, height: 844}, hasTouch: true, isMobile: true};
-const SHOWN = 8000;
 
-async function pairedState() {
-    const browser = await chromium.launch();
-    const context = await browser.newContext(PHONE);
-    const page = await context.newPage();
-    await page.goto(PAIR);
-    await page.getByPlaceholder("Message the agent").waitFor();
-    await page.getByRole("button", {name: "Skip the tour"}).click();
-    const state = await context.storageState();
-    await browser.close();
-    return state;
-}
 
 const state = await pairedState();
 const top = (page) => page.locator(".layer.page").last();
