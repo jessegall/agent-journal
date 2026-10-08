@@ -821,7 +821,7 @@ def answering(seen: list):
 
 
 def test_the_hooks_and_the_command_reach_the_server_through_a_curl_older_than_7_87(tmp_path):
-    from install import asks
+    from install import ASKS
     seen: list = []
     root = tmp_path / ".journal"
     (root / "runtime").mkdir(parents=True)
@@ -829,8 +829,7 @@ def test_the_hooks_and_the_command_reach_the_server_through_a_curl_older_than_7_
     with answering(seen) as url:
         (root / "runtime" / "heartbeat").write_text(f"{int(time.time())} {url}\n")
         hook = subprocess.run(["sh", str(CODE / "hook.sh"), "claude", str(root)], input='{"hook_event_name": "Stop"}', env=env, capture_output=True, text=True, timeout=60)
-        served = asks().split(") ;;")[0].split("case \"$1\" in ")[1].split("|")[0]
-        shim = subprocess.run(["sh", "-c", f"root={root}\n{asks()}", "sh", served], env=env, capture_output=True, text=True, timeout=60)
+        shim = subprocess.run(["sh", "-c", f"root={root}\n{ASKS}", "sh", "todo"], env=env, capture_output=True, text=True, timeout=60)
     assert hook.returncode == 0 and not (root / "runtime" / "hook-failures.log").exists(), f"the hook was delivered: {hook.stderr}"
     assert any(path.startswith("/api/hook/claude?") and "root=" in path and "env=main" in path for path in seen), f"the hook carried its parameters in the query: {seen}"
     assert shim.stdout == "ok" and any(path.startswith("/api/run?") and "actor=agent" in path for path in seen), f"the command was delivered: {shim.stderr} {seen}"
