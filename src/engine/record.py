@@ -77,6 +77,10 @@ class Record:
             self._folders[type, scope] = f
         return self._folders[type, scope]
 
+    def remake_folder(self, type: str, scope: str = "") -> Path:
+        self._folders.pop((type, scope), None)
+        return self.folder(type, scope)
+
     @contextmanager
     def locked(self, scope: str = ""):
         path = (self.root / RESOURCES if scope == PROJECT else self.home) / ".lock"
