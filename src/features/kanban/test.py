@@ -120,7 +120,7 @@ def test_the_board_and_its_moves_are_refused_while_the_feature_is_off():
     n = Todos(record, actor=USER).create("a card").n
     record.features = {"kanban": False}
     assert (refused(lambda: board(record)), refused(lambda: shift(record, n, "held", why="x"))) == \
-        ("the kanban feature is off", "the kanban feature is off"), "both commands say so"
+        ("the kanban feature is off: switch it on in Settings, or with journal feature switch kanban",) * 2, "both commands say so, and how to switch it on"
 
 
 def test_a_cards_words_pass_the_formatters_like_every_other_field():
