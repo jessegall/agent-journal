@@ -49,7 +49,13 @@ const choices = computed(() =>
                         <LineList :value="setting.value" @change="(value) => emit('change', setting.key, value)" />
                     </template>
                     <template #secret>
-                        <SecretPicker :value="setting.value" @pick="(value) => emit('change', setting.key, value)" />
+                        <SecretPicker
+                            :value="setting.value"
+                            picked-line="The plugin gets the secret {title}."
+                            none-line="No secret is picked, so the plugin gets no value."
+                            note="The plugin's services get this secret's value. Nothing else does."
+                            @pick="(value) => emit('change', setting.key, value)"
+                        />
                     </template>
                     <template #textarea>
                         <textarea
