@@ -61,6 +61,7 @@ class Group(Enum):
     SEQUENCES = Grouping("Sequences", "Steps the agent follows in order, in every environment of this project", Section.PROJECT, lead="sequences")
     BOARDS = Grouping("Boards", "Ticket boards and the agents that fill them, in every environment of this project", Section.PROJECT, lead="boards")
     TICKETS = Grouping("Tickets", "Each ticket runs in an environment of its own", Section.PROJECT, lead="tickets")
+    INTEGRATIONS = Grouping("Integrations", "Outside services the journal reads from, each off until you switch it on and pick its key", Section.PROJECT)
     SHARED_RECORDS = Grouping("Checks, triggers and templates", "Kept once for the project and used by every environment", Section.PROJECT)
     MEMORY = Grouping("Memory", "Facts, rules and reminders repeated to the agent", Section.MEMORY)
     RECORDS = Grouping("Documents", "Documents, collections, checks and other things the agent files", Section.MEMORY)
