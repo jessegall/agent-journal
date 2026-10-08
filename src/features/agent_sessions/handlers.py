@@ -72,9 +72,14 @@ class MarkSilentStopped(Handler):
         silent = time.time() - context.settings.quiet * MINUTE
         sessions = Sessions(context.record.root)
         for row in agents.rows.every():
-            if not row.live or float(row.at) >= silent or live(sessions.read(row.title)):
+            if float(row.at) >= silent or not has_ended(row, sessions):
                 continue
             stop(agents, row)
+
+
+def has_ended(row, sessions: Sessions) -> bool:
+    """Whether a row still counted as running belongs to a session that is gone."""
+    return row.live and not live(sessions.read(row.title))
 
 
 def stop(agents: Agents, row) -> None:
@@ -88,7 +93,7 @@ def stop_ended(root: Path) -> str:
     for record in environment_records(Path(root)):
         agents, sessions = Agents(record, actor=SYSTEM), Sessions(record.root)
         for row in agents.rows.every():
-            if not row.live or live(sessions.read(row.title)):
+            if not has_ended(row, sessions):
                 continue
             stop(agents, row)
             ended.append(row.title)

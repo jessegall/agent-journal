@@ -5,7 +5,7 @@ from pathlib import Path
 
 from controllers.requests import request
 from controllers.types import Notices
-from engine.handover import accept, epoch_of, give, nothing_waits
+from engine.handover import epoch_of, give, nothing_waits, taken
 from engine.machines import Lease, this_machine
 from engine.offline import Waiting, Write
 from engine.outbox import Request
@@ -41,7 +41,6 @@ class ConnectionView:
 
 SERVER, HERE = "server", "here"
 SERVER_ROLE, YOUR_COPY = "the server", "your copy"
-STATE = CONNECTION
 
 
 def local_hello(record) -> Hello:
@@ -51,7 +50,7 @@ def local_hello(record) -> Hello:
 def join(record, transport: Transport) -> Welcome:
     """Asks the server who it is, checks that both can work together, and keeps the answer for the Settings card; a copy too old to carry the sync's checks is refused."""
     welcome = connect(local_hello(record), transport.hello())
-    record.state(STATE).set("welcome", {"release": welcome.release.value, "step": welcome.comparison.step.value, "migrations": list(welcome.comparison.migrations)})
+    record.state(CONNECTION).set("welcome", {"release": welcome.release.value, "step": welcome.comparison.step.value, "migrations": list(welcome.comparison.migrations)})
     if welcome.release is not Release.SAME or welcome.comparison.step is not Step.IN_STEP:
         warn(record, "This copy is not in step with the server", f"Compared with the server this copy's release is {welcome.release.value}, and its record must {welcome.comparison.step.value} before it syncs.")
     return welcome
@@ -77,7 +76,7 @@ def hand_to_server(record, transport: Transport) -> Lease:
     if record.holds(""):
         lease = give(record, "", transport.hello().machine)
     else:
-        lease = Lease.read(record.scope_home(""))
+        lease = record.lease("")
     try:
         transport.handover(record.env, lease)
     except OSError as lost:
@@ -89,21 +88,19 @@ def take_back(record, transport: Transport) -> Lease:
     """The server lets go first and names this machine under the next epoch; a lost answer is settled by asking the server who holds the environment now."""
     try:
         lease = transport.handback(record.env)
-    except OSError as lost:
-        lease = held_by(record, transport, lost)
+    except OSError:
+        lease = held_by(record, transport)
     if lease.machine != this_machine():
         raise Refused(f"the server handed {record.env} to {lease.machine}, not to this machine")
-    if Lease.read(record.scope_home("")) == lease:
-        return lease
-    return accept(record, "", lease)
+    return taken(record, "", lease)
 
 
 def settle(record, transport: Transport, lease: Lease, lost: OSError) -> None:
-    if held_by(record, transport, lost) != lease:
+    if held_by(record, transport) != lease:
         raise Refused(f"this machine let go of {record.env} at epoch {lease.epoch} and the server has not taken it yet: run hand again to finish") from lost
 
 
-def held_by(record, transport: Transport, lost: OSError) -> Lease:
+def held_by(record, transport: Transport) -> Lease:
     try:
         return transport.holder(record.env)
     except OSError as unknown:
@@ -138,7 +135,7 @@ def sync(record, transport: Transport) -> Synced:
             pulled += replay(found, "", transport.events(EventQuery.of(found, "")))
     if not record.holds(PROJECT):
         pulled += replay(record, PROJECT, transport.events(EventQuery.of(record, PROJECT)))
-    record.state(STATE).set("synced_at", time.time())
+    record.state(CONNECTION).set("synced_at", time.time())
     return Synced(flushed.sent, pulled)
 
 
@@ -154,7 +151,7 @@ def warn(record, title: str, brief: str) -> None:
 
 def what_travels(root: Path) -> Travelling:
     found = travelling_files(root)
-    environments = sorted({path.relative_to(root).parts[1] for path in found if path.relative_to(root).parts[0] == "environments" and len(path.relative_to(root).parts) > 2})
+    environments = sorted({parts[1] for parts in (path.relative_to(root).parts for path in found) if parts[0] == "environments" and len(parts) > 2})
     return Travelling(len(found), sum(path.stat().st_size for path in found), tuple(environments))
 
 
@@ -166,14 +163,14 @@ def role_of(connected: bool) -> str:
 
 
 def view(record, address: str) -> ConnectionView:
-    welcome = record.state(STATE).get("welcome") or {}
+    welcome = record.state(CONNECTION).get("welcome") or {}
     connected = bool(address and welcome)
     return ConnectionView(address, connected, welcome.get("release", ""), welcome.get("step", ""), what_travels(record.root), role_of(connected),
-                          float(record.state(STATE).get("synced_at", 0.0)), ServerKey(record.root).is_kept())
+                          float(record.state(CONNECTION).get("synced_at", 0.0)), ServerKey(record.root).is_kept())
 
 
 def leave(record) -> None:
     """Disconnects: the server's address and what was learned of it are forgotten, and nothing already sent is taken back."""
     record.change_setting("connection", {"address": ""})
-    record.state(STATE).remove("welcome")
-    record.state(STATE).remove("synced_at")
+    record.state(CONNECTION).remove("welcome")
+    record.state(CONNECTION).remove("synced_at")

@@ -113,10 +113,9 @@ class Phones(Controller):
         active = self._active(member)
         if active is not None:
             raise Refused(f"{active.title} is connected: stop that session first, one phone at a time")
-        pending = [self._phone(row["n"]) for row in self._summaries() if not row.get("key") and row.get("code") and not row["completed"] and not row["deleted"]]
-        for phone in pending:
-            if phone.member == member:
-                self.complete(phone.n, how="a newer code replaced it")
+        pending = (self._phone(row["n"]) for row in self._summaries() if not row.get("key") and row.get("code") and not row["completed"] and not row["deleted"])
+        for phone in [phone for phone in pending if phone.member == member]:
+            self.complete(phone.n, how="a newer code replaced it")
         code = secrets.token_urlsafe(24)
         short = "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
         made = self._kept(super().create("A phone, not yet connected").n, environment=self.record.env, member=member, code=hashed(code), short=hashed(short),

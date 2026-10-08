@@ -29,6 +29,13 @@ def give(record, scope: str, to: str) -> Lease:
     return record.hand_over(scope, to)
 
 
+def taken(record, scope: str, lease: Lease) -> Lease:
+    """Takes a lease once: the same lease again, as after an answer that was lost, is already taken."""
+    if record.lease(scope) == lease:
+        return lease
+    return accept(record, scope, lease)
+
+
 def accept(record, scope: str, lease: Lease) -> Lease:
     """The machine a scope was handed to takes the lease, once and only if its epoch is newer than the one it knows."""
     with record.locked(scope):

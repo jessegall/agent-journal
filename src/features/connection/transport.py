@@ -106,10 +106,13 @@ class HttpTransport:
         self.ask("handover", {"env": env, **asdict(lease)})
 
     def handback(self, env: str) -> Lease:
-        return Lease(**json.loads(self.ask("handback", {"env": env, "machine": this_machine()})))
+        return self.leased("handback", {"env": env, "machine": this_machine()})
 
     def holder(self, env: str) -> Lease:
-        return Lease(**json.loads(self.ask("holder", {"env": env})))
+        return self.leased("holder", {"env": env})
+
+    def leased(self, path: str, body: dict) -> Lease:
+        return Lease(**json.loads(self.ask(path, body)))
 
     def send(self, held: Write) -> Sent:
         """A write the server could not be reached for, or failed on, is tried again; one it refused is not."""
