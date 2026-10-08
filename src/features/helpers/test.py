@@ -429,7 +429,12 @@ def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back
     guard = OfferKeptAgentsFirst()
     context = AgentContext.of(features.FEATURES["helpers"], record, Agents(record, actor=SYSTEM).create("claude-1", provider="claude"))
     asked = lambda kind: guard.cancel(context, Dispatch(kind=kind, model="sonnet", model_supported=True, description="Ada: map the hooks"))
-    assert (asked("reviewer"), "of this kind (explore)" in asked("explore")) == ("", True), "a reviewer always starts fresh, and kinds stay apart"
+    assert (asked("reviewer"), asked("explore")) == ("", ""), "a reviewer always starts fresh, and an idle helper of another type never has to go to make room for an explorer"
+    record.set_setting("helpers", {"kept": 3, "working": 2})
+    for row in helpers.rows.standing()[:2]:
+        Agents(Record(record.root, row.environment), actor=SYSTEM).create("working", status="working", at=time.time())
+    assert "2 agents work at once" in refused(lambda: helpers.dispatch("Cy", "another job", "claude", "sonnet")), "the working cap holds a new dispatch whatever the type"
+    record.set_setting("helpers", {"kept": 3, "working": 6})
     for row in helpers.rows.standing():
         Agents(Record(record.root, row.environment), actor=SYSTEM).create("busy", status="working", at=time.time())
     assert "started" in helpers.dispatch("Bo", "change nudges/standing.py again", "claude", "sonnet"), "when every kept one is busy the dispatch goes through"

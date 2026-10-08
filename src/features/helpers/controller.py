@@ -106,7 +106,8 @@ class Helpers(Controller):
     def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False, checkout: str = "",
                  todos: str = "") -> str:
         census, paths = kept(self.record, self.rows.standing()), named_paths(f"{job}\n{brief}")
-        held_back = refusal(census, int(features.FEATURES["helpers"].values(self.record).kept), HELPER_KIND, paths)
+        limits = features.FEATURES["helpers"].values(self.record)
+        held_back = refusal(census, int(limits.kept), int(limits.working), HELPER_KIND, paths)
         if held_back:
             raise Refused(held_back)
         row = self._dispatched(name, job, provider, model, brief, worktree, checkout, numbers_in(todos))

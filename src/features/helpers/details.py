@@ -34,12 +34,12 @@ class HelpersDetails(FeatureDetails):
         dispatch a new helper while an idle one already touched the files its job names, the answer
         names that one.
 
-        At most helpers.kept (8) helpers and subagents are kept for reuse; 0 turns the limit off. At
-        the limit, while one of them waits for work, a new dispatch is refused with the idle ones
-        listed, those that touched the same files first, each with the line that sends it the work.
-        journal helper finish <n> or journal agent retire <id> frees a place, and when all of them
-        are busy the dispatch goes through. Reviewers and critics start fresh, so they are never
-        held back.
+        At most helpers.kept (8) agents of each type, such as helpers or designers, are kept for reuse, and at
+        most helpers.working (6) agents work at the same time; 0 turns a limit off. When the kept ones of
+        a type are full and some of them wait for work, a new dispatch of that type is refused with the
+        idle ones listed, those that touched the same files first, each with the line that sends it the
+        work. An idle agent of another type never has to go. journal helper finish <n> or journal agent
+        retire <id> frees a place. Reviewers and critics start fresh, so they are never held back.
 
         journal helper dispatch <name> "<job>" --provider codex --model <model> --brief "<the bounded
         job>" starts a helper in an environment of its own, named after you and the helper, which
@@ -79,7 +79,14 @@ class HelpersDetails(FeatureDetails):
         Setting(
             name="kept",
             default=8,
-            title="Agents kept for reuse",
+            title="Agents kept for reuse of each type",
+            abstract="Helpers, designers and each other type count apart. 0 turns the limit off",
+            unit="agents",
+        ),
+        Setting(
+            name="working",
+            default=6,
+            title="Agents working at the same time",
             abstract="0 turns the limit off",
             unit="agents",
         ),

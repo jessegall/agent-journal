@@ -144,17 +144,22 @@ def kept(record, helpers: list) -> list[Kept]:
     return [*(helper_kept(record, row) for row in helpers if agent_runs(record, row)), *(subagents_kept(record, primary) if primary else [])]
 
 
-def refusal(census: list[Kept], limit: int, kind: str, paths: tuple[str, ...]) -> str:
-    idle = [k for k in census if k.idle]
-    if not limit or len(census) < limit or not idle or is_fresh_kind(kind):
+def refusal(census: list[Kept], per_type: int, at_once: int, kind: str, paths: tuple[str, ...]) -> str:
+    """Why a new agent of this kind starts later: the project allows only so many agents working at once, and only so many of one kind kept for reuse; an idle agent of another kind never has to go."""
+    if is_fresh_kind(kind):
         return ""
-    offered = sorted((k for k in idle if k.kind == kind or k.overlaps(paths)), key=lambda k: not k.overlaps(paths))
-    if not offered:
-        places = "\n".join(k.place() for k in idle)
-        return f"""{len(census)} helpers and subagents are kept for reuse, the most this project keeps, and {len(idle)} of them wait for work. None of them is of this kind ({kind}) or touched the files this work names, so free a place before you start another:
-{places}"""
+    busy = [k for k in census if not k.idle]
+    if at_once and len(busy) >= at_once:
+        working = "\n".join(f"- {k.name} ({k.job})" for k in busy)
+        return f"""{len(busy)} agents work at once, the most this project allows. Wait for one to report, or stop one, before you start another:
+{working}"""
+    same = [k for k in census if k.kind == kind]
+    idle = [k for k in same if k.idle]
+    if not per_type or len(same) < per_type or not idle:
+        return ""
+    offered = sorted(idle, key=lambda k: not k.overlaps(paths))
     offers = "\n".join(k.offer() for k in offered)
-    return f"""{len(census)} helpers and subagents are kept for reuse, the most this project keeps, and {len(idle)} of them wait for work. Send this work to one that knows it instead of starting another:
+    return f"""{len(same)} agents of this kind ({kind}) are kept for reuse, the most this project keeps of one kind, and {len(idle)} of them wait for work. Send this work to one that knows it instead of starting another:
 {offers}
 Or free a place: journal helper finish <n> for a helper, journal agent retire <id> for a subagent."""
 
