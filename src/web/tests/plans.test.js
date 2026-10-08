@@ -86,9 +86,10 @@ test("a delegated plan names its helpers with their jobs and branches, or the ag
     ];
     const worktrees = [{completed: 0, data: {helper: "Hedy", branch: "helper/hedy"}}];
     const seen = delegationOf(plan, {todos, helpers, worktrees, tickets: []});
-    expect(seen.line).toBe("With helpers Hedy and Benny");
+    expect(seen.line).toBe("Helpers: Hedy, Benny");
     expect(seen.helpers[0]).toMatchObject({name: "Hedy", job: "Fix the tunnel", branch: "helper/hedy"});
-    expect(withLine(["Hedy"], [])).toBe("With helper Hedy");
-    expect(delegationOf(plan, {todos: [], helpers: [], worktrees: [], tickets: [{n: 41, completed: 0}]}).line).toBe("With the agent on ticket 41");
+    expect(withLine(["Hedy"], [])).toBe("Helper: Hedy");
+    expect([withLine([], [12, 13]), withLine([], [])]).toEqual(["Tickets: 12, 13", "Delegated"]);
+    expect(delegationOf(plan, {todos: [], helpers: [], worktrees: [], tickets: [{n: 41, completed: 0}]}).line).toBe("Ticket: 41");
     expect(delegationOf({...plan, data: {...plan.data, delegated: false}}, {todos, helpers, worktrees, tickets: []})).toBe(null);
 });
