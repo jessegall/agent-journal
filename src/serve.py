@@ -133,7 +133,9 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def tell_threads_on_signal(root: Path) -> None:
-    faulthandler.register(signal.SIGUSR1, file=open(runtime.folder(root) / THREADS, "w"), all_threads=True)
+    folder = runtime.folder(root)
+    folder.mkdir(parents=True, exist_ok=True)
+    faulthandler.register(signal.SIGUSR1, file=open(folder / THREADS, "w"), all_threads=True)
 
 
 def allow_open_files() -> None:
