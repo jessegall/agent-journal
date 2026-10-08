@@ -1,8 +1,9 @@
 from dataclasses import dataclass
+from controllers.invoke import invoked
+from controllers.types import Agents
 from engine.fields import Loaded
 from features.routing import Reply, Request, handles
-from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
-from features.skill_loading.required import load_now
+from features.skill_loading.catalogue import always
 
 
 @dataclass(frozen=True)
@@ -23,21 +24,17 @@ class Keywords(Loaded):
 
 @handles("GET", "/api/{env}/skills")
 def get_skills(req: Request) -> Reply:
-    return Reply(200, skills(req.record(), req.query_as(SkillsQuery).agent))
+    return Reply(200, invoked(req.as_user(Agents), "skills", named={"agent": req.query_as(SkillsQuery).agent}))
 
 
 @handles("GET", "/api/{env}/skills/{name}")
 def get_skill(req: Request) -> Reply:
-    root = req.record().root.parent
-    hit = next((s for s in catalogue(root) if s[SKILL.name] == req.params["name"]), None)
-    if not hit:
-        return Reply(404, {"error": f"no skill {req.params['name']}"})
-    return Reply(200, {**hit, "text": (root / hit[SKILL.path]).read_text(errors="replace")})
+    return Reply(200, invoked(req.as_user(Agents), "skill", named={"skill": req.params["name"]}))
 
 
 @handles("POST", "/api/{env}/skills/{name}/load")
 def post_skill_load(req: Request) -> Reply:
-    return Reply(200, {"notice": load_now(req.record(), req.params["name"])})
+    return Reply(200, invoked(req.as_user(Agents), "load_skill", named={"skill": req.params["name"]}))
 
 
 @handles("POST", "/api/{env}/skills/{name}/always")
@@ -48,5 +45,4 @@ def post_skill_always(req: Request) -> Reply:
 
 @handles("POST", "/api/{env}/skills/{name}/keywords")
 def post_skill_keywords(req: Request) -> Reply:
-    words = req.body_as(Keywords).words
-    return Reply(200, {"keywords": set_keywords(req.record(), req.params["name"], [w.strip() for w in words if w.strip()])})
+    return Reply(200, invoked(req.as_user(Agents), "keywords", named={"skill": req.params["name"], "keywords": req.body_as(Keywords).words}))

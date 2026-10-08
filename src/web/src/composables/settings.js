@@ -5,6 +5,8 @@ import {store} from "../state/store.js";
 
 export const feedOn = computed(() => !store.settings || store.settings.features.file_feed !== false);
 export const boardOn = computed(() => !store.settings || store.settings.features.kanban !== false);
+export const barOn = computed(() => !store.settings || store.settings.features.status_bar !== false);
+export const familyOn = computed(() => !store.settings || store.settings.features.family_tree !== false);
 export const steered = computed(() => (store.settings && store.settings.work_tracking && store.settings.work_tracking.steered) || "");
 export const autoOn = computed(() => !!(store.settings && store.settings.features["work_tracking.auto"]) || !!steered.value);
 export const workMode = computed(() => (store.settings && store.settings.work_modes && store.settings.work_modes.mode) || DEFAULT_MODE);

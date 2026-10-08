@@ -18,7 +18,7 @@ import controllers.files as files
 import controllers.stored as stored
 import features
 from commands.dispatch import dispatch, ranked, resolve
-from commands.invoke import invoked, spread
+from controllers.invoke import invoked, spread
 from commands.parser import parser
 from controllers.base import Controller, actions
 from controllers.environments import KEPT, SWEPT

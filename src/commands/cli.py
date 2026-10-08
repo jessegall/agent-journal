@@ -12,7 +12,7 @@ from engine.record import Record
 from engine.sessions import Sessions, allowed
 from resources.base import OWNER, Refused
 from resources.shapes import typed
-from commands.invoke import invoked
+from controllers.invoke import invoked
 from commands.parser import PRINTED, QUERIES, Misused, parser, words
 from engine.command_line import CommandLine, wire
 from engine.timing import measured
