@@ -26,6 +26,7 @@ from controllers.base import SENDER, Sender  # noqa: E402
 from resources.base import OWNER_ID  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.after_answer import AfterAnswer  # noqa: E402
+from engine.quiet_collector import QuietCollector  # noqa: E402
 from features.switches import WARMERS  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
@@ -128,6 +129,10 @@ class Handler(BaseHTTPRequestHandler):
             SENDER.reset(sending)
 
     def answered(self, method: str, url, body: dict) -> Reply:
+        with self.server.collector.serving():
+            return self.answered_now(method, url, body)
+
+    def answered_now(self, method: str, url, body: dict) -> Reply:
         if method == "GET" and environmental(url.path):
             self.server.warm.wait(WARM_WAIT)
         query = dict(parse_qsl(url.query))
@@ -177,6 +182,7 @@ class JournalServer(ThreadingHTTPServer):
         self.warm = threading.Event()
         self.warm.set()
         self.after_answer = AfterAnswer.started()
+        self.collector = QuietCollector()
 
 
 def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
@@ -197,7 +203,6 @@ def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
 WATCH_SECONDS = 1.0
 SETTLE_SECONDS = 1.5
 STOP_SECONDS = 0.2
-FREEZE_SECONDS = 10.0
 LATE_STOP = 5.0
 
 
@@ -229,11 +234,6 @@ def watch_runtime(root: Path, halting: threading.Event) -> None:
         runtime.refresh_flags(root)
         if runtime.hook_failures(root).is_file():
             unanswered(root)
-
-
-def freeze_caches(halting: threading.Event) -> None:
-    while not halting.wait(FREEZE_SECONDS):
-        gc.freeze()
 
 
 def keep_services(root: Path, halting: threading.Event) -> None:
@@ -317,7 +317,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     threading.Thread(target=watch_code, args=(root, Path(root) / ARCHIVE if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=watch_runtime, args=(root, halting), daemon=True).start()
-    threading.Thread(target=freeze_caches, args=(halting,), daemon=True).start()
+    threading.Thread(target=server.collector.run, args=(halting,), daemon=True).start()
     threading.Thread(target=replay, args=(root,), daemon=True).start()
     threading.Thread(target=warm, args=(root,), daemon=True).start()
     threading.Thread(target=warm_commands, daemon=True).start()
