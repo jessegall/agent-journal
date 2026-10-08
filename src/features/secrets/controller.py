@@ -1,3 +1,4 @@
+import re
 import time
 from pathlib import Path
 
@@ -5,12 +6,14 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
-from controllers.types import Messages
-from features.secrets.resource import Kind, Secret
+from controllers.types import Environments, Messages
+from features.secrets.resource import Kind, Secret, SecretField
+from features.secrets.running import checked_program, run_masked
 from features.secrets.values import ValuesFile
-from resources.base import AGENT, USER, Refused
+from resources.base import AGENT, SYSTEM, USER, Refused
 
 KEPT_DAYS = 30
+PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
 
 class Secrets(Controller):
@@ -42,6 +45,24 @@ class Secrets(Controller):
         made.unlink()
         return self._stored(self.load(n), field, value)
 
+    @action(here=True)
+    def run(self, name: str, *command: str, stdin: str = "", env: bool = False) -> str:
+        row = self._named(name)
+        self._shared_with_caller(row)
+        checked_program(command, row.programs)
+        fields = [SecretField.from_json(raw) for raw in row.secret_fields]
+        values = ValuesFile(self.record.root).values()
+        if row.is_waiting() or any(field.variable not in values for field in fields):
+            raise Refused(f"secret {row.n}, {row.title}, has no value yet: ask for it with journal secret request, and the user fills it in")
+        by_name = {field.name: values[field.variable] for field in fields}
+        given = PLACEHOLDER.sub(lambda found: by_name.get(found[1], found[0]), stdin) if stdin else next(values[field.variable] for field in fields if field.hidden)
+        masks = {values[field.variable]: row.title for field in fields if field.hidden}
+        code = run_masked(command, {field.variable: values[field.variable] for field in fields} if env else {}, masks, f"{given}\n".encode())
+        self.update(row.n, used=time.time())
+        if code:
+            raise SystemExit(code)
+        return ""
+
     @action
     def where(self) -> str:
         return str(ValuesFile(self.record.root).path)
@@ -51,6 +72,20 @@ class Secrets(Controller):
             raise Refused("a secret's value cannot be empty")
         ValuesFile(self.record.root).put(row.field(field).variable, value)
         return self.update(row.n, filled={**row.filled, field: time.time()}, asked="")
+
+    def _named(self, name: str) -> Secret:
+        if name.isdigit():
+            return self.load(int(name))
+        found = next((row for row in self.rows.every() if row.title.lower() == name.lower()), None)
+        if found is None:
+            raise Refused(f"no secret named {name!r}: journal secret all lists them")
+        return found
+
+    def _shared_with_caller(self, row: Secret) -> None:
+        place = Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
+        helping = bool(place and place.data.get("kind") == "helper")
+        if not row.helpers and (self.agent or helping):
+            raise Refused(f"secret {row.n}, {row.title}, is for the main agent only; the user can share it with helpers and subagents under Settings, Secrets")
 
     def _purge(self) -> list[str]:
         gone = [row for row in self.rows.every(deleted=True) if row.deleted and time.time() - row.deleted > KEPT_DAYS * 86400]
