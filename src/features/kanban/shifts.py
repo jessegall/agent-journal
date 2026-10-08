@@ -70,6 +70,8 @@ def found(lane: str, target: str) -> Shift | None:
 def refused(sources: Sources, todo, lane: str, target: str) -> str:
     if target not in LANE_KEYS:
         return f"a lane is one of {', '.join(LANE_KEYS)}"
+    if lane == DOING and todo.n not in sources.works:
+        return f"todo {todo.n} is with {Ref.parse(todo.assigned).spoken}: its card moves when that work is done"
     if lane == DOING:
         work = sources.works[todo.n]
         return f"work {work.n} is open on todo {todo.n}: the agent ends it with journal work end or parks it with journal work park"

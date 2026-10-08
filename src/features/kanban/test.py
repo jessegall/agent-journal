@@ -7,7 +7,7 @@ from controllers.types import Questions, Todos, Works
 from features.kanban.board import sources_of
 from features.kanban.lanes import lane_of
 from features.plans.controller import Plans
-from resources.base import AGENT, USER
+from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 
 
@@ -151,6 +151,10 @@ def test_a_parked_to_do_is_held_not_doing():
     Works(record, actor=AGENT).action("park")("waiting on the build")
     cards = {card["n"]: card for column in board(record)["lanes"] for card in column["cards"]}
     assert (lane(record, row.n), cards[row.n]["reason"]) == ("held", "parked: waiting on the build"), "parked work leaves Doing and says why"
+    handed = Todos(record, actor=AGENT).create("with a helper")
+    Todos(record, actor=SYSTEM).update(handed.n, assigned="helper:7")
+    cards = {card["n"]: card for column in board(record)["lanes"] for card in column["cards"]}
+    assert (lane(record, handed.n), cards[handed.n]["targets"]) == ("doing", []), "a helper's card is Doing on a board with no work of its own, and draws"
 
 
 def test_an_ended_plan_holds_none_of_its_rows():
