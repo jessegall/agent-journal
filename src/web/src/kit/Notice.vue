@@ -1,7 +1,7 @@
 <script setup>
 import Icon from "./Icon.vue";
 
-const BANDS = ["report", "wait", "danger", "info", "need"];
+const BANDS = ["report", "wait", "danger", "info", "need", "ask"];
 
 defineProps({
     tone: {type: String, default: "muted"},
@@ -77,6 +77,10 @@ defineProps({
 
 .notice-wait {
     --band: var(--tone-commit);
+}
+
+.notice-ask {
+    --band: var(--tone-warn);
 }
 
 .notice-need {

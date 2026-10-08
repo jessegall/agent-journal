@@ -299,6 +299,30 @@ export class ApiClient {
         return this.act("doc", n, "revision", {number});
     }
 
+    createSecret(fields) {
+        return this.create("secret", fields);
+    }
+
+    updateSecret(n, fields) {
+        return this.act("secret", n, "update", fields);
+    }
+
+    fillSecret(n, field, value) {
+        return this.act("secret", n, "fill", {field, value});
+    }
+
+    deleteSecret(n) {
+        return this.act("secret", n, "delete", {why: "deleted from the viewer"});
+    }
+
+    restoreSecret(n) {
+        return this.act("secret", n, "restore");
+    }
+
+    secretsFile() {
+        return this.command("secret", "where");
+    }
+
     command(type, action, body = {}) {
         return this.post(this.here(`/${type}/${action}`), body);
     }

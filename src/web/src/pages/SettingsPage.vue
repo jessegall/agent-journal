@@ -20,6 +20,7 @@ import ServicesList from "./ServicesList.vue";
 import DiagnosticsLog from "./DiagnosticsLog.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import PluginSettings from "./PluginSettings.vue";
+import SettingsSecrets from "./SettingsSecrets.vue";
 import SettingsRegion from "./SettingsRegion.vue";
 import SettingsTunnel from "./SettingsTunnel.vue";
 import {TABS, catalog, counts, inTab, narrowed, tabCounts, tabLine} from "../domain/settingsCatalog.js";
@@ -31,7 +32,7 @@ import {store} from "../state/store.js";
 
 const TAB = "journal.settings.tab";
 const LISTED = ["features", "system", "sharing", "developer"];
-const FLUSH = ["plugins", "environments"];
+const FLUSH = ["plugins", "environments", "secrets"];
 const known = (key) => TABS.some((t) => t.key === key);
 const opening = (...keys) => keys.find(known) || TABS[0].key;
 const tab = ref(opening(route.value.sub, remembered(TAB, "")));
@@ -208,6 +209,10 @@ onMounted(async () => {
                             <template #services>
                                 <p class="settings-line">{{ tabLine("services") }}</p>
                                 <ServicesList />
+                            </template>
+                            <template #secrets>
+                                <p class="settings-line">{{ tabLine("secrets") }}</p>
+                                <SettingsSecrets />
                             </template>
                             <template #plugins>
                                 <PluginSettings :query="query" @saved="saved = {text: `Saved: ${$event}`}" />
