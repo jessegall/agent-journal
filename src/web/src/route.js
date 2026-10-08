@@ -126,6 +126,7 @@ export const PAGES = [
     "skills",
     "plugins",
     "secrets",
+    "integrations",
     "page",
     "hub",
     "file",
