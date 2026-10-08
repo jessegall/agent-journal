@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.260.1 — A plan worked by helpers keeps running beside yours
+- Starting a plan no longer parks a plan whose current phase a helper or a ticket's agent is working: both stay active, and the one with helpers moves on as their rows close.
+- The record audit no longer calls a file gone because the project's file list finished building halfway through the audit.
+- A browser scenario that fails keeps a screenshot of the page at that moment and names it in the failure.
+
 ## 2.260.0 — A question is asked once, and on its own
 - Asking a question must be a command of its own: chained or piped with other commands, it is refused, so one slip can no longer ask the same question twice. A question still open with the same title is refused too.
 - A message gets one answer from the agent: a second reply to it is refused and points at the first, to be added to there.
