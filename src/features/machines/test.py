@@ -5,7 +5,7 @@ import pytest
 
 import features
 from commands.invoke import invoked
-from controllers import stored
+from controllers import base, stored
 from controllers.features import Features
 from controllers.requests import deliver, request
 from controllers.types import Rules, Todos
@@ -134,4 +134,15 @@ def test_two_people_pressing_the_same_row_with_the_machines_feature_on_the_secon
     assert (todos.load(row.n).outcome, todos.load(row.n).title) == ("first", "second press"), "the first press stands and the late ones change nothing"
     invoked(Todos(record, actor=USER), "update", (row.n,), {"title": "fresh", "unchanged_since": todos.load(row.n).updated})
     assert todos.load(row.n).title == "fresh", "a press made on what the row is now goes through"
+
+
+def test_a_retry_with_the_same_key_makes_no_second_row(monkeypatch):
+    record = fresh()
+    todos = Todos(record, actor=AGENT)
+    first = todos.create("file the report", idempotency="press-1")
+    monkeypatch.setattr(base, "TWICE_WITHIN", 0)
+    again = todos.create("file the report", idempotency="press-1")
+    other = todos.create("file the report", idempotency="press-2")
+    assert (again.n, len(todos.all())) == (first.n, 2), "the retry gets the row the lost answer made, and a new key makes a new row"
+    assert other.n != first.n
 

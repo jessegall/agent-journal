@@ -14,16 +14,6 @@ class Messages(Controller):
     resource = types.Message
 
     @action
-    def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        with self.record.locked():
-            key = data.get(types.Message.idempotency, "")
-            if key:
-                existing = next((row["n"] for row in self.rows.summaries() if row.get(types.Message.idempotency) == key), None)
-                if existing:
-                    return self.load(existing)
-            return super().create(title, abstract, brief, **data)
-
-    @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
         return super().update(n, titled(brief) if title is None and brief is not None else title, abstract, brief, outcome, **data)
 
