@@ -1,4 +1,4 @@
-import {execFileSync} from "node:child_process";
+import {execFileSync, spawnSync} from "node:child_process";
 import {chromium} from "playwright-core";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
@@ -7,6 +7,7 @@ const FIRST_CHOICE_WAIT = 8000;
 const LOCAL = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/;
 
 const JOURNAL_WAIT = 60000;
+const RUNS_LOCALLY = new Set(["404", "409", "000", ""]);
 
 const isOutside = (address) => !LOCAL.test(address.href);
 
@@ -52,15 +53,15 @@ export function journal(...words) {
     const asked = new URL("api/run", process.env.JOURNAL_SCRATCH_URL);
     asked.searchParams.set("env", "main");
     asked.searchParams.set("cwd", `${root}/..`);
-    const reply = execFileSync("curl", ["-s", "-m", String(JOURNAL_WAIT / 1000), "-w", "\n%{http_code}", "-H", "Content-Type: text/plain", "--data-binary", "@-", asked.href], {
+    const answered = spawnSync("curl", ["-s", "-m", String(JOURNAL_WAIT / 1000), "-w", "\n%{http_code}", "-H", "Content-Type: text/plain", "--data-binary", "@-", asked.href], {
         input: words.join("\0"),
         encoding: "utf8",
         timeout: JOURNAL_WAIT,
-    });
-    const status = reply.slice(reply.lastIndexOf("\n") + 1);
-    const body = reply.slice(0, reply.lastIndexOf("\n"));
+    }).stdout;
+    const status = answered.slice(answered.lastIndexOf("\n") + 1);
+    const body = answered.slice(0, answered.lastIndexOf("\n"));
     if (status === "200") return body;
-    if (status !== "409") throw new Error(`journal ${words.join(" ")} was refused with ${status}: ${body}`);
+    if (!RUNS_LOCALLY.has(status)) throw new Error(`journal ${words.join(" ")} was refused with ${status}: ${body}`);
     return execFileSync(process.env.JOURNAL_PYTHON, [`${root}/journal.py`, "--root", root, "--env", "main", ...words], {
         cwd: `${root}/..`,
         encoding: "utf8",
