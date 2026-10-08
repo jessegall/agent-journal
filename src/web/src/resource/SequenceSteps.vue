@@ -159,7 +159,7 @@ async function save() {
                                 >
                                     <Icon name="down" :size="12" />
                                 </button>
-                                <button type="button" class="step-tool" title="Remove this step" @click="draft.steps.splice(i, 1)">
+                                <button type="button" class="step-tool" aria-label="Remove this step" @click="draft.steps.splice(i, 1)">
                                     <Icon name="close" :size="12" />
                                 </button>
                             </span>

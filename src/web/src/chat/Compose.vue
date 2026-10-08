@@ -218,7 +218,7 @@ async function use(tool) {
                         <template v-for="(f, i) in draft.files" :key="i">
                             <span class="chip">
                                 {{ f.name }}
-                                <button type="button" class="chip-x" title="Remove" @click="unpick(i)">×</button>
+                                <button type="button" class="chip-x" aria-label="Remove" @click="unpick(i)">×</button>
                             </span>
                         </template>
                     </div>

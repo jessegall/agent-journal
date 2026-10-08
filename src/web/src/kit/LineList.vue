@@ -44,7 +44,7 @@ const remove = (i) => {
                     @input="line.text = $event.target.value"
                     @change="save"
                 />
-                <button type="button" class="line-remove" title="Remove" @click="remove(i)"><Icon name="x" :size="12" /></button>
+                <button type="button" class="line-remove" aria-label="Remove" @click="remove(i)"><Icon name="x" :size="12" /></button>
             </div>
         </template>
         <button type="button" class="line-add" @click="lines.push(entry(''))">

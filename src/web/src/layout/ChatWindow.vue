@@ -114,7 +114,7 @@ function close() {
                 <button type="button" class="shell-btn" :title="shell.shut ? 'Restore' : 'Minimize'" @click="fold">
                     {{ shell.shut ? "▴" : "–" }}
                 </button>
-                <button type="button" class="shell-btn" title="Close" @click="close">×</button>
+                <button type="button" class="shell-btn" aria-label="Close" @click="close">×</button>
             </div>
         </template>
         <template v-if="shell.driving">
