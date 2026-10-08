@@ -36,6 +36,8 @@ async function noticeShown(page, url, title) {
     });
 }
 
+const card = (page) => page.locator(".list-box", {hasText: "Connection to a server"});
+
 async function openCard(page, url) {
     await page.goto(`${url}#/main/settings`);
     await page.getByRole("tab", {name: "Phone and share links"}).click();
@@ -95,7 +97,7 @@ await runScenarios(process.argv[2], {
         await openCard(page, url);
         await page.getByText("Connecting sends 214 files (1.3 MB) from 3 environments.").waitFor();
         if (sent.length) throw new Error("something was sent to the server before the person pressed Connect");
-        if (!(await page.getByRole("button", {name: "Connect", exact: true}).isDisabled())) throw new Error("Connect was open with no address typed");
+        if (!(await card(page).getByRole("button", {name: "Connect", exact: true}).isDisabled())) throw new Error("Connect was open with no address typed");
     },
     async "a server connected from the card is shown as connected and can be disconnected"(page, url) {
         journal("feature", "switch", "connection");
@@ -110,10 +112,10 @@ await runScenarios(process.argv[2], {
             reply(route, "disconnected");
         });
         await openCard(page, url);
-        await page.getByRole("textbox", {name: "Server address"}).fill("https://journal.example.com");
-        await page.getByRole("button", {name: "Connect", exact: true}).click();
+        await card(page).getByRole("textbox", {name: "Server address"}).fill("https://journal.example.com");
+        await card(page).getByRole("button", {name: "Connect", exact: true}).click();
         await page.getByText("In step with the server.").waitFor();
-        await page.getByRole("button", {name: "Disconnect"}).click();
+        await card(page).getByRole("button", {name: "Disconnect"}).click();
         await page.getByText(/Not connected/).waitFor();
     },
     async "a copy that has joined a server says so in the bar, with how it stands and when it last synced"(page, url) {
