@@ -2,14 +2,14 @@ import {journal, numberOf, reply, runScenarios, shot} from "./harness.mjs";
 
 const AGENT = {n: 1, ref: "agent:1", type: "agent", title: "Main agent", completed: 0, deleted: 0, seen: [], refs: [], data: {status: "idle", at: Date.now() / 1000}};
 
-async function idleAgent(page) {
-    await page.route(/\/api\/main\/agent\?/, (route) => reply(route, {rows: [AGENT]}));
+async function idleAgent(page, data = {}) {
+    await page.route(/\/api\/main\/agent\?/, (route) => reply(route, {rows: [{...AGENT, data: {...AGENT.data, ...data}}]}));
 }
 
-async function waitsOn(page, url, what) {
+async function waitsOn(page, url, what, run = null) {
     const n = numberOf(journal("work", "start", `Waiting ${Date.now()}`));
-    journal("work", "await", String(n), what);
-    await idleAgent(page);
+    journal("work", "await", String(n), what, ...(run ? ["--on", run.id] : []));
+    await idleAgent(page, run ? {shell_rows: [{id: run.id, command: what, running: true}]} : {});
     await page.goto(`${url}#/main`);
     return n;
 }
@@ -47,6 +47,31 @@ await runScenarios(process.argv[2], {
         await reply.getByText("the passage").waitFor();
         await page.locator(".flash-veil").waitFor({state: "detached"});
         await shot(page, "comment-reply");
+    },
+    async "a multi-line command waited on shows as its first word and a project path on one line"(page, url) {
+        const command = "python3 /nowhere/Project builds/src/x.py --all\nfor f in a b; do\n  echo $f\ndone";
+        const n = await waitsOn(page, url, command, {id: "shell-2"});
+        await page.locator(".legend", {hasText: "Waiting"}).click();
+        const label = await page.locator(".waiting-label").first().innerText();
+        if (label !== "python3 src/x.py") throw new Error(`the run shows as "${label}", not its first word and project path`);
+        const bar = await page.locator(".statusbar-roll").innerText();
+        if (bar.includes("\n") || bar.includes("for f in")) throw new Error("the status bar shows the raw command");
+        await shot(page, "waiting-multiline");
+        journal("work", "end", String(n), "--how", "done");
+    },
+    async "an agent's inspector keeps the chat's padding and shows that agent's own waiting state"(page, url) {
+        const n = await waitsOn(page, url, "the test suite", {id: "shell-1"});
+        await page.goto(`${url}#/main?open=agent:1`);
+        const thread = page.locator(".agent-inspector .thread");
+        await thread.waitFor();
+        const padding = await thread.evaluate((node) => getComputedStyle(node).paddingLeft);
+        if (padding !== "24px") throw new Error(`the inspector's chat has ${padding} of padding, not the main chat's 24px`);
+        await page.locator(".agent-inspector .legend", {hasText: "Waiting"}).waitFor();
+        await shot(page, "inspector-chat");
+        const box = await page.locator(".agent-inspector .legend").boundingBox();
+        await page.locator(".agent-inspector .legend", {hasText: "command"}).waitFor();
+        if (process.env.SHOT_DIR) await page.screenshot({path: `${process.env.SHOT_DIR}/waiting-badge-close.png`, clip: {x: box.x - 20, y: box.y - 16, width: box.width + 120, height: box.height + 40}});
+        journal("work", "end", String(n), "--how", "done");
     },
     async "an idle agent with nothing to wait on says it is ready, not waiting"(page, url) {
         await idleAgent(page);

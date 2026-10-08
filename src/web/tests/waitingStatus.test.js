@@ -2,6 +2,8 @@ import {createApp, h, nextTick, reactive} from "vue";
 import {beforeEach, describe, expect, test} from "vitest";
 import WaitEdge from "../src/kit/WaitEdge.vue";
 import {lineOf, stateOf, waitingFor, waitingOn, wordOf} from "../src/domain/agentState.js";
+import {ref} from "vue";
+import {useWaiting} from "../src/composables/waiting.js";
 import {phoneWaiting} from "../src/phone/agentWait.js";
 
 const flush = async () => {
@@ -96,5 +98,13 @@ describe("the time a wait has lasted", () => {
         const runs = [{id: "run", running: false, ended: NOW - 600, task: "the suite"}];
         const wait = waitingFor({text: "the suite", on: "run", since: NOW - 1440}, {runs, now: NOW});
         expect(wait.items.map((item) => item.out)).toEqual(["14m 00s"]);
+    });
+});
+
+describe("the waiting state follows the agent it is given", () => {
+    test("an inspector's own agent waits while an agent with nothing awaited does not", () => {
+        const own = useWaiting(ref([]), ref(agent()), () => [work()]).waiting.value;
+        expect(own.text).toBe("the test suite");
+        expect(useWaiting(ref([]), ref(agent()), () => []).waiting.value).toBeNull();
     });
 });

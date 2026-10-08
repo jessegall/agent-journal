@@ -101,6 +101,29 @@ await runScenarios(process.argv[2], {
         if (times !== 1) throw new Error(`the kept message reached the server ${times} times`);
         if ((await page.getByText(marker).count()) !== 1) throw new Error("the kept message shows more than once in the chat");
     },
+    async "two pasted images get their own names and send, and a repeated file name is refused in words"(page, url) {
+        const marker = `images ${Date.now()}`;
+        await home(page, url);
+        const paste = (name) =>
+            compose(page).evaluate((box, given) => {
+                const data = new DataTransfer();
+                data.items.add(new File([new Uint8Array([137, 80, 78, 71])], given, {type: "image/png"}));
+                box.dispatchEvent(new ClipboardEvent("paste", {clipboardData: data, bubbles: true, cancelable: true}));
+            }, name);
+        await paste("image");
+        await paste("image");
+        await page.locator(".compose-files").getByText("Pasted image 1.png").waitFor();
+        await page.locator(".compose-files").getByText("Pasted image 2.png").waitFor();
+        await paste("photo.png");
+        await paste("photo.png");
+        await page.getByText('"photo.png" is already attached', {exact: false}).waitFor();
+        await compose(page).fill(marker);
+        await sendButton(page).click();
+        await page.getByText(marker).first().waitFor();
+        await settle(page);
+        if ((await stored(page, marker)) !== 1) throw new Error("the message with two pasted images was not sent");
+        await page.screenshot({path: `${process.env.SHOT_DIR || "/tmp"}/pasted-images.png`});
+    },
     async "pressing send twice sends one message"(page, url) {
         const marker = `twice ${Date.now()}`;
         await home(page, url);

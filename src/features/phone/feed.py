@@ -105,6 +105,7 @@ class Waiting(TypedDict):
 
 class Awaiting(TypedDict):
     text: str
+    work: str
     on: str
     since: float
 
@@ -252,8 +253,9 @@ EXTRAS = {"question": lambda home: {"hold": hold(home)},
 def awaited(home: Record) -> Awaiting:
     work = next((w for w in Works(home, actor=SYSTEM).rows.standing() if w.awaiting and not w.parked), None)
     if work is None:
-        return Awaiting(text="", on="", since=0.0)
-    return Awaiting(text=work.awaiting, on=work.awaiting_on, since=float(work.awaiting_since))
+        return Awaiting(text="", work="", on="", since=0.0)
+    named = f"to-do {work.todo} · {work.title}" if work.todo else work.title
+    return Awaiting(text=work.awaiting, work=named, on=work.awaiting_on, since=float(work.awaiting_since))
 
 
 def running(home: Record, environment: str) -> Running:

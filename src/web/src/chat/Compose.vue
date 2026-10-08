@@ -8,6 +8,7 @@ import {store} from "../state/store.js";
 
 import Icon from "../kit/Icon.vue";
 import WaitEdge from "../kit/WaitEdge.vue";
+import {attach, refusal} from "./attachments.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 
 const props = defineProps({
@@ -118,16 +119,22 @@ function escaped(e) {
     }
 }
 
+function attached(files) {
+    const {added, refused} = attach(draft.files, files);
+    draft.files.push(...added);
+    draft.error = refused.length ? refusal(refused) : "";
+}
+
 function pasted(e) {
     const files = Array.from(e.clipboardData?.files || []);
     if (!files.length) return;
     e.preventDefault();
-    draft.files.push(...files);
+    attached(files);
 }
 
 function dropped(e) {
     draft.over = false;
-    draft.files.push(...Array.from(e.dataTransfer?.files || []));
+    attached(Array.from(e.dataTransfer?.files || []));
     area.value && area.value.focus();
 }
 
@@ -136,7 +143,7 @@ function dragging(e) {
 }
 
 function picked(e) {
-    draft.files.push(...e.target.files);
+    attached(Array.from(e.target.files));
     e.target.value = "";
     area.value && area.value.focus();
 }
