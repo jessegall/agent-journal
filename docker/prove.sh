@@ -4,7 +4,7 @@
 # a backup, and a restore that brings back what was lost.
 set -eu
 cd "$(dirname "$0")"
-export COMPOSE_PROJECT_NAME=journal-proof JOURNAL_IMAGE=agent-journal:local HTTP_PORT=18080 HTTPS_PORT=18443 JOURNAL_ADDRESS=localhost
+export COMPOSE_PROJECT_NAME=journal-proof COMPOSE_PROFILES=journal JOURNAL_IMAGE=agent-journal:local HTTP_PORT=18080 HTTPS_PORT=18443 JOURNAL_ADDRESS=localhost
 WORK="$(mktemp -d)"
 export JOURNAL_ENV_FILE="$WORK/.env" BACKUP_FOLDER="$WORK/backups"
 printf 'JOURNAL_ADDRESS=localhost\nRESTIC_PASSWORD=proof-only-password\n' > "$JOURNAL_ENV_FILE"
@@ -18,6 +18,8 @@ cleanup() { compose --profile restore down -v --remove-orphans >/dev/null 2>&1 |
 trap cleanup EXIT
 
 [ "${SKIP_BUILD:-}" = "1" ] || docker build -q -f Dockerfile -t "$JOURNAL_IMAGE" .. >/dev/null
+env -u COMPOSE_PROFILES -u JOURNAL_IMAGE docker compose config --services 2>/dev/null | grep -qx journal && fail "a plain docker compose up would start the journal on an unchecked image"
+pass "a plain docker compose up leaves the journal to the updater"
 compose up -d journal caddy >/dev/null 2>&1
 for _ in $(seq 1 90); do compose exec -T journal curl -fsS http://127.0.0.1:8440/ready >/dev/null 2>&1 && break; sleep 2; done
 compose exec -T journal curl -fsS http://127.0.0.1:8440/ready >/dev/null 2>&1 && pass "the journal starts and its health address answers" || fail "the journal never became ready"
