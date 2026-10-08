@@ -9,6 +9,7 @@ newer version than the last one it saw is handed the same.
 - Every list shows its real total, such as 'Showing 25 of 1,072', loads more as you scroll to its end, and has a Load more button; the phone's lists too.
 - The demos play to their end again on the computer, and the phone version starts instead of saying it cannot reach your computer.
 - The phone tour's highlight ring starts below the status bar, so no edge of it is hidden.
+- The server allows up to 4,096 open files instead of macOS's 256, and kill -USR1 on it writes every thread's stack to .journal/runtime/threads.txt, so a server that stops answering can be looked into.
 
 ## 2.262.0 — Secrets, and a faster journal
 - Secrets: keys and logins the agent may use without ever seeing them. Add them under Settings, Secrets, where the agent's requests wait at the top. Their values live in one owner-only file per project in your home folder (~/.config/agent-journal/secrets), never in the journal, git, a worktree or a backup, and no screen shows a value again.
