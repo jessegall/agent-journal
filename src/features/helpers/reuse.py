@@ -53,27 +53,38 @@ def is_fresh_kind(kind: str) -> bool:
     return any(word in kind for word in FRESH)
 
 
-def branch_of(record, helper) -> tuple[Path, str, str]:
-    """The project, the commit a helper's worktree was cut from and the ref holding its work, or nothing at all when it has no worktree or the work is gone."""
+@dataclass(frozen=True)
+class Branch:
+    """A helper's work in the project: the commit its worktree was cut from and the ref holding what it did, both empty when it has no worktree or the work is gone."""
+
+    project: Path = Path()
+    base: str = ""
+    ref: str = ""
+
+    def exists(self) -> bool:
+        return bool(self.base and self.ref)
+
+
+def branch_of(record, helper) -> Branch:
     if not helper.worktree:
-        return Path(), "", ""
+        return Branch()
     cut, project = Worktrees(record, actor=SYSTEM).load(int(helper.worktree)), record.root.resolve().parent
     ref = next((ref for ref in (f"refs/heads/{cut.branch}", f"{KEPT}/{cut.title}") if present(project, ref)), "")
-    return project, cut.base, ref
+    return Branch(project, cut.base, ref)
 
 
 def touched(record, helper) -> tuple[str, ...]:
-    project, base, ref = branch_of(record, helper)
-    return tuple(lines(project, "diff", "--name-only", f"{base}...{ref}")) if base and ref else ()
+    branch = branch_of(record, helper)
+    return tuple(lines(branch.project, "diff", "--name-only", f"{branch.base}...{branch.ref}")) if branch.exists() else ()
 
 
 def unlanded(record, helper) -> tuple[str, ...]:
     """What a helper committed that the project's branch lacks, by message, so a commit taken over by cherry-pick counts as landed."""
-    project, base, ref = branch_of(record, helper)
-    if not (base and ref):
+    branch = branch_of(record, helper)
+    if not branch.exists():
         return ()
-    landed = set(lines(project, "log", "--format=%s", "-n", str(LANDED_WINDOW), "HEAD"))
-    return tuple(subject for subject in reversed(lines(project, "log", "--format=%s", f"{base}..{ref}")) if subject not in landed)
+    landed = set(lines(branch.project, "log", "--format=%s", "-n", str(LANDED_WINDOW), "HEAD"))
+    return tuple(subject for subject in reversed(lines(branch.project, "log", "--format=%s", f"{branch.base}..{branch.ref}")) if subject not in landed)
 
 
 def state_of(record, helper) -> WorkState:
