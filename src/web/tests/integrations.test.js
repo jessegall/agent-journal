@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
+import {boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, loginWords, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
 
 const NOW = Date.now() / 1000;
 
@@ -54,5 +54,10 @@ describe("the Integrations page", () => {
         expect(switchWords("Linear")).toMatchObject({mcp: "Agents use Linear through its MCP server", fetching: "The journal fetches Linear into tickets"});
         expect(switchWords("Linear").mcpHelp).toContain("not marked untrusted");
         expect([mcpOn({}, "linear"), mcpOn({linear: {use_mcp: true}}, "linear"), fetchingOn({}, "linear"), fetchingOn({linear: {fetching: false}}, "linear")]).toEqual([false, true, true, false]);
+    });
+
+    test("says what Log in does", () => {
+        expect(loginWords("Linear")).toMatchObject({button: "Log in"});
+        expect(loginWords("Linear").line).toContain("Linear's own sign-in in your browser");
     });
 });

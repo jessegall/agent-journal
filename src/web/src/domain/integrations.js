@@ -71,3 +71,9 @@ export const switchWords = (title) => ({
 export const mcpOn = (settings, name) => Boolean(settings?.[name]?.use_mcp);
 
 export const fetchingOn = (settings, name) => settings?.[name]?.fetching !== false;
+
+export const loginWords = (title) => ({
+    button: "Log in",
+    line: `Log in opens ${title}'s own sign-in in your browser. The journal keeps the token as a secret and uses it as the key.`,
+    waiting: `Waiting for you to finish signing in to ${title}.`,
+});
