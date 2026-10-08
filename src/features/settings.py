@@ -6,10 +6,10 @@ from resources.text import paragraphs
 class Setting:
     def __init__(self, name: str, default, title: str, abstract: str = "", unit: str = "", under: str = "",
                  choices: tuple[str, ...] = (), labels: tuple[tuple[str, str], ...] = (), examples: tuple[tuple[str, str], ...] = (), hidden: bool = False,
-                 runs_commands: bool = False, scope: str = ENVIRONMENT, secret: bool = False):
+                 runs_commands: bool = False, scope: str = ENVIRONMENT, secret: bool = False, needs: str = ""):
         self.name, self.default, self.title, self.abstract, self.unit, self.under = name, default, paragraphs(title), paragraphs(abstract), unit, under
         self.choices, self.labels, self.examples, self.hidden, self.runs_commands = choices, dict(labels), dict(examples), hidden, runs_commands
-        self.scope, self.secret = scope, secret
+        self.scope, self.secret, self.needs = scope, secret, needs
 
     def kind(self) -> str:
         if self.secret:
@@ -25,7 +25,7 @@ class Setting:
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "default": self.default, "unit": self.unit, "kind": self.kind(),
                 "under": self.under, "choices": list(self.choices), "labels": self.labels, "examples": self.examples, "hidden": self.hidden,
-                "scope": self.scope}
+                "scope": self.scope, "needs": self.needs}
 
     def allows(self, value) -> bool:
         if self.secret:

@@ -2,11 +2,12 @@ import time
 from dataclasses import dataclass, replace
 
 from controllers.types import Comments
+from features.boards.controller import Boards
 from features.tickets.controller import Tickets
 from features.integrations.client import Answer, IntegrationClient
-from features.integrations.state import IntegrationState
+from features.integrations.state import Choice, IntegrationState
 from features.integrations.words import BODY, COMMENT, TITLE, cleaned
-from features.linear.reading import ISSUES, KNOWN, TEAMS, Issue, Reply, Team, reply_of
+from features.linear.reading import COMMENT, ISSUES, KNOWN, TEAMS, UPDATE, WORKFLOW, Issue, Reply, Team, reply_of
 from features.members.words import words_from
 from resources.base import Refused, SYSTEM, titled
 
@@ -18,11 +19,26 @@ CHUNK = 100
 
 
 @dataclass(frozen=True)
+class StageState:
+    """The Linear state an issue is set to when a ticket moves to this stage of the board."""
+
+    stage: str
+    state: str
+
+
+@dataclass(frozen=True)
 class Choices:
-    """What you chose on the card: the board the issues land on, and the teams whose issues come in."""
+    """What you chose on the card: the board the issues land on, the teams whose issues come in, and which Linear state each stage stands for."""
 
     board: int = 0
     teams: tuple[str, ...] = ()
+    stages: tuple[StageState, ...] = ()
+
+    def state_of(self, stage: str) -> str:
+        return next((one.state for one in self.stages if one.stage == stage), "")
+
+    def stage_of(self, state: str) -> str:
+        return next((one.stage for one in self.stages if one.state == state), "")
 
 
 @dataclass
@@ -57,6 +73,20 @@ def issue_filter(choices: Choices, cursor: str) -> dict:
     return found
 
 
+def workflow_of(client: IntegrationClient, limits: Limits, choices: Choices) -> tuple[Choice, ...]:
+    nodes = asked(client, limits, WORKFLOW, {}).data.workflow.nodes
+    return tuple(Choice(n.id, n.name, n.team.id) for n in nodes if not choices.teams or n.team.id in choices.teams)
+
+
+def send_status(client: IntegrationClient, issue: str, state: str) -> None:
+    """Sets one Linear issue to one state: nothing else is sent."""
+    asked(client, Limits(), UPDATE, {"id": issue, "stateId": state})
+
+
+def send_comment(client: IntegrationClient, issue: str, body: str) -> None:
+    asked(client, Limits(), COMMENT, {"issueId": issue, "body": body})
+
+
 def changed_issues(client: IntegrationClient, limits: Limits, choices: Choices, cursor: str) -> list[Issue]:
     issues, after = [], ""
     while True:
@@ -72,6 +102,7 @@ class TicketsFromLinear:
 
     def __init__(self, record, choices: Choices):
         self.choices = choices
+        self.boards = Boards(record, actor=SYSTEM)
         self.tickets = Tickets(record, actor=SYSTEM)
         self.comments = Comments(record, actor=SYSTEM)
 
@@ -85,8 +116,21 @@ class TicketsFromLinear:
             ticket = self.tickets.create(title, brief=brief, source=SOURCE, source_id=issue.id, board=self.choices.board)
         if ticket.data.get("linear_gone"):
             ticket = self.tickets.update(ticket.n, linear_gone="")
+        ticket = self.aligned(ticket, issue)
         self.add_comments(ticket, issue)
         return ticket
+
+    def aligned(self, ticket, issue: Issue):
+        """A ticket moves to the stage of the state Linear put its issue in, only when Linear changed that state, and what it holds of Linear moves with it so the move is not sent back."""
+        changes = {}
+        if issue.state.id and ticket.data.get("linear_state") != issue.state.id:
+            stage = self.choices.stage_of(issue.state.id)
+            changes["linear_state"] = issue.state.id
+            if stage and stage != ticket.stage and stage in self.boards.load(self.choices.board).stages:
+                changes["stage"] = stage
+        if "linear_stage" not in ticket.data or "stage" in changes:
+            changes["linear_stage"] = changes.get("stage", ticket.stage)
+        return self.tickets.update(ticket.n, **changes) if changes else ticket
 
     def add_comments(self, ticket, issue: Issue) -> None:
         had = {c.data.get("linear_id") for c in self.comments.linked_to(ticket.ref)}
@@ -128,6 +172,7 @@ def synced(record, client: IntegrationClient, choices: Choices, state: Integrati
         return state
     limits, work = Limits(), TicketsFromLinear(record, choices)
     try:
+        workflow = workflow_of(client, limits, choices)
         issues = changed_issues(client, limits, choices, state.cursor)
         for issue in issues:
             work.save(issue)
@@ -135,4 +180,4 @@ def synced(record, client: IntegrationClient, choices: Choices, state: Integrati
     except Refused as error:
         return replace(state, last_checked=now, last_error=str(error), failures=state.failures + 1, paused_until=limits.pause(now))
     newest = max((issue.updated for issue in issues), default=state.cursor)
-    return replace(state, last_checked=now, last_error="", cursor=max(newest, state.cursor), failures=0, paused_until=limits.pause(now))
+    return replace(state, last_checked=now, last_error="", cursor=max(newest, state.cursor), failures=0, paused_until=limits.pause(now), choices=workflow)
