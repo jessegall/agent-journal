@@ -1,6 +1,6 @@
 from controllers.types import Agents, Messages, Nudges
 from engine import chat
-from resources.base import SYSTEM
+from resources.base import AGENT, SYSTEM
 from tests.conftest import fresh
 from tests.kit import report
 
@@ -33,6 +33,8 @@ def test_a_turn_that_only_answers_a_journal_line_is_kept_out_of_the_chat_unless_
     assert answered("That is another helper's worktree, nothing to do.") == [True], "whatever words it uses, once a new line starts the next turn"
     assert answered("Carrying on with it.", delivered=(f"nudge:{kept.n}",)) == [False], "a line whose answer must be read keeps the answer in the chat"
     assert answered("Okay, on it.", delivered=("message:7",)) == [False], "an answer to a message is never hidden"
+    relayed = Messages(record, actor=AGENT).create("helper 3 reported", brief="the helper is done", peer="Zed")
+    assert answered("That is the helper's earlier report.", delivered=(f"message:{relayed.n}",)) == [True], "an answer to a helper's report, which the journal pushed, is kept out like any journal line"
     assert answered("Understood.", prompt="carry on") == [False], "a turn the person started is never hidden"
     assert answered("The suite broke on the gate.", failure="the turn failed") == [False], "a failed turn is never hidden"
     assert answered("Got it, but which branch should I use?") == [False], "a question waiting on the person is never hidden"

@@ -1,5 +1,7 @@
-from features.base import FeatureDetails
+from features.base import FeatureDetails, Line
 from features.groups import Group
+
+KEPT_OUT = "kept out"
 
 
 class AcknowledgementsDetails(FeatureDetails):
@@ -24,3 +26,11 @@ class AcknowledgementsDetails(FeatureDetails):
         that changed files, a reply that asks you something, or a line that asks the agent about
         a stall, a block or a decision; those always reach the chat.
     """
+
+    lines = [
+        Line(
+            name=KEPT_OUT,
+            title="your answer to a journal line was kept out of the chat",
+            brief="a journal line is an instruction, not a message: act on it and write nothing, unless the user needs to know something such as a failure, finished work or a decision that waits on them",
+        ),
+    ]
