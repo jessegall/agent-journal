@@ -107,6 +107,10 @@ class Ref:
             raise Refused(f"{ref!r} is not a row: write it as type:number, like todo:785")
         return cls(kind, int(n))
 
+    @classmethod
+    def numbers_of(cls, kind: str, refs: "list[str]") -> list[int]:
+        return [cls.parse(ref).n for ref in refs if ref.startswith(f"{kind}:")]
+
     @property
     def spoken(self) -> str:
         return f"{self.type} {self.n}"

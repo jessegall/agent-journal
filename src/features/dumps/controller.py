@@ -45,7 +45,7 @@ class Dumps(Controller):
         return Collections(self.record, actor=self.actor)
 
     def _collection(self, dump) -> int:
-        return next((ref.n for ref in map(Ref.parse, dump.refs) if ref.type == Collections.resource.type), 0)
+        return next(iter(Ref.numbers_of(Collections.resource.type, dump.refs)), 0)
 
     def _collect(self, dump, refs: list[str]):
         collections = self._collections()

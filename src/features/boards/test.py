@@ -26,6 +26,10 @@ def test_a_board_question_is_seen_only_on_its_board():
     assert "nothing to pause" in refused(lambda: boards.pause(board.n)) and "is not paused" in refused(lambda: boards.resume(board.n)), \
         "a board that is not running cannot be paused, and one that is not paused cannot be resumed"
     assert "each stage once" in refused(lambda: boards.create("Twice", stages=["Ideas", "Ideas"])), "a board's stages are all different"
+    quoted = Messages(record, actor=USER).create("why this?", refs=["thought:1:1791471557.20651"])
+    Messages(record, actor=AGENT).read(quoted.n)
+    assert Messages(record, actor=AGENT).reply(quoted.n, "Because."), "a message that quotes a thought is answered like any other"
+    assert boards.of_message(quoted) == 0, "a ref that is not a row names no board"
 
 
 def test_a_request_opens_a_session_that_cancel_closes():
