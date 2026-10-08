@@ -41,7 +41,7 @@ await runScenarios(process.argv[2], {
         await card.waitFor();
         await card.getByText("Use Gmail").waitFor();
         if ((await card.getByRole("switch", {name: "Use Gmail"}).getAttribute("aria-checked")) !== "false") throw new Error("Gmail starts switched on");
-        if (await card.getByText("through its MCP server").count()) throw new Error("Gmail offers an MCP server switch it does not have");
+        if (await card.getByText("Agents can use Gmail directly").count()) throw new Error("Gmail offers a direct-use switch it does not have");
         await card.getByRole("switch", {name: "Use Gmail"}).click();
         await card.locator("[data-gmail-account]").waitFor();
         await card.locator("[data-gmail-search]").waitFor();

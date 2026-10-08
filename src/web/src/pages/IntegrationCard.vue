@@ -112,6 +112,7 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
 
 <style scoped>
 .integration {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -149,6 +150,7 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
 }
 
 .key-label {

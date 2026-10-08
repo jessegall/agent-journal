@@ -30,9 +30,9 @@ class IntegrationDetails(FeatureDetails):
         Setting(
             name="use_mcp",
             default=False,
-            title="Agents use it through its MCP server",
-            abstract="Adds the service's own MCP server to each agent's tools. What an agent reads through it is not marked untrusted. Off unless you turn it on",
+            title="Agents can use it directly",
+            abstract="Gives each agent the service's own tools. What an agent reads there is not marked as untrusted. Off unless you turn it on",
             scope=PROJECT,
         ),
-        Setting(name="fetching", default=True, title="The journal fetches it into tickets", abstract="The journal reads the service and keeps its issues as tickets", scope=PROJECT),
+        Setting(name="fetching", default=True, title="Read it into tickets", abstract="The journal reads the service and keeps what it finds as tickets", scope=PROJECT),
     ]

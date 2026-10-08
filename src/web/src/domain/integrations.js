@@ -65,9 +65,9 @@ export const webhookWords = (title) => ({
 export const signingOf = (settings, name) => settings?.[name]?.signing_key || "";
 
 export const switchWords = (title) => ({
-    mcp: `Agents use ${title} through its MCP server`,
-    mcpHelp: `What an agent reads through ${title}'s MCP server is not marked untrusted. It stays off until you turn it on.`,
-    fetching: `The journal fetches ${title} into tickets`,
+    mcp: `Agents can use ${title} directly`,
+    mcpHelp: `Agents get ${title}'s own tools. What they read there is not marked as untrusted. Off until you turn it on.`,
+    fetching: `Read ${title} into tickets`,
 });
 
 export const mcpOn = (settings, name) => Boolean(settings?.[name]?.use_mcp);
