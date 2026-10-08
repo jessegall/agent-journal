@@ -50,8 +50,8 @@ class World:
 
     @staticmethod
     def install(name: str, place: Path) -> Copy:
-        from tests.test_it_boots import installed
-        root = installed(place)
+        from tests.conftest import SOURCE, installed
+        root = installed(place, SOURCE)
         return Copy(name, root, place / "home")
 
     @property
