@@ -13,8 +13,8 @@ def transport_for(record, address: str) -> Transport:
     return HttpTransport(address, ServerKey(record.root).read())
 
 
-def server_of(context: Context, address: str = "") -> Transport:
-    named = address or str(context.settings.address)
+def server_of(context: Context) -> Transport:
+    named = str(context.settings.address)
     if not named:
         raise Refused("name the server first: journal environment connect --address <address>, or its address in Settings")
     return transport_for(context.record, named)
@@ -24,11 +24,11 @@ class ConnectToServer(Command):
     name = "connect"
     user_only = True
 
-    def run(self, context: Context, environments: Environments, address: str = "", key: str = "") -> str:
-        if key:
+    def run(self, context: Context, environments: Environments, address: str | None = None, key: str | None = None) -> str:
+        if key is not None:
             ServerKey(context.record.root).keep(key)
-        welcome = join(context.record, server_of(context, address))
-        if address:
+        welcome = join(context.record, server_of(context) if address is None else transport_for(context.record, address))
+        if address is not None:
             context.record.change_setting("connection", {"address": address})
         return f"connected: this journal is {welcome.release.value} of the server's release, and its record must {welcome.comparison.step.value} before it syncs"
 

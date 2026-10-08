@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import ClassVar
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.transcript import Turn
 from providers.jsonl import WholeRead, parsed_row, tail_lines, whole_lines
 from providers.payload import AgentCall, AskCall, AskedQuestion, Asking, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, HookFacts, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall

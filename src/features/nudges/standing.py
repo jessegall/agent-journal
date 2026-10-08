@@ -6,7 +6,7 @@ from controllers.types import Agents, Nudges
 from features import FEATURES
 from engine.events.engine import ClockTicked
 from engine.events.resources import AnyEvent, ResourceEvent
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.journal import waiting
 from features.parts import AgentContext, Context, Handler
 from features.trigger import MINUTE

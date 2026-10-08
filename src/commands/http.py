@@ -8,7 +8,7 @@ from email.parser import BytesParser
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from queue import Empty, Queue
 from typing import Iterator
 from urllib.parse import quote
@@ -37,7 +37,8 @@ from engine.stored import last_lines
 from engine.git_view import commit, file_diff
 from engine.project_files import list_folder, matching, project_path, read_source
 from engine.paths import contained
-from commands.dispatch import rank_routes, represented, route
+from commands.dispatch import represented
+from features.routing import rank_routes, route
 from features.phone.places import place_at
 from features.routing import JSON, PLAIN, Reply, Request
 from resources.base import Missing

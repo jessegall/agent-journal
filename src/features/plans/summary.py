@@ -4,7 +4,6 @@ from controllers.types import Todos
 from features.helper_worktrees.controller import Worktrees
 from features.helpers.controller import Helpers
 from features.plans.controller import Plans
-from features.tickets.controller import Tickets
 from resources.base import SYSTEM
 
 SHOWN = ("building", "ready", "active", "waiting", "done")
@@ -46,8 +45,7 @@ def helping(record, p) -> list[Helping]:
 def open_tickets(record, p) -> list[int]:
     if not p.delegated or p.current_phase is None:
         return []
-    tickets = Tickets(record, actor=SYSTEM)
-    return [t.n for t in map(tickets.load, p.current_phase.get("tickets", [])) if not t.completed]
+    return [row.n for row in Plans(record, actor=SYSTEM)._members(p.current_phase) if row.type == "ticket" and not row.completed]
 
 
 def plan(record, p, todos: dict) -> PlanSummary:

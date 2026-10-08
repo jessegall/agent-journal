@@ -11,7 +11,7 @@ from providers.base import REFUSED, BackgroundTasks, Provider, SubagentRow, runn
 from providers.jsonl import head_lines, parsed, rows, tail_lines
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Chunk, Payload, Row
-from engine.fields import Loaded
+from resources.fields import Loaded
 from resources.types import AgentRow
 from engine.stored import read_json, write_text
 from providers.playwright import with_logins_table

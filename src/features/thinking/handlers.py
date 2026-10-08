@@ -7,7 +7,7 @@ from engine.events.engine import AgentMessageSent
 from features.parts import AgentContext, Handler
 from providers import PROVIDERS
 from providers.payload import HookEvent
-from engine.fields import Loaded
+from resources.fields import Loaded
 from controllers.types import Agents
 
 THINKING = "thinking"

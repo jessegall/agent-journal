@@ -6,7 +6,7 @@ from controllers.types import Messages, Questions, Works
 from engine.memo import Memo
 from features.messages.answering import unanswered
 from features.base import PLACEHOLDER
-from features.nudges.sending import Sent
+from features.sending import Sent
 from features.trigger import MINUTE
 from features.work_tracking.next import ready
 from resources.base import AGENT, SYSTEM

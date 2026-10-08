@@ -19,7 +19,8 @@ from features.auto_update.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
-from commands.dispatch import hook_path, reached_by_phone, resolve  # noqa: E402
+from commands.dispatch import hook_path, reached_by_phone  # noqa: E402
+from features.routing import resolve  # noqa: E402
 from features.phone.allow_list import Reach  # noqa: E402
 from features.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
 from controllers.base import SENDER, Sender  # noqa: E402
@@ -238,10 +239,9 @@ def watch_runtime(root: Path, halting: threading.Event) -> None:
 
 def keep_services(root: Path, halting: threading.Event) -> None:
     """A journal that stays up with no agent, such as one on a server, keeps its services up from here."""
-    from agents.terminal import lifeline
     from controllers.faults import threw
     from engine.record import Record
-    from engine.services import Manager
+    from engine.services import Manager, lifeline
     from engine.stop import stays_up
     from features.plugins.services import plugin_services
     if not stays_up(Record(root, default_env(root))):

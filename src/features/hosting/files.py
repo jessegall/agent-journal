@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.organization import FOLDER, parsed
 
 HOSTING = "hosting.toml"

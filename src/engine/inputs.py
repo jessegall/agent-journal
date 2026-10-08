@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from engine import runtime
 from engine.stored import read_json, write_json
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 STALE = 600.0
 FORCE = "force"

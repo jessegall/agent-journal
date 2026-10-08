@@ -237,7 +237,7 @@ def services(ctx) -> str:
 def services_up(root: Path) -> str:
     from engine.services import Manager
     from features.plugins.services import plugin_services
-    from agents.terminal import lifeline
+    from engine.services import lifeline
     alive, keeping = lifeline()
     manager = Manager(root, alive, sources=(plugin_services,))
     print("journal: keeping the plugins' services up; Ctrl-C stops them")

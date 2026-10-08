@@ -3,7 +3,7 @@ from typing import TypedDict
 
 from controllers.base import LAST
 from controllers.types import CONTROLLERS
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.format import KEEP_SHAPED, VIEWER, settled, shaped, worded
 from resources.base import USER, Refused
 from overview.counts import counts

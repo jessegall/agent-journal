@@ -7,7 +7,7 @@ from enum import StrEnum
 from typing import ClassVar
 from pathlib import Path
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 
 class HookEvent(StrEnum):

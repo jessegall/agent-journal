@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 from resources.types import TYPES
 from engine.stored import read_json, write_json, write_text

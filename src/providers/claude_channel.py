@@ -9,7 +9,7 @@ from pathlib import Path
 
 from engine import runtime
 from engine.sessions import ACTIVE_ENV, agent_pid
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.package import build_file
 
 PROTOCOL = "2025-06-18"

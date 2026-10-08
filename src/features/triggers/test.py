@@ -127,7 +127,7 @@ def test_a_part_a_feature_leaves_unwritten_refuses_until_it_is():
 
 def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_setting_is_refused():
     import pytest
-    from features.nudges.sending import Nudge, send
+    from features.sending import Nudge, send
     from features.settings import Settings
     with pytest.raises(ValueError, match="needs most"):
         Nudge("line", "behaviour", lambda context, agent: [], first=True)
@@ -174,7 +174,8 @@ def test_every_kind_of_tool_call_says_what_it_is_doing_and_which_words_a_trigger
 def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_inside_the_budget_and_a_trigger_on_one_tells_or_holds(monkeypatch):
     import time as clock
     from controllers.types import Questions, Todos, Works
-    from features import FEATURES, watched
+    from features import FEATURES
+    from features.triggers import watched
     from features.parts import AgentContext
     from resources.base import AGENT, SYSTEM, USER
     from tests.kit import idle

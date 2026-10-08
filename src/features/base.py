@@ -19,6 +19,7 @@ from engine.record import Record
 from engine.memo import Memo
 from engine.settings_file import PROJECT_PARTS
 from resources.base import ENVIRONMENT, PROJECT, Refused, SYSTEM
+from features.sending import SendOnTheClock, SendOnToolUse
 
 REGISTRY: dict[str, type] = {}
 VALUES = Memo()
@@ -159,7 +160,6 @@ class Feature(ABC):
             SETTING_KEYS.add(None, tuple(self.settings), key=self.name)
         SETTINGS_CHANGED.add(None, self.settings_changed, key=self.name)
         if self.nudges:
-            from features.nudges.sending import SendOnTheClock, SendOnToolUse
             self.journal.events.handler(SendOnTheClock(self.nudges))
             self.journal.events.handler(SendOnToolUse(self.nudges))
 

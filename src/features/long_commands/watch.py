@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.sessions import alive
 from engine.wording import clipped
-from features.nudges.sending import Sent
+from features.sending import Sent
 from features.trigger import DAY, MINUTE
 from providers import PROVIDERS, transcript_reader
 from providers.base import BackgroundTasks

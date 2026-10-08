@@ -4,7 +4,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import ClassVar
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, WHOM, Pruned, Ref, Refused, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows

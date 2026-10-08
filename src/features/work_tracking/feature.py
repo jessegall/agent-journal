@@ -5,7 +5,7 @@ from features.journal import Journal
 from features.work_tracking.auto import steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
-from features.nudges.sending import Nudge
+from features.sending import Nudge
 from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_ready, stopped_with_work, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import RefuseHeldWrites, RefuseWaitingInTheShell

@@ -24,7 +24,7 @@ from engine.wording import plural
 from engine.transcript import PEER
 from providers.turns import turns
 from engine.stored import Growth, read_json, write_json
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 CLOCK_EVERY = 5.0
 

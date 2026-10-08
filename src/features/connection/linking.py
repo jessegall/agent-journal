@@ -11,7 +11,7 @@ from engine.record import Record
 from engine.sync import CONNECTION, PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay, travels
 from engine.version import version
 from features.connection.transport import ServerKey, Transport
-from migrations import applied
+from engine.ledger import applied
 from resources.base import PROJECT, SYSTEM, Refused
 
 @dataclass(frozen=True)

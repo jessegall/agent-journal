@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.transcript import timestamp
 
 TEXT_PARTS = ("input_text", "output_text", "text")

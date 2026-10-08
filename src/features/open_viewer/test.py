@@ -243,7 +243,7 @@ def test_every_request_stays_inside_its_journal(tmp_path, monkeypatch):
     from features.routing import Request
     from controllers.types import Environments, Todos
     from engine.record import Record
-    from migrations import applied
+    from engine.ledger import applied
     from resources.base import Refused, USER
     for name in (".", "..", "../other", "nested/name", "nested\\name"):
         with pytest.raises(Refused):

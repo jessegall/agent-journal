@@ -10,7 +10,7 @@ from contextlib import suppress
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
 
-from commands.dispatch import ranked
+from features.routing import ranked
 from controllers.base import SENDER, word_names
 from controllers.features import Features
 from controllers.types import CONTROLLERS, Environments, Todos

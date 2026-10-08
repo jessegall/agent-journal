@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass, field, replace
 from typing import TypedDict
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.phone.push import N, on_curve, verified
 from resources.base import Refused
 

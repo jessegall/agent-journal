@@ -5,7 +5,7 @@ from pathlib import Path
 from controllers.base import Arguments
 from controllers.features import writes_a_secret, writes_what_runs
 from controllers.types import CONTROLLERS
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.paths import known_environment
 from engine.record import Record
 from features.permission_prompts.skipping import Relaunch

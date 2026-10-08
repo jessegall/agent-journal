@@ -1,48 +1,20 @@
 import mimetypes
 from pathlib import Path
-from urllib.parse import unquote
 from engine import bus
 from engine.record import Record
 from engine.timing import Stopwatch, profiler
 from controllers.faults import threw
-from features.format import shaped
 from engine.disk import DiskFull
 from resources.base import Missing, Refused
 from engine.package import data
-from engine.memo import Memo
 from features.phone.allow_list import Reach, reached
-from features.routing import FEATURE_ROUTES, Reply, Request, Route
+from features.format import rendered
+from features.routing import Reply, Request, resolve
 from engine.paths import contained, known_environment
 
 
 WEB = data("web", "dist")
 HOOK_PATH = "/api/hook/"
-
-ROUTES: list[Route] = []
-RANKED = Memo()
-
-def route(method: str, pattern: str):
-    def register(fn):
-        ROUTES.append(Route(method, pattern, fn))
-        return fn
-    return register
-
-
-def rank_routes() -> None:
-    ROUTES.sort(key=lambda r: r.rank)
-
-
-def ranked() -> list[Route]:
-    return RANKED.get("routes", (len(ROUTES), FEATURE_ROUTES.version), lambda: sorted([*ROUTES, *FEATURE_ROUTES.each()], key=lambda r: r.rank))
-
-
-def resolve(method: str, path: str) -> tuple[Route, dict] | None:
-    for r in ranked():
-        m = r.regex.match(path)
-        if m and r.method == method:
-            return r, {k: unquote(v) for k, v in m.groupdict().items()}
-    return None
-
 
 def reached_by_phone(root: Path, method: str, path: str, query: dict, body: dict, environment: str, unlocked: bool, member: str) -> Reach:
     found = resolve(method, path)
@@ -129,16 +101,6 @@ def guarded(reply: Reply, root: Path, env: str, where: str) -> Reply:
 
 def represented(got, record):
     return {"ok": True} if got is None else rendered(got, record)
-
-
-def rendered(got, record):
-    if hasattr(got, "ref"):
-        return shaped(got, record)
-    if isinstance(got, list):
-        return [rendered(item, record) for item in got]
-    if isinstance(got, dict):
-        return {key: rendered(value, record) for key, value in got.items()}
-    return got
 
 
 def static(path: str) -> Reply:

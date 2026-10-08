@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.vault import Vault
 

@@ -20,7 +20,7 @@ from engine.sessions import alive
 from engine.version import version
 from engine.package import entry
 from engine.ports import free, url_of
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.machines import journal_home
 from resources.base import Refused
 

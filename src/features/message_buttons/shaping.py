@@ -2,7 +2,7 @@ from dataclasses import dataclass, replace
 
 from controllers.types import CONTROLLERS
 from resources.base import Refused, SYSTEM
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 MOST = 5
 LABEL = 120

@@ -1,6 +1,6 @@
 import re
 
-from features import watched
+from features.triggers import watched
 from features.triggers.resource import DENY, HOLD, IDLE, INSTRUCT, MESSAGE, NUDGE, START, WORKING, Trigger
 
 EMPTY = "Add the words to watch for and choose what happens, and this sentence will say what the trigger does."

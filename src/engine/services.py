@@ -6,7 +6,7 @@ import uuid
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
 from engine.stored import read_json, write_json
 from engine.locks import claim
@@ -174,6 +174,13 @@ def gather(root: Path, sources, faulted=ignore) -> tuple[list[ServiceSpec], bool
 
 def specs(root: Path, sources) -> list[ServiceSpec]:
     return gather(root, sources)[0]
+
+
+def lifeline() -> tuple[int, int]:
+    read, write = os.pipe()
+    os.set_inheritable(read, True)
+    os.set_inheritable(write, False)
+    return read, write
 
 
 def spawn(spec: ServiceSpec, lifeline: int) -> int:

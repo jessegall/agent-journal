@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from controllers.invoke import invoked
 from controllers.types import Agents
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.file_feed.feed import PAGE, Side
 from features.routing import Reply, Request, handles
 

@@ -3,13 +3,15 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Iterator
+from urllib.parse import unquote
 from uuid import uuid4
 
 from controllers.base import Sender
 from controllers.types import CONTROLLERS, Environments
 from engine import runtime
 from engine.extension import Extension
-from engine.fields import Loaded
+from engine.memo import Memo
+from resources.fields import Loaded
 from engine.record import Record
 from resources.base import SYSTEM, USER, Missing
 
@@ -120,3 +122,30 @@ def handles(method: str, pattern: str):
         fn.route = Route(method, pattern, fn)
         return fn
     return marked
+
+
+ROUTES: list[Route] = []
+RANKED = Memo()
+
+
+def route(method: str, pattern: str):
+    def register(fn):
+        ROUTES.append(Route(method, pattern, fn))
+        return fn
+    return register
+
+
+def rank_routes() -> None:
+    ROUTES.sort(key=lambda r: r.rank)
+
+
+def ranked() -> list[Route]:
+    return RANKED.get("routes", (len(ROUTES), FEATURE_ROUTES.version), lambda: sorted([*ROUTES, *FEATURE_ROUTES.each()], key=lambda r: r.rank))
+
+
+def resolve(method: str, path: str) -> tuple[Route, dict] | None:
+    for r in ranked():
+        m = r.regex.match(path)
+        if m and r.method == method:
+            return r, {k: unquote(v) for k, v in m.groupdict().items()}
+    return None
