@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass, field
 from functools import cache, partial
 
 from engine import bus
+from engine.extension import Extension
 from engine.fields import Loaded
 from engine.markers import plain
 from engine.record import Record
@@ -50,8 +51,16 @@ COMMANDS: dict[str, dict] = {}
 
 
 def networked(type_: str, name: str) -> bool:
-    held = COMMANDS.get(type_, {}).get(name) or getattr(CONTROLLERS.get(type_), name, None)
-    return bool(getattr(held, "network", False))
+    return bool(getattr(command_held(type_, name), "network", False))
+
+
+def runs_here(type_: str, name: str) -> bool:
+    return bool(getattr(command_held(type_, name), "here", False))
+
+
+def command_held(type_: str, name: str):
+    return COMMANDS.get(type_, {}).get(name) or getattr(CONTROLLERS.get(type_), name, None)
+SAVE_REWRITES = Extension()
 HANDLERS: dict[str, list] = {}
 CONTROLLERS: dict[str, type] = {}
 
@@ -135,6 +144,8 @@ class Controller(Files, Links, Discussed):
         self._shipped(r, action)
         self._guarded(r, action)
         r.rewrite(plain)
+        for rewriter in SAVE_REWRITES.each(self.record):
+            r.rewrite(rewriter(self.record))
         self._note_force(r)
         if self.actor not in r.seen:
             r.seen.append(self.actor)

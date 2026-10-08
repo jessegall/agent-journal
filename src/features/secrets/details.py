@@ -21,7 +21,15 @@ class SecretsDetails(FeatureDetails):
         When a task needs a key or a login you do not have, ask for it with journal secret request
         "<name>" "<why>" [--kind "api key"|login|custom]: it waits under Settings, Secrets until the
         user fills it in. Never ask the user to paste a value into the chat, and never read the
-        file that holds the values. journal secret all lists the secrets with their descriptions,
+        file that holds the values.
+
+        Use a secret with journal secret run <name> -- <command>: the command gets the hidden
+        value on its standard input, a home folder of its own so it keeps no login behind, and
+        its output comes back with every form of the value replaced by [secret <name>]. --stdin
+        "<text>" sends that text instead, with {<field>} filled in, such as --stdin
+        "Authorization: Bearer {key}" for curl -H @-; --env gives the fields as environment
+        variables instead. A secret never goes to a shell, an interpreter or a build tool, only
+        to the programs it lists, and to helpers and subagents only when the user shared it. journal secret all lists the secrets with their descriptions,
         instructions and fields; journal secret read <n> shows one. A value you made yourself,
         such as a generated password, is written to a file and moved into the secret with
         journal secret store <n> <field> <file>, which deletes the file.

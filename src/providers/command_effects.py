@@ -41,6 +41,7 @@ TALLY = re.compile(r"\bTests(?: run)?: (\d+),.*$", re.M)
 TALLY_FAILED = re.compile(r"\b(?:Failures|Errors): (\d+)")
 BROKE = re.compile(r"^(?:npm ERR!|ERROR in |error TS\d+|Build failed|Compilation failed|.*failed to compile)", re.M | re.I)
 QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
+WRAPPED = re.compile(r"\s--\s+(.*)$", re.S)
 JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"(?:[^\"\\]|\\.)*\"|'[^']*'|\d*>&\d|[^;&|)\n])*")
 
 
@@ -173,4 +174,9 @@ def effects(command: str) -> list[str]:
 
 
 def without_journal(command: str) -> str:
-    return JOURNAL_CALL.sub(r"\1", command)
+    return JOURNAL_CALL.sub(lambda call: call[1] + wrapped(call[0]), command)
+
+
+def wrapped(call: str) -> str:
+    found = WRAPPED.search(call)
+    return found[1] if found else ""

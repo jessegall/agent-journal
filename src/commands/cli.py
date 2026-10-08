@@ -4,7 +4,7 @@ import os
 import sys
 from pathlib import Path
 
-from controllers.base import networked
+from controllers.base import networked, runs_here
 from controllers.types import CONTROLLERS
 import features
 from providers import DRIVERS, workspace_folders
@@ -57,16 +57,19 @@ TAKES = {"--root", "--env", "--default-env", "--as", "--session", "--agent", "--
 
 
 def first_word(argv: list[str]) -> str:
+    return next(plain_words(argv), "")
+
+
+def plain_words(argv: list[str]):
     at = 0
     while at < len(argv):
         word = argv[at]
         if word in TAKES:
             at += 2
-        elif word.startswith("-"):
-            at += 1
-        else:
-            return word
-    return ""
+            continue
+        at += 1
+        if not word.startswith("-"):
+            yield word
 
 
 def noun_of(argv: list[str]) -> str:
@@ -75,7 +78,8 @@ def noun_of(argv: list[str]) -> str:
 
 
 def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
-    if not argv or noun_of(argv) not in served():
+    noun, word = (list(plain_words(argv)) + ["", ""])[:2]
+    if not argv or noun_of(argv) not in served() or runs_here(noun, word):
         return f"{first_word(argv) or 'the journal'} is not a command the server runs", None
     out, err = io.StringIO(), io.StringIO()
     try:
