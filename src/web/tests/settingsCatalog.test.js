@@ -146,3 +146,11 @@ describe("model pickers", () => {
         });
     });
 });
+
+describe("the Models group", () => {
+    test("it lists the model each provider starts agents on", () => {
+        const spec = {features: {}, groups: [{key: "models", title: "Models", line: "", section: "Agent", tab: "agent", lead: ""}], models: [{provider: "claude", model: "sonnet", label: "Sonnet"}, {provider: "codex", model: "gpt-6-sol", label: "GPT-6 Sol"}]};
+        const [section] = catalog(spec, {}, {});
+        expect(groupRows(section.groups[0]).map((r) => [r.key, r.kind, r.value])).toEqual([["models:claude", "fixed", "Sonnet"], ["models:codex", "fixed", "GPT-6 Sol"]]);
+    });
+});

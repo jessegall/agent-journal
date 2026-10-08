@@ -262,6 +262,9 @@ function looseRows(settings, context) {
         });
     return {
         rows: {
+            models: (context.models || []).map((m) =>
+                row({key: `models:${m.provider}`, kind: "fixed", label: providerName(m.provider), hint: "The model it starts agents on unless one is named", value: m.label})
+            ),
             project: [
                 row({
                     key: "color",
@@ -374,7 +377,7 @@ function looseRows(settings, context) {
 
 export function catalog(spec, settings, context) {
     const features = Object.values(spec.features || {}).map(normalised);
-    const loose = looseRows(settings || {}, context);
+    const loose = looseRows(settings || {}, {...context, models: spec.models});
     const groups = (spec.groups || []).map((g) =>
         group(
             g,

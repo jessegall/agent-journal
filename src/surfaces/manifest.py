@@ -13,6 +13,7 @@ from controllers.described import described_types
 from resources.base import ACTIONS, ACTORS, SCOPES, VIEWS, Resource
 from resources.types import priority
 from engine import runtime
+from providers import PROVIDERS
 from engine.version import version
 from engine.package import data
 from typing import TypedDict
@@ -39,7 +40,13 @@ class Manifest(TypedDict):
     types: dict[str, dict]
     features: dict
     groups: list[groups.Described]
+    models: list[dict]
     chat_kinds: dict[str, dict[str, str]]
+
+
+def default_models() -> list[dict]:
+    return [{"provider": name, "model": kind.dispatch_default, "label": kind().model_labels().get(kind.dispatch_default, kind.dispatch_default)}
+            for name, kind in PROVIDERS.items()]
 
 
 def built_in() -> dict:
@@ -61,5 +68,6 @@ def manifest(root: Path) -> Manifest:
         "methods": actions(Controller),
         "features": catalogue(features.describe(), Record(root, runtime.env(root))),
         "groups": groups.describe(),
+        "models": default_models(),
         **built_in(),
     }

@@ -49,6 +49,7 @@ class Group(Enum):
     LAWS = Grouping(
         "Rules", "Rules the journal gives every agent: how it starts subagents and how much it reads", Section.AGENT, Tab.AGENT, lead="journal_laws"
     )
+    MODELS = Grouping("Models", "The model each provider starts agents on", Section.AGENT, Tab.AGENT)
     SKILLS = Grouping("Skills", "When the agent loads skills", Section.AGENT, Tab.AGENT, lead="skill_loading")
     WORK_TRACKING = Grouping(
         "Work tracking", "The agent opens work before it changes files, and logs it on its to-do", Section.WORK, Tab.AGENT, lead="work_tracking"
