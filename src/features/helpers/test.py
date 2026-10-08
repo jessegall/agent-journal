@@ -7,7 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import features
-from controllers.types import Agents, Environments, Features, Messages, Nudges, Todos
+from controllers.types import Agents, Environments, Features, Messages, Nudges, Questions, Todos
 from engine.record import Record
 from engine.sessions import Sessions
 from providers import PROVIDERS
@@ -164,6 +164,20 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     said(5)
     said(5)
     assert counted() == 2, "and a line with something new in it is said again"
+    away = Record(record.root, f"{record.env}-rhea")
+    Questions(away, actor=AGENT).create("Which port?", options=[{"title": "8421"}, {"title": "9000"}], pick=1)
+    asking, = [n for n in Nudges(record, actor=SYSTEM).all() if "asks question 1" in n.title]
+    assert (asking.title, asking.until) == ("helper 1, Rhea, asks question 1 and waits for the answer", ["helper.completed", "helper.deleted"]), \
+        "a question a helper asks in its own environment reaches the dispatcher at once, naming the helper and the question"
+    assert "Which port? Options: 1. 8421 (its pick); 2. 9000." in asking.brief and f'journal --env "{away.env}" question answer 1' in asking.brief, \
+        "the line carries the question, its options and the command that answers it in the helper's environment"
+    assert features.FEATURES["helpers"].is_owed(record, "helper asking", ("helper:1",)), "it is said again while the question stays open"
+    Questions(away, actor=USER).complete(1, how="8421")
+    assert not features.FEATURES["helpers"].is_owed(record, "helper asking", ("helper:1",)), "and no more once it is answered"
+    Questions(record, actor=AGENT, agent="agent-7").create("Which branch?", options=[{"title": "main"}, {"title": "release"}], pick=2)
+    lent, = [n for n in Nudges(record, actor=SYSTEM).all() if n.title.startswith("subagent agent-7")]
+    assert lent.until == ["question.completed", "question.deleted"] and "Options: 1. main; 2. release (its pick)." in lent.brief, \
+        "a question a subagent asks in the environment lent to it reaches the dispatcher the same way"
     from agents.terminal import launch_log
     launch_log(record.root, f"{record.env}-rhea").parent.mkdir(parents=True, exist_ok=True)
     launch_log(record.root, f"{record.env}-rhea").write_text("\x1b[1mSettingsWarning\x1b[0m: hooks must be an object\n")

@@ -1,7 +1,7 @@
 from features.base import Feature
 from features.helpers.controller import Helpers
 from features.helpers.details import HelpersDetails
-from features.helpers.handlers import NameStoppedOrQuietHelpers, TellAFailedTurnOnChange
+from features.helpers.handlers import NameStoppedOrQuietHelpers, TellAFailedTurnOnChange, TellAQuestionAskedAway
 from features.helpers.commands import RetireSubagent
 from features.helpers.interceptors import (HandedRowsCloseOnlyThroughTheirHelper, HandedRowsStayAssigned, KeepSubagentFiles,
                                           OfferKeptAgentsFirst, RefuseTestRunsToHelpers)
@@ -16,6 +16,7 @@ class HelpersFeature(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.handler(TellAFailedTurnOnChange())
         journal.events.handler(NameStoppedOrQuietHelpers())
+        journal.events.handler(TellAQuestionAskedAway())
         journal.commands.intercept("todo.complete", HandedRowsCloseOnlyThroughTheirHelper())
         journal.commands.intercept("todo.update", HandedRowsStayAssigned())
         journal.commands.add("agent", RetireSubagent())

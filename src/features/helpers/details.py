@@ -1,6 +1,6 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.groups import Group
-from features.helpers.handlers import still_unreported
+from features.helpers.handlers import helper_waits_on_question, still_unreported
 from features.settings import Setting
 from features.trigger import MINUTES, Trigger
 
@@ -58,6 +58,11 @@ class HelpersDetails(FeatureDetails):
         Stopping the helper, or its turn ending in an error, gives back the rows it has not
         finished; finishing it gives back the rest.
 
+        A question a helper asks in its own environment, or a subagent asks in the environment lent
+        to it, reaches you at once as a line naming it, the question and its options, and again
+        while the question stays open. Answer it with journal question answer <n> in that
+        environment; the helpers list and the plan page show a helper that waits on one.
+
         A helper whose agent stops running before it reports, as after a restart of the machine, is
         named to you at once; one that has done nothing for a while is named so you can check on it.
     """
@@ -111,6 +116,25 @@ class HelpersDetails(FeatureDetails):
     ]
 
     lines = [
+        Line(
+            name="helper asking",
+            title="{{who}}, asks question {{question}} and waits for the answer",
+            brief="""
+                {{text}} {{options}} It waits in the helper's own environment, so answer it there with {{command}}
+            """,
+            until=("helper.completed", "helper.deleted"),
+            owed=helper_waits_on_question,
+            while_waiting=True,
+        ),
+        Line(
+            name="subagent asking",
+            title="{{who}}, asks question {{question}} and waits for the answer",
+            brief="""
+                {{text}} {{options}} Answer it with {{command}}, or leave it to the user
+            """,
+            until=("question.completed", "question.deleted"),
+            while_waiting=True,
+        ),
         Line(
             name="stopped",
             title="helper {{n}}, {{name}}, stopped running before it reported",

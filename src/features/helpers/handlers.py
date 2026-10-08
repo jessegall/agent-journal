@@ -1,14 +1,16 @@
 import time
 
 from agents.terminal import Launched, launch_failure
+from controllers.types import Agents, Questions
+from engine.record import Record
 from engine.seats import terminal_of
 from engine.events.engine import ClockTicked
 from engine.events.resources import AgentChanged
 from engine.sessions import Sessions, alive
-from controllers.types import Agents
-from engine.record import Record
+from features.ask_questions.handlers import QuestionAsked
 from features.helpers.controller import Helpers
-from features.parts import AgentContext, Handler, OnAgentUpdated
+from features.helpers.reuse import subagent_rows
+from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from features.trigger import MINUTE
 from resources.base import SYSTEM
 from resources.types import FAILED
@@ -27,6 +29,46 @@ class TellAFailedTurnOnChange(OnAgentUpdated, TellAFailedTurn):
 
 def still_unreported(journal, rows: tuple[str, ...]) -> bool:
     return any(row.ref in rows and not (row.report or row.stopped_by_user) for row in journal.get(Helpers).rows.standing())
+
+
+def open_questions(root, environment: str) -> list:
+    return [question for question in Questions(Record(root, environment), actor=SYSTEM).rows.standing() if not question.hidden]
+
+
+def helper_waits_on_question(journal, rows: tuple[str, ...]) -> bool:
+    helpers = journal.get(Helpers)
+    return any(row.ref in rows and open_questions(helpers.record.root, row.environment) for row in helpers.rows.standing())
+
+
+def listed_options(question) -> str:
+    if not question.options:
+        return "It offers no options, so answer it in your own words."
+    titles = [option["title"] if isinstance(option, dict) else str(option) for option in question.options]
+    return "Options: " + "; ".join(f"{at}. {title}{' (its pick)' if question.pick == at else ''}" for at, title in enumerate(titles, 1)) + "."
+
+
+def subagent_name(record, agent: str) -> str:
+    primary = Agents(record, actor=SYSTEM).primary()
+    task = next((sub.task for sub in subagent_rows(primary) if sub.address == agent), "") if primary else ""
+    return task.partition(":")[0].strip() or agent
+
+
+class TellAQuestionAskedAway(Handler):
+    def handle(self, context: Context, event: QuestionAsked) -> None:
+        question = Questions(context.record, actor=SYSTEM).load(event.n)
+        helpers = Helpers(context.record, actor=SYSTEM)
+        place = helpers._helping()
+        if question.hidden or not (place or question.agent):
+            return
+        if place:
+            helper = helpers._helper(place)
+            context.feature.to_primary(Record(context.record.root, place.launched_from), "helper asking", who=f"helper {helper.n}, {helper.name}", question=question.n,
+                                       text=question.title, options=listed_options(question),
+                                       command=f'journal --env "{context.record.env}" question answer {question.n} "<answer>" --set reason="<why>"', rows=[helper.ref])
+            return
+        context.feature.to_primary(context.record, "subagent asking", who=f"subagent {subagent_name(context.record, question.agent)}", question=question.n,
+                                   text=question.title, options=listed_options(question), command=f'journal question answer {question.n} "<answer>" --set reason="<why>"',
+                                   rows=[question.ref])
 
 
 def gone(root, name: str, session) -> bool:

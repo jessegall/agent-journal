@@ -13,6 +13,16 @@ export const HELPER_WORDS = {
     refused: "Refused",
 };
 
+export const helperAsking = (row, environments = []) => {
+    const attention = environments.find((one) => one.owner === `helper:${row.n}`)?.attention;
+    return attention?.kind === "question" ? attention.text : "";
+};
+
+export const helperTag = (row) => {
+    const state = row.asking ? "needs" : helperState(row);
+    return {state, word: row.asking ? "Asks a question" : HELPER_WORDS[state]};
+};
+
 export const FINISHED_STATES = new Set(["finished", "stopped", "ended", "refused"]);
 export const stateRank = (state) => ({needs: 0, working: 1, running: 1, idle: 2, reported: 3})[state] ?? 4;
 export const stateAt = (row) => row.completed || row.completed_at || row.ended || row.at || row.started || 0;
@@ -77,7 +87,7 @@ export const helperCard = (row) => ({
     title: row.title,
     session: "",
     state: helperState(row) === "running" ? "running" : "idle",
-    reason: "",
+    reason: row.asking ? `Asks a question: ${row.asking}` : "",
 });
 
 export const helperHolding = (todo, helpers) => helpers.find((row) => `helper:${row.n}` === todo.data?.assigned) || null;

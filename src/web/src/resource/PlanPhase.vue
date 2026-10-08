@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import {useScope} from "../composables/scope.js";
 import {state} from "../domain/records.js";
 import HolderTag from "../kit/HolderTag.vue";
-import {HELPER_WORDS, helperHolding, helperName, helperState, helpersHolding} from "../domain/helpers.js";
+import {helperHolding, helperName, helperTag, helpersHolding} from "../domain/helpers.js";
 import {peek, peekThere} from "../route.js";
 
 const props = defineProps({
@@ -45,7 +45,7 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
                     <span class="cp">checkpoint</span>
                 </template>
                 <template v-for="h in holders" :key="h.n">
-                    <HolderTag :name="helperName(h)" :state="helperState(h)" :word="HELPER_WORDS[helperState(h)]" @open="emit('inspect', h)" />
+                    <HolderTag :name="helperName(h)" :state="helperTag(h).state" :word="helperTag(h).word" @open="emit('inspect', h)" />
                 </template>
                 <span class="progress">{{ closed }}/{{ rows.length }}</span>
                 <template v-if="talk">
@@ -72,8 +72,8 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
                     <template v-if="heldBy(t)">
                         <HolderTag
                             :name="helperName(heldBy(t))"
-                            :state="helperState(heldBy(t))"
-                            :word="HELPER_WORDS[helperState(heldBy(t))]"
+                            :state="helperTag(heldBy(t)).state"
+                            :word="helperTag(heldBy(t)).word"
                             @open="emit('inspect', heldBy(t))"
                         />
                     </template>
