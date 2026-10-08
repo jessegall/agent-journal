@@ -77,7 +77,7 @@ class Messages(Controller):
         unread = [number for number in numbers if self.actor == AGENT and AGENT not in self.load(number).seen]
         if unread:
             self._refuse(f"read message {unread[0]} before you answer it: journal message read {unread[0]}")
-        windowed = next((m for m in map(self.load, numbers) if m.data.get("window")), None)
+        windowed = next((m for m in map(self.load, numbers) if hasattr(CONTROLLERS.get(m.data.get("window", "").partition(":")[0]), "say")), None)
         if windowed:
             kind, _, place = windowed.data["window"].partition(":")
             self._refuse(f"message {windowed.n} was written in {kind} {place}: answer it there, with journal {kind} say {place}")
