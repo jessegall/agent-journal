@@ -9,7 +9,7 @@ import resources.types as resources_module
 from controllers.base import Controller
 from agents.terminal import prompted
 from controllers.requests import request
-from controllers.types import Agents, Environments, Messages, Todos
+from controllers.types import Agents, Environments, Messages, Nudges, Todos
 from engine import attic, bus
 from engine.outbox import Request
 from engine.record import Record
