@@ -34,8 +34,6 @@ services:
       options:
         max-size: 10m
         max-file: "5"
-    labels:
-      - com.centurylinklabs.watchtower.enable=true
 
   caddy:
     image: caddy:2.8
@@ -83,6 +81,22 @@ services:
       - ./restore-into-volume.sh:/restore.sh:ro
       - ${BACKUP_FOLDER:-./backups}:/backups
 
+  # Updates the journal only to an image cosign verifies was signed by this repository's release workflow.
+  updater:
+    build:
+      context: ..
+      dockerfile: docker/updater.Dockerfile
+    restart: unless-stopped
+    environment:
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME:-agent-journal}
+      JOURNAL_ADDRESS: ${JOURNAL_ADDRESS:?set JOURNAL_ADDRESS in .env}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/compose:ro
+    mem_limit: 128m
+    logging: *logs
+
+  # Keeps Caddy up to date; the journal is left to the updater, which checks its signature.
   watchtower:
     image: containrrr/watchtower:1.7.1
     restart: unless-stopped

@@ -1,10 +1,10 @@
-# Publishes the journal-on-a-server image for each release tag and signs it; Watchtower on the server pulls it.
-# Actions are pinned by commit. Only a release tag such as v2.261.0 moves :latest; any other v* tag gets its own tag alone.
+# Publishes the journal-on-a-server image for each release tag and signs it; the updater on the server verifies the
+# signature before it deploys. Actions are pinned by commit, and only a release tag such as v2.261.0 runs this at all.
 name: Docker image
 
 on:
   push:
-    tags: ["v*"]
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
 
 permissions:
   contents: read
@@ -31,7 +31,7 @@ jobs:
           flavor: latest=false
           tags: |
             type=ref,event=tag
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-') }}
+            type=raw,value=latest
       - id: build
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:

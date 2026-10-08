@@ -32,9 +32,27 @@ Open `https://<your domain>`, type the setup code and choose the owner's passwor
 - `backup`: a restic snapshot of the journal's volume every day, kept 7 days and 4 weeks. It holds the
   project checkout, the record and the server's home (provider login, password hash, logins, audit log);
   it leaves out the journal's runtime folder. Set `RESTIC_REPOSITORY` to keep it off the server.
-- `watchtower`: pulls a new image every hour and restarts the journal on it; the journal upgrades its record on start.
-  Images are published only for release tags and signed with cosign:
+- `updater`: once an hour, checks with cosign that `ghcr.io/jessegall/agent-journal:latest` was signed by this
+  repository's release workflow, and only then restarts the journal on exactly that digest; the journal upgrades its
+  record on start. An image without that signature is never deployed. To check one by hand:
   `cosign verify --certificate-identity-regexp '^https://github.com/jessegall/agent-journal/' --certificate-oidc-issuer https://token.actions.githubusercontent.com ghcr.io/jessegall/agent-journal:latest`.
+- `watchtower`: keeps Caddy up to date.
+
+## What the two users protect, and what they do not
+
+The login page runs as `gateway`; the journal and every agent run as `journal`. An agent, or anyone who takes one
+over, cannot:
+
+- read or change the owner's password, the logins, the wrong tries, the phone keys or the login page's settings;
+- make a setup code, reset the password or clear the wrong tries;
+- change the login page's code or take its port, even while it restarts;
+- get the server to run, upgrade, stop or update the journal from outside.
+
+It can do everything the `journal` user can: read and change the record, the project and its git history, push
+with `GITHUB_TOKEN`, use the provider login, and change the journal's own server and viewer, which run from the
+project's `.journal` folder. Behind the login it can therefore show the owner anything, including a page that looks
+like a login form at the real address. Treat a server agent as able to act as you inside the journal; the login page
+and its vault are the only things kept from it.
 
 ## Day to day
 
