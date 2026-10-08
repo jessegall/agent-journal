@@ -83,7 +83,8 @@ class RefuseWholeSuiteToHelpers(ToolInterceptor):
 
     def intercept(self, context: AgentContext, call) -> str:
         place = Environments(context.record, actor=SYSTEM).rows.by_title(context.record.env)
-        if not (context.agent.row.subagent or (place and place.helping)) or not runs_whole_suite(call.shell_command or "") or may_run_whole_suite(context.record):
+        shell = call.shell_command
+        if not shell or not (context.agent.row.subagent or (place and place.helping)) or not runs_whole_suite(shell) or may_run_whole_suite(context.record):
             return ""
         return ("Helpers and subagents never run the whole test suite: run the tests beside what you changed, "
                 "or journal check touched <n> for the ones that cover your change. The agent that dispatched you can allow it with journal helper allow_suite.")
