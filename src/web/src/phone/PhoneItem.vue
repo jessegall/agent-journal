@@ -130,7 +130,10 @@ const SECOND = ["block", "comment"];
 const acts = ref(null);
 const moreOpen = ref(false);
 const actions = computed(() =>
-    itemActions(row.value).map((action) => ({...action, run: () => (action.word === "comment" ? (commenting.value = true) : acts.value.begin(action))}))
+    itemActions(row.value).map((action) => ({
+        ...action,
+        run: () => (action.word === "comment" ? (commenting.value = true) : acts.value.begin(action)),
+    }))
 );
 const FIRSTS = {plan: ["start"], doc: ["plan", "share"], report: ["share"], collection: ["share"], plugin: ["upgrade"]};
 const firstKeys = computed(() => (row.value?.type === "todo" ? [FIRST[todoLane(row.value)]] : FIRSTS[row.value?.type] || []));
@@ -264,13 +267,22 @@ onMounted(async () => {
                     <PhoneReaderPhases :plan="row" />
                     <template v-if="row.type === 'plan'">
                         <CellGroup>
-                            <Cell label="Timeline" sub="What happened on this plan's to-dos" icon="clock" @pick="emit('open', `timeline:${row.n}`)" />
+                            <Cell
+                                label="Timeline"
+                                sub="What happened on this plan's to-dos"
+                                icon="clock"
+                                @pick="emit('open', `timeline:${row.n}`)"
+                            />
                         </CellGroup>
                     </template>
                     <template v-if="files.length">
                         <CellGroup head="Files">
                             <template v-for="name in files" :key="name">
-                                <Cell :label="name" icon="file" @pick="emit('open', `attachment:${row.type}/${row.n}/${encodeURIComponent(name)}`)" />
+                                <Cell
+                                    :label="name"
+                                    icon="file"
+                                    @pick="emit('open', `attachment:${row.type}/${row.n}/${encodeURIComponent(name)}`)"
+                                />
                             </template>
                         </CellGroup>
                     </template>
@@ -279,7 +291,15 @@ onMounted(async () => {
                             <template v-for="file in touched" :key="file.path">
                                 <Cell
                                     :label="file.path.split('/').pop()"
-                                    :sub="[file.created ? 'New' : '', `+${file.added} −${file.removed}`, file.path.includes('/') ? file.path : ''].filter(Boolean).join(' · ')"
+                                    :sub="
+                                        [
+                                            file.created ? 'New' : '',
+                                            `+${file.added} −${file.removed}`,
+                                            file.path.includes('/') ? file.path : '',
+                                        ]
+                                            .filter(Boolean)
+                                            .join(' · ')
+                                    "
                                     icon="file"
                                     @pick="emit('open', `file:${file.path}`)"
                                 />
@@ -289,7 +309,12 @@ onMounted(async () => {
                     <template v-if="commits.length">
                         <CellGroup :head="`Commits · ${commits.length}`">
                             <template v-for="commit in commits" :key="commit.sha">
-                                <Cell :label="commit.subject" :sub="commit.sha.slice(0, 7)" icon="branch" @pick="emit('open', `commit:${commit.sha}`)" />
+                                <Cell
+                                    :label="commit.subject"
+                                    :sub="commit.sha.slice(0, 7)"
+                                    icon="branch"
+                                    @pick="emit('open', `commit:${commit.sha}`)"
+                                />
                             </template>
                         </CellGroup>
                     </template>
@@ -364,10 +389,23 @@ onMounted(async () => {
             <PhoneShareSheet :target="`${row.type}:${row.n}`" :title="row.title" @close="sharing = false" />
         </template>
         <template v-if="commenting && row">
-            <FormSheet title="Comment" :sub="row.title" :fields="COMMENT" button="Comment" @close="commenting = false" @submit="commented" />
+            <FormSheet
+                title="Comment"
+                :sub="row.title"
+                :fields="COMMENT"
+                button="Comment"
+                @close="commenting = false"
+                @submit="commented"
+            />
         </template>
         <template v-if="moreOpen && row">
-            <ActionSheet :title="row.title" :about="`${kindTitle(row.type)} ${row.n}`" :actions="actions" :foot="runsOffLine(row)" @close="moreOpen = false" />
+            <ActionSheet
+                :title="row.title"
+                :about="`${kindTitle(row.type)} ${row.n}`"
+                :actions="actions"
+                :foot="runsOffLine(row)"
+                @close="moreOpen = false"
+            />
         </template>
         <template v-if="row">
             <PhoneActs ref="acts" :row="row" @changed="changed" @gone="emit('close')" @share="sharing = true" />

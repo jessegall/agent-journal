@@ -66,11 +66,15 @@ const sorter = computed(() => ORDERS.find((one) => one.key === order.value));
 const titleOf = (key) => lanes.value.find((one) => one.key === key)?.title || key;
 const cardsOf = (key) => (lanes.value.find((one) => one.key === key)?.cards || []).map((card) => ({...card, lane: key}));
 const sorted = (cards) => cards.filter(named(words.value)).sort(sorter.value.sort);
-const groups = computed(() => LISTED.map((key) => ({key, title: titleOf(key), cards: sorted(cardsOf(key))})).filter((one) => one.cards.length));
+const groups = computed(() =>
+    LISTED.map((key) => ({key, title: titleOf(key), cards: sorted(cardsOf(key))})).filter((one) => one.cards.length)
+);
 const done = computed(() => sorted(cardsOf("done")));
 const open = computed(() => LISTED.reduce((sum, key) => sum + cardsOf(key).length, 0));
 const chips = computed(() =>
-    lanes.value.filter((one) => doneLane.value || one.key !== "done").map((one) => ({key: one.key, label: one.title, count: one.cards.length}))
+    lanes.value
+        .filter((one) => doneLane.value || one.key !== "done")
+        .map((one) => ({key: one.key, label: one.title, count: one.cards.length}))
 );
 const shown = computed(() => sorted(cardsOf(lane.value)));
 const environment = computed(() => place.value.split("/")[1] || "");
@@ -124,12 +128,24 @@ const actionsOf = (row) => [
     {key: "open", label: "Open", run: () => emit("open", `todo:${row.n}`)},
     ...itemActions(row).map((action) => ({...action, run: () => acts.value.begin(action)})),
 ];
-const orders = computed(() => ORDERS.map((one) => ({key: one.key, label: one.label, check: one.key === order.value, run: () => (order.value = one.key)})));
+const orders = computed(() =>
+    ORDERS.map((one) => ({key: one.key, label: one.label, check: one.key === order.value, run: () => (order.value = one.key)}))
+);
 const archived = ref([]);
 const settings = computed(() => [
     {key: "done", label: "Show the Done lane", check: doneLane.value, run: () => (doneLane.value = !doneLane.value)},
-    {key: "new-board", label: "Make a new board", sub: "Pick its stages, or build it from a document", run: () => (sheet.value = "new-board")},
-    ...archived.value.map((board) => ({key: `board-${board.n}`, label: board.title, sub: "Archived board · Restore it", run: () => restore(board)})),
+    {
+        key: "new-board",
+        label: "Make a new board",
+        sub: "Pick its stages, or build it from a document",
+        run: () => (sheet.value = "new-board"),
+    },
+    ...archived.value.map((board) => ({
+        key: `board-${board.n}`,
+        label: board.title,
+        sub: "Archived board · Restore it",
+        run: () => restore(board),
+    })),
 ]);
 
 async function openSettings() {
@@ -240,7 +256,14 @@ const made = (row) => (refresh(), emit("open", `todo:${row.n}`));
         <PhoneActs ref="acts" :row="acting" @changed="refresh" @gone="refresh" />
     </template>
     <template v-if="asking">
-        <FormSheet :title="asking.title" :sub="asking.sub" :fields="asking.fields" button="Move" @submit="asking.send" @close="asking = null" />
+        <FormSheet
+            :title="asking.title"
+            :sub="asking.sub"
+            :fields="asking.fields"
+            button="Move"
+            @submit="asking.send"
+            @close="asking = null"
+        />
     </template>
 </template>
 

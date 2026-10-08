@@ -355,7 +355,6 @@ function took(got) {
     landNext = false;
 }
 
-
 const refresh = usePoll("phone-feed", asked, FEED_EVERY, (got) => {
     if (!got || switching.value) return;
     if (held.value) waitingFeed = got;
@@ -367,13 +366,12 @@ provide(
     phoneActs((target) => open(target), refresh)
 );
 const focusedPlan = computed(
-    () => feed.value.plans.find((plan) => plan.n === planOpen.value) || feed.value.plans.find((plan) => plan.status === WAITS) || feed.value.plans[0]
+    () =>
+        feed.value.plans.find((plan) => plan.n === planOpen.value) ||
+        feed.value.plans.find((plan) => plan.status === WAITS) ||
+        feed.value.plans[0]
 );
-const go = usePlanGo(
-    focusedPlan,
-    refresh,
-    failed
-);
+const go = usePlanGo(focusedPlan, refresh, failed);
 
 watch(offline, (now, before) => {
     if (now !== before) announce(now ? "Offline, waiting to reconnect" : "Back online");

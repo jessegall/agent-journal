@@ -47,7 +47,12 @@ onMounted(load);
             <template v-for="group in days" :key="group.day">
                 <CellGroup :head="group.day">
                     <template v-for="item in group.items" :key="`${item.at}-${item.kind}-${item.todo}`">
-                        <Cell :label="`#${item.todo} ${item.title}`" :sub="subOf(item)" :icon="MOMENTS[item.kind].icon" @pick="emit('open', `todo:${item.todo}`)" />
+                        <Cell
+                            :label="`#${item.todo} ${item.title}`"
+                            :sub="subOf(item)"
+                            :icon="MOMENTS[item.kind].icon"
+                            @pick="emit('open', `todo:${item.todo}`)"
+                        />
                     </template>
                 </CellGroup>
             </template>
