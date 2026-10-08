@@ -2,6 +2,7 @@ import importlib.util
 import pickle
 import pkgutil
 import time
+from collections import deque
 from copy import deepcopy
 from functools import cache
 from threading import Lock, Thread, get_ident
@@ -50,6 +51,8 @@ class TranscriptCache:
         self.kept: dict[tuple, float] = {}
         self.locks: dict[tuple, Lock] = {}
         self.guard = Lock()
+        self.behind: deque[Callable[[], None]] = deque()
+        self.catching_up = False
 
     def lock(self, key: tuple) -> Lock:
         with self.guard:
@@ -104,13 +107,49 @@ class TranscriptCache:
         if size is None:
             return []
         key = ("transcript", str(path), code_mark())
+        offset, _, turns, _ = self.held_turns(path, key, size)
+        if size - offset > FOLD_IN_PLACE_BYTES:
+            self.turns_behind(path, key, extend)
+            return turns or self.glimpse(path, extend)
+        lock = self.lock(key)
+        if not lock.acquire(timeout=FOLD_WAIT):
+            return turns or self.glimpse(path, extend)
+        try:
+            return self.turns_up(path, key, extend)
+        finally:
+            lock.release()
+
+    def held_turns(self, path: Path, key: tuple, size: int) -> tuple:
         kept = None if str(path) in self.transcripts else self.stored(key)
         held = self.transcripts.get(str(path)) or (kept and (kept[0], *kept[1]))
-        offset, count, turns, seam = held if held and held[0] <= size else (0, 0, [], b"")
-        if seam and self.before(path, offset, len(seam)) != seam:
-            offset, count, turns, seam = 0, 0, [], b""
+        if not held or held[0] > size or (held[3] and self.before(path, held[0], len(held[3])) != held[3]):
+            return 0, 0, [], b""
+        return held
+
+    def glimpse(self, path: Path, extend: Callable[[list, list[bytes], int], list]) -> list:
+        """The newest turns at once, while the whole read catches up behind."""
+        read = tail_lines(path, RECENT_BYTES)
+        return extend([], read.lines, self.counted_before(path, read))
+
+    def turns_behind(self, path: Path, key: tuple, extend: Callable[[list, list[bytes], int], list]) -> None:
+        lock = self.lock(key)
+        if not lock.acquire(blocking=False):
+            return
+
+        def run() -> None:
+            try:
+                self.turns_up(path, key, extend)
+            finally:
+                lock.release()
+        self.later(run)
+
+    def turns_up(self, path: Path, key: tuple, extend: Callable[[list, list[bytes], int], list]) -> list:
+        size = size_of(path)
+        if size is None:
+            return []
+        offset, count, turns, seam = self.held_turns(path, key, size)
         read = lines_from(path, offset)
-        if not held:
+        if not offset:
             count = self.counted_before(path, read)
         if read.end > offset:
             turns = extend(turns, read.lines, count)
@@ -177,11 +216,38 @@ class TranscriptCache:
                 self.fold_up(key, path, fold, start, row_of)
             finally:
                 lock.release()
-        Thread(target=run, daemon=True).start()
+        self.later(run)
+
+    def later(self, job: Callable[[], None]) -> None:
+        """Queues a long read for the one thread that catches up, so requests share the interpreter with one read at a time."""
+        with self.guard:
+            self.behind.append(job)
+            if self.catching_up:
+                return
+            self.catching_up = True
+        Thread(target=self.catch_up, daemon=True).start()
+
+    def catch_up(self) -> None:
+        try:
+            while (job := self.next_behind()) is not None:
+                job()
+        except BaseException:
+            with self.guard:
+                self.catching_up = False
+            raise
+
+    def next_behind(self) -> Callable[[], None] | None:
+        with self.guard:
+            if self.behind:
+                return self.behind.popleft()
+            self.catching_up = False
+            return None
 
     def fold_up(self, key: tuple, path: Path, fold, start, row_of: Callable):
         offset, state = self.last(key, start)
-        size = size_of(path) or 0
+        size = size_of(path)
+        if size is None:
+            return state
         if size < offset:
             offset, state = 0, start()
         if size > offset:
