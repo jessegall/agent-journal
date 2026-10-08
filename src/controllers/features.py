@@ -10,6 +10,8 @@ from controllers.marks import action
 
 
 SETTING_KEYS = Extension()
+SETTINGS_CHANGED = Extension()
+SECRET_CHECKS = Extension()
 
 
 class Features(Controller):
@@ -42,8 +44,9 @@ class Features(Controller):
         refuse_a_secret_that_runs_commands(self.record, name, {key: value})
         before = self._held(name, key)
         self.record.change_setting(name, {key: setting_value(value)})
-        import features
-        features.settings_changed(self.record, [name], self.actor)
+        changed = SETTINGS_CHANGED.keyed().get(name)
+        if changed:
+            changed(self.record, self.actor)
         if self.actor == AGENT and self._held(name, key) != before:
             from controllers.types import Agents
             Agents(self.record, actor=self.actor)._mark_primary(f"Changed {name}.{key} from {before} to {self._held(name, key)}", icon="settings")
@@ -77,14 +80,11 @@ def refuse_a_secret(name: str, keys, actor: str) -> None:
         raise Refused(f"only you pick the key of {name}, under Integrations in the viewer")
 
 
-def refuse_a_secret_that_runs_commands(record, name: str, values: dict) -> None:
-    """The key of an integration is for that integration alone: a secret that lets commands use it is not picked for one."""
-    from features.secrets.controller import Secrets
-    from features.secrets.resource import SecretField
+def refuse_a_secret_that_runs_commands(record, name: str, values) -> None:
+    """The key of an integration is for that integration alone; each check the secrets feature registered refuses a secret that lets commands use it."""
     for key in secrets_in(name, values):
-        for secret in Secrets(record, actor=SYSTEM).rows.standing():
-            if secret.programs and any(SecretField.from_json(raw).variable == values[key] for raw in secret.secret_fields):
-                raise Refused(f"the secret {secret.title} lets commands use it, so it cannot be the key of {name}; make one for {name} alone, with no command")
+        for check in SECRET_CHECKS.each(record):
+            check(record, name, values[key])
 
 
 def writes_a_secret(body: dict) -> bool:

@@ -29,11 +29,10 @@ def settings(record: Record) -> dict:
 
 
 def apply(record: Record, body: dict, actor: str) -> dict:
-    for name, values in body.items():
-        if isinstance(values, dict):
-            check_choices(name, values)
-            refuse_a_secret(name, values, actor)
-            refuse_a_secret_that_runs_commands(record, name, values)
+    for name, values in ((n, v) for n, v in body.items() if isinstance(v, dict)):
+        check_choices(name, values)
+        refuse_a_secret(name, values, actor)
+        refuse_a_secret_that_runs_commands(record, name, values)
     before = switches(record)
     for key, value in body.items():
         if key == Record.features and isinstance(value, dict):
