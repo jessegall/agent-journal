@@ -18,7 +18,7 @@ async function closedPort() {
 }
 
 async function connectTo(page, url, address) {
-    journal("feature", "switch", "connection");
+    journal("feature", "switch", "connection", "--on");
     await page.goto(`${url}#/main/settings`);
     await page.getByRole("textbox", {name: "Find a setting in every tab"}).fill(ADDRESS);
     const field = page.getByRole("textbox", {name: ADDRESS});
@@ -89,7 +89,7 @@ await runScenarios(process.argv[2], {
         }
     },
     async "the connection card tells what connecting would send before anything is sent"(page, url) {
-        journal("feature", "switch", "connection");
+        journal("feature", "switch", "connection", "--on");
         const sent = [];
         await page.route(/\/api\/main\/environment\/connection$/, (route) =>
             reply(route, {address: "", connected: false, release: "", step: "", travels: {files: 214, bytes: 1363148, environments: ["a", "b", "c"]}})
@@ -104,7 +104,7 @@ await runScenarios(process.argv[2], {
         if (!(await card(page).getByRole("button", {name: "Connect", exact: true}).isDisabled())) throw new Error("Connect was open with no address typed");
     },
     async "a server connected from the card is shown as connected and can be disconnected"(page, url) {
-        journal("feature", "switch", "connection");
+        journal("feature", "switch", "connection", "--on");
         let state = {address: "", connected: false, release: "", step: "", travels: {files: 3, bytes: 900, environments: ["main"]}};
         await page.route(/\/api\/main\/environment\/connection$/, (route) => reply(route, state));
         await page.route(/\/api\/main\/environment\/connect$/, (route) => {
@@ -123,7 +123,7 @@ await runScenarios(process.argv[2], {
         await page.getByText(/Not connected/).waitFor();
     },
     async "a copy that has joined a server says so in the bar, with how it stands and when it last synced"(page, url) {
-        journal("feature", "switch", "connection");
+        journal("feature", "switch", "connection", "--on");
         await page.route(/\/api\/main\/environment\/connection$/, (route) =>
             reply(route, {address: "https://journal.example.com", connected: true, release: "same", step: "in step", role: "your copy", synced_at: Date.now() / 1000 - 180, travels: {files: 1, bytes: 1, environments: []}})
         );
@@ -133,7 +133,7 @@ await runScenarios(process.argv[2], {
         });
     },
     async "a journal that runs on a server says in the bar that it is the server"(page, url) {
-        journal("feature", "switch", "connection");
+        journal("feature", "switch", "connection", "--on");
         await page.route(/\/api\/main\/environment\/connection$/, (route) =>
             reply(route, {address: "", connected: false, release: "", step: "", role: "the server", synced_at: 0, travels: {files: 1, bytes: 1, environments: []}})
         );
