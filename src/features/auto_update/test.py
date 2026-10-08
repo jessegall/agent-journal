@@ -180,6 +180,8 @@ def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_pa
     profile = (home / ".bash_profile").read_text()
     assert "open a new terminal" in told and profile.count(ON_PATH) == 1 and 'export PATH="$HOME/.local/bin:$PATH"' in profile, \
         "a journal command off the PATH puts its folder on the PATH once, in the shell's own profile, and says so"
+    monkeypatch.setenv("PATH", f"{home / '.local' / 'bin'}:/usr/bin")
+    assert put_on_path(home / ".local" / "bin") == "", "a folder already on the PATH is left as it is"
 
 
 def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_passes_nothing(tmp_path):
@@ -478,6 +480,59 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     assert ran.returncode != 0 and "ModuleNotFoundError" in ran.stderr, "an install that was already healed and still has no package fails loudly instead of looping"
     ran = subprocess.run([sys.executable, str(broken / "install.py")], env={"PATH": "/usr/bin:/bin", install.REPOSITORY_ENV: str(tmp_path / "no-repository")}, capture_output=True, text=True, timeout=60)
     assert "could not be fetched" in str(ran.stderr), "an installer with no package beside it and no source to fetch from says what is missing"
+
+    project = tmp_path / "legacy"
+    legacy = project / ".journal"
+    (legacy / "src").mkdir(parents=True)
+    (legacy / "src" / "VERSION").write_text("2.1.0")
+    (project / "CLAUDE.md").write_text("# Notes\n")
+    assert install.copy_legacy_managed(project, legacy)[0].startswith("Managed files from before this update were copied to .journal/attic/before-update-2.1.0-"), \
+        "managed files an older build never recorded are copied aside before the first update that records them"
+    assert (legacy / "runtime" / managed.LEGACY_COPY_MARKER).read_text().startswith(".journal/attic/"), "and the copy is named for the announcement"
+    managed.remember_managed(project, legacy)
+    assert install.copy_legacy_managed(project, legacy) == [], "once the files are recorded nothing more is copied"
+    (project / "CLAUDE.md").write_text("# Notes, rewritten by the journal\n")
+    managed.remember_rewritten(project, legacy, project / "CLAUDE.md")
+    assert managed.changed_managed(project, legacy) == [] and managed.remembered_unchanged(project, legacy, project / "CLAUDE.md"), \
+        "a file the journal rewrote itself is remembered as it now is, not taken for the user's change"
+
+    with monkeypatch.context() as patch:
+        patch.setattr(install, "listed_variables", lambda: (_ for _ in ()).throw(OSError("no git")))
+        assert install.repository_variables() == frozenset(), "without git no variable is dropped"
+    silent = tmp_path / "silent.py"
+    silent.write_text("import sys\nsys.exit(3)\n")
+    assert install.start_refused(silent, legacy) == "it exited with 3 and printed nothing", "a build that will not start and says nothing is named by its exit"
+    assert install.pack(legacy) == f"the Python is already in {install.ARCHIVE}", "a journal whose Python is already packed is not packed again"
+    with monkeypatch.context() as patch:
+        patch.setattr(install, "finish", lambda site, site_root: [f"finished {site.name} in {site_root.name}"])
+        assert install.main(["finish", str(project)]) == ["finished legacy in .journal"], "the finish word ends an install begun by an older installer"
+
+    started = []
+
+    class Replaced(Exception):
+        pass
+
+    def replaced(program, argv):
+        started.append(argv[1])
+        raise Replaced()
+    with monkeypatch.context() as patch:
+        package = tmp_path / "healing"
+        (package / install.SRC).mkdir(parents=True)
+        (package / install.SRC / "install.py").write_text("# moved\n")
+        patch.setattr(install, "PACKAGE", package)
+        patch.setattr(install.os, "execv", replaced)
+        patch.setattr(install.os, "execve", lambda program, argv, env: started.append((argv[1], env[install.HEALED])))
+        with pytest.raises(Replaced):
+            install.heal()
+        (package / install.SRC / "install.py").unlink()
+        patch.setattr(install, "fetch", lambda into: ("", "no network"))
+        with pytest.raises(SystemExit, match="could not be fetched: no network"):
+            install.heal()
+        patch.setattr(install, "fetch", lambda into: ("abc", ""))
+        patch.setattr(install, "refresh", lambda source, target: ([], []))
+        install.heal()
+    assert started == [str(package / install.SRC / "install.py"), (str(package / "install.py"), "1")], \
+        "a heal runs the installer under src/ when it is there, else fetches the package and runs again marked as healed"
 
 
 def test_a_hook_never_waits_more_than_a_moment_for_a_server_that_is_down_slow_or_refusing(tmp_path):
