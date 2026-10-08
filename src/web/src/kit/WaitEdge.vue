@@ -4,7 +4,6 @@ import Chip from "./Chip.vue";
 import Icon from "./Icon.vue";
 
 const NOTE_SECONDS = 5;
-const TAIL = [0, 1, 2, 3, 4, 5];
 const props = defineProps({waiting: {type: Object, default: null}});
 const emit = defineEmits(["list"]);
 const note = ref(null);
@@ -41,12 +40,7 @@ onUnmounted(() => clearTimeout(timer));
 <template>
     <div :class="['wait-edge', {waiting: Boolean(waiting), lit}]">
         <slot />
-        <svg class="edge" aria-hidden="true">
-            <rect class="ring" pathLength="1" />
-            <template v-for="i in TAIL" :key="i">
-                <rect class="dash" pathLength="1" :style="{'--i': i}" />
-            </template>
-        </svg>
+        <span class="glow" aria-hidden="true" />
         <template v-if="note">
             <span class="note">
                 <Icon name="tick" :size="11" />
@@ -71,53 +65,22 @@ onUnmounted(() => clearTimeout(timer));
     border-radius: var(--edge-radius, 12px);
 }
 
-.edge {
+.glow {
     position: absolute;
-    inset: -1px;
-    width: calc(100% + 2px);
-    height: calc(100% + 2px);
-    overflow: visible;
+    inset: 0;
+    border-radius: inherit;
     pointer-events: none;
     opacity: 0;
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--accent-text) 30%, transparent),
+        0 0 16px 3px color-mix(in srgb, var(--accent-text) 45%, transparent);
 }
 
-.edge rect {
-    x: 1px;
-    y: 1px;
-    width: calc(100% - 2px);
-    height: calc(100% - 2px);
-    rx: var(--edge-radius, 12px);
-    fill: none;
-    stroke: var(--accent-text);
-    stroke-width: 2px;
+.waiting .glow {
+    animation: breathe 3.6s ease-in-out infinite;
 }
 
-.ring {
-    opacity: 0;
-}
-
-.dash {
-    stroke-dasharray: 0.05 0.95;
-    stroke-dashoffset: 0;
-    opacity: calc(1 - var(--i) * 0.17);
-    animation: lap 8s cubic-bezier(0.35, 0.15, 0.65, 0.85) infinite;
-    animation-delay: calc(-8s + var(--i) * 0.4s);
-}
-
-.waiting .edge {
-    opacity: 1;
-}
-
-.lit .edge {
-    opacity: 1;
-}
-
-.lit .dash {
-    display: none;
-}
-
-.lit .ring {
-    opacity: 0.85;
+.lit .glow {
     animation: settle 1.6s ease-out forwards;
 }
 
@@ -182,9 +145,14 @@ onUnmounted(() => clearTimeout(timer));
     white-space: nowrap;
 }
 
-@keyframes lap {
-    to {
-        stroke-dashoffset: -1;
+@keyframes breathe {
+    0%,
+    100% {
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 0.85;
     }
 }
 
@@ -199,13 +167,9 @@ onUnmounted(() => clearTimeout(timer));
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .dash {
+    .waiting .glow {
         animation: none;
-        display: none;
-    }
-
-    .waiting .ring {
-        opacity: 0.6;
+        opacity: 0.5;
     }
 }
 </style>
