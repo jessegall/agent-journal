@@ -55,4 +55,8 @@ class DevFaultsDetails(FeatureDetails):
             title="{{title}}",
             brief="{{summary}}",
         ),
+        Line(
+            name="overdue",
+            title="{{title}}, seen {{times}} times with no to-do open for it: journal todo create \"{{title}}\" before any other write",
+        ),
     ]
