@@ -4,8 +4,10 @@ import Icon from "./Icon.vue";
 
 <template>
     <div class="handled-note">
-        <Icon name="check" :size="12" />
-        <span class="handled-label">Closed</span>
+        <span class="handled-label">
+            <Icon name="check" :size="12" />
+            Closed
+        </span>
         <span class="handled-text"><slot /></span>
     </div>
 </template>
@@ -13,8 +15,8 @@ import Icon from "./Icon.vue";
 <style scoped>
 .handled-note {
     display: flex;
-    align-items: baseline;
-    gap: 6px;
+    flex-direction: column;
+    gap: 2px;
     padding: 6px 8px;
     border-radius: 7px;
     background: color-mix(in srgb, var(--tone-good) 10%, transparent);
@@ -22,13 +24,10 @@ import Icon from "./Icon.vue";
     font-size: 12px;
 }
 
-.handled-note .ico {
-    flex: none;
-    align-self: center;
-}
-
 .handled-label {
-    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-weight: 500;
 }
 

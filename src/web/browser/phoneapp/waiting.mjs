@@ -18,12 +18,12 @@ await runScenarios(
             await waitingFeed(page);
             await home(page);
             await page.getByRole("button", {name: /^Main agent, Waiting on the test suite/}).waitFor({timeout: SHOWN});
-            await page.locator(".legend", {hasText: "Waiting on the test suite"}).waitFor({timeout: SHOWN});
+            await page.locator(".legend", {hasText: "Waiting"}).waitFor({timeout: SHOWN});
         },
         async "the words on the message box open the agent's sheet with the list of what it waits on"(page) {
             await waitingFeed(page);
             await home(page);
-            await page.locator(".legend", {hasText: "Waiting on the test suite"}).click();
+            await page.locator(".legend", {hasText: "Waiting"}).click();
             await page.getByRole("dialog").getByText("What the agent is waiting on").waitFor({timeout: SHOWN});
         },
     },

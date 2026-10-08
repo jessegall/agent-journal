@@ -5,17 +5,23 @@
 <style scoped>
 .wait-mark {
     flex: none;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    border: 1.6px solid var(--accent-text);
-    border-right-color: transparent;
-    animation: wait-turn 2.4s linear infinite;
+    background: var(--tone-warn);
+    animation: wait-pulse 1.6s ease-in-out infinite;
 }
 
-@keyframes wait-turn {
-    to {
-        transform: rotate(360deg);
+@keyframes wait-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 color-mix(in oklab, var(--tone-warn) 55%, transparent);
+        opacity: 1;
+    }
+
+    50% {
+        box-shadow: 0 0 0 5px transparent;
+        opacity: 0.6;
     }
 }
 

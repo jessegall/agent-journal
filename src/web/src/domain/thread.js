@@ -18,6 +18,23 @@ const hasParent = (c) =>
         return type !== "comment" && meta(type);
     });
 
+const quotedLines = (text) =>
+    text
+        .split("\n")
+        .map((line) => `> ${line}`)
+        .join("\n");
+
+const asked = (c, comments) => comments.find((p) => !p.deleted && p !== c && c.refs.includes(p.ref));
+
+function onItsRow(c, comments) {
+    if (hasParent(c)) return c;
+    const parent = asked(c, comments);
+    const row = parent && onItsRow(parent, comments);
+    if (!row) return null;
+    const passage = quotesOf(row) || quotedLines(row.brief);
+    return {...c, refs: [...c.refs, ...row.refs.filter((ref) => ref !== c.ref)], brief: c.brief.startsWith(">") ? c.brief : `${passage}\n\n${c.brief}`};
+}
+
 const receipt = (m) => {
     const refs = filed(m);
     return {
@@ -142,7 +159,11 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
     const turns = [
         ...live.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map((m) => ({...m, who: m.seen[0]})),
         ...live.filter((m) => m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m, rows)).map(receipt),
-        ...rows.comment.filter((c) => !c.deleted && hasParent(c) && !c.data.visitor).map((c) => ({...c, who: c.seen[0]})),
+        ...rows.comment
+            .filter((c) => !c.deleted && !c.data.visitor)
+            .map((c) => onItsRow(c, rows.comment))
+            .filter(Boolean)
+            .map((c) => ({...c, who: c.seen[0]})),
         ...visitorComments(rows.comment),
         ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
         ...(rows.suggestion || []).filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),

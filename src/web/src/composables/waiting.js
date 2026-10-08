@@ -3,12 +3,10 @@ import {rows} from "../sync/rows.js";
 import {stateOf, waitingOn} from "../domain/agentState.js";
 import {agent} from "./leadAgent.js";
 import {useHelpers} from "./helpers.js";
-import {useNow} from "./now.js";
-
-const MINUTE = 30;
+import {useSharedNow} from "./now.js";
 
 export function useWaiting(helpers = useHelpers().rows) {
-    const now = useNow(MINUTE);
+    const now = useSharedNow();
     const waiting = computed(() => (stateOf(agent.value, rows("work")) === "waiting" ? waitingOn(agent.value, rows("work"), helpers.value, now.value) : null));
     const open = ref(false);
     const anchor = ref(null);

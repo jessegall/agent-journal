@@ -55,6 +55,8 @@ export function journal(...words) {
 
 export const numberOf = (output) => JSON.parse(output.slice(output.indexOf("{"), output.indexOf("\n}") + 2)).n;
 
+export const shot = (page, name) => (process.env.SHOT_DIR ? page.screenshot({path: `${process.env.SHOT_DIR}/${name}.png`}) : null);
+
 export async function drag(page, source, target) {
     await source.scrollIntoViewIfNeeded();
     const from = await source.boundingBox();

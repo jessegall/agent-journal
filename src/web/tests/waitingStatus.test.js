@@ -17,17 +17,17 @@ describe("the waiting word and its line", () => {
         const works = [work({awaiting: "3 helpers", awaiting_on: "helper:1,helper:2,helper:3"})];
         const helpers = [helper(1, "running"), helper(2, "running"), helper(3, "running")];
         expect(wordOf(stateOf(agent(), works))).toBe("Waiting");
-        expect(waitingOn(agent(), works, helpers, NOW).line).toBe("on 3 helpers · 4 min");
-        expect(lineOf(agent(), works, false, helpers)).toMatch(/^on 3 helpers · \d+ (min|h)$/);
+        expect(waitingOn(agent(), works, helpers, NOW).line).toBe("on 3 helpers · 4m 00s");
+        expect(lineOf(agent(), works, false, helpers)).toMatch(/^on 3 helpers · (\d+h )?(\d+m )?\d+s$/);
     });
 
     test("a wait on a run names the run, and each report lowers the helper count", () => {
-        expect(waitingOn(agent(), [work()], [], NOW).line).toBe("on the test suite · 4 min");
+        expect(waitingOn(agent(), [work()], [], NOW).line).toBe("on the test suite · 4m 00s");
         const two = waitingFor(
             {text: "3 helpers", on: "helper:1,helper:2,helper:3", since: NOW - 60},
             {helpers: [helper(1, "reported"), helper(2, "running"), helper(3, "running")], now: NOW}
         );
-        expect(two.line).toBe("on 2 helpers · 1 min");
+        expect(two.line).toBe("on 2 helpers · 1m 00s");
         expect(two.items.map((item) => item.reported)).toEqual([true, false, false]);
     });
 
@@ -38,7 +38,7 @@ describe("the waiting word and its line", () => {
 
     test("the phone says waiting only when the agent is neither working nor paused", () => {
         const running = {awaiting: {text: "the test suite", on: "", since: NOW - 120}, helpers: []};
-        expect(phoneWaiting({agent: "idle", running}, NOW).line).toBe("on the test suite · 2 min");
+        expect(phoneWaiting({agent: "idle", running}, NOW).line).toBe("on the test suite · 2m 00s");
         expect(phoneWaiting({agent: "working", running}, NOW)).toBeNull();
         expect(phoneWaiting({agent: "idle", running: {...running, paused: true}}, NOW)).toBeNull();
     });
@@ -58,11 +58,11 @@ describe("the message box edge", () => {
     test("a wait puts what it waits on on the border, and an ended wait lights it once", async () => {
         const waiting = waitingFor({text: "the test suite", on: "", since: NOW - 60}, {now: NOW});
         const {into, state} = mounted(waiting);
-        expect(into.querySelector(".legend").textContent).toContain("Waiting on the test suite");
+        expect(into.querySelector(".legend").textContent).toContain("Waiting");
         expect(into.querySelector(".wait-edge").classList.contains("waiting")).toBe(true);
         state.waiting = null;
         await flush();
-        expect(into.querySelector(".legend").textContent).toContain("The test suite finished");
+        expect(into.querySelector(".note").textContent).toContain("The test suite finished");
         expect(into.querySelector(".wait-edge").classList.contains("lit")).toBe(true);
     });
 
@@ -71,14 +71,22 @@ describe("the message box edge", () => {
         const {into, state} = mounted(wait([helper(1, "running"), helper(2, "running")]));
         state.waiting = wait([helper(1, "reported"), helper(2, "running")]);
         await flush();
-        expect(into.querySelector(".legend").textContent).toContain("1 helper reported, 1 still at work");
+        expect(into.querySelector(".note").textContent).toContain("1 helper reported, 1 still at work");
         state.waiting = null;
         await flush();
-        expect(into.querySelector(".legend").textContent).toContain("All 2 helpers reported");
+        expect(into.querySelector(".note").textContent).toContain("All 2 helpers reported");
     });
 
     test("with no wait there is no label", () => {
         const {into} = mounted(null);
         expect(into.querySelector(".legend")).toBeNull();
+    });
+});
+
+describe("the time a wait has lasted", () => {
+    test("counts seconds, and each item carries it", () => {
+        const two = waitingFor({text: "2 helpers", on: "helper:1,helper:2", since: NOW - 67}, {helpers: [helper(1, "running"), helper(2, "running")], now: NOW});
+        expect(two.line).toBe("on 2 helpers · 1m 07s");
+        expect(two.items.map((item) => item.out)).toEqual(["1m 07s", "1m 07s"]);
     });
 });

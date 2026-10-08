@@ -529,18 +529,18 @@ watch(
                         </div>
                         <Transition name="status">
                             <div
-                                v-if="busy || waiting"
+                                v-if="busy && !waiting"
                                 class="thread-turn busy"
-                                :aria-label="waiting ? `The agent is waiting ${waiting}` : `The agent is ${activity}`"
+                                :aria-label="`The agent is ${activity}`"
                             >
                                 <div class="thread-meta">
                                     <Dot kind="started" solid :size="6" />
-                                    <template v-if="thought && !waiting">
+                                    <template v-if="thought">
                                         <span>thinking</span>
                                         <span class="thread-meta-on thought">{{ thought }}</span>
                                     </template>
                                     <template v-else>
-                                        <RunningCommand :idle="waiting ? `Waiting ${waiting}` : activity" />
+                                        <RunningCommand :idle="activity" />
                                     </template>
                                 </div>
                             </div>
