@@ -19,7 +19,8 @@ async function closedPort() {
 
 async function connectTo(page, url, address) {
     journal("feature", "switch", "connection");
-    await page.goto(`${url}#/main/settings?q=${encodeURIComponent(ADDRESS)}`);
+    await page.goto(`${url}#/main/settings`);
+    await page.getByRole("textbox", {name: "Find a setting in every tab"}).fill(ADDRESS);
     const field = page.getByRole("textbox", {name: ADDRESS});
     await field.waitFor({timeout: 30000});
     const saved = page.waitForResponse((answer) => answer.request().method() === "POST" && /\/api\/main\/settings$/.test(answer.url()));
