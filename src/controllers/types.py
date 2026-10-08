@@ -19,14 +19,13 @@ from controllers.notices import Notices
 from controllers.reactions import Reactions
 from controllers.tools import Tools
 from controllers.features import Features
-from controllers.connections import Connections
 from controllers.plugins import Plugins
 from controllers.environments import Environments
 from controllers.nudges import Nudges
 
 
 register(Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Questions, Comments, Agents,
-         Notifications, Notices, Reactions, Tools, Features, Connections, Plugins, Environments, Nudges)
+         Notifications, Notices, Reactions, Tools, Features, Plugins, Environments, Nudges)
 
 
 WARM_PAUSE = 0.02

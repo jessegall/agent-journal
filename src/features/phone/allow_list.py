@@ -102,7 +102,6 @@ ALLOWED = (
     *actions("check", "all attach comment delete detach link move read_all reopen retire show unlink update"),
     *actions("collection", "add all attach close comment create delete detach link move read_all remove reopen show unlink update"),
     *actions("comment", "all attach delete detach done link move read_all reopen reply show unlink update"),
-    *actions("connection", "all attach comment complete delete detach link move read_all reopen show unlink update"),
     *actions("critique", "all attach comment delete detach finish link move read_all reopen show unlink update"),
     *actions("doc", "all attach comment create delete detach draft final hide keep link move read_all reopen revision show supersede unhide unlink update"),
     *actions("dump", "all attach choose close comment create decline delete detach direct dismiss link move read_all remove reopen show stop unlink update"),
