@@ -131,6 +131,11 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
         "the main agent reading the helper's files is never told to rebase"
     commit(project, "again.txt", "and again\n")
     assert helper().startswith("phone-connection moved 2 commits"), "a new tip is told again"
+    strayed = {**read, "cwd": str(folder)}
+    assert "another checkout" in handle(provider, record.root, record.env, strayed).get("reason", ""), \
+        "the main agent sitting in a helper's checkout is refused before a compaction can move it there"
+    going_home = {**strayed, "tool_name": "Bash", "tool_input": {"command": f"cd {project}"}}
+    assert "another checkout" not in handle(provider, record.root, record.env, going_home).get("reason", ""), "going back is let through"
 
 
 def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():

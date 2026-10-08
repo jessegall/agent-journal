@@ -26,6 +26,11 @@ class HelperWorktreesDetails(FeatureDetails):
         rebase. Once it has rebased onto the working branch, journal worktree take <n>
         cherry-picks its commits onto it, and journal worktree drop <n> removes the worktree and
         its branch.
+
+        The main agent stays in its own checkout: while its working folder sits in another one,
+        every tool call is refused until it goes back with cd, since a compaction there would
+        move it into that checkout's environment. git -C <folder> or a subshell works in another
+        checkout without moving.
     """
 
     lines = [
@@ -34,5 +39,11 @@ class HelperWorktreesDetails(FeatureDetails):
             title="{{working}} moved {{commits}} since your worktree was cut: rebase onto {{working}} in {{path}} before you report. "
                   "This one call was held back to tell you; run it again after.",
             reach=Reach.BOTH,
+        ),
+        Line(
+            name="strayed",
+            title="Your working folder {{folder}} is another checkout than your own, and a new start there would move you into "
+                  "another environment. Go back with cd {{home}} first; work in another checkout with git -C <folder> or a "
+                  "subshell, ( cd <folder> && … ).",
         ),
     ]
