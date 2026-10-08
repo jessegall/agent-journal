@@ -1,5 +1,6 @@
 import re
 import time
+from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 
 import controllers.types as types_module
@@ -20,6 +21,7 @@ CHECKPOINT = re.compile(r"\s*\(checkpoint\)\s*$", re.IGNORECASE)
 PHASE_ROWS = Extension()
 PHASE_STARTS = Extension()
 PLAN_STARTS = Extension()
+CATCHING_UP: ContextVar[frozenset[str]] = ContextVar("catching_up", default=frozenset())
 PHASES, TODOS = "phases", "todos"
 STAGES = (PHASES, TODOS)
 DEPTHS = {
@@ -299,7 +301,7 @@ class Plans(Controller):
 
     def _step(self, plan) -> bool:
         phase = plan.current_phase
-        if plan.status != ACTIVE or phase is None or not self._complete(phase):
+        if plan.completed or plan.status != ACTIVE or phase is None or not self._complete(phase):
             return False
         i = plan.current
         last = i == len(plan.phases)
@@ -307,6 +309,8 @@ class Plans(Controller):
         plan.status = status_after(last, waits)
         plan.current = i if last or waits else i + 1
         self.save(plan, "updated", phase=i, complete=True, status=plan.status, passed=bool(phase[PHASE.checkpoint]) and not waits)
+        if self.rows.peek(plan.n).completed:
+            return False
         if last:
             self.complete(plan.n, how="every row in every phase is done")
         elif not waits:
@@ -314,10 +318,20 @@ class Plans(Controller):
         return not (last or waits)
 
     def _catch_up(self) -> None:
-        for running in self._running():
-            plan = self.load(running.n)
-            while self._step(plan):
-                pass
+        """Walks every running plan on as far as its closed rows allow, one pass at a time per record."""
+        home = str(self.record.home)
+        walking = CATCHING_UP.get()
+        # A step's own save raises the event that asks for a catch-up; the pass already walking finishes the job.
+        if home in walking:
+            return
+        entered = CATCHING_UP.set(walking | {home})
+        try:
+            for running in self._running():
+                plan = self.load(running.n)
+                while self._step(plan):
+                    pass
+        finally:
+            CATCHING_UP.reset(entered)
 
     def _user_only(self, word: str) -> None:
         if self.actor == AGENT:

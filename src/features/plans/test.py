@@ -200,7 +200,7 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
         "once only blocked rows are left in a phase, every later phase's rows are offered, and the phase stays open until its row closes"
 
 
-def test_a_plan_started_with_its_rows_already_closed_completes_itself(env):
+def test_a_plan_started_with_its_rows_already_closed_completes_itself(env, monkeypatch):
     record, todos, rows, by_agent, by_user = env.record, env.todos, env.rows, env.by_agent, env.by_user
     late = by_agent.create("already done", goal="nothing left to do")
     by_agent.phase(late.n, "only phase", when="its row is closed")
@@ -210,6 +210,35 @@ def test_a_plan_started_with_its_rows_already_closed_completes_itself(env):
     todos.complete(row.n, "done before the plan ran")
     by_user.start(by_user.approve(late.n).n)
     assert by_agent.load(late.n).data["status"] == "done", "its rows already closed, it completes itself when started"
+
+    saving = Plans.save
+
+    def ran_on(plan_save):
+        last = todos.create("its last row")
+        walked = by_agent.create(f"walked {plan_save.__name__}", goal="the last row closes it")
+        by_agent.phase(walked.n, "only phase", when="its row is closed")
+        by_agent.place(walked.n, 1, [last.n])
+        by_agent.ready(walked.n)
+        by_user.start(by_user.approve(walked.n).n)
+        monkeypatch.setattr(Plans, "save", plan_save)
+        todos.complete(last.n, "the last row closes")
+        Plans(record, actor=SYSTEM)._catch_up()
+        monkeypatch.setattr(Plans, "save", saving)
+        return by_agent.load(walked.n)
+
+    def reentering(self, r, action, **event):
+        saved = saving(self, r, action, **event)
+        if event.get("complete"):
+            self._catch_up()
+        return saved
+
+    def closed_elsewhere(self, r, action, **event):
+        saved = saving(self, r, action, **event)
+        if event.get("complete") and not self.rows.peek(r.n).completed:
+            self.complete(r.n, how="closed by another handler")
+        return saved
+    assert ran_on(reentering).completed, "a catch-up its own save asks for again runs once, and closes the plan without refusing itself"
+    assert ran_on(closed_elsewhere).outcome == "closed by another handler", "a catch-up stops at a plan something else closed while it walked"
 
     from features.plans.resource import ABANDONED
     from migrations.m0056_plans_with_open_rows import run as reopen_plans
