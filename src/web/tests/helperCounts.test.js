@@ -1,3 +1,4 @@
+// @vitest-environment node
 import {describe, expect, it} from "vitest";
 import {agentCounts, helperCounts, isWorking} from "../src/domain/helpers.js";
 

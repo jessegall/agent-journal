@@ -1,3 +1,4 @@
+// @vitest-environment node
 import {describe, expect, test} from "vitest";
 import {tunnelState} from "../src/domain/tunnelState.js";
 

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import {expect, test} from "vitest";
 import {replyQuote} from "../src/format/quote.js";
 

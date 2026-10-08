@@ -1,3 +1,4 @@
+// @vitest-environment node
 import {describe, expect, test} from "vitest";
 import {navGroups, navSections, same, settingChanges, timingEvery, timingMarks, timingUnit, timingWords, untitled} from "../src/domain/settingsCatalog.js";
 

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import {expect, test} from "vitest";
 import {closeQuestion, closeUpdate, openQuestion, openUpdate, questionView, updateView} from "../src/state/overlays.js";
 

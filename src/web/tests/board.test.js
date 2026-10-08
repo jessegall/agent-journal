@@ -1,3 +1,4 @@
+// @vitest-environment node
 import {beforeEach, describe, expect, test, vi} from "vitest";
 import {laneTitle, lens, named, visibleLanes} from "../src/board/lanes.js";
 import {moveEffect, refused} from "../src/board/moves.js";
