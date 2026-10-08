@@ -10,6 +10,15 @@ FOLDER = "integration-data"
 
 
 @dataclass(frozen=True)
+class Choice(Loaded):
+    """Something you can pick that the service has, such as a workflow state of a team."""
+
+    id: str = ""
+    name: str = ""
+    team: str = ""
+
+
+@dataclass(frozen=True)
 class IntegrationState(Loaded):
     """What an integration learned on its last runs: kept beside the record, never in it, and written only by the journal."""
 
@@ -18,6 +27,7 @@ class IntegrationState(Loaded):
     cursor: str = ""
     paused_until: float = 0.0
     failures: int = 0
+    choices: tuple[Choice, ...] = ()
 
 
 def state_file(root: Path, name: str) -> Path:

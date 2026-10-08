@@ -40,6 +40,7 @@ class Features(Controller):
         if key not in known:
             raise Refused(f"{name} has no setting {key!r}; its settings are {', '.join(known)}")
         check_choices(name, {key: setting_value(value)})
+        refuse_unmet_needs(self.record, name, {key: setting_value(value)})
         refuse_a_secret(name, [key], self.actor)
         refuse_a_secret_that_runs_commands(self.record, name, {key: value})
         before = self._held(name, key)
@@ -67,6 +68,15 @@ def check_choices(name: str, values: dict) -> None:
     for setting in SETTING_KEYS.keyed().get(name, ()):
         if setting.name in values and not setting.allows(values[setting.name]):
             raise Refused(f"{name} {setting.name} is one of {', '.join(map(str, setting.choices))}, not {values[setting.name]!r}")
+
+
+def refuse_unmet_needs(record, name: str, values: dict) -> None:
+    """A setting that needs another one set first, such as sending status changes before any stage is mapped, is refused until that one is."""
+    held = {**record.setting(name, {}), **values}
+    for setting in SETTING_KEYS.keyed().get(name, ()):
+        if setting.needs and values.get(setting.name) and not held.get(setting.needs):
+            needed = next(other.title for other in SETTING_KEYS.keyed()[name] if other.name == setting.needs)
+            raise Refused(f"{setting.title} needs {needed.lower()} first")
 
 
 def secrets_in(name: str, keys) -> list[str]:

@@ -8,11 +8,14 @@ from resources.base import Refused
 TEAMS = "query { teams { nodes { id key name } } }"
 ISSUES = """query($after: String, $filter: IssueFilter) {
   issues(first: 50, after: $after, filter: $filter, orderBy: updatedAt) {
-    nodes { id identifier title description url updatedAt team { id } creator { name } assignee { isMe }
+    nodes { id identifier title description url updatedAt state { id } team { id } creator { name } assignee { isMe }
             comments { nodes { id body createdAt user { name } } } }
     pageInfo { hasNextPage endCursor }
   }
 }"""
+WORKFLOW = "query { workflowStates { nodes { id name team { id } } } }"
+UPDATE = "mutation($id: String!, $stateId: String!) { issueUpdate(id: $id, input: {stateId: $stateId}) { success } }"
+COMMENT = "mutation($issueId: String!, $body: String!) { commentCreate(input: {issueId: $issueId, body: $body}) { success } }"
 KNOWN = """query($filter: IssueFilter) {
   issues(first: 100, filter: $filter, includeArchived: true) { nodes { id identifier archivedAt team { id } assignee { isMe } } }
 }"""
@@ -64,10 +67,23 @@ class Issue(Loaded):
     url: str = ""
     updated: str = ""
     archived: str = ""
+    state: Reference = field(default_factory=Reference)
     team: Reference = field(default_factory=Reference)
     creator: Person = field(default_factory=Person)
     assignee: Person = field(default_factory=Person)
     comments: Comments = field(default_factory=Comments)
+
+
+@dataclass(frozen=True)
+class WorkflowState(Loaded):
+    id: str = ""
+    name: str = ""
+    team: Reference = field(default_factory=Reference)
+
+
+@dataclass(frozen=True)
+class WorkflowStates(Loaded):
+    nodes: tuple[WorkflowState, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -86,7 +102,9 @@ class Issues(Loaded):
 
 @dataclass(frozen=True)
 class Data(Loaded):
+    aliases: ClassVar[dict] = {"workflow": ("workflowStates",)}
     teams: Teams = field(default_factory=Teams)
+    workflow: WorkflowStates = field(default_factory=WorkflowStates)
     issues: Issues = field(default_factory=Issues)
 
 

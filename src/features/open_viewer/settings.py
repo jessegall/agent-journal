@@ -1,5 +1,5 @@
 import features
-from controllers.features import check_choices, refuse_a_secret, refuse_a_secret_that_runs_commands
+from controllers.features import check_choices, refuse_a_secret, refuse_a_secret_that_runs_commands, refuse_unmet_needs
 from controllers.types import Features, Nudges
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
@@ -31,6 +31,7 @@ def settings(record: Record) -> dict:
 def apply(record: Record, body: dict, actor: str) -> dict:
     for name, values in ((n, v) for n, v in body.items() if isinstance(v, dict)):
         check_choices(name, values)
+        refuse_unmet_needs(record, name, values)
         refuse_a_secret(name, values, actor)
         refuse_a_secret_that_runs_commands(record, name, values)
     before = switches(record)
