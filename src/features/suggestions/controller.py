@@ -44,7 +44,8 @@ class Suggestions(Controller):
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         waiting = self.rows.standing()
         if len(waiting) >= OPEN_SUGGESTIONS:
-            self._refuse(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}")
+            self._refuse(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}. "
+                         "Write the rest into your report as sections with journal report section <report n> \"<part>\" \"<body>\" and link it, or wait until the user answers one")
         declined = [s for s in self.rows.every() if s.decision == Decision.DECLINE and s.title.lower() == title.lower()]
         if declined and not data.pop("despite", None):
             s = declined[-1]

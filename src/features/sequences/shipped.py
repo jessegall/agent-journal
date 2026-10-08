@@ -175,7 +175,10 @@ CHECKING_THE_INSTRUCTION_FILES = ShippedSequence(
                              "suggest \"<the change>\" --brief \"<why, and the diff>\". Never edit the files yourself; the "
                              "user accepts a suggestion first, and the journal's block is only ever written by the journal. When an "
                              "accepted fix comes back as a to-do, apply it only where the lines still read as the diff shows; if they "
-                             "changed since, read the files again and propose the fix anew. "
+                             "changed since, read the files again and propose the fix anew. At most five suggestions wait at a time: "
+                             "when the limit refuses one, write the remaining fixes, each with its diff, into the report of the "
+                             "previous step as sections, link the report from the suggestions you did file, and go on; never leave "
+                             "the step unfinished. "
                              "Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 )
