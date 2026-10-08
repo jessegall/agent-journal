@@ -88,7 +88,7 @@ onMounted(fetchHooks);
             </section>
         </template>
         <template v-if="!loaded">
-            <Skeleton :count="2" label="Loading the hooks" />
+            <Skeleton :count="2" label="Loading the commands the agent runs" />
         </template>
         <template v-else-if="!events.length && !error">
             <p class="none">No hooks are set for this agent.</p>
