@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from surfaces.manifest import built_in
+
 import features
 from controllers.types import Agents, Todos
 from engine.transaction import WORK, undoable
@@ -105,7 +107,7 @@ globalThis.__DEMO_BUILD__ = "test";
 globalThis.location = {origin: "http://demo"};
 const {expand} = await import(process.argv[1] + "/moments.js");
 const {StandIn} = await import(process.argv[1] + "/standIn.js");
-const standIn = new StandIn(expand(JSON.parse(readFileSync(process.argv[2], "utf8"))));
+const standIn = new StandIn({...expand(JSON.parse(readFileSync(process.argv[2], "utf8"))), builtIn: JSON.parse(process.argv[3])});
 const todos = async () => (await standIn.answer("GET", "/api/t/todo?completed=1").json()).rows.map((row) => row.title);
 const first = await todos();
 const dashboard = await standIn.answer("GET", "/api/t/dashboard?types=todo&completed=1&last=25&events=100").json();
@@ -175,7 +177,7 @@ def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(t
     assert len(demo["moments"]) == 3
     assert len(set(demo["answers"])) < len(demo["moments"]) * len(demo["moments"][0]["answers"]), "an answer that did not change is stored once"
     assert not Scrubber().leaks(shipped.read_text()) and "/home/demo" in shipped.read_text()
-    done = subprocess.run(["node", "--input-type=module", "-e", BOOT, WEB.as_uri(), str(shipped)], capture_output=True, text=True, timeout=60)
+    done = subprocess.run(["node", "--input-type=module", "-e", BOOT, WEB.as_uri(), str(shipped), json.dumps(built_in())], capture_output=True, text=True, timeout=60)
     assert done.returncode == 0, done.stderr
     got = json.loads(done.stdout)
     assert got["first"] == ["first row"] and got["last"] == ["renamed row", "third row"], "stepping replays the recorded moments in order"
