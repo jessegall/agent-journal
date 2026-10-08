@@ -7,6 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import features
+from agents.terminal import launch_brief
 from controllers.types import Agents, Environments, Features, Messages, Nudges, Questions, Todos
 from engine.record import Record
 from engine.sessions import Sessions
@@ -29,7 +30,7 @@ from tests.conftest import fresh, refused
 
 def started(monkeypatch) -> list:
     calls = []
-    monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, env, agent, args: calls.append((cwd, env, agent, args)) or 1)
+    monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, env, agent, args: calls.append((cwd, env, agent, args, launch_brief(root, env).read_text())) or 1)
     monkeypatch.setattr("providers.codex.Codex.models", lambda self: ("gpt-5.5", "gpt-6-sol"))
     return calls
 
@@ -40,15 +41,17 @@ def test_a_helper_starts_on_its_provider_and_model_in_an_environment_kept_out_of
     record = fresh()
     said = Helpers(record, actor=AGENT).dispatch("Rhea Lovelace", "Profile the slow hooks", "codex", "gpt-5.5", brief="Time each hook")
     row = Helpers(record, actor=AGENT).all()[0]
-    (cwd, env, agent, args), = calls
+    (cwd, env, agent, args, kickoff), = calls
     assert (row.name, row.provider, row.model, row.environment) == ("Rhea Lovelace", "codex", "gpt-5.5", f"{record.env}-rhea-lovelace"), "the row names who, where and on what"
     assert (env, agent) == (f"{record.env}-rhea-lovelace", "codex") and args[args.index("--model") + 1] == "gpt-5.5", "it runs on the named provider and model"
-    assert "Profile the slow hooks" in args[-1] and "journal helper report" in args[-1], "the kickoff holds the job and how to report"
+    assert "Profile the slow hooks" in kickoff and "journal helper report" in kickoff, "the kickoff holds the job and how to report"
+    assert (str(launch_brief(record.root, env)) in args[-1], any("slow hooks" in arg for arg in args)) == (True, False), \
+        "the kickoff waits in a file beside the launch log and the command line only points at it, so pkill -f on a phrase of the job never ends a helper"
     from features.work_tracking.auto import automatic
     from controllers.types import Todos
     home = Record(record.root, f"{record.env}-rhea-lovelace")
     job, = Todos(home, actor=SYSTEM).all()
-    assert (job.title, job.brief, "journal todo start 1" in args[-1], automatic(home)) == ("Profile the slow hooks", "Time each hook", True, True), \
+    assert (job.title, job.brief, "journal todo start 1" in kickoff, automatic(home)) == ("Profile the slow hooks", "Time each hook", True, True), \
         "its job waits as a to-do on its own list, the kickoff names it, and auto mode keeps it going"
     from controllers.types import Facts
     Facts(record, actor=AGENT).create("The viewer runs on port 8421", keywords=["port"])
@@ -283,7 +286,7 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     assert plans.load(plan.n).delegated, "handing a helper a row of a plan's current phase delegates the plan"
     row = helpers.load(1)
     helper = Helpers(Record(repo.record.root, row.environment), actor=AGENT)
-    assert todos.load(fixed).assigned == row.ref and f"to-do {fixed}: fix the tunnel" in calls[0][3][-1], "the rows are handed over and the kickoff names them"
+    assert todos.load(fixed).assigned == row.ref and f"to-do {fixed}: fix the tunnel" in calls[0][4], "the rows are handed over and the kickoff names them"
     for closing in (lambda: todos.complete(fixed, "done here"), lambda: todos.strike(fixed, "not needed"), lambda: todos.unassign(fixed)):
         assert "journal helper stop 1 gives it back first" in refused(closing), "the agent that dispatched it cannot close, strike or take back a handed row"
     assert "assigned to helper:1" in refused(lambda: todos.start(fixed)), "nor start it"
@@ -306,7 +309,7 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     assert written_tests(repo.record, row) == ("test_tunnel.py",), "and the tests it wrote are listed, for the agent that dispatched it to run"
     assert f"closed to-do {fixed}" in Worktrees(repo.record, actor=SYSTEM).take(int(row.worktree)) and todos.load(fixed).completed, "taking its work closes it"
     assert unlanded(repo.record, row) == (), "once its commit is taken over by cherry-pick it counts as landed, though its hash is new"
-    named = re.search(r"journal (helper done <n> .*?<what landed>.)", calls[0][3][-1]).group(1).replace("<n>", str(dropped)).replace("<what landed>", "names the cause")
+    named = re.search(r"journal (helper done <n> .*?<what landed>.)", calls[0][4]).group(1).replace("<n>", str(dropped)).replace("<what landed>", "names the cause")
     assert run(["--root", str(repo.record.root), "--env", row.environment, *shlex.split(named)], out=io.StringIO(), err=io.StringIO()) == 0 and todos.load(dropped).pending, "the command the kickoff names marks the row"
     assert "gives it back first" in refused(lambda: todos.reopen(dropped, "not yet")), "the agent cannot unmark a row the helper marked"
     Todos(repo.record, actor=USER).reopen(dropped, "not yet")
@@ -337,9 +340,9 @@ def test_a_helper_launches_in_a_nested_checkout_named_by_its_path(monkeypatch, t
     (project / "docs").mkdir()
     helpers = Helpers(record, actor=AGENT)
     helpers.dispatch("Ada", "review the queue", "claude", "sonnet", checkout="platform")
-    (cwd, _, _, args), = calls
+    (cwd, _, _, _, kickoff), = calls
     assert (cwd, helpers.all()[0].checkout) == (project / "platform", str(project / "platform")), "it launches in the nested checkout, and the row names it"
-    assert str(project / "platform") in args[-1], "the kickoff names the checkout it works in"
+    assert str(project / "platform") in kickoff, "the kickoff names the checkout it works in"
     assert "not a git checkout" in refused(lambda: helpers.dispatch("Bo", "a job", "claude", "sonnet", checkout="docs")), "a folder that is no checkout is refused"
     assert "inside the project" in refused(lambda: helpers.dispatch("Bo", "a job", "claude", "sonnet", checkout=str(tmp_path))), "a checkout outside the project is refused"
     assert "either" in refused(lambda: helpers.dispatch("Bo", "a job", "claude", "sonnet", checkout="platform", worktree=True)), "a checkout and a worktree are never both given"
