@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.264.0 — Logins for the agent's browser, secrets on a server, and to-dos that close when their work lands
+- `journal secret login <name> <url>` opens a browser for you to log in once; the session is kept beside the secrets file, owner-only, and the agent's own browser tool starts logged in from its next start.
+- A journal on a server keeps its secrets in a folder of its own that no backup holds and a restore leaves in place. The owner can take a hosted journal down or upgrade it from the viewer, only signed release images are deployed (the first deploy included), and a nearly full disk ends in a clear refusal with a health address that says so.
+- A to-do a helper works closes by itself when the commit carrying its trailer reaches main, whatever route it took; `journal todo sweep` closes open rows whose work is already there, and `journal helper say <n> --todos` hands more rows to a running helper.
+- Helpers and subagents are told never to run the whole suite, and a guard refuses it unless the main agent allows it for that helper.
+- An update is no longer refused over your own text in AGENTS.md or CLAUDE.md, and the updates page offers Update anyway for anything else it warns about.
+- An open question is asked with its choices whenever they are known; history searches name the tool and the term in their chat mark.
+- The plan page shows which helper holds each phase and to-do; the orchestrator grid keeps each agent in a fixed cell with a timer; the phone has one picker at the top; an agent's inspector shows only that agent; the helpers menu shows a helper working again after a follow-up.
+- Viewer polish: the waiting glow eases again, the waiting badge is smaller, the status bar shows a running command on one line without seconds, project paths are shown relative, pasted images get names of their own, search can include archived items, and buttons show a spinner until answered.
+- Chat marks for dispatching, stopping and finishing helpers and for worktree changes; a helper's own list holds the to-dos it was handed; a mark when an agent changes a setting; a plugin's settle reaches its card on any agent row.
+- Requests stay within their budgets after an environment change or a worker reload; the demos open what they teach and pace themselves.
+
 ## 2.263.0 — A bar for each active plan, lists that show their real totals, and demos that play to the end
 - Each active plan has its own bar at the top, the plan you work first. A plan handed to helpers or a ticket's agent is marked: its bar reads 'With helper Hedy' (or 'Delegated' when no one is on it yet) and opens a card of who works on it. Such a plan keeps running beside yours; journal plan delegate <n> sets it by hand. From four plans on, the rest fold into one line below the bars. The phone shows one strip per plan.
 - Every list shows its real total, such as 'Showing 25 of 1,072', loads more as you scroll to its end, and has a Load more button; the phone's lists too.
