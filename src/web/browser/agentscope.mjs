@@ -26,6 +26,6 @@ await runScenarios(process.argv[2], {
         await page.getByText("No terminal of its own").waitFor({timeout: 10000});
         await page.waitForTimeout(2500);
         await shot(page, "subagent-terminal");
-        journal("agent", "delete", String(agent), "cleaning up");
+        journal("agent", "delete", String(agent), "--why", "cleaning up");
     },
 });
