@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, loginWords, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
+import {textOf, boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, loginWords, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
 
 const NOW = Date.now() / 1000;
 
@@ -21,6 +21,11 @@ describe("the Integrations page", () => {
         expect(stateWords("Linear", true, {last_checked: NOW - 5})).toBe("Last checked just now");
         expect(stateWords("Linear", true, {last_checked: NOW - 60, last_error: "the key was refused"})).toBe("Could not reach Linear: the key was refused");
         expect(stateWords("Linear", true, null)).toBe("Not checked yet");
+    });
+
+    test("reads the address and the search you wrote for Gmail, and nothing when none is written", () => {
+        const settings = {gmail: {account: "me@gmail.com", search: "label:journal"}};
+        expect([textOf(settings, "gmail", "account"), textOf(settings, "gmail", "search"), textOf({}, "gmail", "search")]).toEqual(["me@gmail.com", "label:journal", ""]);
     });
 
     test("reads the board and the teams you chose, and says plainly when syncing is paused", () => {

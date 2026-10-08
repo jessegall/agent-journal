@@ -1,10 +1,10 @@
 import time
 from dataclasses import asdict, replace
 
-from controllers.types import Notices, Questions
+from controllers.types import Questions
 from engine import bus
 from features.integrations.state import IntegrationState, read_state, write_state
-from features.linear.details import REFUSED, SEND, UNREACHABLE
+from features.linear.details import SEND
 from features.linear.sync import Choices, StageState, TicketsFromLinear, issue_of, send_comment, send_status, synced, teams_of
 from features.linear.webhook import event_of
 from features.routing import Reply, Request, handles
@@ -14,7 +14,6 @@ from features.sharing.tunnel import kept_address
 from features.tickets.controller import Tickets
 from resources.base import Refused, SYSTEM, USER
 
-KEY_REFUSED = ("answered 401", "answered 403")
 CATCH_UP = 30 * 60.0
 
 
@@ -102,14 +101,6 @@ class LinearWork:
         write_state(record.root, self.name, after)
         self.notice_failure(record, before, read_state(record.root, self.name))
         return read_state(record.root, self.name)
-
-    def notice_failure(self, record, before: IntegrationState, after: IntegrationState) -> None:
-        here = self.journal.at(record)
-        if after.failures == 1 and before.failures == 0:
-            here.notice(REFUSED if any(mark in after.last_error for mark in KEY_REFUSED) else UNREACHABLE, integration=self.name)
-        if after.failures == 0 and before.failures:
-            for notice in (n for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("integration") == self.name):
-                here.clear(notice, "Linear answered again")
 
     def teams_route(self):
         @handles("GET", "/api/{env}/integration/linear/teams")

@@ -36,6 +36,23 @@ await runScenarios(process.argv[2], {
         if ((await page.locator('[data-integration="linear"]').getByRole("switch").getAttribute("aria-checked")) !== "true") throw new Error("the switch did not stay on");
         await shot(page, "integrations-on");
     },
+    async "Gmail is off at first and its card asks for the address and the mail to read once it is on"(page, url) {
+        await page.goto(`${url}#/main/integrations`);
+        const card = page.locator('[data-integration="gmail"]');
+        await card.waitFor();
+        await card.getByText("Use Gmail").waitFor();
+        if ((await card.getByRole("switch").getAttribute("aria-checked")) !== "false") throw new Error("Gmail starts switched on");
+        if (await card.getByText("through its MCP server").count()) throw new Error("Gmail offers an MCP server switch it does not have");
+        await card.getByRole("switch").click();
+        await card.locator("[data-gmail-account]").waitFor();
+        await card.locator("[data-gmail-search]").waitFor();
+        await card.locator("[data-gmail-account]").fill("me@gmail.com");
+        await card.locator("[data-gmail-account]").blur();
+        await page.reload();
+        await page.locator('[data-integration="gmail"] [data-gmail-account]').waitFor();
+        if ((await page.locator('[data-integration="gmail"] [data-gmail-account]').inputValue()) !== "me@gmail.com") throw new Error("the address was not kept");
+        await shot(page, "integrations-gmail");
+    },
     async "an image in text from Linear shows as a link and loads nothing from its host"(page, url) {
         const asked = [];
         const host = createServer((request, answer) => (asked.push(request.url), answer.end("x"))).listen(0);

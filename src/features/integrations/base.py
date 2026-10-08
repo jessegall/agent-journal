@@ -3,7 +3,9 @@ from dataclasses import asdict, replace
 from urllib.parse import urlsplit
 
 from controllers.features import Features
+from controllers.types import Notices
 from features.base import Feature
+from features.integrations.details import REFUSED, UNREACHABLE
 from features.integrations.client import IntegrationClient
 from features.integrations.login import OPEN_BROWSER, signed_in
 from features.integrations.state import read_state, write_state
@@ -12,13 +14,14 @@ from features.routing import Reply, Request, handles
 from features.secrets.controller import Secrets
 from features.secrets.resource import Kind
 from providers import PROVIDERS
-from resources.base import Refused, USER
+from resources.base import Refused, SYSTEM, USER
 
 
 class IntegrationFeature(Feature):
     """What every integration feature shares: the page of its state, and a client that holds its key in the journal's own process."""
 
     origin = ""
+    key_refused: tuple[str, ...] = ()
 
     def client(self, record) -> IntegrationClient:
         """The one client of this project, built when first needed and again when its settings change."""
@@ -51,6 +54,15 @@ class IntegrationFeature(Feature):
             if not agent.present(project):
                 continue
             agent.serve_mcp(project, self.mcp_name, url) if wanted else agent.drop_mcp(project, self.mcp_name)
+
+    def notice_failure(self, record, before, after) -> None:
+        """A failed sync is noticed once, and the notice clears when a sync works again."""
+        here = self.journal.at(record)
+        if after.failures == 1 and before.failures == 0:
+            here.notice(REFUSED if any(mark in after.last_error for mark in self.key_refused) else UNREACHABLE, integration=self.name)
+        if after.failures == 0 and before.failures:
+            for notice in (n for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("integration") == self.name):
+                here.clear(notice, f"{self.details.title} answered again")
 
     def describe(self) -> dict:
         return {**super().describe(), "mcp_server": self.details.mcp_server}

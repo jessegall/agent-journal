@@ -1,10 +1,9 @@
 from features.base import Line
-from features.integrations.details import IntegrationDetails
+from features.integrations.details import REFUSED, UNREACHABLE, IntegrationDetails
 from features.settings import Setting
 from features.trigger import MINUTES, Trigger
 from resources.base import PROJECT
 
-REFUSED, UNREACHABLE = "refused", "unreachable"
 SEND, KEEP = "Send", "Don't send"
 
 
