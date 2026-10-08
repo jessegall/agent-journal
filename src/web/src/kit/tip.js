@@ -18,6 +18,7 @@ let touchTimer = 0;
 let touched = false;
 let hushed = null;
 let pointed = null;
+let pointer = null;
 let spare = 0;
 
 export const shown = reactive({key: null, words: NO_WORDS, side: "below", arrow: 0, x: 0, y: 0, leaving: false, entering: false, sliding: false, prefer: "below"});
@@ -106,6 +107,7 @@ export function listen(doc = document) {
             if (e.pointerType === "touch") return;
             const key = targetKey(e);
             pointed = key ?? null;
+            pointer = {x: e.clientX, y: e.clientY};
             if (key) return show(key);
             if (onBubble(e)) return keep();
             if (shown.key !== null) later();
@@ -181,8 +183,15 @@ function delist(el) {
     if (shown.key === key) nextTick(() => known.has(key) || hide(true));
 }
 
+function underPointer(el) {
+    return pointer !== null && el.contains(document.elementFromPoint(pointer.x, pointer.y));
+}
+
 export const tip = {
-    mounted: enlist,
+    mounted(el, binding) {
+        const key = enlist(el, binding);
+        if (key && underPointer(el)) show(key);
+    },
     updated(el, binding) {
         const key = enlist(el, binding);
         if (key !== shown.key) return;

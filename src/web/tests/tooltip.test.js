@@ -1,7 +1,7 @@
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {createApp, h, nextTick, ref, withDirectives} from "vue";
 import Tooltip from "../src/kit/Tooltip.vue";
-import {HIDE_AFTER, LEAVE_FOR, place, shown, tip} from "../src/kit/tip.js";
+import {HIDE_AFTER, LEAVE_FOR, hide, place, shown, tip} from "../src/kit/tip.js";
 
 const words = ref({title: "Builder", line: "Builds it itself."});
 const identity = ref(0);
@@ -28,6 +28,7 @@ async function settle() {
 
 beforeEach(() => {
     vi.useFakeTimers();
+    document.elementFromPoint = () => null;
     words.value = {title: "Builder", line: "Builds it itself."};
     Object.defineProperty(HTMLElement.prototype, "offsetWidth", {configurable: true, get: () => 200});
     Object.defineProperty(HTMLElement.prototype, "offsetHeight", {configurable: true, get: () => 40});
@@ -73,6 +74,17 @@ test("a button redrawn as a new element keeps the bubble, now measured against t
     await settle();
     expect(bubble().hidden).toBe(false);
     expect(shown.x).toBe(330);
+});
+
+test("a button that appears under a pointer that has not moved shows its words", async () => {
+    document.getElementById("one").dispatchEvent(new MouseEvent("pointerover", {bubbles: true, clientX: 120, clientY: 20}));
+    await settle();
+    hide(true);
+    await settle();
+    identity.value += 1;
+    document.elementFromPoint = () => document.getElementById("one");
+    await settle();
+    expect(shown.key).toBe("mode:one");
 });
 
 test("near the bottom of the window the bubble opens above, and stays inside the sides", async () => {
