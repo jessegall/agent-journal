@@ -170,6 +170,7 @@ class Canceler:
 class Command:
     name: ClassVar[str] = ""
     network: ClassVar[bool] = False
+    user_only: ClassVar[bool] = False
 
     def run(self, context: Context, controller, *args, **kwargs):
         raise NotImplementedError

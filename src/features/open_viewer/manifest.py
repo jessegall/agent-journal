@@ -16,7 +16,7 @@ from engine import runtime
 from providers import PROVIDERS
 from engine.version import version
 from engine.package import data
-from surfaces.attachments import listed_types
+from features.open_viewer.attachments import listed_types
 from typing import TypedDict
 
 

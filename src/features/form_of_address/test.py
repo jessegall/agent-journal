@@ -4,7 +4,7 @@ from features.form_of_address.controller import Profiles, ship
 from features.form_of_address.voices import PLAIN_WORDS, SHIPPED
 from features.session_briefing.start import start_block
 from resources.base import SYSTEM, USER, Refused
-from surfaces.settings import apply
+from features.open_viewer.settings import apply
 from tests.conftest import fresh, refused
 from tests.kit import report
 

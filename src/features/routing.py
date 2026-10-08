@@ -50,7 +50,7 @@ class Request:
 
     def record(self) -> Record:
         if self.kept is None:
-            self.kept = Record(self.root, self.params["env"], memo=True)
+            self.kept = Record(self.root, self.env, memo=True)
         return self.kept
 
     @property
@@ -78,7 +78,11 @@ class Request:
         if type_ not in CONTROLLERS:
             raise Missing(f"no type {type_}")
         self.body.pop("actor", None)
-        return CONTROLLERS[type_](self.record(), actor=USER)
+        return self.as_user(CONTROLLERS[type_])
+
+    def as_user(self, kind):
+        """The controller of that kind acting for the user, as every viewer request does."""
+        return kind(self.record(), actor=USER)
 
 
 @dataclass

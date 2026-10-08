@@ -10,7 +10,7 @@ from engine.reach import Guard
 from engine.wording import APPENDS
 from features.format import FORMATTERS
 from features.parts import ActionInterceptor, AgentContext, Canceler, Command, Context, Handler, TextFormatter, ToolInterceptor
-from resources.base import SYSTEM, Refused
+from resources.base import SYSTEM, USER, Refused
 from features.routing import FEATURE_ROUTES
 
 
@@ -135,6 +135,8 @@ class Commands:
         def call(controller, *args, **kwargs):
             if not feature.enabled(controller.record):
                 raise Refused(f"the {feature.name} feature is off")
+            if command.user_only and controller.actor != USER:
+                raise Refused(f"only the user may {type_} {command.name}: they do it from the viewer")
             return command.run(Context.of(feature, controller.record), controller, *args, **kwargs)
         given = list(inspect.signature(command.run).parameters.values())[2:]
         call.__signature__ = inspect.Signature([inspect.Parameter("controller", inspect.Parameter.POSITIONAL_OR_KEYWORD), *given])
