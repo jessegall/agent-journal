@@ -4,7 +4,6 @@ import subprocess
 import sys
 import threading
 import time
-from dataclasses import dataclass, field
 from pathlib import Path
 
 from engine.record import Record
@@ -12,16 +11,14 @@ from engine.record import Record
 STOPPED_WITHIN = 10
 
 
-@dataclass
 class Copy:
     """One installed journal in a folder of its own, run as a real process when it is started."""
 
-    name: str
-    root: Path
-    home: Path
-    process: subprocess.Popen | None = None
-    port: int = 0
-    printed: list[str] = field(default_factory=list)
+    def __init__(self, name: str, root: Path, home: Path) -> None:
+        self.name, self.root, self.home = name, root, home
+        self.process: subprocess.Popen | None = None
+        self.port = 0
+        self.printed: list[str] = []
 
     @property
     def address(self) -> str:

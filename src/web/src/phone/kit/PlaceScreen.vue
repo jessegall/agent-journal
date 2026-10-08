@@ -18,8 +18,6 @@ const {under, scrolled} = useScrolled();
             <BigTitle :title="title" :sub="sub" />
             <slot />
         </div>
-        <template v-if="$slots.foot">
-            <ScreenFoot><slot name="foot" /></ScreenFoot>
-        </template>
+        <ScreenFoot :shown="Boolean($slots.foot)"><slot name="foot" /></ScreenFoot>
     </div>
 </template>

@@ -114,9 +114,7 @@ defineExpose({reload, rows});
             <PagedList :shown="rows.length" :total="total" :more="more && !loading" :load="next" />
             <slot name="bottom" />
         </div>
-        <template v-if="$slots.foot">
-            <ScreenFoot><slot name="foot" /></ScreenFoot>
-        </template>
+        <ScreenFoot :shown="Boolean($slots.foot)"><slot name="foot" /></ScreenFoot>
     </div>
 </template>
 

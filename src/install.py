@@ -241,19 +241,33 @@ def put_on_path(bin_: Path) -> str:
     return f"{bin_} added to your PATH in {profile}: open a new terminal, then type journal"
 
 
-def install(project: Path, root: Path | None = None, yes: bool = False) -> list[str]:
-    root = root or project / ".journal"
+@dataclass(frozen=True)
+class Prepared:
+    copied: list[str]
+    held: str | None = None
+
+
+def prepare_managed(project: Path, root: Path, yes: bool) -> Prepared:
+    """Copies the managed files an older build left unrecorded, then holds the update for files changed since, or sets them aside when told yes."""
     copied = copy_legacy_managed(project, root)
     changed = loaded().managed.changed_managed(project, root)
     if changed and not yes:
-        return [loaded().managed.changed_message(project, changed)]
+        return Prepared(copied, loaded().managed.changed_message(project, changed))
     if changed:
         archive_changed(project, root, changed)
+    return Prepared(copied)
+
+
+def install(project: Path, root: Path | None = None, yes: bool = False) -> list[str]:
+    root = root or project / ".journal"
+    prepared = prepare_managed(project, root, yes)
+    if prepared.held is not None:
+        return [prepared.held]
     refresh(PACKAGE, code(root))
     done = configure(project, root)
     retire(root)
     loaded().managed.remember_managed(project, root)
-    return copied + done
+    return prepared.copied + done
 
 
 def old_git_hook(project: Path) -> list[str]:
@@ -396,15 +410,12 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False, version:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError:
             return ["another upgrade of this journal is running; this one stepped aside"]
-        copied = copy_legacy_managed(project, root)
-        changed = loaded().managed.changed_managed(project, root)
-        if changed and not yes:
-            return [loaded().managed.changed_message(project, changed)]
-        if changed:
-            archive_changed(project, root, changed)
+        prepared = prepare_managed(project, root, yes)
+        if prepared.held is not None:
+            return [prepared.held]
         mark.touch()
         try:
-            return copied + upgrading(project, root, version)
+            return prepared.copied + upgrading(project, root, version)
         finally:
             mark.unlink(missing_ok=True)
 
