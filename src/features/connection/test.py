@@ -203,6 +203,15 @@ def test_code_goes_through_git_as_snapshots_and_is_applied_only_over_files_not_c
     (theirs / "a.txt").write_text("one")
     assert (pull(theirs, "laptop"), (theirs / "a.txt").read_text()) == (["a.txt"], "two"), "over a file only changed there the snapshot is applied"
     assert "no snapshot" in refused(lambda: pull(theirs, "nobody")), "a name nobody pushed is said plainly"
+    from engine.comparison import Listing
+    from features.connection.code import summary
+    unhosted = tmp_path / "unhosted"
+    run("clone", "-q", str(mine), str(unhosted), cwd=tmp_path)
+    assert push(unhosted, "desk") == Pushed((), (".",)), "a repository with no hosted remote is skipped, not failed"
+    assert "no snapshot" in refused(lambda: pull(unhosted, "laptop")), "and nothing is fetched into it"
+    before = Listing.of_project(unhosted)
+    (unhosted / "b.txt").write_text("new")
+    assert summary(unhosted, before) == "1 added, 0 changed, 0 removed", "what a pull changed is counted"
 
 
 def test_a_hosted_world_runs_a_server_and_two_local_copies_as_real_processes_that_connect_and_sync(hosted_world):
