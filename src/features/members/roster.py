@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass, field, replace
 from engine.fields import Loaded
 from features.hosted_journal.owner import KeptCode, KeptPassword
 from features.hosted_journal.vault import Vault
+from features.members.roles import Role
 from features.trigger import DAY
 from resources.base import Refused
 
@@ -18,6 +19,7 @@ class Member(Loaded):
 
     id: str = ""
     name: str = ""
+    role: Role = Role.WRITER
     invited: float = 0.0
     joined: float = 0.0
     code: KeptCode = field(default_factory=KeptCode)
@@ -33,7 +35,7 @@ class Member(Loaded):
         return {key: value for key, value in asdict(self).items() if key != "id"}
 
     def summary(self) -> dict:
-        return {"id": self.id, "name": self.name, "invited": self.invited, "joined": self.joined}
+        return {"id": self.id, "name": self.name, "role": self.role, "invited": self.invited, "joined": self.joined}
 
 
 @dataclass(frozen=True)
@@ -51,7 +53,7 @@ class Roster:
     def all(self) -> tuple[Member, ...]:
         return tuple(Member.from_json({**kept, "id": key}) for key, kept in self.vault.read(MEMBERS).items())
 
-    def invite(self, name: str) -> Invite:
+    def invite(self, name: str, role: Role) -> Invite:
         named = " ".join(name.split())[:NAME_LONGEST]
         if not named:
             raise Refused("a member needs a name")
@@ -60,7 +62,7 @@ class Roster:
             if self.named(named) is not None:
                 raise Refused(f"{named} is already a member")
             now = self.vault.clock()
-            member = Member(f"m-{secrets.token_hex(6)}", named, now, code=KeptCode.made(code, now + INVITE_DAYS * DAY))
+            member = Member(f"m-{secrets.token_hex(6)}", named, role, now, code=KeptCode.made(code, now + INVITE_DAYS * DAY))
             self._keep(member)
         return Invite(member, code)
 
@@ -92,6 +94,15 @@ class Roster:
             joined = member.joining(chosen, self.vault.clock())
             self._keep(joined)
         return joined
+
+    def assign(self, member: str, role: Role) -> Member:
+        with self.vault.held():
+            found = self.found(member)
+            if found is None:
+                raise Refused(f"there is no member {member}")
+            assigned = replace(found, role=role)
+            self._keep(assigned)
+        return assigned
 
     def _keep(self, member: Member) -> None:
         self.vault.write(MEMBERS, {**self.vault.read(MEMBERS), member.id: member.kept()})

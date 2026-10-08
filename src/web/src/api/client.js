@@ -119,8 +119,12 @@ export class ApiClient {
         return this.get("/hosting/members");
     }
 
-    inviteMember(name) {
-        return this.post("/hosting/members", {name});
+    inviteMember(name, role) {
+        return this.post("/hosting/members", {name, role});
+    }
+
+    assignRole(member, role) {
+        return this.post("/hosting/members/role", {member, role});
     }
 
     upgrade() {
@@ -811,6 +815,7 @@ export class ApiClient {
 }
 
 export const api = new ApiClient();
+export const onBlocked = (fn) => transport.onBlocked(fn);
 export const onWrite = (fn) =>
     transport.onWrite((url) => {
         const where = new URL(url, location.origin);

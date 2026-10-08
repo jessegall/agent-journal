@@ -10,6 +10,7 @@ from features.hosted_journal.owner import Logins
 from features.hosted_journal.test import SCENARIOS_WAIT, WEB, Answer, Hosted, hosted  # noqa: F401  hosted is the fixture
 from features.hosted_journal.vault import Vault
 from features.members.details import MembersDetails
+from features.members.roles import NOT_A_WRITER, Role
 from features.members.roster import INVITE_DAYS, Roster
 from features.trigger import DAY
 from resources.base import USER
@@ -24,6 +25,12 @@ def with_members(hosted: Hosted) -> str:
 
 def sent(hosted: Hosted, path: str, body: dict, cookie: str) -> Answer:
     return hosted.call("POST", path, body=json.dumps(body), Cookie=cookie, Origin=f"http://127.0.0.1:{hosted.port}", Content_Type="application/json")
+
+
+def member_login(hosted: Hosted, name: str, role: Role) -> str:
+    roster = Roster(hosted.vault)
+    member = roster.join(roster.invite(name, role).code, MEMBER_PASSWORD)
+    return f"__Host-journal={Logins(hosted.vault).open(7, 'test', member.id)}"
 
 
 def login_in(answer: Answer) -> str:
@@ -58,13 +65,32 @@ def test_an_invited_person_joins_once_from_the_link_and_logs_in_again_by_name(ho
     assert Roster(week_on).invited_by(later) is None and Roster(hosted.vault).invited_by(later).name == "Bea", "an invite runs out after a week"
 
 
-def test_inviting_joining_and_logging_in_as_a_member_work_in_a_browser(hosted):
+def test_inviting_joining_logging_in_and_a_readers_refusal_work_in_a_browser(hosted):
     owner = with_members(hosted)
     invite = json.loads(sent(hosted, "/api/hosting/members", {"name": "Bea"}, owner).text)["link"]
     roster = Roster(hosted.vault)
-    roster.join(roster.invite("Dan").code, MEMBER_PASSWORD)
-    env = {**os.environ, "HOSTED_URL": f"http://127.0.0.1:{hosted.port}/", "HOSTED_OWNER_LOGIN": owner.split("=", 1)[1],
+    roster.join(roster.invite("Dan", Role.WRITER).code, MEMBER_PASSWORD)
+    reader = member_login(hosted, "Cleo", Role.READER).split("=", 1)[1]
+    env = {**os.environ, "HOSTED_URL": f"http://127.0.0.1:{hosted.port}/", "HOSTED_OWNER_LOGIN": owner.split("=", 1)[1], "HOSTED_READER_LOGIN": reader,
            "HOSTED_INVITE_LINK": invite.replace("https://", "http://"), "HOSTED_MEMBER_NAME": "Dan", "HOSTED_MEMBER_PASSWORD": MEMBER_PASSWORD}
     run = subprocess.run(["node", "browser/hosted/members.mjs"], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
     assert run.returncode == 0, run.stderr[-2000:]
     assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+
+
+def test_a_reader_only_reads_a_writer_writes_shared_rows_and_a_refusal_says_why(hosted):
+    owner = with_members(hosted)
+    reader, writer = member_login(hosted, "Ada", Role.READER), member_login(hosted, "Bea", Role.WRITER)
+    todo = f"/api/{hosted.record.env}/todo"
+    refused = sent(hosted, todo, {"title": "From a reader"}, reader)
+    assert refused.status == 403 and json.loads(refused.text) == {"error": Role.READER.refusal(), "blocked": True}
+    assert sent(hosted, todo, {"title": "From a writer"}, writer).status == 201
+    ran = sent(hosted, f"/api/{hosted.record.env}/tool/1/run", {}, writer)
+    assert ran.status == 403 and json.loads(ran.text)["error"] == Role.WRITER.refusal(), "a writer runs nothing"
+    assert json.loads(sent(hosted, "/api/hosting/members", {"name": "Eve"}, writer).text) == {"error": "Only the owner can do this.", "blocked": True}
+    told = json.loads(hosted.call("GET", "/api/hosting/me", Cookie=reader).text)
+    assert told["role"] == "reader" and told["abilities"]["cannot"][0]["why"] == NOT_A_WRITER, "a member is told what they can do and why not the rest"
+    ada = Roster(hosted.vault).named("Ada").id
+    assert sent(hosted, "/api/hosting/members/role", {"member": ada, "role": "owner"}, owner).status == 400, "there are two roles"
+    assert sent(hosted, "/api/hosting/members/role", {"member": ada, "role": "writer"}, owner).status == 200
+    assert sent(hosted, todo, {"title": "Now a writer"}, reader).status == 201, "a new role holds from the next press"

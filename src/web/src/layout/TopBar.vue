@@ -3,6 +3,7 @@ import {meta, types} from "../domain/spec.js";
 import People from "./People.vue";
 import TakeDown from "./TakeDown.vue";
 import {hostedOn, membersOn, sharingOn} from "../composables/settings.js";
+import {ownsJournal} from "../composables/me.js";
 import {store} from "../state/store.js";
 import {demo} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
@@ -124,7 +125,9 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 <People />
             </template>
             <template v-if="hostedOn">
-                <TakeDown />
+                <template v-if="ownsJournal">
+                    <TakeDown />
+                </template>
                 <form method="post" action="/logout" class="logout">
                     <button type="submit" class="icon-btn" aria-label="Log out" v-tip="'Log out of this journal on its server'"><Icon name="lock" /></button>
                 </form>
