@@ -143,6 +143,10 @@ class RecordEvents(EventLog):
     def written_here(self, event: Event) -> bool:
         return event.env == self.env
 
+    def own(self, since: int) -> list[Event]:
+        """The events of this environment's own log, without those it wrote into the project's."""
+        return super().events(since)
+
     def events(self, since: int = 0, last: int = 0, where: Callable[[Event], bool] = everything) -> list[Event]:
         both = [*super().events(since, last, where), *self.project.events(since, last, lambda e: self.written_here(e) and where(e))]
         merged = sorted(both, key=lambda e: e.id)

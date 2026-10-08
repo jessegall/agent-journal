@@ -4,12 +4,15 @@ import urllib.request
 from dataclasses import asdict
 from typing import Protocol
 
-from engine.machines import Lease
+from engine import runtime
+from engine.machines import Lease, this_machine
 from engine.offline import Sent, Write
+from engine.stored import write_text
 from engine.sync import Hello
 from resources.base import Event, Refused
 
 TIMEOUT = 5
+SERVER_KEY = "server-key"
 
 
 class ServerRefused(Refused):
@@ -42,16 +45,36 @@ class Transport(Protocol):
     def events(self, scope: str, env: str, since: int) -> list[Event]: ...
 
 
-class HttpTransport:
-    """The journal on a server over its own address, answering as JSON under /api/sync."""
+class ServerKey:
+    """The machine key this copy shows the server's login page, kept on this machine and never sent anywhere else."""
 
-    def __init__(self, address: str, timeout: float = TIMEOUT) -> None:
+    def __init__(self, root) -> None:
+        self.file = runtime.folder(root) / SERVER_KEY
+
+    def keep(self, key: str) -> None:
+        write_text(self.file, key)
+        self.file.chmod(0o600)
+
+    def read(self) -> str | None:
+        return self.file.read_text().strip() if self.file.is_file() else None
+
+
+class HttpTransport:
+    """The journal on a server over its own address, answering as JSON under /api/sync, with this copy's machine key when it has one."""
+
+    def __init__(self, address: str, key: str | None = None, timeout: float = TIMEOUT) -> None:
         self.address = address.rstrip("/")
+        self.key = key
         self.timeout = timeout
+
+    def headers(self) -> dict:
+        if self.key is None:
+            return {"Content-Type": "application/json"}
+        return {"Content-Type": "application/json", "Authorization": f"Bearer {self.key}"}
 
     def ask(self, path: str, body: dict | None = None) -> str:
         data = None if body is None else json.dumps(body).encode()
-        request = urllib.request.Request(f"{self.address}/api/sync/{path}", data=data, headers={"Content-Type": "application/json"})
+        request = urllib.request.Request(f"{self.address}/api/sync/{path}", data=data, headers=self.headers())
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as answer:
                 return answer.read().decode() or "{}"
@@ -65,7 +88,7 @@ class HttpTransport:
         self.ask("handover", {"env": env, **asdict(lease)})
 
     def handback(self, env: str) -> Lease:
-        return Lease(**json.loads(self.ask("handback", {"env": env})))
+        return Lease(**json.loads(self.ask("handback", {"env": env, "machine": this_machine()})))
 
     def send(self, held: Write) -> Sent:
         """A write the server could not be reached for, or failed on, is tried again; one it refused is not."""

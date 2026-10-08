@@ -88,7 +88,7 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     record.hand_over("", this_machine())
     monkeypatch.setenv("JOURNAL_ADDRESS", "journal.example.com")
     assert view(record, "").role == "the server", "a journal that runs on a server says that it is the server"
-    monkeypatch.setattr("features.connection.feature.transport_for", lambda address: Server(record.root, up=False))
+    monkeypatch.setattr("features.connection.feature.transport_for", lambda record, address: Server(record.root, up=False))
     record.change_setting("connection", {"address": "https://server.example"})
     features.FEATURES["connection"].settings_changed(record, USER)
     assert any("Could not connect" in n.title for n in Notices(record, actor=SYSTEM).all()), "an address nobody answers at becomes a notice, not an error"
@@ -178,6 +178,20 @@ def test_a_hosted_world_runs_a_server_and_two_local_copies_as_real_processes_tha
     port = world.server.port
     world.start(world.server)
     assert world.server.port == port and world.server.running(), "it comes back where it was"
+    as_you = ("--as", "user")
+    world.laptop.run(*as_you, "feature", "switch", "connection")
+    assert "connected" in world.laptop.run(*as_you, "environment", "connect", world.server.address).stdout
+    assert "from epoch 1" in world.laptop.run(*as_you, "environment", "hand", "main", "server").stdout, "the laptop hands its environment to the server"
+    world.server.run(*as_you, "todo", "create", "Written on the server")
+    assert "took in" in world.laptop.run(*as_you, "environment", "sync").stdout
+    written = next(row.n for row in Todos(world.server.record(), actor=SYSTEM).all() if row.title == "Written on the server")
+    assert any((event.type, event.action, event.n) == ("todo", "created", written) for event in world.laptop.record().event_log.events()), \
+        "a write made on the server arrives on the laptop"
+    sent = Write("laptop-1", "", Request("main", "todo", "create", ["Written on the laptop"], actor=USER))
+    server = HttpTransport(world.server.address)
+    assert [server.send(sent), server.send(sent)] == [Sent.TAKEN, Sent.TAKEN]
+    assert [row.title for row in Todos(world.server.record(), actor=SYSTEM).all()].count("Written on the laptop") == 1, \
+        "a write made on the laptop arrives on the server, once however often it is sent"
 
 
 def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and_without_a_long_wait(tmp_path):

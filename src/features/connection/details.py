@@ -20,7 +20,8 @@ class ConnectionDetails(FeatureDetails):
     help = """
         Saving the server's address checks that both journals can work together: the release, the sync's own version and the
         shape of the record. A copy too old to carry the sync's checks on what never leaves a machine is refused with a
-        notice. journal environment connect <address> does the same from the terminal, journal environment hand <environment>
+        notice. journal environment connect <address> <machine key> does the same from the terminal, with the key the server's
+        hosted-journal machine-key made for this computer, which stays on this computer; journal environment hand <environment>
         server|here moves one environment between the two machines, journal environment sync sends what was written while the
         server was away and pulls what happened there, and journal environment code_push and code_pull carry the project's files
         through git, never over a file you changed here.

@@ -18,7 +18,7 @@ from engine.color import identity
 from engine.fields import Loaded
 from engine.viewer import lately_running
 from features.hosted_journal.settings import FromRecord, FromVault
-from features.hosted_journal.owner import MOST_EVERYWHERE, SHORTEST, Devices, KeptLogin, Logins, Owner, Standing, WrongTries, hashed
+from features.hosted_journal.owner import Devices, KeptLogin, Logins, MOST_EVERYWHERE, MachineKeys, Owner, SHORTEST, Standing, WrongTries, hashed
 from features.hosted_journal.people import people_of
 from features.hosted_journal.hosting import Ask, Hosting
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page, taken_down_page
@@ -59,6 +59,7 @@ PHONE_OWNER_ACTIONS: dict[Action, PhoneAnswer] = {
     Action("phone", "allow_passkey"): lambda phones, asked: phones.allow_passkey(asked.n),
     Action("phone", "refuse_passkey"): lambda phones, asked: phones.refuse_passkey(asked.n),
 }
+SYNC = "/api/sync/"
 NEVER_FROM_OUTSIDE = frozenset((post("/api/run"), post("/api/upgrade"), post("/api/stop"), post("/api/hook/{provider}"), post("/api/update"),
                                 post("/api/journals/start"), post("/api/services/{id}")))
 STREAM = "text/event-stream"
@@ -154,6 +155,9 @@ class Visit:
         kept = SimpleCookie(self.handler.headers.get("Cookie", "")).get(name)
         return kept.value if kept else ""
 
+    def bearer(self) -> str:
+        return self.handler.headers.get("Authorization", "").removeprefix("Bearer ")
+
     def token(self) -> str:
         return self.cookie_named(COOKIE)
 
@@ -247,6 +251,8 @@ class Gateway:
         if Hosting(visit.vault).down():
             return visit.page(503, taken_down_page(visit.project()))
         try:
+            if visit.url.path.startswith(SYNC):
+                return self.synced(visit)
             asked = (visit.handler.command, visit.url.path)
             return {**people_of(visit.record).pages(self), **self.pages}.get(asked, self.forward)(visit)
         except DiskFull as full:
@@ -362,6 +368,15 @@ class Gateway:
                 phones.complete(phone.n, "ended when the journal was taken down")
         visit.vault.audit("hosted journal taken down", place=visit.place(), logins_ended=ended)
         return visit.json(202, {"asked": Ask.TAKE_DOWN.value}, {"Set-Cookie": visit.cookie(COOKIE, "", 0)})
+
+    def synced(self, visit: Visit) -> None:
+        """A copy's sync, let through by a machine key the owner made rather than by a login."""
+        if not MachineKeys(visit.vault).matches(visit.bearer()):
+            return visit.refuse(401, "a copy syncs only with a machine key: make one on the server with hosted-journal machine-key")
+        size = visit.length()
+        if size > BODY_LIMIT:
+            raise TooLarge.sent("a sync")
+        return Desktop(visit.handler, visit.handler.path, {}, VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
 
     def forward(self, visit: Visit) -> None:
         token = visit.token()

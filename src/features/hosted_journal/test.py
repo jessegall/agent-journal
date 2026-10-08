@@ -29,7 +29,7 @@ from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, DEVICE_COOKIE, MOST_STREAMS, Visit
 from features.hosted_journal.host import clear_tries, log_out_everywhere, reset_password
 from features.hosted_journal.hosting import Hosting
-from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, Standing, WrongTries, hashed
+from features.hosted_journal.owner import LOCKED_FOR, LOGINS, Logins, MOST_EVERYWHERE, MOST_TRIES, MachineKeys, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.feature import APART
 from features.hosted_journal.apart import serving_command, serving_environment
 from features.hosted_journal.phones import KEPT_ELSEWHERE, PHONES, VaultGuard
@@ -281,6 +281,11 @@ def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hoste
 def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_each_refusal(hosted, tmp_path):
     token = hosted.logged_in()
     origin = f"http://127.0.0.1:{hosted.port}"
+    key = MachineKeys(hosted.vault).make("laptop")
+    unkeyed = [hosted.call("GET", "/api/sync/hello", **headers).status for headers in ({}, {"Cookie": f"{COOKIE}={token}"}, {"Authorization": "Bearer wrong"})]
+    keyed = hosted.call("GET", "/api/sync/hello", Authorization=f"Bearer {key}")
+    assert (unkeyed, keyed.status, bool(json.loads(keyed.text)["machine"])) == ([401, 401, 401], 200, True), \
+        "a copy's sync passes the login page only with a machine key the owner made, never with a login or a wrong key"
     closed = ("/api/run", "/api/upgrade", "/api/stop", "/api/hook/claude", "/api/update", "/api/journals/start", "/api/services/sharing.server")
     encoded = ("/api/%72un", "/api/upgr%61de", "/api/st%6fp", "/api/hoo%6b/claude", "/api/upd%61te")
     for path in (*closed, *encoded):
