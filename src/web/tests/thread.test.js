@@ -90,6 +90,14 @@ describe("agent replies", () => {
     });
 });
 
+describe("a search mark", () => {
+    test("keeps the term it searched for, so a click can open the search with it filled in", () => {
+        const searched = agent({cards: [{at: 5, label: "Searched the conversation", title: "'Johannes'", term: "Johannes", icon: "search", tone: "note", key: "search-1"}]});
+        const got = turns({agent: [searched]});
+        expect(got.map((t) => [t.type, t.data.term])).toEqual([["card", "Johannes"]]);
+    });
+});
+
 describe("folding runs", () => {
     const loads = (n) => agent({skill_loads: Array.from({length: n}, (_, i) => ({at: 10 + i, skill: `s${i}`}))});
 

@@ -41,15 +41,16 @@ def back(call: JournalCall) -> int:
 class SearchMark:
     label: str
     title: str = ""
+    term: str = ""
 
 
 def mark(call: JournalCall) -> SearchMark | None:
     words = asked(call)
     noun, terms = (words[0], words[1:]) if words else ("", [])
     if noun == "search" and terms:
-        return SearchMark("Searched the conversation", repr(" ".join(terms)))
+        return SearchMark("Searched the conversation", repr(" ".join(terms)), " ".join(terms))
     if noun in CONTROLLERS and terms[:1] == ["search"] and terms[1:]:
-        return SearchMark(f"Searched {CONTROLLERS[noun].resource.details.title.lower()}s", repr(" ".join(terms[1:])))
+        return SearchMark(f"Searched {CONTROLLERS[noun].resource.details.title.lower()}s", repr(" ".join(terms[1:])), " ".join(terms[1:]))
     if noun == "conversation":
         return SearchMark("Read the conversation history", {0: "", 1: "before the last compaction"}.get(back(call), f"{back(call)} compactions back"))
     if noun == "user":
@@ -75,7 +76,7 @@ class MarkHistorySearches(ToolInterceptor):
         for command in call.commands:
             for found in searches(command):
                 key = f"search-{time.time_ns()}"
-                context.journal.get(Agents).card(context.agent.row.n, key=key, label=found.label, title=found.title, icon="search", tone="note")
+                context.journal.get(Agents).card(context.agent.row.n, key=key, label=found.label, title=found.title, term=found.term, icon="search", tone="note")
                 context.state.set(OPEN, key)
         return ""
 
