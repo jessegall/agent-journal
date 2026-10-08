@@ -1,6 +1,5 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import Chip from "./Chip.vue";
 import Icon from "./Icon.vue";
 
 const NOTE_SECONDS = 5;
@@ -51,9 +50,6 @@ onUnmounted(() => clearTimeout(timer));
             <button type="button" class="legend" @click="emit('list', $event)">
                 Waiting
                 <span class="chev" />
-                <template v-if="waiting.kind">
-                    <Chip>{{ waiting.kind }}</Chip>
-                </template>
             </button>
         </template>
     </div>
@@ -109,13 +105,6 @@ onUnmounted(() => clearTimeout(timer));
 
 .legend:hover:not(:disabled) {
     color: var(--text);
-}
-
-.legend :deep(.chip) {
-    align-self: center;
-    padding: 0 6px;
-    font-size: 10px;
-    line-height: 14px;
 }
 
 .legend .chev {
