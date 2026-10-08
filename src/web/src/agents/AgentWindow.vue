@@ -4,6 +4,7 @@ import {computed} from "vue";
 import Meter from "../kit/Meter.vue";
 import StateDot from "../kit/StateDot.vue";
 import Tile from "../kit/Tile.vue";
+import JobTimer from "../kit/JobTimer.vue";
 import {agentState} from "../domain/ticketAgents.js";
 import {clock} from "../format/time.js";
 import {useNow} from "../composables/now.js";
@@ -44,6 +45,9 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
         </template>
         <template v-else-if="entry.now">
             <p class="aw-now">{{ entry.now }}</p>
+        </template>
+        <template v-if="entry.since" #corner>
+            <JobTimer :since="entry.since" />
         </template>
         <template v-if="entry.plan" #foot>
             <Meter v-bind="planMeter(entry.plan)" />

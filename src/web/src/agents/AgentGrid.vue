@@ -1,10 +1,10 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 import Tile from "../kit/Tile.vue";
 import AgentWindow from "./AgentWindow.vue";
 import TicketAgent from "./TicketAgent.vue";
-import {hiddenBy, hiddenSummary, orchestraOf, ordered} from "../domain/orchestra.js";
+import {hiddenBy, hiddenSummary, orchestraOf, ordered, slotsFor} from "../domain/orchestra.js";
 import {store} from "../state/store.js";
 import {peekThere} from "../route.js";
 import {ui} from "../state/ui.js";
@@ -13,10 +13,13 @@ const summary = computed(() => store.summary);
 const every = computed(() =>
     orchestraOf(summary.value && summary.value.environments, summary.value && summary.value.helpers, Date.now() / 1000)
 );
+const slots = ref([]);
+watch(every, (now) => (slots.value = slotsFor(slots.value, now)), {immediate: true});
 const entries = computed(() =>
     ordered(
         every.value.filter((entry) => !hiddenBy(entry, ui.agentView)),
-        ui.agentView.order
+        ui.agentView.order,
+        slots.value
     )
 );
 const LEAST = 9;

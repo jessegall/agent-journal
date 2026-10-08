@@ -26,6 +26,11 @@ const emit = defineEmits(["open"]);
             <div class="tile-body">
                 <slot />
             </div>
+            <template v-if="$slots.corner">
+                <div class="tile-corner">
+                    <slot name="corner" />
+                </div>
+            </template>
             <template v-if="$slots.foot">
                 <div class="tile-foot">
                     <slot name="foot" />
@@ -79,6 +84,13 @@ const emit = defineEmits(["open"]);
 .tile-cover:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: -2px;
+}
+
+.tile-corner {
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
+    pointer-events: none;
 }
 
 .tile-head,
