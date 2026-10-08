@@ -16,7 +16,7 @@ await runScenarios(URL_, {
         await page.getByPlaceholder("Their name").fill("Ada");
         await page.getByRole("button", {name: "Invite", exact: true}).click();
         await page.getByText("Send this link to Ada.").waitFor();
-        await page.getByRole("button", {name: "Environments"}).first().click();
+        await page.getByRole("region", {name: "Members"}).getByRole("button", {name: "Environments"}).first().click();
         await page.getByRole("menuitemcheckbox", {name: "main"}).waitFor();
     },
     async "an invite link lets the person choose a password and opens the journal"(page) {
