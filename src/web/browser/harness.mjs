@@ -49,6 +49,18 @@ export async function runScenarios(url, scenarios, {voice = true, device = {}} =
 
 export function journal(...words) {
     const root = process.env.JOURNAL_SCRATCH_ROOT;
+    const asked = new URL("api/run", process.env.JOURNAL_SCRATCH_URL);
+    asked.searchParams.set("env", "main");
+    asked.searchParams.set("cwd", `${root}/..`);
+    const reply = execFileSync("curl", ["-s", "-m", String(JOURNAL_WAIT / 1000), "-w", "\n%{http_code}", "-H", "Content-Type: text/plain", "--data-binary", "@-", asked.href], {
+        input: words.join("\0"),
+        encoding: "utf8",
+        timeout: JOURNAL_WAIT,
+    });
+    const status = reply.slice(reply.lastIndexOf("\n") + 1);
+    const body = reply.slice(0, reply.lastIndexOf("\n"));
+    if (status === "200") return body;
+    if (status !== "409") throw new Error(`journal ${words.join(" ")} was refused with ${status}: ${body}`);
     return execFileSync(process.env.JOURNAL_PYTHON, [`${root}/journal.py`, "--root", root, "--env", "main", ...words], {
         cwd: `${root}/..`,
         encoding: "utf8",
