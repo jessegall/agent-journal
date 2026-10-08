@@ -51,7 +51,7 @@ const stateKey = computed(() => {
 
 const task = computed(() => {
     const open = rows("work").find((w) => !w.completed && !w.data.agent && (w.data.session === props.resource.title || !w.data.session));
-    return open ? open.title : "Waiting for its next task";
+    return open ? open.title : "Waiting: next task";
 });
 
 const factsOf = computed(() => {

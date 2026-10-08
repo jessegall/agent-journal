@@ -59,7 +59,7 @@ export function waitingFor({text, on, since}, {runs = [], helpers = [], now = Da
     const helping = refs.length > 0 && refs.every((ref) => ref.startsWith(HELPER));
     const out = items.filter((item) => !item.reported).length;
     const kinds = [...new Set(items.map((item) => item.kind))];
-    return {text, items, helping, kind: kinds.length === 1 ? kinds[0] : "", since, line: `on ${helping ? countOf(out || items.length) : text}${since ? ` · ${elapsed(now - since)}` : ""}`};
+    return {text, items, helping, kind: kinds.length === 1 ? kinds[0] : "", since, line: `${helping ? countOf(out || items.length) : text}${since ? ` · ${elapsed(now - since)}` : ""}`};
 }
 
 export function waitingOn(agent, works, helpers = [], now = Date.now() / 1000) {
@@ -97,11 +97,11 @@ export function lineOf(agent, works, auto = false, helpers = [], helping = 0) {
     const state = stateOf(agent, works);
     if (state === "stopped") return "no agent is on this environment";
     if (state === "compacting") return "summarizing the conversation, then it carries on";
-    if (state === "waiting") return waitingOn(agent, works, helpers)?.line || "on a background run";
+    if (state === "waiting") return waitingOn(agent, works, helpers)?.line || "a background run";
     if (state === "paused") return "held until you resume it";
     const current = currentWork(works);
     if (current) return named(current);
-    if (state === "idle" && helping) return `${countOf(helping)} working`;
+    if (state === "idle" && helping) return `Helpers: ${helping}`;
     if (state === "idle") return phrase(auto ? "auto" : "idle");
     return phrase("bearings");
 }

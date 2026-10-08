@@ -146,7 +146,7 @@ export const stoppedNote = (j) => (j.running ? "its viewer stopped answering" : 
 
 export const removeWords = (row) =>
     [
-        row.live ? "An agent is running here." : "",
+        row.live ? "Agent: running" : "",
         `Removing moves all of ${row.title} into the archive.`,
         `Bring it back with journal environment unarchive ${row.title}.`,
     ]

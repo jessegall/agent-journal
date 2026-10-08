@@ -36,7 +36,7 @@ const agentWords = computed(() => {
     if (AGENT_WORDS[props.feed.agent]) return AGENT_WORDS[props.feed.agent];
     if (paused.value) return "Paused";
     if (waiting.value) return `Waiting ${waiting.value.work}`.trim();
-    return jobs.value ? `Working on ${counted(jobs.value, "job", "jobs")}` : "Idle";
+    return jobs.value ? `Working: ${counted(jobs.value, "job", "jobs")}` : "Idle";
 });
 const agentTone = computed(() => (paused.value ? "paused" : waiting.value ? "waiting" : jobs.value ? "working" : ""));
 </script>

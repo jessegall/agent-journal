@@ -57,7 +57,7 @@ const groups = computed(() => {
             </template>
         </template>
         <template v-for="held in store.ticketTodos" :key="held.ticket">
-            <div class="rail-group" :title="`Held by ticket ${held.ticket}'s agent, in environment ${held.env}`">
+            <div class="rail-group" :title="`Held by: ticket ${held.ticket}'s agent · environment ${held.env}`">
                 Ticket {{ held.ticket }} · {{ held.title }}
                 <span class="rail-group-n">{{ held.todos.length }}</span>
             </div>
