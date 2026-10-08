@@ -51,7 +51,7 @@ REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin"
 LOGIN_PAGE = {"hosting", "hostingUpgrade", "hostingTakeDown"}
 SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
 CALLS = {
-    "changelog": [], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
+    "changelog": [], "releases": [], "restore": ["todo", 1], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
     "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "startJournal": ["/nowhere/.journal", "codex"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
     "extension": [], "tunnelLogin": [{"endpoint": "127.0.0.1:9", "username": "walker", "password": "a password"}],
     "tunnelLogout": [], "tunlerVersion": [], "updateTunler": [], "installTunler": ["127.0.0.1:9"], "tunnelAnswering": [],
@@ -232,7 +232,7 @@ def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
         "/api/agent-controls/claude": {"groups", "note", "provider"},
         "/api/{env}/agent": {"more", "rows"},
         "/api/{env}/agent/1/transcript": {"first", "total", "turns"},
-        "/api/changelog": {"changelog", "checking", "latest", "newer", "repository", "updating", "version"},
+        "/api/changelog": {"changed", "changelog", "checking", "latest", "newer", "repository", "updating", "version"},
     }
     wrong = {path: sorted(keys[path] ^ set(reply.body)) for path in keys if (reply := get(record, path)).code != 200 or set(reply.body) != keys[path]}
     assert wrong == {}, "each object the viewer reads has the keys it reads, and nothing else"
