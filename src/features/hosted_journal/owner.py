@@ -18,6 +18,7 @@ COST = {"n": 2 ** 15, "r": 8, "p": 1}
 MEMORY = 64 * 1024 * 1024
 SETUP_DAYS = 1
 MOST_TRIES = 5
+MOST_EVERYWHERE = 50
 LOCKED_FOR = 15 * MINUTE
 
 
@@ -131,9 +132,16 @@ class WrongTries:
         return [at for at in self.vault.read(TRIES).get(place, []) if at > since]
 
     def locked_for(self, place: str) -> float:
-        """Seconds until this place may try again; zero while it may."""
+        """Seconds until this place may try again, or every place once too many wrong tries came from all of them together; zero while it may."""
+        now = self.vault.clock()
+        everywhere = sorted(at for ats in self.vault.read(TRIES).values() for at in ats if at > now - LOCKED_FOR)
         recent = self.recent(place)
-        return max(0.0, recent[0] + LOCKED_FOR - self.vault.clock()) if len(recent) >= MOST_TRIES else 0.0
+        starts = []
+        if len(recent) >= MOST_TRIES:
+            starts.append(recent[0])
+        if len(everywhere) >= MOST_EVERYWHERE:
+            starts.append(everywhere[-MOST_EVERYWHERE])
+        return max((at + LOCKED_FOR - now for at in starts), default=0.0)
 
     def counted(self, place: str) -> float:
         """Counts a try before its password is checked, so guesses sent at once cannot slip past the limit; answers the seconds to wait when it is refused."""

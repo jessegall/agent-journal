@@ -34,6 +34,7 @@ class HostedJournalDetails(FeatureDetails):
 
     settings = [
         Setting("address", "", "The address this journal answers at", "The server's own domain, such as journal.example.com"),
+        Setting("proxy", "", "The TLS proxy in front of the login page", "Its host name or address; only it may say a request came in over https and from where"),
         Setting("listen", "127.0.0.1", "Where the login page listens", "127.0.0.1 keeps it on the server; the Docker image sets 0.0.0.0 so the TLS proxy beside it can reach it"),
         Setting("port", 8440, "The login page's port", "The TLS proxy forwards the server's address to this port"),
         Setting("apart", False, "The login page runs under a user of its own", "The Docker image starts it apart from the journal, so agents cannot reach its password and logins"),

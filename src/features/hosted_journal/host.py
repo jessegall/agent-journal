@@ -21,12 +21,12 @@ def record_of(root: Path) -> Record:
     return Record(root, runtime.env(root))
 
 
-def prepare(root: Path, address: str, listen: str, port: int) -> str:
+def prepare(root: Path, address: str, listen: str, port: int, proxy: str) -> str:
     """Switches the journal on a server on, at its address, with its login page run apart under a user of its own."""
     record = record_of(root)
     features = Features(record, actor=USER)
     features.switch(HostedJournalDetails.name, True)
-    for key, value in (("address", address), ("listen", listen), ("port", str(port)), ("apart", "true")):
+    for key, value in (("address", address), ("listen", listen), ("port", str(port)), ("proxy", proxy), ("apart", "true")):
         features.configure(HostedJournalDetails.name, key, value)
     return ""
 
@@ -65,6 +65,7 @@ def main(argv: list[str]) -> None:
     prepared.add_argument("--address", default="")
     prepared.add_argument("--listen", default="0.0.0.0")
     prepared.add_argument("--port", type=int, default=8440)
+    prepared.add_argument("--proxy", default="")
     words.add_parser("password-status", help="say whether the owner still has to choose a password")
     words.add_parser("setup-code", help="make a one-time code that sets the owner's password")
     words.add_parser("reset-password", help="clear the owner's password and end every login")
@@ -72,7 +73,7 @@ def main(argv: list[str]) -> None:
     given = parser.parse_args(argv)
     root = given.root.resolve()
     commands = {
-        "prepare": lambda: prepare(root, given.address, given.listen, given.port),
+        "prepare": lambda: prepare(root, given.address, given.listen, given.port, given.proxy),
         "password-status": lambda: password_status(root),
         "setup-code": lambda: setup_code(root),
         "reset-password": lambda: reset_password(root),
