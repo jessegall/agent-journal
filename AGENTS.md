@@ -43,6 +43,8 @@ the general model for careful work without invention, the strongest only for jud
 Unset means the orchestrator's own model, which is the wrong default. The journal carries this as a rule
 (`journal rules`); this file carries it so it is read before the first dispatch.
 
+Every dispatch prompt says the subagent never runs the whole test suite: it runs the tests beside what it changed, or `journal check touched <n>`.
+
 ## Controllers by reference
 
 A controller is reached by its class — `Todos(record, actor=SYSTEM)`, `Plans(...)` from `controllers.types` — never by a string key; `CONTROLLERS[event.type]` is for generic dispatch on an event's type only.

@@ -4,7 +4,7 @@ from features.helpers.details import HelpersDetails
 from features.helpers.handlers import NameStoppedOrQuietHelpers, TellAFailedTurnOnChange
 from features.helpers.commands import RetireSubagent
 from features.helpers.interceptors import (HandedRowsCloseOnlyThroughTheirHelper, HandedRowsStayAssigned, KeepSubagentFiles,
-                                          OfferKeptAgentsFirst)
+                                          OfferKeptAgentsFirst, RefuseWholeSuiteToHelpers)
 from features.journal import Journal
 
 __all__ = ["Helpers"]
@@ -20,4 +20,5 @@ class HelpersFeature(Feature):
         journal.commands.intercept("todo.update", HandedRowsStayAssigned())
         journal.commands.add("agent", RetireSubagent())
         journal.agent.interceptor(KeepSubagentFiles())
+        journal.agent.interceptor(RefuseWholeSuiteToHelpers())
         journal.agent.canceler(OfferKeptAgentsFirst())
