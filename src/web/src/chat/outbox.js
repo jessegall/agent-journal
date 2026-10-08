@@ -4,12 +4,13 @@ import {tellExtension} from "../platform/extension.js";
 import {pollNow, startPoll} from "../composables/poll.js";
 
 const KEY = "journal.outbox.v1";
+const DELIVERY = "journal.outbox.delivery";
 const BRIDGE_WAIT = 500;
 const RETRY_MS = 5000;
 const OUTBOX = "outbox";
 const bridge = new Map();
 let request = 0;
-let queueTask = Promise.resolve();
+const chains = {};
 let storageMode = "";
 let active = null;
 let polling = false;
@@ -30,13 +31,10 @@ window.addEventListener("message", (event) => {
     resolve(event.data.value);
 });
 
-function shared(work) {
-    return globalThis.navigator?.locks ? () => navigator.locks.request(KEY, work) : work;
-}
-
-function serial(work) {
-    const task = queueTask.then(shared(work), shared(work));
-    queueTask = task.catch(() => {});
+function serial(lock, work) {
+    const run = globalThis.navigator?.locks ? () => navigator.locks.request(lock, work) : work;
+    const task = (chains[lock] || Promise.resolve()).then(run, run);
+    chains[lock] = task.catch(() => {});
     return task;
 }
 
@@ -132,15 +130,26 @@ function fileFrom(record) {
     return new File([bytes], record.name, {type: record.type, lastModified: record.lastModified});
 }
 
-async function enqueue(record) {
-    return serial(async () => {
+function enqueue(record) {
+    return serial(KEY, async () => {
         const queue = await readQueue();
         queue.push(record);
         await writeQueue(queue);
     });
 }
 
-async function deliver(record, queue) {
+function stored(record) {
+    return serial(KEY, async () => {
+        const queue = await readQueue();
+        await writeQueue(queue.map((kept) => (kept.id === record.id ? record : kept)));
+    });
+}
+
+function removed(id) {
+    return serial(KEY, async () => writeQueue((await readQueue()).filter((kept) => kept.id !== id)));
+}
+
+async function deliver(record) {
     const server = api.at(record.origin, record.env);
     const message = await server.create("message", {
         title: record.title,
@@ -151,25 +160,24 @@ async function deliver(record, queue) {
     });
     record.message = message.n;
     record.uploaded = Array.isArray(record.uploaded) ? record.uploaded : [];
-    await writeQueue(queue);
+    await stored(record);
     for (let n = 0; n < record.files.length; n += 1) {
         if (record.uploaded[n]) continue;
         await server.upload("message", record.message, fileFrom(record.files[n]));
         record.uploaded[n] = true;
-        await writeQueue(queue);
+        await stored(record);
     }
 }
 
-async function flush(env, origin) {
-    return serial(async () => {
-        const queue = await readQueue();
+function flush(env, origin) {
+    return serial(DELIVERY, async () => {
+        const queue = await serial(KEY, readQueue);
         const delivered = [];
-        for (const record of [...queue]) {
+        for (const record of queue) {
             if (record.env !== env || record.origin !== origin) continue;
             try {
-                await deliver(record, queue);
-                queue.splice(queue.indexOf(record), 1);
-                await writeQueue(queue);
+                await deliver(record);
+                await removed(record.id);
                 delivered.push(record.id);
             } catch (e) {}
         }
@@ -211,7 +219,9 @@ export async function sendMessage(env, body, files = [], id = token()) {
         uploaded: [],
     };
     await enqueue(record);
-    const delivered = await flush(record.env, record.origin);
-    report(delivered);
-    return {id: record.id, queued: !delivered.includes(record.id)};
+    const delivered = flush(record.env, record.origin).then((ids) => {
+        report(ids);
+        return ids.includes(record.id);
+    });
+    return {id: record.id, delivered};
 }

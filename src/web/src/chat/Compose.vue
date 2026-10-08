@@ -27,7 +27,7 @@ const props = defineProps({
     waiting: {type: Object, default: null},
 });
 const emit = defineEmits(["unquote", "typing", "waiting-list"]);
-const draft = reactive({text: "", files: [], sending: false, error: "", over: false});
+const draft = reactive({text: "", files: [], error: "", over: false});
 const writing = computed(() => !!draft.text.trim());
 watch(writing, (is) => {
     store.drafting += is ? 1 : -1;
@@ -44,7 +44,7 @@ watch(
 const area = ref(null);
 const kept = ref(0);
 const resting = computed(() => Boolean(props.idle) && !draft.text.trim() && !draft.files.length);
-const ready = computed(() => !draft.sending && Boolean(draft.text.trim()));
+const ready = computed(() => Boolean(draft.text.trim()));
 const label = computed(() => (resting.value ? props.idle.label : props.submit));
 const measures = ref(null);
 const widths = reactive({idle: 0, submit: 0});
@@ -154,10 +154,9 @@ function unpick(i) {
 }
 
 async function go() {
-    if (draft.sending || !draft.text.trim()) return;
+    if (!draft.text.trim()) return;
     const text = draft.text.trim();
     const files = draft.files;
-    draft.sending = true;
     draft.error = "";
     draft.text = "";
     draft.files = [];
@@ -168,7 +167,6 @@ async function go() {
         draft.text = draft.text || text;
         draft.files = draft.files.length ? draft.files : files;
     } finally {
-        draft.sending = false;
         area.value && area.value.focus();
     }
 }
