@@ -184,6 +184,13 @@ def test_the_owner_sets_the_password_with_a_one_time_code_then_works_in_the_view
     assert (agents != gateway, re.search(rf"chown (\w+):\w+ [^\n]*{vault}\b", image)[1], bool(re.search(rf"chmod 700 [^\n]*{vault}\b", image))) == (True, gateway, True), \
         "the login page runs as a user of its own, the only one that can open the vault"
     assert "COPY --chown=root:root src /opt/agent-journal/src" in image, "the login page runs code no agent can change"
+    lines = (DOCKER / "compose.yaml").read_text().splitlines()
+    pinned = [(lines[i - 1].strip(), line.split("image:", 1)[1].strip()) for i, line in enumerate(lines) if "@sha256:" in line and line.strip().startswith("image:")]
+    assert [(version.split(";")[0], image.split("@")[0]) for version, image in pinned] == \
+        [("# caddy 2.8", "caddy"), ("# restic 0.17.3", "restic/restic"), ("# restic 0.17.3", "restic/restic"), ("# watchtower 1.7.1", "containrrr/watchtower")] \
+        and all(re.fullmatch(r"\S+@sha256:[0-9a-f]{64}", image) for _, image in pinned), \
+        "caddy, restic (backup and restore) and watchtower run by digest, each with its version tag in a comment above"
+    assert "watchtower.enable" not in "\n".join(lines), "nothing asks the pinned watchtower to move an image"
     logged = (folder / AUDIT).read_text()
     assert "owner password set" in logged and PASSWORD not in logged and code not in logged and token not in logged
     shares = Shares(hosted.record, actor=SYSTEM)
@@ -436,3 +443,4 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
     finally:
         child.terminate()
         child.wait(APART_WAIT)
+
