@@ -1,5 +1,6 @@
 <script setup>
 import {saveSetting} from "../actions/settings.js";
+import {stopJournal} from "../actions/stopJournal.js";
 import {demo} from "../platform/demo.js";
 import {narrow} from "../platform/view.js";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
@@ -122,7 +123,7 @@ function showAll() {
 async function stop() {
     stopping.value = true;
     try {
-        await api.stop();
+        await stopJournal();
     } catch (e) {
         stopping.value = false;
     }

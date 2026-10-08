@@ -175,3 +175,32 @@ textarea {
         opacity: 0;
     }
 }
+
+[data-busy] {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+[data-busy] > * {
+    visibility: hidden;
+}
+
+[data-busy]:not(.busy)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 9px;
+    height: 9px;
+    margin: auto;
+    border: 1px solid var(--text-2);
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: busy-spin 0.7s linear infinite;
+}
+
+@keyframes busy-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

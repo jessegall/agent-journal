@@ -1,4 +1,4 @@
-import {runScenarios} from "./harness.mjs";
+import {reply, runScenarios} from "./harness.mjs";
 
 const AUTO = "Start the next to-do without asking";
 
@@ -48,5 +48,19 @@ await runScenarios(process.argv[2], {
         await panel.waitFor({timeout: 2000}).catch(() => {
             throw new Error("picking a unit closed the how-often panel");
         });
+    },
+    async "stopping the journal shows a spinner on Stop, then closes the tab or says the journal is stopped"(page, url) {
+        let answer;
+        await page.route(/\/api\/stop$/, (route) => new Promise((resolve) => (answer = () => (reply(route, {}), resolve()))));
+        await page.goto(`${url}#/main/settings?q=Stop the journal`);
+        const stop = page.getByRole("button", {name: "Stop", exact: true});
+        await stop.click();
+        await page.waitForFunction(() => document.querySelector("button[data-busy]"), null, {timeout: 5000}).catch(() => {
+            throw new Error("Stop showed no spinner while the server had not answered");
+        });
+        const closed = page.waitForEvent("close", {timeout: 5000}).then(() => true, () => false);
+        answer();
+        if (await closed) return;
+        await page.getByText("The journal is stopped", {exact: false}).waitFor({timeout: 5000});
     },
 });
