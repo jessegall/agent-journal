@@ -185,6 +185,12 @@ def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
     assert marks() == [("Running tests", "running")], "a test run shows as a mark while it runs"
     handle(claude, record.root, record.env, {**tests, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "3 passed, 1 failed in 0.2s"}})
     assert marks() == [("Tests failed", "failed")], "and turns red in place when a test fails"
+    chained = "cat > notes.txt <<'EOF'\npytest in a note\nEOF\nsed -i '' 's/a/b/' x.py && .venv/bin/python -m pytest src/features/secrets/test.py src/features/helpers/test.py -q -n 2"
+    handle(claude, record.root, record.env, {**tests, "tool_input": {"command": chained}})
+    handle(claude, record.root, record.env, {**tests, "tool_input": {"command": chained}, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "12 passed in 1s"}})
+    named = [(card["name"], card["command"]) for card in agents.by_session("claude-1").data["cards"] if card.get("key", "").startswith("tests:")]
+    assert named == [("The whole suite", "pytest -q"), ("Tests of secrets, Tests of helpers", ".venv/bin/python -m pytest src/features/secrets/test.py src/features/helpers/test.py -q -n 2")], \
+        "a test run's mark names what was tested and shows only its test command, never the chain around it"
 
 
 def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(tmp_path, monkeypatch):
