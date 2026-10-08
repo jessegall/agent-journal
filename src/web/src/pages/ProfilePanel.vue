@@ -1,7 +1,7 @@
 <script setup>
 import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {callings, profileInUse, profiles, sampleOf} from "../composables/profiles.js";
+import {callings, namings, profileInUse, profiles, sampleOf} from "../composables/profiles.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
@@ -26,6 +26,7 @@ const blank = () => ({
     calling: "title and name",
     sample: "",
     humour: "",
+    naming: "",
 });
 const draft = reactive(blank());
 const start = ref(0);
@@ -38,6 +39,7 @@ const copyOf = (row) => ({
     calling: row.data.calling,
     sample: sampleOf(row),
     humour: row.data.humour,
+    naming: row.data.naming,
 });
 const resetDraft = (row) => Object.assign(draft, row ? copyOf(row) : blank());
 
@@ -63,10 +65,12 @@ const choices = computed(() => {
         {value: "none", label: "No name", hint: "It never addresses you by name."},
     ].map((choice) => ({...choice, current: choice.value === draft.calling}));
 });
+const styles = computed(() => namings.value.map((style) => ({value: style.text, label: style.label, hint: style.text, current: style.text === draft.naming})));
 const sample = computed(() => (locked.value ? sampleOf(props.row) : draft.sample));
 const missing = computed(() => {
     if (!draft.title.trim()) return "Give it a name.";
     if (!draft.brief.trim()) return "Write how it talks.";
+    if (!draft.naming.trim()) return "Choose how it names its helpers and subagents.";
     return draft.sample.trim() ? "" : "Write a sample line.";
 });
 
@@ -155,6 +159,15 @@ function startFrom(row) {
                     :disabled="locked"
                     placeholder="For example: When I send a meme or am cross with you, answer with one dry line, then fix it."
                     @input="edit('humour', $event.target.value)"
+                />
+            </FormField>
+            <FormField label="Agent names" help="How the agent names the helpers and subagents it starts. Pick a style, or write your own below.">
+                <ChoiceList stacked :choices="styles" :disabled="locked" @pick="edit('naming', $event)" />
+                <TextArea
+                    :value="draft.naming"
+                    :disabled="locked"
+                    placeholder="For example: Name it after a famous chef that fits the job, such as Chef Julia for a cleanup."
+                    @input="edit('naming', $event.target.value)"
                 />
             </FormField>
             <FormField label="Address" help="Your title and first name are set in Settings › Agent, under Your title and name.">

@@ -74,11 +74,6 @@ class LawDetails(FeatureDetails):
 
     settings = [
         Setting(
-            name="cartoon_names",
-            default=False,
-            title="Name subagents after cartoon characters",
-        ),
-        Setting(
             name="whole_read_lines",
             default=600,
             title="Block reading a whole file longer than",

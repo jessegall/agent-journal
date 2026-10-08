@@ -4,11 +4,11 @@ from controllers.base import Controller
 from controllers.marks import action
 from features.form_of_address.names import first_name, in_use, title
 from features.form_of_address.resource import Profile
-from features.form_of_address.voices import BUTLER, SHIPPED, Calling, Voice, filled
+from features.form_of_address.voices import BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
 from resources.base import SYSTEM, Refused
 
 COPY = " (my copy)"
-SHAPE = ("brief", "calling", "sample", "humour")
+SHAPE = ("brief", "calling", "sample", "humour", "naming")
 
 
 class Profiles(Controller):
@@ -16,7 +16,7 @@ class Profiles(Controller):
 
     def voice(self, n: int) -> Voice:
         r = self.rows.peek(n)
-        return Voice(title=r.title, text=r.brief, calling=Calling(r.calling), sample=r.sample, humour=r.humour)
+        return Voice(title=r.title, text=r.brief, calling=Calling(r.calling), sample=r.sample, humour=r.humour, naming=r.naming)
 
     def standing(self) -> Voice:
         try:
@@ -26,8 +26,8 @@ class Profiles(Controller):
 
     @action
     def create(self, title: str, abstract: str = "", brief: str = "", calling: str = Calling.TITLE_AND_NAME.value, sample: str = "", humour: str = "",
-               **data):
-        return super().create(title, abstract, brief, calling=self._calling(calling), sample=sample, humour=humour, **data)
+               naming: str = SCIENTISTS.text, **data):
+        return super().create(title, abstract, brief, calling=self._calling(calling), sample=sample, humour=humour, naming=naming, **data)
 
     @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None,
@@ -48,11 +48,15 @@ class Profiles(Controller):
     @action
     def duplicate(self, n: int):
         row = self.load(n)
-        return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=self._sample(row), humour=row.humour)
+        return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=self._sample(row), humour=row.humour, naming=row.naming)
 
     @action
     def callings(self) -> dict:
         return {call.value: self._called(call) for call in Calling}
+
+    @action
+    def namings(self) -> list[dict]:
+        return [{"label": naming.label, "text": naming.text} for naming in NAMINGS]
 
     @action
     def samples(self) -> dict:
@@ -80,7 +84,7 @@ def ship(record) -> list[str]:
     held = {r.title: r for r in (profiles.load(row["n"]) for row in profiles.rows.summaries() if not row["deleted"]) if r.system}
     made = []
     for voice in SHIPPED:
-        shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample, "humour": voice.humour}
+        shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample, "humour": voice.humour, "naming": voice.naming}
         if voice.title not in held:
             profiles.create(voice.title, **shape, system=True)
         elif {name: getattr(held[voice.title], name) for name in SHAPE} != shape:

@@ -84,6 +84,13 @@ def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three()
     assert refused(lambda: profiles.update(copy.n, calling="sir")), "to one of the three only"
     assert refused(lambda: profiles.create("Odd", brief="x", calling="sir")), "a calling outside the three is refused"
     assert profiles.callings()["none"] == "" and "{you}" not in profiles.samples()[copy.n], "a copy keeps the sample with your name filled in"
+    from features.form_of_address.voices import CARTOON, NAMINGS, SPORTING
+    assert (copy.naming, [style["label"] for style in profiles.namings()]) == (SPORTING.text, [style.label for style in NAMINGS]), \
+        "a copy keeps how the Coach names its agents, and the styles to choose from are offered"
+    named = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).naming for row in profiles.rows.summaries()}
+    assert ("Dr. Einstein" in named["Butler"], "Big Mike" in named["Homie"], "Ada, reviewer" in named["Colleague"], "Coach Bolt" in named["Coach"]) == \
+        (True, True, True, True), "each shipped profile names agents in its own style"
+    assert profiles.update(copy.n, naming=CARTOON.text).naming == CARTOON.text, "and a profile of your own names them as you write"
 
 
 def test_each_profile_answers_a_joke_in_its_own_manner_and_the_journal_words_stay_plain_in_every_voice():
@@ -147,3 +154,17 @@ def test_the_upgrade_folds_every_environments_settings_into_the_project_with_the
     assert json.loads((root / "attic" / "settings-before-project" / "aside.json").read_text()) == values["aside"], \
         "a second run keeps the first backup instead of overwriting it with the emptied file"
     assert json.loads((root / "settings.json").read_text())["form_of_address"] == {"title": "Captain", "first_name": "Ada"}, "and changes nothing else"
+
+
+def test_the_upgrade_moves_the_cartoon_names_switch_into_the_profile_in_use():
+    import json
+    from features.form_of_address.names import in_use
+    from features.form_of_address.voices import CARTOON
+    from migrations.m0072_naming_lives_in_the_profile import run
+    record = shipped_record()
+    (record.home / "settings.json").write_text(json.dumps({"journal_laws": {"cartoon_names": True, "output_lines": 400}}))
+    run(record.root)
+    chosen = Profiles(record, actor=SYSTEM).load(in_use(record))
+    assert (chosen.title, chosen.naming, json.loads((record.home / "settings.json").read_text())) == \
+        ("Butler (my copy)", CARTOON.text, {"journal_laws": {"output_lines": 400}}), \
+        "the switch is gone, and a copy of the profile in use, now in use, names agents after cartoon characters"
