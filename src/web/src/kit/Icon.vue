@@ -33,6 +33,7 @@ const alias = {
     chevron: "arrow",
 };
 const shapes = {
+    key: '<circle cx="5.5" cy="10.5" r="2.8"/><path d="M7.5 8.5 13 3M10.8 5.2l1.7 1.7M9.2 6.8l1.2 1.2"/>',
     terminal: '<path d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>',
     trash: '<path d="M3 4.5h10M6.4 4.5V3h3.2v1.5M4.4 4.5l.7 8.5h5.8l.7-8.5"/>',
     chat: '<path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/>',
