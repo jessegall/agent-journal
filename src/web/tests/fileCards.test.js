@@ -5,7 +5,7 @@ vi.mock("../src/sync/rows.js", () => ({
 }));
 
 const {render} = await import("../src/text/index.js");
-await import("../src/text/fileCards.js");
+await import("../src/text/all.js");
 
 const context = {types: [{name: "message", title: "Message"}], env: "main"};
 
@@ -17,6 +17,11 @@ describe("a file the agent names", () => {
         expect(html).toContain("Here is the screen:");
     });
 
+    test("shows the picture when the server has already turned the message number into a marker", () => {
+        const html = render("[[chip message:17785|message 17785]] IMG_1201.png", context);
+        expect(html).toContain('<img class="file-card-image" src="');
+    });
+
     test("shows a file that is not a picture as a card with its name", () => {
         const html = render("message 17785 notes.txt", context);
         expect(html).not.toContain("<img");
@@ -25,6 +30,11 @@ describe("a file the agent names", () => {
 
     test("leaves a name the message does not hold as plain text", () => {
         expect(render("message 17785 other.png", context)).not.toContain("file-card");
+    });
+
+    test("shows a file path the server has already turned into a marker as a card", () => {
+        const html = render("[[file /Users/me/project/src/app.py|src/app.py]]", context);
+        expect(html).toContain('data-file="/Users/me/project/src/app.py"');
     });
 
     test("shows a file path on a line of its own as a card that opens the file", () => {
