@@ -6,7 +6,7 @@ from argparse import _SubParsersAction
 
 from engine.command_line import command_line
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
-from engine.project_files import is_listed, matching
+from engine.project_files import is_listed, matching, refresh
 from resources.base import SYSTEM
 from features.trigger import DAY
 
@@ -25,15 +25,14 @@ def command_words() -> dict[str, set[str]]:
     return out
 
 
-def missing_paths(project, text: str) -> list[str]:
-    return sorted({home + path for home, path in PATH.findall(text) if not present(project, home, path)})
+def missing_paths(project, text: str, listed: bool) -> list[str]:
+    return sorted({home + path for home, path in PATH.findall(text) if not present(project, home, path, listed)})
 
 
-def present(project, home: str, path: str) -> bool:
+def present(project, home: str, path: str, listed: bool) -> bool:
     if home:
         return (Path.home() / path).exists()
-    listed = is_listed(project)
-    return (project / path).exists() or bool(matching(project, path)) or not listed
+    return not listed or (project / path).exists() or bool(matching(project, path))
 
 
 def unknown_verbs(text: str, words: dict[str, set[str]]) -> list[str]:
@@ -60,12 +59,15 @@ def retiring(controller, r) -> str:
 
 def claim_evidence(record) -> list[Evidence]:
     project, words = record.root.parent, command_words()
+    listed = is_listed(project)
+    if not listed:
+        refresh(project)
     found = []
     for claims in CLAIMS:
         controller = claims(record, actor=SYSTEM)
         for r in controller.rows.standing():
             text = f"{r.title}\n{r.brief}"
-            found += [Evidence(r.ref, f"names {what}, which is gone", retiring(controller, r)) for what in missing_paths(project, text)]
+            found += [Evidence(r.ref, f"names {what}, which is gone", retiring(controller, r)) for what in missing_paths(project, text, listed)]
             found += [Evidence(r.ref, f"names {what}, which the CLI does not answer to", retiring(controller, r)) for what in unknown_verbs(text, words)]
     return found
 
