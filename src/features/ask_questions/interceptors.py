@@ -1,5 +1,6 @@
 import json
 
+from engine.journal_calls import calls, pieces
 from engine.reach import Reach
 from features.ask_questions.choices import restates
 from features.parts import ActionInterceptor, AgentContext, Context, ToolInterceptor
@@ -69,3 +70,21 @@ class NamesItsPick(QuestionInterceptor):
     def asked(self, controller, text: str, titles: list[str], pick: int | None) -> None:
         if controller.actor == AGENT and unpicked(titles, pick):
             controller._refuse(f"name the option you would pick with --set pick=<1 to {len(titles)}>: the card marks it as the agent's pick")
+
+
+class AskOnItsOwn(ToolInterceptor):
+    reach = Reach.MAIN
+
+    def intercept(self, context: AgentContext, call) -> str:
+        shell = call.shell_command
+        if not shell or not any(made.names("question", "ask") for made in calls(shell)) or len(pieces(shell)) < 2:
+            return ""
+        return "ask a question as a command of its own, never chained or piped with others, so it goes out once and on purpose"
+
+
+class AskedOnce(QuestionInterceptor):
+    def asked(self, controller, text: str, titles: list[str], pick: int | None) -> None:
+        title = titled(text.split("\n", 1)[0])
+        open_one = controller.rows.by_title(title, standing=True)
+        if open_one:
+            controller._refuse(f"question {open_one.n} already asks this and is still open: wait for its answer")

@@ -214,7 +214,10 @@ def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():
     assert "is a reaction: journal message react" in refused(lambda: Messages(record, actor="agent").reply(asked.n, "👍"))
     assert "read message" in refused(lambda: Messages(record, actor="agent").reply(asked.n, "On it.")), "a message the agent has not read is never answered"
     Messages(record, actor="agent").read(asked.n)
-    assert Messages(record, actor="agent").reply(asked.n, "On it."), "once read, it is answered"
+    first = Messages(record, actor="agent").reply(asked.n, "On it.")
+    assert first, "once read, it is answered"
+    assert "already answered this" in refused(lambda: Messages(record, actor="agent").reply(asked.n, "And one more thing.")), \
+        "a message gets one answer from the agent; more goes into that answer"
 
 
 def test_a_reaction_from_the_user_reaches_the_agent_as_what_it_is():

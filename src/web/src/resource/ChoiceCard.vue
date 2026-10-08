@@ -62,6 +62,7 @@ async function commitOwn(text) {
         const sent = await api.create("message", {brief: text, about: props.resource.ref});
         if (props.resource.type === "doc")
             await api.act("doc", props.resource.n, "update", {status: "final", answered_own: text, answered_message: sent.n});
+        else await api.act(props.resource.type, props.resource.n, "set", {key: "answered_own", value: text});
         written.value.push(`Sent as your message ${sent.n}: “${text}”. The answer comes in the chat.`);
         own.value = "";
         writing.value = false;

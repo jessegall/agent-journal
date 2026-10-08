@@ -157,6 +157,19 @@ def test_a_row_waits_on_one_question_and_the_user_can_dismiss_it():
         "a dismissal closes the question with the user's reason"
     assert "not asked again" in dismissed.outcome, "the agent hears it is not to act on it or ask again"
     assert Todos(record, actor=AGENT).ask(row.n, "Tag it as 5.2?").n, "once it is closed the row may ask again"
+    open_one = Questions(record, actor=AGENT).create("Which port should the viewer use?")
+    assert f"question {open_one.n} already asks this" in refused(lambda: Questions(record, actor=AGENT).create("Which port should the viewer use?")), \
+        "the same question, still open, is never asked twice"
+    from runner.hooks import handle
+    from providers import PROVIDERS
+
+    def shell(command):
+        return handle(PROVIDERS["claude"](), record.root, record.env,
+                      {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}}).get("reason", "")
+
+    asking = 'journal question ask "Ship it?" --set options=\'["Yes","No"]\' --set pick=1'
+    assert ("command of its own" in shell(f"journal todo create x; {asking}"), "command of its own" in shell(f"{asking} | grep x"), "command of its own" in shell(asking)) == \
+        (True, True, False), "a question is asked on its own, never chained or piped with other commands"
 
 
 def test_a_question_is_dismissed_when_its_row_closes_and_asked_about_after_a_day():

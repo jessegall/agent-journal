@@ -11,7 +11,8 @@ def pressed_of(row) -> list[str]:
 def unspent(row) -> list[Button]:
     buttons = [Button.from_payload(given) for given in row.data.get("buttons") or []]
     pressed = pressed_of(row)
-    return [button for button in buttons if not spent(button, buttons, pressed)]
+    answered = bool(row.data.get("answered_own"))
+    return [button for button in buttons if not spent(button, buttons, pressed) and not (answered and button.choice)]
 
 
 def press(record, row, label: str, actor: str, via: str):

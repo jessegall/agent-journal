@@ -81,6 +81,9 @@ class Messages(Controller):
         if windowed:
             kind, _, place = windowed.data["window"].partition(":")
             self._refuse(f"message {windowed.n} was written in {kind} {place}: answer it there, with journal {kind} say {place}")
+        earlier = next((reply for number in numbers for reply in self.comments(number) if self.actor == AGENT and reply.author == AGENT), None)
+        if earlier:
+            self._refuse(f"you already answered this in comment {earlier.n}: add to that answer with journal comment update {earlier.n} rather than a second reply")
         quotes = [self._quoted(number) for number in numbers]
         quoted = "\n>\n".join(quote for quote in quotes if quote)
         made = self.comment(numbers[0], f"{quoted}\n\n{text}" if quoted and not text.startswith(">") else text)
