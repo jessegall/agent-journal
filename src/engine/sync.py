@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 from enum import StrEnum
 
+from resources.base import Refused
+
 PROTOCOL = 1
+OLDEST_CLIENT_PROTOCOL = 1
 
 NEVER_TRAVELS_PATHS = ("runtime", "phone-push.json", "vault", "secrets")
 NEVER_TRAVELS_TYPES = ("phone",)
@@ -81,6 +84,8 @@ class Welcome:
 
 
 def connect(client: Hello, server: Hello) -> Welcome:
+    if client.shape.protocol < OLDEST_CLIENT_PROTOCOL:
+        raise Refused(f"this copy ({client.version or 'unknown release'}) is too old to carry the sync's checks on what never leaves a machine: upgrade it, then connect again")
     ours, theirs = numbered(client.version), numbered(server.version)
     release = Release.SAME if ours == theirs else Release.BEHIND if ours < theirs else Release.AHEAD
     return Welcome(release, client.shape.compared(server.shape))
