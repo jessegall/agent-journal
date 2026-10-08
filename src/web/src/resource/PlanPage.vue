@@ -13,14 +13,13 @@ import Folded from "../kit/Folded.vue";
 import PlanPageActions from "./PlanPageActions.vue";
 import PlanPhase from "./PlanPhase.vue";
 import TicketAgent from "../agents/TicketAgent.vue";
-import {useHelpers} from "../composables/helpers.js";
+import {useHelpersHolding} from "../composables/helpers.js";
 import {helperCard, helperEnvironment, helperName} from "../domain/helpers.js";
 import ProgressBar from "../kit/ProgressBar.vue";
 
 const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean, closable: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
 const error = ref("");
-const {rows: helpers, loaded: helpersLoaded} = useHelpers();
 const inspected = ref(null);
 const fetching = ref(false);
 const scope = useScope();
@@ -36,6 +35,7 @@ const phases = computed(() =>
         return {...p, i: i + 1, rows, waiting: fetching.value ? named.length - rows.length : 0};
     })
 );
+const {rows: helpers, loaded: helpersLoaded} = useHelpersHolding(computed(() => phases.value.flatMap((p) => p.rows)));
 watchEffect(() => {
     if (props.readOnly) return;
     const known = new Set(scope.rows("todo").map((t) => t.n));

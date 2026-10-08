@@ -100,6 +100,13 @@ export const helperCard = (row) => ({
 
 export const helperHolding = (todo, helpers) => helpers.find((row) => `helper:${row.n}` === todo.data?.assigned) || null;
 
+const ASSIGNED_HELPER = /^helper:(\d+)$/;
+
+export function holdingHelpers(todos) {
+    const numbers = todos.map((todo) => String(todo.data?.assigned || "").match(ASSIGNED_HELPER)).filter(Boolean).map((found) => Number(found[1]));
+    return [...new Set(numbers)];
+}
+
 export function helpersHolding(todos, helpers) {
     const held = todos.map((todo) => helperHolding(todo, helpers)).filter(Boolean);
     const once = held.filter((row, i) => held.findIndex((other) => other.n === row.n) === i);
