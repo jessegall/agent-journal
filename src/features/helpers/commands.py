@@ -13,4 +13,5 @@ class RetireSubagent(Command):
         if subagent not in known:
             raise Refused(f"{subagent} is not one of your subagents; name one by its id: journal agent retire <id>")
         retire(context.record, subagent)
+        agents._mark_primary("Retired a subagent", name=subagent, icon="agents")
         return f"subagent {subagent} is retired, so it no longer counts against the agents kept for reuse"

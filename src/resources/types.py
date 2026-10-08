@@ -53,6 +53,7 @@ class Todo(Ranked, Placed, Resource):
         Field(name="status"),
         Field(name="work"),
         Field(default="", name="assigned"),
+        Field(default="", name="handed"),
         Field(name="blocked"),
         Field(name="reported"),
         Field(name="pending"),

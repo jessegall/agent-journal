@@ -48,6 +48,10 @@ class Agents(Controller):
             return row
         return self.appended(row, "cards", {"at": time.time(), **card}, KEPT_CARDS)
 
+    def _mark_primary(self, label: str, **card):
+        primary = self.primary_to_read()
+        return self.card(primary.n, label=label, tone="good", **card) if primary else None
+
     def settle_cards(self, plugin: str, key: str, how: str):
         settled = 0
         for row in self.all():

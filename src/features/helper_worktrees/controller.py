@@ -10,7 +10,7 @@ from features.agent_sessions.launch import running_at
 from engine.worktree import contains, current_branch, git, included, lines, link_folders, present, share_journal, tip
 from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
-from controllers.types import Todos
+from controllers.types import Agents, Todos
 from resources.base import Refused, SYSTEM
 from controllers.marks import action
 
@@ -47,6 +47,7 @@ class Worktrees(Controller):
     @action(network=True)
     def cut(self, name: str, helper: str = "") -> str:
         row = self._cut(name, helper)
+        self._marked("Cut worktree", row)
         return (f"worktree {row.n}: {row.path} on branch {row.branch}, cut from {row.working} at {row.base[:10]}. "
                 f"Tell the helper to work and commit only there, and to rebase onto {row.working} before it reports.")
 
@@ -107,6 +108,7 @@ class Worktrees(Controller):
             raise Refused(f"the cherry-pick stopped and was undone: {(picked.stderr or picked.stdout).strip()}")
         self.update(row.n, taken=tip(project, row.branch))
         landed = self._land(row)
+        self._marked("Took work from worktree", row)
         return (f"took {plural(len(commits), 'commit')} from {row.branch} onto {row.working}, now at {tip(project, row.working)[:10]}"
                 + (f"; closed to-do {', '.join(str(n) for n in landed)}" if landed else ""))
 
@@ -137,7 +139,11 @@ class Worktrees(Controller):
         listed = Todos(self.record, actor=SYSTEM)
         for todo in self._waiting(row):
             listed.unassign(todo.n)
+        self._marked("Dropped worktree", row)
         return super().complete(n, how or f"dropped; its last commit is kept at {KEPT}/{row.title}", **data)
+
+    def _marked(self, label: str, row) -> None:
+        Agents(self.record, actor=SYSTEM)._mark_primary(label, name=row.title, icon="branch", detail=row.branch)
 
     def _drift(self, row) -> Drift:
         project = self._project()
