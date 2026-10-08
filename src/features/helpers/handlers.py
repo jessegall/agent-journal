@@ -5,6 +5,8 @@ from engine.seats import terminal_of
 from engine.events.engine import ClockTicked
 from engine.events.resources import AgentChanged
 from engine.sessions import Sessions, alive
+from controllers.types import Agents
+from engine.record import Record
 from features.helpers.controller import Helpers
 from features.parts import AgentContext, Handler, OnAgentUpdated
 from features.trigger import MINUTE
@@ -52,3 +54,15 @@ class NameStoppedOrQuietHelpers(Handler):
                 speaking.agent.say("stopped", n=row.n, name=row.name, cause=launch_failure(context.record.root, row.environment), rows=[row.ref])
             elif not stopped and time.time() - last_seen >= quiet_after and speaking.once("helper quiet", f"{row.n}:{last_seen}"):
                 speaking.agent.say("quiet", n=row.n, name=row.name, minutes=int((time.time() - last_seen) // MINUTE))
+            if not stopped:
+                self.name_idle(context, speaking, row)
+
+    def name_idle(self, context: AgentContext, speaking: AgentContext, row) -> None:
+        agent = Agents(Record(context.record.root, row.environment), actor=SYSTEM).primary_to_read()
+        idle = agent.idle_for if agent else 0.0
+        after, every, repeats = (float(context.settings.idle_after) * MINUTE, float(context.settings.idle_every) * MINUTE, int(context.settings.idle_repeats))
+        if idle < after:
+            return
+        notice = 1 + int((idle - after) // every) if every else 1
+        if (not repeats or notice <= 1 + repeats) and speaking.once("helper idle", f"{row.n}:{agent.at}:{notice}"):
+            speaking.agent.say("idle", n=row.n, name=row.name, minutes=int(idle // MINUTE))

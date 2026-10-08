@@ -85,6 +85,29 @@ class HelpersDetails(FeatureDetails):
             unit="minutes",
             under="watch",
         ),
+        Setting(
+            name="idle_after",
+            default=2,
+            title="Minutes a helper stands idle before you are told",
+            unit="minutes",
+            under="watch",
+        ),
+        Setting(
+            name="idle_every",
+            default=10,
+            title="Minutes between repeats of that notice",
+            abstract="0 tells you once",
+            unit="minutes",
+            under="watch",
+        ),
+        Setting(
+            name="idle_repeats",
+            default=0,
+            title="Repeats of that notice at most",
+            abstract="0 repeats without limit",
+            unit="repeats",
+            under="watch",
+        ),
     ]
 
     lines = [
@@ -97,6 +120,15 @@ class HelpersDetails(FeatureDetails):
             """,
             until=("helper.completed", "helper.deleted"),
             owed=still_unreported,
+            while_waiting=True,
+        ),
+        Line(
+            name="idle",
+            title="helper {{n}}, {{name}}, has stood idle for {{minutes}} minutes",
+            brief="""
+                it finished its turn and waits for work: journal helper say {{n}} "<the next work>", or
+                journal helper finish {{n}} once its work is taken
+            """,
             while_waiting=True,
         ),
         Line(
