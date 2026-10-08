@@ -94,7 +94,13 @@ export const helperHolding = (todo, helpers) => helpers.find((row) => `helper:${
 
 export function helpersHolding(todos, helpers) {
     const held = todos.map((todo) => helperHolding(todo, helpers)).filter(Boolean);
-    return held.filter((row, i) => held.findIndex((other) => other.n === row.n) === i);
+    const once = held.filter((row, i) => held.findIndex((other) => other.n === row.n) === i);
+    const named = new Map();
+    for (const row of once) {
+        const kept = named.get(helperName(row));
+        if (!kept || (FINISHED_STATES.has(helperState(kept)) && !FINISHED_STATES.has(helperState(row)))) named.set(helperName(row), row);
+    }
+    return once.filter((row) => named.get(helperName(row)) === row);
 }
 
 export function holdingRuns(todos, helpers) {

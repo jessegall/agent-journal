@@ -50,12 +50,16 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
                     <template v-if="phase.checkpoint">
                         <span class="cp">checkpoint</span>
                     </template>
-                    <template v-for="h in holders" :key="h.n">
-                        <HolderTag :name="helperName(h)" :state="helperTag(h).state" :word="helperTag(h).word" :closed="closedHolder(h)" @open="emit('inspect', h)" />
-                    </template>
                     <span class="progress">{{ closed }}/{{ rows.length }}</span>
                 </span>
             </div>
+            <template v-if="holders.length">
+                <div class="phead-tags">
+                    <template v-for="h in holders" :key="h.n">
+                        <HolderTag :name="helperName(h)" :state="helperTag(h).state" :word="helperTag(h).word" :closed="closedHolder(h)" @open="emit('inspect', h)" />
+                    </template>
+                </div>
+            </template>
             <template v-if="phase.when">
                 <div class="when">complete when {{ phase.when }}</div>
             </template>
@@ -175,7 +179,18 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
 
 .ptitle {
     flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
     font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.phead-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 2px 24px;
 }
 
 .phead-end {
