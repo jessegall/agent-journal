@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 import secrets
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import Enum
 
 from engine.fields import Loaded
@@ -22,6 +22,7 @@ SETUP_DAYS = 1
 MOST_TRIES = 5
 MOST_EVERYWHERE = 50
 LOCKED_FOR = 15 * MINUTE
+OWNER = "owner"
 
 
 def hashed(secret: str) -> str:
@@ -38,11 +39,28 @@ class KeptPassword(Loaded):
     hash: str = ""
     cost: int = EARLIER_COST
 
+    @classmethod
+    def made(cls, password: str) -> "KeptPassword":
+        if len(password) < SHORTEST:
+            raise Refused(f"the password needs at least {SHORTEST} characters")
+        salt = secrets.token_bytes(16)
+        return cls(salt.hex(), stretched(password, salt, COST), COST)
+
+    def matches(self, given: str) -> bool:
+        return bool(self.hash) and hmac.compare_digest(self.hash, stretched(given, bytes.fromhex(self.salt), self.cost))
+
 
 @dataclass(frozen=True)
 class KeptCode(Loaded):
     hash: str = ""
     until: float = 0.0
+
+    @classmethod
+    def made(cls, code: str, until: float) -> "KeptCode":
+        return cls(hashed(code), until)
+
+    def matches(self, given: str, now: float) -> bool:
+        return bool(self.hash) and self.until > now and hmac.compare_digest(self.hash, hashed(given.strip()))
 
 
 class Owner:
@@ -55,14 +73,10 @@ class Owner:
         return bool(KeptPassword.from_json(self.vault.read(PASSWORD)).hash)
 
     def matches(self, given: str) -> bool:
-        kept = KeptPassword.from_json(self.vault.read(PASSWORD))
-        return bool(kept.hash) and hmac.compare_digest(kept.hash, stretched(given, bytes.fromhex(kept.salt), kept.cost))
+        return KeptPassword.from_json(self.vault.read(PASSWORD)).matches(given)
 
     def set_password(self, password: str) -> None:
-        if len(password) < SHORTEST:
-            raise Refused(f"the password needs at least {SHORTEST} characters")
-        salt = secrets.token_bytes(16)
-        self.vault.write(PASSWORD, {"salt": salt.hex(), "hash": stretched(password, salt, COST), "cost": COST})
+        self.vault.write(PASSWORD, asdict(KeptPassword.made(password)))
         self.vault.remove(SETUP)
 
     def forget_password(self) -> None:
@@ -70,12 +84,11 @@ class Owner:
 
     def make_setup_code(self) -> str:
         code = secrets.token_urlsafe(9)
-        self.vault.write(SETUP, {"hash": hashed(code), "until": self.vault.clock() + SETUP_DAYS * DAY})
+        self.vault.write(SETUP, asdict(KeptCode.made(code, self.vault.clock() + SETUP_DAYS * DAY)))
         return code
 
     def setup_code_matches(self, given: str) -> bool:
-        kept = KeptCode.from_json(self.vault.read(SETUP))
-        return bool(kept.hash) and kept.until > self.vault.clock() and hmac.compare_digest(kept.hash, hashed(given.strip()))
+        return KeptCode.from_json(self.vault.read(SETUP)).matches(given, self.vault.clock())
 
 
 class Standing(Enum):
@@ -86,30 +99,42 @@ class Standing(Enum):
 
 @dataclass(frozen=True)
 class KeptLogin(Loaded):
+    """A browser's login: when it was made and runs out, the browser it came from, and whose it is."""
+
     made: float = 0.0
     until: float = 0.0
     device: str = ""
+    member: str = OWNER
+
+    def standing(self, now: float) -> Standing:
+        return Standing.OPEN if self.until > now else Standing.RAN_OUT
+
+    def is_owners(self) -> bool:
+        return self.member == OWNER
 
 
 class Logins:
-    """The browsers logged in as the owner, each by a token kept only as its hash."""
+    """The browsers logged in as the owner or a member, each by a token kept only as its hash."""
 
     def __init__(self, vault: Vault) -> None:
         self.vault = vault
 
-    def open(self, days: int, device: str) -> str:
+    def open(self, days: int, device: str, member: str) -> str:
         token = secrets.token_urlsafe(32)
         with self.vault.held():
             now = self.vault.clock()
             kept = {key: login for key, login in self.vault.read(LOGINS).items() if KeptLogin.from_json(login).until > now}
-            self.vault.write(LOGINS, {**kept, hashed(token): {"made": now, "until": now + days * DAY, "device": device[:120]}})
+            opened = KeptLogin(now, now + days * DAY, device[:120], member)
+            self.vault.write(LOGINS, {**kept, hashed(token): asdict(opened)})
         return token
 
+    def found(self, token: str) -> KeptLogin | None:
+        kept = self.vault.read(LOGINS).get(hashed(token)) if token else None
+        return None if kept is None else KeptLogin.from_json(kept)
+
     def standing(self, token: str) -> Standing:
-        found = self.vault.read(LOGINS).get(hashed(token)) if token else None
-        if found is None:
-            return Standing.UNKNOWN
-        return Standing.OPEN if KeptLogin.from_json(found).until > self.vault.clock() else Standing.RAN_OUT
+        login = self.found(token)
+        return Standing.UNKNOWN if login is None else login.standing(self.vault.clock())
 
     def close(self, token: str) -> None:
         with self.vault.held():

@@ -111,6 +111,18 @@ export class ApiClient {
         return this.post("/hosting/take-down", {});
     }
 
+    hostingMe() {
+        return this.get("/hosting/me");
+    }
+
+    members() {
+        return this.get("/hosting/members");
+    }
+
+    inviteMember(name) {
+        return this.post("/hosting/members", {name});
+    }
+
     upgrade() {
         return this.post("/upgrade");
     }

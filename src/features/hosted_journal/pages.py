@@ -22,6 +22,8 @@ class Notice(Enum):
     RAN_OUT = "Your login ran out. Log in again."
     LOGGED_OUT = "You are logged out."
     SHORT = "The password needs at least 12 characters, typed the same twice."
+    WRONG_NAME = "That name or password is wrong."
+    WRONG_INVITE = "This invite link is wrong, was used already or has run out. Ask the owner for a new one."
 
     @classmethod
     def named(cls, name: str) -> "Notice":
@@ -39,12 +41,12 @@ def framed(title: str, body: str) -> str:
 <body><main>{body}</main></body></html>"""
 
 
-def login_page(project: str, notice: Notice) -> str:
+def login_page(project: str, notice: Notice, below: str) -> str:
     return framed(f"Log in to {project}", f"""<h1>Log in to {html.escape(project)}</h1>
 <p class="abstract">This journal runs on a server. Its owner's password opens it.</p>
 <form method="post" action="/login">{notice.shown()}
 <label>Password<input type="password" name="password" autocomplete="current-password" required autofocus></label>
-<button type="submit">Log in</button></form>""")
+<button type="submit">Log in</button></form>{below}""")
 
 
 def notice_page(project: str, text: str) -> str:
