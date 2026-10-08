@@ -1,5 +1,6 @@
 import time
 
+from agents.terminal import launch_failure
 from engine.events.engine import ClockTicked
 from engine.events.resources import AgentChanged
 from engine.sessions import Sessions, alive
@@ -41,6 +42,6 @@ class NameStoppedOrQuietHelpers(Handler):
             last_seen = max(s.last_heard for s in theirs)
             stopped = all(s.pid and not alive(s.pid) for s in theirs)
             if stopped and speaking.once("helper stopped", f"{row.n}:{last_seen}"):
-                speaking.agent.say("stopped", n=row.n, name=row.name, rows=[row.ref])
+                speaking.agent.say("stopped", n=row.n, name=row.name, cause=launch_failure(context.record.root, row.environment), rows=[row.ref])
             elif not stopped and time.time() - last_seen >= quiet_after and speaking.once("helper quiet", f"{row.n}:{last_seen}"):
                 speaking.agent.say("quiet", n=row.n, name=row.name, minutes=int((time.time() - last_seen) // MINUTE))

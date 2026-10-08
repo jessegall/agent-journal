@@ -92,7 +92,7 @@ class HelpersDetails(FeatureDetails):
             name="stopped",
             title="helper {{n}}, {{name}}, stopped running before it reported",
             brief="""
-                its agent is gone, so journal helper say cannot reach it. Dispatch the job again, or
+                its agent is gone, so journal helper say cannot reach it. {{cause}} Dispatch the job again, or
                 journal helper finish {{n}} and do the job yourself
             """,
             until=("helper.completed", "helper.deleted"),

@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import subprocess
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -13,6 +14,8 @@ from engine.worktree import checkout, environment, share_journal
 from typing import TypedDict
 
 from supervisor import LAUNCHED
+
+ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|[\x00-\x08\x0b-\x1f\x7f]")
 
 LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
@@ -162,6 +165,14 @@ def supervise(root: Path, cwd: Path, env: str, agent: str, args: list[str], take
 
 def launch_log(root: Path, env: str) -> Path:
     return runtime.folder(root) / "launches" / f"{env}.log"
+
+
+def launch_failure(root: Path, env: str, lines: int = 3) -> str:
+    log = launch_log(root, env)
+    if not log.is_file():
+        return ""
+    tail = [ANSI.sub("", line).strip() for line in log.read_text(errors="replace").splitlines()[-40:]]
+    return " ".join([line for line in tail if line][-lines:])[:400]
 
 
 def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> int:
