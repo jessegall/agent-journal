@@ -6,6 +6,15 @@ const browser = await chromium.launch({channel: "chrome"});
 const page = await browser.newPage();
 const errors = [];
 page.on("pageerror", (error) => errors.push(String(error)));
+await page.addInitScript(() => {
+    const seen = (globalThis.dumpWindow = {opened: false, items: 0, closed: false});
+    setInterval(() => {
+        const open = !!document.querySelector(".dump-work");
+        seen.opened ||= open;
+        seen.closed ||= seen.opened && !open;
+        seen.items = Math.max(seen.items, document.querySelectorAll(".dump-pile *").length);
+    }, 20);
+});
 await page.goto(address);
 await page.waitForFunction(() => globalThis.demo && document.querySelector(".compose-send"));
 
@@ -60,6 +69,7 @@ if (feed) await feed.click();
 await page.waitForTimeout(1500);
 const got = await page.evaluate(() => ({
     finished: demo.player.finished,
+    dumpWindow: globalThis.dumpWindow,
     todos: demo.state.rows.todo.map((row) => !!row.completed),
     text: document.body.innerText,
     cards: document.querySelectorAll(".diff-card").length,

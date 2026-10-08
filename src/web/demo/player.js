@@ -96,9 +96,21 @@ export class Player {
         return true;
     }
 
+    get filing() {
+        return (this.standIn.moment.rows.dump || []).find((row) => !row.completed && !row.deleted) || null;
+    }
+
+    followDump(was) {
+        const now = this.filing;
+        if (now && now.n !== was?.n) Object.assign(store, {pane: "chat", dumpSelected: now.n, dumping: true});
+        if (!now && was) store.dumping = false;
+    }
+
     goTo(at) {
         const known = new Set(this.standIn.state.events.map((e) => e.id));
+        const filing = this.filing;
         while (this.standIn.state.at < at && this.standIn.step());
+        this.followDump(filing);
         this.standIn.state.events.filter((e) => !known.has(e.id)).forEach((e) => QuietStream.tell(this.standIn.dated(e)));
         this.stepped();
     }
