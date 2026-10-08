@@ -10,13 +10,13 @@ from features.routing import Reply, Request, handles
 class IntegrationFeature(Feature):
     """What every integration feature shares: the page of its state, and a client that holds its key in the journal's own process."""
 
-    host = ""
+    origin = ""
 
     def client(self, record) -> IntegrationClient:
         """The one client of this project, built when first needed and again when its settings change."""
         home = str(record.home)
         if home not in self.clients:
-            self.clients[home] = IntegrationClient(record.root, self.host, str(self.values(record).key))
+            self.clients[home] = IntegrationClient(record.root, self.origin, str(self.values(record).key))
         return self.clients[home]
 
     def register(self, journal: Journal) -> None:

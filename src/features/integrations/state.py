@@ -16,6 +16,8 @@ class IntegrationState(Loaded):
     last_checked: float = 0.0
     last_error: str = ""
     cursor: str = ""
+    paused_until: float = 0.0
+    failures: int = 0
 
 
 def state_file(root: Path, name: str) -> Path:
