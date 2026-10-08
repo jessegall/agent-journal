@@ -140,6 +140,7 @@ def monitor_status(finished: bool, notified: bool, status: str) -> str:
 
 
 class Claude(Provider):
+    refusals = ("credit balance is too low", "usage limit reached", "invalid api key")
     name = "claude"
     session_variable = "CLAUDE_CODE_SESSION_ID"
     follow_up = 'SendMessage({{to: "{id}", message: "<the new work>"}})'

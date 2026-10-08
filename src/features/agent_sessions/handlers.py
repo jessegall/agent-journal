@@ -72,8 +72,9 @@ class MarkSilentStopped(Handler):
         silent = time.time() - context.settings.quiet * MINUTE
         sessions = Sessions(context.record.root)
         for row in agents.rows.every():
-            if row.live and float(row.at) < silent and not live(sessions.read(row.title)):
-                stop(agents, row)
+            if not row.live or float(row.at) >= silent or live(sessions.read(row.title)):
+                continue
+            stop(agents, row)
 
 
 def stop(agents: Agents, row) -> None:
@@ -87,9 +88,10 @@ def stop_ended(root: Path) -> str:
     for record in environment_records(Path(root)):
         agents, sessions = Agents(record, actor=SYSTEM), Sessions(record.root)
         for row in agents.rows.every():
-            if row.live and not live(sessions.read(row.title)):
-                stop(agents, row)
-                ended.append(row.title)
+            if not row.live or live(sessions.read(row.title)):
+                continue
+            stop(agents, row)
+            ended.append(row.title)
     return f"sessions that had ended are stopped: {', '.join(ended)}" if ended else "no ended session was left running"
 
 

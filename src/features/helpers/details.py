@@ -164,6 +164,18 @@ class HelpersDetails(FeatureDetails):
             while_waiting=True,
         ),
         Line(
+            name="refused",
+            title="helper {{n}}, {{name}}, cannot work: {{provider}} refused it",
+            brief="""
+                {{provider}} said: {{reason}}. journal helper say cannot help while it refuses. Stop it with
+                journal helper stop {{n}}, then dispatch the job again on another provider, or journal helper finish {{n}}
+                and do the job yourself
+            """,
+            until=("helper.completed", "helper.deleted"),
+            owed=still_unreported,
+            while_waiting=True,
+        ),
+        Line(
             name="idle",
             title="helper {{n}}, {{name}}, has stood idle for {{minutes}} minutes",
             brief="""

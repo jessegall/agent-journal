@@ -204,6 +204,7 @@ class ModelControls(TypedDict):
 
 
 class Codex(Provider):
+    refusals = ("out of credits", "usage limit", "quota exceeded")
     name = "codex"
     dispatch_default = "gpt-6-sol"
     follow_up = 'send_input({{id: "{id}", message: "<the new work>"}})'

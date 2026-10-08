@@ -143,6 +143,12 @@ class Provider(ABC):
     applies_at_once = ()
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
     dispatch_default = ""
+    refusals: ClassVar[tuple[str, ...]] = ()
+
+    @classmethod
+    def refusal_in(cls, output: str) -> str | None:
+        """The line of an agent's launch output where this provider refused to work for it, such as for want of credits."""
+        return next((line.strip() for line in output.splitlines() if any(phrase in line.lower() for phrase in cls.refusals)), None)
 
     @classmethod
     def briefing_limit(cls) -> int:
