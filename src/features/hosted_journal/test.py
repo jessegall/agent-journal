@@ -3,6 +3,7 @@ import json
 import re
 import shutil
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -174,6 +175,12 @@ def test_the_owner_sets_the_password_with_a_one_time_code_then_works_in_the_view
     folder = hosted.vault.folder
     assert not folder.is_relative_to(hosted.record.root.resolve().parent)
     assert {path.stat().st_mode & 0o777 for path in (folder.parent, folder)} == {0o700} and (folder / LOGINS).stat().st_mode & 0o777 == 0o600
+    image, start = (DOCKER / "Dockerfile").read_text(), (DOCKER / "entrypoint.sh").read_text()
+    agents, gateway = (re.search(rf'{name}="setpriv --reuid (\w+)', start)[1] for name in ("AS_JOURNAL", "AS_GATEWAY"))
+    vault = re.search(r"AGENT_JOURNAL_VAULT=(\S+)", image)[1]
+    assert (agents != gateway, re.search(rf"chown (\w+):\w+ [^\n]*{vault}\b", image)[1], bool(re.search(rf"chmod 700 [^\n]*{vault}\b", image))) == (True, gateway, True), \
+        "the login page runs as a user of its own, the only one that can open the vault"
+    assert "COPY --chown=root:root src /opt/agent-journal/src" in image, "the login page runs code no agent can change"
     logged = (folder / AUDIT).read_text()
     assert "owner password set" in logged and PASSWORD not in logged and code not in logged and token not in logged
     shares = Shares(hosted.record, actor=SYSTEM)
