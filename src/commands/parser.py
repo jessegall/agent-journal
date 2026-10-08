@@ -37,7 +37,9 @@ def add_method(acts, controller: type, name: str) -> None:
             a.add_argument("--set", action="append", default=[], metavar="key=value")
         elif p.kind is inspect.Parameter.VAR_POSITIONAL:
             a.add_argument(p.name, nargs="*")
-        elif p.annotation is bool or isinstance(p.default, bool):
+        elif isinstance(p.default, bool):
+            a.add_argument(flag, action=argparse.BooleanOptionalAction, default=p.default)
+        elif p.annotation is bool:
             a.add_argument(flag, action="store_true")
         elif p.annotation == bool | None:
             a.add_argument(flag, type=truthy, default=None)

@@ -134,7 +134,7 @@ class Commands:
 
         def call(controller, *args, **kwargs):
             if not feature.enabled(controller.record):
-                raise Refused(f"the {feature.name} feature is off")
+                raise Refused(f"the {feature.name} feature is off: switch it on in Settings, or with journal feature switch {feature.name}")
             if command.user_only and controller.actor != USER:
                 raise Refused(f"only the user may {type_} {command.name}: they do it from the viewer")
             return command.run(Context.of(feature, controller.record), controller, *args, **kwargs)
