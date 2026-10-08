@@ -257,3 +257,24 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
     assert ((here / "photo.png").read_bytes(), calls) == (b"pixels", ["fetched"]), "an attachment is fetched when it is opened, once"
     assert "over the" in refused(lambda: fetch(Attachment("big.bin", 30 * 1024 * 1024, "x"), here, read)) and "whole" in refused(lambda: fetch(Attachment("odd.bin", 3, "x"), here, read)), \
         "one over the size limit is not fetched, and one that arrives other than described is not kept"
+    import subprocess
+    from engine.snapshots import SNAPSHOT_REFS, repositories, take
+    project = root / "project"
+    (project / "platform").mkdir(parents=True)
+    run = lambda *args, cwd=project: subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=cwd, capture_output=True, text=True, timeout=30, check=True).stdout.strip()
+    for folder in (project, project / "platform"):
+        run("init", "-q", cwd=folder)
+        (folder / "a.txt").write_text("one")
+        run("add", "a.txt", cwd=folder)
+        run("commit", "-qm", "first", cwd=folder)
+    (project / "a.txt").write_text("two")
+    (project / "platform" / "b.txt").write_text("new")
+    (project / ".env").write_text("KEY=1")
+    (project / ".journal").mkdir()
+    (project / ".journal" / "settings.json").write_text("{}")
+    assert repositories(project) == [".", "platform"], "the snapshot covers the project's repository and the ones nested in it"
+    made = take(project, "s1")
+    assert [(m.repository, m.ref) for m in made] == [(".", f"{SNAPSHOT_REFS}/s1/project"), ("platform", f"{SNAPSHOT_REFS}/s1/platform")], \
+        "each repository's snapshot is kept under a ref of the journal's, so it stays reachable"
+    assert (run("show", f"{made[0].ref}:a.txt"), run("ls-tree", "-r", "--name-only", made[0].ref).split(), run("show", f"{made[1].ref}:b.txt")) == ("two", ["a.txt"], "new"), \
+        "it holds the working files as they stand, nested repositories apart, and leaves out the environment file and the journal's own record"
