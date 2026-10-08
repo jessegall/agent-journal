@@ -93,7 +93,7 @@ def test_a_repeat_ends_when_the_row_it_is_about_changes_or_waits():
     idle(record)
     tick(record)
     assert len(numbered(record, "todo 2 next")) == 1, "the next ready row is offered in its place"
-    Todos(record, actor=AGENT).ask(2, "Files or SQLite?")
+    Todos(record, actor=AGENT).ask(2, "Files or SQLite?", options=[{"title": "Files"}, {"title": "SQLite"}], pick=1)
     aged(record, 60)
     tick(record)
     assert (numbered(record, "todo 2 next"), len(numbered(record, "todo 2 next", completed=True))) == ([], 1), \

@@ -181,7 +181,7 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     record = fresh()
     idle(record, context=70)
     Messages(record, actor=USER).create("answer me")
-    Questions(record, actor=AGENT).create("Which one?")
+    Questions(record, actor=AGENT).create("Which one?", options=[{"title": "A"}, {"title": "B"}], pick=1)
     work = Works(record, actor=AGENT).create("the job")
     Works(record, actor=AGENT).section(work.n, "log", "started")
     now = clock.time()

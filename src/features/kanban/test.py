@@ -33,7 +33,7 @@ def test_every_to_do_sits_in_one_lane_by_its_state_and_the_first_rule_that_match
     todos.after(waiting, plain)
     Works(record, actor=AGENT).create("building it", todo=started)
     Works(record, actor=AGENT, force="two at once for the test").create("another", todo=asked)
-    Questions(record, actor=AGENT).create("which way", about=f"todo:{asked}")
+    Questions(record, actor=AGENT).create("which way", about=f"todo:{asked}", options=[{"title": "A"}, {"title": "B"}], pick=1)
     todos.complete(done, "shipped")
     todos.complete(old, "long ago")
     closed = todos.load(old)

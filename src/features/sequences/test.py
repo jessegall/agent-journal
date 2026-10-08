@@ -296,11 +296,11 @@ def test_a_standing_step_is_nudged_until_a_question_about_its_own_run_is_asked()
     sequences.run(made.n)
     key = next(iter(sequences.load(made.n).runs))
     late = lambda: [n for n in nudges(record) if "is still at step" in n]
-    CONTROLLERS["question"](record, actor=AGENT).create("Which colour for the button?")
+    CONTROLLERS["question"](record, actor=AGENT).create("Which colour for the button?", options=[{"title": "Blue"}, {"title": "Red"}], pick=1)
     sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 90}})
     tick(record)
     assert len(late()) == 1, "a step standing still for a minute is nudged, whatever unrelated question is open"
-    about_run = CONTROLLERS["question"](record, actor=AGENT).create("Is this step still wanted?", about=made.ref)
+    about_run = CONTROLLERS["question"](record, actor=AGENT).create("Is this step still wanted?", about=made.ref, options=[{"title": "Yes, still wanted"}, {"title": "No, drop it"}], pick=1)
     sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 300}})
     tick(record)
     assert len(late()) == 1, "a question about the run itself pauses its nudge"
@@ -371,7 +371,7 @@ def test_only_a_starting_trigger_starts_a_sequence_and_each_message_gets_its_own
         "a sequence that dispatches tells the working agent to dispatch, about the board, and lends it the environment"
     handed = CONTROLLERS["sequence"](record, actor=AGENT, agent="filler").next(dispatching.n, about="board:3")
     assert "check it" in str(handed), "the agent the sequence dispatched moves it on and is handed the next step at once"
-    asked = CONTROLLERS["question"](record, actor=AGENT).create("Which one?", about="board:3")
+    asked = CONTROLLERS["question"](record, actor=AGENT).create("Which one?", about="board:3", options=[{"title": "A"}, {"title": "B"}], pick=1)
     CONTROLLERS["question"](record, actor=USER).complete(asked.n, how="the first")
     assert f"board 3 waits for the filler (question {asked.n} answered - the first) - dispatch it now" in nudges(record), "an answer to a question about the board dispatches it again"
     from migrations.m0063_one_sequence_step_reminder import run as move_reminder
