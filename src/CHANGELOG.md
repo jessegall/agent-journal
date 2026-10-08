@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.259.0 — Triggers that watch the journal, and a calmer dump window
+- A trigger can now fire on something true in the journal instead of words: a message of yours unanswered or unread for a while, work open without a log entry, the agent idle or its context full, a question left open, or ready to-dos with no work open. It reminds the agent, tells it what to do, or holds its writes until the matter is dealt with. Make and edit one in the viewer under Triggers, choosing 'When something in the journal is true'.
+- The dump window drops its green: a quiet Filed label, a plain summary with a tally of what was filed, the agent's suggestions as ordinary buttons inside the summary, grey counts under each file and one list of what was filed. Colour stays only while filing, for a question waiting on you, and for something that failed or is being removed. The phone's dump screens follow the same rules.
+
 ## 2.258.0 — Waiting shows once and counts live, the agent's comment replies show in the chat, and an unread message cannot be answered
 - The edge around the message box travels at one steady speed while the agent waits. Its label reads Waiting with a small tag for what it waits on (subagent, helper, command or background run), and opens the list on a click; the bar above the message box no longer repeats it.
 - The time waited counts up live with seconds, such as 1m 07s, in the list, on the label and on the phone. The status at the top shows a pulsing orange dot instead of a spinner. In the list, each item's status sits level with its first line.

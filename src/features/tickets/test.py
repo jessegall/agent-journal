@@ -534,8 +534,9 @@ def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
     request = Boards(record, actor=USER).request(board.n, "I want to share")
     agent = Messages(record, actor=AGENT)
     agent.read(request.n)
-    assert "shorter" in refused(lambda: agent.reply(request.n, "y" * (PANEL_REPLY + 1))), "a reply the panel cannot show whole is refused"
-    assert agent.reply(request.n, "Five tickets drafted, pick the ones to keep.").brief.endswith("pick the ones to keep."), "a short reply goes through"
+    assert "journal board say" in refused(lambda: agent.reply(request.n, "Five tickets drafted.")), "a request made on the board is answered on the board"
+    assert "shorter" in refused(lambda: agent.comment(request.n, "y" * (PANEL_REPLY + 1))), "an answer the panel cannot show whole is refused"
+    assert agent.comment(request.n, "Five tickets drafted, pick the ones to keep.").brief.endswith("pick the ones to keep."), "a short answer goes through"
 
 
 def calls_fire_once_and_repeat_on_time(monkeypatch):
