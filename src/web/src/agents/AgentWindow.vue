@@ -23,15 +23,16 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
         opens
         compact
         :class="['agent-window', state.key, {sub: entry.sub}]"
-        :label="`Open the agent of ${entry.label} ${entry.title}`"
+        :label="`Open ${entry.name}, ${entry.title}`"
         @open="emit('open')"
     >
         <template #head>
             <span class="aw-head">
-                <span class="aw-label">{{ entry.label }}</span>
-                <StateDot :state="state.dot" />
-                <span class="aw-state">{{ state.word }}</span>
-                <span class="aw-env">{{ entry.of ? `${entry.of} · ${entry.env}` : entry.env }}</span>
+                <span class="aw-name">{{ entry.name }}</span>
+                <span class="aw-pill">
+                    <StateDot :state="state.dot" />
+                    <span class="aw-state">{{ state.word }}</span>
+                </span>
             </span>
         </template>
         <p class="aw-title">{{ entry.title }}</p>
@@ -46,12 +47,27 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
         <template v-else-if="entry.now">
             <p class="aw-now">{{ entry.now }}</p>
         </template>
-        <template v-if="entry.since" #corner>
-            <JobTimer :since="entry.since" />
-        </template>
-        <template v-if="entry.plan" #foot>
+        <template v-if="entry.plan">
             <Meter v-bind="planMeter(entry.plan)" />
         </template>
+        <div class="aw-lines">
+            <p class="aw-line">
+                <span class="aw-key">Branch</span>
+                <span class="aw-branch">{{ entry.env }}</span>
+            </p>
+            <template v-if="entry.label">
+                <p class="aw-line">
+                    <span class="aw-key">Kind</span>
+                    <span class="aw-kind">
+                        <span class="aw-label">{{ entry.label }}</span>
+                        <template v-if="entry.of">{{ entry.of }}</template>
+                    </span>
+                    <template v-if="entry.since">
+                        <JobTimer class="aw-timer" :since="entry.since" />
+                    </template>
+                </p>
+            </template>
+        </div>
     </Tile>
 </template>
 
@@ -79,25 +95,41 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
 .aw-head {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
     min-width: 0;
-    font-size: 11.5px;
+    width: 100%;
 }
 
-.aw-label,
-.aw-state {
-    flex: none;
+.aw-name {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.aw-label {
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
+.aw-pill {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    padding: 1px 9px;
+    border: 1px solid var(--border-2);
+    border-radius: 999px;
+    font-size: 11.5px;
 }
 
 .aw-state {
     color: var(--text-2);
     font-weight: 500;
+    white-space: nowrap;
+}
+
+.agent-window.waiting .aw-pill {
+    border-color: color-mix(in srgb, var(--tone-warn) 45%, var(--border-2));
 }
 
 .agent-window.waiting .aw-state {
@@ -108,27 +140,65 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
     color: var(--danger);
 }
 
-.aw-env {
-    min-width: 0;
-    margin-left: auto;
+.aw-title {
+    display: -webkit-box;
+    margin: 0;
     overflow: hidden;
+    color: var(--text-2);
+    font-size: 13px;
+    line-height: 1.35;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.aw-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: auto;
+}
+
+.aw-line {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+    margin: 0;
+    font-size: 11.5px;
+}
+
+.aw-key {
+    flex: none;
+    width: 44px;
     color: var(--text-4);
+}
+
+.aw-branch {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-3);
     font-family: var(--mono);
     font-size: 10.5px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.aw-title {
-    display: -webkit-box;
-    margin: 0;
+.aw-kind {
+    min-width: 0;
     overflow: hidden;
-    color: var(--text);
-    font-size: 13.5px;
-    font-weight: 500;
-    line-height: 1.35;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    color: var(--text-3);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.aw-label {
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.aw-timer {
+    flex: none;
+    margin-left: auto;
 }
 
 .aw-seen {
