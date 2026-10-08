@@ -143,6 +143,9 @@ class PlanStrip(TypedDict):
     updated: float
     phases: list[PlanPhase]
     hold: int
+    delegated: bool
+    helpers: list[str]
+    tickets: list[int]
 
 
 class Feed(TypedDict):
@@ -151,7 +154,7 @@ class Feed(TypedDict):
     agent: str
     notices: list[dict]
     running: Running
-    plan: PlanStrip | None
+    plans: list[PlanStrip]
 
 
 def in_feed(kind: str, row, away: list[str]) -> bool:
@@ -194,19 +197,24 @@ def feed(home: Record, phone, before: float = math.inf) -> Feed:
     tasks = task_names(home) if any(item["data"].get("sent_to") for item in items) else {}
     items = sorted([*({**item, "to": tasks.get(item["data"].get("sent_to"))} for item in items), *shown], key=lambda item: item["created"])
     return Feed(items=items, waiting=waiting(home, phone), agent=Agents(home, actor=SYSTEM).state(phone.environment), notices=notices(home),
-                running=running(home, phone.environment), plan=plan_strip(home))
+                running=running(home, phone.environment), plans=plan_strips(home))
 
 
-def plan_strip(home: Record) -> PlanStrip | None:
+def plan_strips(home: Record) -> list[PlanStrip]:
     plans = Plans(home, actor=SYSTEM)
-    plan = next(iter(plans._running()), None)
-    if plan is None:
-        return None
+    return [plan_strip(home, plans, plan) for plan in sorted(plans._running(), key=lambda plan: (plan.delegated, plan.n))]
+
+
+def plan_strip(home: Record, plans: Plans, plan) -> PlanStrip:
     phases = [PlanPhase(title=formatted(phase[PHASE.title], home, VIEWER), checkpoint=bool(phase[PHASE.checkpoint]),
                         todos=[PlanTodo(n=row.n, title=formatted(row.title, home, VIEWER), done=bool(row.completed)) for row in plans._members(phase)])
               for phase in plan.phases]
+    open_rows = [row for row in plans._members(plan.current_phase) if not row.completed] if plan.delegated and plan.current_phase else []
+    helpers = Helpers(home, actor=SYSTEM)
+    names = sorted({helpers.load(int(row.assigned.partition(":")[2])).name for row in open_rows if row.assigned.startswith("helper:")})
     return PlanStrip(n=plan.n, title=formatted(plan.title, home, VIEWER), abstract=formatted(plan.abstract, home, VIEWER), status=plan.status,
-                     current=plan.current, updated=plan.updated, phases=phases, hold=hold(home))
+                     current=plan.current, updated=plan.updated, phases=phases, hold=hold(home), delegated=plan.delegated, helpers=names,
+                     tickets=[row.n for row in open_rows if row.type == "ticket"])
 
 
 def marks(home: Record, since: float) -> list[Mark]:

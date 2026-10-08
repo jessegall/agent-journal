@@ -1,4 +1,4 @@
-import {reactive, ref, watch} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import {useHeldSend} from "../composables/heldSend.js";
 import {ended, perform} from "./outbox.js";
 import {announce, tryAgain} from "./announce.js";
@@ -65,5 +65,5 @@ export function usePlanGo(plan, refresh, failed) {
         }
     );
 
-    return reactive({left, held, sent, waits, stale, trouble, sendingNow, seconds, start, undo: stop, now: sendNow, again});
+    return reactive({n: computed(() => plan.value?.n), left, held, sent, waits, stale, trouble, sendingNow, seconds, start, undo: stop, now: sendNow, again});
 }

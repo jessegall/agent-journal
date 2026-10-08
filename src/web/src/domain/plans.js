@@ -34,9 +34,14 @@ export function cardPlan(plans) {
     return lead && !PLAN_RUNNING.includes(lead.data.status) ? lead : null;
 }
 
-export function barPlan(plans) {
-    const lead = leadingPlan(plans);
-    return lead && PLAN_RUNNING.includes(lead.data.status) ? lead : null;
+const BARS_SHOWN = 3;
+const isRunning = (p) => PLAN_RUNNING.includes(p.data.status);
+
+export function barPlans(plans) {
+    const running = openPlans(plans)
+        .filter(isRunning)
+        .sort((a, b) => Boolean(a.data.delegated) - Boolean(b.data.delegated) || (a.data.status === "approved") - (b.data.status === "approved") || a.n - b.n);
+    return running.length > BARS_SHOWN ? running.slice(0, BARS_SHOWN) : running;
 }
 
 export function otherPlans(plans) {
@@ -44,11 +49,47 @@ export function otherPlans(plans) {
     return openPlans(plans).filter((p) => p !== lead);
 }
 
+export function foldedPlans(plans) {
+    const shown = barPlans(plans);
+    return openPlans(plans).filter((p) => !shown.includes(p));
+}
+
 export function othersLine(others) {
     const parked = others.filter((p) => p.data.status === "parked").length;
-    const planned = others.length - parked;
-    const words = [planned && `+${planned} more planned`, parked && `${planned ? "" : "+"}${parked} paused`];
+    const active = others.filter(isRunning).length;
+    const planned = others.length - parked - active;
+    const words = [
+        active && `+${active} more active ${active === 1 ? "plan" : "plans"}`,
+        planned && `+${planned} more planned`,
+        parked && `${active || planned ? "" : "+"}${parked} paused`,
+    ];
     return words.filter(Boolean).join(" · ");
+}
+
+const joined = (words) => (words.length < 2 ? words.join("") : `${words.slice(0, -1).join(", ")} and ${words.at(-1)}`);
+
+export function withLine(helpers, tickets) {
+    if (helpers.length) return `With ${helpers.length === 1 ? "helper" : "helpers"} ${joined(helpers)}`;
+    if (tickets.length) return `With the agent on ${tickets.length === 1 ? "ticket" : "tickets"} ${joined(tickets)}`;
+    return "With helpers";
+}
+
+export function delegationOf(p, {todos, helpers, worktrees, tickets}) {
+    const phase = p.data.phases[(p.data.current || 1) - 1];
+    if (!p.data.delegated || !phase) return null;
+    const held = new Set(
+        todos.filter((t) => phase.todos.includes(t.n) && !t.completed && String(t.data.assigned || "").startsWith("helper:")).map((t) => Number(t.data.assigned.split(":")[1]))
+    );
+    const found = helpers
+        .filter((h) => held.has(h.n))
+        .map((h) => ({
+            n: h.n,
+            name: h.data.name,
+            job: h.title,
+            branch: worktrees.filter((w) => !w.completed && w.data.helper === h.data.name).at(-1)?.data.branch || "",
+        }));
+    const agents = tickets.filter((t) => (phase.tickets || []).includes(t.n) && !t.completed).map((t) => t.n);
+    return {helpers: found, tickets: agents, line: withLine(found.map((h) => h.name), agents)};
 }
 
 export function sizeOf(p) {

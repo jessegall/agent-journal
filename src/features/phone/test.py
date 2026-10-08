@@ -516,7 +516,11 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     for title in ("One", "Two"):
         plans(record, actor=AGENT).phase(held.n, title, "done", checkpoint=title == "One")
     Controller.update(plans(record, actor=SYSTEM), held.n, status="waiting", current=1)
-    strip = call(base, "/p/feed", key=key).body["plan"]
+    beside = Controller.update(plans(record, actor=SYSTEM), plans(record, actor=AGENT).create("Beside it").n, status="active", delegated=True)
+    strips = call(base, "/p/feed", key=key).body["plans"]
+    assert [(each["n"], each["delegated"]) for each in strips] == [(held.n, False), (beside.n, True)], \
+        "the feed carries a strip for each running plan, the one you work first and a delegated one after it"
+    strip = strips[0]
     assert (strip["n"], strip["status"], [phase["title"] for phase in strip["phases"]]) == (held.n, "waiting", ["One", "Two"]), \
         "the feed carries the plan that runs, with its phases"
     assert call(base, "/p/continue", {"n": held.n, "updated": strip["updated"] - 5}, key).status == 409, "a plan that moved on is not continued"

@@ -21,6 +21,7 @@
         --accent-dim: #e5e6fa;
         --tone-good: #2e8a4e;
         --tone-warn: #a4731a;
+        --tone-helper: #1f8a7e;
         --danger: #bf4f3d;
         --tip-bg: #ffffff;
         --tip-edge: var(--border-2);

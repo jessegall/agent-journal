@@ -52,7 +52,7 @@ import PhoneAtWork from "./PhoneAtWork.vue";
 import PhonePlanSheet from "./PhonePlanSheet.vue";
 import PhoneSuggestionLayer from "./PhoneSuggestionLayer.vue";
 import {phoneActs} from "./suggestionActs.js";
-import {usePlanGo} from "./planGo.js";
+import {usePlanGo, WAITS} from "./planGo.js";
 import {useEdgeBack} from "./edge.js";
 import {useUnder} from "./under.js";
 import {announce, spoken} from "./announce.js";
@@ -84,7 +84,7 @@ const agentOpen = ref(false);
 const secondNow = useSharedNow();
 const waitingNow = computed(() => phoneWaiting(feed.value, secondNow.value));
 const atWorkOpen = ref(false);
-const planOpen = ref(false);
+const planOpen = ref(0);
 const lastActive = computed(() => items.value.findLast((item) => item.who !== "user")?.created || 0);
 const direction = ref("push");
 const screen = ref("chat");
@@ -366,8 +366,11 @@ provide(
     "suggestionActs",
     phoneActs((target) => open(target), refresh)
 );
+const focusedPlan = computed(
+    () => feed.value.plans.find((plan) => plan.n === planOpen.value) || feed.value.plans.find((plan) => plan.status === WAITS) || feed.value.plans[0]
+);
 const go = usePlanGo(
-    computed(() => feed.value.plan),
+    focusedPlan,
     refresh,
     failed
 );
@@ -679,7 +682,7 @@ onMounted(startTourOnce);
                     @places="picking = true"
                     @agent="agentOpen = true"
                     @at-work="atWorkOpen = true"
-                    @plan="planOpen = true"
+                    @plan="planOpen = $event"
                     @open="open"
                     @list="listing = true"
                 />
@@ -875,8 +878,8 @@ onMounted(startTourOnce);
             @close="atWorkOpen = false"
         />
     </template>
-    <template v-if="planOpen && feed.plan">
-        <PhonePlanSheet :plan="feed.plan" :go="go" @read="(target) => ((planOpen = false), open(target))" @close="planOpen = false" />
+    <template v-if="planOpen && focusedPlan">
+        <PhonePlanSheet :plan="focusedPlan" :go="go" @read="(target) => ((planOpen = 0), open(target))" @close="planOpen = 0" />
     </template>
     <template v-if="listing">
         <PhoneNeeds :waiting="feed.waiting" @open="(target) => ((listing = false), open(target))" @close="listing = false" />

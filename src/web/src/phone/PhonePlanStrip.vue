@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
+import {withLine} from "../domain/plans.js";
 import {here, phaseAt, phaseProgress, share, WAITS} from "./planGo.js";
 
 const SEGMENTS = 8;
@@ -13,6 +14,8 @@ const emit = defineEmits(["open"]);
 const typing = ref(false);
 const focus = (event) => (typing.value = event.type === "focusin" && /^(INPUT|TEXTAREA)$/.test(event.target.tagName));
 const waits = computed(() => props.plan.status === WAITS);
+const mine = computed(() => props.go.n === props.plan.n);
+const delegation = computed(() => props.plan.delegated && withLine(props.plan.helpers, props.plan.tickets));
 const at = computed(() => here(props.plan));
 const phase = computed(() => phaseAt(props.plan, at.value));
 const folded = computed(() => (typing.value || props.away) && !waits.value);
@@ -35,7 +38,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <section :class="['plan-strip', {waits, folded}]" aria-label="The plan that is running">
+    <section :class="['plan-strip', {waits, folded, delegated: delegation}]" :aria-label="`Plan ${plan.n} is running`">
         <button type="button" class="plan-open" :aria-label="label" @click="emit('open')">
             <span class="plan-row">
                 <svg
@@ -84,9 +87,12 @@ onUnmounted(() => {
                         <template v-if="phase.todos.length">done</template>
                     </span>
                 </span>
+                <template v-if="delegation">
+                    <span class="plan-row plan-with">{{ delegation }}</span>
+                </template>
             </template>
         </button>
-        <template v-if="waits && !folded">
+        <template v-if="waits && mine && !folded">
             <div class="plan-wait">
                 <template v-if="go.sent">
                     <span class="plan-note">Sent</span>
@@ -121,6 +127,16 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.plan-strip.delegated .plan-flag,
+.plan-strip.delegated .plan-count {
+    color: var(--tone-helper);
+}
+
+.plan-with {
+    color: var(--tone-helper);
+    font-size: 12px;
+}
+
 .plan-strip {
     display: flex;
     flex-direction: column;

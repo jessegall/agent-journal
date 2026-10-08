@@ -2,7 +2,7 @@
 import {agent} from "../composables/leadAgent.js";
 import {autoOn, steered, workMode} from "../composables/settings.js";
 import {store} from "../state/store.js";
-import {barPlan, otherPlans} from "../domain/plans.js";
+import {barPlans, foldedPlans} from "../domain/plans.js";
 import {currentWork, lineOf, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
 import {silentIn} from "../domain/journals.js";
 import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
@@ -102,8 +102,8 @@ const sentence = computed(() => {
     return {head: now.slice(0, cut), tail: now.slice(cut)};
 });
 watch(line, (now, before) => (was.value = before || ""));
-const bar = computed(() => barPlan(rows("plan")));
-const others = computed(() => otherPlans(rows("plan")));
+const bars = computed(() => barPlans(rows("plan")));
+const others = computed(() => foldedPlans(rows("plan")));
 const error = ref("");
 
 async function runBar(p) {
@@ -221,18 +221,18 @@ async function runBar(p) {
     <template v-if="waitingOpen && waitingNow">
         <WaitingPanel :waiting="waitingNow" :anchor="waitingAnchor" @close="waitingOpen = false" />
     </template>
-    <Transition name="planbar">
+    <TransitionGroup name="planbar">
         <PSection
-            v-if="bar"
+            v-for="(bar, i) in bars"
             :key="bar.n"
             :p="bar"
             :data="bar.data"
-            :others="others"
+            :others="i === bars.length - 1 ? others : []"
             :error="error"
             @run-bar="runBar"
             @failed="error = $event"
         />
-    </Transition>
+    </TransitionGroup>
     <Toast :toast="toast" @done="toast = null" />
 </template>
 

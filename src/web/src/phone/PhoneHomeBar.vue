@@ -91,8 +91,8 @@ const agentTone = computed(() => (paused.value ? "paused" : waiting.value ? "wai
             </p>
         </template>
         <PhoneNotify />
-        <template v-if="feed.plan">
-            <PhonePlanStrip :plan="feed.plan" :go="go" :away="away" @open="emit('plan')" />
+        <template v-for="plan in feed.plans" :key="plan.n">
+            <PhonePlanStrip :plan="plan" :go="go" :away="away" @open="emit('plan', plan.n)" />
         </template>
         <PhoneWaiting :waiting="feed.waiting" @open="(target) => emit('open', target)" @list="emit('list')" />
     </div>
