@@ -1,6 +1,7 @@
 <script setup>
 import {agent} from "../composables/leadAgent.js";
 import {autoOn, steered, workMode} from "../composables/settings.js";
+import {oneLine} from "../format/command.js";
 import {store} from "../state/store.js";
 import {barPlans, foldedPlans} from "../domain/plans.js";
 import {currentWork, lineOf, named, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
@@ -89,7 +90,7 @@ const line = computed(() => {
     if (paused.value) return "held until you resume it";
     if (silent.value) return "started, but it never reported in";
     if (waitingNow.value) return current.value ? named(current.value) : "";
-    return lineOf(agent.value, rows("work"), waiting.value, helpers.value);
+    return oneLine(lineOf(agent.value, rows("work"), waiting.value, helpers.value), store.summary?.project);
 });
 const inspect = () => peek("work", current.value.n);
 const roll = (event) => (waitingNow.value && !paused.value ? toggleWaiting(event) : current.value && inspect());
