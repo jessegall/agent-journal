@@ -118,6 +118,16 @@ from features.connection.transport import HttpTransport, ServerKey
 server = HttpTransport('http://{ADDRESS}', ServerKey('{COPY_ROOT}').read())
 print(server.holder('{ENV}').machine == server.hello().machine)""") == "True"
 
+    def holders(self) -> str:
+        """The lease each side keeps for the environment, as the two sides see it."""
+        return self.in_copy_python(f"""
+from pathlib import Path
+from engine.machines import Lease, this_machine
+from engine.record import Record
+from features.connection.transport import HttpTransport, ServerKey
+server = HttpTransport('http://{ADDRESS}', ServerKey('{COPY_ROOT}').read())
+print('copy', this_machine()[:8], 'keeps', Lease.read(Record(Path('{COPY_ROOT}'), '{ENV}').scope_home('')), '| server', server.hello().machine[:8], 'names', server.holder('{ENV}'))""")
+
     def queue(self, *requests: tuple[str, list]) -> None:
         """Writes made on the copy into the environment the server holds, queued for the next sync as the journal queues them."""
         made = ", ".join(f"Request('{ENV}', 'todo', {word!r}, {args!r}, actor='user')" for word, args in requests)
@@ -184,15 +194,18 @@ def a_refused_write_does_not_block(world: World) -> None:
 
 def a_cut_network_leaves_one_holder(world: World) -> None:
     taking_back = subprocess.Popen(["docker", "exec", "-w", COPY_PROJECT, world.copy, "python3", f"{COPY_ROOT}/journal.py", "--root", COPY_ROOT,
-                                    "--env", ENV, "--as", "user", "environment", "hand", ENV, "here"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                    "--env", ENV, "--as", "user", "environment", "hand", ENV, "here"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     time.sleep(0.3)
     docker("network", "disconnect", world.network, world.copy)
     try:
-        taking_back.wait(COMMAND_WITHIN)
+        answered = taking_back.communicate(timeout=COMMAND_WITHIN)[0].strip()
     finally:
         docker("network", "connect", world.network, world.copy)
+    print(f"    the handback cut off answered: {answered or '(nothing)'}", flush=True)
+    print(f"    after the cut: {world.holders()}", flush=True)
     case("a network cut in the middle of a handback never leaves two holders", not (world.copy_holds() and world.server_holds()))
-    world.on_copy("environment", "hand", ENV, "here")
+    retried = world.on_copy("environment", "hand", ENV, "here")
+    print(f"    the handback again answered: {retried}; after it: {world.holders()}", flush=True)
     case("and running it again leaves exactly one", world.copy_holds() != world.server_holds())
 
 
