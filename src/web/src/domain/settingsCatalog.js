@@ -313,7 +313,7 @@ function looseRows(settings, context) {
                     key: "flash",
                     kind: "switch",
                     label: "Show the journal's name when you come back",
-                    hint: "Its name and colour fill the window briefly, so you know which journal you are in",
+                    hint: "Its name and colour fill the window briefly, so you can tell which journal this is",
                     value: viewer.flash !== false,
                     shipped: true,
                     target: {path: ["viewer", "flash"]},

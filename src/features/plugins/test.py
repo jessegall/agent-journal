@@ -43,6 +43,14 @@ def installed(record, name, guard="exit 0", **manifest):
                                                 manifest={"name": name, "refuse": "sh guard.sh", **manifest})
 
 
+def configured(record, name, settings: dict):
+    return installed(record, name, settings=settings)
+
+
+def listening(record, name, on: dict):
+    return installed(record, name, on=on)
+
+
 def answer_once(listening, reply=b'{"refuse": "from its service"}\n'):
     taken, _ = listening.accept()
     with taken:
@@ -253,7 +261,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.plugins.declared import settings_of
     from features.plugins.environment import environment
     record = alone()
-    row = installed(record, "linter", settings={"quiet": {"title": "Quiet", "default": "", "env": "QUIET"}})
+    row = configured(record, "linter", {"quiet": {"title": "Quiet", "default": "", "env": "QUIET"}})
     plugins = Plugins(record, actor=SYSTEM)
     assert environment(record.root, "linter", Manifest.of(row.manifest), row.token)["QUIET"] == "", "unchanged, a setting is its default"
     from tests.kit import dispatch
@@ -298,7 +306,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.secrets.values import ValuesFile
     from resources.base import USER
     ValuesFile(record.root).put("STRIPE_TEST_KEY", "sk-test-plugin-77")
-    payer = installed(record, "payer", settings={"stripe": {"type": "secret", "env": "STRIPE_KEY"}})
+    payer = configured(record, "payer", {"stripe": {"type": "secret", "env": "STRIPE_KEY"}})
     given = lambda: environment(record.root, "payer", Manifest.of(payer.manifest), payer.token, chosen=settings_of(plugins.load(payer.n)).chosen)["STRIPE_KEY"]
     assert given() == "", "a plugin gets no secret until it is given one"
     from features.plugins import manifest
@@ -812,7 +820,7 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
             pass
     server = HTTPServer(("127.0.0.1", 0), Answering)
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    installed(record, "answerer", on={"todo.created": {"run": "sh answer.sh"}})
+    listening(record, "answerer", {"todo.created": {"run": "sh answer.sh"}})
     script = folder(record.root, "answerer") / "answer.sh"
     script.write_text("exit 1\n")
     host, now = Host(record.root, FEATURES["plugins"].journal), time.time()
@@ -836,7 +844,7 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
     Plugins(record, actor=SYSTEM).update(plugin.n, abstract="looked at again")
     Todos(record, actor=SYSTEM).create("One more for the watcher")
     assert host.step(now + 61) >= 1, "a plugin hears of other plugins changing, and the skills it loads on an event are asked for"
-    installed(record, "poster", on={"todo.created": {"post": f"http://127.0.0.1:{server.server_port}/event"}})
+    listening(record, "poster", {"todo.created": {"post": f"http://127.0.0.1:{server.server_port}/event"}})
     host.step(now + 61)
     Todos(record, actor=SYSTEM).create("Posted one")
     host.step(now + 61)

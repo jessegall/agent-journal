@@ -154,9 +154,13 @@ class DeclaredEvent(Loaded):
     def collapsed(self) -> bool:
         return self.card is not None and self.card.collapsed
 
-    def look(self, title: str) -> Look:
+    @property
+    def shown_title(self) -> str:
+        return self.title if self.title else self.name
+
+    def look(self) -> Look:
         card = self.card if self.card is not None else Card()
-        return Look(card.label if card.label else title, card.icon, card.tone if card.tone else self.tone, card.color)
+        return Look(card.label if card.label else self.shown_title, card.icon, card.tone if card.tone else self.tone, card.color)
 
 
 @dataclass(frozen=True)
