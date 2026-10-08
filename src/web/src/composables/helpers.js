@@ -1,16 +1,21 @@
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {api} from "../api/client.js";
+import {helperAsking} from "../domain/helpers.js";
+import {store} from "../state/store.js";
 import {usePoll} from "./poll.js";
 
 const EVERY = 5000;
 
 export function useHelpers() {
-    const rows = ref([]);
+    const fetched = ref([]);
+    const rows = computed(() =>
+        fetched.value.map((row) => ({...row, asking: row.completed || row.data?.report ? "" : helperAsking(row, store.summary?.helpers)}))
+    );
     const refresh = usePoll(
         "helpers",
         () => api.list("helper", {completed: true}).then((got) => got.rows || []),
         EVERY,
-        (got) => (rows.value = got),
+        (got) => (fetched.value = got),
     );
     return {rows, refresh};
 }

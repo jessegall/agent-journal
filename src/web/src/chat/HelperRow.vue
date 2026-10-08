@@ -1,5 +1,5 @@
 <script setup>
-import {HELPER_WORDS, helperLine, helperName, helperReport, helperState, stateAt} from "../domain/helpers.js";
+import {helperLine, helperName, helperReport, helperState, helperTag, stateAt} from "../domain/helpers.js";
 import {nextTick, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {word as commandWord} from "../domain/spec.js";
@@ -20,7 +20,8 @@ const clipped = ref(false);
 const name = () => helperName(props.row);
 const report = () => helperReport(props.row);
 const state = () => helperState(props.row);
-const stateLabel = () => (state() === "finished" ? `Closed ${ago(stateAt(props.row))}` : HELPER_WORDS[state()]);
+const tag = () => helperTag(props.row);
+const stateLabel = () => (state() === "finished" ? `Closed ${ago(stateAt(props.row))}` : tag().word);
 
 async function remove() {
     busy.value = true;
@@ -44,14 +45,14 @@ onMounted(() =>
 <template>
     <div :class="['helper', state()]">
         <div class="helper-head">
-            <span :class="['helper-dot', state()]" />
+            <span :class="['helper-dot', tag().state]" />
             <Btn kind="text" class="helper-what" v-tip="`Open this helper's inspector`" @click="emit('inspect')">
                 <strong class="helper-name">{{ name() }}</strong>
                 <span class="helper-job" :title="row.title">{{ row.title }}</span>
                 <small>{{ helperLine(row) }}</small>
             </Btn>
             <div class="helper-side">
-                <span :class="['helper-state', state()]">{{ stateLabel() }}</span>
+                <span :class="['helper-state', tag().state]">{{ stateLabel() }}</span>
                 <template v-if="state() === 'running'">
                     <AgentStopButton
                         quiet
@@ -64,6 +65,9 @@ onMounted(() =>
                 </template>
             </div>
         </div>
+        <template v-if="row.asking">
+            <p class="helper-asking">{{ row.asking }}</p>
+        </template>
         <template v-if="report()">
             <TextDisplay ref="reportBox" :class="['helper-report', {whole}]" :text="report()" :style="{'--lines': LINES}" />
             <template v-if="clipped || whole">
@@ -151,6 +155,10 @@ onMounted(() =>
     background: var(--tone-good);
 }
 
+.helper-dot.needs {
+    background: var(--tone-warn);
+}
+
 .helper-what {
     flex: 1 1 200px;
     min-width: 0;
@@ -188,6 +196,16 @@ onMounted(() =>
 
 .helper-state.reported {
     color: var(--tone-good);
+}
+
+.helper-state.needs {
+    color: var(--tone-warn);
+}
+
+.helper-asking {
+    margin: 0 0 0 15px;
+    color: var(--text-2);
+    font-size: 12px;
 }
 
 .helper-report {
