@@ -6,7 +6,7 @@ set -eu
 : "${RESTIC_PASSWORD:?set RESTIC_PASSWORD in .env}"
 restic cat config >/dev/null 2>&1 || restic init
 while true; do
-    restic backup /data --exclude /data/project/.journal/runtime --tag journal --host journal
+    restic backup /data --exclude /data/project/.journal/runtime --exclude /data/.restoring --tag journal --host journal
     restic forget --host journal --keep-daily 7 --keep-weekly 4 --prune
     [ "${BACKUP_ONCE:-}" = "1" ] && exit 0
     sleep "${BACKUP_EVERY:-86400}"
