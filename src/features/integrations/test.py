@@ -48,3 +48,33 @@ def test_the_integration_client_sends_its_key_only_to_its_own_host_and_masks_it_
     assert client.masked("failed with lin_api_secret_value in it") == "failed with [secret LINEAR_KEY] in it", "an error never carries the key"
     assert "no key is picked" in refused(lambda: IntegrationClient(record.root, "api.linear.app", "").post("https://api.linear.app/graphql", {})), \
         "with no key picked nothing is sent"
+
+
+def test_the_integration_client_refuses_a_redirect_so_the_key_never_follows_one(tmp_path):
+    import http.server
+    import threading
+    import urllib.error
+    import urllib.request
+    from features.integrations.client import OPENER
+
+    class Redirecting(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            self.send_response(302)
+            self.send_header("Location", "https://elsewhere.example/steal")
+            self.end_headers()
+
+        def log_message(self, *_):
+            pass
+
+    server = http.server.HTTPServer(("127.0.0.1", 0), Redirecting)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        asked = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/graphql", data=b"{}", headers={"Authorization": "kept"})
+        try:
+            OPENER.open(asked, timeout=5)
+            followed = True
+        except urllib.error.HTTPError as error:
+            followed = error.code != 302
+    finally:
+        server.shutdown()
+    assert followed is False, "a redirect to another host is an error, not a second request carrying the key"
