@@ -4,7 +4,7 @@ from email.message import EmailMessage
 import features
 from features.integrations.state import read_state
 from features.secrets.values import ValuesFile
-from resources.base import AGENT, SYSTEM, USER
+from resources.base import AGENT, SYSTEM, USER, Refused
 from features.open_viewer.settings import apply
 from tests.conftest import fresh, refused
 
@@ -163,3 +163,41 @@ def test_a_refused_login_is_noticed_once_with_the_password_masked(monkeypatch, t
     error = read_state(record.root, "gmail").last_error
     notices = [n for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("integration") == "gmail"]
     assert PASSWORD not in error and "AUTHENTICATIONFAILED" in error and len(notices) == 1 and "refused" in notices[0].title, "three failed syncs give one notice and the error never holds the password"
+
+
+def test_gmail_refuses_without_an_address_an_answer_on_a_ticket_not_from_gmail_and_a_failed_send_never_shows_the_password():
+    import smtplib
+    from types import SimpleNamespace
+    from features.gmail.commands import ProposeReply
+    from features.gmail.mail import Mailbox
+    assert "no address and app password" in refused(lambda: Mailbox("", PASSWORD).fetched("ALL", 0)), "nothing is read without an address"
+    assert "no address and app password" in refused(lambda: Mailbox("me@example.com", "").sent("ana@example.com", "Re: Hi", "Thanks", "")), "nor sent without the app password"
+    ours = SimpleNamespace(load=lambda n: SimpleNamespace(source="linear", data={}, ref="ticket:7"))
+    assert "did not come from Gmail" in refused(lambda: ProposeReply().run(SimpleNamespace(record=None), ours, 7, "Thanks")), "an answer is proposed only on a ticket from Gmail"
+
+    class Refusing:
+        def __init__(self, *_, **__):
+            pass
+
+        def __enter__(self):
+            raise smtplib.SMTPAuthenticationError(535, f"bad credentials {PASSWORD}".encode())
+
+        def __exit__(self, *_):
+            return False
+    why = refused(lambda: Mailbox("me@example.com", PASSWORD, smtp=Refusing).sent("ana@example.com", "Re: Hi", "Thanks", ""))
+    assert ("smtp.gmail.com refused" in why, PASSWORD in why) == (True, False), "a send the server refuses is said with the password masked"
+
+
+def test_gmail_reads_nothing_while_fetching_is_off_and_a_send_the_server_refuses_is_kept_not_raised(monkeypatch, tmp_path):
+    from features.gmail.mail import Mailbox
+    world = gmail_world(monkeypatch, tmp_path, mails={1: raw("Hello", "Hi")})
+    record, server, gmail = world.record, world.server, world.gmail
+    apply(record, {"gmail": {**dict(gmail.values(record)), "fetching": False}}, USER)
+    gmail.check(record)
+    assert server.logins == [], "with fetching switched off nothing is read"
+
+    def refused_send(box: Mailbox) -> None:
+        raise Refused("smtp.gmail.com refused: 554 message rejected")
+    gmail.push(record, refused_send)
+    assert read_state(record.root, "gmail").last_error == "smtp.gmail.com refused: 554 message rejected", \
+        "a send the server refuses is kept in the integration's state, never raised into your answer"
