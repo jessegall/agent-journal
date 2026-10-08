@@ -1464,7 +1464,7 @@ def test_the_server_ends_when_interrupted_or_told_to_stop_restarts_on_new_code_a
             waited(found)
             after(found[0])
         return Quiet(forever)
-    for name in ("warmed", "replay", "warm", "warm_commands", "freeze_caches", "watch_runtime"):
+    for name in ("warmed", "replay", "warm", "warm_commands", "freeze_caches", "watch_runtime", "keep_services"):
         monkeypatch.setattr(serve, name, lambda *args: None)
     monkeypatch.setattr(serve, "watch_code", lambda root, package, server, event: changed.append(event))
     monkeypatch.setattr(serve, "watch_stop", lambda root, server, halting, began: stopped.append(halting))
