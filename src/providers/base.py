@@ -142,6 +142,7 @@ class Provider(ABC):
     background_wakes = False
     applies_at_once = ()
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
+    dispatch_default = ""
 
     @classmethod
     def briefing_limit(cls) -> int:
@@ -319,7 +320,10 @@ class Provider(ABC):
 
     def models(self) -> tuple[str, ...]:
         """The models a dispatch may name; empty when the provider cannot tell."""
-        return ()
+        return tuple(self.model_labels())
+
+    def model_labels(self) -> dict[str, str]:
+        return {}
 
     def offers(self, model: str) -> bool:
         return not self.models() or model in self.models()

@@ -1,3 +1,5 @@
+import {providerName} from "./agents.js";
+
 export const DIAGNOSTICS_LINE = "Slow pages and errors, saved on your computer for the developer";
 
 export const COUNTED = ["percent", "uses", "minutes"];
@@ -64,7 +66,7 @@ export function settingChanges(target, value, settings) {
                   .map((k) => [k, saved[k]])
           )
         : {...saved};
-    const stored = target.invert ? !value : value;
+    const stored = target.provider ? {...target.saved, [target.provider]: value} : target.invert ? !value : value;
     if (target.sparse && same(stored, target.shipped)) delete base[key];
     else base[key] = stored;
     return {[top]: base};
@@ -137,9 +139,31 @@ function settingRow(f, setting, settings) {
     });
 }
 
+function modelRows(f, setting, settings) {
+    const saved = {...setting.default, ...((settings[f.name] || {})[setting.name] || {})};
+    const defaults = Object.fromEntries(f.settings.map((s) => [s.name, s.default]));
+    return Object.entries(setting.choices).map(([provider, models]) => {
+        const value = models.includes(saved[provider]) ? saved[provider] : setting.default[provider];
+        const named = setting.labels[provider] || {};
+        return row({
+            key: `${f.name}:${setting.name}:${provider}`,
+            kind: "choice",
+            label: `${setting.title} on ${providerName(provider)}`,
+            hint: setting.abstract,
+            indent: Boolean(setting.under),
+            options: (models.length ? models : [value]).map((key) => ({key, label: named[key] || key})),
+            value,
+            shipped: setting.default[provider],
+            target: {path: [f.name, setting.name], provider, saved, sparse: true, shipped: setting.default, defaults},
+        });
+    });
+}
+
+const settingRows = (f, setting, settings) => (setting.kind === "models" ? modelRows(f, setting, settings) : [settingRow(f, setting, settings)]);
+
 function featureRows(f, settings, extras) {
     const declared = f.settings.filter((s) => s.kind !== "map" && !s.hidden);
-    const under = (key) => declared.filter((s) => s.under === key).map((s) => settingRow(f, s, settings));
+    const under = (key) => declared.filter((s) => s.under === key).flatMap((s) => settingRows(f, s, settings));
     const own =
         hasTiming(f.trigger) && f.trigger_label
             ? [row({key: `${f.name}:timing`, kind: "timing", label: f.trigger_label, timing: timing(f.name, f.trigger, settings)})]
@@ -147,7 +171,7 @@ function featureRows(f, settings, extras) {
     return [
         ...own,
         ...Object.entries(f.behaviours).flatMap(([key, b]) => [behaviourRow(f, key, b, settings), ...under(key)]),
-        ...declared.filter((s) => !s.under).map((s) => settingRow(f, s, settings)),
+        ...declared.filter((s) => !s.under).flatMap((s) => settingRows(f, s, settings)),
         ...(extras[f.name] || []),
     ];
 }

@@ -12,7 +12,7 @@ DISPATCH_MODELS = Extension()
 BOARD_OF_MESSAGE = Extension()
 
 
-def unchosen(record) -> str:
+def unchosen(record, provider: str) -> str:
     return ""
 
 
@@ -50,5 +50,5 @@ def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) ->
     speaking = context.speaking_to(agent)
     speaking.once(DISPATCH, f"{sequence.n}|{key}|{sequence.started(key)}|{why}", lambda: speaking.agent.say(
         DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board,
-        model=dispatch_model(agent.provider, models.get(sequence.dispatch, unchosen)(context.record)), why=why,
+        model=dispatch_model(agent.provider, models.get(sequence.dispatch, unchosen)(context.record, agent.provider)), why=why,
         request=request_of(context, about)))

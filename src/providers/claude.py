@@ -31,6 +31,7 @@ COMMAND_NAME = re.compile(r"<command-name>(.*?)</command-name>", re.S)
 COMMAND_ARGS = re.compile(r"<command-args>(.*?)</command-args>", re.S)
 TYPED_OUTPUT = re.compile(r"<(bash-stdout|bash-stderr|local-command-stdout)>(.*?)</\1>", re.S)
 KEPT_TYPED = 50
+MODELS = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("claude-fable-5-1", "Fable"))
 BACKGROUNDED = re.compile(r"(?:backgrounded by user with ID|running in background with ID): (\w+)")
 TASK_ENDED = re.compile(r"<task-id>(\w+)</task-id>.*?<status>(\w+)</status>", re.S)
 TASK_OK = "completed"
@@ -155,17 +156,13 @@ class Claude(Provider):
     worktrees = (".claude", "worktrees")
     link_skills = True
     applies_at_once = ("effort",)
+    dispatch_default = "sonnet"
     controls = {
         "groups": [
             {
                 "key": "model",
                 "label": "Model",
-                "choices": [
-                    {"value": "opus", "label": "Opus", "command": "/model opus"},
-                    {"value": "sonnet", "label": "Sonnet", "command": "/model sonnet"},
-                    {"value": "haiku", "label": "Haiku", "command": "/model haiku"},
-                    {"value": "claude-fable-5-1", "label": "Fable", "command": "/model claude-fable-5-1"},
-                ],
+                "choices": [{"value": value, "label": label, "command": f"/model {value}"} for value, label in MODELS],
             },
             {
                 "key": "effort",
@@ -282,6 +279,12 @@ class Claude(Provider):
 
     def agent_file(self, project: Path, name: str) -> Path:
         return project / self.home / "agents" / f"{name}.md"
+
+    def model_labels(self) -> dict[str, str]:
+        return dict(MODELS)
+
+    def offers(self, model: str) -> bool:
+        return model in self.models() or model.startswith("claude-")
 
     def agent_text(self, kind, model: str) -> str:
         return f"---\nname: {kind.name}\ndescription: {kind.description}\ntools: {kind.tools}\nmodel: {model}\n---\n\n{kind.instructions}\n"
