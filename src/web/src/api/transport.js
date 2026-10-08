@@ -16,7 +16,7 @@ export const loginPage = {open: (address) => window.location.assign(address)};
 export async function answered(response, fallback, failed = failure) {
     const body = await response.json().catch(() => ({}));
     if (response.status === LOGGED_OUT && body.login) loginPage.open(body.login);
-    if (!response.ok) throw failed(response.status, body.error || fallback);
+    if (!response.ok) throw Object.assign(failed(response.status, body.error || fallback), {blocked: Boolean(body.blocked)});
     return body;
 }
 
@@ -27,6 +27,7 @@ class Transport {
         this.flying = new Map();
         this.asked = new Map();
         this.written = () => {};
+        this.refused = () => {};
         this.watcher = () => {};
         this.tries = RELOAD_TRIES;
         this.carried = {};
@@ -58,6 +59,10 @@ class Transport {
         this.written = fn;
     }
 
+    onBlocked(fn) {
+        this.refused = fn;
+    }
+
     async reach(method, url, body, wait, tries, unlocked = {}) {
         const raw = body instanceof FormData;
         try {
@@ -83,7 +88,10 @@ class Transport {
                 release();
                 this.watcher("answered", method, url, body);
             });
-        return answered(res, `${res.status} ${res.statusText}`);
+        return answered(res, `${res.status} ${res.statusText}`).catch((error) => {
+            if (error.blocked) this.refused(error.message);
+            throw error;
+        });
     }
 
     async unlockedReach(method, url, body, wait, tries) {

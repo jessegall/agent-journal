@@ -8,23 +8,34 @@ from features.hosted_journal.owner import OWNER, KeptLogin
 from features.hosted_journal.pages import Notice, notice_page
 from features.hosted_journal.people import Act, Page
 from features.members.pages import BELOW_LOGIN, join_page, member_login_page
+from features.members.roles import OWNER_ABILITIES, Abilities, Role
 from features.members.roster import Roster
 
 OWNER_NAME = "Owner"
+NOT_A_MEMBER = "You are no longer a member of this journal."
 
 
 @dataclass(frozen=True)
 class Invited(Loaded):
     name: str = ""
+    role: str = Role.WRITER.value
+
+
+@dataclass(frozen=True)
+class Assigned(Loaded):
+    member: str = ""
+    role: str = ""
 
 
 @dataclass(frozen=True)
 class Someone:
-    """Who a login belongs to, as the viewer shows it."""
+    """Who a login belongs to, and what they can do, as the viewer shows it."""
 
     member: str
     name: str
+    role: str
     owner: bool
+    abilities: Abilities
 
 
 class MemberLogins:
@@ -41,14 +52,19 @@ class MemberLogins:
         return {("GET", "/api/hosting/me"): self.me}
 
     def owner_actions(self, gateway: Gateway) -> dict[tuple[str, str], Page]:
-        return {("GET", "/api/hosting/members"): self.listed, ("POST", "/api/hosting/members"): self.invite}
+        return {("GET", "/api/hosting/members"): self.listed, ("POST", "/api/hosting/members"): self.invite,
+                ("POST", "/api/hosting/members/role"): self.assign}
 
     def refusal(self, visit: Visit, login: KeptLogin) -> str | None:
-        if Roster(visit.vault).found(login.member) is None:
-            return "you are no longer a member of this journal"
-        if visit.handler.command != "GET":
-            return "a member reads this journal and changes nothing in it"
-        return None
+        member = Roster(visit.vault).found(login.member)
+        if member is None:
+            return NOT_A_MEMBER
+        if visit.handler.command == "GET":
+            return None
+        reached = visit.reached()
+        if reached is not None and member.role.reaches(reached.target):
+            return None
+        return member.role.refusal()
 
     def show_join(self, visit: Visit) -> None:
         code = parse_qs(visit.url.query).get("code", [""])[0]
@@ -88,16 +104,23 @@ class MemberLogins:
 
     def me(self, visit: Visit, login: KeptLogin) -> None:
         if login.is_owners():
-            return visit.json(200, asdict(Someone(OWNER, OWNER_NAME, True)))
+            return visit.json(200, asdict(Someone(OWNER, OWNER_NAME, OWNER, True, OWNER_ABILITIES)))
         member = Roster(visit.vault).found(login.member)
         if member is None:
-            return visit.refuse(403, "you are no longer a member of this journal")
-        return visit.json(200, asdict(Someone(member.id, member.name, False)))
+            return visit.refuse(403, NOT_A_MEMBER)
+        return visit.json(200, asdict(Someone(member.id, member.name, member.role, False, member.role.abilities())))
 
     def listed(self, visit: Visit) -> None:
         return visit.json(200, {"members": [member.summary() for member in Roster(visit.vault).all()]})
 
     def invite(self, visit: Visit) -> None:
-        made = Roster(visit.vault).invite(visit.asked(Invited).name)
+        asked = visit.asked(Invited)
+        made = Roster(visit.vault).invite(asked.name, Role.named(asked.role))
         visit.vault.audit("member invited", place=visit.place(), member=made.member.id)
         return visit.json(201, {"member": made.member.summary(), "link": f"{visit.origin()}/join?code={made.code}"})
+
+    def assign(self, visit: Visit) -> None:
+        asked = visit.asked(Assigned)
+        member = Roster(visit.vault).assign(asked.member, Role.named(asked.role))
+        visit.vault.audit("member role changed", place=visit.place(), member=member.id, role=member.role)
+        return visit.json(200, {"member": member.summary()})

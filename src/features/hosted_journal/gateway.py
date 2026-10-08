@@ -22,7 +22,7 @@ from features.hosted_journal.hosting import Ask, Hosting
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page, taken_down_page
 from features.hosted_journal.phones import VaultGuard
 from features.hosted_journal.vault import DiskFull, RefusalLog, Vault
-from features.phone.allow_list import Action, GenericPath, post, reach
+from features.phone.allow_list import Action, GenericPath, Page, post, reach
 from features.phone.desktop import Desktop, closed, encoded
 from features.routing import MEMBER
 from features.sharing.origins import origins_of
@@ -89,6 +89,14 @@ class TooLarge(Refused):
 def member_mark(login: KeptLogin) -> dict:
     """The mark the gateway alone puts on a forwarded request, naming who sent it."""
     return {MEMBER: login.member}
+
+
+@dataclass(frozen=True)
+class Reached:
+    """The journal's page or controller action a request would reach, and the values its path names."""
+
+    target: Page | Action
+    params: dict
 
 
 @dataclass(frozen=True)
@@ -171,6 +179,13 @@ class Visit:
         except ValueError as unreadable:
             raise Refused("the request is not JSON") from unreadable
 
+    def reached(self) -> Reached | None:
+        """What the journal would answer this request with, or None when no route of the journal's answers it."""
+        found = resolve(self.handler.command, urlsplit(encoded(self.url)).path)
+        if found is None:
+            return None
+        return Reached(reach(found[0], GenericPath.from_json(found[1])), found[1])
+
     def project(self) -> str:
         return identity(self.record.root)["project"]
 
@@ -187,8 +202,15 @@ class Visit:
         self.handler.send(303, b"", {**PAGE_HEADERS, "Location": where, **(headers or {})})
 
     def refuse(self, code: int, text: str) -> None:
+        self._refused(code, {"error": text})
+
+    def block(self, why: str) -> None:
+        """Refuses what this login's person may not do here, saying why, so the viewer can show it on the control they pressed."""
+        self._refused(403, {"error": why, "blocked": True})
+
+    def _refused(self, code: int, body: dict) -> None:
         self.refusals.write(self.vault, place=self.place(), method=self.handler.command, path=self.url.path, code=code)
-        self.handler.send(code, json.dumps({"error": text}).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
+        self.handler.send(code, json.dumps(body).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
 
 
 class Gateway:
@@ -359,9 +381,9 @@ class Gateway:
         if acted := people.actions(self).get(asked):
             return acted(visit, login)
         if not login.is_owners() and asked in owned:
-            return visit.refuse(403, "only the journal's owner does this")
+            return visit.block("Only the owner can do this.")
         if not login.is_owners() and (refusal := people.refusal(visit, login)):
-            return visit.refuse(403, refusal)
+            return visit.block(refusal)
         if asked in owned:
             return owned[asked](visit)
         if phone := self.answered_by_phones(visit):
@@ -372,13 +394,10 @@ class Gateway:
 
     def answered_by_phones(self, visit: Visit) -> tuple[PhoneAnswer, PhonePath] | None:
         """The owner's phone action this request reaches, which the login page answers itself when it keeps the phones' keys."""
-        found = resolve(visit.handler.command, urlsplit(encoded(visit.url)).path)
-        if found is None:
+        reached = visit.reached()
+        if reached is None or reached.target not in self.answered_here:
             return None
-        action = reach(found[0], GenericPath.from_json(found[1]))
-        if action not in self.answered_here:
-            return None
-        return self.answered_here[action], PhonePath.from_json(found[1])
+        return self.answered_here[reached.target], PhonePath.from_json(reached.params)
 
     def answer_here(self, visit: Visit, answer: PhoneAnswer, path: PhonePath, raw: bytes) -> None:
         try:
