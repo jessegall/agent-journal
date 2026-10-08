@@ -12,7 +12,7 @@ from engine.record import Record
 from engine.sync import PROTOCOL, Comparison, Hello, Release, Shape, Step
 from engine.version import version
 from features.connection.code import Pushed, pull, push
-from features.connection.linking import Synced, hand, join, local_hello, sync
+from features.connection.linking import hand, join, local_hello, sync
 from features.connection.transport import HttpTransport
 from migrations import applied
 from resources.base import AGENT, SYSTEM, USER, Event
