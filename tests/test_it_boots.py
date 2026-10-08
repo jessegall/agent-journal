@@ -1629,7 +1629,7 @@ def test_the_engines_small_helpers_give_an_empty_answer_when_a_program_a_folder_
     (place / "broken.py").symlink_to(place / "nothing.py")
     assert [Path(name).name for name, _ in package.code_stamp(place)] == ["kept.py"], "a hidden folder and a file that cannot be read are not part of the code's stamp"
     monkeypatch.setattr(package, "ZIPPED", True)
-    assert package.entry("engine.keeper")[-2:] == ["-m", "engine.keeper"], "a packed journal starts a module through its archive"
+    assert package.entry("keeper")[-2:] == ["-m", "keeper"], "a packed journal starts a module through its archive"
     monkeypatch.undo()
 
     assert Growth().grew(tmp_path / "missing") is False, "a file that is not there has not grown"

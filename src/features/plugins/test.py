@@ -579,8 +579,8 @@ def test_stopping_a_service_stops_every_process_it_forked():
     import fcntl
     fcntl.flock(holding, fcntl.LOCK_EX)
     threading.Timer(1.0, holding.close).start()
-    kept = subprocess.Popen([*entry("engine.keeper"), str(lifeline), str(spec_file(record.root, "held.web"))], pass_fds=(lifeline,), stdin=subprocess.DEVNULL,
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    kept = subprocess.Popen([*entry("keeper"), str(lifeline), str(spec_file(record.root, "held.web"))], pass_fds=(lifeline,), stdin=subprocess.DEVNULL,
+                            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, start_new_session=True)
     os.close(lifeline)
     deadline = time.time() + 15
     while time.time() < deadline and status(record.root, "held.web").state != "starting":
@@ -589,6 +589,7 @@ def test_stopping_a_service_stops_every_process_it_forked():
     os.close(writer)
     kept.wait(timeout=15)
     assert "session" in status(record.root, "held.web").why, "a service that stops because the agent session ended says so"
+    assert b"RuntimeWarning" not in kept.stderr.read(), "a keeper starts once, with no warning that its module was imported before it ran"
     Manager(record.root).remove("held.web")
     with socket.socket() as busy:
         busy.bind(("127.0.0.1", 0))

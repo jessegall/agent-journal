@@ -44,7 +44,7 @@ KEPT_COPIES = 1
 NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
 MANAGED = "managed-files.json"
 LEGACY_COPY_MARKER = "managed-update-copy"
-STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "engine.keeper"}
+STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "keeper", "keeper.py": "keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
         "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
 
