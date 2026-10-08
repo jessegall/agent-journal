@@ -7,7 +7,7 @@ import Switch from "../kit/Switch.vue";
 import Segmented from "../kit/Segmented.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TextInput from "../kit/TextInput.vue";
-import PluginSecretPicker from "./PluginSecretPicker.vue";
+import SecretPicker from "../kit/SecretPicker.vue";
 
 const props = defineProps({setting: {type: Object, required: true}, children: {type: Array, default: () => []}, dim: Boolean});
 const emit = defineEmits(["change"]);
@@ -49,7 +49,7 @@ const choices = computed(() =>
                         <LineList :value="setting.value" @change="(value) => emit('change', setting.key, value)" />
                     </template>
                     <template #secret>
-                        <PluginSecretPicker :value="setting.value" @pick="(value) => emit('change', setting.key, value)" />
+                        <SecretPicker :value="setting.value" @pick="(value) => emit('change', setting.key, value)" />
                     </template>
                     <template #textarea>
                         <textarea

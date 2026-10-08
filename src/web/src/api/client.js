@@ -670,6 +670,10 @@ export class ApiClient {
         return this.post(this.here("/mode"), {mode});
     }
 
+    integration(name) {
+        return this.get(this.here(`/integration/${name}`));
+    }
+
     search(q, archived = false, resources = []) {
         return this.get(this.here(`/search${query({q, ...(archived ? {archived: true} : {}), ...(resources.length ? {resources: resources.join(",")} : {})})}`));
     }

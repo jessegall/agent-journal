@@ -4,7 +4,12 @@ import ChoiceList from "../kit/ChoiceList.vue";
 import {handedVariable, pickable, pickedBy} from "../domain/secrets.js";
 import {rows} from "../sync/rows.js";
 
-const props = defineProps({value: {type: String, default: ""}});
+const props = defineProps({
+    value: {type: String, default: ""},
+    pickedLine: {type: String, default: "The plugin gets the secret {title}."},
+    noneLine: {type: String, default: "No secret is picked, so the plugin gets no value."},
+    note: {type: String, default: "The plugin's services get this secret's value. Nothing else does."},
+});
 const emit = defineEmits(["pick"]);
 const secrets = computed(() => pickable(rows("secret").filter((row) => !row.deleted)));
 const picked = computed(() => pickedBy(secrets.value, props.value));
@@ -22,8 +27,8 @@ const choices = computed(() =>
             <p class="secret-picker-line">You have no secret to pick yet. Add one on the Secrets page.</p>
         </template>
         <p class="secret-picker-line">
-            {{ picked ? `The plugin gets the secret ${picked.title}.` : "No secret is picked, so the plugin gets no value." }}
-            The plugin's services get this secret's value. Nothing else does.
+            {{ picked ? pickedLine.replace("{title}", picked.title) : noneLine }}
+            {{ note }}
         </p>
     </div>
 </template>
