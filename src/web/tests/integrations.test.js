@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {boardOf, integrationsIn, isOn, keyOf, keyWords, settingsWith, stateWords, teamsOf, withTeam} from "../src/domain/integrations.js";
+import {boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, stageStatesOf, stateWords, statesFor, teamsOf, withStageState, withTeam} from "../src/domain/integrations.js";
 
 const NOW = Date.now() / 1000;
 
@@ -33,5 +33,15 @@ describe("the Integrations page", () => {
     test("saving one setting sends the others with it, as the server replaces what a feature kept", () => {
         expect(settingsWith({linear: {key: "LINEAR_KEY", board: 2}}, "linear", {board: 5})).toEqual({linear: {key: "LINEAR_KEY", board: 5}});
         expect(settingsWith({}, "linear", {key: "K"})).toEqual({linear: {key: "K"}});
+    });
+
+    test("maps each stage to a Linear state and only then allows sending status changes", () => {
+        const settings = {linear: {stage_states: {Doing: "s1"}}};
+        expect([mapped(settings, "linear"), mapped({}, "linear"), mapped({linear: {stage_states: {Doing: ""}}}, "linear")]).toEqual([true, false, false]);
+        expect(withStageState(settings, "linear", "Done", "s2")).toEqual({Doing: "s1", Done: "s2"});
+        expect(stageStatesOf({}, "linear")).toEqual({});
+        const states = [{id: "s1", name: "Todo", team: "t1"}, {id: "s2", name: "Done", team: "t2"}];
+        expect(statesFor(states, ["t1"])).toEqual([{value: "s1", label: "Todo"}]);
+        expect(statesFor(states, []).length).toBe(2);
     });
 });
