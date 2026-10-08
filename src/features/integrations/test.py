@@ -7,7 +7,7 @@ from features.integrations.client import IntegrationClient
 from features.integrations.state import IntegrationState, read_state, state_file, write_state
 from features.secrets.values import ValuesFile
 from resources.base import AGENT, USER
-from surfaces.settings import apply
+from features.open_viewer.settings import apply
 from tests.conftest import fresh, refused
 
 
@@ -260,7 +260,7 @@ def test_issues_become_one_ticket_each_with_their_comments_once_and_one_that_lea
     ticket = next(t for t in tickets if t.source_id == "id-1")
     assert len([c for c in Comments(record, actor=SYSTEM).linked_to(ticket.ref) if c.data.get("linear_id")]) == 1, "a comment is added once, whatever the number of syncs"
     hostile = next(t for t in tickets if t.source_id == "id-2")
-    assert (hostile.brief.startswith('<untrusted source="linear"'), INJECTION in hostile.brief), "an issue telling the agent to run a command is saved wrapped, its words untouched inside the wrap"
+    assert (hostile.brief.startswith('<untrusted source="linear"'), INJECTION in hostile.brief) == (True, True), "an issue telling the agent to run a command is saved wrapped, its words untouched inside the wrap"
     assert (Todos(record, actor=SYSTEM).rows.standing(), Messages(record, actor=SYSTEM).rows.standing()) == ([], []), "a journal tag and a journal command in an issue make no to-do and no reply"
     assert "only you start" in refused(lambda: Tickets(record, actor=AGENT).start(ticket.n)), "an agent cannot start a ticket from Linear"
     assert "only you confirm" in refused(lambda: Tickets(record, actor=AGENT).confirm(ticket.n)), "nor confirm it"

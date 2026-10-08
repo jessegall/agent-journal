@@ -5,7 +5,7 @@ import features
 from features.integrations.state import read_state
 from features.secrets.values import ValuesFile
 from resources.base import AGENT, SYSTEM, USER
-from surfaces.settings import apply
+from features.open_viewer.settings import apply
 from tests.conftest import fresh, refused
 
 PASSWORD = "abcd efgh ijkl mnop"
