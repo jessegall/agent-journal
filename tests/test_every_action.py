@@ -48,7 +48,8 @@ BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "point", "p
          "extensionZip", "stream", "layoutFrom"}
 REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin", "tunnelLogout", "updateTunler", "installTunler",
         "tunnelAnswering", "tunnelDomains", "tunnelRelease", "tunnelReaddress", "tunnelCause", "restartTunnel", "setService", "installPlugin", "installSuggested", "upgradePlugin", "previewPlugin",
-        "previewUpgrade", "launchAgent", "saveAgentHooks", "relaunchAgent", "runShell", "agentKeys", "runCheck", "connectPhone", "connectTo"}
+        "previewUpgrade", "launchAgent", "saveAgentHooks", "relaunchAgent", "runShell", "agentKeys", "runCheck", "connectPhone", "connectTo",
+        "logInIntegration", "checkIntegration", "integrationTeams", "integrationWebhook"}
 LOGIN_PAGE = {"hosting", "hostingUpgrade", "hostingTakeDown", "hostingMe", "members", "inviteMember", "assignRole", "removeMember", "shareEnvironments", "endLogins",
               "leaveJournal"}
 SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
@@ -90,6 +91,7 @@ CALLS = {
     "editedFile": [AGENT_N, "c-1", "after"], "terminal": [AGENT_N, "commands"], "skills": [], "skill": ["journal"],
     "loadSkill": ["journal"], "alwaysSkill": ["journal", True], "skillKeywords": ["journal", "walk, walked"],
     "report": [{"kind": "threw", "message": "walked", "where": "/", "stack": ""}], "diagnostics": [], "clearDiagnostics": [],
+    "integration": ["linear"], "integrationTeams": ["linear"], "integrationWebhook": ["linear"], "logInIntegration": ["linear"], "checkIntegration": ["linear"],
 }
 
 WORLD = ("run", "install", "uninstall", "upgrade", "services", "archive_file", "pickup", "unarchive", "ask", "launch")

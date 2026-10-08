@@ -256,7 +256,6 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
         "a browser that logged in before is never locked out by wrong tries from elsewhere"
     assert "cleared" in clear_tries(hosted.record.root)
     assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.78", **proxied).status == 303
-    from engine.record import Record
     from features.hosted_journal import host
     from features.hosted_journal.settings import GATEWAY
     root = str(hosted.record.root)
@@ -268,8 +267,8 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
     host.main(["--root", root, "gateway-settings", "--address", "journal.example.org", "--days", "3"])
     assert hosted.vault.read(GATEWAY) == {"address": "journal.example.org", "proxy": "", "days": 3}, "the login page's own settings go to its vault"
     host.main(["--root", root, "prepare", "--address", ADDRESS, "--port", "8441", "--proxy", "127.0.0.1"])
-    kept = Record(hosted.record.root, hosted.record.env).setting(HostedJournalDetails.name, {})
-    assert (kept["port"], kept["proxy"], kept["apart"]) == ("8441", "127.0.0.1", "true"), "prepare switches the journal on a server on, with its login page run apart"
+    kept = HostedJournalDetails.values(host.record_of(hosted.record.root))
+    assert (kept["port"], kept["proxy"], kept["apart"]) == (8441, "127.0.0.1", True), "prepare switches the journal on a server on, with its login page run apart"
     monkeypatch.setattr(host, "setup_code", lambda given: (_ for _ in ()).throw(PermissionError("vault")))
     with pytest.raises(SystemExit, match="Only the login page's user"):
         host.main(["--root", root, "setup-code"])
@@ -499,6 +498,7 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
         assert [(answer.status, "never runs this" in answer.text) for answer in outside] == [(403, True)] * 3, \
             "the login page started as production starts it refuses what never comes from outside itself, before anything reaches the journal"
         made = json.loads(apart.call("POST", "/api/main/phone/connect", body='{"days": 7}', Cookie=token, Origin=origin, Content_Type="application/json").text)
+        assert "link" in made, made
         assert made["link"].startswith(f"https://{ADDRESS}/p/#")
         phone_headers = {"Origin": origin, "X-Phone": "1", "Content-Type": "application/json"}
         paired = apart.call("POST", "/p/pair", body=json.dumps({"code": made["link"].rsplit("#", 1)[1], "device": "phone"}), **phone_headers)

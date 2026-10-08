@@ -1,6 +1,8 @@
 import fcntl
+from dataclasses import replace
 import json
 import os
+import subprocess
 from pathlib import Path
 import tarfile
 import time
@@ -168,7 +170,6 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert "conversation-1" in json.loads(runtime.relaunch_file(record.root, "claude-1").read_text())["command"], "in the same conversation"
     Sessions(record.root).write("claude-1", launch=LAUNCH)
     assert relaunch.tick() == "", "one launched the current way is left alone"
-    import subprocess
     from supervisor import stop
     stubborn = subprocess.Popen(["sh", "-c", "trap '' HUP TERM; sleep 30"])
     began = time.time()
@@ -177,7 +178,6 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
 
 
 def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_path, monkeypatch):
-    import subprocess
     import sys
     from install import launcher
     script = tmp_path / "said.py"
@@ -206,7 +206,6 @@ def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_pa
 
 
 def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_passes_nothing(tmp_path):
-    import subprocess
     import sys
     from install import HOOK
     (tmp_path / "src").mkdir()
@@ -308,7 +307,6 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
 def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tmp_path, monkeypatch):
     import json
     import shutil
-    import subprocess
     import sys
     from pathlib import Path
     import features
@@ -420,7 +418,6 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     assert len(list((journal / "attic").glob("before-*.tar.gz"))) == install.KEPT_COPIES, "only the newest copy of the record is kept"
     assert install.keep_copy(tmp_path / "no-record") == "", "a project with no record keeps no copy"
 
-    import subprocess
     import sys
     site = tmp_path / "site"
     site_root = site / ".journal"
@@ -469,8 +466,9 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         patch.setattr(install, "complete", lambda folder: False)
         patch.delenv(install.REPAIRED, raising=False)
         patch.setattr(install, "configure", lambda site, site_root: ["configured"])
-        patch.setattr(install, "loaded", lambda: SimpleNamespace(migrate=lambda site_root: [], ship_sequences=lambda site_root: "sequences", ship_profiles=lambda site_root: "profiles",
-                                                                managed=managed))
+        stand_in = replace(install.loaded(), migrate=lambda site_root: [], ship_sequences=lambda site_root: "sequences", ship_profiles=lambda site_root: "profiles",
+                           stop_ended=lambda site_root: "no ended session was left running", managed=managed)
+        patch.setattr(install, "loaded", lambda: stand_in)
         patch.setattr(install, "retire", lambda site_root: 3)
         patch.setattr(install, "pack", lambda site_root: "packed")
         patch.setattr(managed, "remember_managed", lambda site, site_root: None)
@@ -492,7 +490,8 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         class Absent:
             def present(self, site):
                 return False
-        patch.setattr(install, "loaded", lambda: SimpleNamespace(providers={"ghost": Absent}))
+        ghostly = replace(install.loaded(), providers={"ghost": Absent})
+        patch.setattr(install, "loaded", lambda: ghostly)
         assert install.configure(site, site_root)[-1] == "no agent found here: neither Ghost", "a site with no agent in it is told so"
     broken = tmp_path / "broken"
     broken.mkdir()
@@ -559,7 +558,6 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
 def test_a_hook_never_waits_more_than_a_moment_for_a_server_that_is_down_slow_or_refusing(tmp_path):
     import http.server
     import socket
-    import subprocess
     import threading
     import time
     from pathlib import Path
@@ -616,7 +614,6 @@ def test_a_hook_never_waits_more_than_a_moment_for_a_server_that_is_down_slow_or
 
 
 def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_tag(tmp_path):
-    import subprocess
     from pathlib import Path
     from engine.version import version
     from install import fetch, released
