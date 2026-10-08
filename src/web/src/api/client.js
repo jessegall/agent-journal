@@ -131,6 +131,10 @@ export class ApiClient {
         return this.post("/hosting/members/remove", {member});
     }
 
+    shareEnvironments(member, environments) {
+        return this.post("/hosting/members/environments", {member, environments});
+    }
+
     endLogins(member) {
         return this.post("/hosting/members/end-logins", {member});
     }

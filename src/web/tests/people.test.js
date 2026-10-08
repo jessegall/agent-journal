@@ -170,3 +170,20 @@ test("a member who leaves is sent to the login page", async () => {
     await flush();
     expect(open).toHaveBeenCalledWith("/login?notice=left");
 });
+
+test("the owner shares an environment with a member from the member's row", async () => {
+    const {default: MemberEnvironments} = await import("../src/layout/MemberEnvironments.vue");
+    const share = vi.fn();
+    const into = document.createElement("div");
+    document.body.append(into);
+    const app = createApp(MemberEnvironments, {shared: ["main"], environments: ["main", "garden"], onShare: share});
+    app.directive("tip", tip);
+    app.mount(into);
+    await flush();
+    pressed("Environments");
+    await flush();
+    const garden = [...document.querySelectorAll('[role="menuitemcheckbox"]')].find((item) => item.textContent.includes("garden"));
+    expect(garden.getAttribute("aria-checked")).toBe("false");
+    garden.click();
+    expect(share).toHaveBeenCalledWith(["main", "garden"]);
+});

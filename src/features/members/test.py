@@ -13,7 +13,7 @@ from urllib.parse import parse_qs, urlsplit
 from commands.dispatch import ranked
 from controllers.base import word_names
 from controllers.features import Features
-from controllers.types import CONTROLLERS, Todos
+from controllers.types import CONTROLLERS, Environments, Todos
 from features import FEATURES
 from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, Visit
 from features.hosted_journal.owner import KeptLogin, Logins
@@ -44,7 +44,7 @@ def sent(hosted: Hosted, path: str, body: dict, cookie: str) -> Answer:
 
 def member_login(hosted: Hosted, name: str, role: Role) -> str:
     roster = Roster(hosted.vault)
-    member = roster.join(roster.invite(name, role).code, MEMBER_PASSWORD)
+    member = roster.join(roster.invite(name, role, (hosted.record.env,)).code, MEMBER_PASSWORD)
     return f"__Host-journal={Logins(hosted.vault).open(7, 'test', member.id)}"
 
 
@@ -100,7 +100,7 @@ def test_inviting_joining_roles_and_who_wrote_what_work_in_a_browser(hosted):
     owner = with_members(hosted)
     invite = json.loads(sent(hosted, "/api/hosting/members", {"name": "Bea"}, owner).text)["link"]
     roster = Roster(hosted.vault)
-    roster.join(roster.invite("Dan", Role.WRITER).code, MEMBER_PASSWORD)
+    roster.join(roster.invite("Dan", Role.WRITER, (hosted.record.env,)).code, MEMBER_PASSWORD)
     reader = member_login(hosted, "Cleo", Role.READER).split("=", 1)[1]
     writer = member_login(hosted, "Eli", Role.WRITER).split("=", 1)[1]
     env = {**os.environ, "HOSTED_URL": f"http://127.0.0.1:{hosted.port}/", "HOSTED_OWNER_LOGIN": owner.split("=", 1)[1], "HOSTED_READER_LOGIN": reader, "HOSTED_WRITER_LOGIN": writer,
@@ -131,7 +131,7 @@ def test_a_reader_only_reads_a_writer_writes_shared_rows_and_a_refusal_says_why(
 def test_a_member_reaches_only_what_the_allow_list_names_over_every_route_action_and_settings_field(hosted):
     owner = with_members(hosted)
     roster, gate = Roster(hosted.vault), MemberLogins()
-    logins = {role: KeptLogin(member=roster.join(roster.invite(role.value, role).code, MEMBER_PASSWORD).id) for role in Role}
+    logins = {role: KeptLogin(member=roster.join(roster.invite(role.value, role, (hosted.record.env,)).code, MEMBER_PASSWORD).id) for role in Role}
     requests = every_request()
     visits = {asked: visit_of(hosted, *asked) for asked in requests}
     targets = {asked: visit.reached() for asked, visit in visits.items()}
@@ -240,3 +240,25 @@ def test_leaving_removal_and_logging_out_end_a_members_live_sessions_at_once_and
     assert (listed["Ada"]["departed"], listed["Bea"]["departed"], listed["Cleo"]["departed"]) == ("removed", "left", None)
     assert Todos(hosted.record, actor=SYSTEM).load(written["n"]).data[WRITER] == ids["Ada"], "what a removed member wrote keeps naming them"
     assert sent(hosted, "/api/hosting/members", {"name": "Ada"}, owner).status == 201, "a name a departed member had can be invited again"
+
+
+def test_a_member_sees_only_the_environments_the_owner_shares_in_lists_rows_search_and_the_live_stream(hosted):
+    owner = with_members(hosted)
+    writer = member_login(hosted, "Bea", Role.WRITER)
+    bea, env = Roster(hosted.vault).named("Bea").id, hosted.record.env
+    garden = Environments(hosted.record, actor=SYSTEM).create("garden")
+
+    def titles(cookie: str) -> list[str]:
+        return [row["title"] for row in json.loads(hosted.call("GET", f"/api/{env}/environment", Cookie=cookie).text)["rows"]]
+    refused = hosted.call("GET", "/api/garden/todo", Cookie=writer)
+    assert refused.status == 403 and json.loads(refused.text)["error"] == "The owner has not shared this environment with you."
+    assert [hosted.call("GET", path, Cookie=writer, Accept=accept).status for path, accept in (
+        (f"/api/{env}/todo?env=garden", "*/*"), ("/api/garden/stream", "text/event-stream"), ("/api/garden/search?q=x", "*/*"))] == [403, 403, 403], \
+        "an environment not shared stays shut by its address, its query and its live stream"
+    assert "garden" in titles(owner) and "garden" not in titles(writer), "the list of environments holds only the shared ones"
+    assert hosted.call("GET", f"/api/{env}/environment/{garden.n}", Cookie=writer).status == 404
+    assert not [hit for hit in json.loads(hosted.call("GET", f"/api/{env}/search?q=garden", Cookie=writer).text) if hit["title"] == "garden"]
+    assert "garden" not in [place["name"] for place in json.loads(hosted.call("GET", "/api/summary", Cookie=writer).text)["environments"]]
+    assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "nowhere"]}, owner).status == 400
+    assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "garden"]}, owner).status == 200
+    assert hosted.call("GET", "/api/garden/todo", Cookie=writer).status == 200 and "garden" in titles(writer), "a shared environment opens from the next request"

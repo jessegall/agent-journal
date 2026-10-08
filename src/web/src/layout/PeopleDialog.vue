@@ -1,9 +1,10 @@
 <script setup>
-import {onMounted, onUnmounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {loginPage} from "../api/transport.js";
 import {loadPeople, people} from "../composables/people.js";
 import {roleTitle} from "../domain/members.js";
+import {store} from "../state/store.js";
 import AlertDialog from "../kit/AlertDialog.vue";
 import Btn from "../kit/Btn.vue";
 import CopyButton from "../kit/CopyButton.vue";
@@ -34,6 +35,8 @@ async function attempt(work) {
 const invite = (name, role) => attempt(async () => (invited.value = await api.inviteMember(name, role)));
 const assign = (member, role) => attempt(() => api.assignRole(member.id, role));
 const endLogins = (member) => attempt(() => api.endLogins(member.id));
+const share = (member, names) => attempt(() => api.shareEnvironments(member.id, names));
+const environments = computed(() => (store.summary?.environments || []).map((environment) => environment.name));
 
 const askRemove = (member) =>
     (confirming.value = {
@@ -80,7 +83,9 @@ onUnmounted(() => clearInterval(timer));
                     <MemberRow
                         :member="member"
                         :owner="me.owner"
+                        :environments="environments"
                         @assign="(role) => assign(member, role)"
+                        @share="(names) => share(member, names)"
                         @end-logins="endLogins(member)"
                         @remove="askRemove(member)"
                     />

@@ -15,6 +15,7 @@ from urllib.parse import quote
 
 import features
 from surfaces.appoint import appoint, online
+from surfaces.shared import row_shared, shared
 from surfaces.package import archive as extension_archive, info as extension_info
 from overview.summary import lately_summarized
 from engine.color import identity, set_color
@@ -236,12 +237,14 @@ def post_identity(req: Request) -> Reply:
 
 @route("GET", "/api/summary")
 def get_summary(req: Request) -> Reply:
-    return Reply(200, lately_summarized(req.root))
+    summary = lately_summarized(req.root)
+    return Reply(200, {**summary, "environments": [e for e in summary["environments"] if shared(e["name"])],
+                       "helpers": [e for e in summary["helpers"] if shared(e["name"])]})
 
 
 @route("GET", "/api/agents")
 def get_agents(req: Request) -> Reply:
-    return Reply(200, online(req.root))
+    return Reply(200, [agent for agent in online(req.root) if shared(agent["environment"])])
 
 
 @route("POST", "/api/{env}/appoint")
@@ -559,7 +562,9 @@ def get_search(req: Request) -> Reply:
         for r in CONTROLLERS[type_](record, actor=USER).search(term, archived):
             matches = [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name, safe='')}"}
                        for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
-            out.append({**shaped(r, req.record(), VIEWER), "matches": matches})
+            view = shaped(r, req.record(), VIEWER)
+            if row_shared(type_, view):
+                out.append({**view, "matches": matches})
     return Reply(200, out)
 
 
@@ -604,7 +609,8 @@ def get_dashboard(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/{type}")
 def get_all(req: Request) -> Reply:
-    return Reply(200, listing(req.controller(), req.record(), Listing.from_query(req.query)))
+    listed = listing(req.controller(), req.record(), Listing.from_query(req.query))
+    return Reply(200, {**listed, "rows": [row for row in listed["rows"] if row_shared(req.params["type"], row)]})
 
 
 @route("POST", "/api/{env}/{type}")
@@ -618,7 +624,10 @@ def post_create(req: Request) -> Reply:
 def get_one(req: Request) -> Reply:
     controller = req.controller()
     n = int(req.params["n"])
-    return Reply(200, shaped(controller.show(n) if controller.resource.cleared_by == OPENED else controller.load(n), req.record(), VIEWER))
+    view = shaped(controller.show(n) if controller.resource.cleared_by == OPENED else controller.load(n), req.record(), VIEWER)
+    if not row_shared(req.params["type"], view):
+        return Reply(404, {"error": f"no {req.params['type']} {n}"})
+    return Reply(200, view)
 
 
 @route("GET", "/api/{env}/{type}/{n}/choices")

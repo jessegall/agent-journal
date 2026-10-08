@@ -28,6 +28,7 @@ class Member(Loaded):
     id: str = ""
     name: str = ""
     role: Role = Role.WRITER
+    environments: tuple[str, ...] = ()
     invited: float = 0.0
     joined: float = 0.0
     code: KeptCode = field(default_factory=KeptCode)
@@ -37,6 +38,9 @@ class Member(Loaded):
 
     def has_joined(self) -> bool:
         return bool(self.joined)
+
+    def sees(self, environment: str) -> bool:
+        return environment in self.environments
 
     def is_present(self) -> bool:
         return self.departed is None
@@ -52,7 +56,7 @@ class Member(Loaded):
         return {key: value for key, value in asdict(self).items() if key != "id"}
 
     def summary(self) -> dict:
-        return {"id": self.id, "name": self.name, "role": self.role, "invited": self.invited, "joined": self.joined, "departed": self.departed}
+        return {"id": self.id, "name": self.name, "role": self.role, "environments": self.environments, "invited": self.invited, "joined": self.joined, "departed": self.departed}
 
 
 @dataclass(frozen=True)
@@ -70,7 +74,7 @@ class Roster:
     def all(self) -> tuple[Member, ...]:
         return tuple(Member.from_json({**kept, "id": key}) for key, kept in self.vault.read(MEMBERS).items())
 
-    def invite(self, name: str, role: Role) -> Invite:
+    def invite(self, name: str, role: Role, environments: tuple[str, ...]) -> Invite:
         named = " ".join(name.split())[:NAME_LONGEST]
         if not named:
             raise Refused("a member needs a name")
@@ -79,7 +83,7 @@ class Roster:
             if self.named(named) is not None:
                 raise Refused(f"{named} is already a member")
             now = self.vault.clock()
-            member = Member(f"m-{secrets.token_hex(6)}", named, role, now, code=KeptCode.made(code, now + INVITE_DAYS * DAY))
+            member = Member(f"m-{secrets.token_hex(6)}", named, role, environments, now, code=KeptCode.made(code, now + INVITE_DAYS * DAY))
             self._keep(member)
         return Invite(member, code)
 
@@ -122,6 +126,12 @@ class Roster:
             assigned = replace(self.required(member), role=role)
             self._keep(assigned)
         return assigned
+
+    def share(self, member: str, environments: tuple[str, ...]) -> Member:
+        with self.vault.held():
+            shared = replace(self.required(member), environments=environments)
+            self._keep(shared)
+        return shared
 
     def depart(self, member: str, how: Departure) -> Member:
         with self.vault.held():
