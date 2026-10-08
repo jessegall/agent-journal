@@ -188,9 +188,8 @@ def test_gmail_refuses_without_an_address_an_answer_on_a_ticket_not_from_gmail_a
     assert ("smtp.gmail.com refused" in why, PASSWORD in why) == (True, False), "a send the server refuses is said with the password masked"
 
 
-def test_gmail_reads_nothing_while_fetching_is_off_and_a_send_the_server_refuses_is_kept_not_raised(monkeypatch, tmp_path):
+def test_gmail_reads_nothing_while_fetching_is_off_and_a_send_the_server_refuses_is_kept_not_raised(world):
     from features.gmail.mail import Mailbox
-    world = gmail_world(monkeypatch, tmp_path, mails={1: raw("Hello", "Hi")})
     record, server, gmail = world.record, world.server, world.gmail
     apply(record, {"gmail": {**dict(gmail.values(record)), "fetching": False}}, USER)
     gmail.check(record)
