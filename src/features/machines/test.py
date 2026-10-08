@@ -14,6 +14,7 @@ from engine.machines import Lease, this_machine
 from engine.numbers import BLOCK, Leases, Numbers, rows
 from engine.outbox import Request
 from engine.record import Record
+from engine.sync import PROTOCOL, Comparison, Shape, Step
 from features.machines.details import MachinesDetails
 from resources.base import AGENT, PROJECT, SYSTEM, USER, Stale
 from tests.conftest import fresh, refused
@@ -146,3 +147,13 @@ def test_a_retry_with_the_same_key_makes_no_second_row(monkeypatch):
     assert (again.n, len(todos.all())) == (first.n, 2), "the retry gets the row the lost answer made, and a new key makes a new row"
     assert other.n != first.n
 
+
+def test_the_sync_compares_its_own_protocol_number_and_the_migrations_a_copy_went_through():
+    server = Shape(PROTOCOL, frozenset({"m1", "m2"}))
+    assert Shape(PROTOCOL, frozenset({"m1", "m2"})).compared(server) == Comparison(Step.IN_STEP), "a copy in step syncs as it is"
+    assert Shape(PROTOCOL, frozenset({"m1"})).compared(server) == Comparison(Step.UPGRADE_HERE, ("m2",)), \
+        "a copy behind the server upgrades, and its own migrations bring the rows it pulled along"
+    assert Shape(PROTOCOL, frozenset({"m1", "m2", "m3"})).compared(server) == Comparison(Step.MIGRATE_PULLED, ("m3",)), \
+        "a copy ahead of the server runs its newer migrations over what it pulls, instead of being rebuilt"
+    assert Shape(PROTOCOL + 1, frozenset({"m1", "m2"})).compared(server) == Comparison(Step.PULL_AGAIN), \
+        "only a new protocol number, not a new release, makes a copy pull everything again"
