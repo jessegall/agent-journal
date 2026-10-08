@@ -22,6 +22,7 @@ import Switch from "../kit/Switch.vue";
 import Toast from "../kit/Toast.vue";
 import Spinner from "../kit/Spinner.vue";
 import {peek, route} from "../route.js";
+import ConnectionMark from "./ConnectionMark.vue";
 import Segmented from "../kit/Segmented.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import HelperList from "../chat/HelperList.vue";
@@ -178,6 +179,7 @@ async function runBar(p) {
                         @change="setAuto"
                     />
                     <Segmented class="statusbar-mode" :options="modeOptions" :value="mode" @pick="pickMode" />
+                    <ConnectionMark />
                     <button
                         type="button"
                         :class="['statusbar-helpers', {none: !helpers.length}]"

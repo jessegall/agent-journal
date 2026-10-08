@@ -29,9 +29,12 @@ class ConnectionView:
     release: str
     step: str
     travels: Travelling
+    role: str
+    synced_at: float
 
 
 SERVER, HERE = "server", "here"
+SERVER_ROLE, YOUR_COPY = "the server", "your copy"
 STATE = "connection"
 
 
@@ -83,9 +86,18 @@ def what_travels(root: Path) -> Travelling:
     return Travelling(len(found), sum(path.stat().st_size for path in found), tuple(environments))
 
 
+def role_of(connected: bool) -> str:
+    """Which side this journal is: the server when it runs on one, otherwise a copy of it once it has joined."""
+    if os.environ.get("JOURNAL_ADDRESS"):
+        return SERVER_ROLE
+    return YOUR_COPY if connected else ""
+
+
 def view(record, address: str) -> ConnectionView:
     welcome = record.state(STATE).get("welcome") or {}
-    return ConnectionView(address, bool(address and welcome), welcome.get("release", ""), welcome.get("step", ""), what_travels(record.root))
+    connected = bool(address and welcome)
+    return ConnectionView(address, connected, welcome.get("release", ""), welcome.get("step", ""), what_travels(record.root), role_of(connected),
+                          float(record.state(STATE).get("synced_at", 0.0)))
 
 
 def leave(record) -> None:

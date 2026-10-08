@@ -115,4 +115,20 @@ await runScenarios(process.argv[2], {
         await page.getByRole("button", {name: "Disconnect"}).click();
         await page.getByText(/Not connected/).waitFor();
     },
+    async "a copy that has joined a server says so in the bar, with how it stands and when it last synced"(page, url) {
+        await page.route(/\/api\/main\/environment\/connection$/, (route) =>
+            reply(route, {address: "https://journal.example.com", connected: true, release: "same", step: "in step", role: "your copy", synced_at: Date.now() / 1000 - 180, travels: {files: 1, bytes: 1, environments: []}})
+        );
+        await page.goto(`${url}#/main`);
+        await page.getByText(/Your copy · in step · synced 3m ago/).first().waitFor({timeout: 30000}).catch(() => {
+            throw new Error("the bar did not say that this is a copy, in step, synced 3 minutes ago");
+        });
+    },
+    async "a journal that runs on a server says in the bar that it is the server"(page, url) {
+        await page.route(/\/api\/main\/environment\/connection$/, (route) =>
+            reply(route, {address: "", connected: false, release: "", step: "", role: "the server", synced_at: 0, travels: {files: 1, bytes: 1, environments: []}})
+        );
+        await page.goto(`${url}#/main`);
+        await page.getByText(/The server · not synced yet/).first().waitFor({timeout: 30000});
+    },
 });

@@ -19,3 +19,20 @@ const STEPS = {
 };
 
 export const stepWords = (step) => STEPS[step] || "";
+
+const SHORT = {
+    "in step": "in step",
+    "upgrade here": "must upgrade",
+    "migrate pulled": "ahead of the server",
+    "pull again": "pulls everything afresh",
+};
+
+const ROLES = {"the server": "The server", "your copy": "Your copy"};
+
+export function markerWords({role, step, synced_at: syncedAt}, ago) {
+    if (!ROLES[role]) return "";
+    const last = syncedAt ? `synced ${ago(syncedAt)}` : "not synced yet";
+    return [ROLES[role], SHORT[step], last].filter(Boolean).join(" · ");
+}
+
+export const markerTone = ({step}) => (step === "in step" ? "good" : "warn");
