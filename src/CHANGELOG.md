@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.264.1 — Hooks answer at once and never hold the agent
+- A hook answers before anything that only tells the agent something; nudges, marks, whispers and the agent's report run after the answer, on worker threads.
+- A long transcript is folded in the background, so a hook never waits minutes behind it after an upgrade, and the viewer's connections are no longer left open until the server runs out of files.
+- Writers held back by a migration wait together instead of one after another.
+- A plugin service's when-check runs in the project's folder.
+
 ## 2.264.0 — Logins for the agent's browser, secrets on a server, and to-dos that close when their work lands
 - `journal secret login <name> <url>` opens a browser for you to log in once; the session is kept beside the secrets file, owner-only, and the agent's own browser tool starts logged in from its next start.
 - A journal on a server keeps its secrets in a folder of its own that no backup holds and a restore leaves in place. The owner can take a hosted journal down or upgrade it from the viewer, only signed release images are deployed (the first deploy included), and a nearly full disk ends in a clear refusal with a health address that says so.
