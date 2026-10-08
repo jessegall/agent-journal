@@ -1,6 +1,7 @@
 import json
 import uuid
 from dataclasses import asdict, dataclass, field
+from enum import StrEnum
 from pathlib import Path
 from typing import Callable
 
@@ -10,6 +11,7 @@ from engine.locks import held_file
 from engine.stored import append_text, write_json, write_text
 
 WAITING = "waiting-writes.jsonl"
+SET_ASIDE = "refused-writes.jsonl"
 APPLIED = "applied-writes.json"
 KEPT_KEYS = 5000
 
@@ -26,11 +28,26 @@ class Write:
     named: dict = field(default_factory=dict)
 
 
+class Sent(StrEnum):
+    """What became of one write sent to the server."""
+
+    TAKEN = "taken"
+    AWAY = "away"
+    REFUSED = "refused"
+
+
+@dataclass(frozen=True)
+class Flushed:
+    sent: int
+    refused: tuple[Write, ...]
+
+
 class Waiting:
     """What this machine wrote while the server was away, kept in the order it was written until the server takes it."""
 
     def __init__(self, root: Path) -> None:
         self.file = runtime.folder(root) / WAITING
+        self.set_aside = runtime.folder(root) / SET_ASIDE
         self.lock = self.file.with_suffix(".lock")
 
     def hold(self, scope: str, type_: str, word: str, args: list | None = None, named: dict | None = None) -> Write:
@@ -40,23 +57,38 @@ class Waiting:
         return held
 
     def waiting(self) -> list[Write]:
-        if not self.file.is_file():
-            return []
-        return [Write(**json.loads(line)) for line in self.file.read_text().splitlines() if line.strip()]
+        return written(self.file)
 
-    def flush(self, send: Callable[[Write], bool]) -> int:
-        """Sends the waiting writes oldest first and stops at the first one the server does not take, so none overtakes another; answers how many went."""
+    def refused(self) -> list[Write]:
+        return written(self.set_aside)
+
+    def flush(self, send: Callable[[Write], Sent]) -> Flushed:
+        """Sends the waiting writes oldest first and stops at the first one the server could not take, so none overtakes another; one it refused is set aside and the rest go on."""
         with held_file(self.lock):
             waiting = self.waiting()
-            sent = 0
+            done, refused = 0, []
             try:
                 for held in waiting:
-                    if not send(held):
+                    outcome = send(held)
+                    if outcome is Sent.AWAY:
                         break
-                    sent += 1
+                    if outcome is Sent.REFUSED:
+                        refused.append(held)
+                    done += 1
             finally:
-                write_text(self.file, "".join(json.dumps(asdict(held)) + "\n" for held in waiting[sent:]))
-        return sent
+                write_text(self.file, lines(waiting[done:]))
+                append_text(self.set_aside, lines(refused))
+        return Flushed(done - len(refused), tuple(refused))
+
+
+def written(file: Path) -> list[Write]:
+    if not file.is_file():
+        return []
+    return [Write(**json.loads(line)) for line in file.read_text().splitlines() if line.strip()]
+
+
+def lines(writes: list[Write]) -> str:
+    return "".join(json.dumps(asdict(held)) + "\n" for held in writes)
 
 
 class Applied:
@@ -66,11 +98,11 @@ class Applied:
         self.file = Path(folder) / APPLIED
         self.lock = self.file.with_suffix(".lock")
 
-    def apply(self, held: Write, run: Callable[[Write], None]) -> bool:
-        """Runs the write unless its key was applied before; answers true either way, since the sender may let go of it."""
+    def apply(self, held: Write, run: Callable[[Write], None]) -> Sent:
+        """Runs the write unless its key was applied before; answers taken either way, since the sender may let go of it."""
         with held_file(self.lock):
             keys = read_json(self.file, list, [])
             if held.key not in keys:
                 run(held)
                 write_json(self.file, [*keys, held.key][-KEPT_KEYS:])
-        return True
+        return Sent.TAKEN

@@ -8,7 +8,7 @@ import features
 from controllers.features import Features
 from controllers.types import Environments, Notices, Todos
 from engine.machines import Lease, this_machine
-from engine.offline import Applied, Waiting, Write
+from engine.offline import Applied, Sent, Waiting, Write
 from engine.record import Record
 from engine.sync import PROTOCOL, Comparison, Hello, Release, Shape, Step
 from engine.version import version
@@ -41,8 +41,10 @@ class Server:
         return Lease(this_machine(), 2)
 
     def send(self, held):
+        if held.args[0] == "turned down":
+            return Sent.REFUSED
         self.taken.append(held.args[0])
-        return self.up
+        return Sent.TAKEN if self.up else Sent.AWAY
 
     def events(self, scope, env, since):
         return [e for e in self.events_to_give if e.id > since]
@@ -100,7 +102,7 @@ def test_an_environment_goes_to_the_server_only_once_it_has_taken_the_new_epoch_
         "a server that does not answer takes nothing and this machine keeps the environment"
     Waiting(record.root).hold("", "todo", "create", ["waits"])
     assert "still wait" in refused(lambda: hand(record.root, record.env, "server", Server(record.root))) and record.holds(""), "writes still waiting go first"
-    Waiting(record.root).flush(lambda held: True)
+    Waiting(record.root).flush(lambda held: Sent.TAKEN)
     server = Server(record.root)
     lease = hand(record.root, record.env, "server", server)
     assert (lease, server.handed, record.holds("")) == (Lease("server-1", 1), [(record.env, Lease("server-1", 1))], False), \
@@ -171,7 +173,7 @@ def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and
         gone = closed.getsockname()[1]
     began = time.time()
     assert "Connection refused" in refused(lambda: HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).hello()) and time.time() - began < 3, "a server that refuses the connection is met at once"
-    assert HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).send(Write("k", "", "todo", "create", ["x"])) is False, "and a write sent to it is kept, not lost"
+    assert HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).send(Write("k", "", "todo", "create", ["x"])) is Sent.AWAY, "and a write sent to it is kept, not lost"
     with socket.socket() as stalled:
         stalled.bind(("127.0.0.1", 0))
         stalled.listen(1)
@@ -179,8 +181,10 @@ def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and
         assert refused(lambda: HttpTransport(f"http://127.0.0.1:{stalled.getsockname()[1]}", timeout=0.3).hello()) and time.time() - began < 3, "a server that accepts and never answers is given up on at the timeout"
 
     class Down(http.server.BaseHTTPRequestHandler):
+        status = 503
+
         def do_POST(self):
-            self.send_response(503)
+            self.send_response(self.status)
             self.end_headers()
 
         do_GET = do_POST
@@ -192,6 +196,10 @@ def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         assert "taken down" in refused(lambda: HttpTransport(f"http://127.0.0.1:{server.server_port}").hello()), "a server taken down answers 503 and the refusal says so"
+        outcomes = []
+        for Down.status in (503, 500, 400, 403):
+            outcomes.append(HttpTransport(f"http://127.0.0.1:{server.server_port}").send(Write("k", "", "todo", "create", ["x"])))
+        assert outcomes == [Sent.AWAY, Sent.AWAY, Sent.REFUSED, Sent.REFUSED], "a write the server failed on is tried again, and one it refused is not"
     finally:
         server.shutdown()
 
@@ -220,7 +228,13 @@ def test_a_sync_that_meets_a_server_down_an_epoch_change_or_an_interrupted_push_
     except OSError:
         pass
     assert ([w.args[0] for w in again.waiting()], ran) == (["second", "third"], ["first"]), "a push cut off in the middle keeps what the server did not take and drops what it did"
-    assert (again.flush(lambda held: taken.apply(held, lambda write: ran.append(write.args[0]))), ran) == (2, ["first", "second", "third"]), "the next try sends the rest, and nothing arrives twice"
+    assert (again.flush(lambda held: taken.apply(held, lambda write: ran.append(write.args[0]))).sent, ran) == (2, ["first", "second", "third"]), "the next try sends the rest, and nothing arrives twice"
+    for name in ("fourth", "turned down", "fifth"):
+        waiting.hold("", "todo", "create", [name])
+    server = Server(record.root)
+    assert (sync(record, server)["sent"], server.taken, waiting.waiting(), [held.args for held in waiting.refused()]) == (2, ["fourth", "fifth"], [], [["turned down"]]), \
+        "a write the server refused is set aside and the writes after it still go, in order"
+    assert any("turned down changes" in n.title and "turned down" in n.brief for n in Notices(record, actor=SYSTEM).all()), "and a notice names what was set aside"
 
 
 def test_a_handover_with_a_stale_lease_is_refused_on_both_sides():
