@@ -396,7 +396,7 @@ def test_stopping_the_journal_names_what_was_left_open_and_the_other_commands_an
     monkeypatch.setattr("engine.typist.live", lambda root: [])
     monkeypatch.setattr("commands.queries.kept_work", lambda cwd: None)
     assert read("ended").strip() == "", "a session that ends puts back what it set aside and stops the journal when no session is left"
-    monkeypatch.setattr("install.upgrade", lambda project, root, yes=False: [f"upgraded {project.name} {yes}"])
+    monkeypatch.setattr("install.upgrade", lambda project, root, yes=False, version="": [f"upgraded {project.name} {yes}"])
     assert "upgraded" in read("upgrade", "--yes") and "True" in read("upgrade", "--yes"), "an upgrade prints what it did"
     monkeypatch.setattr("commands.demo.demo_built", lambda folder, into, environment, name: f"built {into.name}")
     assert "built shop" in read("demo", "recording", "shop"), "a demo is built into the folder asked for"
