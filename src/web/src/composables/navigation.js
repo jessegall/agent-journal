@@ -39,6 +39,7 @@ export function useNavigation() {
                 ...(boardOn.value ? [{...pageLink("kanban"), count: recordCount("todo")}] : []),
                 ...daily("project"),
                 ...(demo ? [] : [pageLink("plugins")]),
+                pageLink("secrets"),
                 pageLink("resources"),
                 pageLink("settings"),
             ],

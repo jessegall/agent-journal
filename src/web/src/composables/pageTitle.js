@@ -11,6 +11,7 @@ const PAGES = {
     skills: "Skills",
     about: "About",
     plugins: "Plugins",
+    secrets: "Secrets",
     page: "Plugin",
     hub: "Journals",
     file: "File",

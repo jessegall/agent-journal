@@ -47,4 +47,4 @@ class LeakAlarm:
             return
         self.told[key] = time.time()
         Notifications(record, actor=SYSTEM).create(f"The value of the secret {title} was written into the journal",
-                                                   brief=f"It was replaced with [secret {title}] before it was saved, but it was seen: rotate it, then fill in the new value under Settings, Secrets.")
+                                                   brief=f"It was replaced with [secret {title}] before it was saved, but it was seen: rotate it, then fill in the new value on the Secrets page.")

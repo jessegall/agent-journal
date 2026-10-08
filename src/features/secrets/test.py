@@ -150,3 +150,8 @@ def test_a_journal_on_a_server_keeps_its_own_values_which_no_backup_restore_or_o
     monkeypatch.delenv("AGENT_JOURNAL_SECRETS")
     assert (ValuesFile(record.root).path.is_relative_to(tmp_path / "laptop"), ValuesFile(record.root).values()) == (True, {}), \
         "an agent on another machine working on the same journal reads only that machine's own file"
+    from engine.record import Record
+    asked_here = fresh()
+    Secrets(asked_here, actor=AGENT).request("A project key", "to reach the host")
+    assert [row.title for row in Secrets(Record(asked_here.root, "another"), actor=SYSTEM).all()] == ["A project key"], \
+        "a secret belongs to the whole project, so it is listed from every environment"

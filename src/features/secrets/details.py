@@ -3,7 +3,7 @@ from features.groups import Group
 
 
 class SecretsDetails(FeatureDetails):
-    explains = "Keys and logins the agent may use without ever seeing them. You fill in their values under Settings, Secrets."
+    explains = "Keys and logins the agent may use without ever seeing them. You fill in their values on the Secrets page."
     name = "secrets"
     group = Group.PROJECT
     label = "Let the agent use keys and logins without seeing them"
@@ -19,7 +19,7 @@ class SecretsDetails(FeatureDetails):
 
     help = """
         When a task needs a key or a login you do not have, ask for it with journal secret request
-        "<name>" "<why>" [--kind "api key"|login|custom]: it waits under Settings, Secrets until the
+        "<name>" "<why>" [--kind "api key"|login|custom]: it waits on the Secrets page until the
         user fills it in. Never ask the user to paste a value into the chat, and never read the
         file that holds the values.
 

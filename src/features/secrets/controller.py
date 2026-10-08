@@ -29,13 +29,13 @@ class Secrets(Controller):
     @action
     def request(self, title: str, why: str, kind: str = Kind.API_KEY.value) -> Secret:
         row = self.create(title, kind=kind, asked=why)
-        Messages(self.record, actor=AGENT).create(f"Please fill in the secret {title}", brief=f"I need it {why}. Fill it in under Settings, Secrets, never in the chat.\n\nsecret {row.n}")
+        Messages(self.record, actor=AGENT).create(f"Please fill in the secret {title}", brief=f"I need it {why}. Fill it in on the Secrets page, never in the chat.\n\nsecret {row.n}")
         return row
 
     @action
     def fill(self, n: int, field: str, value: str) -> Secret:
         if self.actor != USER:
-            self._refuse("only you fill in a secret's value, under Settings, Secrets in the viewer")
+            self._refuse("only you fill in a secret's value, on the Secrets page in the viewer")
         return self._stored(self.load(n), field, value)
 
     @action
@@ -98,7 +98,7 @@ class Secrets(Controller):
         place = Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
         helping = bool(place and place.data.get("kind") == "helper")
         if not row.helpers and (self.agent or helping):
-            raise Refused(f"secret {row.n}, {row.title}, is for the main agent only; the user can share it with helpers and subagents under Settings, Secrets")
+            raise Refused(f"secret {row.n}, {row.title}, is for the main agent only; the user can share it with helpers and subagents on the Secrets page")
 
     def _purge(self) -> list[str]:
         gone = [row for row in self.rows.every(deleted=True) if row.deleted and time.time() - row.deleted > KEPT_DAYS * 86400]

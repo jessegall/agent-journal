@@ -412,7 +412,6 @@ export const TABS = [
     {key: "sharing", title: "Phone and share links", line: "Your phone and share links reach this journal through the tunler account below."},
     {key: "plugins", title: "Plugins", line: "The settings of each installed plugin."},
     {key: "environments", title: "Environments", line: "The environments of this project. Each has its own to-dos, agent and history."},
-    {key: "secrets", title: "Secrets", line: "Keys and logins the agent may use without ever seeing them. You fill in their values here."},
     {key: "developer", title: "Developer", line: "Only needed when you work on the journal itself."},
 ];
 

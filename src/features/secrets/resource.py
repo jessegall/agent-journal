@@ -40,7 +40,7 @@ class Secret(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Secret",
         abstract="A key or login the agent may use without ever seeing it",
-        help="Its values live in a file in your home folder, never in the journal. You fill them in under Settings, Secrets.",
+        help="Its values live in a file in your home folder, never in the journal. You fill them in on the Secrets page.",
     )
     data_fields: ClassVar[list[Field]] = [
         Field(default=Kind.CUSTOM.value, name="kind"),

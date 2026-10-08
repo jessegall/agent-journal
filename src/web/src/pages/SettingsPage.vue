@@ -21,7 +21,6 @@ import ServicesList from "./ServicesList.vue";
 import DiagnosticsLog from "./DiagnosticsLog.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import PluginSettings from "./PluginSettings.vue";
-import SettingsSecrets from "./SettingsSecrets.vue";
 import SettingsRegion from "./SettingsRegion.vue";
 import SettingsConnection from "./SettingsConnection.vue";
 import SettingsTunnel from "./SettingsTunnel.vue";
@@ -214,10 +213,6 @@ onMounted(async () => {
                             <template #services>
                                 <p class="settings-line">{{ tabLine("services") }}</p>
                                 <ServicesList />
-                            </template>
-                            <template #secrets>
-                                <p class="settings-line">{{ tabLine("secrets") }}</p>
-                                <SettingsSecrets />
                             </template>
                             <template #plugins>
                                 <PluginSettings :query="query" @saved="saved = {text: `Saved: ${$event}`}" />
