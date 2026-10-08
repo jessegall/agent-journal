@@ -136,8 +136,17 @@ class TranscriptCache:
     def before(self, path: Path, offset: int, span: int) -> bytes:
         return read_bytes(path, max(0, offset - span), offset)
 
+    @staticmethod
+    def fold_key(path: Path, fold, start) -> tuple:
+        return str(path), fold.__name__, code_mark(), *getattr(start, "__dataclass_fields__", ())
+
+    def caught_up(self, path: Path, fold, start) -> bool:
+        size = size_of(path)
+        held = self.folds.get(self.fold_key(path, fold, start))
+        return size is None or (held is not None and held[0] >= size)
+
     def folded(self, path: Path, fold, start, row_of: Callable):
-        key = (str(path), fold.__name__, code_mark(), *getattr(start, "__dataclass_fields__", ()))
+        key = self.fold_key(path, fold, start)
         size = size_of(path)
         if size is None:
             return start()

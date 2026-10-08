@@ -3,7 +3,7 @@ from features import trigger
 from engine.journal_calls import calls
 from features.parts import AgentContext, ToolInterceptor
 from engine.gates import Runs
-from features.skill_loading.catalogue import loaded_at, loaded_before_compaction, teaching_command
+from features.skill_loading.catalogue import has_read_every_load, loaded_at, loaded_before_compaction, teaching_command
 from features.skill_loading.required import outstanding, require
 from engine.reach import Reach
 
@@ -34,6 +34,6 @@ class RefuseUntilLoaded(ToolInterceptor):
 
     def intercept(self, context: AgentContext, call) -> str:
         missing = outstanding(context.record, context.agent.row)
-        if not missing:
+        if not missing or not has_read_every_load(context.agent.row):
             return ""
         return context.feature.line_text("required", skills=", ".join(missing), loads=", ".join(context.provider.skill_load(name) for name in missing))

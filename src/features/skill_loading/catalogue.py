@@ -101,6 +101,11 @@ def available(root: Path) -> set[str]:
     return {f.parent.name for f in skill_files(root / LIBRARY)}
 
 
+def has_read_every_load(agent) -> bool:
+    provider = transcript_reader(agent)
+    return provider.has_read_every_load(Path(agent.transcript)) if provider else True
+
+
 def loaded_at(agent) -> dict[str, float]:
     provider = transcript_reader(agent)
     return provider.loaded_skills(Path(agent.transcript)) if provider else {}

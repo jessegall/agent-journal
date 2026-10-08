@@ -336,6 +336,9 @@ class Provider(ABC):
     def loaded_skills(self, path: Path) -> dict[str, float]:
         return dict(self.folded(path, self.skill_loads, dict))
 
+    def has_read_every_load(self, path: Path) -> bool:
+        return CACHE.caught_up(path, self.skill_loads, dict)
+
     def starts_window(self, row: dict) -> bool:
         return False
 
