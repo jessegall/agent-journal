@@ -4,7 +4,7 @@ from dataclasses import asdict
 from functools import cached_property
 from typing import Callable, ClassVar
 
-from controllers.features import SETTING_KEYS
+from controllers.features import SETTING_KEYS, SETTINGS_CHANGED
 from controllers.types import Agents
 from features import trigger
 from features.switches import switches
@@ -157,6 +157,7 @@ class Feature(ABC):
         self.register(self.journal)
         if self.settings:
             SETTING_KEYS.add(None, tuple(self.settings), key=self.name)
+        SETTINGS_CHANGED.add(None, self.settings_changed, key=self.name)
         if self.nudges:
             from features.nudges.sending import SendOnTheClock, SendOnToolUse
             self.journal.events.handler(SendOnTheClock(self.nudges))
