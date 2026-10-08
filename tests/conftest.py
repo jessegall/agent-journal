@@ -124,3 +124,14 @@ def viewer_functions_restored(request, monkeypatch):
     for name in changed:
         setattr(viewer, name, _VIEWER_FUNCTIONS[name])
     assert not changed, f"{request.node.nodeid} left engine.viewer.{', '.join(changed)} replaced for every later test"
+
+
+@pytest.fixture
+def hosted_world(tmp_path):
+    """A hosted journal and two local copies in scratch folders, real processes once started; imported here so a run that never asks for it never installs one."""
+    from tests.world import World
+    world = World(tmp_path)
+    try:
+        yield world
+    finally:
+        world.close()
