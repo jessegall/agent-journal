@@ -170,7 +170,7 @@ def allowed(root: Path, environment: str, route: Route, params: dict, body: dict
     """A named page or action is open, and one that runs a command only right after the phone unlocked; anything unnamed is closed, and a phone gets only what its person's rights grant."""
     reached = reach(route, GenericPath.from_json(params))
     home = Record(root, environment)
-    if reached == post("/api/{env}/settings") and writes_a_secret(body):
+    if writes_a_secret(body):
         return Reach.CLOSED
     if reached not in NAMED or not rights_of(home).may_reach(home, member, reached):
         return Reach.CLOSED
