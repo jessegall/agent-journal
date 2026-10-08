@@ -198,6 +198,11 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     assert (ended, [n.title for n in Notices(record).all()]) == ([record.env], [f"Message {lost.n} has not reached the agent"]), \
         "a message the agent never saw restarts its engine once, with a notice saying so, and is not alarmed about again"
     monkeypatch.undo()
+    launched = []
+    monkeypatch.setattr(engines.subprocess, "Popen", lambda command, **given: launched.append((command[-1], given["stdout"].name)))
+    children.spawn("feature-x")
+    monkeypatch.undo()
+    assert launched == [("feature-x", str(record.root / "runtime" / "engine-feature-x.log"))], "an environment's engine runs as its own process, writing to its own log"
     from providers import DRIVERS
     from runner.engine import Engine, SILENT_AFTER
     report(record, "working", "PreToolUse")
