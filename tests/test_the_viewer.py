@@ -75,7 +75,7 @@ def test_the_viewers_own_code_passes_its_unit_tests():
 @needs_node_modules
 @pytest.mark.parametrize("script", sorted(path.stem for path in (WEB / "browser").glob("*.mjs") if path.stem not in HELPERS))
 def test_the_viewer_answers_every_state_in_a_browser(scratch_viewer, script):
-    env = {**os.environ, "JOURNAL_SCRATCH_ROOT": str(scratch_viewer.root), "JOURNAL_PYTHON": sys.executable}
+    env = {**os.environ, "JOURNAL_SCRATCH_ROOT": str(scratch_viewer.root), "JOURNAL_SCRATCH_URL": scratch_viewer.url, "JOURNAL_PYTHON": sys.executable}
     run = subprocess.run(["node", f"browser/{script}.mjs", scratch_viewer.url], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
     assert run.returncode == 0, run.stderr[-2000:]
     assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
