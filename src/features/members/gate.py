@@ -122,20 +122,25 @@ class MemberLogins:
         found = Roster(Vault(record.root)).present(member)
         return None if found is None else Sender(found.id, found.role, frozenset(found.environments))
 
+    def enters(self, record: Record, member: str) -> bool:
+        """Whether this person may see the record's environment at all: the owner every one, a member those shared with them."""
+        if member == OWNER_ID:
+            return True
+        sender = self.sender(record, member)
+        return sender is not None and record.env in sender.environments
+
     def may_reach(self, record: Record, member: str, page: Page | Action) -> bool:
         """Whether this person may reach a page or action, from the browser or a phone alike."""
         if member == OWNER_ID:
             return True
-        sender = self.sender(record, member)
-        return sender is not None and record.env in sender.environments and Role.named(sender.role).reaches(page)
+        return self.enters(record, member) and Role.named(self.sender(record, member).role).reaches(page)
 
     def sees(self, record: Record, member: str, row: Resource) -> bool:
         """Whether this person may see a row, on their phone as in the viewer: only in, and of, the environments shared with them."""
         if member == OWNER_ID:
             return True
-        sender = self.sender(record, member)
         named = environment_of(row.type, as_dict(row))
-        return sender is not None and record.env in sender.environments and (named is None or named in sender.environments)
+        return self.enters(record, member) and (named is None or self.enters(Record(record.root, named), member))
 
     def show_join(self, visit: Visit) -> None:
         code = parse_qs(visit.url.query).get("code", [""])[0]

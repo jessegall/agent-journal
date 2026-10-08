@@ -384,6 +384,10 @@ class PhoneRoutes:
         if not phone.connected:
             handler.answer(410, "this phone was disconnected" if phone.completed else "this phone's connection has run out")
             return None
+        home = self.phones(handler)._home(phone)
+        if not rights_of(home).enters(home, phone.member):
+            handler.answer(403, "the environment this phone shows is no longer shared with the person who connected it")
+            return None
         return phone
 
     def relying(self, handler) -> Relying:
