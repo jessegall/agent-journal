@@ -22,6 +22,9 @@ class Request:
     named: dict = field(default_factory=dict)
     actor: str = SYSTEM
 
+    def line(self) -> str:
+        return " ".join([self.type, self.word, *map(str, self.args)])
+
 
 class Outbox:
     """This machine's requests waiting for the machine that holds their scope."""
@@ -34,11 +37,16 @@ class Outbox:
         with held_file(self.lock):
             append_text(self.file, json.dumps(asdict(asked)) + "\n")
 
+    def waiting(self) -> list[Request]:
+        if not self.file.is_file():
+            return []
+        return [Request(**json.loads(line)) for line in self.file.read_text().splitlines() if line.strip()]
+
     def take(self, runnable: Callable[[Request], bool]) -> list[Request]:
         if not self.file.is_file():
             return []
         with held_file(self.lock):
-            waiting = [Request(**json.loads(line)) for line in self.file.read_text().splitlines() if line.strip()]
+            waiting = self.waiting()
             taken = [runnable(asked) for asked in waiting]
             write_text(self.file, "".join(json.dumps(asdict(asked)) + "\n" for asked, now in zip(waiting, taken) if not now))
         return [asked for asked, now in zip(waiting, taken) if now]

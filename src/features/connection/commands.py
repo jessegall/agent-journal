@@ -46,7 +46,7 @@ class SyncWithServer(Command):
 
     def run(self, context: Context, environments: Environments) -> str:
         done = sync(context.record, server_of(context))
-        return f"sent {done['sent']} writes that waited, took in {done['pulled']} events from the server"
+        return f"sent {done.sent} writes that waited, took in {done.pulled} events from the server"
 
 
 class PushCode(Command):

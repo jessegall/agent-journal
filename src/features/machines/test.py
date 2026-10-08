@@ -117,7 +117,7 @@ def test_a_machine_that_handed_an_environment_over_is_refused_when_it_writes_aga
         "the server takes the lease and writes the environment"
     assert "older" in refused(lambda: accept(there, "", given)), "a handover is taken once: the same epoch again is refused"
     waiting_here = fresh()
-    Waiting(waiting_here.root).hold("", "todo", "create", ["still waiting"])
+    Waiting(waiting_here.root).hold("", Request(waiting_here.env, "todo", "create", ["still waiting"]))
     assert "still wait" in refused(lambda: give(waiting_here, "", "server")), "writes still waiting for the server go first, then the environment is handed over"
 
 
@@ -234,16 +234,16 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
         "releases are compared by number, not by text, and a copy behind is told which migrations it lacks"
     assert connect(Hello("2.266.0", Shape(PROTOCOL + 1, frozenset())), server) == Welcome(Release.AHEAD, Comparison(Step.PULL_AGAIN)), \
         "a copy with another protocol number pulls everything again, whichever release it is"
-    from engine.offline import Applied, Waiting
+    from engine.offline import Applied, Sent, Waiting
     root = fresh().root
     waiting, applied, away = Waiting(root), Applied(root), {"down": True}
-    first, second = waiting.hold("", "todo", "create", ["first"]), waiting.hold("", "todo", "create", ["second"])
+    first, second = waiting.hold("", Request("", "todo", "create", ["first"])), waiting.hold("", Request("", "todo", "create", ["second"]))
     ran = []
-    deliver = lambda held: not away["down"] and applied.apply(held, lambda write: ran.append(write.args[0]))
-    assert (waiting.flush(deliver), [w.args[0] for w in waiting.waiting()]) == (0, ["first", "second"]), "while the server is away the writes wait, oldest first"
+    deliver = lambda held: Sent.AWAY if away["down"] else applied.apply(held, lambda write: ran.append(write.asked.args[0]))
+    assert (waiting.flush(deliver).sent, [w.asked.args[0] for w in waiting.waiting()]) == (0, ["first", "second"]), "while the server is away the writes wait, oldest first"
     away["down"] = False
-    assert (waiting.flush(deliver), waiting.waiting(), ran) == (2, [], ["first", "second"]), "once it is back they go in the order they were written"
-    assert (applied.apply(first, lambda write: ran.append("again")), ran) == (True, ["first", "second"]), "a write sent again after a lost answer is not applied twice"
+    assert (waiting.flush(deliver).sent, waiting.waiting(), ran) == (2, [], ["first", "second"]), "once it is back they go in the order they were written"
+    assert (applied.apply(first, lambda write: ran.append("again")), ran) == (Sent.TAKEN, ["first", "second"]), "a write sent again after a lost answer is not applied twice"
     assert "too old" in refused(lambda: connect(Hello("2.100.0", Shape(0, frozenset())), server)), \
         "a copy from before the sync carried its checks on what never travels is refused, not brought along"
     from engine import bus

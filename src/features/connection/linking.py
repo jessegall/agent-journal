@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from controllers.types import Notices
-from engine.handover import accept, epoch_of, give, ready_to_give
+from engine.handover import accept, epoch_of, give, nothing_waits, ready_to_give
 from engine.machines import Lease, this_machine
 from engine.offline import Waiting, Write
 from engine.record import Record
-from engine.sync import PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay, travels
+from engine.sync import CONNECTION, PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay, travels
 from engine.version import version
 from features.connection.transport import Transport
 from migrations import applied
@@ -38,7 +38,7 @@ class ConnectionView:
 
 SERVER, HERE = "server", "here"
 SERVER_ROLE, YOUR_COPY = "the server", "your copy"
-STATE = "connection"
+STATE = CONNECTION
 
 
 def local_hello(record) -> Hello:
@@ -62,6 +62,7 @@ def hand(record_root: Path, env: str, to: str, transport: Transport) -> Lease:
     """Moves one environment between this machine and the server through the lease: the server is asked first, and this machine lets go only once it has taken the new epoch."""
     record = Record(record_root, env)
     if to == HERE:
+        nothing_waits(record, f"take {env} back")
         return accept(record, "", transport.handback(env))
     if to != SERVER:
         raise Refused(f"hand an environment to {SERVER} or to {HERE}, not to {to!r}")
@@ -78,7 +79,13 @@ def heard(transport: Transport) -> Hello:
         raise Refused(f"the server does not answer: {error}") from error
 
 
-def sync(record, transport: Transport) -> dict:
+@dataclass(frozen=True)
+class Synced:
+    sent: int
+    pulled: int
+
+
+def sync(record, transport: Transport) -> Synced:
     """Sends what was written here while the server was away, oldest first, then takes in what happened on the server in the scopes it holds, without firing features."""
     epoch = heard(transport).shape.epoch
     flushed = Waiting(record.root).flush(transport.send)
@@ -93,11 +100,11 @@ def sync(record, transport: Transport) -> dict:
     if not record.holds(PROJECT):
         pulled += replay(record, PROJECT, transport.events(PROJECT, record.env, record.event_log.cursor(pulled_cursor(PROJECT))))
     record.state(STATE).set("synced_at", time.time())
-    return {"sent": flushed.sent, "pulled": pulled}
+    return Synced(flushed.sent, pulled)
 
 
 def notice_refused(record, refused: tuple[Write, ...]) -> None:
-    turned_down = "\n".join(f"- {held.type} {held.word} {' '.join(map(str, held.args))}" for held in refused)
+    turned_down = "\n".join(f"- {held.asked.line()}" for held in refused)
     Notices(record, actor=SYSTEM).create("The server turned down changes made here", tone="warn",
                                          brief=f"The server refused these changes, so they were set aside and the changes after them went on:\n{turned_down}")
 

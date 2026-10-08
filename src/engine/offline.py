@@ -1,6 +1,6 @@
 import json
 import uuid
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from enum import StrEnum
 from pathlib import Path
 from typing import Callable
@@ -8,6 +8,8 @@ from typing import Callable
 from engine import runtime
 from engine.disk import read_json
 from engine.locks import held_file
+from engine.outbox import Outbox, Request
+from engine.sync import has_joined
 from engine.stored import append_text, write_json, write_text
 
 WAITING = "waiting-writes.jsonl"
@@ -18,14 +20,15 @@ KEPT_KEYS = 5000
 
 @dataclass(frozen=True)
 class Write:
-    """One change made while the server was away, with a key of its own so it is applied once however often it is sent."""
+    """One change made here into a scope the server writes, with a key of its own so it is applied once however often it is sent."""
 
     key: str
     scope: str
-    type: str
-    word: str
-    args: list = field(default_factory=list)
-    named: dict = field(default_factory=dict)
+    asked: Request
+
+    @classmethod
+    def from_json(cls, found: dict) -> "Write":
+        return cls(found["key"], found["scope"], Request(**found["asked"]))
 
 
 class Sent(StrEnum):
@@ -43,15 +46,15 @@ class Flushed:
 
 
 class Waiting:
-    """What this machine wrote while the server was away, kept in the order it was written until the server takes it."""
+    """What this machine wrote into scopes the server writes, kept in the order it was written until the server takes it."""
 
     def __init__(self, root: Path) -> None:
         self.file = runtime.folder(root) / WAITING
         self.set_aside = runtime.folder(root) / SET_ASIDE
         self.lock = self.file.with_suffix(".lock")
 
-    def hold(self, scope: str, type_: str, word: str, args: list | None = None, named: dict | None = None) -> Write:
-        held = Write(uuid.uuid4().hex, scope, type_, word, args or [], named or {})
+    def hold(self, scope: str, asked: Request) -> Write:
+        held = Write(uuid.uuid4().hex, scope, asked)
         with held_file(self.lock):
             append_text(self.file, json.dumps(asdict(held)) + "\n")
         return held
@@ -84,11 +87,19 @@ class Waiting:
 def written(file: Path) -> list[Write]:
     if not file.is_file():
         return []
-    return [Write(**json.loads(line)) for line in file.read_text().splitlines() if line.strip()]
+    return [Write.from_json(json.loads(line)) for line in file.read_text().splitlines() if line.strip()]
 
 
 def lines(writes: list[Write]) -> str:
     return "".join(json.dumps(asdict(held)) + "\n" for held in writes)
+
+
+def queue(record, scope: str, asked: Request) -> None:
+    """A write into a scope another machine holds: a copy that joined a server sends it there at the next sync, in order; otherwise it waits until this machine holds the scope again."""
+    if has_joined(record):
+        Waiting(record.root).hold(scope, asked)
+        return
+    Outbox(record.root).send(asked)
 
 
 class Applied:
