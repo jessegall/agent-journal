@@ -84,6 +84,12 @@ class Release(StrEnum):
     BEHIND = "behind"
     AHEAD = "ahead"
 
+    @classmethod
+    def of(cls, ours: tuple[int, ...], theirs: tuple[int, ...]) -> "Release":
+        if ours == theirs:
+            return cls.SAME
+        return cls.BEHIND if ours < theirs else cls.AHEAD
+
 
 def numbered(version: str) -> tuple[int, ...]:
     return tuple(int(part) for part in version.split(".") if part.isdigit())
@@ -126,9 +132,7 @@ def has_joined(record) -> bool:
 def connect(client: Hello, server: Hello) -> Welcome:
     if client.shape.protocol < max(OLDEST_CLIENT_PROTOCOL, server.oldest):
         raise Refused(f"this copy ({client.version or 'unknown release'}) is too old to carry the sync's checks on what never leaves a machine: upgrade it, then connect again")
-    ours, theirs = numbered(client.version), numbered(server.version)
-    release = Release.SAME if ours == theirs else Release.BEHIND if ours < theirs else Release.AHEAD
-    return Welcome(release, client.shape.compared(server.shape))
+    return Welcome(Release.of(numbered(client.version), numbered(server.version)), client.shape.compared(server.shape))
 
 
 def pulled_cursor(scope: str) -> str:

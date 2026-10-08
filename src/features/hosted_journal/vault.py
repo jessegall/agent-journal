@@ -7,7 +7,7 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
-from engine.disk import DiskFull, read_json, replace
+from engine.disk import append, read_json, replace
 from engine.viewer import machine
 from engine.wording import digest
 
@@ -58,12 +58,7 @@ class Vault:
         log = self.opened() / AUDIT
         if log.is_file() and log.stat().st_size > AUDIT_BYTES:
             os.replace(log, log.with_suffix(".log.1"))
-        line = json.dumps({"at": round(self.clock(), 3), "what": what, **facts}) + "\n"
-        try:
-            with os.fdopen(os.open(log, os.O_WRONLY | os.O_CREAT | os.O_APPEND, SECRET), "a") as kept:
-                kept.write(line)
-        except OSError as cause:
-            raise DiskFull.writing(AUDIT, cause) from cause
+        append(log, json.dumps({"at": round(self.clock(), 3), "what": what, **facts}) + "\n", SECRET)
 
 
 class RefusalLog:

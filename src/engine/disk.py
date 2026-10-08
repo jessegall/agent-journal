@@ -90,6 +90,17 @@ def restore(path: Path, raw: bytes, mode: int = 0o666) -> None:
         raise
 
 
+def append(path: Path, text: str, mode: int = 0o666) -> None:
+    """Adds the text to the end of the file, and refuses with DiskFull only when the disk has no room left."""
+    try:
+        with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, mode), "a") as kept:
+            kept.write(text)
+    except OSError as cause:
+        if cause.errno in OUT_OF_ROOM:
+            raise DiskFull.writing(path.name, cause) from cause
+        raise
+
+
 def last_lines(path, lines: int) -> str:
     try:
         with Path(path).open("rb") as source:

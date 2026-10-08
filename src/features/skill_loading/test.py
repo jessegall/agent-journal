@@ -131,7 +131,7 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
 def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     import json
     from datetime import datetime, timezone
-    from tests.kit import handle
+    from tests.kit import appended, handle
     from providers import PROVIDERS
     record = fresh()
     record.set_setting("features", {"work_tracking": False})
@@ -139,7 +139,8 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     (record.root.parent / ".agents" / "skills" / "journal-plans" / "SKILL.md").write_text("---\nname: journal-plans\n---\n")
     transcript = tmp_path / "s.jsonl"
     used = {"type": "assistant", "message": {"content": [], "usage": {"input_tokens": 1000}}}
-    transcript.write_text(json.dumps({"type": "user", "message": {"content": "go"}}) + "\n" + json.dumps(used) + "\n")
+    transcript.write_text("")
+    appended(transcript, {"type": "user", "message": {"content": "go"}}, used)
     report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
 
     def call(tool, **given):
@@ -159,7 +160,7 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
         "both the limit and how long the gate steps aside are settings"
     now = datetime.now(timezone.utc).isoformat()
     loaded = {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": "journal-plans"}}]}}
-    transcript.write_text(transcript.read_text() + json.dumps(loaded) + "\n")
+    appended(transcript, loaded)
     assert call("Bash", command="journal plan phase 1 build --when done") == "", "once it is loaded, work goes on"
     from features.skill_loading.required import require
     from providers.transcript_cache import CACHE
@@ -167,7 +168,7 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     assert "Skill: journal-plans" in call("Read", file_path="x.py"), "a skill required again after its last load is asked for again"
     again = {**loaded, "timestamp": datetime.now(timezone.utc).isoformat()}
     with CACHE.lock(CACHE.fold_key(transcript, PROVIDERS["claude"]().skill_loads, dict)):
-        transcript.write_text(transcript.read_text() + json.dumps(again) + "\n")
+        appended(transcript, again)
         assert call("Read", file_path="x.py") == "", \
             "while a load sits in lines the fold has not read yet, the guard lets the call through rather than refuse on what it has not read"
     assert call("Read", file_path="x.py") == "", "and once those lines are folded the load counts"

@@ -110,7 +110,7 @@ class Helpers(Controller):
                  todos: str = "") -> str:
         census, paths = kept(self.record, self.rows.standing()), named_paths(f"{job}\n{brief}")
         limits = features.FEATURES["helpers"].values(self.record)
-        held_back = refusal(census, int(limits.kept), int(limits.working), HELPER_KIND, paths)
+        held_back = refusal(census, limits, HELPER_KIND, paths)
         if held_back:
             raise Refused(held_back)
         row = self._dispatched(name, job, provider, model, brief, worktree, checkout, numbers_in(todos))

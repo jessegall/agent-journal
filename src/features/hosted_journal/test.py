@@ -5,10 +5,8 @@ from contextlib import suppress
 import re
 import shutil
 import os
-import re
 import socket
 import subprocess
-import sys
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -35,7 +33,8 @@ from features.hosted_journal.apart import serving_command, serving_environment
 from features.hosted_journal.phones import KEPT_ELSEWHERE, PHONES, VaultGuard
 from features.hosted_journal.settings import FromRecord, GatewaySettings, keep_gateway_settings
 from features.hosted_journal.watch import DiskWatch
-from features.hosted_journal.vault import AUDIT, VAULT, DiskFull, RefusalLog, Vault
+from engine.disk import DiskFull
+from features.hosted_journal.vault import AUDIT, VAULT, RefusalLog, Vault
 from features.trigger import DAY
 from features.phone.controller import Phones
 from features.sharing.controller import Shares

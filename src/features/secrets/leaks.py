@@ -36,9 +36,10 @@ class LeakAlarm:
 
     def masked(self, record, names: dict[str, str], text: str) -> str:
         for value, title in names.items():
-            if value in text:
-                text = text.replace(value, f"[secret {title}]")
-                self.tell(record, title)
+            if value not in text:
+                continue
+            text = text.replace(value, f"[secret {title}]")
+            self.tell(record, title)
         return text
 
     def tell(self, record, title: str) -> None:

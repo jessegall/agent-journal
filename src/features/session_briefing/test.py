@@ -240,7 +240,8 @@ def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
 
 
 def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
-    import json
+    from functools import partial
+    from tests.kit import appended
     import time
     from datetime import datetime, timezone
     from types import SimpleNamespace
@@ -257,7 +258,7 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     transcript.write_text("")
     driver.last_report = lambda: SimpleNamespace(transcript=str(transcript), asking={})
     stamp = lambda: datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    written = lambda *rows: transcript.write_text(transcript.read_text() + "".join(json.dumps(r) + "\n" for r in rows))
+    written = partial(appended, transcript)
     assert driver._post("todo 5 next", "journal") is True, "a live channel takes the line"
     time.sleep(0.01)
     written({"type": "attachment", "timestamp": stamp(), "attachment": {"type": "queued_command", "prompt": '<channel source="journal" from="journal">\ntodo 5 next'}},

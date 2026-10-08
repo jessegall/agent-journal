@@ -110,7 +110,7 @@ class Setting(Loaded):
         return self.title if self.title else self.key
 
     @property
-    def runs_commands(self) -> bool:
+    def is_command(self) -> bool:
         return self.kind == "command"
 
     def is_secret(self) -> bool:
@@ -123,6 +123,14 @@ class Setting(Loaded):
             raise Refused(f"{self.key} is a number, not {value!r}")
         if self.kind == "options" and value not in [str(option) for option in self.options]:
             raise Refused(f"{self.key} is one of {', '.join(map(str, self.options))}")
+
+
+@dataclass(frozen=True)
+class Look:
+    label: str
+    icon: str
+    tone: str
+    color: str
 
 
 @dataclass(frozen=True)
@@ -145,6 +153,10 @@ class DeclaredEvent(Loaded):
     @property
     def collapsed(self) -> bool:
         return self.card is not None and self.card.collapsed
+
+    def look(self, title: str) -> Look:
+        card = self.card if self.card is not None else Card()
+        return Look(card.label if card.label else title, card.icon, card.tone if card.tone else self.tone, card.color)
 
 
 @dataclass(frozen=True)

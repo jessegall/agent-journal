@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 import threading
@@ -33,6 +34,11 @@ from runner.engine import Engine  # noqa: F401
 from runner.gate import PAUSED  # noqa: F401
 from runner.hooks import answer  # noqa: F401
 from runner.hooks import handle  # noqa: F401
+
+
+def appended(path: Path, *rows: dict) -> None:
+    with path.open("a") as out:
+        out.writelines(json.dumps(row) + "\n" for row in rows)
 
 
 def report(record, status, event, session="claude-1", **more):
