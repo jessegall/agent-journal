@@ -1,7 +1,7 @@
 from features.base import Feature
 from features.journal import Journal
-from features.open_viewer.commands import (Appoint, Control, Force, Pause, Relaunch, Resume, RunShell, SaveSettings, SendKeys, ShowAttachments, ShowEvents, ShowHooks,
-                                          ShowManifest, ShowOnline, ShowOptions, ShowScreen, ShowSettings, ShowSummary, WireHooks)
+from features.open_viewer.commands import (Appoint, Control, Force, Pause, Relaunch, Resume, RunShell, SaveSettings, SendKeys, ShowAttachments, ShowEvents, ShowHooks, ShowLinks,
+                                          ShowManifest, ShowOnline, ShowOptions, ShowScreen, ShowSettings, ShowSummary, ShowTranscript, WireHooks)
 from features.open_viewer.details import OpenViewerDetails
 from features.open_viewer.handlers import ShowViewerTab
 
@@ -16,5 +16,5 @@ class OpenViewer(Feature):
         journal.commands.add("feature", ShowSettings())
         journal.commands.add("feature", SaveSettings())
         for command in (ShowOnline(), Appoint(), ShowOptions(), RunShell(), ShowScreen(), SendKeys(), Relaunch(), Force(), Pause(), Resume(), Control(), ShowHooks(),
-                        WireHooks()):
+                        WireHooks(), ShowTranscript(), ShowLinks()):
             journal.commands.add("agent", command)

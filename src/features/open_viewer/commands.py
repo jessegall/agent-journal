@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from typing import TypedDict
 
 from agents.control import force, options, pause, relaunch, request, resume, shell
 from agents.screen import screen_since
@@ -9,6 +10,7 @@ from features.open_viewer.appoint import appoint, online
 from features.open_viewer.attachments import attachments
 from features.open_viewer.manifest import manifest
 from features.open_viewer.settings import apply, settings
+from features.open_viewer.transcripts import TRANSCRIPT_PAGE, paged, transcript_at
 from features.parts import Command, Context
 from controllers.shared import shared
 from features.permission_prompts.skipping import set_skipped
@@ -161,13 +163,19 @@ def _provider(name: str):
     return PROVIDERS[name]()
 
 
+class ProviderHooks(TypedDict):
+    path: str
+    hooks: dict
+    elsewhere: list[dict]
+
+
 class ShowHooks(Command):
     name = "hooks"
 
-    def run(self, context: Context, agents, provider: str):
+    def run(self, context: Context, agents, provider: str) -> ProviderHooks:
         project = agents.record.root.parent
         wired = _provider(provider)
-        return {"path": str(wired.config(project).relative_to(project)), "hooks": wired.hooks(project), "elsewhere": wired.hooks_elsewhere(project)}
+        return ProviderHooks(path=str(wired.config(project).relative_to(project)), hooks=wired.hooks(project), elsewhere=wired.hooks_elsewhere(project))
 
 
 class WireHooks(Command):
@@ -179,3 +187,17 @@ class WireHooks(Command):
             return {"hooks": _provider(provider).set_hooks(agents.record.root.parent, hooks)}
         except ValueError as error:
             raise Refused(str(error)) from error
+
+
+class ShowTranscript(Command):
+    name = "transcript"
+
+    def run(self, context: Context, agents, n: int, subagent: str = "", since: int = 0, before: int = 0, last: int = TRANSCRIPT_PAGE):
+        return paged(transcript_at(agents.load(n), subagent), agents.record, since, before, last)
+
+
+class ShowLinks(Command):
+    name = "links"
+
+    def run(self, context: Context, agents, n: int, subagent: str = ""):
+        return {"links": transcript_at(agents.load(n), subagent).links()}
