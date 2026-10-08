@@ -68,6 +68,11 @@ compose exec -T -u journal journal sh -c 'rm -rf /data/project/json.py /data/pro
 compose exec -T -u journal journal sh -c 'touch /opt/agent-journal/src/serve.py' >/dev/null 2>&1 && fail "an agent's user can change the login page's code" || pass "the login page's code cannot be changed by an agent's user"
 compose exec -T -u journal journal sh -c 'grep -rl "owner.json\|scrypt" /data/project/.journal --include=*.json' >/dev/null 2>&1 && fail "a secret is in the record" || pass "no secret is in the record"
 
+RUNNING="$(docker inspect --format '{{.Image}}' "$(compose ps -q journal)")"
+compose run --rm -e UPDATE_ONCE=1 -e JOURNAL_IMAGE_NAME=agent-journal updater 2>/dev/null | grep -q "carries no signature" \
+    && [ "$(docker inspect --format '{{.Image}}' "$(compose ps -q journal)")" = "$RUNNING" ] \
+    && pass "an image without the release workflow's signature is never deployed" || fail "the updater deployed an unsigned image"
+
 compose exec -T -u journal journal sh -c 'echo kept > /data/project/proof.txt'
 compose run --rm -e BACKUP_ONCE=1 backup >/dev/null 2>&1 && pass "a backup snapshot is made" || fail "the backup failed"
 compose exec -T journal printenv RESTIC_PASSWORD >/dev/null 2>&1 && fail "the journal's agents can read the backup password" || pass "the backup password stays off the journal's container"
