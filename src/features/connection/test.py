@@ -170,6 +170,10 @@ def test_syncing_sends_the_writes_that_waited_in_order_and_takes_in_what_happene
     server = Server(record.root)
     server.events_to_give = [Event(id=9000 + i, at=1.0, type="todo", n=900 + i, action="created", actor=AGENT, env=record.env) for i in range(2)]
     assert sync(record, server) == Synced(2, 2) and server.taken == ["first", "second"], "what waited goes oldest first, then the server's events come in"
+    request(record.root, Request(record.env, "todo", "create", ["turned down"], actor=USER))
+    assert (sync(record, server).sent, server.taken[-1], Waiting(record.root).waiting()) == (0, "The server turned down changes made here", []), \
+        "on a copy whose environment the server writes, the notice of a refused write goes to the server at once instead of being refused here"
+    server.taken.clear()
     assert sync(record, server) == Synced(0, 0), "nothing is sent or taken in twice"
     assert [t.title for t in Todos(Record(record.root, record.env), actor=SYSTEM).all()] == [], "pulled events are in the log only, and no feature acted on them"
 

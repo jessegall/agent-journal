@@ -138,14 +138,14 @@ from engine.outbox import Request
 for asked in ({made},):
     request(Path('{COPY_ROOT}'), asked)""")
 
-    def server_titles(self) -> list[str]:
-        """The titles of the server's to-dos, oldest first, read where they are kept."""
+    def server_titles(self, kind: str = "Todos") -> list[str]:
+        """The titles of the server's rows of one kind, oldest first, read where they are kept."""
         code = f"""import features; features.load()
 import json
 from pathlib import Path
-from controllers.types import Todos
+from controllers.types import {kind}
 from engine.record import Record
-print(json.dumps([row.title for row in sorted(Todos(Record(Path('{SERVER_ROOT}'), '{ENV}'), actor='system').all(), key=lambda row: row.created)]))"""
+print(json.dumps([row.title for row in sorted({kind}(Record(Path('{SERVER_ROOT}'), '{ENV}'), actor='system').all(), key=lambda row: row.created)]))"""
         return json.loads(docker("exec", "-u", "journal", "-e", f"PYTHONPATH={CODE}", self.server, "python3", "-c", code))
 
     def tear_down(self) -> None:
@@ -189,7 +189,7 @@ def a_refused_write_does_not_block(world: World) -> None:
     titles = world.server_titles()
     case("a write the server refuses is set aside and the writes after it still land",
          "Before the refused one" in titles and "After the refused one" in titles)
-    case("and the copy is left a notice naming it", "turned down" in world.on_copy("notice", "all"))
+    case("and a notice naming it reaches the server, which writes the environment", any("turned down" in title for title in world.server_titles("Notices")))
 
 
 def a_cut_network_leaves_one_holder(world: World) -> None:
