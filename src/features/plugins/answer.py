@@ -51,18 +51,17 @@ def raised(record, plugin: str, session: str, asked: Posting) -> None:
     record.emit("plugin", row.n, RAISED, PLUGIN, scope=PROJECT, event=f"{plugin}.{name}", title=event.shown_title, tone=event.tone, brief=asked.brief, plugin=plugin,
                 collapsed=event.collapsed)
     if event.card:
-        carded(record, session, plugin, event.look(), asked.brief,
-               asked.open, asked.key)
+        carded(record, session, plugin, event.look(), asked)
 
 
-def carded(record, session: str, plugin: str, look: Look, brief: str, page: str = "", settle: str = "") -> None:
+def carded(record, session: str, plugin: str, look: Look, asked: Posting) -> None:
     agents = Agents(record, actor=SYSTEM)
     agent = agents._session_or_primary(session)
     if not agent:
         return
     agents.card(agent.n, plugin=plugin, label=look.label if look.label else plugin, icon=look.icon if look.icon else "bell", tone=look.tone,
-                color=look.color if COLOR.match(look.color) else "", detail=next((line.strip(" •-") for line in brief.splitlines() if line.strip()), ""),
-                page=page, settle=settle)
+                color=look.color if COLOR.match(look.color) else "", detail=next((line.strip(" •-") for line in asked.brief.splitlines() if line.strip()), ""),
+                page=asked.open, settle=asked.key)
 
 
 def settled(record, plugin: str, values: dict) -> None:
