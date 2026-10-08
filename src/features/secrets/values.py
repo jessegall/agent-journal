@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from functools import cache
 from pathlib import Path
 
 PROJECT_ID = "project-id"
@@ -18,6 +19,7 @@ def secrets_folder() -> Path:
     return Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "agent-journal" / "secrets"
 
 
+@cache
 def project_id(root: Path) -> str:
     path = root / PROJECT_ID
     if not path.is_file():
