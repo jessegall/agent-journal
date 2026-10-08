@@ -318,3 +318,5 @@ def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back
     assert "is not one of your subagents" in refused(lambda: Agents(record, actor=AGENT).action("retire")("a9")), "only one of your own subagents is retired"
     Agents(record, actor=AGENT).action("retire")("a1")
     assert [k for k in kept(record, []) if k.kind == "explore"] == [], "a retired subagent frees its place"
+    Agents(record, actor=SYSTEM).update(context.agent.row.n, subagent_rows=[{"id": "toolu_2", "task": "Bea: draw it", "type": "designer", "status": "refused"}])
+    assert [k for k in kept(record, []) if k.kind == "designer"] == [], "a dispatch the limit refused never takes a place"

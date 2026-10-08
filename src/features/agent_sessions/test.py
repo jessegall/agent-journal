@@ -332,11 +332,15 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
     main.write_text(lines({"type": "session_meta", "payload": {"id": parent}},
                           {"type": "response_item", "payload": {"type": "function_call", "namespace": "collaboration", "name": "spawn_agent", "call_id": "c1",
                                                                 "arguments": json.dumps({"task_name": "iris_auth", "agent_type": "plan-reviewer", "model": "gpt-6-sol"})}},
-                          {"type": "response_item", "payload": {"type": "function_call_output", "call_id": "c1", "output": json.dumps({"task_name": "/root/iris_auth"})}}))
+                          {"type": "response_item", "payload": {"type": "function_call_output", "call_id": "c1", "output": json.dumps({"task_name": "/root/iris_auth"})}},
+                          {"type": "response_item", "payload": {"type": "function_call", "namespace": "collaboration", "name": "spawn_agent", "call_id": "c2",
+                                                                "arguments": json.dumps({"task_name": "bea_draw", "agent_type": "designer", "model": "gpt-6-sol"})}},
+                          {"type": "response_item", "payload": {"type": "function_call_output", "call_id": "c2", "output": "8 helpers and subagents are kept for reuse"}}))
     (day / f"rollout-2026-10-02T22-56-45-{child}.jsonl").write_text(lines(
         {"type": "session_meta", "payload": {"id": child, "source": {"subagent": {"thread_spawn": {"parent_thread_id": parent, "agent_path": "/root/iris_auth"}}}}},
         {"type": "event_msg", "payload": {"type": "task_started"}}))
-    spawned, = Codex().crew(main)["subagent_rows"]
+    spawned, refused_spawn = Codex().crew(main)["subagent_rows"]
+    assert (refused_spawn["status"], refused_spawn["running"]) == ("refused", False), "a spawn Codex was refused is recorded as refused, never as running"
     assert (spawned["task"], spawned["type"], spawned["session"], spawned["running"]) == ("iris_auth", "plan-reviewer", child, True), \
         "a subagent Codex spawns directly is found by its path, so the viewer's agent list can show it"
 

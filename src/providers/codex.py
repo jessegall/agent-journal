@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, Turn
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow, bare
-from providers.base import BackgroundTasks, Provider, SubagentRow, running_and_latest
+from providers.base import REFUSED, BackgroundTasks, Provider, SubagentRow, running_and_latest
 from providers.jsonl import last_lines, parsed, rows
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Chunk, Payload, Row
@@ -142,6 +142,7 @@ class SpawnedAgent:
     session: str
     at: float
     agent_path: str = ""
+    refused: bool = False
 
 
 @dataclass(frozen=True)
@@ -456,6 +457,8 @@ class Codex(Provider):
         return running, 0.0 if running or not found else found.stat().st_mtime
 
     def subagent_row(self, path: Path, spawn: SpawnedAgent) -> dict:
+        if spawn.refused:
+            return SubagentRow(spawn.task, spawn.task, spawn.type, spawn.model, False, spawn.at, spawn.at, REFUSED, "").to_json()
         session = spawn.session or self.spawned_session(path, spawn)
         running, ended = self.subagent_state(path, session) if session else (True, 0.0)
         return SubagentRow(session, spawn.task, spawn.type, spawn.model, running, spawn.at, ended, "" if running else "finished", session).to_json()
@@ -505,9 +508,9 @@ class Codex(Provider):
                                             script_field(script, "model", index), found[1], at) for index, found in enumerate(SPAWNED.finditer(output))]
         asked = crew.direct.pop(key, None)
         if asked:
-            found = SPAWNED.search(output)
+            found, answer = SPAWNED.search(output), SpawnAnswer.from_json(arguments_of(output))
             crew.subagents.append(SpawnedAgent(asked.task_name, asked.agent_type, asked.model, found[1] if found else "", at,
-                                               SpawnAnswer.from_json(arguments_of(output)).task_name))
+                                               answer.task_name, refused=not found and not answer.task_name))
         command = crew.pending.pop(key, "")
         cell = CELL_RUNNING.search(output)
         if cell:
