@@ -1,4 +1,7 @@
-import {journal, numberOf, runScenarios} from "./harness.mjs";
+import {mkdtempSync, writeFileSync} from "node:fs";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
+import {journal, numberOf, runScenarios, shot} from "./harness.mjs";
 
 const SETTLE = 1500;
 const MESSAGES = /\/api\/main\/message(\?|$)/;
@@ -55,6 +58,8 @@ async function home(page, url) {
     await page.goto(`${url}#/main`);
     await compose(page).waitFor();
 }
+
+const PIXEL = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
 const suggest = (title) => numberOf(journal("suggestion", "suggest", title, "--brief", "Every search reads the whole tree again."));
 const ask = (title) => numberOf(journal("question", "ask", title, "--abstract", "pick one", "--set", OPTIONS, "--set", "pick=1"));
@@ -123,6 +128,20 @@ await runScenarios(process.argv[2], {
         await settle(page);
         if ((await stored(page, marker)) !== 1) throw new Error("the message with two pasted images was not sent");
         await page.screenshot({path: `${process.env.SHOT_DIR || "/tmp"}/pasted-images.png`});
+    },
+    async "an agent's line naming an attachment shows that picture as a card in the chat"(page, url) {
+        const folder = mkdtempSync(join(tmpdir(), "shown-"));
+        const picture = join(folder, "IMG_1201.png");
+        writeFileSync(picture, Buffer.from(PIXEL, "base64"));
+        const n = numberOf(journal("message", "create", `screen ${Date.now()}`, "--brief", "this one"));
+        journal("message", "attach", String(n), picture);
+        journal("message", "reply", String(n), `Look at this one:\nmessage ${n} IMG_1201.png\nIt is the cut off screen.`);
+        await home(page, url);
+        const card = page.locator(".thread-text .file-card").first();
+        await card.waitFor();
+        await page.waitForFunction(() => document.querySelector(".thread-text .file-card-image")?.naturalWidth > 0);
+        await shot(page, "shown-file");
+        if (!(await card.innerText()).includes("IMG_1201.png")) throw new Error("the card does not name the file");
     },
     async "pressing send twice sends one message"(page, url) {
         const marker = `twice ${Date.now()}`;
