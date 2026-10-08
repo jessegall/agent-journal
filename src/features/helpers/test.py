@@ -85,7 +85,7 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     assert "already done" in refused(lambda: helpers.dispatch("Zed", "a job", "claude", "sonnet", todos=str(finished))), "a finished to-do is not handed on"
     assert f"todo {taken} is already assigned to helper:7" in refused(lambda: helpers.dispatch("Zed", "a job", "claude", "sonnet", todos=str(taken))), \
         "a to-do one helper holds is not handed to another"
-    assert "only a helper marks" in refused(lambda: helpers.done(finished, "x")), "the agent that dispatched a helper closes its own to-dos itself"
+    assert "only a helper reads or marks" in refused(lambda: helpers.done(finished, "x")), "the agent that dispatched a helper closes its own to-dos itself"
     assert "is not running" in refused(lambda: helpers.say(1, "hello")), "a helper that is not running cannot be told anything"
     from engine.sessions import Sessions
     from features.agent_sessions.launch import running_in, stop_in, tell_in
@@ -253,6 +253,7 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     assert Sessions(repo.record.root).environment("main-agent") == repo.record.env, "the main agent working in a helper's worktree stays in its own environment"
     from controllers.types import Environments as Places
     monkeypatch.setattr(Places, "stop", lambda self, n: "stopped")
+    Sessions(repo.record.root).bind("helper-rhea", row.environment, pid=os.getpid(), provider="codex")
     assert helpers.stop(1) == "stopped", "the agent stops a running helper"
     helpers.complete(1)
     assert not Environments(repo.record, actor=SYSTEM).rows.by_title(f"{repo.record.env}-rhea"), "its environment is packed away"
