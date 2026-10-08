@@ -7,7 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from engine.focus import SCRIPT, existing_tab
 from controllers.types import Agents
-from engine import viewer
+from engine import runtime, viewer
 from resources.base import SYSTEM
 from tests.kit import report
 from tests.conftest import fresh
@@ -452,6 +452,9 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     assert ask("POST", "/api/identity", body={"color": "not-a-colour"}).code == 400, "an identity colour that is no colour is refused"
     named = ask("POST", "/api/identity", body={"color": "#aa3355"}).body
     assert named["root"] == str(record.root) and ask("GET", "/api/identity").body["root"] == str(record.root), "the identity names the root it serves"
+    assert ask("GET", f"/api/{record.env}/health").body == {"locks": "taken"}, "the health check answers once it could take the record's locks"
+    http.unanswered(record.root)
+    assert not runtime.hook_failures(record.root).exists(), "with no hook failures logged there is nothing to report"
     assert ask("GET", "/api/agent-hooks/nobody").code == 404, "hooks of a provider that does not exist are not found"
     wired = ask("GET", "/api/agent-hooks/claude").body
     assert {"path", "hooks", "elsewhere"} <= set(wired), "a provider's hooks come with the file that holds them"
