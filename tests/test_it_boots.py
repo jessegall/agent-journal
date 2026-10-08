@@ -33,6 +33,7 @@ from scripts.checks.imports import imports, missing
 from serve import Handler, JournalServer
 from tests import isolation
 from tests.conftest import fresh
+from tests.kit import installed, installed_to_start
 
 def shipped(copy: Path) -> None:
     """One copy of the files the checkout ships, taken once, so every version a test reads comes from the same moment."""
@@ -46,14 +47,6 @@ def shipped(copy: Path) -> None:
 
 HERE = isolation.shared("shipped", shipped)
 CODE = HERE / "src"
-
-
-def installed(place: Path) -> Path:
-    for agent in (".claude", ".codex"):
-        (place / PROJECT / agent).mkdir(parents=True)
-    env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
-    subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, timeout=120)
-    return place / PROJECT / ".journal"
 
 
 def test_every_import_in_the_package_resolves():
@@ -114,7 +107,7 @@ def as_older_installer(root: Path) -> None:
 
 
 def test_an_upgrade_from_an_older_installer_fills_in_a_folder_the_release_added(tmp_path):
-    root = installed(tmp_path)
+    root = installed_to_start(tmp_path, CODE)
     as_older_installer(root)
     repository = released(tmp_path)
     subprocess.run(["git", "tag", f"v{(HERE / 'VERSION').read_text().strip()}"], cwd=repository, capture_output=True, timeout=WAIT)
@@ -150,7 +143,7 @@ def test_an_installed_journal_keeps_its_records_and_upgrades_itself_from_a_relea
 
 def test_an_upgrade_copies_a_changed_file_into_the_attic_before_replacing_it(tmp_path):
     import tarfile
-    root = installed(tmp_path)
+    root = installed_to_start(tmp_path, CODE)
     changed = root / "src" / "journal.py"
     original = changed.read_bytes()
     changed.write_bytes(original + b"\n# changed by hand\n")
@@ -188,7 +181,7 @@ def test_a_fetch_from_inside_a_git_hook_leaves_the_pushing_repository_alone(tmp_
 
 
 def test_a_legacy_install_copies_managed_files_and_updates_without_holding(tmp_path):
-    root = installed(tmp_path)
+    root = installed(tmp_path, CODE)
     (root / "managed-files.json").unlink()
     changed = root / "src" / "journal.py"
     original = changed.read_bytes()
@@ -208,13 +201,13 @@ def test_a_legacy_install_copies_managed_files_and_updates_without_holding(tmp_p
 
 
 def test_every_agent_launches_from_an_installed_zip(tmp_path):
-    entry = installed(tmp_path) / "journal.py"
+    entry = installed_to_start(tmp_path, CODE) / "journal.py"
     for name in DRIVERS:
         launches(tmp_path, entry, name)
 
 
 def test_the_launcher_carries_its_running_agent_over_to_a_new_build(tmp_path):
-    root = installed(tmp_path)
+    root = installed_to_start(tmp_path, CODE)
     repository = released(tmp_path)
     upgrade_from(repository, root)
     (repository / "src" / "channel.py").write_text((repository / "src" / "channel.py").read_text() + f"\nRELEASE = {os.urandom(4000).hex()!r}\n")
@@ -290,7 +283,7 @@ def test_the_journal_starts_on_a_record_with_a_damaged_row(tmp_path):
 
 
 def test_an_upgrade_keeps_a_build_a_live_session_runs_from(tmp_path):
-    root = installed(tmp_path)
+    root = installed(tmp_path, CODE)
     good = (root / "journal.pyz").resolve()
     old = [root / f"journal-0.0.{i}-old000000{i}.pyz" for i in range(3)]
     for i, build in enumerate(old):
@@ -316,7 +309,7 @@ def heals(root: Path, good: Path):
 
 
 def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(tmp_path):
-    place, root = tmp_path, installed(tmp_path)
+    place, root = tmp_path, installed_to_start(tmp_path, CODE)
     good = (root / "journal.pyz").resolve()
     bad = root / "journal-99.0.0-broken0000.pyz"
     with zipfile.ZipFile(good) as source, zipfile.ZipFile(bad, "w") as target:
@@ -330,7 +323,7 @@ def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(t
 
 
 def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_path):
-    place, root = tmp_path, installed(tmp_path)
+    place, root = tmp_path, installed_to_start(tmp_path, CODE)
     good = (root / "journal.pyz").resolve()
     bad = root / "journal-99.0.0-broken0000.pyz"
     with zipfile.ZipFile(good) as source, zipfile.ZipFile(bad, "w") as target:
@@ -344,7 +337,7 @@ def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_p
 
 
 def test_an_install_checks_the_hooks_it_wired_and_names_one_that_cannot_run(tmp_path):
-    root = installed(tmp_path)
+    root = installed_to_start(tmp_path, CODE)
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
     settings = root.parent / ".claude" / "settings.local.json"
     wired = json.loads(settings.read_text())
@@ -370,7 +363,7 @@ def test_an_install_checks_the_hooks_it_wired_and_names_one_that_cannot_run(tmp_
 
 
 def test_a_session_for_another_journal_runs_that_journals_own_build(tmp_path):
-    here, there = installed(tmp_path / "here"), installed(tmp_path / "there")
+    here, there = installed(tmp_path / "here", CODE), installed(tmp_path / "there", CODE)
     program = (f"import sys; from pathlib import Path; sys.path.insert(0, {str(here / 'journal.pyz')!r}); from engine.package import entry_in, own_build; "
              f"print(entry_in(Path({str(there)!r}), 'supervisor')[1], own_build(Path({str(here)!r})), own_build(Path({str(there)!r})), sep='|')")
     launched, mine, theirs = subprocess.run([sys.executable, "-c", program], capture_output=True, text=True, timeout=WAIT).stdout.strip().split("|")
@@ -379,7 +372,7 @@ def test_a_session_for_another_journal_runs_that_journals_own_build(tmp_path):
 
 
 def test_a_killed_server_is_reaped_so_a_new_one_starts(tmp_path, monkeypatch):
-    root = installed(tmp_path)
+    root = installed_to_start(tmp_path, CODE)
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     starter = subprocess.Popen([sys.executable, "-c", f"import sys, time; sys.path.insert(0, {str(CODE)!r}); from pathlib import Path; from engine import viewer; "
                                 f"root = Path({str(root)!r}); print(viewer.launch(root, root.parent)[0], flush=True); time.sleep({WAIT})"],
@@ -405,7 +398,7 @@ def test_a_killed_server_is_reaped_so_a_new_one_starts(tmp_path, monkeypatch):
 
 
 def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_back(tmp_path):
-    root = installed(tmp_path)
+    root = installed_to_start(tmp_path, CODE)
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": ""}
     journal = [sys.executable, str(root / "journal.py"), "--root", str(root)]
     wired = json.loads((root.parent / ".claude" / "settings.local.json").read_text())["hooks"]["SessionStart"][0]["hooks"][0]["command"]
@@ -582,7 +575,7 @@ def test_a_held_record_lock_lets_the_runtime_folder_write_and_times_out_every_ot
 
 
 def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(tmp_path):
-    root = installed(tmp_path)
+    root = installed_to_start(tmp_path, CODE)
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": ""}
     server = subprocess.Popen([sys.executable, str(root / "journal.py"), "--root", str(root), "serve", "--port", "0"], cwd=root.parent, env=env,
                               stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
@@ -927,7 +920,7 @@ def test_install_sh_as_a_first_time_user_runs_it_installs_the_release_and_leaves
 
 
 def test_a_moved_or_upgraded_python_is_named_by_the_command_and_the_channel_check(tmp_path):
-    root = installed(tmp_path)
+    root = installed(tmp_path, CODE)
     gone = tmp_path / "python-gone" / "bin" / "python3"
     for command in (root / "journal", tmp_path / "home" / ".local" / "bin" / "journal"):
         command.write_text(command.read_text().replace(sys.executable, str(gone)))
@@ -1021,7 +1014,7 @@ def test_a_machine_with_only_one_agent_warms_up_without_ending_the_server(tmp_pa
 
 
 def test_a_plugin_service_runs_from_the_packed_build_and_stops_when_the_last_session_ends(tmp_path, free_port):
-    root = installed(tmp_path)
+    root = installed(tmp_path, CODE)
     port = free_port()
     program = f"""
 import json, os, sys, time
@@ -1051,7 +1044,7 @@ print(ZIPPED, ready, reached("stopped"))
 
 
 def test_stopping_the_journal_stops_the_agent_of_every_helper_and_leaves_its_environment_free(tmp_path):
-    root = installed(tmp_path)
+    root = installed_to_start(tmp_path, CODE)
     bin_ = tmp_path / "bin"
     bin_.mkdir()
     stand_in = bin_ / "claude"

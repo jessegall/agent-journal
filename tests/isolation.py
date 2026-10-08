@@ -48,14 +48,13 @@ def world() -> Path:
 
 def shared(name: str, make: Callable[[Path], None]) -> Path:
     """A folder the first worker to ask makes once for the whole run, and every worker reads."""
-    where = base() / name
+    where, made = base() / name, base() / f"{name}.made"
     with open(base() / f"{name}.lock", "w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        if not where.is_dir():
-            making = base() / f"{name}.making"
-            shutil.rmtree(making, ignore_errors=True)
-            make(making)
-            making.rename(where)
+        if not made.is_file():
+            shutil.rmtree(where, ignore_errors=True)
+            make(where)
+            made.touch()
     return where
 
 
