@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from engine.record import Record
-from scripts.boot_guard import WAIT
 
 STOPPED_WITHIN = 10
 
@@ -69,6 +68,7 @@ class World:
 
     def start(self, copy: Copy) -> Copy:
         """Starts the copy's server on the port it had before, or a free one the first time, and waits until it has printed its address."""
+        from scripts.boot_guard import WAIT
         copy.printed.clear()
         copy.process = subprocess.Popen([sys.executable, str(copy.root / "journal.py"), "--root", str(copy.root), "serve", "--port", str(copy.port)], cwd=copy.root.parent,
                                         env=copy.environment(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
