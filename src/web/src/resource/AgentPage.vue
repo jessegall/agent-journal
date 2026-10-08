@@ -7,6 +7,7 @@ import {usePoll} from "../composables/poll.js";
 import {useScope} from "../composables/scope.js";
 import {modelFamily, providerName} from "../domain/agents.js";
 import {project} from "../state/identity.js";
+import {store} from "../state/store.js";
 import {span} from "../format/time.js";
 import {route, showSession} from "../route.js";
 import {PAGE} from "../sync/rows.js";
@@ -67,6 +68,8 @@ const factsOf = computed(() => {
     ];
 });
 
+const online = computed(() => store.online.some((live) => live.session === props.resource.title && live.environment === environment.value));
+
 const mainInfo = computed(() => ({
     kind: "Main agent",
     name: project.value,
@@ -76,9 +79,13 @@ const mainInfo = computed(() => ({
     counts: {subagents: data.value.subagents || 0, skills: (data.value.skills || []).length},
     link: sessionLink.value ? {href: sessionLink.value, label: "Open its session on claude.ai"} : null,
     actions: [
-        data.value.paused
-            ? {key: "resume", label: "Resume its agent", title: "It carries on from where it waited."}
-            : {key: "pause", label: "Pause its agent", title: "It finishes the step it is on, then waits until you resume it."},
+        ...(online.value
+            ? [
+                  data.value.paused
+                      ? {key: "resume", label: "Resume its agent", title: "It carries on from where it waited."}
+                      : {key: "pause", label: "Pause its agent", title: "It finishes the step it is on, then waits until you resume it."},
+              ]
+            : []),
         {
             key: "stop",
             label: "Stop its agent",

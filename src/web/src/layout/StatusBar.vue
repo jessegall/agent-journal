@@ -1,5 +1,5 @@
 <script setup>
-import {agent} from "../composables/leadAgent.js";
+import {agent, agentOnline} from "../composables/leadAgent.js";
 import {autoOn, steered, workMode} from "../composables/settings.js";
 import {oneLine} from "../format/command.js";
 import {store} from "../state/store.js";
@@ -148,7 +148,7 @@ async function runBar(p) {
                 </span>
             </component>
         </span>
-        <template v-if="state !== 'stopped'">
+        <template v-if="state !== 'stopped' && agentOnline">
             <Btn
                 kind="icon"
                 :class="['statusbar-pause', {paused}]"
