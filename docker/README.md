@@ -41,7 +41,7 @@ Open `https://<your domain>`, type the setup code and choose the owner's passwor
   repository's release workflow, and only then restarts the journal on exactly that digest; the journal upgrades its
   record on start. An image without that signature is never deployed. To check one by hand:
   `cosign verify --certificate-identity-regexp '^https://github.com/jessegall/agent-journal/' --certificate-oidc-issuer https://token.actions.githubusercontent.com ghcr.io/jessegall/agent-journal:latest`.
-- `watchtower`: keeps Caddy up to date.
+- `watchtower`: watches only containers that ask for it, and none does while Caddy, restic and watchtower are pinned by digest; to take a newer Caddy, put its digest in `compose.yaml` (`docker buildx imagetools inspect caddy:<version>`).
 
 ## What the two users protect, and what they do not
 

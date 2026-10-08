@@ -35,7 +35,8 @@ services:
         max-file: "5"
 
   caddy:
-    image: caddy:2.8
+    # caddy 2.8; the digest is what runs, so a moved tag changes nothing.
+    image: caddy@sha256:226d1f059b75399fe19182893c7184591c07b97afc8dfcf44eeb80c9a77a530f
     restart: unless-stopped
     ports:
       - "${HTTP_PORT:-80}:80"
@@ -48,11 +49,10 @@ services:
       - caddy-config:/config
     mem_limit: 256m
     logging: *logs
-    labels:
-      - com.centurylinklabs.watchtower.enable=true
 
   backup:
-    image: restic/restic:0.17.3
+    # restic 0.17.3
+    image: restic/restic@sha256:8f5a62b422a2cb1277ea0dd6e826fe1acf649e5b9f02d60e5268d5fd1976255a
     restart: unless-stopped
     env_file: ${JOURNAL_ENV_FILE:-.env}
     entrypoint: ["/bin/sh", "/backup.sh"]
@@ -66,7 +66,8 @@ services:
     logging: *logs
 
   restore:
-    image: restic/restic:0.17.3
+    # restic 0.17.3
+    image: restic/restic@sha256:8f5a62b422a2cb1277ea0dd6e826fe1acf649e5b9f02d60e5268d5fd1976255a
     profiles: [restore]
     env_file: ${JOURNAL_ENV_FILE:-.env}
     entrypoint: ["/bin/sh", "/restore.sh"]
@@ -94,9 +95,10 @@ services:
     mem_limit: 128m
     logging: *logs
 
-  # Keeps Caddy up to date; the journal is left to the updater, which checks its signature.
+  # Updates nothing while Caddy is pinned by digest; a newer Caddy comes from changing its digest above. The journal is left to the updater, which checks its signature.
   watchtower:
-    image: containrrr/watchtower:1.7.1
+    # watchtower 1.7.1
+    image: containrrr/watchtower@sha256:6dd50763bbd632a83cb154d5451700530d1e44200b268a4e9488fefdfcf2b038
     restart: unless-stopped
     command: --label-enable --cleanup --interval 3600
     volumes:
