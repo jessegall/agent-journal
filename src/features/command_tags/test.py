@@ -143,13 +143,22 @@ def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transc
     from providers import PROVIDERS
     from resources.base import SYSTEM
     record = fresh()
-    engine = watching(record, tmp_path / "none.jsonl")
+    transcript = tmp_path / "s.jsonl"
+    now = datetime.now(timezone.utc).isoformat()
+    rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    engine = watching(record, transcript)
     message = asked_and_read(record, "done yet?")
     stop = {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": f"[!reply:{message.n}] done"}
     for _ in range(2):
         handle(PROVIDERS["claude"](), record.root, record.env, stop)
         engine.announce_written()
     assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["done"], "posted once, from the hook's own text"
+    rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": f"[!reply:{message.n}] done"}]}})
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    engine.announce_written()
+    assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["done"] and not [n for n in nudges(record) if "did not run" in n], \
+        "when the transcript has the turn later, its tag does not run again and nothing says it did not run"
 
 
 def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_it():
