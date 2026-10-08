@@ -218,6 +218,14 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     assert not Environments(repo.record, actor=SYSTEM).rows.by_title(f"{repo.record.env}-rhea"), "its environment is packed away"
     assert Worktrees(repo.record, actor=SYSTEM).load(cut.n).completed and not Path(cut.path).exists(), "its worktree is dropped"
     assert "is finished" in refused(lambda: helpers.say(1, "more")), "a finished helper takes no follow-up"
+    helpers.dispatch("Sol", "Change the hooks", "codex", "gpt-5.5")
+    gone = helpers.load(2).environment
+    places = Environments(repo.record, actor=SYSTEM)
+    places.force_delete(places.rows.by_title(gone).n)
+    folder = repo.record.root / "environments" / gone
+    folder.mkdir(parents=True, exist_ok=True)
+    helpers.complete(2)
+    assert not folder.exists() and list((repo.record.root / "attic").glob(f"{gone}-*")), "finish packs the folder into the attic even when its environment row is gone"
 
 
 def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_come_back_when_it_stops(monkeypatch):

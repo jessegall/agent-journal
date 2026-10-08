@@ -1,4 +1,5 @@
 import json
+import time
 from pathlib import Path
 
 import controllers.types as types_module
@@ -6,7 +7,7 @@ import features
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Agents, Environments, Messages, Nudges, Todos
-from engine import bus
+from engine import attic, bus
 from engine.record import Record
 from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared, tell_in
@@ -259,9 +260,16 @@ class Helpers(Controller):
         bus.defer(lambda: self._packed(row, place))
         return finished
 
+    def _packed_folder(self, title: str) -> None:
+        home = Record(self.record.root, title).home
+        if home.is_dir():
+            attic.pack(home, f"{title}-{int(time.time())}")
+
     def _packed(self, row: Helper, place) -> None:
         if place:
             Environments(self.record, actor=SYSTEM).complete(place.n, "the helper finished", yes=True)
+        else:
+            self._packed_folder(row.environment)
         cut = Worktrees(self.record, actor=SYSTEM)
         if row.worktree and not cut.load(int(row.worktree)).completed:
             cut.complete(int(row.worktree))
