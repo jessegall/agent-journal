@@ -18,7 +18,7 @@ from features.agent_sessions.launch import launched, prepared, tell_in
 from features.helper_worktrees.controller import Worktrees
 from features.helpers.resource import Helper, held_by_helper
 from features.plans.controller import delegate_plans_holding
-from features.helpers.reuse import HELPER_KIND, agent_runs, kept, knowing, named_paths, refusal, unlanded
+from features.helpers.reuse import HELPER_KIND, agent_runs, kept, knowing, named_paths, refusal, unlanded, written_tests
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
 from controllers.marks import action
