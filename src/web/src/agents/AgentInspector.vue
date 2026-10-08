@@ -25,7 +25,7 @@ import {scopeIn} from "../composables/scope.js";
 import {useTranscript} from "../composables/transcript.js";
 import {INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
 import {levelOf} from "../domain/verbosity.js";
-import {plainRefusal} from "../domain/agents.js";
+import {plainRefusal, sessionRow} from "../domain/agents.js";
 import {age} from "../format/time.js";
 import {pollKey, usePoll} from "../composables/poll.js";
 import {PAGE, holding, rows} from "../sync/rows.js";
@@ -73,13 +73,11 @@ const there = scope ? scope.api : api;
 const rowsHere = scope ? scope.rows : rows;
 
 const found = ref(null);
-const newest = (list) => [...list].sort((a, b) => b.updated - a.updated)[0] || null;
-const own = (list) => list.find((row) => row.title === props.chatSession) || newest(list.filter((row) => !row.deleted && !row.data.parent));
 usePoll(
     pollKey(),
     () => (!props.agent && elsewhere ? there.list("agent", {last: 20, completed: true}) : Promise.resolve(null)),
     EVERY,
-    (got) => got && (found.value = own(got.rows))
+    (got) => got && (found.value = sessionRow(got.rows, props.chatSession))
 );
 const agent = computed(() => props.agent || found.value);
 
@@ -248,12 +246,11 @@ const openSkills = () => go(route.value.env, "skills");
                     </template>
                     <template #terminal>
                         <template v-if="subagent">
-                            <p class="pane-note">
-                                The terminal of its parent session, agent {{ agent ? agent.n : "" }}. Commands typed here go to that
-                                session.
-                            </p>
+                            <EmptyState title="No terminal of its own">
+                                A subagent's commands are not kept apart from its parent's, so nothing of the parent's shows here.
+                            </EmptyState>
                         </template>
-                        <template v-if="agent">
+                        <template v-else-if="agent">
                             <TerminalWindow :key="`${agent.n}:${levelOf(pane)}`" class="fill" :agent="agent" :level="levelOf(pane)" />
                         </template>
                         <template v-else>

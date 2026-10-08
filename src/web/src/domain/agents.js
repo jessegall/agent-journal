@@ -36,3 +36,5 @@ export function plainRefusal(message, action) {
         ? `Its agent isn't running, so it can't be ${PAST[action] || "changed"}.`
         : message;
 }
+
+export const sessionRow = (rows, session) => rows.find((row) => row.title === session) || null;
