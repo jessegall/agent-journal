@@ -1,8 +1,10 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 from engine.fields import Loaded
 from engine.stored import read_json, write_json
+from features.secrets.running import Masker
+from features.secrets.values import ValuesFile
 
 FOLDER = "integration-data"
 
@@ -25,6 +27,9 @@ def read_state(root: Path, name: str) -> IntegrationState:
 
 
 def write_state(root: Path, name: str, state: IntegrationState) -> None:
+    """The one place state is written, so no writer can store a secret's value in the error."""
+    masker = Masker({value: variable for variable, value in ValuesFile(root).values().items() if value})
+    state = replace(state, last_error=masker.masked(state.last_error.encode()).decode(errors="replace"))
     path = state_file(root, name)
     path.parent.mkdir(parents=True, exist_ok=True)
     write_json(path, asdict(state))
