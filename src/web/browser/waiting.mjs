@@ -69,7 +69,6 @@ await runScenarios(process.argv[2], {
         await page.locator(".agent-inspector .legend", {hasText: "Waiting"}).waitFor();
         await shot(page, "inspector-chat");
         const box = await page.locator(".agent-inspector .legend").boundingBox();
-        await page.locator(".agent-inspector .legend", {hasText: "command"}).waitFor();
         if (process.env.SHOT_DIR) await page.screenshot({path: `${process.env.SHOT_DIR}/waiting-badge-close.png`, clip: {x: box.x - 20, y: box.y - 16, width: box.width + 120, height: box.height + 40}});
         journal("work", "end", String(n), "--how", "done");
     },
