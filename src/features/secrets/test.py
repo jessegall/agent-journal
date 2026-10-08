@@ -46,7 +46,7 @@ def test_a_secret_keeps_its_value_in_a_file_of_its_own_and_nowhere_in_the_journa
     made.write_text("generated-pass-9x\n")
     Secrets(record, actor=AGENT).store(login.n, "password", str(made))
     assert (values.values()["STAGING_PASSWORD"], made.exists()) == ("generated-pass-9x", False), "a value the agent made is moved in, and its file removed"
-    assert "is one of api key, login, custom" in refused(lambda: Secrets(record, actor=USER).create("X", kind="token")), "the kinds are named"
+    assert "is one of api key, login, browser login, custom" in refused(lambda: Secrets(record, actor=USER).create("X", kind="token")), "the kinds are named"
     assert "has no field 'pin'" in refused(lambda: Secrets(record, actor=USER).fill(login.n, "pin", "1")), "a field the secret lacks is named"
 
 
@@ -128,8 +128,8 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
         "the agent's request puts a Log in button in the chat"
     assert "only you log in" in refused(lambda: agent.login(row.n)) and opened == [], "the agent never opens the login itself"
     from features.message_buttons.pressing import press
-    press(record, asked, "Log in", secrets.actor, "viewer")
     said = secrets.login(row.n)
+    press(record, asked, "Log in", secrets.actor, "viewer")
     logins = BrowserLogins(record.root)
     merged = json.loads(logins.merged.read_text())
     assert opened[0][:4] == ["npx", "-y", "playwright@latest", "open"] and "Restart the agent once" in said, "the browser opens for the user, and the agent is told to restart once"
