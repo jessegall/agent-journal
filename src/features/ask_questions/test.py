@@ -168,6 +168,9 @@ def test_a_row_waits_on_one_question_and_the_user_can_dismiss_it():
                       {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}}).get("reason", "")
 
     asking = 'journal question ask "Ship it?" --set options=\'["Yes","No"]\' --set pick=1'
+    codex = lambda command: handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "codex-1", "tool_name": "exec_command",
+                                                                                    "tool_input": {"cmd": command}}).get("reason", "")
+    assert "command of its own" in codex(f"journal todo create x && {asking}"), "a Codex agent asks a question on its own too"
     assert ("command of its own" in shell(f"journal todo create x; {asking}"), "command of its own" in shell(f"{asking} | grep x"), "command of its own" in shell(asking)) == \
         (True, True, False), "a question is asked on its own, never chained or piped with other commands"
 
