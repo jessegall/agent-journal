@@ -163,3 +163,46 @@ def test_every_kind_of_tool_call_says_what_it_is_doing_and_which_words_a_trigger
     assert (response_text({"file": {"content": "inside"}}), response_text({"filenames": ["a", "b"]}), response_text(7), response_text(["x", "", "y"])) == \
         ("inside", "a\nb", "", "x\ny"), "a tool's answer is read as text whatever shape it comes in"
     assert other.loop == "abc12345", "a loop id written in the answer's text is found when it is not a field"
+
+
+def test_each_watched_fact_names_its_rows_only_past_its_threshold_and_twenty_stay_inside_the_budget(monkeypatch):
+    import time as clock
+    from controllers.types import Questions, Todos, Works
+    from features import FEATURES, watched
+    from features.parts import AgentContext
+    from resources.base import AGENT, SYSTEM, USER
+    from tests.kit import idle
+
+    def finding(record, name: str, over: float) -> list[str]:
+        context = AgentContext.of(FEATURES["triggers"], record, Agents(record, actor=SYSTEM).by_session("claude-1"))
+        return [found.key for found in watched.found(name, context, context.agent.row, over)]
+
+    record = fresh()
+    idle(record, context=70)
+    Messages(record, actor=USER).create("answer me")
+    Questions(record, actor=AGENT).create("Which one?")
+    work = Works(record, actor=AGENT).create("the job")
+    Works(record, actor=AGENT).section(work.n, "log", "started")
+    now = clock.time()
+    monkeypatch.setattr(clock, "time", lambda: now + 20 * 60)
+    assert (finding(record, "message.unread", 10), finding(record, "message.unread", 30)) == (["1"], []), "an unread message is named once it is older than the threshold"
+    assert (finding(record, "question.open", 10), finding(record, "question.open", 30)) == (["1"], []), "an open question is named once it is older than the threshold"
+    assert (finding(record, "work.unlogged", 10), finding(record, "work.unlogged", 30)) == ([str(work.n)], []), "work is unlogged from its last entry, not from its start"
+    assert (finding(record, "agent.context", 60), finding(record, "agent.context", 80)) == (["claude-1"], []), "the context is named above the percent"
+    assert (finding(record, "agent.idle", 10), finding(record, "agent.idle", 30)) == (["claude-1"], []), "an idle agent is named once it has been idle long enough"
+    started = clock.perf_counter()
+    for _ in range(20):
+        for name in watched.FACTS:
+            finding(record, name, 10)
+    assert (clock.perf_counter() - started) / 20 < 0.05, "twenty facts are read inside the fifty millisecond hook budget"
+    context = AgentContext.of(FEATURES["triggers"], record, Agents(record, actor=SYSTEM).by_session("claude-1"), hook=object())
+    counted = []
+    monkeypatch.setitem(watched.FACTS, "agent.idle", watched.Fact("agent.idle", watched.MINUTES, "", lambda *given: counted.append(1) or []))
+    for _ in range(3):
+        watched.found("agent.idle", context, context.agent.row, 10)
+    assert len(counted) == 1, "a fact is read once for each hook, however many triggers ask for it"
+    other = fresh("u")
+    Todos(other, actor=USER).create("one")
+    Todos(other, actor=USER).create("two")
+    idle(other)
+    assert (finding(other, "todo.ready", 2), finding(other, "todo.ready", 3)) == (["ready"], []), "ready to-dos are named once there are enough and no work is open"
