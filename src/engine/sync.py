@@ -11,6 +11,7 @@ ENVIRONMENT = "environment"
 OLDEST_CLIENT_PROTOCOL = 1
 
 NEVER_TRAVELS_PATHS = ("runtime", "phone-push.json", "vault", "secrets")
+NEVER_TRAVELS_IN_PROJECT = (".journal", ".env", ".env.*")
 NEVER_TRAVELS_TYPES = ("phone",)
 NEVER_TRAVELS_FIELDS = {"share": ("token", "password"), "plugin": ("token",)}
 
