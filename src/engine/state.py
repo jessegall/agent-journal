@@ -6,10 +6,18 @@ from engine.stored import read_json, write_json
 
 
 class State:
+    """A small JSON file of state; it is read once, and a change reads it fresh under its lock."""
+
     def __init__(self, path: Path):
         self.path = Path(path)
+        self.held: dict | None = None
 
     def all(self) -> dict:
+        if self.held is None:
+            self.held = self.fresh()
+        return self.held
+
+    def fresh(self) -> dict:
         found = read_json(self.path, dict, {})
         return found if isinstance(found, dict) else {}
 
@@ -20,6 +28,8 @@ class State:
         self.update({key: value})
 
     def update(self, values: dict) -> None:
+        if all(self.all().get(key) == value for key, value in values.items()):
+            return
         with self.changing() as held:
             held.update(values)
 
@@ -39,14 +49,16 @@ class State:
 
     def clear(self) -> None:
         self.path.unlink(missing_ok=True)
+        self.held = None
 
     @contextmanager
     def changing(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.with_suffix(".lock").open("a") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
-            before = self.all()
+            before = self.fresh()
             held = dict(before)
             yield held
             if held != before:
                 write_json(self.path, held)
+            self.held = held

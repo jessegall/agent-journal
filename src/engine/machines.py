@@ -42,6 +42,13 @@ class Lease:
     def write(self, folder: Path) -> None:
         write_text(folder / LEASE, json.dumps(asdict(self)))
 
+    @staticmethod
+    def stamp(folder: Path) -> int:
+        try:
+            return (folder / LEASE).stat().st_mtime_ns
+        except OSError:
+            return 0
+
     def is_leased(self) -> bool:
         return bool(self.machine)
 

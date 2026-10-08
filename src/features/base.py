@@ -245,7 +245,7 @@ class Feature(ABC):
     def _gate(self, record, given: Hold, key: str, agent) -> None:
         for row in [agent] if agent else Agents(record, actor=SYSTEM).rows.standing():
             if given.reach.reaches(row.subagent):
-                hold(record.root, record.env, row.title, self.keyed(key), given)
+                hold(record, row.title, self.keyed(key), given)
 
     def release(self, record, key: str = "", agent=None) -> None:
         self._gate(record, Hold(reach=Reach.BOTH), key, agent)

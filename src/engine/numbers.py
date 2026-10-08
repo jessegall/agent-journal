@@ -1,7 +1,7 @@
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import IO, Callable
 
 from engine import runtime
 from engine.locks import held_file
@@ -31,8 +31,12 @@ class Block:
     end: int
 
     @classmethod
-    def read(cls, f: Path) -> "Block":
-        found = read_numbers(f)
+    def read(cls, held: IO) -> "Block":
+        held.seek(0)
+        try:
+            found = [int(word) for word in held.read().split()]
+        except ValueError:
+            return cls(0, 0)
         return cls(*found) if len(found) == 2 else cls(0, 0)
 
     def is_spent(self) -> bool:
@@ -41,8 +45,12 @@ class Block:
     def drawn(self) -> "Block":
         return Block(self.next + 1, self.end)
 
-    def write(self, f: Path) -> None:
-        write_text(f, f"{self.next} {self.end}")
+    def write(self, held: IO) -> None:
+        """Rewrites the block in place under its lock; a block cut short reads as spent, and a fresh one is leased."""
+        held.seek(0)
+        held.truncate()
+        held.write(f"{self.next} {self.end}")
+        held.flush()
 
 
 class Leases:
@@ -81,21 +89,21 @@ class Numbers:
         return cls(runtime.folder(root) / FOLDER, Leases(root))
 
     def draw(self, sequence: str, floor: Callable[[], int]) -> int:
-        with held_file(self.held / LOCK):
-            block = self._block(sequence, floor)
-            block.drawn().write(self.held / sequence)
+        with held_file(self.held / sequence) as held:
+            block = self._block(held, sequence, floor)
+            block.drawn().write(held)
         return block.next
 
     def peek(self, sequence: str, floor: Callable[[], int]) -> int:
-        with held_file(self.held / LOCK):
-            return self._block(sequence, floor).next
+        with held_file(self.held / sequence) as held:
+            return self._block(held, sequence, floor).next
 
-    def _block(self, sequence: str, floor: Callable[[], int]) -> Block:
-        block = Block.read(self.held / sequence)
+    def _block(self, held: IO, sequence: str, floor: Callable[[], int]) -> Block:
+        block = Block.read(held)
         if not block.is_spent():
             return block
         leased = self.leases.lease(sequence, floor())
-        leased.write(self.held / sequence)
+        leased.write(held)
         return leased
 
     def forget(self, scope: str) -> None:
