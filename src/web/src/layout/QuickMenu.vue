@@ -1,5 +1,5 @@
 <script setup>
-import {agent} from "../composables/leadAgent.js";
+import {agent, agentOnline} from "../composables/leadAgent.js";
 import {autoOn, steered} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import QuickRow from "./QuickRow.vue";
@@ -179,7 +179,7 @@ const commands = computed(() => {
             },
         });
     }
-    if (agent.value) {
+    if (agentOnline.value) {
         const paused = Boolean(agent.value.data.paused);
         rows.push({
             label: paused ? "Resume the agent" : "Pause the agent",
