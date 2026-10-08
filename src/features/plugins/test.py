@@ -533,11 +533,14 @@ def test_stopping_a_service_stops_every_process_it_forked():
     kept.kill()
     started = []
     manager = Manager(record.root, start=lambda spec, lifeline: started.append(spec.id) or 0)
-    for sid, when in (("idle.web", "echo no C# here; exit 1"), ("busy.web", "exit 0")):
-        manager.one(ServiceSpec(id=sid, plugin=sid.split(".")[0], service="web", run=["true"], when=when, **files_for(record.root, sid)))
+    (record.root.parent / "app.csproj").write_text("")
+    for sid, when in (("idle.web", "echo no C# here; exit 1"), ("busy.web", "test -f app.csproj")):
+        manager.one(ServiceSpec(id=sid, plugin=sid.split(".")[0], service="web", run=["true"], cwd=str(record.root / "plugins"), when=when,
+                                **files_for(record.root, sid)))
     idle = json.loads(status_file(record.root, "idle.web").read_text())
     assert (started, idle["state"], "no C# here" in idle["why"]) == (["busy.web"], "not needed", True), \
-        "a service whose when-command fails is left unstarted as not needed, with the command's own words; one that answers 0 starts"
+        ("a service whose when-command fails is left unstarted as not needed, with the command's own words; one that answers 0 starts, "
+         "asked in the project's folder rather than the service's own")
     want(record.root, "busy.web", UP, nonce=time.time())
     manager.one(ServiceSpec(id="busy.web", plugin="busy", service="web", run=["true"], when="echo none here; exit 1", **files_for(record.root, "busy.web")))
     assert json.loads(status_file(record.root, "busy.web").read_text())["state"] == "not needed", \

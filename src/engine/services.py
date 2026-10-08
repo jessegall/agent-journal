@@ -326,7 +326,7 @@ class Manager:
         if now - asked < NEEDED_FOR:
             return why
         try:
-            ran = subprocess.run(spec.when, shell=True, cwd=spec.cwd or None, env={**os.environ, **spec.env}, capture_output=True, text=True, timeout=ASKED_WITHIN)
+            ran = subprocess.run(spec.when, shell=True, cwd=self.root.parent, env={**os.environ, **spec.env}, capture_output=True, text=True, timeout=ASKED_WITHIN)
             why = "" if ran.returncode == 0 else f"not needed here: {spec.when} answered {ran.returncode}{excerpt(ran.stdout)}"
         except (OSError, subprocess.SubprocessError) as e:
             why = f"not needed here: {spec.when} could not be asked ({e})"

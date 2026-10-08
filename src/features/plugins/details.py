@@ -47,7 +47,7 @@ class PluginsDetails(FeatureDetails):
         When one of its servers gives up, you are told once; journal services list|start|stop|restart|log <plugin>.<service>
         inspects them. The servers a plugin declares are kept up while the session runs and stop with it; an upgrade removes
         each one and starts it again from the new code. A service may declare "when": "<command>": the journal runs it first,
-        and only an exit of 0 starts the service; otherwise it stays unstarted as not needed here, with the command's words as
+        in the project's folder (the plugin's own folder is $JOURNAL_PLUGIN_DIR), and only an exit of 0 starts the service; otherwise it stays unstarted as not needed here, with the command's words as
         the reason, and is asked again ten minutes later. A service keeps what it writes in $JOURNAL_PLUGIN_DATA, which
         outlives upgrades, never in the plugin's own folder or the project. A plugin writes back
         by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the
