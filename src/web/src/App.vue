@@ -6,7 +6,7 @@ import WindowBar from "./layout/WindowBar.vue";
 import {activityVisible, closeOverlays} from "./actions/panels.js";
 
 import {computed, defineAsyncComponent, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
-import {route} from "./route.js";
+import {PAGES, route} from "./route.js";
 import {project} from "./state/identity.js";
 import {ui} from "./state/ui.js";
 import {store} from "./state/store.js";
@@ -72,21 +72,7 @@ provide("suggestionActs", desktopActs(useTurnLinks().openRef));
 const page = computed(() =>
     !route.value.page
         ? "home"
-        : [
-                "settings",
-                "search",
-                "files",
-                "commit",
-                "skills",
-                "plugins",
-                "page",
-                "hub",
-                "file",
-                "kanban",
-                "organization",
-                "resources",
-                "about",
-            ].includes(route.value.page)
+        : PAGES.includes(route.value.page)
           ? route.value.page
           : store.spec && store.spec.types[route.value.page]
             ? "index"

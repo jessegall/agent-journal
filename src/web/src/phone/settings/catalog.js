@@ -1,5 +1,6 @@
 import {computed, ref} from "vue";
 import {saveSetting} from "../../actions/settings.js";
+import {stopJournal as stopServer} from "../../actions/stopJournal.js";
 import {api} from "../../api/client.js";
 import {catalog, counts, inTab, narrowed} from "../../domain/settingsCatalog.js";
 import {demo} from "../../platform/demo.js";
@@ -59,7 +60,7 @@ export const saveTiming = (row, next) => saved(row.label, () => saveSetting(row.
 export async function stopJournal() {
     stopping.value = true;
     try {
-        await api.stop();
+        await stopServer();
     } catch (error) {
         stopping.value = false;
         toast(error.message);

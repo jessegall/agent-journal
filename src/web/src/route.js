@@ -117,3 +117,19 @@ export function showSession(sub) {
 export function unpeek() {
     opening(route.value.stack.slice(0, -1));
 }
+
+export const PAGES = [
+    "settings",
+    "search",
+    "files",
+    "commit",
+    "skills",
+    "plugins",
+    "page",
+    "hub",
+    "file",
+    "kanban",
+    "organization",
+    "resources",
+    "about",
+];

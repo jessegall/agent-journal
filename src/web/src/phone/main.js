@@ -5,9 +5,11 @@ import PhoneApp from "./PhoneApp.vue";
 import "../tokens.css";
 import "../light.css";
 import "./phone.css";
+import {watchPresses} from "../platform/pressed.js";
 
 const start = (root = PhoneApp) => {
     followColorScheme();
+    watchPresses();
     createApp(root).directive("tip", tip).mount("#app");
 };
 

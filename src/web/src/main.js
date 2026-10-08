@@ -3,8 +3,10 @@ import App from "./App.vue";
 import {watchConsole} from "./platform/faults.js";
 import {tip} from "./kit/tip.js";
 import "./tokens.css";
+import {watchPresses} from "./platform/pressed.js";
 
 watchConsole();
+watchPresses();
 
 function start({root = App, given = new Map()} = {}) {
     const app = createApp(root);

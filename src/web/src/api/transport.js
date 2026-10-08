@@ -1,3 +1,5 @@
+import {holdPressed} from "../platform/pressed.js";
+
 const WAIT_MS = 20000;
 const UPLOAD_WAIT_MS = 300000;
 export const LONG_WAIT_MS = 600000;
@@ -69,9 +71,13 @@ class Transport {
 
     async send(method, url, body, wait = 0, tries = RELOAD_TRIES) {
         this.watcher("sent", method, url, body);
+        const release = method === "GET" ? () => {} : holdPressed();
         const res = await this.reach(method, url, body, wait, tries)
             .then((got) => (got.status === LOCKED && this.unlocker ? this.unlockedReach(method, url, body, wait, tries) : got))
-            .finally(() => this.watcher("answered", method, url, body));
+            .finally(() => {
+                release();
+                this.watcher("answered", method, url, body);
+            });
         return answered(res, `${res.status} ${res.statusText}`);
     }
 
