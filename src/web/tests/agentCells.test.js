@@ -1,7 +1,7 @@
 import {createApp, h, nextTick} from "vue";
 import {expect, test} from "vitest";
 import JobTimer from "../src/kit/JobTimer.vue";
-import {ordered, slotsFor} from "../src/domain/orchestra.js";
+import {orchestraOf, ordered, slotsFor} from "../src/domain/orchestra.js";
 
 const agent = (kind, n) => ({key: `${kind}:${n}`, kind, n});
 
@@ -27,4 +27,10 @@ test("the timer shows how long the agent has been on its current job", async () 
     createApp({render: () => h(JobTimer, {since: Date.now() / 1000 - 3725})}).mount(into);
     await nextTick();
     expect(into.textContent).toMatch(/^1h 02m 0\ds$/);
+});
+
+test("every cell carries its model, whether or not a tool is running", () => {
+    const quiet = {name: "main", owner: "", agent: {model: "claude-sonnet-5-5"}, counts: {}, plans: [], subagents: [{session: "s", parent: 1, type: "Explore", model: "claude-haiku-5-5", running: true}]};
+    const cells = orchestraOf([{...quiet, owner: "helper:3"}], [], 1000);
+    expect(cells.map((c) => [c.kind, c.model, c.now])).toEqual([["helper", "claude-sonnet-5-5", ""], ["subagent", "claude-haiku-5-5", "Explore"]]);
 });
