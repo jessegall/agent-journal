@@ -1,4 +1,5 @@
 import features
+import pytest
 from controllers.types import Agents, Messages
 from features.triggers.controller import Triggers
 from providers.payload import BashCall
@@ -100,7 +101,7 @@ def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its
     assert [words_text(words) for words in (["a"], ["a", "b"], ["a", "b", "c", "d"], list("abcde"))] == \
         ["“a”", "“a” or “b”", "“a”, “b”, “c” or 1 other phrase", "“a”, “b”, “c” or 2 other phrases"], "a sentence names the first three phrases and counts the rest"
     from types import SimpleNamespace
-    assert summary(SimpleNamespace(words=[]), []) == EMPTY, "a trigger with no words says what it still needs"
+    assert summary(SimpleNamespace(words=[], is_state=False), []) == EMPTY, "a trigger with no words says what it still needs"
     from tests.conftest import refused
     assert "a trigger does one of" in refused(lambda: triggers.create("odd", **{"words": ["x"], "does": "dance"})), "a trigger does one of the things a trigger can do"
     assert "needs words to watch for" in refused(lambda: triggers.update(row.n, words=[])), "a trigger emptied of its words would watch for nothing and is refused"
@@ -165,7 +166,7 @@ def test_every_kind_of_tool_call_says_what_it_is_doing_and_which_words_a_trigger
     assert other.loop == "abc12345", "a loop id written in the answer's text is found when it is not a field"
 
 
-def test_each_watched_fact_names_its_rows_only_past_its_threshold_and_twenty_stay_inside_the_budget(monkeypatch):
+def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_inside_the_budget_and_a_trigger_on_one_tells_or_holds(monkeypatch):
     import time as clock
     from controllers.types import Questions, Todos, Works
     from features import FEATURES, watched
@@ -197,7 +198,7 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_and_twenty_sta
     assert (clock.perf_counter() - started) / 20 < 0.05, "twenty facts are read inside the fifty millisecond hook budget"
     context = AgentContext.of(FEATURES["triggers"], record, Agents(record, actor=SYSTEM).by_session("claude-1"), hook=object())
     counted = []
-    monkeypatch.setitem(watched.FACTS, "agent.idle", watched.Fact("agent.idle", watched.MINUTES, "", lambda *given: counted.append(1) or []))
+    monkeypatch.setitem(watched.FACTS, "agent.idle", watched.Fact("agent.idle", watched.MINUTES, "", "", lambda *given: counted.append(1) or []))
     for _ in range(3):
         watched.found("agent.idle", context, context.agent.row, 10)
     assert len(counted) == 1, "a fact is read once for each hook, however many triggers ask for it"
@@ -206,3 +207,28 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_and_twenty_sta
     Todos(other, actor=USER).create("two")
     idle(other)
     assert (finding(other, "todo.ready", 2), finding(other, "todo.ready", 3)) == (["ready"], []), "ready to-dos are named once there are enough and no work is open"
+
+    from engine.gates import held
+    from resources.base import Refused
+    from tests.kit import tick
+    for refused in ("message", "deny"):
+        with pytest.raises(Refused):
+            Triggers(record, actor=USER).create("never", when="state", fact="message.unread", does=refused)
+    Triggers(record, actor=USER).create("unread for long", text="read message {{n}}", when="state", fact="message.unread", over=10, does="nudge")
+    holder = Triggers(record, actor=USER).create("hold for unread", text="read message {{n}} first", when="state", fact="message.unread", over=10, does="hold")
+    tick(record)
+    tick(record)
+    assert len([n for n in nudges(record) if "unread for long" in n]) == 1, "a trigger on a fact tells the agent once for each row it names"
+    report(record, "working", "PreToolUse")
+    assert "hold for unread" in held(record, "claude-1"), "a hold keeps the main agent's writes while the fact is true"
+    assert held(record, "claude-1", subagent=True) == "", "and does not reach a subagent"
+    Messages(record, actor=AGENT).read(1)
+    report(record, "working", "PreToolUse")
+    assert "hold for unread" not in held(record, "claude-1"), "a hold is released when the fact stops being true"
+    Triggers(record, actor=USER).update(holder.n, over=1)
+    Messages(record, actor=USER).create("another")
+    monkeypatch.setattr(clock, "time", lambda: now + 60 * 60)
+    report(record, "working", "PreToolUse")
+    assert "hold for unread" in held(record, "claude-1"), "a hold holds again for a new row"
+    Triggers(record, actor=USER).delete(holder.n)
+    assert "hold for unread" not in held(record, "claude-1"), "and is released when its trigger is deleted"
