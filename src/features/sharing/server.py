@@ -14,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
 from features import running  # noqa: E402
 from features.sharing.controller import HEALTH, HEALTH_MARKER, LAYOUT_FILE  # noqa: E402
-from features.sharing.passwords import unlocked  # noqa: E402
+from features.sharing.origins import origins_of  # noqa: E402
+from features.sharing.passwords import WrongPasswords, unlocked  # noqa: E402
 from features.sharing.services import LOOPBACK  # noqa: E402
 from features.sharing.visiting import SharedComment  # noqa: E402
 from features.sharing.page import PICTURES, Page, disposition, document, unshared  # noqa: E402
@@ -94,6 +95,7 @@ VISITOR_POSTS = {"comment": posted_comment, "answer": posted_answer}
 
 class ShareHandler(BaseHTTPRequestHandler):
     shares = None
+    wrong = WrongPasswords()
     server_version = "share"
     sys_version = ""
 
@@ -110,7 +112,12 @@ class ShareHandler(BaseHTTPRequestHandler):
             return share, 404
         if share.ended:
             return share, 410
+        place = origins_of(self.shares.record).place(self)
+        if share.password and self.wrong.locked(place):
+            return share, 429
         if not unlocked(share, self.password()):
+            if self.password():
+                self.wrong.count(place)
             return share, 401
         return share, OPEN
 
