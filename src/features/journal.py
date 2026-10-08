@@ -83,7 +83,7 @@ class Journal:
                                **spec.asking(self.feature.name))
         added = appended(f"{self.feature.name}.{line}", {**values, "record": record}, "").removeprefix(" - ")
         said = replace(message, brief=". ".join(part for part in (added, message.brief) if part))
-        if Nudges(record, actor=SYSTEM)._repeats_last(agent.title, titled(said.title), said.brief):
+        if Nudges(record, actor=SYSTEM)._repeats_last(agent.title, titled(said.title), said.brief, agent.at):
             return None
         return self.send(record, said)
 
