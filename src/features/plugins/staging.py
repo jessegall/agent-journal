@@ -13,6 +13,7 @@ from engine.upgrades import fetch
 from resources.base import Refused
 
 REPOSITORY = re.compile(r"[\w.-]+/[\w.-]+$")
+COMMIT = re.compile(r"[0-9a-f]{40}")
 REMOTE = ("http://", "https://", "git@", "file://", "ssh://")
 
 
@@ -20,6 +21,11 @@ class Unreached(Refused):
     @classmethod
     def fetching(cls, where: str, failed: str) -> "Unreached":
         return cls(f"Could not reach {where}: {failed}")
+
+
+def followed(revision: str) -> str:
+    """The ref a plugin keeps following: a commit pinned only to confirm a preview is not one."""
+    return "" if COMMIT.fullmatch(revision) else revision
 
 
 def remote(address: str) -> bool:
