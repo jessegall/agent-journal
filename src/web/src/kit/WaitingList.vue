@@ -1,15 +1,9 @@
 <script setup>
-import {span} from "../format/time.js";
-import {useNow} from "../composables/now.js";
+import Chip from "./Chip.vue";
 import CloseButton from "./CloseButton.vue";
 
-const props = defineProps({waiting: {type: Object, required: true}, closable: {type: Boolean, default: true}});
+defineProps({waiting: {type: Object, required: true}, closable: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
-const now = useNow(30000);
-const out = (item) => {
-    const since = item.since || props.waiting.since;
-    return since ? span(now.value - since) : "";
-};
 </script>
 
 <template>
@@ -24,10 +18,13 @@ const out = (item) => {
             <template v-for="item in waiting.items" :key="item.label">
                 <li :class="['waiting-item', {back: item.reported}]">
                     <span class="waiting-label">{{ item.label }}</span>
+                    <span class="waiting-report">{{ item.reported ? "Report ready" : "At work" }}</span>
                     <span class="waiting-meta">
-                        {{ [item.where, out(item)].filter(Boolean).join(" · ") }}
+                        <template v-if="item.kind">
+                            <Chip>{{ item.kind }}</Chip>
+                        </template>
+                        {{ [item.where, item.out].filter(Boolean).join(" · ") }}
                     </span>
-                    <span class="waiting-report">{{ item.reported ? "Report is in" : "At work" }}</span>
                 </li>
             </template>
         </ul>
@@ -72,14 +69,16 @@ const out = (item) => {
 
 .waiting-meta {
     grid-column: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     color: var(--text-3);
     font-size: 12px;
 }
 
 .waiting-report {
-    grid-row: 1 / span 2;
+    grid-row: 1;
     grid-column: 2;
-    align-self: center;
     color: var(--accent-text);
     font-size: 12px;
 }

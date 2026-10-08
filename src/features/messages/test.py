@@ -212,6 +212,9 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
 def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():
     asked = Messages(record := fresh(), actor="user").create("ship it?")
     assert "is a reaction: journal message react" in refused(lambda: Messages(record, actor="agent").reply(asked.n, "👍"))
+    assert "read message" in refused(lambda: Messages(record, actor="agent").reply(asked.n, "On it.")), "a message the agent has not read is never answered"
+    Messages(record, actor="agent").read(asked.n)
+    assert Messages(record, actor="agent").reply(asked.n, "On it."), "once read, it is answered"
 
 
 def test_a_reaction_from_the_user_reaches_the_agent_as_what_it_is():
@@ -250,6 +253,7 @@ def test_a_line_about_a_message_waits_for_the_driver_and_is_dropped_once_the_mes
     engine.agent.flush()
     assert Messages(record, actor=SYSTEM).load(later.n).data.get("delivered"), "a message told to the agent is stamped with the moment it was told"
     whisper = Nudges(record, actor=SYSTEM).create("answer message", rows=[later.ref])
+    Messages(record, actor=AGENT).read(later.n)
     Messages(record, actor=AGENT).reply(later.n, "on it")
     engine.agent.pending = [e for e in record.event_log.events() if (e.type, e.n, e.action) == ("nudge", whisper.n, "created")]
     engine.agent.flush()

@@ -74,6 +74,9 @@ class Messages(Controller):
             self._refuse("name the message to reply to: journal message reply <n> \"<text>\", or several as 12,13")
         if only_emoji(text):
             self._refuse(f"a reply that is only {text.strip()} is a reaction: journal message react {numbers[0]} \"{text.strip()}\"")
+        unread = [number for number in numbers if self.actor == AGENT and AGENT not in self.load(number).seen]
+        if unread:
+            self._refuse(f"read message {unread[0]} before you answer it: journal message read {unread[0]}")
         quotes = [self._quoted(number) for number in numbers]
         quoted = "\n>\n".join(quote for quote in quotes if quote)
         made = self.comment(numbers[0], f"{quoted}\n\n{text}" if quoted and not text.startswith(">") else text)

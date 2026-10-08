@@ -118,3 +118,13 @@ describe("older turns", () => {
         expect(got.map((t) => t.title || t.ref)).toEqual(["message:1", "new", "message:2"]);
     });
 });
+
+describe("an agent's reply to a comment", () => {
+    test("shows on the agent's side with the row, quoting what the comment quoted", () => {
+        const asked = comment(1, 10, "> the passage\n\nwhy?", "user", {refs: ["todo:86"]});
+        const reply = comment(2, 20, "because", "agent", {refs: ["comment:1"]});
+        const got = turns({comment: [asked, reply]});
+        expect(got.map((t) => [t.who, t.refs.includes("todo:86")])).toEqual([["user", true], ["agent", true]]);
+        expect(got[1].brief).toBe("> the passage\n\nbecause");
+    });
+});
