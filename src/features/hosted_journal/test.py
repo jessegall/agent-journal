@@ -1,3 +1,4 @@
+import base64
 import errno
 import json
 import re
@@ -320,6 +321,11 @@ def test_another_site_plain_http_from_outside_a_strange_host_large_bodies_and_to
     gateway.streams[hashed(token)] = MOST_STREAMS
     assert hosted.call("GET", "/api/main/events", Cookie=f"{COOKIE}={token}", Accept="text/event-stream").status == 429
     gateway.streams.clear()
+    shared = Shares(hosted.record, actor=USER).create(Docs(hosted.record, actor=USER).create("Shared", brief="open to a link").ref, password="tulip")
+    opened = hosted.call("GET", f"/s/{shared.token}/", Authorization="Basic " + base64.b64encode(b"visitor:tulip").decode())
+    assert (opened.status, "set-cookie" in opened.headers) == (200, False), "a link opens its own item and starts no login"
+    assert hosted.call("GET", f"/s/{shared.token}/../api/identity").status == 404, "a link's address reaches nothing of the viewer"
+    assert hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={shared.token}").status in (302, 303, 401), "a link's token is no login"
     held = [gateway.checking.acquire() for _ in range(CHECKS_AT_ONCE)]
     assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 429 and all(held)
     for _ in held:

@@ -211,6 +211,9 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header(tmp_path,
         opened = lambda password: visit(f"http://127.0.0.1:{server.server_port}/s/{locked.token}/", password)
         assert (opened(None), opened("daisy"), opened("tulip")) == (401, 401, 200), \
             "a page with a password asks for it, refuses a wrong one and opens for the right one"
+        for _ in range(5):
+            opened("daisy")
+        assert opened("tulip") == 429, "a place that sent five wrong passwords is refused, even with the right one, until it has waited"
         base = f"http://127.0.0.1:{server.server_port}"
         paper = tmp_path / "notes.txt"
         paper.write_text("inside")
