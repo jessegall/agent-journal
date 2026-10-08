@@ -90,7 +90,8 @@ def release(repository: Path) -> None:
 
 def released(place: Path) -> Path:
     repository = place / "release"
-    subprocess.run(["git", "clone", "-q", "--local", str(isolation.shared("release", release)), str(repository)], capture_output=True, timeout=WAIT, check=True)
+    uncompressed = ["-c", "pack.window=0", "-c", "pack.compression=0"]
+    subprocess.run(["git", "clone", "-q", "--local", *uncompressed, str(isolation.shared("release", release)), str(repository)], capture_output=True, timeout=WAIT, check=True)
     return repository
 
 
