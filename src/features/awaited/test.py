@@ -32,3 +32,15 @@ def test_a_wait_on_a_run_and_a_helper_stands_until_both_are_back_and_then_hands_
     assert (done.awaiting, done.awaiting_on) == ("", ""), "the wait ends once every one is back"
     assert "the suite completed" in done.sections[-1]["body"] and "Rhea: hooks spend 40ms in imports" in done.sections[-1]["body"], "their results go into the work's log"
     assert [n for n in nudges(record) if n.startswith("the suite and Rhea came back")], "the agent is told once to carry on"
+
+
+def test_a_wait_on_a_run_that_finished_without_an_end_time_still_ends():
+    features.load()
+    record = fresh()
+    Agents(record, actor=SYSTEM).create("claude-1")
+    report(record, "idle", "Stop", shell_rows=[{"id": "toolu_2", "task_id": "bq9", "command": "pytest -q", "task": "the suite", "running": False, "ended": 0.0, "status": ""}])
+    works = Works(record, actor=AGENT)
+    work = works.create("ship it")
+    works.action("await")("the suite", on="bq9")
+    tick(record)
+    assert works.load(work.n).awaiting == "", "a run that is no longer running ends the wait, whether or not it recorded when it ended"
