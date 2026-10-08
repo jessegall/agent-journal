@@ -14,6 +14,7 @@ class Phone(Shape, Resource):
     )
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="environment"),
+        Field(TEXT, name="member"),
         Field(name="journal"),
         Field(name="push"),
         Field(default=list, name="pushed"),
@@ -37,7 +38,7 @@ class Phone(Shape, Resource):
     scope = PROJECT
     takes_comments = False
     in_sidebar = False
-    indexed = ("environment", "key", "code", "short", "code_until", "expires", "last_seen")
+    indexed = ("environment", "member", "key", "code", "short", "code_until", "expires", "last_seen")
     command_names = {"complete": "disconnect"}
 
     @property

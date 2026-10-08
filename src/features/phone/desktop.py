@@ -6,7 +6,7 @@ from commands.dispatch import resolve
 from engine.extension import Extension
 from engine.viewer import lately_running
 from features.phone.allow_list import Page
-from features.routing import JSON, PHONE_ENVIRONMENT, PHONE_UNLOCKED
+from features.routing import JSON, PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED
 from features.sharing.page import disposition
 from features.sharing.server import APP_HEADERS
 
@@ -32,8 +32,8 @@ def closed(record, method: str, forwarded: str) -> bool:
     return found is not None and Page(found[0].method, found[0].pattern) in shut
 
 
-def phone_marks(environment: str, unlocked: bool) -> dict:
-    return {PHONE_ENVIRONMENT: environment, PHONE_UNLOCKED: "1" if unlocked else "0"}
+def phone_marks(environment: str, unlocked: bool, member: str = "") -> dict:
+    return {PHONE_ENVIRONMENT: environment, PHONE_UNLOCKED: "1" if unlocked else "0", PHONE_MEMBER: member}
 
 
 class Desktop:

@@ -41,6 +41,7 @@ class PhoneRequest(Loaded):
 
     n: int = 0
     days: int = 7
+    member: str = ""
 
 
 @dataclass(frozen=True)
@@ -53,7 +54,7 @@ class PhonePath(Loaded):
 
 PhoneAnswer = Callable[[Phones, PhoneRequest], object]
 PHONE_OWNER_ACTIONS: dict[Action, PhoneAnswer] = {
-    Action("phone", "connect"): lambda phones, asked: phones.connect(asked.days),
+    Action("phone", "connect"): lambda phones, asked: phones.connect(asked.days, asked.member),
     Action("phone", "disconnect"): lambda phones, asked: phones.complete(asked.n, "disconnected in the viewer"),
     Action("phone", "allow_passkey"): lambda phones, asked: phones.allow_passkey(asked.n),
     Action("phone", "refuse_passkey"): lambda phones, asked: phones.refuse_passkey(asked.n),
@@ -419,8 +420,10 @@ class Gateway:
 
     def answer_here(self, visit: Visit, answer: PhoneAnswer, path: PhonePath, raw: bytes) -> None:
         try:
-            asked = replace(PhoneRequest.from_json(json.loads(raw or b"{}")), n=path.n)
+            asked = replace(PhoneRequest.from_json(json.loads(raw or b"{}")), n=path.n, member=Logins(visit.vault).member(visit.token()))
             record = Record(visit.record.root, path.env)
+            if path.n and Phones(record, actor=USER)._phone(path.n).member != asked.member:
+                raise Refused("a phone is answered only by the one who connected it")
             body = rendered(answer(Phones(record, actor=USER), asked), record)
         except (ValueError, Refused) as refused:
             return visit.handler.send(400, json.dumps({"error": str(refused)}).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})

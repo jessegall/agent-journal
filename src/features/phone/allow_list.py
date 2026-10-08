@@ -9,6 +9,7 @@ from engine.fields import Loaded
 from engine.paths import known_environment
 from engine.record import Record
 from features.permission_prompts.skipping import Relaunch
+from features.phone.members import rights_of
 from features.routing import Named, Reply, Route
 from resources.base import SYSTEM
 
@@ -165,20 +166,20 @@ def reach(route: Route, path: GenericPath) -> Page | Action:
     return Action(path.type, path.action or GENERIC[page])
 
 
-def allowed(root: Path, environment: str, route: Route, params: dict, body: dict, unlocked: bool) -> Reach:
-    """A named page or action is open, and one that runs a command only right after the phone unlocked; anything unnamed is closed."""
+def allowed(root: Path, environment: str, route: Route, params: dict, body: dict, unlocked: bool, member: str = "") -> Reach:
+    """A named page or action is open, and one that runs a command only right after the phone unlocked; anything unnamed is closed, and a member's phone gets only what the member's rights grant."""
     reached = reach(route, GenericPath.from_json(params))
-    if reached not in NAMED:
+    if reached not in NAMED or (member and not rights_of(Record(root, environment)).may_reach(Record(root, environment), member, reached)):
         return Reach.CLOSED
     if unlocked or not (reached in RUNS or reached.asks_to_run(Record(root, environment), Arguments.given(body, params), body)):
         return Reach.OPEN
     return Reach.LOCKED
 
 
-def reached(root: Path, route: Route, params: dict, query: dict, body: dict, environment: str, unlocked: bool) -> Reach:
+def reached(root: Path, route: Route, params: dict, query: dict, body: dict, environment: str, unlocked: bool, member: str = "") -> Reach:
     """How far a phone in this environment gets with the page."""
     here = {Named.from_json(given).env for given in (params, query)} - {""}
     target = Named.from_json(body).env
     if not here <= {environment} or (target and not known_environment(root, target)):
         return Reach.CLOSED
-    return allowed(root, environment, route, params, body, unlocked)
+    return allowed(root, environment, route, params, body, unlocked, member)

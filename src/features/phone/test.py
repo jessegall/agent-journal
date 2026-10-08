@@ -381,6 +381,31 @@ def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served, monkeypa
     n = Phones(record, actor=USER).connect(7)["n"]
     with pytest.raises(Refused):
         Phones(record, actor=AGENT).update(n, key="abc", expires=time.time() + 999)
+    from commands.dispatch import reached_by_phone
+    from features.phone.allow_list import Reach
+    from features.phone.members import MEMBER_RIGHTS, MemberRights
+    sam = Phones(record, actor=USER).connect(7, "sam")["n"]
+    assert (Phones(record, actor=SYSTEM)._phone(sam).member, Phones(record, actor=SYSTEM)._phone(n).member) == ("sam", ""), \
+        "a phone connected for a member is that member's, and the owner's stays the owner's"
+    asked = lambda who: reached_by_phone(record.root, "GET", "/api/identity", {}, {}, record.env, True, who)
+    assert (asked(""), asked("sam")) == (Reach.OPEN, Reach.CLOSED), "a member's phone reaches nothing until the member's rights grant it, and the owner's phone is as before"
+
+    class Grants(MemberRights):
+        def may_reach(self, record, member, page):
+            return member == "sam" and page == allow_list.get("/api/identity")
+
+        def sees(self, record, member, row):
+            return member == "sam" and row.title.startswith("Sam")
+
+    MEMBER_RIGHTS.add(None, lambda record: Grants())
+    try:
+        assert (asked("sam"), asked("kim")) == (Reach.OPEN, Reach.CLOSED), "and then reaches exactly what its member is granted"
+        mine, theirs = Todos(record, actor=SYSTEM).create("Sam's"), Todos(record, actor=SYSTEM).create("Kim's")
+        phone = Phones(record, actor=SYSTEM)._phone(sam)
+        from features.phone.feed import reaches
+        assert (reaches(record, phone, mine), reaches(record, phone, theirs)) == (True, False), "a member's phone is shown, and pushed, only what its member may see"
+    finally:
+        MEMBER_RIGHTS.remove(MEMBER_RIGHTS.entries[-1].value)
     unaddressed = fresh()
     with monkeypatch.context() as patched:
         patched.setattr(Shares, "_address", lambda self: "")

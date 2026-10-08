@@ -17,6 +17,7 @@ from features.format import VIEWER, formatted, shaped
 from features.helpers.controller import Helpers
 from features.helpers.state import HelperSnapshot, asked_permission, helper_reason, helper_state
 from features.phone.chat_view import card_shows, hidden, whisper_shows
+from features.phone.members import rights_of
 from features.phone.places import WAITED, owed
 from features.suggestions.controller import Suggestions
 from features.suggestions.details import SuggestionsDetails
@@ -169,6 +170,8 @@ def hold(home: Record) -> int:
 
 
 def reaches(home: Record, phone, row) -> bool:
+    if phone.member and not rights_of(home).sees(home, phone.member, row):
+        return False
     environment = row.data.get("environment")
     if environment in (phone.environment, None, ""):
         return True
