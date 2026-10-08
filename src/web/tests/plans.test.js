@@ -62,3 +62,33 @@ test("a plan's timeline groups its moments by day, newest first", () => {
     expect(days.map((one) => one.items.map((item) => item.todo))).toEqual([[2], [1, 1]]);
     expect(days[1].items.map((item) => item.kind)).toEqual(["done", "started"]);
 });
+
+test("each running plan gets a bar, the one you work first and delegated ones after it, three at most", async () => {
+    const {barPlans, foldedPlans, othersLine} = await import("../src/domain/plans.js");
+    const made = (n, status, delegated = false) => ({n, type: "plan", data: {status, delegated, phases: [], current: 1}});
+    const plans = [made(1, "active", true), made(2, "active"), made(3, "active", true), made(4, "active", true), made(5, "parked")];
+    expect(barPlans(plans).map((p) => p.n)).toEqual([2, 1, 3]);
+    expect(foldedPlans(plans).map((p) => p.n)).toEqual([4, 5]);
+    expect(othersLine(foldedPlans(plans))).toBe("+1 more active plan · 1 paused");
+    expect(barPlans(plans.slice(0, 3)).map((p) => p.n)).toEqual([2, 1, 3]);
+});
+
+test("a delegated plan names its helpers with their jobs and branches, or the agent on its ticket", async () => {
+    const {delegationOf, withLine} = await import("../src/domain/plans.js");
+    const plan = {n: 1, data: {delegated: true, current: 1, phases: [{todos: [10, 11], tickets: [41]}]}};
+    const todos = [
+        {n: 10, completed: 0, data: {assigned: "helper:3"}},
+        {n: 11, completed: 0, data: {assigned: "helper:4"}},
+    ];
+    const helpers = [
+        {n: 3, title: "Fix the tunnel", data: {name: "Hedy"}},
+        {n: 4, title: "Test it", data: {name: "Benny"}},
+    ];
+    const worktrees = [{completed: 0, data: {helper: "Hedy", branch: "helper/hedy"}}];
+    const seen = delegationOf(plan, {todos, helpers, worktrees, tickets: []});
+    expect(seen.line).toBe("With helpers Hedy and Benny");
+    expect(seen.helpers[0]).toMatchObject({name: "Hedy", job: "Fix the tunnel", branch: "helper/hedy"});
+    expect(withLine(["Hedy"], [])).toBe("With helper Hedy");
+    expect(delegationOf(plan, {todos: [], helpers: [], worktrees: [], tickets: [{n: 41, completed: 0}]}).line).toBe("With the agent on ticket 41");
+    expect(delegationOf({...plan, data: {...plan.data, delegated: false}}, {todos, helpers, worktrees, tickets: []})).toBe(null);
+});
