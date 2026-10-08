@@ -1,3 +1,4 @@
+// @vitest-environment node
 import {describe, expect, test} from "vitest";
 import {asking, complete, creating, daysLeft, drafted, handedVariable, isWaiting, keptWords, pickable, pickedBy, saved, variableOf, whenWords} from "../src/domain/secrets.js";
 

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import {beforeEach, expect, test, vi} from "vitest";
 
 const readAll = vi.fn();
