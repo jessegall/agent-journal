@@ -340,6 +340,7 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     record = fresh()
     import os
     import socket
+    import stat
     import threading
     from commands import http
     from serve import Handler, JournalServer
@@ -351,17 +352,25 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     asked = {"stream": f"GET /api/{record.env}/stream HTTP/1.1\r\nHost: 127.0.0.1:{server.server_port}\r\n\r\n",
              "hook": f"POST /api/hook/claude?root={record.root}&env={record.env}&pid=0 HTTP/1.1\r\nHost: 127.0.0.1:{server.server_port}\r\n"
                      f"Content-Type: application/json\r\nContent-Length: {len(hook)}\r\n\r\n{hook}"}
+    def sockets() -> int:
+        return sum(1 for fd in os.listdir("/dev/fd") if is_socket(int(fd)))
+
+    def is_socket(fd: int) -> bool:
+        try:
+            return stat.S_ISSOCK(os.fstat(fd).st_mode)
+        except OSError:
+            return False
     try:
-        open_before = len(os.listdir("/dev/fd"))
+        open_before = sockets()
         for _ in range(5):
             for request in asked.values():
                 with socket.create_connection(("127.0.0.1", server.server_port), timeout=5) as dropped:
                     dropped.sendall(request.encode())
                     dropped.recv(64)
         waited = time.monotonic() + 5
-        while len(os.listdir("/dev/fd")) > open_before and time.monotonic() < waited:
+        while sockets() > open_before and time.monotonic() < waited:
             time.sleep(0.05)
-        assert len(os.listdir("/dev/fd")) <= open_before, "every connection a viewer or a hook drops is closed by the server, a live stream included"
+        assert sockets() <= open_before, "every connection a viewer or a hook drops is closed by the server, a live stream included"
     finally:
         server.shutdown()
         server.server_close()
