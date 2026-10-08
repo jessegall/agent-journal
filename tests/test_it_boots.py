@@ -225,7 +225,7 @@ def test_the_launcher_carries_its_running_agent_over_to_a_new_build(tmp_path):
 
 
 def test_an_upgrade_leaves_a_helper_running_and_its_job_out_of_the_process_list(tmp_path):
-    root = installed(tmp_path)
+    root = installed(tmp_path, CODE)
     repository = released(tmp_path)
     (tmp_path / "bin").mkdir()
     standin = tmp_path / "bin" / "claude"
