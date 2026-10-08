@@ -10,7 +10,7 @@ const api = {
 vi.mock("../src/api/client.js", () => ({api, onWrite: vi.fn()}));
 vi.mock("../src/chat/outbox.js", () => ({onOutboxChange: vi.fn()}));
 
-const {earlier, holding, rows, load, optimistic, patched, recallEvents, refresh, takeEvents, PAGE} = await import("../src/sync/rows.js");
+const {earlier, hasLoaded, holding, rows, load, optimistic, patched, recallEvents, refresh, takeEvents, PAGE} = await import("../src/sync/rows.js");
 const {store} = await import("../src/state/store.js");
 
 const row = (n, more = {}) => ({n, type: "todo", completed: 0, updated: n, ...more});
@@ -31,7 +31,9 @@ describe("paging rows", () => {
             store.rows.todo = [...store.rows.todo, row(9)];
             return {rows: [row(1), row(2)], more: true};
         });
+        expect(hasLoaded("todo")).toBe(false);
         await load("todo");
+        expect(hasLoaded("todo")).toBe(true);
         expect(store.rows.todo.map((r) => r.n)).toEqual([1, 2, 9]);
         expect([store.paging.size.todo, store.paging.more.todo]).toEqual([PAGE, true]);
     });

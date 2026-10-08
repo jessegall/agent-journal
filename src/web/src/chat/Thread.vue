@@ -33,7 +33,7 @@ import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import PlanCard from "./PlanCard.vue";
-import ThreadSkeleton from "./ThreadSkeleton.vue";
+import MessageSkeleton from "../kit/MessageSkeleton.vue";
 import {tellExtension} from "../platform/extension.js";
 import {ui} from "../state/ui.js";
 
@@ -225,6 +225,7 @@ const thread = computed(() => {
 });
 watch(thread, (made) => made.keys.forEach((placeholder, ref) => link(ref, placeholder)), {immediate: true});
 const turns = computed(() => thread.value.turns);
+const turnsLoaded = computed(() => scope.loaded("message"));
 watch(turns, keep);
 
 let glidedAt = 0;
@@ -488,7 +489,7 @@ watch(
                 </template>
             </div>
             <template v-if="!ready">
-                <ThreadSkeleton />
+                <MessageSkeleton />
             </template>
             <div class="thread-views">
                 <div
@@ -503,7 +504,12 @@ watch(
                     <template v-if="rendering">
                         <div ref="topMark" class="thread-top" />
                         <template v-if="!turns.length">
-                            <p class="thread-empty">Nothing has been said here yet.</p>
+                            <template v-if="turnsLoaded">
+                                <p class="thread-empty">Nothing has been said here yet.</p>
+                            </template>
+                            <template v-else>
+                                <MessageSkeleton />
+                            </template>
                         </template>
                         <TransitionGroup :name="settledOnce ? 'turn' : ''">
                             <Turn

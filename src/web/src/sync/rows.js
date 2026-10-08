@@ -19,6 +19,11 @@ const absent = new Map();
 let owedWhole = false;
 let draining = null;
 
+export function hasLoaded(type) {
+    seen.value;
+    return loaded.has(type);
+}
+
 export function rows(type) {
     seen.value;
     if (!watchedTypes.has(type)) {
@@ -92,6 +97,7 @@ watch(
 
 function took(type, got) {
     loaded.add(type);
+    seen.value += 1;
     store.rows[type] = got.rows;
     store.paging.size[type] = store.paging.size[type] || PAGE;
     store.paging.more[type] = got.more;

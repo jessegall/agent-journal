@@ -1,9 +1,9 @@
 import {inject} from "vue";
 import {api} from "../api/client.js";
-import {PAGE, earlier, holding, rows} from "../sync/rows.js";
+import {PAGE, earlier, hasLoaded, holding, rows} from "../sync/rows.js";
 import {store} from "../state/store.js";
 
-const HERE = {env: "", api, rows, holding, earlier};
+const HERE = {env: "", api, rows, loaded: hasLoaded, holding, earlier};
 const merged = (list, fresh) => [...list.filter((row) => !fresh.some((f) => f.n === row.n)), ...fresh];
 
 export const useScope = () => inject("scope", HERE);
@@ -11,6 +11,7 @@ export const useScope = () => inject("scope", HERE);
 export function scopeIn(env) {
     const there = api.in(env);
     const rowsThere = (type) => store.elsewhere[`${env}:${type}`] || [];
+    const loadedThere = (type) => `${env}:${type}` in store.elsewhere;
     const keep = (type, got) => (store.elsewhere[`${env}:${type}`] = merged(rowsThere(type), (got && got.rows) || []));
     const hold = async (type, ns) => ns.length && keep(type, await there.list(type, {only: ns, completed: true}));
     const recent = async (type, last) => keep(type, await there.list(type, {last, completed: true}));
@@ -35,5 +36,5 @@ export function scopeIn(env) {
         );
     }
 
-    return {env, api: there, rows: rowsThere, holding: hold, recent, recentAll, earlier: earlierThere};
+    return {env, api: there, rows: rowsThere, loaded: loadedThere, holding: hold, recent, recentAll, earlier: earlierThere};
 }
