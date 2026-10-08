@@ -14,7 +14,11 @@ const builtInManifest = () => ({
     load(id) {
         if (id !== `\0${BUILT_IN}`) return undefined;
         const dump = "import json, features; from surfaces.manifest import built_in; features.discover(); print(json.dumps(built_in()))";
-        const json = execFileSync("python3", ["-c", dump], {cwd: fileURLToPath(new URL("..", import.meta.url)), env: {...process.env, PYTHONPATH: "."}, timeout: 30000});
+        const json = execFileSync("python3", ["-c", dump], {
+            cwd: fileURLToPath(new URL("..", import.meta.url)),
+            env: {...process.env, PYTHONPATH: "."},
+            timeout: 30000,
+        });
         return `export default ${json.toString().trim()};`;
     },
 });

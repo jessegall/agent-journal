@@ -216,7 +216,7 @@ def test_a_visitor_plays_every_shipped_lesson_to_the_end_pressing_only_what_is_o
     from scripts.demo.record import SCENARIOS
     site = tmp_path / "site"
     subprocess.run(["npx", "vite", "build", "--mode", "demo", "--outDir", str(site), "--emptyOutDir"], cwd=WEB.parent, check=True, capture_output=True, timeout=180)
-    runs = [(key, "") for key in SCENARIOS] + [("bakery", "phone.html")]
+    runs = [(key, page) for key in SCENARIOS for page in ("", "phone.html")]
     with served(site) as url:
         played = {run: subprocess.run(["node", str(PLAY), f"{url}{run[1]}?speed=100&scenario={run[0]}"], cwd=WEB.parent,
                                       capture_output=True, text=True, timeout=300) for run in runs}
@@ -227,6 +227,7 @@ def test_a_visitor_plays_every_shipped_lesson_to_the_end_pressing_only_what_is_o
         assert one["errors"] == [], run
         assert {"send", "answer"} <= set(one["moves"]), f"{run}: the visitor sends the messages and gives the recorded answer"
         assert one["finished"], f"{run}: the recording plays through to its end"
+        assert "Lesson done" in one["ending"], f"{run}: the lesson reaches its done card"
         assert "sending" not in one["text"], f"{run}: a sent message lands as the recorded one"
     for key in SCENARIOS:
         assert got[(key, "")]["refused"] and all(got[(key, "")]["refused"]), f"{key}: an answer that is not outlined is inert and shows the replay notice"

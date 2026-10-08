@@ -98,6 +98,6 @@ const showing = words
     .slice(0, 30);
 const onScreen = !!showing && got.text.replace(/\s+/g, " ").includes(showing);
 if (!onScreen) errors.push(`the last agent message is not on screen: ${showing}`);
-console.log(JSON.stringify({...got, moves: done, refused, errors}));
+console.log(JSON.stringify({...got, ending, moves: done, refused, errors}));
 await browser.close();
 if (errors.length || !got.finished) process.exitCode = 1;
