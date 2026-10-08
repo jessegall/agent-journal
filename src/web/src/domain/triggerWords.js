@@ -84,7 +84,7 @@ export const DOES = [
 ];
 
 export const WHEN = [
-    {value: "words", label: "When words come up", hint: "A word you choose shows up in a message or a command."},
+    {value: "words", label: "When a word is written", hint: "A word you choose shows up in a message or a command."},
     {value: "state", label: "When something in the journal is true", hint: "For example, a message of yours has waited too long for an answer."},
 ];
 
@@ -93,16 +93,16 @@ export const FACTS = [
     {value: "message.unanswered", phrase: "a message of yours has been read but left unanswered for more than {over} minutes", label: "A message of yours was read but not answered", unit: "minutes"},
     {value: "work.unlogged", phrase: "work has had no log entry for more than {over} minutes", label: "Work has no log entry", unit: "minutes"},
     {value: "work.awaiting", phrase: "work has been waiting for something for more than {over} minutes", label: "Work has been waiting for something", unit: "minutes"},
-    {value: "agent.idle", phrase: "the agent has been idle for more than {over} minutes", label: "The agent is idle", unit: "minutes"},
+    {value: "agent.idle", phrase: "the agent has been idle for more than {over} minutes", label: "The agent has been idle", unit: "minutes"},
     {value: "agent.context", phrase: "the agent's context is more than {over} percent full", label: "The agent's context is getting full", unit: "percent"},
     {value: "question.open", phrase: "a question has had no answer for more than {over} minutes", label: "A question has no answer", unit: "minutes"},
     {value: "todo.ready", phrase: "at least {over} to-dos are ready and no work is open", label: "To-dos are ready and no work is open", unit: "to-dos"},
 ];
 
 export const ONLY_WHEN = [
-    {value: "any", label: "Any time"},
-    {value: "idle", label: "While the agent is idle"},
-    {value: "working", label: "While the agent is working"},
+    {value: "any", label: "Either"},
+    {value: "idle", label: "Idle"},
+    {value: "working", label: "Working"},
 ];
 
 export const REPEATS = [
@@ -119,7 +119,7 @@ export const factOf = (value) => FACTS.find((fact) => fact.value === value) || F
 export const EXAMPLES = [
     {
         name: "Hold the agent while a message waits",
-        title: "Answer my messages",
+        title: "Answer waiting messages",
         when: "state",
         fact: "message.unanswered",
         over: 5,

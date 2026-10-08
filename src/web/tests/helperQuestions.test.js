@@ -13,7 +13,7 @@ describe("a helper waiting on a question", () => {
     });
 
     it("shows as needing you in the helpers list and on the plan page, in the inspector with the question", () => {
-        const asking = {n: 1, title: "Profile the hooks", data: {}, asking: "Which port?"};
+        const asking = {n: 1, title: "Profile the start", data: {}, asking: "Which port?"};
         expect(helperTag(asking)).toEqual({state: "needs", word: "Asks a question"});
         expect(helperCard(asking).reason).toBe("Asks a question: Which port?");
         expect(helperTag({n: 2, data: {}, asking: ""})).toEqual({state: "running", word: "Working"});

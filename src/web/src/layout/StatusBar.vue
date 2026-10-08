@@ -135,7 +135,7 @@ async function runBar(p) {
                 :is="current || waitingNow ? 'button' : 'span'"
                 :type="current || waitingNow ? 'button' : null"
                 :class="['statusbar-roll', {link: current || waitingNow}]"
-                v-tip:roll="waitingNow ? {title: 'See what the agent is waiting on'} : current ? {title: 'Open this work', line: 'Shows what the agent is doing now.'} : null"
+                v-tip:roll="waitingNow ? {title: 'Show what the agent needs to go ahead'} : current ? {title: 'Open this work', line: 'Shows what the agent is doing now.'} : null"
                 @click="roll"
             >
                 <template v-if="sentence.head">
@@ -154,7 +154,7 @@ async function runBar(p) {
                 :class="['statusbar-pause', {paused}]"
                 v-tip:pause="
                     paused
-                        ? {title: 'Resume', line: 'Tells the agent to carry on.'}
+                        ? {title: 'Resume', line: 'Tells the agent to continue.'}
                         : {title: 'Pause', line: 'Stops the agent\'s current turn and holds back the journal\'s reminders.'}
                 "
                 @click="pauseOrResume"
@@ -189,7 +189,7 @@ async function runBar(p) {
                         v-tip:helpers="
                             helpersOut
                                 ? {title: `${helpersOut} helpers out`, line: 'Opens the list of what they are doing.'}
-                                : {title: 'Helpers', line: 'Agents on other providers this environment dispatched.'}
+                                : {title: 'Helpers', line: 'Agents on other providers that this environment started.'}
                         "
                         :aria-expanded="helpersOpen"
                         @click.stop="toggleHelpers"

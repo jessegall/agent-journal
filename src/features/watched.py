@@ -83,7 +83,7 @@ FACTS = {fact.name: fact for fact in (
     Fact("message.unanswered", MINUTES, "A message of yours was read but not answered", "a message of yours has been read but left unanswered for more than {over} minutes", message_unanswered),
     Fact("work.unlogged", MINUTES, "Work has no log entry", "work has had no log entry for more than {over} minutes", work_unlogged),
     Fact("work.awaiting", MINUTES, "Work has been waiting for something", "work has been waiting for something for more than {over} minutes", work_awaiting),
-    Fact("agent.idle", MINUTES, "The agent is idle", "the agent has been idle for more than {over} minutes", agent_idle),
+    Fact("agent.idle", MINUTES, "The agent has been idle", "the agent has been idle for more than {over} minutes", agent_idle),
     Fact("agent.context", PERCENT, "The agent's context is getting full", "the agent's context is more than {over} percent full", agent_context),
     Fact("question.open", MINUTES, "A question has no answer", "a question has had no answer for more than {over} minutes", question_open),
     Fact("todo.ready", COUNT, "To-dos are ready and no work is open", "at least {over} to-dos are ready and no work is open", todo_ready),
