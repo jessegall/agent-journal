@@ -1,4 +1,5 @@
-import {runScenarios, shot} from "./harness.mjs";
+import {createServer} from "node:http";
+import {journal, numberOf, runScenarios, shot} from "./harness.mjs";
 
 await runScenarios(process.argv[2], {
     async "Linear is off at first and its card says how the key and the state read"(page, url) {
@@ -30,5 +31,21 @@ await runScenarios(process.argv[2], {
         await page.reload();
         if ((await page.locator('[data-integration="linear"]').getByRole("switch").getAttribute("aria-checked")) !== "true") throw new Error("the switch did not stay on");
         await shot(page, "integrations-on");
+    },
+    async "an image in text from Linear shows as a link and loads nothing from its host"(page, url) {
+        const asked = [];
+        const host = createServer((request, answer) => (asked.push(request.url), answer.end("x"))).listen(0);
+        await new Promise((done) => host.once("listening", done));
+        const image = `http://127.0.0.1:${host.address().port}/pixel.png`;
+        const brief = `<untrusted source="linear" author="Ana">See ![pixel](${image}) and <img src="${image}"></untrusted>`;
+        const n = numberOf(journal("todo", "create", `From Linear ${Date.now()}`, "--brief", brief));
+        try {
+            await page.goto(`${url}#/main/todo/${n}`);
+            await page.getByText("pixel (image)").waitFor();
+            await page.waitForTimeout(500);
+            if (asked.length) throw new Error(`the viewer asked the image's host: ${asked.join(", ")}`);
+        } finally {
+            host.close();
+        }
     },
 });

@@ -2,7 +2,7 @@
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {saveSettings} from "../actions/settings.js";
-import {boardOf, keyOf, teamsOf, withTeam} from "../domain/integrations.js";
+import {boardOf, keyOf, settingsWith, teamsOf, withTeam} from "../domain/integrations.js";
 import ChoiceList from "../kit/ChoiceList.vue";
 import Switch from "../kit/Switch.vue";
 import {rows} from "../sync/rows.js";
@@ -33,8 +33,8 @@ async function load() {
 
 watch(key, load, {immediate: true});
 
-const pickBoard = (n) => saveSettings({[NAME]: {board: n}});
-const pickTeam = (id, on) => saveSettings({[NAME]: {teams: withTeam(picked.value, id, on)}});
+const pickBoard = (n) => saveSettings(settingsWith(store.settings, NAME, {board: n}));
+const pickTeam = (id, on) => saveSettings(settingsWith(store.settings, NAME, {teams: withTeam(picked.value, id, on)}));
 </script>
 
 <template>

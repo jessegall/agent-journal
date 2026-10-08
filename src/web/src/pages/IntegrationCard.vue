@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {saveSettings} from "../actions/settings.js";
 import {usePoll, pollKey} from "../composables/poll.js";
-import {isOn, keyOf, keyWords, stateWords} from "../domain/integrations.js";
+import {isOn, keyOf, keyWords, settingsWith, stateWords} from "../domain/integrations.js";
 import Btn from "../kit/Btn.vue";
 import SecretPicker from "../kit/SecretPicker.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -39,7 +39,7 @@ async function checkNow() {
 }
 
 const switchTo = (next) => saveSettings({features: {[props.feature.name]: next}});
-const pick = (variable) => saveSettings({[props.feature.name]: {key: variable}});
+const pick = (variable) => saveSettings(settingsWith(store.settings, props.feature.name, {key: variable}));
 </script>
 
 <template>
