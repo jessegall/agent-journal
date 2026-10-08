@@ -10,6 +10,16 @@ from resources.base import Refused
 TIMEOUT = 10.0
 
 
+class NoRedirects(urllib.request.HTTPRedirectHandler):
+    """A redirect is an error, so the key in the request header never follows it to another address."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+OPENER = urllib.request.build_opener(NoRedirects)
+
+
 class IntegrationClient:
     """Talks to one service from the journal's own process: the key is read here, sent only to that service's host and never leaves through a command line, a subprocess or an error."""
 
@@ -29,7 +39,7 @@ class IntegrationClient:
             raise Refused("no key is picked, so nothing is sent")
         request = urllib.request.Request(url, data=json.dumps(body).encode(), headers={"Content-Type": "application/json", "Authorization": self.key})
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as answer:
+            with OPENER.open(request, timeout=self.timeout) as answer:
                 return answer.read().decode()
         except urllib.error.HTTPError as error:
             raise Refused(self.masked(f"{self.host} answered {error.code}")) from None
