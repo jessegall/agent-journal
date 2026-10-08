@@ -6,7 +6,8 @@ from features.ask_questions.choices import restates
 from features.parts import ActionInterceptor, AgentContext, Context, ToolInterceptor
 from resources.base import AGENT, titled
 from resources.shapes import normalize_options
-from controllers.types import Questions
+from controllers.types import CONTROLLERS, Questions
+from features.message_buttons.pressing import unspent
 
 FILED = "filed"
 UNPICKED = "unpicked"
@@ -88,3 +89,19 @@ class AskedOnce(QuestionInterceptor):
         open_one = controller.rows.by_title(title, standing=True)
         if open_one:
             controller._refuse(f"question {open_one.n} already asks this and is still open: wait for its answer")
+
+
+class OneAskPerRow(ActionInterceptor):
+    def intercept(self, feature_context: Context, controller, title: str = "", abstract: str = "", brief: str = "", **data):
+        about = str(data.get("about") or "")
+        if controller.type != "question" or ":" not in about:
+            return None
+        kind, _, n = about.partition(":")
+        if kind not in CONTROLLERS or not n.isdigit():
+            return None
+        rows = CONTROLLERS[kind](controller.record, actor=controller.actor).rows
+        if not rows.exists(int(n)):
+            return None
+        if any(button.choice for button in unspent(rows.peek(int(n)))):
+            controller._refuse(f"{kind} {n} already asks this through its buttons: wait for that answer, or take its buttons off first")
+        return None

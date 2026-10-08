@@ -32,6 +32,10 @@ class AskQuestionsDetails(FeatureDetails):
         and leave the choice to the user. A question the user dismisses is closed as no longer
         needed: do not act on it and do not ask it again. A row waits on one open question at a
         time; asking a second one about it is refused and names the one it waits on.
+        A question about a document or report (--set about=doc:<n>) shows in the chat and inside
+        that document as one question, and an answer in either place answers both; a row that
+        already asks through its own choice buttons is not asked again as a question. Ask each
+        question as a command of its own, never chained or piped, and never one still open.
 
         A message with two or more listed options and a question, or the language of putting a
         decision to the user, tells you to use journal question ask --set options=…; your

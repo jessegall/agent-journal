@@ -3,7 +3,7 @@ from features.journal import Journal
 from features.ask_questions.details import AskQuestionsDetails
 from features.ask_questions.handlers import AskInsteadOfProse, DismissSettledQuestions, MarkTheAnswer, ReleaseOnceAnswered, ReleaseOnceAsked, open_a_day
 from features.nudges.sending import Nudge
-from features.ask_questions.interceptors import AskedOnce, AskInTheJournal, AskOnItsOwn, NamesItsPick, OptionsOnlyInTheirButtons
+from features.ask_questions.interceptors import AskedOnce, AskInTheJournal, AskOnItsOwn, NamesItsPick, OneAskPerRow, OptionsOnlyInTheirButtons
 
 
 class AskQuestions(Feature):
@@ -21,3 +21,4 @@ class AskQuestions(Feature):
         journal.commands.intercept("create", OptionsOnlyInTheirButtons())
         journal.commands.intercept("create", NamesItsPick())
         journal.commands.intercept("create", AskedOnce())
+        journal.commands.intercept("create", OneAskPerRow())
