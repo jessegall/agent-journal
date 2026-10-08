@@ -36,7 +36,8 @@ class HelperWorktreesDetails(FeatureDetails):
     lines = [
         Line(
             name="drifted",
-            title="{{working}} moved {{commits}} since your worktree was cut: rebase onto {{working}} in {{path}} before you report.",
+            title="{{working}} moved since your worktree was cut",
+            brief="It gained {{commits}}. Rebase onto {{working}} in {{path}} before you report.",
             reach=Reach.BOTH,
         ),
         Line(
