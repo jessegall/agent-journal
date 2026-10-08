@@ -30,12 +30,9 @@ AGENT_JOURNAL_BOOTSTRAPPED=1 python3 /opt/agent-journal/src/install.py upgrade "
 hosted-journal prepare --address "$JOURNAL_ADDRESS" --listen 0.0.0.0 --port 8440 --proxy caddy
 SETUP
 
-(
-    while true; do
-        $AS_GATEWAY python3 -m features.sharing.server "$ROOT" 8440 0.0.0.0 || true
-        sleep 2
-    done
-) &
+$AS_GATEWAY hosted-journal gateway-settings --address "$JOURNAL_ADDRESS" --proxy caddy --days 7
+# Root holds the login page's port for good and starts the login page on it as gateway, so no agent can take the port.
+env -C / PYTHONPATH=/opt/agent-journal/src PYTHONSAFEPATH=1 python3 -P -m features.hosted_journal.apart keep "$ROOT" --port 8440 &
 $AS_GATEWAY hosted-journal password-status
 
 exec $AS_JOURNAL python3 "$ROOT/journal.py" --root "$ROOT" serve --port 8421

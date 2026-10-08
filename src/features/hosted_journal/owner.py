@@ -13,6 +13,7 @@ PASSWORD = "owner.json"
 SETUP = "setup.json"
 LOGINS = "logins.json"
 TRIES = "tries.json"
+DEVICE_KEY = "device.json"
 SHORTEST = 12
 COST = 2 ** 17
 EARLIER_COST = 2 ** 15
@@ -133,22 +134,22 @@ class WrongTries:
         since = self.vault.clock() - LOCKED_FOR
         return [at for at in self.vault.read(TRIES).get(place, []) if at > since]
 
-    def locked_for(self, place: str) -> float:
-        """Seconds until this place may try again, or every place once too many wrong tries came from all of them together; zero while it may."""
+    def locked_for(self, place: str, ceiling: float = MOST_EVERYWHERE) -> float:
+        """Seconds until this place may try again, or every place under the ceiling once that many wrong tries came from all together; zero while it may."""
         now = self.vault.clock()
         everywhere = sorted(at for ats in self.vault.read(TRIES).values() for at in ats if at > now - LOCKED_FOR)
         recent = self.recent(place)
         starts = []
         if len(recent) >= MOST_TRIES:
             starts.append(recent[0])
-        if len(everywhere) >= MOST_EVERYWHERE:
+        if len(everywhere) >= ceiling:
             starts.append(everywhere[-MOST_EVERYWHERE])
         return max((at + LOCKED_FOR - now for at in starts), default=0.0)
 
-    def counted(self, place: str) -> float:
+    def counted(self, place: str, ceiling: float = MOST_EVERYWHERE) -> float:
         """Counts a try before its password is checked, so guesses sent at once cannot slip past the limit; answers the seconds to wait when it is refused."""
         with self.vault.held():
-            if wait := self.locked_for(place):
+            if wait := self.locked_for(place, ceiling):
                 return wait
             since = self.vault.clock() - LOCKED_FOR
             kept = {key: [at for at in ats if at > since] for key, ats in self.vault.read(TRIES).items()}
@@ -160,3 +161,32 @@ class WrongTries:
             kept = self.vault.read(TRIES)
             kept.pop(place, None)
             self.vault.write(TRIES, kept)
+
+    def clear(self) -> int:
+        with self.vault.held():
+            count = sum(len(ats) for ats in self.vault.read(TRIES).values())
+            self.vault.write(TRIES, {})
+        return count
+
+
+class Devices:
+    """Browsers that logged in here before, known by a cookie only this server can sign, so a flood of wrong tries elsewhere never locks them out."""
+
+    def __init__(self, vault: Vault) -> None:
+        self.vault = vault
+
+    def signed(self, device: str) -> str:
+        with self.vault.held():
+            kept = self.vault.read(DEVICE_KEY)
+            if not kept.get("key"):
+                kept = {"key": secrets.token_hex(32)}
+                self.vault.write(DEVICE_KEY, kept)
+        return hmac.new(bytes.fromhex(kept["key"]), device.encode(), hashlib.sha256).hexdigest()
+
+    def issue(self) -> str:
+        device = secrets.token_urlsafe(16)
+        return f"{device}.{self.signed(device)}"
+
+    def known(self, cookie: str) -> str | None:
+        device, _, signature = cookie.partition(".")
+        return device if device and signature and hmac.compare_digest(signature, self.signed(device)) else None

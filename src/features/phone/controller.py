@@ -1,7 +1,7 @@
 import hashlib
 import secrets
 import time
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 from typing import TypedDict
 
@@ -13,6 +13,7 @@ from controllers.notices import Notices
 from engine import runtime
 from engine.record import Record
 from features.phone.feed import waiting
+from features.phone.guard import RecordGuard, guard_of
 from features.phone.passkey import CREATE, GET, Assertion, Challenge, Creating, Enrolment, Getting, Passkey, PendingPasskey, Relying, Unlock, Unverified, creating
 from features.phone.places import Place, place_at, places
 from features.phone.push import Keys, allowed, send, unpadded
@@ -56,8 +57,30 @@ def hashed(secret: str) -> str:
 class Phones(Controller):
     resource = Phone
 
+    def _guard(self) -> RecordGuard:
+        return guard_of(self.record)
+
+    def _phone(self, n: int) -> Phone:
+        """The phone with what its guard keeps, which on a journal on a server is the login page's alone to read."""
+        phone = self.load(n)
+        return replace(phone, data={**phone.data, **self._guard().read(phone.n)})
+
+    def _summaries(self) -> list[dict]:
+        guard = self._guard()
+        return [{**row, **guard.read(row["n"])} for row in self.rows.summaries()]
+
+    def _kept(self, n: int, **fields) -> Phone:
+        super().update(n, **self._guard().kept(n, fields))
+        return self._phone(n)
+
+    @action
+    def complete(self, n: int, how: str = "", **data):
+        done = super().complete(n, how, **data)
+        self._guard().drop(int(n))
+        return done
+
     def connected(self) -> list[Phone]:
-        return [phone for phone in (self.load(row["n"]) for row in self.rows.summaries() if not row["deleted"]) if phone.connected]
+        return [phone for phone in (self._phone(row["n"]) for row in self._summaries() if not row["deleted"]) if phone.connected]
 
     def stand_in(self, key: str, expires: float) -> Phone:
         return Phone(n=0, title="A phone", data={"environment": self.record.env, "key": key, "expires": expires})
@@ -88,55 +111,55 @@ class Phones(Controller):
         active = self._active()
         if active is not None:
             raise Refused(f"{active.title} is connected: stop that session first, one phone at a time")
-        for row in self.rows.summaries():
+        for row in self._summaries():
             if not row.get("key") and row.get("code") and not row["completed"] and not row["deleted"]:
                 self.complete(row["n"], how="a newer code replaced it")
         code = secrets.token_urlsafe(24)
         short = "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
-        made = super().create("A phone, not yet connected", environment=self.record.env, code=hashed(code), short=hashed(short),
-                              code_until=time.time() + CODE_SECONDS, days=int(days))
+        made = self._kept(super().create("A phone, not yet connected").n, environment=self.record.env, code=hashed(code), short=hashed(short),
+                          code_until=time.time() + CODE_SECONDS, days=int(days))
         return Code(n=made.n, link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", code_until=made.code_until, address=address)
 
     def _pair(self, code: str, device: str) -> tuple[Phone, str] | None:
         now = time.time()
         with self.record.locked(PROJECT):
             given = {hashed(code), hashed(typed(code))}
-            found = next((row["n"] for row in self.rows.summaries() if given & {row.get("code"), row.get("short")} - {"", None}
+            found = next((row["n"] for row in self._summaries() if given & {row.get("code"), row.get("short")} - {"", None}
                           and not row["completed"] and not row["deleted"]), None)
             if found is None:
                 self._missed()
                 return None
-            phone = self.load(found)
+            phone = self._phone(found)
             if phone.code_until < now or self._active() is not None:
                 return None
             key = secrets.token_urlsafe(32)
             named = titled(" ".join(str(device).split())[:DEVICE_LONGEST] or "A phone")
-            paired = super().update(phone.n, title=named, key=hashed(key), code="", short="", code_until=0, expires=now + phone.days * DAY, last_seen=now)
+            paired = self._kept(phone.n, title=named, key=hashed(key), code="", short="", code_until=0, expires=now + phone.days * DAY, last_seen=now)
         Notices(Record(self.record.root, paired.environment), actor=SYSTEM).create(
             f"A phone connected, {named}", brief="If that was not you, disconnect it from the phone button in the top bar.", tone="warn")
         return paired, key
 
     def _missed(self) -> None:
-        for row in self.rows.summaries():
+        for row in self._summaries():
             if not row.get("code") or row["completed"] or row["deleted"]:
                 continue
-            tries = self.load(row["n"]).tries + 1
-            super().update(row["n"], tries=tries)
+            tries = self._phone(row["n"]).tries + 1
+            self._kept(row["n"], tries=tries)
             if tries >= MOST_TRIES:
                 self.complete(row["n"], how=f"{MOST_TRIES} wrong codes were tried, so this code no longer works")
 
     def _active(self) -> Phone | None:
         now = time.time()
-        found = next((row["n"] for row in self.rows.summaries() if row.get("key") and row.get("expires", 0) > now and not row["completed"] and not row["deleted"]), None)
-        return self.load(found) if found else None
+        found = next((row["n"] for row in self._summaries() if row.get("key") and row.get("expires", 0) > now and not row["completed"] and not row["deleted"]), None)
+        return self._phone(found) if found else None
 
     def _by_key(self, key: str) -> Phone | None:
-        found = next((row["n"] for row in self.rows.summaries() if key and row.get("key") == hashed(key) and not row["deleted"]), None)
+        found = next((row["n"] for row in self._summaries() if key and row.get("key") == hashed(key) and not row["deleted"]), None)
         if found is None:
             return None
-        phone = self.load(found)
+        phone = self._phone(found)
         if phone.connected and time.time() - phone.last_seen > SEEN_EVERY:
-            return super().update(phone.n, last_seen=time.time())
+            return self._kept(phone.n, last_seen=time.time())
         return phone
 
     def _home(self, phone: Phone) -> Record:
@@ -154,7 +177,7 @@ class Phones(Controller):
         if found is None or moving.environment not in found.environments:
             raise Refused(f"no running journal at {moving.journal!r} with an environment {moving.environment!r} on this machine")
         journal = None if Path(found.root) == self.record.root.resolve() else found.root
-        return super().update(phone.n, journal=journal, environment=moving.environment, picked={**phone.picked, found.root: time.time()})
+        return self._kept(phone.n, journal=journal, environment=moving.environment, picked={**phone.picked, found.root: time.time()})
 
     def _picked(self, phone: Phone) -> list[Place]:
         return sorted(self._places(), key=lambda place: -phone.picked.get(place.root, 0.0))
@@ -163,7 +186,7 @@ class Phones(Controller):
         unknown = [card for card in cards if card not in (*CARDS, WAITING_CARD)]
         if unknown:
             raise Refused(f"no home screen card called {', '.join(unknown)}")
-        return super().update(phone.n, home=list(dict.fromkeys(cards)))
+        return self._kept(phone.n, home=list(dict.fromkeys(cards)))
 
     def _push_key(self) -> str:
         return unpadded(Keys.kept(self.record.root).public)
@@ -171,7 +194,7 @@ class Phones(Controller):
     def _subscribe(self, phone: Phone, endpoint: str) -> Phone:
         if not allowed(endpoint):
             raise Refused("a phone's notifications come only through Apple's, Google's, Mozilla's or Microsoft's push service")
-        return super().update(phone.n, push=endpoint, pushed=[item["ref"] for item in waiting(self._home(phone), phone)])
+        return self._kept(phone.n, push=endpoint, pushed=[item["ref"] for item in waiting(self._home(phone), phone)])
 
     def _notify(self) -> None:
         phone = self._active()
@@ -184,7 +207,7 @@ class Phones(Controller):
         if set(owed) - set(phone.pushed):
             send(Keys.kept(self.record.root), phone.push, f"https://{address}")
         if owed != phone.pushed:
-            super().update(phone.n, pushed=owed)
+            self._kept(phone.n, pushed=owed)
 
     def _enrolling(self, phone: Phone, relying: Relying) -> Creating:
         if phone.passkey:
@@ -195,7 +218,7 @@ class Phones(Controller):
         """The passkey the phone made, held until the user allows it on the computer within ALLOW_SECONDS."""
         with self.record.locked(PROJECT):
             challenge = self._taken(phone)
-            current = self.load(phone.n)
+            current = self._phone(phone.n)
             if current.passkey:
                 raise Refused("this phone already has its passkey: connect the phone again to make a new one")
             if current.waiting_passkey.waits(time.time()):
@@ -208,7 +231,7 @@ class Phones(Controller):
                 f"Set up Face ID for phone {current.title}?", tone="warn", action=PASSKEY_NOTICE, phone=current.n,
                 brief="The phone asks to run commands after Face ID or its passcode. Allow it only if you asked for this on your phone just now.")
             pending = PendingPasskey(asdict(passkey), desk.env, notice.n, time.time() + ALLOW_SECONDS)
-            super().update(phone.n, pending_passkey=asdict(pending))
+            self._kept(phone.n, pending_passkey=asdict(pending))
         return pending
 
     @action
@@ -216,11 +239,11 @@ class Phones(Controller):
         """Keeps the passkey the phone asked to set up, so it runs commands after Face ID or its passcode."""
         self._require_user()
         with self.record.locked(PROJECT):
-            phone = self.load(int(n))
+            phone = self._phone(int(n))
             pending = self._cleared(phone, "allowed on the computer")
             if not phone.connected or not pending.waits(time.time()):
                 raise Refused("the phone's request ran out: ask again from the phone")
-            allowed = super().update(phone.n, passkey=pending.passkey)
+            allowed = self._kept(phone.n, passkey=pending.passkey)
         Notices(Record(self.record.root, pending.environment), actor=SYSTEM).create(
             f"Face ID was set up for phone {phone.title}", brief="If that was not you, disconnect it from the phone button in the top bar.", tone="warn")
         return allowed
@@ -230,9 +253,9 @@ class Phones(Controller):
         """Drops the passkey the phone asked to set up."""
         self._require_user()
         with self.record.locked(PROJECT):
-            phone = self.load(int(n))
+            phone = self._phone(int(n))
             self._cleared(phone, "refused on the computer")
-        return self.load(phone.n)
+        return self._phone(phone.n)
 
     def _require_user(self) -> None:
         if self.actor != USER:
@@ -243,7 +266,7 @@ class Phones(Controller):
         pending = phone.waiting_passkey
         if not pending.passkey:
             raise Refused(f"phone {phone.n} has not asked to set up Face ID")
-        super().update(phone.n, pending_passkey={})
+        self._kept(phone.n, pending_passkey={})
         Notices(Record(self.record.root, pending.environment), actor=SYSTEM).complete(pending.notice, how=how)
         return pending
 
@@ -260,9 +283,9 @@ class Phones(Controller):
         """A one-use unlock for the request the challenge named, good for a minute on this phone alone."""
         with self.record.locked(PROJECT):
             challenge = self._taken(phone)
-            passkey = given.counted(Passkey.from_json(self.load(phone.n).passkey), challenge, relying, time.time())
+            passkey = given.counted(Passkey.from_json(self._phone(phone.n).passkey), challenge, relying, time.time())
             unlock = secrets.token_urlsafe(32)
-            super().update(phone.n, passkey=asdict(passkey), unlock=asdict(Unlock(hashed(unlock), challenge.request, time.time() + UNLOCK_SECONDS)))
+            self._kept(phone.n, passkey=asdict(passkey), unlock=asdict(Unlock(hashed(unlock), challenge.request, time.time() + UNLOCK_SECONDS)))
         return unlock
 
     def _spend(self, phone: Phone, unlock: str, request: str) -> bool:
@@ -270,28 +293,29 @@ class Phones(Controller):
         if not unlock:
             return False
         with self.record.locked(PROJECT):
-            kept = Unlock.from_json(self.load(phone.n).unlock)
+            kept = Unlock.from_json(self._phone(phone.n).unlock)
             if not kept.fits(hashed(unlock)):
                 return False
-            super().update(phone.n, unlock={})
+            self._kept(phone.n, unlock={})
         return kept.opens(request, time.time())
 
     def _challenged(self, phone: Phone, kind: str, request: str) -> Challenge:
         challenge = Challenge(secrets.token_urlsafe(32), kind, time.time() + CHALLENGE_SECONDS, request)
-        super().update(phone.n, challenge=asdict(challenge))
+        self._kept(phone.n, challenge=asdict(challenge))
         return challenge
 
     def _taken(self, phone: Phone) -> Challenge:
         """The challenge this phone was given, cleared so it answers one attempt only."""
-        kept = self.load(phone.n).challenge
-        super().update(phone.n, challenge={})
+        kept = self._phone(phone.n).challenge
+        self._kept(phone.n, challenge={})
         if not kept:
             raise Unverified.because("ask again, the last request has run out")
         return Challenge.from_json(kept)
 
     def _live(self) -> list[dict]:
         now = time.time()
-        return [row for row in self.rows.standing_summaries()
+        guard = self._guard()
+        return [row for row in ({**row, **guard.read(row["n"])} for row in self.rows.standing_summaries())
                 if ((row.get("key") and row.get("expires", 0) > now) or row.get("code_until", 0) > now)]
 
 

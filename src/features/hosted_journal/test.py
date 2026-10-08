@@ -1,7 +1,10 @@
 import errno
 import json
 import os
+import socket
 import subprocess
+import sys
+import time
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from http.client import HTTPConnection
@@ -18,9 +21,14 @@ from engine import disk
 from engine.sessions import Sessions
 from engine.viewer import SERVING
 from features.hosted_journal.details import HostedJournalDetails
-from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, MOST_STREAMS, Visit
+from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, DEVICE_COOKIE, MOST_STREAMS, Visit
+from features.hosted_journal.host import clear_tries
 from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, WrongTries, hashed
+from features.hosted_journal.feature import APART
+from features.hosted_journal.phones import KEPT_ELSEWHERE, PHONES
+from features.hosted_journal.settings import FromRecord, GatewaySettings, keep_gateway_settings
 from features.hosted_journal.vault import AUDIT, VAULT, DiskFull, RefusalLog, Vault
+from features.trigger import DAY
 from features.phone.controller import Phones
 from features.sharing.controller import Shares
 from features.sharing.routes import EVERY_OTHER, ROUTES
@@ -33,7 +41,9 @@ from tests.conftest import fresh
 
 ADDRESS = "journal.example.com"
 PASSWORD = "correct horse battery"
-WEB = Path(__file__).resolve().parents[2] / "web"
+SRC = Path(__file__).resolve().parents[2]
+WEB = SRC / "web"
+APART_WAIT = 30
 SCENARIOS_WAIT = 240
 
 
@@ -56,7 +66,10 @@ class Hosted(NamedTuple):
         connection = HTTPConnection("127.0.0.1", self.port, timeout=10)
         connection.request(method, path, None if body is None else body.encode(), given)
         reply = connection.getresponse()
-        answer = Answer(reply.status, {name.lower(): value for name, value in reply.getheaders()}, reply.read().decode(errors="replace"))
+        headers: dict[str, str] = {}
+        for name, value in reply.getheaders():
+            headers[name.lower()] = f"{headers[name.lower()]}\n{value}" if name.lower() in headers else value
+        answer = Answer(reply.status, headers, reply.read().decode(errors="replace"))
         connection.close()
         return answer
 
@@ -135,7 +148,9 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
     assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.9").status == 429, "only the proxy names a new place"
     Features(hosted.record, actor=USER).configure(HostedJournalDetails.name, "proxy", "127.0.0.1")
     proxied = {"Host": ADDRESS, "Origin": f"https://{ADDRESS}", "X_Forwarded_Proto": "https"}
-    assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.9", **proxied).status == 303
+    trusted = hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.9", **proxied)
+    assert trusted.status == 303
+    device = next(line.split(";")[0] for line in trusted.headers["set-cookie"].splitlines() if line.startswith(DEVICE_COOKIE))
     for _ in range(MOST_TRIES):
         hosted.call("POST", "/login", {"password": "wrong"}, X_Forwarded_For="2001:db8::1", **proxied)
     assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="2001:db8::ffff", **proxied).status == 429, "IPv6 counts by /64"
@@ -150,6 +165,13 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
     for place in range(MOST_EVERYWHERE):
         tries.counted(f"10.0.{place // 250}.{place % 250}")
     assert tries.locked_for("192.0.2.200") > 0, "too many wrong tries from every place together lock out every place"
+    for place in range(MOST_EVERYWHERE):
+        WrongTries(hosted.vault).counted(f"10.1.{place // 250}.{place % 250}")
+    assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.77", **proxied).status == 429
+    assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.77", Cookie=device, **proxied).status == 303, \
+        "a browser that logged in before is never locked out by wrong tries from elsewhere"
+    assert "cleared" in clear_tries(hosted.record.root)
+    assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.78", **proxied).status == 303
 
 
 def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hosted):
@@ -185,23 +207,20 @@ def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_ea
     assert {line["path"] for line in logged if line["what"] == "refused"} >= {*closed, *encoded}
 
 
-def test_another_site_plain_http_from_outside_and_a_strange_host_are_refused(hosted):
+def test_another_site_plain_http_from_outside_a_strange_host_large_bodies_and_too_many_streams_are_refused(hosted):
     token = hosted.logged_in()
     assert hosted.call("POST", "/api/main/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin="https://evil.example").status == 403
     assert hosted.call("POST", "/login", {"password": PASSWORD}, Origin="https://evil.example").status == 403
     outside = type("Outside", (), {"shares": Shares(hosted.record, actor=SYSTEM), "path": "/", "client_address": ("203.0.113.5", 4000),
                                    "headers": {"Host": "localhost", "X-Forwarded-Proto": "https", "X-Forwarded-For": "198.51.100.7"}})
-    visit = Visit(outside, RefusalLog(1))
+    visit = Visit(outside, RefusalLog(1), FromRecord())
     assert not visit.secure() and visit.place() == "203.0.113.5", "a peer that is not the named proxy decides neither https, locality nor its place"
     forged = {"Host": ADDRESS, "Cookie": f"{COOKIE}={token}", "X_Forwarded_Proto": "https", "X_Forwarded_For": "203.0.113.9"}
     Features(hosted.record, actor=USER).configure(HostedJournalDetails.name, "proxy", "127.0.0.1")
     assert hosted.call("GET", "/api/identity", **forged).status == 200
     assert "only over https" in hosted.call("GET", "/", **{**forged, "X_Forwarded_Proto": "http"}).text
     assert hosted.call("GET", "/api/identity", **{**forged, "Host": "journal.evil.example"}).status == 421
-
-
-def test_large_bodies_and_too_many_open_streams_are_refused(hosted):
-    token = hosted.logged_in()
+    origin = f"http://127.0.0.1:{hosted.port}"
     origin = f"http://127.0.0.1:{hosted.port}"
     big = hosted.call("POST", "/api/main/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin=origin, Content_Length=str(2 * 1024 * 1024))
     assert big.status == 413
@@ -261,3 +280,39 @@ def test_a_server_starts_no_more_agents_than_its_setting_allows(hosted, monkeypa
         refuse_past_cap(hosted.record.root)
     Features(hosted.record, actor=USER).switch(HostedJournalDetails.name, False)
     refuse_past_cap(hosted.record.root)
+
+
+def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypatch, tmp_path):
+    monkeypatch.setenv(VAULT, str(tmp_path / "vault"))
+    root = hosted.record.root
+    keep_gateway_settings(root, GatewaySettings(ADDRESS, "", 7))
+    Owner(Vault(root)).set_password(PASSWORD)
+    listening = socket.create_server(("127.0.0.1", 0))
+    env = {**os.environ, APART: "1", "PYTHONPATH": str(SRC), "PYTHONSAFEPATH": "1"}
+    child = subprocess.Popen([sys.executable, "-P", "-m", "features.hosted_journal.apart", "serve", str(root), "--fd", str(listening.fileno())],
+                             pass_fds=(listening.fileno(),), env=env, cwd="/", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        apart = Hosted(hosted.record, listening.getsockname()[1], Vault(root))
+        began = time.time()
+        while time.time() - began < APART_WAIT and apart.call("GET", "/login").status != 200:
+            time.sleep(0.2)
+        origin = f"http://127.0.0.1:{apart.port}"
+        Features(hosted.record, actor=USER).configure(HostedJournalDetails.name, "proxy", "127.0.0.1")
+        forged = {"Host": ADDRESS, "Origin": f"https://{ADDRESS}", "X_Forwarded_Proto": "https", "X_Forwarded_For": "203.0.113.9"}
+        assert apart.call("POST", "/login", {"password": PASSWORD}, **forged).status == 403, "a proxy named in the record is not trusted"
+        Phones(hosted.record, actor=SYSTEM)._kept(Phones(hosted.record, actor=SYSTEM).create("A forged phone").n,
+                                                  key=hashed("forged"), expires=time.time() + DAY, environment="main")
+        assert apart.call("GET", "/p/state", Cookie="__Host-phone=forged").status == 401, "a phone written into the record opens nothing"
+        token = apart.call("POST", "/login", {"password": PASSWORD}).headers["set-cookie"].split(";")[0]
+        made = json.loads(apart.call("POST", "/api/main/phone/connect", body='{"days": 7}', Cookie=token, Origin=origin, Content_Type="application/json").text)
+        assert made["link"].startswith(f"https://{ADDRESS}/p/#")
+        phone_headers = {"Origin": origin, "X-Phone": "1", "Content-Type": "application/json"}
+        paired = apart.call("POST", "/p/pair", body=json.dumps({"code": made["link"].rsplit("#", 1)[1], "device": "phone"}), **phone_headers)
+        key = paired.headers["set-cookie"].split(";")[0]
+        assert apart.call("GET", "/p/state", Cookie=key).status == 200
+        assert Phones(hosted.record, actor=SYSTEM).load(made["n"]).key == KEPT_ELSEWHERE and str(made["n"]) in Vault(root).read(PHONES)
+        Features(hosted.record, actor=USER).switch(HostedJournalDetails.name, False)
+        assert apart.call("GET", "/login").status == 200 and apart.call("POST", "/api/run", body="{}", Cookie=token, Origin=origin).status == 403
+    finally:
+        child.terminate()
+        child.wait(APART_WAIT)
