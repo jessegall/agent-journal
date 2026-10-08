@@ -237,8 +237,10 @@ class Helpers(Controller):
     @staticmethod
     def _relayed(home: Record, row: Helper, text: str, given_back_text: str) -> None:
         message = Messages(home, actor=AGENT).create(titled(text), brief=f"{text}{given_back_text}", peer=row.name)
+        lacking = unlanded(home, row)
+        named = f"; this branch has commits {', '.join(lacking)} that {PROJECT_NAME} lacks" if lacking else ""
         Nudges(home, actor=SYSTEM).to_primary(titled(f"helper {row.n}, {row.name}, reported in message {message.n}"),
-                                               f"read it, then journal helper finish {row.n} once its work is taken or dropped",
+                                               f"read it, then journal helper finish {row.n} once its work is taken or dropped{named}",
                                                asks="helpers.reported", until=["helper.completed", "helper.deleted"], rows=[row.ref])
 
     @action(network=True)
