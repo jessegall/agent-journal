@@ -551,8 +551,9 @@ def get_search(req: Request) -> Reply:
     record = req.record()
     want = term.lower()
     out = []
+    archived = req.query.get("archived") == "true"
     for type_ in listed_types():
-        for r in CONTROLLERS[type_](record, actor=USER).search(term):
+        for r in CONTROLLERS[type_](record, actor=USER).search(term, archived):
             matches = [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name, safe='')}"}
                        for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
             out.append({**shaped(r, req.record(), VIEWER), "matches": matches})

@@ -72,14 +72,17 @@ def attic_text(record, term: str) -> str:
     return f"{lines}\nbring one back with journal environment unarchive <name>"
 
 
-def search_text(record, term: str, page: int) -> str:
+def search_text(record, term: str, page: int, archived: bool = False) -> str:
     want = term.lower()
     transcript_matches = "\n".join(turn_text(hit.turn, f"{hit.provider}:{hit.session}  ")
                                    for hit in search_transcript(environment_transcript(record), term, page))
     file_hits = [f"  file  {r.ref}  {name}" + (f" — {tags}" if tags else "")
                  for type_, controller in CONTROLLERS.items() for r in controller(record).rows.every()
                  for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
-    return "\n".join(part for part in (transcript_matches, "\n".join(file_hits)) if part)
+    archived_hits = [f"  archived  {r.ref}  {r.title}  (bring back with journal {r.type} restore {r.n})"
+                     for controller in CONTROLLERS.values() if archived
+                     for r in controller(record).search(term, archived=True) if r.deleted]
+    return "\n".join(part for part in (transcript_matches, "\n".join(file_hits), "\n".join(archived_hits)) if part)
 
 def switched(ctx, on: bool) -> str:
     if on:

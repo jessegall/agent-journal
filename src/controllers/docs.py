@@ -45,8 +45,8 @@ class Docs(Controller):
         return not row.hidden
 
     @action
-    def search(self, term: str):
-        return [r for r in super().search(term) if not r.hidden]
+    def search(self, term: str, archived: bool = False):
+        return [r for r in super().search(term, archived) if not r.hidden]
 
     @action
     def file(self, title: str, path: str):

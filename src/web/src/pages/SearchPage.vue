@@ -13,6 +13,8 @@ import ResourceCard from "../resource/ResourceCard.vue";
 const q = ref(route.value.q);
 const hits = ref([]);
 const attic = ref(false);
+const archived = ref(false);
+const brought = ref({});
 const removed = ref([]);
 const restored = ref({});
 const searching = ref(false);
@@ -32,11 +34,16 @@ async function run() {
         return;
     }
     try {
-        const [found, archived] = await Promise.all([api.search(query), attic.value ? api.searchAttic(query) : []]);
-        if (current === request) [hits.value, removed.value] = [found, archived];
+        const [found, gone] = await Promise.all([api.search(query, archived.value), attic.value ? api.searchAttic(query) : []]);
+        if (current === request) [hits.value, removed.value] = [found, gone];
     } finally {
         if (current === request) searching.value = false;
     }
+}
+
+async function restore(r) {
+    await api.restore(r.type, r.n);
+    brought.value = {...brought.value, [r.ref]: true};
 }
 
 async function bringBack(name) {
@@ -44,7 +51,7 @@ async function bringBack(name) {
     restored.value = {...restored.value, [name]: true};
 }
 
-watch(attic, run);
+watch([attic, archived], run);
 
 watch(
     () => route.value.q,
@@ -68,7 +75,10 @@ watch(
                 @input="q = $event.target.value"
             />
         </form>
-        <Switch class="attic-switch" :on="attic" word="Include removed environments" @change="(on) => (attic = on)" />
+        <div class="switches">
+            <Switch :on="archived" word="Include archived items" @change="(on) => (archived = on)" />
+            <Switch :on="attic" word="Include removed environments" @change="(on) => (attic = on)" />
+        </div>
         <template v-if="searching">
             <CardSkeleton class="cards" />
         </template>
@@ -79,6 +89,17 @@ watch(
             <template v-for="r in hits" :key="r.ref">
                 <div :class="['hit', {filed: r.matches.length}]">
                     <ResourceCard :resource="r" @click="peek(r.type, r.n)" />
+                    <template v-if="r.deleted">
+                        <div class="archived">
+                            <span>Archived</span>
+                            <template v-if="brought[r.ref]">
+                                <small>Brought back</small>
+                            </template>
+                            <template v-else>
+                                <Btn small @click="restore(r)">Bring back</Btn>
+                            </template>
+                        </div>
+                    </template>
                     <template v-if="r.matches.length">
                         <div class="matches">
                             <template v-for="f in r.matches" :key="f.name">
@@ -143,8 +164,20 @@ watch(
     margin: 16px 0;
 }
 
-.attic-switch {
+.switches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
     margin-top: 12px;
+}
+
+.archived {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 4px 0;
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .removed-head {

@@ -106,6 +106,15 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     assert refused(lambda: messages.tag(message.n, "missing.png", "nothing")) == "message 1 has no file missing.png", \
         "unknown files cannot be tagged"
 
+    messages.delete(message.n, "cleaning up")
+    assert messages.search("three regions") == [], "search leaves archived rows out by default"
+    assert [r.n for r in messages.search("three regions", archived=True)] == [message.n], "search finds an archived row when asked"
+    assert "archived  message:1  look at this  (bring back with journal message restore 1)" in search_text(record, "three regions", 0, archived=True), \
+        "journal search --archived says the hit is archived and how to bring it back"
+    assert dispatch("GET", "/api/t/search", record.root, {"q": "three regions", "archived": "true"}, {}).body[0]["deleted"], \
+        "viewer search marks an archived hit"
+    messages.restore(message.n)
+
     text = folder / "notes.txt"
     text.write_text("notes")
     messages.attach(message.n, str(text))
