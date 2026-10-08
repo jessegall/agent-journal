@@ -25,7 +25,7 @@ import {scopeIn} from "../composables/scope.js";
 import {useTranscript} from "../composables/transcript.js";
 import {INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
 import {levelOf} from "../domain/verbosity.js";
-import {plainRefusal, sessionRow} from "../domain/agents.js";
+import {agentOf, plainRefusal} from "../domain/agents.js";
 import {age} from "../format/time.js";
 import {pollKey, usePoll} from "../composables/poll.js";
 import {PAGE, holding, rows} from "../sync/rows.js";
@@ -77,7 +77,7 @@ usePoll(
     pollKey(),
     () => (!props.agent && elsewhere ? there.list("agent", {last: 20, completed: true}) : Promise.resolve(null)),
     EVERY,
-    (got) => got && (found.value = sessionRow(got.rows, props.chatSession))
+    (got) => got && (found.value = agentOf(got.rows, props.chatSession, props.kind === "helper"))
 );
 const agent = computed(() => props.agent || found.value);
 
