@@ -103,6 +103,11 @@ describe("the time a wait has lasted", () => {
         expect(wait.items.map((item) => item.out)).toEqual(["14m 00s"]);
     });
 
+    test("a run the agent no longer lists has ended, so the list and the mark agree that the wait is over", () => {
+        const wait = waitingFor({text: "the suite", on: "gone", since: NOW - 1440}, {runs: [], now: NOW});
+        expect(wait.items.map((item) => item.reported)).toEqual([true]);
+    });
+
     test("an idle orchestrator stays Idle and says how many helpers work", () => {
         expect(wordOf(stateOf(agent(), []))).toBe("Idle");
         expect(lineOf(agent(), [], false, [], 4)).toBe("Helpers: 4");
