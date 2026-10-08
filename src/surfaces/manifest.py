@@ -42,6 +42,10 @@ class Manifest(TypedDict):
     chat_kinds: dict[str, dict[str, str]]
 
 
+def built_in() -> dict:
+    return {"types": described_types(), "chat_kinds": {"recalled": RECALLED, "marked": MARKED}}
+
+
 def manifest(root: Path) -> Manifest:
     return {
         "project": root.resolve().parent.name,
@@ -55,8 +59,7 @@ def manifest(root: Path) -> Manifest:
         "priority": priority(),
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
-        "types": described_types(),
         "features": catalogue(features.describe(), Record(root, runtime.env(root))),
         "groups": groups.describe(),
-        "chat_kinds": {"recalled": RECALLED, "marked": MARKED},
+        **built_in(),
     }

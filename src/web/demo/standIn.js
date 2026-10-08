@@ -46,6 +46,11 @@ export class StandIn {
         return this.moments[this.state.at];
     }
 
+    get manifest() {
+        const {types, ...parts} = this.demo.builtIn;
+        return {...this.moment.manifest, ...parts, types: {...types, ...this.moment.manifest.types}};
+    }
+
     fresh(at) {
         const {rows, events, settings} = structuredClone(this.moments[at]);
         const sent = this.state ? this.state.sent : {};
@@ -141,7 +146,8 @@ export class StandIn {
     }
 
     top(name) {
-        const {manifest, identity, pages, agents} = this.moment;
+        const {identity, pages, agents} = this.moment;
+        const {manifest} = this;
         return {
             manifest,
             identity,
@@ -184,7 +190,7 @@ export class StandIn {
         if (second === "bar") return this.moment.bar;
         if (second === "family") return this.moment.family;
         if (second === "agent" && parts[3] === "edits") return this.edits(third, parts[4], query);
-        if (!this.moment.manifest.types[second]) return undefined;
+        if (!this.manifest.types[second]) return undefined;
         if (!third) return this.list(second, query);
         const row = this.held(second).find((r) => r.n === Number(third));
         return row && stripped(row);
@@ -216,7 +222,7 @@ export class StandIn {
         if (second === "settings") return this.change(() => this.saved(body));
         if (second === "mode")
             return this.change(() => (this.state.settings.work_modes = {...this.state.settings.work_modes, mode: body.mode}));
-        if (parts.length === 1 || !this.moment.manifest.types[second]) return undefined;
+        if (parts.length === 1 || !this.manifest.types[second]) return undefined;
         if (!third) return this.create(second, body);
         if (third === "linked_to") return [];
         const row = this.held(second).find((r) => r.n === Number(third));

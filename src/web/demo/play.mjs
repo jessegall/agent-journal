@@ -6,6 +6,8 @@ const browser = await chromium.launch({channel: "chrome"});
 const page = await browser.newPage();
 const errors = [];
 page.on("pageerror", (error) => errors.push(String(error)));
+const MISSING_FILE = /^(Failed to load resource|A bad HTTP response code)/;
+page.on("console", (line) => line.type() === "error" && !MISSING_FILE.test(line.text()) && errors.push(line.text()));
 await page.addInitScript(() => {
     const seen = (globalThis.dumpWindow = {opened: false, items: 0, closed: false});
     setInterval(() => {
@@ -72,9 +74,14 @@ const got = await page.evaluate(() => ({
     dumpWindow: globalThis.dumpWindow,
     todos: demo.state.rows.todo.map((row) => !!row.completed),
     text: document.body.innerText,
+    lastAgentMessage: (demo.state.rows.comment.filter((row) => row.seen[0] === "agent").at(-1) || {}).brief || "",
     cards: document.querySelectorAll(".diff-card").length,
     panes: [...document.querySelectorAll(".pane-tab")].map((tab) => tab.title),
 }));
+const words = (got.lastAgentMessage.split("\n\n").pop() || "").split(/\[\[[^\]]*\]\]/);
+const showing = words.reduce((best, part) => (part.length > best.length ? part : best), "").replace(/\s+/g, " ").trim().slice(0, 30);
+const onScreen = !!showing && got.text.replace(/\s+/g, " ").includes(showing);
+if (!onScreen) errors.push(`the last agent message is not on screen: ${showing}`);
 console.log(JSON.stringify({...got, moves: done, refused, errors}));
 await browser.close();
 if (errors.length || !got.finished) process.exitCode = 1;
