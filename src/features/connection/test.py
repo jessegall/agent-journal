@@ -360,3 +360,29 @@ def test_the_sync_routes_are_safe_to_ask_twice_name_who_holds_an_environment_and
     unnamed = fresh()
     Features(unnamed, actor=USER).switch("connection", True)
     assert "name the server first" in refused(lambda: Environments(unnamed, actor=USER).action("sync")()), "syncing with no server named says how to name one"
+
+
+def test_every_connection_command_reaches_the_server_its_settings_name(monkeypatch):
+    from controllers.invoke import invoked
+    from controllers.types import Environments, Features
+    from features.connection import commands
+    features.load()
+    record = fresh()
+    Features(record, USER).switch("connection", True)
+    server = Server(record.root)
+    monkeypatch.setattr(commands, "transport_for", lambda record, address: server)
+    monkeypatch.setattr(commands, "push", lambda project, machine: Pushed(("platform",), ("notes",)))
+    monkeypatch.setattr(commands, "pull", lambda project, name: ["a.py", "b.py"])
+    run = lambda word, *given: invoked(Environments(record, actor=AGENT), word, given)
+    as_you = lambda word, *given: invoked(Environments(record, actor=USER), word, given)
+    assert "name the server first" in refused(lambda: run("sync")), "nothing is sent before a server is named"
+    assert as_you("connect", "https://journal.example.org").startswith("connected: this journal is same of the server's release"), "connecting names how this copy stands"
+    assert Record(record.root, record.env).setting("connection", {})["address"] == "https://journal.example.org", "and keeps the address"
+    assert as_you("connect").startswith("connected"), "a second connect reads the address from the settings"
+    assert run("sync") == "sent 0 writes that waited, took in 0 events from the server", "a sync says what went each way"
+    assert as_you("hand", record.env, "server") == f"{record.env} is written by the server from epoch 1", "an environment handed over is written by the server"
+    assert as_you("hand", record.env, "here") == f"{record.env} is written by this machine from epoch 2", "an environment taken back is written here from the server's new epoch"
+    assert as_you("code_push") == "pushed 1 repositories, skipped notes (no git remote called hosted)", "a push names the repositories it could not push"
+    assert run("code_pull", "laptop") == "wrote 2 files from laptop", "a pull says how many files it wrote"
+    assert run("connection")["address"] == "https://journal.example.org", "the connection view names the server"
+    assert as_you("disconnect").startswith("disconnected") and run("connection")["connected"] is False, "disconnecting forgets the server"
