@@ -62,7 +62,7 @@ def test_the_integration_client_sends_its_key_only_to_its_own_host_and_masks_it_
     client = IntegrationClient(record.root, "https://api.linear.app", "LINEAR_KEY")
     assert "only to https://api.linear.app" in refused(lambda: client.post("https://example.com/graphql", {})), "another address is refused"
     assert "only to https://api.linear.app" in refused(lambda: client.post("//example.com/graphql", {})), "and so is one that only looks like a path"
-    assert client.masked("failed with lin_api_secret_value in it") == "failed with [secret LINEAR_KEY] in it", "an error never carries the key"
+    assert client.masker.masked_text("failed with lin_api_secret_value in it") == "failed with [secret LINEAR_KEY] in it", "an error never carries the key"
     assert "no key is picked" in refused(lambda: IntegrationClient(record.root, "https://api.linear.app", "").post("/graphql", {})), \
         "with no key picked nothing is sent"
     import socket

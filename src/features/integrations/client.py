@@ -58,14 +58,11 @@ class IntegrationClient:
         if self.stamp() != self.seen:
             self.read_key()
 
-    def masked(self, text: str) -> str:
-        return self.masker.masked(text.encode()).decode(errors="replace")
-
     def post(self, path: str, body: dict) -> Answer:
         """The service's answer, for the caller to read into its own typed values."""
         self.current()
         if not path.startswith("/") or urlsplit(path).netloc:
-            raise Refused(f"this integration sends its key only to {self.origin}, not to {self.masked(path)}")
+            raise Refused(f"this integration sends its key only to {self.origin}, not to {self.masker.masked_text(path)}")
         if not self.key:
             raise Refused("no key is picked, so nothing is sent")
         request = urllib.request.Request(self.origin + path, data=json.dumps(body).encode(), headers={"Content-Type": "application/json", "Authorization": self.key})
@@ -73,6 +70,6 @@ class IntegrationClient:
             with OPENER.open(request, timeout=self.timeout) as answer:
                 return Answer(answer.read().decode(), number(answer.headers.get(REMAINING), int, -1), number(answer.headers.get(RESET), float, 0.0))
         except urllib.error.HTTPError as error:
-            raise Refused(self.masked(f"{self.origin} answered {error.code}: {error.read().decode(errors='replace')[:200]}")) from None
+            raise Refused(self.masker.masked_text(f"{self.origin} answered {error.code}: {error.read().decode(errors='replace')[:200]}")) from None
         except OSError as error:
-            raise Refused(self.masked(f"could not reach {self.origin}: {error}")) from None
+            raise Refused(self.masker.masked_text(f"could not reach {self.origin}: {error}")) from None

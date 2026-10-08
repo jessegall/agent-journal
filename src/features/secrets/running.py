@@ -47,6 +47,9 @@ class Masker:
             text = text.replace(form, mask)
         return text
 
+    def masked_text(self, text: str) -> str:
+        return self.masked(text.encode()).decode(errors="replace")
+
 
 NO_PROGRAMS = "this secret lists no programs, so it is given to none: the user names the programs it may go to on the Secrets page"
 

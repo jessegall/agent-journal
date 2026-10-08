@@ -42,7 +42,7 @@ def read_state(root: Path, name: str) -> IntegrationState:
 def write_state(root: Path, name: str, state: IntegrationState) -> None:
     """The one place state is written, so no writer can store a secret's value in the error."""
     masker = Masker({value: variable for variable, value in ValuesFile(root).values().items() if value})
-    state = replace(state, last_error=masker.masked(state.last_error.encode()).decode(errors="replace"))
+    state = replace(state, last_error=masker.masked_text(state.last_error))
     path = state_file(root, name)
     path.parent.mkdir(parents=True, exist_ok=True)
     write_json(path, asdict(state))
