@@ -2,6 +2,7 @@ import importlib.util
 import pickle
 import pkgutil
 import time
+from copy import deepcopy
 from functools import cache
 from threading import Lock, Thread, get_ident
 from pathlib import Path
@@ -16,6 +17,8 @@ KEEP_TRANSCRIPT_EVERY = 300.0
 SEAM = 256
 RECENT_BYTES = 1_000_000
 RECENT_ROWS = 1000
+FOLD_WAIT = 0.2
+FOLD_IN_PLACE_BYTES = 4_000_000
 
 
 SHAPED_BY = ("engine.transcript",)
@@ -126,16 +129,47 @@ class TranscriptCache:
         size = size_of(path)
         if size is None:
             return start()
-        with self.lock(key):
-            offset, state = self.folds.pop(key, None) or self.stored(key) or (0, start())
-            if size < offset:
-                offset, state = 0, start()
-            if size > offset:
-                lines, offset = complete_lines(path, offset)
-                for found in rows(lines, row_of):
-                    state = fold(state, found)
-                self.keep(key, offset, state, KEEP_EVERY)
-            self.folds[key] = (offset, state)
+        offset, state = self.last(key, start)
+        if size - offset > FOLD_IN_PLACE_BYTES:
+            self.fold_behind(key, path, fold, start, row_of)
+            return state
+        lock = self.lock(key)
+        if not lock.acquire(timeout=FOLD_WAIT):
+            return state
+        try:
+            return self.fold_up(key, path, fold, start, row_of)
+        finally:
+            lock.release()
+
+    def last(self, key: tuple, start) -> tuple:
+        if key not in self.folds:
+            self.folds[key] = self.stored(key) or (0, start())
+        return self.folds[key]
+
+    def fold_behind(self, key: tuple, path: Path, fold, start, row_of: Callable) -> None:
+        lock = self.lock(key)
+        if not lock.acquire(blocking=False):
+            return
+
+        def run() -> None:
+            try:
+                self.fold_up(key, path, fold, start, row_of)
+            finally:
+                lock.release()
+        Thread(target=run, daemon=True).start()
+
+    def fold_up(self, key: tuple, path: Path, fold, start, row_of: Callable):
+        offset, state = self.last(key, start)
+        size = size_of(path) or 0
+        if size < offset:
+            offset, state = 0, start()
+        if size > offset:
+            lines, offset = complete_lines(path, offset)
+            state = deepcopy(state)
+            for found in rows(lines, row_of):
+                state = fold(state, found)
+            self.keep(key, offset, state, KEEP_EVERY)
+        self.folds[key] = (offset, state)
         return state
 
 

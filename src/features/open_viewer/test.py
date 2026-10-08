@@ -338,6 +338,33 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     from controllers.types import Todos
     from resources.base import USER
     record = fresh()
+    import os
+    import socket
+    import threading
+    from commands import http
+    from serve import Handler, JournalServer
+    monkeypatch.setattr(http, "STREAM_BEAT", 0.05)
+    monkeypatch.setattr(Handler, "root", record.root)
+    server = JournalServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    hook = json.dumps({"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read", "tool_input": {"file_path": "x.py"}})
+    asked = {"stream": f"GET /api/{record.env}/stream HTTP/1.1\r\nHost: 127.0.0.1:{server.server_port}\r\n\r\n",
+             "hook": f"POST /api/hook/claude?root={record.root}&env={record.env}&pid=0 HTTP/1.1\r\nHost: 127.0.0.1:{server.server_port}\r\n"
+                     f"Content-Type: application/json\r\nContent-Length: {len(hook)}\r\n\r\n{hook}"}
+    try:
+        open_before = len(os.listdir("/dev/fd"))
+        for _ in range(5):
+            for request in asked.values():
+                with socket.create_connection(("127.0.0.1", server.server_port), timeout=5) as dropped:
+                    dropped.sendall(request.encode())
+                    dropped.recv(64)
+        waited = time.monotonic() + 5
+        while len(os.listdir("/dev/fd")) > open_before and time.monotonic() < waited:
+            time.sleep(0.05)
+        assert len(os.listdir("/dev/fd")) <= open_before, "every connection a viewer or a hook drops is closed by the server, a live stream included"
+    finally:
+        server.shutdown()
+        server.server_close()
     ask = lambda method, path, query=None, body=None: dispatch(method, path, record.root, query or {}, body or {})
     assert ask("GET", f"/api/{record.env}/settings").code == 200 and ask("POST", f"/api/{record.env}/settings", body={"ask_questions": {"hold": 1}}).code == 200, \
         "the settings are read and written through the viewer"

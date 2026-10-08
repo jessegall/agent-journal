@@ -83,6 +83,7 @@ def unanswered(root: Path) -> None:
 
 
 TRANSCRIPT_PAGE = 300
+STREAM_BEAT = 15.0
 
 @dataclass(frozen=True)
 class HookQuery(Loaded):
@@ -579,7 +580,7 @@ def get_stream(req: Request) -> Reply:
             yield b": open\n\n"
             while True:
                 try:
-                    e = queue.get(timeout=15)
+                    e = queue.get(timeout=STREAM_BEAT)
                     yield f"id: {e.id}\ndata: {json.dumps(e.to_json())}\n\n".encode()
                 except Empty:
                     yield b"event: beat\ndata: keep\n\n"
