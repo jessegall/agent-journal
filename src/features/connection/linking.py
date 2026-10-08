@@ -6,7 +6,7 @@ from pathlib import Path
 from controllers.types import Notices
 from engine.handover import accept, epoch_of, give, ready_to_give
 from engine.machines import Lease, this_machine
-from engine.offline import Waiting
+from engine.offline import Waiting, Write
 from engine.record import Record
 from engine.sync import PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay, travels
 from engine.version import version
@@ -81,7 +81,9 @@ def heard(transport: Transport) -> Hello:
 def sync(record, transport: Transport) -> dict:
     """Sends what was written here while the server was away, oldest first, then takes in what happened on the server in the scopes it holds, without firing features."""
     epoch = heard(transport).shape.epoch
-    sent = Waiting(record.root).flush(transport.send)
+    flushed = Waiting(record.root).flush(transport.send)
+    if flushed.refused:
+        notice_refused(record, flushed.refused)
     if heard(transport).shape.epoch != epoch:
         raise Refused("the server has a new epoch since this sync began, so nothing is taken in; connect again to pull everything")
     pulled = 0
@@ -91,7 +93,13 @@ def sync(record, transport: Transport) -> dict:
     if not record.holds(PROJECT):
         pulled += replay(record, PROJECT, transport.events(PROJECT, record.env, record.event_log.cursor(pulled_cursor(PROJECT))))
     record.state(STATE).set("synced_at", time.time())
-    return {"sent": sent, "pulled": pulled}
+    return {"sent": flushed.sent, "pulled": pulled}
+
+
+def notice_refused(record, refused: tuple[Write, ...]) -> None:
+    turned_down = "\n".join(f"- {held.type} {held.word} {' '.join(map(str, held.args))}" for held in refused)
+    Notices(record, actor=SYSTEM).create("The server turned down changes made here", tone="warn",
+                                         brief=f"The server refused these changes, so they were set aside and the changes after them went on:\n{turned_down}")
 
 
 def what_travels(root: Path) -> Travelling:
