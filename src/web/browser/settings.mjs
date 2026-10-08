@@ -52,9 +52,11 @@ await runScenarios(process.argv[2], {
     async "stopping the journal shows a spinner on Stop, then closes the tab or says the journal is stopped"(page, url) {
         let answer;
         await page.route(/\/api\/stop$/, (route) => new Promise((resolve) => (answer = () => (reply(route, {}), resolve()))));
-        await page.goto(`${url}#/main/settings?q=Stop the journal`);
+        await page.goto(`${url}#/main/settings?sub=system`);
         const stop = page.getByRole("button", {name: "Stop", exact: true});
-        await stop.click();
+        await stop.click({timeout: 5000}).catch(async () => {
+            throw new Error(`no Stop button; page reads: ${(await page.locator("body").innerText()).replace(/\s+/g, " ").slice(0, 600)}`);
+        });
         await page.waitForFunction(() => document.querySelector("button[data-busy]"), null, {timeout: 5000}).catch(() => {
             throw new Error("Stop showed no spinner while the server had not answered");
         });
