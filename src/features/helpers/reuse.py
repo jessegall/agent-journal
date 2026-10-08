@@ -12,6 +12,7 @@ from features.helper_worktrees.controller import KEPT, Worktrees
 from features.helpers.state import HelperAgent, HelperSnapshot, WorkState, helper_state
 from providers import PROVIDERS
 from resources.base import SYSTEM
+from features.settings import Settings
 
 PATH = re.compile(r"[\w.-]+(?:/[\w.-]+)+\.\w+|\b[\w-]+\.(?:py|js|ts|vue|md|json|toml|css|sh)\b")
 FRESH = ("review", "critic", "audit", "verifier")
@@ -144,10 +145,11 @@ def kept(record, helpers: list) -> list[Kept]:
     return [*(helper_kept(record, row) for row in helpers if agent_runs(record, row)), *(subagents_kept(record, primary) if primary else [])]
 
 
-def refusal(census: list[Kept], per_type: int, at_once: int, kind: str, paths: tuple[str, ...]) -> str:
+def refusal(census: list[Kept], limits: Settings, kind: str, paths: tuple[str, ...]) -> str:
     """Why a new agent of this kind starts later: the project allows only so many agents working at once, and only so many of one kind kept for reuse; an idle agent of another kind never has to go."""
     if is_fresh_kind(kind):
         return ""
+    per_type, at_once = int(limits.kept), int(limits.working)
     busy = [k for k in census if not k.idle]
     if at_once and len(busy) >= at_once:
         working = "\n".join(f"- {k.name} ({k.job})" for k in busy)

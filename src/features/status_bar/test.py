@@ -210,10 +210,11 @@ def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(
     assert [(w.key, w.used, w.resets) for w in usage] == [("five_hour", 42.0, 1791300000)], "the status line's rate limits come back as usage windows"
     assert claude.reported(tmp_path / "s-9.jsonl", "context_window") == {"context_window_size": 1000000}, "and its context window size"
     from features.status_bar.usage import observe
-    kept = observe("claude", str(tmp_path / "s-9.jsonl"), {}, now=1791200000)
+    reported, unread = str(tmp_path / "s-9.jsonl"), str(tmp_path / "none.jsonl")
+    kept = observe("claude", reported, {}, now=1791200000)
     assert [w["key"] for w in kept["windows"]] == ["five_hour"], "a window that has not reset yet is kept on the agent"
-    assert observe("claude", str(tmp_path / "s-9.jsonl"), kept, now=1791400000) == {"windows": []}, "a window past its reset time is dropped"
-    assert (observe("claude", str(tmp_path / "none.jsonl"), kept), observe("claude", str(tmp_path / "none.jsonl"), {})) == ({}, None), \
+    assert observe("claude", reported, kept, now=1791400000) == {"windows": []}, "a window past its reset time is dropped"
+    assert (observe("claude", unread, kept), observe("claude", unread, {})) == ({}, None), \
         "an agent whose usage can no longer be read has its old windows cleared, and one that never had any is left alone"
     project = tmp_path / "project"
     (project / ".claude").mkdir(parents=True)

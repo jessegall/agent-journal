@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from controllers.types import Agents, Plugins, Todos
 from engine.gates import Hold, hold
 from resources.fields import Loaded
-from features.plugins.declared import declared, named, settings_of, settings_choosing
+from features.plugins.declared import Look, declared, named, settings_of, settings_choosing
 from resources.base import PLUGIN, PROJECT, RAISED, Refused, SYSTEM, check_abstract, check_title
 
 KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "raise")
@@ -32,14 +32,6 @@ class Posting(Loaded):
         return cls.from_json(value)
 
 
-@dataclass(frozen=True)
-class Look:
-    label: str
-    icon: str
-    tone: str
-    color: str
-
-
 def held(record, session: str, plugin: str, why: str) -> None:
     hold(record, session, f"{HELD}:{plugin}", Hold(why))
 
@@ -60,8 +52,7 @@ def raised(record, plugin: str, session: str, asked: Posting) -> None:
     record.emit("plugin", row.n, RAISED, PLUGIN, scope=PROJECT, event=f"{plugin}.{name}", title=title, tone=event.tone, brief=asked.brief, plugin=plugin,
                 collapsed=event.collapsed)
     if event.card:
-        card = event.card
-        carded(record, session, plugin, Look(card.label if card.label else title, card.icon, card.tone if card.tone else event.tone, card.color), asked.brief,
+        carded(record, session, plugin, event.look(title), asked.brief,
                asked.open, asked.key)
 
 

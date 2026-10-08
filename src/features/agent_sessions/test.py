@@ -86,7 +86,6 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     moved.switch(moved.create("u").n)
     assert (sessions.environment("conversation-9"), sessions.environment("claude-7272")) == ("u", "u"), \
         "a switch moves the agent's terminal session with it, so the new environment's engine drives it"
-    moved.switch(moved.by_title("u").n) if False else None
     import os
     from tests.kit import asked_for
     from engine.record import Record

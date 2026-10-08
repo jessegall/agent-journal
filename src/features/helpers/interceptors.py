@@ -75,7 +75,7 @@ class OfferKeptAgentsFirst(Canceler):
 
     def cancel(self, context: AgentContext, dispatch) -> str:
         census = kept(context.record, Helpers(context.record, actor=SYSTEM).rows.standing())
-        return refusal(census, int(context.settings.kept), int(context.settings.working), dispatch.kind or "subagent",
+        return refusal(census, context.settings, dispatch.kind or "subagent",
                        named_paths(f"{dispatch.description}\n{dispatch.prompt}"))
 
 

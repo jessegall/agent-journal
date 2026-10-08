@@ -119,7 +119,7 @@ class Configure(Command):
     def runs_commands(self, controller, arguments: Arguments) -> bool:
         row = controller.load(arguments.n)
         setting = declared(row).setting(arguments.key)
-        return setting is not None and setting.runs_commands and str(arguments.value) != str(settings_of(row).chosen.get(arguments.key, setting.default))
+        return setting is not None and setting.is_command and str(arguments.value) != str(settings_of(row).chosen.get(arguments.key, setting.default))
 
 
 class Raise(Command):

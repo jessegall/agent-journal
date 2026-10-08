@@ -12,7 +12,7 @@ from urllib.request import urlopen
 
 from features.format import rendered
 from features.routing import resolve
-from engine.disk import KEPT_FREE_BYTES, free_bytes, nearly_full
+from engine.disk import KEPT_FREE_BYTES, DiskFull, free_bytes, nearly_full
 from engine.record import Record
 from features.phone.controller import Phones
 from engine.color import identity
@@ -24,7 +24,7 @@ from features.hosted_journal.people import people_of
 from features.hosted_journal.hosting import Ask, Hosting
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page, taken_down_page
 from features.hosted_journal.phones import VaultGuard
-from features.hosted_journal.vault import DiskFull, RefusalLog, Vault
+from features.hosted_journal.vault import RefusalLog, Vault
 from features.phone.allow_list import Action, GenericPath, Page, post, reach
 from features.phone.desktop import Desktop, closed, encoded
 from features.sharing.origins import origins_of
@@ -241,8 +241,7 @@ class Gateway:
     def get(self, handler, rest: list[str]) -> None:
         self.serve(Visit(handler, self.refusals, self.settings))
 
-    def post(self, handler, rest: list[str]) -> None:
-        self.serve(Visit(handler, self.refusals, self.settings))
+    post = get
 
     def serve(self, visit: Visit) -> None:
         if not visit.secure():
