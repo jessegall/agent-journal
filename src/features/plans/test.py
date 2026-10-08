@@ -321,10 +321,18 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     report(record, "working", "PreToolUse")
     tick(record)
     assert asked() == 2, "once the minutes are up, a tool use asks again, and the clock right after does not"
-    Todos(record, actor=SYSTEM).update(2, assigned="rhea")
     third = approved("third", "four")
     by_user.start(third)
-    assert (status(first)[0], status(third)[0]) == ("active", "active"), "a plan whose current phase is with a helper keeps running beside the one started"
+    assert status(first)[0] == "parked", "a plan nobody has delegated is parked when another starts"
+    by_user.start(first)
+    by_agent.delegate(first)
+    fourth = approved("fourth", "five")
+    by_user.start(fourth)
+    assert (status(first)[0], status(fourth)[0]) == ("active", "active"), "a delegated plan keeps running beside the one started"
+    from features.plans.summary import plans_shown
+    assert next(p for p in plans_shown(record) if p["n"] == first)["delegated"] is True, "the viewer is told which plans are delegated"
+    by_agent.delegate(first, off=True)
+    assert not by_agent.load(first).delegated, "delegate --off clears the flag"
 
 
 def test_claude_plan_mode_is_refused_for_a_journal_plan():

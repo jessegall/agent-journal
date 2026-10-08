@@ -175,7 +175,7 @@ class Plans(Controller):
         self._allowed(r, ACTIVE, APPROVED, PARKED)
         first_start = r.status == APPROVED
         for other in self.rows.every():
-            if other.n != r.n and other.status in RUNNING and not self._helped(other):
+            if other.n != r.n and other.status in RUNNING and not other.delegated:
                 self._status(self.load(other.n), PARKED, *RUNNING, parked_for=r.n)
         started = self._status(r, ACTIVE, APPROVED, PARKED)
         if first_start:
@@ -183,6 +183,17 @@ class Plans(Controller):
                 begin(self.record, started)
         self._start_phase(started)
         return started
+
+    @action
+    def delegate(self, n: int, off: bool = False):
+        return self.update(int(n), delegated=not off)
+
+    @action
+    def delegate_row(self, todo: int):
+        row = Todos(self.record, actor=self.actor).load(todo)
+        for plan in self._running():
+            if plan.has_in_phase(row):
+                self.delegate(plan.n)
 
     @action
     def dismiss(self, n: int):
@@ -260,10 +271,6 @@ class Plans(Controller):
             rows = kind(self.record, actor=self.actor)
             found += [rows.rows.peek(int(n)) for n in phase.get(key, []) if rows.rows.exists(int(n))]
         return found
-
-    def _helped(self, plan) -> bool:
-        phase = plan.current_phase
-        return phase is not None and any(row.type != "todo" or row.assigned for row in self._members(phase) if not row.completed)
 
     def _complete(self, phase: dict) -> bool:
         return all(row.completed for row in self._members(phase))

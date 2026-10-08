@@ -17,6 +17,7 @@ from features.parts import AgentContext
 from features.helper_worktrees.controller import Worktrees
 from tests.kit import project_on, run
 from features.helpers.controller import Helpers
+from features.plans.controller import Plans
 from features.helpers.interceptors import KeepSubagentFiles, OfferKeptAgentsFirst
 from features.helpers.reuse import kept
 from providers.payload import Dispatch
@@ -199,7 +200,14 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     todos = Todos(repo.record, actor=AGENT)
     fixed, dropped, left = (todos.create(title).n for title in ("fix the tunnel", "name the cause", "test the dialog"))
     helpers = Helpers(repo.record, actor=AGENT)
+    plans = Plans(repo.record, actor=AGENT)
+    plan = plans.create("Tunnel work")
+    plans.phase(plan.n, "Fix", when="fixed")
+    plans.place(plan.n, 1, [fixed])
+    plans.update(plan.n, status="active")
     helpers.dispatch("Rhea", "The tunnel", "codex", "gpt-5.5", worktree=True, todos=f"{fixed},{dropped},{left}")
+    from features.plans.summary import plans_shown
+    assert [(p["delegated"], [h["name"] for h in p["helpers"]]) for p in plans_shown(repo.record)] == [(True, ["Rhea"])], "handing a helper a row of a plan's current phase delegates the plan"
     row = helpers.load(1)
     helper = Helpers(Record(repo.record.root, row.environment), actor=AGENT)
     assert todos.load(fixed).assigned == row.ref and f"to-do {fixed}: fix the tunnel" in calls[0][3][-1], "the rows are handed over and the kickoff names them"
