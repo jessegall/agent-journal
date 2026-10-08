@@ -187,3 +187,5 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
         "releases are compared by number, not by text, and a copy behind is told which migrations it lacks"
     assert connect(Hello("2.266.0", Shape(PROTOCOL + 1, frozenset())), server) == Welcome(Release.AHEAD, Comparison(Step.PULL_AGAIN)), \
         "a copy with another protocol number pulls everything again, whichever release it is"
+    assert "too old" in refused(lambda: connect(Hello("2.100.0", Shape(0, frozenset())), server)), \
+        "a copy from before the sync carried its checks on what never travels is refused, not brought along"
