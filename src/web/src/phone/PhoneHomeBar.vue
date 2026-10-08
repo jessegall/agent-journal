@@ -4,6 +4,7 @@ import {computed} from "vue";
 import {SILENT, SILENT_WORD} from "../domain/agentState.js";
 import {agentCounts} from "../domain/helpers.js";
 import {phoneWaiting} from "./agentWait.js";
+import {useSharedNow} from "../composables/now.js";
 import {counted} from "../format/number.js";
 import PhoneAtWorkChip from "./PhoneAtWorkChip.vue";
 import Icon from "../kit/Icon.vue";
@@ -29,7 +30,8 @@ const jobs = computed(() => {
     return (props.feed.agent === "working" ? 1 : 0) + agentCounts(live.helpers || [], live.subagents || []).working;
 });
 const paused = computed(() => Boolean(props.feed.running?.paused));
-const waiting = computed(() => phoneWaiting(props.feed));
+const secondNow = useSharedNow();
+const waiting = computed(() => phoneWaiting(props.feed, secondNow.value));
 const agentWords = computed(() => {
     if (AGENT_WORDS[props.feed.agent]) return AGENT_WORDS[props.feed.agent];
     if (paused.value) return "Paused";

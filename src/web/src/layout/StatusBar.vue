@@ -89,7 +89,7 @@ const line = computed(() =>
         ? "held until you resume it"
         : silent.value
           ? "started, but it never reported in"
-          : lineOf(agent.value, rows("work"), waiting.value, helpers.value)
+          : waitingNow.value?.line || lineOf(agent.value, rows("work"), waiting.value, helpers.value)
 );
 const inspect = () => peek("work", current.value.n);
 const roll = (event) => (waitingNow.value && !paused.value ? toggleWaiting(event) : current.value && inspect());

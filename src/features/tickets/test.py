@@ -533,6 +533,7 @@ def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
     assert "title" in refused(lambda: drafting.update(made.n, title="t" * (CARD_TITLE + 1))), "a title too long for the card is refused"
     request = Boards(record, actor=USER).request(board.n, "I want to share")
     agent = Messages(record, actor=AGENT)
+    agent.read(request.n)
     assert "shorter" in refused(lambda: agent.reply(request.n, "y" * (PANEL_REPLY + 1))), "a reply the panel cannot show whole is refused"
     assert agent.reply(request.n, "Five tickets drafted, pick the ones to keep.").brief.endswith("pick the ones to keep."), "a short reply goes through"
 

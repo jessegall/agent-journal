@@ -36,6 +36,15 @@ export function span(seconds, exact = false) {
     return h < 24 ? `${h}h ${m}m` : `${Math.floor(h / 24)}d ${h % 24}h`;
 }
 
+const two = (n) => String(n).padStart(2, "0");
+
+export function elapsed(seconds) {
+    const s = Math.max(0, Math.floor(seconds || 0));
+    if (s < 60) return `${s}s`;
+    if (s < 3600) return `${Math.floor(s / 60)}m ${two(s % 60)}s`;
+    return `${Math.floor(s / 3600)}h ${two(Math.floor((s % 3600) / 60))}m ${two(s % 60)}s`;
+}
+
 export function stamp(at) {
     return at
         ? new Date(at * 1000).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"})

@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.258.0 — Waiting shows once and counts live, the agent's comment replies show in the chat, and an unread message cannot be answered
+- The edge around the message box travels at one steady speed while the agent waits. Its label reads Waiting with a small tag for what it waits on (subagent, helper, command or background run), and opens the list on a click; the bar above the message box no longer repeats it.
+- The time waited counts up live with seconds, such as 1m 07s, in the list, on the label and on the phone. The status at the top shows a pulsing orange dot instead of a spinner. In the list, each item's status sits level with its first line.
+- When the agent replies to your comment, the chat shows its reply as the same card your comment gets, on the agent's side, quoting your comment.
+- A closed row's outcome shows Closed on its own line above the text.
+- The agent can no longer answer a message it has not read: a reply, by command or by tag, is refused until it runs journal message read.
+
 ## 2.257.1 — Settings show no empty headings, and a list inside a panel is never cut off
 - The settings sidebar shows a heading only when something is listed under it, so System no longer stands alone.
 - A drop-down list, such as the unit in a "how often" panel, now opens above everything around it and stays on screen, and picking from it keeps the panel it opened from open.

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 
 from controllers.types import Comments, Messages, Nudges
+from resources.base import AGENT, USER
 from providers.payload import Chunk
 from runner.chat_mirror import displayed
 from engine.sessions import Sessions
@@ -23,6 +24,12 @@ def watching(record, transcript):
     return engine
 
 
+
+def asked_and_read(record, text, **more):
+    message = Messages(record, actor=USER).create(text, **more)
+    Messages(record, actor=AGENT).read(message.n)
+    return message
+
 def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
     transcript = tmp_path / "s.jsonl"
     now = datetime.now(timezone.utc).isoformat()
@@ -30,7 +37,7 @@ def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
     transcript.write_text(json.dumps(rows[0]) + "\n")
     record = fresh()
     engine = watching(record, transcript)
-    asked = Messages(record, actor="user").create("are you there?")
+    asked = asked_and_read(record, "are you there?")
     chat = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
 
     def text(text):
@@ -73,7 +80,7 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
         "the tags feature adds to the messages line; no second line follows"
     from controllers.types import Agents, Messages
     from resources.base import AGENT, USER
-    thanks, asked = Messages(record, actor=USER).create("Thank you, sir."), Messages(record, actor=USER).create("Thanks, but which branch?")
+    thanks, asked = asked_and_read(record, "Thank you, sir."), asked_and_read(record, "Thanks, but which branch?")
     assert counted({("message", "created"): {thanks.n: None}}, record) == \
         [f'1 new message {thanks.n} - message {thanks.n} only acknowledges: react to it with journal message react {thanks.n} "👍", no words needed'], \
         "a message that only acknowledges is answered with a reaction"
@@ -82,7 +89,7 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"
     record = fresh()
     Agents(record, actor=AGENT).by_session("claude-1")
-    Messages(record, actor=AGENT).read(Messages(record, actor=USER).create("how is it going?").n)
+    Messages(record, actor=AGENT).read(asked_and_read(record, "how is it going?").n)
     report(record, "idle", "Stop")
     assert any(n.brief.startswith("answer by opening your turn with [!reply:1]") for n in Nudges(record).all() if "before you write" in n.title), \
         "the line naming a read message still to answer says how to answer it, in its brief"
@@ -116,14 +123,14 @@ def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
     rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}},
             {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "[!info] working"}]}}]
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-    message = Messages(record, actor="user").create("are you there?")
+    message = asked_and_read(record, "are you there?")
     engine = watching(record, transcript)
     rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": f"[!reply:{message.n}] yes, here"}]}})
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     engine.announce_written()
     assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["yes, here"], \
         "written mid-turn, no hook fired: the reply is posted as soon as the engine sees it"
-    later = Messages(record, actor="user").create("still there?")
+    later = asked_and_read(record, "still there?")
     rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": f"[!reply:{later.n}] said while it restarted"}]}})
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     watching(record, transcript)
@@ -137,7 +144,7 @@ def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transc
     from resources.base import SYSTEM
     record = fresh()
     engine = watching(record, tmp_path / "none.jsonl")
-    message = Messages(record, actor="user").create("done yet?")
+    message = asked_and_read(record, "done yet?")
     stop = {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": f"[!reply:{message.n}] done"}
     for _ in range(2):
         handle(PROVIDERS["claude"](), record.root, record.env, stop)
@@ -151,13 +158,13 @@ def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_i
     record = fresh()
     report(record, "working", "PreToolUse")
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
-    message = Messages(record, actor="user").create("still there?")
+    message = asked_and_read(record, "still there?")
     base = {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "m1"}
     displayed(record.root, Chunk.from_json({**base, "index": 0, "final": False, "delta": f"[!reply:{message.n}] shown in two "}))
     displayed(record.root, Chunk.from_json({**base, "index": 1, "final": True, "delta": "pieces"}))
     displayed(record.root, Chunk.from_json({**base, "message_id": "m2", "index": 0, "final": True, "delta": f"[!reply:{message.n}] shown in two pieces"}))
     assert [c.title for c in Comments(record, actor="system").linked_to(message.ref)] == ["shown in two pieces"], "joined, posted once"
-    orphaned = Messages(record, actor="user").create("what if the first piece is missing?")
+    orphaned = asked_and_read(record, "what if the first piece is missing?")
     displayed(record.root, Chunk.from_json({**base, "message_id": "m3", "index": 1, "final": True, "delta": "the body without its tag"}))
     assert not [m for m in Messages(record, actor="system").all() if m.title == "the body without its tag"], "a stream without its first piece is not posted"
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": f"[!reply:{orphaned.n}]\nthe body without its tag"})
@@ -196,7 +203,7 @@ def test_one_reply_answers_several_messages():
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse")
-    first, second = (Messages(record, actor="user").create(text, brief=text) for text in ("Remove the plan.", "And write the document."))
+    first, second = (asked_and_read(record, text, brief=text) for text in ("Remove the plan.", "And write the document."))
     chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"[!reply:{first.n},{second.n}]\nYes, the plan goes and the document follows.")
     made = Comments(record, actor="system").all()
     assert len(made) == 1 and {first.ref, second.ref} <= set(made[0].refs), "one reply answers both messages"

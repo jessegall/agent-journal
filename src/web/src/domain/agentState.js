@@ -1,3 +1,4 @@
+import {elapsed} from "../format/time.js";
 import {helperEnvironment, helperName, helperState} from "./helpers.js";
 
 export const SILENT = "silent";
@@ -16,12 +17,13 @@ export function waitsFor(works) {
     return awaiting ? `for ${awaiting}` : "";
 }
 
-const RUN_KINDS = ["shell_rows", "subagent_rows", "monitor_rows"];
+const RUN_KINDS = {shell_rows: "command", subagent_rows: "subagent", monitor_rows: "background run"};
+const RUN_ROWS = Object.keys(RUN_KINDS);
 
 export function backgroundRun(agent) {
     if (!agent) return "";
     if (agent.data.background_run !== undefined) return agent.data.background_run;
-    const running = RUN_KINDS.flatMap((kind) => agent.data[kind] || []).find((entry) => entry.running);
+    const running = RUN_ROWS.flatMap((kind) => agent.data[kind] || []).find((entry) => entry.running);
     return running ? running.task || running.command || "a background run" : "";
 }
 
@@ -29,20 +31,15 @@ const HELPER = "helper:";
 const BACK = ["reported", "finished"];
 const countOf = (n) => `${n} ${n === 1 ? "helper" : "helpers"}`;
 
-const minutes = (since, now) => {
-    const m = Math.max(1, Math.floor((now - since) / 60));
-    return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h`;
-};
-
 function runItem(runs, ref, text) {
     const run = runs.find((entry) => [entry.task_id, entry.id].includes(ref));
-    return {label: run?.task || run?.command || text, where: "a background run", reported: Boolean(run) && !run.running};
+    return {label: run?.task || run?.command || text, where: "", kind: run?.kind || "background run", reported: Boolean(run) && !run.running};
 }
 
 function helperItem(helpers, ref) {
     const row = helpers.find((h) => `${HELPER}${h.n}` === ref);
-    if (!row) return {label: ref, where: "", reported: false};
-    return {label: helperName(row), where: helperEnvironment(row) || "", since: Number(row.created || 0), reported: BACK.includes(helperState(row))};
+    if (!row) return {label: ref, where: "", kind: "helper", reported: false};
+    return {label: helperName(row), where: helperEnvironment(row) || "", kind: "helper", since: Number(row.created || 0), reported: BACK.includes(helperState(row))};
 }
 
 export function waitingFor({text, on, since}, {runs = [], helpers = [], now = Date.now() / 1000} = {}) {
@@ -50,15 +47,20 @@ export function waitingFor({text, on, since}, {runs = [], helpers = [], now = Da
     const refs = String(on || "").split(",").filter(Boolean);
     const items = refs.length
         ? refs.map((ref) => (ref.startsWith(HELPER) ? helperItem(helpers, ref) : runItem(runs, ref, text)))
-        : [{label: text, where: "", reported: false}];
+        : [{label: text, where: "", kind: "", reported: false}];
+    items.forEach((item) => {
+        const began = item.since || since;
+        item.out = began ? elapsed(now - began) : "";
+    });
     const helping = refs.length > 0 && refs.every((ref) => ref.startsWith(HELPER));
     const out = items.filter((item) => !item.reported).length;
-    return {text, items, helping, since, line: `on ${helping ? countOf(out || items.length) : text}${since ? ` · ${minutes(since, now)}` : ""}`};
+    const kinds = [...new Set(items.map((item) => item.kind))];
+    return {text, items, helping, kind: kinds.length === 1 ? kinds[0] : "", since, line: `on ${helping ? countOf(out || items.length) : text}${since ? ` · ${elapsed(now - since)}` : ""}`};
 }
 
 export function waitingOn(agent, works, helpers = [], now = Date.now() / 1000) {
     const work = currentWork(works);
-    const runs = RUN_KINDS.flatMap((kind) => agent?.data[kind] || []);
+    const runs = RUN_ROWS.flatMap((kind) => (agent?.data[kind] || []).map((entry) => ({...entry, kind: RUN_KINDS[kind]})));
     const text = work?.data.awaiting || backgroundRun(agent);
     return waitingFor({text, on: work?.data.awaiting_on, since: Number(work?.data.awaiting_since || 0)}, {runs, helpers, now});
 }

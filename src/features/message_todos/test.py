@@ -17,6 +17,7 @@ def test_a_reply_links_the_new_to_dos_it_names_and_points_out_the_one_it_leaves_
     asked = Messages(record, actor=USER).create("make the tunnel restart itself and fix the label")
     named, elsewhere, forgotten = (todos.create(title).n for title in ("restart the tunnel", "already linked", "fix the label"))
     Messages(record, actor=USER).link(Messages(record, actor=USER).create("an earlier ask").n, f"todo:{elsewhere}")
+    Messages(record, actor=AGENT).read(asked.n)
     Messages(record, actor=AGENT).reply(asked.n, f"Filed as to-do {named}, to-do {elsewhere} and to-do {old.n}.")
     refs = Messages(record, actor=SYSTEM).load(asked.n).refs
     assert f"todo:{named}" in refs, "a new to-do the reply names is linked to the message it answers"
@@ -52,6 +53,9 @@ def test_a_message_is_filed_replied_edited_and_processed_by_the_agent_that_reads
     agent.process(first.n, "tunnel restart", f"todo {todo.n}, nonsense")
     assert f"todo:{todo.n}" in agent.load(first.n).refs, "a message is linked to what it became"
     assert "name the message" in refused(lambda: agent.reply("  ", "hello")), "a reply must say which message"
+    assert "read message" in refused(lambda: agent.reply(str(second.n), "seen it")), "a message the agent has not read is never answered"
+    agent.read(first.n)
+    agent.read(second.n)
     assert "is a reaction" in refused(lambda: agent.reply(str(first.n), "👍")), "a reply that is only a face is a reaction"
     made = agent.reply(f"{first.n},{second.n}", "both are on the list", file=str(note))
     assert "> make the tunnel restart itself" in made.brief and "both are on the list" in made.brief, "a reply quotes what it answers"
