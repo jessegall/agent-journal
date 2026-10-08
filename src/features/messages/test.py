@@ -307,3 +307,7 @@ def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update(
     read = [e.data.get("by") for e in record.event_log.events() if e.type == "message" and e.action == "updated" and e.data.get("seen") == AGENT]
     assert read == ["read", "read"], f"a read from the viewer's read-all and from the command both say read: {read}"
     assert [by for t, _, by in heard if t == "reaction"] == [None], f"a row of another type saved inside the command is not stamped with it: {heard}"
+    closing = Messages(record, actor=SYSTEM)
+    held_open = closing.create("closed twice")
+    assert (closing._closed_once(held_open.n, "first").completed > 0, closing._closed_once(held_open.n, "second"), closing.load(held_open.n).outcome) == (True, None, "first"), \
+        "a message two handlers or threads both close is closed once, and the second asking is no failure"

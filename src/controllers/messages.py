@@ -1,6 +1,6 @@
 from controllers.base import Controller, CONTROLLERS
 from resources import types
-from resources.base import AGENT, USER, Refused, titled
+from resources.base import AGENT, USER, Refused, Resource, titled
 from controllers.comments import Comments
 from controllers.marks import action
 
@@ -54,6 +54,11 @@ class Messages(Controller):
             if kind in CONTROLLERS and num.isdigit():
                 self.link(n, f"{kind}:{int(num)}")
         return self.section(n, part, result)
+
+    def _closed_once(self, n: int, how: str) -> Resource | None:
+        """Closes a message unless it is closed already, whoever got there first, so a second handler or thread asking is no failure."""
+        with self.record.locked(self.resource.scope):
+            return None if self.load(n).completed else self.complete(n, how)
 
     @action
     def reply(self, n: str, text: str, file: str = ""):
