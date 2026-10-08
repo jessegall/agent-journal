@@ -10,7 +10,7 @@ await runScenarios(process.argv[2], {
         await card.getByText("Use Linear").waitFor();
         await card.getByText("Key", {exact: true}).waitFor();
         await card.getByText("No key is picked, so Linear is not reached.").waitFor();
-        await card.getByText("Add one on the Secrets page.").waitFor();
+        await card.getByText("no command can use it").waitFor();
         if ((await card.getByRole("switch").getAttribute("aria-checked")) !== "false") throw new Error("Linear starts switched on");
         await card.locator("[data-state]").getByText("Off", {exact: true}).waitFor();
         await shot(page, "integrations-off");
@@ -32,7 +32,7 @@ await runScenarios(process.argv[2], {
         await card.getByText("Webhook signing secret").waitFor();
         await card.getByText(/Paste this address into Linear's webhook settings|Turn on sharing to get an address/).waitFor();
         await page.reload();
-        if ((await page.locator('[data-integration="linear"]').getByRole("switch").getAttribute("aria-checked")) !== "true") throw new Error("the switch did not stay on");
+        await page.locator('[data-integration="linear"]').getByRole("switch", {checked: true}).waitFor();
         await shot(page, "integrations-on");
     },
     async "Gmail is off at first and its card asks for the address and the mail to read once it is on"(page, url) {
@@ -45,11 +45,12 @@ await runScenarios(process.argv[2], {
         await card.getByRole("switch").click();
         await card.locator("[data-gmail-account]").waitFor();
         await card.locator("[data-gmail-search]").waitFor();
+        const saved = page.waitForResponse((answer) => answer.request().method() === "POST" && /\/api\/main\/settings$/.test(answer.url()));
         await card.locator("[data-gmail-account]").fill("me@gmail.com");
         await card.locator("[data-gmail-account]").blur();
+        await saved;
         await page.reload();
-        await page.locator('[data-integration="gmail"] [data-gmail-account]').waitFor();
-        if ((await page.locator('[data-integration="gmail"] [data-gmail-account]').inputValue()) !== "me@gmail.com") throw new Error("the address was not kept");
+        await page.waitForFunction(() => document.querySelector('[data-integration="gmail"] [data-gmail-account]')?.value === "me@gmail.com");
         await shot(page, "integrations-gmail");
     },
     async "an image in text from Linear shows as a link and loads nothing from its host"(page, url) {
