@@ -1066,8 +1066,10 @@ def test_an_upload_and_the_file_route_stay_inside_the_rows_folder_for_every_type
 
 def test_no_chip_marker_is_kept_in_a_row_of_any_type_or_reaches_a_command_or_a_nudge():
     marked = "see [[chip todo:1|to-do 1]] and [[file src/a.py|a.py]]"
-    leaked = {}
-    for type_, resource, record, controller in each_type():
+    leaked, record = {}, fresh("ch")
+    features.load()
+    for type_ in TYPES:
+        controller = CONTROLLERS[type_](record, actor=SYSTEM)
         fields = {name: "a title" if name == "title" else marked for name in TYPES[type_].required}
         try:
             row = controller.create("a title", abstract=marked, brief=marked, **fields)
