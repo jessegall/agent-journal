@@ -7,8 +7,10 @@ umask 007
 : "${JOURNAL_ADDRESS:?set JOURNAL_ADDRESS in .env to the server's own domain}"
 PROJECT="${JOURNAL_PROJECT:-/data/project}"
 ROOT="$PROJECT/.journal"
-AS_JOURNAL="setpriv --reuid journal --regid journal --init-groups env HOME=/data/home"
-AS_GATEWAY="setpriv --reuid gateway --regid journal --init-groups env HOME=/data/gateway PYTHONPATH=/opt/agent-journal/src"
+# The login page's Python never looks in a folder an agent can write: it starts in /, with a safe import path.
+AS_JOURNAL="setpriv --reuid journal --regid journal --init-groups env -C $PROJECT HOME=/data/home"
+AS_GATEWAY="setpriv --reuid gateway --regid journal --init-groups env -C / HOME=/data/gateway PYTHONPATH=/opt/agent-journal/src PYTHONSAFEPATH=1"
+cd /
 
 $AS_JOURNAL sh -eu <<'SETUP'
 umask 007
