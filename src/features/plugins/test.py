@@ -391,7 +391,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
         "a manifest may give setup as bare commands or steps, a refuse as a word list, a chat rule and a post handler"
 
 
-def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
+def test_a_service_no_plugin_declares_is_stopped_and_forgotten(monkeypatch):
     from engine.services import files_for
     record = fresh()
     left = subprocess.Popen(["sleep", "30"], start_new_session=True)
@@ -491,8 +491,10 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     assert keeper.one(spec("flaky.web")) is False, "and is left alone until the wait is over"
     asked = spec("asked.web", when="exit 3")
     assert "answered 3" in keeper.unneeded(asked, now[0]) and "answered 3" in keeper.unneeded(asked, now[0] + 1.0), "a service that is not needed here says what the check answered, and the answer is kept for a while"
-    unaskable = spec("unaskable.web", when="true", cwd=str(record.root / "no-such-folder"))
-    assert "could not be asked" in keeper.unneeded(unaskable, now[0]), "a check that cannot even run is not a reason to start the service"
+    from engine import services
+    monkeypatch.setattr(services, "ASKED_WITHIN", 0.2)
+    unaskable = spec("unaskable.web", when="sleep 5")
+    assert "could not be asked" in keeper.unneeded(unaskable, now[0]), "a check that cannot answer in time is not a reason to start the service"
     stray = subprocess.Popen(["sleep", "30"], start_new_session=True)
     status_file(record.root, "stray.web").write_text(json.dumps({"state": "running", "keeper": 0, "pgid": stray.pid}))
     assert keeper.sweep() == [stray.pid] and stray.wait(timeout=5) is not None and status(record.root, "stray.web").why == "its keeper is gone", \
