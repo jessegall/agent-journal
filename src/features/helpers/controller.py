@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import controllers.types as types_module
@@ -29,6 +30,19 @@ def kickoff(row, folder: Path, todo: int, handed: list[Todo]) -> str:
             f"Do not write to the user, and do not write rules, facts or docs. "
             f"When the job is done, or you cannot go on, finish with journal helper report \"<what you did, what you found, what is left>\": "
             f"that is the only way your answer reaches the agent that dispatched you.")
+
+
+def refuse_unreadable_settings(folder: Path) -> None:
+    path = folder / ".claude" / "settings.json"
+    if not path.is_file():
+        return
+    try:
+        settings = json.loads(path.read_text())
+    except ValueError as failure:
+        raise Refused(f"{path} is not valid JSON, so Claude Code would stop a helper at start with a dialog it cannot answer: fix the file first") from failure
+    if not isinstance(settings, dict) or not isinstance(settings.get("hooks", {}), dict):
+        raise Refused(f"{path} holds hooks that are not an object, so Claude Code would stop a helper at start with a dialog it cannot answer: "
+                      f"make hooks an object or take it out of the file first")
 
 
 def numbers_in(text: str) -> tuple[int, ...]:
@@ -96,6 +110,7 @@ class Helpers(Controller):
         handed = self._handable(todos)
         project = self.record.root.resolve().parent
         folder = self._checkout(project, checkout) if checkout else project
+        refuse_unreadable_settings(folder)
         slug = slugged(name, limit=30)
         if not slug:
             raise Refused(f"a helper needs a name, such as Rhea; {name!r} has no letters to name it by")

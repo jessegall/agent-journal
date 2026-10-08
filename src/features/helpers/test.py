@@ -127,11 +127,20 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     watch()
     watch()
     assert titles() == ["helper 1, Rhea, has done nothing for 25 minutes"], "one quiet for a while is named once, so the agent checks on it"
+    from agents.terminal import launch_log
+    launch_log(record.root, f"{record.env}-rhea").parent.mkdir(parents=True, exist_ok=True)
+    launch_log(record.root, f"{record.env}-rhea").write_text("\x1b[1mSettingsWarning\x1b[0m: hooks must be an object\n")
     sessions.write(seated, pid=2 ** 22 + 7)
     watch()
     stopped, = [n for n in Nudges(record, actor=SYSTEM).all() if "stopped running" in n.title]
     assert (stopped.title, stopped.until) == ("helper 1, Rhea, stopped running before it reported", ["helper.completed", "helper.deleted"]), \
         "one whose agent is gone is named at once, and said again until it is finished"
+    assert "SettingsWarning: hooks must be an object" in stopped.brief, "the notice names the cause from the tail of its launch log"
+    settings = record.root.parent / ".claude" / "settings.json"
+    settings.parent.mkdir(exist_ok=True)
+    settings.write_text('{"hooks": []}')
+    assert "hooks that are not an object" in refused(lambda: Helpers(record, actor=AGENT).dispatch("Zoe", "a job", "codex", "gpt-5.5")), \
+        "a checkout whose settings.json Claude Code would reject is not launched into"
     Helpers(Record(record.root, f"{record.env}-rhea"), actor=AGENT).report("The hooks spend 40ms in imports")
     assert Helpers(record, actor=AGENT).load(1).report == "The hooks spend 40ms in imports", "the row keeps the report"
     told = Messages(record, actor=SYSTEM).all()[-1]
