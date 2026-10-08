@@ -4,6 +4,7 @@ from pathlib import Path
 from engine.transcript import IDLE
 from controllers.types import Agents, environment_records
 from providers import PROVIDERS, transcript_reader
+from providers.jsonl import WholeRead
 from resources.base import SYSTEM
 
 SETTLE, SETTLE_STEP = 1.5, 0.05
@@ -24,7 +25,8 @@ def _settled_provider(agent):
     return provider
 
 
-def turns(agent) -> list:
+def every_turn(agent) -> list:
+    """All the turns of an agent's transcript, read again only when the file has grown, so a search asks a warm copy instead of parsing the transcript each time."""
     try:
         provider = _settled_provider(agent)
         if not provider:
@@ -34,8 +36,12 @@ def turns(agent) -> list:
         return []
     held = TURNS.get(agent.transcript)
     if not held or held[0] != size:
-        held = TURNS[agent.transcript] = (size, [t for t in provider.turns(agent.transcript) if t.has_agent_text])
+        held = TURNS[agent.transcript] = (size, provider.every_turn(Path(agent.transcript), WholeRead.SEARCH))
     return held[1]
+
+
+def turns(agent) -> list:
+    return [t for t in every_turn(agent) if t.has_agent_text]
 
 
 def last_turn(agent):
