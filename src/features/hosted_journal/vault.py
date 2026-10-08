@@ -31,8 +31,9 @@ class Vault:
         self.clock = clock
 
     def opened(self) -> Path:
-        self.folder.mkdir(mode=PRIVATE, parents=True, exist_ok=True)
-        self.folder.chmod(PRIVATE)
+        for folder in (self.folder.parent, self.folder):
+            folder.mkdir(mode=PRIVATE, parents=True, exist_ok=True)
+            folder.chmod(PRIVATE)
         return self.folder
 
     def read(self, name: str) -> dict:

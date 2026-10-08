@@ -66,15 +66,18 @@ class Visit:
         self.host = handler.headers.get("Host", "")
         self.url = urlsplit(handler.path)
 
+    def encrypted(self) -> bool:
+        return self.handler.headers.get("X-Forwarded-Proto") == "https"
+
     def secure(self) -> bool:
         """Plain http is answered on the server itself; from outside only what the TLS proxy passes on as https."""
-        return local(self.host) or self.handler.headers.get("X-Forwarded-Proto") == "https"
+        return local(self.host) or self.encrypted()
 
     def addressed(self) -> bool:
         return local(self.host) or not self.settings["address"] or self.host == self.settings["address"]
 
     def same_origin(self) -> bool:
-        return self.handler.headers.get("Origin") == f"{'http' if local(self.host) else 'https'}://{self.host}"
+        return self.handler.headers.get("Origin") == f"{'https' if self.encrypted() else 'http'}://{self.host}"
 
     def place(self) -> str:
         forwarded = self.handler.headers.get("X-Forwarded-For", "")

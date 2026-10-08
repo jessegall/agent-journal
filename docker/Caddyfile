@@ -1,0 +1,15 @@
+# TLS for the journal's own address. Caddy gets the certificate and sends plain http on to https.
+{$JOURNAL_ADDRESS} {
+	encode gzip
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	request_body {
+		max_size 26MB
+	}
+	reverse_proxy journal:8440 {
+		flush_interval -1
+	}
+	log {
+		output stdout
+		format console
+	}
+}

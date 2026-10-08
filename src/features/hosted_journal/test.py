@@ -11,8 +11,10 @@ from urllib.parse import urlencode
 
 import pytest
 
+from agents.terminal import TooManyAgents, refuse_past_cap
 from controllers.features import Features
 from engine import disk
+from engine.sessions import Sessions
 from engine.viewer import SERVING
 from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import COOKIE, MOST_STREAMS
@@ -70,7 +72,7 @@ def serve(record) -> int:
 def hosted():
     import features
     features.load()
-    record = fresh()
+    record = fresh("main")
     Features(record, actor=USER).switch(HostedJournalDetails.name, True)
     Features(record, actor=USER).configure(HostedJournalDetails.name, "address", ADDRESS)
     desk = JournalServer(("127.0.0.1", 0), type("Desk", (Handler,), {"root": record.root}))
@@ -110,7 +112,7 @@ def test_the_owner_sets_the_password_with_a_one_time_code_then_works_in_the_view
     assert "<div id=\"app\">" in hosted.call("GET", "/", Cookie=f"{COOKIE}={token}").text
     folder = hosted.vault.folder
     assert not folder.is_relative_to(hosted.record.root.resolve().parent)
-    assert folder.stat().st_mode & 0o777 == 0o700 and (folder / LOGINS).stat().st_mode & 0o777 == 0o600
+    assert {path.stat().st_mode & 0o777 for path in (folder.parent, folder)} == {0o700} and (folder / LOGINS).stat().st_mode & 0o777 == 0o600
     logged = (folder / AUDIT).read_text()
     assert "owner password set" in logged and PASSWORD not in logged and code not in logged and token not in logged
     shares = Shares(hosted.record, actor=SYSTEM)
@@ -157,7 +159,7 @@ def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_ea
 
 def test_another_site_plain_http_from_outside_and_a_strange_host_are_refused(hosted):
     token = hosted.logged_in()
-    assert hosted.call("POST", "/api/t/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin="https://evil.example").status == 403
+    assert hosted.call("POST", "/api/main/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin="https://evil.example").status == 403
     assert hosted.call("POST", "/login", {"password": PASSWORD}, Origin="https://evil.example").status == 403
     assert "only over https" in hosted.call("GET", "/", Host=ADDRESS, Cookie=f"{COOKIE}={token}").text
     through = hosted.call("GET", "/api/identity", Host=ADDRESS, Cookie=f"{COOKIE}={token}", X_Forwarded_Proto="https")
@@ -168,11 +170,11 @@ def test_another_site_plain_http_from_outside_and_a_strange_host_are_refused(hos
 def test_large_bodies_and_too_many_open_streams_are_refused(hosted):
     token = hosted.logged_in()
     origin = f"http://127.0.0.1:{hosted.port}"
-    big = hosted.call("POST", "/api/t/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin=origin, Content_Length=str(2 * 1024 * 1024))
+    big = hosted.call("POST", "/api/main/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin=origin, Content_Length=str(2 * 1024 * 1024))
     assert big.status == 413
     gateway = ROUTES.keyed(hosted.record)[EVERY_OTHER]
     gateway.streams[hashed(token)] = MOST_STREAMS
-    assert hosted.call("GET", "/api/t/events", Cookie=f"{COOKIE}={token}", Accept="text/event-stream").status == 429
+    assert hosted.call("GET", "/api/main/events", Cookie=f"{COOKIE}={token}", Accept="text/event-stream").status == 429
     gateway.streams.clear()
 
 
@@ -198,3 +200,13 @@ def test_login_failed_rate_limited_and_ran_out_show_in_a_browser(hosted):
     run = subprocess.run(["node", "browser/hosted/login.mjs"], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
     assert run.returncode == 0, run.stderr[-2000:]
     assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+
+
+def test_a_server_starts_no_more_agents_than_its_setting_allows(hosted, monkeypatch):
+    monkeypatch.setattr(Sessions, "running", lambda sessions: ["claude-1", "claude-2"])
+    refuse_past_cap(hosted.record.root)
+    Features(hosted.record, actor=USER).configure(HostedJournalDetails.name, "agents", "2")
+    with pytest.raises(TooManyAgents, match="2 agents already run here"):
+        refuse_past_cap(hosted.record.root)
+    Features(hosted.record, actor=USER).switch(HostedJournalDetails.name, False)
+    refuse_past_cap(hosted.record.root)

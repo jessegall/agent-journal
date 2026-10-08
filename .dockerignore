@@ -1,0 +1,12 @@
+**/__pycache__
+**/*.pyc
+**/node_modules
+.git
+.journal
+.claude
+tests
+scripts
+docker/.env
+docker/backups
+src/web/src
+src/web/browser

@@ -9,13 +9,17 @@ from engine.sessions import ACTIVE_ENV, Sessions, hold_build
 from engine import runtime
 from engine.stored import read_json, write_json
 from engine.package import CODE, code, entry_in
+from engine.extension import Extension
 from engine.fields import Loaded
+from engine.record import Record
+from resources.base import Refused
 from engine.worktree import checkout, environment, share_journal
 from typing import TypedDict
 
 from supervisor import LAUNCHED
 
 ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|[\x00-\x08\x0b-\x1f\x7f]")
+AT_ONCE = Extension()
 
 LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
@@ -175,7 +179,23 @@ def launch_failure(root: Path, env: str, lines: int = 3) -> str:
     return " ".join([line for line in tail if line][-lines:])[:400]
 
 
+class TooManyAgents(Refused):
+    @classmethod
+    def running(cls, count: int) -> "TooManyAgents":
+        return cls(f"{count} agents already run here, the most this journal starts at once: stop one first, or raise the number in Settings")
+
+
+def refuse_past_cap(root: Path) -> None:
+    """A feature may cap the agents running at once, such as on a server with its own memory and spend."""
+    record = Record(root, runtime.env(root))
+    caps = [cap(record) for cap in AT_ONCE.each(record)]
+    running = len(Sessions(root).running())
+    if caps and running >= min(caps):
+        raise TooManyAgents.running(running)
+
+
 def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> int:
+    refuse_past_cap(root)
     started = entry_in(root, "supervisor")
     log = launch_log(root, env)
     log.parent.mkdir(parents=True, exist_ok=True)
