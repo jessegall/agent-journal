@@ -94,7 +94,7 @@ COSIGN = """#!/bin/sh
 for each in "$@"; do ref="$each"; done
 while [ $# -gt 0 ]; do [ "$1" = --certificate-identity-regexp ] && pattern="$2"; shift; done
 printf '%s' "$SIGNED_BY" | grep -Eq "$pattern" || exit 1
-case "$ref" in *@sha256:*) [ "${ref##*@}" = "$IMAGE_DIGEST" ] || exit 1;; esac
+case "$ref" in *@sha256:*) [ -z "$DIGEST_UNSIGNED" ] && [ "${ref##*@}" = "$IMAGE_DIGEST" ] || exit 1;; esac
 echo '[{"critical":{"image":{"docker-manifest-digest":"'"$IMAGE_DIGEST"'"}},"optional":{"Subject":"'"$SIGNED_BY"'"}}]'
 """
 DOCKER_STUB = """#!/bin/sh
@@ -108,7 +108,7 @@ exit 0
 RELEASE_SIGNER = "https://github.com/jessegall/agent-journal/.github/workflows/docker-image.yml@refs/tags/v"
 
 
-def updater_calls(tmp_path: Path, signed_by: str, running: str = "", installed: str = "", asked: str = "") -> list[str]:
+def updater_calls(tmp_path: Path, signed_by: str, running: str = "", installed: str = "", asked: str = "", digest_unsigned: str = "") -> list[str]:
     """What docker is told when the updater runs once against a registry whose newest image is signed by the given identity."""
     shutil.rmtree(tmp_path, ignore_errors=True)
     for name, body in (("cosign", COSIGN), ("docker", DOCKER_STUB)):
@@ -122,7 +122,7 @@ def updater_calls(tmp_path: Path, signed_by: str, running: str = "", installed: 
     script = (DOCKER / "update.sh").read_text().replace("cd /compose", f"cd {tmp_path / 'compose'}")
     env = {**os.environ, "PATH": f"{tmp_path / 'bin'}:{os.environ['PATH']}", "COMPOSE_PROJECT_NAME": "proof", "UPDATE_ONCE": "1",
            "JOURNAL_UPDATER_STATE": str(tmp_path / "state"), "JOURNAL_REQUESTS": str(tmp_path / "vault/*/hosting-request.json"),
-           "SIGNED_BY": signed_by, "IMAGE_DIGEST": "sha256:" + "a" * 64, "RUNNING": running, "INSTALLED": installed, "CALLS": str(tmp_path / "calls")}
+           "SIGNED_BY": signed_by, "IMAGE_DIGEST": "sha256:" + "a" * 64, "RUNNING": running, "INSTALLED": installed, "DIGEST_UNSIGNED": digest_unsigned, "CALLS": str(tmp_path / "calls")}
     subprocess.run(["sh", "-c", script], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=30, check=True)
     calls = tmp_path / "calls"
     return [line for line in calls.read_text().splitlines() if line.startswith("compose")] if calls.exists() else []
@@ -260,6 +260,7 @@ def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_ea
     mine = "ghcr.io/jessegall/agent-journal@sha256:" + "b" * 64
     assert updater_calls(tmp_path, RELEASE_SIGNER + "2.300.0", running=mine, installed="2.200.0") == [], "a running journal is upgraded only when its owner asks"
     assert updater_calls(tmp_path, RELEASE_SIGNER + "2.300.0", running=mine, installed="2.200.0", asked="upgrade") == [deployed]
+    assert updater_calls(tmp_path, RELEASE_SIGNER + "2.300.0", digest_unsigned="1") == [], "the first start checks the exact image it is about to run"
     assert updater_calls(tmp_path, RELEASE_SIGNER + "2.100.0", running=mine, installed="2.200.0", asked="upgrade") == [], "never back to an older release"
     assert hosted.call("POST", "/logout", {}, Cookie=f"{COOKIE}={token}").headers["location"] == "/login?notice=logged-out"
     assert hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={token}").status == 401
