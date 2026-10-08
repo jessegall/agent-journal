@@ -39,7 +39,7 @@ def test_a_helper_starts_on_its_provider_and_model_in_an_environment_kept_out_of
     features.load()
     calls = started(monkeypatch)
     record = fresh()
-    said = Helpers(record, actor=AGENT).dispatch("Rhea Lovelace", "Profile the slow hooks", "codex", "gpt-5.5", brief="Time each hook")
+    dispatched = Helpers(record, actor=AGENT).dispatch("Rhea Lovelace", "Profile the slow hooks", "codex", "gpt-5.5", brief="Time each hook")
     row = Helpers(record, actor=AGENT).all()[0]
     (cwd, env, agent, args, kickoff), = calls
     assert (row.name, row.provider, row.model, row.environment) == ("Rhea Lovelace", "codex", "gpt-5.5", f"{record.env}-rhea-lovelace"), "the row names who, where and on what"
@@ -58,7 +58,7 @@ def test_a_helper_starts_on_its_provider_and_model_in_an_environment_kept_out_of
     from controllers.types import Facts
     Facts(record, actor=AGENT).create("The viewer runs on port 8421", keywords=["port"])
     assert [f.title for f in Facts(home, actor=SYSTEM).rows.standing()] == ["The viewer runs on port 8421"], "it reads the facts of the environment that sent it"
-    assert cwd == record.root.resolve().parent and "helper 1" in said, "without a worktree it works in the project"
+    assert cwd == record.root.resolve().parent and "helper 1" in dispatched, "without a worktree it works in the project"
     place = Environments(record, actor=SYSTEM).rows.by_title(f"{record.env}-rhea-lovelace")
     assert place.helping and place.launched_from == record.env, "its environment is marked as the helper's and names the dispatcher"
     summary = summarize(record.root)
@@ -232,8 +232,8 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
         "a checkout whose settings.json Claude Code would reject is not launched into"
     Helpers(Record(record.root, f"{record.env}-rhea"), actor=AGENT).report("The hooks spend 40ms in imports")
     assert Helpers(record, actor=AGENT).load(1).report == "The hooks spend 40ms in imports", "the row keeps the report"
-    told = Messages(record, actor=SYSTEM).all()[-1]
-    assert (told.brief, told.data["peer"]) == ("The hooks spend 40ms in imports", "Rhea"), "the chat shows it as a message from the helper"
+    relayed = Messages(record, actor=SYSTEM).all()[-1]
+    assert (relayed.brief, relayed.data["peer"]) == ("The hooks spend 40ms in imports", "Rhea"), "the chat shows it as a message from the helper"
     from engine.events.resources import MessageCreated
     from features.helpers.handlers import RelayAnswerToDispatcher
     inside = Record(record.root, f"{record.env}-rhea")
@@ -253,7 +253,7 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     reported, = [n for n in Nudges(record, actor=SYSTEM).all() if "helper 1, Rhea, reported" in n.title]
     assert reported.until == ["helper.completed", "helper.deleted"], "the dispatcher is told, until it finishes the helper"
     assert not features.FEATURES["helpers"].is_owed(record, "stopped", ("helper:1",)), "once it reported, the line that it stopped is no longer owed"
-    assert told.ref in reported.data["rows"] and features.FEATURES["helpers"].is_owed(record, "reported", tuple(reported.data["rows"])), \
+    assert relayed.ref in reported.data["rows"] and features.FEATURES["helpers"].is_owed(record, "reported", tuple(reported.data["rows"])), \
         "a report is named while it stands"
     monkeypatch.setattr("features.helpers.controller.tell_in", lambda *given: True)
     Helpers(record, actor=AGENT).say(1, "Now profile the start-up too")
@@ -272,8 +272,8 @@ def test_a_turn_that_ends_in_an_error_reports_once_for_the_helper(monkeypatch):
     row = agents.create("codex-2")
     for _ in range(2):
         agents.update(row.n, status=IDLE, event=FAILED, failure="Your workspace is out of credits.")
-    told = [m for m in Messages(record, actor=SYSTEM).all() if m.data.get("peer") == "Rhea"]
-    assert [m.brief for m in told] == ["My turn ended in an error, so I stopped: Your workspace is out of credits."], \
+    relayed = [m for m in Messages(record, actor=SYSTEM).all() if m.data.get("peer") == "Rhea"]
+    assert [m.brief for m in relayed] == ["My turn ended in an error, so I stopped: Your workspace is out of credits."], \
         "the dispatcher hears the error once, as the helper's report"
 
 
