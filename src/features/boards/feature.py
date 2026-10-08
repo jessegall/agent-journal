@@ -6,7 +6,7 @@ from features.boards.handlers import MarkQuietFillingStalled, OfferToPlaceAddedC
 from features.boards.shipped import SEQUENCES
 from features.boards.limits import BoardWorkStaysOnTheBoard, FillerKeepsToTheBoard, PanelRepliesStayShort
 from features.journal import Journal
-from features.nudges.sending import Nudge
+from features.sending import Nudge
 from features.boards.exploration import FILLER
 from features.sequences.dispatch import BOARD_OF_MESSAGE, DISPATCH_MODELS
 from features.boards.orchestration import filler_model, orchestration

@@ -245,7 +245,8 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
     import agents.terminal as terminal
     features.load()
     record = fresh()
-    read, write = terminal.lifeline()
+    from engine.services import lifeline
+    read, write = lifeline()
     assert (os.get_inheritable(read), os.get_inheritable(write)) == (True, False), "the lifeline's read end goes on to the agent and its write end stays here"
     os.close(read)
     os.close(write)

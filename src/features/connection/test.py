@@ -17,7 +17,7 @@ from engine.version import version
 from features.connection.code import Pushed, pull, push
 from features.connection.linking import Synced, hand, join, local_hello, sync
 from features.connection.transport import HttpTransport, ServerKey
-from migrations import applied
+from engine.ledger import applied
 from resources.base import AGENT, PROJECT, SYSTEM, USER, Event
 from tests.conftest import fresh, hosted_world, refused  # noqa: F401
 

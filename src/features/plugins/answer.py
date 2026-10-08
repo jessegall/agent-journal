@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from controllers.types import Agents, Plugins, Todos
 from engine.gates import Hold, hold
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.plugins.declared import declared, named, settings_of, settings_choosing
 from resources.base import PLUGIN, PROJECT, RAISED, Refused, SYSTEM, check_abstract, check_title
 

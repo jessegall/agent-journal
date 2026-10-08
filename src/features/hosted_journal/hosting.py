@@ -3,7 +3,7 @@ from enum import Enum
 from pathlib import Path
 
 import install
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.disk import read_json
 from features.hosted_journal.vault import Vault
 

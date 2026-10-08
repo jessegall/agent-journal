@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from engine.events.engine import ClockTicked
 from engine.events.resources import QuestionAnswered, ResourceCreated, ResourceEvent
-from features.nudges.sending import Sent
+from features.sending import Sent
 from features.trigger import MINUTE, MINUTES, Trigger
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Questions, Works

@@ -10,12 +10,13 @@ from http.cookies import SimpleCookie
 from urllib.parse import parse_qs, urlsplit
 from urllib.request import urlopen
 
-from commands.dispatch import rendered, resolve
+from features.format import rendered
+from features.routing import resolve
 from engine.disk import KEPT_FREE_BYTES, free_bytes, nearly_full
 from engine.record import Record
 from features.phone.controller import Phones
 from engine.color import identity
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.viewer import lately_running
 from features.hosted_journal.settings import FromRecord, FromVault
 from features.hosted_journal.owner import Devices, KeptLogin, Logins, MOST_EVERYWHERE, MachineKeys, Owner, SHORTEST, Standing, WrongTries, hashed

@@ -2,7 +2,7 @@ import tomllib
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from resources.base import Refused
 
 FOLDER = "agentic-organization"

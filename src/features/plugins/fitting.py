@@ -8,7 +8,7 @@ from pathlib import Path
 
 from controllers.types import Agents, Environments, Plugins
 from engine.events.engine import ClockTicked
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.stored import write_text
 from engine.upgrades import fetch
 from engine.worktree import tracked_files

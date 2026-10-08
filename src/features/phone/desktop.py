@@ -2,8 +2,7 @@ from collections.abc import Callable
 from http.client import HTTPConnection, HTTPException
 from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit
 
-import commands.http  # noqa: F401  registers the journal's routes, which closed() resolves against
-from commands.dispatch import resolve
+from features.routing import resolve
 from engine.extension import Extension
 from engine.viewer import lately_running
 from features.phone.allow_list import Page

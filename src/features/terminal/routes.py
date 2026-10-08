@@ -1,6 +1,6 @@
 from controllers.types import Agents
 from dataclasses import dataclass
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.routing import Reply, Request, handles
 from features.terminal.log import EVERYTHING, LEVELS as TERMINAL_LEVELS, lines as terminal_lines
 from resources.base import Refused, USER

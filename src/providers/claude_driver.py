@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 from engine import runtime
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.stored import read_json, write_json
 from providers.claude import CHANNEL_MARK, SERVER, Claude
 from providers.claude_rows import Row

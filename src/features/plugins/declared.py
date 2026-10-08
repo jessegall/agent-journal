@@ -2,7 +2,7 @@ from dataclasses import dataclass, field, replace
 from fnmatch import fnmatch
 from pathlib import PurePath
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from resources.base import Refused
 
 REFUSE_SECONDS = 1.5

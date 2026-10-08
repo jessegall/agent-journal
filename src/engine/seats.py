@@ -5,7 +5,7 @@ from pathlib import Path
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
 from engine import runtime
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 SEAT = "seat.json"
 SEATED = "seated.json"

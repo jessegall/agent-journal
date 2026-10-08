@@ -1,7 +1,7 @@
 from dataclasses import dataclass, replace
 from typing import ClassVar
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 
 @dataclass(frozen=True)

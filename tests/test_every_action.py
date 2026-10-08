@@ -17,7 +17,8 @@ import pytest
 import controllers.files as files
 import controllers.stored as stored
 import features
-from commands.dispatch import dispatch, ranked, resolve
+from commands.dispatch import dispatch
+from features.routing import ranked, resolve
 from controllers.invoke import invoked, spread
 from commands.parser import parser
 from controllers.base import Controller, actions

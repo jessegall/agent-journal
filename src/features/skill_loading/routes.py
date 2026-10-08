@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from controllers.invoke import invoked
 from controllers.types import Agents
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.routing import Reply, Request, handles
 from features.skill_loading.catalogue import always
 

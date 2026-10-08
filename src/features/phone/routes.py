@@ -8,7 +8,7 @@ from typing import TypedDict
 from http.cookies import SimpleCookie
 
 from engine.record import Record
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.phone.controller import Phones
 from features.phone.desktop import Desktop, phone_marks
 from features.phone.members import rights_of

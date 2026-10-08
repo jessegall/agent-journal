@@ -4,8 +4,8 @@ from typing import ClassVar
 from engine.events.agents import AgentReported
 from controllers.types import Agents, Questions
 from engine.events.resources import AnyEvent, MessageCreated, QuestionAnswered, ResourceEvent
-from features.nudges.sending import Sent
-from features import watched
+from features.sending import Sent
+from features.triggers import watched
 from features.trigger import DAY, MINUTE
 from providers.turns import last_text
 from features.parts import AgentContext, Context, Handler

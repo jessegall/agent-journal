@@ -110,3 +110,13 @@ def catalogue(described: dict, record) -> dict:
         CATALOGUES.clear()
     CATALOGUES[key] = {name: {**feature, "help": formatted(feature["help"], record, VIEWER)} for name, feature in described.items()}
     return CATALOGUES[key]
+
+
+def rendered(got, record):
+    if hasattr(got, "ref"):
+        return shaped(got, record)
+    if isinstance(got, list):
+        return [rendered(item, record) for item in got]
+    if isinstance(got, dict):
+        return {key: rendered(value, record) for key, value in got.items()}
+    return got

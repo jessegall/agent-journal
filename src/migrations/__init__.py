@@ -8,9 +8,9 @@ from pathlib import Path
 from engine.package import modules
 from engine.locks import hold_record_writes
 from engine.stored import write_text
-from engine.fields import Loaded
+from resources.fields import Loaded
 from dataclasses import dataclass
-from resources.base import Refused
+from engine.ledger import applied, ledger
 
 
 
@@ -23,23 +23,6 @@ def shipped(root: Path, ship, kind: str) -> str:
     from engine.record import Record
     made = ship(Record(Path(root), runtime.env(Path(root))))
     return f"{kind} shipped: {', '.join(made)}" if made else f"the shipped {kind} are already there"
-
-
-def ledger(root: Path) -> Path:
-    return Path(root) / "migrations.json"
-
-
-def applied(root: Path) -> dict:
-    path = ledger(root)
-    if not path.exists():
-        return {}
-    try:
-        value = json.loads(path.read_text())
-    except (OSError, ValueError) as error:
-        raise Refused(f"damaged migrations ledger: {path}") from error
-    if not isinstance(value, dict):
-        raise Refused(f"damaged migrations ledger: {path}")
-    return value
 
 
 @dataclass(frozen=True)

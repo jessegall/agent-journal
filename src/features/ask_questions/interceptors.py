@@ -96,10 +96,10 @@ class AskedOnce(QuestionInterceptor):
 
 class OneAskPerRow(ActionInterceptor):
     def intercept(self, feature_context: Context, controller, title: str = "", abstract: str = "", brief: str = "", **data):
-        about = str(data.get("about") or "")
-        if controller.type != "question" or ":" not in about:
+        about = data.get("about")
+        if controller.type != "question" or about is None or ":" not in str(about):
             return None
-        kind, _, n = about.partition(":")
+        kind, _, n = str(about).partition(":")
         if kind not in CONTROLLERS or not n.isdigit():
             return None
         rows = CONTROLLERS[kind](controller.record, actor=controller.actor).rows

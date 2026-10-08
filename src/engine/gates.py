@@ -3,7 +3,7 @@ from enum import StrEnum
 from pathlib import Path
 
 from engine import runtime
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.reach import Reach
 from engine.extension import Extension
 

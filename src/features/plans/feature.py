@@ -5,6 +5,7 @@ from features.journal import Journal
 from features.plans.details import PlansDetails
 from features.plans.handlers import (
     AdvancePlans,
+    DelegatePlansOfHandedRows,
     EndReviewWithItsReport,
     GuideBuilding,
     PassCheckpointsInAuto,
@@ -16,7 +17,7 @@ from features.plans.handlers import (
     blocked_plans,
     still_plans,
 )
-from features.nudges.sending import Nudge
+from features.sending import Nudge
 from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
 from features.plans.progress import held
 from features.work_tracking.next import ROW_HOLDS
@@ -32,6 +33,7 @@ class PlansFeature(Feature):
         SUMMARY_PARTS.add(None, plans_shown, key="plans")
         ROW_HOLDS.add(self, held)
         journal.events.handler(StartBuilding())
+        journal.events.handler(DelegatePlansOfHandedRows())
         journal.events.handler(StartApproved())
         journal.events.handler(EndReviewWithItsReport())
         journal.events.handler(TellParkedAndPickedUp())

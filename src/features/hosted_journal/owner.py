@@ -4,7 +4,7 @@ import secrets
 from dataclasses import asdict, dataclass
 from enum import Enum
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.hosted_journal.vault import Vault
 from features.trigger import DAY, MINUTE
 from resources.base import OWNER_ID, Refused

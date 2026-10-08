@@ -18,7 +18,6 @@ from features.agent_sessions.launch import launched, prepared, tell_in
 from features.helper_worktrees.controller import Worktrees
 from features.form_of_address.address import voice_of
 from features.helpers.resource import Helper, held_by_helper
-from features.plans.controller import delegate_plans_holding
 from features.helpers.reuse import HELPER_KIND, agent_runs, kept, knowing, named_paths, refusal, unlanded, written_tests
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
@@ -240,7 +239,6 @@ class Helpers(Controller):
                 self._left(holder, given, row)
             listed.assign(given.n, to=row.ref)
             own.create(given.title, brief=given.brief, handed=str(given.n))
-            delegate_plans_holding(self.record, given)
 
     @action(network=True)
     def say(self, n: int, text: str, todos: str = "") -> str:

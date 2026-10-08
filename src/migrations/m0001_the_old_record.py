@@ -10,7 +10,7 @@ from controllers.types import CONTROLLERS, Docs, Messages, Notifications, Rules,
 from engine.record import Record
 from resources.base import AGENT, Refused, SYSTEM, USER, TITLE_MAX, titled
 from engine.stored import write_text
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 
 @dataclass(frozen=True)

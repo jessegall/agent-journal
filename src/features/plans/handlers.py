@@ -4,17 +4,28 @@ from typing import ClassVar
 from controllers.types import Todos, Works
 from engine.events.engine import ClockTicked
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
-from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING, Plans
-from features.nudges.sending import Sent
+from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING, Plans, delegate_plans_holding
+from features.sending import Sent
 from features.trigger import MINUTE
 from features.plans.resource import PHASE, PHASE_FIELDS
 from features.work_tracking.auto import passes_checkpoints
 from features.work_tracking.next import carried_on, named_rows, ready, waiting_rows
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
-from features.plans.controller import Plans
 
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
+
+
+@dataclass(frozen=True)
+class TodoUpdated(ResourceEvent):
+    on: ClassVar[str] = "todo.updated"
+
+
+class DelegatePlansOfHandedRows(Handler):
+    def handle(self, context: Context, event: TodoUpdated) -> None:
+        row = Todos(context.record, actor=SYSTEM).load(event.n)
+        if row.assigned.startswith("helper:") and not row.completed:
+            delegate_plans_holding(context.record, row)
 
 
 @dataclass(frozen=True)

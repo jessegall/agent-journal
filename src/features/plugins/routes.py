@@ -1,6 +1,6 @@
 from controllers.types import Plugins
 from dataclasses import dataclass
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.stored import last_lines, read_json
 from features.plugins.dashboard import checked
 from features.plugins.declared import called, declared

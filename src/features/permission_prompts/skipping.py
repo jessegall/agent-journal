@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.work_tracking.auto import automatic
 from providers import DRIVERS
 

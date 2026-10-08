@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass
 from typing import ClassVar
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 from resources.base import DOCUMENT, PROJECT, Resource, ResourceDetails
 from resources.shapes import LIST, TEXT, Field, Shape

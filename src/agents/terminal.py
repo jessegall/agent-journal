@@ -10,7 +10,7 @@ from engine import runtime
 from engine.stored import read_json, write_json, write_text
 from engine.package import CODE, code, entry_in
 from engine.extension import Extension
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.record import Record
 from resources.base import Refused
 from engine.worktree import checkout, environment, share_journal
@@ -122,13 +122,6 @@ def relaunch(root: Path, env: str, session: str, conversation: str) -> Path:
     asked = runtime.relaunch_file(root, session)
     write_json(asked, launching(root, cwd, env, agent, list(launched.args), conversation))
     return asked
-
-
-def lifeline() -> tuple[int, int]:
-    read, write = os.pipe()
-    os.set_inheritable(read, True)
-    os.set_inheritable(write, False)
-    return read, write
 
 
 def carried() -> dict | None:

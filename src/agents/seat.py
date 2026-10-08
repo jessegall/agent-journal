@@ -16,7 +16,7 @@ from engine.worktree import checkout, environment
 from controllers.types import Agents, Environments
 from resources.base import SYSTEM
 from resources.types import AgentRow
-from engine.fields import Loaded
+from resources.fields import Loaded
 from dataclasses import dataclass
 
 DISPATCHED, RETURNED = "dispatched", "returned"

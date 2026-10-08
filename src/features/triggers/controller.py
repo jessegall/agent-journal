@@ -4,7 +4,8 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
-from features import watched
+from engine.extension import Extension
+from features.triggers import watched
 from features.triggers.resource import DOES, FIRED, FROM_USER, ONLY_WHEN, START, STATE_DOES, WHEN, Trigger
 from features.triggers.summary import summary
 from resources.base import SYSTEM, Refused, Resource
@@ -12,6 +13,9 @@ from resources.base import SYSTEM, Refused, Resource
 
 def holding(n: int) -> str:
     return f"hold.{n}"
+
+
+STARTED_BY = Extension()
 
 
 class Triggers(Controller):
@@ -62,20 +66,17 @@ class Triggers(Controller):
         from features import FEATURES
         FEATURES["triggers"].release(self.record, holding(n))
 
-    def _sequences(self):
-        from features.sequences.controller import Sequences
-        return Sequences(self.record, actor=SYSTEM)
-
-    def _starting(self, n: int) -> list[Resource]:
-        return [row for row in self._sequences().rows.standing() if row.data.get("starts_on") == f"trigger:{n}"]
+    def _starting(self, n: int) -> list[tuple[Controller, Resource]]:
+        return [(rows, row) for kind in STARTED_BY.each(self.record) for rows in (kind(self.record, actor=SYSTEM),)
+                for row in rows.rows.standing() if row.data.get("starts_on") == f"trigger:{n}"]
 
     def _starts(self, n: int) -> list[str]:
-        return [row.title for row in self._starting(n)]
+        return [row.title for _, row in self._starting(n)]
 
     def _stop_starting(self, n: int) -> None:
-        for row in self._starting(n):
+        for rows, row in self._starting(n):
             if not row.system:
-                self._sequences().update(row.n, starts_on="")
+                rows.update(row.n, starts_on="")
 
     def fired(self, n: int, about: str = "") -> None:
         with self.record.locked(self.resource.scope):

@@ -7,7 +7,7 @@ from functools import cache, partial
 
 from engine import bus
 from engine.extension import Extension
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.markers import plain
 from engine.offline import queue
 from engine.outbox import Request
