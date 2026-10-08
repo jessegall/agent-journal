@@ -3,6 +3,9 @@ from resources import types
 from resources.base import SYSTEM
 
 
+LOOKED_BACK = 20
+
+
 class Nudges(Controller):
     resource = types.Nudge
 
@@ -10,3 +13,11 @@ class Nudges(Controller):
         from controllers.agents import Agents
         agent = Agents(self.record, actor=SYSTEM).primary()
         return self.create(title, brief=brief, session=agent.title, **data) if agent else None
+
+    def _repeats_last(self, session: str, title: str, brief: str) -> bool:
+        """Whether the last line said to this session was this very line, so that saying it again would add nothing."""
+        for row in reversed(self.rows.summaries()[-LOOKED_BACK:]):
+            last = self.load(row["n"]) if not row["deleted"] else None
+            if last is not None and last.data.get("session") == session:
+                return not last.completed and last.title == title and last.brief == brief
+        return False
