@@ -21,7 +21,9 @@
         "PlainViewerTextDetector",
         "PlainServerTextDetector",
         "PlainViewerScriptTextDetector",
-        "PlainViewerPageTextDetector"
+        "PlainViewerPageTextDetector",
+        "SentenceLabelDetector",
+        "SentenceLabelScriptDetector"
     ],
     "parallel": 2,
     "configure": {
