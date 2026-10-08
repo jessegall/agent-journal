@@ -197,9 +197,8 @@ class Controller(Files, Links, Discussed):
         if found is not None:
             return self.update(found["n"], abstract=abstract or None, brief=brief or None, **data)
         self._handled("create", title=title, abstract=abstract, brief=brief, **data)
-        for name in self.resource.required:
-            if not data.get(name):
-                self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
+        for name in self.resource.unfilled(data):
+            self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
         with self.record.locked(self.resource.scope):
             n = (self.rows.numbers() or [0])[-1] + 1
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
@@ -283,7 +282,11 @@ class Controller(Files, Links, Discussed):
                     break
             else:
                 r.sections.append({SECTION.title: title, SECTION.body: body})
+            self._sectioned(r)
             return self.save(r, "updated", section=title)
+
+    def _sectioned(self, r: Resource) -> None:
+        pass
 
     @marks.action
     def delete(self, n: int, why: str = "") -> Resource:
