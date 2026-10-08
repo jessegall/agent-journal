@@ -18,6 +18,8 @@ if [ -n "${GITHUB_TOKEN:-}" ]; then
 fi
 
 mkdir -p "$PROJECT/.claude"
+# Claude's first-run questions have no one to answer them on a server; its login comes from .env.
+[ -f "$HOME/.claude.json" ] || printf '{"hasCompletedOnboarding": true, "theme": "dark"}\n' > "$HOME/.claude.json"
 AGENT_JOURNAL_BOOTSTRAPPED=1 python3 /opt/agent-journal/src/install.py upgrade "$PROJECT" >/dev/null
 hosted-journal prepare --address "$JOURNAL_ADDRESS" --listen 0.0.0.0 --port 8440
 

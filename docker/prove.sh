@@ -39,6 +39,18 @@ pass "run, upgrade, stop and hook are refused to the owner"
 for _ in 1 2 3 4 5; do curl -sk -o /dev/null -H "Origin: $SITE" --data "password=wrong" "$SITE/login"; done
 curl -sk -H "Origin: $SITE" --data-urlencode "password=$PASSWORD" "$SITE/login" | grep -q "Too many wrong tries" && pass "five wrong passwords lock the place out" || fail "no lock-out"
 
+json() { python3 -c "import json, sys; print(json.load(sys.stdin)$1)"; }
+LINK="$(curl -sk -b "$JAR" -H "Origin: $SITE" -H "Content-Type: application/json" -X POST -d '{"days": 7}' "$SITE/api/main/phone/connect" | json '["link"]')"
+echo "$LINK" | grep -q "^https://localhost/p/#" || fail "the phone's code points at $LINK"
+PHONE="$WORK/phone"
+curl -sk -o /dev/null -c "$PHONE" -H "Origin: $SITE" -H "X-Phone: 1" -H "Content-Type: application/json" -X POST -d "{\"code\": \"${LINK#*#}\", \"device\": \"proof\"}" "$SITE/p/pair"
+[ "$(curl -sk -o /dev/null -w '%{http_code}' -b "$PHONE" "$SITE/p/state")" = "200" ] && pass "a phone pairs at the server's own address" || fail "the phone did not pair"
+
+PLACE="$(curl -sk -b "$JAR" -H "Origin: $SITE" -H "Content-Type: application/json" -X POST -d '{"title": "server-work"}' "$SITE/api/main/environment" | json '["n"]')"
+curl -sk -o /dev/null -b "$JAR" -H "Origin: $SITE" -H "Content-Type: application/json" -X POST -d '{"agent": "claude"}' "$SITE/api/main/environment/$PLACE/launch"
+for _ in $(seq 1 30); do compose exec -T journal pgrep -u journal -x claude >/dev/null 2>&1 && break; sleep 1; done
+compose exec -T journal pgrep -u journal -x claude >/dev/null 2>&1 && pass "an agent started from the viewer runs headless on the server" || fail "no agent started"
+
 [ "$(compose exec -T journal id -u)" = "10001" ] && pass "the server runs as an unprivileged user" || fail "the server runs as root"
 MODES="$(compose exec -T journal sh -c 'stat -c %a "$HOME"/.journal/hosted "$HOME"/.journal/hosted/*/owner.json' | tr '\n' ' ')"
 echo "$MODES" | grep -Eq '^700 600 $' && pass "secrets sit in a folder only the server's user can read" || fail "secret modes are $MODES"

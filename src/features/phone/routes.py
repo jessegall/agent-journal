@@ -17,7 +17,7 @@ from engine.color import identity
 from features.sharing.controller import Shares
 from features.sharing.page import disposition, unshared
 from features.sharing.preview import icon
-from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
+from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT, local, own_origin
 from resources.base import SYSTEM, Refused, Stale
 from features.trigger import DAY
 from engine.wording import digest
@@ -33,7 +33,6 @@ HEADER = "X-Phone"
 UNLOCK = "X-Phone-Unlock"
 UPLOAD_LIMIT = 25 * 1024 * 1024
 UPLOADED = "application/octet-stream"
-LOCAL = ("127.0.0.1", "localhost")
 BUILD = re.compile(r"assets/(phone-[\w-]+\.js)")
 
 
@@ -214,10 +213,6 @@ def built() -> str:
     return found.group(1) if found else ""
 
 
-def local(host: str) -> bool:
-    return host.split(":", 1)[0] in LOCAL
-
-
 class PhoneRoutes:
     def get(self, handler, rest: list[str]) -> None:
         if rest[:1] == ["assets"] and len(rest) == 2:
@@ -396,9 +391,7 @@ class PhoneRoutes:
         return Relying(address, f"https://{address}")
 
     def trusted(self, handler, kind: str = "application/json") -> bool:
-        host = handler.headers.get("Host", "")
-        origin = f"{'http' if local(host) else 'https'}://{host}"
-        return (handler.headers.get("Origin") == origin and handler.headers.get(HEADER) == "1"
+        return (handler.headers.get("Origin") == own_origin(handler.headers) and handler.headers.get(HEADER) == "1"
                 and handler.headers.get("Content-Type", "").startswith(kind))
 
     def body(self, handler) -> dict | None:

@@ -35,6 +35,7 @@ PACKED = ("text/", "application/javascript", "image/svg+xml")
 COMMENT_HEADER = "X-Shared-Comment"
 APP_PAGE = "share.html"
 OWN_PATHS = ("s", HEALTH)
+LOCAL = ("127.0.0.1", "localhost")
 PREVIEW = "preview.png"
 APP_HEADERS = {"Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
                                           "font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}
@@ -47,6 +48,17 @@ HEADERS = {
     "X-Robots-Tag": "noindex, nofollow",
     "Cache-Control": "no-store",
 }
+
+
+def local(host: str) -> bool:
+    return host.split(":", 1)[0] in LOCAL
+
+
+def own_origin(headers) -> str:
+    """The origin this server's own pages load from: https behind a TLS proxy or a tunnel, plain http only on the machine itself."""
+    host = headers.get("Host", "")
+    secure = headers.get("X-Forwarded-Proto") == "https" or not local(host)
+    return f"{'https' if secure else 'http'}://{host}"
 
 
 def routed(parts: list[str], record):
