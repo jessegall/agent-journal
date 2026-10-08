@@ -1,5 +1,6 @@
 import errno
 import json
+import re
 import os
 import socket
 import subprocess
@@ -44,6 +45,8 @@ ADDRESS = "journal.example.com"
 PASSWORD = "correct horse battery"
 SRC = Path(__file__).resolve().parents[2]
 WEB = SRC / "web"
+DOCKER = SRC.parent / "docker"
+WORKFLOW = SRC.parent / ".github" / "workflows" / "docker-image.yml"
 APART_WAIT = 30
 SCENARIOS_WAIT = 240
 
@@ -206,6 +209,11 @@ def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_ea
     for path in ("/p/api/upgrade", "/p/api/st%6fp", "/p/api/update"):
         refused = hosted.call("POST", path, body="{}", Cookie=key, **phone_headers)
         assert refused.status == 403 and "never runs this" in refused.text, path
+    image = WORKFLOW.read_text()
+    assert re.search(r'tags: \["v\[0-9\]\+\.\[0-9\]\+\.\[0-9\]\+"\]', image) and "branches" not in image and "pull_request" not in image
+    assert not re.findall(r"uses: (?!\S+@[0-9a-f]{40}\b)", image), "every action is pinned by commit"
+    assert "latest=false" in image and image.count("value=latest") == 1 and "is-ancestor" in image and "cosign verify" in image
+    assert re.match(r"FROM \S+@sha256:[0-9a-f]{64}", (DOCKER / "Dockerfile").read_text())
     assert hosted.call("POST", "/logout", {}, Cookie=f"{COOKIE}={token}").headers["location"] == "/login?notice=logged-out"
     assert hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={token}").status == 401
     logged = [json.loads(line) for line in (hosted.vault.folder / AUDIT).read_text().splitlines()]
