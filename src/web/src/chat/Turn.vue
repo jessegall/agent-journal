@@ -26,7 +26,7 @@ const skillMark = computed(() => ({
     at: props.turn.created,
     title: `Read the ${props.turn.title} skill`,
 }));
-const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "Conversation summarized", at: props.turn.created}));
+const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "Conversation compacted", at: props.turn.created}));
 const cardMark = computed(() => ({...data.value, at: props.turn.created}));
 
 const searching = ref(false);
