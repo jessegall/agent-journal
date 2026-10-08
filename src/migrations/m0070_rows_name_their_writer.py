@@ -2,8 +2,7 @@ from pathlib import Path
 
 from controllers.types import CONTROLLERS
 from engine.record import Record
-from features.hosted_journal.owner import OWNER
-from resources.base import SYSTEM, USER, WRITER
+from resources.base import OWNER_ID, SYSTEM, USER, WRITER
 
 
 def run(root: Path) -> str:
@@ -14,6 +13,6 @@ def run(root: Path) -> str:
 def named_in(rows) -> int:
     unnamed = [row for row in (rows.peek(summary["n"]) for summary in rows.summaries()) if row.author == USER and WRITER not in row.data]
     for row in unnamed:
-        row.data[WRITER] = OWNER
+        row.data[WRITER] = OWNER_ID
         rows.persist(row)
     return len(unnamed)

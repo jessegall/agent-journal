@@ -166,17 +166,18 @@ def reach(route: Route, path: GenericPath) -> Page | Action:
     return Action(path.type, path.action or GENERIC[page])
 
 
-def allowed(root: Path, environment: str, route: Route, params: dict, body: dict, unlocked: bool, member: str = "") -> Reach:
-    """A named page or action is open, and one that runs a command only right after the phone unlocked; anything unnamed is closed, and a member's phone gets only what the member's rights grant."""
+def allowed(root: Path, environment: str, route: Route, params: dict, body: dict, unlocked: bool, member: str) -> Reach:
+    """A named page or action is open, and one that runs a command only right after the phone unlocked; anything unnamed is closed, and a phone gets only what its person's rights grant."""
     reached = reach(route, GenericPath.from_json(params))
-    if reached not in NAMED or (member and not rights_of(Record(root, environment)).may_reach(Record(root, environment), member, reached)):
+    home = Record(root, environment)
+    if reached not in NAMED or not rights_of(home).may_reach(home, member, reached):
         return Reach.CLOSED
     if unlocked or not (reached in RUNS or reached.asks_to_run(Record(root, environment), Arguments.given(body, params), body)):
         return Reach.OPEN
     return Reach.LOCKED
 
 
-def reached(root: Path, route: Route, params: dict, query: dict, body: dict, environment: str, unlocked: bool, member: str = "") -> Reach:
+def reached(root: Path, route: Route, params: dict, query: dict, body: dict, environment: str, unlocked: bool, member: str) -> Reach:
     """How far a phone in this environment gets with the page."""
     here = {Named.from_json(given).env for given in (params, query)} - {""}
     target = Named.from_json(body).env

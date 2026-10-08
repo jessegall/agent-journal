@@ -6,6 +6,7 @@ from engine.stop import STAYS_UP
 from features.base import Feature
 from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, PHONE_OWNER_ACTIONS, Gateway
+from features.hosted_journal.people import people_of
 from features.hosted_journal.phones import VaultGuard
 from features.hosted_journal.settings import FromRecord, FromVault
 from features.hosted_journal.vault import Vault
@@ -13,6 +14,7 @@ from features.hosted_journal.watch import DiskWatch
 from features.journal import Journal
 from features.phone.desktop import CLOSED
 from features.phone.guard import PHONE_GUARDS
+from features.phone.members import MEMBER_RIGHTS
 from features.sharing.address import ANSWERS_AT
 from features.sharing.origins import ORIGINS, ProxyLookup, ProxyOrigins
 from features.sharing.routes import EVERY_OTHER, ROUTES, TICKS
@@ -60,6 +62,7 @@ class HostedJournalFeature(Feature):
         CLOSED.add(guarding, NEVER_FROM_OUTSIDE)
         ORIGINS.add(guarding, self.origins)
         ANSWERS_AT.add(guarding, self.address)
+        MEMBER_RIGHTS.add(guarding, people_of)
         if self.apart:
             PHONE_GUARDS.add(None, phone_vault)
         TICKS.add(guarding, DiskWatch())

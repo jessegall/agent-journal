@@ -2,7 +2,7 @@ import time
 from typing import ClassVar
 
 from features.phone.passkey import PendingPasskey
-from resources.base import PROJECT, Resource, ResourceDetails
+from resources.base import OWNER_ID, PROJECT, Resource, ResourceDetails
 from resources.shapes import NUMBER, TEXT, Field, Shape
 
 
@@ -14,7 +14,7 @@ class Phone(Shape, Resource):
     )
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="environment"),
-        Field(TEXT, name="member"),
+        Field(TEXT, OWNER_ID, name="member"),
         Field(name="journal"),
         Field(name="push"),
         Field(default=list, name="pushed"),

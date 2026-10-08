@@ -7,7 +7,7 @@ from enum import Enum
 from engine.fields import Loaded
 from features.hosted_journal.vault import Vault
 from features.trigger import DAY, MINUTE
-from resources.base import Refused
+from resources.base import OWNER_ID, Refused
 
 PASSWORD = "owner.json"
 SETUP = "setup.json"
@@ -22,7 +22,6 @@ SETUP_DAYS = 1
 MOST_TRIES = 5
 MOST_EVERYWHERE = 50
 LOCKED_FOR = 15 * MINUTE
-OWNER = "owner"
 
 
 def hashed(secret: str) -> str:
@@ -104,13 +103,13 @@ class KeptLogin(Loaded):
     made: float = 0.0
     until: float = 0.0
     device: str = ""
-    member: str = OWNER
+    member: str = OWNER_ID
 
     def standing(self, now: float) -> Standing:
         return Standing.OPEN if self.until > now else Standing.RAN_OUT
 
     def is_owners(self) -> bool:
-        return self.member == OWNER
+        return self.member == OWNER_ID
 
 
 class Logins:
@@ -135,11 +134,6 @@ class Logins:
     def standing(self, token: str) -> Standing:
         login = self.found(token)
         return Standing.UNKNOWN if login is None else login.standing(self.vault.clock())
-
-    def member(self, token: str) -> str:
-        """Who this login belongs to: a member's id, or an empty string for the owner."""
-        login = KeptLogin.from_json(self.vault.read(LOGINS).get(hashed(token), {}))
-        return "" if login.is_owners() else login.member
 
     def close(self, token: str) -> None:
         with self.vault.held():

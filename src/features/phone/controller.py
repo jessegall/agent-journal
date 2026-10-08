@@ -23,7 +23,7 @@ from features.phone.resource import Phone
 from features.phone.surface import CARDS
 from features.sharing.controller import Shares
 from features.trigger import DAY
-from resources.base import PROJECT, SYSTEM, USER, Refused, titled
+from resources.base import OWNER_ID, PROJECT, SYSTEM, USER, Refused, titled
 
 CODE_SECONDS = 600
 DAYS = (1, 7, 30)
@@ -102,7 +102,7 @@ class Phones(Controller):
             raise Refused(f"a phone's {', '.join(sorted(set(data) & set(KEPT)))} are set only by scanning the code in the viewer's Connect your phone dialog")
 
     @action
-    def connect(self, days: int = 7, member: str = "") -> Code:
+    def connect(self, days: int = 7, member: str = OWNER_ID) -> Code:
         if self.actor != USER:
             raise Refused("only the user connects a phone, from the viewer's Connect your phone dialog")
         if int(days) not in DAYS:
@@ -154,7 +154,7 @@ class Phones(Controller):
         return [self._phone(row["n"]) for row in self._summaries() if row.get("key") and row.get("expires", 0) > now and not row["completed"] and not row["deleted"]]
 
     def _active(self, member: str) -> Phone | None:
-        """The phone this member has connected, one at a time; the owner is the member named by an empty string."""
+        """The phone this person has connected, one at a time each, the owner's included."""
         return next((phone for phone in self._actives() if phone.member == member), None)
 
     def _by_key(self, key: str) -> Phone | None:

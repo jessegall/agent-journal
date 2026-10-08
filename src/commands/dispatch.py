@@ -44,7 +44,7 @@ def resolve(method: str, path: str) -> tuple[Route, dict] | None:
     return None
 
 
-def reached_by_phone(root: Path, method: str, path: str, query: dict, body: dict, environment: str, unlocked: bool, member: str = "") -> Reach:
+def reached_by_phone(root: Path, method: str, path: str, query: dict, body: dict, environment: str, unlocked: bool, member: str) -> Reach:
     found = resolve(method, path)
     return Reach.CLOSED if found is None else reached(root, *found, query, body, environment, unlocked, member)
 

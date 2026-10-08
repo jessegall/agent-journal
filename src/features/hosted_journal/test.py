@@ -28,7 +28,7 @@ from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, DEVICE_COOKIE, MOST_STREAMS, Visit
 from features.hosted_journal.host import clear_tries
 from features.hosted_journal.hosting import Hosting
-from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, OWNER, Logins, Owner, Standing, WrongTries, hashed
+from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.feature import APART
 from features.hosted_journal.apart import serving_command, serving_environment
 from features.hosted_journal.phones import KEPT_ELSEWHERE, PHONES, VaultGuard
@@ -43,7 +43,7 @@ from features.sharing.server import ShareHandler
 from features.sharing.services import share_services
 from features.sharing.tunnel import SERVER
 from controllers.types import Messages, Todos
-from resources.base import SYSTEM, USER
+from resources.base import OWNER_ID, SYSTEM, USER
 from serve import Handler, JournalServer
 from tests.conftest import fresh
 
@@ -86,7 +86,7 @@ class Hosted(NamedTuple):
     def logged_in(self) -> str:
         if not Owner(self.vault).has_password():
             Owner(self.vault).set_password(PASSWORD)
-        return Logins(self.vault).open(7, "test", OWNER)
+        return Logins(self.vault).open(7, "test", OWNER_ID)
 
 
 def serve(record) -> int:
@@ -241,7 +241,7 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
 
 def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hosted):
     Owner(hosted.vault).set_password(PASSWORD)
-    old = Logins(Vault(hosted.record.root, clock=lambda: 0.0)).open(7, "old phone", OWNER)
+    old = Logins(Vault(hosted.record.root, clock=lambda: 0.0)).open(7, "old phone", OWNER_ID)
     page = hosted.call("GET", "/", Cookie=f"{COOKIE}={old}")
     assert page.status == 303 and page.headers["location"] == "/login?notice=ran-out"
     api = hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={old}")
@@ -327,7 +327,7 @@ def test_another_site_plain_http_from_outside_a_strange_host_large_bodies_and_to
     assert hosted.call("GET", f"/s/{shared.token}/../api/identity").status == 404, "a link's address reaches nothing of the viewer"
     assert hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={shared.token}").status in (302, 303, 401), "a link's token is no login"
     sam = Logins(hosted.vault).open(7, "test", "sam")
-    assert (Logins(hosted.vault).member(sam), Logins(hosted.vault).member(token), Logins(hosted.vault).member("unknown")) == ("sam", "", ""), \
+    assert (Logins(hosted.vault).found(sam).member, Logins(hosted.vault).found(token).member, Logins(hosted.vault).found("unknown")) == ("sam", OWNER_ID, None), \
         "a login knows whose it is, which is what a phone connected through it belongs to"
     held = [gateway.checking.acquire() for _ in range(CHECKS_AT_ONCE)]
     assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 429 and all(held)
@@ -347,7 +347,7 @@ def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, mo
         raise OSError(errno.ENOSPC, "No space left on device")
     monkeypatch.setattr(disk.os, "replace", full)
     with pytest.raises(DiskFull):
-        Logins(hosted.vault).open(7, "another", OWNER)
+        Logins(hosted.vault).open(7, "another", OWNER_ID)
     assert (hosted.vault.folder / LOGINS).read_text() == kept and token
     assert not [path for path in hosted.vault.folder.iterdir() if path.name.startswith(".")]
     assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 507
@@ -385,8 +385,8 @@ def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, mo
 @pytest.mark.skipif(not (WEB / "node_modules" / "playwright-core").is_dir(), reason="the viewer's npm packages are not installed")
 def test_login_failed_rate_limited_and_ran_out_show_in_a_browser(hosted):
     Owner(hosted.vault).set_password(PASSWORD)
-    owner = Logins(hosted.vault).open(7, "scenario", OWNER)
-    old = Logins(Vault(hosted.record.root, clock=lambda: 0.0)).open(7, "old", OWNER)
+    owner = Logins(hosted.vault).open(7, "scenario", OWNER_ID)
+    old = Logins(Vault(hosted.record.root, clock=lambda: 0.0)).open(7, "old", OWNER_ID)
     Hosting(hosted.vault).updater.mkdir(parents=True, exist_ok=True)
     (Hosting(hosted.vault).updater / "status.json").write_text(json.dumps({"latest": "99.0.0", "newer": True}))
     env = {**os.environ, "HOSTED_URL": f"http://127.0.0.1:{hosted.port}/", "HOSTED_PASSWORD": PASSWORD, "HOSTED_OLD_LOGIN": old, "HOSTED_OWNER_LOGIN": owner}

@@ -31,6 +31,7 @@ KEYWORDS_IN = "keywords_in"
 PART_OF = "part_of"
 OWNER = "plugin"
 ENVIRONMENT, PROJECT = "environment", "project"
+OWNER_ID = "owner"   # the id of the journal's owner wherever a person is named: on a login, a row's writer or a phone
 WRITER = "member"   # the data key naming the person who made a row: the owner, or a member of a journal on a server
 SIDEBAR, RESULTS, WORKINGS, UNLISTED = "sidebar", "results", "workings", ""
 SCOPES = (ENVIRONMENT, PROJECT)
