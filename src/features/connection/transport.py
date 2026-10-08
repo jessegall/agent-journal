@@ -60,6 +60,9 @@ class ServerKey:
     def read(self) -> str | None:
         return self.file.read_text().strip() if self.file.is_file() else None
 
+    def is_kept(self) -> bool:
+        return self.file.is_file()
+
 
 class HttpTransport:
     """The journal on a server over its own address, answering as JSON under /api/sync, with this copy's machine key when it has one."""

@@ -16,7 +16,7 @@ from engine.sync import PROTOCOL, Comparison, Hello, Release, Shape, Step
 from engine.version import version
 from features.connection.code import Pushed, pull, push
 from features.connection.linking import Synced, hand, join, local_hello, sync
-from features.connection.transport import HttpTransport
+from features.connection.transport import HttpTransport, ServerKey
 from migrations import applied
 from resources.base import AGENT, SYSTEM, USER, Event
 from tests.conftest import fresh, hosted_world, refused  # noqa: F401
@@ -94,6 +94,16 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     assert (view(record, "https://server.example").connected, view(record, "https://server.example").step) == (True, "in step"), "a copy that has joined is shown as connected and how it stands"
     leave(record)
     assert (view(record, "").connected, record.setting("connection", {}).get("address")) == (False, ""), "disconnecting forgets the address and what was learned of the server"
+    monkeypatch.setattr("features.connection.commands.transport_for", lambda record, address: Server(record.root))
+    Features(record, actor=USER).switch("connection", True)
+    Environments(record, actor=USER).action("connect")("https://server.example", "the-machine-key")
+    kept = ServerKey(record.root)
+    shown = str(Environments(record, actor=USER).action("connection")())
+    assert (kept.read(), kept.file.stat().st_mode & 0o777, view(record, "https://server.example").has_key, "the-machine-key" in shown) == ("the-machine-key", 0o600, True, False), \
+        "the machine key given in the viewer is saved on this computer alone, readable by its owner only, and never shown again"
+    assert "the-machine-key" not in "".join(path.read_text(errors="ignore") for path in record.root.rglob("*") if path.is_file() and path != kept.file), \
+        "and no other file of the record holds it"
+    leave(record)
     join(record, newer)
     marked = view(record, "https://server.example")
     assert (marked.role, marked.synced_at) == ("your copy", 0.0), "a copy that has joined says it is a copy, and that it has not synced yet"

@@ -7,6 +7,7 @@ import {connectToServer, connection, disconnectFromServer, loadConnection} from 
 import {stepWords, travelsLine} from "../domain/connection.js";
 
 const address = ref("");
+const key = ref("");
 const changing = ref(false);
 const busy = ref(false);
 const failure = ref("");
@@ -17,9 +18,10 @@ async function connect() {
     busy.value = true;
     failure.value = "";
     try {
-        await connectToServer(address.value);
+        await connectToServer(address.value, key.value);
         changing.value = false;
         address.value = "";
+        key.value = "";
     } catch (e) {
         failure.value = e.message;
     } finally {
@@ -53,6 +55,9 @@ onMounted(loadConnection);
                         .
                         {{ stepWords(connection.step) }}
                     </p>
+                    <template v-if="connection.has_key">
+                        <p class="connection-line connection-travels">This computer syncs with the machine key saved on it. The key is never shown again.</p>
+                    </template>
                     <div class="connection-actions">
                         <Btn small @click="changing = true">Change server</Btn>
                         <Btn small :busy="busy" @click="leave">Disconnect</Btn>
@@ -61,6 +66,18 @@ onMounted(loadConnection);
                 <template v-else>
                     <p class="connection-line">Not connected. Give the address of your journal on a server, and this one will share its environments with it.</p>
                     <TextInput :value="address" aria-label="Server address" placeholder="https://journal.example.com" @input="address = $event.target.value" @keydown.enter="connect" />
+                    <TextInput
+                        :value="key"
+                        type="password"
+                        autocomplete="off"
+                        aria-label="Machine key"
+                        :placeholder="connection.has_key ? 'A machine key is saved on this computer; give a new one to replace it' : 'Machine key'"
+                        @input="key = $event.target.value"
+                        @keydown.enter="connect"
+                    />
+                    <p class="connection-line connection-travels">
+                        The server's owner makes the machine key on the server with hosted-journal machine-key. It is saved on this computer only and is never shown again.
+                    </p>
                     <p class="connection-line connection-travels">{{ travelsLine(connection.travels) }}</p>
                     <div class="connection-actions">
                         <Btn small :busy="busy" :disabled="!address.trim()" @click="connect">Connect</Btn>

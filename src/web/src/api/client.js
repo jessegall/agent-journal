@@ -163,8 +163,8 @@ export class ApiClient {
         return this.command("environment", "connection", address ? {address} : {});
     }
 
-    connectTo(address) {
-        return this.command("environment", "connect", {address});
+    connectTo(address, key) {
+        return this.command("environment", "connect", key ? {address, key} : {address});
     }
 
     disconnectFromServer() {
