@@ -35,7 +35,7 @@ const countOf = (n) => `${n} ${n === 1 ? "helper" : "helpers"}`;
 
 function runItem(runs, ref, text) {
     const run = runs.find((entry) => [entry.task_id, entry.id].includes(ref));
-    return {label: run?.task || run?.command || text, where: "", kind: run?.kind || "background run", reported: Boolean(run) && !run.running, ended: Number(run?.ended || 0)};
+    return {label: run?.task || run?.command || text, where: "", kind: run?.kind || "background run", reported: !run || !run.running, ended: Number(run?.ended || 0)};
 }
 
 function helperItem(helpers, ref) {
