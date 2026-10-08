@@ -1,7 +1,11 @@
 from http.client import HTTPConnection, HTTPException
 from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit
 
+import commands.http  # noqa: F401  registers the journal's routes, which closed() resolves against
+from commands.dispatch import resolve
+from engine.extension import Extension
 from engine.viewer import lately_running
+from features.phone.allow_list import Page
 from features.routing import JSON, PHONE_ENVIRONMENT, PHONE_UNLOCKED
 from features.sharing.page import disposition
 from features.sharing.server import APP_HEADERS
@@ -12,12 +16,20 @@ STREAMED = "text/event-stream"
 WAIT_SECONDS = 600
 CHUNK = 65536
 API = "/api/"
+CLOSED = Extension()
 
 
 def encoded(asked) -> str:
     """The asked path and query, decoded and encoded again, so no raw character reaches the request line."""
     path = "/".join(quote(unquote(part), safe="") for part in asked.path.split("/"))
     return f"{path}?{urlencode(parse_qsl(asked.query, keep_blank_values=True))}" if asked.query else path
+
+
+def closed(record, method: str, forwarded: str) -> bool:
+    """Whether the journal would route this exact forwarded path to a page a feature closes to everyone who comes in from outside."""
+    found = resolve(method, urlsplit(forwarded).path)
+    shut = {page for pages in CLOSED.each(record) for page in pages}
+    return found is not None and Page(found[0].method, found[0].pattern) in shut
 
 
 def phone_marks(environment: str, unlocked: bool) -> dict:
@@ -34,12 +46,16 @@ class Desktop:
         self.page_headers = page_headers
 
     def forward(self, body: bytes) -> None:
-        reached = urlsplit(lately_running(self.handler.shares.record.root))
+        record = self.handler.shares.record
+        forwarded = encoded(self.asked)
+        if closed(record, self.handler.command, forwarded):
+            return self.handler.answer(403, "this journal never runs this for anyone who comes in from outside")
+        reached = urlsplit(lately_running(record.root))
         if not reached.port:
             return self.handler.answer(503, "the journal is not running")
         connection = HTTPConnection(reached.hostname, reached.port, timeout=WAIT_SECONDS)
         try:
-            connection.request(self.handler.command, encoded(self.asked), body or None, self.carried())
+            connection.request(self.handler.command, forwarded, body or None, self.carried())
             reply = connection.getresponse()
             headers = {name: reply.getheader(name) for name in KEPT if reply.getheader(name)}
             kind = reply.getheader("Content-Type", "")

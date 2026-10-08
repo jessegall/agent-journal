@@ -4,8 +4,9 @@ from agents.terminal import AT_ONCE
 from engine.stop import STAYS_UP
 from features.base import Feature
 from features.hosted_journal.details import HostedJournalDetails
-from features.hosted_journal.gateway import Gateway
+from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, Gateway
 from features.journal import Journal
+from features.phone.desktop import CLOSED
 from features.sharing.address import ANSWERS_AT
 from features.sharing.routes import EVERY_OTHER, ROUTES
 from features.sharing.services import KEEP_UP, LISTENS, Listen
@@ -38,3 +39,4 @@ class HostedJournalFeature(Feature):
         LISTENS.add(self, listen)
         ANSWERS_AT.add(self, address)
         AT_ONCE.add(self, agents_at_once)
+        CLOSED.add(self, NEVER_FROM_OUTSIDE)

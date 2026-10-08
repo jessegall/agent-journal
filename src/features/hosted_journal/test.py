@@ -20,6 +20,7 @@ from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import COOKIE, MOST_STREAMS
 from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_TRIES, Logins, Owner, WrongTries, hashed
 from features.hosted_journal.vault import AUDIT, DiskFull, Vault
+from features.phone.controller import Phones
 from features.sharing.controller import Shares
 from features.sharing.routes import EVERY_OTHER, ROUTES
 from features.sharing.server import ShareHandler
@@ -44,13 +45,13 @@ class Hosted(NamedTuple):
     port: int
     vault: Vault
 
-    def call(self, method: str, path: str, form: dict | None = None, **headers) -> Answer:
+    def call(self, method: str, path: str, form: dict | None = None, body: str | None = None, **headers) -> Answer:
         given = {"Host": f"127.0.0.1:{self.port}", **{name.replace("_", "-"): value for name, value in headers.items()}}
-        body = None if form is None else urlencode(form).encode()
-        if body is not None:
+        if form is not None:
+            body = urlencode(form)
             given = {"Content-Type": "application/x-www-form-urlencoded", "Origin": f"http://127.0.0.1:{self.port}", **given}
         connection = HTTPConnection("127.0.0.1", self.port, timeout=10)
-        connection.request(method, path, body, given)
+        connection.request(method, path, None if body is None else body.encode(), given)
         reply = connection.getresponse()
         answer = Answer(reply.status, {name.lower(): value for name, value in reply.getheaders()}, reply.read().decode(errors="replace"))
         connection.close()
@@ -149,12 +150,21 @@ def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hoste
 def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_each_refusal(hosted):
     token = hosted.logged_in()
     origin = f"http://127.0.0.1:{hosted.port}"
-    for path in ("/api/run", "/api/upgrade", "/api/stop", "/api/hook/claude"):
-        assert hosted.call("POST", path, {}, Cookie=f"{COOKIE}={token}", Origin=origin).status == 403
+    closed = ("/api/run", "/api/upgrade", "/api/stop", "/api/hook/claude", "/api/update", "/api/journals/start", "/api/services/sharing.server")
+    encoded = ("/api/%72un", "/api/upgr%61de", "/api/st%6fp", "/api/hoo%6b/claude", "/api/upd%61te")
+    for path in (*closed, *encoded):
+        assert hosted.call("POST", path, {}, Cookie=f"{COOKIE}={token}", Origin=origin).status == 403, path
+    code = Phones(hosted.record, actor=USER).connect(7)["link"].rsplit("#", 1)[1]
+    phone_headers = {"Origin": origin, "X-Phone": "1", "Content-Type": "application/json"}
+    paired = hosted.call("POST", "/p/pair", body=json.dumps({"code": code, "device": "phone"}), **phone_headers)
+    key = paired.headers["set-cookie"].split(";")[0]
+    for path in ("/p/api/upgrade", "/p/api/st%6fp", "/p/api/update"):
+        refused = hosted.call("POST", path, body="{}", Cookie=key, **phone_headers)
+        assert refused.status == 403 and "never runs this" in refused.text, path
     assert hosted.call("POST", "/logout", {}, Cookie=f"{COOKIE}={token}").headers["location"] == "/login?notice=logged-out"
     assert hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={token}").status == 401
     logged = [json.loads(line) for line in (hosted.vault.folder / AUDIT).read_text().splitlines()]
-    assert sorted(line["path"] for line in logged if line["what"] == "refused") == ["/api/hook/claude", "/api/run", "/api/stop", "/api/upgrade"]
+    assert {line["path"] for line in logged if line["what"] == "refused"} >= {*closed, *encoded}
 
 
 def test_another_site_plain_http_from_outside_and_a_strange_host_are_refused(hosted):
