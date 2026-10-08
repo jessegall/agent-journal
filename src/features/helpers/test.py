@@ -382,12 +382,16 @@ def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back
     record = fresh()
     project, helpers = record.root.resolve().parent, Helpers(record, actor=AGENT)
     record.set_setting("helpers", {"kept": 0})
+    runs = lambda row, pid=os.getpid(): Sessions(record.root).bind(f"{row.name}-agent", row.environment, pid=pid, provider="claude")
     helpers.dispatch("Rhea", "profile the hooks", "claude", "sonnet")
     helpers.dispatch("Zed", "fix src/features/nudges/standing.py", "claude", "sonnet")
+    runs(helpers.load(1))
+    runs(helpers.load(2))
     monkeypatch.setattr("features.helpers.reuse.touched", lambda record, row: ("src/features/nudges/standing.py",) if row.name == "Zed" else ())
     Agents(Record(record.root, helpers.load(2).environment), actor=SYSTEM).create("claude-zed", status=IDLE, at=time.time() - 600)
     started_answer = helpers.dispatch("Ivy", "tidy nudges/standing.py", "claude", "sonnet")
     assert "helper 2, Zed" in started_answer and "helper 1" not in started_answer, "a new helper's answer names the idle one that touched the files its job names"
+    runs(helpers.load(3))
     record.set_setting("helpers", {"kept": 3})
     held_back = refused(lambda: helpers.dispatch("Bo", "change nudges/standing.py again", "claude", "sonnet"))
     assert held_back.index("helper 2, Zed") < held_back.index("helper 1, Rhea") and 'journal helper say 2 "<the new work>"' in held_back, \
@@ -399,6 +403,15 @@ def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back
     for row in helpers.rows.standing():
         Agents(Record(record.root, row.environment), actor=SYSTEM).create("busy", status="working", at=time.time())
     assert "started" in helpers.dispatch("Bo", "change nudges/standing.py again", "claude", "sonnet"), "when every kept one is busy the dispatch goes through"
+    import subprocess
+    gone = subprocess.Popen(["true"])
+    gone.wait()
+    runs(helpers.load(3), gone.pid)
+    from features.helpers.reuse import agent_runs
+    assert (agent_runs(record, helpers.load(2)), agent_runs(record, helpers.load(3))) == (True, False), "a helper whose agent process is gone is not one that runs"
+    assert "helper 3, Ivy" not in [k.name for k in kept(record, helpers.rows.standing())], "and it is not one of the helpers kept for reuse, so it holds no place against the limit"
+    assert "no agent running" in helpers.stop(3) and not helpers.load(3).completed, "stopping it says that its agent is gone instead of refusing"
+    assert helpers.complete(3).completed, "and finishing it then works, since the same check says its agent does not run"
     Agents(record, actor=SYSTEM).update(context.agent.row.n, subagent_rows=[{"id": "toolu_1", "task": "Ada: map the hooks", "type": "explore", "session": "a1"}])
     child = Agents(record, actor=SYSTEM).create("a1", parent="claude-1")
     KeepSubagentFiles().intercept(AgentContext.of(features.FEATURES["helpers"], record, child), SimpleNamespace(paths=(str(project / "src" / "hooks.py"),)))

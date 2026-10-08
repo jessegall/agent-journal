@@ -6,6 +6,7 @@ from pathlib import Path
 from agents.seat import SubagentRow
 from controllers.types import Agents
 from engine.record import Record
+from engine.sessions import Sessions
 from engine.worktree import lines, present
 from features.helper_worktrees.controller import KEPT, Worktrees
 from features.helpers.state import HelperAgent, HelperSnapshot, WorkState, helper_state
@@ -95,9 +96,14 @@ def unlanded(record, helper) -> tuple[str, ...]:
     return tuple(subject for subject in reversed(lines(branch.project, "log", "--format=%s", f"{branch.base}..{branch.ref}")) if subject not in landed)
 
 
+def agent_runs(record, helper) -> bool:
+    """The one answer to whether a helper's agent runs, which stopping, finishing, the state shown and the limit on kept helpers all go by."""
+    return bool(Sessions(record.root).holder(helper.environment))
+
+
 def state_of(record, helper) -> WorkState:
     agent = Agents(Record(record.root, helper.environment), actor=SYSTEM).primary_to_read()
-    snapshot = HelperSnapshot(agent=HelperAgent(status=agent.status, at=float(agent.at))) if agent else HelperSnapshot()
+    snapshot = HelperSnapshot(agent=HelperAgent(status=agent.status, at=float(agent.at))) if agent and agent_runs(record, helper) else HelperSnapshot()
     return helper_state(helper, snapshot, time.time())
 
 
@@ -135,7 +141,7 @@ def subagents_kept(record, primary) -> list[Kept]:
 
 def kept(record, helpers: list) -> list[Kept]:
     primary = Agents(record, actor=SYSTEM).primary_to_read()
-    return [*(helper_kept(record, row) for row in helpers), *(subagents_kept(record, primary) if primary else [])]
+    return [*(helper_kept(record, row) for row in helpers if agent_runs(record, row)), *(subagents_kept(record, primary) if primary else [])]
 
 
 def refusal(census: list[Kept], limit: int, kind: str, paths: tuple[str, ...]) -> str:
