@@ -27,6 +27,8 @@ class People(Protocol):
 
     def refusal(self, visit: "Visit", login: KeptLogin) -> str | None: ...
 
+    def marks(self, visit: "Visit", login: KeptLogin) -> dict: ...
+
 
 class NoMembers:
     """Only the owner logs in."""
@@ -45,6 +47,9 @@ class NoMembers:
 
     def refusal(self, visit: "Visit", login: KeptLogin) -> str | None:
         return "only this journal's owner logs in here"
+
+    def marks(self, visit: "Visit", login: KeptLogin) -> dict:
+        return {}
 
 
 def people_of(record: Record) -> People:

@@ -88,6 +88,7 @@ class Pressed:
 
 PRESSED: ContextVar[Pressed] = ContextVar("pressed", default=Pressed())
 WRITING_MEMBER: ContextVar[str | None] = ContextVar("writing_member", default=None)
+SHARED_ENVIRONMENTS: ContextVar[frozenset[str] | None] = ContextVar("shared_environments", default=None)
 HANDLERS: dict[str, list] = {}
 CONTROLLERS: dict[str, type] = {}
 

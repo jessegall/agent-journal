@@ -21,6 +21,7 @@ PLAIN = "text/plain; charset=utf-8"
 PHONE_ENVIRONMENT = "X-Phone-Environment"
 PHONE_UNLOCKED = "X-Phone-Unlocked"
 MEMBER = "X-Journal-Member"
+SHARED = "X-Journal-Environments"
 
 
 @dataclass(frozen=True)

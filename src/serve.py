@@ -21,8 +21,8 @@ import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone, resolve  # noqa: E402
 from features.phone.allow_list import Reach  # noqa: E402
-from features.routing import MEMBER, PHONE_ENVIRONMENT, PHONE_UNLOCKED, Reply  # noqa: E402
-from controllers.base import WRITING_MEMBER  # noqa: E402
+from features.routing import MEMBER, PHONE_ENVIRONMENT, PHONE_UNLOCKED, SHARED, Reply  # noqa: E402
+from controllers.base import SHARED_ENVIRONMENTS, WRITING_MEMBER  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.after_answer import AfterAnswer  # noqa: E402
 from features.switches import WARMERS  # noqa: E402
@@ -119,11 +119,13 @@ class Handler(BaseHTTPRequestHandler):
             reply.chunks.close()
 
     def answered_as(self, member: str | None, method: str, url, body: dict) -> Reply:
-        """Answers with the member the login page named as the sender, when a member sent it, as the one writing."""
-        writing = WRITING_MEMBER.set(member)
+        """Answers a member's request, as the login page named it, with the member as the one writing and only their environments in sight."""
+        given = self.headers.get(SHARED)
+        writing, seeing = WRITING_MEMBER.set(member), SHARED_ENVIRONMENTS.set(None if given is None else frozenset(filter(None, given.split(","))))
         try:
             return self.answered(method, url, body)
         finally:
+            SHARED_ENVIRONMENTS.reset(seeing)
             WRITING_MEMBER.reset(writing)
 
     def answered(self, method: str, url, body: dict) -> Reply:

@@ -26,7 +26,6 @@ from features.hosted_journal.phones import VaultGuard
 from features.hosted_journal.vault import DiskFull, RefusalLog, Vault
 from features.phone.allow_list import Action, GenericPath, Page, post, reach
 from features.phone.desktop import Desktop, closed, encoded
-from features.routing import MEMBER
 from features.sharing.origins import origins_of
 from features.trigger import DAY
 from resources.base import USER, Refused
@@ -87,11 +86,6 @@ class TooLarge(Refused):
     @classmethod
     def sent(cls, what: str) -> "TooLarge":
         return cls(f"the {what} is too large")
-
-
-def member_mark(login: KeptLogin) -> dict:
-    """The mark the gateway alone puts on a member's forwarded request, naming the member; the owner's requests carry none."""
-    return {} if login.is_owners() else {MEMBER: login.member}
 
 
 @dataclass(frozen=True)
@@ -396,8 +390,8 @@ class Gateway:
         if phone := self.answered_by_phones(visit):
             return self.answer_here(visit, *phone, visit.handler.rfile.read(size) if size else b"")
         if STREAM not in visit.handler.headers.get("Accept", ""):
-            return Desktop(visit.handler, visit.handler.path, member_mark(login), VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
-        return self.streamed(visit, login, hashed(token))
+            return Desktop(visit.handler, visit.handler.path, people.marks(visit, login), VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
+        return self.streamed(visit, login, hashed(token), people.marks(visit, login))
 
     def end_logins_of(self, vault: Vault, member: str) -> int:
         """Ends every login of this member and cuts the live streams their browsers hold open, so nothing of theirs stays connected."""
@@ -432,7 +426,7 @@ class Gateway:
             return visit.handler.send(400, json.dumps({"error": str(refused)}).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
         return visit.handler.send(200, json.dumps(body).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
 
-    def streamed(self, visit: Visit, login: KeptLogin, token: str) -> None:
+    def streamed(self, visit: Visit, login: KeptLogin, token: str, marks: dict) -> None:
         with self.lock:
             if self.streams[token] >= MOST_STREAMS:
                 return visit.refuse(429, f"one login keeps at most {MOST_STREAMS} live streams open; close a tab")
@@ -440,7 +434,7 @@ class Gateway:
             self.listening[login.member] += 1
             self.live[login.member].add(visit.handler.connection)
         try:
-            return Desktop(visit.handler, visit.handler.path, member_mark(login), VIEWER_HEADERS).forward(b"")
+            return Desktop(visit.handler, visit.handler.path, marks, VIEWER_HEADERS).forward(b"")
         finally:
             with self.lock:
                 self.streams[token] -= 1

@@ -2,7 +2,9 @@ from dataclasses import asdict, dataclass
 from functools import partial
 from urllib.parse import parse_qs
 
+from engine import runtime
 from engine.fields import Loaded
+from engine.paths import known_environment
 from features.hosted_journal.gateway import COOKIE, Gateway, Visit
 from features.hosted_journal.owner import OWNER, KeptLogin
 from features.hosted_journal.pages import Notice, notice_page
@@ -10,9 +12,11 @@ from features.hosted_journal.people import Act, Page
 from features.members.pages import BELOW_LOGIN, join_page, member_login_page
 from features.members.roles import OWNER_ABILITIES, Abilities, Role
 from features.members.roster import Departure, Roster
+from features.routing import MEMBER, SHARED
 
 OWNER_NAME = "Owner"
 NOT_A_MEMBER = "You are no longer a member of this journal."
+NOT_SHARED = "The owner has not shared this environment with you."
 
 
 @dataclass(frozen=True)
@@ -33,6 +37,12 @@ class Picked(Loaded):
 
 
 @dataclass(frozen=True)
+class Shared(Loaded):
+    member: str = ""
+    environments: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class Someone:
     """Who a login belongs to, and what they can do, as the viewer shows it."""
 
@@ -41,6 +51,13 @@ class Someone:
     role: str
     owner: bool
     abilities: Abilities
+
+
+def environments_named(visit: Visit) -> set[str]:
+    """The environments a request reaches into, by its address or its query."""
+    reached = visit.reached()
+    named = {reached.params.get("env", "")} if reached is not None else set()
+    return {*named, *parse_qs(visit.url.query).get("env", [])} - {""}
 
 
 def asks_for_the_viewer(visit: Visit) -> bool:
@@ -65,18 +82,28 @@ class MemberLogins:
     def owner_actions(self, gateway: Gateway) -> dict[tuple[str, str], Page]:
         return {("POST", "/api/hosting/members"): self.invite,
                 ("POST", "/api/hosting/members/role"): self.assign, ("POST", "/api/hosting/members/remove"): partial(self.remove, gateway),
-                ("POST", "/api/hosting/members/end-logins"): partial(self.end_logins, gateway)}
+                ("POST", "/api/hosting/members/end-logins"): partial(self.end_logins, gateway),
+                ("POST", "/api/hosting/members/environments"): self.share}
 
     def refusal(self, visit: Visit, login: KeptLogin) -> str | None:
         member = Roster(visit.vault).present(login.member)
         if member is None:
             return NOT_A_MEMBER
+        if not all(member.sees(environment) for environment in environments_named(visit)):
+            return NOT_SHARED
         reached = visit.reached()
         if reached is None and asks_for_the_viewer(visit):
             return None
         if reached is not None and member.role.reaches(reached.target):
             return None
         return member.role.refusal()
+
+    def marks(self, visit: Visit, login: KeptLogin) -> dict:
+        """What the login page alone tells the journal of a member's request: who sent it, and the environments they may see."""
+        member = Roster(visit.vault).present(login.member)
+        if login.is_owners() or member is None:
+            return {}
+        return {MEMBER: member.id, SHARED: ",".join(member.environments)}
 
     def show_join(self, visit: Visit) -> None:
         code = parse_qs(visit.url.query).get("code", [""])[0]
@@ -129,7 +156,7 @@ class MemberLogins:
 
     def invite(self, visit: Visit) -> None:
         asked = visit.asked(Invited)
-        made = Roster(visit.vault).invite(asked.name, Role.named(asked.role))
+        made = Roster(visit.vault).invite(asked.name, Role.named(asked.role), (runtime.env(visit.record.root),))
         visit.vault.audit("member invited", place=visit.place(), member=made.member.id)
         return visit.json(201, {"member": made.member.summary(), "link": f"{visit.origin()}/join?code={made.code}"})
 
@@ -158,3 +185,12 @@ class MemberLogins:
         ended = gateway.end_logins_of(visit.vault, member.id)
         visit.vault.audit("member's logins ended", place=visit.place(), member=member.id, logins_ended=ended)
         return visit.json(200, {"member": member.summary(), "ended": ended})
+
+    def share(self, visit: Visit) -> None:
+        asked = visit.asked(Shared)
+        unknown = [environment for environment in asked.environments if not known_environment(visit.record.root, environment)]
+        if unknown:
+            return visit.refuse(400, f"there is no environment {', '.join(unknown)}")
+        member = Roster(visit.vault).share(asked.member, asked.environments)
+        visit.vault.audit("member's environments changed", place=visit.place(), member=member.id, environments=list(member.environments))
+        return visit.json(200, {"member": member.summary()})
