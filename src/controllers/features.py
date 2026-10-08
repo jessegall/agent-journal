@@ -115,7 +115,7 @@ class SettingsWrite:
         named = (FeatureKeys(body["name"], (body.get("key"),)),) if isinstance(body.get("name"), str) else ()
         return cls((*named, *(FeatureKeys(name, tuple(values)) for name, values in body.items() if isinstance(values, dict))))
 
-    def picks_a_secret(self) -> bool:
+    def has_a_secret(self) -> bool:
         return any(secrets_in(write.feature, write.keys) for write in self.writes)
 
 

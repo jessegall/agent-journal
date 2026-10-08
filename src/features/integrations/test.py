@@ -28,10 +28,10 @@ def test_only_you_pick_an_integrations_key_and_a_phone_never_does():
     assert "only you pick the key" in refused(lambda: apply(record, {"linear": {"key": "LINEAR_KEY"}}, AGENT)), "nor through the settings write"
     Features(record, actor=USER).configure("linear", "key", "LINEAR_KEY")
     assert features.FEATURES["linear"].values(record).key == "LINEAR_KEY", "you can, and it is read back"
-    picks_a_secret = lambda body: SettingsWrite.from_body(body).picks_a_secret()
-    assert (picks_a_secret({"linear": {"key": "LINEAR_KEY"}}), picks_a_secret({"linear": {"enabled": True}}), picks_a_secret({"boards": {"x": 1}})) == (True, False, False), \
+    has_a_secret = lambda body: SettingsWrite.from_body(body).has_a_secret()
+    assert (has_a_secret({"linear": {"key": "LINEAR_KEY"}}), has_a_secret({"linear": {"enabled": True}}), has_a_secret({"boards": {"x": 1}})) == (True, False, False), \
         "a settings write that holds a key is told apart, so the phone's allow list can close it"
-    assert (picks_a_secret({"name": "linear", "key": "key", "value": "LINEAR_KEY"}), picks_a_secret({"name": "linear", "key": "enabled", "value": "x"})) == (True, False), \
+    assert (has_a_secret({"name": "linear", "key": "key", "value": "LINEAR_KEY"}), has_a_secret({"name": "linear", "key": "enabled", "value": "x"})) == (True, False), \
         "and so is a single setting written by name, whichever route carries it"
     from features.secrets.controller import Secrets
     asked = Secrets(record, actor=AGENT).request("Linear key", "for Linear")
