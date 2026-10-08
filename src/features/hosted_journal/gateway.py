@@ -16,11 +16,11 @@ from features.hosted_journal.owner import SHORTEST, Logins, Owner, Standing, Wro
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page
 from features.hosted_journal.vault import DiskFull, Vault
 from features.phone.desktop import Desktop
+from features.sharing.server import local, own_origin
 from features.trigger import DAY
 from resources.base import Refused
 
 COOKIE = "__Host-journal"
-LOCAL = ("127.0.0.1", "localhost")
 REFUSED = re.compile(r"^/api/(?:run|upgrade|stop|hook)(?:/|$)")
 STREAM = "text/event-stream"
 FORM_LIMIT = 8192
@@ -51,10 +51,6 @@ class LoginForm(Loaded):
         return self.password == self.again and len(self.password) >= SHORTEST
 
 
-def local(host: str) -> bool:
-    return host.rsplit(":", 1)[0] in LOCAL
-
-
 class Visit:
     """One request at the gateway: who sent it, from where, and the server's files it is checked against."""
 
@@ -77,7 +73,7 @@ class Visit:
         return local(self.host) or not self.settings["address"] or self.host == self.settings["address"]
 
     def same_origin(self) -> bool:
-        return self.handler.headers.get("Origin") == f"{'https' if self.encrypted() else 'http'}://{self.host}"
+        return self.handler.headers.get("Origin") == own_origin(self.handler.headers)
 
     def place(self) -> str:
         forwarded = self.handler.headers.get("X-Forwarded-For", "")
