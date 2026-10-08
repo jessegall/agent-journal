@@ -23,7 +23,6 @@ import {chipOpener} from "./peeked.js";
 import {itemFacts, todoLane} from "./todo.js";
 import {kindTitle, kindWord} from "./kinds.js";
 import PhoneMissing from "./PhoneMissing.vue";
-import PhoneSkeletonPage from "./PhoneSkeletonPage.vue";
 import {useFades} from "./fades.js";
 import {liveButtons} from "../domain/buttons.js";
 import {useUnder} from "./under.js";
@@ -36,6 +35,7 @@ import PhoneReaderPhases from "./PhoneReaderPhases.vue";
 import PhoneReaderReview from "./PhoneReaderReview.vue";
 import {critiqueBrief} from "../domain/critique.js";
 import {DEPTHS, SIZES} from "./readerChoices.js";
+import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({
     target: {type: String, required: true},
@@ -358,7 +358,7 @@ onMounted(async () => {
             </PhoneMissing>
         </template>
         <template v-else>
-            <PhoneSkeletonPage :kind="target.split(':')[0]" />
+            <Skeleton shape="page" label="Loading" />
         </template>
         <template v-if="sharing && row">
             <PhoneShareSheet :target="`${row.type}:${row.n}`" :title="row.title" @close="sharing = false" />

@@ -8,7 +8,7 @@ import EmptyList from "./kit/EmptyList.vue";
 import PlaceScreen from "./kit/PlaceScreen.vue";
 import PhoneDumpStart from "./PhoneDumpStart.vue";
 import PhoneDumpWork from "./PhoneDumpWork.vue";
-import PhoneSkeletonRows from "./PhoneSkeletonRows.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
 const DUMPS_EVERY = 3000;
 const DUMPS_KEPT = 20;
@@ -55,7 +55,7 @@ function started(row) {
             />
         </template>
         <template v-else>
-            <CellGroup aria-busy="true" aria-label="Loading"><PhoneSkeletonRows :count="4" /></CellGroup>
+            <CellGroup><Skeleton :count="4" /></CellGroup>
         </template>
     </PlaceScreen>
 </template>

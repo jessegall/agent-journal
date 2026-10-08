@@ -8,7 +8,7 @@ import CellGroup from "./kit/CellGroup.vue";
 import EmptyList from "./kit/EmptyList.vue";
 import NavBar from "./kit/NavBar.vue";
 import {useScrolled} from "./kit/scrolled.js";
-import PhoneSkeletonRows from "./PhoneSkeletonRows.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: ""}});
 const emit = defineEmits(["back", "open"]);
@@ -39,7 +39,7 @@ onMounted(load);
                 <EmptyList icon="warn" title="The timeline did not load" :reason="failed" action="Try again" @act="load" />
             </template>
             <template v-else-if="!items">
-                <CellGroup aria-busy="true" aria-label="Loading"><PhoneSkeletonRows :count="4" /></CellGroup>
+                <CellGroup><Skeleton :count="4" /></CellGroup>
             </template>
             <template v-else-if="!items.length">
                 <EmptyList icon="clock" title="Nothing yet" reason="Nothing has happened on this plan's to-dos yet." />
