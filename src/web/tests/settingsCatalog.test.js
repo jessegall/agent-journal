@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {navGroups, same, settingChanges, timingEvery, timingMarks, timingUnit, timingWords, untitled} from "../src/domain/settingsCatalog.js";
+import {navGroups, navSections, same, settingChanges, timingEvery, timingMarks, timingUnit, timingWords, untitled} from "../src/domain/settingsCatalog.js";
 
 describe("timing words", () => {
     test.each([
@@ -89,4 +89,15 @@ test("the sidebar folds a plugin's slash-named groups under one heading each", (
         ["b", "Backend"],
         ["d", "Python"],
     ]);
+});
+
+test("the sidebar leaves out a heading with nothing under it", () => {
+    const shown = {key: "u", title: "Updates", items: [{}], danger: []};
+    const unnamed = {key: "s", title: "Stop", items: [], danger: [{}]};
+    const sections = [
+        {title: "Project", groups: [shown]},
+        {title: "System", groups: [unnamed]},
+        {title: "Empty", groups: []},
+    ];
+    expect(navSections(sections).map((s) => [s.title, s.groups.map((g) => g.key)])).toEqual([["Project", ["u"]]]);
 });
