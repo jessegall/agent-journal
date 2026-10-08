@@ -16,7 +16,7 @@ onMounted(() => Promise.all([loadMe(), loadPeople()]));
             <Icon name="people" />
         </button>
     </template>
-    <template v-if="open">
+    <template v-if="open && me">
         <PeopleDialog :me="me" @close="open = false" />
     </template>
 </template>
