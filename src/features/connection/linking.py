@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 from controllers.types import Notices
