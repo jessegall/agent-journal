@@ -23,7 +23,7 @@ const props = defineProps({
     go: {type: Object, required: true},
     away: {type: Boolean, default: false},
 });
-const emit = defineEmits(["places", "agent", "at-work", "open", "list", "plan"]);
+const emit = defineEmits(["places", "at-work", "open", "list", "plan"]);
 const AGENT_WORDS = {offline: "Not running", [SILENT]: SILENT_WORD};
 const jobs = computed(() => {
     const live = props.feed.running || {};
@@ -47,7 +47,7 @@ const agentTone = computed(() => (paused.value ? "paused" : waiting.value ? "wai
             <Button
                 kind="block"
                 class="top-btn"
-                :aria-label="`Switch journal or environment, now ${connection.project}, ${connection.environment}`"
+                :aria-label="`Journal ${connection.project}, environment ${connection.environment}, agent ${agentWords}. Switch journal or environment, or open the agent`"
                 @click="emit('places')"
             >
                 <span class="top-line">
@@ -59,23 +59,10 @@ const agentTone = computed(() => (paused.value ? "paused" : waiting.value ? "wai
                     <template v-if="offline">
                         <span class="top-offline-dot" aria-hidden="true" />
                     </template>
-                    {{ connection.environment }}{{ offline ? " · Offline, waiting to reconnect" : current ? "" : " · Updating…" }}
-                </span>
-            </Button>
-            <Button
-                kind="block"
-                class="top-btn"
-                aria-haspopup="dialog"
-                :aria-label="`Main agent, ${agentWords}. Open the agent's controls`"
-                @click="emit('agent')"
-            >
-                <span class="top-line">
-                    <span class="top-name">Main agent</span>
-                    <Icon name="chevronRight" bold :size="12" class="top-chevron" />
-                </span>
-                <span class="top-sub">
-                    <span :class="['top-live', agentTone]" aria-hidden="true" />
-                    {{ agentWords }}
+                    <template v-else>
+                        <span :class="['top-live', agentTone]" aria-hidden="true" />
+                    </template>
+                    {{ connection.environment }} · {{ offline ? "Offline, waiting to reconnect" : current ? agentWords : "Updating…" }}
                 </span>
             </Button>
         </header>

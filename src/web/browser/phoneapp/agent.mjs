@@ -21,7 +21,8 @@ async function act(page, label) {
 
 async function more(page, label) {
     await chat(page);
-    await page.getByRole("button", {name: /^Main agent/}).click();
+    await page.getByRole("button", {name: /^Journal /}).click();
+    await page.getByRole("button", {name: "Main agent"}).click();
     await sheet(page).getByRole("button", {name: new RegExp(`^${label}`)}).click();
 }
 

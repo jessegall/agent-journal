@@ -680,7 +680,6 @@ onMounted(startTourOnce);
                     :go="go"
                     :away="far"
                     @places="picking = true"
-                    @agent="agentOpen = true"
                     @at-work="atWorkOpen = true"
                     @plan="planOpen = $event"
                     @open="open"
@@ -852,6 +851,7 @@ onMounted(startTourOnce);
         <PhonePlaces
             :environment="connection.environment"
             @close="picking = false"
+            @agent="((picking = false), (agentOpen = true))"
             @switching="leaving"
             @stayed="staying"
             @moved="arrived"

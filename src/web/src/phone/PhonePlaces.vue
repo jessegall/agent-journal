@@ -4,6 +4,7 @@ import {announce} from "./announce.js";
 import {phone} from "../api/phone.js";
 import Spinner from "../kit/Spinner.vue";
 import PhoneSheet from "./PhoneSheet.vue";
+import PhoneNavRow from "./PhoneNavRow.vue";
 import PhonePlaceList from "./PhonePlaceList.vue";
 import PhonePlaceDetail from "./PhonePlaceDetail.vue";
 import {CONTROLS, useDrag} from "./drag.js";
@@ -12,7 +13,7 @@ const EDGE = 24;
 const COMMIT = 0.35;
 const FLICK = 0.5;
 const props = defineProps({environment: {type: String, required: true}, opening: {type: Object, default: null}});
-const emit = defineEmits(["close", "moved", "switching", "stayed"]);
+const emit = defineEmits(["close", "moved", "switching", "stayed", "agent"]);
 const places = ref(null);
 const at = ref("");
 const busy = ref("");
@@ -108,6 +109,9 @@ function start(agent) {
                 </template>
                 <template v-else>
                     <div key="list" class="places-pane">
+                        <PhoneNavRow class="places-agent" @click="emit('agent')">
+                            <span class="place-env">Main agent</span>
+                        </PhoneNavRow>
                         <h2 class="places-title">Journals and environments</h2>
                         <PhonePlaceList :places="places || []" :here="here" @pick="pick" />
                         <button type="button" class="places-close" @click="close">Close</button>
@@ -119,6 +123,13 @@ function start(agent) {
 </template>
 
 <style scoped>
+.places-agent {
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    background: var(--sel);
+}
+
 .places-title {
     margin: 4px 0 12px;
     color: var(--text);
