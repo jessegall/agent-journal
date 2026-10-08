@@ -275,6 +275,8 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     payer = installed(record, "payer", "exit 0", settings={"stripe": {"type": "secret", "env": "STRIPE_KEY"}})
     given = lambda: environment(record.root, "payer", Manifest.of(payer.manifest), payer.token, chosen=settings_of(plugins.load(payer.n)).chosen)["STRIPE_KEY"]
     assert given() == "", "a plugin gets no secret until it is given one"
+    from features.plugins import manifest
+    assert manifest.typed({"stripe": {"type": "secret", "env": "STRIPE_KEY"}})["stripe"]["type"] == "secret", "a plugin.json may ask for a secret"
     assert "only you give payer a secret" in refused(lambda: Configure().run(None, plugins, payer.n, "stripe", "STRIPE_TEST_KEY")), "an agent never gives one"
     Configure().run(None, Plugins(record, actor=USER), payer.n, "stripe", "STRIPE_TEST_KEY")
     assert given() == "sk-test-plugin-77", "once you pick the secret for it, its services get the value in their variable"
