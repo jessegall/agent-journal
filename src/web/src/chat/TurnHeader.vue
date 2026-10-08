@@ -13,7 +13,7 @@ const writer = computed(() => writerName(props.turn.data));
 <template>
     <div class="thread-meta">
         <template v-if="turn.pending">
-            <span>sending</span>
+            <span :class="{'thread-unsent': turn.unsent}">{{ turn.unsent ? "not sent yet, trying again" : "sending" }}</span>
         </template>
         <template v-else-if="mine || turn.type === 'question'">
             <span class="thread-ref">{{ turn.type }} {{ turn.n }}</span>
@@ -44,6 +44,10 @@ const writer = computed(() => writerName(props.turn.data));
     padding: 0 3px;
     font-size: 10.5px;
     color: var(--text-4);
+}
+
+.thread-unsent {
+    color: var(--danger);
 }
 
 .thread-meta-dot {

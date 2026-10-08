@@ -196,7 +196,7 @@ async function loaded() {
     ]);
 }
 const revoke = (p) => Object.values(p.data.previews || {}).forEach(URL.revokeObjectURL);
-const {pending, promise, drop, keep, link, keyOf} = usePromised(revoke);
+const {pending, promise, drop, change, keep, link, keyOf} = usePromised(revoke);
 const boardRequests = computed(
     () =>
         new Set(
@@ -370,15 +370,15 @@ async function post(text, files) {
     const placeholder = await promised(body, files, id);
     await nextTick();
     toBottom(true);
+    let sent;
     try {
-        await sendMessage(scope.env || route.value.env, {brief: body, about}, files, id);
+        sent = await sendMessage(scope.env || route.value.env, {brief: body, about}, files, id);
     } catch (e) {
         drop(placeholder);
         if (!quote.value.ref && !quote.value.text) quote.value = replying;
         throw e;
     }
-    await nextTick();
-    toBottom(true);
+    sent.delivered.then((delivered) => delivered || change(placeholder, {unsent: true}));
 }
 
 function measured(url) {
