@@ -12,7 +12,8 @@ from typing import NamedTuple
 import pytest
 
 from scripts.boot_guard import PROJECT
-from tests import isolation, phone_pages, shared_pages
+from tests import phone_pages, shared_pages
+from tests.kit import installed_once
 
 HERE = Path(__file__).resolve().parents[1]
 CODE = HERE / "src"
@@ -39,18 +40,11 @@ class Scratch(NamedTuple):
     root: Path
 
 
-def scratch_install(place: Path) -> None:
-    for agent in (".claude", ".codex"):
-        (place / PROJECT / agent).mkdir(parents=True)
-    env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
-    subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / PROJECT)], env=env, capture_output=True, timeout=120, check=True)
-
-
 @pytest.fixture(scope="module")
 def scratch_viewer(tmp_path_factory):
-    """A copy of the run's one scratch install of this build, served on a port of its own."""
+    """A copy of the run's one install of this build, served on a port of its own."""
     place = tmp_path_factory.mktemp("viewer")
-    shutil.copytree(isolation.shared("scratch-install", scratch_install), place, symlinks=True, dirs_exist_ok=True)
+    shutil.copytree(installed_once().parents[1], place, symlinks=True, dirs_exist_ok=True)
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
     root = place / PROJECT / ".journal"
     port = free_port()

@@ -36,6 +36,7 @@ LOOKUP_SECONDS = 10
 BOOTSTRAPPED = "AGENT_JOURNAL_BOOTSTRAPPED"
 HEALED = "AGENT_JOURNAL_HEALED"
 REPAIRED = "AGENT_JOURNAL_REPAIRED"
+UNVERIFIED = "AGENT_JOURNAL_UNVERIFIED"
 SRC = "src"
 ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 2
@@ -575,6 +576,13 @@ def compiled(source: bytes, name: str, stamp: float) -> bytes:
     return MAGIC_NUMBER + (0).to_bytes(4, "little") + int(stamp).to_bytes(4, "little") + (len(source) & 0xFFFFFFFF).to_bytes(4, "little") + marshal.dumps(code)
 
 
+def start_refused(built: Path, root: Path) -> str:
+    started = subprocess.run([sys.executable, str(built), "--root", str(root), "version"], cwd=root.parent, capture_output=True, text=True, timeout=120)
+    if started.returncode == 0:
+        return ""
+    return started.stderr.strip()[-300:] or f"it exited with {started.returncode} and printed nothing"
+
+
 def pack(root: Path) -> str:
     src = code(root)
     dirs = packed_dirs(src)
@@ -594,10 +602,10 @@ def pack(root: Path) -> str:
                 source = f.read_bytes()
                 archive.writestr(zipfile.ZipInfo(name, moment), source)
                 archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", moment), compiled(source, str(target / name), stamp))
-        started = subprocess.run([sys.executable, str(built), "--root", str(root), "version"], cwd=root.parent, capture_output=True, text=True, timeout=120)
-        if started.returncode != 0:
+        refused = "" if os.environ.get(UNVERIFIED) else start_refused(built, root)
+        if refused:
             built.unlink(missing_ok=True)
-            return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {started.stderr.strip()[-300:]}"
+            return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {refused}"
         built.replace(target)
     loaded().point(root, target)
     held = loaded().held_builds(root)
