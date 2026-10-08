@@ -28,10 +28,10 @@ class EnvironmentAsked(Loaded):
 
 @dataclass(frozen=True)
 class EventsAsked(Loaded):
-    """The events of one scope a copy has not taken in yet."""
+    """The events of one scope a copy has not taken in yet; the environment's own scope is the empty one."""
 
-    scope: str
     env: str
+    scope: str = ""
     since: int = 0
 
 
