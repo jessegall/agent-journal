@@ -285,3 +285,27 @@ def test_no_hook_reads_more_than_a_tail_of_a_long_transcript_and_a_new_build_kee
     searched = PROVIDERS["claude"]().every_turn(transcript, jsonl.WholeRead.SEARCH)
     assert (len(searched) > len(PROVIDERS["claude"]().turns(transcript)), whole_reads.since(before)) == (True, (jsonl.WholeRead.SEARCH,)), \
         "only a search reads a transcript whole, and the read is recorded with its reason"
+
+
+def test_a_long_transcript_answers_its_newest_turns_at_once_and_fills_in_behind(tmp_path, monkeypatch):
+    import json
+    import time
+    from providers import PROVIDERS, transcript_cache
+    monkeypatch.setattr(transcript_cache.CACHE, "folder", tmp_path / "folds")
+    monkeypatch.setattr(transcript_cache, "FOLD_IN_PLACE_BYTES", 10_000)
+    monkeypatch.setattr(transcript_cache, "RECENT_BYTES", 5_000)
+    said = lambda n: {"type": "user", "timestamp": "2026-10-05T10:00:00Z", "message": {"content": f"question {n} " + "x" * 200}}
+    answered = lambda n: {"type": "assistant", "timestamp": "2026-10-05T10:00:01Z", "message": {"content": [{"type": "text", "text": f"answer {n}"}]}}
+    transcript = tmp_path / "long.jsonl"
+    transcript.write_text("".join(json.dumps(row) + "\n" for n in range(200) for row in (said(n), answered(n))))
+    claude = PROVIDERS["claude"]()
+    began = time.monotonic()
+    first = claude.turns(transcript)
+    assert (bool(first), first[-1].text, time.monotonic() - began < 1) == (True, "answer 199", True), \
+        "a long transcript nobody has read yet answers at once with its newest turns"
+    waited = time.monotonic() + 5
+    while len(claude.turns(transcript)) <= len(first) and time.monotonic() < waited:
+        time.sleep(0.02)
+    whole = claude.turns(transcript)
+    assert (len(whole) > len(first), whole[-1].text, whole[0].text.startswith("question 0")) == (True, "answer 199", True), \
+        "and fills in with the rest once the read behind it has caught up"
