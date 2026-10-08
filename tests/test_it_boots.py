@@ -1666,3 +1666,49 @@ def test_the_engines_small_helpers_give_an_empty_answer_when_a_program_a_folder_
         assert ran == [], "work deferred while events are held waits"
     assert ran == ["first"], "work deferred twice under one key runs once"
 
+
+
+def test_the_first_hooks_after_an_upgrade_answer_within_budget_on_a_long_transcript(tmp_path, monkeypatch):
+    import features
+    from commands.dispatch import dispatch
+    from engine import whole_reads
+    from features.dev_faults.reports import BUDGET
+    from features.skill_loading.required import require
+    from providers import jsonl, transcript_cache
+    features.load()
+    record = fresh()
+    cache = transcript_cache.CACHE
+    monkeypatch.setattr(cache, "folder", tmp_path / "folds")
+    transcript = tmp_path / "claude-1.jsonl"
+    said = lambda n: {"type": "user", "timestamp": "2026-10-08T10:00:00Z", "message": {"content": f"question {n} " + "x" * 1000}}
+    answered = lambda n: {"type": "assistant", "timestamp": "2026-10-08T10:00:01Z", "message": {"content": [{"type": "text", "text": f"answer {n} " + "y" * 1000}]}}
+    with transcript.open("w") as written:
+        for n in range(15000):
+            written.write(json.dumps(said(n)) + "\n" + json.dumps(answered(n)) + "\n")
+    query = {"root": str(record.root), "env": record.env, "pid": "0"}
+    hook = lambda event: {"hook_event_name": event, "session_id": "claude-1", "transcript_path": str(transcript), "tool_name": "Read",
+                          "tool_input": {"file_path": "x.py"}, "cwd": str(record.root.parent)}
+    for event in ("SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse"):
+        dispatch("POST", "/api/hook/claude", record.root, query, hook(event)).after()
+    require(record, transcript.stem, {"journal": time.time()})
+    monkeypatch.setattr(transcript_cache, "code_mark", lambda: "the next release")
+    for held in (cache.transcripts, cache.folds, cache.recents):
+        held.clear()
+    answering, spans, read = threading.current_thread(), [], jsonl.read_bytes
+
+    def measured(path, start, stop=None) -> bytes:
+        found = read(path, start, stop)
+        if threading.current_thread() is answering:
+            spans.append(len(found))
+        return found
+    monkeypatch.setattr(jsonl, "read_bytes", measured)
+    before, working = whole_reads.count(), []
+    for event in ("UserPromptSubmit", "PreToolUse", "PostToolUse", "PreToolUse"):
+        began = time.thread_time()
+        reply = dispatch("POST", "/api/hook/claude", record.root, query, hook(event))
+        working.append((time.thread_time() - began) * 1000)
+        reply.after()
+    assert transcript.stat().st_size > 20_000_000 and max(working) <= BUDGET["hook"], \
+        f"the first hooks after an upgrade answer within their budget on a long transcript; they worked {[round(ms) for ms in working]} ms"
+    assert (max(spans, default=0) <= transcript_cache.RECENT_BYTES, whole_reads.count() - before) == (True, 0), \
+        "and read only a bounded tail of it while they answer and after, never the whole transcript"
