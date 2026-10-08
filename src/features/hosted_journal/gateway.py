@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 from urllib.request import urlopen
 
 from commands.dispatch import rendered, resolve
+from engine.disk import KEPT_FREE_BYTES, free_bytes, nearly_full
 from engine.record import Record
 from features.phone.controller import Phones
 from engine.color import identity
@@ -275,6 +276,9 @@ class Gateway:
         return visit.go("/login?notice=logged-out", {"Set-Cookie": visit.cookie(COOKIE, "", 0)})
 
     def ready(self, visit: Visit) -> None:
+        free = free_bytes(visit.record.root)
+        if free < KEPT_FREE_BYTES:
+            return visit.handler.send(503, nearly_full(free).encode(), {"Content-Type": "text/plain"})
         address = lately_running(visit.record.root)
         try:
             urlopen(f"{address.rstrip('/')}/api/identity", timeout=READY_SECONDS).read()

@@ -9,12 +9,13 @@ from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, PHONE_OWNER_ACTI
 from features.hosted_journal.phones import VaultGuard
 from features.hosted_journal.settings import FromRecord, FromVault
 from features.hosted_journal.vault import Vault
+from features.hosted_journal.watch import DiskWatch
 from features.journal import Journal
 from features.phone.desktop import CLOSED
 from features.phone.guard import PHONE_GUARDS
 from features.sharing.address import ANSWERS_AT
 from features.sharing.origins import ORIGINS, ProxyLookup, ProxyOrigins
-from features.sharing.routes import EVERY_OTHER, ROUTES
+from features.sharing.routes import EVERY_OTHER, ROUTES, TICKS
 from features.sharing.services import KEEP_UP, LISTENS, Listen
 
 APART = "AGENT_JOURNAL_APART"
@@ -61,6 +62,7 @@ class HostedJournalFeature(Feature):
         ANSWERS_AT.add(guarding, self.address)
         if self.apart:
             PHONE_GUARDS.add(None, phone_vault)
+        TICKS.add(guarding, DiskWatch())
         KEEP_UP.add(self, always)
         STAYS_UP.add(self, always)
         LISTENS.add(self, listen)
