@@ -117,6 +117,7 @@ class JournalSummary(TypedDict):
     root: str
     version: str
     start: str
+    started: float
     color: str
     environments: list[dict]
     helpers: list[dict]
@@ -128,6 +129,6 @@ def summarize(root: Path) -> JournalSummary:
     standing = [e for e in every if e.is_main()]
     owners = {e.title: e.owner for e in standing}
     names = dict.fromkeys([start, *(e.title for e in standing)])
-    return {"project": root.resolve().parent.name, "root": str(root), "version": version(), "start": start, "color": identity(root)["color"],
+    return {"project": root.resolve().parent.name, "root": str(root), "version": version(), "start": start, "started": runtime.STARTED[0], "color": identity(root)["color"],
             "environments": [{**environment(Record(root, name)), "owner": owners.get(name, "")} for name in names],
             "helpers": [{**environment(Record(root, e.title)), "owner": e.owner} for e in every if e.helping]}

@@ -10,7 +10,7 @@ const flush = async () => {
 };
 const row = (n, created, data = {}, completed = 0) => ({n, title: `Suggestion ${n}`, brief: "", outcome: "", created, completed, data});
 
-function scheduled(list, hours = 3) {
+function scheduled(list, hours = 3, graceUntil = () => 0) {
     let made;
     const into = document.createElement("div");
     document.body.append(into);
@@ -18,7 +18,8 @@ function scheduled(list, hours = 3) {
         setup: () => (
             (made = useSuggestionWindow(
                 () => list,
-                () => hours
+                () => hours,
+                graceUntil
             )),
             () => h("div")
         ),
@@ -90,6 +91,19 @@ describe("when the window opens", () => {
         expect(window.suggestion.value).toBeNull();
         document.dispatchEvent(new Event("pointerdown"));
         vi.advanceTimersByTime(3000);
+        expect(window.suggestion.value.n).toBe(1);
+    });
+});
+
+describe("right after the journal starts", () => {
+    test("a suggestion whose hours ran out opens only once the grace period after the start has passed", () => {
+        const now = 10 * HOUR;
+        const grace = now * 1000 + 10 * 60_000;
+        const window = scheduled([row(1, now - 5 * HOUR)], 3, () => grace);
+        vi.advanceTimersByTime(5 * 60_000);
+        expect(window.suggestion.value).toBeNull();
+        document.dispatchEvent(new Event("pointerdown"));
+        vi.advanceTimersByTime(5 * 60_000 + 2000);
         expect(window.suggestion.value.n).toBe(1);
     });
 });
