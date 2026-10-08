@@ -47,13 +47,13 @@ def mark(call: JournalCall) -> SearchMark | None:
     words = asked(call)
     noun, terms = (words[0], words[1:]) if words else ("", [])
     if noun == "search" and terms:
-        return SearchMark("Conversation search", repr(" ".join(terms)))
+        return SearchMark("Searched the conversation", repr(" ".join(terms)))
     if noun in CONTROLLERS and terms[:1] == ["search"] and terms[1:]:
-        return SearchMark(f"{CONTROLLERS[noun].resource.details.title} search", repr(" ".join(terms[1:])))
+        return SearchMark(f"Searched {CONTROLLERS[noun].resource.details.title.lower()}s", repr(" ".join(terms[1:])))
     if noun == "conversation":
-        return SearchMark("Conversation history", {0: "", 1: "before the last compaction"}.get(back(call), f"{back(call)} compactions back"))
+        return SearchMark("Read the conversation history", {0: "", 1: "before the last compaction"}.get(back(call), f"{back(call)} compactions back"))
     if noun == "user":
-        return SearchMark("Message history", "your messages")
+        return SearchMark("Searched your messages", "")
     return None
 
 
