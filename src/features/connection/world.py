@@ -1,3 +1,4 @@
+"""Test support: a hosted journal and two local copies as real processes; the tests of this feature and of the sync use it through the hosted_world fixture."""
 import os
 import subprocess
 import sys
@@ -8,7 +9,6 @@ from pathlib import Path
 
 from engine.record import Record
 from scripts.boot_guard import WAIT
-from tests.test_it_boots import installed
 
 STOPPED_WITHIN = 10
 
@@ -51,6 +51,7 @@ class World:
 
     @staticmethod
     def install(name: str, place: Path) -> Copy:
+        from tests.test_it_boots import installed
         root = installed(place)
         return Copy(name, root, place / "home")
 
