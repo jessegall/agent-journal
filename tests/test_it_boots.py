@@ -629,14 +629,14 @@ def test_feature_rows_are_seated_again_only_when_the_features_or_environments_ch
     features.load(record.root)
     assert Features(record, actor=SYSTEM).rows.summaries(), "a new journal's environment gets its feature rows"
     seated = []
-    monkeypatch.setattr(features, "seat", seated.append)
+    monkeypatch.setattr(features, "seat", lambda root, homes: seated.append(homes))
     features.SEATED.clear()
     features.load(record.root)
     assert seated == [], "a process that starts on a journal whose features and environments are as seated seats nothing"
     Record(record.root, "other").home.mkdir(parents=True)
     features.SEATED.clear()
     features.load(record.root)
-    assert seated == [record.root], "a new environment is seated"
+    assert seated == [("other",)], "a new environment alone is seated"
 
 
 def test_old_feature_names_are_renamed_in_settings_gates_and_triggers_in_one_pass():
