@@ -1,7 +1,8 @@
 <script setup>
 import {meta, types} from "../domain/spec.js";
+import People from "./People.vue";
 import TakeDown from "./TakeDown.vue";
-import {hostedOn, sharingOn} from "../composables/settings.js";
+import {hostedOn, membersOn, sharingOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import {demo} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
@@ -119,6 +120,9 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                     </div>
                 </Transition>
             </div>
+            <template v-if="membersOn">
+                <People />
+            </template>
             <template v-if="hostedOn">
                 <TakeDown />
                 <form method="post" action="/logout" class="logout">

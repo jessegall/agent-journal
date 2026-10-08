@@ -16,13 +16,15 @@ from engine.color import identity
 from engine.fields import Loaded
 from engine.viewer import lately_running
 from features.hosted_journal.settings import FromRecord, FromVault
-from features.hosted_journal.owner import MOST_EVERYWHERE, SHORTEST, Devices, Logins, Owner, Standing, WrongTries, hashed
+from features.hosted_journal.owner import MOST_EVERYWHERE, OWNER, SHORTEST, Devices, KeptLogin, Logins, Owner, Standing, WrongTries, hashed
+from features.hosted_journal.people import people_of
 from features.hosted_journal.hosting import Ask, Hosting
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page, taken_down_page
 from features.hosted_journal.phones import VaultGuard
 from features.hosted_journal.vault import DiskFull, RefusalLog, Vault
 from features.phone.allow_list import Action, GenericPath, post, reach
 from features.phone.desktop import Desktop, closed, encoded
+from features.routing import MEMBER
 from features.sharing.origins import origins_of
 from features.trigger import DAY
 from resources.base import USER, Refused
@@ -78,6 +80,17 @@ PAGE_HEADERS = {**VIEWER_HEADERS, "Content-Security-Policy": "default-src 'none'
                 "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store"}
 
 
+class TooLarge(Refused):
+    @classmethod
+    def sent(cls, what: str) -> "TooLarge":
+        return cls(f"the {what} is too large")
+
+
+def member_mark(login: KeptLogin) -> dict:
+    """The mark the gateway alone puts on a forwarded request, naming who sent it."""
+    return {MEMBER: login.member}
+
+
 @dataclass(frozen=True)
 class TryPlace:
     key: str
@@ -86,6 +99,7 @@ class TryPlace:
 
 @dataclass(frozen=True)
 class LoginForm(Loaded):
+    name: str = ""
     password: str = ""
     again: str = ""
     code: str = ""
@@ -116,8 +130,11 @@ class Visit:
     def addressed(self) -> bool:
         return self.on_this_machine() or not self.settings.address or urlsplit(f"//{self.host}").hostname == self.settings.address
 
+    def origin(self) -> str:
+        return self.origins.origin(self.handler)
+
     def same_origin(self) -> bool:
-        return self.handler.headers.get("Origin") == self.origins.origin(self.handler)
+        return self.handler.headers.get("Origin") == self.origin()
 
     def place(self) -> str:
         return self.origins.place(self.handler)
@@ -141,8 +158,18 @@ class Visit:
     def form(self) -> "LoginForm":
         size = self.length()
         if size > FORM_LIMIT:
-            raise Refused("the form is too large")
+            raise TooLarge.sent("form")
         return LoginForm.from_json({name: values[0] for name, values in parse_qs(self.handler.rfile.read(size).decode(errors="replace")).items()})
+
+    def asked(self, kind):
+        """The request's JSON body, read into the given Loaded type."""
+        size = self.length()
+        if size > FORM_LIMIT:
+            raise TooLarge.sent("request")
+        try:
+            return kind.from_json(json.loads(self.handler.rfile.read(size) or b"{}"))
+        except ValueError as unreadable:
+            raise Refused("the request is not JSON") from unreadable
 
     def project(self) -> str:
         return identity(self.record.root)["project"]
@@ -197,11 +224,14 @@ class Gateway:
         if Hosting(visit.vault).down():
             return visit.page(503, taken_down_page(visit.project()))
         try:
-            return self.pages.get((visit.handler.command, visit.url.path), self.forward)(visit)
+            asked = (visit.handler.command, visit.url.path)
+            return {**people_of(visit.record).pages(self), **self.pages}.get(asked, self.forward)(visit)
         except DiskFull as full:
             return visit.handler.answer(507, str(full))
+        except TooLarge as large:
+            return visit.refuse(413, str(large))
         except Refused as refused:
-            return visit.refuse(413, str(refused))
+            return visit.refuse(400, str(refused))
 
     def show_login(self, visit: Visit) -> None:
         place = visit.try_place()
@@ -211,10 +241,12 @@ class Gateway:
         if wait:
             return visit.page(429, locked_page(visit.project(), wait))
         notice = Notice.named(parse_qs(visit.url.query).get("notice", [""])[0])
-        return visit.page(200, login_page(visit.project(), notice) if owner.has_password() else setup_page(visit.project(), Notice.NONE))
+        if not owner.has_password():
+            return visit.page(200, setup_page(visit.project(), Notice.NONE))
+        return visit.page(200, login_page(visit.project(), notice, people_of(visit.record).below_login()))
 
-    def tried(self, visit: Visit, matched: Callable[[], bool], wrong: Callable[[], str]) -> None:
-        """A login or setup form: its try is counted first and refused while its place is locked out, with few password checks at once."""
+    def tried(self, visit: Visit, matched: Callable[[], str | None], wrong: Callable[[], str]) -> None:
+        """A login, setup or invite form, counted before it is checked; matched answers whom it proved to be, or None for no one."""
         if not self.checking.acquire(blocking=False):
             return visit.refuse(429, "the server is checking other logins; try again in a moment")
         try:
@@ -222,22 +254,23 @@ class Gateway:
         finally:
             self.checking.release()
 
-    def checked(self, visit: Visit, matched: Callable[[], bool], wrong: Callable[[], str]) -> None:
+    def checked(self, visit: Visit, matched: Callable[[], str | None], wrong: Callable[[], str]) -> None:
         tries = WrongTries(visit.vault)
         tried = visit.try_place()
         place, ceiling = tried.key, tried.ceiling
         if wait := tries.counted(place, ceiling):
             visit.vault.audit("locked out", place=place)
             return visit.page(429, locked_page(visit.project(), wait))
-        if not matched():
+        member = matched()
+        if member is None:
             visit.vault.audit("wrong try", place=place, path=visit.url.path)
             if wait := tries.locked_for(place, ceiling):
                 return visit.page(429, locked_page(visit.project(), wait))
             return visit.page(401, wrong())
         tries.forget(place)
         days = float(visit.settings.days)
-        token = Logins(visit.vault).open(days, visit.handler.headers.get("User-Agent", ""))
-        visit.vault.audit("logged in", place=place, login=hashed(token)[:12])
+        token = Logins(visit.vault).open(days, visit.handler.headers.get("User-Agent", ""), member)
+        visit.vault.audit("logged in", place=place, login=hashed(token)[:12], member=member)
         return visit.go("/", {"Set-Cookie": [visit.cookie(COOKIE, token, days), visit.cookie(DEVICE_COOKIE, Devices(visit.vault).issue(), DEVICE_DAYS)]})
 
     def log_in(self, visit: Visit) -> None:
@@ -247,7 +280,8 @@ class Gateway:
         if not owner.has_password():
             return visit.go("/login")
         form = visit.form()
-        return self.tried(visit, lambda: owner.matches(form.password), lambda: login_page(visit.project(), Notice.WRONG))
+        below = people_of(visit.record).below_login()
+        return self.tried(visit, lambda: OWNER if owner.matches(form.password) else None, lambda: login_page(visit.project(), Notice.WRONG, below))
 
     def set_up(self, visit: Visit) -> None:
         owner = Owner(visit.vault)
@@ -259,12 +293,12 @@ class Gateway:
         if not form.chooses_password():
             return visit.page(400, setup_page(visit.project(), Notice.SHORT))
 
-        def chosen() -> bool:
+        def chosen() -> str | None:
             if not owner.setup_code_matches(form.code):
-                return False
+                return None
             owner.set_password(form.password)
             visit.vault.audit("owner password set", place=visit.place())
-            return True
+            return OWNER
         return self.tried(visit, chosen, lambda: setup_page(visit.project(), Notice.WRONG_CODE))
 
     def log_out(self, visit: Visit) -> None:
@@ -307,8 +341,10 @@ class Gateway:
 
     def forward(self, visit: Visit) -> None:
         token = visit.token()
-        standing = Logins(visit.vault).standing(token)
-        if standing is not Standing.OPEN:
+        login = Logins(visit.vault).found(token)
+        if login is None:
+            return self.turned_away(visit, Standing.UNKNOWN)
+        if (standing := login.standing(visit.vault.clock())) is not Standing.OPEN:
             return self.turned_away(visit, standing)
         if closed(visit.record, visit.handler.command, encoded(visit.url)):
             return visit.refuse(403, "the journal on a server never runs this for anyone who comes in from outside")
@@ -317,13 +353,22 @@ class Gateway:
         size = visit.length()
         if size > (UPLOAD_LIMIT if visit.url.path.endswith("/upload") else BODY_LIMIT):
             return visit.refuse(413, "too large")
-        if owned := self.owner_actions.get((visit.handler.command, visit.url.path)):
-            return owned(visit)
+        asked = (visit.handler.command, visit.url.path)
+        people = people_of(visit.record)
+        owned = {**people.owner_actions(self), **self.owner_actions}
+        if acted := people.actions(self).get(asked):
+            return acted(visit, login)
+        if not login.is_owners() and asked in owned:
+            return visit.refuse(403, "only the journal's owner does this")
+        if not login.is_owners() and (refusal := people.refusal(visit, login)):
+            return visit.refuse(403, refusal)
+        if asked in owned:
+            return owned[asked](visit)
         if phone := self.answered_by_phones(visit):
             return self.answer_here(visit, *phone, visit.handler.rfile.read(size) if size else b"")
         if STREAM not in visit.handler.headers.get("Accept", ""):
-            return Desktop(visit.handler, visit.handler.path, {}, VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
-        return self.streamed(visit, hashed(token))
+            return Desktop(visit.handler, visit.handler.path, member_mark(login), VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
+        return self.streamed(visit, login, hashed(token))
 
     def answered_by_phones(self, visit: Visit) -> tuple[PhoneAnswer, PhonePath] | None:
         """The owner's phone action this request reaches, which the login page answers itself when it keeps the phones' keys."""
@@ -344,16 +389,16 @@ class Gateway:
             return visit.handler.send(400, json.dumps({"error": str(refused)}).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
         return visit.handler.send(200, json.dumps(body).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
 
-    def streamed(self, visit: Visit, login: str) -> None:
+    def streamed(self, visit: Visit, login: KeptLogin, token: str) -> None:
         with self.lock:
-            if self.streams[login] >= MOST_STREAMS:
+            if self.streams[token] >= MOST_STREAMS:
                 return visit.refuse(429, f"one login keeps at most {MOST_STREAMS} live streams open; close a tab")
-            self.streams[login] += 1
+            self.streams[token] += 1
         try:
-            return Desktop(visit.handler, visit.handler.path, {}, VIEWER_HEADERS).forward(b"")
+            return Desktop(visit.handler, visit.handler.path, member_mark(login), VIEWER_HEADERS).forward(b"")
         finally:
             with self.lock:
-                self.streams[login] -= 1
+                self.streams[token] -= 1
 
     def turned_away(self, visit: Visit, standing: Standing) -> None:
         notice = "?notice=ran-out" if standing is Standing.RAN_OUT else ""
