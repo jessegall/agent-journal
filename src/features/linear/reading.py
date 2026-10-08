@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass, field
 from typing import ClassVar
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from resources.base import Refused
 
 TEAMS = "query { teams { nodes { id key name } } }"

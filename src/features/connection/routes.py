@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 
 from controllers.requests import run
 from engine import runtime
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.handover import accept, give
 from engine.machines import Lease
 from engine.offline import Applied, Write
