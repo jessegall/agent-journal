@@ -50,7 +50,7 @@ def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none(tmp_pat
 
     todos = Todos(record, actor=USER)
     row = todos.create("stuck")
-    q = Questions(record, actor=AGENT).create("which way", about=row.ref)
+    q = Questions(record, actor=AGENT).create("which way", about=row.ref, options=[{"title": "A"}, {"title": "B"}], pick=1)
     assert [e for e in evidence(record) if e.ref == row.ref] == [], "a fresh question is not evidence"
     questions = Questions(record, actor=AGENT)
     old = questions.load(q.n)

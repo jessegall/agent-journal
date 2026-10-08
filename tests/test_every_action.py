@@ -602,7 +602,7 @@ def test_the_overview_counts_only_live_rows_and_splits_a_helper_environment_out(
     counted = environment(record)["counts"]
     assert {"todos": counted["todos"], "messages": counted["messages"]} == {"todos": 1, "messages": 1}, \
         "an environment counts its open to-dos and its unread messages, never a closed or archived row"
-    CONTROLLERS["question"](record, actor=AGENT).create("Which port should it use")
+    CONTROLLERS["question"](record, actor=AGENT).create("Which port should it use", options=[{"title": "8421"}, {"title": "8422"}], pick=1)
     assert environment(record)["attention"] == {"kind": "question", "text": "Which port should it use"}, "an open question asks for attention"
     CONTROLLERS["notice"](record, actor=SYSTEM).create("Allow Bash to remove the build folder", action="permission")
     assert environment(record)["attention"] == {"kind": "permission", "text": "Allow Bash to remove the build folder"}, "and a waiting permission prompt comes first"

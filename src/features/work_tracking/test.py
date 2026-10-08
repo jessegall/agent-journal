@@ -132,7 +132,7 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     Todos(asking, actor=AGENT).start(row.n)
     stopped, agents = asking, Agents(asking, actor=SYSTEM)
     assert len(idle_for(6)) == 1, "work on a row is told to carry on"
-    Todos(asking, actor=AGENT).ask(row.n, "Files or SQLite?")
+    Todos(asking, actor=AGENT).ask(row.n, "Files or SQLite?", options=[{"title": "Files"}, {"title": "SQLite"}], pick=1)
     assert len(idle_for(16)) == 1, "work whose row waits on a question is left to the question"
 
 
@@ -156,7 +156,7 @@ def test_ready_rows_are_ordered_by_priority_then_by_number_skipping_what_is_not_
     assert ready(record)[0].n == b.n, "a row waiting on an open row is skipped"
     todos.complete(b.n, "done")
     assert ready(record)[0].n == a.n, "its prerequisite closed, the row is ready again"
-    Questions(record, actor=AGENT).create("which way", about=a.ref).n
+    Questions(record, actor=AGENT).create("which way", about=a.ref, options=[{"title": "A"}, {"title": "B"}], pick=1).n
     Questions(record, actor=AGENT).link(1, a.ref)
     assert ready(record)[0].n == d.n, "a row with an open question waits on the user"
     work = Todos(record, actor=AGENT).start(d.n)
@@ -256,7 +256,7 @@ def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     todos.block(stuck.n, "the user decides the schema")
     decided = todos.create("the pricing")
     todos.block(decided.n, "the user picks a price")
-    todos.ask(decided.n, "Which price, 5 or 7?")
+    todos.ask(decided.n, "Which price, 5 or 7?", options=[{"title": "5"}, {"title": "7"}], pick=1)
     todos.complete(base.n, how="done")
     assert (todos.waits(todos.load(waiting.n)), any("is unblocked" in n for n in nudges(record))) == ([f"todo:{extra.n}"], False), \
         "one of two rows closed: it still waits on the other, and nothing is said"

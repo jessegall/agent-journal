@@ -485,7 +485,7 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     orchestrating = Works(record, actor=AGENT)
     orchestrating.update(orchestrating.create("run the board", force="the orchestrator's own work").n, awaiting="the tickets to finish")
     place = Record(record.root, "ticket-1")
-    asked = Questions(place, actor=AGENT).create("Which theme?")
+    asked = Questions(place, actor=AGENT).create("Which theme?", options=[{"title": "Light"}, {"title": "Dark"}], pick=1)
     tickets.update(ticket.n, told=time.time() - 1)
     Messages(place, actor=AGENT).create("Dark it is, as the card says")
     monkeypatch.setattr(time, "time", lambda: started + 120)
@@ -595,7 +595,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     delivered = []
     monkeypatch.setattr(Tickets, "_owned_by", lambda self, env, kind: ticket.n)
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: delivered.append(note))
-    question = Questions(record, actor=AGENT).create("Which one?")
+    question = Questions(record, actor=AGENT).create("Which one?", options=[{"title": "A"}, {"title": "B"}], pick=1)
     Questions(record, actor=USER).complete(question.n, how="Both")
     assert delivered == [f"Your question {question.n}, Which one?, is answered: Both"], "a ticket's agent is told when the user answers its question"
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("no agent")))

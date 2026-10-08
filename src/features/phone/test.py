@@ -197,7 +197,7 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     older = call(base, f"/p/feed?before={message.created}", key=key).body["items"]
     assert all(item["created"] < message.created for item in older), "an older page holds only what came before it"
     spoken = {"message": lambda: Messages(record, actor=AGENT).create("the build is green"),
-              "question": lambda: Questions(record, actor=AGENT).create("Which port should it use"),
+              "question": lambda: Questions(record, actor=AGENT).create("Which port should it use", options=[{"title": "8421"}, {"title": "8422"}], pick=1),
               "comment": lambda: Comments(record, actor=AGENT).create("noted on the message", refs=[f"message:{made['n']}"]),
               "suggestion": lambda: Suggestions(record, actor=AGENT).create("Keep the file list between searches")}
     assert set(spoken) == set(POSTED), "every kind the phone's chat speaks is checked below"
@@ -503,7 +503,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert call(base, "/p/dismiss", {"n": unwanted.n}, key).status == 201 and Questions(record, actor=SYSTEM).load(unwanted.n).data["dismissed"], \
         "a question can be dismissed from the phone"
     assert call(base, "/p/dismiss", {"n": unwanted.n}, key).status == 409, "a question already dismissed is not dismissed again"
-    assert call(base, "/p/answer", {"n": Questions(record, actor=AGENT).create("Which one?").n, "answer": " "}, key).status == 422, "an answer needs words"
+    assert call(base, "/p/answer", {"n": Questions(record, actor=AGENT).create("Which one?", options=[{"title": "A"}, {"title": "B"}], pick=1).n, "answer": " "}, key).status == 422, "an answer needs words"
     assert [call(base, f"/p/{name}", body, key).status for name, body in (("message", {"brief": " "}), ("react", {"n": 1, "face": "👍", "type": "doc"}),
                                                                      ("comment", {"ref": "doc:9999", "text": "hm"}))] == [422, 422, 422], \
         "a message without words, a reaction to what the phone cannot react to and a comment on a row it cannot read are all refused"

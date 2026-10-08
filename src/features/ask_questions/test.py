@@ -102,7 +102,7 @@ def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse")
-    asked = Questions(record, actor=AGENT).create("which one?")
+    asked = Questions(record, actor=AGENT).create("which one?", options=[{"title": "A"}, {"title": "B"}], pick=1)
     Questions(record, actor=USER).set(asked.n, "kept", "true")
     Questions(record, actor=USER).complete(asked.n, how="this one")
     assert Questions(record, actor=USER).load(asked.n).data.get("kept") is False, "the answer takes it off the panel it was kept on"
@@ -165,8 +165,8 @@ def test_a_row_waits_on_one_question_and_the_user_can_dismiss_it():
     assert asking.create("What is the client's billing address?").n and asking.create("Which administrations does the client keep?", free="description").n, \
         "a free question is asked open, and one that only looks listable says it is free"
     assert Todos(record, actor=AGENT).ask(row.n, "Tag it as 5.2?").n, "once it is closed the row may ask again"
-    open_one = Questions(record, actor=AGENT).create("Which port should the viewer use?")
-    assert f"question {open_one.n} already asks this" in refused(lambda: Questions(record, actor=AGENT).create("Which port should the viewer use?")), \
+    open_one = Questions(record, actor=AGENT).create("Which port should the viewer use?", options=[{"title": "8421"}, {"title": "8422"}], pick=1)
+    assert f"question {open_one.n} already asks this" in refused(lambda: Questions(record, actor=AGENT).create("Which port should the viewer use?", options=[{"title": "8421"}, {"title": "8422"}], pick=1)), \
         "the same question, still open, is never asked twice"
     from runner.hooks import handle
     from providers import PROVIDERS
@@ -190,13 +190,13 @@ def test_a_question_is_dismissed_when_its_row_closes_and_asked_about_after_a_day
     report(record, "idle", "Stop")
     todos, questions = Todos(record, actor=AGENT), Questions(record, actor=AGENT)
     row = todos.create("the pricing")
-    asked = questions.create("Which price, 5 or 7?", about=row.ref)
-    other = questions.create("Which font for the menu?")
+    asked = questions.create("Which price, 5 or 7?", about=row.ref, options=[{"title": "5"}, {"title": "7"}], pick=1)
+    other = questions.create("Which font for the menu?", options=[{"title": "Serif"}, {"title": "Sans"}], pick=1)
     todos.complete(row.n, how="the price came from the supplier's list")
     assert (questions.load(asked.n).completed > 0, questions.load(asked.n).data.get("dismissed"), questions.load(other.n).completed) == (True, True, 0.0), \
         "closing the row a question is about dismisses it, and leaves the others"
     gone = todos.create("the colour")
-    about_gone = questions.create("Which colour?", about=gone.ref)
+    about_gone = questions.create("Which colour?", about=gone.ref, options=[{"title": "Blue"}, {"title": "Red"}], pick=1)
     todos.delete(gone.n, "not needed")
     assert questions.load(about_gone.n).data.get("dismissed") is True, "deleting the row a question is about dismisses it too"
     old = questions.load(other.n)
@@ -220,6 +220,6 @@ def test_a_row_can_carry_a_field_named_context_and_old_answered_and_board_questi
     Questions(record, actor=AGENT).stamp(answered.n, kept=True)
     assert leave_panel(record.root) == "1 answered questions taken off the notifications panel", "an answered question still kept on the panel is taken off"
     assert leave_panel(record.root) == "0 answered questions taken off the notifications panel", "one already taken off is left alone"
-    about_board = Questions(record, actor=AGENT).create("Which stage?", about="board:1")
+    about_board = Questions(record, actor=AGENT).create("Which stage?", about="board:1", options=[{"title": "Plan"}, {"title": "Build"}], pick=1)
     assert hide_board_questions(record.root) == [about_board.ref], "a question about a board is hidden from the general list"
     assert hide_board_questions(record.root) == [], "a hidden question is not hidden twice"

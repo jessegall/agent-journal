@@ -196,7 +196,7 @@ def test_a_board_request_names_its_board_and_keeps_the_work_on_it():
     assert any(f"You fill board {board.n}" in brief for brief in briefs), "the dispatch names the board the filler fills"
     assert "on its board" in refused(lambda: Plans(record, actor=AGENT, agent="board-filler").create("Sharing")), \
         "the board-filler makes no plan of its own: its work goes on the board"
-    assert "on its board" in refused(lambda: Questions(record, actor=AGENT, agent="board-filler").create("Which one?")), "no chat question either"
+    assert "on its board" in refused(lambda: Questions(record, actor=AGENT, agent="board-filler").create("Which one?", options=[{"title": "A"}, {"title": "B"}], pick=1)), "no chat question either"
     assert Boards(record, actor=AGENT).ask(board.n, "Which one?", options=[{"title": "A"}]).hidden, "the board's own question goes through"
 
 
