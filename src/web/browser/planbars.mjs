@@ -36,6 +36,7 @@ await runScenarios(process.argv[2], {
             await bar(page, `Mine ${stamp}`).getByText("0/1").waitFor();
             await bar(page, `Handed ${stamp}`).getByText("0/1").waitFor();
             await bar(page, `Mine ${stamp}`).getByRole("button", {name: /^Delegated/}).waitFor({state: "detached"});
+            if (await bar(page, `Handed ${stamp}`).getByText(/^With /).count()) throw new Error("the plan bar's tag still reads like a sentence instead of a label");
             await bar(page, `Handed ${stamp}`).getByRole("button", {name: "Delegated"}).click();
             await page.getByText("No helper has been handed this phase yet. Delegated plans keep running beside the one the agent works.").waitFor();
             await shot(page, "plan-bars-delegated");
