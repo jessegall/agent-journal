@@ -13,10 +13,18 @@ class IntegrationFeature(Feature):
     host = ""
 
     def client(self, record) -> IntegrationClient:
-        return IntegrationClient(record.root, self.host, str(self.values(record).key))
+        """The one client of this project, built when first needed and again when its settings change."""
+        home = str(record.home)
+        if home not in self.clients:
+            self.clients[home] = IntegrationClient(record.root, self.host, str(self.values(record).key))
+        return self.clients[home]
 
     def register(self, journal: Journal) -> None:
+        self.clients: dict[str, IntegrationClient] = {}
         journal.routes.add(self.state_route())
+
+    def settings_changed(self, record, actor: str) -> None:
+        self.clients.pop(str(record.home), None)
 
     def state_route(self):
         name = self.name

@@ -27,15 +27,21 @@ def test_only_you_pick_an_integrations_key_and_a_phone_never_does():
     assert features.FEATURES["linear"].values(record).key == "LINEAR_KEY", "you can, and it is read back"
     assert (writes_a_secret({"linear": {"key": "LINEAR_KEY"}}), writes_a_secret({"linear": {"enabled": True}}), writes_a_secret({"boards": {"x": 1}})) == (True, False, False), \
         "a settings write that holds a key is told apart, so the phone's allow list can close it"
+    assert (writes_a_secret({"name": "linear", "key": "key", "value": "LINEAR_KEY"}), writes_a_secret({"name": "linear", "key": "enabled", "value": "x"})) == (True, False), \
+        "and so is a single setting written by name, whichever route carries it"
 
 
-def test_what_an_integration_learned_is_kept_beside_the_record_and_not_in_it():
+def test_what_an_integration_learned_is_kept_beside_the_record_and_not_in_it(monkeypatch, tmp_path):
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path))
     record = fresh()
     write_state(record.root, "linear", IntegrationState(last_checked=42.0, last_error="the key was refused", cursor="2026-10-09"))
     assert read_state(record.root, "linear") == IntegrationState(42.0, "the key was refused", "2026-10-09"), "a sync's state reads back as it was written"
     assert state_file(record.root, "linear").parent.parent.name == "integration-data", "it lives in the journal's integration data folder"
     inside = [path for path in record.root.rglob("*") if path.is_file() and "integration-data" not in path.parts and "the key was refused" in path.read_text(errors="ignore")]
     assert inside == [], "and nothing of it is in the record"
+    ValuesFile(record.root).put("LINEAR_KEY", "lin_api_secret_value")
+    write_state(record.root, "linear", IntegrationState(last_error="refused lin_api_secret_value"))
+    assert read_state(record.root, "linear").last_error == "refused [secret LINEAR_KEY]", "an error is stored masked, whoever wrote it"
 
 
 def test_the_integration_client_sends_its_key_only_to_its_own_host_and_masks_it_in_errors(monkeypatch, tmp_path):
@@ -78,3 +84,19 @@ def test_the_integration_client_refuses_a_redirect_so_the_key_never_follows_one(
     finally:
         server.shutdown()
     assert followed is False, "a redirect to another host is an error, not a second request carrying the key"
+
+
+def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_change(monkeypatch, tmp_path):
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path))
+    features.load()
+    record = fresh()
+    linear = features.FEATURES["linear"]
+    first = linear.client(record)
+    assert linear.client(record) is first, "the client is built once and used again"
+    ValuesFile(record.root).put("LINEAR_KEY", "lin_first")
+    apply(record, {"linear": {"key": "LINEAR_KEY"}}, USER)
+    second = linear.client(record)
+    assert (second is first, second.key) == (False, "lin_first"), "and built again when its key is picked"
+    ValuesFile(record.root).put("LINEAR_KEY", "lin_rotated")
+    linear.client(record).current()
+    assert linear.client(record).key == "lin_rotated", "a key you replaced in your secrets is read again"
