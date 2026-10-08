@@ -19,7 +19,14 @@ says what it is about, or what happens when they press it, in the words a newcom
     hub, steered, inject, dispatched, moment, resource, orchestrator, "ships with";
   - uses one of the words the house has replaced: park (Pause), dismiss or abandon (Close).
 
+- **`sentence-label`** and **`sentence-label-in-script`** - a tag, badge, label or status written as a
+  sentence where a dashboard shows a label and a value: "With helper Leslie", "Waiting for the agent",
+  "Working on 3 jobs", "Held by ticket 5", "The agent is running".
+
 ## How to fix it
+
+- Write a tag, badge or status as a label, a colon and the value: "Helper: Leslie", "Helpers: Hedy, Benny",
+  "Ticket: 12", "Waiting: the agent", "Working: 3 jobs", "Agent: running"; "Delegated" when there is no value.
 
 - Name who acts: "The agent sorts it by subject", "What the agent is doing".
 - Say the thing the user sees: "item", "to-do", "message", "entry", not "row"; "comes with the journal",

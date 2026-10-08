@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "frontend",
+    "find": {
+        "select": "kind:Text",
+        "where": [
+            {
+                "textMatches": "(?i)^\\s*(with (a |an |the )?(helpers?|tickets?|agents?|plans?)\\b|(waiting|waits) (for|on) \\S|working on \\S|(held|blocked|handed) (by|to|for) \\S|(\\S+\\s+){0,3}\\S+ (is|are) (running|working|waiting|idle|stopped)\\.?\\s*$)"
+            }
+        ],
+        "reject": [
+            {
+                "textLike": "No *"
+            },
+            {
+                "textLike": "For example*"
+            }
+        ]
+    },
+    "sin": {
+        "name": "sentence-label",
+        "description": "A tag, badge, label or status the viewer shows is written as a sentence ('With helper Leslie', 'Waiting for the agent', 'Working on 3 jobs', 'The agent is running') where a dashboard shows a label and a value.",
+        "rule": "Write a tag, badge, label or status as a label, a colon and the value: 'Helper: Leslie', 'Helpers: Hedy, Benny', 'Ticket: 12', 'Waiting: the agent', 'Working: 3 jobs', 'Agent: running'.",
+        "skill": "plain-viewer-text"
+    }
+}
