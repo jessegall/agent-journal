@@ -402,6 +402,9 @@ class Provider(ABC):
         blocks = [block for listed in (self.settings(project).get("hooks") or {}).values() for block in listed]
         return next((hook["command"] for block in blocks for hook in block.get("hooks", []) if journal_hook(hook.get("command", ""))), "")
 
+    def browser_logins(self, project: Path, storage: Path) -> bool:
+        return False
+
     def wiring_trouble(self, project: Path) -> str:
         command = self.wired(project)
         if not command:

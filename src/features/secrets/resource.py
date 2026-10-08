@@ -50,6 +50,8 @@ class Secret(Shape, Resource):
         Field(default=dict, name="filled", journal_only=True),
         Field(default=0.0, name="used", journal_only=True),
         Field(default="", name="asked"),
+        Field(default=0.0, name="session", journal_only=True),
+        Field(default=0.0, name="session_expires", journal_only=True),
     ]
     type = "secret"
     icon = "key"

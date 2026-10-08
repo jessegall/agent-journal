@@ -49,6 +49,7 @@ DISPATCHES = ("Agent", "Task")
 QUIET_SUBAGENT = 600
 SETTLE_BYTES = 65536
 SERVER = "journal"
+BROWSER = "playwright"
 
 
 @dataclass
@@ -221,6 +222,16 @@ class Claude(Provider):
         servers = known.get("mcpServers") or {}
         servers[SERVER] = {"command": sys.executable, "args": [str(hook.root / "journal.py"), "-m", "channel", str(hook.root)]}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
+
+    def browser_logins(self, project: Path, storage: Path) -> bool:
+        f = project / ".mcp.json"
+        known = read_json(f, dict, {})
+        servers = known.get("mcpServers") or {}
+        wanted = {"type": "stdio", "command": "npx", "args": ["-y", "@playwright/mcp@latest", "--headless", "--isolated", "--storage-state", str(storage)]}
+        if servers.get(BROWSER) == wanted:
+            return False
+        write_text(f, json.dumps({**known, "mcpServers": {**servers, BROWSER: wanted}}, indent=2) + "\n")
+        return True
 
     def wiring_trouble(self, project: Path) -> str:
         found = super().wiring_trouble(project)
