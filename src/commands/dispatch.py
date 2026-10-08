@@ -16,6 +16,7 @@ from engine.paths import contained, known_environment
 
 
 WEB = data("web", "dist")
+HOOK_PATH = "/api/hook/"
 
 ROUTES: list[Route] = []
 RANKED = Memo()
@@ -59,24 +60,17 @@ def later(reply: Reply, then) -> Reply:
     return reply
 
 
-def sooner(reply: Reply, first) -> Reply:
-    rest = reply.after
-
-    def after() -> None:
-        first()
-        rest()
-    reply.after = after
-    return reply
+def hook_path(path: str) -> bool:
+    return path.startswith(HOOK_PATH)
 
 
 def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Stopwatch, profile=None) -> Reply:
     if not reply.timed:
         return reply
     name = f"{method} {path}" if reply.named is None else f"{method} {path} ({reply.named})"
-    answered = []
-    kind = "hook" if "/hook/" in path else "request"
-    later(reply, lambda: began.announce(Record(root, env), kind, name, profile, answered[0] if answered else None))
-    return sooner(reply, lambda: answered.append(began.lap()))
+    answered = began.lap()
+    kind = "hook" if hook_path(path) else "request"
+    return later(reply, lambda: began.announce(Record(root, env), kind, name, profile, answered))
 
 
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:

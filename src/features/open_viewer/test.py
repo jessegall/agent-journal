@@ -85,13 +85,12 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     from types import SimpleNamespace
     import urllib.error
     import urllib.request
-    from http.server import ThreadingHTTPServer
     import pytest
     from features.routing import Request
     from commands.http import get_file_diff, get_file_text, get_project_files
     from engine.project_files import read_source, walk
     from resources.base import Refused
-    from serve import Handler
+    from serve import Handler, JournalServer
     project, other = tmp_path / "project", tmp_path / "other"
     (project / ".journal").mkdir(parents=True)
     (project / ".private").mkdir()
@@ -114,7 +113,7 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
         with pytest.raises(Refused):
             handler(Request(project / ".journal", {"env": "main"}, query, {}))
     Handler.root = project / ".journal"
-    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    server = JournalServer(("127.0.0.1", 0), Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
 
     def status(headers):

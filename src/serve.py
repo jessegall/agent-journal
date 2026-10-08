@@ -19,10 +19,11 @@ from features.auto_update.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
-from commands.dispatch import reached_by_phone, resolve  # noqa: E402
+from commands.dispatch import hook_path, reached_by_phone, resolve  # noqa: E402
 from features.phone.allow_list import Reach  # noqa: E402
 from features.routing import PHONE_ENVIRONMENT, PHONE_UNLOCKED, Reply  # noqa: E402
 from engine import runtime  # noqa: E402
+from engine.after_answer import AfterAnswer  # noqa: E402
 from features.switches import WARMERS  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
@@ -77,6 +78,13 @@ class Handler(BaseHTTPRequestHandler):
         if not self.allowed_request():
             return
         url = urlparse(self.path)
+        if not hook_path(url.path):
+            self.answer(method, url)
+            return
+        with self.server.after_answer.answering_hook():
+            self.answer(method, url)
+
+    def answer(self, method: str, url) -> None:
         length = self.headers["Content-Length"]
         raw = self.rfile.read(int(length)) if length else b""
         kind = self.headers.get("Content-Type") or ""
@@ -96,7 +104,7 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(data)
             self.wfile.flush()
             if reply.after:
-                reply.after()
+                self.server.after_answer.add(reply.after)
             return
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
@@ -158,6 +166,7 @@ class JournalServer(ThreadingHTTPServer):
         super().__init__(address, handler)
         self.warm = threading.Event()
         self.warm.set()
+        self.after_answer = AfterAnswer.started()
 
 
 def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
