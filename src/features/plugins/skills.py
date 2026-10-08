@@ -57,8 +57,8 @@ def published(root: Path, plugin: str, manifest) -> list[str]:
         shutil.rmtree(target, ignore_errors=True)
         shutil.copytree(source, target)
         (target / SKILL).write_text(stamped((target / SKILL).read_text(), plugin))
-        link(project, name)
         placed.append(name)
+    link(project, placed)
     for stale in set(owned(project, plugin)) - set(theirs):
         unlink(project, stale)
     ignored(project, placed)
