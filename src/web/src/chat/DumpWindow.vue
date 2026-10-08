@@ -213,21 +213,23 @@ function toggle(m) {
                                 @leave="leave"
                             />
                         </template>
-                        <template v-for="m in listed" :key="m.ref">
-                            <DumpMadeRow
-                                :made="m"
-                                :open="opened === m.ref"
-                                :lit="litRef === m.ref || (!!litItem && items.some((i) => i.name === litItem && i.refs.includes(m.ref)))"
-                                :selecting="!!merging"
-                                :selected="!!merging && merging.has(m.ref)"
-                                @mouseenter="litRef = m.ref"
-                                @toggle="toggle(m)"
-                                @peek="peekRef(m.ref)"
-                                @rename="(title) => renameRow(m, title)"
-                                @merge="merging = new Set([m.ref])"
-                                @select="select(m)"
-                            />
-                        </template>
+                        <div class="dump-list">
+                            <template v-for="m in listed" :key="m.ref">
+                                <DumpMadeRow
+                                    :made="m"
+                                    :open="opened === m.ref"
+                                    :lit="litRef === m.ref || (!!litItem && items.some((i) => i.name === litItem && i.refs.includes(m.ref)))"
+                                    :selecting="!!merging"
+                                    :selected="!!merging && merging.has(m.ref)"
+                                    @mouseenter="litRef = m.ref"
+                                    @toggle="toggle(m)"
+                                    @peek="peekRef(m.ref)"
+                                    @rename="(title) => renameRow(m, title)"
+                                    @merge="merging = new Set([m.ref])"
+                                    @select="select(m)"
+                                />
+                            </template>
+                        </div>
                     </div>
                     <template v-if="merging">
                         <div class="dump-float">
@@ -306,6 +308,16 @@ function toggle(m) {
     padding: 16px 20px 10px;
     font-size: 12.5px;
     color: var(--text-3);
+}
+
+.dump-list {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border-2);
+    border-radius: 12px;
+    background: var(--raised);
 }
 
 .dump-docs {

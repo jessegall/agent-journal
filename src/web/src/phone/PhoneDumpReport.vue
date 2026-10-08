@@ -4,7 +4,7 @@ import Button from "./kit/Button.vue";
 import Cell from "./kit/Cell.vue";
 import CellGroup from "./kit/CellGroup.vue";
 
-const ANSWERED = {taken: "Done", left: "Not now"};
+const ANSWERED = {taken: "Sent to the agent", left: "Not now"};
 
 defineProps({
     title: {type: String, required: true},
@@ -19,7 +19,7 @@ const emit = defineEmits(["take", "leave"]);
 <template>
     <CellGroup :head="title">
         <template v-for="line in lines" :key="line">
-            <Cell :label="line" icon="check" still />
+            <Cell :label="line" still />
         </template>
         <template v-if="summing">
             <Cell label="Writing a summary of what was filed…" icon="clock" still />
@@ -29,12 +29,12 @@ const emit = defineEmits(["take", "leave"]);
         <TextDisplay class="dump-summary" :text="summary" />
     </template>
     <template v-if="suggestions.length">
-        <CellGroup head="Suggestions from the agent">
+        <CellGroup head="What the agent can do next">
             <template v-for="offer in suggestions" :key="offer.pick">
                 <Cell :label="offer.ask || offer.label" :sub="ANSWERED[offer.state] || ''" still>
                     <template v-if="!offer.state" #end>
                         <span class="dump-offer">
-                            <Button :busy="offer.busy" @click="emit('take', offer.pick)">
+                            <Button kind="plain" :busy="offer.busy" @click="emit('take', offer.pick)">
                                 {{ offer.ask ? offer.label : "Yes, do it" }}
                             </Button>
                             <Button kind="plain" @click="emit('leave', offer.pick)">Not now</Button>

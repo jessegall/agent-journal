@@ -101,9 +101,7 @@ function renamed(name) {
     grid-template-columns: 24px minmax(0, 1fr) auto;
     gap: 12px;
     padding: 12px 14px 11px;
-    border: 1px solid var(--border-2);
-    border-radius: 12px;
-    background: var(--raised);
+    border-bottom: 1px solid var(--border);
     cursor: pointer;
     animation: dump-doc-arrive 0.5s var(--ease) both;
     transition:
@@ -112,18 +110,20 @@ function renamed(name) {
         box-shadow 0.25s;
 }
 
+.dump-doc:last-child {
+    border-bottom: 0;
+}
+
 .dump-doc:hover {
-    border-color: var(--border-3);
+    background: var(--sel);
 }
 
 .dump-doc.forming {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--border-2));
     cursor: default;
 }
 
 .dump-doc.lit {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+    background: var(--accent-dim);
 }
 
 .dump-doc.selecting {
@@ -131,7 +131,6 @@ function renamed(name) {
 }
 
 .dump-doc.selected {
-    border-color: var(--accent);
     background: color-mix(in srgb, var(--accent) 9%, var(--raised));
 }
 
@@ -156,7 +155,7 @@ function renamed(name) {
     height: 30px;
     margin-top: 2px;
     border-radius: 3px;
-    background-color: color-mix(in srgb, var(--tone-good) 20%, var(--sel));
+    background-color: var(--sel);
     background-image: repeating-linear-gradient(to bottom, transparent 0 4px, var(--border-3) 4px 5px);
     background-size: calc(100% - 8px) calc(100% - 13px);
     background-position: 4px 8px;
@@ -293,7 +292,7 @@ function renamed(name) {
 
 .dump-doc-added {
     font-size: 11px;
-    color: var(--accent-text);
+    color: var(--text-3);
     white-space: nowrap;
 }
 

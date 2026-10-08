@@ -30,7 +30,7 @@ const emit = defineEmits(["more", "paste-more"]);
 const READ = {waiting: -1, read: 0.6, filed: 1, failed: 1};
 
 function slipMeta(item) {
-    if (item.state === "filed") return `→ ${counted(item.refs.filter((r) => !r.startsWith("collection:")).length, "thing", "things")}`;
+    if (item.state === "filed") return `${counted(item.refs.filter((r) => !r.startsWith("collection:")).length, "thing", "things")} filed`;
     return item.state === "failed" ? "not filed" : item.state;
 }
 </script>
@@ -61,7 +61,7 @@ function slipMeta(item) {
         <template v-if="moreError">
             <span class="dump-error">{{ moreError }}</span>
         </template>
-        <ProgressBar thin :value="settled" :max="Math.max(1, items.length)" />
+        <ProgressBar thin :tone="working ? '' : 'quiet'" :value="settled" :max="Math.max(1, items.length)" />
         <DumpEyebrow>What the agent is doing</DumpEyebrow>
         <DumpNarration :timeline="timeline" :current="current" :thinking="thinking" />
         <template v-if="question">
