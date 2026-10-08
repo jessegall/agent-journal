@@ -82,6 +82,10 @@ class Shape:
     command_fields: ClassVar[frozenset[str]] = frozenset()
     journal_fields: ClassVar[frozenset[str]] = frozenset()
 
+    @classmethod
+    def unfilled(cls, data: dict) -> list[str]:
+        return [name for name in cls.required if not data.get(name)]
+
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
         declare(cls)

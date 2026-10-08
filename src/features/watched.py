@@ -5,6 +5,7 @@ from typing import Callable
 from controllers.types import Messages, Questions, Works
 from engine.memo import Memo
 from features.messages.answering import unanswered
+from features.base import PLACEHOLDER
 from features.nudges.sending import Sent
 from features.trigger import MINUTE
 from features.work_tracking.next import ready
@@ -19,7 +20,15 @@ class Fact:
     name: str
     unit: str
     label: str
+    phrase: str
     find: Callable
+
+    def sentence(self, over: float) -> str:
+        return self.phrase.format(over=int(over))
+
+
+def filled(text: str, values: dict) -> str:
+    return PLACEHOLDER.sub(lambda found: str(values.get(found.group(1), found.group(0))), text)
 
 
 def minutes_since(stamp: float) -> int:
@@ -70,14 +79,14 @@ def todo_ready(context, agent, over: float) -> list[Sent]:
 
 
 FACTS = {fact.name: fact for fact in (
-    Fact("message.unread", MINUTES, "A message of yours has not been read", message_unread),
-    Fact("message.unanswered", MINUTES, "A message of yours was read but not answered", message_unanswered),
-    Fact("work.unlogged", MINUTES, "Work has no log entry", work_unlogged),
-    Fact("work.awaiting", MINUTES, "Work has been waiting for something", work_awaiting),
-    Fact("agent.idle", MINUTES, "The agent is idle", agent_idle),
-    Fact("agent.context", PERCENT, "The agent's context is getting full", agent_context),
-    Fact("question.open", MINUTES, "A question has no answer", question_open),
-    Fact("todo.ready", COUNT, "To-dos are ready and no work is open", todo_ready),
+    Fact("message.unread", MINUTES, "A message of yours has not been read", "a message of yours has gone unread for more than {over} minutes", message_unread),
+    Fact("message.unanswered", MINUTES, "A message of yours was read but not answered", "a message of yours has been read but left unanswered for more than {over} minutes", message_unanswered),
+    Fact("work.unlogged", MINUTES, "Work has no log entry", "work has had no log entry for more than {over} minutes", work_unlogged),
+    Fact("work.awaiting", MINUTES, "Work has been waiting for something", "work has been waiting for something for more than {over} minutes", work_awaiting),
+    Fact("agent.idle", MINUTES, "The agent is idle", "the agent has been idle for more than {over} minutes", agent_idle),
+    Fact("agent.context", PERCENT, "The agent's context is getting full", "the agent's context is more than {over} percent full", agent_context),
+    Fact("question.open", MINUTES, "A question has no answer", "a question has had no answer for more than {over} minutes", question_open),
+    Fact("todo.ready", COUNT, "To-dos are ready and no work is open", "at least {over} to-dos are ready and no work is open", todo_ready),
 )}
 
 
