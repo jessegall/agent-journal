@@ -16,7 +16,7 @@ const light = (n) => (ui.litCard = n);
         type="button"
         :class="['board-role', {idle: !n}]"
         :disabled="!n"
-        :title="n ? `${title} works on #${n} ${task}; open its chat` : `${title} is idle`"
+        :title="n ? `${title}: #${n} ${task}, opens its chat` : `${title}: idle`"
         @mouseenter="light(n)"
         @mouseleave="light(0)"
         @click="go(env)"

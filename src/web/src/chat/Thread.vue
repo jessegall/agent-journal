@@ -127,7 +127,7 @@ const dockCount = computed(() => [dumpDock.value, reportDock.value, planCard.val
 const thought = computed(() => (owner.value && owner.value.data.thinking) || "");
 const helping = computed(() => ((owner.value && owner.value.data.subagent_rows) || []).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
-    owner.value && owner.value.data.status === "compacting" ? "compacting" : helping.value ? `Waiting for ${helping.value.task}` : "working"
+    owner.value && owner.value.data.status === "compacting" ? "compacting" : helping.value ? `Waiting: ${helping.value.task}` : "working"
 );
 const away = ref(false);
 const planOpen = ref(true);

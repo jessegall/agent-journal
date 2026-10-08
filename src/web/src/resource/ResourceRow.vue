@@ -16,7 +16,7 @@ const held = computed(() => {
     if (props.resource.data.blocked) return props.resource.data.blocked;
     if (parkedFor(props.resource)) return `Paused: ${parkedFor(props.resource)}`;
     const refs = waitsOn(props.resource);
-    return refs.length ? `Waits on ${refs.map((ref) => "#" + ref.split(":")[1]).join(", ")}` : "";
+    return refs.length ? `Waits on: ${refs.map((ref) => "#" + ref.split(":")[1]).join(", ")}` : "";
 });
 const summary = computed(() =>
     props.resource.type === "trigger"

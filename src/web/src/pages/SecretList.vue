@@ -57,7 +57,7 @@ onMounted(async () => {
                         <span>{{ whenWords(row) }}</span>
                     </span>
                     <template v-if="isWaiting(row)">
-                        <Chip tone="accent">Waiting for a value</Chip>
+                        <Chip tone="accent">Waiting: a value</Chip>
                     </template>
                     <Icon name="chevron" :size="12" />
                 </button>

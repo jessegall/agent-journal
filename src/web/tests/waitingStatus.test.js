@@ -19,17 +19,17 @@ describe("the waiting word and its line", () => {
         const works = [work({awaiting: "3 helpers", awaiting_on: "helper:1,helper:2,helper:3"})];
         const helpers = [helper(1, "running"), helper(2, "running"), helper(3, "running")];
         expect(wordOf(stateOf(agent(), works))).toBe("Waiting");
-        expect(waitingOn(agent(), works, helpers, NOW).line).toBe("on 3 helpers · 4m 00s");
-        expect(lineOf(agent(), works, false, helpers)).toMatch(/^on 3 helpers · (\d+h )?(\d+m )?\d+s$/);
+        expect(waitingOn(agent(), works, helpers, NOW).line).toBe("3 helpers · 4m 00s");
+        expect(lineOf(agent(), works, false, helpers)).toMatch(/^3 helpers · (\d+h )?(\d+m )?\d+s$/);
     });
 
     test("a wait on a run names the run, and each report lowers the helper count", () => {
-        expect(waitingOn(agent(), [work()], [], NOW).line).toBe("on the test suite · 4m 00s");
+        expect(waitingOn(agent(), [work()], [], NOW).line).toBe("the test suite · 4m 00s");
         const two = waitingFor(
             {text: "3 helpers", on: "helper:1,helper:2,helper:3", since: NOW - 60},
             {helpers: [helper(1, "reported"), helper(2, "running"), helper(3, "running")], now: NOW}
         );
-        expect(two.line).toBe("on 2 helpers · 1m 00s");
+        expect(two.line).toBe("2 helpers · 1m 00s");
         expect(two.items.map((item) => item.reported)).toEqual([true, false, false]);
         expect(two.items.map((item) => item.status)).toEqual(["Report ready", "At work", "At work"]);
         expect(waitingOn(agent(), [work()], [], NOW).items[0].status).toBe("At work");
@@ -42,7 +42,7 @@ describe("the waiting word and its line", () => {
 
     test("the phone says waiting only when the agent is neither working nor paused", () => {
         const running = {awaiting: {text: "the test suite", on: "", since: NOW - 120}, helpers: []};
-        expect(phoneWaiting({agent: "idle", running}, NOW).line).toBe("on the test suite · 2m 00s");
+        expect(phoneWaiting({agent: "idle", running}, NOW).line).toBe("the test suite · 2m 00s");
         expect(phoneWaiting({agent: "working", running}, NOW)).toBeNull();
         expect(phoneWaiting({agent: "idle", running: {...running, paused: true}}, NOW)).toBeNull();
     });
@@ -90,7 +90,7 @@ describe("the message box edge", () => {
 describe("the time a wait has lasted", () => {
     test("counts seconds, and each item carries it", () => {
         const two = waitingFor({text: "2 helpers", on: "helper:1,helper:2", since: NOW - 67}, {helpers: [helper(1, "running"), helper(2, "running")], now: NOW});
-        expect(two.line).toBe("on 2 helpers · 1m 07s");
+        expect(two.line).toBe("2 helpers · 1m 07s");
         expect(two.items.map((item) => item.out)).toEqual(["1m 07s", "1m 07s"]);
     });
 
@@ -102,7 +102,7 @@ describe("the time a wait has lasted", () => {
 
     test("an idle orchestrator stays Idle and says how many helpers work", () => {
         expect(wordOf(stateOf(agent(), []))).toBe("Idle");
-        expect(lineOf(agent(), [], false, [], 4)).toBe("4 helpers working");
+        expect(lineOf(agent(), [], false, [], 4)).toBe("Helpers: 4");
         expect(lineOf(agent(), [], false, [], 0)).toBe("ready for your next message");
     });
 });

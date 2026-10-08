@@ -188,7 +188,7 @@ export function useDump(every, selected, rowsOf, sequenceKey) {
     });
     const thinking = computed(() => {
         if (step.value && (phase.value === "waiting" || (phase.value === "filing" && !log.value.length))) return step.value;
-        if (phase.value === "waiting") return "Waiting for the agent";
+        if (phase.value === "waiting") return "Waiting: the agent";
         if (phase.value === "queued") return `Waiting in line behind dump ${inHand.value.n}`;
         if (phase.value === "quiet")
             return `No update for ${Math.round((now.value - dump.value.updated) / 60)} min; the agent may be busy elsewhere`;
