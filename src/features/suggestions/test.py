@@ -42,6 +42,9 @@ def test_the_agent_proposes_and_the_user_decides_accept_adjust_or_decline():
         mine.create(f"proposal {i}")
     assert refused(lambda: mine.create("one more")).startswith("5 suggestions already wait on the user") is True, \
         "a sixth open suggestion is refused, naming the five"
+    from features.sequences.shipped import CHECKING_THE_INSTRUCTION_FILES
+    assert "link it" in refused(lambda: mine.create("one more")) and "write the remaining fixes" in " ".join(str(step) for step in CHECKING_THE_INSTRUCTION_FILES.steps), \
+        "the refusal and the step that files suggestions both name the way out at the limit: write the rest into the report and link it"
 
 
 def test_the_users_answer_shows_on_their_side_of_the_chat_and_no_can_be_taken_back():
