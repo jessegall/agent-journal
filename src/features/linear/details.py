@@ -1,4 +1,10 @@
+from features.base import Line
 from features.integrations.details import IntegrationDetails
+from features.settings import Setting
+from features.trigger import MINUTES, Trigger
+from resources.base import PROJECT
+
+REFUSED, UNREACHABLE = "refused", "unreachable"
 
 
 class LinearDetails(IntegrationDetails):
@@ -17,3 +23,17 @@ class LinearDetails(IntegrationDetails):
         API key kept in your secrets. The journal sends the key only to api.linear.app, from its own process, and never
         shows it to an agent: only you pick it.
     """
+
+    trigger = Trigger(every=5, unit=MINUTES)
+    trigger_label = "Check Linear"
+
+    settings = [
+        *IntegrationDetails.settings,
+        Setting(name="board", default=0, title="Board", abstract="The board your Linear issues land on, as tickets", scope=PROJECT),
+        Setting(name="teams", default="", title="Which issues", abstract="The Linear teams whose issues assigned to you come in; none picked means every team", scope=PROJECT),
+    ]
+
+    lines = [
+        Line(name=REFUSED, title="Linear refused the key", brief="Pick a working key for Linear under Integrations, in the viewer"),
+        Line(name=UNREACHABLE, title="Linear could not be reached", brief="The journal tries again in five minutes; the card under Integrations says why"),
+    ]
