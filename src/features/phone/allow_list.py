@@ -10,7 +10,7 @@ from engine.paths import known_environment
 from engine.record import Record
 from features.permission_prompts.skipping import Relaunch
 from features.phone.members import rights_of
-from features.routing import Named, Reply, Route
+from features.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Named, Reply, Route
 from resources.base import SYSTEM
 
 
@@ -166,23 +166,35 @@ def reach(route: Route, path: GenericPath) -> Page | Action:
     return Action(path.type, path.action or GENERIC[page])
 
 
-def allowed(root: Path, environment: str, route: Route, params: dict, body: dict, unlocked: bool, member: str) -> Reach:
+@dataclass(frozen=True)
+class PhoneVisit:
+    """A request from a phone: the environment it is paired to, whether it just unlocked, and whose phone it is."""
+
+    environment: str
+    unlocked: bool
+    member: str
+
+    def marks(self) -> dict:
+        return {PHONE_ENVIRONMENT: self.environment, PHONE_UNLOCKED: "1" if self.unlocked else "0", PHONE_MEMBER: self.member}
+
+
+def allowed(root: Path, route: Route, params: dict, body: dict, visit: PhoneVisit) -> Reach:
     """A named page or action is open, and one that runs a command only right after the phone unlocked; anything unnamed is closed, and a phone gets only what its person's rights grant."""
     reached = reach(route, GenericPath.from_json(params))
-    home = Record(root, environment)
+    home = Record(root, visit.environment)
     if writes_a_secret(body):
         return Reach.CLOSED
-    if reached not in NAMED or not rights_of(home).may_reach(home, member, reached):
+    if reached not in NAMED or not rights_of(home).may_reach(home, visit.member, reached):
         return Reach.CLOSED
-    if unlocked or not (reached in RUNS or reached.asks_to_run(Record(root, environment), Arguments.given(body, params), body)):
+    if visit.unlocked or not (reached in RUNS or reached.asks_to_run(Record(root, visit.environment), Arguments.given(body, params), body)):
         return Reach.OPEN
     return Reach.LOCKED
 
 
-def reached(root: Path, route: Route, params: dict, query: dict, body: dict, environment: str, unlocked: bool, member: str) -> Reach:
+def reached(root: Path, route: Route, params: dict, query: dict, body: dict, visit: PhoneVisit) -> Reach:
     """How far a phone in this environment gets with the page."""
     here = {Named.from_json(given).env for given in (params, query)} - {""}
     target = Named.from_json(body).env
-    if not here <= {environment} or (target and not known_environment(root, target)):
+    if not here <= {visit.environment} or (target and not known_environment(root, target)):
         return Reach.CLOSED
-    return allowed(root, environment, route, params, body, unlocked, member)
+    return allowed(root, route, params, body, visit)

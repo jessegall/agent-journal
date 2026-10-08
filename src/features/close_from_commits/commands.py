@@ -13,6 +13,6 @@ class SweepLanded(Command):
         if not checkout or not checkout.landing:
             raise Refused("this project has no main branch from a remote to read trailers from")
         todos, works, closed = Todos(context.record, actor=SYSTEM), Works(context.record, actor=SYSTEM), []
-        for sha, subject, body in landing_commits(checkout, checkout.landing):
-            closed += closing(todos, works, sha, subject, body)[0]
+        for commit in landing_commits(checkout, checkout.landing):
+            closed += closing(todos, works, commit)[0]
         return f"closed {', '.join(closed)}" if closed else "no open to-do has its trailer on main"

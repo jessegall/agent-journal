@@ -27,7 +27,7 @@ from features.members.roles import NOT_A_WRITER, Role
 from features.members.roster import INVITE_DAYS, Roster
 from commands.dispatch import reached_by_phone
 from engine.record import Record
-from features.phone.allow_list import RUNS, TO_WEIGH, VIEWER_SETTINGS, Action, Reach, get
+from features.phone.allow_list import RUNS, TO_WEIGH, VIEWER_SETTINGS, Action, PhoneVisit, Reach, get
 from features.phone.controller import Phones
 from features.phone.members import rights_of
 from features.routing import MEMBER, ROLE, SHARED, sender_of
@@ -315,7 +315,7 @@ def test_the_phone_asks_the_same_members_model_as_the_login_page(hosted, monkeyp
     assert isinstance(rights, MemberLogins), "the phone's rights are the members feature's own"
     assert [rights.may_reach(hosted.record, who, create) for who in (OWNER_ID, ada, bea)] == [True, False, True], "a phone reaches what its person's role does"
     assert not rights.may_reach(garden, bea, get("/api/identity")), "and nothing in an environment not shared with them"
-    assert [reached_by_phone(hosted.record.root, "POST", f"/api/{env}/todo", {}, {}, env, True, who) for who in (ada, bea)] == [Reach.CLOSED, Reach.OPEN]
+    assert [reached_by_phone(hosted.record.root, "POST", f"/api/{env}/todo", {}, {}, PhoneVisit(env, True, who)) for who in (ada, bea)] == [Reach.CLOSED, Reach.OPEN]
     headers = rights.headers(hosted.record, bea)
     assert headers == {MEMBER: bea, ROLE: "writer", SHARED: env} and rights.headers(hosted.record, OWNER_ID) == {}, \
         "the login page names a member's id, role and environments on each request it forwards from their phone"

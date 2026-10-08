@@ -10,7 +10,8 @@ from http.cookies import SimpleCookie
 from engine.record import Record
 from resources.fields import Loaded
 from features.phone.controller import Phones
-from features.phone.desktop import Desktop, phone_marks
+from features.phone.allow_list import PhoneVisit
+from features.phone.desktop import Desktop
 from features.phone.members import rights_of
 from features.phone.passkey import Assertion, Enrolment, Relying, requested
 from features.phone.surface import PhoneSurface
@@ -348,7 +349,7 @@ class PhoneRoutes:
         body = handler.rfile.read(size) if size else b""
         phones = self.phones(handler)
         unlocked = phones._spend(phone, handler.headers.get(UNLOCK, ""), requested(handler.command, handler.path, body))
-        marks = {**phone_marks(phone.environment, unlocked, phone.member), **rights_of(phones.record).headers(phones.record, phone.member)}
+        marks = {**PhoneVisit(phone.environment, unlocked, phone.member).marks(), **rights_of(phones.record).headers(phones.record, phone.member)}
         return Desktop(handler, handler.path.removeprefix("/p"), marks).forward(body)
 
     def attach(self, handler, rest: list[str]) -> None:
