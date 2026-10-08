@@ -6,6 +6,7 @@ from features.settings import Setting
 from resources.base import PROJECT
 
 REFUSED, UNREACHABLE = "refused", "unreachable"
+SEND, KEEP = "Send", "Don't send"
 
 
 class IntegrationDetails(FeatureDetails):

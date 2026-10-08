@@ -1,8 +1,8 @@
 from features.integrations.base import IntegrationFeature
 from features.journal import Journal
-from features.linear.commands import ProposeComment, SyncLinear
+from features.linear.commands import ProposeComment
 from features.linear.details import LinearDetails
-from features.linear.handlers import CheckLinear, MoveIssue, SendApprovedComment
+from features.linear.handlers import MoveIssue
 from features.linear.routes import LinearWebhook
 from features.linear.webhook import Deliveries
 from features.linear.working import LinearWork
@@ -18,9 +18,6 @@ class Linear(LinearWork, IntegrationFeature):
         super().register(journal)
         self.deliveries = Deliveries()
         ROUTES.add(self, LinearWebhook(self), key="linear")
-        journal.events.handler(CheckLinear())
         journal.events.handler(MoveIssue())
-        journal.events.handler(SendApprovedComment())
-        journal.commands.add("feature", SyncLinear())
         journal.commands.add("ticket", ProposeComment())
-        journal.routes.add(self.teams_route(), self.check_route(), self.webhook_route())
+        journal.routes.add(self.teams_route(), self.webhook_route())
