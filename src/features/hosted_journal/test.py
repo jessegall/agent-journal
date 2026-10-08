@@ -42,7 +42,7 @@ from features.sharing.routes import EVERY_OTHER, ROUTES
 from features.sharing.server import ShareHandler
 from features.sharing.services import share_services
 from features.sharing.tunnel import SERVER
-from controllers.types import Messages, Todos
+from controllers.types import Docs, Messages, Todos
 from resources.base import OWNER_ID, SYSTEM, USER
 from serve import Handler, JournalServer
 from tests.conftest import fresh
