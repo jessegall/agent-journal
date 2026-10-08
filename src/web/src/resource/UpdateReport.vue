@@ -9,6 +9,7 @@ import {
     commitHref,
     neighbour,
     refLabel,
+    settled,
     updateAlso,
     updateCounts,
     updateLabel,
@@ -24,6 +25,7 @@ const older = computed(() => neighbour(props.resource, reports.value, -1));
 const carried = computed(() => carriedOver(props.resource, reports.value));
 const counts = computed(() => updateCounts(props.resource, !!newer.value));
 const sections = computed(() => updateSections(props.resource, !!newer.value));
+const held = computed(() => ({question: rows("question"), plan: rows("plan"), suggestion: rows("suggestion")}));
 const also = computed(() => updateAlso(props.resource));
 
 function open(item) {
@@ -67,6 +69,7 @@ function open(item) {
                             :class="['update-row', 'hy', {commit: s.key === 'commits'}]"
                             data-hy="row"
                             :data-changed="carried.has(item.ref) ? null : '1'"
+                            :data-settled="settled(item, held) ? '1' : null"
                             @click="open(item)"
                         >
                             <template v-if="s.key === 'commits'">
@@ -170,6 +173,12 @@ function open(item) {
 
 .update-row:last-child {
     border-bottom: 1px solid var(--border);
+}
+
+.update-row[data-settled] .update-title,
+.update-row[data-settled] .update-note {
+    text-decoration: line-through;
+    opacity: 0.6;
 }
 
 .update-row:hover {
