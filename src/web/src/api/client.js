@@ -601,6 +601,14 @@ export class ApiClient {
         return this.get(this.here(`/search${query({q})}`));
     }
 
+    searchAttic(q) {
+        return this.get(this.here(`/search/attic${query({q})}`));
+    }
+
+    unarchive(name) {
+        return this.post(this.here("/environment/unarchive"), {name});
+    }
+
     files() {
         return this.get(this.here("/files"));
     }

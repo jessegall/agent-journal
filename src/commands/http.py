@@ -24,7 +24,7 @@ from features.permission_prompts.skipping import Relaunch, set_skipped
 from engine.files import found_files
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments
-from engine import bus, runtime, typist, viewer
+from engine import attic, bus, runtime, typist, viewer
 from engine.package import CODE
 from surfaces.manifest import manifest
 from engine.version import version
@@ -550,6 +550,12 @@ def get_search(req: Request) -> Reply:
                        for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
             out.append({**shaped(r, req.record(), VIEWER), "matches": matches})
     return Reply(200, out)
+
+
+@route("GET", "/api/{env}/search/attic")
+def get_search_attic(req: Request) -> Reply:
+    term = req.query.get("q", "")
+    return Reply(200, [asdict(hit) for hit in attic.searched(req.root, term)] if term else [])
 
 
 @route("GET", "/api/{env}/stream")

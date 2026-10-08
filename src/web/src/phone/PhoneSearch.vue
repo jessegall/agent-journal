@@ -1,4 +1,5 @@
 <script setup>
+import CardSkeleton from "../kit/CardSkeleton.vue";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {phone} from "../api/phone.js";
@@ -79,6 +80,9 @@ watch(asked, (now) => {
                         </template>
                     </template>
                 </CellGroup>
+            </template>
+            <template v-if="searching">
+                <CardSkeleton />
             </template>
             <template v-if="asked && !searching && !items.length && !places.length && !commands.length">
                 <p class="search-none">Nothing matches “{{ words }}”.</p>

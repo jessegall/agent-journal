@@ -14,7 +14,7 @@ from resources.base import ACTORS, AGENT
 from engine.version import version
 from features.runtime_cleanup.details import RuntimeCleanupDetails
 from features.runtime_cleanup.tidy import tidy
-from commands.queries import attached, decided, demo, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
+from commands.queries import attached, attic_text, decided, demo, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
 
 argparse._ = str
 
@@ -104,8 +104,9 @@ def built(only: str) -> argparse.ArgumentParser:
     add_query(cmds, "carry", "everything standing, in full", lambda ctx: briefing.carry(ctx["record"]))
     add_query(cmds, "start", "what a session is handed at its start", lambda ctx: briefing.start_block(ctx["record"]))
     add_query(cmds, "open", "open work", lambda ctx: briefing.lines(briefing.open_work(ctx["record"])))
-    add_query(cmds, "search", "every agent transcript in this environment and attached files", lambda ctx: search_text(ctx["record"], ctx["term"], ctx["page"]),
-              ("term", {}), ("--page", {"type": int, "default": 0}))
+    add_query(cmds, "search", "every agent transcript in this environment and attached files; --attic searches removed environments instead",
+              lambda ctx: attic_text(ctx["record"], ctx["term"]) if ctx["attic"] else search_text(ctx["record"], ctx["term"], ctx["page"]),
+              ("term", {}), ("--page", {"type": int, "default": 0}), ("--attic", {"action": "store_true"}))
     add_query(cmds, "conversation", "the stretch the last summary replaced", lambda ctx: say(conversation(transcript(ctx["record"], ctx["session"]), ctx["back"])),
               ("--back", {"type": int, "default": 1}))
     add_query(cmds, "user", "the user's own words, in full", lambda ctx: say(user(transcript(ctx["record"], ctx["session"]))))

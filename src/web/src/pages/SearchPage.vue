@@ -1,5 +1,8 @@
 <script setup>
+import Btn from "../kit/Btn.vue";
+import CardSkeleton from "../kit/CardSkeleton.vue";
 import EmptyState from "../kit/EmptyState.vue";
+import Switch from "../kit/Switch.vue";
 import {nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -9,6 +12,9 @@ import ResourceCard from "../resource/ResourceCard.vue";
 
 const q = ref(route.value.q);
 const hits = ref([]);
+const attic = ref(false);
+const removed = ref([]);
+const restored = ref({});
 const searching = ref(false);
 const input = ref(null);
 let request = 0;
@@ -20,17 +26,25 @@ async function run() {
     const query = q.value.trim();
     go(route.value.env, "search", 0, q.value);
     hits.value = [];
+    removed.value = [];
     searching.value = !!query;
     if (!query) {
         return;
     }
     try {
-        const result = await api.search(query);
-        if (current === request) hits.value = result;
+        const [found, archived] = await Promise.all([api.search(query), attic.value ? api.searchAttic(query) : []]);
+        if (current === request) [hits.value, removed.value] = [found, archived];
     } finally {
         if (current === request) searching.value = false;
     }
 }
+
+async function bringBack(name) {
+    await api.unarchive(name);
+    restored.value = {...restored.value, [name]: true};
+}
+
+watch(attic, run);
 
 watch(
     () => route.value.q,
@@ -54,7 +68,11 @@ watch(
                 @input="q = $event.target.value"
             />
         </form>
-        <template v-if="route.q && !searching && !hits.length">
+        <Switch class="attic-switch" :on="attic" word="Include removed environments" @change="(on) => (attic = on)" />
+        <template v-if="searching">
+            <CardSkeleton class="cards" />
+        </template>
+        <template v-if="route.q && !searching && !hits.length && !removed.length">
             <EmptyState class="empty">Nothing matches “{{ route.q }}”.</EmptyState>
         </template>
         <div class="cards">
@@ -76,6 +94,23 @@ watch(
                 </div>
             </template>
         </div>
+        <template v-if="removed.length">
+            <h3 class="removed-head">In removed environments</h3>
+            <ul class="removed">
+                <template v-for="hit in removed" :key="`${hit.environment}-${hit.ref}`">
+                    <li>
+                        <span class="removed-place">{{ hit.environment }} · {{ hit.ref.replace(":", " ") }}</span>
+                        <span class="removed-title">{{ hit.title }}</span>
+                        <template v-if="restored[hit.environment]">
+                            <small>Brought back</small>
+                        </template>
+                        <template v-else>
+                            <Btn small @click="bringBack(hit.environment)">Bring back {{ hit.environment }}</Btn>
+                        </template>
+                    </li>
+                </template>
+            </ul>
+        </template>
     </section>
 </template>
 
@@ -106,6 +141,49 @@ watch(
 
 .empty {
     margin: 16px 0;
+}
+
+.attic-switch {
+    margin-top: 12px;
+}
+
+.removed-head {
+    margin: 22px 0 8px;
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.removed {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 720px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.removed li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.removed-place {
+    color: var(--text-3);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.removed-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .cards {
