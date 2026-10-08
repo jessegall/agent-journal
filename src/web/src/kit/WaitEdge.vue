@@ -3,6 +3,7 @@ import {computed, onUnmounted, ref, watch} from "vue";
 import Icon from "./Icon.vue";
 
 const NOTE_SECONDS = 5;
+const SETTLE_SECONDS = 1.6;
 const props = defineProps({waiting: {type: Object, default: null}});
 const emit = defineEmits(["list"]);
 const note = ref(null);
@@ -11,7 +12,6 @@ let timer = 0;
 
 const open = computed(() => (props.waiting ? props.waiting.items.filter((item) => !item.reported).length : 0));
 const plural = (n) => `${n} ${n === 1 ? "helper" : "helpers"}`;
-const capital = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 function setNote(words, ended) {
     clearTimeout(timer);
     note.value = {words, tick: true, ended};
@@ -26,7 +26,10 @@ watch(
     () => props.waiting,
     (now, before) => {
         if (!before || now) return;
-        setNote(before.helping ? `All ${plural(before.items.length)} reported` : `${capital(before.text)} finished`, true);
+        clearTimeout(timer);
+        note.value = null;
+        lit.value = true;
+        timer = setTimeout(() => (lit.value = false), SETTLE_SECONDS * 1000);
     }
 );
 watch(open, (now, before) => {
