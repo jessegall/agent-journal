@@ -14,7 +14,7 @@ from engine.machines import Lease, this_machine
 from engine.numbers import BLOCK, Leases, Numbers, rows
 from engine.outbox import Request
 from engine.record import Record
-from engine.sync import NEVER_TRAVELS_FIELDS, NEVER_TRAVELS_TYPES, PROTOCOL, Comparison, Shape, Step, travelling, travels
+from engine.sync import NEVER_TRAVELS_FIELDS, NEVER_TRAVELS_TYPES, PROTOCOL, Comparison, Hello, Release, Shape, Step, Welcome, connect, travelling, travels
 from features.machines.details import MachinesDetails
 from resources.base import AGENT, PROJECT, SYSTEM, USER, Stale
 from tests.conftest import fresh, refused
@@ -177,3 +177,13 @@ def test_keys_hashes_and_tokens_never_travel_to_another_machine():
         "the files that hold keys and live state stay on their machine"
     assert (travelling("phone", {"key": "x"}), travelling("share", {"target": "doc:1", "token": "t", "password": "p"})) == (None, {"target": "doc:1"}), \
         "a phone never travels, and a share travels without its token or password"
+
+
+def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_against_the_servers():
+    server = Hello("2.265.0", Shape(PROTOCOL, frozenset({"m1", "m2"})))
+    assert connect(Hello("2.265.0", Shape(PROTOCOL, frozenset({"m1", "m2"}))), server) == Welcome(Release.SAME, Comparison(Step.IN_STEP)), \
+        "a copy in step with the server is let sync as it is"
+    assert connect(Hello("2.9.0", Shape(PROTOCOL, frozenset({"m1"}))), server) == Welcome(Release.BEHIND, Comparison(Step.UPGRADE_HERE, ("m2",))), \
+        "releases are compared by number, not by text, and a copy behind is told which migrations it lacks"
+    assert connect(Hello("2.266.0", Shape(PROTOCOL + 1, frozenset())), server) == Welcome(Release.AHEAD, Comparison(Step.PULL_AGAIN)), \
+        "a copy with another protocol number pulls everything again, whichever release it is"

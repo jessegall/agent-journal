@@ -52,3 +52,35 @@ class Shape:
         if ahead:
             return Comparison(Step.MIGRATE_PULLED, tuple(sorted(ahead)))
         return Comparison(Step.IN_STEP)
+
+
+class Release(StrEnum):
+    SAME = "same"
+    BEHIND = "behind"
+    AHEAD = "ahead"
+
+
+def numbered(version: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in version.split(".") if part.isdigit())
+
+
+@dataclass(frozen=True)
+class Hello:
+    """What a copy says about itself when it connects: its release and the shape of its record."""
+
+    version: str
+    shape: Shape
+
+
+@dataclass(frozen=True)
+class Welcome:
+    """The server's answer to a connecting copy: where its release stands against the server's, and what its record must do before it syncs."""
+
+    release: Release
+    comparison: Comparison
+
+
+def connect(client: Hello, server: Hello) -> Welcome:
+    ours, theirs = numbered(client.version), numbered(server.version)
+    release = Release.SAME if ours == theirs else Release.BEHIND if ours < theirs else Release.AHEAD
+    return Welcome(release, client.shape.compared(server.shape))
