@@ -19,14 +19,15 @@ await runScenarios(process.argv[2], {
             const body = await response.json();
             await route.fulfill({response, json: {...body, environments: [...(body.environments || []), fakeAgent(9), fakeAgent(2), fakeAgent(5)]}});
         });
+        const layout = {tree: {id: 1}, panes: {1: {tabs: ["agents"], active: "agents"}}, next: 2};
+        await page.addInitScript((kept) => sessionStorage.setItem("journal.layout.main", kept), JSON.stringify(layout));
         await page.goto(`${url}#/main`);
-        await page.locator(".agent-presets").click();
-        await page.getByText("Agents", {exact: true}).last().click();
         await page.locator(".agent-window").nth(2).waitFor();
         const labels = await page.locator(".agent-window .aw-label").allInnerTexts();
         if (labels.join() !== "#2,#5,#9") throw new Error(`the cells are ${labels.join()}, not in number order`);
         const timers = await page.locator(".agent-window .job-timer").allInnerTexts();
         if (timers.length !== 3 || !timers.every((time) => /^1h 02m \d\ds$/.test(time))) throw new Error(`the timers read ${timers.join()}`);
+        await page.locator(".project-flash").waitFor({state: "detached"});
         await shot(page, "agent-cells");
     },
 });
