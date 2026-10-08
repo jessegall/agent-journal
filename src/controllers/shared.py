@@ -1,4 +1,4 @@
-from controllers.base import SHARED_ENVIRONMENTS
+from controllers.base import SENDER
 
 ENVIRONMENT_OF = {"environment": lambda row: row.get("title"), "ticket": lambda row: row.get("data", {}).get("work_environment")}
 
@@ -13,8 +13,8 @@ def environment_of(type_: str, row: dict) -> str | None:
 
 def shared(environment: str | None) -> bool:
     """Whether the person reading may see what belongs to this environment: always, unless a member reads and the owner has not shared it."""
-    names = SHARED_ENVIRONMENTS.get()
-    return names is None or not environment or environment in names
+    sender = SENDER.get()
+    return sender is None or not environment or environment in sender.environments
 
 
 def row_shared(type_: str, row: dict) -> bool:

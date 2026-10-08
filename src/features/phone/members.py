@@ -14,6 +14,10 @@ class MemberRights:
     def sees(self, record: Record, member: str, row) -> bool:
         return member == OWNER_ID
 
+    def headers(self, record: Record, member: str) -> dict:
+        """What the login page tells the journal of a request from this person's phone; nothing for the owner's."""
+        return {}
+
 
 def rights_of(record: Record) -> MemberRights:
     named = [given(record) for given in MEMBER_RIGHTS.each(record)]

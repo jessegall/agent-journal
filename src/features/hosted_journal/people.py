@@ -34,6 +34,8 @@ class People(Protocol):
 
     def sees(self, record: Record, member: str, row: Resource) -> bool: ...
 
+    def headers(self, record: Record, member: str) -> dict: ...
+
 
 class NoMembers:
     """Only the owner logs in."""
@@ -61,6 +63,9 @@ class NoMembers:
 
     def sees(self, record: Record, member: str, row: Resource) -> bool:
         return member == OWNER_ID
+
+    def headers(self, record: Record, member: str) -> dict:
+        return {}
 
 
 def people_of(record: Record) -> People:

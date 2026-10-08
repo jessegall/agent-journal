@@ -11,6 +11,7 @@ from engine.record import Record
 from engine.fields import Loaded
 from features.phone.controller import Phones
 from features.phone.desktop import Desktop, phone_marks
+from features.phone.members import rights_of
 from features.phone.passkey import Assertion, Enrolment, Relying, requested
 from features.phone.surface import PhoneSurface
 from engine.color import identity
@@ -345,8 +346,10 @@ class PhoneRoutes:
         if phone is None:
             return None
         body = handler.rfile.read(size) if size else b""
-        unlocked = self.phones(handler)._spend(phone, handler.headers.get(UNLOCK, ""), requested(handler.command, handler.path, body))
-        return Desktop(handler, handler.path.removeprefix("/p"), phone_marks(phone.environment, unlocked, phone.member)).forward(body)
+        phones = self.phones(handler)
+        unlocked = phones._spend(phone, handler.headers.get(UNLOCK, ""), requested(handler.command, handler.path, body))
+        marks = {**phone_marks(phone.environment, unlocked, phone.member), **rights_of(phones.record).headers(phones.record, phone.member)}
+        return Desktop(handler, handler.path.removeprefix("/p"), marks).forward(body)
 
     def attach(self, handler, rest: list[str]) -> None:
         if not self.trusted(handler, UPLOADED):

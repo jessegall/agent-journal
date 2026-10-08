@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Callable, Iterator
 from uuid import uuid4
 
+from controllers.base import Sender
 from controllers.types import CONTROLLERS, Environments
 from engine import runtime
 from engine.extension import Extension
@@ -22,7 +23,16 @@ PHONE_ENVIRONMENT = "X-Phone-Environment"
 PHONE_UNLOCKED = "X-Phone-Unlocked"
 MEMBER = "X-Journal-Member"
 SHARED = "X-Journal-Environments"
+ROLE = "X-Journal-Role"
 PHONE_MEMBER = "X-Phone-Member"
+
+
+def sender_of(headers) -> Sender | None:
+    """The member the login page named on a request it forwarded, or None for the owner's requests and every agent's."""
+    member = headers.get(MEMBER)
+    if member is None:
+        return None
+    return Sender(member, headers.get(ROLE, ""), frozenset(filter(None, headers.get(SHARED, "").split(","))))
 
 
 @dataclass(frozen=True)
