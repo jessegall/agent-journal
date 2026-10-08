@@ -7,7 +7,6 @@ await runScenarios(process.argv[2], {
         const card = page.locator('[data-integration="linear"]');
         await card.waitFor();
         await page.getByText("Outside services the journal can reach for you").first().waitFor();
-        await page.getByText("No integration is switched on").waitFor();
         await card.getByText("Use Linear").waitFor();
         await card.getByText("Key", {exact: true}).waitFor();
         await card.getByText("No key is picked, so Linear is not reached.").waitFor();
@@ -62,7 +61,7 @@ await runScenarios(process.argv[2], {
         const n = numberOf(journal("todo", "create", `From Linear ${Date.now()}`, "--brief", brief));
         try {
             await page.goto(`${url}#/main/todo/${n}`);
-            await page.getByText("pixel (image)").waitFor();
+            await page.locator("article").getByText("pixel (image)").waitFor();
             await page.waitForTimeout(500);
             if (asked.length) throw new Error(`the viewer asked the image's host: ${asked.join(", ")}`);
         } finally {

@@ -83,9 +83,9 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
                 <Switch :on="fetching" :title="switches.fetching" @change="setFetching" />
             </div>
         </template>
+        <h4 class="key-label">{{ words.label }}</h4>
+        <SecretPicker :value="key" :picked-line="words.picked" :none-line="words.none" :note="words.note" @pick="pick" />
         <template v-if="on && fetching">
-            <h4 class="key-label">{{ words.label }}</h4>
-            <SecretPicker :value="key" :picked-line="words.picked" :none-line="words.none" :note="words.note" @pick="pick" />
             <template v-if="feature.mcp_server">
                 <div class="acts">
                     <Btn small :busy="signing" @click="logIn">{{ login.button }}</Btn>
