@@ -36,6 +36,8 @@ def kickoff(row, folder: Path, todo: int, handed: list[Todo], dispatcher: str) -
             f"Write the test that proves your change but never run tests, builds of tests or checks: name the tests you wrote in your report, and {dispatcher} runs them. "
             f"You report to {dispatcher}, the agent that dispatched you: address {dispatcher} by that name and never the user, "
             f"do not write to the user, and do not write rules, facts or docs. "
+            f"Other helpers {dispatcher} dispatched are listed by journal helper peers; write to one with journal helper say <n> \"<text>\", "
+            f"and its answer reaches your next turn the same way, whichever provider either of you runs on. "
             f"When the job is done, or you cannot go on, finish with journal helper report \"<what you did, what you found, what is left>\", "
             f"written to {dispatcher}: that is the only way your answer reaches {dispatcher}.")
 
@@ -242,6 +244,9 @@ class Helpers(Controller):
 
     @action(network=True)
     def say(self, n: int, text: str, todos: str = "") -> str:
+        place = self._helping()
+        if place:
+            return self._said_to_peer(place, n, text, todos)
         row = self._unfinished(n, "finished")
         handed = self._handable(numbers_in(todos))
         words = f"{handed_over(handed)}\n{text}" if handed else text
@@ -255,12 +260,35 @@ class Helpers(Controller):
         return f"sent to {row.name}" + (f", with to-do {', '.join(str(t.n) for t in handed)}" if handed else "")
 
     @action
+    def peers(self) -> list[str]:
+        place = self._helping()
+        if not place:
+            raise Refused("only a helper has peers; journal helper all lists the helpers you dispatched")
+        me = self._helper(place)
+        return [f"helper {row.n}, {row.name}, on {row.provider}: {row.title}"
+                for row in Helpers(Record(self.record.root, place.launched_from), actor=SYSTEM).rows.standing() if row.n != me.n]
+
+    @action
     def report(self, text: str) -> str:
         place = self._helping()
         if not place:
             raise Refused("only a helper reports, from the environment it was dispatched into")
         self._told(place, text)
         return "reported; the agent that dispatched you has it"
+
+    def _said_to_peer(self, place, n: int, text: str, todos: str) -> str:
+        if todos:
+            raise Refused("only the agent that dispatched you hands out to-dos; send the words alone")
+        me = self._helper(place)
+        peer = Helpers(Record(self.record.root, place.launched_from), actor=SYSTEM)._unfinished(n, "finished")
+        if peer.n == me.n:
+            raise Refused("that is you; journal helper peers lists the other helpers")
+        there = Record(self.record.root, peer.environment)
+        message = Messages(there, actor=AGENT).create(titled(text), brief=text, peer=me.name)
+        answer = f'answer with journal helper say {me.n} "<text>"'
+        if not tell_in(self.record, peer.environment, peer.provider, f"helper {me.n}, {me.name}, wrote in message {message.n}: {text} - {answer}"):
+            Nudges(there, actor=SYSTEM).to_primary(titled(f"helper {me.n}, {me.name}, wrote in message {message.n}"), f"{text}\n\n{answer}")
+        return f"sent to {peer.name}"
 
     def _failed(self, failure: str) -> None:
         place = self._helping()
