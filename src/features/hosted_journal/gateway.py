@@ -28,6 +28,7 @@ FORM_LIMIT = 8192
 BODY_LIMIT = 1024 * 1024
 UPLOAD_LIMIT = 25 * 1024 * 1024
 MOST_STREAMS = 8
+CHECKS_AT_ONCE = 3
 READY_SECONDS = 3
 VIEWER_HEADERS = {
     "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
@@ -117,6 +118,7 @@ class Gateway:
     def __init__(self) -> None:
         self.streams: Counter[str] = Counter()
         self.lock = threading.Lock()
+        self.checking = threading.BoundedSemaphore(CHECKS_AT_ONCE)
         self.pages: dict[tuple[str, str], Callable[[Visit], None]] = {
             ("GET", "/login"): self.show_login, ("GET", "/setup"): lambda visit: visit.go("/login"), ("POST", "/login"): self.log_in,
             ("POST", "/setup"): self.set_up, ("POST", "/logout"): self.log_out, ("GET", "/ready"): self.ready,
@@ -150,14 +152,21 @@ class Gateway:
         return visit.page(200, login_page(visit.project(), notice) if owner.has_password() else setup_page(visit.project(), Notice.NONE))
 
     def tried(self, visit: Visit, matched: Callable[[], bool], wrong: Callable[[], str]) -> None:
-        """A login or setup form, refused while its place is locked out, and counted against it when wrong."""
+        """A login or setup form: its try is counted first and refused while its place is locked out, with few password checks at once."""
+        if not self.checking.acquire(blocking=False):
+            return visit.refuse(429, "the server is checking other logins; try again in a moment")
+        try:
+            return self.checked(visit, matched, wrong)
+        finally:
+            self.checking.release()
+
+    def checked(self, visit: Visit, matched: Callable[[], bool], wrong: Callable[[], str]) -> None:
         tries = WrongTries(visit.vault)
         place = visit.place()
-        if wait := tries.locked_for(place):
+        if wait := tries.counted(place):
             visit.vault.audit("locked out", place=place)
             return visit.page(429, locked_page(visit.project(), wait))
         if not matched():
-            tries.missed(place)
             visit.vault.audit("wrong try", place=place, path=visit.url.path)
             if wait := tries.locked_for(place):
                 return visit.page(429, locked_page(visit.project(), wait))

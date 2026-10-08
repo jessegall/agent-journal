@@ -95,9 +95,10 @@ class Logins:
 
     def open(self, days: int, device: str) -> str:
         token = secrets.token_urlsafe(32)
-        now = self.vault.clock()
-        kept = {key: login for key, login in self.vault.read(LOGINS).items() if KeptLogin.from_json(login).until > now}
-        self.vault.write(LOGINS, {**kept, hashed(token): {"made": now, "until": now + days * DAY, "device": device[:120]}})
+        with self.vault.held():
+            now = self.vault.clock()
+            kept = {key: login for key, login in self.vault.read(LOGINS).items() if KeptLogin.from_json(login).until > now}
+            self.vault.write(LOGINS, {**kept, hashed(token): {"made": now, "until": now + days * DAY, "device": device[:120]}})
         return token
 
     def standing(self, token: str) -> Standing:
@@ -107,13 +108,15 @@ class Logins:
         return Standing.OPEN if KeptLogin.from_json(found).until > self.vault.clock() else Standing.RAN_OUT
 
     def close(self, token: str) -> None:
-        kept = self.vault.read(LOGINS)
-        kept.pop(hashed(token), None)
-        self.vault.write(LOGINS, kept)
+        with self.vault.held():
+            kept = self.vault.read(LOGINS)
+            kept.pop(hashed(token), None)
+            self.vault.write(LOGINS, kept)
 
     def close_all(self) -> int:
-        count = len(self.vault.read(LOGINS))
-        self.vault.write(LOGINS, {})
+        with self.vault.held():
+            count = len(self.vault.read(LOGINS))
+            self.vault.write(LOGINS, {})
         return count
 
 
@@ -132,12 +135,18 @@ class WrongTries:
         recent = self.recent(place)
         return max(0.0, recent[0] + LOCKED_FOR - self.vault.clock()) if len(recent) >= MOST_TRIES else 0.0
 
-    def missed(self, place: str) -> None:
-        since = self.vault.clock() - LOCKED_FOR
-        kept = {key: [at for at in ats if at > since] for key, ats in self.vault.read(TRIES).items()}
-        self.vault.write(TRIES, {**{key: ats for key, ats in kept.items() if ats}, place: [*self.recent(place), self.vault.clock()]})
+    def counted(self, place: str) -> float:
+        """Counts a try before its password is checked, so guesses sent at once cannot slip past the limit; answers the seconds to wait when it is refused."""
+        with self.vault.held():
+            if wait := self.locked_for(place):
+                return wait
+            since = self.vault.clock() - LOCKED_FOR
+            kept = {key: [at for at in ats if at > since] for key, ats in self.vault.read(TRIES).items()}
+            self.vault.write(TRIES, {**{key: ats for key, ats in kept.items() if ats}, place: [*self.recent(place), self.vault.clock()]})
+        return 0.0
 
     def forget(self, place: str) -> None:
-        kept = self.vault.read(TRIES)
-        kept.pop(place, None)
-        self.vault.write(TRIES, kept)
+        with self.vault.held():
+            kept = self.vault.read(TRIES)
+            kept.pop(place, None)
+            self.vault.write(TRIES, kept)

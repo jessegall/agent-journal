@@ -3,6 +3,7 @@ import json
 import os
 import subprocess
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from http.client import HTTPConnection
 from http.server import ThreadingHTTPServer
 from pathlib import Path
@@ -17,7 +18,7 @@ from engine import disk
 from engine.sessions import Sessions
 from engine.viewer import SERVING
 from features.hosted_journal.details import HostedJournalDetails
-from features.hosted_journal.gateway import COOKIE, MOST_STREAMS
+from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, MOST_STREAMS
 from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_TRIES, Logins, Owner, WrongTries, hashed
 from features.hosted_journal.vault import AUDIT, DiskFull, Vault
 from features.phone.controller import Phones
@@ -129,8 +130,9 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
     assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.9").status == 303
     now = [1000.0]
     tries = WrongTries(Vault(hosted.record.root, clock=lambda: now[0]))
-    for _ in range(MOST_TRIES):
-        tries.missed("198.51.100.1")
+    with ThreadPoolExecutor(20) as pool:
+        waits = list(pool.map(lambda _: tries.counted("198.51.100.1"), range(20)))
+    assert waits.count(0.0) == MOST_TRIES, "guesses sent at once are each counted before any is checked"
     assert WrongTries(Vault(hosted.record.root, clock=lambda: now[0])).locked_for("198.51.100.1") == LOCKED_FOR
     now[0] += LOCKED_FOR + 1
     assert WrongTries(Vault(hosted.record.root, clock=lambda: now[0])).locked_for("198.51.100.1") == 0
@@ -186,6 +188,11 @@ def test_large_bodies_and_too_many_open_streams_are_refused(hosted):
     gateway.streams[hashed(token)] = MOST_STREAMS
     assert hosted.call("GET", "/api/main/events", Cookie=f"{COOKIE}={token}", Accept="text/event-stream").status == 429
     gateway.streams.clear()
+    held = [gateway.checking.acquire() for _ in range(CHECKS_AT_ONCE)]
+    assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 429 and all(held)
+    for _ in held:
+        gateway.checking.release()
+    assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 303
 
 
 def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, monkeypatch):
