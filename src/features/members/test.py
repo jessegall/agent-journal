@@ -11,7 +11,7 @@ from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
 
 from commands.dispatch import ranked
-from controllers.base import word_names
+from controllers.base import SENDER, word_names
 from controllers.features import Features
 from controllers.types import CONTROLLERS, Environments, Todos
 from features import FEATURES
@@ -19,7 +19,7 @@ from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, Visit
 from features.hosted_journal.owner import KeptLogin, Logins
 from features.hosted_journal.settings import FromRecord
 from features.hosted_journal.test import SCENARIOS_WAIT, WEB, Answer, Hosted, hosted  # noqa: F401  hosted is the fixture
-from features.hosted_journal.vault import RefusalLog, Vault
+from features.hosted_journal.vault import VAULT, RefusalLog, Vault
 from features.members.allow_list import READ_MARKS, READS, UNREAD, WRITES, read
 from features.members.gate import MemberLogins
 from features.members.details import MembersDetails
@@ -29,6 +29,7 @@ from commands.dispatch import reached_by_phone
 from engine.record import Record
 from features.phone.allow_list import RUNS, TO_WEIGH, VIEWER_SETTINGS, Action, Reach, get
 from features.phone.members import rights_of
+from features.routing import MEMBER, ROLE, SHARED, sender_of
 from features.trigger import DAY
 from resources.base import AGENT, OWNER_ID, SYSTEM, USER, WRITER
 
@@ -267,7 +268,7 @@ def test_a_member_sees_only_the_environments_the_owner_shares_in_lists_rows_sear
     assert hosted.call("GET", "/api/garden/todo", Cookie=writer).status == 200 and "garden" in titles(writer), "a shared environment opens from the next request"
 
 
-def test_the_phone_asks_the_same_members_model_as_the_login_page(hosted):
+def test_the_phone_asks_the_same_members_model_as_the_login_page(hosted, monkeypatch, tmp_path):
     owner = with_members(hosted)
     member_login(hosted, "Ada", Role.READER)
     member_login(hosted, "Bea", Role.WRITER)
@@ -279,6 +280,18 @@ def test_the_phone_asks_the_same_members_model_as_the_login_page(hosted):
     assert [rights.may_reach(hosted.record, who, create) for who in (OWNER_ID, ada, bea)] == [True, False, True], "a phone reaches what its person's role does"
     assert not rights.may_reach(garden, bea, get("/api/identity")), "and nothing in an environment not shared with them"
     assert [reached_by_phone(hosted.record.root, "POST", f"/api/{env}/todo", {}, {}, env, True, who) for who in (ada, bea)] == [Reach.CLOSED, Reach.OPEN]
+    headers = rights.headers(hosted.record, bea)
+    assert headers == {MEMBER: bea, ROLE: "writer", SHARED: env} and rights.headers(hosted.record, OWNER_ID) == {}, \
+        "the login page names a member's id, role and environments on each request it forwards from their phone"
+    monkeypatch.setenv(VAULT, str(tmp_path))
+    assert not rights.may_reach(hosted.record, bea, create), "a journal that cannot read the members file grants a member nothing by itself"
+    sending = SENDER.set(sender_of(headers))
+    try:
+        assert rights.may_reach(hosted.record, bea, create) and not rights.may_reach(hosted.record, ada, create), \
+            "it grants a member's phone what the login page's headers name, and only to that member"
+    finally:
+        SENDER.reset(sending)
+    monkeypatch.undo()
     here, there = Todos(hosted.record, actor=SYSTEM).create("In the start environment"), Todos(garden, actor=SYSTEM).create("In the garden")
     assert (rights.sees(hosted.record, bea, here), rights.sees(garden, bea, there), rights.sees(garden, OWNER_ID, there)) == (True, False, True), \
         "a phone is shown only rows of the environments shared with its person"

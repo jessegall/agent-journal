@@ -6,6 +6,7 @@ from engine import runtime
 from engine.fields import Loaded
 from engine.paths import known_environment
 from engine.record import Record
+from controllers.base import SENDER, Sender
 from controllers.shared import environment_of
 from features.hosted_journal.gateway import COOKIE, Gateway, Visit
 from features.hosted_journal.owner import KeptLogin
@@ -15,7 +16,7 @@ from features.hosted_journal.vault import Vault
 from features.members.pages import BELOW_LOGIN, join_page, member_login_page
 from features.members.roles import OWNER_ABILITIES, Abilities, Role
 from features.members.roster import Departure, Roster
-from features.routing import MEMBER, SHARED
+from features.routing import MEMBER, ROLE, SHARED
 from features.phone.allow_list import Action, Page
 from resources.base import OWNER_ID, Resource, as_dict
 
@@ -104,26 +105,37 @@ class MemberLogins:
         return member.role.refusal()
 
     def marks(self, visit: Visit, login: KeptLogin) -> dict:
-        """What the login page alone tells the journal of a member's request: who sent it, and the environments they may see."""
-        member = Roster(visit.vault).present(login.member)
-        if login.is_owners() or member is None:
+        return self.headers(visit.record, login.member)
+
+    def headers(self, record: Record, member: str) -> dict:
+        """What the login page alone tells the journal of a member's request, from the browser or their phone: who sent it, their role and their environments."""
+        found = Roster(Vault(record.root)).present(member)
+        if member == OWNER_ID or found is None:
             return {}
-        return {MEMBER: member.id, SHARED: ",".join(member.environments)}
+        return {MEMBER: found.id, ROLE: found.role, SHARED: ",".join(found.environments)}
+
+    def sender(self, record: Record, member: str) -> Sender | None:
+        """The member as the login page named them on this request, or, in the login page itself, as its members file holds them."""
+        sending = SENDER.get()
+        if sending is not None and sending.member == member:
+            return sending
+        found = Roster(Vault(record.root)).present(member)
+        return None if found is None else Sender(found.id, found.role, frozenset(found.environments))
 
     def may_reach(self, record: Record, member: str, page: Page | Action) -> bool:
         """Whether this person may reach a page or action, from the browser or a phone alike."""
         if member == OWNER_ID:
             return True
-        found = Roster(Vault(record.root)).present(member)
-        return found is not None and found.sees(record.env) and found.role.reaches(page)
+        sender = self.sender(record, member)
+        return sender is not None and record.env in sender.environments and Role.named(sender.role).reaches(page)
 
     def sees(self, record: Record, member: str, row: Resource) -> bool:
         """Whether this person may see a row, on their phone as in the viewer: only in, and of, the environments shared with them."""
         if member == OWNER_ID:
             return True
-        found = Roster(Vault(record.root)).present(member)
+        sender = self.sender(record, member)
         named = environment_of(row.type, as_dict(row))
-        return found is not None and found.sees(record.env) and (named is None or found.sees(named))
+        return sender is not None and record.env in sender.environments and (named is None or named in sender.environments)
 
     def show_join(self, visit: Visit) -> None:
         code = parse_qs(visit.url.query).get("code", [""])[0]

@@ -1,6 +1,6 @@
 import re
 
-from controllers.base import WRITING_MEMBER
+from controllers.base import SENDER
 
 from resources.base import OWNER_ID, SECTION, USER, WRITER, Resource
 
@@ -26,9 +26,10 @@ class MemberWords:
     """Marks the words a member writes into a row as untrusted, before any agent can read them; words already in the row stay as they were."""
 
     def __call__(self, controller, r: Resource) -> None:
-        member = WRITING_MEMBER.get()
-        if member is None:
+        sender = SENDER.get()
+        if sender is None:
             return
+        member = sender.member
         kept = texts_of(controller.rows.peek(r.n)) if controller.rows.exists(r.n) else set()
 
         def new(text: str) -> str:
@@ -44,5 +45,5 @@ class WrittenBy:
     def __call__(self, controller, r: Resource) -> None:
         if controller.actor != USER or controller.rows.exists(r.n):
             return
-        member = WRITING_MEMBER.get()
-        r.data[WRITER] = OWNER_ID if member is None else member
+        sender = SENDER.get()
+        r.data[WRITER] = OWNER_ID if sender is None else sender.member

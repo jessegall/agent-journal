@@ -69,6 +69,15 @@ UNCHANGED_SINCE = "unchanged_since"
 
 
 @dataclass(frozen=True)
+class Sender:
+    """The member a request came from, as the login page named them: their id, their role and the environments shared with them."""
+
+    member: str
+    role: str
+    environments: frozenset[str]
+
+
+@dataclass(frozen=True)
 class Pressed:
     """The row a call writes to, and when it last changed as the person pressing it saw it."""
 
@@ -87,8 +96,7 @@ class Pressed:
 
 
 PRESSED: ContextVar[Pressed] = ContextVar("pressed", default=Pressed())
-WRITING_MEMBER: ContextVar[str | None] = ContextVar("writing_member", default=None)
-SHARED_ENVIRONMENTS: ContextVar[frozenset[str] | None] = ContextVar("shared_environments", default=None)
+SENDER: ContextVar["Sender | None"] = ContextVar("sender", default=None)
 HANDLERS: dict[str, list] = {}
 CONTROLLERS: dict[str, type] = {}
 

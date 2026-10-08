@@ -21,8 +21,8 @@ import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone, resolve  # noqa: E402
 from features.phone.allow_list import Reach  # noqa: E402
-from features.routing import MEMBER, PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, SHARED, Reply  # noqa: E402
-from controllers.base import SHARED_ENVIRONMENTS, WRITING_MEMBER  # noqa: E402
+from features.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
+from controllers.base import SENDER, Sender  # noqa: E402
 from resources.base import OWNER_ID  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.after_answer import AfterAnswer  # noqa: E402
@@ -95,7 +95,7 @@ class Handler(BaseHTTPRequestHandler):
         except (json.JSONDecodeError, UnicodeDecodeError) as error:
             reply = Reply(400, {"error": f"the request body is not JSON: {error}"})
         else:
-            reply = self.answered_as(self.headers.get(MEMBER), method, url, body)
+            reply = self.answered_as(sender_of(self.headers), method, url, body)
         self.send_response(reply.code)
         self.sibling()
         self.send_header("Content-Type", reply.kind)
@@ -119,15 +119,13 @@ class Handler(BaseHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError, OSError):
             reply.chunks.close()
 
-    def answered_as(self, member: str | None, method: str, url, body: dict) -> Reply:
-        """Answers a member's request, as the login page named it, with the member as the one writing and only their environments in sight."""
-        given = self.headers.get(SHARED)
-        writing, seeing = WRITING_MEMBER.set(member), SHARED_ENVIRONMENTS.set(None if given is None else frozenset(filter(None, given.split(","))))
+    def answered_as(self, sender: Sender | None, method: str, url, body: dict) -> Reply:
+        """Answers a request as from the member the login page named on it, who writes as themselves and sees only what is shared with them."""
+        sending = SENDER.set(sender)
         try:
             return self.answered(method, url, body)
         finally:
-            SHARED_ENVIRONMENTS.reset(seeing)
-            WRITING_MEMBER.reset(writing)
+            SENDER.reset(sending)
 
     def answered(self, method: str, url, body: dict) -> Reply:
         if method == "GET" and environmental(url.path):
