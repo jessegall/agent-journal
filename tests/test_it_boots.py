@@ -32,8 +32,7 @@ from scripts.boot_guard import PROJECT, WAIT, cleared, launches
 from scripts.checks.imports import imports, missing
 from serve import Handler, JournalServer
 from tests import isolation
-from tests.conftest import fresh
-from tests.kit import installed, installed_once, installed_to_start
+from tests.conftest import fresh, installed, installed_once, installed_to_start
 
 def shipped(copy: Path) -> None:
     """One copy of the files the checkout ships, taken once, so every version a test reads comes from the same moment."""

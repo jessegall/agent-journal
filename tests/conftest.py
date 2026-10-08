@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -15,12 +16,39 @@ from engine.record import Record  # noqa: E402
 from engine.runtime import TESTS_RUNNING  # noqa: E402
 from engine import locks  # noqa: E402
 from controllers import stored  # noqa: E402
+from install import UNVERIFIED  # noqa: E402
+from scripts.boot_guard import PROJECT  # noqa: E402
 
 
 def fresh(env: str = "t") -> Record:
     record = Record(Path(tempfile.mkdtemp(dir=isolation.world())) / ".journal", env)
     record.home.mkdir(parents=True)
     return record
+
+
+SOURCE = Path(__file__).resolve().parents[1] / "src"
+
+
+def installed(place: Path, code: Path) -> Path:
+    return install(place, code, {})
+
+
+def installed_to_start(place: Path, code: Path) -> Path:
+    """An install for a test that starts the build itself, so the installer does not start it once more to check it."""
+    return install(place, code, {UNVERIFIED: "1"})
+
+
+def install(place: Path, code: Path, env: dict) -> Path:
+    for agent in (".claude", ".codex"):
+        (place / PROJECT / agent).mkdir(parents=True)
+    subprocess.run([sys.executable, str(code / "install.py"), "upgrade", str(place / PROJECT)],
+                   env={**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1", **env}, capture_output=True, timeout=120, check=True)
+    return place / PROJECT / ".journal"
+
+
+def installed_once() -> Path:
+    """The run's one install of this build, which tests read or copy and never change."""
+    return isolation.shared("installed-once", lambda where: installed_to_start(where, SOURCE)) / PROJECT / ".journal"
 
 
 def holds(record: Record, session: str = "claude-1") -> dict:
