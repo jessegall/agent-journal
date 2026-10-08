@@ -320,6 +320,10 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     report(record, "working", "PreToolUse")
     tick(record)
     assert asked() == 2, "once the minutes are up, a tool use asks again, and the clock right after does not"
+    Todos(record, actor=SYSTEM).update(2, assigned="rhea")
+    third = approved("third", "four")
+    by_user.start(third)
+    assert (status(first)[0], status(third)[0]) == ("active", "active"), "a plan whose current phase is with a helper keeps running beside the one started"
 
 
 def test_claude_plan_mode_is_refused_for_a_journal_plan():

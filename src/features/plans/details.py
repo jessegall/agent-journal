@@ -41,8 +41,10 @@ class PlansDetails(FeatureDetails):
         Only the user approves a plan, and then you start it with journal plan start <n>; only the user continues it past a checkpoint; with the auto
         feature on, checkpoints are passed without waiting.
 
-        One plan runs at a time. Starting a plan parks the one that runs, and journal plan park
-        <n> sets a plan aside; a parked plan's rows wait until it is started again.
+        You work one plan at a time. Starting a plan parks the one that runs, unless a helper
+        or a ticket's agent works a row of its current phase: that plan keeps running beside it.
+        journal plan park <n> sets a plan aside; a parked plan's rows wait until it is started
+        again.
     """
 
     behaviours = [
