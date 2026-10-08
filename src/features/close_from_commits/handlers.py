@@ -5,7 +5,7 @@ from engine.events.agents import AgentReported
 from engine.git import Checkout, checkout_of
 from engine.proc import git
 from features.parts import ANY_BUT_PRE_TOOL_USE, AgentContext, Handler
-from resources.base import Refused
+from resources.base import SYSTEM, Refused
 from engine.wording import digest
 from controllers.types import Agents, Todos, Works
 
@@ -59,7 +59,7 @@ class CloseRowsFromCommits(Handler):
         return [tuple(c.strip("\n").split("\x1f", 3)) for c in out.split("\x1e") if c.strip()]
 
     def close(self, context: AgentContext, sha: str, subject: str, body: str) -> None:
-        todos, works = context.journal.get(Todos), context.journal.get(Works)
+        todos, works = context.journal.acting(SYSTEM).get(Todos), context.journal.get(Works)
         closed, ended = [], []
         for numbers, how in TRAILER.findall(body):
             for n in re.findall(r"\d+", numbers):
