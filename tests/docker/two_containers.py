@@ -155,7 +155,7 @@ def connect(world: World) -> None:
     key = world.on_gateway("machine-key", "--name", "member").split("shown only now: ", 1)[1].split()[0]
     world.on_copy("feature", "switch", "connection")
     case("the copy connects through the proxy and the login page with the machine key the owner made",
-         "connected" in world.on_copy("environment", "connect", f"http://{ADDRESS}", key))
+         "connected" in world.on_copy("environment", "connect", "--address", f"http://{ADDRESS}", "--key", key))
     case("the copy hands its environment to the server", "from epoch" in world.on_copy("environment", "hand", ENV, "server"))
 
 

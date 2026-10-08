@@ -16,7 +16,7 @@ def transport_for(record, address: str) -> Transport:
 def server_of(context: Context, address: str = "") -> Transport:
     named = address or str(context.settings.address)
     if not named:
-        raise Refused("name the server first: journal environment connect <address>, or its address in Settings")
+        raise Refused("name the server first: journal environment connect --address <address>, or its address in Settings")
     return transport_for(context.record, named)
 
 
