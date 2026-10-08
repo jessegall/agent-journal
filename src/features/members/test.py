@@ -205,9 +205,14 @@ def test_rows_name_who_made_them_older_rows_name_the_owner_and_everyone_sees_who
     assert (theirs["data"][WRITER], mine["data"][WRITER], WRITER in by_agent.data) == (bea, "owner", False), "a row a person makes names them by a stable id"
     assert sent(hosted, todos, {"title": "Forged", WRITER: "owner"}, writer).status != 201, "nobody names someone else as the writer"
     assert sent(hosted, f"{todos}/{theirs['n']}/update", {WRITER: "owner"}, owner).status != 200
+    member_login(hosted, "Cy", Role.READER)
+    sent(hosted, "/api/hosting/members", {"name": "Dee"}, owner)
     listed = json.loads(hosted.call("GET", "/api/hosting/members", Cookie=writer).text)
     assert listed["owner"]["connected"] and [member["connected"] for member in listed["members"] if member["id"] == bea] == [True], \
         "every login sees who has the journal open"
+    shown = {member["name"]: member for member in listed["members"]}
+    assert (sorted(shown), shown["Bea"]["environments"], sorted(shown["Cy"])) == (["Bea", "Cy"], [hosted.record.env], ["connected", "departed", "id", "name"]), \
+        "a member sees their own row whole and of the others only who has joined, by name, never their roles or environments"
     rows = Todos(hosted.record, actor=SYSTEM).rows
     older = Todos(hosted.record, actor=USER).create("Written before members")
     older.data.pop(WRITER)

@@ -7,7 +7,7 @@ from features.hosted_journal.owner import KeptCode, KeptPassword
 from features.hosted_journal.vault import Vault
 from features.members.roles import Role
 from features.trigger import DAY
-from resources.base import Refused
+from resources.base import OWNER_ID, Refused
 
 MEMBERS = "members.json"
 INVITE_DAYS = 7
@@ -57,6 +57,12 @@ class Member(Loaded):
 
     def summary(self) -> dict:
         return {"id": self.id, "name": self.name, "role": self.role, "environments": self.environments, "invited": self.invited, "joined": self.joined, "departed": self.departed}
+
+    def shown_to(self, viewer: str) -> dict:
+        """The member as the owner and they themselves see them; any other member sees only who they are."""
+        if viewer in (OWNER_ID, self.id):
+            return self.summary()
+        return {"id": self.id, "name": self.name, "departed": self.departed}
 
 
 @dataclass(frozen=True)

@@ -20,7 +20,7 @@ const emit = defineEmits(["assign", "share", "end-logins", "remove"]);
                     <Btn small v-tip="'They can no longer log in; what they wrote stays under their name'" @click="emit('remove')">Remove</Btn>
                 </span>
             </template>
-            <template v-else>
+            <template v-else-if="member.role">
                 <span class="role">{{ roleTitle(member.role) }}</span>
             </template>
         </template>

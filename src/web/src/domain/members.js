@@ -9,7 +9,7 @@ const DEPARTED = {left: "Left the journal", removed: "Removed by the owner"};
 
 export function memberStatus(member) {
     if (member.departed) return DEPARTED[member.departed];
-    if (!member.joined) return "Invited, has not joined yet";
+    if (member.joined === 0) return "Invited, has not joined yet";
     return member.connected ? "Connected now" : "Not connected";
 }
 
