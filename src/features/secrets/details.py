@@ -37,4 +37,9 @@ class SecretsDetails(FeatureDetails):
         The values live in one file per project under your home folder, owner-only, never in git,
         the attic, a worktree or a backup of the record; journal secret where prints its path.
         A deleted secret keeps its values for 30 days, then they are removed from the file.
+
+        For a site you use in a browser, never type a password into a page: run journal secret
+        login <name> <url>, and the user logs in once in the browser that opens and closes it.
+        The session is saved beside the values file, and the agent's own browser tool starts
+        logged in from its next start.
     """

@@ -1,9 +1,14 @@
+import json
+import shutil
 import stat
+import subprocess
 import time
+from pathlib import Path
 
 import features
 from controllers.types import Messages
 from features.secrets.controller import Secrets
+from features.secrets.sessions import BrowserLogins
 from features.secrets.values import ValuesFile
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
@@ -91,3 +96,33 @@ def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch
     leaked = Todos(record, actor=AGENT).create(f"try the key {VALUE} again", brief=f"curl -H 'Authorization: Bearer {VALUE}'")
     assert (leaked.title, VALUE in leaked.brief) == ("try the key [secret GitHub] again", False), "a value written into any row is replaced before it is saved"
     assert any("GitHub was written into the journal" in note.title for note in Notifications(record, actor=SYSTEM).rows.every()), "and you are told to rotate it"
+
+
+def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    features.load()
+    record = fresh()
+    opened = []
+
+    def browser(command, check):
+        opened.append(command)
+        cookie = {"name": "session", "domain": "staging.example.com", "path": "/", "expires": 2_000_000_000.0}
+        Path(command[-2].removeprefix("--save-storage=")).write_text(json.dumps({"cookies": [cookie], "origins": [{"origin": command[-1], "localStorage": []}]}))
+    monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
+    monkeypatch.setattr(subprocess, "run", browser)
+    row = Secrets(record, actor=USER).create("Staging", kind="login")
+    said = Secrets(record, actor=AGENT).login("staging", "https://staging.example.com")
+    Secrets(record, actor=AGENT).login("Staging", "https://staging.example.com")
+    logins = BrowserLogins(record.root)
+    merged = json.loads(logins.merged.read_text())
+    assert opened[0][:4] == ["npx", "-y", "playwright@latest", "open"] and "Restart the agent once" in said, "the browser opens for the user, and the agent is told to restart once"
+    assert (len(merged["cookies"]), len(merged["origins"])) == (1, 1), "logging in again replaces the saved session instead of adding a second"
+    assert {stat.S_IMODE(path.stat().st_mode) for path in (logins.merged, logins.saved_for("Staging"))} == {0o600}, "only the owner reads a saved login"
+    server = json.loads((record.root.parent / ".mcp.json").read_text())["mcpServers"]["playwright"]
+    assert server["args"][-2:] == ["--storage-state", str(logins.merged)], "the agent's browser tool starts from the saved logins"
+    assert Secrets(record, actor=SYSTEM).load(row.n).session_expires == 2_000_000_000.0, "the secret records when its login runs out"
+    from providers import PROVIDERS
+    from runner.hooks import handle
+    reason = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "cwd": str(record.root.parent),
+                                                                     "tool_name": "Read", "tool_input": {"file_path": str(logins.merged)}}).get("reason", "")
+    assert "never read by an agent" in reason, "the saved logins are refused to the agent like the secrets file"

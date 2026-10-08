@@ -9,7 +9,9 @@ from controllers.marks import action
 from controllers.types import Environments, Messages
 from features.secrets.resource import Kind, Secret, SecretField
 from features.secrets.running import checked_program, run_masked
+from features.secrets.sessions import BrowserLogins
 from features.secrets.values import ValuesFile
+from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER, Refused
 
 KEPT_DAYS = 30
@@ -62,6 +64,17 @@ class Secrets(Controller):
         if code:
             raise SystemExit(code)
         return ""
+
+    @action(here=True)
+    def login(self, name: str, url: str) -> str:
+        row = self._named(name)
+        logins = BrowserLogins(self.record.root)
+        saved = logins.record(row.title, url)
+        merged = logins.merge()
+        rewired = [provider().browser_logins(self.record.root.parent, merged) for provider in PROVIDERS.values()]
+        self.update(row.n, session=time.time(), session_expires=logins.expires(saved))
+        restart = " Restart the agent once so its browser tool reads the saved logins." if any(rewired) else ""
+        return f"saved: the agent's own browser starts logged in to {url} from its next start.{restart}"
 
     @action
     def where(self) -> str:
