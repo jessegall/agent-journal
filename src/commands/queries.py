@@ -14,7 +14,7 @@ from engine.seats import seats
 from engine.transcript import Turn, search as search_transcript
 from features.command_tags.reading import visible
 from providers import PROVIDERS
-from providers.jsonl import WholeRead
+from providers.turns import every_turn
 from resources.base import Refused, SYSTEM
 from resources.types import AgentRow
 from engine import runtime
@@ -60,7 +60,7 @@ def environment_transcript(record) -> list[SourcedTurn]:
         if not provider or not path or not path.is_file() or path in seen:
             continue
         seen.add(path)
-        for turn in provider().every_turn(path, WholeRead.SEARCH):
+        for turn in every_turn(row):
             turns.append((turn.at, row.n, turn.line, SourcedTurn(row.provider, row.title, turn)))
     turns.sort(key=lambda item: item[:3])
     return [item[-1] for item in turns]

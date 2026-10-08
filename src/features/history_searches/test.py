@@ -6,7 +6,7 @@ from resources.base import SYSTEM
 from tests.conftest import fresh
 
 
-def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_not():
+def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_not(tmp_path, monkeypatch):
     from features import FEATURES
     from features.history_searches.handlers import MarkHistorySearches
     features.load()
@@ -23,6 +23,17 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     run("journal message search assign | head")
     last = (Agents(record, actor=SYSTEM).load(agent.n).data.get("cards") or [])[-1]
     assert (last["label"], last["title"]) == ("Message search", "'assign'"), "searching one kind of row names that kind and what was searched for"
+    import json
+    from commands.cli import captured
+    from providers.claude import Claude
+    transcript = tmp_path / "s.jsonl"
+    transcript.write_text(json.dumps({"type": "user", "uuid": "u1", "timestamp": "2026-10-08T10:00:00Z", "message": {"role": "user", "content": "find the needle please"}}) + "\n")
+    Agents(record, actor=SYSTEM).update(agent.n, provider="claude", transcript=str(transcript))
+    reads, original = [], Claude.turns
+    monkeypatch.setattr(Claude, "turns", lambda self, path: reads.append(path) or original(self, path))
+    first, second = captured(["search", "needle"], record.root), captured(["search", "needle"], record.root)
+    assert (first[1], "needle" in first[0], first == second, len(reads)) == (0, True, True, 1), \
+        "a search is run by the server, which keeps the transcripts it has read, so the second search reads nothing again"
 
 
 def test_a_search_mark_keeps_what_the_search_found_and_what_was_read_from_it_until_the_next_search_or_answer():

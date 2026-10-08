@@ -46,11 +46,17 @@ def context(args: dict) -> CommandContext:
 
 READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read", "board"}
 LOCAL = {"browser"}
+SERVED_QUERIES = frozenset({"search"})
 
 
 def served() -> frozenset:
     features.load()
     return frozenset(CONTROLLERS) - LOCAL
+
+
+def asked_of_server(argv: list[str]) -> bool:
+    """Whether the server runs this command with the warm copies it keeps: a noun's command, or a query that reads the whole history, such as search."""
+    return noun_of(argv) in served() or first_word(argv) in SERVED_QUERIES
 
 
 TAKES = {"--root", "--env", "--default-env", "--as", "--session", "--agent", "--force", "--cwd", "--plugin"}
@@ -79,7 +85,7 @@ def noun_of(argv: list[str]) -> str:
 
 def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
     noun, word = (list(plain_words(argv)) + ["", ""])[:2]
-    if not argv or noun_of(argv) not in served() or runs_here(noun, word):
+    if not argv or not asked_of_server(argv) or runs_here(noun, word):
         return f"{first_word(argv) or 'the journal'} is not a command the server runs", None
     out, err = io.StringIO(), io.StringIO()
     try:
