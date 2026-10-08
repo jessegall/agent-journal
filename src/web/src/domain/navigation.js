@@ -6,6 +6,7 @@ export const PAGES = {
     resources: {title: "Resources", icon: "tiles", text: "Every type of item the journal keeps"},
     skills: {title: "Skills", icon: "book", text: "The instructions the agent loads for each kind of work"},
     organization: {title: "Organization", icon: "agents", text: "The project's domains and the roles under them"},
+    secrets: {title: "Secrets", icon: "key", text: "Keys and logins the agent may use without ever seeing them"},
     plugins: {title: "Plugins", icon: "plug", text: "Installed plugins, with their pages and settings"},
     settings: {title: "Settings", icon: "settings", text: "Features, notifications and how the viewer behaves"},
 };

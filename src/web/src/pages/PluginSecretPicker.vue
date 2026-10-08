@@ -19,7 +19,7 @@ const choices = computed(() =>
             <ChoiceList stacked :choices="choices" @pick="emit('pick', $event)" />
         </template>
         <template v-else>
-            <p class="secret-picker-line">You have no secret to pick yet. Add one under Settings, Secrets.</p>
+            <p class="secret-picker-line">You have no secret to pick yet. Add one on the Secrets page.</p>
         </template>
         <p class="secret-picker-line">
             {{ picked ? `The plugin gets the secret ${picked.title}.` : "No secret is picked, so the plugin gets no value." }}

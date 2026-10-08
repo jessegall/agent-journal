@@ -15,7 +15,7 @@ await runScenarios(process.argv[2], {
     async "a secret is made, filled in and deleted, and its value is in no page, response or record"(page, url) {
         const bodies = [];
         page.on("response", (answer) => answer.text().then((text) => bodies.push(text), () => {}));
-        await page.goto(`${url}#/main/settings?sub=secrets`);
+        await page.goto(`${url}#/main/secrets`);
         await page.getByRole("button", {name: "New secret"}).click();
         await page.getByRole("radio", {name: /Login/}).click();
         await page.locator("#secret-title").fill(`Staging ${Date.now()}`);
@@ -47,7 +47,7 @@ await runScenarios(process.argv[2], {
     async "the agent's request is a band at the top of the page with a button to fill it in"(page, url) {
         const title = `Asked ${Date.now()}`;
         journal("secret", "request", title, "to run the payment tests");
-        await page.goto(`${url}#/main/settings?sub=secrets`);
+        await page.goto(`${url}#/main/secrets`);
         await page.getByText(`The agent is waiting for a secret: ${title}`).waitFor();
         await page.getByText("to run the payment tests").first().waitFor();
         await page.getByRole("button", {name: "Fill it in"}).first().click();

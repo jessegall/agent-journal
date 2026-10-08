@@ -15,18 +15,28 @@ function show(next, n = 0) {
 </script>
 
 <template>
-    <SwitchCase :value="screen">
-        <template #list>
-            <SecretList @open="show('one', $event)" @new="show('new')" />
-        </template>
-        <template #new>
-            <SecretNew @open="show('one', $event)" @back="show('list')" />
-        </template>
-        <template #one>
-            <SecretOpen :n="opened" @back="show('list')" />
-        </template>
-    </SwitchCase>
+    <section class="secrets-page">
+        <SwitchCase :value="screen">
+            <template #list>
+                <SecretList @open="show('one', $event)" @new="show('new')" />
+            </template>
+            <template #new>
+                <SecretNew @open="show('one', $event)" @back="show('list')" />
+            </template>
+            <template #one>
+                <SecretOpen :n="opened" @back="show('list')" />
+            </template>
+        </SwitchCase>
+    </section>
 </template>
+
+<style scoped>
+.secrets-page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 18px 20px;
+}
+</style>
 
 <style>
 .secrets {
