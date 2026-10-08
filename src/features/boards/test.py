@@ -264,10 +264,19 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
     from features.boards.agent_types import written
     from providers import PROVIDERS
     (record.root.parent / ".claude").mkdir(exist_ok=True)
-    record.set_setting("boards", {"filler_model": "haiku"})
-    files = {f.stem: f.read_text() for f in written(record.root.parent, record) if f.suffix == ".md"}
+    (record.root.parent / ".codex").mkdir(exist_ok=True)
+    record.set_setting("boards", {"filler_model": {"claude": "haiku", "codex": "gpt-6-sol"}})
+    profiles = written(record.root.parent, record)
+    files = {f.stem: f.read_text() for f in profiles if f.suffix == ".md"}
     assert set(files) == {"board-filler", "ticket-reviewer", "plan-reviewer", "goal-verifier"} and "model: haiku" in files["board-filler"], \
         "the four agent types are written for Claude, the filler with the model Settings chose"
+    codex = {f.stem: f.read_text() for f in profiles if f.suffix == ".toml"}
+    assert 'model = "gpt-6-sol"' in codex["board-filler"], "Codex's own profile names a Codex model, chosen beside Claude's"
+    from features.boards.details import BoardsDetails
+    picked = next(setting for setting in BoardsDetails.settings if setting.name == "filler_model")
+    assert (set(picked.describe()["choices"]), picked.describe()["choices"]["claude"] == list(PROVIDERS["claude"]().models()),
+            picked.allows({"claude": "gpt-6-sol"}), picked.default["codex"]) == ({"claude", "codex"}, True, False, "gpt-6-sol"), \
+        "the model setting offers each provider its own models, refuses a Codex model for Claude, and starts Codex on gpt-6-sol"
     call = lambda command: {"session_id": "claude-1", "agent_id": "sub-1", "agent_type": "board-filler", "tool_name": "Bash",
                             "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
     said = lambda command: str(handle(PROVIDERS["claude"](), record.root, record.env, call(command)).get("reason", ""))

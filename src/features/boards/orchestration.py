@@ -12,5 +12,5 @@ def orchestration(record) -> str:
             "ticket's own agent. journal board orchestrate off returns you to your own work.")
 
 
-def filler_model(record) -> str:
-    return BoardsDetails.values(record).filler_model
+def filler_model(record, provider: str) -> str:
+    return BoardsDetails.values(record).filler_model.get(provider, "")

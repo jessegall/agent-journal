@@ -204,6 +204,7 @@ class ModelControls(TypedDict):
 
 class Codex(Provider):
     name = "codex"
+    dispatch_default = "gpt-6-sol"
     follow_up = 'send_input({{id: "{id}", message: "<the new work>"}})'
     question_tools = frozenset({"request_user_input", "request_user_input_async"})
     tool_kinds = {**Provider.tool_kinds, **dict.fromkeys((*SHELL_TOOLS, "apply_patch"), CodexShell), "spawn_agent": AgentCall,
@@ -275,8 +276,8 @@ class Codex(Provider):
             return chosen
         return self.configuration().model or chosen
 
-    def models(self) -> tuple[str, ...]:
-        return tuple(model.slug for model in self.catalog())
+    def model_labels(self) -> dict[str, str]:
+        return {model.slug: model.display_name for model in self.catalog()}
 
     @classmethod
     @cache
@@ -315,8 +316,8 @@ class Codex(Provider):
 
     def agent_text(self, kind, model: str) -> str:
         sandbox = "workspace-write" if "Bash" in kind.tools and "Grep" not in kind.tools else "read-only"
-        return (f"name = {json.dumps(kind.name)}\ndescription = {json.dumps(kind.description)}\nsandbox_mode = {json.dumps(sandbox)}\n"
-                f"developer_instructions = {json.dumps(kind.instructions)}\n")
+        return (f"name = {json.dumps(kind.name)}\ndescription = {json.dumps(kind.description)}\nmodel = {json.dumps(model)}\n"
+                f"sandbox_mode = {json.dumps(sandbox)}\ndeveloper_instructions = {json.dumps(kind.instructions)}\n")
 
     def present(self, project: Path) -> bool:
         return (project / self.home).is_dir() or shutil.which("codex") is not None

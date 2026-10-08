@@ -1,6 +1,6 @@
 // @vitest-environment node
 import {describe, expect, test} from "vitest";
-import {TABS, inTab, navGroups, navSections, same, settingChanges, timingEvery, timingMarks, timingUnit, timingWords, untitled} from "../src/domain/settingsCatalog.js";
+import {TABS, catalog, groupRows, inTab, navGroups, navSections, same, settingChanges, timingEvery, timingMarks, timingUnit, timingWords, untitled} from "../src/domain/settingsCatalog.js";
 
 describe("timing words", () => {
     test.each([
@@ -112,5 +112,37 @@ describe("the Agent tab", () => {
         ];
         expect(inTab(sections, "agent").map((s) => s.groups.map((g) => g.key))).toEqual([["agent"]]);
         expect(inTab(sections, "features").map((s) => s.groups.map((g) => g.key))).toEqual([["viewer"], ["chat"]]);
+    });
+});
+
+describe("model pickers", () => {
+    const models = {
+        name: "filler_model",
+        title: "Model for the agent that fills a board",
+        abstract: "",
+        under: "",
+        kind: "models",
+        default: {claude: "sonnet", codex: "gpt-6-sol"},
+        choices: {claude: ["opus", "sonnet"], codex: ["gpt-6-sol", "gpt-6-luna"]},
+        labels: {claude: {opus: "Opus", sonnet: "Sonnet"}, codex: {"gpt-6-sol": "GPT-6 Sol", "gpt-6-luna": "GPT-6 Luna"}},
+    };
+    const spec = {
+        features: {boards: {name: "boards", label: "Boards", group: "work", settings: [models], behaviours: {}}},
+        groups: [{key: "work", title: "Boards", section: "Project", lead: "boards"}],
+    };
+
+    test("each provider gets a picker of its own models, with the saved one chosen", () => {
+        const rows = groupRows(catalog(spec, {boards: {filler_model: {codex: "gpt-6-luna"}}}, {})[0].groups[0]).filter((r) => r.key.startsWith("boards:filler_model"));
+        expect(rows.map((r) => [r.label, r.options.map((o) => o.label), r.value])).toEqual([
+            ["Model for the agent that fills a board on Claude Code", ["Opus", "Sonnet"], "sonnet"],
+            ["Model for the agent that fills a board on Codex", ["GPT-6 Sol", "GPT-6 Luna"], "gpt-6-luna"],
+        ]);
+    });
+
+    test("picking one provider's model keeps every other provider's", () => {
+        const [claude] = groupRows(catalog(spec, {boards: {filler_model: {codex: "gpt-6-luna"}}}, {})[0].groups[0]).filter((r) => r.key.startsWith("boards:filler_model"));
+        expect(settingChanges(claude.target, "opus", {boards: {filler_model: {codex: "gpt-6-luna"}}})).toEqual({
+            boards: {filler_model: {claude: "opus", codex: "gpt-6-luna"}},
+        });
     });
 });

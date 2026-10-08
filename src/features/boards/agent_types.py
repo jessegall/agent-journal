@@ -50,5 +50,5 @@ def written(project: Path, record: Record) -> list[Path]:
     from features.boards.details import BoardsDetails
     from providers import PROVIDERS
     values = BoardsDetails.values(record)
-    chosen = [(kind, str(getattr(values, kind.setting))) for kind in AGENT_TYPES]
-    return [path for cls in PROVIDERS.values() if cls().present(project) for path in cls().agent_types(project, chosen)]
+    return [path for name, cls in PROVIDERS.items() if cls().present(project)
+            for path in cls().agent_types(project, [(kind, getattr(values, kind.setting)[name]) for kind in AGENT_TYPES])]

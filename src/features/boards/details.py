@@ -1,11 +1,10 @@
 from resources.base import PROJECT
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
-from features.settings import Setting
+from features.settings import ModelsSetting, Setting
 from features.boards.resource import MEANINGS
 from features.groups import Group
 
-MODELS = ("haiku", "sonnet", "opus")
 
 
 class BoardsDetails(FeatureDetails):
@@ -61,17 +60,13 @@ class BoardsDetails(FeatureDetails):
     ]
 
     settings = [
-        Setting(
+        ModelsSetting(
             name="filler_model",
-            default="sonnet",
-            choices=MODELS,
             title="Model for the agent that fills a board",
             scope=PROJECT,
         ),
-        Setting(
+        ModelsSetting(
             name="reviewer_model",
-            default="sonnet",
-            choices=MODELS,
             title="Model for the agents that review plans and tickets",
             scope=PROJECT,
         ),
