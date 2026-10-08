@@ -1,7 +1,7 @@
 import features
 from controllers.types import Agents, Messages, Nudges, Todos
 from resources.base import AGENT, SYSTEM, USER
-from tests.conftest import fresh
+from tests.conftest import fresh, refused
 
 
 def test_a_reply_links_the_new_to_dos_it_names_and_points_out_the_one_it_leaves_unlinked(monkeypatch):
@@ -25,7 +25,7 @@ def test_a_reply_links_the_new_to_dos_it_names_and_points_out_the_one_it_leaves_
     assert f"todo:{old.n}" not in refs, "a to-do older than the setting's minutes is not linked"
     nudged = [n.title for n in Nudges(record, actor=SYSTEM).rows.every()]
     assert f"to-do {forgotten} came from message {asked.n}?" in nudged, "a new to-do the reply leaves unnamed and unlinked is pointed out"
-    Messages(record, actor=AGENT).reply(asked.n, "And one more thing.")
+    assert "already answered" in refused(lambda: Messages(record, actor=AGENT).reply(asked.n, "And one more thing.")), "a second reply goes into the first"
     assert [n.title for n in Nudges(record, actor=SYSTEM).rows.every()].count(f"to-do {forgotten} came from message {asked.n}?") == 1, "once"
 
 

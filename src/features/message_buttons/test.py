@@ -63,3 +63,10 @@ def test_a_document_carries_buttons_that_say_something_for_the_user():
     doc = Docs(record, actor=AGENT).create("A proposal", buttons=buttons)
     assert Docs(record, actor=AGENT).load(doc.n).data["buttons"] == [{"label": "Accept this proposal", "say": "I accept this proposal"}], \
         "a say button is kept on a document, and one that would not run is dropped"
+    from controllers.types import Reports
+    from features.message_buttons.pressing import unspent
+    choice = [{"label": "Reshape it", "say": "Reshape it", "choice": "answer"}, {"label": "Keep it", "say": "Keep it", "choice": "answer"}]
+    report = Reports(record, actor=AGENT).create("A choice", buttons=choice)
+    assert len(unspent(Reports(record, actor=AGENT).load(report.n))) == 2, "an open choice offers both of its buttons"
+    Reports(record, actor=AGENT).action("set")(report.n, key="answered_own", value="Yep, and in Docker")
+    assert unspent(Reports(record, actor=AGENT).load(report.n)) == [], "an answer in your own words settles the choice like a pressed button"
