@@ -32,7 +32,7 @@ def save_mail(tickets: Tickets, board: int, mail: Mail):
     title = cleaned((mail.subject or "(no subject)").replace(":", " -"), TITLE)
     brief = cleaned(f"From {mail.sender} <{mail.address}>\n\n{mail.body}", BODY)
     with words_from(SOURCE, cleaned(mail.sender, TITLE)):
-        return tickets.create(title, brief=brief, source=SOURCE, source_id=mail.uid, board=board, gmail_from=mail.address, gmail_id=mail.message_id)
+        return tickets.create(title, brief=brief, source=SOURCE, source_id=mail.uid, board=board, gmail_from=mail.address, gmail_id=mail.message_id, gmail_subject=cleaned(mail.subject, TITLE))
 
 
 def synced(record, mailbox: Mailbox, choices: Choices, state: IntegrationState, now: float | None = None) -> IntegrationState:
