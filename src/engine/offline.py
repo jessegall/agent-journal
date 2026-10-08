@@ -56,7 +56,7 @@ class Waiting:
     def hold(self, scope: str, asked: Request) -> Write:
         held = Write(uuid.uuid4().hex, scope, asked)
         with held_file(self.lock):
-            append_text(self.file, json.dumps(asdict(held)) + "\n")
+            append_text(self.file, lines([held]))
         return held
 
     def waiting(self) -> list[Write]:

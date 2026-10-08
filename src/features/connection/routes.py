@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass
 from controllers.requests import run
 from engine import runtime
 from resources.fields import Loaded
-from engine.handover import accept, give
+from engine.handover import give, taken
 from engine.machines import Lease
 from engine.offline import Applied, Write
 from engine.record import Record
@@ -45,10 +45,7 @@ def post_sync_handover(req: Request) -> Reply:
     """Takes an environment under the lease the copy names; the same lease sent again after a lost answer is taken once."""
     handed = Handed.from_json(req.body)
     record = Record(req.root, handed.env)
-    lease = Lease(handed.machine, handed.epoch)
-    if Lease.read(record.scope_home("")) == lease:
-        return Reply(200, asdict(lease))
-    return Reply(200, asdict(accept(record, "", lease)))
+    return Reply(200, asdict(taken(record, "", Lease(handed.machine, handed.epoch))))
 
 
 @handles("POST", "/api/sync/handback")
@@ -56,7 +53,7 @@ def post_sync_handback(req: Request) -> Reply:
     """Lets an environment go to the copy that asks; asked again after a lost answer, it names the lease it already gave."""
     handed = Handed.from_json(req.body)
     record = Record(req.root, handed.env)
-    current = Lease.read(record.scope_home(""))
+    current = record.lease("")
     if current.machine == handed.machine:
         return Reply(200, asdict(current))
     return Reply(200, asdict(give(record, "", handed.machine)))
@@ -65,7 +62,7 @@ def post_sync_handback(req: Request) -> Reply:
 @handles("POST", "/api/sync/holder")
 def post_sync_holder(req: Request) -> Reply:
     """Which machine writes an environment, and from which epoch: how a copy settles a handover whose answer it lost."""
-    return Reply(200, asdict(Lease.read(Record(req.root, EnvironmentAsked.from_json(req.body).env).scope_home(""))))
+    return Reply(200, asdict(Record(req.root, EnvironmentAsked.from_json(req.body).env).lease("")))
 
 
 @handles("POST", "/api/sync/write")
