@@ -97,6 +97,19 @@ def remember_managed(project: Path, root: Path) -> None:
     target.write_text(json.dumps(files, indent=2, sort_keys=True) + "\n")
 
 
+def remembered_unchanged(project: Path, root: Path, path: Path) -> bool:
+    target = root / MANAGED
+    remembered = json.loads(target.read_text()) if target.is_file() else {}
+    return remembered.get(path.relative_to(project).as_posix()) == managed_hash(path)
+
+
+def remember_rewritten(project: Path, root: Path, path: Path) -> None:
+    target = root / MANAGED
+    remembered = json.loads(target.read_text())
+    remembered[path.relative_to(project).as_posix()] = managed_hash(path)
+    target.write_text(json.dumps(remembered, indent=2, sort_keys=True) + "\n")
+
+
 def changed_managed(project: Path, root: Path) -> list[Path]:
     target = root / MANAGED
     if not target.is_file():
@@ -401,13 +414,17 @@ def repository_of(given: str | None) -> str:
     return given if given is not None else os.environ.get(REPOSITORY_ENV, REPOSITORY)
 
 
-def released(repository: str | None = None) -> str:
+def release_versions(repository: str | None = None) -> list[str]:
     try:
         listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository_of(repository), "v*"], capture_output=True, text=True, timeout=LOOKUP_SECONDS, env=git_env())
     except (OSError, subprocess.TimeoutExpired):
-        return ""
+        return []
     versions = [line.rsplit("/v", 1)[1] for line in listed.stdout.splitlines() if "/v" in line] if not listed.returncode else []
-    return max(versions, key=version_key) if versions else ""
+    return sorted(versions, key=version_key, reverse=True)
+
+
+def released(repository: str | None = None) -> str:
+    return next(iter(release_versions(repository)), "")
 
 
 def fetch(into: Path, repository: str | None = None, ref: str = "") -> tuple[str, str]:
@@ -445,7 +462,7 @@ def half_done(root: Path) -> bool:
     return (code(root) / "__main__.py").is_file() and (root / ARCHIVE).exists()
 
 
-def upgrade(project: Path, root: Path | None = None, yes: bool = False) -> list[str]:
+def upgrade(project: Path, root: Path | None = None, yes: bool = False, version: str = "") -> list[str]:
     root = root or project / ".journal"
     mark = loaded().upgrade_mark(root)
     mark.parent.mkdir(parents=True, exist_ok=True)
@@ -462,7 +479,7 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False) -> list[
             archive_changed(project, root, changed)
         mark.touch()
         try:
-            return copied + upgrading(project, root)
+            return copied + upgrading(project, root, version)
         finally:
             mark.unlink(missing_ok=True)
 
@@ -472,12 +489,12 @@ def installed_here(root: Path, package: Path = PACKAGE) -> bool:
     return built or package in (root.resolve(), code(root).resolve())
 
 
-def upgrading(project: Path, root: Path) -> list[str]:
+def upgrading(project: Path, root: Path, version: str = "") -> list[str]:
     done = [line for line in [keep_copy(root)] if line]
     source, temporary, newest = PACKAGE, None, ""
     reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
-        newest = released()
+        newest = version or released()
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
         _, failed = fetch(source, ref=f"refs/tags/v{newest}" if newest else "")
@@ -607,7 +624,8 @@ def pack(root: Path) -> str:
 def main(argv: list[str]) -> list[str]:
     word = argv[0] if argv else "install"
     if word == "upgrade":
-        return upgrade(Path(next((arg for arg in argv[1:] if arg != "--yes"), ".")).resolve(), yes="--yes" in argv)
+        target = argv[argv.index("--to") + 1] if "--to" in argv else ""
+        return upgrade(Path(next((arg for arg in argv[1:] if arg not in ("--yes", "--to", target)), ".")).resolve(), yes="--yes" in argv, version=target)
     if word == "finish":
         project = Path(argv[1] if len(argv) > 1 else ".").resolve()
         return finish(project, project / ".journal")

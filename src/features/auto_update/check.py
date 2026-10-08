@@ -67,10 +67,12 @@ def settled(root: Path, latest: str, failed: str) -> None:
         tried[latest] = {**(tried.get(latest) or {}), "ok": not failed, "why": failed}
 
 
-def installed(root: Path, yes: bool = False) -> str:
+def installed(root: Path, yes: bool, version: str) -> str:
     command = [*entry("journal"), "--root", str(root), "upgrade"]
     if yes:
         command.append("--yes")
+    if version:
+        command += ["--to", version]
     started = subprocess.Popen(command, cwd=root.parent, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, text=True, start_new_session=True)
     try:
@@ -121,7 +123,7 @@ class UpdateCheck:
             return
         root = Path(self.agent.record.root)
         try:
-            failed = installed(root)
+            failed = installed(root, False, "")
         finally:
             self.installing.release()
         settled(root, latest, failed)

@@ -1,4 +1,5 @@
 import re
+import install
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -85,7 +86,10 @@ def brief(project: Path, record) -> Briefing:
             continue
         want = leading(had, managed) if had.strip() else f"# {title}\n\n{managed}\n"
         if want != had:
+            held = install.remembered_unchanged(project, record.root, project / name) if target.is_file() else False
             write_text(target, mark + want)
+            if held:
+                install.remember_rewritten(project, record.root, project / name)
             written.append(project / name)
     return Briefing(tuple(written), tuple(left))
 
