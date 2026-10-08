@@ -1,4 +1,5 @@
 import json
+import threading
 import time
 from pathlib import Path
 
@@ -48,6 +49,16 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on():
         timed(Reply(200, {}, after=lambda: busy(0.08)), record.root, record.env, "POST", "/api/hook/claude", Stopwatch()).after()
     assert notified(record) == ["request GET /api/main/message is slower than its budget"], \
         "work done after the answer is sent is not held against the budget the agent waits on"
+    from engine.after_answer import AfterAnswer
+    workers, ran = AfterAnswer.started(1), []
+    with workers.answering_hook():
+        workers.add(lambda: ran.append(threading.current_thread().name))
+        time.sleep(0.1)
+        assert ran == [], "work an answer leaves behind waits while a hook is still being answered"
+    waited = time.monotonic() + 2
+    while not ran and time.monotonic() < waited:
+        time.sleep(0.01)
+    assert ran == ["after-answer-0"], "then it runs on a worker thread, never on the thread that answers"
     log = record.root / "runtime" / "diagnostics.log"
     assert not log.exists(), "the diagnostic log is off by default"
     record.features = {**record.features, "dev_faults.log": True}
