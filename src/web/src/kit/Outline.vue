@@ -1,7 +1,9 @@
 <script setup>
 import {computed} from "vue";
 
-const props = defineProps({rect: {type: Object, required: true}});
+const props = defineProps({rect: {type: Object, required: true}, tag: {type: String, default: ""}});
+
+const NEAR_TOP = 40;
 
 const ring = computed(() => ({
     left: `${props.rect.l - 4}px`,
@@ -13,7 +15,11 @@ const ring = computed(() => ({
 
 <template>
     <Teleport to="body">
-        <div class="outline" :style="ring" />
+        <div :class="['outline', {tagged: tag, below: rect.t < NEAR_TOP}]" :style="ring">
+            <template v-if="tag">
+                <span class="outline-tag">{{ tag }}</span>
+            </template>
+        </div>
     </Teleport>
 </template>
 
@@ -30,6 +36,42 @@ const ring = computed(() => ({
         top 0.3s var(--ease),
         width 0.3s var(--ease),
         height 0.3s var(--ease);
+}
+
+.outline.tagged {
+    border-width: 3px;
+    box-shadow:
+        0 0 0 4px var(--accent-dim),
+        0 0 18px var(--accent);
+    animation:
+        outline-in 0.2s both,
+        outline-pulse 0.9s 0.2s 1;
+}
+
+.outline-tag {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 6px);
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+.outline.below .outline-tag {
+    bottom: auto;
+    top: calc(100% + 6px);
+}
+
+@keyframes outline-pulse {
+    50% {
+        transform: scale(1.04);
+    }
 }
 
 @keyframes outline-in {

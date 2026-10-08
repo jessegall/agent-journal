@@ -1,46 +1,46 @@
 import {store} from "../src/state/store.js";
 import {ui} from "../src/state/ui.js";
+import {reactive} from "vue";
+import {movesOf, stepSeconds} from "./pacing.js";
+import {scenario} from "./scenarios.js";
 import {QuietStream} from "./stream.js";
 
 const SPEED = Number(new URLSearchParams(location.search).get("speed")) || 1;
-const LONGEST = 5;
-const SHORTEST = 0.3;
-const MOVES = [
-    ["send", (e) => e.type === "message" && e.action === "created"],
-    ["approve", (e) => e.type === "plan" && e.action === "updated" && e.data.by === "approve"],
-    ["answer", (e) => e.type === "question" && e.action === "completed"],
-    ["answer", (e) => e.type === "dump" && e.action === "updated" && e.data.by === "answer"],
-];
+const ENDING_AFTER = 2000;
+const SLOWER = 2;
+
+const LINES = {
+    send: "Your turn: press Send to ask the agent",
+    approve: "The plan is ready, press Approve",
+    answer: "The agent asks you a question, pick the outlined answer",
+};
 
 const ANSWERS = {
     question: (row) => row.outcome,
     dump: (row) => row.data.answers.at(-1).answer,
 };
 
-const newest = (moment) => Math.max(0, ...(moment.events || []).map((e) => e.id));
-
-function moveIn(moment, before) {
-    const fresh = (moment.events || []).filter((e) => e.id > newest(before) && e.actor === "user");
-    for (const [kind, is] of MOVES) {
-        const event = fresh.find(is);
-        if (event) return {kind, n: event.n, type: event.type};
-    }
-    return null;
-}
-
-function movesOf(moments) {
-    return moments.map((moment, at) => (at > 0 ? moveIn(moment, moments[at - 1]) : null)).map((move, at) => move && {...move, at});
-}
-
 export class Player {
     constructor(standIn) {
         this.standIn = standIn;
         this.timer = null;
         this.stepped = () => {};
+        this.show = () => {};
+        this.close = () => {};
+        this.view = reactive({paused: false, slower: false, ended: false, finishing: false, move: null});
+        this.ending = null;
         this.moves = movesOf(this.standIn.moments).filter(Boolean);
         const first = this.waiting;
         if (first && this.standIn.state.at === 0) this.goTo(first.at - 1);
         this.play();
+    }
+
+    get line() {
+        const {ended, finishing, paused, move} = this.view;
+        if (ended) return "Lesson done";
+        if (finishing) return "The agent is done";
+        if (paused) return "Paused";
+        return move ? LINES[move.kind] : `The agent is working, watch ${scenario.watch}`;
     }
 
     get waiting() {
@@ -48,7 +48,7 @@ export class Player {
     }
 
     get playing() {
-        return this.timer !== null;
+        return this.timer !== null || this.view.paused;
     }
 
     get finished() {
@@ -59,7 +59,10 @@ export class Player {
         const move = this.waiting;
         ui.prefill = move && move.kind === "send" ? this.asked(move.at) : "";
         if (move && move.type === "dump") Object.assign(store, {pane: "chat", dumpSelected: move.n, dumping: true});
-        if (this.finished) store.dumping = false;
+        if (move) this.close();
+        this.view.move = move || null;
+        this.view.finishing = this.finished;
+        if (this.finished) this.ending ??= setTimeout(() => (this.view.ended = true), ENDING_AFTER);
     }
 
     asked(at) {
@@ -112,22 +115,46 @@ export class Player {
         while (this.standIn.state.at < at && this.standIn.step());
         this.followDump(filing);
         this.standIn.state.events.filter((e) => !known.has(e.id)).forEach((e) => QuietStream.tell(this.standIn.dated(e)));
+        this.showFresh(known);
         this.stepped();
+    }
+
+    showFresh(known) {
+        const fresh = this.standIn.state.events.filter((e) => !known.has(e.id));
+        fresh.forEach((e) => scenario.shows[`${e.type}.${e.action}`] && this.show(scenario.shows[`${e.type}.${e.action}`], e.n));
     }
 
     play() {
         clearTimeout(this.timer);
         this.timer = null;
+        this.view.move = null;
+        if (this.view.paused) return;
         const next = this.standIn.state.at + 1;
         const move = this.waiting;
         if (next >= this.standIn.moments.length || (move && move.at === next)) return this.offer();
-        const gap = this.standIn.moments[next].at - this.standIn.moment.at;
+        const seconds = stepSeconds(this.standIn.moments, next, scenario.subjects) * (this.view.slower ? SLOWER : 1);
         this.timer = setTimeout(
             () => {
                 this.goTo(next);
                 this.play();
             },
-            (Math.min(LONGEST, Math.max(SHORTEST, gap)) * 1000) / SPEED
+            (seconds * 1000) / SPEED
         );
+    }
+
+    pause() {
+        this.view.paused = true;
+        clearTimeout(this.timer);
+        this.timer = null;
+    }
+
+    resume() {
+        this.view.paused = false;
+        this.play();
+    }
+
+    slow() {
+        this.view.slower = !this.view.slower;
+        if (this.timer !== null) this.play();
     }
 }

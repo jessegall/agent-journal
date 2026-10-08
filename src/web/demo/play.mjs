@@ -2,6 +2,11 @@ import {chromium} from "playwright-core";
 
 const [address] = process.argv.slice(2);
 const phone = address.includes("phone.html");
+const shots = process.env.SHOT_DIR;
+const lesson = new URL(address).searchParams.get("scenario");
+let shot = 0;
+const look = (name) =>
+    shots && page.screenshot({path: `${shots}/${lesson}-${phone ? "phone" : "computer"}-${String(++shot).padStart(2, "0")}-${name}.png`});
 const browser = await chromium.launch({channel: "chrome"});
 const page = await browser.newPage();
 const errors = [];
@@ -38,7 +43,7 @@ async function strayed(move, answer) {
     const at = await page.evaluate(() => demo.state.at);
     await page.getByText(other, {exact: true}).first().click();
     await page.waitForTimeout(300);
-    const after = await page.evaluate(() => ({at: demo.state.at, notice: document.body.innerText.includes("This is a replay")}));
+    const after = await page.evaluate(() => ({at: demo.state.at, notice: !!document.querySelector(".replay-hint")}));
     refused.push(after.at === at && after.notice);
 }
 
@@ -58,6 +63,7 @@ for (let moves = 0; moves < 100; moves++) {
     const move = await page.evaluate(() => (demo.player.finished ? null : demo.player.waiting));
     if (!move) break;
     const at = await page.evaluate(() => demo.state.at);
+    await look(move.kind);
     if (move.kind === "send") await page.locator(".compose-send").click();
     if (move.kind === "approve" && !phone) await page.locator(".plan-card-start").click();
     if (move.kind === "approve" && phone)
@@ -69,6 +75,12 @@ for (let moves = 0; moves < 100; moves++) {
 const feed = await page.$('.pane-tab[title="File edits"]');
 if (feed) await feed.click();
 await page.waitForTimeout(1500);
+const ending = await page.waitForSelector(".lesson-end", {timeout: 8000}).then(
+    (card) => card.innerText(),
+    () => ""
+);
+await look("end");
+if (!ending.includes("Lesson done")) errors.push("the ending card did not appear");
 const got = await page.evaluate(() => ({
     finished: demo.player.finished,
     dumpWindow: globalThis.dumpWindow,
@@ -79,7 +91,11 @@ const got = await page.evaluate(() => ({
     panes: [...document.querySelectorAll(".pane-tab")].map((tab) => tab.title),
 }));
 const words = (got.lastAgentMessage.split("\n\n").pop() || "").split(/\[\[[^\]]*\]\]/);
-const showing = words.reduce((best, part) => (part.length > best.length ? part : best), "").replace(/\s+/g, " ").trim().slice(0, 30);
+const showing = words
+    .reduce((best, part) => (part.length > best.length ? part : best), "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 30);
 const onScreen = !!showing && got.text.replace(/\s+/g, " ").includes(showing);
 if (!onScreen) errors.push(`the last agent message is not on screen: ${showing}`);
 console.log(JSON.stringify({...got, moves: done, refused, errors}));

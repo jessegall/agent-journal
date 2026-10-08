@@ -24,7 +24,7 @@ export async function install() {
     standIn.player = new Player(standIn);
     standIn.player.stepped = () => document.dispatchEvent(new Event("visibilitychange"));
     globalThis.demo = standIn;
-    noticeReplay();
+    noticeReplay(standIn);
     if (!insideFrame()) {
         const band = document.createElement("div");
         document.body.prepend(band);

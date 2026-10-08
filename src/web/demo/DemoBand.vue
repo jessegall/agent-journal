@@ -1,8 +1,12 @@
 <script setup>
 import Btn from "../src/kit/Btn.vue";
+import {inject} from "vue";
 import DemoOutline from "./DemoOutline.vue";
+import LessonEnd from "./LessonEnd.vue";
+import LessonStatus from "./LessonStatus.vue";
 import {lessons, scenario} from "./scenarios.js";
 import {restart} from "./storage.js";
+import {STAND_IN} from "./standIn.js";
 import {insideFrame, viewAs} from "./view.js";
 
 const REPOSITORY = "https://github.com/jessegall/agent-journal";
@@ -11,6 +15,7 @@ const WHOLE = "A recorded session where you play the user. Nothing leaves your b
 
 const open = (url) => window.open(url, "_blank", "noopener");
 const framed = insideFrame();
+const {player} = inject(STAND_IN);
 </script>
 
 <template>
@@ -19,6 +24,7 @@ const framed = insideFrame();
             <span class="demo-band-lesson">{{ scenario.title }}</span>
             <span class="demo-band-long">&nbsp;· {{ WHOLE }}</span>
         </span>
+        <LessonStatus :player="player" class="demo-band-status" />
         <span class="demo-band-acts">
             <Btn small title="Pick another lesson" @click="lessons">All lessons</Btn>
             <template v-if="!framed">
@@ -29,6 +35,7 @@ const framed = insideFrame();
             <Btn small @click="open(REPOSITORY)">View on GitHub</Btn>
         </span>
         <DemoOutline />
+        <LessonEnd :player="player" />
     </div>
 </template>
 
@@ -56,6 +63,11 @@ const framed = insideFrame();
     font-weight: 600;
 }
 
+.demo-band-status {
+    flex: 1;
+    justify-content: center;
+}
+
 .demo-band-acts {
     flex: none;
     display: flex;
@@ -67,6 +79,12 @@ const framed = insideFrame();
         flex-wrap: wrap;
         justify-content: center;
         gap: 2px 12px;
+    }
+
+    .demo-band-status {
+        order: 3;
+        flex-basis: 100%;
+        justify-content: center;
     }
 
     .demo-band-long,
