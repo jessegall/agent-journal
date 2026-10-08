@@ -87,8 +87,8 @@ class TooLarge(Refused):
 
 
 def member_mark(login: KeptLogin) -> dict:
-    """The mark the gateway alone puts on a forwarded request, naming who sent it."""
-    return {MEMBER: login.member}
+    """The mark the gateway alone puts on a member's forwarded request, naming the member; the owner's requests carry none."""
+    return {} if login.is_owners() else {MEMBER: login.member}
 
 
 @dataclass(frozen=True)

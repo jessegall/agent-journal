@@ -63,6 +63,7 @@ def runs_here(type_: str, name: str) -> bool:
 def command_held(type_: str, name: str):
     return COMMANDS.get(type_, {}).get(name) or getattr(CONTROLLERS.get(type_), name, None)
 SAVE_REWRITES = Extension()
+SAVE_MARKS = Extension()
 SAVE_CHECKS = Extension()
 UNCHANGED_SINCE = "unchanged_since"
 
@@ -86,6 +87,7 @@ class Pressed:
 
 
 PRESSED: ContextVar[Pressed] = ContextVar("pressed", default=Pressed())
+WRITING_MEMBER: ContextVar[str | None] = ContextVar("writing_member", default=None)
 HANDLERS: dict[str, list] = {}
 CONTROLLERS: dict[str, type] = {}
 
@@ -170,6 +172,8 @@ class Controller(Files, Links, Discussed):
         self._guarded(r, action)
         for check in SAVE_CHECKS.each(self.record):
             check(self, r)
+        for mark in SAVE_MARKS.each(self.record):
+            mark(self, r)
         r.rewrite(plain)
         for rewriter in SAVE_REWRITES.each(self.record):
             r.rewrite(rewriter(self.record))
