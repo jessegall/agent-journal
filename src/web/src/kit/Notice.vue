@@ -1,7 +1,7 @@
 <script setup>
 import Icon from "./Icon.vue";
 
-const BANDS = ["report", "wait", "danger", "info", "need", "ask"];
+const BANDS = ["brief", "report", "wait", "danger", "info", "need", "ask"];
 
 defineProps({
     tone: {type: String, default: "muted"},

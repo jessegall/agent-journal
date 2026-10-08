@@ -55,3 +55,18 @@ export function chatTurns(entries) {
     }
     return out;
 }
+
+export function fromMainAgent(turns) {
+    let first = true;
+    return turns.map((t) => {
+        if (t.type !== "line" || t.who !== "user") return t;
+        const opening = first;
+        first = false;
+        return {...t, data: {...t.data, from_main: true, opening}};
+    });
+}
+
+export const briefOf = (entries) => {
+    const first = entries.find((t) => hasText(t) && SPEAKERS[t.kind] === "user");
+    return first ? {text: first.text, at: first.at} : null;
+};

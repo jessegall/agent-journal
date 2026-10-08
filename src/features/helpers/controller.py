@@ -147,6 +147,7 @@ class Helpers(Controller):
             row = self.update(row.n, worktree=str(given.n))
         home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER)
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
+        Messages(home, actor=AGENT).create(titled(job), brief=f"{job}\n\n{brief}".strip(), from_main=True, opening=True)
         self._handed(row, home, handed)
         prompt = kickoff(row, folder, todo.n, handed, voice_of(self.record).agent_name)
         try:
@@ -246,7 +247,9 @@ class Helpers(Controller):
         words = f"{handed_over(handed)}\n{text}" if handed else text
         if not tell_in(self.record, row.environment, row.provider, words):
             raise Refused(f"helper {n}, {row.name}, is not running; dispatch it again to go on")
-        self._handed(row, Record(self.record.root, row.environment), handed)
+        home = Record(self.record.root, row.environment)
+        Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
+        self._handed(row, home, handed)
         if row.report:
             Helpers(self.record, actor=SYSTEM).update(n, report="")
         return f"sent to {row.name}" + (f", with to-do {', '.join(str(t.n) for t in handed)}" if handed else "")
