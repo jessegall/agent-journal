@@ -51,7 +51,7 @@ const look = (page, control) =>
             const scrolled = [...document.querySelectorAll("*")].reduce((sum, el) => sum + Math.round(el.scrollTop), 0);
             const own = c.isConnected ? `${c.className}${[...c.attributes].filter((a) => a.name.startsWith("aria-")).map((a) => a.value)}` : "gone";
             const shown = [...document.querySelectorAll(opened)].filter((el) => el.checkVisibility()).length;
-            return `${location.hash}|${own}|${shown}|${typed}|${scrolled}|${document.activeElement === c}`;
+            return `${location.hash}|${own}|${shown}|${typed}|${scrolled}|${document.activeElement === c}|${document.body.innerText.length}`;
         },
         [control, OPENED]
     );
