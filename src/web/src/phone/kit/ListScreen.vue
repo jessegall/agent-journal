@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
+import PagedList from "../../kit/PagedList.vue";
 import PhoneSkeletonRows from "../PhoneSkeletonRows.vue";
 import BigTitle from "./BigTitle.vue";
 import EmptyList from "./EmptyList.vue";
@@ -19,6 +20,7 @@ const props = defineProps({
     empty: {type: Object, required: true},
     keep: {type: Function, default: () => true},
     order: {type: Function, default: null},
+    total: {type: Number, default: 0},
 });
 const emit = defineEmits(["back", "act"]);
 const rows = ref([]);
@@ -28,7 +30,6 @@ const skeleton = ref(false);
 const failed = ref("");
 const busy = ref(false);
 const words = ref("");
-const end = ref(null);
 const {under, scrolled} = useScrolled();
 const visible = computed(() => {
     const asked = words.value.trim().toLowerCase();
@@ -36,7 +37,6 @@ const visible = computed(() => {
     return props.order ? kept.sort(props.order) : kept;
 });
 let skeletonTimer = 0;
-let watcher = null;
 
 async function page(before) {
     busy.value = true;
@@ -60,19 +60,16 @@ function reload() {
 }
 
 function next() {
-    if (busy.value || !more.value || !rows.value.length) return;
-    page(rows.value.at(-1).n);
+    if (!rows.value.length) return;
+    return page(rows.value.at(-1).n);
 }
 
 onMounted(() => {
     skeletonTimer = setTimeout(() => (skeleton.value = true), SKELETON_AFTER);
-    watcher = new IntersectionObserver((seen) => seen.some((one) => one.isIntersecting) && next());
-    if (end.value) watcher.observe(end.value);
     page(0);
 });
 onUnmounted(() => {
     clearTimeout(skeletonTimer);
-    watcher?.disconnect();
 });
 
 defineExpose({reload, rows});
@@ -113,10 +110,7 @@ defineExpose({reload, rows});
                     <p class="list-none">Nothing loaded so far matches “{{ words }}”.</p>
                 </template>
             </template>
-            <span ref="end" class="list-end" />
-            <template v-if="more && !loading">
-                <button type="button" class="list-more" :disabled="busy" @click="next">{{ busy ? "Loading…" : "Show more" }}</button>
-            </template>
+            <PagedList :shown="rows.length" :total="total" :more="more && !loading" :load="next" />
             <slot name="bottom" />
         </div>
         <template v-if="$slots.foot">
@@ -145,21 +139,5 @@ defineExpose({reload, rows});
 .list-none {
     color: var(--text-3);
     text-align: center;
-}
-
-.list-end {
-    display: block;
-    height: 1px;
-}
-
-.list-more {
-    width: 100%;
-    min-height: 44px;
-    margin-top: 10px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--sel);
-    color: var(--accent-text);
-    font: inherit;
 }
 </style>
