@@ -30,9 +30,7 @@ from controllers.faults import broke, log_file
 from runner.chat_mirror import displayed
 from runner.hooks import answer
 from engine.record import Record
-from engine.transcript import page
 from providers import PROVIDERS
-from providers.base import Provider
 from providers.payload import Hook
 from resources.base import OPENED, PROJECT, USER, Refused, titled
 from engine.stored import last_lines
@@ -45,7 +43,8 @@ from features.routing import JSON, PLAIN, Reply, Request
 from resources.base import Missing
 
 from commands.invoke import invoked, takes_row
-from features.format import VIEWER, carded, formatted, shaped
+from features.format import VIEWER, carded, shaped
+from features.open_viewer.transcripts import TRANSCRIPT_PAGE
 from surfaces.everything import found
 from surfaces.listing import Listing, counted, listing
 from commands.dispatch import dispatch  # noqa: F401
@@ -77,7 +76,6 @@ def unanswered(root: Path) -> None:
         broke(Record(root, env), trouble, where="the hook")
 
 
-TRANSCRIPT_PAGE = 300
 SHOWN_HITS = 30
 STREAM_BEAT = 15.0
 
@@ -417,66 +415,25 @@ def get_project_files_found(req: Request) -> Reply:
     return Reply(200, files)
 
 
-@dataclass(frozen=True)
-class Transcript:
-    provider: Provider
-    path: Path
-
-    def turns(self) -> list:
-        return self.provider.turns(self.path)
-
-    def links(self) -> list:
-        return self.provider.work_links(self.path)
-
-
-class NoTranscript:
-    def turns(self) -> list:
-        return []
-
-    def links(self) -> list:
-        return []
-
-
-def transcript_at(req: Request, session: str | None) -> Transcript | NoTranscript:
-    row = Agents(req.record(), actor=USER).load(req.params["n"])
-    kept = row.provider in PROVIDERS and row.transcript
-    if session is None:
-        return Transcript(PROVIDERS[row.provider](), Path(row.transcript)) if kept else NoTranscript()
-    known = kept and any(r.get("session") == session for r in row.subagent_rows)
-    path = PROVIDERS[row.provider]().subagent_transcript(Path(row.transcript), session) if known else None
-    if not path:
-        raise Missing("no such subagent session")
-    return Transcript(PROVIDERS[row.provider](), path)
-
-
-SPOKEN = ("agent", "human", "injected")
-
-
-def transcript_of(req: Request, session: str | None = None) -> Reply:
-    found = transcript_at(req, session)
-    turns = found.turns()
+def transcript_of(req: Request, subagent: str) -> Reply:
     asked = req.query_as(TranscriptQuery)
-    got = page(turns, asked.since, asked.before, asked.last)
-    record = req.record()
-    got["turns"] = [{**t, "said": formatted(t["text"], record, VIEWER)} if t["kind"] in SPOKEN and t["text"] else t for t in got["turns"]]
-    return Reply(200, got)
+    return Reply(200, invoked(req.as_user(Agents), "transcript", (int(req.params["n"]),),
+                              {"subagent": subagent, "since": asked.since, "before": asked.before, "last": asked.last}))
 
 
 @route("GET", "/api/{env}/agent/{n}/links")
 def get_agent_links(req: Request) -> Reply:
-    found = transcript_at(req, None)
-    return Reply(200, {"links": found.links()})
+    return Reply(200, invoked(req.as_user(Agents), "links", (int(req.params["n"]),)))
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/links")
 def get_subagent_links(req: Request) -> Reply:
-    found = transcript_at(req, req.params["session"])
-    return Reply(200, {"links": found.links()})
+    return Reply(200, invoked(req.as_user(Agents), "links", (int(req.params["n"]),), {"subagent": req.params["session"]}))
 
 
 @route("GET", "/api/{env}/agent/{n}/transcript")
 def get_transcript(req: Request) -> Reply:
-    return transcript_of(req)
+    return transcript_of(req, "")
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/transcript")
