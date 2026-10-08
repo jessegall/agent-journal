@@ -80,7 +80,7 @@ def test_a_server_of_another_version_is_not_taken_for_this_journals(tmp_path, mo
     assert viewer.answers("http://127.0.0.1:8423/", tmp_path) is True
 
 
-def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visible_files(tmp_path, monkeypatch):
+def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visible_files(tmp_path, monkeypatch, capsys):
     import threading
     from types import SimpleNamespace
     import urllib.error
@@ -204,6 +204,34 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     serve.watch_code(project / ".journal", project, serving, changed)
     assert (changed.is_set(), ended, serve.runtime.restarting(project / ".journal").exists()) == (True, ["stopped"], True), \
         "once the code has stopped changing for a moment the server notes a restart and stops"
+    halting = threading.Event()
+    monkeypatch.setattr(serve, "asked", lambda root, began: True)
+    serve.watch_stop(project / ".journal", serving, halting)
+    assert halting.is_set() and ended[-1] == "stopped", "a stop asked for from outside halts the server"
+    import engine.services
+    import engine.stop
+    monkeypatch.setattr(engine.stop, "stays_up", lambda record: True)
+    monkeypatch.setattr(serve, "WATCH_SECONDS", 0)
+    beats, staying = [], threading.Event()
+
+    class ServiceBroke(Exception):
+        pass
+
+    class RestoreBroke(Exception):
+        pass
+
+    def tick(manager):
+        beats.append(len(beats))
+        if len(beats) == 1:
+            raise ServiceBroke()
+        staying.set()
+    monkeypatch.setattr(engine.services.Manager, "tick", tick)
+    serve.keep_services(project / ".journal", staying)
+    assert beats == [0, 1], "a server that stays up with no agent keeps its services, and a tick that throws is noted and tried again"
+    serve.warm_commands()
+    monkeypatch.setattr("engine.handover.after_restore", lambda root: (_ for _ in ()).throw(RestoreBroke()))
+    serve.settle_agents(project / ".journal")
+    assert "RestoreBroke" in capsys.readouterr().err, "a failure while settling agents after a restore is printed, never raised into the server"
 
 
 def test_commit_and_diff_routes_only_show_visible_literal_files(tmp_path):

@@ -511,4 +511,22 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
     finally:
         child.terminate()
         child.wait(APART_WAIT)
+    from types import SimpleNamespace
+    from features.hosted_journal import apart as kept_apart
+    served = []
+    monkeypatch.setattr(kept_apart, "watch_change_log", lambda: None)
+    monkeypatch.setattr(kept_apart, "serve_on", lambda shares, held: served.append(held.family) or held.close())
+    kept_apart.main(["serve", str(root), "--fd", str(socket.create_server(("127.0.0.1", 0)).detach())])
+    assert served == [socket.AF_INET], "the login page answers on the socket its keeper holds"
+
+    class Restarting(Exception):
+        pass
+    started = []
+    monkeypatch.setattr(kept_apart.pwd, "getpwnam", lambda name: SimpleNamespace(pw_dir=str(tmp_path), pw_uid=os.getuid()))
+    monkeypatch.setattr(kept_apart.grp, "getgrnam", lambda name: SimpleNamespace(gr_gid=os.getgid()))
+    monkeypatch.setattr(kept_apart.subprocess, "run", lambda command, **given: started.append((command[-4], given["user"], given["cwd"])))
+    monkeypatch.setattr(kept_apart.time, "sleep", lambda seconds: (_ for _ in ()).throw(Restarting()))
+    with pytest.raises(Restarting):
+        kept_apart.main(["keep", str(root), "--host", "127.0.0.1", "--port", "0"])
+    assert started == [("serve", os.getuid(), "/")], "the keeper holds the port and starts the login page as its own user, from /, again after it ends"
 
