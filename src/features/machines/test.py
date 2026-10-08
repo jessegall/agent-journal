@@ -198,4 +198,15 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
         "a copy with another protocol number pulls everything again, whichever release it is"
     assert "too old" in refused(lambda: connect(Hello("2.100.0", Shape(0, frozenset())), server)), \
         "a copy from before the sync carried its checks on what never travels is refused, not brought along"
-
+    from engine import bus
+    from engine.sync import pulled_cursor, replay
+    from resources.base import Event
+    heard, record = [], fresh()
+    off = bus.on("todo.created", lambda event, record: heard.append(event.id))
+    pulled = [Event(id=9000 + i, at=1.0, type="todo", n=900 + i, action="created", actor=AGENT, env="elsewhere") for i in range(2)]
+    assert (replay(record, PROJECT, pulled), replay(record, PROJECT, pulled), heard) == (2, 0, []), \
+        "pulled events are put into the log once and no feature fires on them"
+    assert ([e.id for e in record.event_log.project.events(since=8999)], all(e.handled for e in record.event_log.project.events(since=8999))) == ([9000, 9001], True), \
+        "they are kept as already handled"
+    assert (record.event_log.cursor(pulled_cursor(PROJECT)), record.event_log.cursor(pulled_cursor(""))) == (9001, 0), "each scope has a cursor of its own"
+    off()
