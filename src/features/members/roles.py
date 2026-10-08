@@ -2,23 +2,9 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import assert_never
 
-from features.phone.allow_list import Action, Page, actions
+from features.members.allow_list import read, written
+from features.phone.allow_list import Action, Page
 from resources.base import Refused
-
-SHARED = ("message", "comment", "todo", "doc", "question", "reaction", "report", "plan")
-
-WRITES = frozenset((
-    *actions("message", "create edit comment"),
-    *actions("comment", "create reply done update"),
-    *actions("todo", "create update comment done reopen block unblock priority"),
-    *actions("doc", "create update section comment"),
-    *actions("question", "answer comment"),
-    *actions("reaction", "create"),
-    *actions("report", "comment"),
-    *actions("plan", "comment"),
-))
-
-READ_MARKS = frozenset(Action(type_, "read_all") for type_ in SHARED)
 
 READ = "Read every page of this journal"
 WRITE = "Write messages, to-dos, comments and documents, and answer questions"
@@ -55,8 +41,8 @@ class Role(StrEnum):
             raise Refused(f"there is no role {value}; a member is a writer or a reader")
         return cls(value)
 
-    def reaches(self, reached: Page | Action) -> bool:
-        return reached in READ_MARKS or (self is Role.WRITER and reached in WRITES)
+    def reaches(self, target: Page | Action) -> bool:
+        return read(target) or (self is Role.WRITER and written(target))
 
     def refusal(self) -> str:
         match self:
