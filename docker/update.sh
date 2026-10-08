@@ -4,7 +4,7 @@
 # the owner can also take it down, which stops it after a final backup and leaves its data restorable.
 set -eu
 IMAGE="${JOURNAL_IMAGE_NAME:-ghcr.io/jessegall/agent-journal}"
-SIGNER="${JOURNAL_SIGNER:-^https://github.com/jessegall/agent-journal/\.github/workflows/docker-image\.yml@refs/tags/v}"
+SIGNER="${JOURNAL_SIGNER:-^https://github.com/jessegall/agent-journal/\.github/workflows/docker-image\.yml@refs/tags/v[0-9]+\.[0-9]+\.[0-9]+\$}"
 ISSUER="https://token.actions.githubusercontent.com"
 STATE="${JOURNAL_UPDATER_STATE:-/data/updater}"
 REQUESTS="${JOURNAL_REQUESTS:-/data/vault/*/hosting-request.json}"
@@ -38,28 +38,47 @@ take_down() {
         || echo "the final backup failed; the journal's data stays in its volume"
 }
 
-verify() {
-    verified="$(cosign verify --certificate-identity-regexp "$SIGNER" --certificate-oidc-issuer "$ISSUER" "$IMAGE:latest" 2>/dev/null)" || return 1
+signed() {
+    verified="$(cosign verify --certificate-identity-regexp "$SIGNER" --certificate-oidc-issuer "$ISSUER" "$1" 2>/dev/null)" || return 1
     digest="$(printf '%s' "$verified" | sed -n 's/.*"docker-manifest-digest":"\(sha256:[0-9a-f]*\)".*/\1/p' | head -1)"
     version="$(printf '%s' "$verified" | sed -n 's/.*@refs\/tags\/v\([0-9][0-9.]*\)".*/\1/p' | head -1)"
-    [ -n "$digest" ]
+    [ -n "$digest" ] && [ -n "$version" ]
+}
+
+running_version() {
+    journal="$(docker ps -q --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --filter label=com.docker.compose.service=journal)"
+    [ -n "$journal" ] && docker inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' $journal 2>/dev/null || true
+}
+
+is_newer() {
+    [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n 1)" = "$1" ]
+}
+
+deploy() {
+    ref="$IMAGE@$1"
+    echo "deploying $ref, signed by the release workflow"
+    JOURNAL_IMAGE="$ref" docker compose --profile journal up -d --no-deps --pull always journal
+    write_status "$version" false
 }
 
 check_and_deploy() {
     upgrade_asked="$1"
-    if ! verify; then
+    if ! signed "$IMAGE:latest"; then
         echo "$IMAGE:latest carries no signature from the release workflow, so nothing is deployed"
         return
     fi
+    candidate="$digest"
+    candidate_version="$version"
     running="$(running_image)"
     newer=false
-    [ "$running" != "$IMAGE@$digest" ] && newer=true
-    write_status "$version" "$([ -n "$running" ] && echo "$newer" || echo false)"
+    if [ -n "$running" ] && [ "$running" != "$IMAGE@$candidate" ]; then
+        installed="$(running_version)"
+        [ -z "$installed" ] || is_newer "$candidate_version" "$installed" && newer=true
+    fi
+    write_status "$candidate_version" "$newer"
     [ -e "$STATE/down" ] && return
     if [ -z "$running" ] || { [ "$newer" = true ] && [ "$upgrade_asked" = yes ]; }; then
-        echo "deploying $IMAGE@$digest, signed by the release workflow"
-        JOURNAL_IMAGE="$IMAGE@$digest" docker compose --profile journal up -d --no-deps --pull always journal
-        write_status "$version" false
+        deploy "$candidate"
     fi
 }
 
