@@ -14,8 +14,8 @@ ISSUES = """query($after: String, $filter: IssueFilter) {
   }
 }"""
 WORKFLOW = "query { workflowStates { nodes { id name team { id } } } }"
-UPDATE = "mutation($id: String!, $stateId: String!) { issueUpdate(id: $id, input: {stateId: $stateId}) { success } }"
-COMMENT = "mutation($issueId: String!, $body: String!) { commentCreate(input: {issueId: $issueId, body: $body}) { success } }"
+SET_STATE = "mutation($id: String!, $stateId: String!) { issueUpdate(id: $id, input: {stateId: $stateId}) { success } }"
+ADD_COMMENT = "mutation($issueId: String!, $body: String!) { commentCreate(input: {issueId: $issueId, body: $body}) { success } }"
 KNOWN = """query($filter: IssueFilter) {
   issues(first: 100, filter: $filter, includeArchived: true) { nodes { id identifier archivedAt team { id } assignee { isMe } } }
 }"""
