@@ -101,6 +101,13 @@ describe("folding runs", () => {
         expect(folded[0].turns).toHaveLength(4);
     });
 
+    test("a group of plugin marks counts the settled ones", () => {
+        const card = (i, settled) => ({at: 10 + i, label: "Sin found", icon: "warn", tone: settled ? "good" : "warn", plugin: "cc", page: "d/p", settled});
+        const folded = turns({agent: [agent({cards: [card(0, "fixed"), card(1, "fixed"), card(2), card(3), card(4)]})]});
+        expect(folded[0]).toMatchObject({type: "group", title: "5 × Sin found, 2 fixed"});
+        expect(folded[0].turns[0].data.page).toBe("d/p");
+    });
+
     test("a different turn in the middle ends the run", () => {
         const got = turns({agent: [loads(4)], comment: [comment(1, 11.5, "hm", "user")]});
         expect(got.map((t) => t.type)).toEqual(["skill", "skill", "comment", "skill", "skill"]);

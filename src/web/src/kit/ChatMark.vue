@@ -35,6 +35,9 @@ const tint = computed(() => ({
                 <ChatMarkStatus :mark="mark" />
             </template>
         </span>
+        <template v-if="mark.settled">
+            <span class="settled">{{ mark.settled }}</span>
+        </template>
         <template v-if="mark.detail">
             <TextDisplay class="detail" :text="mark.detail" inline />
         </template>
@@ -112,6 +115,11 @@ button.mark:hover {
     gap: 5px;
     min-width: 0;
     overflow-wrap: anywhere;
+}
+
+.settled {
+    color: var(--tone-good);
+    font-weight: 600;
 }
 
 .mark.console .head {

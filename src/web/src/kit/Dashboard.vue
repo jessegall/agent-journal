@@ -5,12 +5,20 @@ import EmptyState from "./EmptyState.vue";
 
 const props = defineProps({document: {type: Object, required: true}, page: {type: String, default: ""}});
 const emit = defineEmits(["file"]);
-const trail = ref(props.page ? [props.page] : []);
+const known = (id) => id in (props.document.pages || {});
+const gone = ref(Boolean(props.page) && !known(props.page));
+const trail = ref(props.page && !gone.value ? [props.page] : []);
 const here = computed(() => trail.value.at(-1) || props.document.start);
 const page = computed(() => (props.document.pages || {})[here.value] || null);
 const title = (id) => ((props.document.pages || {})[id] || {}).title || id;
-const open = (id) => (trail.value = [...trail.value, id]);
-const back = (at) => (trail.value = trail.value.slice(0, at));
+const open = (id) => {
+    gone.value = false;
+    trail.value = [...trail.value, id];
+};
+const back = (at) => {
+    gone.value = false;
+    trail.value = trail.value.slice(0, at);
+};
 watch(
     () => props.document.start,
     () => (trail.value = [])
@@ -35,6 +43,9 @@ watch(
                     </button>
                 </template>
             </nav>
+            <template v-if="gone">
+                <p class="gone" role="status">What you opened is no longer in this dashboard. Here is its start page.</p>
+            </template>
             <Transition name="page" mode="out-in">
                 <div :key="here" class="page">
                     <DashboardNode :node="page.view" @open="open" @file="emit('file', $event)" />
@@ -56,6 +67,15 @@ watch(
     flex-wrap: wrap;
     align-items: center;
     gap: 4px;
+}
+
+.gone {
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: var(--hover);
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
 .step {

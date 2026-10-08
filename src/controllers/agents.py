@@ -48,6 +48,17 @@ class Agents(Controller):
             return row
         return self.appended(row, "cards", {"at": time.time(), **card}, KEPT_CARDS)
 
+    def settle_cards(self, plugin: str, key: str, how: str):
+        settled = 0
+        for row in self.all():
+            cards = row.data.get("cards") or []
+            waiting = [card for card in cards if card.get("plugin") == plugin and card.get("settle") == key and not card.get("settled")]
+            if not waiting:
+                continue
+            self.update(row.n, cards=[{**card, "tone": "good", "settled": how, "settled_at": time.time()} if card in waiting else card for card in cards])
+            settled += len(waiting)
+        return settled
+
     def drop_card(self, n: int, key: str):
         row = self.load(n)
         return self.update(row.n, cards=[kept for kept in row.data.get("cards") or [] if kept.get("key") != key])

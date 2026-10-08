@@ -54,7 +54,11 @@ class PluginsDetails(FeatureDetails):
         "events": {"<name>": {"title": "...", "tone": "...", "card": {"label", "icon", "color", "collapsed"}}}: the card
         shows it in the chat, and "collapsed": true makes its item in the activity list start folded to its title, opening
         on a click. A raise can name one of its dashboard pages, --open <dashboard>/<page> or "open" in an answer's raise,
-        and clicking its card in the chat opens that page in a side panel.
+        and clicking its card in the chat opens that page in a side panel. A raise can also carry a key of the plugin's own,
+        --key <key> or "key" in an answer's raise, and journal plugin settle <plugin> <key> [--how "<words>"] (also a line in
+        $JOURNAL_QUEUE) settles every card with that key: it keeps its text but turns green with the words beside it
+        (fixed by default), and a group of cards counts them, such as "5 x Sin found, 3 fixed". The plugin decides when,
+        for example when its next check no longer finds the problem; the journal does not check the cards itself.
 
         A plugin shows its output as a dashboard: "dashboards": [{"name": "<id>", "title": "<Title>"}] in its manifest, and a
         JSON file it writes to $JOURNAL_PLUGIN_DATA/dashboards/<id>.json whenever its output changes. The viewer lists each

@@ -15,6 +15,6 @@ const page = computed(() => asked.value.open.split("/").slice(1).join("/"));
 
 <template>
     <template v-if="plugin && board">
-        <PluginDashboard :key="asked.open" :plugin="plugin" :board="board" :page="page" @close="store.pluginPage = null" />
+        <PluginDashboard :key="asked.open" :plugin="plugin" :board="board" :page="page" :settled="asked.settled" @close="store.pluginPage = null" />
     </template>
 </template>

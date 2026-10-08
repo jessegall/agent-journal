@@ -104,6 +104,8 @@ const cards = (agents) =>
                 title: c.title,
                 row: c.ref || c.row,
                 page: c.page,
+                settled: c.settled,
+                settledAt: c.settled_at,
                 side: c.side,
                 state: c.state === "running" && !c.started ? "" : c.state,
                 started: c.started,
@@ -193,7 +195,10 @@ const GROUPS = {
         icon: t.data.icon,
         tone: t.data.tone,
         color: t.data.color,
-        label: (n) => `${n} × ${t.data.label}`,
+        label: (n, run) => {
+            const settled = run.filter((r) => r.data.settled);
+            return `${n} × ${t.data.label}${settled.length ? `, ${settled.length} ${settled[0].data.settled}` : ""}`;
+        },
     }),
 };
 const groupOf = (t) => (GROUPS[t.type] ? GROUPS[t.type](t) : null);
@@ -208,9 +213,9 @@ function folded(run) {
         created: last.created,
         seen: ["agent"],
         refs: [],
-        data: {tone: group.tone || "", color: group.color || ""},
+        data: {tone: run.every((t) => t.data.settled) ? "good" : group.tone || "", color: group.color || ""},
         sections: [],
-        title: group.label(run.length),
+        title: group.label(run.length, run),
         brief: "",
         icon: group.icon,
         turns: run,

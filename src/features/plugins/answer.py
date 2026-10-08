@@ -24,6 +24,7 @@ class Posting(Loaded):
     link: str = ""
     event: str = ""
     open: str = ""
+    key: str = ""
 
     @classmethod
     def of(cls, value, key: str = "title") -> "Posting":
@@ -62,17 +63,17 @@ def raised(record, plugin: str, session: str, asked: Posting) -> None:
     if event.card:
         card = event.card
         carded(record, session, plugin, Look(card.label if card.label else title, card.icon, card.tone if card.tone else event.tone, card.color), asked.brief,
-               asked.open)
+               asked.open, asked.key)
 
 
-def carded(record, session: str, plugin: str, look: Look, brief: str, page: str = "") -> None:
+def carded(record, session: str, plugin: str, look: Look, brief: str, page: str = "", settle: str = "") -> None:
     agents = Agents(record, actor=SYSTEM)
     agent = agents._session_or_primary(session)
     if not agent:
         return
     agents.card(agent.n, plugin=plugin, label=look.label if look.label else plugin, icon=look.icon if look.icon else "bell", tone=look.tone,
                 color=look.color if COLOR.match(look.color) else "", detail=next((line.strip(" •-") for line in brief.splitlines() if line.strip()), ""),
-                page=page)
+                page=page, settle=settle)
 
 
 def settled(record, plugin: str, values: dict) -> None:
