@@ -136,6 +136,9 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
         "the main agent sitting in a helper's checkout is refused before a compaction can move it there"
     going_home = {**strayed, "tool_name": "Bash", "tool_input": {"command": f"cd {project}"}}
     assert "another checkout" not in handle(provider, record.root, record.env, going_home).get("reason", ""), "going back is let through"
+    codex = lambda command: handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "codex-1", "cwd": str(folder),
+                                                                                    "tool_name": "exec_command", "tool_input": {"cmd": command}}).get("reason", "")
+    assert ("another checkout" in codex("ls"), "another checkout" in codex(f"cd {project}")) == (True, False), "a Codex agent is held to its own checkout the same way"
 
 
 def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():
