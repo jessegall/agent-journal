@@ -4,7 +4,7 @@ from pathlib import Path
 from resources.base import Refused
 
 ENVIRONMENTS = "environments"
-ROUTED = frozenset({"agent-controls", "agent-hooks", "hook", "journals", "plugins", "services", "update"})
+ROUTED = frozenset({"agent-controls", "agent-hooks", "hook", "journals", "plugins", "services", "sync", "update"})
 
 
 def contained(folder: Path, name: str, nested: bool = False) -> Path:
