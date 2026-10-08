@@ -54,7 +54,7 @@ class Agents(Controller):
 
     def settle_cards(self, plugin: str, key: str, how: str):
         settled = 0
-        for row in self.all():
+        for row in self.all(completed=True, last=0):
             cards = row.data.get("cards") or []
             waiting = [card for card in cards if card.get("plugin") == plugin and card.get("settle") == key and not card.get("settled")]
             if not waiting:

@@ -329,6 +329,13 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     marks = {card["detail"]: card for card in Agents(record, actor=SYSTEM).primary().data["cards"] if card["detail"].startswith("keyed")}
     assert (marks["keyed one"]["tone"], marks["keyed one"]["settled"], marks["keyed two"]["tone"], "settled" in marks["keyed two"]) == ("good", "repented", "warn", False), \
         "journal plugin settle turns only the cards with that key good and keeps their text"
+    first = Agents(record, actor=SYSTEM).rows.standing()[0]
+    Agents(record, actor=SYSTEM).card(first.n, label="old mark", plugin="typed", settle="sin:9")
+    for n in range(30):
+        Agents(record, actor=SYSTEM).create(f"s-more-{n}")
+    Settle().run(None, plugins, "typed", "sin:9", "repented")
+    assert Agents(record, actor=SYSTEM).load(first.n).data["cards"][-1]["settled"] == "repented", \
+        "settle reaches a mark on the oldest agent row, past the last 25 rows"
     off()
     assert apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "made-up"}}) == [], "an event the manifest does not declare is refused"
     everything = {"whisper": "psst", "say": "hello", "notify": {"title": "Heads up", "brief": "b"}, "notice": "A notice", "todo": {"title": "From a plugin"},
