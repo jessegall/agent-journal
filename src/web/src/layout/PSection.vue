@@ -1,10 +1,9 @@
 <script setup>
-import {delegationOf, doneOf, NOT_STARTED, othersLine, phaseOf, planButton, rowsOf} from "../domain/plans.js";
+import {delegationOf, doneOf, NOT_STARTED, phaseOf, planButton, rowsOf} from "../domain/plans.js";
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
-import PlanList from "./PlanList.vue";
 import {parkPlan} from "../actions/plans.js";
 import {useOutside} from "../composables/outside.js";
 import {useLanding} from "../composables/planFlight.js";
@@ -13,12 +12,11 @@ import {peek} from "../route.js";
 import {rows} from "../sync/rows.js";
 
 const PARKABLE = ["approved", "active", "waiting"];
-const props = defineProps({p: Object, data: Object, others: Array, error: String});
+const props = defineProps({p: Object, data: Object, error: String});
 const emit = defineEmits(["runBar", "failed"]);
 const bar = ref(null);
 const menu = ref(null);
 const menuButton = ref(null);
-const listButton = ref(null);
 const withButton = ref(null);
 const withCard = ref(null);
 const hovering = ref(false);
@@ -91,18 +89,10 @@ async function park() {
                             </div>
                         </template>
                         <template v-if="!delegation.helpers.length && !delegation.tickets.length">
-                            <p class="planbar-card-none">No helper is on this phase right now.</p>
+                            <p class="planbar-card-none">No helper has been handed this phase yet. Delegated plans keep running beside the one the agent works.</p>
                         </template>
                     </div>
                 </MenuPanel>
-            </template>
-        </template>
-        <template v-if="othersLine(others)">
-            <button ref="listButton" type="button" :class="['planbar-others', {on: opened === 'list'}]" @click.stop="toggle('list')">
-                {{ othersLine(others) }}
-            </button>
-            <template v-if="opened === 'list'">
-                <PlanList :plans="others" :running="data.status !== 'approved'" :anchor="listButton" @close="opened = ''" />
             </template>
         </template>
         <template v-if="NOT_STARTED[data.status]">
@@ -211,29 +201,6 @@ async function park() {
 .planbar-phase b {
     color: var(--text-2);
     font-weight: 400;
-}
-
-.planbar-others {
-    flex: none;
-    height: 22px;
-    padding: 0 7px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-3);
-    font: inherit;
-    font-size: 11.5px;
-    white-space: nowrap;
-    cursor: pointer;
-    transition:
-        background 0.15s,
-        color 0.15s;
-}
-
-.planbar-others:hover,
-.planbar-others.on {
-    background: var(--hover);
-    color: var(--text);
 }
 
 .planbar-delegated .planbar-icon {

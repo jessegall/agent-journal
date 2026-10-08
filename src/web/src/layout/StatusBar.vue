@@ -6,6 +6,7 @@ import {barPlans, foldedPlans} from "../domain/plans.js";
 import {currentWork, lineOf, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
 import {silentIn} from "../domain/journals.js";
 import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
+import PlanMore from "./PlanMore.vue";
 import PSection from "./PSection.vue";
 
 import {computed, ref, watch} from "vue";
@@ -223,16 +224,16 @@ async function runBar(p) {
     </template>
     <TransitionGroup name="planbar">
         <PSection
-            v-for="(bar, i) in bars"
+            v-for="bar in bars"
             :key="bar.n"
             :p="bar"
             :data="bar.data"
-            :others="i === bars.length - 1 ? others : []"
             :error="error"
             @run-bar="runBar"
             @failed="error = $event"
         />
     </TransitionGroup>
+    <PlanMore :plans="others" />
     <Toast :toast="toast" @done="toast = null" />
 </template>
 
