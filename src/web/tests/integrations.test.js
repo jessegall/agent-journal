@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {boardOf, integrationsIn, isOn, keyOf, keyWords, stateWords, teamsOf, withTeam} from "../src/domain/integrations.js";
+import {boardOf, integrationsIn, isOn, keyOf, keyWords, settingsWith, stateWords, teamsOf, withTeam} from "../src/domain/integrations.js";
 
 const NOW = Date.now() / 1000;
 
@@ -15,7 +15,7 @@ describe("the Integrations page", () => {
     });
 
     test("says plainly what the key and the state are", () => {
-        expect(keyWords("Linear")).toMatchObject({label: "Key", none: "No key is picked, so Linear is not reached.", note: "Add one on the Secrets page."});
+        expect(keyWords("Linear")).toMatchObject({label: "Key", none: "No key is picked, so Linear is not reached.", note: "The key is only for Linear, and no command can use it. Add one on the Secrets page."});
         expect(stateWords("Linear", false, null)).toBe("Off");
         expect(stateWords("Linear", true, {last_checked: NOW - 4 * 60 - 5})).toBe("Last checked 4 minutes ago");
         expect(stateWords("Linear", true, {last_checked: NOW - 5})).toBe("Last checked just now");
@@ -28,5 +28,10 @@ describe("the Integrations page", () => {
         expect([boardOf(settings, "linear"), teamsOf(settings, "linear"), boardOf({}, "linear"), teamsOf({}, "linear")]).toEqual([3, ["t1", "t2"], 0, []]);
         expect([withTeam(["t1"], "t2", true), withTeam(["t1", "t2"], "t1", false), withTeam(["t1"], "t1", true)]).toEqual(["t1,t2", "t2", "t1"]);
         expect(stateWords("Linear", true, {paused_until: NOW + 600})).toMatch(/^Paused until .*Linear's request limit is nearly used$/);
+    });
+
+    test("saving one setting sends the others with it, as the server replaces what a feature kept", () => {
+        expect(settingsWith({linear: {key: "LINEAR_KEY", board: 2}}, "linear", {board: 5})).toEqual({linear: {key: "LINEAR_KEY", board: 5}});
+        expect(settingsWith({}, "linear", {key: "K"})).toEqual({linear: {key: "K"}});
     });
 });

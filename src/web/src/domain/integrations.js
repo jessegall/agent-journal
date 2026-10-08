@@ -13,7 +13,7 @@ export const keyWords = (title) => ({
     label: "Key",
     none: `No key is picked, so ${title} is not reached.`,
     picked: `${title} signs in with the secret {title}.`,
-    note: "Add one on the Secrets page.",
+    note: `The key is only for ${title}, and no command can use it. Add one on the Secrets page.`,
 });
 
 export function stateWords(title, on, state) {
@@ -39,3 +39,5 @@ export const boardOf = (settings, name) => Number(settings?.[name]?.board) || 0;
 export const teamsOf = (settings, name) => String(settings?.[name]?.teams || "").split(",").filter(Boolean);
 
 export const withTeam = (picked, id, on) => (on ? [...new Set([...picked, id])] : picked.filter((one) => one !== id)).join(",");
+
+export const settingsWith = (settings, name, patch) => ({[name]: {...(settings?.[name] || {}), ...patch}});
