@@ -41,3 +41,12 @@ export const teamsOf = (settings, name) => String(settings?.[name]?.teams || "")
 export const withTeam = (picked, id, on) => (on ? [...new Set([...picked, id])] : picked.filter((one) => one !== id)).join(",");
 
 export const settingsWith = (settings, name, patch) => ({[name]: {...(settings?.[name] || {}), ...patch}});
+
+export const stageStatesOf = (settings, name) => settings?.[name]?.stage_states || {};
+
+export const withStageState = (settings, name, stage, state) => ({...stageStatesOf(settings, name), [stage]: state});
+
+export const mapped = (settings, name) => Object.values(stageStatesOf(settings, name)).some(Boolean);
+
+export const statesFor = (choices, teams) =>
+    (choices || []).filter((one) => !teams.length || teams.includes(one.team)).map((one) => ({value: one.id, label: one.name}));

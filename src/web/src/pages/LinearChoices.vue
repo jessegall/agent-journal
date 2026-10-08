@@ -2,12 +2,14 @@
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {saveSettings} from "../actions/settings.js";
-import {boardOf, keyOf, settingsWith, teamsOf, withTeam} from "../domain/integrations.js";
+import {boardOf, keyOf, mapped, settingsWith, stageStatesOf, statesFor, teamsOf, withStageState, withTeam} from "../domain/integrations.js";
 import ChoiceList from "../kit/ChoiceList.vue";
+import MenuChoice from "../kit/MenuChoice.vue";
 import Switch from "../kit/Switch.vue";
 import {rows} from "../sync/rows.js";
 import {store} from "../state/store.js";
 
+const props = defineProps({states: {type: Array, default: () => []}});
 const NAME = "linear";
 const boards = computed(() => rows("board").filter((row) => !row.deleted));
 const board = computed(() => boardOf(store.settings, NAME));
@@ -33,6 +35,13 @@ async function load() {
 
 watch(key, load, {immediate: true});
 
+const stages = computed(() => boards.value.find((row) => row.n === board.value)?.data.stages || []);
+const options = computed(() => statesFor(props.states, picked.value));
+const stageStates = computed(() => stageStatesOf(store.settings, NAME));
+const hasMapping = computed(() => mapped(store.settings, NAME));
+const sending = computed(() => Boolean(store.settings?.[NAME]?.send_status));
+const pickState = (stage, state) => saveSettings(settingsWith(store.settings, NAME, {stage_states: withStageState(store.settings, NAME, stage, state)}));
+const sendStatus = (on) => saveSettings(settingsWith(store.settings, NAME, {send_status: on}));
 const pickBoard = (n) => saveSettings(settingsWith(store.settings, NAME, {board: n}));
 const pickTeam = (id, on) => saveSettings(settingsWith(store.settings, NAME, {teams: withTeam(picked.value, id, on)}));
 </script>
@@ -60,6 +69,26 @@ const pickTeam = (id, on) => saveSettings(settingsWith(store.settings, NAME, {te
                 <Switch :on="picked.includes(team.id)" :title="team.name" @change="(on) => pickTeam(team.id, on)" />
             </div>
         </template>
+        <h4 class="label">Status</h4>
+        <template v-if="!stages.length">
+            <p class="line">Pick a board to map its stages to Linear states.</p>
+        </template>
+        <template v-else-if="!options.length">
+            <p class="line">The states Linear has show here after the first check.</p>
+        </template>
+        <template v-for="stage in stages" :key="stage">
+            <div class="team">
+                <span>When a ticket moves to {{ stage }}, set the issue to</span>
+                <MenuChoice :options="options" :value="stageStates[stage] || ''" empty="Do nothing" @pick="(state) => pickState(stage, state)" />
+            </div>
+        </template>
+        <div :class="['team', {greyed: !hasMapping}]">
+            <span>Send status changes to Linear</span>
+            <Switch :on="sending" title="Send status changes to Linear" @change="sendStatus" />
+        </div>
+        <template v-if="!hasMapping">
+            <p class="line">Map a stage first.</p>
+        </template>
     </div>
 </template>
 
@@ -79,6 +108,11 @@ const pickTeam = (id, on) => saveSettings(settingsWith(store.settings, NAME, {te
 .line {
     margin: 0;
     color: var(--text-2);
+}
+
+.greyed {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 .team {

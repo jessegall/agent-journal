@@ -57,7 +57,7 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
         <template v-if="on">
             <SwitchCase :value="feature.name">
                 <template #linear>
-                    <LinearChoices />
+                    <LinearChoices :states="state ? state.choices : []" />
                 </template>
             </SwitchCase>
         </template>
