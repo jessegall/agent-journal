@@ -239,6 +239,8 @@ def test_the_naming_law_follows_the_chosen_style():
     record.set_setting("form_of_address", {"profile": str(own.n)})
     assert "a cartoon character" in start_block(record) and "Dora the Explorer" in dict((law.name, law.text) for law in laws(record))["L5"], \
         "the law every session is handed names agents in the style of the profile in use"
+    assert "addresses you as Sam and never the user" in dict((law.name, law.text) for law in laws(record))["L5"], \
+        "and tells every helper and subagent to address the agent by the profile's name, never the user"
 
 
 def test_an_instruction_file_past_its_providers_limit_is_told_once_per_size_band():

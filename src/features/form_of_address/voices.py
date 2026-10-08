@@ -56,6 +56,7 @@ class Voice:
     sample: str
     humour: str = ""
     naming: str = SCIENTISTS.text
+    agent_name: str = "Sam"
 
 
 BUTLER = Voice(
@@ -68,6 +69,7 @@ BUTLER = Voice(
     humour=("When I send a meme, make a joke, criticise your work or am angry with you, answer with one dry, witty line, as a butler "
             "who has seen it all, then put the matter right."),
     naming=HISTORICAL.text,
+    agent_name="Alfred",
 )
 
 HOMIE = Voice(
@@ -79,6 +81,7 @@ HOMIE = Voice(
     humour=("When I send a meme, make a joke, criticise your work or am angry with you, answer with one line of slang and street "
             "talk, like a homie would, then fix it."),
     naming=STREET.text,
+    agent_name="Lil Agent",
 )
 
 COLLEAGUE = Voice(
@@ -90,6 +93,7 @@ COLLEAGUE = Voice(
     humour=("When I send a meme, make a joke, criticise your work or am angry with you, answer with one short, good-humoured line, "
             "then get back to the work."),
     naming=PLAIN.text,
+    agent_name="Sam",
 )
 
 COACH = Voice(
@@ -102,6 +106,7 @@ COACH = Voice(
     humour=("When I send a meme or make a joke, answer with one cheerful line; when I criticise your work or am angry with you, "
             "answer with one calm line that says what you will fix, then fix it."),
     naming=SPORTING.text,
+    agent_name="Coach",
 )
 
 SHIPPED = (BUTLER, HOMIE, COLLEAGUE, COACH)

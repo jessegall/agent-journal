@@ -47,6 +47,8 @@ def test_a_helper_starts_on_its_provider_and_model_in_an_environment_kept_out_of
     assert "Profile the slow hooks" in kickoff and "journal helper report" in kickoff, "the kickoff holds the job and how to report"
     assert (str(launch_brief(record.root, env)) in args[-1], any("slow hooks" in arg for arg in args)) == (True, False), \
         "the kickoff waits in a file beside the launch log and the command line only points at it, so pkill -f on a phrase of the job never ends a helper"
+    assert "You report to Alfred" in kickoff and "never the user" in kickoff, \
+        "the kickoff tells the helper to address the agent by the profile's name, never the user"
     from features.work_tracking.auto import automatic
     from controllers.types import Todos
     home = Record(record.root, f"{record.env}-rhea-lovelace")

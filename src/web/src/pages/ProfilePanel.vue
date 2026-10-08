@@ -27,6 +27,7 @@ const blank = () => ({
     sample: "",
     humour: "",
     naming: "",
+    agent_name: "",
 });
 const draft = reactive(blank());
 const start = ref(0);
@@ -40,6 +41,7 @@ const copyOf = (row) => ({
     sample: sampleOf(row),
     humour: row.data.humour,
     naming: row.data.naming,
+    agent_name: row.data.agent_name,
 });
 const resetDraft = (row) => Object.assign(draft, row ? copyOf(row) : blank());
 
@@ -71,12 +73,13 @@ const missing = computed(() => {
     if (!draft.title.trim()) return "Give it a name.";
     if (!draft.brief.trim()) return "Write how it talks.";
     if (!draft.naming.trim()) return "Choose how it names its helpers and subagents.";
+    if (!draft.agent_name.trim()) return "Give the agent a name.";
     return draft.sample.trim() ? "" : "Write a sample line.";
 });
 
-async function save() {
+async function save(fields) {
     try {
-        await api.updateProfile(props.row.n, {...draft});
+        await api.updateProfile(props.row.n, fields);
         failed.value = "";
         emit("changed", props.row);
     } catch (e) {
@@ -88,7 +91,8 @@ function edit(field, value) {
     draft[field] = value;
     if (isNew.value) return;
     clearTimeout(timer);
-    timer = setTimeout(save, SAVE_AFTER_MS);
+    const fields = locked.value ? {[field]: value} : {...draft};
+    timer = setTimeout(() => save(fields), SAVE_AFTER_MS);
 }
 
 function startFrom(row) {
@@ -169,6 +173,12 @@ function startFrom(row) {
                     placeholder="For example: Name it after a famous chef that fits the job, such as Chef Julia for a cleanup."
                     @input="edit('naming', $event.target.value)"
                 />
+            </FormField>
+            <FormField
+                label="Agent name"
+                help="The name helpers and subagents call the agent by in their reports. You can change it on every profile, the built-in ones too."
+            >
+                <TextInput :value="draft.agent_name" placeholder="For example: Alfred" @input="edit('agent_name', $event.target.value)" />
             </FormField>
             <FormField label="Address" help="Your title and first name are set in Settings › Agent, under Your title and name.">
                 <ChoiceList stacked :choices="choices" :disabled="locked" @pick="edit('calling', $event)" />

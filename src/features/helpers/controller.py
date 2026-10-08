@@ -16,6 +16,7 @@ from engine.record import Record
 from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared, tell_in
 from features.helper_worktrees.controller import Worktrees
+from features.form_of_address.address import voice_of
 from features.helpers.resource import Helper, held_by_helper
 from features.plans.controller import delegate_plans_holding
 from features.helpers.reuse import HELPER_KIND, agent_runs, kept, knowing, named_paths, refusal, unlanded, written_tests
@@ -26,16 +27,17 @@ from engine.wording import slugged
 from resources.types import EnvironmentKind
 
 
-def kickoff(row, folder: Path, todo: int, handed: list[Todo]) -> str:
+def kickoff(row, folder: Path, todo: int, handed: list[Todo], dispatcher: str) -> str:
     return (f"You are {row.name}, a helper dispatched for one bounded job. The job: {row.title}\n\n{row.brief}\n\n"
             f"It is to-do {todo} on your own list: take it with journal todo start {todo}, keep its work log as you go, "
             f"and close it with journal todo done {todo} --how \"<what landed>\" before you report. "
             f"{handed_over(handed)}"
             f"Work only on this job, in {folder}. Commit what you change there; never push, never switch branches. "
-            f"Write the test that proves your change but never run tests, builds of tests or checks: name the tests you wrote in your report, and the agent that dispatched you runs them. "
-            f"Do not write to the user, and do not write rules, facts or docs. "
-            f"When the job is done, or you cannot go on, finish with journal helper report \"<what you did, what you found, what is left>\": "
-            f"that is the only way your answer reaches the agent that dispatched you.")
+            f"Write the test that proves your change but never run tests, builds of tests or checks: name the tests you wrote in your report, and {dispatcher} runs them. "
+            f"You report to {dispatcher}, the agent that dispatched you: address {dispatcher} by that name and never the user, "
+            f"do not write to the user, and do not write rules, facts or docs. "
+            f"When the job is done, or you cannot go on, finish with journal helper report \"<what you did, what you found, what is left>\", "
+            f"written to {dispatcher}: that is the only way your answer reaches {dispatcher}.")
 
 
 def refuse_unreadable_settings(folder: Path) -> None:
@@ -146,8 +148,9 @@ class Helpers(Controller):
         home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER)
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
         self._handed(row, home, handed)
+        prompt = kickoff(row, folder, todo.n, handed, voice_of(self.record).agent_name)
         try:
-            launched(self.record, place, provider, prompted(self.record.root, place, ["--model", model], kickoff(row, folder, todo.n, handed)), folder)
+            launched(self.record, place, provider, prompted(self.record.root, place, ["--model", model], prompt), folder)
         except Exception:
             give_back(self.record, handed)
             raise
