@@ -95,6 +95,15 @@ class Hello:
 
     version: str
     shape: Shape
+    machine: str = ""
+
+    @classmethod
+    def read(cls, payload: dict) -> "Hello":
+        return cls(str(payload.get("version", "")), Shape(int(payload.get("protocol", 0)), frozenset(payload.get("migrations", [])), int(payload.get("epoch", 0))),
+                   str(payload.get("machine", "")))
+
+    def to_json(self) -> dict:
+        return {"version": self.version, "protocol": self.shape.protocol, "migrations": sorted(self.shape.migrations), "epoch": self.shape.epoch, "machine": self.machine}
 
 
 @dataclass(frozen=True)
