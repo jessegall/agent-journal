@@ -44,12 +44,20 @@ def unit_after(text: str) -> bool:
 HANDLED = re.compile(r"\b(?:repl(?:y|ied|ying) to|answer(?:ed|ing)?|clos(?:ed|ing)|fil(?:ed|ing)|start(?:ed|ing)|park(?:ed|ing)|resum(?:ed|ing)|end(?:ed|ing)"
                      r"|finish(?:ed|ing)|struck|reopen(?:ed|ing)|process(?:ed|ing))\s+#?$", re.IGNORECASE)
 SMALL = 100
+STATUS = re.compile(r"\b(?:answers?|answered|returns?|returned|responds?|responded|status|http|errors?|code)\s+(?:with\s+)?(?:an?\s+)?(?:(?:http|status|error)\s+)*$", re.IGNORECASE)
+STATUSES = range(100, 600)
+
+
+def is_status(before: str, value: int) -> bool:
+    """A number in the range of HTTP statuses right after a word that reports one, such as the server answered 500."""
+    return value in STATUSES and bool(STATUS.search(before))
 
 
 def bare(text: str) -> list[int]:
     text = LISTED.sub("", QUOTED.sub("", text))
     return list(dict.fromkeys(int(m.group(1)) for m in STANDALONE.finditer(text)
                               if not typed_before(text[max(0, m.start() - 24):m.start()]) and not unit_after(text[m.end():m.end() + 16])
+                              and not is_status(text[max(0, m.start() - 40):m.start()], int(m.group(1)))
                               and (int(m.group(1)) >= SMALL or HANDLED.search(text[max(0, m.start() - 24):m.start()]))))
 
 
