@@ -305,10 +305,7 @@ class Manager:
             return False
         write_json(spec_file(self.root, sid), asdict(replace(spec, owner=os.getpid())))
         replace(current, state="starting", keeper=0, owner=os.getpid(), port=spec.port, url=spec.url, at=now).write(spec.status)
-        kept = self.start(spec, self.lifeline)
-        started = status(self.root, sid)
-        if kept and started.state == "starting" and not started.keeper:
-            replace(started, keeper=kept).write(spec.status)
+        self.start(spec, self.lifeline)
         return True
 
     def booting(self, current: ServiceState, now: float) -> bool:

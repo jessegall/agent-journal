@@ -547,6 +547,12 @@ def test_stopping_a_service_stops_every_process_it_forked():
     manager.one(ServiceSpec(id="busy.web", plugin="busy", service="web", run=["true"], when="echo none here; exit 1", **files_for(record.root, "busy.web")))
     assert json.loads(status_file(record.root, "busy.web").read_text())["state"] == "not needed", \
         "a restart, as after a plugin upgrade, asks the when-command again instead of keeping the old answer"
+    def keeper_ends_at_once(spec, lifeline):
+        ServiceState(state="stopped", why="the agent session that started it ended", keeper=4242).write(spec.status)
+        return 4242
+    Manager(record.root, start=keeper_ends_at_once).one(ServiceSpec(id="quick.web", plugin="quick", service="web", run=["true"], **files_for(record.root, "quick.web")))
+    assert (status(record.root, "quick.web").state, status(record.root, "quick.web").why) == ("stopped", "the agent session that started it ended"), \
+        "a keeper that ends before the manager has returned from starting it keeps its own state and reason, never overwritten by the manager"
     stuck = subprocess.Popen(["/bin/sh", "-c", "sleep 30 & wait"], start_new_session=True)
     status_file(record.root, "stuck.web").write_text(json.dumps({"state": "starting", "keeper": stuck.pid, "pgid": stuck.pid}))
     manager.one(ServiceSpec(id="stuck.web", plugin="stuck", service="web", run=["true"], when="exit 1", **files_for(record.root, "stuck.web")))
