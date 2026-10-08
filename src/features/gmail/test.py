@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from email.message import EmailMessage
 
 import features
+from pytest import fixture
 from features.integrations.state import read_state
 from features.secrets.values import ValuesFile
 from resources.base import AGENT, SYSTEM, USER, Refused
@@ -83,13 +84,14 @@ def mail_tickets(record) -> list:
     return [t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.source == "gmail"]
 
 
-def gmail_world(monkeypatch, tmp_path, **given):
+@fixture
+def world(monkeypatch, tmp_path):
     from features.boards.controller import Boards
     from features.gmail.mail import Mailbox
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path))
     features.load()
     record = fresh()
-    server = Server(**given)
+    server = Server(mails={1: raw("Hello", "Hi there")})
     gmail = features.FEATURES["gmail"]
     monkeypatch.setattr("features.gmail.working.Mailbox", lambda account, password: Mailbox(account, password, server.imap, server.smtp))
     board = Boards(record, actor=SYSTEM).create("Mail")
@@ -98,8 +100,7 @@ def gmail_world(monkeypatch, tmp_path, **given):
     return World(record, server, gmail)
 
 
-def test_gmail_reads_nothing_until_an_address_a_search_and_a_board_are_chosen(monkeypatch, tmp_path):
-    world = gmail_world(monkeypatch, tmp_path, mails={1: raw("Hello", "Hi there")})
+def test_gmail_reads_nothing_until_an_address_a_search_and_a_board_are_chosen(world):
     record, server, gmail = world.record, world.server, world.gmail
     apply(record, {"gmail": {**dict(gmail.values(record)), "search": ""}}, USER)
     gmail.check(record)
@@ -109,11 +110,11 @@ def test_gmail_reads_nothing_until_an_address_a_search_and_a_board_are_chosen(mo
     assert server.logins[0] == ("imap.gmail.com", "me@gmail.com", PASSWORD) and server.searches[0][0] == "X-GM-RAW", "with all chosen it signs in to Google's own server and runs the search"
 
 
-def test_mail_becomes_one_ticket_each_wrapped_as_untrusted_and_only_you_start_it(monkeypatch, tmp_path):
+def test_mail_becomes_one_ticket_each_wrapped_as_untrusted_and_only_you_start_it(world):
     from controllers.types import Messages, Todos
     from features.tickets.controller import Tickets
-    world = gmail_world(monkeypatch, tmp_path, mails={1: raw("Hello", "Hi there"), 2: raw("Urgent", HOSTILE)})
     record, server, gmail = world.record, world.server, world.gmail
+    server.mails[2] = raw("Urgent", HOSTILE)
     gmail.check(record)
     gmail.check(record)
     tickets = mail_tickets(record)
@@ -127,12 +128,11 @@ def test_mail_becomes_one_ticket_each_wrapped_as_untrusted_and_only_you_start_it
     assert len(mail_tickets(record)) == 3, "a later sync adds only the mail after the cursor"
 
 
-def test_an_answer_is_sent_only_when_you_press_send_and_goes_to_the_sender_with_the_exact_text(monkeypatch, tmp_path):
+def test_an_answer_is_sent_only_when_you_press_send_and_goes_to_the_sender_with_the_exact_text(world):
     from controllers.types import Questions
     from features.gmail.commands import ProposeReply
     from features.parts import Context
     from features.tickets.controller import Tickets
-    world = gmail_world(monkeypatch, tmp_path, mails={1: raw("Hello", "Hi there")})
     record, server, gmail = world.record, world.server, world.gmail
     gmail.check(record)
     ticket = next(t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.source == "gmail")
@@ -154,10 +154,10 @@ def test_an_answer_is_sent_only_when_you_press_send_and_goes_to_the_sender_with_
     assert (message["To"], message["Subject"], message.get_content().strip(), message["In-Reply-To"]) == ("ana@example.com", "Re: Hello", words, "<Hello@example.com>"), "your Send mails the sender the text exactly as shown"
 
 
-def test_a_refused_login_is_noticed_once_with_the_password_masked(monkeypatch, tmp_path):
+def test_a_refused_login_is_noticed_once_with_the_password_masked(world):
     from controllers.types import Notices
-    world = gmail_world(monkeypatch, tmp_path, mails={1: raw("Hello", "Hi")}, broken="AUTHENTICATIONFAILED")
     record, server, gmail = world.record, world.server, world.gmail
+    server.broken = "AUTHENTICATIONFAILED"
     for _ in range(3):
         gmail.check(record)
     error = read_state(record.root, "gmail").last_error

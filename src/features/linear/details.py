@@ -4,8 +4,6 @@ from features.settings import Setting
 from features.trigger import MINUTES, Trigger
 from resources.base import PROJECT
 
-SEND, KEEP = "Send", "Don't send"
-
 
 class LinearDetails(IntegrationDetails):
     explains = "The journal reads your Linear issues into tickets. It is off until you switch it on and pick the key it signs in with."
@@ -29,7 +27,7 @@ class LinearDetails(IntegrationDetails):
         Only the user starts a Linear ticket, in the viewer, even in auto mode: journal ticket start on one is refused, and so
         is confirming it. To say something on the Linear issue, journal ticket linear_comment <n> "<the text>" asks the user
         with Send and Don't send and sends nothing by itself; wait for the answer, which posts exactly the text shown.
-        journal feature sync linear checks Linear now.
+        journal feature sync_linear checks Linear now.
 
         The key and the webhook signing secret are the user's alone: you cannot pick them and no command can be given them. If
         the user switched on Agents use Linear through its MCP server, what you read through that server is not marked

@@ -4,8 +4,6 @@ from features.settings import Setting
 from features.trigger import MINUTES, Trigger
 from resources.base import PROJECT
 
-SEND, KEEP = "Send", "Don't send"
-
 
 class GmailDetails(IntegrationDetails):
     explains = "The journal reads the mail you choose into tickets. It is off until you switch it on, name your address and pick the app password it signs in with."
@@ -28,7 +26,7 @@ class GmailDetails(IntegrationDetails):
         Only the user starts a Gmail ticket, in the viewer, even in auto mode: journal ticket start on one is refused, and so
         is confirming it. To answer the sender, journal ticket gmail_reply <n> "<the text>" asks the user with Send and
         Don't send and sends nothing by itself; wait for the answer, which sends exactly the text shown, to the sender only.
-        journal feature sync gmail checks the mail now.
+        journal feature sync_gmail checks the mail now.
 
         The app password is the user's alone: you cannot pick it and no command can be given it.
     """

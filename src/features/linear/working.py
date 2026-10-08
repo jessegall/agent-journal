@@ -1,10 +1,8 @@
 import time
 from dataclasses import asdict, replace
 
-from controllers.types import Questions
 from engine import bus
 from features.integrations.state import IntegrationState, read_state, write_state
-from features.linear.details import SEND
 from features.linear.sync import Choices, StageState, TicketsFromLinear, issue_of, send_comment, send_status, synced, teams_of
 from features.linear.webhook import event_of
 from features.routing import Reply, Request, handles
@@ -12,7 +10,7 @@ from features.secrets.values import ValuesFile
 from features.sharing.address import own_address
 from features.sharing.tunnel import kept_address
 from features.tickets.controller import Tickets
-from resources.base import Refused, SYSTEM, USER
+from resources.base import Refused, SYSTEM
 
 CATCH_UP = 30 * 60.0
 
@@ -24,6 +22,12 @@ class LinearWork:
         values = self.values(record)
         stages = tuple(StageState(stage, state) for stage, state in dict(values.stage_states).items() if state)
         return Choices(int(values.board), tuple(part for part in str(values.teams).split(",") if part), stages)
+
+    def deliver(self, client, ticket, text: str) -> None:
+        send_comment(client, ticket.source_id, text)
+
+    def ticked(self, record) -> None:
+        self.check(record, catching_up=True)
 
     def move_issue(self, record, n: int) -> None:
         tickets = Tickets(record, actor=SYSTEM)
@@ -38,21 +42,6 @@ class LinearWork:
         tickets.update(ticket.n, **agreed)
         if sending:
             bus.defer(lambda: self.push(record, lambda client: send_status(client, ticket.source_id, state)))
-
-    def send_approved(self, record, n: int) -> None:
-        question = Questions(record, actor=SYSTEM).load(n)
-        if not question.data.get("linear_comment") or question.outcome != SEND or question.data.get("answered_by") != USER:
-            return
-        ticket = Tickets(record, actor=SYSTEM).load(question.refs[0].split(":")[1])
-        bus.defer(lambda: self.push(record, lambda client: send_comment(client, ticket.source_id, question.brief)))
-
-    def push(self, record, sending) -> None:
-        """Sends one write to Linear from the journal's own process; a failure is kept in the integration's state, never raised into the move or the answer."""
-        try:
-            sending(self.client(record))
-        except Refused as error:
-            before = read_state(record.root, self.name)
-            write_state(record.root, self.name, replace(before, last_error=str(error)))
 
     def webhook_address(self, record) -> str:
         """Where Linear is told to deliver events: the journal's tunnel address, or nothing while it has none."""
@@ -115,10 +104,3 @@ class LinearWork:
             return Reply(200, {"address": self.webhook_address(req.record())})
 
         return get_webhook
-
-    def check_route(self):
-        @handles("POST", "/api/{env}/integration/linear/check")
-        def post_check(req: Request) -> Reply:
-            return Reply(200, asdict(self.check(req.record())))
-
-        return post_check

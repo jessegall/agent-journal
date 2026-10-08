@@ -3,9 +3,12 @@ from dataclasses import asdict, replace
 from urllib.parse import urlsplit
 
 from controllers.features import Features
-from controllers.types import Notices
+from controllers.types import Notices, Questions
+from engine import bus
 from features.base import Feature
-from features.integrations.details import REFUSED, UNREACHABLE
+from features.integrations.commands import SyncIntegration
+from features.integrations.details import REFUSED, SEND, UNREACHABLE
+from features.integrations.handlers import CheckOnClock, SendApproved
 from features.integrations.client import IntegrationClient
 from features.integrations.login import OPEN_BROWSER, signed_in
 from features.integrations.state import read_state, write_state
@@ -13,6 +16,7 @@ from features.journal import Journal
 from features.routing import Reply, Request, handles
 from features.secrets.controller import Secrets
 from features.secrets.resource import Kind
+from features.tickets.controller import Tickets
 from providers import PROVIDERS
 from resources.base import Refused, SYSTEM, USER
 
@@ -32,7 +36,10 @@ class IntegrationFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         self.clients: dict[str, IntegrationClient] = {}
-        journal.routes.add(self.state_route(), self.login_route())
+        journal.events.handler(CheckOnClock())
+        journal.events.handler(SendApproved())
+        journal.commands.add("feature", SyncIntegration(self.name))
+        journal.routes.add(self.state_route(), self.login_route(), self.check_route())
 
     def settings_changed(self, record, actor: str) -> None:
         self.clients.pop(str(record.home), None)
@@ -54,6 +61,27 @@ class IntegrationFeature(Feature):
             if not agent.present(project):
                 continue
             agent.serve_mcp(project, self.mcp_name, url) if wanted else agent.drop_mcp(project, self.mcp_name)
+
+    def service(self, record):
+        """What this integration talks to the service through; sending and checking use it."""
+        return self.client(record)
+
+    def ticked(self, record) -> None:
+        self.check(record)
+
+    def send_approved(self, record, n: int) -> None:
+        question = Questions(record, actor=SYSTEM).load(n)
+        if question.data.get("proposal") != self.name or question.outcome != SEND or question.data.get("answered_by") != USER:
+            return
+        ticket = Tickets(record, actor=SYSTEM).load(question.refs[0].split(":")[1])
+        bus.defer(lambda: self.push(record, lambda service: self.deliver(service, ticket, question.brief)))
+
+    def push(self, record, sending) -> None:
+        """Sends one write from the journal's own process; a failure is kept in the integration's state, never raised into the move or the answer."""
+        try:
+            sending(self.service(record))
+        except Refused as error:
+            write_state(record.root, self.name, replace(read_state(record.root, self.name), last_error=str(error)))
 
     def notice_failure(self, record, before, after) -> None:
         """A failed sync is noticed once, and the notice clears when a sync works again."""
@@ -96,6 +124,15 @@ class IntegrationFeature(Feature):
             return Reply(200, {"started": True})
 
         return post_login
+
+    def check_route(self):
+        name = self.name
+
+        @handles("POST", f"/api/{{env}}/integration/{name}/check")
+        def post_check(req: Request) -> Reply:
+            return Reply(200, asdict(self.check(req.record())))
+
+        return post_check
 
     def state_route(self):
         name = self.name
