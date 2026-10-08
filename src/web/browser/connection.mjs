@@ -36,6 +36,10 @@ async function noticeShown(page, url, title) {
     });
 }
 
+async function noticeSays(page, words) {
+    await page.waitForFunction(async (found) => (await (await fetch("/api/main/notice?last=10")).text()).toLowerCase().includes(found), words.toLowerCase(), {timeout: 20000});
+}
+
 const card = (page) => page.locator(".list-box", {hasText: "Connection to a server"});
 
 async function openCard(page, url) {
@@ -56,7 +60,7 @@ await runScenarios(process.argv[2], {
         try {
             await connectTo(page, url, address);
             await noticeShown(page, url, "Could not connect to the server");
-            await page.getByText(/too old/).first().waitFor({timeout: 20000}).catch(() => {
+            await noticeSays(page, "too old").catch(() => {
                 throw new Error("the notice did not say this copy is too old");
             });
         } finally {
@@ -77,7 +81,7 @@ await runScenarios(process.argv[2], {
         try {
             await connectTo(page, url, address);
             await noticeShown(page, url, "Could not connect to the server");
-            await page.getByText(/taken down/).first().waitFor({timeout: 20000}).catch(() => {
+            await noticeSays(page, "taken down").catch(() => {
                 throw new Error("the notice did not say the server was taken down");
             });
         } finally {
@@ -119,6 +123,7 @@ await runScenarios(process.argv[2], {
         await page.getByText(/Not connected/).waitFor();
     },
     async "a copy that has joined a server says so in the bar, with how it stands and when it last synced"(page, url) {
+        journal("feature", "switch", "connection");
         await page.route(/\/api\/main\/environment\/connection$/, (route) =>
             reply(route, {address: "https://journal.example.com", connected: true, release: "same", step: "in step", role: "your copy", synced_at: Date.now() / 1000 - 180, travels: {files: 1, bytes: 1, environments: []}})
         );
@@ -128,6 +133,7 @@ await runScenarios(process.argv[2], {
         });
     },
     async "a journal that runs on a server says in the bar that it is the server"(page, url) {
+        journal("feature", "switch", "connection");
         await page.route(/\/api\/main\/environment\/connection$/, (route) =>
             reply(route, {address: "", connected: false, release: "", step: "", role: "the server", synced_at: 0, travels: {files: 1, bytes: 1, environments: []}})
         );
