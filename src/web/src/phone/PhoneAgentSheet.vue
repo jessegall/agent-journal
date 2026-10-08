@@ -14,6 +14,7 @@ import PhoneAgentControls from "./PhoneAgentControls.vue";
 import PhoneAgentMore from "./agent/PhoneAgentMore.vue";
 import WaitingList from "../kit/WaitingList.vue";
 import {phoneWaiting} from "./agentWait.js";
+import {useSharedNow} from "../composables/now.js";
 
 const props = defineProps({
     state: {type: String, required: true},
@@ -28,7 +29,8 @@ const root = ref("");
 const starting = ref("");
 const told = ref("");
 const running = computed(() => props.state !== "offline");
-const waiting = computed(() => phoneWaiting({agent: props.state, running: props.live}));
+const secondNow = useSharedNow();
+const waiting = computed(() => phoneWaiting({agent: props.state, running: props.live}, secondNow.value));
 
 onMounted(async () => {
     try {

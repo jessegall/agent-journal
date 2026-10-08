@@ -1,8 +1,10 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
+import Chip from "./Chip.vue";
 import Icon from "./Icon.vue";
 
 const NOTE_SECONDS = 5;
+const TAIL = [0, 1, 2, 3, 4, 5];
 const props = defineProps({waiting: {type: Object, default: null}});
 const emit = defineEmits(["list"]);
 const note = ref(null);
@@ -12,12 +14,6 @@ let timer = 0;
 const open = computed(() => (props.waiting ? props.waiting.items.filter((item) => !item.reported).length : 0));
 const plural = (n) => `${n} ${n === 1 ? "helper" : "helpers"}`;
 const capital = (text) => text.charAt(0).toUpperCase() + text.slice(1);
-const legend = computed(() => {
-    if (note.value) return note.value;
-    if (!props.waiting) return null;
-    return {words: `Waiting on ${props.waiting.helping ? plural(open.value || props.waiting.items.length) : props.waiting.text}`, tick: false};
-});
-
 function setNote(words, ended) {
     clearTimeout(timer);
     note.value = {words, tick: true, ended};
@@ -45,16 +41,24 @@ onUnmounted(() => clearTimeout(timer));
 <template>
     <div :class="['wait-edge', {waiting: Boolean(waiting), lit}]">
         <slot />
-        <span class="edge" />
-        <template v-if="legend">
-            <button type="button" :class="['legend', {done: legend.tick}]" :disabled="!waiting" @click="emit('list', $event)">
-                <template v-if="legend.tick">
-                    <Icon name="tick" :size="11" />
-                </template>
-                {{ legend.words }}
-                <template v-if="waiting && !legend.ended">
-                    <span class="meta">{{ waiting.line.includes("·") ? waiting.line.split("·").pop().trim() : "" }}</span>
-                    <span class="chev" />
+        <svg class="edge" aria-hidden="true">
+            <rect class="ring" pathLength="1" />
+            <template v-for="i in TAIL" :key="i">
+                <rect class="spot" pathLength="1" :style="{'--i': i}" />
+            </template>
+        </svg>
+        <template v-if="note">
+            <span class="note">
+                <Icon name="tick" :size="11" />
+                {{ note.words }}
+            </span>
+        </template>
+        <template v-else-if="waiting">
+            <button type="button" class="legend" @click="emit('list', $event)">
+                Waiting
+                <span class="chev" />
+                <template v-if="waiting.kind">
+                    <Chip>{{ waiting.kind }}</Chip>
                 </template>
             </button>
         </template>
@@ -70,44 +74,50 @@ onUnmounted(() => clearTimeout(timer));
 .edge {
     position: absolute;
     inset: -1px;
-    border-radius: inherit;
-    padding: 2px;
-    overflow: hidden;
+    width: calc(100% + 2px);
+    height: calc(100% + 2px);
+    overflow: visible;
     pointer-events: none;
     opacity: 0;
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
 }
 
-.edge::before {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 150%;
-    aspect-ratio: 1;
-    transform: translate(-50%, -50%);
+.edge rect {
+    x: 1px;
+    y: 1px;
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+    rx: var(--edge-radius, 12px);
+    fill: none;
+    stroke: var(--accent-text);
+    stroke-width: 2px;
+}
+
+.ring {
+    opacity: 0;
+}
+
+.spot {
+    stroke-dasharray: 0.05 0.95;
+    stroke-dashoffset: 0;
+    opacity: calc(1 - var(--i) * 0.17);
+    animation: lap 8s linear infinite;
+    animation-delay: calc(-8s + var(--i) * 0.4s);
 }
 
 .waiting .edge {
     opacity: 1;
 }
 
-.waiting .edge::before {
-    background: conic-gradient(
-        transparent 0turn,
-        transparent 0.5turn,
-        color-mix(in oklab, var(--accent-text) 30%, transparent) 0.75turn,
-        var(--accent-text) 0.96turn,
-        transparent 1turn
-    );
-    animation: lap 8s linear infinite;
+.lit .edge {
+    opacity: 1;
 }
 
-.lit .edge {
+.lit .spot {
+    display: none;
+}
+
+.lit .ring {
     opacity: 0.85;
-    background: var(--accent-text);
     animation: settle 1.6s ease-out forwards;
 }
 
@@ -138,10 +148,6 @@ onUnmounted(() => clearTimeout(timer));
     color: var(--text);
 }
 
-.legend .meta {
-    color: var(--text-3);
-}
-
 .legend .chev {
     width: 5px;
     height: 5px;
@@ -151,14 +157,27 @@ onUnmounted(() => clearTimeout(timer));
     margin-left: 1px;
 }
 
-.legend.done {
-    border-color: color-mix(in oklab, var(--tone-good) 45%, var(--border-2));
+.note {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 1px 9px;
+    border: 1px solid color-mix(in oklab, var(--tone-good) 45%, var(--border-2));
+    border-radius: 999px;
+    background: var(--bg);
     color: var(--text);
+    font-size: 12px;
+    white-space: nowrap;
 }
 
 @keyframes lap {
     to {
-        transform: translate(-50%, -50%) rotate(360deg);
+        stroke-dashoffset: -1;
     }
 }
 
@@ -173,19 +192,13 @@ onUnmounted(() => clearTimeout(timer));
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .waiting .edge {
-        background: color-mix(in oklab, var(--accent-text) 60%, transparent);
-    }
-
-    .waiting .edge::before,
-    .lit .edge {
+    .spot {
         animation: none;
-        background: none;
+        display: none;
     }
 
-    .lit .edge {
-        opacity: 0.85;
-        background: var(--accent-text);
+    .waiting .ring {
+        opacity: 0.6;
     }
 }
 </style>
