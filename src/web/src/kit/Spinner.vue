@@ -1,5 +1,9 @@
+<script setup>
+defineProps({size: {type: Number, default: 9}});
+</script>
+
 <template>
-    <span class="spinner" />
+    <span class="spinner" :style="{width: `${size}px`, height: `${size}px`, borderWidth: size > 14 ? '2px' : '1px'}" />
 </template>
 
 <style scoped>

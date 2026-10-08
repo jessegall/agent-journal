@@ -8,6 +8,8 @@ import Notice from "../kit/Notice.vue";
 import {store} from "../state/store.js";
 import {useNow} from "../composables/now.js";
 import {hostedOn} from "../composables/settings.js";
+import {runUpdate} from "../composables/updates.js";
+import {clear, updating} from "../state/updating.js";
 
 const upstream = ref(null);
 const dismissed = ref(remembered("journal.upgrade.dismissed", ""));
@@ -53,15 +55,24 @@ function dismiss() {
 
 async function upgrade(always = false, yes = false) {
     running.value = true;
+    lines.value = [];
     try {
         if (always) await saveSettings({features: {auto_update: true}});
-        await api.update(yes);
-        lines.value = [`Installing ${upstream.value.latest}; this page reloads once it runs`];
     } catch (e) {
         lines.value = [e.message];
-    } finally {
         running.value = false;
+        return;
     }
+    await runUpdate(upstream.value.latest, yes);
+    running.value = false;
+}
+
+async function retry() {
+    const version = updating.version;
+    clear();
+    running.value = true;
+    await runUpdate(version);
+    running.value = false;
 }
 </script>
 
@@ -81,6 +92,12 @@ async function upgrade(always = false, yes = false) {
             </span>
             <Btn kind="primary" small @click="reload">Reload now</Btn>
             <span class="drain" :style="{animationDuration: `${RELOAD_AFTER}s`, animationPlayState: waiting ? 'paused' : 'running'}" />
+        </div>
+    </template>
+    <template v-if="updating.failure">
+        <div class="band failed" role="alert">
+            <span class="text">The update to {{ updating.version }} did not finish: {{ updating.failure }}</span>
+            <Btn kind="primary" small @click="retry">Try again</Btn>
         </div>
     </template>
     <template v-if="visible && changed.length">
@@ -104,8 +121,8 @@ async function upgrade(always = false, yes = false) {
                 </template>
             </span>
             <template v-if="!lines.length">
-                <Btn kind="primary" small :disabled="running" @click="upgrade(false)">{{ running ? "Updating…" : "Update" }}</Btn>
-                <Btn small :disabled="running" @click="upgrade(true)">Update and turn on auto-update</Btn>
+                <Btn kind="primary" small :busy="running" @click="upgrade(false)">Update</Btn>
+                <Btn small :class="{dimmed: running}" :disabled="running" @click="upgrade(true)">Update and turn on auto-update</Btn>
             </template>
             <Btn small @click="dismiss">Not now</Btn>
         </div>
@@ -130,6 +147,15 @@ async function upgrade(always = false, yes = false) {
 
 .reloading {
     position: relative;
+}
+
+.failed {
+    border-bottom-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+    background: color-mix(in srgb, var(--danger) 12%, var(--bg));
+}
+
+.dimmed {
+    opacity: 0.5;
 }
 
 .offline {
