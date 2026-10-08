@@ -17,7 +17,7 @@ from controllers.discussion import TWICE_WITHIN, Discussed
 from controllers.files import Files
 from controllers.links import Links
 from controllers import marks
-from controllers.stored import RowStore
+from controllers.stored import IDEMPOTENCY, RowStore
 from engine.wording import noun
 
 WORDS = ("title", "abstract", "brief")
@@ -228,7 +228,11 @@ class Controller(Files, Links, Discussed):
 
     @marks.action
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
-        twin = self._twin(title, brief, data.get("about"), data.get("idempotency", ""))
+        key = data.get(IDEMPOTENCY, "")
+        made = self.rows.by_idempotency(key) if key else None
+        if made is not None:
+            return made
+        twin = self._twin(title, brief, data.get("about"), key)
         if twin is not None:
             return twin
         found = self._plugin_twin(title, data)

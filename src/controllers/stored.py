@@ -13,6 +13,7 @@ from engine.numbers import rows
 T = TypeVar("T")
 DAMAGED = "damaged"
 DRAFT_OF = "draft_of"
+IDEMPOTENCY = "idempotency"
 
 INDEX = "index.json"
 CHANGES = "changes.log"
@@ -258,7 +259,7 @@ class RowStore:
             del rows[at]
 
     def _row(self, r: Resource, stamp: str) -> dict:
-        return {"n": r.n, "created": r.created, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
+        return {"n": r.n, "created": r.created, IDEMPOTENCY: r.data.get(IDEMPOTENCY, ""), "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
                 "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), DRAFT_OF: r.data.get(DRAFT_OF, ""), OWNER: r.data.get(OWNER, ""),
                 **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
 
@@ -324,7 +325,7 @@ class RowStore:
     def _loose(self, folder: Path) -> dict[int, dict]:
         stamps = self._stamps(folder)
         known = INDEXED.get(str(folder)) or {int(n): row for n, row in read_json(folder / INDEX, dict, {}).items()}
-        needed = {"created", "files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
+        needed = {"created", IDEMPOTENCY, "files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
         rows = {}
         for n, stamp in stamps.items():
             row = known.get(n)
@@ -345,6 +346,10 @@ class RowStore:
             WRITTEN[str(folder)] = time.time()
         INDEXED[str(folder)] = rows
         return rows
+
+    def by_idempotency(self, key: str) -> Resource | None:
+        found = next((row["n"] for row in self.summaries() if row[IDEMPOTENCY] == key), None)
+        return self.load(found) if found else None
 
     def by_title(self, title: str, standing: bool = False) -> Resource | None:
         found = next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None)
