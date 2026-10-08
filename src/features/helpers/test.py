@@ -276,7 +276,10 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     marked = todos.load(fixed)
     assert not marked.completed and lane_of(Sources(todos), marked) == DONE, "a row the helper marks shows as done, waiting for its merge"
     commit(Path(Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree)).path), "tunnel.txt", "fixed\n")
+    from features.helpers.reuse import unlanded
+    assert unlanded(repo.record, row) == ("write tunnel.txt",), "a commit on a helper's branch that the project's branch lacks is named"
     assert f"closed to-do {fixed}" in Worktrees(repo.record, actor=SYSTEM).take(int(row.worktree)) and todos.load(fixed).completed, "taking its work closes it"
+    assert unlanded(repo.record, row) == (), "once its commit is taken over by cherry-pick it counts as landed, though its hash is new"
     named = re.search(r"journal (helper done <n> .*?<what landed>.)", calls[0][3][-1]).group(1).replace("<n>", str(dropped)).replace("<what landed>", "names the cause")
     assert run(["--root", str(repo.record.root), "--env", row.environment, *shlex.split(named)], out=io.StringIO(), err=io.StringIO()) == 0 and todos.load(dropped).pending, "the command the kickoff names marks the row"
     assert "gives it back first" in refused(lambda: todos.reopen(dropped, "not yet")), "the agent cannot unmark a row the helper marked"
