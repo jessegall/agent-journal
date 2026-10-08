@@ -24,11 +24,16 @@ class TriggersDetails(FeatureDetails):
         does=nudge --set text="<what to say>" writes one. words_in says where the words are
         matched: text, commands, both (the default), everything, or user for only what the user writes.
 
-        does is one of {', '.join(DOES)}. A message reaches the chat as if the user wrote it, a
+        does is one of {', '.join(DOES)}; hold keeps the main agent's writes until the fact is no longer true. A message reaches the chat as if the user wrote it, a
         nudge and an instruction are said to you alone, and a deny refuses the tool call
         with the trigger's text as the reason. In your own chat text a deny cannot unsay the words, so it is
         marked and you are told. A start does nothing of its own: it starts the sequences whose starts_on
         names it (trigger:<n>), which is how a sequence starts on words or a command.
+
+        A trigger can instead watch the journal: --set when=state --set fact=message.unanswered
+        --set over=5 says a message has waited more than 5 minutes. only_when is any, idle or working;
+        timing is the minutes before it says so again (0 says it once for each row); most caps the
+        times for each row. A trigger on a fact does nudge, instruct or hold, never message or deny.
     """
 
     behaviours = [
@@ -48,6 +53,10 @@ class TriggersDetails(FeatureDetails):
             name="instruct",
             title="do this now: {{title}}",
             brief="{{text}}",
+        ),
+        Line(
+            name="held",
+            title="{{title}}: {{text}}",
         ),
         Line(
             name="denied",

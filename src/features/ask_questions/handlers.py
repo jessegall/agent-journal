@@ -1,4 +1,3 @@
-import time
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -6,7 +5,8 @@ from engine.events.agents import AgentReported
 from controllers.types import Agents, Questions
 from engine.events.resources import AnyEvent, MessageCreated, QuestionAnswered, ResourceEvent
 from features.nudges.sending import Sent
-from features.trigger import DAY
+from features import watched
+from features.trigger import DAY, MINUTE
 from providers.turns import last_text
 from features.parts import AgentContext, Context, Handler
 from features.ask_questions.choices import offers_choices
@@ -64,6 +64,4 @@ class DismissSettledQuestions(Handler):
 
 
 def open_a_day(context, agent) -> list[Sent]:
-    now = time.time()
-    return [Sent(str(q.n), {"n": q.n, "title": q.title}) for q in Questions(context.record, actor=SYSTEM).rows.standing()
-            if not q.hidden and now - q.created > DAY]
+    return watched.found("question.open", context, agent, DAY / MINUTE)

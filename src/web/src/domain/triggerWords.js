@@ -66,6 +66,14 @@ export const DOES = [
         example: "Never force-push. Ask me first.",
     },
     {
+        value: "hold",
+        label: "Hold the agent's writes",
+        short: "It holds the agent's writes.",
+        hint: "The agent cannot write until this stops being true. Helpers and subagents are not held.",
+        ask: "What the agent is told while it is held",
+        example: "Read your messages before you carry on.",
+    },
+    {
         value: START,
         label: "Start a sequence",
         short: "It starts a sequence.",
@@ -75,7 +83,50 @@ export const DOES = [
     },
 ];
 
+export const WHEN = [
+    {value: "words", label: "When words come up", hint: "A word you choose shows up in a message or a command."},
+    {value: "state", label: "When something in the journal is true", hint: "For example, a message of yours has waited too long for an answer."},
+];
+
+export const FACTS = [
+    {value: "message.unread", phrase: "a message of yours has gone unread for more than {over} minutes", label: "A message of yours is still unread", unit: "minutes"},
+    {value: "message.unanswered", phrase: "a message of yours has been read but left unanswered for more than {over} minutes", label: "A message of yours was read but not answered", unit: "minutes"},
+    {value: "work.unlogged", phrase: "work has had no log entry for more than {over} minutes", label: "Work has no log entry", unit: "minutes"},
+    {value: "work.awaiting", phrase: "work has been waiting for something for more than {over} minutes", label: "Work has been waiting for something", unit: "minutes"},
+    {value: "agent.idle", phrase: "the agent has been idle for more than {over} minutes", label: "The agent is idle", unit: "minutes"},
+    {value: "agent.context", phrase: "the agent's context is more than {over} percent full", label: "The agent's context is getting full", unit: "percent"},
+    {value: "question.open", phrase: "a question has had no answer for more than {over} minutes", label: "A question has no answer", unit: "minutes"},
+    {value: "todo.ready", phrase: "at least {over} to-dos are ready and no work is open", label: "To-dos are ready and no work is open", unit: "to-dos"},
+];
+
+export const ONLY_WHEN = [
+    {value: "any", label: "Any time"},
+    {value: "idle", label: "While the agent is idle"},
+    {value: "working", label: "While the agent is working"},
+];
+
+export const REPEATS = [
+    {value: 0, label: "Once for each"},
+    {value: 5, label: "Every 5 minutes"},
+    {value: 15, label: "Every 15 minutes"},
+    {value: 60, label: "Every hour"},
+];
+
+export const STATE_DOES = ["nudge", "instruct", "hold"];
+
+export const factOf = (value) => FACTS.find((fact) => fact.value === value) || FACTS[0];
+
 export const EXAMPLES = [
+    {
+        name: "Hold the agent while a message waits",
+        title: "Answer my messages",
+        when: "state",
+        fact: "message.unanswered",
+        over: 5,
+        only_when: "any",
+        does: "hold",
+        text: "Answer message {{n}} before you carry on.",
+    },
     {
         name: "Block a command",
         title: "No force push",
@@ -147,6 +198,7 @@ function doing(trigger, sequences) {
         nudge: [{text: "remind the agent "}, ...text],
         instruct: [{text: "tell the agent to do this now: "}, ...text],
         deny: [{text: "block it and tell the agent "}, ...text],
+        hold: [{text: "hold the agent's writes until that stops being true, saying "}, ...text],
         start: sequences.length
             ? [{text: "start the sequence "}, ...titles]
             : [{text: "start a sequence. "}, {text: "None is picked yet, so nothing happens", muted: true, stop: true}],
@@ -156,11 +208,25 @@ function doing(trigger, sequences) {
 const keyed = (parts) => parts.map((part, i) => ({...part, key: `part-${i}`}));
 const EMPTY = "Add the words to watch for and choose what happens, and this sentence will say what the trigger does.";
 
+const GATES = {idle: " while the agent is idle", working: " while the agent is working"};
+function stateWatching(trigger) {
+    return `When ${factOf(trigger.fact).phrase.replace("{over}", trigger.over)}${GATES[trigger.only_when] || ""}, `;
+}
+
+function repeating(trigger) {
+    if (!["nudge", "instruct"].includes(trigger.does)) return [];
+    if (!trigger.timing) return [{text: " It says so once for each."}];
+    return [{text: ` It says so again every ${trigger.timing} minutes, at most ${trigger.most} times for each.`}];
+}
+
 export function sentence(trigger, sequences) {
-    if (!trigger.words.length) return keyed([{text: EMPTY, muted: true}]);
-    const parts = [{text: `${watching(wordsText(trigger.words), trigger.words_in)}, `}, ...doing(trigger, sequences)];
+    const state = trigger.when === "state";
+    if (!state && !trigger.words.length) return keyed([{text: EMPTY, muted: true}]);
+    const opening = state ? stateWatching(trigger) : `${watching(wordsText(trigger.words), trigger.words_in)}, `;
+    const parts = [{text: opening}, ...doing(trigger, sequences)];
     const last = parts.at(-1);
-    return keyed(last.stop || /[.!?]”?$/.test(last.text) ? parts : [...parts, {text: "."}]);
+    const closed = last.stop || /[.!?]”?$/.test(last.text) ? parts : [...parts, {text: "."}];
+    return keyed(state ? [...closed, ...repeating(trigger)] : closed);
 }
 
 export const plain = (parts) => parts.map((part) => part.text).join("");
