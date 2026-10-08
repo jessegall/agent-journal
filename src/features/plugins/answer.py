@@ -1,6 +1,5 @@
 import re
 from dataclasses import dataclass
-from pathlib import Path
 
 from controllers.types import Agents, Plugins, Todos
 from engine.gates import Hold, hold
@@ -41,8 +40,8 @@ class Look:
     color: str
 
 
-def held(root: Path, env: str, session: str, plugin: str, why: str) -> None:
-    hold(root, env, session, f"{HELD}:{plugin}", Hold(why))
+def held(record, session: str, plugin: str, why: str) -> None:
+    hold(record, session, f"{HELD}:{plugin}", Hold(why))
 
 
 def nudged(record, journal, plugin: str, session: str, text: str, private: bool) -> None:
@@ -122,4 +121,4 @@ def one(record, journal, plugin: str, session: str, key: str, value) -> None:
         posting = Posting.of(value)
         Todos(record, actor=PLUGIN).create(check_title(posting.title), brief=posting.brief, plugin=plugin)
     elif key == "hold":
-        held(record.root, record.env, session, plugin, str(value) if value else "")
+        held(record, session, plugin, str(value) if value else "")

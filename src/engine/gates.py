@@ -5,7 +5,6 @@ from pathlib import Path
 from engine import runtime
 from engine.fields import Loaded
 from engine.reach import Reach
-from engine.stored import read_json, write_json
 from engine.extension import Extension
 
 POLICIES = Extension()
@@ -65,15 +64,16 @@ def gate_file(root: Path, env: str, session: str) -> Path:
     return runtime.session_file(root, session, f"gate-{env}.json")
 
 
-def hold(root: Path, env: str, session: str, key: str, given: Hold) -> None:
-    f = gate_file(root, env, session)
-    holds = read_json(f, dict, {})
-    kept = {k: v for k, v in holds.items() if k != key}
-    changed = {**kept, key: asdict(given)} if given.why else kept
-    if changed != holds:
-        write_json(f, changed)
+def hold(record, session: str, key: str, given: Hold) -> None:
+    gate = record.state_at(gate_file(record.root, record.env, session))
+    if gate.get(key) == (asdict(given) if given.why else None):
+        return
+    with gate.changing() as holds:
+        holds.pop(key, None)
+        if given.why:
+            holds[key] = asdict(given)
 
 
 def held(record, session: str, subagent: bool = False) -> str:
-    holds = (Hold.from_json(raw) for raw in read_json(gate_file(record.root, record.env, session), dict, {}).values())
+    holds = (Hold.from_json(raw) for raw in record.state_at(gate_file(record.root, record.env, session)).all().values())
     return "; ".join(one.why for one in holds if one.why and one.reach.reaches(subagent))

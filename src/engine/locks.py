@@ -126,9 +126,9 @@ def writing(path: Path):
 @contextmanager
 def held_file(path: Path):
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a") as held:
+    with path.open("a+") as held:
         acquire(held, fcntl.LOCK_EX)
         try:
-            yield
+            yield held
         finally:
             fcntl.flock(held, fcntl.LOCK_UN)

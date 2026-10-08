@@ -60,6 +60,7 @@ class Record:
         self.env = env
         self.writer = writer
         self.home = environment_home(self.root, env)
+        self._leases: dict[str, tuple[int, Lease]] = {}
         self._held: dict[Path, int] = {}
         self._threads = waits.Lock("record", threading.RLock())
         self._depth = 0
@@ -88,11 +89,19 @@ class Record:
         return self.root / RESOURCES if scope == PROJECT else self.home
 
     def holds(self, scope: str) -> bool:
-        return self.writer.holds(Lease.read(self.scope_home(scope)))
+        return self.writer.holds(self.lease(scope))
+
+    def lease(self, scope: str) -> Lease:
+        folder = self.scope_home(scope)
+        stamp = Lease.stamp(folder)
+        kept = self._leases.get(scope)
+        if kept is None or kept[0] != stamp:
+            kept = self._leases[scope] = (stamp, Lease.read(folder))
+        return kept[1]
 
     def fence(self, scope: str) -> None:
         if not self.holds(scope):
-            raise NotTheOwner.of(self.scope_name(scope), Lease.read(self.scope_home(scope)))
+            raise NotTheOwner.of(self.scope_name(scope), self.lease(scope))
 
     def hand_over(self, scope: str, machine: str) -> Lease:
         with self.locked(scope):
@@ -180,7 +189,12 @@ class Record:
 
     def state(self, owner: str, session: str | None = None) -> State:
         folder = self.home / "state" if session is None else runtime.sessions(self.root) / session
-        return State(folder / f"{owner}.json")
+        return self.state_at(folder / f"{owner}.json")
+
+    def state_at(self, path: Path) -> State:
+        if self.memo is None:
+            return State(path)
+        return self.memo.setdefault(("state", str(path)), State(path))
 
     def setting(self, key: str, default=None):
         return self.settings().get(key, default)
