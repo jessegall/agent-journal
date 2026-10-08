@@ -7,13 +7,14 @@ import Btn from "../kit/Btn.vue";
 import Notice from "../kit/Notice.vue";
 import {store} from "../state/store.js";
 import {useNow} from "../composables/now.js";
+import {hostedOn} from "../composables/settings.js";
 
 const upstream = ref(null);
 const dismissed = ref(remembered("journal.upgrade.dismissed", ""));
 const lines = ref([]);
 const running = ref(false);
 const visible = computed(
-    () => upstream.value && upstream.value.newer && (!upstream.value.installs || upstream.value.changed?.length) && dismissed.value !== upstream.value.latest
+    () => !hostedOn.value && upstream.value && upstream.value.newer && (!upstream.value.installs || upstream.value.changed?.length) && dismissed.value !== upstream.value.latest
 );
 const changed = computed(() => upstream.value?.changed || []);
 const mine = (document.querySelector("script[type=module]") || {}).src || "";

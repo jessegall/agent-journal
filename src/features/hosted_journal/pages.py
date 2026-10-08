@@ -61,6 +61,10 @@ def insecure_page(project: str) -> str:
     return notice_page(project, "This journal answers only over https. Open it at its https address.")
 
 
+def taken_down_page(project: str) -> str:
+    return notice_page(project, "This journal was taken down. Its owner can bring it back from the server.")
+
+
 def setup_page(project: str, notice: Notice) -> str:
     return framed(f"Set up {project}", f"""<h1>Set up {html.escape(project)}</h1>
 <p class="abstract">Choose the owner's password. The setup code comes from the server: run

@@ -1,5 +1,6 @@
 <script setup>
 import {meta, types} from "../domain/spec.js";
+import TakeDown from "./TakeDown.vue";
 import {hostedOn, sharingOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import {demo} from "../platform/demo.js";
@@ -119,6 +120,7 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 </Transition>
             </div>
             <template v-if="hostedOn">
+                <TakeDown />
                 <form method="post" action="/logout" class="logout">
                     <button type="submit" class="icon-btn" aria-label="Log out" v-tip="'Log out of this journal on its server'"><Icon name="lock" /></button>
                 </form>
