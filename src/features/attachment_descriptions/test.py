@@ -109,7 +109,7 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     assert (shown["title"], shown["sections"], "outcome" in shown) == ("look at this", [{"title": "Detail"}], False), \
         "a result card carries its formatted title and summary and only its section titles, never text it does not show"
     from commands import http
-    messages.create("three regions again")
+    again = messages.create("three regions again")
     shown, http.SHOWN_HITS = http.SHOWN_HITS, 1
     try:
         narrowed = dispatch("GET", "/api/t/search", record.root, {"q": "three regions"}, {}).body
@@ -121,8 +121,8 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
         "unknown files cannot be tagged"
 
     messages.delete(message.n, "cleaning up")
-    assert messages.search("three regions") == [], "search leaves archived rows out by default"
-    assert [r.n for r in messages.search("three regions", archived=True)] == [message.n], "search finds an archived row when asked"
+    assert [r.n for r in messages.search("three regions")] == [again.n], "search leaves archived rows out by default"
+    assert [r.n for r in messages.search("three regions", archived=True)] == [again.n, message.n], "search finds an archived row when asked"
     assert "archived  message:1  look at this  (bring back with journal message restore 1)" in search_text(record, "three regions", 0, archived=True), \
         "journal search --archived says the hit is archived and how to bring it back"
     assert dispatch("GET", "/api/t/search", record.root, {"q": "three regions", "archived": "true"}, {}).body["hits"][0]["deleted"], \
