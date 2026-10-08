@@ -8,7 +8,7 @@ from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM
 from runner.hooks import handle
 from tests.conftest import refused
-from tests.kit import commit, git, project_on
+from tests.kit import commit, git, nudges_with_briefs, project_on
 
 
 def test_a_helper_is_not_told_about_another_environments_worktrees():
@@ -124,17 +124,23 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
     provider = PROVIDERS["claude"]()
     read = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "cwd": str(project), "tool_name": "Read",
             "tool_input": {"file_path": str(folder / "shared.txt")}}
-    helper = lambda: handle(provider, record.root, record.env, {**read, "agent_id": "rhea"}).get("reason", "")
+    drifts = lambda: [f"{title}. {brief}" for title, brief in nudges_with_briefs(record) if "since your worktree was cut" in title]
+
+    def told(hook: dict) -> str:
+        before = len(drifts())
+        reason = handle(provider, record.root, record.env, hook).get("reason", "")
+        return " ".join([*drifts()[before:], reason]).strip()
+    helper = lambda: told({**read, "agent_id": "rhea"})
     assert helper() == "", "nothing is said while the working branch has not moved"
     assert worktrees.all()[0].checked_tip == tip(project, "phone-connection"), "the tip it checked is kept, so the next tool call runs no git"
     commit(project, "main.txt", "meanwhile\n")
-    told = helper()
-    assert told.startswith("phone-connection moved 1 commit") and "rebase onto phone-connection" in told, "the helper is told the branch moved"
+    told_tip = helper()
+    assert (told_tip.startswith("phone-connection moved since your worktree was cut"), "1 commit" in told_tip, f"Rebase onto phone-connection in {folder}" in told_tip) == \
+        (True, True, True), "the helper is told the branch moved, what it gained and where to rebase"
     assert helper() == "", "once for that tip"
-    assert "moved" not in handle(provider, record.root, record.env, read).get("reason", ""), \
-        "the main agent reading the helper's files is never told to rebase"
+    assert "moved" not in told(read), "the main agent reading the helper's files is never told to rebase"
     commit(project, "again.txt", "and again\n")
-    assert helper().startswith("phone-connection moved 2 commits"), "a new tip is told again"
+    assert "It gained 2 commits" in helper(), "a new tip is told again"
     strayed = {**read, "cwd": str(folder)}
     assert "another checkout" in handle(provider, record.root, record.env, strayed).get("reason", ""), \
         "the main agent sitting in a helper's checkout is refused before a compaction can move it there"
