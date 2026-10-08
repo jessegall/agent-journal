@@ -4,7 +4,7 @@ import {computed, inject, onMounted, ref, watch} from "vue";
 import {phone, PhoneError} from "../api/phone.js";
 import AlertDialog from "../kit/AlertDialog.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
-import {HELPER_WORDS, helperLine} from "../domain/helpers.js";
+import {helperLine, helperWord} from "../domain/helpers.js";
 import {age, span} from "../format/time.js";
 import {announce, tell} from "./announce.js";
 import {ended} from "./outbox.js";
@@ -70,7 +70,7 @@ watch(() => [props.row.at, props.row.state, props.row.report], load);
                 <h2>{{ current.name }}</h2>
                 <p>{{ helperLine(current) }}</p>
             </div>
-            <span :class="['helper-pill', current.state]"><i />{{ HELPER_WORDS[current.state] }}</span>
+            <span :class="['helper-pill', current.state]"><i />{{ helperWord(current.state) }}</span>
         </div>
         <dl class="helper-facts">
             <template v-if="current.state === 'reported'">

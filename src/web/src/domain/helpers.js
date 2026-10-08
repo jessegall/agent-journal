@@ -1,4 +1,6 @@
+import {workMode} from "../composables/settings.js";
 import {providerName} from "./agents.js";
+import {ORCHESTRATOR} from "./modes.js";
 export const helperState = (row) => row.state || (row.completed ? "finished" : row.data?.report ? "reported" : "running");
 
 export const HELPER_WORDS = {
@@ -13,14 +15,20 @@ export const HELPER_WORDS = {
     refused: "Refused",
 };
 
+const ORCHESTRATED_WORDS = {...HELPER_WORDS, needs: "Waits for answer"};
+
+export const helperWords = (mode = workMode.value) => (mode === ORCHESTRATOR ? ORCHESTRATED_WORDS : HELPER_WORDS);
+export const helperWord = (state, mode) => helperWords(mode)[state];
+
 export const helperAsking = (row, environments = []) => {
     const attention = environments.find((one) => one.owner === `helper:${row.n}`)?.attention;
     return attention?.kind === "question" ? attention.text : "";
 };
 
-export const helperTag = (row) => {
+export const helperTag = (row, mode = workMode.value) => {
     const state = row.asking ? "needs" : helperState(row);
-    return {state, word: row.asking ? "Asks a question" : HELPER_WORDS[state]};
+    const word = row.asking && mode !== ORCHESTRATOR ? "Asks a question" : helperWord(state, mode);
+    return {state, word};
 };
 
 export const FINISHED_STATES = new Set(["finished", "stopped", "ended", "refused"]);
