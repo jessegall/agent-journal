@@ -68,6 +68,15 @@ class PeerLog(Loaded):
 
 
 @dataclass(frozen=True)
+class Announced(Loaded):
+    """How far an agent's turns reached the chat: the transcript line, the Stop hook's last message, and one it carried before the transcript had it."""
+
+    line: int = -1
+    last_message: str = ""
+    carried: str = ""
+
+
+@dataclass(frozen=True)
 class Reading:
     row: object
     provider: Provider
@@ -160,19 +169,24 @@ class Engine:
             return
         written = turns(row)
         f = runtime.announced_file(self.record.root, row.title)
-        announced = read_json(f, dict, None)
-        now = {"line": written[-1].line if written else -1, "last_message": row.last_message or ""}
-        if announced == now:
+        kept = read_json(f, dict, None)
+        now = Announced(written[-1].line if written else -1, row.last_message)
+        if kept is None:
+            write_json(f, asdict(now))
             return
-        write_json(f, now)
-        if announced is None:
+        announced = Announced.from_json(kept)
+        if (announced.line, announced.last_message) == (now.line, now.last_message):
             return
-        stopped = [row.last_message] if row.last_message and row.event == HookEvent.STOP and row.last_message != announced.get("last_message") else []
-        known = next((i for i, turn in enumerate(written) if turn.line == announced["line"]), None)
+        stopped = [row.last_message] if row.last_message and row.event == HookEvent.STOP and row.last_message != announced.last_message else []
+        known = next((i for i, turn in enumerate(written) if turn.line == announced.line), None)
         fresh = written[known + 1:] if known is not None else written[-1:]
-        for turn in fresh:
+        # The turn a Stop hook carried before the transcript had it already ran its tags and reached the chat; it is not sent again.
+        sent = [turn for turn in fresh if turn.text != announced.carried]
+        alone = [text for text in stopped if text not in {turn.text for turn in fresh}]
+        write_json(f, asdict(replace(now, carried=alone[-1] if alone else "")))
+        for turn in sent:
             chat.send(self.record, row, turn.text, turn=turn.key)
-        for text in [text for text in stopped if text not in {turn.text for turn in fresh}]:
+        for text in alone:
             chat.send(self.record, row, text)
 
     def elsewhere(self, e) -> bool:
