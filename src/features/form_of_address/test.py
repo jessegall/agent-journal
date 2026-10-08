@@ -91,6 +91,12 @@ def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three()
     assert ("Dr. Einstein" in named["Butler"], "Big Mike" in named["Homie"], "Ada, reviewer" in named["Colleague"], "Coach Bolt" in named["Coach"]) == \
         (True, True, True, True), "each shipped profile names agents in its own style"
     assert profiles.update(copy.n, naming=CARTOON.text).naming == CARTOON.text, "and a profile of your own names them as you write"
+    agents = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).agent_name for row in profiles.rows.summaries()}
+    assert ({title: agents[title] for title in ("Butler", "Homie", "Colleague", "Coach")}, copy.agent_name) == \
+        ({"Butler": "Alfred", "Homie": "Lil Agent", "Colleague": "Sam", "Coach": "Coach"}, "Coach"), "each profile names the agent its helpers address"
+    butler = number_of(record, "Butler")
+    assert profiles.update(butler, agent_name="Jeeves").agent_name == "Jeeves", "the agent's name can be changed on a built-in profile too"
+    assert refused(lambda: profiles.update(butler, brief="Be loud.")), "while the rest of a built-in profile stays as shipped"
 
 
 def test_each_profile_answers_a_joke_in_its_own_manner_and_the_journal_words_stay_plain_in_every_voice():

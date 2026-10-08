@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass, replace
 
 from features.form_of_address.address import voice_of
-from features.form_of_address.voices import BUTLER
+from features.form_of_address.voices import BUTLER, Voice
 
 NAMING_LAW = "L5"
 
@@ -42,12 +42,18 @@ NAMED = re.compile(r"^[A-Z][\w.,'-]*(?:\s+[\w.,'-]+){0,3}\s*:\s*\S")
 
 
 def laws(record=None) -> tuple[Law, ...]:
-    naming = naming_of(record)
-    return tuple(replace(law, text=f"{law.text} {naming}") if law.name == NAMING_LAW else law for law in LAWS)
+    voice = voice_in_use(record)
+    told = (f"{voice.naming} Every helper and subagent addresses you as {voice.agent_name} and never the user: "
+            f"their reports are written to you.")
+    return tuple(replace(law, text=f"{law.text} {told}") if law.name == NAMING_LAW else law for law in LAWS)
 
 
 def naming_of(record=None) -> str:
-    return BUTLER.naming if record is None else voice_of(record).naming
+    return voice_in_use(record).naming
+
+
+def voice_in_use(record=None) -> Voice:
+    return BUTLER if record is None else voice_of(record)
 
 
 def carry(record=None) -> str:

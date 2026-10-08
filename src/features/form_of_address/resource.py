@@ -10,6 +10,7 @@ class Profile(Shape, Resource):
         Field(default="", name="sample"),
         Field(default="", name="humour"),
         Field(default="", name="naming"),
+        Field(default="", name="agent_name"),
         Field(FLAG, False, name="system"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
@@ -18,6 +19,7 @@ class Profile(Shape, Resource):
         help=("A profile's brief is its voice in plain words: the tone, the humour, how it uses your name and when it reacts. "
               "--set calling=\"title and name\", name or none says what it calls you; --set humour=\"<how>\" is how it answers a "
               "meme, a joke, criticism or anger; --set naming=\"<how>\" is how it names the helpers and subagents it starts; "
+              "--set agent_name=\"<name>\" is the name they address it by, and can be changed on every profile; "
               "--set sample=\"<line>\" is how it answers the sample question, shown when you choose. The four that ship with the journal "
               "cannot be changed or removed: "
               "journal profile duplicate <n> makes one you can."),
@@ -29,3 +31,4 @@ class Profile(Shape, Resource):
     command_names = {"complete": "retire"}
     scope = PROJECT
     view = DOCUMENT
+    progress = ("agent_name",)
