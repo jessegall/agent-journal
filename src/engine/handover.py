@@ -39,10 +39,9 @@ def epoch_of(root: Path) -> int:
 def restored(root: Path) -> int:
     """Starts a new epoch after a backup was put back: the project and every environment keep their holder and get an epoch above any a copy saw before, so copies pull again instead of pushing rows from before the restore."""
     epoch = int(time.time())
-    for home in (Path(root) / RESOURCES, *environments(root).glob("*/")):
-        if home.is_dir():
-            held = Lease.read(home)
-            Lease(held.machine, max(held.epoch + 1, epoch)).write(home)
+    for home in (found for found in (Path(root) / RESOURCES, *environments(root).glob("*/")) if found.is_dir()):
+        held = Lease.read(home)
+        Lease(held.machine, max(held.epoch + 1, epoch)).write(home)
     return epoch
 
 
