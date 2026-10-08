@@ -155,6 +155,15 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     helper_agent.update(helper_agent.primary_to_read().n, at=time.time() - 25 * 60)
     watch()
     assert len(idle()) == 2, "no more notices than the repeats setting allows"
+    speaker = AgentContext.of(features.FEATURES["helpers"], record, Agents(record, actor=SYSTEM).primary()).agent
+    said = lambda minutes: speaker.say("idle", n=7, name="Zed", minutes=minutes)
+    counted = lambda: len([n for n in Nudges(record, actor=SYSTEM).all() if "Zed" in n.title])
+    said(4)
+    said(4)
+    assert counted() == 1, "a line repeated word for word with nothing said between is said once"
+    said(5)
+    said(5)
+    assert counted() == 2, "and a line with something new in it is said again"
     from agents.terminal import launch_log
     launch_log(record.root, f"{record.env}-rhea").parent.mkdir(parents=True, exist_ok=True)
     launch_log(record.root, f"{record.env}-rhea").write_text("\x1b[1mSettingsWarning\x1b[0m: hooks must be an object\n")
