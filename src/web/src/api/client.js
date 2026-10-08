@@ -678,6 +678,10 @@ export class ApiClient {
         return this.get(this.here(`/integration/${name}/teams`));
     }
 
+    integrationWebhook(name) {
+        return this.get(this.here(`/integration/${name}/webhook`));
+    }
+
     checkIntegration(name) {
         return this.post(this.here(`/integration/${name}/check`));
     }

@@ -1,3 +1,4 @@
+import time
 from dataclasses import asdict, dataclass, replace
 from typing import ClassVar
 
@@ -9,13 +10,20 @@ from engine.events.engine import ClockTicked
 from features.integrations.base import IntegrationFeature
 from features.integrations.state import IntegrationState, read_state, write_state
 from features.linear.details import REFUSED, UNREACHABLE, LinearDetails
-from features.linear.sync import Choices, StageState, send_comment, send_status, synced, teams_of
+from features.linear.sync import Choices, StageState, TicketsFromLinear, issue_of, send_comment, send_status, synced, teams_of
+from features.linear.webhook import SIGNATURE, Deliveries, event_of
 from features.parts import WHOLE_FEATURE, Command, Context, Handler
+from features.secrets.values import ValuesFile
+from features.sharing.address import own_address
+from features.sharing.routes import ROUTES
+from features.sharing.tunnel import kept_address
 from features.journal import Journal
 from features.routing import Reply, Request, handles
 from resources.base import AGENT, Refused, SYSTEM, USER, titled
 
 KEY_REFUSED = ("answered 401", "answered 403")
+WEBHOOK_BODY = 256 * 1024
+CATCH_UP = 30 * 60.0
 
 
 @dataclass(frozen=True)
@@ -61,7 +69,29 @@ class CheckLinear(Handler):
     behaviour = WHOLE_FEATURE
 
     def handle(self, context: Context, event: ClockTicked) -> None:
-        context.feature.check(context.record)
+        context.feature.check(context.record, catching_up=True)
+
+
+class LinearWebhook:
+    """The address Linear delivers its events to, on the share server, answering only while Linear is on."""
+
+    def __init__(self, feature):
+        self.feature = feature
+
+    def get(self, handler, rest: list[str]) -> None:
+        handler.send(404, b"", {})
+
+    def post(self, handler, rest: list[str]) -> None:
+        if rest != ["webhook"]:
+            return handler.send(404, b"", {})
+        size = int(handler.headers.get("Content-Length", 0))
+        if size > WEBHOOK_BODY:
+            return handler.send(413, b"", {})
+        try:
+            self.feature.take(handler.shares.record, handler.rfile.read(size), handler.headers.get(SIGNATURE, ""))
+        except Refused:
+            return handler.send(401, b"", {})
+        handler.send(200, b"{}", {"Content-Type": "application/json"})
 
 
 class SyncLinear(Command):
@@ -82,11 +112,13 @@ class Linear(IntegrationFeature):
     def register(self, journal: Journal) -> None:
         super().register(journal)
         journal.events.handler(CheckLinear())
+        self.deliveries = Deliveries()
+        ROUTES.add(self, LinearWebhook(self), key="linear")
         journal.events.handler(MoveIssue())
         journal.events.handler(SendApprovedComment())
         journal.commands.add("feature", SyncLinear())
         journal.commands.add("ticket", ProposeComment())
-        journal.routes.add(self.teams_route(), self.check_route())
+        journal.routes.add(self.teams_route(), self.check_route(), self.webhook_route())
 
     def choices(self, record) -> Choices:
         values = self.values(record)
@@ -122,11 +154,48 @@ class Linear(IntegrationFeature):
             before = read_state(record.root, self.name)
             write_state(record.root, self.name, replace(before, last_error=str(error)))
 
-    def check(self, record) -> IntegrationState:
-        """One sync now: nothing when no key or no board is picked; failures are noticed once until a sync works again."""
+    def webhook_address(self, record) -> str:
+        """Where Linear is told to deliver events: the journal's tunnel address, or nothing while it has none."""
+        own = own_address(record)
+        kept = kept_address(record.root)
+        host = own[0] if own else ".".join(kept[part] for part in ("subdomain", "host") if kept.get(part))
+        return f"https://{host}/linear/webhook" if host and (own or kept.get("subdomain")) else ""
+
+    def signing_secret(self, record) -> str:
+        return ValuesFile(record.root).values().get(str(self.values(record).signing_key), "")
+
+    def waits_for_webhook(self, record) -> bool:
+        return bool(self.webhook_address(record)) and bool(self.signing_secret(record))
+
+    def take(self, record, body: bytes, signature: str) -> None:
+        """A signed, fresh event for an issue: the issue is fetched from the API and saved the way a sync saves it; the event itself is only a hint."""
+        event = event_of(body, signature, self.signing_secret(record), time.time())
+        if not self.deliveries.fresh(signature, time.time()):
+            raise Refused("the event was already taken")
+        if event.kind != "Issue" or not event.data.id:
+            return
+        choices = self.choices(record)
+        if not choices.board:
+            return
+        issue = issue_of(self.client(record), event.data.id)
+        if issue is None:
+            return
+        work = TicketsFromLinear(record, choices)
+        if reason := work.why_gone(issue):
+            known = work.known().get(issue.id)
+            if known:
+                work.note_gone(known, reason)
+        else:
+            work.save(issue)
+        write_state(record.root, self.name, replace(read_state(record.root, self.name), webhook_at=time.time()))
+
+    def check(self, record, catching_up: bool = False) -> IntegrationState:
+        """One sync now: nothing when no key or no board is picked, and while the webhook delivers, the clock only catches up every half hour; failures are noticed once until a sync works again."""
         before = read_state(record.root, self.name)
         choices = self.choices(record)
         if not str(self.values(record).key) or not choices.board:
+            return before
+        if catching_up and self.waits_for_webhook(record) and time.time() - before.last_checked < CATCH_UP:
             return before
         after = synced(record, self.client(record), choices, before)
         write_state(record.root, self.name, after)
@@ -147,6 +216,13 @@ class Linear(IntegrationFeature):
             return Reply(200, [asdict(team) for team in teams_of(self.client(req.record()))])
 
         return get_teams
+
+    def webhook_route(self):
+        @handles("GET", "/api/{env}/integration/linear/webhook")
+        def get_webhook(req: Request) -> Reply:
+            return Reply(200, {"address": self.webhook_address(req.record())})
+
+        return get_webhook
 
     def check_route(self):
         @handles("POST", "/api/{env}/integration/linear/check")

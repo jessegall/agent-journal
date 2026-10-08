@@ -50,3 +50,14 @@ export const mapped = (settings, name) => Object.values(stageStatesOf(settings, 
 
 export const statesFor = (choices, teams) =>
     (choices || []).filter((one) => !teams.length || teams.includes(one.team)).map((one) => ({value: one.id, label: one.name}));
+
+export const webhookWords = (title) => ({
+    label: "Webhook signing secret",
+    none: `No signing secret is picked, so events from ${title} are not taken.`,
+    picked: `${title} events are checked with the secret {title}.`,
+    note: "Copy the signing secret from Linear's webhook settings into a secret on the Secrets page.",
+    address: `Paste this address into ${title}'s webhook settings`,
+    absent: "Turn on sharing to get an address Linear can reach. Until then the journal checks Linear every five minutes.",
+});
+
+export const signingOf = (settings, name) => settings?.[name]?.signing_key || "";

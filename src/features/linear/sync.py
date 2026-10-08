@@ -87,6 +87,12 @@ def send_comment(client: IntegrationClient, issue: str, body: str) -> None:
     asked(client, Limits(), ADD_COMMENT, {"issueId": issue, "body": body})
 
 
+def issue_of(client: IntegrationClient, issue: str) -> Issue | None:
+    """One issue by its id, fetched from the API: a webhook event only hints that it changed."""
+    found = asked(client, Limits(), ISSUES, {"filter": {"id": {"in": [issue]}}}).data.issues.nodes
+    return found[0] if found else None
+
+
 def changed_issues(client: IntegrationClient, limits: Limits, choices: Choices, cursor: str) -> list[Issue]:
     issues, after = [], ""
     while True:

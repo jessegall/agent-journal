@@ -29,6 +29,7 @@ class LinearDetails(IntegrationDetails):
 
     settings = [
         *IntegrationDetails.settings,
+        Setting(name="signing_key", default="", title="Webhook signing secret", abstract="The secret Linear signs each webhook event with; only you pick it, from your secrets", scope=PROJECT, secret=True),
         Setting(name="board", default=0, title="Board", abstract="The board your Linear issues land on, as tickets", scope=PROJECT),
         Setting(name="teams", default="", title="Which issues", abstract="The Linear teams whose issues assigned to you come in; none picked means every team", scope=PROJECT),
         Setting(name="stage_states", default={}, title="Stage states", abstract="For each stage of the board, the Linear state an issue is set to when a ticket moves there", scope=PROJECT),

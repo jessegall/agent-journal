@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, stageStatesOf, stateWords, statesFor, teamsOf, withStageState, withTeam} from "../src/domain/integrations.js";
+import {boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
 
 const NOW = Date.now() / 1000;
 
@@ -43,5 +43,10 @@ describe("the Integrations page", () => {
         const states = [{id: "s1", name: "Todo", team: "t1"}, {id: "s2", name: "Done", team: "t2"}];
         expect(statesFor(states, ["t1"])).toEqual([{value: "s1", label: "Todo"}]);
         expect(statesFor(states, []).length).toBe(2);
+    });
+
+    test("says what the webhook needs and where to paste its address", () => {
+        expect(webhookWords("Linear")).toMatchObject({label: "Webhook signing secret", address: "Paste this address into Linear's webhook settings"});
+        expect([signingOf({linear: {signing_key: "LINEAR_SIGNING"}}, "linear"), signingOf({}, "linear")]).toEqual(["LINEAR_SIGNING", ""]);
     });
 });

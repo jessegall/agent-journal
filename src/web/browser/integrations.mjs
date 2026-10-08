@@ -28,6 +28,8 @@ await runScenarios(process.argv[2], {
         await card.getByText(`Linear signs in with the secret ${title}.`).waitFor();
         await card.getByRole("switch").click();
         await card.locator("[data-state]").getByText(/Not checked yet|Last checked|Could not reach Linear/).waitFor();
+        await card.getByText("Webhook signing secret").waitFor();
+        await card.getByText(/Paste this address into Linear's webhook settings|Turn on sharing to get an address/).waitFor();
         await page.reload();
         if ((await page.locator('[data-integration="linear"]').getByRole("switch").getAttribute("aria-checked")) !== "true") throw new Error("the switch did not stay on");
         await shot(page, "integrations-on");

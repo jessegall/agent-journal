@@ -2,8 +2,10 @@
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {saveSettings} from "../actions/settings.js";
-import {boardOf, keyOf, mapped, settingsWith, stageStatesOf, statesFor, teamsOf, withStageState, withTeam} from "../domain/integrations.js";
+import {boardOf, keyOf, mapped, settingsWith, signingOf, stageStatesOf, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../domain/integrations.js";
 import ChoiceList from "../kit/ChoiceList.vue";
+import CopyButton from "../kit/CopyButton.vue";
+import SecretPicker from "../kit/SecretPicker.vue";
 import MenuChoice from "../kit/MenuChoice.vue";
 import Switch from "../kit/Switch.vue";
 import {rows} from "../sync/rows.js";
@@ -42,6 +44,21 @@ const hasMapping = computed(() => mapped(store.settings, NAME));
 const sending = computed(() => Boolean(store.settings?.[NAME]?.send_status));
 const pickState = (stage, state) => saveSettings(settingsWith(store.settings, NAME, {stage_states: withStageState(store.settings, NAME, stage, state)}));
 const sendStatus = (on) => saveSettings(settingsWith(store.settings, NAME, {send_status: on}));
+const words = webhookWords("Linear");
+const signing = computed(() => signingOf(store.settings, NAME));
+const address = ref("");
+const pickSigning = (variable) => saveSettings(settingsWith(store.settings, NAME, {signing_key: variable}));
+
+async function loadAddress() {
+    try {
+        address.value = (await api.integrationWebhook(NAME)).address;
+    } catch {
+        address.value = "";
+    }
+}
+
+watch(key, loadAddress, {immediate: true});
+
 const pickBoard = (n) => saveSettings(settingsWith(store.settings, NAME, {board: n}));
 const pickTeam = (id, on) => saveSettings(settingsWith(store.settings, NAME, {teams: withTeam(picked.value, id, on)}));
 </script>
@@ -82,6 +99,18 @@ const pickTeam = (id, on) => saveSettings(settingsWith(store.settings, NAME, {te
                 <MenuChoice :options="options" :value="stageStates[stage] || ''" empty="Do nothing" @pick="(state) => pickState(stage, state)" />
             </div>
         </template>
+        <h4 class="label">{{ words.label }}</h4>
+        <SecretPicker :value="signing" :picked-line="words.picked" :none-line="words.none" :note="words.note" @pick="pickSigning" />
+        <template v-if="address">
+            <p class="line">{{ words.address }}</p>
+            <div class="team">
+                <code class="address" data-webhook>{{ address }}</code>
+                <CopyButton :text="address" hint="Copy the address" />
+            </div>
+        </template>
+        <template v-else>
+            <p class="line">{{ words.absent }}</p>
+        </template>
         <div :class="['team', {greyed: !hasMapping}]">
             <span>Send status changes to Linear</span>
             <Switch :on="sending" title="Send status changes to Linear" @change="sendStatus" />
@@ -108,6 +137,11 @@ const pickTeam = (id, on) => saveSettings(settingsWith(store.settings, NAME, {te
 .line {
     margin: 0;
     color: var(--text-2);
+}
+
+.address {
+    overflow-wrap: anywhere;
+    font-size: 12px;
 }
 
 .greyed {
