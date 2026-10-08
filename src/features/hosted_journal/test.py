@@ -18,8 +18,8 @@ from engine import disk
 from engine.sessions import Sessions
 from engine.viewer import SERVING
 from features.hosted_journal.details import HostedJournalDetails
-from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, MOST_STREAMS
-from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_TRIES, Logins, Owner, WrongTries, hashed
+from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, MOST_STREAMS, Proxies, Visit
+from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, WrongTries, hashed
 from features.hosted_journal.vault import AUDIT, VAULT, DiskFull, Vault
 from features.phone.controller import Phones
 from features.sharing.controller import Shares
@@ -132,7 +132,13 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
         assert hosted.call("POST", "/login", {"password": "wrong"}).status == 401
     assert "Too many wrong tries" in hosted.call("POST", "/login", {"password": "wrong"}).text
     assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 429
-    assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.9").status == 303
+    assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.9").status == 429, "only the proxy names a new place"
+    Features(hosted.record, actor=USER).configure(HostedJournalDetails.name, "proxy", "127.0.0.1")
+    proxied = {"Host": ADDRESS, "Origin": f"https://{ADDRESS}", "X_Forwarded_Proto": "https"}
+    assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.9", **proxied).status == 303
+    for _ in range(MOST_TRIES):
+        hosted.call("POST", "/login", {"password": "wrong"}, X_Forwarded_For="2001:db8::1", **proxied)
+    assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="2001:db8::ffff", **proxied).status == 429, "IPv6 counts by /64"
     now = [1000.0]
     tries = WrongTries(Vault(hosted.record.root, clock=lambda: now[0]))
     with ThreadPoolExecutor(20) as pool:
@@ -141,6 +147,9 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
     assert WrongTries(Vault(hosted.record.root, clock=lambda: now[0])).locked_for("198.51.100.1") == LOCKED_FOR
     now[0] += LOCKED_FOR + 1
     assert WrongTries(Vault(hosted.record.root, clock=lambda: now[0])).locked_for("198.51.100.1") == 0
+    for place in range(MOST_EVERYWHERE):
+        tries.counted(f"10.0.{place // 250}.{place % 250}")
+    assert tries.locked_for("192.0.2.200") > 0, "too many wrong tries from every place together lock out every place"
 
 
 def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hosted):
@@ -178,10 +187,15 @@ def test_another_site_plain_http_from_outside_and_a_strange_host_are_refused(hos
     token = hosted.logged_in()
     assert hosted.call("POST", "/api/main/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin="https://evil.example").status == 403
     assert hosted.call("POST", "/login", {"password": PASSWORD}, Origin="https://evil.example").status == 403
-    assert "only over https" in hosted.call("GET", "/", Host=ADDRESS, Cookie=f"{COOKIE}={token}").text
-    through = hosted.call("GET", "/api/identity", Host=ADDRESS, Cookie=f"{COOKIE}={token}", X_Forwarded_Proto="https")
-    assert through.status == 200
-    assert hosted.call("GET", "/api/identity", Host="journal.evil.example", Cookie=f"{COOKIE}={token}", X_Forwarded_Proto="https").status == 421
+    outside = type("Outside", (), {"shares": Shares(hosted.record, actor=SYSTEM), "path": "/", "client_address": ("203.0.113.5", 4000),
+                                   "headers": {"Host": "localhost", "X-Forwarded-Proto": "https", "X-Forwarded-For": "198.51.100.7"}})
+    visit = Visit(outside, Proxies())
+    assert not visit.secure() and visit.place() == "203.0.113.5", "a peer that is not the named proxy decides neither https, locality nor its place"
+    forged = {"Host": ADDRESS, "Cookie": f"{COOKIE}={token}", "X_Forwarded_Proto": "https", "X_Forwarded_For": "203.0.113.9"}
+    Features(hosted.record, actor=USER).configure(HostedJournalDetails.name, "proxy", "127.0.0.1")
+    assert hosted.call("GET", "/api/identity", **forged).status == 200
+    assert "only over https" in hosted.call("GET", "/", **{**forged, "X_Forwarded_Proto": "http"}).text
+    assert hosted.call("GET", "/api/identity", **{**forged, "Host": "journal.evil.example"}).status == 421
 
 
 def test_large_bodies_and_too_many_open_streams_are_refused(hosted):

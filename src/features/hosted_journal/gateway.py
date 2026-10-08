@@ -1,9 +1,12 @@
 import json
+import socket
+import time
 import threading
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass
 from http.cookies import SimpleCookie
+from ipaddress import ip_address, ip_network
 from urllib.parse import parse_qs, urlsplit
 from urllib.request import urlopen
 
@@ -13,10 +16,10 @@ from engine.viewer import lately_running
 from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.owner import SHORTEST, Logins, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page
-from features.hosted_journal.vault import DiskFull, Vault
+from features.hosted_journal.vault import Clock, DiskFull, Vault
 from features.phone.allow_list import post
 from features.phone.desktop import Desktop, closed, encoded
-from features.sharing.server import local, own_origin
+from features.sharing.server import own_origin
 from features.trigger import DAY
 from resources.base import Refused
 
@@ -29,6 +32,7 @@ BODY_LIMIT = 1024 * 1024
 UPLOAD_LIMIT = 25 * 1024 * 1024
 MOST_STREAMS = 8
 CHECKS_AT_ONCE = 3
+LOOKUP_EVERY = 60
 READY_SECONDS = 3
 VIEWER_HEADERS = {
     "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
@@ -56,30 +60,36 @@ class LoginForm(Loaded):
 class Visit:
     """One request at the gateway: who sent it, from where, and the server's files it is checked against."""
 
-    def __init__(self, handler) -> None:
+    def __init__(self, handler, proxies: "Proxies") -> None:
         self.handler = handler
         self.record = handler.shares.record
         self.vault = Vault(self.record.root)
         self.settings = HostedJournalDetails.values(self.record)
         self.host = handler.headers.get("Host", "")
         self.url = urlsplit(handler.path)
+        self.peer = ip_address(handler.client_address[0])
+        self.proxied = str(self.peer) in proxies.of(self.settings["proxy"]) and "X-Forwarded-For" in handler.headers
+
+    def on_this_machine(self) -> bool:
+        return self.peer.is_loopback and not self.proxied
 
     def encrypted(self) -> bool:
-        return self.handler.headers.get("X-Forwarded-Proto") == "https"
+        """Only the TLS proxy named in the settings may say a request came in over https."""
+        return self.proxied and self.handler.headers.get("X-Forwarded-Proto") == "https"
 
     def secure(self) -> bool:
-        """Plain http is answered on the server itself; from outside only what the TLS proxy passes on as https."""
-        return local(self.host) or self.encrypted()
+        return self.on_this_machine() or self.encrypted()
 
     def addressed(self) -> bool:
-        return local(self.host) or not self.settings["address"] or self.host == self.settings["address"]
+        return self.on_this_machine() or not self.settings["address"] or self.host == self.settings["address"]
 
     def same_origin(self) -> bool:
-        return self.handler.headers.get("Origin") == own_origin(self.handler.headers)
+        return self.handler.headers.get("Origin") == own_origin(self.host, self.encrypted())
 
     def place(self) -> str:
-        forwarded = self.handler.headers.get("X-Forwarded-For", "")
-        return forwarded.rsplit(",", 1)[-1].strip() or self.handler.client_address[0]
+        """Where a try comes from: the proxy's client, or else the peer itself, with an IPv6 address counted by its /64 network."""
+        address = ip_address(self.handler.headers["X-Forwarded-For"].rsplit(",", 1)[-1].strip()) if self.proxied else self.peer
+        return str(ip_network(f"{address}/64", strict=False)) if address.version == 6 else str(address)
 
     def token(self) -> str:
         kept = SimpleCookie(self.handler.headers.get("Cookie", "")).get(COOKIE)
@@ -112,6 +122,25 @@ class Visit:
         self.handler.send(code, json.dumps({"error": text}).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
 
 
+class Proxies:
+    """The addresses the TLS proxy named in the settings has, looked up again once a minute; a name that does not resolve is trusted by no one."""
+
+    def __init__(self, clock: Clock = time.time) -> None:
+        self.clock = clock
+        self.found: dict[str, tuple[float, frozenset[str]]] = {}
+
+    def of(self, name: str) -> frozenset[str]:
+        at, found = self.found.get(name, (0.0, frozenset()))
+        if not name or self.clock() - at < LOOKUP_EVERY:
+            return found
+        try:
+            found = frozenset(socket.gethostbyname_ex(name)[2])
+        except OSError:
+            found = frozenset()
+        self.found[name] = (self.clock(), found)
+        return found
+
+
 class Gateway:
     """The only way into a journal on a server: the owner's login in front of the full viewer, forwarded to the journal on the server itself."""
 
@@ -119,16 +148,17 @@ class Gateway:
         self.streams: Counter[str] = Counter()
         self.lock = threading.Lock()
         self.checking = threading.BoundedSemaphore(CHECKS_AT_ONCE)
+        self.proxies = Proxies()
         self.pages: dict[tuple[str, str], Callable[[Visit], None]] = {
             ("GET", "/login"): self.show_login, ("GET", "/setup"): lambda visit: visit.go("/login"), ("POST", "/login"): self.log_in,
             ("POST", "/setup"): self.set_up, ("POST", "/logout"): self.log_out, ("GET", "/ready"): self.ready,
         }
 
     def get(self, handler, rest: list[str]) -> None:
-        self.serve(Visit(handler))
+        self.serve(Visit(handler, self.proxies))
 
     def post(self, handler, rest: list[str]) -> None:
-        self.serve(Visit(handler))
+        self.serve(Visit(handler, self.proxies))
 
     def serve(self, visit: Visit) -> None:
         if not visit.secure():

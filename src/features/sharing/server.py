@@ -54,11 +54,9 @@ def local(host: str) -> bool:
     return host.split(":", 1)[0] in LOCAL
 
 
-def own_origin(headers) -> str:
+def own_origin(host: str, encrypted: bool) -> str:
     """The origin this server's own pages load from: https behind a TLS proxy or a tunnel, plain http only on the machine itself."""
-    host = headers.get("Host", "")
-    secure = headers.get("X-Forwarded-Proto") == "https" or not local(host)
-    return f"{'https' if secure else 'http'}://{host}"
+    return f"{'https' if encrypted else 'http'}://{host}"
 
 
 def routed(parts: list[str], record):

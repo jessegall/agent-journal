@@ -391,7 +391,9 @@ class PhoneRoutes:
         return Relying(address, f"https://{address}")
 
     def trusted(self, handler, kind: str = "application/json") -> bool:
-        return (handler.headers.get("Origin") == own_origin(handler.headers) and handler.headers.get(HEADER) == "1"
+        host = handler.headers.get("Host", "")
+        encrypted = handler.headers.get("X-Forwarded-Proto") == "https" or not local(host)
+        return (handler.headers.get("Origin") == own_origin(host, encrypted) and handler.headers.get(HEADER) == "1"
                 and handler.headers.get("Content-Type", "").startswith(kind))
 
     def body(self, handler) -> dict | None:
