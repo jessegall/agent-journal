@@ -53,3 +53,13 @@ export function carriedOver(r, reports) {
 export const refLabel = (ref) => (ref.startsWith("commit:") ? ref.slice(7, 14) : ref.replace(/^todo:/, "to-do ").replace(":", " "));
 
 export const commitHref = (ref, env) => (ref.startsWith("commit:") ? href.commit(env, ref.slice(7)) : "");
+
+const WAITING_PLANS = ["ready", "waiting"];
+
+export function settled(item, held) {
+    if (item.section !== "need") return false;
+    const [type, n] = item.ref.split(":");
+    const row = (held[type] || []).find((r) => String(r.n) === n);
+    if (!row) return false;
+    return type === "plan" ? !WAITING_PLANS.includes(row.data.status) : Boolean(row.completed);
+}
