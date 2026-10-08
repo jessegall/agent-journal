@@ -16,7 +16,7 @@ from engine.viewer import lately_running
 from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.owner import SHORTEST, Logins, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page
-from features.hosted_journal.vault import Clock, DiskFull, Vault
+from features.hosted_journal.vault import Clock, DiskFull, RefusalLog, Vault
 from features.phone.allow_list import post
 from features.phone.desktop import Desktop, closed, encoded
 from features.sharing.server import own_origin
@@ -33,6 +33,7 @@ UPLOAD_LIMIT = 25 * 1024 * 1024
 MOST_STREAMS = 8
 CHECKS_AT_ONCE = 3
 LOOKUP_EVERY = 60
+REFUSALS_A_MINUTE = 60
 READY_SECONDS = 3
 VIEWER_HEADERS = {
     "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
@@ -60,8 +61,9 @@ class LoginForm(Loaded):
 class Visit:
     """One request at the gateway: who sent it, from where, and the server's files it is checked against."""
 
-    def __init__(self, handler, proxies: "Proxies") -> None:
+    def __init__(self, handler, proxies: "Proxies", refusals: RefusalLog) -> None:
         self.handler = handler
+        self.refusals = refusals
         self.record = handler.shares.record
         self.vault = Vault(self.record.root)
         self.settings = HostedJournalDetails.values(self.record)
@@ -81,7 +83,7 @@ class Visit:
         return self.on_this_machine() or self.encrypted()
 
     def addressed(self) -> bool:
-        return self.on_this_machine() or not self.settings["address"] or self.host == self.settings["address"]
+        return self.on_this_machine() or not self.settings["address"] or urlsplit(f"//{self.host}").hostname == self.settings["address"]
 
     def same_origin(self) -> bool:
         return self.handler.headers.get("Origin") == own_origin(self.host, self.encrypted())
@@ -118,7 +120,7 @@ class Visit:
         self.handler.send(303, b"", {**PAGE_HEADERS, "Location": where, **(headers or {})})
 
     def refuse(self, code: int, text: str) -> None:
-        self.vault.audit("refused", place=self.place(), method=self.handler.command, path=self.url.path, code=code)
+        self.refusals.write(self.vault, place=self.place(), method=self.handler.command, path=self.url.path, code=code)
         self.handler.send(code, json.dumps({"error": text}).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
 
 
@@ -149,16 +151,17 @@ class Gateway:
         self.lock = threading.Lock()
         self.checking = threading.BoundedSemaphore(CHECKS_AT_ONCE)
         self.proxies = Proxies()
+        self.refusals = RefusalLog(REFUSALS_A_MINUTE)
         self.pages: dict[tuple[str, str], Callable[[Visit], None]] = {
             ("GET", "/login"): self.show_login, ("GET", "/setup"): lambda visit: visit.go("/login"), ("POST", "/login"): self.log_in,
             ("POST", "/setup"): self.set_up, ("POST", "/logout"): self.log_out, ("GET", "/ready"): self.ready,
         }
 
     def get(self, handler, rest: list[str]) -> None:
-        self.serve(Visit(handler, self.proxies))
+        self.serve(Visit(handler, self.proxies, self.refusals))
 
     def post(self, handler, rest: list[str]) -> None:
-        self.serve(Visit(handler, self.proxies))
+        self.serve(Visit(handler, self.proxies, self.refusals))
 
     def serve(self, visit: Visit) -> None:
         if not visit.secure():

@@ -14,8 +14,9 @@ SETUP = "setup.json"
 LOGINS = "logins.json"
 TRIES = "tries.json"
 SHORTEST = 12
-COST = {"n": 2 ** 15, "r": 8, "p": 1}
-MEMORY = 64 * 1024 * 1024
+COST = 2 ** 17
+EARLIER_COST = 2 ** 15
+MEMORY = 256 * 1024 * 1024
 SETUP_DAYS = 1
 MOST_TRIES = 5
 MOST_EVERYWHERE = 50
@@ -26,14 +27,15 @@ def hashed(secret: str) -> str:
     return hashlib.sha256(secret.encode()).hexdigest()
 
 
-def stretched(password: str, salt: bytes) -> str:
-    return hashlib.scrypt(password.encode(), salt=salt, maxmem=MEMORY, **COST).hex()
+def stretched(password: str, salt: bytes, cost: int) -> str:
+    return hashlib.scrypt(password.encode(), salt=salt, n=cost, r=8, p=1, maxmem=MEMORY).hex()
 
 
 @dataclass(frozen=True)
 class KeptPassword(Loaded):
     salt: str = ""
     hash: str = ""
+    cost: int = EARLIER_COST
 
 
 @dataclass(frozen=True)
@@ -53,13 +55,13 @@ class Owner:
 
     def matches(self, given: str) -> bool:
         kept = KeptPassword.from_json(self.vault.read(PASSWORD))
-        return bool(kept.hash) and hmac.compare_digest(kept.hash, stretched(given, bytes.fromhex(kept.salt)))
+        return bool(kept.hash) and hmac.compare_digest(kept.hash, stretched(given, bytes.fromhex(kept.salt), kept.cost))
 
     def set_password(self, password: str) -> None:
         if len(password) < SHORTEST:
             raise Refused(f"the password needs at least {SHORTEST} characters")
         salt = secrets.token_bytes(16)
-        self.vault.write(PASSWORD, {"salt": salt.hex(), "hash": stretched(password, salt)})
+        self.vault.write(PASSWORD, {"salt": salt.hex(), "hash": stretched(password, salt, COST), "cost": COST})
         self.vault.remove(SETUP)
 
     def forget_password(self) -> None:
