@@ -1,6 +1,7 @@
 import base64
 import errno
 import json
+from contextlib import suppress
 import re
 import shutil
 import os
@@ -26,7 +27,7 @@ from engine.sessions import Sessions
 from engine.viewer import SERVING
 from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, DEVICE_COOKIE, MOST_STREAMS, Visit
-from features.hosted_journal.host import clear_tries
+from features.hosted_journal.host import clear_tries, log_out_everywhere, reset_password
 from features.hosted_journal.hosting import Hosting
 from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.feature import APART
@@ -239,7 +240,22 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
     assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.78", **proxied).status == 303
 
 
-def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hosted):
+def held_stream(hosted: Hosted, token: str) -> threading.Thread:
+    """A live stream held open through the login page, read until the page ends it."""
+    held = socket.create_connection(("127.0.0.1", hosted.port), timeout=10)
+    held.sendall(f"GET /api/{hosted.record.env}/stream HTTP/1.1\r\nHost: 127.0.0.1:{hosted.port}\r\nCookie: {COOKIE}={token}\r\nAccept: text/event-stream\r\n\r\n".encode())
+    assert held.recv(64).split(b" ")[1] == b"200"
+
+    def drained() -> None:
+        with suppress(OSError):
+            while held.recv(4096):
+                pass
+    reading = threading.Thread(target=drained)
+    reading.start()
+    return reading
+
+
+def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hosted, monkeypatch):
     Owner(hosted.vault).set_password(PASSWORD)
     old = Logins(Vault(hosted.record.root, clock=lambda: 0.0)).open(7, "old phone", OWNER_ID)
     page = hosted.call("GET", "/", Cookie=f"{COOKIE}={old}")
@@ -248,6 +264,18 @@ def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hoste
     assert api.status == 401 and json.loads(api.text)["login"] == "/login?notice=ran-out"
     assert "Your login ran out" in hosted.call("GET", "/login?notice=ran-out").text
     assert hosted.call("GET", "/").headers["location"] == "/login"
+    monkeypatch.setattr("commands.http.STREAM_BEAT", 0.2)
+    for ended_by in (log_out_everywhere, reset_password):
+        reading = held_stream(hosted, hosted.logged_in())
+        ended_by(hosted.record.root)
+        reading.join(5)
+        assert not reading.is_alive(), f"{ended_by.__name__} from the server's own shell ends every open stream by its next heartbeat"
+    reading = held_stream(hosted, hosted.logged_in())
+    monkeypatch.setattr("commands.http.STREAM_BEAT", 60)
+    origin = f"http://127.0.0.1:{hosted.port}"
+    assert hosted.call("POST", "/api/hosting/take-down", {}, Cookie=f"{COOKIE}={hosted.logged_in()}", Origin=origin).status == 202
+    reading.join(5)
+    assert not reading.is_alive(), "taking the journal down cuts every open stream at once, without waiting for a heartbeat"
 
 
 def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_each_refusal(hosted, tmp_path):
