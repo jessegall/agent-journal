@@ -3,11 +3,12 @@ from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 
 from engine.sessions import Sessions
-from engine.stored import read_json
+from engine.stored import read_json, write_json
 from engine import runtime
 from engine.fields import Loaded
 
 SEAT = "seat.json"
+SEATED = "seated.json"
 
 ONLINE_FOR = 5.0
 
@@ -52,6 +53,15 @@ class Seat(Loaded):
     def status(self) -> str:
         return self.state if self.state else self.reported.status
 
+    def live_agent(self, sessions: Sessions) -> "LiveAgent":
+        environment = sessions.environment(self.session)
+        return LiveAgent(self.session, self.provider, self.model, self.status, environment if environment else self.env, self.at, self.terminal)
+
+
+@dataclass(frozen=True)
+class SessionSeat(Loaded):
+    terminal: str = ""
+
 
 @dataclass(frozen=True)
 class LiveAgent:
@@ -68,7 +78,18 @@ class LiveAgent:
 
 
 def live_session(root: Path, session: str, within: float = ONLINE_FOR) -> tuple[Seat, LiveAgent] | None:
-    return next((pair for pair in live(root, within) if pair[1].session == session), None)
+    seat = read_seat(root, seated_terminal(root, session))
+    if seat.session != session or time.time() - seat.at > within:
+        return None
+    return seat, seat.live_agent(Sessions(root))
+
+
+def seated_terminal(root: Path, session: str) -> str:
+    return read_json(runtime.session_file(root, session, SEATED), SessionSeat.from_json, SessionSeat(terminal=session)).terminal
+
+
+def remember_terminal(root: Path, session: str, terminal: str) -> None:
+    write_json(runtime.session_file(root, session, SEATED), {"terminal": terminal})
 
 
 def offline(root: Path, session: str, within: float = ONLINE_FOR) -> str:
@@ -89,8 +110,7 @@ def live(root: Path, within: float = ONLINE_FOR) -> list[tuple[Seat, LiveAgent]]
     for seat in seats(root, within=within):
         if not seat.session or now - seat.at > within:
             continue
-        environment = sessions.environment(seat.session)
-        found[seat.session] = (seat, LiveAgent(seat.session, seat.provider, seat.model, seat.status, environment if environment else seat.env, seat.at, seat.terminal))
+        found[seat.session] = (seat, seat.live_agent(sessions))
     return sorted(found.values(), key=lambda pair: (-pair[1].at, pair[1].session))
 
 

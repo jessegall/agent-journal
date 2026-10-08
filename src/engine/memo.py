@@ -24,6 +24,9 @@ class Memo:
     def forget(self, key) -> None:
         self.held.pop(key, None)
 
+    def forget_mentioning(self, words) -> None:
+        self.held = {key: held for key, held in list(self.held.items()) if not any(word in str(held[1]) for word in words)}
+
     def clear(self) -> None:
         self.held.clear()
 

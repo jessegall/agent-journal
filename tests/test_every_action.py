@@ -25,7 +25,7 @@ from controllers.environments import KEPT, SWEPT
 from controllers.types import CONTROLLERS, Environments, Todos, Works
 from engine.extension import EXTENSIONS
 from engine.package import code
-from engine.paths import ROUTED
+from engine.paths import ROUTED, environment_names
 from engine.record import Record
 from engine.stored import read_json, write_text
 from engine.transaction import snapshot, undoable
@@ -567,10 +567,10 @@ def test_a_feature_row_marked_missing_is_found_again_and_a_switch_relayed_from_e
     features.load()
     record = fresh()
     rows = CONTROLLERS["feature"](record, actor=SYSTEM)
-    features.seat(record.root)
+    features.seat(record.root, environment_names(record.root))
     row = rows.rows.by_title("thinking")
     rows.update(row.n, missing=True)
-    features.seat(record.root)
+    features.seat(record.root, environment_names(record.root))
     assert not rows.load(row.n).missing, "a feature that is there again is no longer marked missing"
     rows.update(row.n, enabled=False)
     features.passed(record.event_log.events()[-1], record)

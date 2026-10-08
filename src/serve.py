@@ -19,7 +19,7 @@ from features.auto_update.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
-from commands.dispatch import reached_by_phone  # noqa: E402
+from commands.dispatch import reached_by_phone, resolve  # noqa: E402
 from features.phone.allow_list import Reach  # noqa: E402
 from features.routing import PHONE_ENVIRONMENT, PHONE_UNLOCKED, Reply  # noqa: E402
 from engine import runtime  # noqa: E402
@@ -36,6 +36,7 @@ DEFAULT_PORT = 8430
 REQUEST_BACKLOG = 128
 THREADS = "threads.txt"
 OPEN_FILES = 4096
+WARM_WAIT = 30.0
 SWITCH_INTERVAL = 0.001
 LOOPBACK = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::(\d+))?$")
 
@@ -109,6 +110,8 @@ class Handler(BaseHTTPRequestHandler):
             reply.chunks.close()
 
     def answered(self, method: str, url, body: dict) -> Reply:
+        if method == "GET" and environmental(url.path):
+            self.server.warm.wait(WARM_WAIT)
         query = dict(parse_qsl(url.query))
         within = self.headers.get(PHONE_ENVIRONMENT)
         if within is None:
@@ -143,8 +146,18 @@ def allow_open_files() -> None:
     resource.setrlimit(resource.RLIMIT_NOFILE, (OPEN_FILES if most == resource.RLIM_INFINITY else min(OPEN_FILES, most), most))
 
 
+def environmental(path: str) -> bool:
+    found = resolve("GET", path)
+    return found is not None and "env" in found[1]
+
+
 class JournalServer(ThreadingHTTPServer):
     request_queue_size = REQUEST_BACKLOG
+
+    def __init__(self, address, handler):
+        super().__init__(address, handler)
+        self.warm = threading.Event()
+        self.warm.set()
 
 
 def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
@@ -237,9 +250,9 @@ def warm_changed(root: Path) -> None:
     manifest(root)
 
 
-def warmed(root: Path) -> None:
+def warmed(root: Path, warm: threading.Event) -> None:
     try:
-        warm_viewer(root, default_env(root))
+        warm_viewer(root, default_env(root), warm)
         WARMERS.append(lambda: warm_changed(root))
         read_transcripts(root)
     except Exception:
@@ -248,11 +261,12 @@ def warmed(root: Path) -> None:
     gc.freeze()
 
 
-def warm_viewer(root: Path, env: str) -> None:
+def warm_viewer(root: Path, env: str, warm: threading.Event) -> None:
     from commands.parser import parser
     from controllers.types import CONTROLLERS
-    parser()
     dispatch("GET", f"/api/{env}/dashboard", root, {"types": ",".join(CONTROLLERS), "completed": "1", "last": "25", "events": "100"}, {})
+    warm.set()
+    parser()
     dispatch("GET", f"/api/{env}/family", root, {}, {})
     dispatch("GET", "/api/manifest", root, {}, {})
 
@@ -266,7 +280,8 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
     changed = threading.Event()
     halting = threading.Event()
-    threading.Thread(target=warmed, args=(root,), daemon=True).start()
+    server.warm.clear()
+    threading.Thread(target=warmed, args=(root, server.warm), daemon=True).start()
     threading.Thread(target=watch_code, args=(root, Path(root) / ARCHIVE if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=watch_runtime, args=(root, halting), daemon=True).start()

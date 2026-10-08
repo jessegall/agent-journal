@@ -62,34 +62,45 @@ def subscribe() -> None:
 
 
 def sync_rows(root: Path) -> None:
-    from features.switches import generation
+    from engine.paths import environment_names
+    from engine.record import Record
+    from features.switches import generation, seen_environments
     if SEATED.get(str(root)) == generation():
         return
-    stamp, kept = seating(root), Path(root) / SEATED_STAMP
-    if not kept.is_file() or kept.read_text() != stamp:
-        seat(root)
-        write_text(kept, stamp)
+    homes = environment_names(root)
+    if homes:
+        seen_environments(Record(root, homes[0]))
+    kept = Path(root) / SEATED_STAMP
+    held = kept.read_text().splitlines() if kept.is_file() else []
+    seating = [features_stamp(), *homes]
+    if held != seating:
+        seat(root, unseated(held, seating))
+        write_text(kept, "\n".join(seating))
     SEATED[str(root)] = generation()
 
 
-def seating(root: Path) -> str:
-    from engine.paths import environments
-    homes = sorted(p.name for p in environments(root).glob("*") if p.is_dir())
-    return hashlib.sha256("\n".join([*sorted(FEATURES), "", *homes]).encode()).hexdigest()
+def features_stamp() -> str:
+    return hashlib.sha256("\n".join(sorted(FEATURES)).encode()).hexdigest()
+
+
+def unseated(held: list[str], seating: list[str]) -> tuple[str, ...]:
+    if held[:1] != seating[:1]:
+        return tuple(seating[1:])
+    seated = set(held[1:])
+    return tuple(home for home in seating[1:] if home not in seated)
 
 
 def running(feature: type):
     return FEATURES.get(feature.name)
 
 
-def seat(root: Path) -> None:
+def seat(root: Path, homes: tuple[str, ...]) -> None:
     from controllers.types import Features
-    from engine.paths import environments
     from engine.record import Record
     from features.switches import booted
     from resources.base import PROJECT, SYSTEM
-    for home in sorted(p for p in environments(root).glob("*") if p.is_dir()):
-        record = Record(root, home.name)
+    for home in homes:
+        record = Record(root, home)
         rows = Features(record, actor=SYSTEM)
         known = {r.title: r for r in rows.rows.every()}
         for name, feature in FEATURES.items():

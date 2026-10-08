@@ -16,10 +16,12 @@ from features.journal import Journal
 from features.settings import Setting, Settings
 from resources.text import paragraphs
 from engine.record import Record
+from engine.memo import Memo
 from engine.settings_file import PROJECT_PARTS
 from resources.base import ENVIRONMENT, PROJECT, Refused, SYSTEM
 
 REGISTRY: dict[str, type] = {}
+VALUES = Memo()
 
 
 class Behaviour:
@@ -92,7 +94,7 @@ class FeatureDetails:
 
     @classmethod
     def values(cls, record) -> Settings:
-        return Settings(cls.settings, record.setting(cls.name, {}))
+        return VALUES.get((cls.name, str(record.home)), record.settings_file.held()[0], lambda: Settings(cls.settings, record.setting(cls.name, {})))
 
 
 class Feature(ABC):

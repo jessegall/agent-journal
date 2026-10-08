@@ -4,13 +4,12 @@ from typing import TypedDict
 from controllers.base import LAST
 from controllers.types import CONTROLLERS
 from engine.fields import Loaded
-from features.format import KEEP_SHAPED, VIEWER, settled, shaped
+from features.format import KEEP_SHAPED, VIEWER, settled, shaped, worded
 from resources.base import USER, Refused
-from engine.memo import Memo
 from overview.counts import counts
 
-LISTED = Memo(KEEP_SHAPED)
-VIEWED = Memo(KEEP_SHAPED)
+LISTED = worded(KEEP_SHAPED)
+VIEWED = worded(KEEP_SHAPED)
 
 
 @dataclass(frozen=True)

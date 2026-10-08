@@ -5,7 +5,8 @@ from engine import bus
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
 from controllers.types import Environments, Features
-from resources.base import RAISED, SYSTEM
+from engine.paths import environment_home
+from resources.base import CREATED, RAISED, SYSTEM
 
 SWITCHES: dict[str, tuple[int, dict[str, bool]]] = {}
 GENERATION = [0]
@@ -55,6 +56,9 @@ def rebooted(event=None, record=None) -> None:
 def switch_changed(event, record) -> None:
     if event.action == RAISED:
         return
+    if event.type == Features.resource.type and event.action == CREATED:
+        booted(record)
+        return
     rebooted(event, record)
 
 
@@ -66,10 +70,29 @@ def warmed() -> None:
 def environments_changed(event=None, record=None) -> None:
     if record is None:
         return rebooted(event, record)
-    names = tuple(sorted(row["title"] for row in Environments(record, actor=SYSTEM).rows.standing_summaries()))
-    if ENVIRONMENT_NAMES.get(str(record.root)) != names:
-        ENVIRONMENT_NAMES[str(record.root)] = names
-        rebooted(event, record)
+    root = str(record.root)
+    names = standing_environments(record)
+    changed = set(ENVIRONMENT_NAMES.get(root, names)) ^ set(names)
+    ENVIRONMENT_NAMES[root] = names
+    if changed:
+        environments_moved(record, changed)
+
+
+def environments_moved(record, changed: set[str]) -> None:
+    import features
+    from features.format import forget_mentions
+    for name in changed:
+        SWITCHES.pop(str(environment_home(record.root, name)), None)
+    features.SEATED.pop(str(record.root), None)
+    forget_mentions(changed)
+
+
+def standing_environments(record) -> tuple[str, ...]:
+    return tuple(sorted(row["title"] for row in Environments(record, actor=SYSTEM).rows.standing_summaries()))
+
+
+def seen_environments(record) -> None:
+    ENVIRONMENT_NAMES[str(record.root)] = standing_environments(record)
 
 
 def generation() -> int:

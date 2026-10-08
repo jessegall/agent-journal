@@ -6,7 +6,7 @@ from typing import ClassVar
 
 from engine.fields import Loaded
 
-from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Pruned, Ref, Refused, Resource, ResourceDetails
+from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, WHOM, Pruned, Ref, Refused, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows
 
 
@@ -66,7 +66,7 @@ class Todo(Ranked, Placed, Resource):
         abstract="One thing to do later, with a brief that says why and where to start",
         help="A to-do waits on the list until it is started as work and closed; auto mode works the list in order.",
     )
-    indexed = ("hidden", "assigned")
+    indexed = ("hidden", "assigned", "status", WHOM)
     hidden_listed = False
     listed_open = True
     type = "todo"

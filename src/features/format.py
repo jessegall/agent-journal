@@ -14,7 +14,23 @@ PLAIN_FIELDS = ("title", "abstract")
 CATALOGUES: dict = {}
 KEEP_CATALOGUES = 8
 KEEP_SHAPED = 5000
-SHAPED = Memo(KEEP_SHAPED)
+KEEP_TEXTS = 20000
+WORDED: list[Memo] = []
+
+
+def worded(limit: int) -> Memo:
+    memo = Memo(limit)
+    WORDED.append(memo)
+    return memo
+
+
+SHAPED = worded(KEEP_SHAPED)
+TEXTS = worded(KEEP_TEXTS)
+
+
+def forget_mentions(words) -> None:
+    for memo in WORDED:
+        memo.forget_mentioning(words)
 
 
 def formatted(text: str, record=None, surface: str = "") -> str:
@@ -35,6 +51,12 @@ def settled(record) -> tuple:
     return record.settings_file.held()[0], generation()
 
 
+def formatted_item(text: str, record, surface: str) -> str:
+    if record is None:
+        return formatted(text, record, surface)
+    return TEXTS.get((str(record.home), surface, text), settled(record), lambda: formatted(text, record, surface))
+
+
 def shaped(r, record, surface: str = "") -> dict:
     return SHAPED.get((str(record.home), r.type, r.n, r.updated, surface, settled(record)), None, lambda: shape(r, record, surface))
 
@@ -45,7 +67,7 @@ def shape(r, record=None, surface: str = "") -> dict:
     fields = {**fields, **{key: plain(fields[key]) for key in PLAIN_FIELDS if key in fields}}
     parts = [{**s, SECTION.title: formatted(s.get(SECTION.title), record, surface), SECTION.body: formatted(s.get(SECTION.body), record, surface)}
              for s in row.get("sections") or []]
-    data = {key: [{**item, **{sub: formatted(item.get(sub), record, surface) for sub in subs if item.get(sub)}} for item in row["data"].get(key) or []]
+    data = {key: [{**item, **{sub: formatted_item(item[sub], record, surface) for sub in subs if item.get(sub)}} for item in row["data"].get(key) or []]
             for key, subs in getattr(r, "formatted_data", {}).items() if row.get("data", {}).get(key)}
     shaped_row = {**row, **fields}
     if parts:

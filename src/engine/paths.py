@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from resources.base import Refused
@@ -20,6 +21,14 @@ def contained(folder: Path, name: str, nested: bool = False) -> Path:
 
 def environments(root: Path) -> Path:
     return Path(root) / ENVIRONMENTS
+
+
+def environment_names(root: Path) -> tuple[str, ...]:
+    try:
+        with os.scandir(environments(root)) as found:
+            return tuple(sorted(entry.name for entry in found if entry.is_dir()))
+    except FileNotFoundError:
+        return ()
 
 
 def environment_home(root: Path, name: str) -> Path:

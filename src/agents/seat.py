@@ -11,7 +11,7 @@ from engine.record import Record
 from engine.sessions import SessionRecord, SessionsSnapshot, agent_pid, alive
 from engine.stored import Growth, write_json
 from engine.proc import git
-from engine.seats import seat_file
+from engine.seats import remember_terminal, seat_file
 from engine.worktree import checkout, environment
 from controllers.types import Agents, Environments
 from resources.base import SYSTEM
@@ -74,6 +74,7 @@ class SeatReport:
         self.crewed_at = 0.0
         self.crew_growth = Growth()
         self.subagents_ended: dict | None = None
+        self.pointed: tuple[str, str] = ("", "")
 
     def branch(self) -> str:
         last = self.agent.driver.last_report()
@@ -133,6 +134,15 @@ class SeatReport:
         write_json(seat_file(self.record.root, self.agent.driver.session), {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
                                  "why": why, "printed": self.agent.driver.last_printed(),
                                  "report": {"title": last.title, **last.data} if last else {}})
+        if last and last.title:
+            self.point(last.title)
+
+    def point(self, session: str) -> None:
+        terminal = self.agent.driver.session
+        if self.pointed == (session, terminal):
+            return
+        remember_terminal(self.record.root, session, terminal)
+        self.pointed = (session, terminal)
 
 
 class HookBinding:

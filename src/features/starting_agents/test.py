@@ -159,7 +159,7 @@ def test_a_running_agents_screen_is_read_from_where_the_viewer_stopped_and_a_liv
     import json
     from commands.http import dispatch
     from engine import runtime
-    from engine.seats import SEAT
+    from engine.seats import SEAT, remember_terminal
     from engine.sessions import Sessions
     from engine.stored import write_json
     from tests.kit import report
@@ -171,6 +171,7 @@ def test_a_running_agents_screen_is_read_from_where_the_viewer_stopped_and_a_liv
     seat = lambda at: write_json(folder / SEAT, {"at": at, "agent": "claude", "env": record.env, "report": {"title": "claude-5"}, "reported": {"title": "claude-5", "provider": "claude", "status": "idle"}})
     assert dispatch("GET", f"/api/{record.env}/agent/term-1/screen", record.root, {}, {}).code == 404, "an agent that shows no terminal has no screen to read"
     seat(time.time())
+    remember_terminal(record.root, "claude-5", "term-1")
     blank = dispatch("GET", f"/api/{record.env}/agent/term-1/screen", record.root, {}, {}).body
     assert (blank["data"], blank["at"], (blank["rows"], blank["cols"])) == ("", 0, (40, 120)), "a terminal that printed nothing is a blank screen of the usual size"
     (folder / "screen").write_bytes(b"hello world")

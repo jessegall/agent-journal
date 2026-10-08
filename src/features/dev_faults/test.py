@@ -188,6 +188,9 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
     assert "request GET /api/main/board is slower than its budget" not in notified(record), "a request's first, cold run after a start is let be"
     reports.spent(record.root, record.env, "request", "GET /api/main/board", 400)
     assert "request GET /api/main/board is slower than its budget" in notified(record), "its next run is held to the budget"
+    from serve import environmental
+    assert (environmental("/api/main/dashboard"), environmental("/api/identity")) == (True, False), \
+        "a viewer request about an environment waits for the server's warm-up; a check that the server is up never does"
 
 
 def test_a_slow_request_waits_while_the_agent_waits():
@@ -284,3 +287,13 @@ def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_
     monkeypatch.setattr(switches, "WARMERS", [lambda: warmed.append(1)])
     turned(record, held)
     assert warmed == [1], "what a switch clears, such as the command parser, is built again once the change is made, never by the next request"
+    assert DevFaults.details.values(record) is DevFaults.details.values(record), "a feature's settings are read once until they change"
+    from controllers.types import Environments, Todos
+    from features.format import shaped
+    features.load(record.root)
+    plain, naming = Todos(record, actor=SYSTEM).create("the header"), Todos(record, actor=SYSTEM).create("ask todo 1 in elsewhere")
+    held, before = (shaped(plain, record), shaped(naming, record)), switches.generation()
+    Environments(record, actor=SYSTEM).create("elsewhere")
+    features.load(record.root)
+    assert (switches.generation() == before, shaped(plain, record) is held[0], shaped(naming, record) is held[1]) == (True, True, False), \
+        "a new environment keeps the switches and formatted rows of the others, and forgets only the rows that name it"
