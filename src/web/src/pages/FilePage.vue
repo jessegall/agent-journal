@@ -24,6 +24,10 @@ async function load() {
     error.value = "";
     file.value = null;
     diff.value = "";
+    if (!route.value.q) {
+        error.value = "No file is named.";
+        return;
+    }
     try {
         [file.value, diff.value] = await Promise.all([
             api
