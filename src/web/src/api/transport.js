@@ -89,7 +89,7 @@ class Transport {
                 this.watcher("answered", method, url, body);
             });
         return answered(res, `${res.status} ${res.statusText}`).catch((error) => {
-            if (error.blocked) this.refused(error.message);
+            if (error.blocked && method !== "GET") this.refused(error.message);
             throw error;
         });
     }

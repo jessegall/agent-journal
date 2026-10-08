@@ -38,6 +38,11 @@ class Someone:
     abilities: Abilities
 
 
+def asks_for_the_viewer(visit: Visit) -> bool:
+    """A page or file of the viewer itself, which every login loads; anything under /api/ is a route of the journal's own."""
+    return visit.handler.command == "GET" and not visit.url.path.startswith("/api/")
+
+
 class MemberLogins:
     """The login page's pages and actions for the people the owner invites."""
 
@@ -59,9 +64,9 @@ class MemberLogins:
         member = Roster(visit.vault).found(login.member)
         if member is None:
             return NOT_A_MEMBER
-        if visit.handler.command == "GET":
-            return None
         reached = visit.reached()
+        if reached is None and asks_for_the_viewer(visit):
+            return None
         if reached is not None and member.role.reaches(reached.target):
             return None
         return member.role.refusal()

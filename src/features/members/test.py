@@ -3,19 +3,30 @@ import os
 import re
 import subprocess
 import time
+from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
 
+from commands.dispatch import ranked
+from controllers.base import word_names
 from controllers.features import Features
-from features.hosted_journal.owner import Logins
+from controllers.types import CONTROLLERS
+from features import FEATURES
+from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, Visit
+from features.hosted_journal.owner import KeptLogin, Logins
+from features.hosted_journal.settings import FromRecord
 from features.hosted_journal.test import SCENARIOS_WAIT, WEB, Answer, Hosted, hosted  # noqa: F401  hosted is the fixture
-from features.hosted_journal.vault import Vault
+from features.hosted_journal.vault import RefusalLog, Vault
+from features.members.allow_list import READ_MARKS, READS, UNREAD, WRITES, read
+from features.members.gate import MemberLogins
 from features.members.details import MembersDetails
 from features.members.roles import NOT_A_WRITER, Role
 from features.members.roster import INVITE_DAYS, Roster
+from features.phone.allow_list import RUNS, TO_WEIGH, VIEWER_SETTINGS
 from features.trigger import DAY
 from resources.base import USER
 
 MEMBER_PASSWORD = "a member's own password"
+FILLED = {"env": "main", "n": "1", "provider": "claude", "id": "web", "session": "s", "sha": "abc", "name": "x"}
 
 
 def with_members(hosted: Hosted) -> str:
@@ -31,6 +42,22 @@ def member_login(hosted: Hosted, name: str, role: Role) -> str:
     roster = Roster(hosted.vault)
     member = roster.join(roster.invite(name, role).code, MEMBER_PASSWORD)
     return f"__Host-journal={Logins(hosted.vault).open(7, 'test', member.id)}"
+
+
+def every_request() -> list[tuple[str, str]]:
+    """Every route the journal answers, filled in for every type and for every word each type's controller takes."""
+    asked = []
+    for route in ranked():
+        for type_ in sorted(CONTROLLERS) if "{type}" in route.pattern else [""]:
+            controller = CONTROLLERS.get(type_)
+            words = sorted({*word_names(controller), *controller.resource.command_names.values()}) if "{action}" in route.pattern else [""]
+            asked.extend((route.method, route.pattern.format(**FILLED, type=type_, action=word)) for word in words)
+    return asked
+
+
+def visit_of(hosted: Hosted, method: str, path: str) -> Visit:
+    handler = SimpleNamespace(shares=SimpleNamespace(record=hosted.record), headers={}, path=path, command=method)
+    return Visit(handler, RefusalLog(60), FromRecord())
 
 
 def login_in(answer: Answer) -> str:
@@ -94,3 +121,30 @@ def test_a_reader_only_reads_a_writer_writes_shared_rows_and_a_refusal_says_why(
     assert sent(hosted, "/api/hosting/members/role", {"member": ada, "role": "owner"}, owner).status == 400, "there are two roles"
     assert sent(hosted, "/api/hosting/members/role", {"member": ada, "role": "writer"}, owner).status == 200
     assert sent(hosted, todo, {"title": "Now a writer"}, reader).status == 201, "a new role holds from the next press"
+
+
+def test_a_member_reaches_only_what_the_allow_list_names_over_every_route_action_and_settings_field(hosted):
+    owner = with_members(hosted)
+    roster, gate = Roster(hosted.vault), MemberLogins()
+    logins = {role: KeptLogin(member=roster.join(roster.invite(role.value, role).code, MEMBER_PASSWORD).id) for role in Role}
+    requests = every_request()
+    visits = {asked: visit_of(hosted, *asked) for asked in requests}
+    targets = {asked: visit.reached() for asked, visit in visits.items()}
+    opened = {role: {asked for asked, visit in visits.items() if gate.refusal(visit, logins[role]) is None} for role in Role}
+    assert len(requests) > 1000 and None not in targets.values(), "the sweep reaches every route and every action of every type"
+    assert (READS | READ_MARKS | WRITES) <= {found.target for found in targets.values()}, "the allow-list names nothing the journal does not answer"
+    for role in Role:
+        named = {targets[asked].target for asked in opened[role]}
+        assert all(read(target) or (role is Role.WRITER and target in WRITES) for target in named), f"a {role} reaches only what is named"
+        assert not named & {*RUNS, *TO_WEIGH, *NEVER_FROM_OUTSIDE}, f"a {role} runs, starts or sets nothing that runs"
+        assert not [path for _, path in opened[role] if any(f"/{type_}" in path for type_ in UNREAD)], f"a {role} never reaches secrets, phones, shares or plugins"
+    assert all(method == "GET" or path.endswith("/read-all") for method, path in opened[Role.READER]), "a reader only reads and marks what they read"
+    assert {targets[asked].target for asked in opened[Role.WRITER] - opened[Role.READER]} == WRITES
+    fields = [{details.name: {setting.name: setting.default}} for details in (type(feature).details for feature in FEATURES.values())
+              for setting in details.settings]
+    bodies = [*fields, *({"viewer": {key: ""}} for key in VIEWER_SETTINGS), {"features": {name: True for name in FEATURES}}]
+    assert len(fields) > 20 and all(gate.refusal(visit_of(hosted, "POST", "/api/main/settings"), logins[role]) for role in Role for _ in bodies)
+    writer = f"__Host-journal={Logins(hosted.vault).open(7, 'test', logins[Role.WRITER].member)}"
+    settings = hosted.call("GET", "/api/main/settings", Cookie=owner).text
+    assert {sent(hosted, "/api/main/settings", body, writer).status for body in bodies} == {403}, "no settings field is a member's to write"
+    assert hosted.call("GET", "/api/main/settings", Cookie=owner).text == settings
