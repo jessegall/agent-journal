@@ -323,6 +323,29 @@ class Codex(Provider):
     def present(self, project: Path) -> bool:
         return (project / self.home).is_dir() or shutil.which("codex") is not None
 
+    def mcp_block(self, name: str) -> re.Pattern:
+        return re.compile(rf"\n?# journal-mcp {re.escape(name)} begin\n.*?# journal-mcp {re.escape(name)} end\n", re.S)
+
+    def serve_mcp(self, project: Path, name: str, url: str) -> bool:
+        f = project / self.home / "config.toml"
+        text = f.read_text() if f.is_file() else ""
+        block = f'\n# journal-mcp {name} begin\n[mcp_servers.{json.dumps(name)}]\nurl = {json.dumps(url)}\n# journal-mcp {name} end\n'
+        wanted = self.mcp_block(name).sub("", text).rstrip("\n") + "\n" + block
+        if wanted == text:
+            return False
+        f.parent.mkdir(parents=True, exist_ok=True)
+        write_text(f, wanted.lstrip("\n"))
+        return True
+
+    def drop_mcp(self, project: Path, name: str) -> bool:
+        f = project / self.home / "config.toml"
+        text = f.read_text() if f.is_file() else ""
+        kept = self.mcp_block(name).sub("", text)
+        if kept == text:
+            return False
+        write_text(f, kept)
+        return True
+
     def config(self, project: Path) -> Path:
         return project / self.home / "hooks.json"
 

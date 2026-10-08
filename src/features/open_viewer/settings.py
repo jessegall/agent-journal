@@ -48,7 +48,8 @@ def apply(record: Record, body: dict, actor: str) -> dict:
             record.change_setting(key, value)
             continue
         record.set_setting(key, value)
-    features.settings_changed(record, body, actor)
+    switched = body[Record.features] if isinstance(body.get(Record.features), dict) else {}
+    features.settings_changed(record, [*body, *switched], actor)
     if "boards" in body:
         written(record.root.parent, record)
     rebuild(record)

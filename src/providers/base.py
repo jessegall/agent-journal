@@ -415,6 +415,13 @@ class Provider(ABC):
     def browser_logins(self, project: Path, storage: Path) -> bool:
         return False
 
+    def serve_mcp(self, project: Path, name: str, url: str) -> bool:
+        """Adds a hosted MCP server, named for the journal's own entry, to this agent's project config; answers whether the file changed. The agent signs in through its own MCP login, so no key is written."""
+        return False
+
+    def drop_mcp(self, project: Path, name: str) -> bool:
+        return False
+
     def wiring_trouble(self, project: Path) -> str:
         command = self.wired(project)
         if not command:

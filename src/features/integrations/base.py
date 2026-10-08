@@ -4,6 +4,7 @@ from features.base import Feature
 from features.integrations.client import IntegrationClient
 from features.integrations.state import read_state
 from features.journal import Journal
+from providers import PROVIDERS
 from features.routing import Reply, Request, handles
 
 
@@ -25,6 +26,27 @@ class IntegrationFeature(Feature):
 
     def settings_changed(self, record, actor: str) -> None:
         self.clients.pop(str(record.home), None)
+        self.wire_mcp(record)
+
+    @property
+    def mcp_name(self) -> str:
+        return f"journal-{self.name}"
+
+    def wire_mcp(self, record) -> None:
+        """Adds the service's own MCP server to each agent's project config while it is on, and takes the journal's entry out when it is off; the entry holds the address only, never a key."""
+        url = self.details.mcp_server
+        if not url:
+            return
+        project = record.root.parent
+        wanted = self.enabled(record) and bool(self.values(record).use_mcp)
+        for provider in PROVIDERS.values():
+            agent = provider()
+            if not agent.present(project):
+                continue
+            agent.serve_mcp(project, self.mcp_name, url) if wanted else agent.drop_mcp(project, self.mcp_name)
+
+    def describe(self) -> dict:
+        return {**super().describe(), "mcp_server": self.details.mcp_server}
 
     def state_route(self):
         name = self.name
