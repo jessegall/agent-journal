@@ -59,7 +59,7 @@ describe("the message box edge", () => {
         return {into, state};
     }
 
-    test("a wait puts what it waits on on the border, and an ended wait lights it once", async () => {
+    test("a wait puts the word Waiting on the border, and an ended wait lights it once and says nothing", async () => {
         const waiting = waitingFor({text: "the test suite", on: "", since: NOW - 60}, {now: NOW});
         const {into, state} = mounted(waiting);
         expect(into.querySelector(".legend").textContent).toContain("Waiting");
@@ -68,11 +68,12 @@ describe("the message box edge", () => {
         expect([into.querySelector(".legend")?.textContent.trim(), into.querySelectorAll(".legend .chip").length]).toEqual(["Waiting", 0]);
         state.waiting = null;
         await flush();
-        expect(into.querySelector(".note").textContent).toContain("The test suite finished");
+        expect(into.querySelector(".note")).toBeNull();
+        expect(into.querySelector(".legend")).toBeNull();
         expect(into.querySelector(".wait-edge").classList.contains("lit")).toBe(true);
     });
 
-    test("each helper report says who is still at work, and the last one says all reported", async () => {
+    test("each helper report says who is still at work, and the last one says nothing", async () => {
         const wait = (state) => waitingFor({text: "2 helpers", on: "helper:1,helper:2", since: NOW - 60}, {helpers: state, now: NOW});
         const {into, state} = mounted(wait([helper(1, "running"), helper(2, "running")]));
         state.waiting = wait([helper(1, "reported"), helper(2, "running")]);
@@ -80,7 +81,7 @@ describe("the message box edge", () => {
         expect(into.querySelector(".note").textContent).toContain("1 helper reported, 1 still at work");
         state.waiting = null;
         await flush();
-        expect(into.querySelector(".note").textContent).toContain("All 2 helpers reported");
+        expect(into.querySelector(".note")).toBeNull();
     });
 
     test("with no wait there is no label", () => {
