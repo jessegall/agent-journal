@@ -15,6 +15,8 @@ FOREGROUND = "Bash"
 class MoveLongCommands(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         row = context.agent.row
+        if not row.live:
+            return
         moved = context.state.get("moved")
         if moved and context.state.get("ended") != moved:
             self.follow(context, row, moved)

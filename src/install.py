@@ -558,6 +558,7 @@ def finish(project: Path, root: Path) -> list[str]:
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
     done.append(loaded().ship_sequences(root))
     done.append(loaded().ship_profiles(root))
+    done.append(loaded().stop_ended(root))
     moved = retire(root)
     if moved:
         done.append(f"package moved into {SRC}/: {moved} files out of the record")
@@ -671,6 +672,7 @@ class Package:
     migrate: Callable
     ship_sequences: Callable
     ship_profiles: Callable
+    stop_ended: Callable
     publish: Callable
     upgrade_mark: Callable
 
@@ -684,6 +686,7 @@ def loaded() -> Package:
     from features.journal_laws.briefing import brief
     from features.sequences.shipped import ship
     from features.form_of_address.controller import ship as ship_profiles
+    from features.agent_sessions.handlers import stop_ended
     from migrations import run as migrate
     from migrations import shipped
     from providers import PROVIDERS
@@ -694,7 +697,7 @@ def loaded() -> Package:
     from engine.runtime import default_env, upgrade_mark
     return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
                    served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
-                   ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"),
+                   ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"), stop_ended=stop_ended,
                    publish=publish, upgrade_mark=upgrade_mark)
 
 
