@@ -3,13 +3,13 @@ from functools import partial
 from urllib.parse import parse_qs
 
 from engine.fields import Loaded
-from features.hosted_journal.gateway import Gateway, Visit
+from features.hosted_journal.gateway import COOKIE, Gateway, Visit
 from features.hosted_journal.owner import OWNER, KeptLogin
 from features.hosted_journal.pages import Notice, notice_page
 from features.hosted_journal.people import Act, Page
 from features.members.pages import BELOW_LOGIN, join_page, member_login_page
 from features.members.roles import OWNER_ABILITIES, Abilities, Role
-from features.members.roster import Roster
+from features.members.roster import Departure, Roster
 
 OWNER_NAME = "Owner"
 NOT_A_MEMBER = "You are no longer a member of this journal."
@@ -25,6 +25,11 @@ class Invited(Loaded):
 class Assigned(Loaded):
     member: str = ""
     role: str = ""
+
+
+@dataclass(frozen=True)
+class Picked(Loaded):
+    member: str = ""
 
 
 @dataclass(frozen=True)
@@ -54,14 +59,16 @@ class MemberLogins:
                 ("GET", "/member"): self.show_login, ("POST", "/member"): partial(self.log_in, gateway)}
 
     def actions(self, gateway: Gateway) -> dict[tuple[str, str], Act]:
-        return {("GET", "/api/hosting/me"): self.me, ("GET", "/api/hosting/members"): partial(self.listed, gateway)}
+        return {("GET", "/api/hosting/me"): self.me, ("GET", "/api/hosting/members"): partial(self.listed, gateway),
+                ("POST", "/api/hosting/leave"): partial(self.leave, gateway)}
 
     def owner_actions(self, gateway: Gateway) -> dict[tuple[str, str], Page]:
         return {("POST", "/api/hosting/members"): self.invite,
-                ("POST", "/api/hosting/members/role"): self.assign}
+                ("POST", "/api/hosting/members/role"): self.assign, ("POST", "/api/hosting/members/remove"): partial(self.remove, gateway),
+                ("POST", "/api/hosting/members/end-logins"): partial(self.end_logins, gateway)}
 
     def refusal(self, visit: Visit, login: KeptLogin) -> str | None:
-        member = Roster(visit.vault).found(login.member)
+        member = Roster(visit.vault).present(login.member)
         if member is None:
             return NOT_A_MEMBER
         reached = visit.reached()
@@ -110,7 +117,7 @@ class MemberLogins:
     def me(self, visit: Visit, login: KeptLogin) -> None:
         if login.is_owners():
             return visit.json(200, asdict(Someone(OWNER, OWNER_NAME, OWNER, True, OWNER_ABILITIES)))
-        member = Roster(visit.vault).found(login.member)
+        member = Roster(visit.vault).present(login.member)
         if member is None:
             return visit.refuse(403, NOT_A_MEMBER)
         return visit.json(200, asdict(Someone(member.id, member.name, member.role, False, member.role.abilities())))
@@ -131,3 +138,23 @@ class MemberLogins:
         member = Roster(visit.vault).assign(asked.member, Role.named(asked.role))
         visit.vault.audit("member role changed", place=visit.place(), member=member.id, role=member.role)
         return visit.json(200, {"member": member.summary()})
+
+    def leave(self, gateway: Gateway, visit: Visit, login: KeptLogin) -> None:
+        if login.is_owners():
+            return visit.block("The owner cannot leave their own journal; they can take it down.")
+        member = Roster(visit.vault).depart(login.member, Departure.LEFT)
+        ended = gateway.end_logins_of(visit.vault, member.id)
+        visit.vault.audit("member left", place=visit.place(), member=member.id, logins_ended=ended)
+        return visit.json(200, {"member": member.summary(), "login": "/login?notice=left"}, {"Set-Cookie": visit.cookie(COOKIE, "", 0)})
+
+    def remove(self, gateway: Gateway, visit: Visit) -> None:
+        member = Roster(visit.vault).depart(visit.asked(Picked).member, Departure.REMOVED)
+        ended = gateway.end_logins_of(visit.vault, member.id)
+        visit.vault.audit("member removed", place=visit.place(), member=member.id, logins_ended=ended)
+        return visit.json(200, {"member": member.summary()})
+
+    def end_logins(self, gateway: Gateway, visit: Visit) -> None:
+        member = Roster(visit.vault).required(visit.asked(Picked).member)
+        ended = gateway.end_logins_of(visit.vault, member.id)
+        visit.vault.audit("member's logins ended", place=visit.place(), member=member.id, logins_ended=ended)
+        return visit.json(200, {"member": member.summary(), "ended": ended})

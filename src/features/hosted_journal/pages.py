@@ -23,6 +23,7 @@ class Notice(Enum):
     LOGGED_OUT = "You are logged out."
     SHORT = "The password needs at least 12 characters, typed the same twice."
     WRONG_NAME = "That name or password is wrong."
+    LEFT = "You left this journal. Your words stay in it under your name."
     WRONG_INVITE = "This invite link is wrong, was used already or has run out. Ask the owner for a new one."
 
     @classmethod

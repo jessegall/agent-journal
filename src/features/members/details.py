@@ -23,6 +23,10 @@ class MembersDetails(FeatureDetails):
         chooses a password and is logged in. After that they log in at the same address with their name
         and password.
 
+        A member is a writer, who also writes messages, to-dos, comments and documents, or a reader, who only
+        reads. A member can leave, and the owner can log a member out or remove them: their logins and open
+        pages end at once, and what they wrote stays in the journal under their name.
+
         Members never reach the owner's password, the server's settings or the inviting of other people.
         Their passwords and logins are kept with the owner's, in files only the server's user can read.
     """

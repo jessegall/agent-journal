@@ -6,6 +6,9 @@ const hostingMe = vi.fn();
 const members = vi.fn();
 const inviteMember = vi.fn();
 const assignRole = vi.fn();
+const removeMember = vi.fn();
+const endLogins = vi.fn();
+const leaveJournal = vi.fn();
 let refuse = () => {};
 vi.mock("../src/api/client.js", () => ({
     api: {
@@ -13,6 +16,9 @@ vi.mock("../src/api/client.js", () => ({
         members: (...a) => members(...a),
         inviteMember: (...a) => inviteMember(...a),
         assignRole: (...a) => assignRole(...a),
+        removeMember: (...a) => removeMember(...a),
+        endLogins: (...a) => endLogins(...a),
+        leaveJournal: (...a) => leaveJournal(...a),
     },
     onWrite: vi.fn(),
     onBlocked: (fn) => (refuse = fn),
@@ -23,7 +29,7 @@ const {default: BlockedNotice} = await import("../src/layout/BlockedNotice.vue")
 const {me} = await import("../src/composables/me.js");
 const {memberStatus, writerOf} = await import("../src/domain/members.js");
 const {people} = await import("../src/composables/people.js");
-const {answered} = await import("../src/api/transport.js");
+const {answered, loginPage} = await import("../src/api/transport.js");
 
 const OWNER = {member: "owner", name: "Owner", role: "owner", owner: true, abilities: {can: ["Read every page of this journal"], cannot: []}};
 const READER = {
@@ -51,7 +57,7 @@ async function mounted(component) {
     return into;
 }
 
-const pressed = (label) => [...document.querySelectorAll("button")].find((button) => button.textContent.trim() === label).click();
+const pressed = (label) => [...document.querySelectorAll("button")].filter((button) => button.textContent.trim() === label).at(-1).click();
 
 beforeEach(() => {
     document.body.innerHTML = "";
@@ -65,6 +71,7 @@ test("a member reads as connected, not connected or invited and not joined yet",
     expect(memberStatus({joined: 12, connected: true})).toBe("Connected now");
     expect(memberStatus({joined: 12, connected: false})).toBe("Not connected");
     expect(memberStatus({joined: 0})).toBe("Invited, has not joined yet");
+    expect([memberStatus({joined: 3, departed: "left"}), memberStatus({joined: 3, departed: "removed"})]).toEqual(["Left the journal", "Removed by the owner"]);
 });
 
 test("a row names the member who wrote it, a former member when they are gone, and nobody for the owner", () => {
@@ -130,4 +137,36 @@ test("a change the gateway blocks shows why, whichever control sent it", async (
     refuse("Readers read this journal.");
     await flush();
     expect(document.querySelector('[role="status"]').textContent).toContain("You can't do that. Readers read this journal.");
+});
+
+test("the owner logs a member out, and removes them only after confirming", async () => {
+    hostingMe.mockResolvedValue(OWNER);
+    members.mockResolvedValue({owner: {name: "Owner", connected: true}, members: [{id: "m-1", name: "Ada", role: "writer", joined: 3}]});
+    const into = await mounted(People);
+    into.querySelector('[aria-label="People"]').click();
+    await flush();
+    pressed("Log out");
+    await flush();
+    expect(endLogins).toHaveBeenCalledWith("m-1");
+    pressed("Remove");
+    await flush();
+    expect(document.body.textContent).toContain("Remove Ada?");
+    expect(removeMember).not.toHaveBeenCalled();
+    pressed("Remove");
+    await flush();
+    expect(removeMember).toHaveBeenCalledWith("m-1");
+});
+
+test("a member who leaves is sent to the login page", async () => {
+    hostingMe.mockResolvedValue(READER);
+    leaveJournal.mockResolvedValue({login: "/login?notice=left"});
+    const open = vi.spyOn(loginPage, "open").mockImplementation(() => {});
+    const into = await mounted(People);
+    into.querySelector('[aria-label="People"]').click();
+    await flush();
+    pressed("Leave this journal");
+    await flush();
+    pressed("Leave");
+    await flush();
+    expect(open).toHaveBeenCalledWith("/login?notice=left");
 });

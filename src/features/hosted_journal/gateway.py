@@ -1,7 +1,9 @@
 import json
 import math
+import socket
 import threading
-from collections import Counter
+from collections import Counter, defaultdict
+from contextlib import suppress
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, replace
 from http.cookies import SimpleCookie
@@ -222,6 +224,7 @@ class Gateway:
         self.answered_here = answered_here
         self.streams: Counter[str] = Counter()
         self.listening: Counter[str] = Counter()
+        self.live: defaultdict[str, set[socket.socket]] = defaultdict(set)
         self.last_seen: dict[str, float] = {}
         self.lock = threading.Lock()
         self.checking = threading.BoundedSemaphore(CHECKS_AT_ONCE)
@@ -396,6 +399,17 @@ class Gateway:
             return Desktop(visit.handler, visit.handler.path, member_mark(login), VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
         return self.streamed(visit, login, hashed(token))
 
+    def end_logins_of(self, vault: Vault, member: str) -> int:
+        """Ends every login of this member and cuts the live streams their browsers hold open, so nothing of theirs stays connected."""
+        ended = Logins(vault).close_member(member)
+        with self.lock:
+            streams = list(self.live.pop(member, ()))
+        for stream in streams:
+            # A stream that closed by itself in the meantime is already ended.
+            with suppress(OSError):
+                stream.shutdown(socket.SHUT_RDWR)
+        return ended
+
     def connected(self, now: float) -> frozenset[str]:
         """Who has the journal open: a live stream from their browser, or a request in the last two minutes."""
         with self.lock:
@@ -424,12 +438,14 @@ class Gateway:
                 return visit.refuse(429, f"one login keeps at most {MOST_STREAMS} live streams open; close a tab")
             self.streams[token] += 1
             self.listening[login.member] += 1
+            self.live[login.member].add(visit.handler.connection)
         try:
             return Desktop(visit.handler, visit.handler.path, member_mark(login), VIEWER_HEADERS).forward(b"")
         finally:
             with self.lock:
                 self.streams[token] -= 1
                 self.listening[login.member] -= 1
+                self.live[login.member].discard(visit.handler.connection)
 
     def turned_away(self, visit: Visit, standing: Standing) -> None:
         notice = "?notice=ran-out" if standing is Standing.RAN_OUT else ""

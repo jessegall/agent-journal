@@ -1,5 +1,6 @@
 import secrets
 from dataclasses import asdict, dataclass, field, replace
+from enum import StrEnum
 
 from engine.fields import Loaded
 from features.hosted_journal.owner import KeptCode, KeptPassword
@@ -13,6 +14,13 @@ INVITE_DAYS = 7
 NAME_LONGEST = 60
 
 
+class Departure(StrEnum):
+    """How a member stopped being one: they left, or the owner removed them."""
+
+    LEFT = "left"
+    REMOVED = "removed"
+
+
 @dataclass(frozen=True)
 class Member(Loaded):
     """A person the owner invited, known by an id that never changes, with the password they chose on joining."""
@@ -24,9 +32,18 @@ class Member(Loaded):
     joined: float = 0.0
     code: KeptCode = field(default_factory=KeptCode)
     password: KeptPassword = field(default_factory=KeptPassword)
+    departed: Departure | None = None
+    departed_at: float = 0.0
 
     def has_joined(self) -> bool:
         return bool(self.joined)
+
+    def is_present(self) -> bool:
+        return self.departed is None
+
+    def departing(self, how: Departure, now: float) -> "Member":
+        """The member gone, keeping their name for what they wrote, with no password or invite left to come back by."""
+        return replace(self, departed=how, departed_at=now, code=KeptCode(), password=KeptPassword())
 
     def joining(self, password: KeptPassword, now: float) -> "Member":
         return replace(self, password=password, code=KeptCode(), joined=now)
@@ -35,7 +52,7 @@ class Member(Loaded):
         return {key: value for key, value in asdict(self).items() if key != "id"}
 
     def summary(self) -> dict:
-        return {"id": self.id, "name": self.name, "role": self.role, "invited": self.invited, "joined": self.joined}
+        return {"id": self.id, "name": self.name, "role": self.role, "invited": self.invited, "joined": self.joined, "departed": self.departed}
 
 
 @dataclass(frozen=True)
@@ -73,9 +90,14 @@ class Roster:
     def found(self, member: str) -> Member | None:
         return next((kept for kept in self.all() if kept.id == member), None)
 
+    def present(self, member: str) -> Member | None:
+        found = self.found(member)
+        return found if found is not None and found.is_present() else None
+
     def named(self, name: str) -> Member | None:
+        """The present member with this name; one who left keeps the name only on what they wrote."""
         wanted = " ".join(name.split()).casefold()
-        return next((member for member in self.all() if member.name.casefold() == wanted), None)
+        return next((member for member in self.all() if member.is_present() and member.name.casefold() == wanted), None)
 
     def matching(self, name: str, password: str) -> str | None:
         """The id of the joined member with this name and password, or None."""
@@ -97,12 +119,22 @@ class Roster:
 
     def assign(self, member: str, role: Role) -> Member:
         with self.vault.held():
-            found = self.found(member)
-            if found is None:
-                raise Refused(f"there is no member {member}")
-            assigned = replace(found, role=role)
+            assigned = replace(self.required(member), role=role)
             self._keep(assigned)
         return assigned
+
+    def depart(self, member: str, how: Departure) -> Member:
+        with self.vault.held():
+            departed = self.required(member).departing(how, self.vault.clock())
+            self._keep(departed)
+        return departed
+
+    def required(self, member: str) -> Member:
+        """The present member with this id; refused when there is none."""
+        found = self.present(member)
+        if found is None:
+            raise Refused(f"there is no member {member}")
+        return found
 
     def _keep(self, member: Member) -> None:
         self.vault.write(MEMBERS, {**self.vault.read(MEMBERS), member.id: member.kept()})

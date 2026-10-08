@@ -127,6 +127,18 @@ export class ApiClient {
         return this.post("/hosting/members/role", {member, role});
     }
 
+    removeMember(member) {
+        return this.post("/hosting/members/remove", {member});
+    }
+
+    endLogins(member) {
+        return this.post("/hosting/members/end-logins", {member});
+    }
+
+    leaveJournal() {
+        return this.post("/hosting/leave", {});
+    }
+
     upgrade() {
         return this.post("/upgrade");
     }
