@@ -16,11 +16,18 @@ def relative(project: Path, path: str) -> str:
     return Path(path).relative_to(project).as_posix() if Path(path).is_relative_to(project) else path
 
 
+def at_work(record, helper: Ref) -> bool:
+    helpers = Helpers(record, actor=SYSTEM)
+    return helpers.rows.exists(helper.n) and not helpers.load(helper.n).completed
+
+
 def keep_with_its_helper(controller, n: int) -> None:
     row = controller.load(n)
     if controller.actor != AGENT or not held_by_helper(row):
         return
     helper = Ref.parse(row.assigned)
+    if not at_work(controller.record, helper):
+        return
     controller._refuse(f"todo {n} is handed to {helper.spoken}: only it marks it done, and taking its work closes it; "
                        f"to close, strike or reassign it yourself, journal helper stop {helper.n} gives it back first")
 
