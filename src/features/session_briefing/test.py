@@ -3,7 +3,7 @@ from controllers.types import Docs, Facts, Rules, Todos, Works
 from features.session_briefing.start import QUIET, carry, start_block, status
 from runner.hooks import handle
 from providers import PROVIDERS
-from resources.base import AGENT, USER
+from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh
 from features.session_briefing.block import COMPACTED
 from engine.gates import start_file
@@ -45,6 +45,11 @@ def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
     assert status(record).splitlines()[0] == "JOURNAL  environment t", "status counts what stands, by type"
     assert (carry(record).startswith(start_block(record)) and "RULE 1  name the model" in carry(record)) is True, \
         "carry is the block and every standing thing in full"
+    todos = Todos(record, actor=SYSTEM)
+    todos.update(todos.create("in hand").n, status="started")
+    todos.create("handed over", whom="s-9")
+    todos.task("helper:1", "a helper's own step")
+    assert "1 TO-DOS waiting" in start_block(record), "a to-do in hand, one handed to someone and a helper's own step are not counted as waiting"
 
 
 def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():

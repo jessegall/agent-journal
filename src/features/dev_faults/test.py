@@ -293,7 +293,10 @@ def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_
     features.load(record.root)
     plain, naming = Todos(record, actor=SYSTEM).create("the header"), Todos(record, actor=SYSTEM).create("ask todo 1 in elsewhere")
     held, before = (shaped(plain, record), shaped(naming, record)), switches.generation()
+    seated, seat = [], features.seat
+    monkeypatch.setattr(features, "seat", lambda root, homes: (seated.append(homes), seat(root, homes)))
     Environments(record, actor=SYSTEM).create("elsewhere")
     features.load(record.root)
     assert (switches.generation() == before, shaped(plain, record) is held[0], shaped(naming, record) is held[1]) == (True, True, False), \
         "a new environment keeps the switches and formatted rows of the others, and forgets only the rows that name it"
+    assert seated == [("elsewhere",)], "only the new environment has its feature rows set up"
