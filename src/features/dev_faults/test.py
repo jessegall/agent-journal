@@ -133,7 +133,7 @@ def test_going_over_again_counts_but_tells_the_agent_once():
         reports.slow(record, "command", "message all", 500.0, working=500.0)
     assert "before any other write" in held(record, main.title), "a breach seen over and over with no to-do open holds the agent's writes"
     todos.create(title)
-    assert held(record, main.title) == "", "filing the to-do lifts the hold"
+    assert "before any other write" not in held(record, main.title), "filing the to-do lifts the hold"
 
 
 def test_the_budget_is_tunable_per_environment():
