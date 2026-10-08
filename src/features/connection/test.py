@@ -6,7 +6,7 @@ import time
 
 import features
 from controllers.features import Features
-from controllers.types import Environments, Notices, Todos
+from controllers.types import Environments, Notices, Rules, Todos
 from engine.machines import Lease, this_machine
 from controllers.requests import request
 from engine.offline import Applied, Sent, Waiting, Write
@@ -18,7 +18,7 @@ from features.connection.code import Pushed, pull, push
 from features.connection.linking import Synced, hand, join, local_hello, sync
 from features.connection.transport import HttpTransport, ServerKey
 from migrations import applied
-from resources.base import AGENT, SYSTEM, USER, Event
+from resources.base import AGENT, PROJECT, SYSTEM, USER, Event
 from tests.conftest import fresh, hosted_world, refused  # noqa: F401
 
 
@@ -313,3 +313,45 @@ def test_a_handover_with_a_stale_lease_is_refused_on_both_sides():
     stale = Record(there.root, there.env, writer=Pushing("server-1"))
     assert "refused" in refused(lambda: Todos(stale, actor=AGENT).create("pushed by the old holder")), "a push from the machine that held it before is refused"
     assert "refused" in refused(lambda: give(here, "", "desk")), "and a machine that already handed an environment over cannot hand it on again"
+
+
+def test_the_sync_routes_are_safe_to_ask_twice_name_who_holds_an_environment_and_a_lost_answer_no_one_can_settle_is_refused():
+    from dataclasses import asdict
+    from tests.kit import dispatch
+    features.load()
+    server = fresh()
+    root, env = server.root, server.env
+    ask = lambda path, body: dispatch("POST", f"/api/sync/{path}", root, {}, body)
+    hello = dispatch("GET", "/api/sync/hello", root, {}, {})
+    assert (hello.code, hello.body["machine"]) == (200, this_machine()), "the server says who it is"
+    handed = {"env": env, "machine": this_machine(), "epoch": 1}
+    assert ([ask("handover", handed).code, ask("handover", handed).code], Lease.read(server.scope_home(""))) == ([200, 200], Lease(this_machine(), 1)), \
+        "a handover sent again after a lost answer is taken once"
+    assert ask("holder", {"env": env}).body == {"machine": this_machine(), "epoch": 1}, "the server names who holds an environment and from which epoch"
+    assert [ask("handback", {"env": env, "machine": "laptop-1"}).body for _ in range(2)] == [{"machine": "laptop-1", "epoch": 2}] * 2, \
+        "a handback asked again names the lease it already gave"
+    late = asdict(Write("late-1", "", Request(env, "todo", "create", ["Sent after the server let go"], actor=USER)))
+    assert (ask("write", late).code, [row.title for row in Todos(server, actor=SYSTEM).all()]) == (400, []), \
+        "a write into an environment the server no longer holds is refused, so the copy sets it aside"
+    rule = Rules(server, actor=AGENT).create("Keep it plain", brief="why", keywords="plain")
+    project = ask("events", {"scope": PROJECT, "env": env, "since": 0}).body["events"]
+    own = ask("events", {"scope": "", "env": env, "since": 0}).body["events"]
+    assert (any(e["type"] == "rule" and e["n"] == rule.n for e in project), any(e["type"] == "rule" for e in own)) == (True, False), \
+        "the project's events come from the project's log and an environment's from its own"
+
+    class Unreachable(Server):
+        def holder(self, env):
+            raise OSError("the server went away")
+
+    class HandsElsewhere(Server):
+        def handback(self, env):
+            return Lease("desk-2", 9)
+    record = fresh()
+    gone = Unreachable(record.root)
+    gone.loses_handovers = True
+    assert "cannot be asked who holds it" in refused(lambda: hand(record.root, record.env, "server", gone)) and not Record(record.root, record.env).holds(""), \
+        "a handover whose answer is lost while the server cannot be asked leaves this machine let go and says to run hand again"
+    assert "not to this machine" in refused(lambda: hand(record.root, record.env, "here", HandsElsewhere(record.root))), \
+        "a handback that names another machine is never taken here"
+    Features(record, actor=USER).switch("connection", True)
+    assert "name the server first" in refused(lambda: Environments(record, actor=USER).action("sync")()), "syncing with no server named says how to name one"
