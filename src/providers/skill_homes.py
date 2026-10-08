@@ -21,12 +21,12 @@ def library(project: Path, folder: Path) -> bool:
 
 def link(project: Path, names: list[str], agents: tuple[str, ...] = tuple(LINKED)) -> list[Path]:
     targets = {(name, agent): project / LINKED[agent] / name for name in names for agent in agents if not library(project, project / LINKED[agent])}
-    loose = set(untracked(project, [target.relative_to(project) for target in targets.values()]))
+    untracked_targets = set(untracked(project, [target.relative_to(project) for target in targets.values()]))
     links = []
     for (name, agent), target in targets.items():
         source = project / LIBRARY / name
         target.parent.mkdir(parents=True, exist_ok=True)
-        if target.relative_to(project) not in loose:
+        if target.relative_to(project) not in untracked_targets:
             if target.is_symlink():
                 target.unlink()
             shutil.copytree(source, target, dirs_exist_ok=True)

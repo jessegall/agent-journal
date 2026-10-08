@@ -51,16 +51,16 @@ export async function runScenarios(url, scenarios, {voice = true, device = {}} =
 
 export function journal(...words) {
     const root = process.env.JOURNAL_SCRATCH_ROOT;
-    const asked = new URL("api/run", process.env.JOURNAL_SCRATCH_URL);
-    asked.searchParams.set("env", "main");
-    asked.searchParams.set("cwd", `${root}/..`);
-    const answered = spawnSync("curl", ["-s", "-m", String(JOURNAL_WAIT / 1000), "-w", "\n%{http_code}", "-H", "Content-Type: text/plain", "--data-binary", "@-", asked.href], {
+    const endpoint = new URL("api/run", process.env.JOURNAL_SCRATCH_URL);
+    endpoint.searchParams.set("env", "main");
+    endpoint.searchParams.set("cwd", `${root}/..`);
+    const output = spawnSync("curl", ["-s", "-m", String(JOURNAL_WAIT / 1000), "-w", "\n%{http_code}", "-H", "Content-Type: text/plain", "--data-binary", "@-", endpoint.href], {
         input: words.join("\0"),
         encoding: "utf8",
         timeout: JOURNAL_WAIT,
     }).stdout;
-    const status = answered.slice(answered.lastIndexOf("\n") + 1);
-    const body = answered.slice(0, answered.lastIndexOf("\n"));
+    const status = output.slice(output.lastIndexOf("\n") + 1);
+    const body = output.slice(0, output.lastIndexOf("\n"));
     if (status === "200") return body;
     if (!RUNS_LOCALLY.has(status)) throw new Error(`journal ${words.join(" ")} was refused with ${status}: ${body}`);
     return execFileSync(process.env.JOURNAL_PYTHON, [`${root}/journal.py`, "--root", root, "--env", "main", ...words], {
