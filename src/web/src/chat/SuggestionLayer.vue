@@ -9,9 +9,12 @@ import {UNDO_MS, spoken, undoing} from "../state/suggestionScreen.js";
 
 const DEFAULT_HOURS = 3;
 const hours = computed(() => store.settings?.suggestions?.window_after ?? DEFAULT_HOURS);
+const DEFAULT_GRACE = 10;
+const graceUntil = () => ((store.summary?.started || 0) + (store.settings?.suggestions?.start_grace ?? DEFAULT_GRACE) * 60) * 1000;
 const {suggestion, close} = useSuggestionWindow(
     () => rows("suggestion"),
-    () => hours.value
+    () => hours.value,
+    graceUntil
 );
 </script>
 

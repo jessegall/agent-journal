@@ -10,6 +10,7 @@ from controllers.notices import Notices
 from controllers.questions import Questions
 from controllers.reactions import Reactions
 from controllers.types import CONTROLLERS, Agents, Comments, Environments, Todos, Works
+from engine import runtime
 from engine.record import Record
 from engine.sessions import Sessions
 from features.ask_questions.details import AskQuestionsDetails
@@ -250,7 +251,8 @@ def entry(home: Record, kind: str, row) -> dict:
 
 
 EXTRAS = {"question": lambda home: {"hold": hold(home)},
-          "suggestion": lambda home: {"window_after": SuggestionsDetails.values(home).window_after}}
+          "suggestion": lambda home: {"window_after": SuggestionsDetails.values(home).window_after, "start_grace": SuggestionsDetails.values(home).start_grace,
+                                      "started": runtime.STARTED[0]}}
 
 
 def awaited(home: Record) -> Awaiting:

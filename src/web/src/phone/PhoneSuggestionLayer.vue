@@ -8,7 +8,9 @@ const DEFAULT_HOURS = 3;
 const props = defineProps({items: {type: Array, required: true}});
 const suggestions = () => props.items.filter((item) => item.type === "suggestion");
 const hours = () => suggestions()[0]?.window_after ?? DEFAULT_HOURS;
-const {suggestion, close} = useSuggestionWindow(suggestions, hours);
+const DEFAULT_GRACE = 10;
+const graceUntil = () => ((suggestions()[0]?.started || 0) + (suggestions()[0]?.start_grace ?? DEFAULT_GRACE) * 60) * 1000;
+const {suggestion, close} = useSuggestionWindow(suggestions, hours, graceUntil);
 </script>
 
 <template>

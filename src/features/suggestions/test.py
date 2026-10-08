@@ -75,3 +75,9 @@ def test_the_users_answer_shows_on_their_side_of_the_chat_and_no_can_be_taken_ba
     unpinned = mine.create("Install the Snake plugin", plugin="https://example.invalid/snake")
     assert ("only you install" in refused(lambda: mine.install(unpinned.n)), "names no commit" in refused(lambda: theirs.install(unpinned.n))) == \
         (True, True), "the agent never installs a suggested plugin, and one with no pinned commit is not installed at all"
+    from engine import runtime
+    from features.suggestions.details import SuggestionsDetails
+    from overview.summary import summarize
+    runtime.STARTED[0] = 1234.0
+    assert (SuggestionsDetails.values(record).start_grace, summarize(record.root)["started"]) == (10, 1234.0), \
+        "the viewer is told when the journal started and how long to wait after it before a waiting suggestion opens"

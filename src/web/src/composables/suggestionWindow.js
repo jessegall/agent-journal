@@ -9,7 +9,7 @@ const CHAT_BOX = ".compose textarea";
 
 const drafted = () => [...document.querySelectorAll(CHAT_BOX)].some((box) => box.value.trim());
 
-export function useSuggestionWindow(suggestions, hours) {
+export function useSuggestionWindow(suggestions, hours, graceUntil = () => 0) {
     const shown = ref(0);
     const opened = new Set();
     let active = Date.now();
@@ -29,6 +29,7 @@ export function useSuggestionWindow(suggestions, hours) {
             now - active > ACTIVE_MS ||
             now - typed < IDLE_MS ||
             now - closed < GAP_MS ||
+            now < graceUntil() ||
             drafted()
         );
     }
