@@ -1,8 +1,45 @@
-import {reply, runScenarios} from "./harness.mjs";
+import {reply, runScenarios, shot} from "./harness.mjs";
 
 const AUTO = "Start the next to-do without asking";
 
 await runScenarios(process.argv[2], {
+    async "the updates page offers Update anyway for changed files and sends it with yes"(page, url) {
+        const about = {version: "2.258.0", changelog: "# 2.258.0\n", latest: "2.263.0", newer: true, checking: false, updating: false, repository: false, changed: ["AGENTS.md", "CLAUDE.md"]};
+        await page.route(/\/api\/(main\/)?changelog/, (route) => reply(route, about));
+        await page.route(/\/api\/(main\/)?update\/check/, (route) => reply(route, {}));
+        let sent = null;
+        await page.route(/\/api\/(main\/)?update$/, (route) => {
+            sent = route.request().postDataJSON();
+            return reply(route, {updating: true});
+        });
+        await page.goto(`${url}#/main/about`);
+        const button = page.getByRole("button", {name: "Update anyway"});
+        await button.waitFor({timeout: 30000});
+        await page.getByText("AGENTS.md, CLAUDE.md").waitFor();
+        await shot(page, "update-anyway");
+        await button.click();
+        await page.waitForFunction(() => document.body.innerText.includes("Updating to 2.263.0"));
+        if (!sent || sent.yes !== true) throw new Error(`the button sent ${JSON.stringify(sent)} instead of yes: true`);
+    },
+    async "the updates page lists earlier versions and installs the one picked"(page, url) {
+        const about = {version: "2.263.0", changelog: "# 2.263.0\n", latest: "2.263.0", newer: false, checking: false, updating: false, repository: false, changed: []};
+        await page.route(/\/api\/(main\/)?changelog/, (route) => reply(route, about));
+        await page.route(/\/api\/(main\/)?update\/check/, (route) => reply(route, {}));
+        await page.route(/\/api\/(main\/)?releases/, (route) => reply(route, {versions: ["2.262.0", "2.250.0"]}));
+        let sent = null;
+        await page.route(/\/api\/(main\/)?update$/, (route) => {
+            sent = route.request().postDataJSON();
+            return reply(route, {updating: true});
+        });
+        await page.goto(`${url}#/main/about`);
+        await page.getByText("Install an earlier version").click();
+        const button = page.getByRole("button", {name: "Install 2.250.0"});
+        await button.waitFor({timeout: 30000});
+        await shot(page, "earlier-versions");
+        await button.click();
+        await page.waitForFunction(() => document.body.innerText.includes("Updating to 2.250.0"));
+        if (!sent || sent.version !== "2.250.0") throw new Error(`the button sent ${JSON.stringify(sent)} instead of version 2.250.0`);
+    },
     async "a switch changed on the settings page is still changed after a reload"(page, url) {
         const control = page.getByRole("switch", {name: AUTO, exact: true});
         await page.goto(`${url}#/main/settings?q=Questions`);

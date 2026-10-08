@@ -86,7 +86,7 @@ GENERIC = {
 }
 
 ALLOWED = (
-    get("/api/agent-controls/{provider}"), get("/api/agents"), get("/api/changelog"), get("/api/extension"), get("/api/identity"),
+    get("/api/agent-controls/{provider}"), get("/api/agents"), get("/api/changelog"), get("/api/releases"), get("/api/extension"), get("/api/identity"),
     get("/api/manifest"), get("/api/pages"), get("/api/{env}/agent/{n}/terminal"), get("/api/{env}/commit/{sha}"),
     get("/api/{env}/events"), get("/api/plugins/{name}/log"), get("/api/services"), get("/api/services/{id}/log"),
     get("/api/{env}/dashboard"), get("/api/{env}/diagnostics"), get("/api/{env}/diff"), get("/api/{env}/family"), get("/api/{env}/file"),

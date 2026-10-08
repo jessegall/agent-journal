@@ -2,10 +2,11 @@
 import {onMounted} from "vue";
 import {useUpdates} from "../composables/updates.js";
 import Btn from "../kit/Btn.vue";
+import Notice from "../kit/Notice.vue";
 import StateDot from "../kit/StateDot.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
-const {about, error, status, update, start} = useUpdates();
+const {about, changed, releases, error, status, update, start} = useUpdates();
 
 onMounted(start);
 </script>
@@ -23,10 +24,30 @@ onMounted(start);
                         <StateDot state="running" />
                     </template>
                     <span>{{ status.text }}</span>
-                    <template v-if="status.update">
-                        <Btn kind="primary" @click="update">Update to {{ about.latest }}</Btn>
+                    <template v-if="status.update && !changed.length">
+                        <Btn kind="primary" @click="update()">Update to {{ about.latest }}</Btn>
                     </template>
                 </div>
+                <template v-if="status.update && changed.length">
+                    <Notice tone="need" class="changed-files">
+                        These files changed since the journal wrote them: {{ changed.join(", ") }}. Updating copies them into .journal/attic first.
+                        <template #actions>
+                            <Btn kind="primary" @click="update(true)">Update anyway</Btn>
+                        </template>
+                    </Notice>
+                </template>
+            </template>
+            <template v-if="releases.length">
+                <details class="earlier">
+                    <summary>Install an earlier version</summary>
+                    <p class="hint">The journal copies your record to .journal/attic first, then installs the version you pick.</p>
+                    <template v-for="found in releases" :key="found">
+                        <div class="release">
+                            <span>Version {{ found }}</span>
+                            <Btn small @click="update(true, found)">Install {{ found }}</Btn>
+                        </div>
+                    </template>
+                </details>
             </template>
             <TextDisplay class="changelog" :text="about.changelog" />
         </template>
@@ -60,6 +81,23 @@ onMounted(start);
 
 .update-line .btn {
     margin-left: auto;
+}
+
+.release {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.hint {
+    color: var(--text-2);
+}
+
+.earlier summary {
+    cursor: pointer;
+    font-weight: 600;
 }
 
 .error {

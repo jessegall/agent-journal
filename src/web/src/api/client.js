@@ -55,8 +55,12 @@ export class ApiClient {
         return this.post("/update/check", {});
     }
 
-    update(yes = false) {
-        return this.post("/update", {yes});
+    update(yes = false, version = "") {
+        return this.post("/update", {yes, ...(version ? {version} : {})});
+    }
+
+    releases() {
+        return this.get("/releases");
     }
 
     manifest() {

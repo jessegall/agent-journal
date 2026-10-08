@@ -58,12 +58,12 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert check.tick() == "installing 3.0.0", "a value that is not one of the choices reads as the default, always"
     from controllers.types import Notices
     from features import FEATURES
-    monkeypatch.setattr(updates, "installed", lambda root, yes=False: "package not refreshed: the network was down")
+    monkeypatch.setattr(updates, "installed", lambda root, yes, version: "package not refreshed: the network was down")
     updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
     assert sent[-1].startswith("installing journal 3.0.0 failed") and [n.title for n in Notices(record).all()][-1] == "The journal could not update to 3.0.0", \
         "a failed install is told to the agent and filed as a notice"
     told = len(sent)
-    monkeypatch.setattr(updates, "installed", lambda root, yes=False: "")
+    monkeypatch.setattr(updates, "installed", lambda root, yes, version: "")
     updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
     assert len(sent) == told, "an install that went well tells nothing; the restart says the rest"
     assert updates.claimed(record.root, "3.0.1", "patches") and not updates.claimed(record.root, "3.0.1", "patches"), "a release just tried waits before it is tried again"
@@ -97,6 +97,30 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         "the Update button refuses files changed by hand"
     assert "--yes" in install.upgrade(record.root.parent, record.root)[0] and managed.read_text() == "changed by hand\n", \
         "journal upgrade refuses the same changed file before touching it"
+    assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], "the updates page is told which files changed"
+    monkeypatch.setattr(routes, "release_versions", lambda: ["2.263.0", "2.262.0", "2.250.0"])
+    monkeypatch.setattr(routes, "version", lambda: "2.263.0")
+    assert dispatch("GET", "/api/releases", record.root, {}, {}).body == {"versions": ["2.262.0", "2.250.0"]}, "the updates page lists the released versions except the one running"
+    asked = []
+    monkeypatch.setattr(updates, "installed", lambda root, yes, version: asked.append((yes, version)) or "")
+    assert dispatch("POST", "/api/update", record.root, {}, {"yes": True, "version": "1.0.0"}).code == 400, "a version that was never released is refused"
+    dispatch("POST", "/api/update", record.root, {}, {"yes": True, "version": "2.250.0"})
+    for _ in range(100):
+        if asked:
+            break
+        time.sleep(0.05)
+    assert asked == [(True, "2.250.0")], "picking an earlier version installs exactly that version"
+    agents = record.root.parent / "AGENTS.md"
+    from features.journal_laws.briefing import brief
+    managed.write_text("generated\n")
+    brief(record.root.parent, record)
+    install.remember_managed(record.root.parent, record.root)
+    agents.write_text(agents.read_text() + "\nA line of the project's own.\n")
+    assert install.changed_managed(record.root.parent, record.root) == [], "a line outside the journal's block is not a change to its file"
+    agents.write_text(agents.read_text().replace("form 2 (auto-generated", "form 2 (edited by hand"))
+    managed.write_text("changed by hand\n")
+    assert install.archive_changed(record.root.parent, record.root, install.changed_managed(record.root.parent, record.root)).is_file(), "updating anyway copies the changed files to the attic first"
+    managed.write_text("generated\n")
     check.checked_at = 0.0
     assert check.tick() == "update held for changed files", "automatic updates wait for a decision about changed files"
     managed.write_text("generated\n")
@@ -237,16 +261,16 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     from features.auto_update import check
     upgrade = lambda code, script: [sys.executable, "-c", f"import sys, time\n{script}\nsys.exit({code})"]
     monkeypatch.setattr(check, "entry", lambda name: upgrade(3, "print('could not start')\nprint('')"))
-    assert check.installed(record.root, yes=True) == "could not start", "a failed upgrade reports the last line it printed"
+    assert check.installed(record.root, True, "") == "could not start", "a failed upgrade reports the last line it printed"
     monkeypatch.setattr(check, "entry", lambda name: upgrade(3, "pass"))
-    assert check.installed(record.root) == "journal upgrade failed with exit 3", "a failed upgrade that printed nothing still names its exit"
+    assert check.installed(record.root, False, "") == "journal upgrade failed with exit 3", "a failed upgrade that printed nothing still names its exit"
     monkeypatch.setattr(check, "entry", lambda name: upgrade(0, "time.sleep(30)"))
     monkeypatch.setattr(check, "INSTALL_WAIT", 1)
-    assert "was stopped after" in check.installed(record.root), "an upgrade that never finishes is stopped"
+    assert "was stopped after" in check.installed(record.root, False, ""), "an upgrade that never finishes is stopped"
     monkeypatch.setattr(check, "entry", lambda name: upgrade(0, "print('install failed halfway')"))
-    assert check.installed(record.root) == "install failed halfway", "an upgrade that exits well but says it failed is a failure"
+    assert check.installed(record.root, False, "") == "install failed halfway", "an upgrade that exits well but says it failed is a failure"
     monkeypatch.setattr(check, "entry", lambda name: upgrade(0, "print('all done')"))
-    assert check.installed(record.root) == "", "an upgrade that says nothing is wrong has not failed"
+    assert check.installed(record.root, False, "") == "", "an upgrade that says nothing is wrong has not failed"
     updating = check.UpdateCheck(SimpleNamespace(record=record))
     updating.installing.acquire()
     assert updating.install(None, "99.0.0") is None, "an install already running is not started a second time"

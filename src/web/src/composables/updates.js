@@ -9,6 +9,7 @@ export function useUpdates() {
     const about = ref(null);
     const error = ref("");
     const target = ref("");
+    const releases = ref([]);
 
     const status = computed(() => {
         const a = about.value;
@@ -24,6 +25,10 @@ export function useUpdates() {
         about.value = await api.changelog();
     }
 
+    async function loadReleases() {
+        releases.value = (await api.releases()).versions;
+    }
+
     async function check() {
         await api.checkForUpdate();
         for (let tries = 0; tries < CHECK_TRIES; tries++) {
@@ -33,11 +38,11 @@ export function useUpdates() {
         }
     }
 
-    async function update() {
-        target.value = about.value.latest;
+    async function update(yes = false, version = "") {
+        target.value = version || about.value.latest;
         error.value = "";
         try {
-            await api.update();
+            await api.update(yes, version);
         } catch (failed) {
             target.value = "";
             error.value = failed.message;
@@ -55,11 +60,13 @@ export function useUpdates() {
     async function start() {
         try {
             await load();
-            await check();
+            await Promise.all([check(), loadReleases().catch(() => {})]);
         } catch (failed) {
             error.value = failed.message;
         }
     }
 
-    return {about, error, status, load, update, start};
+    const changed = computed(() => about.value?.changed || []);
+
+    return {about, changed, releases, error, status, load, update, start};
 }
