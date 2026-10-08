@@ -1,4 +1,4 @@
-from features.base import FeatureDetails
+from features.base import Behaviour, FeatureDetails
 from features.groups import Group
 
 
@@ -10,6 +10,15 @@ class SecretsDetails(FeatureDetails):
     has_skill = True
 
     title = "Secrets"
+
+    behaviours = [
+        Behaviour(
+            name="logins",
+            title="Agents log in on their own",
+            abstract="An agent logs in to any site it has a browser login for without asking you first. Off, it asks with a Log in button, unless you let it log in to that site on its own.",
+            default=False,
+        ),
+    ]
 
     abstract = """
         A secret names a key or a login, says what it is for and how to use it, and lists the
@@ -47,4 +56,6 @@ class SecretsDetails(FeatureDetails):
         journal adds), any other Playwright tool Claude Code starts, such as a Playwright plugin,
         through the agent's environment, and Codex's Playwright server in the project's
         .codex/config.toml.
+        Once the user lets you log in to a site on its own, or switched on Agents log in on their own, the
+        same request logs in at once with no button.
     """

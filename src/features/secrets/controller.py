@@ -7,6 +7,7 @@ import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
 from controllers.types import Environments, Messages
+from features import FEATURES
 from features.secrets.resource import Kind, Secret, SecretField
 from features.secrets.running import checked_program, run_masked
 from features.secrets.sessions import BrowserLogins
@@ -69,9 +70,9 @@ class Secrets(Controller):
 
     @action(here=True)
     def login(self, n: int) -> str:
-        if self.actor != USER:
-            self._refuse("only you log in, with the Log in button in the chat: ask for it with journal secret request --kind 'browser login' --url <address>")
         row = self.load(n)
+        if not self._may_log_in(row):
+            self._refuse("only you log in, with the Log in button in the chat: ask for it with journal secret request --kind 'browser login' --url <address>")
         if not row.url:
             raise Refused(f"secret {row.n}, {row.title}, has no site address to log in to")
         logins = BrowserLogins(self.record.root)
@@ -83,17 +84,41 @@ class Secrets(Controller):
         return f"saved: the agent's own browser starts logged in to {row.url} from its next start.{restart}"
 
     @action
+    def allow_login(self, n: int) -> str:
+        if self.actor != USER:
+            self._refuse("only you let the agent log in to a site on its own")
+        logged_in = self.login(n)
+        self.update(n, auto_login=True)
+        return logged_in
+
+    @action
+    def revoke_login(self, n: int) -> Secret:
+        if self.actor != USER:
+            self._refuse("only you decide whether the agent logs in to a site on its own")
+        return self.update(n, auto_login=False)
+
+    @action
     def where(self) -> str:
         return str(ValuesFile(self.record.root).path)
 
     def _login_asked(self, title: str, why: str, url: str) -> Secret:
-        if not url:
+        known = next((row for row in self.rows.every() if row.kind == Kind.BROWSER_LOGIN and row.title.lower() == title.lower()), None)
+        if known and self._may_log_in(known):
+            self.login(known.n)
+            return self.load(known.n)
+        if not known and not url:
             raise Refused("a browser login needs the site's address: journal secret request <name> <why> --kind 'browser login' --url <address>")
-        row = self.create(title, kind=Kind.BROWSER_LOGIN.value, asked=why, url=url)
-        button = {"label": "Log in", "type": self.type, "n": row.n, "action": "login", "outcome": f"Logged in to {title}"}
-        Messages(self.record, actor=AGENT).create(f"I want to log in on {title}, can you do that?", buttons=[button],
-                                                  brief=f"I need it {why}. Log in opens a browser on {url}: log in there and close its window, and my browser keeps the login.\n\nsecret {row.n}")
+        row = self.update(known.n, asked=why) if known else self.create(title, kind=Kind.BROWSER_LOGIN.value, asked=why, url=url)
+        buttons = [{"label": "Log in", "type": self.type, "n": row.n, "action": "login", "outcome": f"Logged in to {row.title}", "choice": "login",
+                    "ask": f"Log in to {row.title} for the agent"},
+                   {"label": "Always let the agent log in to this site", "type": self.type, "n": row.n, "action": "allow_login", "choice": "login",
+                    "outcome": f"Logged in to {row.title}, and the agent logs in to it on its own from now on"}]
+        Messages(self.record, actor=AGENT).create(f"I want to log in on {row.title}, can you do that?", buttons=buttons,
+                                                  brief=f"I need it {why}. Log in opens a browser on {row.url}: log in there and close its window, and my browser keeps the login.\n\nsecret {row.n}")
         return row
+
+    def _may_log_in(self, row: Secret) -> bool:
+        return self.actor == USER or row.auto_login or ("secrets" in FEATURES and FEATURES["secrets"].on(self.record, "logins"))
 
     def _stored(self, row: Secret, field: str, value: str) -> Secret:
         if not value:

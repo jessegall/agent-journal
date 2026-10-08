@@ -28,9 +28,11 @@ const answered = (group) => ({
     label: group.chosen.label,
     say: group.chosen.say,
     sent: sentAs(group.chosen),
-    result: means(group.chosen)
-        .replace(/^Sends/, "Sent")
-        .replace(/^Runs/, "Ran"),
+    result:
+        group.chosen.outcome ||
+        means(group.chosen)
+            .replace(/^Sends/, "Sent")
+            .replace(/^Runs/, "Ran"),
     passed: group.buttons.filter((b) => b !== group.chosen).map((b) => b.label),
 });
 const groups = computed(() => choiceGroups(props.resource).map((group) => ({...group, answer: group.chosen && answered(group)})));

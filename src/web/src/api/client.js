@@ -375,6 +375,10 @@ export class ApiClient {
         return this.act("secret", n, "delete", {why: "deleted from the viewer"});
     }
 
+    revokeSecretLogin(n) {
+        return this.act("secret", n, "revoke_login");
+    }
+
     restoreSecret(n) {
         return this.act("secret", n, "restore");
     }

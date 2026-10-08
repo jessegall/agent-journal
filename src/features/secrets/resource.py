@@ -52,6 +52,7 @@ class Secret(Shape, Resource):
         Field(default=0.0, name="used", journal_only=True),
         Field(default="", name="asked"),
         Field(default="", name="url"),
+        Field(default=False, name="auto_login", journal_only=True),
         Field(default=0.0, name="session", journal_only=True),
         Field(default=0.0, name="session_expires", journal_only=True),
     ]

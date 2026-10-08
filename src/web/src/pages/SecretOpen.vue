@@ -22,6 +22,10 @@ async function save() {
     if (done) emit("back");
 }
 
+async function askEachTime() {
+    await attempt(() => api.revokeSecretLogin(props.n));
+}
+
 async function remove() {
     const {done} = await attempt(() => api.deleteSecret(props.n));
     if (done) emit("back");
@@ -30,7 +34,10 @@ async function remove() {
 
 <template>
     <div class="secrets">
-        <Btn class="secrets-back" small @click="emit('back')"><Icon name="back" :size="12" /> All secrets</Btn>
+        <Btn class="secrets-back" small @click="emit('back')">
+            <Icon name="back" :size="12" />
+            All secrets
+        </Btn>
         <template v-if="one && draft">
             <h3 class="secrets-title">{{ one.title }}</h3>
             <SecretForm :draft="draft">
@@ -45,6 +52,13 @@ async function remove() {
                     <Btn @click="emit('back')">Cancel</Btn>
                 </div>
             </SecretForm>
+            <template v-if="one.data.auto_login">
+                <div class="secrets-delete">
+                    <b>The agent logs in to this site on its own</b>
+                    <p>You let the agent log in to this site without asking you. Take that back, and the agent asks with a Log in button again.</p>
+                    <Btn small :busy="busy" @click="askEachTime">Make the agent ask each time</Btn>
+                </div>
+            </template>
             <div class="secrets-delete">
                 <b>Delete this secret</b>
                 <p>The agent can no longer use it. The secret is kept for 30 days, then its values are removed from the file.</p>
