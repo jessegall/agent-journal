@@ -104,6 +104,7 @@ async function pressPage(browser, url, route, seen) {
         if (asked.pathname.startsWith("/api/") && answer.status() >= 400 && !IGNORED_STATUSES.includes(answer.status())) failures.push(`${name}: ${answer.request().method()} ${asked.pathname} answered ${answer.status()}`);
     });
     await page.route(/\/api\/stop$/, (r) => reply(r, {}));
+    await page.route((address) => address.origin !== new URL(url).origin, (route) => route.abort());
     await page.goto(`${url}#/main/${route}`);
     await page.waitForSelector(CONTROLS);
     await page.waitForTimeout(SETTLE_MS);
