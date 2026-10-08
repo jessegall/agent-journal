@@ -16,6 +16,7 @@ from engine import runtime
 from providers import PROVIDERS
 from engine.version import version
 from engine.package import data
+from surfaces.attachments import listed_types
 from typing import TypedDict
 
 
@@ -41,6 +42,7 @@ class Manifest(TypedDict):
     features: dict
     groups: list[groups.Described]
     models: list[dict]
+    searchable: list[str]
     chat_kinds: dict[str, dict[str, str]]
 
 
@@ -69,5 +71,6 @@ def manifest(root: Path) -> Manifest:
         "features": catalogue(features.describe(), Record(root, runtime.env(root))),
         "groups": groups.describe(),
         "models": default_models(),
+        "searchable": listed_types(),
         **built_in(),
     }

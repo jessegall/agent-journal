@@ -126,6 +126,10 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     assert "message:1  look at this  (archived, bring back with journal message restore 1)" in search_text(record, "three regions", 0, archived=True), \
         "journal search --archived says the hit is archived and how to bring it back"
     assert "message (2)\n" in search_text(record, "three regions", 0, archived=True), "journal search answers every kind of row, grouped by type, each hit with its reference, as the viewer's search does"
+    assert ("message:1" in search_text(record, "three regions", 0, archived=True, resources="todo"), "message:1" in search_text(record, "three regions", 0, archived=True, resources="message")) == (False, True), \
+        "journal search --resources narrows the search to the types named, as the viewer's type picker does"
+    assert dispatch("GET", "/api/t/search", record.root, {"q": "three regions", "archived": "true", "resources": "todo"}, {}).body["hits"] == [], "and so does the viewer's endpoint"
+    assert "no resource type nope" in refused(lambda: search_text(record, "three regions", 0, resources="nope")), "a type that does not exist is refused, naming the ones that do"
     assert dispatch("GET", "/api/t/search", record.root, {"q": "three regions", "archived": "true"}, {}).body["hits"][0]["deleted"], \
         "viewer search marks an archived hit"
     messages.restore(message.n)

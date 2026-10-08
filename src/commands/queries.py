@@ -74,10 +74,10 @@ def attic_text(record, term: str) -> str:
     return f"{lines}\nbring one back with journal environment unarchive <name>"
 
 
-def search_text(record, term: str, page: int, archived: bool = False) -> str:
+def search_text(record, term: str, page: int, archived: bool = False, resources: str = "") -> str:
     transcript_matches = "\n".join(turn_text(hit.turn, f"{hit.provider}:{hit.session}  ")
                                    for hit in search_transcript(environment_transcript(record), term, page))
-    hits = found(record, SYSTEM, term, archived)
+    hits = found(record, SYSTEM, term, archived, tuple(filter(None, resources.split(","))))
     types = list(dict.fromkeys(hit.type for hit in hits))
     rows = "\n".join(f"{type_} ({len(here)})\n" + "\n".join(row_line(hit) for hit in here)
                      for type_ in types if (here := [hit for hit in hits if hit.type == type_]))

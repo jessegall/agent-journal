@@ -557,7 +557,7 @@ def get_search(req: Request) -> Reply:
     if not term:
         return Reply(200, {"hits": [], "more": 0})
     record = req.record()
-    hits = sorted((hit for hit in found(record, USER, term, req.query.get("archived") == "true") if row_shared(hit.type, vars(hit.row))),
+    hits = sorted((hit for hit in found(record, USER, term, req.query.get("archived") == "true", tuple(filter(None, req.query.get("resources", "").split(",")))) if row_shared(hit.type, vars(hit.row))),
                   key=lambda hit: hit.row.updated, reverse=True)
     shown = [{**carded(hit.row, record, VIEWER), "matches": [{"name": name, "tags": tags, "url": f"/api/{record.env}/{hit.type}/{hit.row.n}/files/{quote(name, safe='')}"}
                                                             for name, tags in hit.files]}
