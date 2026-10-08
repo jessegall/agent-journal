@@ -92,6 +92,7 @@ class Work(Traced, Resource):
         Field(default="", name="awaiting"),
         Field(default=0, name="awaiting_since"),
         Field(default="", name="awaiting_on"),
+        Field(default=0, name="logged"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Work",

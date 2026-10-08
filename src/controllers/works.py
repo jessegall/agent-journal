@@ -1,3 +1,5 @@
+import time
+
 from controllers.base import Controller
 from resources import types
 from controllers.todos import Todos
@@ -10,6 +12,9 @@ class Works(Controller):
     @action
     def active(self):
         return next((w for w in self.rows.standing() if not w.parked and w.data.get("agent", "") == self.agent), None)
+
+    def _sectioned(self, r) -> None:
+        r.logged = time.time()
 
     def _for_todo(self, n: int) -> list:
         return [w for w in self.rows.standing() if int(w.todo) == int(n)]

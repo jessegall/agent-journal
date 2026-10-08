@@ -283,7 +283,11 @@ class Controller(Files, Links, Discussed):
                     break
             else:
                 r.sections.append({SECTION.title: title, SECTION.body: body})
+            self._sectioned(r)
             return self.save(r, "updated", section=title)
+
+    def _sectioned(self, r: Resource) -> None:
+        pass
 
     @marks.action
     def delete(self, n: int, why: str = "") -> Resource:
