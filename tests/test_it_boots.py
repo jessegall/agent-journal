@@ -664,7 +664,7 @@ def test_a_warm_up_that_fails_ends_the_server_so_a_broken_build_still_rolls_back
     exits = []
     monkeypatch.setattr(serve, "warm_viewer", broken)
     monkeypatch.setattr(serve.os, "_exit", exits.append)
-    serve.warmed(fresh().root)
+    serve.warmed(fresh().root, threading.Event())
     assert exits == [1], "warming runs beside the server, so a failure in it must end the process for the supervisor to roll back"
 
 
@@ -959,7 +959,7 @@ def test_a_machine_with_only_one_agent_warms_up_without_ending_the_server(tmp_pa
     monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
     exits = []
     monkeypatch.setattr(serve.os, "_exit", exits.append)
-    serve.warmed(root)
+    serve.warmed(root, threading.Event())
     assert exits == [], f"warming a machine with only {present} must not end the server and make the supervisor roll back"
 
 
@@ -1449,6 +1449,7 @@ def test_the_server_ends_when_interrupted_or_told_to_stop_restarts_on_new_code_a
     class Quiet:
         server_address = ("127.0.0.1", 4242)
         server_port = 4242
+        warm = threading.Event()
 
         def __init__(self, forever):
             self.forever = forever
