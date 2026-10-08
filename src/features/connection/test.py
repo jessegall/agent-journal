@@ -16,7 +16,7 @@ from features.connection.linking import hand, join, local_hello, sync
 from features.connection.transport import HttpTransport
 from migrations import applied
 from resources.base import AGENT, SYSTEM, USER, Event
-from tests.conftest import fresh, refused
+from tests.conftest import fresh, hosted_world, refused  # noqa: F401
 
 
 class Server:
