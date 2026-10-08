@@ -21,6 +21,10 @@ class PluginsDetails(FeatureDetails):
         runs as you. Its .journal-plugin/plugin.json says what it listens to, what it runs, which pages it shows and which
         events it raises.
 
+        A setting {"key": "api_key", "type": "secret", "env": "STRIPE_KEY"} asks for one of the user's secrets: the user
+        picks it for the plugin under Settings, Plugins, and only then do the plugin's services get its value, in that
+        variable. An agent never sets one.
+
         Some events can be cancelled before they happen, such as agent.dispatching, raised when a subagent is about to be
         dispatched. A plugin cancels one through "cancels": {"agent.dispatching": "<command>"} in its manifest: the command
         reads the event as JSON and answers {"cancel": "<reason>"} to stop it, and the reason is what the agent is told.

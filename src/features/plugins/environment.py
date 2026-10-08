@@ -9,6 +9,7 @@ from engine.viewer import lately_running
 from engine.wording import fill
 from features.plugins.declared import Manifest, called, declared, settings_of
 from features.plugins.paths import data, folder, plugin_socket, queue_path
+from features.secrets.values import ValuesFile
 
 
 def port_values(ports: dict) -> dict:
@@ -46,9 +47,10 @@ def chosen_values(manifest: Manifest, chosen: dict | None) -> dict:
     return {setting.key: str(picked.get(setting.key, setting.default)) for setting in manifest.settings}
 
 
-def chosen_env(manifest: Manifest, chosen: dict | None) -> dict:
+def chosen_env(root: Path, manifest: Manifest, chosen: dict | None) -> dict:
     values = chosen_values(manifest, chosen)
-    named = {setting.env: values[setting.key] for setting in manifest.settings if setting.env}
+    held = ValuesFile(root).values() if any(setting.is_secret() for setting in manifest.settings) else {}
+    named = {setting.env: held.get(values[setting.key], "") if setting.is_secret() else values[setting.key] for setting in manifest.settings if setting.env}
     return {**named, "JOURNAL_SETTINGS": json.dumps(values)}
 
 
@@ -56,7 +58,7 @@ def environment(root: Path, name: str, manifest: Manifest, token: str, ports: di
     where = values(root, name, token, ports, env)
     given = fill(manifest.env, where)
     path = f"{own_journal(root)}{os.pathsep}{os.environ.get('PATH', '')}"
-    return {**os.environ, "PATH": path, **{str(k): str(v) for k, v in given.items()}, **chosen_env(manifest, chosen),
+    return {**os.environ, "PATH": path, **{str(k): str(v) for k, v in given.items()}, **chosen_env(root, manifest, chosen),
             "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_TOKEN": token,
             "JOURNAL": str(Path(root) / "journal"), "JOURNAL_ENV": where["journal.env"], "JOURNAL_PLUGIN": name,
             "JOURNAL_PLUGIN_DIR": where["dir"], "JOURNAL_PLUGIN_DATA": where["data"], "JOURNAL_QUEUE": where["queue"],

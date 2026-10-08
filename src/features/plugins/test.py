@@ -269,6 +269,15 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
                       events={"sin-found": {"title": "Sin found", "tone": "warn", "card": {"icon": "warn"}}, "checked": {"title": "Checked"}})
     assert "true or false" in refused(lambda: Configure().run(None, plugins, typed.n, "on", "yes")), "a switch takes true or false"
     assert "one of low, high" in refused(lambda: Configure().run(None, plugins, typed.n, "level", "mid")), "options take one of theirs"
+    from features.secrets.values import ValuesFile
+    from resources.base import USER
+    ValuesFile(record.root).put("STRIPE_TEST_KEY", "sk-test-plugin-77")
+    payer = installed(record, "payer", "exit 0", settings={"stripe": {"type": "secret", "env": "STRIPE_KEY"}})
+    given = lambda: environment(record.root, "payer", Manifest.of(payer.manifest), payer.token, chosen=settings_of(plugins.load(payer.n)).chosen)["STRIPE_KEY"]
+    assert given() == "", "a plugin gets no secret until it is given one"
+    assert "only you give payer a secret" in refused(lambda: Configure().run(None, plugins, payer.n, "stripe", "STRIPE_TEST_KEY")), "an agent never gives one"
+    Configure().run(None, Plugins(record, actor=USER), payer.n, "stripe", "STRIPE_TEST_KEY")
+    assert given() == "sk-test-plugin-77", "once you pick the secret for it, its services get the value in their variable"
     from features.plugins.answer import KEYS, apply
     from features.plugins.environment import ports_for
     from features.plugins.declared import Setting

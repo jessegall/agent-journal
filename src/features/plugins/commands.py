@@ -14,7 +14,7 @@ from features.plugins.preview import preview
 from features.plugins.setup import prepared
 from features.plugins.staging import alone, token
 from controllers.types import Agents
-from resources.base import Refused, SYSTEM
+from resources.base import Refused, SYSTEM, USER
 
 VERSION = version()
 
@@ -110,6 +110,8 @@ class Configure(Command):
             names = ", ".join(s.key for s in manifest.settings)
             raise Refused(f"{called(row)} has no setting {key!r}; it has {names if names else 'none'}")
         setting.check(value)
+        if setting.is_secret() and plugins.actor != USER:
+            raise Refused(f"only you give {called(row)} a secret, under Settings, Plugins in the viewer")
         updated = plugins.update(row.n, settings=settings_choosing(row, {key: value}))
         restarted(plugins.record.root, manifest)
         return updated

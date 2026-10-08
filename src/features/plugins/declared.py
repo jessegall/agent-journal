@@ -113,6 +113,9 @@ class Setting(Loaded):
     def runs_commands(self) -> bool:
         return self.kind == "command"
 
+    def is_secret(self) -> bool:
+        return self.kind == "secret"
+
     def check(self, value: str) -> None:
         if self.kind == "flag" and value not in ("true", "false"):
             raise Refused(f"{self.key} is a switch: true or false")
