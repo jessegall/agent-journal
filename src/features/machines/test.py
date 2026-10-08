@@ -317,3 +317,16 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
     assert (agents_now.rows.by_title("claude-up").status, agents_now.rows.by_title("claude-gone").status) == ("working", "stopped"), "the lost one is shown as stopped"
     after_restart(after)
     assert [card["label"] for card in agents_now.rows.by_title("claude-gone").data["cards"]] == ["Agent lost in the restart"], "and marked once in the chat"
+    from engine.handover import RESTORED, after_restore, epoch_of
+    restore = fresh()
+    Todos(restore, actor=AGENT).create("a row")
+    restore.hand_over(PROJECT, "server")
+    restore.hand_over("", "server")
+    known = epoch_of(restore.root)
+    assert (known, after_restore(restore.root)) == (1, False), "with no restore nothing starts a new epoch"
+    (restore.root / RESTORED).write_text("1")
+    assert after_restore(restore.root) and not (restore.root / RESTORED).exists(), "a restore leaves a marker, and the new epoch begins once"
+    assert (epoch_of(restore.root) > 1000, Lease.read(restore.home).machine, Lease.read(restore.home).epoch == epoch_of(restore.root)) == (True, "server", True), \
+        "every scope keeps its holder and moves to an epoch above any a copy saw"
+    assert Shape(PROTOCOL, frozenset(), known).compared(Shape(PROTOCOL, frozenset(), epoch_of(restore.root))) == Comparison(Step.PULL_AGAIN), \
+        "a copy in the old epoch pulls again instead of pushing rows from before the restore"

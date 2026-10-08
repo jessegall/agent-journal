@@ -1,5 +1,10 @@
+import time
+from pathlib import Path
+
 from engine.machines import Lease, NotTheOwner
 from engine.offline import Waiting
+from engine.paths import environments
+from engine.record import RESOURCES
 from resources.base import Refused
 
 
@@ -21,3 +26,31 @@ def accept(record, scope: str, lease: Lease) -> Lease:
             raise Refused(f"{record.scope_name(scope)} was already handed over at epoch {known.epoch}; this handover, epoch {lease.epoch}, is older")
         lease.write(record.scope_home(scope))
     return lease
+
+
+RESTORED = "restored"
+
+
+def epoch_of(root: Path) -> int:
+    """The epoch a copy of the record is in: the project's, which a restore moves on for every copy."""
+    return Lease.read(Path(root) / RESOURCES).epoch
+
+
+def restored(root: Path) -> int:
+    """Starts a new epoch after a backup was put back: the project and every environment keep their holder and get an epoch above any a copy saw before, so copies pull again instead of pushing rows from before the restore."""
+    epoch = int(time.time())
+    for home in (Path(root) / RESOURCES, *environments(root).glob("*/")):
+        if home.is_dir():
+            held = Lease.read(home)
+            Lease(held.machine, max(held.epoch + 1, epoch)).write(home)
+    return epoch
+
+
+def after_restore(root: Path) -> bool:
+    """On the server's start: a restore leaves a marker beside the record, and the new epoch begins once, then the marker goes."""
+    marker = Path(root) / RESTORED
+    if not marker.is_file():
+        return False
+    restored(root)
+    marker.unlink()
+    return True

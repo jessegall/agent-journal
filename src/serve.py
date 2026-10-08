@@ -284,8 +284,10 @@ def warmed(root: Path, warm: threading.Event) -> None:
 
 def settle_agents(root: Path) -> None:
     try:
+        from engine.handover import after_restore
         from engine.record import Record
         from features.machines.restart import after_restart
+        after_restore(root)
         for record in Record.every(root):
             after_restart(record)
     except Exception:
