@@ -107,6 +107,9 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     assert "has no environment left to stop" in refused(lambda: helpers.stop(lost.n)), "a helper whose environment is gone has nothing to stop"
     monkeypatch.setattr("features.helpers.controller.tell_in", lambda *given: True)
     assert helpers.say(ghost.n, "carry on") == "sent to Ghost", "a follow-up reaches a helper that is running"
+    Helpers(record, actor=SYSTEM).update(ghost.n, report="done for now")
+    helpers.say(ghost.n, "one more thing")
+    assert helpers.load(ghost.n).report == "", "a follow-up takes the helper's earlier report away, so the menu shows it working again"
 
 
 def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_a_nudge(monkeypatch):

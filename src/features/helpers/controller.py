@@ -182,6 +182,8 @@ class Helpers(Controller):
         row = self._unfinished(n, "finished")
         if not tell_in(self.record, row.environment, row.provider, text):
             raise Refused(f"helper {n}, {row.name}, is not running; dispatch it again to go on")
+        if row.report:
+            Helpers(self.record, actor=SYSTEM).update(n, report="")
         return f"sent to {row.name}"
 
     @action
