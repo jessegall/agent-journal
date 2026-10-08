@@ -1,5 +1,6 @@
 import json
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import controllers.types as types_module
@@ -83,8 +84,18 @@ def handed_over(todos: list[Todo]) -> str:
         return ""
     listed = "\n".join(f"- to-do {t.n}: {t.title}" + (f" ({t.brief})" if t.brief else "") for t in todos)
     return (f"These to-dos of the agent that dispatched you are yours alone:\n{listed}\n"
+            f"Read one with journal helper todo <n>; the numbers are the dispatching agent's, not your own list's. "
             f"When a commit of yours holds one, mark it with journal helper done <n> \"<what landed>\": "
             f"it shows as done and closes once your work is taken. ")
+
+
+@dataclass(frozen=True)
+class HandedRow:
+    """A to-do handed to a helper as the dispatching agent holds it, with the list it lives on."""
+
+    helper: Helper
+    listed: Todos
+    row: Todo
 
 
 class Helpers(Controller):
@@ -156,16 +167,26 @@ class Helpers(Controller):
         return f"helper {helper.n} may run tests"
 
     @action
-    def done(self, todo: int, how: str) -> str:
+    def todo(self, n: int) -> str:
+        """Reads a to-do handed to this helper by the number the agent that dispatched it knows, which its own list does not carry."""
+        row = self._handed_to_me(n).row
+        return f"to-do {row.n}: {row.title}\n{row.abstract}\n{row.brief}".strip()
+
+    def _handed_to_me(self, n: int) -> "HandedRow":
         place = self._helping()
         if not place:
-            raise Refused("only a helper marks a to-do it was handed as done; the agent that dispatched it closes its own with journal todo done")
+            raise Refused("only a helper reads or marks a to-do it was handed; the agent that dispatched it works its own with journal todo")
         helper = self._helper(place)
-        home = Record(self.record.root, place.launched_from)
-        listed = Todos(home, actor=SYSTEM)
-        row = listed.load(todo)
+        listed = Todos(Record(self.record.root, place.launched_from), actor=SYSTEM)
+        row = listed.load(n)
         if row.assigned != helper.ref:
-            raise Refused(f"todo {row.n} was not handed to you; mark only the to-dos your kickoff names")
+            raise Refused(f"todo {row.n} was not handed to you; use only the to-dos your kickoff names")
+        return HandedRow(helper, listed, row)
+
+    @action
+    def done(self, todo: int, how: str) -> str:
+        handed = self._handed_to_me(todo)
+        helper, listed, row = handed.helper, handed.listed, handed.row
         for copy in (t for t in Todos(self.record, actor=SYSTEM).rows.standing() if t.handed == str(row.n)):
             Todos(self.record, actor=SYSTEM).complete(copy.n, how)
         if not helper.worktree:

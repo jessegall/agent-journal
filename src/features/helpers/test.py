@@ -265,6 +265,10 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
         assert "journal helper stop 1 gives it back first" in refused(closing), "the agent that dispatched it cannot close, strike or take back a handed row"
     assert "assigned to helper:1" in refused(lambda: todos.start(fixed)), "nor start it"
     assert "not handed to you" in refused(lambda: helper.done(todos.create("another").n, "x"))
+    read = helper.todo(fixed)
+    assert read.startswith(f"to-do {fixed}: fix the tunnel") and "not handed to you" in refused(lambda: helper.todo(todos.create("one more").n)), \
+        "a helper reads a to-do handed to it by the number the dispatching agent knows, and only those"
+    assert "only a helper reads" in refused(lambda: Helpers(repo.record, actor=AGENT).todo(fixed)), "the agent that dispatched it works its own list instead"
     own = Todos(Record(repo.record.root, row.environment), actor=SYSTEM)
     assert sorted(t.title for t in own.rows.standing() if t.handed) == ["fix the tunnel", "name the cause", "test the dialog"], "its own list holds each handed to-do"
     helper.done(fixed, "restarts within seconds")
