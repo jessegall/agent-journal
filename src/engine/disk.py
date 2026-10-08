@@ -1,5 +1,7 @@
+import errno
 import json
 import os
+import shutil
 import threading
 from pathlib import Path
 from typing import Any, Callable, TypeVar
@@ -8,6 +10,18 @@ from engine.memo import Memo
 
 T = TypeVar("T")
 LOG_BYTES = 262144
+KEPT_FREE_BYTES = 64 * 1024 * 1024
+OUT_OF_ROOM = (errno.ENOSPC, errno.EDQUOT)
+
+
+class DiskFull(OSError):
+    @classmethod
+    def writing(cls, name: str, cause: OSError) -> "DiskFull":
+        return cls(f"the server could not save {name}: {cause.strerror or cause}")
+
+    @classmethod
+    def keeping(cls, name: str, free: int) -> "DiskFull":
+        return cls(f"the server's disk is nearly full ({free // (1024 * 1024)} MB free), so {name} was not saved")
 
 
 class Growth:
@@ -45,15 +59,26 @@ def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
 
 
 def replace(path: Path, raw: bytes, mode: int = 0o666) -> None:
-    """Writes the whole file or nothing: a failed write, such as on a full disk, leaves the old file as it was."""
+    """Writes the whole file or nothing, and refuses with DiskFull once the disk is down to its kept free space."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    free = shutil.disk_usage(path.parent).free
+    if free - len(raw) < KEPT_FREE_BYTES:
+        raise DiskFull.keeping(path.name, free)
+    restore(path, raw, mode)
+
+
+def restore(path: Path, raw: bytes, mode: int = 0o666) -> None:
+    """Writes the whole file or nothing, even into the kept free space: it puts back what an undone change took."""
     path.parent.mkdir(parents=True, exist_ok=True)
     spare = path.with_name(f".{path.name}.{os.getpid()}.{threading.get_ident()}")
     try:
         with os.fdopen(os.open(spare, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, mode), "wb") as written:
             written.write(raw)
         os.replace(spare, path)
-    except OSError:
+    except OSError as cause:
         spare.unlink(missing_ok=True)
+        if cause.errno in OUT_OF_ROOM:
+            raise DiskFull.writing(path.name, cause) from cause
         raise
 
 

@@ -6,6 +6,7 @@ from engine.record import Record
 from engine.timing import Stopwatch, profiler
 from controllers.faults import threw
 from features.format import shaped
+from engine.disk import DiskFull
 from resources.base import Missing, Refused
 from engine.package import data
 from engine.memo import Memo
@@ -111,6 +112,8 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
         return Reply(404, {"error": str(e)})
     except Refused as e:
         return Reply(400, {"error": str(e)})
+    except DiskFull as e:
+        return Reply(507, {"error": str(e)})
     except Exception as e:
         threw(root, req.env, f"{method} {path}")
         return Reply(500, {"error": f"{type(e).__name__}: {e}"})

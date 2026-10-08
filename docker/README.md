@@ -68,6 +68,12 @@ on this journal uses the secrets file of its own machine, never the server's. Th
 only through `journal secret run`, and the file is refused to their tools; since they run as `journal` too, that
 refusal stops a mistake, not an agent taken over on purpose.
 
+## Limits
+
+- Memory: the journal container stops at 4 GB (`JOURNAL_MEMORY` in `.env`), Caddy at 256 MB, the backup at 512 MB.
+- Logs: Docker keeps five files of 10 MB per container, and the journal cuts each of its own logs to its last megabyte every hour.
+- Disk: once the volume has less than 64 MB free, the journal refuses every write with the answer "the server's disk is nearly full", so no file is left half written. Free some space and writes work again at once.
+
 ## Day to day
 
 - `docker compose logs journal` — the journal's log; logins and refusals are in `/data/vault/*/audit.log` in the container.
