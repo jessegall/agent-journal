@@ -60,7 +60,10 @@ class IntegrationFeature(Feature):
             agent = provider()
             if not agent.present(project):
                 continue
-            agent.serve_mcp(project, self.mcp_name, url) if wanted else agent.drop_mcp(project, self.mcp_name)
+            if wanted:
+                agent.serve_mcp(project, self.mcp_name, url)
+                continue
+            agent.drop_mcp(project, self.mcp_name)
 
     def service(self, record):
         """What this integration talks to the service through; sending and checking use it."""
