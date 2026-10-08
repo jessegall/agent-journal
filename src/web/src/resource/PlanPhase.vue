@@ -4,6 +4,7 @@ import Icon from "../kit/Icon.vue";
 import {useScope} from "../composables/scope.js";
 import HolderTag from "../kit/HolderTag.vue";
 import PlanRowLine from "./PlanRowLine.vue";
+import SkeletonLine from "../kit/SkeletonLine.vue";
 import {FINISHED_STATES, grouped, helperName, helperState, helperTag, helpersHolding, holdingRuns} from "../domain/helpers.js";
 import {peek, peekThere} from "../route.js";
 
@@ -13,6 +14,7 @@ const props = defineProps({
     boning: {type: Boolean, default: false},
     skeleton: {type: Boolean, default: false},
     helpers: {type: Array, default: () => []},
+    helpersLoaded: {type: Boolean, default: true},
 });
 const emit = defineEmits(["inspect"]);
 const talk = inject("talk", null);
@@ -24,7 +26,12 @@ const closed = computed(() => rows.value.filter((t) => t.completed).length);
 const holders = computed(() => helpersHolding(rows.value, props.helpers));
 const runs = computed(() => holdingRuns(rows.value, props.helpers));
 const closedHolder = (helper) => FINISHED_STATES.has(helperState(helper));
-const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) : 0));
+const loading = computed(() => props.phase?.waiting || 0);
+const bones = computed(() => Math.max(loading.value, props.boning ? 3 - rows.value.length : 0));
+const holdersLoading = computed(() => !props.helpersLoaded && rows.value.some((t) => t.data?.assigned));
+const TITLE_BARS = [{width: "42%", height: 11}];
+const ROW_BARS = [{width: "58%", height: 11}];
+const HOLDER_BARS = [{width: "64px", height: 14}];
 </script>
 
 <template>
@@ -32,7 +39,7 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
         <li class="phase skeleton" aria-hidden="true">
             <div class="phead">
                 <span class="mark"><Icon name="circle" :size="14" /></span>
-                <span class="ptitle bone" />
+                <SkeletonLine class="ptitle" :bars="TITLE_BARS" />
             </div>
         </li>
     </template>
@@ -53,8 +60,11 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
                     <span class="progress">{{ closed }}/{{ rows.length }}</span>
                 </span>
             </div>
-            <template v-if="holders.length">
+            <template v-if="holders.length || holdersLoading">
                 <div class="phead-tags">
+                    <template v-if="holdersLoading">
+                        <SkeletonLine class="holders-loading" :bars="HOLDER_BARS" aria-hidden="true" />
+                    </template>
                     <template v-for="h in holders" :key="h.n">
                         <HolderTag :name="helperName(h)" :state="helperTag(h).state" :word="helperTag(h).word" :closed="closedHolder(h)" @open="emit('inspect', h)" />
                     </template>
@@ -102,7 +112,7 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
                 </template>
             </template>
             <template v-for="j in bones" :key="`row-bone-${j}`">
-                <div class="line bones" aria-hidden="true"><span class="bone row-bone" /></div>
+                <div class="line bones" aria-hidden="true"><SkeletonLine class="row-bone" :bars="ROW_BARS" /></div>
             </template>
         </li>
     </template>
@@ -114,40 +124,13 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
     pointer-events: none;
 }
 
-.bone {
-    display: block;
-    height: 11px;
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--border) 25%, var(--border-2) 37%, var(--border) 63%);
-    background-size: 400% 100%;
-    animation: bone 1.4s ease infinite;
-}
-
-.ptitle.bone {
-    width: 42%;
-}
-
 .line.bones {
     height: 26px;
 }
 
 .row-bone {
-    width: 58%;
+    flex: 1;
     margin-left: 22px;
-}
-
-.line.bones:nth-child(odd) .row-bone {
-    width: 44%;
-}
-
-@keyframes bone {
-    from {
-        background-position: 100% 50%;
-    }
-
-    to {
-        background-position: 0 50%;
-    }
 }
 
 .phase {

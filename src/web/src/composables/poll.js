@@ -70,6 +70,7 @@ async function rounds(held) {
         try {
             if (!newest(held).active()) continue;
             const got = await answer(held);
+            held.last = {got};
             held.users.forEach((user) => user.take(got));
         } catch (e) {}
     } while (held.again && kept(held));
@@ -110,8 +111,18 @@ export function startPoll(key, ask, every, take = () => {}, active = () => true)
     const held = polls.get(key);
     if (held) {
         held.users.set(token, {ask, every, take, active});
+        // A page that joins a poll another page runs shows its last answer now, not after the next round.
+        if (held.last) take(held.last.got);
     } else {
-        const fresh = {key, users: new Map([[token, {ask, every, take, active}]]), timer: 0, failures: 0, took: 0, started: -Infinity};
+        const fresh = {
+            key,
+            users: new Map([[token, {ask, every, take, active}]]),
+            timer: 0,
+            failures: 0,
+            took: 0,
+            started: -Infinity,
+            last: null,
+        };
         polls.set(key, fresh);
         round(fresh);
     }
