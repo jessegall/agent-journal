@@ -1,6 +1,6 @@
 from controllers.types import Todos, Works
 from engine.git import checkout_of
-from features.close_from_commits.handlers import SWEEP_COMMITS, closing, landing_commits
+from features.close_from_commits.handlers import closing, landing_commits
 from features.parts import Command, Context
 from resources.base import SYSTEM, Refused
 
@@ -13,6 +13,6 @@ class SweepLanded(Command):
         if not checkout or not checkout.landing:
             raise Refused("this project has no main branch from a remote to read trailers from")
         todos, works, closed = Todos(context.record, actor=SYSTEM), Works(context.record, actor=SYSTEM), []
-        for sha, subject, body in landing_commits(checkout, checkout.landing, limit=SWEEP_COMMITS):
+        for sha, subject, body in landing_commits(checkout, checkout.landing):
             closed += closing(todos, works, sha, subject, body)[0]
         return f"closed {', '.join(closed)}" if closed else "no open to-do has its trailer on main"
