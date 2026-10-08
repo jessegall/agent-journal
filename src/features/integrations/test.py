@@ -113,6 +113,22 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
     ValuesFile(record.root).put("LINEAR_KEY", "lin_rotated")
     linear.client(record).current()
     assert linear.client(record).key == "lin_rotated", "a key you replaced in your secrets is read again"
+    import json
+    project = record.root.parent
+    (project / ".claude").mkdir(exist_ok=True)
+    (project / ".codex").mkdir(exist_ok=True)
+    (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"linear": {"type": "http", "url": "https://own.example/mcp"}}}))
+    on = {**dict(linear.values(record)), "use_mcp": True}
+    apply(record, {"features": {"linear": True}, "linear": on}, USER)
+    servers = json.loads((project / ".mcp.json").read_text())["mcpServers"]
+    codex = (project / ".codex" / "config.toml").read_text()
+    assert (servers["journal-linear"], servers["linear"]["url"], 'url = "https://mcp.linear.app/mcp"' in codex) == ({"type": "http", "url": "https://mcp.linear.app/mcp"}, "https://own.example/mcp", True), \
+        "switching the MCP server on adds it to Claude's and Codex's config, and a project's own entry for the same service stays"
+    assert not [path for path in project.rglob("*") if path.is_file() and ".journal" not in path.parts and "lin_rotated" in path.read_text(errors="ignore")], "no key is written into a file of the project"
+    apply(record, {"linear": {**on, "use_mcp": False}}, USER)
+    assert ("journal-linear" in json.loads((project / ".mcp.json").read_text())["mcpServers"], "journal-linear" in (project / ".codex" / "config.toml").read_text()) == (False, False), \
+        "switching it off takes the journal's entry out of both"
+    assert json.loads((project / ".mcp.json").read_text())["mcpServers"]["linear"]["url"] == "https://own.example/mcp", "and still leaves the project's own entry"
 
 
 KEY = "lin_api_secret_value"

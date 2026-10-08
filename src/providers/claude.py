@@ -247,6 +247,25 @@ class Claude(Provider):
         write_text(f, json.dumps({**known, "env": wanted}, indent=2) + "\n")
         return True
 
+    def serve_mcp(self, project: Path, name: str, url: str) -> bool:
+        f = project / ".mcp.json"
+        known = read_json(f, dict, {})
+        servers = known.get("mcpServers") or {}
+        wanted = {"type": "http", "url": url}
+        if servers.get(name) == wanted:
+            return False
+        write_text(f, json.dumps({**known, "mcpServers": {**servers, name: wanted}}, indent=2) + "\n")
+        return True
+
+    def drop_mcp(self, project: Path, name: str) -> bool:
+        f = project / ".mcp.json"
+        known = read_json(f, dict, {})
+        servers = known.get("mcpServers") or {}
+        if name not in servers:
+            return False
+        write_text(f, json.dumps({**known, "mcpServers": {key: one for key, one in servers.items() if key != name}}, indent=2) + "\n")
+        return True
+
     def wiring_trouble(self, project: Path) -> str:
         found = super().wiring_trouble(project)
         if found:

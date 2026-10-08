@@ -13,6 +13,7 @@ class LinearDetails(IntegrationDetails):
     label = "Use Linear"
     hint = "Reads your Linear issues, once you pick a key"
     position = 10
+    mcp_server = "https://mcp.linear.app/mcp"
 
     title = "Linear"
 

@@ -193,7 +193,7 @@ class Linear(IntegrationFeature):
         """One sync now: nothing when no key or no board is picked, and while the webhook delivers, the clock only catches up every half hour; failures are noticed once until a sync works again."""
         before = read_state(record.root, self.name)
         choices = self.choices(record)
-        if not str(self.values(record).key) or not choices.board:
+        if not str(self.values(record).key) or not choices.board or not self.values(record).fetching:
             return before
         if catching_up and self.waits_for_webhook(record) and time.time() - before.last_checked < CATCH_UP:
             return before
