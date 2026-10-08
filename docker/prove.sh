@@ -51,28 +51,29 @@ curl -sk -o /dev/null -b "$JAR" -H "Origin: $SITE" -H "Content-Type: application
 for _ in $(seq 1 30); do compose exec -T journal pgrep -u journal -x claude >/dev/null 2>&1 && break; sleep 1; done
 compose exec -T journal pgrep -u journal -x claude >/dev/null 2>&1 && pass "an agent started from the viewer runs headless on the server" || fail "no agent started"
 
+[ "$(docker inspect --format '{{.HostConfig.CapDrop}} {{.HostConfig.SecurityOpt}}' "$(compose ps -q journal)")" = "[ALL] [no-new-privileges:true]" ] && pass "the journal's container drops every capability it does not use" || fail "the journal's container keeps capabilities"
 [ "$(compose exec -T journal ps -o user= -p 1 | tr -d ' ')" = "journal" ] && pass "the journal and its agents run as the unprivileged user journal" || fail "the journal runs as another user"
 compose exec -T journal pgrep -u gateway -f features.sharing.server >/dev/null && pass "the login page runs as its own user, gateway" || fail "the login page does not run as gateway"
-MODES="$(compose exec -T journal sh -c 'stat -c %a /data/vault /data/vault/*/ /data/vault/*/owner.json' | tr '\n' ' ')"
+MODES="$(compose exec -T -u gateway journal sh -c 'stat -c %a /data/vault /data/vault/*/ /data/vault/*/owner.json' | tr '\n' ' ')"
 echo "$MODES" | grep -Eq '^700 700 600 $' && pass "the password and logins sit in a folder only gateway can read" || fail "vault modes are $MODES"
 compose exec -T -u journal journal sh -c 'cat /data/vault/*/owner.json' >/dev/null 2>&1 && fail "an agent's user reads the password hash" || pass "an agent's user cannot read the password or logins"
 compose exec -T -u journal journal hosted-journal setup-code >/dev/null 2>&1 && fail "an agent's user made a setup code" || pass "an agent's user cannot make a setup code or reset the password"
 compose exec -T -u journal journal sh -c 'touch /opt/agent-journal/src/serve.py' >/dev/null 2>&1 && fail "an agent's user can change the login page's code" || pass "the login page's code cannot be changed by an agent's user"
-compose exec -T journal sh -c 'grep -rl "owner.json\|scrypt" /data/project/.journal --include=*.json' >/dev/null 2>&1 && fail "a secret is in the record" || pass "no secret is in the record"
+compose exec -T -u journal journal sh -c 'grep -rl "owner.json\|scrypt" /data/project/.journal --include=*.json' >/dev/null 2>&1 && fail "a secret is in the record" || pass "no secret is in the record"
 
-compose exec -T journal sh -c 'echo kept > /data/project/proof.txt'
+compose exec -T -u journal journal sh -c 'echo kept > /data/project/proof.txt'
 compose run --rm -e BACKUP_ONCE=1 backup >/dev/null 2>&1 && pass "a backup snapshot is made" || fail "the backup failed"
 compose exec -T journal printenv RESTIC_PASSWORD >/dev/null 2>&1 && fail "the journal's agents can read the backup password" || pass "the backup password stays off the journal's container"
 compose stop journal >/dev/null 2>&1
 env SNAPSHOT=0000000000 docker compose --profile restore run --rm --no-deps restore >/dev/null 2>&1 && fail "a snapshot that does not exist was restored"
 compose --profile restore run --rm --no-deps --entrypoint cat restore /data/project/proof.txt 2>/dev/null | grep -q kept && pass "a snapshot that cannot be read leaves the volume as it was" || fail "a failed restore emptied the volume"
 compose start journal >/dev/null 2>&1
-compose exec -T journal rm /data/project/proof.txt
+compose exec -T -u journal journal rm /data/project/proof.txt
 compose stop journal >/dev/null 2>&1
 compose --profile restore run --rm --no-deps restore > "$WORK/restore.log" 2>&1 || { tail -5 "$WORK/restore.log"; fail "the restore failed"; }
 compose start journal >/dev/null 2>&1
 for _ in $(seq 1 90); do compose exec -T journal curl -fsS http://127.0.0.1:8440/ready >/dev/null 2>&1 && break; sleep 2; done
-[ "$(compose exec -T journal cat /data/project/proof.txt)" = "kept" ] && pass "the restore brings back a lost file" || fail "the restored volume lacks the file"
+[ "$(compose exec -T -u journal journal cat /data/project/proof.txt)" = "kept" ] && pass "the restore brings back a lost file" || fail "the restored volume lacks the file"
 STATUS="$(curl -sk -o /dev/null -w '%{http_code}' -H "Origin: $SITE" -H "X-Forwarded-For: 192.0.2.99" --data-urlencode "password=$PASSWORD" "$SITE/login")"
 [ "$STATUS" = "303" ] || [ "$STATUS" = "429" ] && pass "the owner's password survives the restore" || fail "login after restore answered $STATUS"
 echo "The install is proven on this machine."

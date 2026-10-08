@@ -24,6 +24,10 @@ services:
       - "8440"
     mem_limit: ${JOURNAL_MEMORY:-4g}
     pids_limit: 1024
+    # Root in the container only starts the two users, so it keeps nothing but switching to them.
+    cap_drop: [ALL]
+    cap_add: [SETUID, SETGID]
+    security_opt: [no-new-privileges:true]
     stop_grace_period: 30s
     logging: &logs
       driver: json-file
