@@ -14,6 +14,7 @@ SETUP = "setup.json"
 LOGINS = "logins.json"
 TRIES = "tries.json"
 DEVICE_KEY = "device.json"
+MACHINES = "machines.json"
 SHORTEST = 12
 COST = 2 ** 17
 EARLIER_COST = 2 ** 15
@@ -153,6 +154,22 @@ class Logins:
             count = len(self.vault.read(LOGINS))
             self.vault.write(LOGINS, {})
         return count
+
+
+class MachineKeys:
+    """The keys the owner made for copies to sync with, each kept only as its hash under the copy's name."""
+
+    def __init__(self, vault: Vault) -> None:
+        self.vault = vault
+
+    def make(self, name: str) -> str:
+        key = secrets.token_urlsafe(32)
+        with self.vault.held():
+            self.vault.write(MACHINES, {**self.vault.read(MACHINES), hashed(key): name[:120]})
+        return key
+
+    def matches(self, key: str) -> bool:
+        return bool(key) and hashed(key) in self.vault.read(MACHINES)
 
 
 class WrongTries:

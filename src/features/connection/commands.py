@@ -4,27 +4,29 @@ from controllers.types import Environments
 from engine.machines import this_machine
 from features.connection.code import pull, push
 from features.connection.linking import hand, join, leave, sync, view
-from features.connection.transport import HttpTransport, Transport
+from features.connection.transport import HttpTransport, ServerKey, Transport
 from features.parts import Command, Context
 from resources.base import Refused
 
 
-def transport_for(address: str) -> Transport:
-    return HttpTransport(address)
+def transport_for(record, address: str) -> Transport:
+    return HttpTransport(address, ServerKey(record.root).read())
 
 
 def server_of(context: Context, address: str = "") -> Transport:
     named = address or str(context.settings.address)
     if not named:
         raise Refused("name the server first: journal environment connect <address>, or its address in Settings")
-    return transport_for(named)
+    return transport_for(context.record, named)
 
 
 class ConnectToServer(Command):
     name = "connect"
     user_only = True
 
-    def run(self, context: Context, environments: Environments, address: str = "") -> str:
+    def run(self, context: Context, environments: Environments, address: str = "", key: str = "") -> str:
+        if key:
+            ServerKey(context.record.root).keep(key)
         welcome = join(context.record, server_of(context, address))
         if address:
             context.record.change_setting("connection", {"address": address})

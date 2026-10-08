@@ -7,7 +7,7 @@ from controllers.features import Features  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.record import Record  # noqa: E402
 from features.hosted_journal.details import HostedJournalDetails  # noqa: E402
-from features.hosted_journal.owner import Logins, Owner, WrongTries  # noqa: E402
+from features.hosted_journal.owner import Logins, MachineKeys, Owner, WrongTries  # noqa: E402
 from features.hosted_journal.settings import GatewaySettings, keep_gateway_settings  # noqa: E402
 from features.hosted_journal.vault import Vault  # noqa: E402
 from resources.base import USER  # noqa: E402
@@ -64,6 +64,13 @@ def clear_tries(root: Path) -> str:
     return f"{cleared} wrong tries cleared: every place may log in again."
 
 
+def machine_key(root: Path, name: str) -> str:
+    vault = Vault(root)
+    key = MachineKeys(vault).make(name)
+    vault.audit("machine key made", name=name)
+    return f"Machine key for {name}, shown only now: {key}\nOn that computer: journal environment connect <address> {key}"
+
+
 def log_out_everywhere(root: Path) -> str:
     vault = Vault(root)
     ended = Logins(vault).close_all()
@@ -89,6 +96,8 @@ def main(argv: list[str]) -> None:
     words.add_parser("reset-password", help="clear the owner's password and end every login")
     words.add_parser("logout-everywhere", help="end every login")
     words.add_parser("clear-tries", help="forget every wrong try, so a locked-out place may log in again")
+    machine = words.add_parser("machine-key", help="make a key a copy of this journal syncs with")
+    machine.add_argument("--name", required=True)
     given = parser.parse_args(argv)
     root = given.root.resolve()
     commands = {
@@ -99,6 +108,7 @@ def main(argv: list[str]) -> None:
         "reset-password": lambda: reset_password(root),
         "logout-everywhere": lambda: log_out_everywhere(root),
         "clear-tries": lambda: clear_tries(root),
+        "machine-key": lambda: machine_key(root, given.name),
     }
     try:
         text = commands[given.word]()
