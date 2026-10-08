@@ -1,5 +1,4 @@
 import json
-import re
 import threading
 from collections import Counter
 from collections.abc import Callable
@@ -15,13 +14,15 @@ from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.owner import SHORTEST, Logins, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page
 from features.hosted_journal.vault import DiskFull, Vault
-from features.phone.desktop import Desktop
+from features.phone.allow_list import post
+from features.phone.desktop import Desktop, closed, encoded
 from features.sharing.server import local, own_origin
 from features.trigger import DAY
 from resources.base import Refused
 
 COOKIE = "__Host-journal"
-REFUSED = re.compile(r"^/api/(?:run|upgrade|stop|hook)(?:/|$)")
+NEVER_FROM_OUTSIDE = frozenset((post("/api/run"), post("/api/upgrade"), post("/api/stop"), post("/api/hook/{provider}"), post("/api/update"),
+                                post("/api/journals/start"), post("/api/services/{id}")))
 STREAM = "text/event-stream"
 FORM_LIMIT = 8192
 BODY_LIMIT = 1024 * 1024
@@ -215,7 +216,7 @@ class Gateway:
         standing = Logins(visit.vault).standing(token)
         if standing is not Standing.OPEN:
             return self.turned_away(visit, standing)
-        if REFUSED.match(visit.url.path):
+        if closed(visit.record, visit.handler.command, encoded(visit.url)):
             return visit.refuse(403, "the journal on a server never runs this for anyone who comes in from outside")
         if visit.handler.command == "POST" and not visit.same_origin():
             return visit.refuse(403, "a change comes only from this journal's own pages")
