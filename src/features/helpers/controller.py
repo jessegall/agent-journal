@@ -275,7 +275,7 @@ class Helpers(Controller):
     def _packed(self, row: Helper, place) -> None:
         if place:
             Environments(self.record, actor=SYSTEM).complete(place.n, "the helper finished", yes=True)
-        else:
+        elif row.environment:
             self._packed_folder(row.environment)
         cut = Worktrees(self.record, actor=SYSTEM)
         if row.worktree and not cut.load(int(row.worktree)).completed:
