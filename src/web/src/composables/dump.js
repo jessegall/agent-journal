@@ -144,7 +144,7 @@ export function useDump(every, selected, rowsOf, sequenceKey) {
         return Object.entries(by).map(([type, list]) => {
             const word = typeTitle(type).toLowerCase();
             const own = list.filter((m) => m.added).length;
-            return `${counted(list.length, word, `${word}s`)}${own ? `, ${own} of them written by the agent without being asked` : ""}`;
+            return `${counted(list.length, word, `${word}s`)}${own ? `, ${own} of them added by the agent` : ""}`;
         });
     });
     const reportTitle = computed(() =>

@@ -61,6 +61,10 @@ const width = computed(() => (props.busy ? "40%" : `${Math.max(props.least, (100
     }
 }
 
+.quiet .fill {
+    background: var(--text-4);
+}
+
 .good .fill {
     background: var(--tone-good);
 }

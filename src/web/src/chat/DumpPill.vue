@@ -37,8 +37,20 @@ const TONES = {
 }
 
 .dump-pill.done {
-    background: color-mix(in srgb, var(--tone-good) 14%, transparent);
-    color: var(--tone-good);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--border-2);
+    background: transparent;
+    line-height: 18px;
+}
+
+.dump-pill.done::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-4);
 }
 
 .dump-pill.needs {
