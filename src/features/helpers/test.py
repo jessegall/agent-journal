@@ -99,7 +99,9 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     zed = Helpers(Record(record.root, helpers.load(2).environment), actor=AGENT)
     assert zed.done(mine, "handled") == f"todo {mine} is done" and todos.load(mine).completed, "a helper without a worktree closes its to-do at once"
     monkeypatch.setattr(Environments, "stop", lambda self, n: "stopped")
+    Sessions(record.root).bind("claude-zed", helpers.load(2).environment, pid=os.getpid(), provider="claude")
     assert Helpers(record, actor=USER).stop(2).startswith("stopped") and helpers.load(2).stopped_by_user, "when you stop a helper it is remembered as stopped by you"
+    Sessions(record.root).write("claude-zed", pid=2 ** 22 + 7)
     later = todos.create("handed but never launched").n
     monkeypatch.setattr("features.helpers.controller.launched", lambda *given: (_ for _ in ()).throw(RuntimeError("no terminal")))
     assert "no terminal" in refused(lambda: helpers.dispatch("Yan", "a job", "claude", "sonnet", todos=str(later))) and todos.load(later).assigned == "", \
@@ -255,6 +257,7 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     monkeypatch.setattr(Places, "stop", lambda self, n: "stopped")
     Sessions(repo.record.root).bind("helper-rhea", row.environment, pid=os.getpid(), provider="codex")
     assert helpers.stop(1) == "stopped", "the agent stops a running helper"
+    Sessions(repo.record.root).write("helper-rhea", pid=2 ** 22 + 7)
     helpers.complete(1)
     assert not Environments(repo.record, actor=SYSTEM).rows.by_title(f"{repo.record.env}-rhea"), "its environment is packed away"
     assert Worktrees(repo.record, actor=SYSTEM).load(cut.n).completed and not Path(cut.path).exists(), "its worktree is dropped"
