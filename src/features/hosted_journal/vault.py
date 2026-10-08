@@ -12,6 +12,7 @@ from engine.viewer import machine
 from engine.wording import digest
 
 FOLDER = "hosted"
+VAULT = "AGENT_JOURNAL_VAULT"
 SECRET = 0o600
 PRIVATE = 0o700
 AUDIT = "audit.log"
@@ -32,11 +33,12 @@ class Vault:
     """The files a hosted journal keeps outside its record, readable by the server's own user alone."""
 
     def __init__(self, root: Path, clock: Clock = time.time) -> None:
-        self.folder = machine().with_name(FOLDER) / digest(str(Path(root).resolve()))
+        self.base = Path(os.environ[VAULT]) if VAULT in os.environ else machine().with_name(FOLDER)
+        self.folder = self.base / digest(str(Path(root).resolve()))
         self.clock = clock
 
     def opened(self) -> Path:
-        for folder in (self.folder.parent, self.folder):
+        for folder in (self.base, self.folder):
             folder.mkdir(mode=PRIVATE, parents=True, exist_ok=True)
             folder.chmod(PRIVATE)
         return self.folder

@@ -20,11 +20,13 @@ from engine.viewer import SERVING
 from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, MOST_STREAMS
 from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_TRIES, Logins, Owner, WrongTries, hashed
-from features.hosted_journal.vault import AUDIT, DiskFull, Vault
+from features.hosted_journal.vault import AUDIT, VAULT, DiskFull, Vault
 from features.phone.controller import Phones
 from features.sharing.controller import Shares
 from features.sharing.routes import EVERY_OTHER, ROUTES
 from features.sharing.server import ShareHandler
+from features.sharing.services import share_services
+from features.sharing.tunnel import SERVER
 from resources.base import SYSTEM, USER
 from serve import Handler, JournalServer
 from tests.conftest import fresh
@@ -119,6 +121,9 @@ def test_the_owner_sets_the_password_with_a_one_time_code_then_works_in_the_view
     assert "owner password set" in logged and PASSWORD not in logged and code not in logged and token not in logged
     shares = Shares(hosted.record, actor=SYSTEM)
     assert shares._address() == ADDRESS and shares.tunnel()["problems"] == []
+    assert SERVER in [spec.id for spec in share_services(hosted.record.root, set())]
+    Features(hosted.record, actor=USER).configure(HostedJournalDetails.name, "apart", "true")
+    assert share_services(hosted.record.root, set()) == [], "a login page run apart under its own user is never started by the journal"
 
 
 def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_minutes_pass(hosted):
@@ -195,7 +200,10 @@ def test_large_bodies_and_too_many_open_streams_are_refused(hosted):
     assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 303
 
 
-def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, monkeypatch):
+def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, monkeypatch, tmp_path):
+    monkeypatch.setenv(VAULT, str(tmp_path / "vault"))
+    assert Vault(hosted.record.root).folder.parent == tmp_path / "vault"
+    monkeypatch.delenv(VAULT)
     token = hosted.logged_in()
     kept = (hosted.vault.folder / LOGINS).read_text()
 

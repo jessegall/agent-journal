@@ -18,7 +18,7 @@ def always(root: Path) -> bool:
 
 def listen(record) -> Listen:
     settings = HostedJournalDetails.values(record)
-    return Listen(settings["listen"], int(settings["port"]))
+    return Listen(settings["listen"], int(settings["port"]), kept=not settings["apart"])
 
 
 def agents_at_once(record) -> int:
