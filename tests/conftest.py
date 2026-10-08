@@ -129,7 +129,7 @@ def viewer_functions_restored(request, monkeypatch):
 @pytest.fixture
 def hosted_world(tmp_path):
     """A hosted journal and two local copies in scratch folders, real processes once started; imported here so a run that never asks for it never installs one."""
-    from tests.world import World
+    from features.connection.world import World
     world = World(tmp_path)
     try:
         yield world
