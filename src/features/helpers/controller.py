@@ -5,7 +5,7 @@ import controllers.types as types_module
 import features
 import resources.types as resources_module
 from controllers.base import Controller
-from controllers.types import Environments, Messages, Nudges, Todos
+from controllers.types import Agents, Environments, Messages, Nudges, Todos
 from engine import bus
 from engine.record import Record
 from engine.sessions import Sessions
@@ -126,15 +126,17 @@ class Helpers(Controller):
         driver = DRIVERS[provider]
         home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER)
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
-        listed = Todos(self.record, actor=SYSTEM)
+        listed, own = Todos(self.record, actor=SYSTEM), Todos(home, actor=SYSTEM)
         for given in handed:
             listed.assign(given.n, to=row.ref)
             delegate_plans_holding(self.record, given)
+            own.create(given.title, brief=given.brief, handed=str(given.n))
         try:
             launched(self.record, place, provider, driver.prompted(["--model", model], kickoff(row, folder, todo.n, handed)), folder)
         except Exception:
             give_back(self.record, handed)
             raise
+        Agents(self.record, actor=SYSTEM)._mark_primary(f"Dispatched helper {row.n}", name=row.name, icon="bot", detail=f"{provider} {model}")
         return row
 
     def _handable(self, numbers: tuple[int, ...]) -> list[Todo]:
@@ -158,6 +160,8 @@ class Helpers(Controller):
         row = listed.load(todo)
         if row.assigned != helper.ref:
             raise Refused(f"todo {row.n} was not handed to you; mark only the to-dos your kickoff names")
+        for copy in (t for t in Todos(self.record, actor=SYSTEM).rows.standing() if t.handed == str(row.n)):
+            Todos(self.record, actor=SYSTEM).complete(copy.n, how)
         if not helper.worktree:
             listed.complete(row.n, how)
             return f"todo {row.n} is done"
@@ -230,6 +234,7 @@ class Helpers(Controller):
         rows = unmarked(self.record, row)
         stopped = places.stop(place.n)
         give_back(self.record, rows)
+        Agents(self.record, actor=SYSTEM)._mark_primary(f"Stopped helper {n}", name=row.name, icon="bot")
         return f"{stopped}{given_back(rows)}"
 
     @action(network=True)
@@ -242,6 +247,7 @@ class Helpers(Controller):
         rows = held(self.record, row)
         finished = super().complete(n, f"{how or 'finished; its environment is packed away'}{given_back(rows)}", **data)
         give_back(self.record, rows)
+        Agents(self.record, actor=SYSTEM)._mark_primary(f"Finished helper {n}", name=row.name, icon="bot")
         bus.defer(lambda: self._packed(row, place))
         return finished
 

@@ -115,6 +115,7 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     record = fresh()
     Agents(record, actor=SYSTEM).create("claude-1")
     Helpers(record, actor=AGENT).dispatch("Rhea", "Profile the slow hooks", "codex", "gpt-5.5")
+    assert [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"]] == ["Dispatched helper 1"], "dispatching a helper shows a mark in the chat"
     assert "only a helper reports" in refused(lambda: Helpers(record, actor=AGENT).report("done")), "the dispatcher cannot report for it"
     sessions = Sessions(record.root)
     seated = "codex-9"
@@ -223,7 +224,10 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
         assert "journal helper stop 1 gives it back first" in refused(closing), "the agent that dispatched it cannot close, strike or take back a handed row"
     assert "assigned to helper:1" in refused(lambda: todos.start(fixed)), "nor start it"
     assert "not handed to you" in refused(lambda: helper.done(todos.create("another").n, "x"))
+    own = Todos(Record(repo.record.root, row.environment), actor=SYSTEM)
+    assert sorted(t.title for t in own.rows.standing() if t.handed) == ["fix the tunnel", "name the cause", "test the dialog"], "its own list holds each handed to-do"
     helper.done(fixed, "restarts within seconds")
+    assert [t.title for t in own.rows.standing() if t.handed] == ["name the cause", "test the dialog"], "marking one done closes its copy on the helper's list"
     marked = todos.load(fixed)
     assert not marked.completed and lane_of(Sources(todos), marked) == DONE, "a row the helper marks shows as done, waiting for its merge"
     commit(Path(Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree)).path), "tunnel.txt", "fixed\n")
