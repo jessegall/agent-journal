@@ -10,6 +10,7 @@ newer version than the last one it saw is handed the same.
 - When the agent replies to your comment, the chat shows its reply as the same card your comment gets, on the agent's side, quoting your comment.
 - A closed row's outcome shows Closed on its own line above the text.
 - The agent can no longer answer a message it has not read: a reply, by command or by tag, is refused until it runs journal message read.
+- A plugin suggestion is one short card: the plugin's name and what it does, with what it runs behind 'See what it runs'. It comes after the first hour of work, or at once in a project that has been in use for more than an hour.
 
 ## 2.257.1 — Settings show no empty headings, and a list inside a panel is never cut off
 - The settings sidebar shows a heading only when something is listed under it, so System no longer stands alone.

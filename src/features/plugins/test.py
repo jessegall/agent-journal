@@ -826,7 +826,7 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     subprocess.run(["git", "add", "Order.cs"], cwd=spread / "shop", capture_output=True, timeout=30)
     assert fitting.written_in(tracked_files(spread)) == {"C#"}, \
         "a project that is no repository itself is read through the repositories inside it, so their languages count"
-    from engine.events.agents import SessionStarted
+    from engine.events.engine import ClockTicked
     from features.parts import AgentContext
     from features.suggestions.controller import Suggestions
     from controllers.types import Todos
@@ -845,11 +845,21 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     repo = project_on("work")
     (repo.project / "app.py").write_text("print('hi')\n")
     subprocess.run(["git", "add", "app.py"], cwd=repo.project, capture_output=True, timeout=30)
-    row = Agents(repo.record, actor="system").by_session("claude-1")
+    agents = Agents(repo.record, actor="system")
+    row = agents.by_session("claude-1")
+    fresh_start = AgentContext.of(features.FEATURES["plugins"], repo.record, agents.stamp(row.n, started=time.time()))
+    fitting.SuggestFittingPlugins().handle(fresh_start, ClockTicked())
+    assert Suggestions(repo.record, actor="system").rows.every() == [], "a session that has just started is suggested nothing"
+    from types import SimpleNamespace
+    from controllers.types import Environments
+    place = Environments(repo.record, actor="system").create(repo.record.env)
+    assert (fitting.in_use_since(repo.record, SimpleNamespace(started=None)), fitting.in_use_since(repo.record, SimpleNamespace(started=place.created - 7200))) == \
+        (place.created, place.created - 7200), "a project counts from whichever began first, its environment or the agent's session, so a project in use for an hour is suggested at once"
+    row = agents.stamp(row.n, started=time.time() - fitting.WORKED_FIRST - 1)
     context = AgentContext.of(features.FEATURES["plugins"], repo.record, row)
 
     def started():
-        fitting.SuggestFittingPlugins().handle(context, SessionStarted())
+        fitting.SuggestFittingPlugins().handle(context, ClockTicked())
         for thread in [t for t in threading.enumerate() if t.name == "plugin-fit"]:
             thread.join(60)
         return {s.title: s for s in Suggestions(repo.record, actor="system").rows.every()}
@@ -869,7 +879,8 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     assert "Install the Another snake plugin" not in {s.title for s in Suggestions(repo.record, actor="system").rows.every()}, "no more suggestions wait than the cap allows"
     assert "written" not in suggested["Install the Snake plugin"].brief and "Python" in suggested["Install the Snake plugin"].brief, "the suggestion says which part of the project fits"
     snake = suggested["Install the Snake plugin"]
-    assert "in its own words" in snake.brief and "setup" in snake.brief, f"the suggestion quotes the plugin and lists the commands it runs: {snake.brief}"
+    assert len(snake.brief) < 160 and "setup" not in snake.brief and any("setup" in line for line in snake.data["runs"]), \
+        f"the suggestion says in one short line why it fits, and keeps the commands it runs aside for 'See what it runs': {snake.brief}"
     pinned = snake.data["commit"]
     assert (len(pinned), snake.data["name"], [o["title"] for o in snake.data["options"]]) == (40, "Snake", ["Yes, I want this", "Change it first", "No, don't do this"]), \
         "a plugin suggestion names the commit it was read from, the plugin and the three answers"
@@ -894,7 +905,7 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     monkeypatch.setattr(fitting, "official", lambda root: release.wait(30) and [])
     (repo.record.root / "runtime" / fitting.KEPT).unlink()
     began = time.monotonic()
-    fitting.SuggestFittingPlugins().handle(context, SessionStarted())
+    fitting.SuggestFittingPlugins().handle(context, ClockTicked())
     stalled = [t for t in threading.enumerate() if t.name == "plugin-fit"]
     assert time.monotonic() - began < 5 and stalled, "a session start returns at once while the official list is still being read"
     release.set()
