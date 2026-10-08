@@ -48,7 +48,7 @@ class HelpersDetails(FeatureDetails):
         checkout inside the project, such as a nested repository on its own branch. The name follows the naming law and the model is
         always named, one the provider offers: a model it does not offer is refused with the list
         of those it does. You are told when it reports: its report shows in the chat as a message from
-        it. journal helper say <n> "<text>" sends it a follow-up; journal helper stop <n> ends its
+        it. journal helper say <n> "<text>" [--todos <n>,<n>] sends it a follow-up and hands it those to-dos; journal helper stop <n> ends its
         agent; once its work is taken (journal worktree take) or dropped, journal helper finish <n>
         packs its environment away.
 
