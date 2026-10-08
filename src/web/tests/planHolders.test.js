@@ -14,4 +14,10 @@ describe("the helper that holds a plan's to-dos", () => {
         const held = helpersHolding([todo(1, "helper:2"), todo(2, "helper:2"), todo(3, "helper:1"), todo(4)], [helper(1), helper(2)]);
         expect(held.map((row) => row.n)).toEqual([2, 1]);
     });
+
+    test("two helper rows with one name show once, and an open one is shown before a closed one", () => {
+        const named = (n, name, state) => ({n, state, data: {name}});
+        const held = helpersHolding([todo(1, "helper:3"), todo(2, "helper:4"), todo(3, "helper:5")], [named(3, "Hedy", "finished"), named(4, "Hedy", "running"), named(5, "Linus", "finished")]);
+        expect(held.map((row) => row.n)).toEqual([4, 5]);
+    });
 });
