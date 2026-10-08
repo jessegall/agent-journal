@@ -55,6 +55,12 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
                 <span class="aw-key">Branch</span>
                 <span class="aw-branch">{{ entry.env }}</span>
             </p>
+            <template v-if="entry.model">
+                <p class="aw-line">
+                    <span class="aw-key">Model</span>
+                    <span class="aw-kind">{{ entry.model }}</span>
+                </p>
+            </template>
             <template v-if="entry.label">
                 <p class="aw-line">
                     <span class="aw-key">Kind</span>
