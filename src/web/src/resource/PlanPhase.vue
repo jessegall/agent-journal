@@ -1,11 +1,10 @@
 <script setup>
 import {computed, inject} from "vue";
-import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import {useScope} from "../composables/scope.js";
-import {state} from "../domain/records.js";
 import HolderTag from "../kit/HolderTag.vue";
-import {helperHolding, helperName, helperTag, helpersHolding} from "../domain/helpers.js";
+import PlanRowLine from "./PlanRowLine.vue";
+import {FINISHED_STATES, grouped, helperName, helperState, helperTag, helpersHolding, holdingRuns} from "../domain/helpers.js";
 import {peek, peekThere} from "../route.js";
 
 const props = defineProps({
@@ -23,7 +22,8 @@ const rows = computed(() => props.phase?.rows || []);
 const done = computed(() => rows.value.length > 0 && rows.value.every((t) => t.completed));
 const closed = computed(() => rows.value.filter((t) => t.completed).length);
 const holders = computed(() => helpersHolding(rows.value, props.helpers));
-const heldBy = (todo) => helperHolding(todo, props.helpers);
+const runs = computed(() => holdingRuns(rows.value, props.helpers));
+const closedHolder = (helper) => FINISHED_STATES.has(helperState(helper));
 const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) : 0));
 </script>
 
@@ -41,48 +41,61 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
             <div class="phead">
                 <span class="mark"><Icon :name="done ? 'check' : 'circle'" :size="14" /></span>
                 <span class="ptitle">{{ phase.i }}. {{ phase.title }}</span>
-                <template v-if="phase.checkpoint">
-                    <span class="cp">checkpoint</span>
-                </template>
-                <template v-for="h in holders" :key="h.n">
-                    <HolderTag :name="helperName(h)" :state="helperTag(h).state" :word="helperTag(h).word" @open="emit('inspect', h)" />
-                </template>
-                <span class="progress">{{ closed }}/{{ rows.length }}</span>
                 <template v-if="talk">
                     <button type="button" class="say" title="Comment on this phase" @click="talk.say(`Phase ${phase.i}: ${phase.title}`)">
                         <Icon name="bubble" :size="12" />
                     </button>
                 </template>
+                <span class="phead-end">
+                    <template v-if="phase.checkpoint">
+                        <span class="cp">checkpoint</span>
+                    </template>
+                    <template v-for="h in holders" :key="h.n">
+                        <HolderTag :name="helperName(h)" :state="helperTag(h).state" :word="helperTag(h).word" :closed="closedHolder(h)" @open="emit('inspect', h)" />
+                    </template>
+                    <span class="progress">{{ closed }}/{{ rows.length }}</span>
+                </span>
             </div>
             <template v-if="phase.when">
                 <div class="when">complete when {{ phase.when }}</div>
             </template>
-            <template v-for="t in rows" :key="`${t.type}-${t.n}`">
-                <div class="line">
-                    <button type="button" :class="['row', {completed: t.completed}]" @click="open(t)">
-                        <template v-if="t.type === 'ticket'">
-                            <Icon class="ticket-mark" name="ticket" :size="12" />
+            <template v-for="run in runs" :key="`${run.rows[0].type}-${run.rows[0].n}`">
+                <template v-if="grouped(run)">
+                    <div :class="['held', 'group', {closed: closedHolder(run.holder)}]">
+                        <div class="held-rows">
+                            <template v-for="t in run.rows" :key="`${t.type}-${t.n}`">
+                                <PlanRowLine :todo="t" @open="open" />
+                            </template>
+                        </div>
+                        <span class="bracket" aria-hidden="true" />
+                        <div class="held-tag">
+                            <HolderTag
+                                :name="helperName(run.holder)"
+                                :state="helperTag(run.holder).state"
+                                :word="helperTag(run.holder).word"
+                                :closed="closedHolder(run.holder)"
+                                @open="emit('inspect', run.holder)"
+                            />
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="held">
+                        <div class="held-rows"><PlanRowLine :todo="run.rows[0]" @open="open" /></div>
+                        <span aria-hidden="true" />
+                        <template v-if="run.holder">
+                            <div class="held-tag">
+                                <HolderTag
+                                    :name="helperName(run.holder)"
+                                    :state="helperTag(run.holder).state"
+                                    :word="helperTag(run.holder).word"
+                                    :closed="closedHolder(run.holder)"
+                                    @open="emit('inspect', run.holder)"
+                                />
+                            </div>
                         </template>
-                        <template v-else>
-                            <Dot :kind="state(t)" />
-                        </template>
-                        <span class="rn">#{{ t.n }}</span>
-                        <span class="rt">{{ t.title }}</span>
-                    </button>
-                    <template v-if="heldBy(t)">
-                        <HolderTag
-                            :name="helperName(heldBy(t))"
-                            :state="helperTag(heldBy(t)).state"
-                            :word="helperTag(heldBy(t)).word"
-                            @open="emit('inspect', heldBy(t))"
-                        />
-                    </template>
-                    <template v-if="talk">
-                        <button type="button" class="say" title="Comment on this to-do" @click="talk.say(`#${t.n} ${t.title}`)">
-                            <Icon name="bubble" :size="12" />
-                        </button>
-                    </template>
-                </div>
+                    </div>
+                </template>
             </template>
             <template v-for="j in bones" :key="`row-bone-${j}`">
                 <div class="line bones" aria-hidden="true"><span class="bone row-bone" /></div>
@@ -161,8 +174,36 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
 }
 
 .ptitle {
-    flex: 1;
+    flex: 0 1 auto;
     font-weight: 500;
+}
+
+.phead-end {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.say {
+    flex: none;
+    display: inline-flex;
+    padding: 3px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-3);
+    opacity: 0;
+    cursor: pointer;
+}
+
+.phead:hover .say,
+.say:focus-visible {
+    opacity: 1;
+}
+
+.say:hover {
+    color: var(--accent-text);
 }
 
 .cp {
@@ -181,62 +222,56 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
     font-size: 12.5px;
 }
 
-.line {
-    display: flex;
-    align-items: center;
+.phase {
+    --tag-column: 170px;
 }
 
-.line .row {
-    flex: 1;
+.held {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16px var(--tag-column);
+    align-items: center;
+    border-radius: 6px;
+}
+
+.held-rows {
     min-width: 0;
 }
 
-.say {
-    flex: none;
-    display: inline-flex;
-    padding: 3px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-3);
-    opacity: 0;
-    cursor: pointer;
-}
-
-.line:hover .say,
-.phead:hover .say,
-.say:focus-visible {
-    opacity: 1;
-}
-
-.say:hover {
-    color: var(--accent-text);
-}
-
-.row {
+.held-tag {
     display: flex;
     align-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 4px 0 4px 24px;
-    border: 0;
-    background: none;
-    color: var(--text-2);
-    text-align: left;
-    cursor: pointer;
+    padding-right: 6px;
 }
 
-.row:hover {
-    color: var(--text);
+.group {
+    background: color-mix(in srgb, var(--text) 3%, transparent);
 }
 
-.row.completed .rt {
-    text-decoration: line-through;
-    color: var(--text-3);
+.group:hover {
+    background: color-mix(in srgb, var(--text) 7%, transparent);
 }
 
-.rn {
-    color: var(--text-3);
-    font-size: 12px;
+.bracket {
+    position: relative;
+    align-self: stretch;
+    margin: 6px 0;
+    border: 1px solid var(--border-3);
+    border-left: 0;
+    border-radius: 0 4px 4px 0;
 }
+
+.bracket::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -9px;
+    width: 9px;
+    border-top: 1px solid var(--border-3);
+}
+
+.group.closed .bracket,
+.group.closed .bracket::after {
+    border-color: var(--border-2);
+}
+
 </style>
