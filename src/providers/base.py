@@ -131,6 +131,7 @@ class Provider(ABC):
     session_variable: ClassVar[str] = ""
     follow_up: ClassVar[str] = ""
     session_markers: ClassVar[tuple[str, ...]] = ()
+    refusals: ClassVar[tuple[str, ...]] = ()
     name = ""
     home = ""
     question_tools = frozenset()
@@ -147,7 +148,6 @@ class Provider(ABC):
     applies_at_once = ()
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
     dispatch_default = ""
-    refusals: ClassVar[tuple[str, ...]] = ()
 
     @classmethod
     def refusal_in(cls, output: str) -> str | None:
