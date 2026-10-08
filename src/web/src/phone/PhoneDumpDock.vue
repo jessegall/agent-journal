@@ -49,7 +49,7 @@ async function hide() {
         <DockRow
             :title="`${filed.title} filed`"
             label="Open the collection"
-            tone="good"
+            tone="quiet"
             close-label="Hide from the chat; its collection stays"
             @open="openFiled"
             @close="hide"

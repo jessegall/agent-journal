@@ -85,7 +85,7 @@ const tag = computed(() => props.label.slice(0, LABEL_AT_MOST).toUpperCase());
 }
 
 .page-thumb.done .page-thumb-read {
-    fill: color-mix(in srgb, var(--tone-good) 22%, transparent);
+    fill: color-mix(in srgb, var(--text-4) 22%, transparent);
 }
 
 .page-thumb-line {

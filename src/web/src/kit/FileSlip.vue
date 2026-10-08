@@ -74,7 +74,7 @@ const extension = computed(() => props.kind || props.file.name.split(".").pop())
 }
 
 .file-slip.filed .file-slip-meta {
-    color: var(--tone-good);
+    color: var(--text-3);
 }
 
 .file-slip.read .file-slip-meta {
