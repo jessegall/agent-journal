@@ -28,7 +28,7 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import HelperList from "../chat/HelperList.vue";
 import {useHelpers} from "../composables/helpers.js";
 import {isWorking} from "../domain/helpers.js";
-import {MODES} from "../domain/modes.js";
+import {MODES, ORCHESTRATOR} from "../domain/modes.js";
 import {rows} from "../sync/rows.js";
 import {runPlan, setAuto} from "../actions/work.js";
 
@@ -50,6 +50,7 @@ const {rows: helpers, refresh: refreshHelpers} = useHelpers();
 const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(helpers);
 const helpersHeight = Math.min(520, Math.round(window.innerHeight * 0.7));
 const helpersOut = computed(() => helpers.value.filter(isWorking).length);
+const orchestratingHelpers = computed(() => (mode.value === ORCHESTRATOR ? helpersOut.value : 0));
 const helpersOpen = ref(false);
 const helpersAnchor = ref(null);
 const modeOptions = computed(() =>
@@ -91,7 +92,7 @@ const line = computed(() => {
     if (paused.value) return "held until you resume it";
     if (silent.value) return "started, but it never reported in";
     if (waitingNow.value) return current.value ? named(current.value) : "";
-    return oneLine(lineOf(agent.value, rows("work"), waiting.value, helpers.value), store.summary?.project);
+    return oneLine(lineOf(agent.value, rows("work"), waiting.value, helpers.value, orchestratingHelpers.value), store.summary?.project);
 });
 const inspect = () => peek("work", current.value.n);
 const roll = (event) => (waitingNow.value && !paused.value ? toggleWaiting(event) : current.value && inspect());

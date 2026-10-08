@@ -93,7 +93,7 @@ export function wordOf(state) {
     return WORDS[state] || "Idle";
 }
 
-export function lineOf(agent, works, auto = false, helpers = []) {
+export function lineOf(agent, works, auto = false, helpers = [], helping = 0) {
     const state = stateOf(agent, works);
     if (state === "stopped") return "no agent is on this environment";
     if (state === "compacting") return "summarizing the conversation, then it carries on";
@@ -101,6 +101,7 @@ export function lineOf(agent, works, auto = false, helpers = []) {
     if (state === "paused") return "held until you resume it";
     const current = currentWork(works);
     if (current) return named(current);
+    if (state === "idle" && helping) return `${countOf(helping)} working`;
     if (state === "idle") return phrase(auto ? "auto" : "idle");
     return phrase("bearings");
 }

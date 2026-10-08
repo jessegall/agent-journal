@@ -32,6 +32,15 @@ def test_a_wait_on_a_run_and_a_helper_stands_until_both_are_back_and_then_hands_
     assert (done.awaiting, done.awaiting_on) == ("", ""), "the wait ends once every one is back"
     assert "the suite completed" in done.sections[-1]["body"] and "Rhea: hooks spend 40ms in imports" in done.sections[-1]["body"], "their results go into the work's log"
     assert [n for n in nudges(record) if n.startswith("the suite and Rhea came back")], "the agent is told once to carry on"
+    from features.boards.controller import Boards
+    from resources.base import Refused
+    Boards(record, actor=AGENT).orchestrate("on")
+    try:
+        works.action("await")("Rhea", on="helper:1")
+    except Refused as refusal:
+        assert "does not wait on a helper" in str(refusal), "an orchestrating agent is refused a wait that names a helper"
+    else:
+        raise AssertionError("an orchestrating agent is refused a wait that names a helper")
 
 
 def test_a_wait_on_a_run_that_finished_without_an_end_time_still_ends():
