@@ -53,9 +53,6 @@ class Mailbox:
         self.account, self.password, self.imap, self.smtp = account, password, imap, smtp
         self.masker = Masker({password: "app password"} if password else {})
 
-    def masked(self, text: str) -> str:
-        return self.masker.masked(text.encode()).decode(errors="replace")
-
     def check(self) -> None:
         if not self.account or not self.password:
             raise Refused("no address and app password are picked, so nothing is read")
@@ -75,7 +72,7 @@ class Mailbox:
             finally:
                 connection.logout()
         except (imaplib.IMAP4.error, OSError, ssl.SSLError) as error:
-            raise Refused(self.masked(f"{IMAP_HOST} refused: {error}")) from None
+            raise Refused(self.masker.masked_text(f"{IMAP_HOST} refused: {error}")) from None
 
     def raw(self, connection, uid: int) -> bytes:
         return connection.uid("FETCH", str(uid), "(BODY.PEEK[])")[1][0][1]
@@ -93,4 +90,4 @@ class Mailbox:
                 connection.login(self.account, self.password)
                 connection.send_message(message)
         except (smtplib.SMTPException, OSError) as error:
-            raise Refused(self.masked(f"{SMTP_HOST} refused: {error}")) from None
+            raise Refused(self.masker.masked_text(f"{SMTP_HOST} refused: {error}")) from None

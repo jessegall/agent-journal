@@ -2,11 +2,8 @@ import importlib
 import json
 import os
 import re
-import socket
 import subprocess
-import threading
 import time
-from contextlib import suppress
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
 
@@ -223,21 +220,6 @@ def test_rows_name_who_made_them_older_rows_name_the_owner_and_everyone_sees_who
     assert rows.peek(theirs["n"]).data[WRITER] == bea and migration.run(hosted.record.root).startswith("0 rows"), "the migration keeps every writer and runs once"
 
 
-def stream_of(hosted: Hosted, cookie: str) -> socket.socket:
-    """A live stream held open through the login page, as a member's browser holds one."""
-    held = socket.create_connection(("127.0.0.1", hosted.port), timeout=10)
-    held.sendall(f"GET /api/{hosted.record.env}/stream HTTP/1.1\r\nHost: 127.0.0.1:{hosted.port}\r\nCookie: {cookie}\r\nAccept: text/event-stream\r\n\r\n".encode())
-    assert held.recv(64).split(b" ")[1] == b"200", "the login page holds the stream open"
-    return held
-
-
-def drained(held: socket.socket) -> None:
-    """Reads the stream until the login page closes it."""
-    with suppress(OSError):
-        while held.recv(4096):
-            pass
-
-
 def test_leaving_removal_and_logging_out_end_a_members_live_sessions_at_once_and_their_rows_keep_their_name(hosted):
     owner = with_members(hosted)
     ada, bea, cleo = (member_login(hosted, name, Role.WRITER) for name in ("Ada", "Bea", "Cleo"))
@@ -245,9 +227,7 @@ def test_leaving_removal_and_logging_out_end_a_members_live_sessions_at_once_and
     ids = {name: roster.named(name).id for name in ("Ada", "Bea", "Cleo")}
     written = json.loads(sent(hosted, f"/api/{hosted.record.env}/todo", {"title": "Ada's to-do"}, ada).text)
     ada_phone = member_phone(hosted, ids["Ada"])
-    held = stream_of(hosted, ada)
-    cut = threading.Thread(target=drained, args=(held,))
-    cut.start()
+    cut = hosted.held_stream(ada)
     assert sent(hosted, "/api/hosting/members/remove", {"member": ids["Ada"]}, owner).status == 200
     cut.join(5)
     assert not cut.is_alive(), "removing a member cuts the live stream their browser holds"
@@ -285,16 +265,12 @@ def test_a_member_sees_only_the_environments_the_owner_shares_in_lists_rows_sear
     assert hosted.call("GET", f"/api/{env}/environment/{garden.n}", Cookie=writer).status == 404
     assert not [hit for hit in json.loads(hosted.call("GET", f"/api/{env}/search?q=garden", Cookie=writer).text)["hits"] if hit["title"] == "garden"]
     assert "garden" not in [place["name"] for place in json.loads(hosted.call("GET", "/api/summary", Cookie=writer).text)["environments"]]
-    held = stream_of(hosted, writer)
-    cut = threading.Thread(target=drained, args=(held,))
-    cut.start()
+    cut = hosted.held_stream(writer)
     assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "garden"]}, owner).status == 200
     cut.join(5)
     assert not cut.is_alive(), "changing what a member may see cuts the stream they hold open, so it reopens under what holds now"
     assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env]}, owner).status == 200
-    held = stream_of(hosted, writer)
-    cut = threading.Thread(target=drained, args=(held,))
-    cut.start()
+    cut = hosted.held_stream(writer)
     assert sent(hosted, "/api/hosting/members/role", {"member": bea, "role": "reader"}, owner).status == 200
     cut.join(5)
     assert not cut.is_alive(), "and so does changing their role"

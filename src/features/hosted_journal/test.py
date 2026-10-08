@@ -88,6 +88,25 @@ class Hosted(NamedTuple):
             Owner(self.vault).set_password(PASSWORD)
         return Logins(self.vault).open(7, "test", OWNER_ID)
 
+    def held_stream(self, cookie: str) -> threading.Thread:
+        """A live stream held open through the login page, read on a thread until the page ends it."""
+        held = socket.create_connection(("127.0.0.1", self.port), timeout=10)
+        held.sendall(f"GET /api/{self.record.env}/stream HTTP/1.1\r\nHost: 127.0.0.1:{self.port}\r\nCookie: {cookie}\r\nAccept: text/event-stream\r\n\r\n".encode())
+        assert held.recv(64).split(b" ")[1] == b"200", "the login page holds the stream open"
+        reading = threading.Thread(target=drained, args=(held,))
+        reading.start()
+        return reading
+
+    def owner_stream(self) -> threading.Thread:
+        return self.held_stream(f"{COOKIE}={self.logged_in()}")
+
+
+def drained(held: socket.socket) -> None:
+    """Reads the stream until the login page closes it."""
+    with suppress(OSError):
+        while held.recv(4096):
+            pass
+
 
 def serve(record) -> int:
     server = ThreadingHTTPServer(("127.0.0.1", 0), type("Bound", (ShareHandler,), {"shares": Shares(record, actor=SYSTEM)}))
@@ -256,21 +275,6 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
         host.main(["--root", root, "setup-code"])
 
 
-def held_stream(hosted: Hosted, token: str) -> threading.Thread:
-    """A live stream held open through the login page, read until the page ends it."""
-    held = socket.create_connection(("127.0.0.1", hosted.port), timeout=10)
-    held.sendall(f"GET /api/{hosted.record.env}/stream HTTP/1.1\r\nHost: 127.0.0.1:{hosted.port}\r\nCookie: {COOKIE}={token}\r\nAccept: text/event-stream\r\n\r\n".encode())
-    assert held.recv(64).split(b" ")[1] == b"200"
-
-    def drained() -> None:
-        with suppress(OSError):
-            while held.recv(4096):
-                pass
-    reading = threading.Thread(target=drained)
-    reading.start()
-    return reading
-
-
 def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hosted, monkeypatch):
     Owner(hosted.vault).set_password(PASSWORD)
     old = Logins(Vault(hosted.record.root, clock=lambda: 0.0)).open(7, "old phone", OWNER_ID)
@@ -282,11 +286,11 @@ def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hoste
     assert hosted.call("GET", "/").headers["location"] == "/login"
     monkeypatch.setattr("commands.http.STREAM_BEAT", 0.2)
     for ended_by in (log_out_everywhere, reset_password):
-        reading = held_stream(hosted, hosted.logged_in())
+        reading = hosted.owner_stream()
         ended_by(hosted.record.root)
         reading.join(5)
         assert not reading.is_alive(), f"{ended_by.__name__} from the server's own shell ends every open stream by its next heartbeat"
-    reading = held_stream(hosted, hosted.logged_in())
+    reading = hosted.owner_stream()
     monkeypatch.setattr("commands.http.STREAM_BEAT", 60)
     origin = f"http://127.0.0.1:{hosted.port}"
     assert hosted.call("POST", "/api/hosting/take-down", {}, Cookie=f"{COOKIE}={hosted.logged_in()}", Origin=origin).status == 202
