@@ -124,6 +124,11 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     Features(record, actor=AGENT).configure("helpers", "kept", "12")
     assert [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"]][1:] == ["Changed helpers.kept from 5 to 12"], \
         "an agent changing a setting shows a mark once, and a person's change shows none"
+    from features.helpers.interceptors import runs_whole_suite
+    assert [runs_whole_suite(c) for c in ("pytest -q -n auto", "python -m pytest", "pytest tests/a.py", "pytest -k x", "ls")] == [True, True, False, False, False], \
+        "a pytest run that names no test file is the whole suite"
+    assert not Helpers(record, actor=SYSTEM).load(1).whole_suite and Helpers(record, actor=AGENT).allow_suite(1) and Helpers(record, actor=SYSTEM).load(1).whole_suite, \
+        "the dispatcher can allow one helper to run the whole suite"
     assert "only a helper reports" in refused(lambda: Helpers(record, actor=AGENT).report("done")), "the dispatcher cannot report for it"
     sessions = Sessions(record.root)
     seated = "codex-9"

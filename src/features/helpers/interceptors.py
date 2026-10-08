@@ -1,15 +1,29 @@
+import re
 from pathlib import Path
 
-from controllers.types import Agents
+from controllers.types import Agents, Environments
 from engine.gates import DISPATCHING
 from engine.reach import Reach
 from features.helpers.controller import Helpers
 from features.helpers.resource import held_by_helper
 from features.helpers.reuse import kept, named_paths, refusal
 from features.parts import ActionInterceptor, AgentContext, Canceler, Context, ToolInterceptor
+from engine.record import Record
 from resources.base import AGENT, SYSTEM, Ref
+from resources.types import HELPER
 
 FILES_KEPT = 50
+PYTEST = re.compile(r"(?:^|[\s;&|])(?:python3?\s+-m\s+)?pytest\b")
+NAMED_TESTS = re.compile(r"\.py\b|::|\s-k\b")
+
+
+def runs_whole_suite(shell: str) -> bool:
+    return bool(PYTEST.search(shell)) and not NAMED_TESTS.search(shell)
+
+
+def may_run_whole_suite(record) -> bool:
+    place = Environments(record, actor=SYSTEM).rows.by_title(record.env)
+    return bool(place and place.helping and Helpers(Record(record.root, place.launched_from), actor=SYSTEM).load(place.owned_by(HELPER)).whole_suite)
 
 
 def relative(project: Path, path: str) -> str:
@@ -62,3 +76,14 @@ class OfferKeptAgentsFirst(Canceler):
     def cancel(self, context: AgentContext, dispatch) -> str:
         census = kept(context.record, Helpers(context.record, actor=SYSTEM).rows.standing())
         return refusal(census, int(context.settings.kept), dispatch.kind or "subagent", named_paths(f"{dispatch.description}\n{dispatch.prompt}"))
+
+
+class RefuseWholeSuiteToHelpers(ToolInterceptor):
+    reach = Reach.BOTH
+
+    def intercept(self, context: AgentContext, call) -> str:
+        place = Environments(context.record, actor=SYSTEM).rows.by_title(context.record.env)
+        if not (context.agent.row.subagent or (place and place.helping)) or not runs_whole_suite(call.shell_command or "") or may_run_whole_suite(context.record):
+            return ""
+        return ("Helpers and subagents never run the whole test suite: run the tests beside what you changed, "
+                "or journal check touched <n> for the ones that cover your change. The agent that dispatched you can allow it with journal helper allow_suite.")

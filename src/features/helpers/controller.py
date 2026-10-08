@@ -27,6 +27,7 @@ def kickoff(row, folder: Path, todo: int, handed: list[Todo]) -> str:
             f"and close it with journal todo done {todo} --how \"<what landed>\" before you report. "
             f"{handed_over(handed)}"
             f"Work only on this job, in {folder}. Commit what you change there; never push, never switch branches. "
+            f"Never run the whole test suite: run the tests beside what you changed, or journal check touched <n>. "
             f"Do not write to the user, and do not write rules, facts or docs. "
             f"When the job is done, or you cannot go on, finish with journal helper report \"<what you did, what you found, what is left>\": "
             f"that is the only way your answer reaches the agent that dispatched you.")
@@ -148,6 +149,11 @@ class Helpers(Controller):
             if row.assigned:
                 raise Refused(f"todo {row.n} is already assigned to {row.assigned}")
         return rows
+
+    @action
+    def allow_suite(self, n: int) -> str:
+        helper = self.update(n, whole_suite=True)
+        return f"helper {helper.n} may run the whole test suite"
 
     @action
     def done(self, todo: int, how: str) -> str:
