@@ -1,9 +1,14 @@
 <script setup>
-defineProps({title: {type: String, default: ""}});
+import Skeleton from "./Skeleton.vue";
+
+defineProps({title: {type: String, default: ""}, loading: Boolean, shape: {type: String, default: "rows"}});
 </script>
 
 <template>
-    <template v-if="title">
+    <template v-if="loading">
+        <Skeleton :shape="shape" />
+    </template>
+    <template v-else-if="title">
         <div class="empty-state titled">
             <p class="empty-state-title">{{ title }}</p>
             <p class="empty-state-text"><slot /></p>

@@ -33,7 +33,7 @@ import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import PlanCard from "./PlanCard.vue";
-import MessageSkeleton from "../kit/MessageSkeleton.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import {tellExtension} from "../platform/extension.js";
 import {ui} from "../state/ui.js";
 
@@ -489,7 +489,7 @@ watch(
                 </template>
             </div>
             <template v-if="!ready">
-                <MessageSkeleton />
+                <Skeleton shape="messages" label="Loading messages" />
             </template>
             <div class="thread-views">
                 <div
@@ -508,7 +508,7 @@ watch(
                                 <p class="thread-empty">Nothing has been said here yet.</p>
                             </template>
                             <template v-else>
-                                <MessageSkeleton />
+                                <Skeleton shape="messages" label="Loading messages" />
                             </template>
                         </template>
                         <TransitionGroup :name="settledOnce ? 'turn' : ''">

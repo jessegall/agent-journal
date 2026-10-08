@@ -11,7 +11,7 @@ import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, href, peek, route} from "../route.js";
 import {groupOf, GROUPS, open, recordCount} from "../domain/records.js";
-import {earlier, rows} from "../sync/rows.js";
+import {earlier, hasLoaded, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
 import ResourceEnd from "../resource/ResourceEnd.vue";
@@ -144,7 +144,7 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
             <NewResource :type="type" @made="select" @close="adding = false" />
         </template>
         <template v-if="!listed.length && !library">
-            <EmptyState class="empty">
+            <EmptyState class="empty" :loading="!hasLoaded(type)">
                 No {{ kind.title.toLowerCase() }}s
                 {{
                     filter === "open"

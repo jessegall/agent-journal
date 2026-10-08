@@ -19,6 +19,7 @@ import Notice from "../kit/Notice.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import {peek, route} from "../route.js";
 import {store} from "../state/store.js";
+import Skeleton from "../kit/Skeleton.vue";
 
 const KINDS = {
     doc: {title: "Document", icon: "file", view: "document", labels: {}},
@@ -246,8 +247,7 @@ watch(currentRef, () => (read.value = 0));
             </template>
             <template v-else>
                 <main class="loading">
-                    <span class="loading-bar" />
-                    <span class="loading-bar short" />
+                    <Skeleton shape="text" :count="2" label="Loading the shared page" />
                 </main>
             </template>
         </template>
@@ -395,17 +395,5 @@ watch(currentRef, () => (read.value = 0));
     max-width: 800px;
     margin: 0 auto;
     padding: 60px 24px;
-}
-
-.loading-bar {
-    display: block;
-    width: 70%;
-    height: 14px;
-    border-radius: 7px;
-    background: var(--border);
-}
-
-.loading-bar.short {
-    width: 40%;
 }
 </style>

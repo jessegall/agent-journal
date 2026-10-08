@@ -6,7 +6,7 @@ import EmptyState from "../kit/EmptyState.vue";
 import Segmented from "../kit/Segmented.vue";
 import DocumentRow from "../resource/DocumentRow.vue";
 import RowGroups from "../resource/RowGroups.vue";
-import {rows} from "../sync/rows.js";
+import {hasLoaded, rows} from "../sync/rows.js";
 import {ageGroups} from "../format/time.js";
 import DocumentPreview from "../resource/DocumentPreview.vue";
 
@@ -130,7 +130,9 @@ function move(event, direction) {
     <div ref="root" :class="['library', {wide}]">
         <div class="document-list" @keydown.down="move($event, 1)" @keydown.up="move($event, -1)" @keydown.esc="selected = 0">
             <template v-if="!docs.length">
-                <EmptyState class="no-documents" title="No documents yet">Documents written here will appear in this list.</EmptyState>
+                <EmptyState class="no-documents" :loading="!hasLoaded('doc')" title="No documents yet">
+                    Documents written here will appear in this list.
+                </EmptyState>
                 <Btn kind="primary" class="make-document" @click="emit('new')">New document</Btn>
             </template>
             <template v-else>

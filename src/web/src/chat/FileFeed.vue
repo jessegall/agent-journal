@@ -34,7 +34,6 @@ const follow = useFollow(scroller);
 const {following, unseen, jump, scrolled, wheeled} = follow;
 const {cards, ready, latest, older, loadOlder} = useFileFeed(props.agent, follow, scope.api);
 const now = useNow();
-const empty = computed(() => ready.value && !cards.value.length);
 const view = computed(() => ({...DEFAULTS, ...(props.options || {})}));
 const flushed = computed(() => props.flush || view.value.flush);
 const filter = ref("");
@@ -112,8 +111,10 @@ function onScroll(e) {
                 </template>
             </div>
         </div>
-        <template v-if="empty">
-            <EmptyState title="No edits yet">The agent's file edits appear here as it makes them.</EmptyState>
+        <template v-if="!cards.length">
+            <EmptyState :loading="!ready" shape="cards" title="No edits yet">
+                The agent's file edits appear here as it makes them.
+            </EmptyState>
         </template>
         <template v-if="!following && cards.length">
             <JumpPill :count="unseen" @jump="jump" />

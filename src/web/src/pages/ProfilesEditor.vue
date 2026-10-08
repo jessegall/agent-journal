@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {loadProfiles, person, profileInUse, profiles, standing, useProfile} from "../composables/profiles.js";
+import {loadProfiles, person, profileInUse, profiles, profilesLoaded, standing, useProfile} from "../composables/profiles.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import Notice from "../kit/Notice.vue";
@@ -95,7 +95,7 @@ onMounted(loadProfiles);
                 />
             </template>
             <template v-if="!own.length">
-                <EmptyState class="profiles-empty">None yet. Make a copy of one above to change it, or press New profile.</EmptyState>
+                <EmptyState class="profiles-empty" :loading="!profilesLoaded">None yet. Make a copy of one above to change it, or press New profile.</EmptyState>
             </template>
         </div>
         <template v-if="open && (open === NEW || panelRow)">

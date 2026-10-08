@@ -4,7 +4,7 @@ import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import GraphNode from "../kit/GraphNode.vue";
-import Spinner from "../kit/Spinner.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import {api} from "../api/client.js";
 import {usePoll} from "../composables/poll.js";
 import {follow} from "../platform/pointer.js";
@@ -93,7 +93,7 @@ watch(tree, async (drawn) => {
 <template>
     <div ref="root" class="family">
         <template v-if="!tree">
-            <div class="family-wait"><Spinner /></div>
+            <Skeleton label="Loading the family tree" />
         </template>
         <template v-else-if="!tree.nodes.length">
             <EmptyState title="No agents yet">
@@ -162,12 +162,6 @@ watch(tree, async (drawn) => {
     min-height: 0;
     display: flex;
     flex-direction: column;
-}
-
-.family-wait {
-    flex: 1;
-    display: grid;
-    place-items: center;
 }
 
 .family-head {

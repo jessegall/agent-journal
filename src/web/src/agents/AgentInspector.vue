@@ -74,29 +74,43 @@ const there = scope ? scope.api : api;
 const rowsHere = scope ? scope.rows : rows;
 
 const found = ref(null);
+const looked = ref(false);
 usePoll(
     pollKey(),
     () => (!props.agent && elsewhere ? there.list("agent", {last: 20, completed: true}) : Promise.resolve(null)),
     EVERY,
-    (got) => got && (found.value = agentOf(got.rows, props.chatSession, props.kind === "helper"))
+    (got) => {
+        looked.value = true;
+        if (got) found.value = agentOf(got.rows, props.chatSession, props.kind === "helper");
+    }
 );
 const agent = computed(() => props.agent || found.value);
 
 const works = ref([]);
+const worksLoaded = ref(false);
 const worked = (w) => (subagent ? w.data.agent === props.session : !w.data.agent);
 usePoll(
     pollKey(),
     () => there.list("work", {last: HISTORY, completed: true}),
     EVERY,
-    (got) => got && (works.value = [...got.rows].filter((w) => !w.deleted && worked(w)).sort((a, b) => b.created - a.created))
+    (got) => {
+        if (!got) return;
+        works.value = [...got.rows].filter((w) => !w.deleted && worked(w)).sort((a, b) => b.created - a.created);
+        worksLoaded.value = true;
+    }
 );
 
 const tasks = ref([]);
+const tasksLoaded = ref(false);
 usePoll(
     pollKey(),
     () => (subagent ? there.tasks(props.session) : Promise.resolve(null)),
     EVERY,
-    (got) => got && (tasks.value = got)
+    (got) => {
+        if (!got) return;
+        tasks.value = got;
+        tasksLoaded.value = true;
+    }
 );
 
 const planRow = computed(() => (scope && props.plan ? scope.rows("plan").find((p) => p.n === props.plan) : null));
@@ -114,7 +128,7 @@ usePoll(
 const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
 const transcript = useTranscript(() => (agent.value ? agent.value.n : 0), props.session, scroller, there);
-const {turns, total} = transcript;
+const {turns, total, loading: transcriptLoading} = transcript;
 
 const AVAILABLE = {
     main: ["chat", "transcript", "terminal", "feed", "todos", "history", "subagents", "skills", "hooks"],
@@ -234,7 +248,7 @@ const openSkills = () => go(route.value.env, "skills");
                             }}
                         </p>
                         <template v-if="subagent">
-                            <SubagentChat :turns="turns" :session="chatSession || session" read-only />
+                            <SubagentChat :turns="turns" :loading="transcriptLoading" :session="chatSession || session" read-only />
                         </template>
                         <template v-else>
                             <Thread view="chat" />
@@ -256,12 +270,12 @@ const openSkills = () => go(route.value.env, "skills");
                             <TerminalWindow :key="`${agent.n}:${levelOf(pane)}`" class="fill" :agent="agent" :level="levelOf(pane)" />
                         </template>
                         <template v-else>
-                            <EmptyState title="No agent yet">Its terminal shows here once the agent starts.</EmptyState>
+                            <EmptyState :loading="!looked" title="No agent yet">Its terminal shows here once the agent starts.</EmptyState>
                         </template>
                     </template>
                     <template #history>
                         <template v-if="!works.length">
-                            <EmptyState title="No work logged yet">What this agent starts and finishes shows here.</EmptyState>
+                            <EmptyState :loading="!worksLoaded" title="No work logged yet">What this agent starts and finishes shows here.</EmptyState>
                         </template>
                         <div class="fill scroll">
                             <template v-for="w in works" :key="w.n">
@@ -279,7 +293,7 @@ const openSkills = () => go(route.value.env, "skills");
                         </template>
                         <template v-else>
                             <div class="fill scroll padded">
-                                <TaskList :tasks="tasks" @open="loadTodo" />
+                                <TaskList :tasks="tasks" :loading="!tasksLoaded" @open="loadTodo" />
                             </div>
                         </template>
                     </template>
@@ -294,7 +308,7 @@ const openSkills = () => go(route.value.env, "skills");
                             />
                         </template>
                         <template v-else>
-                            <EmptyState title="No agent yet">Its edits show here once the agent starts.</EmptyState>
+                            <EmptyState :loading="!looked" title="No agent yet">Its edits show here once the agent starts.</EmptyState>
                         </template>
                     </template>
                     <template #todos>
@@ -351,7 +365,7 @@ const openSkills = () => go(route.value.env, "skills");
                             </div>
                         </template>
                         <template v-else>
-                            <EmptyState title="Reading its plan">Plan {{ plan }} shows here once it has loaded.</EmptyState>
+                            <EmptyState loading shape="text" />
                         </template>
                     </template>
                 </SwitchCase>

@@ -6,8 +6,9 @@ import CloseButton from "../kit/CloseButton.vue";
 import FoldGroup from "../kit/FoldGroup.vue";
 import TicketAgent from "../agents/TicketAgent.vue";
 import HelperRow from "./HelperRow.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
-const props = defineProps({rows: {type: Array, default: () => []}});
+const props = defineProps({rows: {type: Array, default: () => []}, loading: Boolean});
 const emit = defineEmits(["changed", "close"]);
 const grouped = computed(() => helpersByState(props.rows));
 const counts = computed(() => helperCounts(props.rows));
@@ -30,7 +31,10 @@ const inspected = ref(null);
             <CloseButton @click="emit('close')" />
         </header>
         <div class="helpers-body">
-            <template v-if="!rows.length">
+            <template v-if="!rows.length && loading">
+                <Skeleton :count="3" label="Loading the helpers" />
+            </template>
+            <template v-else-if="!rows.length">
                 <p class="helpers-none">No helpers have been started here.</p>
             </template>
             <template v-for="row in grouped.open" :key="row.n">

@@ -17,11 +17,15 @@ const props = defineProps({plugin: {type: String, default: ""}});
 
 const EVERY = 2000;
 const all = ref([]);
+const loaded = ref(false);
 const look = usePoll(
     "services-panel",
     () => api.services(),
     EVERY,
-    (got) => (all.value = got || [])
+    (got) => {
+        all.value = got || [];
+        loaded.value = true;
+    }
 );
 const services = computed(() => (props.plugin ? all.value.filter((s) => s.plugin === props.plugin) : all.value));
 
@@ -57,7 +61,7 @@ const stopped = computed(() => services.value.length - running.value - failing.v
             <p class="error">{{ error }}</p>
         </template>
         <template v-if="!services.length">
-            <EmptyState title="Nothing runs yet">
+            <EmptyState :loading="!loaded" title="Nothing runs yet">
                 {{ plugin ? "This plugin declares no service." : "No plugin or feature on this project declares a service." }}
             </EmptyState>
         </template>

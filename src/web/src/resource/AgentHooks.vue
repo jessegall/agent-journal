@@ -3,6 +3,7 @@ import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({provider: String});
 const path = ref("");
@@ -10,6 +11,7 @@ const hooks = ref({});
 const elsewhere = ref([]);
 const saved = ref("{}");
 const error = ref("");
+const loaded = ref(false);
 const saving = ref(false);
 const events = computed(() => Object.keys(hooks.value).sort());
 const changed = computed(() => JSON.stringify(hooks.value) !== saved.value);
@@ -28,6 +30,8 @@ async function fetchHooks() {
         error.value = "";
     } catch (reason) {
         error.value = reason.message;
+    } finally {
+        loaded.value = true;
     }
 }
 
@@ -83,7 +87,10 @@ onMounted(fetchHooks);
                 </template>
             </section>
         </template>
-        <template v-if="!events.length && !error">
+        <template v-if="!loaded">
+            <Skeleton :count="2" label="Loading the hooks" />
+        </template>
+        <template v-else-if="!events.length && !error">
             <p class="none">No hooks are set for this agent.</p>
         </template>
         <div class="actions">

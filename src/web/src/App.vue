@@ -51,7 +51,7 @@ import UpdateCover from "./layout/UpdateCover.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import BlockedNotice from "./layout/BlockedNotice.vue";
 import HostedBand from "./layout/HostedBand.vue";
-import MessageSkeleton from "./kit/MessageSkeleton.vue";
+import Skeleton from "./kit/Skeleton.vue";
 import SuggestionLayer from "./chat/SuggestionLayer.vue";
 import {desktopActs} from "./chat/suggestionActs.js";
 import {useTurnLinks} from "./chat/turnLinks.js";
@@ -194,7 +194,7 @@ watch(
     </template>
     <template v-else-if="!store.spec && !route.page">
         <main class="home-loading">
-            <MessageSkeleton />
+            <Skeleton shape="messages" label="Loading messages" />
         </main>
     </template>
     <template v-else-if="store.spec && chatOnly">

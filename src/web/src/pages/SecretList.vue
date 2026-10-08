@@ -10,7 +10,7 @@ import EmptyState from "../kit/EmptyState.vue";
 import Icon from "../kit/Icon.vue";
 import ListBox from "../kit/ListBox.vue";
 import Notice from "../kit/Notice.vue";
-import {rows} from "../sync/rows.js";
+import {hasLoaded, rows} from "../sync/rows.js";
 
 const emit = defineEmits(["open", "new"]);
 const {failure, attempt} = useAttempt();
@@ -63,7 +63,7 @@ onMounted(async () => {
                 </button>
             </template>
             <template v-if="!secrets.length">
-                <EmptyState>No secrets yet. Add a key or a login the agent may use without seeing it.</EmptyState>
+                <EmptyState :loading="!hasLoaded('secret')">No secrets yet. Add a key or a login the agent may use without seeing it.</EmptyState>
             </template>
         </ListBox>
         <div class="secrets-bar">

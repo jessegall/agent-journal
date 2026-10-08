@@ -108,8 +108,8 @@ const keywords = (s, words) =>
                 <span class="notice">{{ notice }}</span>
             </template>
         </div>
-        <template v-if="loaded && !rows.length">
-            <EmptyState class="empty">No skills are installed under .claude/skills or .codex/skills.</EmptyState>
+        <template v-if="!loaded || !rows.length">
+            <EmptyState class="empty" :loading="!loaded">No skills are installed under .claude/skills or .codex/skills.</EmptyState>
         </template>
         <template v-else-if="loaded && !matching.length">
             <EmptyState class="empty" title="No skill matches">Try other words.</EmptyState>

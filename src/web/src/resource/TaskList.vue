@@ -1,7 +1,8 @@
 <script setup>
 import {computed} from "vue";
+import Skeleton from "../kit/Skeleton.vue";
 
-const props = defineProps({tasks: {type: Array, required: true}});
+const props = defineProps({tasks: {type: Array, required: true}, loading: Boolean});
 const emit = defineEmits(["open"]);
 const LABELS = {done: "done", doing: "in progress", waiting: "waiting"};
 const done = computed(() => props.tasks.filter((task) => task.state === "done").length);
@@ -18,6 +19,9 @@ const done = computed(() => props.tasks.filter((task) => task.state === "done").
                     <span class="task-state">{{ LABELS[task.state] }}</span>
                 </button>
             </template>
+        </template>
+        <template v-else-if="loading">
+            <Skeleton :count="3" label="Loading the tasks" />
         </template>
         <template v-else>
             <p class="none">No tasks handed to this subagent.</p>

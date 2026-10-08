@@ -16,6 +16,7 @@ import {showAway} from "../platform/visibility.js";
 import {setAuto} from "../actions/work.js";
 import {useNavigation} from "../composables/navigation.js";
 import {activityVisible, toggleActivity} from "../actions/panels.js";
+import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({opening: {type: String, default: "menu"}});
 const emit = defineEmits(["close"]);
@@ -376,7 +377,7 @@ function onFileKey(e) {
                     </div>
                     <div class="quick-files">
                         <template v-if="filesLoading">
-                            <div class="quick-file-empty">Loading {{ folder || "the project" }}…</div>
+                            <Skeleton :label="`Loading ${folder || 'the project'}`" />
                         </template>
                         <template v-else-if="filesError">
                             <div class="quick-file-empty">{{ filesError }}</div>

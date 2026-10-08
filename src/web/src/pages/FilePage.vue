@@ -1,5 +1,6 @@
 <script setup>
 import EmptyState from "../kit/EmptyState.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {highlight, languageOf} from "../text/highlight.js";
@@ -149,6 +150,9 @@ watch(() => route.value.line, reveal);
 </template></pre>
                 </Highlight>
             </template>
+        </template>
+        <template v-else-if="!error">
+            <Skeleton shape="text" label="Loading the file" />
         </template>
     </section>
 </template>
