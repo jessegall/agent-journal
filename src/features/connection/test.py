@@ -66,6 +66,7 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     travelled = what_travels(record.root)
     assert travelled.files > 0 and travelled.bytes > 0 and view(record, "https://server.example").travels == travelled, \
         "the viewer is told what connecting would send before it sends it, and live state is not counted"
+    join(record, Server(record.root))
     assert (view(record, "https://server.example").connected, view(record, "https://server.example").step) == (True, "in step"), "a copy that has joined is shown as connected and how it stands"
     leave(record)
     assert (view(record, "").connected, record.setting("connection", {}).get("address")) == (False, ""), "disconnecting forgets the address and what was learned of the server"
