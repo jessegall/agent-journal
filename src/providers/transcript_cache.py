@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Callable
 
 from engine.wording import digest
-from providers.jsonl import complete_lines, last_lines, rows
+from providers.jsonl import Read, lines_after, lines_from, read_bytes, rows, tail_lines
 
 FOLD_CACHE = Path.home() / ".cache" / "agent-journal" / "folds"
 KEEP_EVERY = 10.0
@@ -19,7 +19,8 @@ RECENT_BYTES = 1_000_000
 RECENT_ROWS = 1000
 FOLD_WAIT = 0.2
 FOLD_IN_PLACE_BYTES = 4_000_000
-FOLD_TAIL_BYTES = 64_000_000
+STATES = "states"
+CURSOR = "cursor"
 
 
 SHAPED_BY = ("engine.transcript",)
@@ -55,7 +56,7 @@ class TranscriptCache:
             return self.locks.setdefault(key, Lock())
 
     def file(self, key: tuple) -> Path:
-        return self.folder / code_mark() / f"{digest('|'.join(key), 20)}.pickle"
+        return self.folder / STATES / f"{digest('|'.join(key), 20)}.pickle"
 
     def stored(self, key: tuple) -> tuple | None:
         try:
@@ -89,13 +90,13 @@ class TranscriptCache:
         held = self.recents.get(str(path))
         if held and held[0] == size:
             return held[1]
-        if held and held[0] < size <= held[0] + RECENT_BYTES:
-            lines, end = complete_lines(path, held[0])
-            found = held[1] + list(rows(lines, row_of))
+        if held and 0 < held[0] < size <= held[0] + RECENT_BYTES:
+            read = lines_after(path, held[0])
+            found = held[1] + list(rows(read.lines, row_of))
         else:
-            lines, end = last_lines(path, RECENT_BYTES)
-            found = list(rows(lines, row_of))
-        self.recents[str(path)] = (end, found[-RECENT_ROWS:])
+            read = tail_lines(path, RECENT_BYTES)
+            found = list(rows(read.lines, row_of))
+        self.recents[str(path)] = (read.end, found[-RECENT_ROWS:])
         return self.recents[str(path)][1]
 
     def transcript(self, path: Path, extend: Callable[[list, list[bytes], int], list]) -> list:
@@ -108,22 +109,32 @@ class TranscriptCache:
         offset, count, turns, seam = held if held and held[0] <= size else (0, 0, [], b"")
         if seam and self.before(path, offset, len(seam)) != seam:
             offset, count, turns, seam = 0, 0, [], b""
-        lines, end = complete_lines(path, offset)
-        if end > offset:
-            turns = extend(turns, lines, count)
-            count += len(lines)
-            seam = self.before(path, end, SEAM)
-            self.keep(key, end, (count, list(turns), seam), KEEP_TRANSCRIPT_EVERY, behind=True)
-        self.transcripts[str(path)] = (end, count, turns, seam)
+        read = lines_from(path, offset)
+        if not held:
+            count = self.counted_before(path, read)
+        if read.end > offset:
+            turns = extend(turns, read.lines, count)
+            count += len(read.lines)
+            seam = self.before(path, read.end, SEAM)
+            self.keep(key, read.end, (count, list(turns), seam), KEEP_TRANSCRIPT_EVERY, behind=True)
+            self.keep((CURSOR, str(path)), read.end, count, KEEP_TRANSCRIPT_EVERY, behind=True)
+        self.transcripts[str(path)] = (read.end, count, turns, seam)
         return turns
 
+    def counted_before(self, path: Path, read: Read) -> int:
+        """Lines before a fresh read, from the cursor an earlier build kept, so turns stay numbered from the first line."""
+        kept = self.stored((CURSOR, str(path)))
+        if not kept or not read.start <= kept[0] <= read.end:
+            return 0
+        at, within = read.start, 0
+        for line in read.lines:
+            if at >= kept[0]:
+                break
+            at, within = at + len(line) + 1, within + 1
+        return max(0, kept[1] - within)
+
     def before(self, path: Path, offset: int, span: int) -> bytes:
-        try:
-            with Path(path).open("rb") as source:
-                source.seek(max(0, offset - span))
-                return source.read(min(span, offset))
-        except OSError:
-            return b""
+        return read_bytes(path, max(0, offset - span), offset)
 
     def folded(self, path: Path, fold, start, row_of: Callable):
         key = (str(path), fold.__name__, code_mark(), *getattr(start, "__dataclass_fields__", ()))
@@ -165,9 +176,10 @@ class TranscriptCache:
         if size < offset:
             offset, state = 0, start()
         if size > offset:
-            lines, offset = complete_lines(path, offset) if offset else last_lines(path, FOLD_TAIL_BYTES)
+            read = lines_from(path, offset)
+            offset = read.end
             state = deepcopy(state)
-            for found in rows(lines, row_of):
+            for found in rows(read.lines, row_of):
                 state = fold(state, found)
             self.keep(key, offset, state, KEEP_EVERY)
         self.folds[key] = (offset, state)

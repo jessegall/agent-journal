@@ -8,7 +8,7 @@ from typing import ClassVar
 
 from engine.fields import Loaded
 from engine.transcript import Turn
-from providers.jsonl import last_lines, parsed_row
+from providers.jsonl import WholeRead, parsed_row, tail_lines, whole_lines
 from providers.payload import AgentCall, AskCall, AskedQuestion, Asking, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, HookFacts, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from providers.transcript_cache import CACHE, RECENT_BYTES
 from resources.base import Refused
@@ -252,8 +252,11 @@ class Provider(ABC):
     def extended(self, turns: list[Turn], lines: list[bytes], count: int) -> list[Turn]:
         return self.refine(turns + self.read_turns(lines, count))
 
+    def every_turn(self, path: Path, why: WholeRead) -> list:
+        return self.refine(self.read_turns(whole_lines(path, why).lines, 0))
+
     def last_turns(self, path: Path, span: int = RECENT_BYTES) -> list:
-        lines, _ = last_lines(path, span)
+        lines = tail_lines(path, span).lines
         return self.refine(self.read_turns(lines, 0))
 
     def read_turns(self, lines: list[bytes], count: int) -> list:

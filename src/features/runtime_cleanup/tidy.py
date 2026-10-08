@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.runtime import folder, profiles, sessions
 from engine.sessions import Sessions, alive
-from providers.transcript_cache import FOLD_CACHE, code_mark
+from providers.transcript_cache import FOLD_CACHE, STATES
 from engine.record import Record
 from engine.wording import plural
 from controllers.stored import mtime
@@ -79,9 +79,9 @@ def leftovers(root: Path) -> int:
     archived = [f for f in older((root / "attic").glob("*.tar.gz"), ARCHIVES_FOR) if not f.name.startswith("before-")]
     unkept = older((folder(root) / "outputs").glob("output-*"), OUTPUTS_FOR)
     profiled = sorted(profiles(root).glob("*.txt"), key=mtime, reverse=True)[PROFILES_KEPT:]
-    marks = [d for d in older(FOLD_CACHE.glob("*"), OTHER_MARKS_FOR) if d.is_dir() and d.name != code_mark()]
-    folds = [*FOLD_CACHE.glob("*.pickle"), *older((FOLD_CACHE / code_mark()).glob("*.pickle"), FOLDS_FOR),
-             *older((FOLD_CACHE / code_mark()).glob("*.tmp"), OTHER_MARKS_FOR)]
+    marks = [d for d in older(FOLD_CACHE.glob("*"), OTHER_MARKS_FOR) if d.is_dir() and d.name != STATES]
+    folds = [*FOLD_CACHE.glob("*.pickle"), *older((FOLD_CACHE / STATES).glob("*.pickle"), FOLDS_FOR),
+             *older((FOLD_CACHE / STATES).glob("*.tmp"), OTHER_MARKS_FOR)]
     for d in staged + marks:
         shutil.rmtree(d, ignore_errors=True)
     for f in archived + unkept + profiled + folds:

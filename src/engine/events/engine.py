@@ -82,6 +82,7 @@ class Measured(TypedEvent):
     after: float = 0.0
     garbage: float = 0.0
     waiting: float = 0.0
+    whole_reads: tuple[str, ...] = ()
     profile: object = None
 
     @classmethod
