@@ -10,7 +10,7 @@ from typing import Callable
 
 from engine import bus, runtime, waits
 from engine.event_log import EventLog, RecordEvents
-from engine.machines import Lease, NotTheOwner, ThisMachine
+from engine.machines import Lease, NotTheOwner, Pushing, ThisMachine
 from engine.numbers import EVENTS, Numbers
 from engine.settings_file import PROJECT_PARTS, ScopedSettings, merged_into
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
@@ -55,7 +55,7 @@ class Record:
     delivery = Setting(dict, project=("channel",))
     viewer = Setting(dict, project=("color_scheme", "chat_hidden", "away", "tour_seen", "open_with"))
 
-    def __init__(self, root: Path, env: str, memo: bool = False, writer: ThisMachine | Lease = ThisMachine()):
+    def __init__(self, root: Path, env: str, memo: bool = False, writer: ThisMachine | Pushing | Lease = ThisMachine()):
         self.root = Path(root)
         self.env = env
         self.writer = writer

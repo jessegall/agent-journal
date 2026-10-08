@@ -94,6 +94,16 @@ def test_a_machine_that_handed_an_environment_over_is_refused_when_it_writes_aga
     Todos(server, actor=AGENT).create("the new owner writes")
     assert [r.title for r in Todos(laptop, actor=AGENT).all()] == ["written before anyone leased it", "the laptop holds it", "the new owner writes"], \
         "nothing the stale writer tried landed, and it can still read"
+    from engine.machines import Pushing
+    pushed = Record(record.root, record.env, writer=Pushing("laptop"))
+    assert "refused" in refused(lambda: Todos(pushed, actor=AGENT).create("pushed by the laptop, which the server holds")), \
+        "a connection from a machine that was handed nothing writes nothing"
+    record.hand_over("", "laptop")
+    assert Todos(pushed, actor=AGENT).create("pushed by its owner").title == "pushed by its owner" and \
+        "refused" in refused(lambda: Todos(Record(record.root, record.env, writer=Pushing("phone")), actor=AGENT).create("pushed by another")), \
+        "a push writes only the scope its connection's machine was handed"
+    assert Pushing("laptop").attributed({"member": "server", "title": "x"}) == {"member": "laptop", "title": "x"}, \
+        "the member of a pushed row comes from the connection, whatever the row says"
 
 
 def test_a_write_into_an_environment_another_machine_holds_waits_for_it_as_a_request():
