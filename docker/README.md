@@ -35,7 +35,8 @@ Open `https://<your domain>`, type the setup code and choose the owner's passwor
 - `caddy`: TLS for the domain, HSTS, and plain http sent on to https.
 - `backup`: a restic snapshot of the journal's volume every day, kept 7 days and 4 weeks. It holds the
   project checkout, the record and the server's home (provider login, password hash, logins, audit log);
-  it leaves out the journal's runtime folder. Set `RESTIC_REPOSITORY` to keep it off the server.
+  it leaves out the journal's runtime folder and the secrets' values in /data/secrets. Set `RESTIC_REPOSITORY`
+  to keep it off the server.
 - `updater`: once an hour, checks with cosign that `ghcr.io/jessegall/agent-journal:latest` was signed by this
   repository's release workflow, and only then restarts the journal on exactly that digest; the journal upgrades its
   record on start. An image without that signature is never deployed. To check one by hand:
@@ -57,6 +58,15 @@ with `GITHUB_TOKEN`, use the provider login, and change the journal's own server
 project's `.journal` folder. Behind the login it can therefore show the owner anything, including a page that looks
 like a login form at the real address. Treat a server agent as able to act as you inside the journal; the login page
 and its vault are the only things kept from it.
+
+## Secrets on the server
+
+The server keeps its own secrets file in /data/secrets, one per project, readable by `journal` alone. You fill in
+the values in the viewer behind your login, as on your own machine. No backup and no copy of the project or the
+record holds them, and a restore leaves them where they are; a new server starts with none. A local agent working
+on this journal uses the secrets file of its own machine, never the server's. The agents on the server get a value
+only through `journal secret run`, and the file is refused to their tools; since they run as `journal` too, that
+refusal stops a mistake, not an agent taken over on purpose.
 
 ## Day to day
 
