@@ -1,6 +1,6 @@
 import inspect
 
-from controllers.base import Arguments
+from controllers.base import PRESSED, UNCHANGED_SINCE, Arguments, Pressed
 from engine import bus
 from resources.base import Refused
 
@@ -27,17 +27,27 @@ def passed(call: inspect.BoundArguments) -> dict:
     return {**{name: value for name, value in call.arguments.items() if name != gathered}, **call.arguments.get(gathered, {})}
 
 
+def without_press(given: dict) -> dict:
+    return {key: value for key, value in given.items() if key != UNCHANGED_SINCE}
+
+
 def takes_row(fn) -> bool:
     return next(iter(inspect.signature(fn).parameters), "") == "n"
 
 
 def invoked(controller, word: str, positional: tuple = (), named: dict | None = None, extra: dict | None = None):
     fn = controller.method(word)
-    ordered, keyed = spread(fn, positional, named or {}, extra or {})
+    given = {**(extra or {}), **(named or {})}
+    named, extra = without_press(named or {}), without_press(extra or {})
+    ordered, keyed = spread(fn, positional, named, extra)
     try:
         call = inspect.signature(fn).bind(*ordered, **keyed)
     except TypeError as error:
         raise Refused(f"{controller.type} {word}: {error}") from error
     controller._refuse_journal_fields(word, Arguments.given(passed(call), {}))
-    with bus.unit():
-        return fn(*call.args, **call.kwargs)
+    pressed = PRESSED.set(Pressed.of(controller.type, call.arguments.get("n"), given))
+    try:
+        with bus.unit():
+            return fn(*call.args, **call.kwargs)
+    finally:
+        PRESSED.reset(pressed)
