@@ -287,6 +287,43 @@ def test_a_write_from_anywhere_but_the_phone_page_is_refused(served, monkeypatch
         with pytest.raises(Unverified):
             integer(b"\x02\x02\x00\x7f")
         assert integer(b"\x02\x02\x00\x80") == (0x80, b""), "a tag or a padded number is refused, a needed zero is not"
+        import features.phone.passkey as pk
+
+        def why(act) -> str:
+            try:
+                act()
+            except Unverified as refusal:
+                return str(refusal).split(": ", 1)[1]
+            return ""
+        site, now = pk.Relying("phone.example", "https://phone.example"), time.time()
+        asked = pk.Challenge("c1", pk.CREATE, now + 60)
+        broken_cbor = [why(lambda: pk.Cbor(raw).item()) for raw in (b"\x42a", b"\x81" * (pk.DEEPEST + 2) + b"\x00", b"\xf7", b"\xa1\x80\x00", b"\x61\xff")]
+        assert ["cut short" in broken_cbor[0], "nests too deep" in broken_cbor[1], "may not use" in broken_cbor[2], "a key it may not use" in broken_cbor[3],
+                "broken text" in broken_cbor[4]] == [True] * 5, "an authenticator's answer that is cut, too deep, oddly valued, oddly keyed or broken text is refused"
+        clients = [b"{}", b"{", json.dumps({"type": pk.CREATE, "origin": "https://elsewhere"}).encode(), json.dumps({"type": pk.CREATE, "origin": site.origin, "challenge": "c2"}).encode()]
+        assert [why(lambda: asked.check(client, kind, site, now)) for client, kind in zip(clients, (pk.GET, pk.CREATE, pk.CREATE, pk.CREATE))] == [
+            "ask again, the last request has run out", "the phone's answer is not readable", "the answer came from another page", "the answer is for another request"], \
+            "an answer of the wrong kind, unreadable, from another page or for another challenge is refused"
+        assert (why(lambda: pk.decoded("a")), why(lambda: pk.Authenticated.read(b"x" * 10)), why(lambda: pk.Authenticated(bytes(32), 0, 0, b"").check(site)),
+                why(lambda: pk.Authenticated(site.hashed(), pk.PRESENT, 0, b"").check(site))) == (
+            "the phone's answer is not readable", "the authenticator's answer is cut short", "the passkey belongs to another site", "Face ID or the passcode was not used"), \
+            "unreadable base64, short authenticator data, another site's data and an answer without Face ID are refused"
+        assert (why(lambda: pk.Passkey(site="other.example").belongs(site)), why(lambda: pk.Passkey(count=5).counted(5)), why(lambda: pk.integer(b"\x05")),
+                why(lambda: pk.signature(b"\x31" + bytes(7))), why(lambda: pk.signature(b"\x30\x06\x02\x01\x00\x02\x01\x01")),
+                why(lambda: pk.Assertion(id="x").counted(pk.Passkey(id="y"), asked, site, now))) == (
+            "this phone's passkey belongs to another address; connect the phone again", "the passkey's counter went back, so it may be a copy",
+            "the signature is not readable", "the signature is not readable", "the signature is not readable", "another passkey answered"), \
+            "a passkey of another address, a counter that went back, an unreadable signature and another passkey's answer are refused"
+        client = json.dumps({"type": pk.CREATE, "challenge": "c1", "origin": site.origin}).encode()
+        attested = site.hashed() + bytes([pk.PRESENT | pk.VERIFIED | pk.ATTESTED]) + (1).to_bytes(4, "big") + bytes(16)
+        enrolled_with = lambda statement: why(lambda: pk.Enrolment(pk.encoded(client), pk.encoded(statement)).passkey(asked, site, now))
+        assert [enrolled_with(b"\x01"),
+                enrolled_with(cbor({"fmt": "none", "attStmt": {}, "authData": site.hashed() + bytes([pk.PRESENT | pk.VERIFIED]) + (1).to_bytes(4, "big")})),
+                enrolled_with(cbor({"fmt": "none", "attStmt": {}, "authData": attested + b"\x00\x00\xa0"})),
+                enrolled_with(cbor({"fmt": "none", "attStmt": {}, "authData": attested + b"\x00\x01\x01" + cbor({1: 3})})),
+                enrolled_with(cbor({"fmt": "none", "attStmt": {}, "authData": attested + b"\x00\x01\x01" + cbor({1: 2, 3: -7, -1: 1, -2: bytes(32), -3: bytes(32)})}))] == [
+            "the authenticator's answer is not readable", "no passkey came with the answer", "the passkey is not readable", "the passkey is not a P-256 key",
+            "the passkey is not a P-256 key"], "an enrolment without data, without a passkey, with an unreadable or a non P-256 key is refused"
         other.id = face.id
         assert unlocked(by=other)[0] == "", "another key answering for this phone's passkey unlocks nothing"
         unlock, signed = unlocked()
