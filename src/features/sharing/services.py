@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 from engine import runtime
@@ -12,6 +13,8 @@ from resources.base import Refused, SYSTEM
 from engine.extension import Extension
 
 KEEP_UP = Extension()
+LISTENS = Extension()
+LOOPBACK = "127.0.0.1"
 IDLE = "Nothing is shared and no phone is paired, so the tunnel stays off."
 SWITCHED_OFF = "Sharing is switched off, so the tunnel stays off."
 
@@ -43,11 +46,26 @@ def wanted(root: Path) -> bool:
     return not why_idle(root)
 
 
+@dataclass(frozen=True)
+class Listen:
+    """Where the share server listens: on this machine alone, at a port it is given or one it finds."""
+
+    host: str = LOOPBACK
+    port: int | None = None
+
+
+def listen_place(root: Path) -> Listen:
+    record = Record(root, runtime.env(root))
+    placed = [given(record) for given in LISTENS.each(record)]
+    return placed[0] if placed else Listen()
+
+
 def share_services(root: Path, taken: set) -> list:
     idle = why_idle(root)
-    port, blocked = allocate(root, SERVER, None, taken)
+    place = listen_place(root)
+    port, blocked = allocate(root, SERVER, place.port, taken)
     taken.add(port)
-    specs = [ServiceSpec(id=SERVER, plugin="sharing", service="server", run=[*entry("features.sharing.server"), str(root), str(port)],
+    specs = [ServiceSpec(id=SERVER, plugin="sharing", service="server", run=[*entry("features.sharing.server"), str(root), str(port), place.host],
                          cwd=str(Path(root).parent), port=port, blocked=blocked, idle=idle, url=f"http://127.0.0.1:{port}", env={BUILD: current_build(root)},
                          **files_for(root, SERVER))]
     command = tunler()

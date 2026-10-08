@@ -173,7 +173,7 @@ def supervise(ctx, agent: str) -> str:
 def ended(ctx) -> str:
     from engine.sessions import Sessions
     from features.clean_slate.slate import put_back
-    from engine.stop import ask
+    from engine.stop import ask, stays_up
     from engine.typist import live
     root = ctx["record"].root
     folder = runtime.folder(root)
@@ -183,7 +183,7 @@ def ended(ctx) -> str:
         try:
             put_back(ctx["record"])
             kept_work(Path.cwd())
-            if not live(root) and not Sessions(root).running():
+            if not live(root) and not Sessions(root).running() and not stays_up(ctx["record"]):
                 ask(root)
         finally:
             faulthandler.cancel_dump_traceback_later()

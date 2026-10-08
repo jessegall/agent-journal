@@ -10,7 +10,7 @@ from http.cookies import SimpleCookie
 from engine.record import Record
 from engine.fields import Loaded
 from features.phone.controller import Phones
-from features.phone.desktop import Desktop
+from features.phone.desktop import Desktop, phone_marks
 from features.phone.passkey import Assertion, Enrolment, Relying, requested
 from features.phone.surface import PhoneSurface
 from engine.color import identity
@@ -350,7 +350,7 @@ class PhoneRoutes:
             return None
         body = handler.rfile.read(size) if size else b""
         unlocked = self.phones(handler)._spend(phone, handler.headers.get(UNLOCK, ""), requested(handler.command, handler.path, body))
-        return Desktop(handler, phone.environment, unlocked).forward(body)
+        return Desktop(handler, handler.path.removeprefix("/p"), phone_marks(phone.environment, unlocked)).forward(body)
 
     def attach(self, handler, rest: list[str]) -> None:
         if not self.trusted(handler, UPLOADED):

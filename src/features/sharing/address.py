@@ -7,6 +7,7 @@ from engine.record import Record
 from engine.viewer import machine
 
 RELIED_ON = Extension()
+ANSWERS_AT = Extension()
 MACHINE_FILE = "machine-id"
 
 
@@ -38,3 +39,8 @@ def this_machine() -> str:
 
 def relied_on(record: Record) -> bool:
     return any(depends(record.root) for depends in RELIED_ON.each(record))
+
+
+def own_address(record: Record) -> list[str]:
+    """The address a feature gives the journal in place of a tunnel, such as the domain of a journal on a server."""
+    return [found for given in ANSWERS_AT.each(record) if (found := given(record))]

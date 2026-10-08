@@ -1,6 +1,6 @@
 <script setup>
 import {meta, types} from "../domain/spec.js";
-import {sharingOn} from "../composables/settings.js";
+import {hostedOn, sharingOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import {demo} from "../platform/demo.js";
 import CountBadge from "../kit/CountBadge.vue";
@@ -118,6 +118,11 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                     </div>
                 </Transition>
             </div>
+            <template v-if="hostedOn">
+                <form method="post" action="/logout" class="logout">
+                    <button type="submit" class="icon-btn" aria-label="Log out" v-tip="'Log out of this journal on its server'"><Icon name="lock" /></button>
+                </form>
+            </template>
             <template v-if="!full">
                 <button
                     type="button"
@@ -229,6 +234,10 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
     width: 15px;
     height: 15px;
 }
+.logout {
+    display: contents;
+}
+
 .drop-wrap {
     position: relative;
 }

@@ -9,6 +9,7 @@ export const steered = computed(() => (store.settings && store.settings.work_tra
 export const autoOn = computed(() => !!(store.settings && store.settings.features["work_tracking.auto"]) || !!steered.value);
 export const workMode = computed(() => (store.settings && store.settings.work_modes && store.settings.work_modes.mode) || DEFAULT_MODE);
 export const sharingOn = computed(() => !store.settings || store.settings.features.sharing !== false);
+export const hostedOn = computed(() => Boolean(store.settings && store.settings.features.hosted_journal));
 
 const viewer = () => (store.settings && store.settings.viewer) || {};
 

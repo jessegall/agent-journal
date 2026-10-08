@@ -9,8 +9,13 @@ const LOCKED = 428;
 
 const failure = (status, message) => Object.assign(new Error(message), {status});
 
+const LOGGED_OUT = 401;
+
+export const loginPage = {open: (address) => window.location.assign(address)};
+
 export async function answered(response, fallback, failed = failure) {
     const body = await response.json().catch(() => ({}));
+    if (response.status === LOGGED_OUT && body.login) loginPage.open(body.login);
     if (!response.ok) throw failed(response.status, body.error || fallback);
     return body;
 }
