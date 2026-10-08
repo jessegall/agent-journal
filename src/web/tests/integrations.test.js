@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {integrationsIn, isOn, keyOf, keyWords, stateWords} from "../src/domain/integrations.js";
+import {boardOf, integrationsIn, isOn, keyOf, keyWords, stateWords, teamsOf, withTeam} from "../src/domain/integrations.js";
 
 const NOW = Date.now() / 1000;
 
@@ -21,5 +21,12 @@ describe("the Integrations page", () => {
         expect(stateWords("Linear", true, {last_checked: NOW - 5})).toBe("Last checked just now");
         expect(stateWords("Linear", true, {last_checked: NOW - 60, last_error: "the key was refused"})).toBe("Could not reach Linear: the key was refused");
         expect(stateWords("Linear", true, null)).toBe("Not checked yet");
+    });
+
+    test("reads the board and the teams you chose, and says plainly when syncing is paused", () => {
+        const settings = {linear: {board: 3, teams: "t1,t2"}};
+        expect([boardOf(settings, "linear"), teamsOf(settings, "linear"), boardOf({}, "linear"), teamsOf({}, "linear")]).toEqual([3, ["t1", "t2"], 0, []]);
+        expect([withTeam(["t1"], "t2", true), withTeam(["t1", "t2"], "t1", false), withTeam(["t1"], "t1", true)]).toEqual(["t1,t2", "t2", "t1"]);
+        expect(stateWords("Linear", true, {paused_until: NOW + 600})).toMatch(/^Paused until .*Linear's request limit is nearly used$/);
     });
 });

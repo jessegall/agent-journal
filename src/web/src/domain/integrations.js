@@ -1,4 +1,4 @@
-import {age} from "../format/time.js";
+import {age, clock} from "../format/time.js";
 
 export const integrationsIn = (features) =>
     Object.values(features || {})
@@ -18,6 +18,7 @@ export const keyWords = (title) => ({
 
 export function stateWords(title, on, state) {
     if (!on) return "Off";
+    if (state?.paused_until > Date.now() / 1000) return `Paused until ${clock(state.paused_until)}, because ${title}'s request limit is nearly used`;
     if (state?.last_error) return `Could not reach ${title}: ${state.last_error}`;
     if (!state?.last_checked) return "Not checked yet";
     const since = age(state.last_checked);
@@ -32,3 +33,9 @@ function minutesAgo(at) {
     const days = Math.floor(hours / 24);
     return `${days} ${days === 1 ? "day" : "days"}`;
 }
+
+export const boardOf = (settings, name) => Number(settings?.[name]?.board) || 0;
+
+export const teamsOf = (settings, name) => String(settings?.[name]?.teams || "").split(",").filter(Boolean);
+
+export const withTeam = (picked, id, on) => (on ? [...new Set([...picked, id])] : picked.filter((one) => one !== id)).join(",");

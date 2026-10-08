@@ -674,6 +674,14 @@ export class ApiClient {
         return this.get(this.here(`/integration/${name}`));
     }
 
+    integrationTeams(name) {
+        return this.get(this.here(`/integration/${name}/teams`));
+    }
+
+    checkIntegration(name) {
+        return this.post(this.here(`/integration/${name}/check`));
+    }
+
     search(q, archived = false, resources = []) {
         return this.get(this.here(`/search${query({q, ...(archived ? {archived: true} : {}), ...(resources.length ? {resources: resources.join(",")} : {})})}`));
     }
