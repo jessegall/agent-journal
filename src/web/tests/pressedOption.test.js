@@ -1,9 +1,9 @@
 import {createApp, nextTick} from "vue";
 import {beforeEach, expect, test, vi} from "vitest";
 
-const command = vi.fn();
+const press = vi.fn();
 const act = vi.fn();
-vi.mock("../src/api/client.js", () => ({api: {command: (...a) => command(...a), act: (...a) => act(...a), create: vi.fn()}}));
+vi.mock("../src/api/client.js", () => ({api: {press: (...a) => press(...a), act: (...a) => act(...a), create: vi.fn()}}));
 vi.mock("../src/sync/rows.js", () => ({rows: () => []}));
 
 const {default: ChoiceCard} = await import("../src/resource/ChoiceCard.vue");
@@ -33,7 +33,7 @@ function shown() {
 
 beforeEach(() => {
     document.body.innerHTML = "";
-    command.mockReset();
+    press.mockReset();
     act.mockReset().mockResolvedValue({});
 });
 
