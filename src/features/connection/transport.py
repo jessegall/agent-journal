@@ -29,14 +29,15 @@ class Transport(Protocol):
 class HttpTransport:
     """The journal on a server over its own address, answering as JSON under /api/sync."""
 
-    def __init__(self, address: str) -> None:
+    def __init__(self, address: str, timeout: float = TIMEOUT) -> None:
         self.address = address.rstrip("/")
+        self.timeout = timeout
 
     def ask(self, path: str, body: dict | None = None) -> str:
         data = None if body is None else json.dumps(body).encode()
         request = urllib.request.Request(f"{self.address}/api/sync/{path}", data=data, headers={"Content-Type": "application/json"})
         try:
-            with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:
+            with urllib.request.urlopen(request, timeout=self.timeout) as answer:
                 return answer.read().decode() or "{}"
         except urllib.error.HTTPError as error:
             raise Refused(f"the server refused {path}: {error.code}") from error

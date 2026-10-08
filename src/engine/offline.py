@@ -49,11 +49,13 @@ class Waiting:
         with held_file(self.lock):
             waiting = self.waiting()
             sent = 0
-            for held in waiting:
-                if not send(held):
-                    break
-                sent += 1
-            write_text(self.file, "".join(json.dumps(asdict(held)) + "\n" for held in waiting[sent:]))
+            try:
+                for held in waiting:
+                    if not send(held):
+                        break
+                    sent += 1
+            finally:
+                write_text(self.file, "".join(json.dumps(asdict(held)) + "\n" for held in waiting[sent:]))
         return sent
 
 
