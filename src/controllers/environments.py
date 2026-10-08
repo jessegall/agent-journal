@@ -153,6 +153,7 @@ class Environments(Controller):
             self._refuse(f"environment {env.title!r} holds {kept}; --yes removes it anyway (its record goes to the attic)")
         if record.home.is_dir():
             attic.pack(record.home, f"{env.title}-{int(time.time())}")
+        record.numbers.forget(env.title)
         self.force_delete(n)
         return f"environment {env.title!r} removed; its record is packed in attic/ — journal environment unarchive {env.title} brings it back"
 
@@ -209,8 +210,16 @@ class Environments(Controller):
             attic.pack(taken, f"{new}-seed-{int(time.time())}")
         if old.is_dir():
             old.rename(taken)
+        for scope in (env.title, new):
+            self.record.numbers.forget(scope)
         self._sessions.rebind(env.title, new)
         return super().update(n, title=new)
+
+    @action
+    def hand(self, n: int, machine: str) -> str:
+        env = self.load(n)
+        lease = self._record_of(env).hand_over(ENVIRONMENT, machine)
+        return f"environment {env.title!r} is written by machine {machine} from now on (handover {lease.epoch}); a write from any other machine is refused"
 
     @action
     def pickup(self, n: int) -> dict:

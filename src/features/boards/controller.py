@@ -7,7 +7,7 @@ from features.boards.building import BuildingBoards
 from features.boards.requests import DraftingBoards, numbers_in
 from features.boards.resource import DONE, MEANINGS, Board
 from features.boards.running import RunningBoards
-from resources.base import FINISHED, Ref, Refused, Resource, SYSTEM
+from resources.base import FINISHED, PROJECT, Ref, Refused, Resource, SYSTEM
 from controllers.marks import action
 from engine.extension import Extension
 
@@ -58,7 +58,7 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
 
     def finish(self, n: int) -> None:
         self.update(n, finished=time.time())
-        self.record.emit("board", n, FINISHED, SYSTEM)
+        self.record.emit("board", n, FINISHED, SYSTEM, scope=PROJECT)
 
     @action
     def added(self, n: int, tickets: str):

@@ -21,6 +21,7 @@ from engine.version import version
 from engine.package import entry
 from engine.ports import free, url_of
 from engine.fields import Loaded
+from engine.machines import journal_home
 from resources.base import Refused
 
 PORTS = [int(port) for port in os.environ["JOURNAL_VIEWER_PORTS"].split(",")] if os.environ.get("JOURNAL_VIEWER_PORTS") else range(8420, 8440)
@@ -37,7 +38,7 @@ URL = re.compile(r"http://127\.0\.0\.1:\d+/")
 
 
 def machine() -> Path:
-    return Path(os.environ.get("AGENT_JOURNAL_HOME") or Path.home() / ".journal") / "journals.json"
+    return journal_home() / "journals.json"
 
 
 RESTARTING = 15.0

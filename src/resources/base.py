@@ -135,6 +135,7 @@ class Event:
     data: dict = field(default_factory=dict)
     pid: int = 0
     handled: bool = False
+    env: str = ""
 
     def to_json(self) -> dict:
         return dict(vars(self))
@@ -220,6 +221,9 @@ class Resource:
     @property
     def ref(self) -> str:
         return f"{self.type}:{self.n}"
+
+    def creation_order(self) -> tuple[float, int]:
+        return self.created, self.n
 
     @property
     def author(self) -> str:
