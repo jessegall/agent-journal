@@ -171,6 +171,7 @@ class Resource:
     created_in_viewer: ClassVar[bool] = True     # its page offers a New button
     start_heading: ClassVar[str] = ""          # its heading in the start block, empty when it is not handed to a session
     start_as_count: ClassVar[bool] = False     # handed as a count, not row by row
+    light_in_dashboard: ClassVar[dict[str, tuple[str, ...]]] = {}  # a heavy data field and the keys of it the dashboard's rows keep
     subagent_writable: ClassVar[bool] = True         # a subagent lent the environment may write it
     takes_comments: ClassVar[bool] = True   # its inspector has a comment section
     nested: ClassVar[bool] = False      # it exists about another resource and is shown under it, never on its own

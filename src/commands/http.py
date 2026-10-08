@@ -46,7 +46,7 @@ from controllers.invoke import invoked, takes_row
 from features.format import VIEWER, carded, shaped
 from features.open_viewer.transcripts import TRANSCRIPT_PAGE
 from surfaces.everything import found
-from surfaces.listing import Listing, counted, listing
+from surfaces.listing import Listing, counted, lightened, listing
 from commands.dispatch import dispatch  # noqa: F401
 
 
@@ -523,7 +523,8 @@ def get_dashboard(req: Request) -> Reply:
     record = req.record()
     asked = req.query_as(DashboardQuery)
     wanted = [t for t in asked.types.split(",") if t in CONTROLLERS]
-    lists = {t: listing(CONTROLLERS[t](record, actor=USER), record, Listing.from_query(req.query)) for t in wanted}
+    controllers = {t: CONTROLLERS[t](record, actor=USER) for t in wanted}
+    lists = {t: lightened(controller, listing(controller, record, Listing.from_query(req.query))) for t, controller in controllers.items()}
     whole = "events" in req.query
     body = {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted)}
     if whole:
