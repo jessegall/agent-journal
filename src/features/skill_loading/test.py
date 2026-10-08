@@ -160,6 +160,16 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     loaded = {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": "journal-plans"}}]}}
     transcript.write_text(transcript.read_text() + json.dumps(loaded) + "\n")
     assert call("Bash", command="journal plan phase 1 build --when done") == "", "once it is loaded, work goes on"
+    from features.skill_loading.required import require
+    from providers.transcript_cache import CACHE
+    require(record, "claude-1", {"journal-plans": datetime.now(timezone.utc).timestamp()})
+    assert "Skill: journal-plans" in call("Read", file_path="x.py"), "a skill required again after its last load is asked for again"
+    again = {**loaded, "timestamp": datetime.now(timezone.utc).isoformat()}
+    with CACHE.lock(CACHE.fold_key(transcript, PROVIDERS["claude"]().skill_loads, dict)):
+        transcript.write_text(transcript.read_text() + json.dumps(again) + "\n")
+        assert call("Read", file_path="x.py") == "", \
+            "while a load sits in lines the fold has not read yet, the guard lets the call through rather than refuse on what it has not read"
+    assert call("Read", file_path="x.py") == "", "and once those lines are folded the load counts"
     import time
     from providers import transcript_cache
     from providers.transcript_cache import TranscriptCache, code_mark
