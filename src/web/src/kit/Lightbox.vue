@@ -32,7 +32,7 @@ useWindowEvent("keydown", keys);
                     <span class="lightbox-count">{{ ui.lightbox.at + 1 }} of {{ ui.lightbox.pictures.length }}</span>
                 </template>
                 <a class="lightbox-open" :href="picture.url" target="_blank">Open the file</a>
-                <button type="button" class="lightbox-x" title="Close" @click="close"><Icon name="close" /></button>
+                <button type="button" class="lightbox-x" aria-label="Close" @click="close"><Icon name="close" /></button>
             </div>
         </div>
     </template>

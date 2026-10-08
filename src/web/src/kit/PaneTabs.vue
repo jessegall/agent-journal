@@ -12,7 +12,6 @@ const emit = defineEmits(["pick", "close", "grab"]);
                 <div
                     role="tab"
                     tabindex="0"
-                    :title="t.title"
                     :aria-selected="t.on"
                     :class="[
                         'pane-tab',
@@ -36,7 +35,7 @@ const emit = defineEmits(["pick", "close", "grab"]);
                     <button
                         type="button"
                         class="pane-tab-x"
-                        :title="`Close ${t.title}`"
+                        :aria-label="`Close ${t.title}`"
                         @pointerdown.stop
                         @click.stop="emit('close', t.key)"
                     >

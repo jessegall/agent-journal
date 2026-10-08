@@ -6,6 +6,8 @@ export const LEAVE_FOR = 80;
 export const HOLD_FOR = 450;
 export const TOUCH_STAYS = 1500;
 
+const OBVIOUS = /^(close|dismiss|remove|delete|hide|clear|cancel|more|menu|pane menu)\b[^,.;]*$/i;
+
 const GAP = 9;
 const EDGE = 8;
 const CORNER = 10;
@@ -22,6 +24,8 @@ let pointer = null;
 let spare = 0;
 
 export const shown = reactive({key: null, words: NO_WORDS, side: "below", arrow: 0, x: 0, y: 0, leaving: false, entering: false, sliding: false, prefer: "below"});
+
+export const obvious = (el, words) => !words.line && !words.keys && !/[\p{L}\p{N}]/u.test(el.textContent) && OBVIOUS.test(words.title);
 
 export const wordsOf = (value) => (value ? {...NO_WORDS, ...(typeof value === "string" ? {title: value} : value)} : null);
 
@@ -168,6 +172,10 @@ function enlist(el, binding) {
     const words = wordsOf(binding.value);
     const key = el.dataset.tipKey || binding.arg || `tip-${(spare += 1)}`;
     if (!words) return delist(el);
+    if (obvious(el, words)) {
+        if (!el.hasAttribute("aria-label")) el.setAttribute("aria-label", words.title);
+        return delist(el);
+    }
     el.dataset.tipKey = key;
     known.set(key, {el, words, cut: binding.modifiers.cut});
     if (key === shown.key) nextTick(measure);

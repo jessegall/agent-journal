@@ -165,7 +165,7 @@ defineExpose({shape, layout, show});
                             <button
                                 type="button"
                                 :class="['agent-pane-menu-btn', {on: menu && menu.id === id}]"
-                                title="Pane menu"
+                                aria-label="Pane menu"
                                 @click.stop="toggleMenu($event, id)"
                             >
                                 <Icon name="dots" />
