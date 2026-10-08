@@ -7,6 +7,7 @@ import {rowsOf} from "../domain/plans.js";
 import {kindOf} from "./kinds.js";
 import {loadSpec} from "./manifest.js";
 import ActionSheet from "./kit/ActionSheet.vue";
+import PagedList from "../kit/PagedList.vue";
 import PhoneNew from "./PhoneNew.vue";
 import ItemRow from "./kit/ItemRow.vue";
 import ListScreen from "./kit/ListScreen.vue";
@@ -18,7 +19,7 @@ import {dotOf, linesOf} from "./places/rowLines.js";
 import {holding, onShelf} from "./places/shelves.js";
 import {runsAllowed} from "./runs.js";
 
-const CLOSED_AT_MOST = 50;
+const CLOSED_PAGE = 25;
 const ORDERS = {
     new: {label: "Newest first", order: null},
     title: {label: "A to Z", order: (a, b) => a.title.localeCompare(b.title)},
@@ -34,6 +35,7 @@ const choosing = ref(false);
 const spec = ref(false);
 const counts = ref({open: 0, all: 0});
 const closed = ref([]);
+const closedMore = ref(false);
 const showClosed = ref(false);
 const todos = ref([]);
 const collections = ref([]);
@@ -97,9 +99,11 @@ async function count() {
     }
 }
 
-async function loadClosed() {
-    const got = await api.list(props.target, {completed: true, last: CLOSED_AT_MOST}).catch(() => ({rows: []}));
-    closed.value = got.rows.filter((row) => row.completed).reverse();
+async function loadClosed(before = 0) {
+    const got = await api.list(props.target, {completed: true, last: CLOSED_PAGE, before}).catch(() => ({rows: [], more: false}));
+    const shown = got.rows.filter((row) => row.completed).reverse();
+    closed.value = before ? [...closed.value, ...shown] : shown;
+    closedMore.value = got.more;
     if (props.target === "plan") await phaseTodos([...(list.value?.rows || []), ...closed.value]);
 }
 
@@ -132,6 +136,7 @@ onMounted(async () => {
         :empty="empty"
         :keep="keep"
         :order="ORDERS[order].order"
+        :total="counts.open"
         @back="emit('back')"
         @act="creating.open()"
     >
@@ -172,6 +177,7 @@ onMounted(async () => {
                             />
                         </template>
                     </div>
+                    <PagedList :shown="closed.length" :total="closedCount" :more="closedMore" :load="() => loadClosed(closed.at(-1).n)" />
                 </template>
             </template>
         </template>
