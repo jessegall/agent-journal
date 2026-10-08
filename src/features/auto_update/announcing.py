@@ -7,7 +7,7 @@ from engine.runtime import default_env
 from engine.stored import write_text
 from engine.version import version as package_version
 from resources.base import SYSTEM
-from install import LEGACY_COPY_MARKER
+from features.journal_laws.managed import LEGACY_COPY_MARKER
 
 KIND = "update"
 

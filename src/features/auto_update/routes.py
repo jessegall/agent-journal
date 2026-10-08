@@ -7,7 +7,8 @@ from engine.upgrades import FETCHING, newer, upstream
 from engine.version import version
 from features.routing import Reply, Request, handles
 from resources.base import Refused
-from install import changed_managed, changed_message, release_versions
+from features.journal_laws.managed import changed_managed, changed_message
+from install import release_versions
 
 CHANGELOG = data("CHANGELOG.md")
 

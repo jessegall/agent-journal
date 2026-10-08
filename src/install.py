@@ -10,7 +10,6 @@ import stat
 import tarfile
 import subprocess
 import hashlib
-import json
 import marshal
 import tempfile
 import time
@@ -19,6 +18,7 @@ from importlib.util import MAGIC_NUMBER
 from pathlib import Path
 from dataclasses import dataclass
 from functools import cache
+from types import ModuleType
 from typing import Callable
 
 
@@ -42,8 +42,6 @@ ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 2
 KEPT_COPIES = 1
 NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
-MANAGED = "managed-files.json"
-LEGACY_COPY_MARKER = "managed-update-copy"
 STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "keeper", "keeper.py": "keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
         "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
@@ -53,84 +51,11 @@ def code(root: Path) -> Path:
     return root / SRC
 
 
-def plain_file(path: Path) -> bool:
-    return path.is_file() and not path.is_symlink()
-
-
-def managed_paths(project: Path, root: Path) -> set[Path]:
-    paths = {path for path in code(root).rglob("*") if plain_file(path)}
-    for home in (".agents/skills", ".claude/skills"):
-        folder = project / home
-        paths.update(path for skill in folder.glob("journal*") if skill.is_dir() and not skill.is_symlink()
-                     for path in skill.rglob("*") if plain_file(path))
-    for home, extension in ((".claude/agents", "md"), (".codex/agents", "toml")):
-        paths.update(path for path in (project / home).glob(f"*.{extension}") if path.is_file() and path.stem in
-                     {"board-filler", "ticket-reviewer", "plan-reviewer", "goal-verifier"})
-    for home in (".claude/settings.local.json", ".codex/hooks.json"):
-        path = project / home
-        if path.is_file():
-            paths.add(path)
-    paths.update(project / name for name in ("CLAUDE.md", "AGENTS.md") if (project / name).is_file())
-    return paths
-
-
-def managed_bytes(path: Path) -> bytes:
-    if path.name in ("settings.local.json", "hooks.json"):
-        from providers.base import journal_hook
-        settings = json.loads(path.read_text())
-        hooks = {event: [block for block in blocks if journal_hook(json.dumps(block))]
-                 for event, blocks in (settings.get("hooks") or {}).items()}
-        status = settings.get("statusLine", {})
-        managed = {"hooks": {event: blocks for event, blocks in hooks.items() if blocks}}
-        if "claude-status.sh" in json.dumps(status):
-            managed["statusLine"] = status
-        return json.dumps(managed, sort_keys=True).encode()
-    if path.name not in ("CLAUDE.md", "AGENTS.md"):
-        return path.read_bytes()
-    from features.journal_laws.briefing import CURRENT
-    text = path.read_text(errors="replace")
-    return "\n".join(match.group() for match in CURRENT.finditer(text)).encode()
-
-
-def managed_hash(path: Path) -> str:
-    return hashlib.sha256(managed_bytes(path)).hexdigest()
-
-
-def remember_managed(project: Path, root: Path) -> None:
-    files = {path.relative_to(project).as_posix(): managed_hash(path) for path in managed_paths(project, root)}
-    target = root / MANAGED
-    target.write_text(json.dumps(files, indent=2, sort_keys=True) + "\n")
-
-
-def remembered_unchanged(project: Path, root: Path, path: Path) -> bool:
-    target = root / MANAGED
-    remembered = json.loads(target.read_text()) if target.is_file() else {}
-    return remembered.get(path.relative_to(project).as_posix()) == managed_hash(path)
-
-
-def remember_rewritten(project: Path, root: Path, path: Path) -> None:
-    target = root / MANAGED
-    remembered = json.loads(target.read_text())
-    remembered[path.relative_to(project).as_posix()] = managed_hash(path)
-    target.write_text(json.dumps(remembered, indent=2, sort_keys=True) + "\n")
-
-
-def changed_managed(project: Path, root: Path) -> list[Path]:
-    target = root / MANAGED
-    if not target.is_file():
-        return []
-    remembered = json.loads(target.read_text())
-    changed = {project / name for name, digest in remembered.items()
-               if not (project / name).is_file() or managed_hash(project / name) != digest}
-    changed.update(path for path in managed_paths(project, root)
-                   if path.relative_to(project).as_posix() not in remembered and managed_bytes(path))
-    return sorted(changed)
-
-
 def copy_legacy_managed(project: Path, root: Path) -> list[str]:
-    if (root / MANAGED).is_file():
+    managed = loaded().managed
+    if (root / managed.MANAGED).is_file():
         return []
-    existing = sorted(managed_paths(project, root))
+    existing = sorted(managed.managed_paths(project, root))
     if not existing or not code(root).is_dir():
         return []
     attic = root / "attic"
@@ -142,7 +67,7 @@ def copy_legacy_managed(project: Path, root: Path) -> list[str]:
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, destination)
     location = copy.relative_to(project).as_posix()
-    marker = root / "runtime" / LEGACY_COPY_MARKER
+    marker = root / "runtime" / managed.LEGACY_COPY_MARKER
     marker.parent.mkdir(parents=True, exist_ok=True)
     marker.write_text(location)
     return [f"Managed files from before this update were copied to {location}"]
@@ -157,11 +82,6 @@ def archive_changed(project: Path, root: Path, changed: list[Path]) -> Path:
             if path.is_file():
                 archive.add(path, arcname=path.relative_to(project).as_posix(), recursive=False)
     return copy
-
-
-def changed_message(project: Path, changed: list[Path]) -> str:
-    names = ", ".join(path.relative_to(project).as_posix() for path in changed)
-    return f"Files changed since the journal wrote them: {names}. Run journal upgrade --yes to copy them into .journal/attic and update anyway."
 
 
 def layout(root: Path) -> tuple[str, ...]:
@@ -324,15 +244,15 @@ def put_on_path(bin_: Path) -> str:
 def install(project: Path, root: Path | None = None, yes: bool = False) -> list[str]:
     root = root or project / ".journal"
     copied = copy_legacy_managed(project, root)
-    changed = changed_managed(project, root)
+    changed = loaded().managed.changed_managed(project, root)
     if changed and not yes:
-        return [changed_message(project, changed)]
+        return [loaded().managed.changed_message(project, changed)]
     if changed:
         archive_changed(project, root, changed)
     refresh(PACKAGE, code(root))
     done = configure(project, root)
     retire(root)
-    remember_managed(project, root)
+    loaded().managed.remember_managed(project, root)
     return copied + done
 
 
@@ -477,9 +397,9 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False, version:
         except OSError:
             return ["another upgrade of this journal is running; this one stepped aside"]
         copied = copy_legacy_managed(project, root)
-        changed = changed_managed(project, root)
+        changed = loaded().managed.changed_managed(project, root)
         if changed and not yes:
-            return [changed_message(project, changed)]
+            return [loaded().managed.changed_message(project, changed)]
         if changed:
             archive_changed(project, root, changed)
         mark.touch()
@@ -567,7 +487,7 @@ def finish(project: Path, root: Path) -> list[str]:
     if moved:
         done.append(f"package moved into {SRC}/: {moved} files out of the record")
     done.append(pack(root))
-    remember_managed(project, root)
+    loaded().managed.remember_managed(project, root)
     return done
 
 
@@ -679,6 +599,7 @@ class Package:
     stop_ended: Callable
     publish: Callable
     upgrade_mark: Callable
+    managed: ModuleType
 
 
 @cache
@@ -699,10 +620,11 @@ def loaded() -> Package:
     from features.boards.agent_types import written as agent_types
     from engine.record import Record
     from engine.runtime import default_env, upgrade_mark
+    from features.journal_laws import managed
     return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
                    served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
                    ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"), stop_ended=stop_ended,
-                   publish=publish, upgrade_mark=upgrade_mark)
+                   publish=publish, upgrade_mark=upgrade_mark, managed=managed)
 
 
 if __name__ == "__main__":
