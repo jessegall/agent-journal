@@ -276,7 +276,7 @@ class Helpers(Controller):
         if not place:
             raise Refused(f"helper {n}, {row.name}, has no environment left to stop")
         rows = unmarked(self.record, row)
-        stopped = places.stop(place.n)
+        stopped = places.stop(place.n) if agent_runs(self.record, row) else f"helper {n}, {row.name}, has no agent running; finish it"
         give_back(self.record, rows)
         Agents(self.record, actor=SYSTEM)._mark_primary(f"Stopped helper {n}", name=row.name, icon="bot")
         return f"{stopped}{given_back(rows)}"
@@ -286,7 +286,7 @@ class Helpers(Controller):
         row = self._unfinished(n, "finished")
         places = Environments(self.record, actor=SYSTEM)
         place = places.rows.by_title(row.environment)
-        if Sessions(self.record.root).holder(row.environment):
+        if agent_runs(self.record, row):
             raise Refused(f"helper {n}, {row.name}, is still running: journal helper stop {n}, then finish it")
         rows = held(self.record, row)
         finished = super().complete(n, f"{how or 'finished; its environment is packed away'}{given_back(rows)}", **data)
