@@ -128,11 +128,7 @@ class Helpers(Controller):
         driver = DRIVERS[provider]
         home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER)
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
-        listed, own = Todos(self.record, actor=SYSTEM), Todos(home, actor=SYSTEM)
-        for given in handed:
-            listed.assign(given.n, to=row.ref)
-            delegate_plans_holding(self.record, given)
-            own.create(given.title, brief=given.brief, handed=str(given.n))
+        self._handed(row, home, handed)
         try:
             launched(self.record, place, provider, driver.prompted(["--model", model], kickoff(row, folder, todo.n, handed)), folder)
         except Exception:
@@ -184,14 +180,25 @@ class Helpers(Controller):
             raise Refused(f"{folder} is not a git checkout: --checkout names the folder that holds .git, such as platform")
         return folder
 
+    def _handed(self, row, home: Record, handed: list[Todo]) -> None:
+        listed, own = Todos(self.record, actor=SYSTEM), Todos(home, actor=SYSTEM)
+        for given in handed:
+            listed.assign(given.n, to=row.ref)
+            delegate_plans_holding(self.record, given)
+            own.create(given.title, brief=given.brief, handed=str(given.n))
+            delegate_plans_holding(self.record, given)
+
     @action(network=True)
-    def say(self, n: int, text: str) -> str:
+    def say(self, n: int, text: str, todos: str = "") -> str:
         row = self._unfinished(n, "finished")
-        if not tell_in(self.record, row.environment, row.provider, text):
+        handed = self._handable(numbers_in(todos))
+        words = f"{handed_over(handed)}\n{text}" if handed else text
+        if not tell_in(self.record, row.environment, row.provider, words):
             raise Refused(f"helper {n}, {row.name}, is not running; dispatch it again to go on")
+        self._handed(row, Record(self.record.root, row.environment), handed)
         if row.report:
             Helpers(self.record, actor=SYSTEM).update(n, report="")
-        return f"sent to {row.name}"
+        return f"sent to {row.name}" + (f", with to-do {', '.join(str(t.n) for t in handed)}" if handed else "")
 
     @action
     def report(self, text: str) -> str:

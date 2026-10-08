@@ -272,6 +272,13 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     stranded = Todos(repo.record, actor=SYSTEM).create("held by a helper that is gone").n
     Todos(repo.record, actor=SYSTEM).assign(stranded, to="helper:99")
     assert todos.unassign(stranded).assigned == "", "a row held by a helper that no longer exists is the agent's to take back"
+    told = []
+    monkeypatch.setattr("features.helpers.controller.tell_in", lambda record, environment, provider, text: told.append(text) or True)
+    helpers.dispatch("Tess", "More tunnel work", "codex", "gpt-5.5")
+    later = todos.create("check the certificate").n
+    helpers.say(helpers.all()[-1].n, "also this one", todos=str(later))
+    assert (todos.load(later).assigned, "check the certificate" in told[-1], told[-1].endswith("also this one")) == (helpers.all()[-1].ref, True, True), \
+        "a follow-up with --todos hands a running helper those rows and names them in what it is told"
 
 
 def test_a_helper_launches_in_a_nested_checkout_named_by_its_path(monkeypatch, tmp_path):

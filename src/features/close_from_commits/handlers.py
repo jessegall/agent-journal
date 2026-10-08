@@ -13,6 +13,31 @@ MADE_HERE = "commit"
 TRAILER = re.compile(r"^Journal: todos done (\d+(?:(?: *, *(?:and +)?| +and +| +)\d+\b)*)(?: +(.*))?$", re.MULTILINE)
 
 
+SWEEP_COMMITS = 300
+
+
+def landing_commits(checkout: Checkout, span: str, limit: int = 0) -> list[tuple[str, str, str]]:
+    out = git(["log", "--format=%H%x1f%s%x1f%B%x1e", *(["-n", str(limit)] if limit else []), span], checkout.top)
+    return [tuple(c.strip("\n").split("\x1f", 2)) for c in out.split("\x1e") if c.strip()]
+
+
+def closing(todos: Todos, works: Works, sha: str, subject: str, body: str, held_only: bool = False) -> tuple[list[str], list[str]]:
+    closed, ended = [], []
+    for numbers, how in TRAILER.findall(body):
+        for n in re.findall(r"\d+", numbers):
+            try:
+                row = todos.load(n)
+                if row.completed or (held_only and not row.assigned):
+                    continue
+                open_work = [w.n for w in works._for_todo(n)]
+                todos.complete(int(n), how=how or f"{subject} ({sha[:9]})", commit=sha)
+            except Refused:
+                continue
+            closed.append(f"to-do {n}")
+            ended += [f"work {w}" for w in open_work if works.load(w).completed]
+    return closed, ended
+
+
 class CloseRowsFromCommits(Handler):
     hooks = ANY_BUT_PRE_TOOL_USE
     def __init__(self):
@@ -48,30 +73,17 @@ class CloseRowsFromCommits(Handler):
         seen = context.record.event_log.cursor_text(cursor)
         tip = git(["rev-parse", checkout.landing], checkout.top).strip()
         context.record.event_log.set_cursor_text(cursor, tip)
-        if not seen or seen == tip:
+        if seen == tip:
             return
-        out = git(["log", "--format=%H%x1f%s%x1f%B%x1e", f"{seen}..{tip}"], checkout.top)
-        for sha, subject, body in (c.strip("\n").split("\x1f", 2) for c in out.split("\x1e") if c.strip()):
-            self.close(context, sha, subject, body)
+        for sha, subject, body in (landing_commits(checkout, f"{seen}..{tip}") if seen else landing_commits(checkout, tip, limit=SWEEP_COMMITS)):
+            self.close(context, sha, subject, body, held_only=not seen)
 
     def log(self, project) -> list[tuple[str, str, str, str]]:
         out = git(["log", "-g", "--format=%H%x1f%gs%x1f%s%x1f%B%x1e", "-n", "50"], project)
         return [tuple(c.strip("\n").split("\x1f", 3)) for c in out.split("\x1e") if c.strip()]
 
-    def close(self, context: AgentContext, sha: str, subject: str, body: str) -> None:
-        todos, works = context.journal.acting(SYSTEM).get(Todos), context.journal.get(Works)
-        closed, ended = [], []
-        for numbers, how in TRAILER.findall(body):
-            for n in re.findall(r"\d+", numbers):
-                try:
-                    if todos.load(n).completed:
-                        continue
-                    open_work = [w.n for w in works._for_todo(n)]
-                    todos.complete(int(n), how=how or f"{subject} ({sha[:9]})", commit=sha)
-                except Refused:
-                    continue
-                closed.append(f"to-do {n}")
-                ended += [f"work {w}" for w in open_work if works.load(w).completed]
+    def close(self, context: AgentContext, sha: str, subject: str, body: str, held_only: bool = False) -> None:
+        closed, ended = closing(context.journal.acting(SYSTEM).get(Todos), context.journal.get(Works), sha, subject, body, held_only)
         if closed:
             context.agent.say("closed", sha=sha[:9], rows=", ".join(closed), ended=f" and ended {', '.join(ended)}" if ended else "")
 
