@@ -11,10 +11,10 @@ RUN apt-get update \
 RUN groupadd --gid 10001 journal \
     && useradd --uid 10001 --gid journal --home-dir /data/home --no-create-home --shell /bin/sh journal \
     && useradd --uid 10002 --gid journal --home-dir /data/gateway --no-create-home --shell /usr/sbin/nologin gateway \
-    && mkdir -p /data/home /data/project /data/gateway /data/vault \
-    && chown journal:journal /data/home /data/project \
+    && mkdir -p /data/home /data/project /data/secrets /data/gateway /data/vault \
+    && chown journal:journal /data/home /data/project /data/secrets \
     && chown gateway:journal /data/gateway /data/vault \
-    && chmod 700 /data/home /data/gateway /data/vault \
+    && chmod 700 /data/home /data/secrets /data/gateway /data/vault \
     && chmod 2770 /data/project
 
 COPY --chown=root:root src /opt/agent-journal/src
@@ -24,6 +24,7 @@ COPY --chown=root:root --chmod=755 docker/entrypoint.sh docker/hosted-journal /u
 ENV JOURNAL_PROJECT=/data/project \
     JOURNAL_ROOT=/data/project/.journal \
     AGENT_JOURNAL_VAULT=/data/vault \
+    AGENT_JOURNAL_SECRETS=/data/secrets \
     PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /

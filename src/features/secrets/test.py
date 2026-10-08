@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 import stat
 import subprocess
@@ -14,6 +15,14 @@ from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 
 VALUE = "sk-test-4f9a1c7e2b"
+DOCKER = Path(__file__).resolve().parents[3] / "docker"
+
+
+def refused_tool(record, tool: str, given: dict) -> str:
+    from providers import PROVIDERS
+    from runner.hooks import handle
+    return handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "cwd": str(record.root.parent),
+                                                                    "tool_name": tool, "tool_input": given}).get("reason", "")
 
 
 def test_a_secret_keeps_its_value_in_a_file_of_its_own_and_nowhere_in_the_journal(tmp_path, monkeypatch):
@@ -84,10 +93,7 @@ def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch
     assert "main agent only" in refused(lambda: Secrets(record, actor=AGENT, agent="sub-1").run("GitHub", "gh")), "a subagent uses a secret only when it is shared"
     assert effects("journal secret run github -- git push origin main") == ["writes"], "the work gate sees what the wrapped command does"
     assert Secrets(record, actor=SYSTEM).load(row.n).used, "the secret records when it was last used"
-    from providers import PROVIDERS
-    from runner.hooks import handle
-    hook = lambda tool, given: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "cwd": str(record.root.parent),
-                                                                                        "tool_name": tool, "tool_input": given}).get("reason", "")
+    hook = lambda tool, given: refused_tool(record, tool, given)
     path = ValuesFile(record.root).path
     assert ("never read by an agent" in hook("Read", {"file_path": str(path)}), "never read by an agent" in hook("Bash", {"command": f"cat {path}"}),
             "never read by an agent" in hook("Bash", {"command": "grep -r KEY ~/.config/agent-journal/secrets"}), hook("Bash", {"command": "ls"})) == (True, True, True, ""), \
@@ -126,3 +132,21 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
     reason = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "cwd": str(record.root.parent),
                                                                      "tool_name": "Read", "tool_input": {"file_path": str(logins.merged)}}).get("reason", "")
     assert "never read by an agent" in reason, "the saved logins are refused to the agent like the secrets file"
+
+
+def test_a_journal_on_a_server_keeps_its_own_values_which_no_backup_restore_or_other_machine_touches(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "laptop"))
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "server"))
+    features.load()
+    record = fresh()
+    row = Secrets(record, actor=USER).create("GitHub", kind="api key")
+    Secrets(record, actor=USER).fill(row.n, "key", VALUE)
+    path = ValuesFile(record.root).path
+    assert (path.parent, ValuesFile(record.root).values()) == (tmp_path / "server", {"GITHUB_KEY": VALUE}), "a server keeps its values in the folder its image names"
+    assert "never read by an agent" in refused_tool(record, "Bash", {"command": f"cat {path.parent}/*"}), "and an agent on it is refused that folder"
+    folder = re.search(r"AGENT_JOURNAL_SECRETS=(\S+)", (DOCKER / "Dockerfile").read_text())[1]
+    assert (f"--exclude {folder} " in (DOCKER / "backup.sh").read_text(), f"! -name {Path(folder).name} " in (DOCKER / "restore-into-volume.sh").read_text()) == (True, True), \
+        "no backup snapshot holds the server's values, and a restore leaves them in place"
+    monkeypatch.delenv("AGENT_JOURNAL_SECRETS")
+    assert (ValuesFile(record.root).path.is_relative_to(tmp_path / "laptop"), ValuesFile(record.root).values()) == (True, {}), \
+        "an agent on another machine working on the same journal reads only that machine's own file"

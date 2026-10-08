@@ -1,7 +1,7 @@
 #!/bin/sh
 # Proves the install on this machine's own Docker, then removes everything it made:
 # build, start, first-time setup, login, refusals, an unprivileged server, secrets only it can read,
-# a backup, and a restore that brings back what was lost.
+# a backup that leaves out the server's secrets, and a restore that brings back what was lost and keeps them.
 set -eu
 cd "$(dirname "$0")"
 export COMPOSE_PROJECT_NAME=journal-proof COMPOSE_PROFILES=journal JOURNAL_IMAGE=agent-journal:local HTTP_PORT=18080 HTTPS_PORT=18443 JOURNAL_ADDRESS=localhost
@@ -76,7 +76,12 @@ compose run --rm -e UPDATE_ONCE=1 -e JOURNAL_IMAGE_NAME=agent-journal updater 2>
     && pass "an image without the release workflow's signature is never deployed" || fail "the updater deployed an unsigned image"
 
 compose exec -T -u journal journal sh -c 'echo kept > /data/project/proof.txt'
+compose exec -T -u journal -w /data/project journal sh -c 'J="python3 .journal/journal.py --root .journal"; $J secret create Proof --kind "api key" >/dev/null && echo proof-secret-value > /tmp/made && $J secret store 1 key /tmp/made >/dev/null' \
+    || fail "a secret's value could not be kept on the server"
+[ "$(compose exec -T -u journal journal sh -c 'stat -c %a /data/secrets /data/secrets/*.env' | tr '\n' ' ')" = "700 600 " ] && pass "the server keeps its secrets in a file of its own" || fail "the server's secrets file is not owner-only"
 compose run --rm -e BACKUP_ONCE=1 backup >/dev/null 2>&1 && pass "a backup snapshot is made" || fail "the backup failed"
+LISTED="$(compose run --rm --entrypoint restic backup ls latest --host journal 2>/dev/null)"
+echo "$LISTED" | grep -qx /data/project/proof.txt && ! echo "$LISTED" | grep -q '^/data/secrets' && pass "no backup holds the server's secrets" || fail "a backup holds the server's secrets"
 compose exec -T journal printenv RESTIC_PASSWORD >/dev/null 2>&1 && fail "the journal's agents can read the backup password" || pass "the backup password stays off the journal's container"
 compose stop journal >/dev/null 2>&1
 env SNAPSHOT=0000000000 docker compose --profile restore run --rm --no-deps restore >/dev/null 2>&1 && fail "a snapshot that does not exist was restored"
@@ -88,6 +93,7 @@ compose --profile restore run --rm --no-deps restore > "$WORK/restore.log" 2>&1 
 compose start journal >/dev/null 2>&1
 for _ in $(seq 1 90); do compose exec -T journal curl -fsS http://127.0.0.1:8440/ready >/dev/null 2>&1 && break; sleep 2; done
 [ "$(compose exec -T -u journal journal cat /data/project/proof.txt)" = "kept" ] && pass "the restore brings back a lost file" || fail "the restored volume lacks the file"
+compose exec -T -u journal journal sh -c 'cat /data/secrets/*.env' | grep -q proof-secret-value && pass "a restore leaves the server's secrets in place" || fail "the restore took the server's secrets"
 STATUS="$(curl -sk -o /dev/null -w '%{http_code}' -H "Origin: $SITE" -H "X-Forwarded-For: 192.0.2.99" --data-urlencode "password=$PASSWORD" "$SITE/login")"
 [ "$STATUS" = "303" ] || [ "$STATUS" = "429" ] && pass "the owner's password survives the restore" || fail "login after restore answered $STATUS"
 echo "The install is proven on this machine."

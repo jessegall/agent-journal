@@ -4,12 +4,15 @@ import uuid
 from pathlib import Path
 
 PROJECT_ID = "project-id"
+FOLDER_VARIABLE = "AGENT_JOURNAL_SECRETS"
 HEADER = """# The values of this project's secrets, written by agent-journal.
 # One line per field: NAME="value". The journal never copies this file anywhere.
 """
 
 
 def secrets_folder() -> Path:
+    if FOLDER_VARIABLE in os.environ:
+        return Path(os.environ[FOLDER_VARIABLE])
     if os.name == "nt":
         return Path(os.environ["APPDATA"]) / "agent-journal" / "secrets"
     return Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "agent-journal" / "secrets"
