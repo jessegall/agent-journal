@@ -11,6 +11,12 @@ const props = defineProps({sequence: {type: Number, default: 0}});
 const emit = defineEmits(["made", "close"]);
 const blank = () => ({
     title: "",
+    when: "words",
+    fact: "message.unanswered",
+    over: 5,
+    only_when: "any",
+    timing: 0,
+    most: 3,
     words: [],
     words_in: "both",
     does: props.sequence ? "start" : "nudge",
@@ -21,7 +27,7 @@ const draft = reactive(blank());
 const error = ref("");
 
 const missing = computed(() => {
-    if (!draft.words.length) return "Add at least one word.";
+    if (draft.when === "words" && !draft.words.length) return "Add at least one word.";
     if (draft.does !== "start" && !draft.text.trim()) return `Write ${doesOf(draft.does).ask.toLowerCase()}.`;
     return draft.title.trim() ? "" : "Give it a name.";
 });
@@ -30,13 +36,17 @@ function start({name, ...fields}) {
     Object.assign(draft, blank(), fields, {sequences: draft.sequences});
 }
 
+const watching = () =>
+    draft.when === "state"
+        ? {when: "state", fact: draft.fact, over: draft.over, only_when: draft.only_when, timing: draft.timing, most: draft.most}
+        : {words: draft.words, words_in: draft.words_in};
+
 async function submit() {
     error.value = "";
     try {
         const made = await api.create("trigger", {
             title: draft.title.trim(),
-            words: draft.words,
-            words_in: draft.words_in,
+            ...watching(),
             does: draft.does,
             text: draft.does === "start" ? "" : draft.text,
         });
