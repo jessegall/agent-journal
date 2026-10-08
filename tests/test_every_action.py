@@ -47,11 +47,12 @@ BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "point", "p
          "extensionZip", "stream", "layoutFrom"}
 REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin", "tunnelLogout", "updateTunler", "installTunler",
         "tunnelAnswering", "tunnelDomains", "tunnelRelease", "tunnelReaddress", "tunnelCause", "restartTunnel", "setService", "installPlugin", "installSuggested", "upgradePlugin", "previewPlugin",
-        "previewUpgrade", "launchAgent", "saveAgentHooks", "relaunchAgent", "runShell", "agentKeys", "runCheck", "connectPhone"}
-LOGIN_PAGE = {"hosting", "hostingUpgrade", "hostingTakeDown"}
+        "previewUpgrade", "launchAgent", "saveAgentHooks", "relaunchAgent", "runShell", "agentKeys", "runCheck", "connectPhone", "connectTo"}
+LOGIN_PAGE = {"hosting", "hostingUpgrade", "hostingTakeDown", "hostingMe", "members", "inviteMember", "assignRole", "removeMember", "shareEnvironments", "endLogins",
+              "leaveJournal"}
 SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
 CALLS = {
-    "changelog": [], "releases": [], "restore": ["todo", 1], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
+    "changelog": [], "connection": [], "connectTo": ["127.0.0.1:9"], "disconnectFromServer": [], "releases": [], "restore": ["todo", 1], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
     "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "startJournal": ["/nowhere/.journal", "codex"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
     "extension": [], "tunnelLogin": [{"endpoint": "127.0.0.1:9", "username": "walker", "password": "a password"}],
     "tunnelLogout": [], "tunlerVersion": [], "updateTunler": [], "installTunler": ["127.0.0.1:9"], "tunnelAnswering": [],
@@ -226,7 +227,7 @@ def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
     (code(record.root) / "CHANGELOG.md").write_text("# changes\n")
     keys = {
         "/api/manifest": {"actions", "actors", "build", "chat_kinds", "environment", "features", "fields", "groups", "methods", "priority", "project", "scopes", "types", "version", "views"},
-        "/api/summary": {"color", "environments", "helpers", "project", "root", "start", "version"},
+        "/api/summary": {"color", "environments", "helpers", "project", "root", "start", "started", "version"},
         "/api/{env}/bar": {"queue"},
         "/api/{env}/family": {"links", "members"},
         "/api/agent-controls/claude": {"groups", "note", "provider"},
