@@ -32,7 +32,9 @@ onUnmounted(() => {
     <slot />
     <template v-if="more">
         <div class="paged-foot">
-            <span class="paged-count">Showing {{ shown }} of {{ total }}</span>
+            <template v-if="total">
+                <span class="paged-count">Showing {{ shown }} of {{ total }}</span>
+            </template>
             <Btn class="paged-more" :busy="loading" @click="next">Load more</Btn>
         </div>
     </template>
