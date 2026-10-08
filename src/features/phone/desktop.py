@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from http.client import HTTPConnection, HTTPException
 from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit
 
@@ -32,6 +33,10 @@ def closed(record, method: str, forwarded: str) -> bool:
     return found is not None and Page(found[0].method, found[0].pattern) in shut
 
 
+def always() -> bool:
+    return True
+
+
 def phone_marks(environment: str, unlocked: bool, member: str) -> dict:
     return {PHONE_ENVIRONMENT: environment, PHONE_UNLOCKED: "1" if unlocked else "0", PHONE_MEMBER: member}
 
@@ -39,11 +44,12 @@ def phone_marks(environment: str, unlocked: bool, member: str) -> dict:
 class Desktop:
     """The journal's own server on this machine, reached from outside through the share server with its loopback Host and no Origin."""
 
-    def __init__(self, handler, path: str, marks: dict, page_headers: dict = APP_HEADERS) -> None:
+    def __init__(self, handler, path: str, marks: dict, page_headers: dict = APP_HEADERS, standing: Callable[[], bool] = always) -> None:
         self.handler = handler
         self.asked = urlsplit(path)
         self.marks = marks
         self.page_headers = page_headers
+        self.standing = standing
 
     def forward(self, body: bytes) -> None:
         record = self.handler.shares.record
@@ -79,5 +85,7 @@ class Desktop:
             self.handler.send_header(name, value)
         self.handler.end_headers()
         while chunk := reply.read1(CHUNK):
+            if not self.standing():
+                return
             self.handler.wfile.write(chunk)
             self.handler.wfile.flush()

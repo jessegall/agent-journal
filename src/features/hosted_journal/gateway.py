@@ -354,6 +354,7 @@ class Gateway:
         """Ends every login and every phone's key before it asks the updater to stop the journal, so nothing is let in while it does."""
         Hosting(visit.vault).ask(Ask.TAKE_DOWN)
         ended = Logins(visit.vault).close_all()
+        self.cut_every_stream()
         VaultGuard(visit.vault).drop_all()
         for record in Record.every(visit.record.root):
             phones = Phones(record, actor=USER)
@@ -392,7 +393,7 @@ class Gateway:
             return self.answer_here(visit, login, *phone, visit.handler.rfile.read(size) if size else b"")
         if STREAM not in visit.handler.headers.get("Accept", ""):
             return Desktop(visit.handler, visit.handler.path, people.marks(visit, login), VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
-        return self.streamed(visit, login, hashed(token), people.marks(visit, login))
+        return self.streamed(visit, login, token, people.marks(visit, login))
 
     def end_logins_of(self, vault: Vault, member: str) -> int:
         """Ends every login of this member and cuts the live streams their browsers hold open, so nothing of theirs stays connected."""
@@ -404,6 +405,16 @@ class Gateway:
         """Cuts the live streams a member's browsers hold open; a browser whose login still stands opens a new one, under what holds now."""
         with self.lock:
             streams = list(self.live.pop(member, ()))
+        return self._cut(streams)
+
+    def cut_every_stream(self) -> int:
+        with self.lock:
+            streams = [stream for held in self.live.values() for stream in held]
+            self.live.clear()
+        return self._cut(streams)
+
+    @staticmethod
+    def _cut(streams: list) -> int:
         for stream in streams:
             # A stream that closed by itself in the meantime is already ended.
             with suppress(OSError):
@@ -435,17 +446,20 @@ class Gateway:
         return visit.handler.send(200, json.dumps(body).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
 
     def streamed(self, visit: Visit, login: KeptLogin, token: str, marks: dict) -> None:
+        """A live stream relayed while its login stands: it ends at the next heartbeat after the login is closed, whichever process closed it."""
+        counted = hashed(token)
         with self.lock:
-            if self.streams[token] >= MOST_STREAMS:
+            if self.streams[counted] >= MOST_STREAMS:
                 return visit.refuse(429, f"one login keeps at most {MOST_STREAMS} live streams open; close a tab")
-            self.streams[token] += 1
+            self.streams[counted] += 1
             self.listening[login.member] += 1
             self.live[login.member].add(visit.handler.connection)
         try:
-            return Desktop(visit.handler, visit.handler.path, marks, VIEWER_HEADERS).forward(b"")
+            standing = lambda: Logins(visit.vault).standing(token) is Standing.OPEN
+            return Desktop(visit.handler, visit.handler.path, marks, VIEWER_HEADERS, standing).forward(b"")
         finally:
             with self.lock:
-                self.streams[token] -= 1
+                self.streams[counted] -= 1
                 self.listening[login.member] -= 1
                 self.live[login.member].discard(visit.handler.connection)
 
