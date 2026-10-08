@@ -29,7 +29,8 @@ class GmailWork:
         if not question.data.get("gmail_reply") or question.outcome != SEND or question.data.get("answered_by") != USER:
             return
         ticket = Tickets(record, actor=SYSTEM).load(question.refs[0].split(":")[1])
-        subject = ticket.title if ticket.title.lower().startswith("re:") else f"Re: {ticket.title}"
+        asked = ticket.data.get("gmail_subject", "")
+        subject = asked if asked.lower().startswith("re:") else f"Re: {asked}"
         bus.defer(lambda: self.push(record, lambda box: box.sent(ticket.data.get("gmail_from", ""), subject, question.brief, ticket.data.get("gmail_id", ""))))
 
     def push(self, record, sending) -> None:

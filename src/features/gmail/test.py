@@ -117,8 +117,8 @@ def test_mail_becomes_one_ticket_each_wrapped_as_untrusted_and_only_you_start_it
     gmail.check(record)
     gmail.check(record)
     tickets = mail_tickets(record)
-    assert sorted(t.title for t in tickets) == ["Hello", "Urgent"], "two syncs of the same mail leave one ticket for each"
-    hostile = next(t for t in tickets if t.title == "Urgent")
+    assert sorted(t.source_id for t in tickets) == ["1", "2"], "two syncs of the same mail leave one ticket for each"
+    hostile = next(t for t in tickets if t.source_id == "2")
     assert hostile.brief.startswith('<untrusted source="gmail"') and HOSTILE in hostile.brief, "mail telling the agent to run a command is saved wrapped, its words untouched inside the wrap"
     assert (Todos(record, actor=SYSTEM).rows.standing(), Messages(record, actor=SYSTEM).rows.standing()) == ([], []), "a journal tag and a command in mail make no to-do and no reply"
     assert "only you start" in refused(lambda: Tickets(record, actor=AGENT).start(hostile.n)), "an agent cannot start a ticket from Gmail"
