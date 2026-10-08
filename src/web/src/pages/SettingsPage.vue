@@ -32,7 +32,7 @@ import {route} from "../route.js";
 import {store} from "../state/store.js";
 
 const TAB = "journal.settings.tab";
-const LISTED = ["features", "system", "sharing", "developer"];
+const LISTED = ["agent", "features", "system", "sharing", "developer"];
 const FLUSH = ["plugins", "environments"];
 const known = (key) => TABS.some((t) => t.key === key);
 const opening = (...keys) => keys.find(known) || TABS[0].key;

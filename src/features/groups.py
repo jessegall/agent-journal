@@ -4,6 +4,7 @@ from typing import TypedDict
 
 
 class Tab(StrEnum):
+    AGENT = "agent"
     FEATURES = "features"
     SYSTEM = "system"
     SHARING = "sharing"
@@ -40,22 +41,22 @@ class Grouping:
 
 
 class Group(Enum):
-    AGENT = Grouping("Agent", "How the agent works and talks to you", Section.AGENT)
-    SESSIONS = Grouping("Sessions", "Agent sessions, subagents and helpers", Section.AGENT)
+    AGENT = Grouping("Agent", "How the agent works and talks to you", Section.AGENT, Tab.AGENT)
+    SESSIONS = Grouping("Sessions", "Agent sessions, subagents and helpers", Section.AGENT, Tab.AGENT)
     LONG_COMMANDS = Grouping(
-        "Long commands", "Moves a command that blocks the agent's terminal to the background", Section.AGENT, lead="long_commands"
+        "Long commands", "Moves a command that blocks the agent's terminal to the background", Section.AGENT, Tab.AGENT, lead="long_commands"
     )
     LAWS = Grouping(
-        "Rules", "Rules the journal gives every agent: how it starts subagents and how much it reads", Section.AGENT, lead="journal_laws"
+        "Rules", "Rules the journal gives every agent: how it starts subagents and how much it reads", Section.AGENT, Tab.AGENT, lead="journal_laws"
     )
-    SKILLS = Grouping("Skills", "When the agent loads skills", Section.AGENT, lead="skill_loading")
+    SKILLS = Grouping("Skills", "When the agent loads skills", Section.AGENT, Tab.AGENT, lead="skill_loading")
     WORK_TRACKING = Grouping(
-        "Work tracking", "The agent opens work before it changes files, and logs it on its to-do", Section.WORK, lead="work_tracking"
+        "Work tracking", "The agent opens work before it changes files, and logs it on its to-do", Section.WORK, Tab.AGENT, lead="work_tracking"
     )
-    PLANS = Grouping("Plans", "How the agent moves through a plan", Section.WORK, lead="plans")
-    QUESTIONS = Grouping("Questions", "Choices only you can make are asked as questions", Section.WORK, lead="ask_questions")
-    MESSAGES = Grouping("Messages", "How the agent handles the messages you send", Section.WORK, lead="messages")
-    VOICE = Grouping("Voice", "How the agent talks to you and what it calls you, in every environment of this project", Section.PROJECT)
+    PLANS = Grouping("Plans", "How the agent moves through a plan", Section.WORK, Tab.AGENT, lead="plans")
+    QUESTIONS = Grouping("Questions", "Choices only you can make are asked as questions", Section.WORK, Tab.AGENT, lead="ask_questions")
+    MESSAGES = Grouping("Messages", "How the agent handles the messages you send", Section.WORK, Tab.AGENT, lead="messages")
+    VOICE = Grouping("Voice", "How the agent talks to you and what it calls you, in every environment of this project", Section.PROJECT, Tab.AGENT)
     SEQUENCES = Grouping("Sequences", "Steps the agent follows in order, in every environment of this project", Section.PROJECT, lead="sequences")
     BOARDS = Grouping("Boards", "Ticket boards and the agents that fill them, in every environment of this project", Section.PROJECT, lead="boards")
     TICKETS = Grouping("Tickets", "Each ticket runs in an environment of its own", Section.PROJECT, lead="tickets")
