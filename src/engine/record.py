@@ -62,7 +62,6 @@ class Record:
         self._depth = 0
         self._pending: list[Callable[[], None]] = []
         self.memo = {} if memo else None
-        self._made: set[Path] = set()
         self.event_log = EventLog(self.home, self.locked)
         self.settings_file = ScopedSettings(self.home, self.root)
 
@@ -72,9 +71,7 @@ class Record:
 
     def folder(self, type: str, scope: str = "") -> Path:
         f = (self.root / RESOURCES if scope == PROJECT else self.home) / type
-        if f not in self._made:
-            f.mkdir(parents=True, exist_ok=True)
-            self._made.add(f)
+        f.mkdir(parents=True, exist_ok=True)
         return f
 
     @contextmanager

@@ -427,6 +427,13 @@ def test_the_command_line_runs_a_forced_command_prints_rows_and_refuses_what_the
     assert code == 0 and "a first row" in text, "a row prints in full"
     out, code = captured(["banana"], record.root)
     assert (code, "is not a command the server runs" in out) == (None, True), "the server runs only the nouns it knows"
+    from install import ASKS
+    assert 'case "$1"' not in ASKS and '404|409|000|"") ;;' in ASKS, \
+        "the journal command on the path sends every command and runs it here when the server does not, so a copy from another version never refuses one"
+    import shutil
+    shutil.rmtree(record.folder("todo"))
+    code, text = read("todo", "create", "after the folder went")
+    assert code == 0 and record.folder("todo").is_dir(), "a type folder removed while the record is open is made again"
     out, code = captured(["todo", "show", "99"], record.root)
     assert code == 1 and out.startswith("!"), "a refusal comes back with its code"
     out, code = captured(["todo", "show"], record.root)

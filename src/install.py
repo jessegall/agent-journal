@@ -231,7 +231,7 @@ def retire(root: Path) -> int:
     return len(old)
 
 
-ASKS = """case "$1" in __SERVED__) ;; *) false ;; esac && if { read -r at url < "$root/runtime/heartbeat"; } 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
+ASKS = """if { read -r at url < "$root/runtime/heartbeat"; } 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
 session="$JOURNAL_SESSION"; [ -z "$session" ] && [ -n "$JOURNAL_SESSION_VARIABLE" ] && eval "session=\\${$JOURNAL_SESSION_VARIABLE:-}"
 reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --url-query "actor=$JOURNAL_ACTOR" --url-query "env=$JOURNAL_ENV" --url-query "cwd=$PWD" --url-query "plugin=$JOURNAL_PLUGIN" --url-query "session=$session" --data-binary @- "${url}api/run")
 [ $? -ne 2 ] || reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --data-binary @- "$(curl -Gso /dev/null -w '%{url_effective}' --data-urlencode "actor=$JOURNAL_ACTOR" --data-urlencode "env=$JOURNAL_ENV" --data-urlencode "cwd=$PWD" --data-urlencode "plugin=$JOURNAL_PLUGIN" --data-urlencode "session=$session" "${url}api/run")")
@@ -241,15 +241,12 @@ body=${reply%
 *}
 case "$said" in
 200) printf '%s' "$body"; exit 0 ;;
-404|000|"") ;;
+404|409|000|"") ;;
 *) [ -n "$body" ] && printf '%s' "$body" >&2 || echo "! the journal server answered $said and said nothing" >&2; exit 1 ;;
 esac
 fi
 """
 
-
-def asks() -> str:
-    return ASKS.replace("__SERVED__", "|".join(sorted(loaded().served())))
 
 SHIM = """#!/bin/sh
 dir="$(pwd)"
@@ -275,7 +272,7 @@ exec "__PYTHON__" "__SCRIPT__" --root "$root" "$@"
 
 
 def launcher(python: str, script: Path, root: Path) -> str:
-    return (LAUNCHER.replace("__ASKS__", asks()).replace("__PYTHON__", python)
+    return (LAUNCHER.replace("__ASKS__", ASKS).replace("__PYTHON__", python)
             .replace("__SCRIPT__", str(script)).replace("__ROOT__", str(root)))
 
 
@@ -287,7 +284,7 @@ def alias(project: Path, root: Path) -> Path:
     bin_ = Path.home() / ".local" / "bin"
     bin_.mkdir(parents=True, exist_ok=True)
     shim = bin_ / "journal"
-    shim.write_text(SHIM.replace("__ASKS__", asks()).replace("__PYTHON__", sys.executable))
+    shim.write_text(SHIM.replace("__ASKS__", ASKS).replace("__PYTHON__", sys.executable))
     shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
     return f
 
