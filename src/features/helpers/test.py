@@ -7,7 +7,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import features
-from controllers.types import Agents, Environments, Messages, Nudges, Todos
+from controllers.types import Agents, Environments, Features, Messages, Nudges, Todos
 from engine.record import Record
 from engine.sessions import Sessions
 from providers import PROVIDERS
@@ -119,6 +119,11 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     Agents(record, actor=SYSTEM).create("claude-1")
     Helpers(record, actor=AGENT).dispatch("Rhea", "Profile the slow hooks", "codex", "gpt-5.5")
     assert [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"]] == ["Dispatched helper 1"], "dispatching a helper shows a mark in the chat"
+    Features(record, actor=SYSTEM).configure("helpers", "kept", "5")
+    Features(record, actor=AGENT).configure("helpers", "kept", "12")
+    Features(record, actor=AGENT).configure("helpers", "kept", "12")
+    assert [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"]][1:] == ["Changed helpers.kept from 5 to 12"], \
+        "an agent changing a setting shows a mark once, and a person's change shows none"
     assert "only a helper reports" in refused(lambda: Helpers(record, actor=AGENT).report("done")), "the dispatcher cannot report for it"
     sessions = Sessions(record.root)
     seated = "codex-9"
