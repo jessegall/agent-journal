@@ -48,13 +48,15 @@ const extension = ref(null);
 const saved = ref(null);
 
 const sections = computed(() =>
-    catalog(store.spec || {}, store.settings || {}, {
-        identity: store.identity,
-        extension: extension.value,
-        extensionZip: api.extensionZip(),
-        stoppable: !demo,
-        stopping: stopping.value,
-    })
+    store.settings
+        ? catalog(store.spec || {}, store.settings, {
+              identity: store.identity,
+              extension: extension.value,
+              extensionZip: api.extensionZip(),
+              stoppable: !demo,
+              stopping: stopping.value,
+          })
+        : []
 );
 const matched = computed(() => narrowed(sections.value, query.value, filter.value));
 const searching = computed(() => Boolean(query.value.trim()) || filter.value !== "all");
@@ -230,7 +232,7 @@ onMounted(async () => {
                                             @act="act"
                                         />
                                     </template>
-                                    <template v-if="!groups.length">
+                                    <template v-if="!groups.length && store.settings">
                                         <EmptyState class="settings-empty" title="No setting matches">
                                             Try other words, or
                                             <Btn class="settings-reset" @click="showAll">show every setting</Btn>

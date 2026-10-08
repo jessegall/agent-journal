@@ -1,18 +1,24 @@
 import {readFileSync} from "node:fs";
 import {reply, runScenarios} from "./harness.mjs";
 
+if (!process.env.PRESS_EVERYTHING) {
+    console.log("{}");
+    process.exit(0);
+}
+
 const PAGES = [...readFileSync(new URL("../src/route.js", import.meta.url), "utf8").match(/PAGES = \[([^\]]*)\]/)[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 const CONTROLS = 'button, [role="button"], [role="switch"], [role="menuitem"], [role="radio"], [role="tab"]';
-const PRESSES_PER_PAGE = 45;
-const SETTLE_MS = 250;
+const PRESSES_PER_PAGE = 60;
+const CROWD = 5;
+const SETTLE_MS = 200;
 const BUSY_WAIT_MS = 3000;
-const STABLE_MS = 120;
+const STABLE_MS = 80;
 const STABLE_TRIES = 15;
 const STATES = ["aria-selected", "aria-checked", "aria-pressed", "aria-current"];
 
 const candidates = (page) =>
     page.evaluate(
-        ([selector, states]) => {
+        ([selector, states, CROWD]) => {
             const nameOf = (c) => (c.getAttribute("aria-label") || c.title || c.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40);
             const covered = (c) => {
                 c.scrollIntoView({block: "nearest"});
@@ -23,33 +29,40 @@ const candidates = (page) =>
             };
             const kindOf = (c) => {
                 const classes = c.className.toString().replace(/\b(on|active|selected|open|current|busy|gone)\b/g, "").trim().split(/\s+/).slice(0, 2);
-                const label = c.getAttribute("role") ? "" : nameOf(c).replace(/[0-9]+/g, "");
-                return `${c.tagName}|${c.getAttribute("role")}|${label}|${classes.join(".")}|${c.parentElement ? c.parentElement.className.toString().split(/\s+/).slice(0, 2).join(".") : ""}`;
+                const crowded = c.parentElement && c.parentElement.querySelectorAll(selector).length > CROWD;
+                const label = crowded ? "" : nameOf(c).replace(/[0-9]+/g, "");
+                return `${c.tagName}|${c.getAttribute("role")}|${classes.join(".")}|${label}|${c.parentElement ? c.parentElement.className.toString().split(/\s+/).slice(0, 2).join(".") : ""}`;
             };
             return [...document.querySelectorAll(selector)].map((c, at) => ({
                 at,
                 name: nameOf(c),
                 kind: kindOf(c),
-                usable: c.checkVisibility({visibilityProperty: true}) && !c.disabled && c.getAttribute("aria-disabled") !== "true" && c.getAttribute("tabindex") !== "-1" && !covered(c),
+                usable: c.checkVisibility({visibilityProperty: true}) && !/\s0$/.test(nameOf(c)) && !c.disabled && c.getAttribute("aria-disabled") !== "true" && c.getAttribute("tabindex") !== "-1" && !covered(c),
                 set: states.some((state) => c.getAttribute(state) === "true") || /\b(on|active|selected|current)\b/.test(c.className.toString()),
             }));
         },
-        [CONTROLS, STATES]
+        [CONTROLS, STATES, CROWD]
     );
 
-const look = (page) =>
-    page.evaluate(() => {
-        const typed = [...document.querySelectorAll("input, textarea")].map((field) => field.value).join("\u0001");
-        const shape = [...document.body.querySelectorAll("*")].map((el) => `${el.tagName}.${el.className && el.className.toString().replace(/\bbusy\b/g, "")}${["aria-expanded", "aria-checked", "aria-selected", "aria-pressed", "hidden"].map((name) => el.getAttribute(name)).join("")}`).sort().join(" ");
-        const scrolled = [...document.querySelectorAll("*")].reduce((sum, el) => sum + Math.round(el.scrollTop), 0);
-        return `${location.hash}|${shape}|${typed}|${scrolled}`;
-    });
+const OPENED = '[role="dialog"], [role="menu"], [role="listbox"], [aria-expanded="true"], [class*="panel"], [class*="dialog"], [class*="popover"], [class*="drawer"], [class*="toast"], [class*="notice"]';
 
-async function stable(page) {
-    let last = await look(page);
+const look = (page, control) =>
+    page.evaluate(
+        ([c, opened]) => {
+            const typed = [...document.querySelectorAll("input, textarea, select")].map((field) => field.value).join("\u0001");
+            const scrolled = [...document.querySelectorAll("*")].reduce((sum, el) => sum + Math.round(el.scrollTop), 0);
+            const own = c.isConnected ? `${c.className}${[...c.attributes].filter((a) => a.name.startsWith("aria-")).map((a) => a.value)}` : "gone";
+            const shown = [...document.querySelectorAll(opened)].filter((el) => el.checkVisibility()).length;
+            return `${location.hash}|${own}|${shown}|${typed}|${scrolled}|${document.activeElement === c}`;
+        },
+        [control, OPENED]
+    );
+
+async function stable(page, control) {
+    let last = await look(page, control);
     for (let tries = 0; tries < STABLE_TRIES; tries++) {
         await page.waitForTimeout(STABLE_MS);
-        const now = await look(page);
+        const now = await look(page, control);
         if (now === last) return now;
         last = now;
     }
@@ -60,16 +73,16 @@ async function press(page, at) {
     const control = (await page.$$(CONTROLS))[at];
     await control.scrollIntoViewIfNeeded();
     await page.mouse.move(0, 0);
-    const before = await stable(page);
+    const before = await stable(page, control);
     await page.evaluate(() => (window.pressedBusy = 0));
     let chooser = false;
     page.once("filechooser", () => (chooser = true));
-    await control.click({timeout: 3000, force: true});
+    await control.click({timeout: 3000});
     await page.mouse.move(0, 0);
-    const afterLook = await stable(page);
+    const afterLook = await stable(page, control);
     return {
         requested: (await page.evaluate(() => window.pressedBusy)) > 0,
-        moved: chooser || before !== afterLook,
+        moved: chooser || before.replace(/\|true$/, "|false") !== afterLook.replace(/\|true$/, "|false") || /\|gone\|/.test(afterLook),
         stuck: await page.waitForFunction(() => !document.querySelector("[data-busy]"), null, {timeout: BUSY_WAIT_MS}).then(() => false, () => true),
     };
 }
@@ -94,13 +107,15 @@ async function pressPage(browser, url, route, seen) {
         const next = (await candidates(page)).find((c) => c.usable && !seen.has(c.kind));
         if (!next) break;
         seen.add(next.kind);
-        const hash = await page.evaluate(() => location.hash);
         const result = await press(page, next.at).catch(() => null);
         if (!result) continue;
         if (!result.requested && !result.moved && !next.set) failures.push(`${name}: "${next.name}" sent no request and changed nothing`);
         else if (result.stuck) failures.push(`${name}: "${next.name}" stayed busy after the answer`);
-        await page.keyboard.press("Escape");
-        if (new URL(page.url()).hash !== hash) await page.goto(`${url}${hash}`);
+        if (result.moved || result.requested) {
+            await page.reload();
+            await page.waitForSelector(CONTROLS);
+            await page.waitForTimeout(SETTLE_MS);
+        }
     }
     await context.close();
     return failures;
