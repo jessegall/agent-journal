@@ -154,6 +154,18 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
     inside = {**strayed, "agent_id": "rhea"}
     assert "another checkout" not in handle(provider, record.root, "helper-env", inside).get("reason", ""), "a helper environment whose folder is a worktree works inside it"
     assert "another checkout" in handle(provider, record.root, record.env, strayed).get("reason", ""), "the main agent in that same folder is still refused"
+    from engine.worktree import git
+    by_hand = project.parent / "by-hand"
+    git(project, "worktree", "add", "-q", "-b", "by-hand", str(by_hand), "HEAD")
+    adopted = worktrees._adopt(by_hand, "Ada")
+    assert (adopted.adopted, adopted.working, adopted.helper, adopted.path) == (True, "phone-connection", "Ada", str(by_hand)), \
+        "a checkout cut by hand and given to a helper is followed as the journal's own worktrees are"
+    commit(project, "later.txt", "moved on\n")
+    row, found = worktrees._drifted((by_hand,), ())
+    assert (row.helper, found.commits.startswith("1 commit")) == ("Ada", True), "and its helper is told when the branch it came from moves"
+    worktrees._released("Ada")
+    assert not [r for r in worktrees.rows.standing() if r.adopted], "finishing the helper lets the followed checkout go, and leaves the checkout itself"
+    assert by_hand.is_dir(), "the checkout is left as it was"
 
 
 def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():
