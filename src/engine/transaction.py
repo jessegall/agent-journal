@@ -2,7 +2,7 @@ import threading
 from contextlib import contextmanager
 from pathlib import Path
 
-from engine.disk import replace
+from engine.disk import restore
 
 
 class Work(threading.local):
@@ -29,7 +29,7 @@ def undoable():
             if before is None:
                 Path(path).unlink(missing_ok=True)
             else:
-                replace(Path(path), before)
+                restore(Path(path), before)
         WORK.undo_snapshots, WORK.undo_releases = None, None
         raise
     events, WORK.undo_snapshots, WORK.undo_releases = WORK.undo_releases, None, None

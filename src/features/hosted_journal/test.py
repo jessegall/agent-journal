@@ -40,6 +40,7 @@ from features.sharing.routes import EVERY_OTHER, ROUTES
 from features.sharing.server import ShareHandler
 from features.sharing.services import share_services
 from features.sharing.tunnel import SERVER
+from controllers.types import Todos
 from resources.base import SYSTEM, USER
 from serve import Handler, JournalServer
 from tests.conftest import fresh
@@ -343,6 +344,16 @@ def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, mo
     logged = [json.loads(line) for line in (hosted.vault.folder / AUDIT).read_text().splitlines()]
     assert [line["what"] for line in logged[-5:]] == ["refused"] * 3 + ["refusals not logged", "refused"] and logged[-2]["count"] == 7
     assert Owner(hosted.vault).matches(PASSWORD) and json.loads((hosted.vault.folder / "owner.json").read_text())["cost"] == 2 ** 17
+    origin = f"http://127.0.0.1:{hosted.port}"
+    rows = lambda: Todos(hosted.record, actor=SYSTEM).rows.summaries()
+    kept = len(rows())
+    monkeypatch.setattr(disk.shutil, "disk_usage", lambda _: shutil._ntuple_diskusage(100, 99, 1024))
+    created = hosted.call("POST", "/api/main/todo/create", body=json.dumps({"title": "no room"}), Cookie=f"{COOKIE}={token}", Origin=origin, Content_Type="application/json")
+    assert created.status == 507 and "nearly full" in created.text
+    assert len(rows()) == kept and not [path for path in hosted.record.root.rglob(".*") if path.name.endswith(f".{os.getpid()}.{threading.get_ident()}")]
+    monkeypatch.undo()
+    assert hosted.call("POST", "/api/main/todo/create", body=json.dumps({"title": "room again"}), Cookie=f"{COOKIE}={token}", Origin=origin, Content_Type="application/json").status == 201
+    assert len(rows()) == kept + 1
 
 
 @pytest.mark.skipif(not (WEB / "node_modules" / "playwright-core").is_dir(), reason="the viewer's npm packages are not installed")

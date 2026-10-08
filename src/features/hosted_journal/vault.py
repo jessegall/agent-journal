@@ -7,7 +7,7 @@ from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
-from engine.disk import read_json, replace
+from engine.disk import DiskFull, read_json, replace
 from engine.viewer import machine
 from engine.wording import digest
 
@@ -21,12 +21,6 @@ LOCK = "vault.lock"
 WRITING = threading.Lock()
 
 Clock = Callable[[], float]
-
-
-class DiskFull(OSError):
-    @classmethod
-    def writing(cls, name: str, cause: OSError) -> "DiskFull":
-        return cls(f"the server could not save {name}: {cause.strerror or cause}")
 
 
 class Vault:
@@ -54,10 +48,7 @@ class Vault:
         return read_json(self.folder / name, dict, {})
 
     def write(self, name: str, data: dict) -> None:
-        try:
-            replace(self.opened() / name, json.dumps(data).encode(), SECRET)
-        except OSError as cause:
-            raise DiskFull.writing(name, cause) from cause
+        replace(self.opened() / name, json.dumps(data).encode(), SECRET)
 
     def remove(self, name: str) -> None:
         (self.folder / name).unlink(missing_ok=True)
