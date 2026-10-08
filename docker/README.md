@@ -68,6 +68,12 @@ on this journal uses the secrets file of its own machine, never the server's. Th
 only through `journal secret run`, and the file is refused to their tools; since they run as `journal` too, that
 refusal stops a mistake, not an agent taken over on purpose.
 
+## Logs, health and alerts
+
+- Logs: `docker compose logs journal` is the journal's output; `docker compose logs caddy` has every request. Logins and refusals are in `/data/vault/*/audit.log` in the journal container, and the journal's own service logs are in `/data/project/.journal/runtime`.
+- Health: `https://<your address>/ready` answers 200 `ok` while the journal answers, and 503 with the reason when it does not or when the disk is nearly full. Docker's own health check asks the same address, so `docker compose ps` shows `unhealthy` too, and an outside monitor can ask it as well.
+- Alerts: when free space on the volume drops to 128 MB, the journal puts a message in the viewer, once, and again after the space has come back and gone again. The tunnel's watchdog keeps the same kind of alert for its own address.
+
 ## Limits
 
 - Memory: the journal container stops at 4 GB (`JOURNAL_MEMORY` in `.env`), Caddy at 256 MB, the backup at 512 MB.

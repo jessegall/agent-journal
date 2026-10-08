@@ -32,6 +32,7 @@ from features.hosted_journal.feature import APART
 from features.hosted_journal.apart import serving_command, serving_environment
 from features.hosted_journal.phones import KEPT_ELSEWHERE, PHONES, VaultGuard
 from features.hosted_journal.settings import FromRecord, GatewaySettings, keep_gateway_settings
+from features.hosted_journal.watch import DiskWatch
 from features.hosted_journal.vault import AUDIT, VAULT, DiskFull, RefusalLog, Vault
 from features.trigger import DAY
 from features.phone.controller import Phones
@@ -40,7 +41,7 @@ from features.sharing.routes import EVERY_OTHER, ROUTES
 from features.sharing.server import ShareHandler
 from features.sharing.services import share_services
 from features.sharing.tunnel import SERVER
-from controllers.types import Todos
+from controllers.types import Messages, Todos
 from resources.base import SYSTEM, USER
 from serve import Handler, JournalServer
 from tests.conftest import fresh
@@ -351,7 +352,16 @@ def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, mo
     created = hosted.call("POST", "/api/main/todo/create", body=json.dumps({"title": "no room"}), Cookie=f"{COOKIE}={token}", Origin=origin, Content_Type="application/json")
     assert created.status == 507 and "nearly full" in created.text
     assert len(rows()) == kept and not [path for path in hosted.record.root.rglob(".*") if path.name.endswith(f".{os.getpid()}.{threading.get_ident()}")]
+    low = hosted.call("GET", "/ready")
+    assert low.status == 503 and "nearly full" in low.text
+    titles = lambda: [row["title"] for row in Messages(hosted.record, actor=SYSTEM).rows.summaries()]
+    monkeypatch.setattr(disk.shutil, "disk_usage", lambda _: shutil._ntuple_diskusage(10**9, 10**9 - 100 * 1024 * 1024, 100 * 1024 * 1024))
+    for _ in range(2):
+        DiskWatch()(Shares(hosted.record, actor=SYSTEM))
+    assert titles().count("The server's disk is nearly full") == 1, "a low disk is told once, while a message can still be saved"
     monkeypatch.undo()
+    DiskWatch()(Shares(hosted.record, actor=SYSTEM))
+    assert hosted.call("GET", "/ready").status == 200
     assert hosted.call("POST", "/api/main/todo/create", body=json.dumps({"title": "room again"}), Cookie=f"{COOKIE}={token}", Origin=origin, Content_Type="application/json").status == 201
     assert len(rows()) == kept + 1
 

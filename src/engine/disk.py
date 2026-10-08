@@ -21,7 +21,15 @@ class DiskFull(OSError):
 
     @classmethod
     def keeping(cls, name: str, free: int) -> "DiskFull":
-        return cls(f"the server's disk is nearly full ({free // (1024 * 1024)} MB free), so {name} was not saved")
+        return cls(f"{nearly_full(free)}, so {name} was not saved")
+
+
+def nearly_full(free: int) -> str:
+    return f"the server's disk is nearly full ({free // (1024 * 1024)} MB free)"
+
+
+def free_bytes(folder: Path) -> int:
+    return shutil.disk_usage(folder).free
 
 
 class Growth:
@@ -61,7 +69,7 @@ def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
 def replace(path: Path, raw: bytes, mode: int = 0o666) -> None:
     """Writes the whole file or nothing, and refuses with DiskFull once the disk is down to its kept free space."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    free = shutil.disk_usage(path.parent).free
+    free = free_bytes(path.parent)
     if free - len(raw) < KEPT_FREE_BYTES:
         raise DiskFull.keeping(path.name, free)
     restore(path, raw, mode)
