@@ -55,7 +55,7 @@ class Environments(Controller):
         return super().update(n, **data)
 
     def _seat(self, name: str, session: str):
-        row = self.rows.by_title(name) or self.create(name, kind=EnvironmentKind.MAIN)
+        row = self.rows.by_title(name) or self.create(name)
         return self.update(row.n, holder=session)
 
     @action
