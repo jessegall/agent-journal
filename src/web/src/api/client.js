@@ -609,8 +609,12 @@ export class ApiClient {
         return this.post(this.here("/mode"), {mode});
     }
 
-    search(q) {
-        return this.get(this.here(`/search${query({q})}`));
+    search(q, archived = false) {
+        return this.get(this.here(`/search${query({q, ...(archived ? {archived: true} : {})})}`));
+    }
+
+    restore(type, n) {
+        return this.act(type, n, "restore");
     }
 
     searchAttic(q) {

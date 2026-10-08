@@ -454,10 +454,10 @@ class Controller(Files, Links, Discussed):
         return ""
 
     @marks.action
-    def search(self, term: str) -> list[Resource]:
+    def search(self, term: str, archived: bool = False) -> list[Resource]:
         want = term.lower()
-        texts = self._texts()
-        hits = (row["n"] for row in reversed(self.rows.summaries()) if not row["deleted"] and want in texts.get(row["n"], ""))
+        texts = self._texts(archived)
+        hits = (row["n"] for row in reversed(self.rows.summaries()) if (archived or not row["deleted"]) and want in texts.get(row["n"], ""))
         return [self.rows.peek(n) for n, _ in zip(hits, range(LAST))]
 
     def load(self, n: int | str) -> Resource:
@@ -479,11 +479,11 @@ class Controller(Files, Links, Discussed):
         self.rows.warm()
         self._texts()
 
-    def _texts(self) -> dict[int, str]:
+    def _texts(self, archived: bool = False) -> dict[int, str]:
         kept = SEARCHABLE.setdefault(str(self.rows.folder()), {})
         for row in self.rows.summaries():
             version = row["stamp"]
-            if row["deleted"] or kept.get(row["n"], (None,))[0] == version:
+            if row["deleted"] and not archived or kept.get(row["n"], (None,))[0] == version:
                 continue
             kept[row["n"]] = (version, searchable(self.rows.peek(row["n"])))
         return {n: text for n, (_, text) in kept.items()}
