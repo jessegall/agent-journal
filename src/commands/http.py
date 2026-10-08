@@ -14,21 +14,18 @@ from typing import Iterator
 from urllib.parse import quote
 
 import features
-from features.open_viewer.appoint import appoint
 from controllers.shared import row_shared
 from surfaces.package import archive as extension_archive, info as extension_info
 from engine.color import identity, set_color
 from engine.upgrades import check_now
-from agents.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
-from features.permission_prompts.skipping import Relaunch, set_skipped
+from agents.control import permit
+from features.permission_prompts.skipping import Relaunch
 from engine.files import found_files
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Features
-from engine import attic, bus, runtime, typist, viewer
+from engine import attic, bus, runtime, viewer
 from engine.package import CODE
 from engine.version import version
-from engine.seats import terminal_of
-from agents.screen import screen_since
 from controllers.faults import broke, log_file
 from runner.chat_mirror import displayed
 from runner.hooks import answer
@@ -245,13 +242,13 @@ def get_agents(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/appoint")
 def post_appoint(req: Request) -> Reply:
-    return Reply(200, appoint(req.root, req.params["env"], req.body_as(Appointed).session))
+    return Reply(200, invoked(req.as_user(Agents), "appoint", named={"session": req.body_as(Appointed).session}))
 
 
 @route("GET", "/api/agent-controls/{provider}")
 def get_agent_controls(req: Request) -> Reply:
     asked = req.query_as(ControlsQuery)
-    return Reply(200, control_options(req.params["provider"], asked.model, asked.effort))
+    return Reply(200, invoked(req.as_user(Agents), "options", named={"provider": req.params["provider"], "model": asked.model, "effort": asked.effort}))
 
 
 @route("POST", "/api/{env}/agent/{session}/permit")
@@ -262,74 +259,53 @@ def post_agent_permit(req: Request) -> Reply:
 @route("POST", "/api/{env}/agent/{session}/shell")
 def post_agent_shell(req: Request) -> Reply:
     line = req.body_as(ShellLine)
-    return Reply(200, shell(req.root, req.params["env"], req.params["session"], line.command, line.now))
-
-
-def terminal_or_missing(req: Request) -> str:
-    terminal = terminal_of(req.root, req.params["session"])
-    if not terminal:
-        raise Missing(f"no session {req.params['session']}")
-    return terminal
+    return Reply(200, invoked(req.as_user(Agents), "shell", named={"session": req.params["session"], "command": line.command, "now": line.now}))
 
 
 @route("GET", "/api/{env}/agent/{session}/screen")
 def get_agent_screen(req: Request) -> Reply:
-    return Reply(200, asdict(screen_since(req.root, terminal_or_missing(req), req.query_as(ScreenQuery).since)))
+    return Reply(200, invoked(req.as_user(Agents), "screen", named={"session": req.params["session"], "since": req.query_as(ScreenQuery).since}))
 
 
 @route("POST", "/api/{env}/agent/{session}/keys")
 def post_agent_keys(req: Request) -> Reply:
-    return Reply(200, {"sent": typist.send(req.root, terminal_or_missing(req), req.body_as(Keys).text.encode())})
+    return Reply(200, invoked(req.as_user(Agents), "keys", named={"session": req.params["session"], "text": req.body_as(Keys).text}))
 
 
 @route("POST", "/api/{env}/agent/{session}/relaunch")
 def post_agent_relaunch(req: Request) -> Reply:
-    skip = req.body_as(Relaunch).skip
-    set_skipped(req.record(), skip)
-    return Reply(200, {**relaunch(req.root, req.params["env"], req.params["session"]), "skip": skip})
+    return Reply(200, invoked(req.as_user(Agents), "relaunch", named={"session": req.params["session"], "skip": req.body_as(Relaunch).skip}))
 
 
 @route("POST", "/api/{env}/agent/{session}/force")
 def post_agent_force(req: Request) -> Reply:
-    return Reply(200, force_session(req.root, req.params["env"], req.params["session"]))
+    return Reply(200, invoked(req.as_user(Agents), "force", named={"session": req.params["session"]}))
 
 
 @route("POST", "/api/{env}/agent/{session}/pause")
 def post_agent_pause(req: Request) -> Reply:
-    return Reply(200, pause_session(req.root, req.params["env"], req.params["session"]))
+    return Reply(200, invoked(req.as_user(Agents), "pause", named={"session": req.params["session"]}))
 
 
 @route("POST", "/api/{env}/agent/{session}/resume")
 def post_agent_resume(req: Request) -> Reply:
-    return Reply(200, resume_session(req.root, req.params["env"], req.params["session"]))
+    return Reply(200, invoked(req.as_user(Agents), "resume", named={"session": req.params["session"]}))
 
 
 @route("POST", "/api/{env}/agent/{session}/control")
 def post_agent_control(req: Request) -> Reply:
     asked = req.body_as(Control)
-    return Reply(200, control_session(req.root, req.params["env"], req.params["session"], asked.action, asked.value))
-
-
-def provider_of(req: Request):
-    if req.params["provider"] not in PROVIDERS:
-        raise Missing(f"no provider {req.params['provider']}")
-    return PROVIDERS[req.params["provider"]]()
+    return Reply(200, invoked(req.as_user(Agents), "control", named={"session": req.params["session"], "action": asked.action, "value": asked.value}))
 
 
 @route("GET", "/api/agent-hooks/{provider}")
 def get_agent_hooks(req: Request) -> Reply:
-    provider = provider_of(req)
-    return Reply(200, {"path": str(provider.config(req.root.parent).relative_to(req.root.parent)), "hooks": provider.hooks(req.root.parent),
-                       "elsewhere": provider.hooks_elsewhere(req.root.parent)})
+    return Reply(200, invoked(req.as_user(Agents), "hooks", named={"provider": req.params["provider"]}))
 
 
 @route("POST", "/api/agent-hooks/{provider}")
 def post_agent_hooks(req: Request) -> Reply:
-    provider = provider_of(req)
-    try:
-        return Reply(200, {"hooks": provider.set_hooks(req.root.parent, req.body.get("hooks") or {})})
-    except ValueError as error:
-        raise Refused(str(error)) from error
+    return Reply(200, invoked(req.as_user(Agents), "wire", named={"provider": req.params["provider"], "hooks": req.body.get("hooks", {})}))
 
 
 @route("GET", "/api/extension")

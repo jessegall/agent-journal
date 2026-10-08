@@ -1,11 +1,20 @@
+from dataclasses import asdict
+
+from agents.control import force, options, pause, relaunch, request, resume, shell
+from agents.screen import screen_since
 from controllers.base import LAST
-from features.open_viewer.appoint import online
+from engine import typist
+from engine.seats import terminal_of
+from features.open_viewer.appoint import appoint, online
 from features.open_viewer.attachments import attachments
 from features.open_viewer.manifest import manifest
 from features.open_viewer.settings import apply, settings
 from features.parts import Command, Context
 from controllers.shared import shared
+from features.permission_prompts.skipping import set_skipped
 from overview.summary import lately_summarized
+from providers import PROVIDERS
+from resources.base import Missing, Refused
 
 
 class ShowManifest(Command):
@@ -58,3 +67,115 @@ class ShowOnline(Command):
 
     def run(self, context: Context, agents):
         return [agent for agent in online(agents.record.root) if shared(agent["environment"])]
+
+
+class Appoint(Command):
+    name = "appoint"
+    user_only = True
+
+    def run(self, context: Context, agents, session: str):
+        return appoint(agents.record.root, agents.record.env, session)
+
+
+class ShowOptions(Command):
+    name = "options"
+
+    def run(self, context: Context, agents, provider: str, model: str = "", effort: str = ""):
+        return options(provider, model, effort)
+
+
+class RunShell(Command):
+    name = "shell"
+    user_only = True
+
+    def run(self, context: Context, agents, session: str, command: str, now: bool = False):
+        return shell(agents.record.root, agents.record.env, session, command, now)
+
+
+def _terminal(agents, session: str) -> str:
+    terminal = terminal_of(agents.record.root, session)
+    if not terminal:
+        raise Missing(f"no session {session}")
+    return terminal
+
+
+class ShowScreen(Command):
+    name = "screen"
+
+    def run(self, context: Context, agents, session: str, since: int = -1):
+        return asdict(screen_since(agents.record.root, _terminal(agents, session), since))
+
+
+class SendKeys(Command):
+    name = "keys"
+    user_only = True
+
+    def run(self, context: Context, agents, session: str, text: str):
+        return {"sent": typist.send(agents.record.root, _terminal(agents, session), text.encode())}
+
+
+class Relaunch(Command):
+    name = "relaunch"
+    user_only = True
+
+    def run(self, context: Context, agents, session: str, skip: bool = False):
+        set_skipped(agents.record, skip)
+        return {**relaunch(agents.record.root, agents.record.env, session), "skip": skip}
+
+
+class Force(Command):
+    name = "force"
+    user_only = True
+
+    def run(self, context: Context, agents, session: str):
+        return force(agents.record.root, agents.record.env, session)
+
+
+class Pause(Command):
+    name = "pause"
+    user_only = True
+
+    def run(self, context: Context, agents, session: str):
+        return pause(agents.record.root, agents.record.env, session)
+
+
+class Resume(Command):
+    name = "resume"
+    user_only = True
+
+    def run(self, context: Context, agents, session: str):
+        return resume(agents.record.root, agents.record.env, session)
+
+
+class Control(Command):
+    name = "control"
+    user_only = True
+
+    def run(self, context: Context, agents, session: str, action: str, value: str = ""):
+        return request(agents.record.root, agents.record.env, session, action, value)
+
+
+def _provider(name: str):
+    if name not in PROVIDERS:
+        raise Missing(f"no provider {name}")
+    return PROVIDERS[name]()
+
+
+class ShowHooks(Command):
+    name = "hooks"
+
+    def run(self, context: Context, agents, provider: str):
+        project = agents.record.root.parent
+        wired = _provider(provider)
+        return {"path": str(wired.config(project).relative_to(project)), "hooks": wired.hooks(project), "elsewhere": wired.hooks_elsewhere(project)}
+
+
+class WireHooks(Command):
+    name = "wire"
+    user_only = True
+
+    def run(self, context: Context, agents, provider: str, hooks: dict):
+        try:
+            return {"hooks": _provider(provider).set_hooks(agents.record.root.parent, hooks)}
+        except ValueError as error:
+            raise Refused(str(error)) from error
