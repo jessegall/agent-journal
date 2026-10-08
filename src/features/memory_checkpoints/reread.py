@@ -12,6 +12,5 @@ def standing(record) -> list:
 
 
 def owed(record, days: int = 7) -> bool:
-    events = record.event_log.events()
-    since = float(record.state(STATE).get(READ_AT, 0)) or (events[0].at if events else time.time())
+    since = float(record.state(STATE).get(READ_AT, 0)) or record.event_log.started_at()
     return time.time() - since > days * DAY
