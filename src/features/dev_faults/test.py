@@ -52,13 +52,20 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on():
     from engine.after_answer import AfterAnswer
     workers, ran = AfterAnswer.started(1), []
     with workers.answering_hook():
-        workers.add(lambda: ran.append(threading.current_thread().name))
+        workers.add(lambda: ran.append(threading.current_thread().name), "claude-1")
         time.sleep(0.1)
         assert ran == [], "work an answer leaves behind waits while a hook is still being answered"
     waited = time.monotonic() + 2
     while not ran and time.monotonic() < waited:
         time.sleep(0.01)
     assert ran == ["after-answer-0"], "then it runs on a worker thread, never on the thread that answers"
+    workers, ran = AfterAnswer.started(2), []
+    workers.add(lambda: (time.sleep(0.05), ran.append("first")), "claude-1")
+    workers.add(lambda: ran.append("second"), "claude-1")
+    waited = time.monotonic() + 2
+    while len(ran) < 2 and time.monotonic() < waited:
+        time.sleep(0.01)
+    assert ran == ["first", "second"], "one agent's hooks are recorded in the order they came, even with a worker free"
     log = record.root / "runtime" / "diagnostics.log"
     assert not log.exists(), "the diagnostic log is off by default"
     record.features = {**record.features, "dev_faults.log": True}

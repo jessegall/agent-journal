@@ -3,6 +3,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Iterator
+from uuid import uuid4
 
 from controllers.types import CONTROLLERS, Environments
 from engine import runtime
@@ -74,6 +75,7 @@ class Reply:
     kind: str = JSON
     chunks: Iterator[bytes] | None = None
     after: Callable[[], None] | None = None
+    after_lane: str = field(default_factory=lambda: uuid4().hex)
     timed: bool = True
     named: str | None = None
 

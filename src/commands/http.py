@@ -37,6 +37,7 @@ from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
 from providers.base import Provider
+from providers.payload import Hook
 from resources.base import OPENED, PROJECT, USER, Refused, titled
 from engine.stored import last_lines
 from engine.git_view import commit, file_diff
@@ -184,9 +185,10 @@ def post_hook(req: Request) -> Reply:
     provider = PROVIDERS[req.params["provider"]]()
     chunk = provider.display_chunk(req.body)
     if chunk is not None:
-        return Reply(200, {}, after=lambda: displayed(req.root, chunk))
-    out = answer(provider, req.root, {**req.body, "inbox": asked.inbox}, asked.pid, asked.env)
-    return Reply(403 if provider.refused(out) else 200, out)
+        return Reply(200, {}, after=lambda: displayed(req.root, chunk), after_lane=chunk.session)
+    hook = Hook.read({**req.body, "inbox": asked.inbox}, provider.tool_kinds)
+    out = answer(provider, req.root, hook, asked.pid, asked.env)
+    return Reply(403 if provider.refused(out) else 200, out, after_lane=hook.session)
 
 
 @route("POST", "/api/{env}/console")

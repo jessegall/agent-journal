@@ -1,5 +1,6 @@
 import json
 import re
+import time
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from enum import StrEnum
@@ -531,6 +532,7 @@ class Hook(Loaded):
     prompt: str = ""
     tool_use: str = ""
     tool: ToolUse = field(default_factory=ToolUse)
+    at: float = field(default_factory=time.time)
 
     @classmethod
     def read(cls, raw: dict, kinds: dict) -> "Hook":

@@ -88,11 +88,13 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
             raise TypeError(f"{name} crashed")
         monkeypatch.setattr(provider_cls, "facts", crash)
         body = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read", "tool_input": {"file_path": "x.py"}}
-        dispatch("POST", f"/api/hook/{name}", record.root, {"root": str(record.root), "env": record.env}, body)
+        answered = dispatch("POST", f"/api/hook/{name}", record.root, {"root": str(record.root), "env": record.env}, body)
+        assert answered.code == 200, f"{name}: a crash while recording the hook happens after it is answered, so the answer stands"
+        answered.after()
         lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM).rows.every()]
         assert any("hit an error" in line and f"TypeError: {name} crashed" in line for line in lines), \
             f"{name}: a crash inside the hook reaches the agent, with the error"
-        dispatch("POST", f"/api/hook/{name}", record.root, {"root": str(record.root), "env": record.env}, body)
+        dispatch("POST", f"/api/hook/{name}", record.root, {"root": str(record.root), "env": record.env}, body).after()
         assert len([line for line in lines if "crashed" in line]) == len([n for n in Nudges(record, actor=SYSTEM).rows.every() if "crashed" in n.brief]), \
             f"{name}: the same error again is not told twice"
         for notice in Notices(record, actor=SYSTEM).rows.standing():

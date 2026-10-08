@@ -104,7 +104,7 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(data)
             self.wfile.flush()
             if reply.after:
-                self.server.after_answer.add(reply.after)
+                self.server.after_answer.add(reply.after, reply.after_lane)
             return
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
