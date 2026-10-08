@@ -12,7 +12,7 @@ from features.plugins.manifest import read
 from features.plugins.paths import data, folder, log
 from features.plugins.preview import preview
 from features.plugins.setup import prepared
-from features.plugins.staging import alone, token
+from features.plugins.staging import alone, followed, token
 from controllers.types import Agents
 from resources.base import Refused, SYSTEM, USER
 
@@ -74,7 +74,7 @@ class Upgrade(Command):
                 ports = {**ports_for(root, manifest), **settings.ports}
                 prepared(manifest, where, environment(root, manifest.name, manifest, row.token, ports, settings.chosen), log(root, manifest.name))
             return reread(plugins, row)
-        with fetched(root, row.source, row.revision if ref is None else ref) as stage:
+        with fetched(root, row.source, followed(row.revision) if ref is None else ref) as stage:
             manifest, commit = stage.manifest, stage.commit
             if commit == row.commit and ref is None and not again:
                 return f"{called(row)} is already at {commit[:12]}; to run its setup again anyway, run it with --again --yes"

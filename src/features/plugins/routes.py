@@ -78,9 +78,9 @@ def post_plugin_upgrade_preview(req: Request) -> Reply:
     from features.plugins.declared import Manifest
     from features.plugins.lifecycle import changed, drop
     from features.plugins.preview import previewed
-    from features.plugins.staging import staged
+    from features.plugins.staging import followed, staged
     row = Plugins(req.record(), actor=USER).load(req.params["n"])
-    where, manifest, commit, linked = staged(req.root, row.source, row.revision, VERSION)
+    where, manifest, commit, linked = staged(req.root, row.source, followed(row.revision), VERSION)
     try:
         return Reply(200, {**previewed(manifest, row.source, commit), "current": commit == row.commit, "changes": changed(Manifest.of(row.manifest), manifest)}, timed=False)
     finally:

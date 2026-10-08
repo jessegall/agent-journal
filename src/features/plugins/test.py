@@ -69,6 +69,10 @@ def git(*args, cwd):
     subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=cwd, capture_output=True, text=True, timeout=30, check=True)
 
 
+def git_head(origin):
+    return subprocess.run(["git", "rev-parse", "HEAD"], cwd=origin, capture_output=True, text=True, timeout=30, check=True).stdout.strip()
+
+
 def repository(tmp_path, manifest, extra=None, name="plugin"):
     origin = tmp_path / name
     (origin / MANIFEST).parent.mkdir(parents=True)
@@ -187,7 +191,13 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     git("commit", "-q", "--allow-empty", "-m", "two", cwd=tmp_path / "upgraded")
     assert "Nothing has changed yet" in plugins.action("upgrade")(row.n), "an upgrade shows what it would change before it does it"
     assert looking() is False, "and when there is something new"
-    assert plugins.action("upgrade")(row.n, yes=True).commit != row.commit, "and moves the plugin to the new commit"
+    git("tag", "v1.1.0", cwd=tmp_path / "upgraded")
+    pinned = plugins.action("upgrade")(row.n, yes=True, ref=git_head(tmp_path / "upgraded"))
+    assert (pinned.commit != row.commit, pinned.revision) == (True, ""), "and moves the plugin to the new commit, the commit that confirmed it never becoming the ref it follows"
+    git("commit", "-q", "--allow-empty", "-m", "three", cwd=tmp_path / "upgraded")
+    git("tag", "v1.2.0", cwd=tmp_path / "upgraded")
+    assert looking() is False, "a later check fetches the newest release the source gained, not the commit it was upgraded to"
+    assert plugins.action("upgrade")(row.n, yes=True, ref=git_head(tmp_path / "upgraded")).commit == git_head(tmp_path / "upgraded"), "and the upgrade lands on it"
     assert (plugins.action("disable")(row.n).enabled, plugins.action("enable")(row.n).enabled) == (False, True), "a plugin is switched off and on again"
     assert "remove it first" in refused(lambda: plugins.action("purge")(row.n)), "what an installed plugin keeps is never purged"
     plugins.complete(row.n, "removed")

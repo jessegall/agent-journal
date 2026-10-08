@@ -15,7 +15,7 @@ from features.plugins.paths import data, folder, home, log, logged
 from features.plugins.run import SECONDS, call
 from features.plugins.setup import checked, prepared
 from features.plugins.skills import published
-from features.plugins.staging import Staged, on_disk, said_version, staged
+from features.plugins.staging import Staged, followed, on_disk, said_version, staged
 
 
 def runs(manifest: Manifest) -> list[str]:
@@ -99,7 +99,7 @@ def install_staged(journal, plugins, stage: Staged, source: str, ref: str, secre
         checked(manifest, stage.where, env)
         data(root, manifest.name).mkdir(parents=True, exist_ok=True)
         prepared(manifest, stage.where, env, log(root, manifest.name))
-        made = place(plugins, stage.where, stage.linked, manifest, source, ref, stage.commit, secret, row=row, ports=ports)
+        made = place(plugins, stage.where, stage.linked, manifest, source, followed(ref), stage.commit, secret, row=row, ports=ports)
         welcomed(journal, plugins, manifest, env)
         restarted(root, manifest)
     return made
