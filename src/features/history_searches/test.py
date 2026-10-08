@@ -23,6 +23,7 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     run("journal message search assign | head")
     last = (Agents(record, actor=SYSTEM).load(agent.n).data.get("cards") or [])[-1]
     assert (last["label"], last["title"]) == ("Searched messages", "'assign'"), "searching one kind of row names that kind and what was searched for"
+    assert last["term"] == "assign", "and the mark keeps the term, so a click can open the search with it filled in"
     import json
     from commands.cli import captured
     from providers.claude import Claude
