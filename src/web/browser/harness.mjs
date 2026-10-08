@@ -1,5 +1,7 @@
 import {execFileSync} from "node:child_process";
 import {chromium} from "playwright-core";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
 
 const FIRST_CHOICE_WAIT = 8000;
 const LOCAL = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/;
@@ -33,7 +35,9 @@ export async function runScenarios(url, scenarios, {voice = true, device = {}} =
             try {
                 await scenario(page, url);
             } catch (error) {
-                failures[name] = String(error.message).split("\n").slice(0, 4).join(" ");
+                const picture = join(tmpdir(), `scenario-${Date.now()}.png`);
+                await page.screenshot({path: picture}).catch(() => {});
+                failures[name] = `${String(error.message).split("\n").slice(0, 4).join(" ")} (the page at that moment: ${picture})`;
             }
             await context.close();
         }
