@@ -328,7 +328,11 @@ def test_the_phone_asks_the_same_members_model_as_the_login_page(hosted, monkeyp
         "a phone is shown only rows of the environments shared with its person"
     sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "garden"]}, owner)
     assert rights.sees(garden, bea, there), "sharing an environment opens it to the phone as to the browser"
+    owners = Phones(hosted.record, actor=USER).connect(7)
     key = member_phone(hosted, bea)
+    assert not Phones(hosted.record, actor=SYSTEM).load(owners["n"]).completed, "a member connecting a phone cancels none of the owner's pending codes"
+    Phones(hosted.record, actor=USER).connect(7)
+    assert Phones(hosted.record, actor=SYSTEM).load(owners["n"]).completed, "the owner's newer code replaces the owner's own"
     assert phone_reads(hosted, key) == 200, "a member's phone reads the environment shared with them"
     sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": ["garden"]}, owner)
     assert phone_reads(hosted, key) == 403, "and nothing of it once it is no longer shared, its feed, lists and pages alike"
