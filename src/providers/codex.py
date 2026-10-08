@@ -13,7 +13,8 @@ from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Chunk, Payload, Row
 from engine.fields import Loaded
 from resources.types import AgentRow
-from engine.stored import read_json
+from engine.stored import read_json, write_text
+from providers.playwright import with_logins_table
 from typing import TypedDict
 
 SHELL_TOOLS = ("exec", "exec_command", "shell", "shell_command")
@@ -324,6 +325,18 @@ class Codex(Provider):
 
     def config(self, project: Path) -> Path:
         return project / self.home / "hooks.json"
+
+    def browser_logins(self, project: Path, storage: Path) -> bool:
+        """Starts Codex's Playwright server in this project from the saved logins, where Codex is used."""
+        if not self.present(project):
+            return False
+        f = project / self.home / "config.toml"
+        had = f.read_text() if f.is_file() else ""
+        written = with_logins_table(had, storage)
+        if written == had:
+            return False
+        write_text(f, written)
+        return True
 
     def hook_files(self, project: Path) -> list[Path]:
         return [Path.home() / self.home / "hooks.json", self.config(project)]

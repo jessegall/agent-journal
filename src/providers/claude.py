@@ -17,6 +17,7 @@ from providers.claude_rows import Block, Row
 from resources.types import AgentRow
 from engine.proc import run
 from engine.stored import JsonFiles, read_json, write_text
+from providers.playwright import environment, runs_playwright, server_args, with_logins
 
 SENDS = "SendMessage"
 READING_KINDS = ("explore", "plan", "claude-code-guide")
@@ -221,13 +222,29 @@ class Claude(Provider):
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
     def browser_logins(self, project: Path, storage: Path) -> bool:
+        """Starts the project's Playwright server from the saved logins, and every other Playwright tool through the agent's environment."""
+        return any([self._playwright_server(project, storage), self._playwright_environment(project, storage)])
+
+    def _playwright_server(self, project: Path, storage: Path) -> bool:
         f = project / ".mcp.json"
         known = read_json(f, dict, {})
         servers = known.get("mcpServers") or {}
-        wanted = {"type": "stdio", "command": "npx", "args": ["-y", "@playwright/mcp@latest", "--headless", "--isolated", "--storage-state", str(storage)]}
-        if servers.get(BROWSER) == wanted:
+        name = next((key for key, server in servers.items() if runs_playwright(server)), BROWSER)
+        had = servers.get(name) or {"type": "stdio", "command": "npx", "args": server_args(storage)}
+        wanted = {**had, "args": with_logins(had.get("args") or [], storage)}
+        if servers.get(name) == wanted:
             return False
-        write_text(f, json.dumps({**known, "mcpServers": {**servers, BROWSER: wanted}}, indent=2) + "\n")
+        write_text(f, json.dumps({**known, "mcpServers": {**servers, name: wanted}}, indent=2) + "\n")
+        return True
+
+    def _playwright_environment(self, project: Path, storage: Path) -> bool:
+        f = self.config(project)
+        known = read_json(f, dict, {})
+        env = known.get("env") or {}
+        wanted = {**env, **environment(storage)}
+        if env == wanted:
+            return False
+        write_text(f, json.dumps({**known, "env": wanted}, indent=2) + "\n")
         return True
 
     def wiring_trouble(self, project: Path) -> str:

@@ -40,6 +40,9 @@ class SecretsDetails(FeatureDetails):
 
         For a site you use in a browser, never type a password into a page: run journal secret
         login <name> <url>, and the user logs in once in the browser that opens and closes it.
-        The session is saved beside the values file, and the agent's own browser tool starts
-        logged in from its next start.
+        The session is saved beside the values file, and the agent's browser tools start logged in
+        from their next start: Claude Code's Playwright server in the project's .mcp.json (the one
+        already there, or one the journal adds), any other Playwright tool Claude Code starts, such
+        as a Playwright plugin, through the agent's environment, and Codex's Playwright server in
+        the project's .codex/config.toml.
     """
