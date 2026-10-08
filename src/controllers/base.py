@@ -155,7 +155,7 @@ class Controller(Files, Links, Discussed):
         return r
 
     def _emit(self, n: int, action: str, **event):
-        return self.record.emit(self.type, n, action, self.actor, **event)
+        return self.record.emit(self.type, n, action, self.actor, scope=self.resource.scope, **event)
 
     def _retitle(self, n: int, title: str) -> Resource:
         return self.update(int(n), title=title.strip())
@@ -211,7 +211,7 @@ class Controller(Files, Links, Discussed):
         for name in self.resource.unfilled(data):
             self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
         with self.record.locked(self.resource.scope):
-            n = (self.rows.numbers() or [0])[-1] + 1
+            n = self.rows.draw_number()
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
             fields = self._shaped(data)
             if self.agent:
@@ -399,7 +399,7 @@ class Controller(Files, Links, Discussed):
         self._guarded(r, "deleted")
         there = type(self)(Record(self.record.root, env), actor=self.actor)
         with there.record.locked(self.resource.scope):
-            m = (there.rows.numbers() or [0])[-1] + 1
+            m = there.rows.draw_number()
             moved = self.resource(**{**asdict(r), "n": m})
             if any(self.folder(n).iterdir()):
                 shutil.copytree(self.folder(n), there.rows.row_folder(m), dirs_exist_ok=True)

@@ -13,7 +13,7 @@ def missing(names: list, text: str) -> list:
 def queued_behind(todos, domain: Domain, role: Role):
     if role.cardinality != WORKTREE:
         return None
-    return max((r for r in todos.rows.standing() if r.data.get("domain") == domain.name and r.data.get("role") == role.name), key=lambda r: r.n, default=None)
+    return max((r for r in todos.rows.standing() if r.data.get("domain") == domain.name and r.data.get("role") == role.name), key=lambda r: r.creation_order(), default=None)
 
 
 def role_of(record, todo) -> Role | None:

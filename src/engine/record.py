@@ -9,7 +9,9 @@ from pathlib import Path
 from typing import Callable
 
 from engine import bus, runtime, waits
-from engine.event_log import EventLog
+from engine.event_log import EventLog, RecordEvents
+from engine.machines import Lease, NotTheOwner, ThisMachine
+from engine.numbers import EVENTS, Numbers
 from engine.settings_file import PROJECT_PARTS, ScopedSettings, merged_into
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
 from engine.state import State
@@ -53,9 +55,10 @@ class Record:
     delivery = Setting(dict, project=("channel",))
     viewer = Setting(dict, project=("color_scheme", "chat_hidden", "away", "tour_seen", "open_with"))
 
-    def __init__(self, root: Path, env: str, memo: bool = False):
+    def __init__(self, root: Path, env: str, memo: bool = False, writer: ThisMachine | Lease = ThisMachine()):
         self.root = Path(root)
         self.env = env
+        self.writer = writer
         self.home = environment_home(self.root, env)
         self._held: dict[Path, int] = {}
         self._threads = waits.Lock("record", threading.RLock())
@@ -63,19 +66,40 @@ class Record:
         self._pending: list[Callable[[], None]] = []
         self.memo = {} if memo else None
         self._folders: dict[tuple[str, str], Path] = {}
-        self.event_log = EventLog(self.home, self.locked)
+        self.event_log = RecordEvents(env, self.home, self.locked, EventLog(self.root / RESOURCES, partial(self.locked, PROJECT), self._readers))
+        self.numbers = Numbers.of(self.root)
         self.settings_file = ScopedSettings(self.home, self.root)
 
     @classmethod
     def every(cls, root: Path) -> list["Record"]:
         return [cls(Path(root), home.name) for home in sorted(environments(root).glob("*/"))]
 
+    def _readers(self) -> list[Path]:
+        return [runtime.folder(home) for home in environments(self.root).glob("*/")]
+
     def folder(self, type: str, scope: str = "") -> Path:
         if (type, scope) not in self._folders:
-            f = (self.root / RESOURCES if scope == PROJECT else self.home) / type
+            f = self.scope_home(scope) / type
             f.mkdir(parents=True, exist_ok=True)
             self._folders[type, scope] = f
         return self._folders[type, scope]
+
+    def scope_home(self, scope: str) -> Path:
+        return self.root / RESOURCES if scope == PROJECT else self.home
+
+    def fence(self, scope: str) -> None:
+        current = Lease.read(self.scope_home(scope))
+        if not self.writer.holds(current):
+            raise NotTheOwner.of(self.scope_name(scope), current)
+
+    def hand_over(self, scope: str, machine: str) -> Lease:
+        with self.locked(scope):
+            lease = Lease.read(self.scope_home(scope)).handed_to(machine)
+            lease.write(self.scope_home(scope))
+        return lease
+
+    def scope_name(self, scope: str) -> str:
+        return PROJECT if scope == PROJECT else self.env
 
     def remake_folder(self, type: str, scope: str = "") -> Path:
         self._folders.pop((type, scope), None)
@@ -83,7 +107,7 @@ class Record:
 
     @contextmanager
     def locked(self, scope: str = ""):
-        path = (self.root / RESOURCES if scope == PROJECT else self.home) / ".lock"
+        path = self.scope_home(scope) / ".lock"
         pending: list[Callable[[], None]] = []
         try:
             with self._threads:
@@ -125,7 +149,7 @@ class Record:
                 self._held[path] = 0
                 fcntl.flock(fh, fcntl.LOCK_UN)
 
-    def emit(self, type: str, n: int, action: str, actor: str, quiet: bool = False, **data) -> Event:
+    def emit(self, type: str, n: int, action: str, actor: str, quiet: bool = False, scope: str = "", **data) -> Event:
         if action not in ACTIONS or actor not in ACTORS:
             raise ValueError(f"not an event: {action} by {actor}")
         if bus.cause() and "cause" not in data:
@@ -133,12 +157,15 @@ class Record:
         if bus.command(type) and "by" not in data:
             data = {**data, "by": bus.command(type)}
         def stamped(id: int, handled: bool = False) -> Event:
-            return Event(id=id, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), handled=handled)
+            return Event(id=id, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), handled=handled, env=self.env)
+
+        log = self.event_log.project if scope == PROJECT else self.event_log
 
         def release() -> Event:
-            with self.locked():
-                e = stamped(self.event_log.last_id() + 1, quiet or bus.listening())
-                self.event_log.append(e)
+            with self.locked(scope):
+                self.fence(scope)
+                e = stamped(self.numbers.draw(EVENTS, lambda: log.last_id() + 1), quiet or bus.listening())
+                log.append(e)
                 self._pending.append(partial(bus.tell_watchers if quiet else bus.emit, e, self))
                 if self.memo is not None:
                     self.memo.clear()

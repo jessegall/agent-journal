@@ -104,7 +104,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         ticket = self.tell(n, note)
         ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, **given(stage=self._board(ticket).stage_for(START)))
         if ticket.sent_back >= RETURNS_BEFORE_ESCALATING:
-            self.record.emit(self.type, ticket.n, ESCALATED, self.actor)
+            self._emit(ticket.n, ESCALATED)
         return ticket
 
     def _plans(self, ticket) -> Plans:
@@ -238,7 +238,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return closed
 
     def raise_moment(self, n: int, moment: str, **data) -> None:
-        self.record.emit(self.type, n, moment, SYSTEM, **data)
+        self.record.emit(self.type, n, moment, SYSTEM, scope=self.resource.scope, **data)
 
     def hold(self, type_: str, n: int) -> None:
         owner = Environments(self.record, actor=self.actor).rows.by_title(self.record.env)

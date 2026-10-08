@@ -31,7 +31,7 @@ class Dumps(Controller):
     @action
     def create(self, title: str = "", abstract: str = "", brief: str = "", **data):
         with self.record.locked():
-            dump = super().create(f"Dump {(self.rows.numbers() or [0])[-1] + 1}", abstract, brief, queued_at=time.time(), **data)
+            dump = super().create(f"Dump {self.rows.next_number()}", abstract, brief, queued_at=time.time(), **data)
         self._collect(dump, [dump.ref])
         return self.load(dump.n)
 

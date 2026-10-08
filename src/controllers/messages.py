@@ -29,10 +29,8 @@ class Messages(Controller):
 
     def _imported(self, turns: list[tuple[str, str, float]], outcome: str) -> None:
         with self.record.locked():
-            n = (self.rows.numbers() or [0])[-1]
             for actor, text, at in turns:
-                n += 1
-                self.rows.write_file(self.resource(n=n, title=titled(text.strip().splitlines()[0]), brief=text, seen=[actor, USER if actor == AGENT else AGENT],
+                self.rows.write_file(self.resource(n=self.rows.draw_number(), title=titled(text.strip().splitlines()[0]), brief=text, seen=[actor, USER if actor == AGENT else AGENT],
                                                created=at, updated=at, completed=at, outcome=outcome))
 
     @action

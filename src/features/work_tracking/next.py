@@ -53,4 +53,4 @@ def worked(record) -> set:
 def ready(record) -> list:
     todos, taken, asked = Todos(record, actor=SYSTEM), worked(record), questioned(record)
     fit = [t for t in open_rows(record) if not t.blocked and not t.assigned and t.n not in taken and not todos.waits(t) and t.ref not in asked and not held(record, t)]
-    return sorted(fit, key=lambda t: (-int(t.priority or LEVELS["default"]), t.n))
+    return sorted(fit, key=lambda t: (-int(t.priority or LEVELS["default"]), t.creation_order()))

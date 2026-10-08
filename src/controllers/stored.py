@@ -1,13 +1,14 @@
 import os
 import time
 import zipfile
-from bisect import bisect_left
+from bisect import bisect_left, insort
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, TypeVar
 from resources.base import MEMORY, OWNER, PART_OF, Missing, Refused, Resource
 from engine.stored import append_text, read_json, write_json, write_text
 from engine.memo import Memo
+from engine.numbers import rows
 
 T = TypeVar("T")
 DAMAGED = "damaged"
@@ -51,6 +52,10 @@ def member(n: int) -> str:
 
 def stamp_of(found: os.stat_result) -> str:
     return f"{found.st_mtime_ns}-{found.st_size}"
+
+
+def listed_order(row: dict) -> tuple[float, int]:
+    return row.get("created", 0.0), row["n"]
 
 
 def is_part(row: dict) -> bool:
@@ -115,6 +120,7 @@ class RowStore:
         return self.folder() / numbered(n)
 
     def write_file(self, r: Resource) -> None:
+        self.record.fence(self.resource.scope)
         p = self.path(r.n)
         if self.resource.own_folder:
             p.parent.mkdir(parents=True, exist_ok=True)
@@ -123,6 +129,18 @@ class RowStore:
         write_text(p, r.dump())
         if self.resource.own_folder:
             os.utime(self.folder())
+
+    def draw_number(self) -> int:
+        return self.record.numbers.draw(self._sequence(), self._floor)
+
+    def next_number(self) -> int:
+        return self.record.numbers.peek(self._sequence(), self._floor)
+
+    def _sequence(self) -> str:
+        return rows(self.record.scope_name(self.resource.scope), self.type)
+
+    def _floor(self) -> int:
+        return (self.numbers() or [0])[-1] + 1
 
     def persist(self, r: Resource) -> None:
         folder = self.folder()
@@ -195,13 +213,13 @@ class RowStore:
 
     def _patched(self, folder: Path, moved: Moved, held: list[dict], loose: dict[int, dict], touched: set[int]) -> list[dict]:
         rows = list(held)
+        listed = {row["n"]: row for row in held}
         for n in sorted(touched):
-            at = bisect_left(rows, n, key=lambda row: row["n"])
-            if at < len(rows) and rows[at]["n"] == n:
-                del rows[at]
+            if n in listed:
+                self._unlisted(rows, listed[n])
             row = loose.get(n) or self.packed().get(n)
             if row and not row.get(DAMAGED) and not is_part(row):
-                rows.insert(at, row)
+                insort(rows, row, key=listed_order)
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
 
@@ -212,7 +230,7 @@ class RowStore:
     def _summarised(self, folder: Path, moved: Moved, loose: list[dict]) -> list[dict]:
         seen = {row["n"] for row in loose}
         packed = [row for n, row in self.packed().items() if n not in seen]
-        rows = wholes(sorted(loose + packed, key=lambda row: row["n"]), is_part)
+        rows = wholes(sorted(loose + packed, key=listed_order), is_part)
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
 
@@ -222,19 +240,25 @@ class RowStore:
         if not held or known is None or held[0] != before:
             return
         rows = list(held[1])
-        at = bisect_left(rows, n, key=lambda row: row["n"])
-        if at < len(rows) and rows[at]["n"] == n:
-            del rows[at]
+        before_row = known.get(n) or self.packed().get(n)
+        if before_row is not None:
+            self._unlisted(rows, before_row)
         if r is None:
             known.pop(n, None)
         else:
             known[n] = self._row(r, stamp_of(self.path(n).stat()))
             if not is_part(known[n]):
-                rows.insert(at, known[n])
+                insort(rows, known[n], key=listed_order)
         SUMMARIES[str(folder)] = (self._moved(folder), rows)
 
+    @staticmethod
+    def _unlisted(rows: list[dict], row: dict) -> None:
+        at = bisect_left(rows, listed_order(row), key=listed_order)
+        if at < len(rows) and rows[at]["n"] == row["n"]:
+            del rows[at]
+
     def _row(self, r: Resource, stamp: str) -> dict:
-        return {"n": r.n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
+        return {"n": r.n, "created": r.created, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
                 "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), DRAFT_OF: r.data.get(DRAFT_OF, ""), OWNER: r.data.get(OWNER, ""),
                 **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
 
@@ -300,7 +324,7 @@ class RowStore:
     def _loose(self, folder: Path) -> dict[int, dict]:
         stamps = self._stamps(folder)
         known = INDEXED.get(str(folder)) or {int(n): row for n, row in read_json(folder / INDEX, dict, {}).items()}
-        needed = {"files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
+        needed = {"created", "files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
         rows = {}
         for n, stamp in stamps.items():
             row = known.get(n)
@@ -368,6 +392,7 @@ class RowStore:
         return self.path(n).is_file() or n in self.packed()
 
     def remove(self, n: int) -> None:
+        self.record.fence(self.resource.scope)
         folder = self.folder()
         before = self._moved(folder) if folder.is_dir() else None
         HELD.forget(str(self.path(n)))

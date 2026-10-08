@@ -1,6 +1,6 @@
 import time
 
-from resources.base import COMMISSIONED, Refused
+from resources.base import COMMISSIONED, PROJECT, Refused
 from controllers.marks import action
 
 
@@ -14,7 +14,7 @@ class BuildingBoards:
             self._retitle(board.n, name)
         self.update(board.n, building={"since": time.time(), "document": next(iter(board.files)), "steer": steer.strip(),
                                       "name_it": not name.strip(), "log": []})
-        self.record.emit("board", board.n, COMMISSIONED, self.actor)
+        self.record.emit("board", board.n, COMMISSIONED, self.actor, scope=PROJECT)
         return self.load(board.n)
 
     @action

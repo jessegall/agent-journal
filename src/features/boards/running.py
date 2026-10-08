@@ -3,7 +3,7 @@ import time
 from engine.worktree import current_branch
 from features.work_modes.details import ORCHESTRATOR
 from features.work_modes.modes import pick
-from resources.base import PAUSED, RESUMED, Refused, STARTED, SYSTEM
+from resources.base import PAUSED, PROJECT, RESUMED, Refused, STARTED, SYSTEM
 from controllers.marks import action
 
 
@@ -17,7 +17,7 @@ class RunningBoards:
                             orchestrator_accepts_waits=True, orchestrator_confirms_drafts=True)
         pick(self.record, ORCHESTRATOR, self.actor)
         self._set_orchestrating(True)
-        self.record.emit("board", board.n, STARTED, self.actor)
+        self.record.emit("board", board.n, STARTED, self.actor, scope=PROJECT)
         return board
 
     @action
@@ -52,7 +52,7 @@ class RunningBoards:
         if not board.started or board.paused:
             raise Refused(f"board {board.n} is not running, so there is nothing to pause")
         board = self.update(board.n, paused=time.time())
-        self.record.emit("board", board.n, PAUSED, self.actor)
+        self.record.emit("board", board.n, PAUSED, self.actor, scope=PROJECT)
         return board
 
     @action
@@ -61,5 +61,5 @@ class RunningBoards:
         if not board.paused:
             raise Refused(f"board {board.n} is not paused")
         board = self.update(board.n, paused=0.0)
-        self.record.emit("board", board.n, RESUMED, self.actor)
+        self.record.emit("board", board.n, RESUMED, self.actor, scope=PROJECT)
         return board

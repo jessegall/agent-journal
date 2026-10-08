@@ -6,7 +6,7 @@ from controllers.types import Agents, Plugins, Todos
 from engine.gates import Hold, hold
 from engine.fields import Loaded
 from features.plugins.declared import declared, named, settings_of, settings_choosing
-from resources.base import PLUGIN, RAISED, Refused, SYSTEM, check_abstract, check_title
+from resources.base import PLUGIN, PROJECT, RAISED, Refused, SYSTEM, check_abstract, check_title
 
 KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "raise")
 MOST = 20
@@ -58,7 +58,7 @@ def raised(record, plugin: str, session: str, asked: Posting) -> None:
     if not event:
         raise Refused(f"{plugin} declares no event {name}")
     title = event.title if event.title else name
-    record.emit("plugin", row.n, RAISED, PLUGIN, event=f"{plugin}.{name}", title=title, tone=event.tone, brief=asked.brief, plugin=plugin,
+    record.emit("plugin", row.n, RAISED, PLUGIN, scope=PROJECT, event=f"{plugin}.{name}", title=title, tone=event.tone, brief=asked.brief, plugin=plugin,
                 collapsed=event.collapsed)
     if event.card:
         card = event.card
