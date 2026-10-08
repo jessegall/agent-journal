@@ -20,7 +20,7 @@ from engine.viewer import SERVING
 from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, MOST_STREAMS, Proxies, Visit
 from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, WrongTries, hashed
-from features.hosted_journal.vault import AUDIT, VAULT, DiskFull, Vault
+from features.hosted_journal.vault import AUDIT, VAULT, DiskFull, RefusalLog, Vault
 from features.phone.controller import Phones
 from features.sharing.controller import Shares
 from features.sharing.routes import EVERY_OTHER, ROUTES
@@ -189,7 +189,7 @@ def test_another_site_plain_http_from_outside_and_a_strange_host_are_refused(hos
     assert hosted.call("POST", "/login", {"password": PASSWORD}, Origin="https://evil.example").status == 403
     outside = type("Outside", (), {"shares": Shares(hosted.record, actor=SYSTEM), "path": "/", "client_address": ("203.0.113.5", 4000),
                                    "headers": {"Host": "localhost", "X-Forwarded-Proto": "https", "X-Forwarded-For": "198.51.100.7"}})
-    visit = Visit(outside, Proxies())
+    visit = Visit(outside, Proxies(), RefusalLog(1))
     assert not visit.secure() and visit.place() == "203.0.113.5", "a peer that is not the named proxy decides neither https, locality nor its place"
     forged = {"Host": ADDRESS, "Cookie": f"{COOKIE}={token}", "X_Forwarded_Proto": "https", "X_Forwarded_For": "203.0.113.9"}
     Features(hosted.record, actor=USER).configure(HostedJournalDetails.name, "proxy", "127.0.0.1")
@@ -229,6 +229,16 @@ def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, mo
     assert (hosted.vault.folder / LOGINS).read_text() == kept and token
     assert not [path for path in hosted.vault.folder.iterdir() if path.name.startswith(".")]
     assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 507
+    monkeypatch.undo()
+    now = [6000.0]
+    refusals = RefusalLog(3, clock=lambda: now[0])
+    for _ in range(10):
+        refusals.write(hosted.vault, place="203.0.113.1", code=421)
+    now[0] += 60
+    refusals.write(hosted.vault, place="203.0.113.1", code=421)
+    logged = [json.loads(line) for line in (hosted.vault.folder / AUDIT).read_text().splitlines()]
+    assert [line["what"] for line in logged[-5:]] == ["refused"] * 3 + ["refusals not logged", "refused"] and logged[-2]["count"] == 7
+    assert Owner(hosted.vault).matches(PASSWORD) and json.loads((hosted.vault.folder / "owner.json").read_text())["cost"] == 2 ** 17
 
 
 @pytest.mark.skipif(not (WEB / "node_modules" / "playwright-core").is_dir(), reason="the viewer's npm packages are not installed")

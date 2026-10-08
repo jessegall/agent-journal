@@ -73,3 +73,28 @@ class Vault:
                 kept.write(line)
         except OSError as cause:
             raise DiskFull.writing(AUDIT, cause) from cause
+
+
+class RefusalLog:
+    """At most so many refusals a minute reach the audit log; the rest are counted, and the count is written when the next minute starts."""
+
+    def __init__(self, per_minute: int, clock: Clock = time.time) -> None:
+        self.per_minute = per_minute
+        self.clock = clock
+        self.minute = 0
+        self.written = 0
+        self.dropped = 0
+        self.lock = threading.Lock()
+
+    def write(self, vault: Vault, **facts) -> None:
+        with self.lock:
+            minute = int(self.clock() // 60)
+            if minute != self.minute:
+                if self.dropped:
+                    vault.audit("refusals not logged", count=self.dropped)
+                self.minute, self.written, self.dropped = minute, 0, 0
+            if self.written >= self.per_minute:
+                self.dropped += 1
+                return
+            self.written += 1
+        vault.audit("refused", **facts)
