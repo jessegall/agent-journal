@@ -2,6 +2,7 @@
 import {store} from "../state/store.js";
 import {saveViewerSetting, viewerSetting, workMode} from "../composables/settings.js";
 import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
+import {demo} from "../platform/demo.js";
 import {narrow} from "../platform/view.js";
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
@@ -414,14 +415,14 @@ watch(
                         >
                             <span class="pane-menu-anchor">
                                 <Btn
-                                    :class="['pane-menu-btn', {on: menu && menu.id === id, hinted: hinted === id}]"
+                                    :class="['pane-menu-btn', {on: menu && menu.id === id, hinted: hinted === id && !demo}]"
                                     :data-pane-menu="id"
                                     v-tip="'Pane menu'"
                                     @click.stop="toggleMenu($event, id)"
                                 >
                                     <Icon name="dots" />
                                 </Btn>
-                                <template v-if="hinted === id">
+                                <template v-if="hinted === id && !demo">
                                     <HintBubble text="More for this window here: detach it, split it, dock it and more." />
                                 </template>
                             </span>

@@ -1,7 +1,11 @@
 import vue from "@vitejs/plugin-vue";
 import {execFileSync} from "node:child_process";
+import {readFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {defineConfig} from "vite";
+import {LESSONS} from "./demo/lessons.js";
+import {expand} from "./demo/moments.js";
+import {lessonFacts} from "./demo/pacing.js";
 
 const BUILT_IN = "virtual:built-in-manifest";
 const builtInManifest = () => ({
@@ -15,10 +19,26 @@ const builtInManifest = () => ({
     },
 });
 
+const FACTS = "virtual:lesson-facts";
+const lessonLengths = () => ({
+    name: "lesson-facts",
+    resolveId: (id) => (id === FACTS ? `\0${FACTS}` : undefined),
+    load(id) {
+        if (id !== `\0${FACTS}`) return undefined;
+        const facts = Object.fromEntries(
+            LESSONS.map(({key, subjects}) => {
+                const recorded = JSON.parse(readFileSync(new URL(`./demo/scenarios/${key}.json`, import.meta.url)));
+                return [key, lessonFacts(expand(recorded).moments, subjects)];
+            })
+        );
+        return `export default ${JSON.stringify(facts)};`;
+    },
+});
+
 export default defineConfig(({mode}) => {
     const demo = mode === "demo";
     return {
-        plugins: [vue(), builtInManifest()],
+        plugins: [vue(), builtInManifest(), lessonLengths()],
         base: "./",
         define: {__DEMO__: demo, __DEMO_BUILD__: JSON.stringify(String(Date.now()))},
         build: demo

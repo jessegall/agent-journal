@@ -8,7 +8,7 @@ const PRESSES = ["pointerdown", "mousedown", "click", "dblclick", "dragstart"];
 const HINTED = new Set(["click", "keydown", "dragstart"]);
 const MOVING = new Set(["Tab", "Escape", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End", "Shift"]);
 
-const hint = () => window.dispatchEvent(new CustomEvent("replay-hint"));
+const hint = (target) => window.dispatchEvent(new CustomEvent("replay-hint", {detail: {target}}));
 const outlined = (standIn, el) => nextButtons(standIn).some((button) => button.contains(el));
 
 function pressable(standIn, target) {
@@ -24,7 +24,7 @@ function typeable(standIn, event) {
 function held(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
-    if (HINTED.has(event.type)) hint();
+    if (HINTED.has(event.type)) hint(event.target);
 }
 
 export function lockReplay(standIn) {

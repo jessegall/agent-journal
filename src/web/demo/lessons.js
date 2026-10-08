@@ -1,0 +1,86 @@
+export const LESSONS = [
+    {
+        key: "bakery",
+        title: "How to ask for a plan",
+        teaches:
+            "Ask for a plan for a bakery's website. The agent asks how thorough it should be, writes it phase by phase, and you approve it with its button and watch it run to the end.",
+        layout: "triage",
+        subjects: ["question", "plan"],
+        shows: {"plan.created": "plan"},
+        watch: "the plan take shape",
+        done: "The agent wrote a plan for the bakery's website and ran it phase by phase until every to-do was done.",
+        load: () => import("./scenarios/bakery.json"),
+    },
+    {
+        key: "ledgerly",
+        title: "How to ask for a report",
+        teaches:
+            "Ask why an invoice is a cent off and for a report. The agent reproduces it, asks how VAT should round, and writes the report part by part before handing it to you as a card.",
+        layout: "default",
+        subjects: ["question", "report"],
+        shows: {"report.created": "report"},
+        watch: "the report fill in",
+        done: "The agent found why the invoice was a cent off and handed you what it found as a report.",
+        load: () => import("./scenarios/ledgerly.json"),
+    },
+    {
+        key: "subagents",
+        title: "How to start subagents",
+        teaches:
+            "Ask for two agents to review a project before it ships. The agent sends two read-only subagents, each named and on its own model; what they find comes back as to-dos, which you have fixed.",
+        layout: "orchestrator",
+        subjects: ["question", "todo"],
+        shows: {},
+        watch: "the subagents at work",
+        done: "The agent sent two subagents to review the project, and what they found came back as to-dos that are now fixed.",
+        load: () => import("./scenarios/subagents.json"),
+    },
+    {
+        key: "helpers",
+        title: "How to work with helpers",
+        teaches:
+            "Ask for a plan and which parts could go to helpers. Hand the writing jobs to helpers on Codex and Claude, each in a place of its own, set one straight when it goes off track, and bring the work back.",
+        layout: "orchestrator",
+        subjects: ["question", "plan", "helper", "report"],
+        shows: {"plan.created": "plan"},
+        watch: "the helpers at work",
+        done: "The agent handed the writing jobs to helpers, steered one back on track and brought all the work back.",
+        load: () => import("./scenarios/helpers.json"),
+    },
+    {
+        key: "docs",
+        title: "How to get a document written",
+        teaches:
+            "Ask for a volunteer handbook page. The agent asks which source to use and writes the guide a chapter at a time from the field notes. You need not press anything in the document: the journal keeps its revisions by itself.",
+        layout: "default",
+        subjects: ["question", "collection", "doc"],
+        shows: {"doc.created": "doc"},
+        watch: "the document fill in",
+        done: "The agent wrote the volunteer guide a chapter at a time and kept it as a document in a collection.",
+        load: () => import("./scenarios/docs.json"),
+    },
+    {
+        key: "memory",
+        title: "How the agent remembers",
+        teaches:
+            "Ask the agent to remember one detail while it builds a theatre's home page. When you ask for the show schedule later, it still knows, because it kept what you said as a fact.",
+        layout: "zen",
+        subjects: ["question", "fact"],
+        shows: {"fact.created": "fact"},
+        watch: "the chat",
+        done: "The agent kept your detail as a fact, so it still knew it when you asked for the show schedule.",
+        load: () => import("./scenarios/memory.json"),
+    },
+    {
+        key: "dumps",
+        title: "How to dump a pile of notes",
+        teaches:
+            "Drop a pasted note, a screenshot and a text file in one dump. The agent sorts them by subject into documents in a named collection, says what it is doing as it goes, and asks you one question in the dump.",
+        layout: "default",
+        subjects: ["doc", "collection"],
+        shows: {},
+        watch: "the notes being sorted",
+        done: "The agent sorted your notes, screenshot and text file into documents in a named collection.",
+        load: () => import("./scenarios/dumps.json"),
+    },
+];
