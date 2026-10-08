@@ -79,6 +79,9 @@ def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch
     from migrations.m0074_secrets_name_their_programs import run as tell_unlisted
     assert len(tell_unlisted(record.root)) == 1 and any("GitHub (secret" in notice.brief for notice in Notices(record, actor=SYSTEM).all()), \
         "an upgrade tells the user which secrets list no programs"
+    gone = Secrets(record, actor=USER).create("Old token", kind="api key")
+    Secrets(record, actor=USER).delete(gone.n, "no longer used")
+    assert [line for line in tell_unlisted(record.root) if "Old token" in line] == [], "a deleted secret is never named"
     Secrets(record, actor=SYSTEM).update(row.n, programs=["cat", "base64", "printenv", "bash"])
     capsys.readouterr()
     agent.run("github", "cat")
