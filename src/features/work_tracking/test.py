@@ -244,6 +244,7 @@ def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     todos.complete(todos.create("a row done right after").n, how="done")
     assert nudges(record).count(parked) == 1, "not again within the minute, so closing several at once says it once"
     record.state("work_tracking").set("parked_named", 0)
+    report(record, "working", "PostToolUse")
     todos.complete(todos.create("a row done later").n, how="done")
     assert nudges(record).count(parked) == 2, "later, closing a to-do reminds it too"
 
