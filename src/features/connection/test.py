@@ -5,7 +5,8 @@ import threading
 import time
 
 import features
-from controllers.types import Notices, Todos
+from controllers.features import Features
+from controllers.types import Environments, Notices, Todos
 from engine.machines import Lease, this_machine
 from engine.offline import Applied, Waiting, Write
 from engine.record import Record
@@ -83,6 +84,13 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     record.change_setting("connection", {"address": "https://server.example"})
     features.FEATURES["connection"].settings_changed(record, USER)
     assert any("Could not connect" in n.title for n in Notices(record, actor=SYSTEM).all()), "an address nobody answers at becomes a notice, not an error"
+    Features(record, actor=USER).switch("connection", True)
+    agent = Environments(record, actor=AGENT)
+    tries = {"connect": lambda: agent.action("connect")("https://elsewhere.example"), "hand": lambda: agent.action("hand")(record.env, "server"),
+             "disconnect": lambda: agent.action("disconnect")(), "code_push": lambda: agent.action("code_push")()}
+    assert {word: "only the user" in refused(attempt) for word, attempt in tries.items()} == dict.fromkeys(tries, True), \
+        "an agent can neither point the record's sync at another address, hand an environment over, disconnect nor push code"
+    assert record.setting("connection", {}).get("address") == "https://server.example", "and the address the user set stays"
 
 
 def test_an_environment_goes_to_the_server_only_once_it_has_taken_the_new_epoch_and_comes_back_through_the_same_lease():
