@@ -23,6 +23,7 @@ import AgentTodo from "./AgentTodo.vue";
 import AgentPanes from "./AgentPanes.vue";
 import {scopeIn} from "../composables/scope.js";
 import {useTranscript} from "../composables/transcript.js";
+import {briefOf} from "../domain/transcript.js";
 import {INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
 import {levelOf} from "../domain/verbosity.js";
 import {agentOf, plainRefusal} from "../domain/agents.js";
@@ -210,6 +211,7 @@ const openSkills = () => go(route.value.env, "skills");
         </template>
         <AgentInspectorBands
             :confirm="question && question.confirm"
+            :brief="info.brief || (subagent ? briefOf(turns) : null)"
             :report="info.report"
             :refusal="refusal"
             :state-key="stateKey"
@@ -227,7 +229,7 @@ const openSkills = () => go(route.value.env, "skills");
                         <p class="pane-note">
                             {{
                                 subagent
-                                    ? `What this subagent was asked and what it answered. It can't be messaged.`
+                                    ? `What the main agent asked this subagent, and what it answered. It can't be messaged.`
                                     : "The conversation with this agent."
                             }}
                         </p>

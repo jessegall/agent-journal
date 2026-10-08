@@ -1,7 +1,7 @@
 <script setup>
 import {standingLink} from "../domain/links.js";
 import {computed, nextTick, ref, watch} from "vue";
-import {chatTurns} from "../domain/transcript.js";
+import {chatTurns, fromMainAgent} from "../domain/transcript.js";
 import {useScope} from "../composables/scope.js";
 import Compose from "./Compose.vue";
 import ChatNotice from "./ChatNotice.vue";
@@ -17,7 +17,7 @@ const log = ref(null);
 const {api, rows} = useScope();
 const sent = computed(() => rows("message").filter((m) => m.data.sent_to === props.session && m.seen[0] === "user"));
 const sentTexts = computed(() => new Set(sent.value.map((m) => m.brief.trim())));
-const transcriptLines = computed(() => chatTurns(props.turns).filter((t) => !(t.who === "user" && sentTexts.value.has(t.brief.trim()))));
+const transcriptLines = computed(() => fromMainAgent(chatTurns(props.turns)).filter((t) => !(t.who === "user" && sentTexts.value.has(t.brief.trim()))));
 const lines = computed(() => [...transcriptLines.value, ...sent.value].sort((a, b) => a.created - b.created));
 const pins = computed(() =>
     rows("notice").filter((notice) => notice.data.agent === props.session && !notice.completed && !standingLink(notice))

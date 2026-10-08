@@ -9,6 +9,8 @@ import TurnHeader from "./TurnHeader.vue";
 import TurnQuote from "./TurnQuote.vue";
 import TurnParent from "./TurnParent.vue";
 import TurnPeer from "./TurnPeer.vue";
+import TurnFromMain from "./TurnFromMain.vue";
+import TurnBriefMarker from "./TurnBriefMarker.vue";
 import TurnText from "./TurnText.vue";
 import TurnQuestion from "./TurnQuestion.vue";
 import TurnActions from "./TurnActions.vue";
@@ -43,7 +45,9 @@ function chipOrUpdate(e) {
     openUpdate(Number(update.dataset.update), update);
 }
 
-const mine = computed(() => props.turn.who === "user");
+const fromMain = computed(() => Boolean(props.turn.data?.from_main));
+const opening = computed(() => Boolean(props.turn.data?.opening));
+const mine = computed(() => props.turn.who === "user" || fromMain.value);
 const subagentTask = (id) =>
     rowsOf("agent")
         .flatMap((agent) => agent.data.subagent_rows || [])
@@ -177,7 +181,13 @@ async function drop() {
         <template v-if="turn.who === 'system'">
             <span class="thread-from">journal</span>
         </template>
-        <div v-show="bubbled" ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
+        <template v-if="opening">
+            <TurnBriefMarker :at="turn.created" />
+        </template>
+        <div v-show="bubbled && !opening" ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
+            <template v-if="fromMain">
+                <TurnFromMain :at="turn.created" />
+            </template>
             <template v-if="resourceComment">
                 <TurnParent :label="commentParent.label" @open="openComment" />
             </template>

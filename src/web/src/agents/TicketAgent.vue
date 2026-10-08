@@ -82,6 +82,7 @@ const info = computed(() => ({
         ...(props.card.reason ? [props.card.reason] : []),
         env.value || "its environment",
     ],
+    brief: helper.value && helper.value.brief ? {text: helper.value.brief, at: helper.value.created} : null,
     report: helper.value && helperReport(helper.value) ? {text: helperReport(helper.value), ...reportLink.value} : null,
     actions: actions.value,
 }));
