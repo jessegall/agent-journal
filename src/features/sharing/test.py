@@ -214,6 +214,7 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header(tmp_path,
         for _ in range(5):
             opened("daisy")
         assert opened("tulip") == 429, "a place that sent five wrong passwords is refused, even with the right one, until it has waited"
+        server.RequestHandlerClass.wrong.tries.clear()
         base = f"http://127.0.0.1:{server.server_port}"
         paper = tmp_path / "notes.txt"
         paper.write_text("inside")
