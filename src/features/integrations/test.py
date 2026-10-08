@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from types import SimpleNamespace
 
 import features
-from controllers.features import Features, writes_a_secret
+from controllers.features import Features, SettingsWrite
 from features.integrations.client import IntegrationClient
 from features.integrations.state import IntegrationState, read_state, state_file, write_state
 from features.secrets.values import ValuesFile
@@ -28,9 +28,10 @@ def test_only_you_pick_an_integrations_key_and_a_phone_never_does():
     assert "only you pick the key" in refused(lambda: apply(record, {"linear": {"key": "LINEAR_KEY"}}, AGENT)), "nor through the settings write"
     Features(record, actor=USER).configure("linear", "key", "LINEAR_KEY")
     assert features.FEATURES["linear"].values(record).key == "LINEAR_KEY", "you can, and it is read back"
-    assert (writes_a_secret({"linear": {"key": "LINEAR_KEY"}}), writes_a_secret({"linear": {"enabled": True}}), writes_a_secret({"boards": {"x": 1}})) == (True, False, False), \
+    picks_a_secret = lambda body: SettingsWrite.from_body(body).picks_a_secret()
+    assert (picks_a_secret({"linear": {"key": "LINEAR_KEY"}}), picks_a_secret({"linear": {"enabled": True}}), picks_a_secret({"boards": {"x": 1}})) == (True, False, False), \
         "a settings write that holds a key is told apart, so the phone's allow list can close it"
-    assert (writes_a_secret({"name": "linear", "key": "key", "value": "LINEAR_KEY"}), writes_a_secret({"name": "linear", "key": "enabled", "value": "x"})) == (True, False), \
+    assert (picks_a_secret({"name": "linear", "key": "key", "value": "LINEAR_KEY"}), picks_a_secret({"name": "linear", "key": "enabled", "value": "x"})) == (True, False), \
         "and so is a single setting written by name, whichever route carries it"
     from features.secrets.controller import Secrets
     asked = Secrets(record, actor=AGENT).request("Linear key", "for Linear")

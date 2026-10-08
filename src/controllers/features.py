@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 
 from controllers.base import Arguments, Controller
 from engine.extension import Extension
@@ -97,10 +98,25 @@ def refuse_a_secret_that_runs_commands(record, name: str, values) -> None:
             check(record, name, values[key])
 
 
-def writes_a_secret(body: dict) -> bool:
-    """Whether a request body would pick the secret of a feature, whether it is a settings write or a single setting."""
-    named = isinstance(body.get("name"), str) and bool(secrets_in(body["name"], [body.get("key")]))
-    return named or any(secrets_in(name, values) for name, values in body.items() if isinstance(values, dict))
+@dataclass(frozen=True)
+class FeatureKeys:
+    feature: str
+    keys: tuple
+
+
+@dataclass(frozen=True)
+class SettingsWrite:
+    """The feature settings a request body writes, whether it is a settings write or a single setting named."""
+
+    writes: tuple[FeatureKeys, ...]
+
+    @classmethod
+    def from_body(cls, body: dict) -> "SettingsWrite":
+        named = (FeatureKeys(body["name"], (body.get("key"),)),) if isinstance(body.get("name"), str) else ()
+        return cls((*named, *(FeatureKeys(name, tuple(values)) for name, values in body.items() if isinstance(values, dict))))
+
+    def picks_a_secret(self) -> bool:
+        return any(secrets_in(write.feature, write.keys) for write in self.writes)
 
 
 def changes_a_command(record, name: str, key: str, value) -> bool:
