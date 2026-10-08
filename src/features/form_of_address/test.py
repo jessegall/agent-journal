@@ -170,6 +170,7 @@ def test_the_upgrade_moves_the_cartoon_names_switch_into_the_profile_in_use():
     record = shipped_record()
     (record.home / "settings.json").write_text(json.dumps({"journal_laws": {"cartoon_names": True, "output_lines": 400}}))
     run(record.root)
+    record.reread_settings()
     chosen = Profiles(record, actor=SYSTEM).load(in_use(record))
     assert (chosen.title, chosen.naming, json.loads((record.home / "settings.json").read_text())) == \
         ("Butler (my copy)", CARTOON.text, {"journal_laws": {"output_lines": 400}}), \
