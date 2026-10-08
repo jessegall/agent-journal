@@ -9,10 +9,11 @@ cd /compose
 while true; do
     if verified="$(cosign verify --certificate-identity-regexp "$SIGNER" --certificate-oidc-issuer "$ISSUER" "$IMAGE:latest" 2>/dev/null)"; then
         digest="$(printf '%s' "$verified" | sed -n 's/.*"docker-manifest-digest":"\(sha256:[0-9a-f]*\)".*/\1/p' | head -1)"
-        running="$(docker inspect --format '{{.Config.Image}}' "$(docker compose ps -q journal)" 2>/dev/null || true)"
+        journal="$(docker ps -q --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --filter label=com.docker.compose.service=journal)"
+        running="$(docker inspect --format '{{.Config.Image}}' $journal 2>/dev/null || true)"
         if [ -n "$digest" ] && [ "$running" != "$IMAGE@$digest" ]; then
             echo "deploying $IMAGE@$digest, signed by the release workflow"
-            JOURNAL_IMAGE="$IMAGE@$digest" docker compose up -d --no-deps --pull always journal
+            JOURNAL_IMAGE="$IMAGE@$digest" docker compose --profile journal up -d --no-deps --pull always journal
         fi
     else
         echo "$IMAGE:latest carries no signature from the release workflow, so nothing is deployed"

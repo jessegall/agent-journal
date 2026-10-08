@@ -15,9 +15,13 @@ viewer, pair your phone, and start agents that run on the server and push their 
 ```sh
 git clone https://github.com/jessegall/agent-journal && cd agent-journal/docker
 cp .env.example .env && chmod 600 .env    # fill in the domain, repository, tokens and a backup password
-docker compose up -d
+docker compose up -d                       # Caddy, backups and the updater, which starts the journal once its image is verified
+docker compose logs -f updater             # until it says it deployed the journal
 docker compose exec -u gateway journal hosted-journal setup-code
 ```
+
+The journal is started only by the updater, on the exact digest it verified, so a later `docker compose up` never
+rolls it back to an unchecked image. To run an image of your own, name it: `JOURNAL_IMAGE=<image> COMPOSE_PROFILES=journal docker compose up -d`.
 
 Open `https://<your domain>`, type the setup code and choose the owner's password (12 characters or more).
 

@@ -3,11 +3,10 @@
 name: agent-journal
 
 services:
+  # Started only by the updater, on the digest it verified; a plain docker compose up never runs an unchecked image.
   journal:
-    image: ${JOURNAL_IMAGE:-ghcr.io/jessegall/agent-journal:latest}
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
+    image: ${JOURNAL_IMAGE:-ghcr.io/jessegall/agent-journal:unverified}
+    profiles: [journal]
     restart: unless-stopped
     # Only what the journal and its agents use: backup credentials stay on the backup service.
     environment:
@@ -38,8 +37,6 @@ services:
   caddy:
     image: caddy:2.8
     restart: unless-stopped
-    depends_on:
-      - journal
     ports:
       - "${HTTP_PORT:-80}:80"
       - "${HTTPS_PORT:-443}:443"
