@@ -58,6 +58,12 @@ MODES="$(compose exec -T -u gateway journal sh -c 'stat -c %a /data/vault /data/
 echo "$MODES" | grep -Eq '^700 700 600 $' && pass "the password and logins sit in a folder only gateway can read" || fail "vault modes are $MODES"
 compose exec -T -u journal journal sh -c 'cat /data/vault/*/owner.json' >/dev/null 2>&1 && fail "an agent's user reads the password hash" || pass "an agent's user cannot read the password or logins"
 compose exec -T -u journal journal hosted-journal setup-code >/dev/null 2>&1 && fail "an agent's user made a setup code" || pass "an agent's user cannot make a setup code or reset the password"
+compose exec -T -u journal journal sh -c 'mkdir -p /data/project/features && for f in json.py features/__init__.py; do echo "open(\"/tmp/planted\", \"w\").write(\"ran\")" > /data/project/$f; done'
+compose exec -T -u gateway -w /data/project journal hosted-journal password-status >/dev/null 2>&1 || true
+compose exec -T journal pkill -u gateway -f features.hosted_journal.apart >/dev/null 2>&1 || true
+for _ in $(seq 1 30); do compose exec -T journal curl -fsS http://127.0.0.1:8440/ready >/dev/null 2>&1 && break; sleep 1; done
+compose exec -T journal test -e /tmp/planted && fail "code planted in the project ran as gateway" || pass "code planted in the project never runs as the login page's user"
+compose exec -T -u journal journal sh -c 'rm -rf /data/project/json.py /data/project/features'
 compose exec -T -u journal journal sh -c 'touch /opt/agent-journal/src/serve.py' >/dev/null 2>&1 && fail "an agent's user can change the login page's code" || pass "the login page's code cannot be changed by an agent's user"
 compose exec -T -u journal journal sh -c 'grep -rl "owner.json\|scrypt" /data/project/.journal --include=*.json' >/dev/null 2>&1 && fail "a secret is in the record" || pass "no secret is in the record"
 

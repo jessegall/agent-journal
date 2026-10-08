@@ -1,4 +1,5 @@
 #!/bin/sh
 # The journal on a server's own commands, run from the root-owned code in /opt: prepare as journal;
 # password-status, setup-code, reset-password and logout-everywhere as gateway.
-exec env PYTHONPATH=/opt/agent-journal/src python3 -m features.hosted_journal.host --root "$JOURNAL_ROOT" "$@"
+cd /
+exec env PYTHONPATH=/opt/agent-journal/src PYTHONSAFEPATH=1 python3 -P -m features.hosted_journal.host --root "$JOURNAL_ROOT" "$@"

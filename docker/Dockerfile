@@ -26,7 +26,7 @@ ENV JOURNAL_PROJECT=/data/project \
     AGENT_JOURNAL_VAULT=/data/vault \
     PYTHONDONTWRITEBYTECODE=1
 
-WORKDIR /data/project
+WORKDIR /
 VOLUME /data
 EXPOSE 8440
 
