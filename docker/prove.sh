@@ -14,7 +14,7 @@ PASSWORD="a proof of the install"
 compose() { docker compose "$@"; }
 pass() { echo "ok   $1"; }
 fail() { echo "FAIL $1"; compose logs --tail 40 journal >&2 || true; exit 1; }
-cleanup() { compose --profile restore down -v --remove-orphans >/dev/null 2>&1 || true; rm -rf "$WORK"; }
+cleanup() { compose --profile journal --profile restore down -v --remove-orphans >/dev/null 2>&1 || true; rm -rf "$WORK"; }
 trap cleanup EXIT
 
 [ "${SKIP_BUILD:-}" = "1" ] || docker build -q -f Dockerfile -t "$JOURNAL_IMAGE" .. >/dev/null
