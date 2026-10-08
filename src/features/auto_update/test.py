@@ -95,14 +95,14 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     page = dispatch("GET", "/api/changelog", record.root, {}, {}).body
     assert (page["changelog"], page["updating"], page["repository"]) == ("# 99.0.0\n", False, False), "the viewer reads the changelog with whether an update is running"
     import install
-    managed = record.root / "src" / "install.py"
-    managed.parent.mkdir(parents=True, exist_ok=True)
-    managed.write_text("generated\n")
+    installer = record.root / "src" / "install.py"
+    installer.parent.mkdir(parents=True, exist_ok=True)
+    installer.write_text("generated\n")
     managed.remember_managed(record.root.parent, record.root)
-    managed.write_text("changed by hand\n")
+    installer.write_text("changed by hand\n")
     assert dispatch("POST", "/api/update", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], \
         "the Update button refuses files changed by hand"
-    assert "--yes" in install.upgrade(record.root.parent, record.root)[0] and managed.read_text() == "changed by hand\n", \
+    assert "--yes" in install.upgrade(record.root.parent, record.root)[0] and installer.read_text() == "changed by hand\n", \
         "journal upgrade refuses the same changed file before touching it"
     assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], "the updates page is told which files changed"
     monkeypatch.setattr(routes, "release_versions", lambda: ["2.263.0", "2.262.0", "2.250.0"])
@@ -119,18 +119,18 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert asked == [(True, "2.250.0")], "picking an earlier version installs exactly that version"
     agents = record.root.parent / "AGENTS.md"
     from features.journal_laws.briefing import brief
-    managed.write_text("generated\n")
+    installer.write_text("generated\n")
     brief(record.root.parent, record)
     managed.remember_managed(record.root.parent, record.root)
     agents.write_text(agents.read_text() + "\nA line of the project's own.\n")
     assert managed.changed_managed(record.root.parent, record.root) == [], "a line outside the journal's block is not a change to its file"
     agents.write_text(agents.read_text().replace("form 2 (auto-generated", "form 2 (edited by hand"))
-    managed.write_text("changed by hand\n")
+    installer.write_text("changed by hand\n")
     assert install.archive_changed(record.root.parent, record.root, managed.changed_managed(record.root.parent, record.root)).is_file(), "updating anyway copies the changed files to the attic first"
-    managed.write_text("generated\n")
+    installer.write_text("generated\n")
     check.checked_at = 0.0
     assert check.tick() == "update held for changed files", "automatic updates wait for a decision about changed files"
-    managed.write_text("generated\n")
+    installer.write_text("generated\n")
     Features(record, actor=SYSTEM).switch("auto_update", False)
     record.set_setting("triggers", {"auto_update": {"every": 5, "unit": "minutes"}})
     monkeypatch.setattr(updates, "stale", lambda root: True)
