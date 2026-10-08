@@ -11,6 +11,7 @@ from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared, tell_in
 from features.helper_worktrees.controller import Worktrees
 from features.helpers.resource import Helper
+from features.plans.controller import Plans
 from features.helpers.reuse import HELPER_KIND, kept, knowing, named_paths, refusal
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
@@ -113,6 +114,7 @@ class Helpers(Controller):
         listed = Todos(self.record, actor=SYSTEM)
         for given in handed:
             listed.assign(given.n, to=row.ref)
+            Plans(self.record, actor=SYSTEM).delegate_row(given.n)
         try:
             launched(self.record, place, provider, driver.prompted(["--model", model], kickoff(row, folder, todo.n, handed)), folder)
         except Exception:

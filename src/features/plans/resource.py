@@ -30,6 +30,7 @@ class Plan(Shape, Resource):
         Field(default=1, name="current"),
         Field(default="normal", name="depth"),
         Field(FLAG, False, name="dismissed"),
+        Field(FLAG, False, name="delegated"),
         Field(default="each", name="worktree"),
         Field(name="branch"),
         Field(NUMBER, 0.0, name="merged"),
@@ -74,6 +75,10 @@ class Plan(Shape, Resource):
         phase = self.current_phase
         holds = self.status != ACTIVE or phase is None or todo.n not in phase[PHASE.todos]
         return Placement(self.n, self.title, number, holds)
+
+    def has_in_phase(self, todo) -> bool:
+        phase = self.current_phase
+        return phase is not None and todo.n in phase[PHASE.todos]
 
     def start_line(self) -> str:
         phase = self.current_phase
