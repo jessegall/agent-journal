@@ -1,3 +1,4 @@
 #!/bin/sh
-# The journal on a server's own commands: prepare, setup-code, reset-password and logout-everywhere.
-exec python3 "$JOURNAL_ROOT/journal.pyz" -m features.hosted_journal.host --root "$JOURNAL_ROOT" "$@"
+# The journal on a server's own commands, run from the root-owned code in /opt: prepare as journal;
+# password-status, setup-code, reset-password and logout-everywhere as gateway.
+exec env PYTHONPATH=/opt/agent-journal/src python3 -m features.hosted_journal.host --root "$JOURNAL_ROOT" "$@"

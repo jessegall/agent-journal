@@ -48,10 +48,11 @@ def wanted(root: Path) -> bool:
 
 @dataclass(frozen=True)
 class Listen:
-    """Where the share server listens: on this machine alone, at a port it is given or one it finds."""
+    """Where the share server listens: on this machine alone, at a port it is given or one it finds, and whether the journal runs it."""
 
     host: str = LOOPBACK
     port: int | None = None
+    kept: bool = True
 
 
 def listen_place(root: Path) -> Listen:
@@ -63,6 +64,8 @@ def listen_place(root: Path) -> Listen:
 def share_services(root: Path, taken: set) -> list:
     idle = why_idle(root)
     place = listen_place(root)
+    if not place.kept:
+        return []
     port, blocked = allocate(root, SERVER, place.port, taken)
     taken.add(port)
     specs = [ServiceSpec(id=SERVER, plugin="sharing", service="server", run=[*entry("features.sharing.server"), str(root), str(port), place.host],

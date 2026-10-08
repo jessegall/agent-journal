@@ -26,7 +26,7 @@ curl -sk "$SITE/login" | grep -q "Set up" && pass "the first visit asks for the 
 [ "$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$HTTP_PORT/")" = "308" ] && pass "plain http is sent on to https" || fail "plain http answered"
 curl -skI "$SITE/login" | grep -qi "strict-transport-security" && pass "https answers carry HSTS" || fail "no HSTS"
 
-CODE="$(compose exec -T journal hosted-journal setup-code | sed 's/.*: //')"
+CODE="$(compose exec -T -u gateway journal hosted-journal setup-code | sed 's/.*: //')"
 STATUS="$(curl -sk -o /dev/null -w '%{http_code}' -c "$JAR" -H "Origin: $SITE" --data-urlencode "code=$CODE" --data-urlencode "password=$PASSWORD" --data-urlencode "again=$PASSWORD" "$SITE/setup")"
 [ "$STATUS" = "303" ] && pass "the setup code sets the owner's password and logs in" || fail "setup answered $STATUS"
 [ "$(curl -sk -o /dev/null -w '%{http_code}' -b "$JAR" "$SITE/api/identity")" = "200" ] && pass "the logged-in owner reaches the journal's own server" || fail "the viewer's API was not reached"
@@ -51,9 +51,13 @@ curl -sk -o /dev/null -b "$JAR" -H "Origin: $SITE" -H "Content-Type: application
 for _ in $(seq 1 30); do compose exec -T journal pgrep -u journal -x claude >/dev/null 2>&1 && break; sleep 1; done
 compose exec -T journal pgrep -u journal -x claude >/dev/null 2>&1 && pass "an agent started from the viewer runs headless on the server" || fail "no agent started"
 
-[ "$(compose exec -T journal id -u)" = "10001" ] && pass "the server runs as an unprivileged user" || fail "the server runs as root"
-MODES="$(compose exec -T journal sh -c 'stat -c %a "$HOME"/.journal/hosted "$HOME"/.journal/hosted/*/owner.json' | tr '\n' ' ')"
-echo "$MODES" | grep -Eq '^700 600 $' && pass "secrets sit in a folder only the server's user can read" || fail "secret modes are $MODES"
+[ "$(compose exec -T journal ps -o user= -p 1 | tr -d ' ')" = "journal" ] && pass "the journal and its agents run as the unprivileged user journal" || fail "the journal runs as another user"
+compose exec -T journal pgrep -u gateway -f features.sharing.server >/dev/null && pass "the login page runs as its own user, gateway" || fail "the login page does not run as gateway"
+MODES="$(compose exec -T journal sh -c 'stat -c %a /data/vault /data/vault/*/ /data/vault/*/owner.json' | tr '\n' ' ')"
+echo "$MODES" | grep -Eq '^700 700 600 $' && pass "the password and logins sit in a folder only gateway can read" || fail "vault modes are $MODES"
+compose exec -T -u journal journal sh -c 'cat /data/vault/*/owner.json' >/dev/null 2>&1 && fail "an agent's user reads the password hash" || pass "an agent's user cannot read the password or logins"
+compose exec -T -u journal journal hosted-journal setup-code >/dev/null 2>&1 && fail "an agent's user made a setup code" || pass "an agent's user cannot make a setup code or reset the password"
+compose exec -T -u journal journal sh -c 'touch /opt/agent-journal/src/serve.py' >/dev/null 2>&1 && fail "an agent's user can change the login page's code" || pass "the login page's code cannot be changed by an agent's user"
 compose exec -T journal sh -c 'grep -rl "owner.json\|scrypt" /data/project/.journal --include=*.json' >/dev/null 2>&1 && fail "a secret is in the record" || pass "no secret is in the record"
 
 compose exec -T journal sh -c 'echo kept > /data/project/proof.txt'

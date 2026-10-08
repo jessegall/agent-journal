@@ -11,7 +11,8 @@ from features.hosted_journal.owner import Logins, Owner  # noqa: E402
 from features.hosted_journal.vault import Vault  # noqa: E402
 from resources.base import USER  # noqa: E402
 
-WAITING = "No owner password yet. Get a one-time setup code with: docker compose exec journal hosted-journal setup-code"
+WAITING = "No owner password yet. Get a one-time setup code with: docker compose exec -u gateway journal hosted-journal setup-code"
+NOT_GATEWAY = "Only the login page's user reads its password and logins: run docker compose exec -u gateway journal hosted-journal {word}"
 
 
 def record_of(root: Path) -> Record:
@@ -21,19 +22,23 @@ def record_of(root: Path) -> Record:
 
 
 def prepare(root: Path, address: str, listen: str, port: int) -> str:
-    """Switches the journal on a server on, at its address, and says whether the owner still has to choose a password."""
+    """Switches the journal on a server on, at its address, with its login page run apart under a user of its own."""
     record = record_of(root)
     features = Features(record, actor=USER)
     features.switch(HostedJournalDetails.name, True)
-    for key, value in (("address", address), ("listen", listen), ("port", str(port))):
+    for key, value in (("address", address), ("listen", listen), ("port", str(port)), ("apart", "true")):
         features.configure(HostedJournalDetails.name, key, value)
+    return ""
+
+
+def password_status(root: Path) -> str:
     return "" if Owner(Vault(root)).has_password() else WAITING
 
 
 def setup_code(root: Path) -> str:
     owner = Owner(Vault(root))
     if owner.has_password():
-        return "The owner's password is set. To choose a new one, run: hosted-journal reset-password, then get a setup code."
+        return "The owner's password is set. To choose a new one, run hosted-journal reset-password, then get a setup code."
     return f"Setup code, valid for one day: {owner.make_setup_code()}"
 
 
@@ -60,17 +65,23 @@ def main(argv: list[str]) -> None:
     prepared.add_argument("--address", default="")
     prepared.add_argument("--listen", default="0.0.0.0")
     prepared.add_argument("--port", type=int, default=8440)
+    words.add_parser("password-status", help="say whether the owner still has to choose a password")
     words.add_parser("setup-code", help="make a one-time code that sets the owner's password")
     words.add_parser("reset-password", help="clear the owner's password and end every login")
     words.add_parser("logout-everywhere", help="end every login")
     given = parser.parse_args(argv)
     root = given.root.resolve()
-    text = {
+    commands = {
         "prepare": lambda: prepare(root, given.address, given.listen, given.port),
+        "password-status": lambda: password_status(root),
         "setup-code": lambda: setup_code(root),
         "reset-password": lambda: reset_password(root),
         "logout-everywhere": lambda: log_out_everywhere(root),
-    }[given.word]()
+    }
+    try:
+        text = commands[given.word]()
+    except PermissionError as refused:
+        raise SystemExit(NOT_GATEWAY.format(word=given.word)) from refused
     if text:
         print(text, flush=True)
 
