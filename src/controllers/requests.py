@@ -2,13 +2,18 @@ from pathlib import Path
 
 from controllers.base import CONTROLLERS
 from controllers.notices import Notices
+from engine.offline import queue
 from engine.outbox import Outbox, Request
 from engine.record import Record
 from resources.base import SYSTEM, Refused
 
 
+def scope_of(asked: Request) -> str:
+    return CONTROLLERS[asked.type].resource.scope
+
+
 def held_here(root: Path, asked: Request) -> bool:
-    return Record(root, asked.env).holds(CONTROLLERS[asked.type].resource.scope)
+    return Record(root, asked.env).holds(scope_of(asked))
 
 
 def run(root: Path, asked: Request) -> None:
@@ -16,11 +21,11 @@ def run(root: Path, asked: Request) -> None:
 
 
 def request(root: Path, asked: Request) -> None:
-    """Runs a write into another scope now when this machine holds that scope, and otherwise sends it to the machine that does."""
+    """Runs a write into another scope now when this machine holds that scope, and otherwise queues it for the machine that does."""
     if held_here(root, asked):
         run(root, asked)
         return
-    Outbox(root).send(asked)
+    queue(Record(root, asked.env), scope_of(asked), asked)
 
 
 def deliver(root: Path) -> int:

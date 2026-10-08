@@ -115,6 +115,14 @@ class Welcome:
     comparison: Comparison
 
 
+CONNECTION = "connection"
+
+
+def has_joined(record) -> bool:
+    """Whether this copy joined a server, which then writes every scope this copy does not hold."""
+    return bool(record.state(CONNECTION).get("welcome"))
+
+
 def connect(client: Hello, server: Hello) -> Welcome:
     if client.shape.protocol < max(OLDEST_CLIENT_PROTOCOL, server.oldest):
         raise Refused(f"this copy ({client.version or 'unknown release'}) is too old to carry the sync's checks on what never leaves a machine: upgrade it, then connect again")

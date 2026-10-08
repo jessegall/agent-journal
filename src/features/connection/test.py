@@ -8,16 +8,22 @@ import features
 from controllers.features import Features
 from controllers.types import Environments, Notices, Todos
 from engine.machines import Lease, this_machine
+from controllers.requests import request
 from engine.offline import Applied, Sent, Waiting, Write
+from engine.outbox import Outbox, Request
 from engine.record import Record
 from engine.sync import PROTOCOL, Comparison, Hello, Release, Shape, Step
 from engine.version import version
 from features.connection.code import Pushed, pull, push
-from features.connection.linking import hand, join, local_hello, sync
+from features.connection.linking import Synced, hand, join, local_hello, sync
 from features.connection.transport import HttpTransport
 from migrations import applied
 from resources.base import AGENT, SYSTEM, USER, Event
 from tests.conftest import fresh, hosted_world, refused  # noqa: F401
+
+
+def asked(title: str) -> Request:
+    return Request("", "todo", "create", [title])
 
 
 class Server:
@@ -41,9 +47,9 @@ class Server:
         return Lease(this_machine(), 2)
 
     def send(self, held):
-        if held.args[0] == "turned down":
+        if held.asked.args[0] == "turned down":
             return Sent.REFUSED
-        self.taken.append(held.args[0])
+        self.taken.append(held.asked.args[0])
         return Sent.TAKEN if self.up else Sent.AWAY
 
     def events(self, scope, env, since):
@@ -100,9 +106,12 @@ def test_an_environment_goes_to_the_server_only_once_it_has_taken_the_new_epoch_
     down = Server(record.root, up=False)
     assert "does not answer" in refused(lambda: hand(record.root, record.env, "server", down)) and record.holds(""), \
         "a server that does not answer takes nothing and this machine keeps the environment"
-    Waiting(record.root).hold("", "todo", "create", ["waits"])
+    Waiting(record.root).hold("", asked("waits"))
     assert "still wait" in refused(lambda: hand(record.root, record.env, "server", Server(record.root))) and record.holds(""), "writes still waiting go first"
     Waiting(record.root).flush(lambda held: Sent.TAKEN)
+    Outbox(record.root).send(asked("for another holder"))
+    assert "still wait" in refused(lambda: hand(record.root, record.env, "server", Server(record.root))), "and so do requests waiting for another scope's holder"
+    Outbox(record.root).take(lambda waiting: True)
     server = Server(record.root)
     lease = hand(record.root, record.env, "server", server)
     assert (lease, server.handed, record.holds("")) == (Lease("server-1", 1), [(record.env, Lease("server-1", 1))], False), \
@@ -114,13 +123,17 @@ def test_an_environment_goes_to_the_server_only_once_it_has_taken_the_new_epoch_
 
 def test_syncing_sends_the_writes_that_waited_in_order_and_takes_in_what_happened_on_the_server_without_firing_features():
     record = fresh()
-    Waiting(record.root).hold("", "todo", "create", ["first"])
-    Waiting(record.root).hold("", "todo", "create", ["second"])
+    join(record, Server(record.root))
     record.hand_over("", "server-1")
+    for title in ("first", "second"):
+        request(record.root, Request(record.env, "todo", "create", [title], actor=USER))
+    assert ([held.asked.args for held in Waiting(record.root).waiting()], Outbox(record.root).waiting()) == ([["first"], ["second"]], []), \
+        "a write into a scope the server writes waits for the server, not for this machine to hold the scope again"
+    assert "still wait" in refused(lambda: hand(record.root, record.env, "here", Server(record.root))), "and is sent before the scope is taken back"
     server = Server(record.root)
     server.events_to_give = [Event(id=9000 + i, at=1.0, type="todo", n=900 + i, action="created", actor=AGENT, env=record.env) for i in range(2)]
-    assert sync(record, server) == {"sent": 2, "pulled": 2} and server.taken == ["first", "second"], "what waited goes oldest first, then the server's events come in"
-    assert sync(record, server) == {"sent": 0, "pulled": 0}, "nothing is sent or taken in twice"
+    assert sync(record, server) == Synced(2, 2) and server.taken == ["first", "second"], "what waited goes oldest first, then the server's events come in"
+    assert sync(record, server) == Synced(0, 0), "nothing is sent or taken in twice"
     assert [t.title for t in Todos(Record(record.root, record.env), actor=SYSTEM).all()] == [], "pulled events are in the log only, and no feature acted on them"
 
 
@@ -173,7 +186,7 @@ def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and
         gone = closed.getsockname()[1]
     began = time.time()
     assert "Connection refused" in refused(lambda: HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).hello()) and time.time() - began < 3, "a server that refuses the connection is met at once"
-    assert HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).send(Write("k", "", "todo", "create", ["x"])) is Sent.AWAY, "and a write sent to it is kept, not lost"
+    assert HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).send(Write("k", "", asked("x"))) is Sent.AWAY, "and a write sent to it is kept, not lost"
     with socket.socket() as stalled:
         stalled.bind(("127.0.0.1", 0))
         stalled.listen(1)
@@ -198,7 +211,7 @@ def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and
         assert "taken down" in refused(lambda: HttpTransport(f"http://127.0.0.1:{server.server_port}").hello()), "a server taken down answers 503 and the refusal says so"
         outcomes = []
         for Down.status in (503, 500, 400, 403):
-            outcomes.append(HttpTransport(f"http://127.0.0.1:{server.server_port}").send(Write("k", "", "todo", "create", ["x"])))
+            outcomes.append(HttpTransport(f"http://127.0.0.1:{server.server_port}").send(Write("k", "", asked("x"))))
         assert outcomes == [Sent.AWAY, Sent.AWAY, Sent.REFUSED, Sent.REFUSED], "a write the server failed on is tried again, and one it refused is not"
     finally:
         server.shutdown()
@@ -208,7 +221,7 @@ def test_a_sync_that_meets_a_server_down_an_epoch_change_or_an_interrupted_push_
     record = fresh()
     waiting = Waiting(record.root)
     for name in ("first", "second", "third"):
-        waiting.hold("", "todo", "create", [name])
+        waiting.hold("", asked(name))
     assert "does not answer" in refused(lambda: sync(record, Server(record.root, up=False))) and len(waiting.waiting()) == 3, "with the server down nothing is sent and every write is kept"
     moved = Server(record.root)
     answers = iter([moved.said, Hello(version(), Shape(PROTOCOL, moved.said.shape.migrations, 9), "server-1")])
@@ -217,22 +230,22 @@ def test_a_sync_that_meets_a_server_down_an_epoch_change_or_an_interrupted_push_
         "an epoch change in the middle of a sync stops it before anything is pulled, after what was sent has gone"
     again, taken, ran = Waiting(fresh().root), Applied(fresh().root), []
     for name in ("first", "second", "third"):
-        again.hold("", "todo", "create", [name])
+        again.hold("", asked(name))
 
     def interrupted(held):
-        if held.args[0] == "second":
+        if held.asked.args[0] == "second":
             raise OSError("the connection dropped")
-        return taken.apply(held, lambda write: ran.append(write.args[0]))
+        return taken.apply(held, lambda write: ran.append(write.asked.args[0]))
     try:
         again.flush(interrupted)
     except OSError:
         pass
-    assert ([w.args[0] for w in again.waiting()], ran) == (["second", "third"], ["first"]), "a push cut off in the middle keeps what the server did not take and drops what it did"
-    assert (again.flush(lambda held: taken.apply(held, lambda write: ran.append(write.args[0]))).sent, ran) == (2, ["first", "second", "third"]), "the next try sends the rest, and nothing arrives twice"
+    assert ([w.asked.args[0] for w in again.waiting()], ran) == (["second", "third"], ["first"]), "a push cut off in the middle keeps what the server did not take and drops what it did"
+    assert (again.flush(lambda held: taken.apply(held, lambda write: ran.append(write.asked.args[0]))).sent, ran) == (2, ["first", "second", "third"]), "the next try sends the rest, and nothing arrives twice"
     for name in ("fourth", "turned down", "fifth"):
-        waiting.hold("", "todo", "create", [name])
+        waiting.hold("", asked(name))
     server = Server(record.root)
-    assert (sync(record, server)["sent"], server.taken, waiting.waiting(), [held.args for held in waiting.refused()]) == (2, ["fourth", "fifth"], [], [["turned down"]]), \
+    assert (sync(record, server).sent, server.taken, waiting.waiting(), [held.asked.args for held in waiting.refused()]) == (2, ["fourth", "fifth"], [], [["turned down"]]), \
         "a write the server refused is set aside and the writes after it still go, in order"
     assert any("turned down changes" in n.title and "turned down" in n.brief for n in Notices(record, actor=SYSTEM).all()), "and a notice names what was set aside"
 

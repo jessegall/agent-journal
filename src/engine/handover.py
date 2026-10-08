@@ -3,18 +3,24 @@ from pathlib import Path
 
 from engine.machines import Lease, NotTheOwner
 from engine.offline import Waiting
+from engine.outbox import Outbox
 from engine.paths import environments
 from engine.record import RESOURCES
 from resources.base import Refused
 
 
 def ready_to_give(record, scope: str) -> None:
-    """Refuses unless this machine holds the scope and has nothing made here still waiting for the server."""
+    """Refuses unless this machine holds the scope and has nothing made here still waiting for the server or for another scope's holder."""
     if not record.holds(scope):
         raise NotTheOwner.of(record.scope_name(scope), Lease.read(record.scope_home(scope)))
-    waiting = Waiting(record.root).waiting()
+    nothing_waits(record, f"hand {record.scope_name(scope)} over")
+
+
+def nothing_waits(record, then: str) -> None:
+    """Refuses while writes made here still wait for the server or for another scope's holder."""
+    waiting = [*Waiting(record.root).waiting(), *Outbox(record.root).waiting()]
     if waiting:
-        raise Refused(f"{len(waiting)} writes made here still wait for the server: let them go first, then hand {record.scope_name(scope)} over")
+        raise Refused(f"{len(waiting)} writes made here still wait for the server: let them go first, then {then}")
 
 
 def give(record, scope: str, to: str) -> Lease:

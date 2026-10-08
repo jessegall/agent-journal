@@ -9,7 +9,8 @@ from engine import bus
 from engine.extension import Extension
 from engine.fields import Loaded
 from engine.markers import plain
-from engine.outbox import Outbox, Request
+from engine.offline import queue
+from engine.outbox import Request
 from engine.record import Record
 from resources.base import OWNER, PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
@@ -467,7 +468,7 @@ class Controller(Files, Links, Discussed):
         changed = []
         wanted = list(dict.fromkeys(int(n) for n in numbers))
         if not self.record.holds(self.resource.scope):
-            Outbox(self.record.root).send(Request(self.record.env, self.type, "read_all", [wanted], actor=self.actor))
+            queue(self.record, self.resource.scope, Request(self.record.env, self.type, "read_all", [wanted], actor=self.actor))
             return [self.load(n) for n in wanted]
         with self.record.locked(self.resource.scope):
             for n in wanted:
