@@ -1,11 +1,28 @@
 import {envState, focusOf, isActive} from "./journals.js";
 import {rows} from "../sync/rows.js";
 import {agentState} from "./ticketAgents.js";
+import {helperName} from "./helpers.js";
 
 const SILENT_AFTER = 300;
 const OWNED = /^(ticket|plan|helper):(\d+)$/;
 const LABELS = {ticket: (n) => `#${n}`, plan: (n) => `Plan ${n}`, helper: (n) => `Helper ${n}`};
 const PLAN_WAITS = {ready: "its plan waits for your approval", waiting: "its plan is at a checkpoint"};
+
+const NAMED_TASK = /^([^:]{2,32}): (.+)$/;
+const MAIN_AGENT = "Main agent";
+
+const ownerRow = (kind, n) => (kind ? rows(kind).find((r) => r.n === Number(n)) : null);
+
+export function splitTask(task) {
+    const named = NAMED_TASK.exec(task || "");
+    return named ? {name: named[1], job: named[2]} : {name: "Subagent", job: task || ""};
+}
+
+function nameOf(kind, n, row) {
+    if (kind === "helper") return row ? helperName(row) : LABELS.helper(n);
+    if (kind === "plan") return "Plan agent";
+    return kind ? "Ticket agent" : MAIN_AGENT;
+}
 
 const fileName = (path) => (path || "").split("/").pop();
 
@@ -25,7 +42,7 @@ function standing(e, plan, now) {
 
 function entryOf(e, now) {
     const [, kind = "", n = "0"] = OWNED.exec(e.owner) || [];
-    const row = kind ? rows(kind).find((r) => r.n === Number(n)) : null;
+    const row = ownerRow(kind, n);
     const plan = (e.plans || []).find((p) => p.status !== "done") || (e.plans || [])[0] || null;
     const focus = focusOf(e);
     const tool = e.agent && e.agent.tool ? `${e.agent.tool} ${fileName(e.agent.file)}`.trim() : "";
@@ -36,7 +53,8 @@ function entryOf(e, now) {
         env: e.name,
         kind,
         n: Number(n),
-        label: LABELS[kind] ? LABELS[kind](n) : e.owner,
+        label: LABELS[kind] ? LABELS[kind](n) : "",
+        name: nameOf(kind, n, row),
         title,
         now: [tool || (focus.known ? focus.title : ""), e.agent && e.agent.model].filter(Boolean).join(" · "),
         plan,
@@ -49,7 +67,7 @@ function entryOf(e, now) {
 
 function subagentsOf(e) {
     const [, kind = "", n = "0"] = OWNED.exec(e.owner) || [];
-    const parent = kind ? LABELS[kind](n) : "the main agent";
+    const parent = kind ? (kind === "helper" ? nameOf(kind, n, ownerRow(kind, n)) : LABELS[kind](n)) : "the main agent";
     return (e.subagents || []).map((sub) => ({
         key: `${e.name}:${sub.session}`,
         env: e.name,
@@ -60,7 +78,8 @@ function subagentsOf(e) {
         session: sub.session,
         label: "Subagent",
         of: `of ${parent}`,
-        title: sub.task || sub.session,
+        name: splitTask(sub.task).name,
+        title: splitTask(sub.task).job || sub.session,
         now: [sub.type, sub.model].filter(Boolean).join(" · "),
         plan: null,
         at: sub.running ? sub.active || sub.at : sub.ended || sub.at,
