@@ -41,7 +41,9 @@ def every_turn(agent) -> list:
 
 
 def turns(agent) -> list:
-    return [t for t in every_turn(agent) if t.has_agent_text]
+    """The turns an agent spoke, read from the saved cursor so a hook never parses the transcript from its first byte."""
+    provider = _settled_provider(agent)
+    return [t for t in provider.turns(Path(agent.transcript)) if t.has_agent_text] if provider else []
 
 
 def last_turn(agent):

@@ -291,7 +291,7 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
     made = take(project, "s1")
     assert [(m.repository, m.ref) for m in made] == [(".", f"{SNAPSHOT_REFS}/s1/project"), ("platform", f"{SNAPSHOT_REFS}/s1/platform")], \
         "each repository's snapshot is kept under a ref of the journal's, so it stays reachable"
-    assert (run("show", f"{made[0].ref}:a.txt"), run("ls-tree", "-r", "--name-only", made[0].ref).split(), run("show", f"{made[1].ref}:b.txt")) == ("two", ["a.txt"], "new"), \
+    assert (run("show", f"{made[0].ref}:a.txt"), run("ls-tree", "-r", "--name-only", made[0].ref).split(), run("show", f"{made[1].ref}:b.txt", cwd=project / "platform")) == ("two", ["a.txt"], "new"), \
         "it holds the working files as they stand, nested repositories apart, and leaves out the environment file and the journal's own record"
     from engine.snapshots import apply
     (project / "a.txt").write_text("changed afterwards")
