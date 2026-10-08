@@ -76,6 +76,7 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     record.hand_over("", "server-1")
     sync(record, Server(record.root))
     assert view(record, "https://server.example").synced_at > 0, "and after a sync it says when"
+    record.hand_over("", this_machine())
     monkeypatch.setenv("JOURNAL_ADDRESS", "journal.example.com")
     assert view(record, "").role == "the server", "a journal that runs on a server says that it is the server"
     monkeypatch.setattr("features.connection.feature.transport_for", lambda address: Server(record.root, up=False))
@@ -173,6 +174,8 @@ def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and
         def do_POST(self):
             self.send_response(503)
             self.end_headers()
+
+        do_GET = do_POST
 
         def log_message(self, *_):
             pass

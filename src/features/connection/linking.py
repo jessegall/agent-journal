@@ -1,4 +1,5 @@
 import os
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -70,15 +71,26 @@ def hand(record_root: Path, env: str, to: str, transport: Transport) -> Lease:
     return give(record, "", lease.machine)
 
 
+def heard(transport: Transport) -> Hello:
+    try:
+        return transport.hello()
+    except OSError as error:
+        raise Refused(f"the server does not answer: {error}") from error
+
+
 def sync(record, transport: Transport) -> dict:
     """Sends what was written here while the server was away, oldest first, then takes in what happened on the server in the scopes it holds, without firing features."""
+    epoch = heard(transport).shape.epoch
     sent = Waiting(record.root).flush(transport.send)
+    if heard(transport).shape.epoch != epoch:
+        raise Refused("the server has a new epoch since this sync began, so nothing is taken in; connect again to pull everything")
     pulled = 0
     for found in Record.every(record.root):
         if not found.holds(""):
             pulled += replay(found, "", transport.events("", found.env, found.event_log.cursor(pulled_cursor(""))))
     if not record.holds(PROJECT):
         pulled += replay(record, PROJECT, transport.events(PROJECT, record.env, record.event_log.cursor(pulled_cursor(PROJECT))))
+    record.state(STATE).set("synced_at", time.time())
     return {"sent": sent, "pulled": pulled}
 
 
@@ -106,3 +118,4 @@ def leave(record) -> None:
     """Disconnects: the server's address and what was learned of it are forgotten, and nothing already sent is taken back."""
     record.change_setting("connection", {"address": ""})
     record.state(STATE).remove("welcome")
+    record.state(STATE).remove("synced_at")
