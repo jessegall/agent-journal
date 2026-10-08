@@ -6,6 +6,7 @@ import {Player} from "./player.js";
 import {noticeReplay} from "./hint.js";
 import {opening, peek} from "../src/route.js";
 import {store} from "../src/state/store.js";
+import {watch} from "vue";
 import {lockReplay} from "./lock.js";
 import {forgetEarlierBuilds} from "./storage.js";
 import {framedAsPhone, onAPhone, phoneAddress} from "./view.js";
@@ -33,6 +34,7 @@ export async function install() {
     standIn.player.show = peek;
     standIn.player.close = () => opening([]);
     store.activity = false;
+    watch(() => store.booted, () => (store.settings = standIn.state.settings), {once: true});
     globalThis.demo = standIn;
     noticeReplay(standIn);
     lockReplay(standIn);
