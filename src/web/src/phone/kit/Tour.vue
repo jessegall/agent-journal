@@ -18,13 +18,27 @@ function unlight() {
     lit = [];
 }
 
+function visibleTop() {
+    const probe = document.body.appendChild(document.createElement("div"));
+    probe.style.cssText = "position: fixed; top: 0; height: env(safe-area-inset-top); visibility: hidden";
+    const top = probe.offsetHeight;
+    probe.remove();
+    return top;
+}
+
+function ring(el, top) {
+    el.style.setProperty("--spot-hidden", `${Math.max(0, top - el.getBoundingClientRect().top)}px`);
+    el.classList.add("spot");
+}
+
 async function light() {
     unlight();
     if (!step.value) return;
     if (step.value.tab && step.value.tab !== props.tab) emit("tab", step.value.tab);
     await nextTick();
     lit = [...document.querySelectorAll(step.value.target)];
-    lit.forEach((el) => el.classList.add("spot"));
+    const top = visibleTop();
+    lit.forEach((el) => ring(el, top));
 }
 
 watch([touring, () => props.tab], light, {immediate: true, flush: "post"});
