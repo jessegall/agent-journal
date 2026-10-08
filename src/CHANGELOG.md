@@ -9,6 +9,9 @@ newer version than the last one it saw is handed the same.
 - A message gets one answer from the agent: a second reply to it is refused and points at the first, to be added to there.
 - Answering a choice in your own words now closes it: its other buttons go, just as when you press one.
 - A row that already asks through its own choice buttons is not asked the same thing again as a question, and a question about a document shows in the document and the chat as one.
+- The agent is stopped while its working folder sits in another checkout, until it goes back, so a compaction there can no longer move it into another environment.
+- The chat and the phone say the conversation was compacted, as Claude Code calls it.
+- A type's folder removed while the journal runs is made again on the next write, and the journal command on your path now sends every command to the server and runs it locally when the server does not know it, so a journal command from another version never refuses one.
 
 ## 2.259.0 — Triggers that watch the journal, and a calmer dump window
 - A trigger can now fire on something true in the journal instead of words: a message of yours unanswered or unread for a while, work open without a log entry, the agent idle or its context full, a question left open, or ready to-dos with no work open. It reminds the agent, tells it what to do, or holds its writes until the matter is dealt with. Make and edit one in the viewer under Triggers, choosing 'When something in the journal is true'.
