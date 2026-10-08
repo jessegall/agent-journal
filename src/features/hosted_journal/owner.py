@@ -142,6 +142,13 @@ class Logins:
             kept.pop(hashed(token), None)
             self.vault.write(LOGINS, kept)
 
+    def close_member(self, member: str) -> int:
+        with self.vault.held():
+            kept = self.vault.read(LOGINS)
+            theirs = [key for key, login in kept.items() if KeptLogin.from_json(login).member == member]
+            self.vault.write(LOGINS, {key: login for key, login in kept.items() if key not in theirs})
+        return len(theirs)
+
     def close_all(self) -> int:
         with self.vault.held():
             count = len(self.vault.read(LOGINS))

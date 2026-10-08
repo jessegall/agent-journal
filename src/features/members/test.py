@@ -2,8 +2,11 @@ import importlib
 import json
 import os
 import re
+import socket
 import subprocess
+import threading
 import time
+from contextlib import suppress
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
 
@@ -195,3 +198,45 @@ def test_rows_name_who_made_them_older_rows_name_the_owner_and_everyone_sees_who
     migration.run(hosted.record.root)
     assert rows.peek(older.n).data[WRITER] == "owner" and WRITER not in rows.peek(by_agent.n).data, "a row a person wrote before names the owner"
     assert rows.peek(theirs["n"]).data[WRITER] == bea and migration.run(hosted.record.root).startswith("0 rows"), "the migration keeps every writer and runs once"
+
+
+def stream_of(hosted: Hosted, cookie: str) -> socket.socket:
+    """A live stream held open through the login page, as a member's browser holds one."""
+    held = socket.create_connection(("127.0.0.1", hosted.port), timeout=10)
+    held.sendall(f"GET /api/{hosted.record.env}/stream HTTP/1.1\r\nHost: 127.0.0.1:{hosted.port}\r\nCookie: {cookie}\r\nAccept: text/event-stream\r\n\r\n".encode())
+    assert held.recv(64).startswith(b"HTTP/1.1 200")
+    return held
+
+
+def drained(held: socket.socket) -> None:
+    """Reads the stream until the login page closes it."""
+    with suppress(OSError):
+        while held.recv(4096):
+            pass
+
+
+def test_leaving_removal_and_logging_out_end_a_members_live_sessions_at_once_and_their_rows_keep_their_name(hosted):
+    owner = with_members(hosted)
+    ada, bea, cleo = (member_login(hosted, name, Role.WRITER) for name in ("Ada", "Bea", "Cleo"))
+    roster = Roster(hosted.vault)
+    ids = {name: roster.named(name).id for name in ("Ada", "Bea", "Cleo")}
+    written = json.loads(sent(hosted, f"/api/{hosted.record.env}/todo", {"title": "Ada's to-do"}, ada).text)
+    held = stream_of(hosted, ada)
+    cut = threading.Thread(target=drained, args=(held,))
+    cut.start()
+    assert sent(hosted, "/api/hosting/members/remove", {"member": ids["Ada"]}, owner).status == 200
+    cut.join(5)
+    assert not cut.is_alive(), "removing a member cuts the live stream their browser holds"
+    assert hosted.call("GET", "/api/hosting/me", Cookie=ada).status == 401, "and their login ends at once"
+    assert hosted.call("POST", "/member", {"name": "Ada", "password": MEMBER_PASSWORD}).status == 401, "a removed member cannot log in again"
+    left = sent(hosted, "/api/hosting/leave", {}, bea)
+    assert left.status == 200 and "Max-Age=0" in left.headers["set-cookie"] and hosted.call("GET", "/api/hosting/me", Cookie=bea).status == 401
+    assert sent(hosted, "/api/hosting/leave", {}, owner).status == 403, "the owner does not leave their own journal"
+    other = f"__Host-journal={Logins(hosted.vault).open(7, 'second device', ids['Cleo'])}"
+    assert json.loads(sent(hosted, "/api/hosting/members/end-logins", {"member": ids["Cleo"]}, owner).text)["ended"] == 2
+    assert [hosted.call("GET", "/api/hosting/me", Cookie=login).status for login in (cleo, other)] == [401, 401], "logging a member out ends every device"
+    assert hosted.call("POST", "/member", {"name": "Cleo", "password": MEMBER_PASSWORD}).status == 303, "a member logged out logs in again"
+    listed = {member["name"]: member for member in json.loads(hosted.call("GET", "/api/hosting/members", Cookie=owner).text)["members"]}
+    assert (listed["Ada"]["departed"], listed["Bea"]["departed"], listed["Cleo"]["departed"]) == ("removed", "left", None)
+    assert Todos(hosted.record, actor=SYSTEM).load(written["n"]).data[WRITER] == ids["Ada"], "what a removed member wrote keeps naming them"
+    assert sent(hosted, "/api/hosting/members", {"name": "Ada"}, owner).status == 201, "a name a departed member had can be invited again"

@@ -1,8 +1,11 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
+import {loginPage} from "../api/transport.js";
 import {loadPeople, people} from "../composables/people.js";
 import {roleTitle} from "../domain/members.js";
+import AlertDialog from "../kit/AlertDialog.vue";
+import Btn from "../kit/Btn.vue";
 import CopyButton from "../kit/CopyButton.vue";
 import Dialog from "../kit/Dialog.vue";
 import ListRow from "../kit/ListRow.vue";
@@ -15,6 +18,7 @@ const emit = defineEmits(["close"]);
 const REFRESH_MS = 15000;
 const invited = ref(null);
 const failure = ref("");
+const confirming = ref(null);
 let timer = 0;
 
 async function attempt(work) {
@@ -29,6 +33,29 @@ async function attempt(work) {
 
 const invite = (name, role) => attempt(async () => (invited.value = await api.inviteMember(name, role)));
 const assign = (member, role) => attempt(() => api.assignRole(member.id, role));
+const endLogins = (member) => attempt(() => api.endLogins(member.id));
+
+const askRemove = (member) =>
+    (confirming.value = {
+        title: `Remove ${member.name}?`,
+        text: `${member.name} is logged out now and cannot log in again. What they wrote stays in the journal under their name.`,
+        label: "Remove",
+        act: () => attempt(() => api.removeMember(member.id)),
+    });
+
+const askLeave = () =>
+    (confirming.value = {
+        title: "Leave this journal?",
+        text: "You are logged out now and cannot log in again unless the owner invites you once more. What you wrote stays under your name.",
+        label: "Leave",
+        act: () => attempt(async () => loginPage.open((await api.leaveJournal()).login)),
+    });
+
+async function confirm() {
+    const act = confirming.value.act;
+    confirming.value = null;
+    await act();
+}
 
 onMounted(() => {
     loadPeople();
@@ -50,7 +77,13 @@ onUnmounted(() => clearInterval(timer));
                     <ListRow :title="people.owner.name" :text="people.owner.connected ? 'Connected now' : 'Not connected'" />
                 </template>
                 <template v-for="member in people.members" :key="member.id">
-                    <MemberRow :member="member" :owner="me.owner" @assign="(role) => assign(member, role)" />
+                    <MemberRow
+                        :member="member"
+                        :owner="me.owner"
+                        @assign="(role) => assign(member, role)"
+                        @end-logins="endLogins(member)"
+                        @remove="askRemove(member)"
+                    />
                 </template>
                 <template v-if="!people.members.length">
                     <p class="quiet">No one else can log in to this journal.</p>
@@ -65,11 +98,25 @@ onUnmounted(() => clearInterval(timer));
                     </div>
                 </template>
             </template>
+            <template v-if="!me.owner">
+                <div class="leave">
+                    <Btn small @click="askLeave">Leave this journal</Btn>
+                </div>
+            </template>
             <template v-if="failure">
                 <p class="quiet" role="alert">{{ failure }}</p>
             </template>
         </div>
     </Dialog>
+    <template v-if="confirming">
+        <AlertDialog :title="confirming.title">
+            <p>{{ confirming.text }}</p>
+            <template #actions>
+                <Btn small @click="confirming = null">Cancel</Btn>
+                <Btn kind="primary" small @click="confirm">{{ confirming.label }}</Btn>
+            </template>
+        </AlertDialog>
+    </template>
 </template>
 
 <style scoped>
@@ -98,6 +145,11 @@ onUnmounted(() => clearInterval(timer));
 
 .quiet {
     color: var(--text-3);
+}
+
+.leave {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .link {
