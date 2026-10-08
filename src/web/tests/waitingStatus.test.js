@@ -1,14 +1,12 @@
-import {createApp, h, nextTick, reactive} from "vue";
+import {createApp, h, reactive} from "vue";
 import {beforeEach, describe, expect, test} from "vitest";
 import WaitEdge from "../src/kit/WaitEdge.vue";
 import {lineOf, stateOf, waitingFor, waitingOn, wordOf} from "../src/domain/agentState.js";
 import {ref} from "vue";
 import {useWaiting} from "../src/composables/waiting.js";
 import {phoneWaiting} from "../src/phone/agentWait.js";
+import {flush} from "./flush.js";
 
-const flush = async () => {
-    for (let i = 0; i < 5; i++) await nextTick();
-};
 const NOW = 1_000_000;
 const work = (data = {}) => ({n: 1, title: "Check", completed: 0, data: {awaiting: "the test suite", awaiting_since: NOW - 240, ...data}});
 const agent = (status = "idle") => ({data: {status}});

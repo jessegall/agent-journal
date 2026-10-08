@@ -1,15 +1,9 @@
 import {runScenarios} from "../harness.mjs";
-import {home, PAIR, PHONE, pairedState, SHOWN, tab} from "./paired.mjs";
+import {openPlace, PAIR, pairedState, PHONE, SHOWN} from "./paired.mjs";
 
 const MESSAGES = /\/p\/message$/;
 
 const state = await pairedState();
-
-async function place(page, label) {
-    await home(page);
-    await tab(page, "Everything");
-    await page.getByRole("button", {name: new RegExp(`^${label}`)}).click();
-}
 
 const sheet = (page) => page.getByRole("dialog");
 
@@ -17,12 +11,12 @@ await runScenarios(
     PAIR,
     {
         async "a plan shows its phase and how many of its to-dos are done"(page) {
-            await place(page, "Plans");
+            await openPlace(page, "Plans");
             await page.getByText("Phase 1 of 1: Watering").waitFor({timeout: SHOWN});
             await page.getByText("0 of 1 to-do done").waitFor();
         },
         async "a suggestion is adjusted from its row and shows among the closed"(page) {
-            await place(page, "Suggestions");
+            await openPlace(page, "Suggestions");
             await page.getByRole("button", {name: "Everything you can do with Suggestion 1"}).click();
             await sheet(page)
                 .getByRole("button", {name: /^Change it first/})
@@ -34,7 +28,7 @@ await runScenarios(
             await page.getByText("Adjusted").waitFor({timeout: SHOWN});
         },
         async "a fact closed from its row opens again with Undo"(page) {
-            await place(page, "Facts");
+            await openPlace(page, "Facts");
             await page.getByRole("button", {name: "Everything you can do with Fact 1"}).click();
             await sheet(page)
                 .getByRole("button", {name: /^Close the fact/})
@@ -45,7 +39,7 @@ await runScenarios(
             await page.getByRole("button", {name: "The roses face south"}).waitFor({timeout: SHOWN});
         },
         async "a fact moves to another environment from its row"(page) {
-            await place(page, "Facts");
+            await openPlace(page, "Facts");
             await page.getByRole("button", {name: "Everything you can do with Fact 1"}).click();
             await sheet(page).getByRole("button", {name: "Move to another environment"}).click();
             await sheet(page).getByLabel("Environment").fill("garden");
@@ -54,7 +48,7 @@ await runScenarios(
             await page.getByText("No open facts").waitFor({timeout: SHOWN});
         },
         async "an unread question is marked as read from its row"(page) {
-            await place(page, "Questions");
+            await openPlace(page, "Questions");
             await page.getByRole("button", {name: "Everything you can do with Question 1"}).click();
             await sheet(page).getByRole("button", {name: "Mark as read"}).click();
             await page.getByText("Marked question 1 as read").waitFor({timeout: SHOWN});
@@ -64,7 +58,7 @@ await runScenarios(
                 throw new Error("the question still offers Mark as read");
         },
         async "documents sit on the shelf of their collection"(page) {
-            await place(page, "Documents");
+            await openPlace(page, "Documents");
             await page.getByRole("tab", {name: /^Garden/}).click();
             await page.getByRole("button", {name: "Garden notes"}).waitFor({timeout: SHOWN});
             await page.getByRole("tab", {name: /^Not in a collection/}).click();
@@ -73,7 +67,7 @@ await runScenarios(
         async "lines of a project file go to the agent with a comment"(page) {
             const sent = [];
             await page.route(MESSAGES, (route) => (sent.push(route.request().postDataJSON().brief), route.fallback()));
-            await place(page, "Project files");
+            await openPlace(page, "Project files");
             await page.getByRole("button", {name: /^roses\.txt/}).click();
             await page.getByRole("button", {name: "Line 2"}).click();
             await page.getByRole("button", {name: "Ask the agent about line 2"}).click();
@@ -89,7 +83,7 @@ await runScenarios(
                 throw new Error(`the agent was sent: ${JSON.stringify(sent)}`);
         },
         async "an environment is made and renamed on the phone"(page) {
-            await place(page, "Environments");
+            await openPlace(page, "Environments");
             await page.getByRole("button", {name: "New environment"}).click();
             await sheet(page).getByLabel("Name").fill("shed");
             await sheet(page).getByRole("button", {name: "Create"}).click();
@@ -103,7 +97,7 @@ await runScenarios(
             await page.getByRole("button", {name: /^barn/}).waitFor({timeout: SHOWN});
         },
         async "the journals page says what needs you in each environment"(page) {
-            await place(page, "Journals");
+            await openPlace(page, "Journals");
             await page
                 .getByText(/· \d+ need you/)
                 .first()
@@ -114,7 +108,7 @@ await runScenarios(
                 .waitFor();
         },
         async "an empty organization asks the agent to draft one"(page) {
-            await place(page, "Organization");
+            await openPlace(page, "Organization");
             await page.getByRole("button", {name: "Ask the agent to draft one"}).click();
             await page.getByText("Asked the agent to draft it").waitFor({timeout: SHOWN});
         },

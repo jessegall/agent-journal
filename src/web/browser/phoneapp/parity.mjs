@@ -1,15 +1,9 @@
 import {runScenarios} from "../harness.mjs";
-import {allowRuns, home, PAIR, PHONE, pairedState, SHOWN, tab} from "./paired.mjs";
+import {allowRuns, home, openPlace, PAIR, pairedState, PHONE, SHOWN, tab} from "./paired.mjs";
 
 const state = await pairedState();
 const sheet = (page) => page.getByRole("dialog");
 const row = (page, name) => page.getByRole("button", {name, exact: true});
-
-async function everything(page, label) {
-    await home(page);
-    await tab(page, "Everything");
-    await page.getByRole("button", {name: new RegExp(`^${label}`)}).click();
-}
 
 async function todos(page) {
     await home(page);
@@ -59,7 +53,7 @@ await runScenarios(
             await page.getByText(/^Created board/).waitFor({timeout: SHOWN});
         },
         async "a plan asks for a review with a critique template and shows its timeline"(page) {
-            await everything(page, "Plans");
+            await openPlace(page, "Plans");
             await page.getByRole("button", {name: /Keep the garden/}).first().click();
             await page.getByRole("button", {name: "Ask for a review"}).click();
             await page.getByText("Template", {exact: true}).waitFor({timeout: SHOWN});
@@ -69,20 +63,20 @@ await runScenarios(
             await page.getByText(/Nothing yet|#1 Water the plants/).first().waitFor({timeout: SHOWN});
         },
         async "a document with versions steps back to an earlier one"(page) {
-            await everything(page, "Documents");
+            await openPlace(page, "Documents");
             await page.getByRole("button", {name: /Garden notes/}).first().click();
             await page.getByLabel("Versions").waitFor({timeout: SHOWN});
             await page.getByRole("button", {name: "Earlier version"}).click();
             await page.getByText(/^Version 1 of/).waitFor({timeout: SHOWN});
         },
         async "a document's share sheet lists its links and stops them"(page) {
-            await everything(page, "Documents");
+            await openPlace(page, "Documents");
             await page.getByRole("button", {name: /Garden notes/}).first().click();
             await page.getByRole("button", {name: /^More/}).click();
             await sheet(page).getByRole("button", {name: /^Stop sharing/}).waitFor({timeout: SHOWN});
         },
         async "search finds an item by its words and a place by its name"(page) {
-            await everything(page, "Search");
+            await openPlace(page, "Search");
             await page.getByLabel("Search places, commands and items").fill("roses");
             await page.getByRole("button", {name: /The roses face south/}).waitFor({timeout: SHOWN});
             await page.getByLabel("Search places, commands and items").fill("environments");
@@ -101,7 +95,7 @@ await runScenarios(
         },
         async "adding a plugin uses the kit field and its Cancel"(page) {
             await allowRuns(page);
-            await everything(page, "Plugins");
+            await openPlace(page, "Plugins");
             await page.getByRole("button", {name: "Add a plugin"}).last().click();
             await page.getByRole("button", {name: /Install a plugin/}).click();
             await sheet(page).getByLabel("Where it comes from").fill("/nowhere");

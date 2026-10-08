@@ -1,27 +1,19 @@
 <script setup>
-import {computed, inject, onMounted, onUnmounted, ref} from "vue";
+import {computed, inject, ref} from "vue";
+import {useSuggestionNote} from "../composables/suggestionNote.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import Icon from "../kit/Icon.vue";
 import SuggestionCard from "./SuggestionCard.vue";
 import {CLOSE_NOTE, hoursText, isOpen, phaseOf} from "../domain/suggestions.js";
 
-const SEEN_MS = 2000;
 const props = defineProps({suggestion: {type: Object, required: true}, hours: {type: Number, required: true}});
 const emit = defineEmits(["close"]);
 const acts = inject("suggestionActs");
 const writing = ref(false);
 const escNote = ref(false);
 const open = computed(() => isOpen(phaseOf(props.suggestion)));
-let noted = false;
-let timer = 0;
-
-function note() {
-    if (noted) return;
-    noted = true;
-    clearTimeout(timer);
-    acts.noteWindow(props.suggestion.n).catch(() => (noted = false));
-}
+const note = useSuggestionNote(acts, () => props.suggestion);
 
 function close() {
     note();
@@ -32,9 +24,6 @@ function escape() {
     if (writing.value) return (escNote.value = true);
     close();
 }
-
-onMounted(() => (timer = setTimeout(note, SEEN_MS)));
-onUnmounted(() => clearTimeout(timer));
 </script>
 
 <template>

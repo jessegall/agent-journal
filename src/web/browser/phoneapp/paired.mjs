@@ -25,10 +25,16 @@ export async function allowRuns(page) {
 }
 
 export async function allowOnComputer(page) {
-    const computer = await page.context().browser().newPage({viewport: {width: 1280, height: 900}});
+    const computer = await page
+        .context()
+        .browser()
+        .newPage({viewport: {width: 1280, height: 900}});
     try {
         await computer.goto(DESK);
-        await computer.locator(".chat-notice", {hasText: "Set up Face ID for phone"}).getByRole("button", {name: "Allow", exact: true}).click({timeout: SHOWN});
+        await computer
+            .locator(".chat-notice", {hasText: "Set up Face ID for phone"})
+            .getByRole("button", {name: "Allow", exact: true})
+            .click({timeout: SHOWN});
     } finally {
         await computer.close();
     }
@@ -40,3 +46,9 @@ export const home = async (page) => {
     await page.goto(new URL("./", PAIR).href);
     await page.getByPlaceholder("Message the agent").waitFor();
 };
+
+export async function openPlace(page, label) {
+    await home(page);
+    await tab(page, "Everything");
+    await page.getByRole("button", {name: new RegExp(`^${label}`)}).click();
+}

@@ -23,33 +23,35 @@ const empty = computed(() => props.doc && !props.doc.abstract && !props.doc.brie
                 {{ searching ? "Clear the search to see every document again." : "Choose a document on the left to see its text here." }}
             </EmptyState>
         </template>
-        <article v-else :key="doc.ref" class="preview-document">
-            <header class="preview-top">
-                <span>This is a preview. Open the whole document to edit, comment, share or close it.</span>
-                <Btn kind="primary" @click="emit('open', doc)">Open the whole document</Btn>
-                <Btn kind="icon" v-tip="'Hide the preview'" aria-label="Hide the preview" @click="emit('hide')">×</Btn>
-            </header>
-            <div class="preview-content">
-                <p class="preview-meta">Document {{ doc.n }} · {{ state.label }} · changed {{ ago(doc.updated || doc.created) }}</p>
-                <h2><MarkedText :text="doc.title" :words="words" /></h2>
-                <template v-if="['answer', 'approve', 'answered'].includes(state.key)"><ChoiceCard :resource="doc" preview /></template>
-                <template v-if="state.key === 'writing'">
-                    <p class="preview-note">
-                        {{ empty ? "No text yet. " : "" }}The agent is still writing this document. It becomes final when finished.
-                    </p>
-                </template>
-                <template v-if="empty && state.key !== 'writing'"><p class="preview-note">No text yet.</p></template>
-                <template v-if="doc.abstract"><TextDisplay :text="doc.abstract" /></template>
-                <template v-if="doc.brief"><TextDisplay :text="doc.brief" /></template>
-                <template v-for="section in doc.sections" :key="section.title">
-                    <section class="preview-section">
-                        <h3>{{ section.title }}</h3>
-                        <TextDisplay :text="section.body" />
-                    </section>
-                </template>
-                <template v-if="files.length"><ResourceFiles :resource="doc" :files="files" /></template>
-            </div>
-        </article>
+        <template v-else>
+            <article :key="doc.ref" class="preview-document">
+                <header class="preview-top">
+                    <span>This is a preview. Open the whole document to edit, comment, share or close it.</span>
+                    <Btn kind="primary" @click="emit('open', doc)">Open the whole document</Btn>
+                    <Btn kind="icon" v-tip="'Hide the preview'" aria-label="Hide the preview" @click="emit('hide')">×</Btn>
+                </header>
+                <div class="preview-content">
+                    <p class="preview-meta">Document {{ doc.n }} · {{ state.label }} · changed {{ ago(doc.updated || doc.created) }}</p>
+                    <h2><MarkedText :text="doc.title" :words="words" /></h2>
+                    <template v-if="['answer', 'approve', 'answered'].includes(state.key)"><ChoiceCard :resource="doc" preview /></template>
+                    <template v-if="state.key === 'writing'">
+                        <p class="preview-note">
+                            {{ empty ? "No text yet. " : "" }}The agent is still writing this document. It becomes final when finished.
+                        </p>
+                    </template>
+                    <template v-if="empty && state.key !== 'writing'"><p class="preview-note">No text yet.</p></template>
+                    <template v-if="doc.abstract"><TextDisplay :text="doc.abstract" /></template>
+                    <template v-if="doc.brief"><TextDisplay :text="doc.brief" /></template>
+                    <template v-for="section in doc.sections" :key="section.title">
+                        <section class="preview-section">
+                            <h3>{{ section.title }}</h3>
+                            <TextDisplay :text="section.body" />
+                        </section>
+                    </template>
+                    <template v-if="files.length"><ResourceFiles :resource="doc" :files="files" /></template>
+                </div>
+            </article>
+        </template>
     </div>
 </template>
 

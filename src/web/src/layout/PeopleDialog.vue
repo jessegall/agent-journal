@@ -65,6 +65,7 @@ onMounted(() => {
     timer = setInterval(loadPeople, REFRESH_MS);
 });
 onUnmounted(() => clearInterval(timer));
+const owner = computed(() => people.value.owner);
 </script>
 
 <template>
@@ -76,8 +77,8 @@ onUnmounted(() => clearInterval(timer));
             <AbilityList :abilities="me.abilities" />
             <section class="members" aria-label="Members">
                 <h3 class="heading">Members</h3>
-                <template v-if="people.owner">
-                    <ListRow :title="people.owner.name" :text="people.owner.connected ? 'Connected now' : 'Not connected'" />
+                <template v-if="owner">
+                    <ListRow :title="owner.name" :text="owner.connected ? 'Connected now' : 'Not connected'" />
                 </template>
                 <template v-for="member in people.members" :key="member.id">
                     <MemberRow

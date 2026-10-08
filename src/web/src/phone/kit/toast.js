@@ -29,3 +29,12 @@ export function undoToast() {
     dismissToast();
     undo?.();
 }
+
+export async function copyShown(text, what) {
+    try {
+        await navigator.clipboard.writeText(text);
+        toast(`The ${what} is copied`);
+    } catch {
+        toast(`Could not copy the ${what}`);
+    }
+}

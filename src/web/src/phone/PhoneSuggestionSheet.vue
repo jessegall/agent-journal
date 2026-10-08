@@ -1,11 +1,11 @@
 <script setup>
 import {computed, inject, nextTick, onMounted, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
+import {useSuggestionNote} from "../composables/suggestionNote.js";
 import PhoneSheet from "./PhoneSheet.vue";
 import SuggestionCard from "../chat/SuggestionCard.vue";
 import {CLOSE_NOTE, hoursText, isOpen, phaseOf} from "../domain/suggestions.js";
 
-const SEEN_MS = 2000;
 const MARKED = "suggestion";
 const props = defineProps({suggestion: {type: Object, required: true}, hours: {type: Number, required: true}});
 const emit = defineEmits(["close"]);
@@ -13,15 +13,7 @@ const acts = inject("suggestionActs");
 const sheet = ref(null);
 const title = ref(null);
 const open = computed(() => isOpen(phaseOf(props.suggestion)));
-let noted = false;
-let timer = 0;
-
-function note() {
-    if (noted) return;
-    noted = true;
-    clearTimeout(timer);
-    acts.noteWindow(props.suggestion.n).catch(() => (noted = false));
-}
+const note = useSuggestionNote(acts, () => props.suggestion);
 
 function gone() {
     note();
@@ -34,13 +26,11 @@ const backed = (event) => event.state?.sheet !== MARKED && sheet.value?.close();
 onMounted(() => {
     history.pushState({...history.state, sheet: MARKED}, "");
     window.addEventListener("popstate", backed);
-    timer = setTimeout(note, SEEN_MS);
     nextTick(() => title.value?.focus({preventScroll: true}));
 });
 
 onUnmounted(() => {
     window.removeEventListener("popstate", backed);
-    clearTimeout(timer);
 });
 </script>
 
