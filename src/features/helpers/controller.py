@@ -9,7 +9,7 @@ import resources.types as resources_module
 from controllers.base import Controller
 from agents.terminal import prompted
 from controllers.requests import request
-from controllers.types import Agents, Environments, Messages, Nudges, Todos
+from controllers.types import Agents, Environments, Messages, Todos
 from engine import attic, bus
 from engine.outbox import Request
 from engine.record import Record
@@ -292,9 +292,7 @@ class Helpers(Controller):
         named = f"; this branch has commits {', '.join(lacking)} that your branch lacks" if lacking else ""
         tests = written_tests(home, row)
         named += f"; tests it wrote, for you to run: {', '.join(tests)}" if tests else ""
-        Nudges(home, actor=SYSTEM).to_primary(titled(f"helper {row.n}, {row.name}, reported in message {message.n}"),
-                                               f"read it, then journal helper finish {row.n} once its work is taken or dropped{named}",
-                                               asks="helpers.reported", until=["helper.completed", "helper.deleted"], rows=[row.ref])
+        features.FEATURES["helpers"].to_primary(home, "reported", n=row.n, name=row.name, message=message.n, branch=named, rows=[row.ref, message.ref])
 
     @action(network=True)
     def stop(self, n: int):
