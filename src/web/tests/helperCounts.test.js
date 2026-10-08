@@ -1,5 +1,4 @@
-// @vitest-environment node
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, test} from "vitest";
 import {agentCounts, helperCounts, helperWord, isWorking} from "../src/domain/helpers.js";
 
 const rows = [
