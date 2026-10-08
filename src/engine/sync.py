@@ -1,11 +1,13 @@
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import StrEnum
 from pathlib import Path
 
-from resources.base import Refused
+from engine import bus
+from resources.base import PROJECT, Event, Refused
 
 PROTOCOL = 1
+ENVIRONMENT = "environment"
 OLDEST_CLIENT_PROTOCOL = 1
 
 NEVER_TRAVELS_PATHS = ("runtime", "phone-push.json", "vault", "secrets")
@@ -107,3 +109,23 @@ def connect(client: Hello, server: Hello) -> Welcome:
     ours, theirs = numbered(client.version), numbered(server.version)
     release = Release.SAME if ours == theirs else Release.BEHIND if ours < theirs else Release.AHEAD
     return Welcome(release, client.shape.compared(server.shape))
+
+
+def pulled_cursor(scope: str) -> str:
+    return f"pulled-{scope or ENVIRONMENT}"
+
+
+def replay(record, scope: str, events: list[Event]) -> int:
+    """Puts events pulled from the server into this machine's log as already handled, so no feature fires on them, and moves the scope's own cursor; answers how many were new."""
+    log = record.event_log.project if scope == PROJECT else record.event_log
+    cursor = pulled_cursor(scope)
+    seen = record.event_log.cursor(cursor)
+    fresh = sorted((event for event in events if event.id > seen), key=lambda event: event.id)
+    with record.locked(scope):
+        for event in fresh:
+            log.append(replace(event, handled=True))
+    for event in fresh:
+        bus.tell_watchers(event, record)
+    if fresh:
+        record.event_log.set_cursor(cursor, fresh[-1].id)
+    return len(fresh)
