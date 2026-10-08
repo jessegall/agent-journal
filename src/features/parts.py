@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, ClassVar
 from controllers.base import Arguments
 from controllers.types import Agents, Environments
 from engine.events.resources import AgentChanged
+from engine.gates import Runs
 from engine.reach import Reach
 from engine.state import State
 from engine.wording import digest
@@ -150,7 +151,7 @@ class TextFormatter:
 class ToolInterceptor:
     reach: ClassVar[Reach]
     behaviour: ClassVar[str | None] = None
-    refuses: ClassVar[bool] = True
+    runs: ClassVar[Runs]
     limit: ClassVar[str] = ""
     steps_aside: ClassVar[str] = ""
 

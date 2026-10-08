@@ -2,6 +2,7 @@ from pathlib import Path
 
 from engine.reach import Reach
 from features.parts import AgentContext, ToolInterceptor
+from engine.gates import Runs
 from features.secrets.values import secrets_folder
 
 NAMED = ("agent-journal/secrets", "agent-journal\\secrets")
@@ -9,6 +10,7 @@ NAMED = ("agent-journal/secrets", "agent-journal\\secrets")
 
 class RefuseSecretsFile(ToolInterceptor):
     reach = Reach.BOTH
+    runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         folder = secrets_folder().resolve()

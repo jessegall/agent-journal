@@ -5,6 +5,7 @@ from engine.events.engine import CommandRan
 from engine.events.resources import CommentCreated
 from engine.journal_calls import parsed
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
+from engine.gates import Runs
 from features.sharing.visitors import AGREEMENT, UNAGREED, hold, read_now
 from resources.base import SYSTEM
 from engine.reach import Reach
@@ -16,6 +17,7 @@ USER_ACTOR = re.compile(r"(?:^|[\s?&])(?:--as(?:=|\s+)|JOURNAL_ACTOR\s*=|actor\s
 
 class RefuseClaimedUser(ToolInterceptor):
     reach = Reach.BOTH
+    runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         if any(USER_ACTOR.search(command) for command in call.commands):
@@ -40,6 +42,7 @@ class HoldOnVisitorComment(Handler):
 
 class RefuseUntilAgreed(ToolInterceptor):
     reach = Reach.BOTH
+    runs = Runs.SYNC
     def intercept(self, context: AgentContext, call) -> str:
         held = context.agent.row.data.get(UNAGREED, [])
         if not held or len(call.commands) == 1 and only_agree(call.commands[0]):

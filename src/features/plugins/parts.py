@@ -9,6 +9,7 @@ from engine.events.engine import ClockTicked
 from engine.events.resources import ResourceEvent
 from engine.services import DOWN, want
 from features.parts import ActionInterceptor, Canceler, Context, Handler, TextFormatter, ToolInterceptor
+from engine.gates import Runs
 from engine.wording import fill
 from features.plugins.lifecycle import changed_on_disk, clear, reread
 from features.plugins.declared import called, declared, named
@@ -61,6 +62,7 @@ class PluginChatRules(TextFormatter):
 
 class AskPluginsToRefuse(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.SYNC
     def intercept(self, context: Context, call_) -> str:
         record, hook = context.record, context.hook
         writes = command_effects.writes(hook)

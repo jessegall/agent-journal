@@ -1,6 +1,6 @@
 import re
 
-from engine.gates import held
+from engine.gates import Runs, held
 from engine.reach import Reach
 from features.parts import AgentContext, ToolInterceptor
 from providers import command_effects
@@ -8,6 +8,7 @@ from providers import command_effects
 
 class RefuseHeldWrites(ToolInterceptor):
     reach = Reach.BOTH
+    runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         return held(context.record, context.agent.session, context.provider.is_subagent(context.hook)) if command_effects.writes(context.hook) else ""
@@ -27,6 +28,7 @@ def only_waits(shell: str) -> bool:
 
 class RefuseWaitingInTheShell(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         shell = call.shell_command

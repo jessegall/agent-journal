@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+from enum import StrEnum
 from pathlib import Path
 
 from engine import runtime
@@ -13,6 +14,16 @@ CANCELERS = Extension()
 RESPONDERS = Extension()
 DISPATCHING, LONG_COMMAND = "agent.dispatching", "agent.command.long"
 CANCELABLE = (DISPATCHING, LONG_COMMAND)
+
+
+class Runs(StrEnum):
+    """Whether a hook part runs before the hook answers, because it decides the tool call, or after it, because it only tells the agent."""
+
+    SYNC = "sync"
+    ASYNC = "async"
+
+    def policies(self) -> Extension:
+        return {Runs.SYNC: POLICIES, Runs.ASYNC: AFTERWARDS}[self]
 
 
 @dataclass(frozen=True)

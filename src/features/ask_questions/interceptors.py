@@ -4,6 +4,7 @@ from engine.journal_calls import calls, pieces
 from engine.reach import Reach
 from features.ask_questions.choices import enumerable, restates
 from features.parts import ActionInterceptor, AgentContext, Context, ToolInterceptor
+from engine.gates import Runs
 from resources.base import AGENT, titled
 from resources.shapes import normalize_options
 from controllers.types import CONTROLLERS, Questions
@@ -36,6 +37,7 @@ def given_options(given) -> list[str]:
 
 class AskInTheJournal(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         if not context.provider.question(call):
@@ -75,6 +77,7 @@ class NamesItsPick(QuestionInterceptor):
 
 class AskOnItsOwn(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         shell = call.shell_command

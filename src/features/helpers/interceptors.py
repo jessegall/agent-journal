@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from controllers.types import Agents, Environments
-from engine.gates import DISPATCHING
+from engine.gates import DISPATCHING, Runs
 from engine.reach import Reach
 from features.helpers.controller import Helpers
 from features.helpers.resource import held_by_helper
@@ -59,7 +59,7 @@ class HandedRowsStayAssigned(ActionInterceptor):
 
 class KeepSubagentFiles(ToolInterceptor):
     reach = Reach.SUBAGENTS
-    refuses = False
+    runs = Runs.ASYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         project, row = context.record.root.resolve().parent, context.agent.row
@@ -80,6 +80,7 @@ class OfferKeptAgentsFirst(Canceler):
 
 class RefuseWholeSuiteToHelpers(ToolInterceptor):
     reach = Reach.BOTH
+    runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         place = Environments(context.record, actor=SYSTEM).rows.by_title(context.record.env)

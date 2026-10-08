@@ -2,6 +2,7 @@
 from features import trigger
 from engine.journal_calls import calls
 from features.parts import AgentContext, ToolInterceptor
+from engine.gates import Runs
 from features.skill_loading.catalogue import loaded_at, loaded_before_compaction, teaching_command
 from features.skill_loading.required import outstanding, require
 from engine.reach import Reach
@@ -10,7 +11,7 @@ from engine.reach import Reach
 
 class RequireCommandSkill(ToolInterceptor):
     reach = Reach.MAIN
-    refuses = False
+    runs = Runs.ASYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         found = next((made for command in call.commands for made in calls(command) if made.noun), None)
@@ -27,6 +28,7 @@ class RequireCommandSkill(ToolInterceptor):
 
 class RefuseUntilLoaded(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.SYNC
     limit = "most_refusals"
     steps_aside = "steps_aside"
 
