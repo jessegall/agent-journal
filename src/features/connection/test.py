@@ -1,3 +1,5 @@
+import subprocess
+
 import features
 from controllers.types import Notices, Todos
 from engine.machines import Lease, this_machine
@@ -5,6 +7,7 @@ from engine.offline import Waiting
 from engine.record import Record
 from engine.sync import PROTOCOL, Comparison, Hello, Release, Shape, Step
 from engine.version import version
+from features.connection.code import Pushed, pull, push
 from features.connection.linking import hand, join, local_hello, sync
 from migrations import applied
 from resources.base import AGENT, SYSTEM, USER, Event
@@ -79,3 +82,30 @@ def test_syncing_sends_the_writes_that_waited_in_order_and_takes_in_what_happene
     assert sync(record, server) == {"sent": 2, "pulled": 2} and server.taken == ["first", "second"], "what waited goes oldest first, then the server's events come in"
     assert sync(record, server) == {"sent": 0, "pulled": 0}, "nothing is sent or taken in twice"
     assert [t.title for t in Todos(Record(record.root, record.env), actor=SYSTEM).all()] == [], "pulled events are in the log only, and no feature acted on them"
+
+
+def git_in(folder):
+    return lambda *args, cwd=folder: subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=cwd, capture_output=True, text=True, timeout=30, check=True).stdout.strip()
+
+
+def test_code_goes_through_git_as_snapshots_and_is_applied_only_over_files_not_changed_here(tmp_path):
+    bare = tmp_path / "hosted.git"
+    bare.mkdir()
+    subprocess.run(["git", "init", "-q", "--bare"], cwd=bare, check=True)
+    mine, theirs = tmp_path / "mine", tmp_path / "theirs"
+    mine.mkdir()
+    run = git_in(mine)
+    run("init", "-q")
+    (mine / "a.txt").write_text("one")
+    run("add", "a.txt")
+    run("commit", "-qm", "first")
+    run("clone", "-q", str(mine), str(theirs), cwd=tmp_path)
+    for folder in (mine, theirs):
+        git_in(folder)("remote", "add", "hosted", str(bare))
+    (mine / "a.txt").write_text("two")
+    assert push(mine, "laptop") == Pushed((".",), ()), "the project's repository is snapshotted and pushed to its hosted remote"
+    (theirs / "a.txt").write_text("mine")
+    assert "also changed here" in refused(lambda: pull(theirs, "laptop")) and (theirs / "a.txt").read_text() == "mine", "a file edited here is never written over"
+    (theirs / "a.txt").write_text("one")
+    assert (pull(theirs, "laptop"), (theirs / "a.txt").read_text()) == (["a.txt"], "two"), "over a file only changed there the snapshot is applied"
+    assert "no snapshot" in refused(lambda: pull(theirs, "nobody")), "a name nobody pushed is said plainly"
