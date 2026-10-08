@@ -258,7 +258,7 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
     assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.78", **proxied).status == 303
     from features.hosted_journal import host
     from features.hosted_journal.settings import GATEWAY
-    root = str(hosted.record.root)
+    root = str(hosted.record.root.resolve())
     for word in ("password-status", "setup-code", "logout-everywhere", "clear-tries", "reset-password", "password-status", "setup-code"):
         host.main(["--root", root, word])
     printed = capsys.readouterr().out
@@ -267,7 +267,7 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
     host.main(["--root", root, "gateway-settings", "--address", "journal.example.org", "--days", "3"])
     assert hosted.vault.read(GATEWAY) == {"address": "journal.example.org", "proxy": "", "days": 3}, "the login page's own settings go to its vault"
     host.main(["--root", root, "prepare", "--address", ADDRESS, "--port", "8441", "--proxy", "127.0.0.1"])
-    kept = HostedJournalDetails.values(host.record_of(hosted.record.root))
+    kept = HostedJournalDetails.values(host.record_of(Path(root)))
     assert (kept["port"], kept["proxy"], kept["apart"]) == (8441, "127.0.0.1", True), "prepare switches the journal on a server on, with its login page run apart"
     monkeypatch.setattr(host, "setup_code", lambda given: (_ for _ in ()).throw(PermissionError("vault")))
     with pytest.raises(SystemExit, match="Only the login page's user"):
@@ -479,8 +479,9 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
         (planted / module).parent.mkdir(parents=True, exist_ok=True)
         (planted / module).write_text(f"open({str(ran)!r}, 'w')\n")
     listening = socket.create_server(("127.0.0.1", 0))
+    apart_log = (tmp_path / "apart.log").open("w")
     child = subprocess.Popen(serving_command(root, listening.fileno()), pass_fds=(listening.fileno(),), env=serving_environment(str(tmp_path)), cwd=planted,
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                             stdout=apart_log, stderr=subprocess.STDOUT)
     try:
         apart = Hosted(hosted.record, listening.getsockname()[1], Vault(root))
         began = time.time()
@@ -498,7 +499,7 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
         assert [(answer.status, "never runs this" in answer.text) for answer in outside] == [(403, True)] * 3, \
             "the login page started as production starts it refuses what never comes from outside itself, before anything reaches the journal"
         made = json.loads(apart.call("POST", "/api/main/phone/connect", body='{"days": 7}', Cookie=token, Origin=origin, Content_Type="application/json").text)
-        assert "link" in made, made
+        assert "link" in made, (made, (tmp_path / "apart.log").read_text()[-3000:])
         assert made["link"].startswith(f"https://{ADDRESS}/p/#")
         phone_headers = {"Origin": origin, "X-Phone": "1", "Content-Type": "application/json"}
         paired = apart.call("POST", "/p/pair", body=json.dumps({"code": made["link"].rsplit("#", 1)[1], "device": "phone"}), **phone_headers)
@@ -519,6 +520,7 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
     finally:
         child.terminate()
         child.wait(APART_WAIT)
+        apart_log.close()
     from types import SimpleNamespace
     from features.hosted_journal import apart as kept_apart
     served = []

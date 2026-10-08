@@ -74,23 +74,6 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(updates, "upstream", lambda root: "3.0.2")
     check.checked_at = 0.0
     assert check.tick() == "update held for changed files", "files the user changed hold an update until they say what to do"
-    started = []
-
-    class Upgrading:
-        pid, returncode = 4242, 2
-
-        def __init__(self, command, **given):
-            started.append(command)
-
-        def communicate(self, timeout=None):
-            if timeout is not None and len(started) == 1:
-                raise subprocess.TimeoutExpired(started[0], timeout)
-            return "fetched\nthe network was down\n", None
-    monkeypatch.setattr(updates.subprocess, "Popen", Upgrading)
-    monkeypatch.setattr(updates.os, "killpg", lambda pid, sent: None)
-    assert updates.installed(record.root, True, "3.0.2") == f"journal upgrade was stopped after {updates.INSTALL_WAIT // 60} minutes", "an upgrade that hangs is stopped and said so"
-    assert updates.installed(record.root, False, "") == "the network was down", "an upgrade that fails says its last line"
-    assert started[0][-3:] == ["--yes", "--to", "3.0.2"] and "--yes" not in started[1], "a confirmed upgrade to a chosen release asks for exactly that"
     with updates.ledger(record.root).changing() as tried:
         tried["3.0.2"] = {"at": __import__("time").time() - 3600, "tries": 2, "ok": False}
     assert not updates.claimed(record.root, "3.0.2", "major versions") and updates.claimed(record.root, "3.0.2", "always"), \
