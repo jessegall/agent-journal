@@ -168,5 +168,5 @@ def publish(project: Path, agents: tuple[str, ...]) -> tuple[list[Path], list[Pa
         for stale in (project / home).glob("journal*"):
             if stale.is_dir() and not stale.is_symlink():
                 shutil.rmtree(stale)
-    linked = [t for name in names for t in link(project, name, tuple(a for a in agents if a in LINKED))]
+    linked = link(project, names, tuple(a for a in agents if a in LINKED))
     return written, linked
