@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from agents.terminal import AT_ONCE
 from engine.stop import STAYS_UP
 from features.base import Feature
 from features.hosted_journal.details import HostedJournalDetails
@@ -19,6 +20,10 @@ def listen(record) -> Listen:
     return Listen(settings["listen"], int(settings["port"]))
 
 
+def agents_at_once(record) -> int:
+    return int(HostedJournalDetails.values(record)["agents"])
+
+
 def address(record) -> str:
     return HostedJournalDetails.values(record)["address"]
 
@@ -32,3 +37,4 @@ class HostedJournalFeature(Feature):
         STAYS_UP.add(self, always)
         LISTENS.add(self, listen)
         ANSWERS_AT.add(self, address)
+        AT_ONCE.add(self, agents_at_once)

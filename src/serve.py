@@ -204,6 +204,25 @@ def freeze_caches(halting: threading.Event) -> None:
         gc.freeze()
 
 
+def keep_services(root: Path, halting: threading.Event) -> None:
+    """A journal that stays up with no agent, such as one on a server, keeps its services up from here."""
+    from agents.terminal import lifeline
+    from controllers.faults import threw
+    from engine.record import Record
+    from engine.services import Manager
+    from engine.stop import stays_up
+    from features.plugins.services import plugin_services
+    if not stays_up(Record(root, default_env(root))):
+        return
+    alive, _keeping = lifeline()
+    manager = Manager(root, alive, sources=(plugin_services,), faulted=lambda where: threw(root, default_env(root), where))
+    while not halting.wait(WATCH_SECONDS):
+        try:
+            manager.tick()
+        except Exception:
+            threw(root, default_env(root), "the server's services")
+
+
 def warm_commands() -> None:
     from commands.cli import served
     from commands.parser import parser
@@ -255,6 +274,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     threading.Thread(target=replay, args=(root,), daemon=True).start()
     threading.Thread(target=warm, args=(root,), daemon=True).start()
     threading.Thread(target=warm_commands, daemon=True).start()
+    threading.Thread(target=keep_services, args=(root, halting), daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:

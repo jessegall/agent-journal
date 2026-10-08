@@ -37,4 +37,5 @@ class HostedJournalDetails(FeatureDetails):
         Setting("listen", "127.0.0.1", "Where the login page listens", "127.0.0.1 keeps it on the server; the Docker image sets 0.0.0.0 so the TLS proxy beside it can reach it"),
         Setting("port", 8440, "The login page's port", "The TLS proxy forwards the server's address to this port"),
         Setting("days", 7, "How long a login lasts", unit="days"),
+        Setting("agents", 3, "Agents running at once", "Starting one more is refused until one stops; each agent uses the server's memory and your provider's spend"),
     ]
