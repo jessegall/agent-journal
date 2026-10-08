@@ -459,14 +459,21 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     assert claude.wiring_trouble(bare).endswith("which does not exist"), "a hook that names a journal that is gone is told so"
     (bare / ".claude" / "settings.json").write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "other"}]}]}}))
     assert [found["path"] for found in claude.hooks_elsewhere(bare)] == [".claude/settings.json"], "hooks kept in another settings file of the project are listed with where they are"
-    monkeypatch.setattr(http, "terminal_of", lambda root, session: "term-1" if session == "claude-1" else "")
-    monkeypatch.setattr(http.typist, "send", lambda root, terminal, keys: terminal == "term-1" and keys == b"hi")
-    monkeypatch.setattr(http, "relaunch", lambda root, env, session: {"relaunched": session})
-    monkeypatch.setattr(http, "set_skipped", lambda row, skip: called.append(skip))
+    from features.open_viewer import commands as viewer_commands
+    monkeypatch.setattr(viewer_commands, "terminal_of", lambda root, session: "term-1" if session == "claude-1" else "")
+    monkeypatch.setattr(viewer_commands.typist, "send", lambda root, terminal, keys: terminal == "term-1" and keys == b"hi")
+    monkeypatch.setattr(viewer_commands, "relaunch", lambda root, env, session: {"relaunched": session})
+    monkeypatch.setattr(viewer_commands, "set_skipped", lambda row, skip: called.append(skip))
     assert ask("POST", f"/api/{record.env}/agent/claude-1/keys", body={"text": "hi"}).body == {"sent": True}, "keys typed in the viewer reach the agent's terminal"
     assert ask("POST", f"/api/{record.env}/agent/nobody/keys", body={"text": "hi"}).code == 404, "an agent with no terminal is not found"
     assert ask("POST", f"/api/{record.env}/agent/claude-1/relaunch", body={"skip": 1}).body == {"relaunched": "claude-1", "skip": True}, "a relaunch says whether prompts are skipped"
     assert called[-1] is True, "and the choice is kept"
+    for word, named in (("appoint", {"session": "claude-1"}), ("shell", {"session": "claude-1", "command": "ls"}), ("keys", {"session": "claude-1", "text": "hi"}),
+                        ("relaunch", {"session": "claude-1"}), ("force", {"session": "claude-1"}), ("pause", {"session": "claude-1"}),
+                        ("resume", {"session": "claude-1"}), ("control", {"session": "claude-1", "action": "model"}), ("wire", {"provider": "claude", "hooks": {}})):
+        with pytest.raises(Refused, match="only the user"):
+            invoked(Agents(record, actor=AGENT), word, named=named)
+    assert invoked(Agents(record, actor=AGENT), "hooks", named={"provider": "claude"}) == ask("GET", "/api/agent-hooks/claude").body, "an agent reads the hooks the viewer shows"
     chunk = {"hook_event_name": "MessageDisplay", "session_id": "claude-1", "message_id": "m1", "delta": "hi", "final": True}
     monkeypatch.setattr(http, "displayed", lambda root, chunk: called.append(chunk.message))
     refused = ask("POST", "/api/hook/claude", {"root": str(record.root.parent / "elsewhere")}, chunk)
