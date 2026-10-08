@@ -1420,6 +1420,22 @@ def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_
     assert chat_mirror.send_to_chat(root, "claude-1", "once only") and chat_mirror.send_to_chat(root, "claude-1", "once only"), "a message already sent counts as sent and is not sent twice"
 
 
+def test_a_server_that_stops_answering_is_stopped_with_its_threads_kept(tmp_path, monkeypatch):
+    from engine import viewer
+    root = tmp_path / ".journal"
+    (root / "runtime").mkdir(parents=True)
+    (root / "runtime" / viewer.STUCK_THREADS).write_text("Thread 0x1: waiting on the record lock")
+    stuck = subprocess.Popen(["sleep", "60"])
+    monkeypatch.setattr(viewer, "running", lambda found: "http://127.0.0.1:1/")
+    monkeypatch.setattr(viewer, "healthy", lambda url, env, timeout=0: False)
+    monkeypatch.setattr(viewer, "last", lambda found: viewer.ViewerMark.from_json({"pid": stuck.pid}))
+    watch = viewer.StuckServer(root, "main")
+    assert (watch.restarted(), watch.restarted()) == ("", ""), "a server that misses two probes is not yet stuck"
+    kept = watch.restarted()
+    assert stuck.wait(timeout=10) is not None, "the third missed probe stops the server, so the worker starts a fresh one"
+    assert "waiting on the record lock" in Path(kept).read_text(), "what each thread was doing is kept beside the runtime"
+
+
 def test_the_server_ends_when_interrupted_or_told_to_stop_restarts_on_new_code_and_answers_hook_failures(tmp_path, monkeypatch):
     import serve
     root = fresh().root
