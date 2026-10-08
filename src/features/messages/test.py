@@ -226,7 +226,7 @@ def test_a_reaction_from_the_user_reaches_the_agent_as_what_it_is():
     asked = Messages(record := fresh(), actor="agent").create("ship it?")
     face = Messages(record, actor="user").react(asked.n, "👍")
     line, counted = render([Event(id=1, at=0.0, type="reaction", n=face.n, action="created", actor="user")], record)
-    assert (line.startswith(f"the user put 👍 on message {asked.n} - act on it"), counted) == (True, {}), "a face and what to do with it, never a bare count"
+    assert (line.startswith(f"the user put 👍 on message {asked.n}. Act on it"), counted) == (True, {}), "a face and what to do with it, never a bare count"
 
 
 def test_a_line_about_a_message_waits_for_the_driver_and_is_dropped_once_the_message_is_answered(monkeypatch):
