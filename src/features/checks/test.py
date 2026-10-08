@@ -212,3 +212,11 @@ def test_upgrades_rename_old_stored_keys_in_events_agents_checks_and_settings(tm
     assert json.loads((home / "settings.json").read_text()) == {"work_tracking": {"name_work_every": 5}}, "the setting is renamed"
     (other / "settings.json").write_text("{")
     assert run(tmp_path) == "0 event logs, 0 rows and 0 settings files use the plain key names", "a second run finds nothing, and an unreadable settings file is skipped"
+    from scripts.checks.pulls import answered as pull_answered, line as pull_line
+    own = {"number": 7, "title": "Fix", "author": {"login": "jessegall"}, "url": "https://example/7", "comments": []}
+    other = {**own, "number": 8, "author": {"login": "stranger"}, "comments": [{"author": {"login": "stranger"}}]}
+    assert ("rule 64" in pull_line(own), "by stranger" in pull_line(other), "gh pr diff 8" in pull_line(other), "never check it out into a live journal" in pull_line(other),
+            "obfuscated code, workflow edits" in pull_line(other)) == (True, True, True, True, True), \
+        "a pull request waiting is told with its author, and one not from the user comes with the careful way to handle it"
+    assert (pull_answered(other, "jessegall"), pull_answered({**other, "comments": [{"author": {"login": "jessegall"}}]}, "jessegall")) == (False, True), \
+        "a pull request the agent commented on last is not told again"
