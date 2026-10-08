@@ -153,8 +153,6 @@ def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
         raise SystemExit(0)
     boot(root)
     announce(root)
-    tell_threads_on_signal(root)
-    allow_open_files()
     features.FEATURES["plugins"].host(root)
     server = JournalServer(("127.0.0.1", port), Handler)
     remember(root, server.server_address[1])
@@ -241,6 +239,8 @@ def warm_viewer(root: Path, env: str) -> None:
 def run(root: Path, port: int = DEFAULT_PORT) -> None:
     sys.setswitchinterval(SWITCH_INTERVAL)
     runtime.STARTED[0] = time.time()
+    tell_threads_on_signal(root)
+    allow_open_files()
     server = serve(root, port)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
     changed = threading.Event()
