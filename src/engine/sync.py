@@ -1,5 +1,7 @@
+import time
 from dataclasses import dataclass
 from enum import StrEnum
+from pathlib import Path
 
 from resources.base import Refused
 
@@ -16,11 +18,27 @@ def travels(path: str) -> bool:
     return not any(part in NEVER_TRAVELS_PATHS for part in path.replace("\\", "/").split("/"))
 
 
-def travelling(type_: str, data: dict) -> dict | None:
-    """What of a row is copied to another machine: nothing for a type that stays, otherwise the row without its keys, hashes and tokens."""
+FOLDER_FIELDS = {"agent": ("cwd", "transcript"), "helper": ("worktree", "checkout"), "worktree": ("path",), "record": ("folder",), "environment": ("folder",)}
+
+
+def utc_minute() -> str:
+    """A date written into a row's text, in UTC, so the same moment reads the same on every machine."""
+    return time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())
+
+
+def relative(path: str, project: Path) -> str:
+    """A path inside the project as written from its root; one outside it is this machine's alone and becomes empty."""
+    if not Path(path).is_absolute():
+        return path
+    return Path(path).relative_to(project).as_posix() if Path(path).is_relative_to(project) else ""
+
+
+def travelling(type_: str, data: dict, project: Path) -> dict | None:
+    """What of a row is copied to another machine: nothing for a type that stays, otherwise the row without its keys, hashes and tokens, its paths from the project's root."""
     if type_ in NEVER_TRAVELS_TYPES:
         return None
-    return {name: value for name, value in data.items() if name not in NEVER_TRAVELS_FIELDS.get(type_, ())}
+    kept = {name: value for name, value in data.items() if name not in NEVER_TRAVELS_FIELDS.get(type_, ())}
+    return {name: relative(value, project) if name in FOLDER_FIELDS.get(type_, ()) else value for name, value in kept.items()}
 
 
 class Step(StrEnum):

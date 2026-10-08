@@ -28,7 +28,7 @@ class LogWork(Command):
     def run(self, context: Context, works: Works, *words: str, n: int = 0):
         n, text = numbered(words, n, "say what was decided or done: journal work log <n> \"<text>\"")
         row = in_hand(works, n)
-        return works.section(row.n, f"{len(row.sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
+        return works.section(row.n, f"{len(row.sections) + 1} · {utc_minute()}", text)
 
 
 class ParkWork(Command):
