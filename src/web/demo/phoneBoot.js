@@ -1,3 +1,4 @@
+import {transport} from "../src/api/transport.js";
 import {loadDemo} from "./data.js";
 import {Player} from "./player.js";
 import {StandIn} from "./standIn.js";
@@ -10,6 +11,8 @@ import PhoneBand from "./PhoneBand.vue";
 import {picked} from "./scenarios.js";
 
 const NOTIFY_SKIPPED = "phone-notify-skipped";
+
+const SHARED = "/p/api";
 
 const asked = (url) => typeof url === "string" && url.startsWith("./") && !url.startsWith("./assets");
 
@@ -27,6 +30,7 @@ export async function install() {
         document.body.prepend(band);
         createApp(PhoneBand).mount(band);
     }
+    transport.reach = async (method, url, body) => standIn.answer(method, url.replace(/^\/p/, ""), body);
     const reached = window.fetch.bind(window);
     window.fetch = async (url, given = {}) =>
         asked(url) ? standIn.phoneAnswer(given.method || "GET", url, given.body && JSON.parse(given.body)) : reached(url, given);
