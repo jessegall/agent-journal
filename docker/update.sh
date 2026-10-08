@@ -56,6 +56,10 @@ is_newer() {
 
 deploy() {
     ref="$IMAGE@$1"
+    if ! signed "$ref" || [ "$digest" != "$1" ]; then
+        echo "$ref carries no signature from the release workflow, so it is not deployed"
+        return
+    fi
     echo "deploying $ref, signed by the release workflow"
     JOURNAL_IMAGE="$ref" docker compose --profile journal up -d --no-deps --pull always journal
     write_status "$version" false
