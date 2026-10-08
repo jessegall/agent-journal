@@ -278,3 +278,12 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
         "each repository's snapshot is kept under a ref of the journal's, so it stays reachable"
     assert (run("show", f"{made[0].ref}:a.txt"), run("ls-tree", "-r", "--name-only", made[0].ref).split(), run("show", f"{made[1].ref}:b.txt")) == ("two", ["a.txt"], "new"), \
         "it holds the working files as they stand, nested repositories apart, and leaves out the environment file and the journal's own record"
+    from engine.snapshots import apply
+    (project / "a.txt").write_text("changed afterwards")
+    (project / "own.txt").write_text("not in the snapshot")
+    (project / "platform" / "b.txt").unlink()
+    assert (apply(project, made), (project / "a.txt").read_text(), (project / "platform" / "b.txt").read_text(), (project / "own.txt").read_text()) == \
+        (["a.txt", "platform/a.txt", "platform/b.txt"], "two", "new", "not in the snapshot"), \
+        "applying a snapshot writes the files it tracks and touches nothing else"
+    assert [(project / name).exists() for name in (".env", ".journal/settings.json")] == [True, True] and run("show", f"{made[0].ref}:a.txt") == "two", \
+        "the environment file and the journal's record are left as they were"

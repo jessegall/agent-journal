@@ -1,7 +1,11 @@
 import os
+import subprocess
 from dataclasses import dataclass
+from fnmatch import fnmatch
 from pathlib import Path
 
+from engine.disk import replace
+from engine.paths import contained
 from engine.proc import git, git_env, ran
 from engine.sync import NEVER_TRAVELS_IN_PROJECT
 
@@ -72,3 +76,28 @@ def snapshot_of(project: Path, repository: str, name: str, others: list[str]) ->
     ref = f"{SNAPSHOT_REFS}/{name}/{key_of(repository)}"
     git(["update-ref", ref, commit], top)
     return Snapshot(repository, ref, commit, base)
+
+
+def never_travels(path: str) -> bool:
+    return any(fnmatch(part, pattern) for part in path.split("/") for pattern in NEVER_TRAVELS_IN_PROJECT)
+
+
+def blob(top: Path, sha: str) -> bytes:
+    return subprocess.run(["git", "cat-file", "blob", sha], cwd=top, capture_output=True, env=git_env(), timeout=30, check=True).stdout
+
+
+def apply(project: Path, snapshots: list[Snapshot]) -> list[str]:
+    """Writes the files a snapshot tracks into the project and nothing else: no file it does not hold, none that never travels, none outside its repository, and nothing is deleted; answers the paths written."""
+    written = []
+    for snapshot in snapshots:
+        top = project / snapshot.repository
+        for entry in git(["ls-tree", "-r", "-z", snapshot.commit], top).split("\0"):
+            facts, _, path = entry.partition("\t")
+            mode, kind, sha = (facts.split() + ["", "", ""])[:3]
+            if kind != "blob" or mode == "120000" or never_travels(path):
+                continue
+            target = contained(top, path, nested=True)
+            replace(target, blob(top, sha))
+            target.chmod(0o755 if mode == "100755" else 0o644)
+            written.append((Path(snapshot.repository) / path).as_posix())
+    return written
