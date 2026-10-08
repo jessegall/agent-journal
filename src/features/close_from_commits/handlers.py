@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 from engine.events.agents import AgentReported
 from engine.git import Checkout, checkout_of
@@ -19,8 +20,14 @@ class CloseRowsFromCommits(Handler):
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         checkout = checkout_of(context.working_folder)
-        if not checkout or not self.moved(checkout, context.record.env):
+        if not checkout:
             return
+        if self.moved(checkout.head_log, context.record.env):
+            self.made_here(context, checkout)
+        if checkout.landing and not checkout.linked and self.moved(checkout.landing_log, context.record.env):
+            self.landed(context, checkout)
+
+    def made_here(self, context: AgentContext, checkout: Checkout) -> None:
         commits = self.log(checkout.top)
         if not commits:
             return
@@ -34,6 +41,17 @@ class CloseRowsFromCommits(Handler):
             if not action.startswith(MADE_HERE):
                 continue
             context.journal.get(Agents).card(context.agent.row.n, label=f"Agent committed {sha[:8]} on `{checkout.branch}`", icon="branch", tone="commit", title=subject)
+            self.close(context, sha, subject, body)
+
+    def landed(self, context: AgentContext, checkout: Checkout) -> None:
+        cursor = f"{context.feature.name}-landed-{digest(checkout.landing, 12)}"
+        seen = context.record.event_log.cursor_text(cursor)
+        tip = git(["rev-parse", checkout.landing], checkout.top).strip()
+        context.record.event_log.set_cursor_text(cursor, tip)
+        if not seen or seen == tip:
+            return
+        out = git(["log", "--format=%H%x1f%s%x1f%B%x1e", f"{seen}..{tip}"], checkout.top)
+        for sha, subject, body in (c.strip("\n").split("\x1f", 2) for c in out.split("\x1e") if c.strip()):
             self.close(context, sha, subject, body)
 
     def log(self, project) -> list[tuple[str, str, str, str]]:
@@ -57,12 +75,12 @@ class CloseRowsFromCommits(Handler):
         if closed:
             context.agent.say("closed", sha=sha[:9], rows=", ".join(closed), ended=f" and ended {', '.join(ended)}" if ended else "")
 
-    def moved(self, checkout: Checkout, environment: str) -> bool:
+    def moved(self, log: Path, environment: str) -> bool:
         try:
-            stamp = checkout.head_log.stat().st_mtime_ns
+            stamp = log.stat().st_mtime_ns
         except OSError:
             return False
-        key = (str(checkout.top), environment)
+        key = (str(log), environment)
         if self.seen.get(key) == stamp:
             return False
         self.seen[key] = stamp

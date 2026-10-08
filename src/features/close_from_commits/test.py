@@ -14,9 +14,10 @@ def test_a_checkout_change_is_seen_in_each_environment(tmp_path):
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "start"], cwd=tmp_path, check=True)
     handler = CloseRowsFromCommits()
-    assert handler.moved(checkout_of(tmp_path), "main")
-    assert handler.moved(checkout_of(tmp_path), "helper")
-    assert not handler.moved(checkout_of(tmp_path), "main")
+    log = checkout_of(tmp_path).head_log
+    assert handler.moved(log, "main")
+    assert handler.moved(log, "helper")
+    assert not handler.moved(log, "main")
 
 
 def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
@@ -58,6 +59,14 @@ def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
     commit("third\n\nJournal: todos done 3")
     assert [n for n in nudges(record) if n.startswith("commit ")][-1].endswith("closed to-do 3 and ended work 1"), \
         "the agent is told what its commit closed and which work that ended"
+    todos.create("fourth")
+    git("update-ref", "--create-reflog", "refs/remotes/origin/main", "HEAD")
+    git("symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main")
+    report(record, "working", "PostToolUse")
+    elsewhere = git("-c", "user.name=t", "-c", "user.email=t@t", "commit-tree", "HEAD^{tree}", "-p", "HEAD", "-m", "made in a worktree\n\nJournal: todos done 4").stdout.strip()
+    git("update-ref", "-m", "push", "refs/remotes/origin/main", elsewhere)
+    report(record, "working", "PostToolUse")
+    assert bool(todos.load(4).completed), "a commit made in another worktree closes its rows once it lands on main"
     from controllers.types import Agents
     branch = git("branch", "--show-current").stdout.strip()
     sha = git("rev-parse", "HEAD").stdout.strip()
