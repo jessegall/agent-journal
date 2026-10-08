@@ -2,6 +2,11 @@ import {createApp, nextTick} from "vue";
 import {beforeEach, expect, test, vi} from "vitest";
 import {tip} from "../src/kit/tip.js";
 
+globalThis.ResizeObserver = class {
+    observe() {}
+    disconnect() {}
+};
+
 const hostingMe = vi.fn();
 const members = vi.fn();
 const inviteMember = vi.fn();
