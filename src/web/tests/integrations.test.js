@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
+import {boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
 
 const NOW = Date.now() / 1000;
 
@@ -48,5 +48,11 @@ describe("the Integrations page", () => {
     test("says what the webhook needs and where to paste its address", () => {
         expect(webhookWords("Linear")).toMatchObject({label: "Webhook signing secret", address: "Paste this address into Linear's webhook settings"});
         expect([signingOf({linear: {signing_key: "LINEAR_SIGNING"}}, "linear"), signingOf({}, "linear")]).toEqual(["LINEAR_SIGNING", ""]);
+    });
+
+    test("offers the two switches, the MCP server one off and fetching one on until you change them", () => {
+        expect(switchWords("Linear")).toMatchObject({mcp: "Agents use Linear through its MCP server", fetching: "The journal fetches Linear into tickets"});
+        expect(switchWords("Linear").mcpHelp).toContain("not marked untrusted");
+        expect([mcpOn({}, "linear"), mcpOn({linear: {use_mcp: true}}, "linear"), fetchingOn({}, "linear"), fetchingOn({linear: {fetching: false}}, "linear")]).toEqual([false, true, true, false]);
     });
 });

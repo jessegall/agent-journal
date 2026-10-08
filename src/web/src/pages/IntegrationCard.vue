@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {saveSettings} from "../actions/settings.js";
 import {usePoll, pollKey} from "../composables/poll.js";
-import {isOn, keyOf, keyWords, settingsWith, stateWords} from "../domain/integrations.js";
+import {fetchingOn, isOn, keyOf, keyWords, mcpOn, settingsWith, stateWords, switchWords} from "../domain/integrations.js";
 import Btn from "../kit/Btn.vue";
 import SecretPicker from "../kit/SecretPicker.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -27,6 +27,11 @@ usePoll(
     () => on.value
 );
 
+const switches = computed(() => switchWords(props.feature.title));
+const mcp = computed(() => mcpOn(store.settings, props.feature.name));
+const fetching = computed(() => fetchingOn(store.settings, props.feature.name));
+const setMcp = (next) => saveSettings(settingsWith(store.settings, props.feature.name, {use_mcp: next}));
+const setFetching = (next) => saveSettings(settingsWith(store.settings, props.feature.name, {fetching: next}));
 const checking = ref(false);
 
 async function checkNow() {
@@ -52,9 +57,22 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
             <span>{{ feature.label }}</span>
             <Switch :on="on" :title="on ? 'Turn it off' : 'Turn it on'" @change="switchTo" />
         </div>
-        <h4 class="key-label">{{ words.label }}</h4>
-        <SecretPicker :value="key" :picked-line="words.picked" :none-line="words.none" :note="words.note" @pick="pick" />
         <template v-if="on">
+            <template v-if="feature.mcp_server">
+                <div class="use">
+                    <span>{{ switches.mcp }}</span>
+                    <Switch :on="mcp" :title="switches.mcp" @change="setMcp" />
+                </div>
+                <p class="abstract">{{ switches.mcpHelp }}</p>
+            </template>
+            <div class="use">
+                <span>{{ switches.fetching }}</span>
+                <Switch :on="fetching" :title="switches.fetching" @change="setFetching" />
+            </div>
+        </template>
+        <template v-if="on && fetching">
+            <h4 class="key-label">{{ words.label }}</h4>
+            <SecretPicker :value="key" :picked-line="words.picked" :none-line="words.none" :note="words.note" @pick="pick" />
             <SwitchCase :value="feature.name">
                 <template #linear>
                     <LinearChoices :states="state ? state.choices : []" />
@@ -62,7 +80,7 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
             </SwitchCase>
         </template>
         <p class="state" data-state>{{ line }}</p>
-        <template v-if="on && key">
+        <template v-if="on && fetching && key">
             <div class="acts">
                 <Btn small :busy="checking" @click="checkNow">Check now</Btn>
             </div>

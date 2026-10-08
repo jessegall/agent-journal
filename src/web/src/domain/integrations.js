@@ -61,3 +61,13 @@ export const webhookWords = (title) => ({
 });
 
 export const signingOf = (settings, name) => settings?.[name]?.signing_key || "";
+
+export const switchWords = (title) => ({
+    mcp: `Agents use ${title} through its MCP server`,
+    mcpHelp: `What an agent reads through ${title}'s MCP server is not marked untrusted. It stays off until you turn it on.`,
+    fetching: `The journal fetches ${title} into tickets`,
+});
+
+export const mcpOn = (settings, name) => Boolean(settings?.[name]?.use_mcp);
+
+export const fetchingOn = (settings, name) => settings?.[name]?.fetching !== false;
