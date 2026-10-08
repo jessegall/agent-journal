@@ -142,16 +142,6 @@ function dragging(e) {
     draft.over = Array.from(e.dataTransfer?.types || []).includes("Files");
 }
 
-function dropped(e) {
-    draft.over = false;
-    draft.files.push(...Array.from(e.dataTransfer?.files || []));
-    area.value && area.value.focus();
-}
-
-function dragging(e) {
-    draft.over = Array.from(e.dataTransfer?.types || []).includes("Files");
-}
-
 function picked(e) {
     attached(Array.from(e.target.files));
     e.target.value = "";
