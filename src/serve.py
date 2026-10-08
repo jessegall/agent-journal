@@ -21,7 +21,7 @@ import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone  # noqa: E402
 from features.routing import resolve  # noqa: E402
-from features.phone.allow_list import Reach  # noqa: E402
+from features.phone.allow_list import PhoneVisit, Reach  # noqa: E402
 from features.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
 from controllers.base import SENDER, Sender  # noqa: E402
 from resources.base import OWNER_ID  # noqa: E402
@@ -140,7 +140,7 @@ class Handler(BaseHTTPRequestHandler):
         within = self.headers.get(PHONE_ENVIRONMENT)
         if within is None:
             return dispatch(method, url.path, self.root, query, body)
-        reach = reached_by_phone(self.root, method, url.path, query, body, within, self.headers.get(PHONE_UNLOCKED) == "1", self.headers.get(PHONE_MEMBER, OWNER_ID))
+        reach = reached_by_phone(self.root, method, url.path, query, body, PhoneVisit(within, self.headers.get(PHONE_UNLOCKED) == "1", self.headers.get(PHONE_MEMBER, OWNER_ID)))
         if reach is not Reach.OPEN:
             return reach.refusal()
         return dispatch(method, url.path, self.root, query, body)

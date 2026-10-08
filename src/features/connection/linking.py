@@ -8,9 +8,9 @@ from engine.handover import accept, epoch_of, give, nothing_waits
 from engine.machines import Lease, this_machine
 from engine.offline import Waiting, Write
 from engine.record import Record
-from engine.sync import CONNECTION, PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay, travelling_files
+from engine.sync import CONNECTION, PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, replay, travelling_files
 from engine.version import version
-from features.connection.transport import ServerKey, Transport
+from features.connection.transport import EventQuery, ServerKey, Transport
 from engine.ledger import applied
 from resources.base import PROJECT, SYSTEM, Refused
 
@@ -132,9 +132,9 @@ def sync(record, transport: Transport) -> Synced:
     pulled = 0
     for found in Record.every(record.root):
         if not found.holds(""):
-            pulled += replay(found, "", transport.events("", found.env, found.event_log.cursor(pulled_cursor(""))))
+            pulled += replay(found, "", transport.events(EventQuery.of(found, "")))
     if not record.holds(PROJECT):
-        pulled += replay(record, PROJECT, transport.events(PROJECT, record.env, record.event_log.cursor(pulled_cursor(PROJECT))))
+        pulled += replay(record, PROJECT, transport.events(EventQuery.of(record, PROJECT)))
     record.state(STATE).set("synced_at", time.time())
     return Synced(flushed.sent, pulled)
 

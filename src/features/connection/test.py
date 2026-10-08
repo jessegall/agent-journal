@@ -67,8 +67,8 @@ class Server:
         self.taken.append(held.asked.args[0])
         return Sent.TAKEN if self.up else Sent.AWAY
 
-    def events(self, scope, env, since):
-        return [e for e in self.events_to_give if e.id > since]
+    def events(self, asked):
+        return [e for e in self.events_to_give if e.id > asked.since]
 
 
 def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_does_not_answer_becomes_a_notice(monkeypatch):

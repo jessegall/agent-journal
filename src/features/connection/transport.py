@@ -1,14 +1,14 @@
 import json
 import urllib.error
 import urllib.request
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from typing import Protocol
 
 from engine import runtime
 from engine.machines import Lease, this_machine
 from engine.offline import Sent, Write
 from engine.stored import write_text
-from engine.sync import Hello
+from engine.sync import Hello, pulled_cursor
 from resources.base import Event, Refused
 
 TIMEOUT = 5
@@ -31,6 +31,19 @@ class ServerRefused(Refused):
         return Sent.AWAY if self.status >= 500 else Sent.REFUSED
 
 
+@dataclass(frozen=True)
+class EventQuery:
+    """The events of one scope a record has not taken in yet."""
+
+    scope: str
+    env: str
+    since: int
+
+    @classmethod
+    def of(cls, record, scope: str) -> "EventQuery":
+        return cls(scope, record.env, record.event_log.cursor(pulled_cursor(scope)))
+
+
 class Transport(Protocol):
     """What this journal asks of the one on the server; everything else the connection does is decided here."""
 
@@ -44,7 +57,7 @@ class Transport(Protocol):
 
     def send(self, held: Write) -> Sent: ...
 
-    def events(self, scope: str, env: str, since: int) -> list[Event]: ...
+    def events(self, asked: EventQuery) -> list[Event]: ...
 
 
 class ServerKey:
@@ -108,5 +121,5 @@ class HttpTransport:
             return Sent.AWAY
         return Sent.TAKEN
 
-    def events(self, scope: str, env: str, since: int) -> list[Event]:
-        return [Event(**found) for found in json.loads(self.ask("events", {"scope": scope, "env": env, "since": since})).get("events", [])]
+    def events(self, asked: EventQuery) -> list[Event]:
+        return [Event(**found) for found in json.loads(self.ask("events", asdict(asked))).get("events", [])]

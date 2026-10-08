@@ -87,6 +87,10 @@ class SkillWindows:
 @dataclass(frozen=True)
 class Decision(Loaded):
     decision: str = ""
+    reason: str = ""
+
+    def refusal_reason(self) -> str:
+        return self.reason if self.decision == "block" else ""
 
 
 @dataclass

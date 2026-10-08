@@ -5,6 +5,7 @@ from resources.base import AGENT, USER
 from runner.hooks import handle
 from tests.conftest import fresh
 from tests.kit import report
+from providers.base import Decision
 
 HELD = "the conversation was compacted — read the latest {} messages before any other write — journal message recent"
 
@@ -29,7 +30,7 @@ def use(record, tool: str, given: dict) -> dict:
 
 
 def refusal(answer: dict) -> str:
-    return answer.get("reason", "") if answer.get("hookSpecificOutput", {}).get("permissionDecision") == "deny" else ""
+    return Decision.from_json(answer).refusal_reason()
 
 
 def test_a_compaction_holds_writes_until_the_latest_messages_are_read():

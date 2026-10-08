@@ -7,7 +7,7 @@ from controllers.faults import threw
 from engine.disk import DiskFull
 from resources.base import Missing, Refused
 from engine.package import data
-from features.phone.allow_list import Reach, reached
+from features.phone.allow_list import PhoneVisit, Reach, reached
 from features.format import rendered
 from features.routing import Reply, Request, resolve
 from engine.paths import contained, known_environment
@@ -16,9 +16,9 @@ from engine.paths import contained, known_environment
 WEB = data("web", "dist")
 HOOK_PATH = "/api/hook/"
 
-def reached_by_phone(root: Path, method: str, path: str, query: dict, body: dict, environment: str, unlocked: bool, member: str) -> Reach:
+def reached_by_phone(root: Path, method: str, path: str, query: dict, body: dict, visit: PhoneVisit) -> Reach:
     found = resolve(method, path)
-    return Reach.CLOSED if found is None else reached(root, *found, query, body, environment, unlocked, member)
+    return Reach.CLOSED if found is None else reached(root, *found, query, body, visit)
 
 
 def later(reply: Reply, then) -> Reply:

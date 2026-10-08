@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 from pathlib import Path
 
 from engine.events.agents import AgentReported
@@ -16,21 +17,28 @@ TRAILER = re.compile(r"^Journal: todos done (\d+(?:(?: *, *(?:and +)?| +and +| +
 SWEEP_COMMITS = 300
 
 
-def landing_commits(checkout: Checkout, span: str, limit: int = SWEEP_COMMITS) -> list[tuple[str, str, str]]:
+@dataclass(frozen=True)
+class Commit:
+    sha: str
+    subject: str
+    body: str
+
+
+def landing_commits(checkout: Checkout, span: str, limit: int = SWEEP_COMMITS) -> list[Commit]:
     out = git(["log", "--format=%H%x1f%s%x1f%B%x1e", "-n", str(limit), span], checkout.top)
-    return [tuple(c.strip("\n").split("\x1f", 2)) for c in out.split("\x1e") if c.strip()]
+    return [Commit(*c.strip("\n").split("\x1f", 2)) for c in out.split("\x1e") if c.strip()]
 
 
-def closing(todos: Todos, works: Works, sha: str, subject: str, body: str, held_only: bool = False) -> tuple[list[str], list[str]]:
+def closing(todos: Todos, works: Works, commit: Commit, held_only: bool = False) -> tuple[list[str], list[str]]:
     closed, ended = [], []
-    for numbers, how in TRAILER.findall(body):
+    for numbers, how in TRAILER.findall(commit.body):
         for n in re.findall(r"\d+", numbers):
             try:
                 row = todos.load(n)
                 if row.completed or (held_only and not row.assigned):
                     continue
                 open_work = [w.n for w in works._for_todo(n)]
-                todos.complete(int(n), how=how or f"{subject} ({sha[:9]})", commit=sha)
+                todos.complete(int(n), how=how or f"{commit.subject} ({commit.sha[:9]})", commit=commit.sha)
             except Refused:
                 continue
             closed.append(f"to-do {n}")
@@ -66,7 +74,7 @@ class CloseRowsFromCommits(Handler):
             if not action.startswith(MADE_HERE):
                 continue
             context.journal.get(Agents).card(context.agent.row.n, label=f"Agent committed {sha[:8]} on `{checkout.branch}`", icon="branch", tone="commit", title=subject)
-            self.close(context, sha, subject, body)
+            self.close(context, Commit(sha, subject, body))
 
     def landed(self, context: AgentContext, checkout: Checkout) -> None:
         cursor = f"{context.feature.name}-landed-{digest(checkout.landing, 12)}"
@@ -75,17 +83,17 @@ class CloseRowsFromCommits(Handler):
         context.record.event_log.set_cursor_text(cursor, tip)
         if seen == tip:
             return
-        for sha, subject, body in (landing_commits(checkout, f"{seen}..{tip}") if seen else landing_commits(checkout, tip)):
-            self.close(context, sha, subject, body, held_only=not seen)
+        for commit in (landing_commits(checkout, f"{seen}..{tip}") if seen else landing_commits(checkout, tip)):
+            self.close(context, commit, held_only=not seen)
 
     def log(self, project) -> list[tuple[str, str, str, str]]:
         out = git(["log", "-g", "--format=%H%x1f%gs%x1f%s%x1f%B%x1e", "-n", "50"], project)
         return [tuple(c.strip("\n").split("\x1f", 3)) for c in out.split("\x1e") if c.strip()]
 
-    def close(self, context: AgentContext, sha: str, subject: str, body: str, held_only: bool = False) -> None:
-        closed, ended = closing(context.journal.acting(SYSTEM).get(Todos), context.journal.get(Works), sha, subject, body, held_only)
+    def close(self, context: AgentContext, commit: Commit, held_only: bool = False) -> None:
+        closed, ended = closing(context.journal.acting(SYSTEM).get(Todos), context.journal.get(Works), commit, held_only)
         if closed:
-            context.agent.say("closed", sha=sha[:9], rows=", ".join(closed), ended=f" and ended {', '.join(ended)}" if ended else "")
+            context.agent.say("closed", sha=commit.sha[:9], rows=", ".join(closed), ended=f" and ended {', '.join(ended)}" if ended else "")
 
     def moved(self, log: Path, environment: str) -> bool:
         try:

@@ -382,12 +382,12 @@ def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served, monkeypa
     with pytest.raises(Refused):
         Phones(record, actor=AGENT).update(n, key="abc", expires=time.time() + 999)
     from commands.dispatch import reached_by_phone
-    from features.phone.allow_list import Reach
+    from features.phone.allow_list import PhoneVisit, Reach
     from features.phone.members import MEMBER_RIGHTS, MemberRights
     sam = Phones(record, actor=USER).connect(7, "sam")["n"]
     assert (Phones(record, actor=SYSTEM)._phone(sam).member, Phones(record, actor=SYSTEM)._phone(n).member) == ("sam", OWNER_ID), \
         "a phone connected for a member is that member's, and the owner's stays the owner's"
-    asked = lambda who: reached_by_phone(record.root, "GET", "/api/identity", {}, {}, record.env, True, who)
+    asked = lambda who: reached_by_phone(record.root, "GET", "/api/identity", {}, {}, PhoneVisit(record.env, True, who))
     assert (asked(OWNER_ID), asked("sam")) == (Reach.OPEN, Reach.CLOSED), "a member's phone reaches nothing until the member's rights grant it, and the owner's phone is as before"
 
     class Grants(MemberRights):
