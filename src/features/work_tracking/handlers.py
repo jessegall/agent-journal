@@ -20,6 +20,7 @@ from engine.command_runs import command_runs
 from controllers.types import Agents, Todos, Works
 
 ASKED_AGAIN_AFTER = 60
+NAMED_PARKED = "named_parked"
 
 
 @dataclass(frozen=True)
@@ -89,14 +90,21 @@ class CloseWork(Handler):
 
 
 def name_parked(context: Context) -> None:
-    parked = [w for w in context.journal.get(Works).rows.standing() if w.parked]
+    """Names parked work once for each time it was parked, and only while nothing else is ready: parking it was the agent's own choice."""
+    parked = {parking(w): w for w in context.journal.get(Works).rows.standing() if w.parked}
+    state = context.record.state(context.feature.name)
+    named = set(state.get(NAMED_PARKED, [])) & set(parked)
+    unnamed = [w for key, w in parked.items() if key not in named]
     agent = context.journal.get(Agents).primary()
-    state, now = context.record.state(context.feature.name), time.time()
-    if not parked or not agent or now - float(state.get("parked_named", 0)) <= ASKED_AGAIN_AFTER:
+    if not unnamed or not agent or ready(context.record):
         return
-    context.speaking_to(agent).agent.say("parked", n=parked[0].n, title=parked[0].title, why=parked[0].parked,
-                                         more=f" and {len(parked) - 1} more" if len(parked) > 1 else "")
-    state.set("parked_named", now)
+    context.speaking_to(agent).agent.say("parked", n=unnamed[0].n, title=unnamed[0].title, why=unnamed[0].parked,
+                                         more=f" and {len(unnamed) - 1} more" if len(unnamed) > 1 else "")
+    state.set(NAMED_PARKED, sorted(set(parked)))
+
+
+def parking(work) -> str:
+    return f"{work.n}:{work.parked}"
 
 
 class NameParkedOnTodoDone(Handler):
