@@ -54,6 +54,12 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
         "a server on the same release and record shape is joined as it is"
     assert join(record, Server(record.root, epoch=5)).comparison == Comparison(Step.PULL_AGAIN), "a server in another epoch, such as after a restore, makes this copy pull everything again"
     assert local_hello(record).machine == this_machine(), "the check names this machine"
+    newer = Server(record.root)
+    newer.said = Hello("99.0.0", Shape(PROTOCOL, newer.said.shape.migrations | {"m9999_new"}, 0), "server-1", 99)
+    assert "too old" in refused(lambda: join(record, newer)), "a server can ask for a newer copy than this one, and this one is told it is too old"
+    newer.said = Hello("99.0.0", Shape(PROTOCOL, newer.said.shape.migrations, 0), "server-1")
+    join(record, newer)
+    assert any("not in step" in n.title for n in Notices(record, actor=SYSTEM).all()), "a server on a newer release leaves a notice that this copy is not in step with it"
     monkeypatch.setattr("features.connection.feature.transport_for", lambda address: Server(record.root, up=False))
     record.change_setting("connection", {"address": "https://server.example"})
     features.FEATURES["connection"].settings_changed(record, USER)
@@ -156,7 +162,7 @@ def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and
     server = http.server.HTTPServer(("127.0.0.1", 0), Down)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
-        assert "503" in refused(lambda: HttpTransport(f"http://127.0.0.1:{server.server_port}").hello()), "a server taken down answers 503 and the refusal says so"
+        assert "taken down" in refused(lambda: HttpTransport(f"http://127.0.0.1:{server.server_port}").hello()), "a server taken down answers 503 and the refusal says so"
     finally:
         server.shutdown()
 

@@ -96,14 +96,15 @@ class Hello:
     version: str
     shape: Shape
     machine: str = ""
+    oldest: int = 0
 
     @classmethod
     def read(cls, payload: dict) -> "Hello":
         return cls(str(payload.get("version", "")), Shape(int(payload.get("protocol", 0)), frozenset(payload.get("migrations", [])), int(payload.get("epoch", 0))),
-                   str(payload.get("machine", "")))
+                   str(payload.get("machine", "")), int(payload.get("oldest", 0)))
 
     def to_json(self) -> dict:
-        return {"version": self.version, "protocol": self.shape.protocol, "migrations": sorted(self.shape.migrations), "epoch": self.shape.epoch, "machine": self.machine}
+        return {"version": self.version, "protocol": self.shape.protocol, "migrations": sorted(self.shape.migrations), "epoch": self.shape.epoch, "machine": self.machine, "oldest": self.oldest}
 
 
 @dataclass(frozen=True)
@@ -115,7 +116,7 @@ class Welcome:
 
 
 def connect(client: Hello, server: Hello) -> Welcome:
-    if client.shape.protocol < OLDEST_CLIENT_PROTOCOL:
+    if client.shape.protocol < max(OLDEST_CLIENT_PROTOCOL, server.oldest):
         raise Refused(f"this copy ({client.version or 'unknown release'}) is too old to carry the sync's checks on what never leaves a machine: upgrade it, then connect again")
     ours, theirs = numbered(client.version), numbered(server.version)
     release = Release.SAME if ours == theirs else Release.BEHIND if ours < theirs else Release.AHEAD
