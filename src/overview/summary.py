@@ -66,7 +66,7 @@ def environment(record: Record) -> dict:
     last = shelf.load(max(finished, key=lambda row: row["completed"])["n"]) if finished else None
     todos = {row["n"]: bool(row["completed"]) for row in Todos(record, actor=SYSTEM).rows.summaries() if not row["deleted"]}
     work = lambda w: {"n": w.n, "title": w.title, "todo": w.todo, "parked": bool(w.parked), "awaiting": w.awaiting,
-                      "completed": w.completed} if w else None
+                      "completed": w.completed, "created": w.created} if w else None
     questions = Questions(record, actor=SYSTEM).rows.standing()
     prompts = [n for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("action") == "permission"]
     attention = attention_of(questions, prompts)

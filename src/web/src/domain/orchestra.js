@@ -41,6 +41,7 @@ function entryOf(e, now) {
         now: [tool || (focus.known ? focus.title : ""), e.agent && e.agent.model].filter(Boolean).join(" · "),
         plan,
         at: (e.agent && e.agent.at) || 0,
+        since: (e.work && e.work.created) || 0,
         waits: Boolean((e.work && e.work.awaiting) || (e.counts || {}).questions || (e.agent && e.agent.asking)),
         card: {type: "ticket", n: Number(n), title, session: "", state, reason: reason || tool},
     };
@@ -63,6 +64,7 @@ function subagentsOf(e) {
         now: [sub.type, sub.model].filter(Boolean).join(" · "),
         plan: null,
         at: sub.running ? sub.active || sub.at : sub.ended || sub.at,
+        since: sub.running ? sub.started || sub.at || 0 : 0,
         waits: false,
         card: {
             type: "agent",
@@ -94,7 +96,7 @@ export const AGENT_VIEW = {
     states: {working: true, waiting: true, idle: true, stopped: true},
     kinds: {ticket: true, plan: true, helper: true, subagent: true},
     unfinished: false,
-    order: "state",
+    order: "number",
 };
 
 export const STATE_SWITCHES = [
@@ -112,6 +114,7 @@ export const KIND_SWITCHES = [
 ];
 
 export const ORDERS = [
+    {key: "number", label: "By number", icon: "list"},
     {key: "state", label: "By state", icon: "list"},
     {key: "ticket", label: "By ticket", icon: "ticket"},
     {key: "active", label: "By last active", icon: "clock"},
@@ -128,6 +131,10 @@ export function hiddenBy(entry, view) {
     return "";
 }
 
+const byNumber = (a, b) => a.n - b.n || (a.kind || "").localeCompare(b.kind || "") || a.key.localeCompare(b.key);
+
+export const slotsFor = (slots, entries) => [...slots, ...entries.filter((e) => !slots.includes(e.key)).sort(byNumber).map((e) => e.key)];
+
 const RANK = {waiting: 0, working: 1, idle: 2, stopped: 3};
 const BY = {
     state: (a, b) => RANK[stateGroup(a)] - RANK[stateGroup(b)] || b.at - a.at,
@@ -135,7 +142,8 @@ const BY = {
     active: (a, b) => b.at - a.at,
 };
 
-export const ordered = (entries, order) => [...entries].sort(BY[order] || BY.state);
+export const ordered = (entries, order, slots = []) =>
+    order === "number" ? [...entries].sort((a, b) => slots.indexOf(a.key) - slots.indexOf(b.key) || byNumber(a, b)) : [...entries].sort(BY[order] || BY.state);
 
 const WORDS = Object.fromEntries(
     [...STATE_SWITCHES, ...KIND_SWITCHES, {key: "unfinished", hidden: (n) => `${n} without an unfinished plan`}].map((s) => [
