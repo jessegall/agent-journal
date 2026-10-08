@@ -207,9 +207,10 @@ def test_a_legacy_install_copies_managed_files_and_updates_without_holding(tmp_p
         "after the first update, the checksum guard holds changed files"
 
 
-@pytest.mark.parametrize("name", list(DRIVERS))
-def test_every_agent_launches_from_an_installed_zip(tmp_path, name):
-    launches(tmp_path, installed(tmp_path) / "journal.py", name)
+def test_every_agent_launches_from_an_installed_zip(tmp_path):
+    entry = installed(tmp_path) / "journal.py"
+    for name in DRIVERS:
+        launches(tmp_path, entry, name)
 
 
 def test_the_launcher_carries_its_running_agent_over_to_a_new_build(tmp_path):
