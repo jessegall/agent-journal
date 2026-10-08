@@ -3,6 +3,7 @@ import time
 
 import pytest
 
+from pathlib import Path
 from types import SimpleNamespace
 from engine.focus import SCRIPT, existing_tab
 from controllers.types import Agents
@@ -327,7 +328,7 @@ def test_running_out_of_viewer_ports_is_refused_in_words_with_the_hooks_put_back
     assert moved(record) == [] and hooks.read_text() == before, "nothing stays set aside"
 
 
-def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_and_lists_the_journals_running(tmp_path, monkeypatch):
+def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_and_lists_the_journals_running(tmp_path, monkeypatch, capsys):
     import socket
     held = socket.socket()
     held.bind(("127.0.0.1", 0))
@@ -359,6 +360,42 @@ def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_a
     viewer.PROBED[0] = time.time() - viewer.PROBE_FOR - 1
     viewer.running_journals()
     assert viewer.PROBED[0] > time.time() - 5, "an old list is refreshed in the background"
+
+    monkeypatch.setattr(viewer, "other_journal_on", lambda port, root: False)
+    monkeypatch.setattr(viewer, "waited", lambda port: False)
+    monkeypatch.setattr(viewer, "free", lambda port: port != viewer.PORTS[0])
+    assert viewer.available(kept, viewer.PORTS[0]) == viewer.PORTS[1] and "is still taken after" in capsys.readouterr().err, \
+        "a port that stays taken is left for the next free one, and the move is said"
+    monkeypatch.setattr(viewer, "running", lambda root: "")
+    assert viewer.answered(kept, SimpleNamespace(poll=lambda: 3, returncode=3)) == ("", 3), "a server that ends before it answers hands back its exit code"
+
+    class Answer:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *raised):
+            return False
+    monkeypatch.setattr(viewer, "urlopen", lambda url, timeout: Answer())
+    assert viewer.healthy("http://x/", "main"), "a server that answers its health check is healthy"
+    monkeypatch.setattr(viewer, "urlopen", lambda url, timeout: (_ for _ in ()).throw(OSError("refused")))
+    assert not viewer.healthy("http://x/", "main"), "one that cannot be reached is not"
+    monkeypatch.setattr(viewer, "running", lambda root: "http://x/")
+    monkeypatch.setattr(viewer, "healthy", lambda url, env: True)
+    watch = viewer.StuckServer(kept, "main")
+    watch.missed = 2
+    assert (watch.restarted(), watch.missed) == ("", 0), "a server that answers again starts its count of missed checks over"
+    (kept / "runtime").mkdir()
+    (kept / "runtime" / viewer.STUCK_THREADS).write_text("Thread 0x1: waiting on the record lock")
+    signals = []
+    monkeypatch.setattr(viewer, "os", SimpleNamespace(kill=lambda pid, number: signals.append(number)))
+    monkeypatch.setattr(viewer, "time", SimpleNamespace(time=time.time, sleep=lambda seconds: None))
+    monkeypatch.setattr(viewer, "STOP_WAIT", 0)
+    monkeypatch.setattr(viewer, "alive", lambda pid: True)
+    kept_threads = watch.restart(4242)
+    assert signals == [viewer.signal.SIGUSR1, viewer.signal.SIGTERM, viewer.signal.SIGKILL] and "the record lock" in Path(kept_threads).read_text(), \
+        "a stuck server is asked for its threads, which are kept, then stopped, and killed when it will not stop"
 
 
 def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_identity(tmp_path, monkeypatch):

@@ -1,3 +1,5 @@
+import pytest
+
 import features
 from controllers.types import Agents
 from features.parts import AgentContext
@@ -84,6 +86,26 @@ def test_a_transcript_rewritten_in_place_is_read_again_not_served_from_the_cache
     cache = TranscriptCache(blocked)
     assert (cache.write(("a",), 1, "state"), cache.recent(tmp_path / "gone.jsonl", lambda raw: raw), cache.before(tmp_path / "gone.jsonl", 10, 5)) == (None, [], b""), \
         "a cache that cannot be written, and a transcript that is gone, leave nothing and fail nothing"
+    lines = lambda turns, read, count: turns + [line.decode() for line in read]
+    busy = cache.lock(("transcript", str(transcript), code_mark()))
+    busy.acquire()
+    try:
+        assert cache.transcript(transcript, lines) == [entry("the first word!").strip(), entry("and more of them").strip()], \
+            "a transcript another request is reading answers with its newest lines instead of waiting"
+        cache.turns_behind(transcript, ("transcript", str(transcript), code_mark()), lines)
+        assert not cache.behind, "a read already going on is not queued a second time"
+    finally:
+        busy.release()
+    assert (cache.turns_up(tmp_path / "gone.jsonl", ("gone",), lines), cache.fold_up(("gone",), tmp_path / "gone.jsonl", None, lambda: "empty", None)) == ([], "empty"), \
+        "a transcript gone before its read leaves no turns and its fold as it started"
+
+    class Broke(Exception):
+        pass
+    cache.behind.append(lambda: (_ for _ in ()).throw(Broke()))
+    cache.catching_up = True
+    with pytest.raises(Broke):
+        cache.catch_up()
+    assert not cache.catching_up, "a read that fails behind lets the next one start its own catching up"
 
 
 def test_the_conversation_a_summary_replaced_and_your_own_words_are_read_back(capsys):
