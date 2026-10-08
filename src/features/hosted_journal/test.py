@@ -18,7 +18,7 @@ from engine import disk
 from engine.sessions import Sessions
 from engine.viewer import SERVING
 from features.hosted_journal.details import HostedJournalDetails
-from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, MOST_STREAMS, Proxies, Visit
+from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, MOST_STREAMS, Visit
 from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, WrongTries, hashed
 from features.hosted_journal.vault import AUDIT, VAULT, DiskFull, RefusalLog, Vault
 from features.phone.controller import Phones
@@ -172,6 +172,8 @@ def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_ea
         assert hosted.call("POST", path, {}, Cookie=f"{COOKIE}={token}", Origin=origin).status == 403, path
     code = Phones(hosted.record, actor=USER).connect(7)["link"].rsplit("#", 1)[1]
     phone_headers = {"Origin": origin, "X-Phone": "1", "Content-Type": "application/json"}
+    forged = {**phone_headers, "Host": ADDRESS, "Origin": f"https://{ADDRESS}", "X-Forwarded-Proto": "https", "X-Forwarded-For": "203.0.113.4"}
+    assert hosted.call("POST", "/p/pair", body=json.dumps({"code": code, "device": "phone"}), **forged).status == 403, "the phone too trusts only the named proxy"
     paired = hosted.call("POST", "/p/pair", body=json.dumps({"code": code, "device": "phone"}), **phone_headers)
     key = paired.headers["set-cookie"].split(";")[0]
     for path in ("/p/api/upgrade", "/p/api/st%6fp", "/p/api/update"):
@@ -189,7 +191,7 @@ def test_another_site_plain_http_from_outside_and_a_strange_host_are_refused(hos
     assert hosted.call("POST", "/login", {"password": PASSWORD}, Origin="https://evil.example").status == 403
     outside = type("Outside", (), {"shares": Shares(hosted.record, actor=SYSTEM), "path": "/", "client_address": ("203.0.113.5", 4000),
                                    "headers": {"Host": "localhost", "X-Forwarded-Proto": "https", "X-Forwarded-For": "198.51.100.7"}})
-    visit = Visit(outside, Proxies(), RefusalLog(1))
+    visit = Visit(outside, RefusalLog(1))
     assert not visit.secure() and visit.place() == "203.0.113.5", "a peer that is not the named proxy decides neither https, locality nor its place"
     forged = {"Host": ADDRESS, "Cookie": f"{COOKIE}={token}", "X_Forwarded_Proto": "https", "X_Forwarded_For": "203.0.113.9"}
     Features(hosted.record, actor=USER).configure(HostedJournalDetails.name, "proxy", "127.0.0.1")

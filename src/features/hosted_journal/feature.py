@@ -8,6 +8,7 @@ from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, Gateway
 from features.journal import Journal
 from features.phone.desktop import CLOSED
 from features.sharing.address import ANSWERS_AT
+from features.sharing.origins import ORIGINS, ProxyLookup, ProxyOrigins
 from features.sharing.routes import EVERY_OTHER, ROUTES
 from features.sharing.services import KEEP_UP, LISTENS, Listen
 
@@ -32,6 +33,13 @@ def address(record) -> str:
 class HostedJournalFeature(Feature):
     details = HostedJournalDetails
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.lookup = ProxyLookup()
+
+    def origins(self, record) -> ProxyOrigins:
+        return ProxyOrigins(HostedJournalDetails.values(record)["proxy"], self.lookup)
+
     def register(self, journal: Journal) -> None:
         ROUTES.add(self, Gateway(), key=EVERY_OTHER)
         KEEP_UP.add(self, always)
@@ -40,3 +48,4 @@ class HostedJournalFeature(Feature):
         ANSWERS_AT.add(self, address)
         AT_ONCE.add(self, agents_at_once)
         CLOSED.add(self, NEVER_FROM_OUTSIDE)
+        ORIGINS.add(self, self.origins)

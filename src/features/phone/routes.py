@@ -17,7 +17,8 @@ from engine.color import identity
 from features.sharing.controller import Shares
 from features.sharing.page import disposition, unshared
 from features.sharing.preview import icon
-from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT, local, own_origin
+from features.sharing.origins import origins_of
+from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused, Stale
 from features.trigger import DAY
 from engine.wording import digest
@@ -385,15 +386,13 @@ class PhoneRoutes:
     def relying(self, handler) -> Relying:
         """The site a passkey answers for: this computer under its own name, or else the tunnel address the journal knows, never one the request names."""
         host = handler.headers.get("Host", "")
-        if local(host):
+        if origins_of(handler.shares.record).on_this_machine(handler):
             return Relying(host.split(":", 1)[0], f"http://{host}")
         address = Shares(handler.shares.record, actor=SYSTEM)._address()
         return Relying(address, f"https://{address}")
 
     def trusted(self, handler, kind: str = "application/json") -> bool:
-        host = handler.headers.get("Host", "")
-        encrypted = handler.headers.get("X-Forwarded-Proto") == "https" or not local(host)
-        return (handler.headers.get("Origin") == own_origin(host, encrypted) and handler.headers.get(HEADER) == "1"
+        return (handler.headers.get("Origin") == origins_of(handler.shares.record).origin(handler) and handler.headers.get(HEADER) == "1"
                 and handler.headers.get("Content-Type", "").startswith(kind))
 
     def body(self, handler) -> dict | None:
