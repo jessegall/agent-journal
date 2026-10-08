@@ -1,6 +1,5 @@
 <script setup>
 import Btn from "../kit/Btn.vue";
-import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
@@ -18,10 +17,7 @@ const emit = defineEmits(["take", "leave"]);
     <section class="dump-report">
         <p class="dump-report-title">{{ title }}</p>
         <template v-for="line in lines" :key="line">
-            <p class="dump-report-line">
-                <Icon name="check" :size="11" />
-                {{ line }}
-            </p>
+            <p class="dump-report-line">{{ line }}</p>
         </template>
         <template v-if="summary">
             <TextDisplay class="dump-report-summary" :text="summary" />
@@ -32,26 +28,28 @@ const emit = defineEmits(["take", "leave"]);
         <template v-else>
             <p class="dump-report-note">Nothing was planned or started. Ask about any of it in the files on the left.</p>
         </template>
-        <template v-for="s in suggestions" :key="s.pick">
-            <div :class="['dump-report-sugg', s.state]">
-                <span class="dump-report-ask">{{ s.ask || s.label }}</span>
-                <SwitchCase :value="s.state">
-                    <template #taken>
-                        <span class="dump-report-done">
-                            <Icon name="check" :size="11" />
-                            {{ s.label }}
-                        </span>
-                    </template>
-                    <template #left>
-                        <span class="dump-report-left">Not now</span>
-                    </template>
-                    <template #default>
-                        <span class="dump-report-btns">
-                            <Btn kind="primary" small :busy="s.busy" @click="emit('take', s.pick)">{{ s.ask ? s.label : "Yes, do it" }}</Btn>
-                            <Btn small @click="emit('leave', s.pick)">Not now</Btn>
-                        </span>
-                    </template>
-                </SwitchCase>
+        <template v-if="suggestions.length">
+            <p class="dump-report-next">What the agent can do next</p>
+            <div class="dump-report-offers">
+                <template v-for="s in suggestions" :key="s.pick">
+                    <div class="dump-report-sugg">
+                        <span class="dump-report-ask">{{ s.ask || s.label }}</span>
+                        <SwitchCase :value="s.state">
+                            <template #taken>
+                                <span class="dump-report-answered">Sent to the agent</span>
+                            </template>
+                            <template #left>
+                                <span class="dump-report-answered">Not now</span>
+                            </template>
+                            <template #default>
+                                <span class="dump-report-btns">
+                                    <Btn small :busy="s.busy" @click="emit('take', s.pick)">{{ s.ask ? s.label : "Yes, do it" }}</Btn>
+                                    <Btn small @click="emit('leave', s.pick)">Not now</Btn>
+                                </span>
+                            </template>
+                        </SwitchCase>
+                    </div>
+                </template>
             </div>
         </template>
     </section>
@@ -64,9 +62,9 @@ const emit = defineEmits(["take", "leave"]);
     flex-direction: column;
     gap: 8px;
     padding: 16px 16px 14px;
-    border: 1px solid color-mix(in srgb, var(--tone-good) 32%, transparent);
+    border: 1px solid var(--border-2);
     border-radius: 12px;
-    background: color-mix(in srgb, var(--tone-good) 5%, var(--bg));
+    background: var(--raised);
     animation: dump-report-arrive 0.6s var(--ease) both;
 }
 
@@ -87,10 +85,6 @@ const emit = defineEmits(["take", "leave"]);
     color: var(--text-2);
 }
 
-.dump-report-line :deep(.ico) {
-    color: var(--tone-good);
-}
-
 .dump-report-summary {
     font-size: 13px;
     color: var(--text-2);
@@ -102,31 +96,26 @@ const emit = defineEmits(["take", "leave"]);
     color: var(--text-3);
 }
 
+.dump-report-next {
+    margin: 6px 0 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-3);
+}
+
+.dump-report-offers {
+    display: flex;
+    flex-direction: column;
+}
+
 .dump-report-sugg {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 12px;
-    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border-2));
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--accent) 7%, var(--bg));
+    padding: 9px 0;
+    border-top: 1px solid var(--border);
     font-size: 13px;
     color: var(--text-2);
-    animation: dump-report-arrive 0.5s var(--ease) both;
-    transition:
-        border-color 0.3s,
-        background 0.3s,
-        opacity 0.3s;
-}
-
-.dump-report-sugg.taken,
-.dump-report-sugg.left {
-    border-color: var(--border-2);
-    background: transparent;
-}
-
-.dump-report-sugg.left {
-    opacity: 0.55;
 }
 
 .dump-report-ask {
@@ -141,15 +130,7 @@ const emit = defineEmits(["take", "leave"]);
     gap: 6px;
 }
 
-.dump-report-done {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    gap: 6px;
-    color: var(--tone-good);
-}
-
-.dump-report-left {
+.dump-report-answered {
     flex: none;
     color: var(--text-4);
 }
@@ -162,8 +143,7 @@ const emit = defineEmits(["take", "leave"]);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .dump-report,
-    .dump-report-sugg {
+    .dump-report {
         animation: none;
     }
 }

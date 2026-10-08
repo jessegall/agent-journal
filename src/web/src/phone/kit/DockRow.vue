@@ -62,6 +62,10 @@ const emit = defineEmits(["open", "close"]);
     background: var(--accent);
 }
 
+.quiet .notice-mark {
+    background: var(--text-4);
+}
+
 .good .notice-mark {
     background: var(--tone-good);
 }
