@@ -21,3 +21,9 @@ describe("the helper that holds a plan's to-dos", () => {
         expect(held.map((row) => row.n)).toEqual([4, 5]);
     });
 });
+
+test("a plan page asks only for the helpers that hold its to-dos", async () => {
+    const {holdingHelpers} = await import("../src/domain/helpers.js");
+    const todos = [{data: {assigned: "helper:7"}}, {data: {assigned: "helper:7"}}, {data: {assigned: "helper:12"}}, {data: {assigned: "agent-3"}}, {data: {}}];
+    expect(holdingHelpers(todos)).toEqual([7, 12]);
+});

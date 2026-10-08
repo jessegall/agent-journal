@@ -26,7 +26,7 @@ import ConnectionMark from "./ConnectionMark.vue";
 import Segmented from "../kit/Segmented.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import HelperList from "../chat/HelperList.vue";
-import {useHelpers} from "../composables/helpers.js";
+import {useEveryHelper, useHelpers} from "../composables/helpers.js";
 import {isWorking} from "../domain/helpers.js";
 import {MODES, ORCHESTRATOR} from "../domain/modes.js";
 import {rows} from "../sync/rows.js";
@@ -52,6 +52,7 @@ const helpersHeight = Math.min(520, Math.round(window.innerHeight * 0.7));
 const helpersOut = computed(() => helpers.value.filter(isWorking).length);
 const orchestratingHelpers = computed(() => (mode.value === ORCHESTRATOR ? helpersOut.value : 0));
 const helpersOpen = ref(false);
+const {rows: everyHelper, refresh: refreshEveryHelper} = useEveryHelper(helpersOpen);
 const helpersAnchor = ref(null);
 const modeOptions = computed(() =>
     MODES.map((one) => ({
@@ -63,6 +64,7 @@ const modeOptions = computed(() =>
 function toggleHelpers(e) {
     helpersAnchor.value = e.currentTarget;
     helpersOpen.value = !helpersOpen.value;
+    if (helpersOpen.value) refreshEveryHelper();
 }
 const keepMode = (key) => (store.settings = {...store.settings, work_modes: {...store.settings.work_modes, mode: key}});
 
@@ -207,7 +209,7 @@ async function runBar(p) {
                         @click.stop
                         @close="helpersOpen = false"
                     >
-                        <HelperList :rows="helpers" @changed="refreshHelpers" @close="helpersOpen = false" />
+                        <HelperList :rows="everyHelper" @changed="refreshEveryHelper(), refreshHelpers()" @close="helpersOpen = false" />
                     </MenuPanel>
                 </template>
             </template>
