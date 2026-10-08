@@ -24,16 +24,30 @@ class IntegrationClient:
     """Talks to one service from the journal's own process: the key is read here, sent only to that service's host and never leaves through a command line, a subprocess or an error."""
 
     def __init__(self, root, host: str, variable: str, timeout: float = TIMEOUT):
-        self.host, self.timeout = host, timeout
-        self.key = ValuesFile(root).values().get(variable, "") if variable else ""
-        self.masker = Masker({self.key: variable} if self.key else {})
+        self.host, self.timeout, self.variable, self.values = host, timeout, variable, ValuesFile(root)
+        self.read_key()
+
+    def read_key(self) -> None:
+        self.key = self.values.values().get(self.variable, "") if self.variable else ""
+        self.masker = Masker({self.key: self.variable} if self.key else {})
+        self.seen = self.stamp()
+
+    def stamp(self) -> int:
+        return self.values.path.stat().st_mtime_ns if self.values.path.is_file() else 0
+
+    def current(self) -> None:
+        """A key you replaced in your secrets is read again; the file is looked at only by its time."""
+        if self.stamp() != self.seen:
+            self.read_key()
 
     def masked(self, text: str) -> str:
-        return (self.masker.masked(text.encode())).decode(errors="replace")
+        return self.masker.masked(text.encode()).decode(errors="replace")
 
     def post(self, url: str, body: dict) -> str:
         """The service's answer as text, for the caller to read into its own typed values."""
-        if urlsplit(url).scheme != "https" or urlsplit(url).hostname != self.host:
+        self.current()
+        address = urlsplit(url)
+        if address.scheme != "https" or address.hostname != self.host:
             raise Refused(f"this integration sends its key only to https://{self.host}, not to {self.masked(url)}")
         if not self.key:
             raise Refused("no key is picked, so nothing is sent")
