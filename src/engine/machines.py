@@ -59,6 +59,23 @@ class ThisMachine:
         return not current.is_leased() or current.machine == this_machine()
 
 
+MEMBER = "member"
+
+
+class Pushing:
+    """The writer a push is checked as: the machine its connection belongs to, which may write only a scope leased to it, never one nobody leased."""
+
+    def __init__(self, machine: str) -> None:
+        self.machine = machine
+
+    def holds(self, current: Lease) -> bool:
+        return current.is_leased() and current.machine == self.machine
+
+    def attributed(self, data: dict) -> dict:
+        """A pushed row or event with its member set from the connection, whatever the row itself says."""
+        return {**data, MEMBER: self.machine}
+
+
 class NotTheOwner(Refused):
     @classmethod
     def of(cls, scope: str, current: Lease) -> "NotTheOwner":
