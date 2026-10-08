@@ -23,6 +23,9 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
     tick(record)
     mark = Agents(record, actor="system").load(Agents(record, actor="system").by_session("claude-1").n).data["cards"][-1]
     assert (mark["label"], mark["state"]) == ("Moved a long command to the background", "failed"), "the mark of a moved command turns to failed when its task ends that way"
+    report(record, "stopped", "Stop", session="ended-1", provider="claude", commands=[{"command": "sleep 1099816", "tool": "Bash", "at": time.time() - 1099816}])
+    tick(record, "ended-1")
+    assert (moved, [n for n in nudges(record) if "1099816" in n]) == (["claude-1"], []), "a session that has ended is never told of, or moved for, the command it left running"
 
 
 def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):

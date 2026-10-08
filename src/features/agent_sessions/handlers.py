@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -9,9 +10,10 @@ from engine.sessions import Sessions, live
 from providers.payload import HookEvent
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
+from resources.base import SYSTEM
 from resources.types import COMPACTING, STOPPED, SUBAGENT
 from features.trigger import MINUTE
-from controllers.types import CONTROLLERS, Agents, Todos
+from controllers.types import CONTROLLERS, Agents, Todos, environment_records
 
 
 STOP = "stop"
@@ -55,7 +57,7 @@ class AskToStop(Handler):
         row = context.journal.get(Agents).rows.peek(event.agent)
         stopping = row.data.get("stopping") or {}
         provider = PROVIDERS.get(row.provider)
-        if not stopping or not provider:
+        if not stopping or not provider or not row.live:
             return
         speaking = context.speaking_to(row)
         if speaking.once(STOP, f"{stopping['task']}|{stopping['at']}"):
@@ -71,7 +73,24 @@ class MarkSilentStopped(Handler):
         sessions = Sessions(context.record.root)
         for row in agents.rows.every():
             if row.live and float(row.at) < silent and not live(sessions.read(row.title)):
-                agents.stamp(row.n, status=STOPPED)
+                stop(agents, row)
+
+
+def stop(agents: Agents, row) -> None:
+    """A session that ended is stopped, with the command it left running and the stop it was asked for dropped, so no later session hears of them."""
+    agents.stamp(row.n, status=STOPPED, running={}, stopping={})
+
+
+def stop_ended(root: Path) -> str:
+    """Stops the agent rows of every session that ended before this upgrade."""
+    ended = []
+    for record in environment_records(Path(root)):
+        agents, sessions = Agents(record, actor=SYSTEM), Sessions(record.root)
+        for row in agents.rows.every():
+            if row.live and not live(sessions.read(row.title)):
+                stop(agents, row)
+                ended.append(row.title)
+    return f"sessions that had ended are stopped: {', '.join(ended)}" if ended else "no ended session was left running"
 
 
 class KeepSubagentAlive(Handler):
