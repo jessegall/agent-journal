@@ -2,7 +2,6 @@ import time
 
 
 import os
-import time
 
 from controllers.types import Agents
 from runner.hooks import handle
@@ -279,7 +278,6 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     assert (engine.typing(), calls, typed.exists()) == ("", ["clear_input"], False), "the stale draft is cleared once"
     import providers.drivers as drivers
     from providers import DRIVERS
-    from resources.base import Refused
     monkeypatch.setattr(drivers, "ENTER_AFTER", 0)
     record = fresh()
     read, write = os.pipe()
@@ -560,6 +558,39 @@ def test_the_supervisor_stops_a_stubborn_agent_relays_what_the_user_types_and_re
     ignoring.wait()
     reader.close()
     writer.close()
+
+    import json
+    import signal
+    import sys
+    import tty
+    master, follower = os.openpty()
+    tty.setraw(follower)
+    sleeper = subprocess.Popen(["python3", "-c", "import time; time.sleep(30)"])
+    monkeypatch.setattr(sys, "stdin", open(os.devnull))
+    monkeypatch.setattr(sys, "stdout", open(tmp_path / "terminal", "w"))
+    handled = []
+    monkeypatch.setattr(supervisor.signal, "signal", lambda sent, then: handled.append(sent))
+    root = tmp_path / ".journal"
+    held = Supervisor(supervisor.Launch.from_json({
+        "root": str(root), "cwd": str(tmp_path), "env": "main", "agent": "claude", "worker": [sys.executable, "-c", f"import sys; sys.exit({supervisor.STOP})"],
+        "heal": ["true"], "ended": ["true"], "args": ["--resume"], "command": ["claude"], "headless": True,
+        "adopt": {"pid": sleeper.pid, "fd": master, "session": "claude-77", "saved": None}}))
+    folder = root / "runtime" / "sessions" / "claude-77"
+    launched, shape = json.loads((folder / supervisor.LAUNCHED).read_text()), json.loads((folder / supervisor.SCREEN_SHAPE).read_text())
+    assert (launched["pid"], launched["args"], shape["rows"], shape["cols"]) == (sleeper.pid, ["--resume"], *supervisor.HEADLESS_SIZE), \
+        "an adopted agent is recorded with how it was launched, and a headless terminal gets the fixed size"
+    os.write(follower, b"hello from the agent")
+    assert held.relay() is None and b"hello from the agent" in (folder / supervisor.PRINTED).read_bytes(), "what the agent prints is relayed and kept"
+    sender = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    sender.sendto(b"from the viewer", str(held.socket_path()))
+    sender.close()
+    assert held.relay() is None and list(held.pending) == [b"from the viewer"], "a line typed from the viewer waits to be fed to the agent"
+    assert held.relay() is None and not held.pending and os.read(follower, 64) == b"from the viewer", "and reaches the agent's terminal"
+    assert held.exited() is None, "an agent with no exit command has no polite way out"
+    assert held.run() == -signal.SIGHUP and sleeper.wait(5) is not None, "a worker that asks to stop ends the session: the agent is hung up on"
+    assert set(handled) == {signal.SIGWINCH, signal.SIGHUP, signal.SIGTERM} and not held.socket_path().exists(), \
+        "the session handles resizes and hangups while it runs, and takes its socket away when it ends"
+    os.close(follower)
 
     seat.exit, seat.fd = "bye", os.open(os.devnull, os.O_RDONLY)
     assert seat.exited() is None, "an agent whose terminal is already closed has no farewell to type and is left to be stopped"

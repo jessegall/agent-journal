@@ -201,7 +201,7 @@ def test_the_owner_sets_the_password_with_a_one_time_code_then_works_in_the_view
     assert share_services(hosted.record.root, set()) == [], "a login page run apart under its own user is never started by the journal"
 
 
-def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_minutes_pass(hosted):
+def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_minutes_pass(hosted, capsys, monkeypatch):
     Owner(hosted.vault).set_password(PASSWORD)
     for _ in range(MOST_TRIES - 1):
         assert hosted.call("POST", "/login", {"password": "wrong"}).status == 401
@@ -237,6 +237,23 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
         "a browser that logged in before is never locked out by wrong tries from elsewhere"
     assert "cleared" in clear_tries(hosted.record.root)
     assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.78", **proxied).status == 303
+    from engine.record import Record
+    from features.hosted_journal import host
+    from features.hosted_journal.settings import GATEWAY
+    root = str(hosted.record.root)
+    for word in ("password-status", "setup-code", "logout-everywhere", "clear-tries", "reset-password", "password-status", "setup-code"):
+        host.main(["--root", root, word])
+    printed = capsys.readouterr().out
+    assert [part in printed for part in ("password is set", "login(s) ended.", "wrong tries cleared", "password is cleared", host.WAITING, "Setup code, valid for one day")] == [True] * 6, \
+        "the server's command line tells whether a password waits, makes a setup code, ends logins, clears tries and resets the password"
+    host.main(["--root", root, "gateway-settings", "--address", "journal.example.org", "--days", "3"])
+    assert hosted.vault.read(GATEWAY) == {"address": "journal.example.org", "proxy": "", "days": 3}, "the login page's own settings go to its vault"
+    host.main(["--root", root, "prepare", "--address", ADDRESS, "--port", "8441", "--proxy", "127.0.0.1"])
+    kept = Record(hosted.record.root, hosted.record.env).setting(HostedJournalDetails.name, {})
+    assert (kept["port"], kept["proxy"], kept["apart"]) == ("8441", "127.0.0.1", "true"), "prepare switches the journal on a server on, with its login page run apart"
+    monkeypatch.setattr(host, "setup_code", lambda given: (_ for _ in ()).throw(PermissionError("vault")))
+    with pytest.raises(SystemExit, match="Only the login page's user"):
+        host.main(["--root", root, "setup-code"])
 
 
 def held_stream(hosted: Hosted, token: str) -> threading.Thread:
