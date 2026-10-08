@@ -1,6 +1,6 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.groups import Group
-from features.helpers.handlers import helper_waits_on_question, still_unreported
+from features.helpers.handlers import helper_waits_on_question, report_waits, still_unreported
 from features.settings import Setting
 from features.trigger import MINUTES, Trigger
 
@@ -140,6 +140,14 @@ class HelpersDetails(FeatureDetails):
                 {{text}} {{options}} Answer it with {{command}}, or leave it to the user
             """,
             until=("question.completed", "question.deleted"),
+            while_waiting=True,
+        ),
+        Line(
+            name="reported",
+            title="helper {{n}}, {{name}}, reported in message {{message}}",
+            brief="read it, then journal helper finish {{n}} once its work is taken or dropped{{branch}}",
+            until=("helper.completed", "helper.deleted"),
+            owed=report_waits,
             while_waiting=True,
         ),
         Line(

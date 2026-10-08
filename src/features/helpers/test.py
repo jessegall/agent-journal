@@ -214,6 +214,12 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     reported, = [n for n in Nudges(record, actor=SYSTEM).all() if "helper 1, Rhea, reported" in n.title]
     assert reported.until == ["helper.completed", "helper.deleted"], "the dispatcher is told, until it finishes the helper"
     assert not features.FEATURES["helpers"].is_owed(record, "stopped", ("helper:1",)), "once it reported, the line that it stopped is no longer owed"
+    assert told.ref in reported.data["rows"] and features.FEATURES["helpers"].is_owed(record, "reported", tuple(reported.data["rows"])), \
+        "a report is named while it stands"
+    monkeypatch.setattr("features.helpers.controller.tell_in", lambda *given: True)
+    Helpers(record, actor=AGENT).say(1, "Now profile the start-up too")
+    assert not features.FEATURES["helpers"].is_owed(record, "reported", tuple(reported.data["rows"])), \
+        "once the helper is given new work, its report is named no more"
 
 
 def test_a_turn_that_ends_in_an_error_reports_once_for_the_helper(monkeypatch):
