@@ -4,7 +4,7 @@ import threading
 from dataclasses import dataclass, field
 from typing import ClassVar
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 
 
 @dataclass(frozen=True)

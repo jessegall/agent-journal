@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from engine.stored import read_json, write_json
 from features.secrets.running import Masker
 from features.secrets.values import ValuesFile

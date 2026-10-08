@@ -11,7 +11,7 @@ import webbrowser
 from dataclasses import dataclass, field
 from typing import Callable, ClassVar
 
-from engine.fields import Loaded
+from resources.fields import Loaded
 from features.integrations.client import OPENER, TIMEOUT
 from resources.base import Refused
 
