@@ -34,14 +34,14 @@ export function cardPlan(plans) {
     return lead && !PLAN_RUNNING.includes(lead.data.status) ? lead : null;
 }
 
-const BARS_SHOWN = 3;
+const MAX_BARS = 3;
 const isRunning = (p) => PLAN_RUNNING.includes(p.data.status);
 
 export function barPlans(plans) {
     const running = openPlans(plans)
         .filter(isRunning)
         .sort((a, b) => Boolean(a.data.delegated) - Boolean(b.data.delegated) || (a.data.status === "approved") - (b.data.status === "approved") || a.n - b.n);
-    return running.length > BARS_SHOWN ? running.slice(0, BARS_SHOWN) : running;
+    return running.length > MAX_BARS ? running.slice(0, MAX_BARS) : running;
 }
 
 export function otherPlans(plans) {
@@ -50,8 +50,8 @@ export function otherPlans(plans) {
 }
 
 export function foldedPlans(plans) {
-    const shown = barPlans(plans);
-    return openPlans(plans).filter((p) => !shown.includes(p));
+    const barred = barPlans(plans);
+    return openPlans(plans).filter((p) => !barred.includes(p));
 }
 
 export function othersLine(others) {
