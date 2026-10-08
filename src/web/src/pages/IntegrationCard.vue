@@ -68,7 +68,7 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
         <p class="abstract">{{ feature.abstract }}</p>
         <div class="use">
             <span>{{ feature.label }}</span>
-            <Switch :on="on" :title="on ? 'Turn it off' : 'Turn it on'" @change="switchTo" />
+            <Switch :on="on" :title="feature.label" @change="switchTo" />
         </div>
         <template v-if="on">
             <template v-if="feature.mcp_server">

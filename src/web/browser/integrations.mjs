@@ -11,7 +11,7 @@ await runScenarios(process.argv[2], {
         await card.getByText("Key", {exact: true}).waitFor();
         await card.getByText("No key is picked, so Linear is not reached.").waitFor();
         await card.getByText("no command can use it").waitFor();
-        if ((await card.getByRole("switch").getAttribute("aria-checked")) !== "false") throw new Error("Linear starts switched on");
+        if ((await card.getByRole("switch", {name: "Use Linear"}).getAttribute("aria-checked")) !== "false") throw new Error("Linear starts switched on");
         await card.locator("[data-state]").getByText("Off", {exact: true}).waitFor();
         await shot(page, "integrations-off");
     },
@@ -27,12 +27,12 @@ await runScenarios(process.argv[2], {
         const card = page.locator('[data-integration="linear"]');
         await card.getByText(title).click();
         await card.getByText(`Linear signs in with the secret ${title}.`).waitFor();
-        await card.getByRole("switch").click();
+        await card.getByRole("switch", {name: "Use Linear"}).click();
         await card.locator("[data-state]").getByText(/Not checked yet|Last checked|Could not reach Linear/).waitFor();
         await card.getByText("Webhook signing secret").waitFor();
         await card.getByText(/Paste this address into Linear's webhook settings|Turn on sharing to get an address/).waitFor();
         await page.reload();
-        await page.locator('[data-integration="linear"]').getByRole("switch", {checked: true}).waitFor();
+        await page.locator('[data-integration="linear"]').getByRole("switch", {name: "Use Linear", checked: true}).waitFor();
         await shot(page, "integrations-on");
     },
     async "Gmail is off at first and its card asks for the address and the mail to read once it is on"(page, url) {
@@ -40,9 +40,9 @@ await runScenarios(process.argv[2], {
         const card = page.locator('[data-integration="gmail"]');
         await card.waitFor();
         await card.getByText("Use Gmail").waitFor();
-        if ((await card.getByRole("switch").getAttribute("aria-checked")) !== "false") throw new Error("Gmail starts switched on");
+        if ((await card.getByRole("switch", {name: "Use Gmail"}).getAttribute("aria-checked")) !== "false") throw new Error("Gmail starts switched on");
         if (await card.getByText("through its MCP server").count()) throw new Error("Gmail offers an MCP server switch it does not have");
-        await card.getByRole("switch").click();
+        await card.getByRole("switch", {name: "Use Gmail"}).click();
         await card.locator("[data-gmail-account]").waitFor();
         await card.locator("[data-gmail-search]").waitFor();
         const saved = page.waitForResponse((answer) => answer.request().method() === "POST" && /\/api\/main\/settings$/.test(answer.url()));

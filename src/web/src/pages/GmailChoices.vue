@@ -25,10 +25,10 @@ const pickBoard = (n) => saveSettings(settingsWith(store.settings, NAME, {board:
     <div class="choices">
         <h4 class="label">Address</h4>
         <p class="line">The Gmail address the app password belongs to.</p>
-        <TextInput v-model="account" type="email" placeholder="you@gmail.com" data-gmail-account @change="save('account', account)" />
+        <TextInput :value="account" type="email" placeholder="you@gmail.com" aria-label="Gmail address" data-gmail-account @input="account = $event.target.value" @change="save('account', account)" />
         <h4 class="label">Which mail</h4>
         <p class="line">The mail to read, as a Gmail label or search. For example label:journal or from:me is:unread. Nothing is read until you write one.</p>
-        <TextInput v-model="search" placeholder="label:journal" data-gmail-search @change="save('search', search)" />
+        <TextInput :value="search" placeholder="label:journal" aria-label="Which Gmail mail to read" data-gmail-search @input="search = $event.target.value" @change="save('search', search)" />
         <h4 class="label">Board</h4>
         <template v-if="boards.length">
             <ChoiceList stacked :choices="choices" @pick="pickBoard" />
