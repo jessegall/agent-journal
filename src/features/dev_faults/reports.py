@@ -4,10 +4,10 @@ import pstats
 import time
 from pathlib import Path
 
-from controllers.types import Agents, Notifications
+from controllers.types import Agents, Notifications, Todos
 from engine import runtime
 from engine.record import Record
-from engine.wording import plural
+from engine.wording import digest, plural
 from features.dev_faults.diagnostics import logged
 from resources.base import SYSTEM
 
@@ -15,6 +15,7 @@ OVER = "is slower than its budget"
 THREW = "the viewer threw"
 SAID = 300
 TOLD_EVERY = 25
+HOLD_AFTER = 20
 RETIRED = "slow"
 BUDGET = {"request": 50, "hook": 50, "command": 50}
 WARMED = ("request", "hook")
@@ -63,9 +64,27 @@ class FaultReports:
                  f"{waiting:.0f}ms waiting on locks" if waiting >= 1 else "", f"then {after:.0f}ms more after it answered" if after >= 1 else "",
                  f"it read a whole transcript for {'; '.join(whole_reads)}" if whole_reads else ""]
         spent = ", ".join(part for part in parts if part)
-        self.file(record, f"{kind} {name} {OVER}"[:80],
-                  f"{took:.0f}ms last{f' ({spent})' if spent else ''}, against a budget of {self.milliseconds(record, kind)}ms.",
-                  kind=kind, target=name, worst=took)
+        title = f"{kind} {name} {OVER}"[:80]
+        brief = f"{took:.0f}ms last{f' ({spent})' if spent else ''}, against a budget of {self.milliseconds(record, kind)}ms."
+        self.file(record, title, brief, kind=kind, target=name, worst=took)
+        self.answer(record, title, brief)
+
+    def answer(self, record, title: str, brief: str) -> None:
+        """A first breach files its own to-do, and one seen over and over with no to-do open holds the agent's writes until one is filed."""
+        fault = Notifications(record, actor=SYSTEM).rows.by_title(title, standing=True)
+        if fault is not None and int(fault.data["times"]) == 1 and Todos(record, actor=SYSTEM).rows.by_title(title, standing=True) is None:
+            Todos(record, actor=SYSTEM).create(title, brief=f"{brief} The budget is {BUDGET.get(fault.data.get('kind'), 50)}ms: profile it, fix it, and verify the new time before the release.")
+        self.settle(record, title)
+
+    def settle(self, record, title: str) -> None:
+        fault = Notifications(record, actor=SYSTEM).rows.by_title(title, standing=True)
+        if fault is None:
+            return
+        key = digest(title, 12)
+        if Todos(record, actor=SYSTEM).rows.by_title(title, standing=True) is not None:
+            return self.feature.release(record, key)
+        if int(fault.data["times"]) >= HOLD_AFTER:
+            self.feature.hold(record, "overdue", key, title=title, times=fault.data["times"])
 
     def threw(self, record, message: str, where: str, stack: str, kind: str = "threw") -> None:
         if self.feature.on(record, "log"):

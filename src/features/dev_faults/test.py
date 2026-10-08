@@ -329,3 +329,14 @@ def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_
     assert (switches.generation() == before, shaped(plain, record) is held[0], shaped(naming, record) is held[1]) == (True, True, False), \
         "a new environment keeps the switches and formatted rows of the others, and forgets only the rows that name it"
     assert seated == [("elsewhere",)], "only the new environment has its feature rows set up"
+    from controllers.types import Todos
+    from engine.gates import held
+    title = Notifications(record, actor=SYSTEM).rows.every()[0].title
+    todos = Todos(record, actor=SYSTEM)
+    assert [t.title for t in todos.rows.standing()] == [title], "the first breach of a command files a to-do of its own"
+    todos.complete(todos.rows.standing()[0].n, "closed while the breach goes on")
+    for _ in range(25):
+        reports.slow(record, "command", "message all", 500.0, working=500.0)
+    assert "before any other write" in held(record, main.title), "a breach seen over and over with no to-do open holds the agent's writes"
+    todos.create(title)
+    assert held(record, main.title) == "", "filing the to-do lifts the hold"
