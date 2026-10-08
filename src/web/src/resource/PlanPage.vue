@@ -12,11 +12,16 @@ import Sections from "./Sections.vue";
 import Folded from "../kit/Folded.vue";
 import PlanPageActions from "./PlanPageActions.vue";
 import PlanPhase from "./PlanPhase.vue";
+import TicketAgent from "../agents/TicketAgent.vue";
+import {useHelpers} from "../composables/helpers.js";
+import {helperCard, helperEnvironment, helperName} from "../domain/helpers.js";
 import ProgressBar from "../kit/ProgressBar.vue";
 
 const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean, closable: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
 const error = ref("");
+const {rows: helpers} = useHelpers();
+const inspected = ref(null);
 const scope = useScope();
 const status = computed(() => props.resource.data.status);
 const current = computed(() => props.resource.data.current || 1);
@@ -127,6 +132,8 @@ async function run(action, body = {}) {
                     :phase="p"
                     :current="p.i === current && (status === 'active' || status === 'waiting')"
                     :boning="building && stage === 'todos'"
+                    :helpers="helpers"
+                    @inspect="inspected = $event"
                 />
             </template>
             <template v-if="building && stage === 'phases'">
@@ -135,6 +142,15 @@ async function run(action, body = {}) {
                 </template>
             </template>
         </ol>
+        <template v-if="inspected">
+            <TicketAgent
+                :card="helperCard(inspected)"
+                :env="helperEnvironment(inspected)"
+                kind="helper"
+                :label="helperName(inspected)"
+                @close="inspected = null"
+            />
+        </template>
     </article>
 </template>
 

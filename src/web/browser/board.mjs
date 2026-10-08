@@ -1,4 +1,4 @@
-import {drag, journal, numberOf, runScenarios} from "./harness.mjs";
+import {drag, journal, numberOf, reply, runScenarios, shot} from "./harness.mjs";
 
 const card = (page, title) => page.locator(".card", {hasText: title});
 const lane = (page, title) => page.locator(".lane", {has: page.locator(".title", {hasText: new RegExp(`^${title}$`)})});
@@ -70,5 +70,25 @@ await runScenarios(process.argv[2], {
         await page.reload();
         await page.getByText(/approved/i).first().waitFor();
         if (await page.getByRole("button", {name: "Approve", exact: true}).count()) throw new Error("the plan asks for approval again after a reload");
+    },
+    async "a plan shows the helper that holds each phase and to-do, with its state, and opens its inspector"(page, url) {
+        const row = numberOf(journal("todo", "create", `Held row ${Date.now()}`, "--brief", "x"));
+        const plan = numberOf(journal("plan", "create", `Held plan ${Date.now()}`, "--set", "goal=something true"));
+        journal("plan", "phase", String(plan), "Build", "--when", "it is built");
+        journal("plan", "stage", String(plan), "todos");
+        journal("plan", "todos", String(plan), "1", String(row));
+        journal("todo", "assign", String(row), "helper:7");
+        const helper = {n: 7, ref: "helper:7", type: "helper", title: "Build the page", completed: 0, deleted: 0, seen: [], refs: [], state: "working",
+            data: {name: "Zed Builder", environment: "zed-env", provider: "claude", model: "sonnet"}};
+        await page.route(/\/api\/main\/helper\?/, (route) => reply(route, {rows: [helper]}));
+        await page.goto(`${url}#/main/plan/${plan}`);
+        const tags = page.locator(".holder", {hasText: "Zed Builder"});
+        await tags.first().waitFor();
+        if ((await tags.count()) !== 2) throw new Error("the phase and its to-do should each name the helper that holds them");
+        if (!(await tags.first().innerText()).includes("Working")) throw new Error("the helper's state is not shown");
+        await shot(page, "plan-holders");
+        await tags.first().click();
+        await page.locator(".agent-inspector").waitFor();
+        await shot(page, "plan-holder-inspector");
     },
 });
