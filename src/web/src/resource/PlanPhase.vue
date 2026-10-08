@@ -4,6 +4,8 @@ import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import {useScope} from "../composables/scope.js";
 import {state} from "../domain/records.js";
+import HolderTag from "../kit/HolderTag.vue";
+import {HELPER_WORDS, helperHolding, helperName, helperState, helpersHolding} from "../domain/helpers.js";
 import {peek, peekThere} from "../route.js";
 
 const props = defineProps({
@@ -11,13 +13,17 @@ const props = defineProps({
     current: {type: Boolean, default: false},
     boning: {type: Boolean, default: false},
     skeleton: {type: Boolean, default: false},
+    helpers: {type: Array, default: () => []},
 });
+const emit = defineEmits(["inspect"]);
 const talk = inject("talk", null);
 const scope = useScope();
 const open = (row) => (scope.env ? peekThere(scope.env, row.type, row.n) : peek(row.type, row.n));
 const rows = computed(() => props.phase?.rows || []);
 const done = computed(() => rows.value.length > 0 && rows.value.every((t) => t.completed));
 const closed = computed(() => rows.value.filter((t) => t.completed).length);
+const holders = computed(() => helpersHolding(rows.value, props.helpers));
+const heldBy = (todo) => helperHolding(todo, props.helpers);
 const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) : 0));
 </script>
 
@@ -37,6 +43,9 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
                 <span class="ptitle">{{ phase.i }}. {{ phase.title }}</span>
                 <template v-if="phase.checkpoint">
                     <span class="cp">checkpoint</span>
+                </template>
+                <template v-for="h in holders" :key="h.n">
+                    <HolderTag :name="helperName(h)" :state="helperState(h)" :word="HELPER_WORDS[helperState(h)]" @open="emit('inspect', h)" />
                 </template>
                 <span class="progress">{{ closed }}/{{ rows.length }}</span>
                 <template v-if="talk">
@@ -60,6 +69,14 @@ const bones = computed(() => (props.boning ? Math.max(0, 3 - rows.value.length) 
                         <span class="rn">#{{ t.n }}</span>
                         <span class="rt">{{ t.title }}</span>
                     </button>
+                    <template v-if="heldBy(t)">
+                        <HolderTag
+                            :name="helperName(heldBy(t))"
+                            :state="helperState(heldBy(t))"
+                            :word="HELPER_WORDS[helperState(heldBy(t))]"
+                            @open="emit('inspect', heldBy(t))"
+                        />
+                    </template>
                     <template v-if="talk">
                         <button type="button" class="say" title="Comment on this to-do" @click="talk.say(`#${t.n} ${t.title}`)">
                             <Icon name="bubble" :size="12" />

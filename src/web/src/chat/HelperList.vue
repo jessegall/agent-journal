@@ -1,5 +1,5 @@
 <script setup>
-import {helperCounts, helperEnvironment, helperName, helperState, helpersByState} from "../domain/helpers.js";
+import {helperCard, helperCounts, helperEnvironment, helperName, helpersByState} from "../domain/helpers.js";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import CloseButton from "../kit/CloseButton.vue";
@@ -18,14 +18,6 @@ const countsLine = computed(() =>
 );
 const closedOpen = ref(false);
 const inspected = ref(null);
-const cardOf = (row) => ({
-    type: "helper",
-    n: row.n,
-    title: row.title,
-    session: "",
-    state: helperState(row) === "running" ? "running" : "idle",
-    reason: "",
-});
 </script>
 
 <template>
@@ -54,7 +46,7 @@ const cardOf = (row) => ({
         </div>
         <template v-if="inspected">
             <TicketAgent
-                :card="cardOf(inspected)"
+                :card="helperCard(inspected)"
                 :env="helperEnvironment(inspected)"
                 kind="helper"
                 :label="helperName(inspected)"

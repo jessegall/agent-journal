@@ -70,3 +70,19 @@ export const helperCounts = (rows) => ({
     working: rows.filter(isWorking).length,
     reported: rows.filter((row) => helperState(row) === "reported").length,
 });
+
+export const helperCard = (row) => ({
+    type: "helper",
+    n: row.n,
+    title: row.title,
+    session: "",
+    state: helperState(row) === "running" ? "running" : "idle",
+    reason: "",
+});
+
+export const helperHolding = (todo, helpers) => helpers.find((row) => `helper:${row.n}` === todo.data?.assigned) || null;
+
+export function helpersHolding(todos, helpers) {
+    const held = todos.map((todo) => helperHolding(todo, helpers)).filter(Boolean);
+    return held.filter((row, i) => held.findIndex((other) => other.n === row.n) === i);
+}
