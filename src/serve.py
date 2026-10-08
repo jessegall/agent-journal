@@ -1,7 +1,10 @@
+import faulthandler
 import gc
 import json
 import os
 import re
+import resource
+import signal
 import sys
 import threading
 import time
@@ -31,6 +34,8 @@ from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, entry
 
 DEFAULT_PORT = 8430
 REQUEST_BACKLOG = 128
+THREADS = "threads.txt"
+OPEN_FILES = 4096
 SWITCH_INTERVAL = 0.001
 LOOPBACK = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::(\d+))?$")
 
@@ -127,6 +132,15 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
+def tell_threads_on_signal(root: Path) -> None:
+    faulthandler.register(signal.SIGUSR1, file=open(runtime.folder(root) / THREADS, "w"), all_threads=True)
+
+
+def allow_open_files() -> None:
+    _, most = resource.getrlimit(resource.RLIMIT_NOFILE)
+    resource.setrlimit(resource.RLIMIT_NOFILE, (OPEN_FILES if most == resource.RLIM_INFINITY else min(OPEN_FILES, most), most))
+
+
 class JournalServer(ThreadingHTTPServer):
     request_queue_size = REQUEST_BACKLOG
 
@@ -139,6 +153,8 @@ def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
         raise SystemExit(0)
     boot(root)
     announce(root)
+    tell_threads_on_signal(root)
+    allow_open_files()
     features.FEATURES["plugins"].host(root)
     server = JournalServer(("127.0.0.1", port), Handler)
     remember(root, server.server_address[1])
