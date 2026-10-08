@@ -108,7 +108,7 @@ exit 0
 RELEASE_SIGNER = "https://github.com/jessegall/agent-journal/.github/workflows/docker-image.yml@refs/tags/v"
 
 
-def updater_calls(tmp_path: Path, signed_by: str, running: str = "", installed: str = "", asked: str = "", digest_unsigned: str = "") -> list[str]:
+def updater_calls(tmp_path: Path, signed_by: str, asked: str | None = None, **facts: str) -> list[str]:
     """What docker is told when the updater runs once against a registry whose newest image is signed by the given identity."""
     shutil.rmtree(tmp_path, ignore_errors=True)
     for name, body in (("cosign", COSIGN), ("docker", DOCKER_STUB)):
@@ -122,7 +122,8 @@ def updater_calls(tmp_path: Path, signed_by: str, running: str = "", installed: 
     script = (DOCKER / "update.sh").read_text().replace("cd /compose", f"cd {tmp_path / 'compose'}")
     env = {**os.environ, "PATH": f"{tmp_path / 'bin'}:{os.environ['PATH']}", "COMPOSE_PROJECT_NAME": "proof", "UPDATE_ONCE": "1",
            "JOURNAL_UPDATER_STATE": str(tmp_path / "state"), "JOURNAL_REQUESTS": str(tmp_path / "vault/*/hosting-request.json"),
-           "SIGNED_BY": signed_by, "IMAGE_DIGEST": "sha256:" + "a" * 64, "RUNNING": running, "INSTALLED": installed, "DIGEST_UNSIGNED": digest_unsigned, "CALLS": str(tmp_path / "calls")}
+           "SIGNED_BY": signed_by, "IMAGE_DIGEST": "sha256:" + "a" * 64, "CALLS": str(tmp_path / "calls"),
+           **{name.upper(): value for name, value in facts.items()}}
     subprocess.run(["sh", "-c", script], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=30, check=True)
     calls = tmp_path / "calls"
     return [line for line in calls.read_text().splitlines() if line.startswith("compose")] if calls.exists() else []
