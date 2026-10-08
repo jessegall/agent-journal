@@ -7,6 +7,7 @@ from pathlib import Path
 from controllers.types import Agents, CONTROLLERS
 import features
 from commands.launch import launch
+from engine import attic
 from engine.record import Record
 from resources.base import PROJECT
 from engine.seats import seats
@@ -62,6 +63,14 @@ def environment_transcript(record) -> list[SourcedTurn]:
             turns.append((turn.at, row.n, turn.line, SourcedTurn(row.provider, row.title, turn)))
     turns.sort(key=lambda item: item[:3])
     return [item[-1] for item in turns]
+
+def attic_text(record, term: str) -> str:
+    hits = attic.searched(record.root, term)
+    if not hits:
+        return f"nothing in the removed environments mentions {term!r}"
+    lines = "\n".join(f"  {hit.environment}  {hit.ref.replace(':', ' ')}  {hit.title}" for hit in hits)
+    return f"{lines}\nbring one back with journal environment unarchive <name>"
+
 
 def search_text(record, term: str, page: int) -> str:
     want = term.lower()
