@@ -1,13 +1,14 @@
 <script setup>
-import {computed, onMounted} from "vue";
+import {computed, watch} from "vue";
 import Chip from "../kit/Chip.vue";
 import {connection, loadConnection} from "../composables/connection.js";
+import {connectionOn} from "../composables/settings.js";
 import {markerTone, markerWords} from "../domain/connection.js";
 import {ago} from "../format/time.js";
 
-const words = computed(() => (connection.value ? markerWords(connection.value, ago) : ""));
+const words = computed(() => (connectionOn.value && connection.value ? markerWords(connection.value, ago) : ""));
 
-onMounted(() => loadConnection());
+watch(connectionOn, (on) => on && loadConnection(), {immediate: true});
 </script>
 
 <template>

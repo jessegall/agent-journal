@@ -10,6 +10,7 @@ export const autoOn = computed(() => !!(store.settings && store.settings.feature
 export const workMode = computed(() => (store.settings && store.settings.work_modes && store.settings.work_modes.mode) || DEFAULT_MODE);
 export const sharingOn = computed(() => !store.settings || store.settings.features.sharing !== false);
 export const hostedOn = computed(() => Boolean(store.settings && store.settings.features.hosted_journal));
+export const connectionOn = computed(() => Boolean(store.settings && store.settings.features.connection));
 export const membersOn = computed(() => hostedOn.value && Boolean(store.settings.features.members));
 
 const viewer = () => (store.settings && store.settings.viewer) || {};
