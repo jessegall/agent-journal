@@ -9,7 +9,17 @@ function answered(ids, answers) {
     return moment;
 }
 
-const expanded = (moments, answers) => moments.map(({at, answers: ids}) => ({at, ...answered(ids, answers)}));
+const notAfter = (rows, at) =>
+    Object.fromEntries(
+        Object.entries(rows).map(([type, held]) => [type, held.map((row) => (row.updated > at ? {...row, updated: at} : row))])
+    );
+
+function expanded(moments, answers) {
+    return moments.map(({at, answers: ids}) => {
+        const moment = answered(ids, answers);
+        return {at, ...moment, rows: notAfter(moment.rows, at)};
+    });
+}
 
 export function expand({answers, moments}) {
     return {moments: expanded(moments, answers)};
