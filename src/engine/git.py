@@ -7,6 +7,7 @@ from engine.proc import git
 MAIN = "the main checkout"
 DETACHED = "a detached head"
 BRANCH_REF = "ref: refs/heads/"
+REMOTE_DEFAULT = "refs/remotes/origin/HEAD"
 
 
 @dataclass(frozen=True)
@@ -30,6 +31,17 @@ class Checkout:
         except OSError:
             return ""
         return text.removeprefix(BRANCH_REF) if text.startswith(BRANCH_REF) else DETACHED
+
+    @property
+    def landing(self) -> str:
+        try:
+            return (self.folder / REMOTE_DEFAULT).read_text().strip().removeprefix("ref: ")
+        except OSError:
+            return ""
+
+    @property
+    def landing_log(self) -> Path:
+        return self.folder / "logs" / self.landing
 
 
 def checkout_of(folder: Path) -> Checkout | None:
