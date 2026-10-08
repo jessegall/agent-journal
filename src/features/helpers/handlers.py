@@ -1,11 +1,11 @@
 import time
 
 from agents.terminal import Launched, launch_failure, launch_output
-from controllers.types import Agents, Questions
+from controllers.types import Agents, Messages, Questions
 from engine.record import Record
 from engine.seats import terminal_of
 from engine.events.engine import ClockTicked
-from engine.events.resources import AgentChanged
+from engine.events.resources import AgentChanged, MessageCreated
 from engine.sessions import Sessions, alive
 from features.ask_questions.handlers import QuestionAsked
 from features.helpers.controller import Helpers
@@ -13,7 +13,7 @@ from features.helpers.reuse import subagent_rows
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from features.trigger import MINUTE
 from providers import PROVIDERS
-from resources.base import SYSTEM
+from resources.base import AGENT, SYSTEM, titled
 from resources.types import FAILED
 
 
@@ -57,6 +57,21 @@ def subagent_name(record, agent: str) -> str:
     primary = Agents(record, actor=SYSTEM).primary()
     task = next((sub.task for sub in subagent_rows(primary) if sub.address == agent), "") if primary else ""
     return task.partition(":")[0].strip() or agent
+
+
+class RelayAnswerToDispatcher(Handler):
+    """While a helper works a follow-up, a message its agent writes in its own environment reaches the dispatcher's chat as a message from the helper, as its report does."""
+
+    def handle(self, context: Context, event: MessageCreated) -> None:
+        helpers = Helpers(context.record, actor=SYSTEM)
+        place = helpers._helping()
+        if not place or event.actor != AGENT:
+            return
+        helper = helpers._helper(place)
+        written = Messages(context.record, actor=SYSTEM).load(event.n)
+        if not helper.answering or written.data.get("from_main") or written.data.get("peer"):
+            return
+        Messages(Record(context.record.root, place.launched_from), actor=AGENT).create(titled(written.brief), brief=written.brief, peer=helper.name)
 
 
 class TellAQuestionAskedAway(Handler):

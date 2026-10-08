@@ -14,7 +14,7 @@ from engine.sessions import Sessions
 from providers import PROVIDERS
 from runner.hooks import answer
 from features.helpers.handlers import NameStoppedOrQuietHelpers
-from features.parts import AgentContext
+from features.parts import AgentContext, Context
 from features.helper_worktrees.controller import Worktrees
 from tests.kit import project_on, run
 from features.helpers.controller import Helpers
@@ -234,6 +234,22 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     assert Helpers(record, actor=AGENT).load(1).report == "The hooks spend 40ms in imports", "the row keeps the report"
     told = Messages(record, actor=SYSTEM).all()[-1]
     assert (told.brief, told.data["peer"]) == ("The hooks spend 40ms in imports", "Rhea"), "the chat shows it as a message from the helper"
+    from engine.events.resources import MessageCreated
+    from features.helpers.handlers import RelayAnswerToDispatcher
+    inside = Record(record.root, f"{record.env}-rhea")
+    relay = lambda text, actor=AGENT: RelayAnswerToDispatcher().handle(
+        Context.of(features.FEATURES["helpers"], inside), MessageCreated(n=Messages(inside, actor=AGENT).create(text, brief=text).n, action="created", type="message", actor=actor))
+    chat = lambda: [m.brief for m in Messages(record, actor=SYSTEM).all() if m.data.get("peer") == "Rhea"]
+    before = chat()
+    relay("a note while working on the first job")
+    assert chat() == before, "a message a helper writes while it works its first job stays in its own chat"
+    Helpers(record, actor=AGENT).say(1, "and the stop hook?")
+    relay("the stop hook spends 12ms")
+    relay("a message the user wrote", actor=USER)
+    assert chat() == before + ["the stop hook spends 12ms"], "while it works a follow-up, a message its agent writes reaches the dispatcher's chat as a message from it, and the user's own does not"
+    Helpers(inside, actor=AGENT).report("Both measured")
+    relay("one more after the report")
+    assert chat()[-1] == "Both measured", "once it has reported, its messages stay in its own chat again"
     reported, = [n for n in Nudges(record, actor=SYSTEM).all() if "helper 1, Rhea, reported" in n.title]
     assert reported.until == ["helper.completed", "helper.deleted"], "the dispatcher is told, until it finishes the helper"
     assert not features.FEATURES["helpers"].is_owed(record, "stopped", ("helper:1",)), "once it reported, the line that it stopped is no longer owed"
