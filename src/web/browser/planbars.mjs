@@ -24,20 +24,24 @@ await runScenarios(process.argv[2], {
         const stamp = Date.now();
         const mine = readyPlan(`Mine ${stamp}`);
         const handed = readyPlan(`Handed ${stamp}`);
-        await approve(page, url, mine, `Mine ${stamp}`);
-        await approve(page, url, handed, `Handed ${stamp}`);
-        journal("plan", "delegate", String(handed));
-        journal("plan", "start", String(handed));
-        journal("plan", "start", String(mine));
-        await page.goto(url);
-        await bar(page, `Mine ${stamp}`).waitFor();
-        await bar(page, `Handed ${stamp}`).waitFor();
-        await bar(page, `Mine ${stamp}`).getByText("0/1").waitFor();
-        await bar(page, `Handed ${stamp}`).getByText("0/1").waitFor();
-        await bar(page, `Mine ${stamp}`).getByRole("button", {name: /^Delegated/}).waitFor({state: "detached"});
-        await bar(page, `Handed ${stamp}`).getByRole("button", {name: "Delegated"}).click();
-        await page.getByText("No helper has been handed this phase yet. Delegated plans keep running beside the one the agent works.").waitFor();
-        await shot(page, "plan-bars-delegated");
+        try {
+            await approve(page, url, mine, `Mine ${stamp}`);
+            await approve(page, url, handed, `Handed ${stamp}`);
+            journal("plan", "delegate", String(handed));
+            journal("plan", "start", String(handed));
+            journal("plan", "start", String(mine));
+            await page.goto(url);
+            await bar(page, `Mine ${stamp}`).waitFor();
+            await bar(page, `Handed ${stamp}`).waitFor();
+            await bar(page, `Mine ${stamp}`).getByText("0/1").waitFor();
+            await bar(page, `Handed ${stamp}`).getByText("0/1").waitFor();
+            await bar(page, `Mine ${stamp}`).getByRole("button", {name: /^Delegated/}).waitFor({state: "detached"});
+            await bar(page, `Handed ${stamp}`).getByRole("button", {name: "Delegated"}).click();
+            await page.getByText("No helper has been handed this phase yet. Delegated plans keep running beside the one the agent works.").waitFor();
+            await shot(page, "plan-bars-delegated");
+        } finally {
+            for (const plan of [mine, handed]) journal("plan", "abandon", String(plan), "--why", "the scenario is over");
+        }
     },
     async "from four active plans on, three show and the rest fold into a count"(page, url) {
         const stamp = Date.now();
