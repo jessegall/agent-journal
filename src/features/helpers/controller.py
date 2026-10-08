@@ -18,7 +18,7 @@ from features.agent_sessions.launch import launched, prepared, tell_in
 from features.helper_worktrees.controller import Worktrees
 from features.helpers.resource import Helper, held_by_helper
 from features.plans.controller import delegate_plans_holding
-from features.helpers.reuse import HELPER_KIND, kept, knowing, named_paths, refusal
+from features.helpers.reuse import HELPER_KIND, agent_runs, kept, knowing, named_paths, refusal, unlanded
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
 from controllers.marks import action
@@ -207,9 +207,9 @@ class Helpers(Controller):
         for copy in (t for t in Todos(self.record, actor=SYSTEM).rows.standing() if t.handed == str(row.n)):
             Todos(self.record, actor=SYSTEM).complete(copy.n, how)
         if not helper.worktree:
-            request(self.record.root, Request(home.env, Todos.resource.type, "complete", [row.n], {"how": how}))
+            request(self.record.root, Request(listed.record.env, Todos.resource.type, "complete", [row.n], {"how": how}))
             return f"todo {row.n} is done"
-        request(self.record.root, Request(home.env, Todos.resource.type, "update", [row.n], {"pending": MergeWait(how, helper.worktree).to_json()}))
+        request(self.record.root, Request(listed.record.env, Todos.resource.type, "update", [row.n], {"pending": MergeWait(how, helper.worktree).to_json()}))
         return f"todo {row.n} shows as done; it closes once your work is taken"
 
     @staticmethod
