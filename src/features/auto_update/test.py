@@ -478,7 +478,7 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     assert "could not be fetched" in str(ran.stderr), "an installer with no package beside it and no source to fetch from says what is missing"
 
 
-def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_path):
+def test_a_hook_never_waits_more_than_a_moment_for_a_server_that_is_down_slow_or_refusing(tmp_path):
     import http.server
     import socket
     import subprocess
@@ -490,12 +490,22 @@ def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_pa
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
     (tmp_path / "runtime").mkdir()
-    (tmp_path / "runtime" / "heartbeat").write_text(f"{int(time.time())} http://127.0.0.1:{port}/\n")
-    (tmp_path / "runtime" / "upgrading").write_text("")
+    env = {"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin", "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": "main"}
+
+    def run() -> tuple[subprocess.CompletedProcess, float]:
+        began = time.time()
+        ran = subprocess.run(["sh", str(hook), "claude", str(tmp_path)], input='{"hook_event_name": "PreToolUse"}', capture_output=True, text=True, env=env, timeout=20)
+        return ran, time.time() - began
+
+    def beat(age: int) -> None:
+        (tmp_path / "runtime" / "heartbeat").write_text(f"{int(time.time()) - age} http://127.0.0.1:{port}/\n")
 
     class Answer(http.server.BaseHTTPRequestHandler):
+        pause = 0.0
+
         def do_POST(self):
             self.rfile.read(int(self.headers["Content-Length"]))
+            time.sleep(self.pause)
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'{"reason": "served"}')
@@ -503,22 +513,28 @@ def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_pa
         def log_message(self, *_):
             pass
 
-    def serve_late():
-        time.sleep(1.2)
-        server = http.server.HTTPServer(("127.0.0.1", port), Answer)
-        server.handle_request()
-        server.server_close()
-    threading.Thread(target=serve_late, daemon=True).start()
-    ran = subprocess.run(["sh", str(hook), "claude", str(tmp_path)], input='{"hook_event_name": "PreToolUse"}', capture_output=True, text=True,
-                         env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin", "AGENT_JOURNAL_ACTIVE": "1"}, timeout=20)
-    assert ran.stdout.strip() == '{"reason": "served"}', (ran.stdout, ran.stderr)
-    assert not (tmp_path / "runtime" / "hook-failures.log").exists(), "no failure is logged for a server that was only restarting"
+    beat(0)
+    (tmp_path / "runtime" / "upgrading").write_text("")
+    refused, took = run()
+    assert (refused.stdout, took < 1.0) == ("", True), "a server that refuses while it upgrades does not hold the agent: the hook goes on at once"
     (tmp_path / "runtime" / "upgrading").unlink()
-    (tmp_path / "runtime" / "heartbeat").write_text(f"{int(time.time()) - 60} http://127.0.0.1:{port}/\n")
-    quiet = subprocess.run(["sh", str(hook), "claude", str(tmp_path)], input='{"hook_event_name": "PreToolUse"}', capture_output=True, text=True,
-                           env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin", "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": "main"}, timeout=20)
+    (tmp_path / "runtime" / "hook-failures.log").unlink()
+    Answer.pause = 3.0
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", port), Answer)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    beat(60)
+    slow, took = run()
+    assert (slow.stdout, took < 1.0) == ("", True), "a server too slow to beat is asked once, briefly, and the hook goes on"
     logged = (tmp_path / "runtime" / "hook-failures.log").read_text().split()
-    assert (quiet.stdout, logged[1:]) == ("", ["down", "claude", "main"]), "a hook that finds the server down lets the agent go on, and says so in the log"
+    assert logged[1:] == ["down", "claude", "main"], "and says so in the log"
+    Answer.pause = 0.0
+    beat(0)
+    served, _ = run()
+    server.shutdown()
+    assert served.stdout.strip() == '{"reason": "served"}', "a server that is beating and answers is waited for as before"
+    (tmp_path / "runtime" / "heartbeat").unlink()
+    gone, took = run()
+    assert (gone.stdout, took < 1.0) == ("", True), "with no heartbeat at all the hook goes on at once"
 
 
 def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_tag(tmp_path):
