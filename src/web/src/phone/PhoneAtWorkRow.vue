@@ -2,7 +2,7 @@
 import {computed, ref} from "vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {HELPER_WORDS, helperLine, stateAt} from "../domain/helpers.js";
+import {helperLine, helperWord, stateAt} from "../domain/helpers.js";
 import {age, clock, span} from "../format/time.js";
 import {plainDoing} from "./doing.js";
 import Icon from "../kit/Icon.vue";
@@ -26,7 +26,7 @@ const line = computed(() => {
         return plainDoing([row.tool, row.file?.split("/").pop()].filter(Boolean).join(" ") || row.now) || "Working";
     if (row.state === "idle") return "Idle";
     if (!helper.value && row.ended) return `Ran ${span(row.ended - row.at)}, ended ${clock(row.ended)}`;
-    return HELPER_WORDS[row.state];
+    return helperWord(row.state);
 });
 const toggle = () => (helper.value ? emit("open", props.row) : (unfolded.value = !unfolded.value));
 </script>
@@ -44,7 +44,7 @@ const toggle = () => (helper.value ? emit("open", props.row) : (unfolded.value =
                 <span class="at-work-model">{{ helper ? helperLine(row) : [row.type, row.model].filter(Boolean).join(" · ") }}</span>
             </span>
             <span class="at-work-state">
-                <strong>{{ HELPER_WORDS[row.state] }}</strong>
+                <strong>{{ helperWord(row.state) }}</strong>
                 <span>{{ row.state === "working" || row.state === "running" ? workingFor : timing }}</span>
             </span>
             <Icon name="chevronRight" bold :facing="helper ? 'right' : unfolded ? 'up' : 'down'" :size="13" />
