@@ -50,6 +50,12 @@ PAGE_HEADERS = {**VIEWER_HEADERS, "Content-Security-Policy": "default-src 'none'
 
 
 @dataclass(frozen=True)
+class TryPlace:
+    key: str
+    ceiling: float
+
+
+@dataclass(frozen=True)
 class LoginForm(Loaded):
     password: str = ""
     again: str = ""
@@ -86,6 +92,11 @@ class Visit:
 
     def place(self) -> str:
         return self.origins.place(self.handler)
+
+    def try_place(self) -> "TryPlace":
+        """Where this browser's login tries are counted: alone and past the ceiling when it carries a device cookie from a good login here."""
+        device = Devices(self.vault).known(self.cookie_named(DEVICE_COOKIE))
+        return TryPlace(f"device {device}", math.inf) if device else TryPlace(self.place(), MOST_EVERYWHERE)
 
     def cookie_named(self, name: str) -> str:
         kept = SimpleCookie(self.handler.headers.get("Cookie", "")).get(name)
@@ -155,7 +166,8 @@ class Gateway:
             return visit.refuse(413, str(refused))
 
     def show_login(self, visit: Visit) -> None:
-        owner, wait = Owner(visit.vault), WrongTries(visit.vault).locked_for(visit.place())
+        place = visit.try_place()
+        owner, wait = Owner(visit.vault), WrongTries(visit.vault).locked_for(place.key, place.ceiling)
         if Logins(visit.vault).standing(visit.token()) is Standing.OPEN:
             return visit.go("/")
         if wait:
@@ -173,9 +185,9 @@ class Gateway:
             self.checking.release()
 
     def checked(self, visit: Visit, matched: Callable[[], bool], wrong: Callable[[], str]) -> None:
-        tries, devices = WrongTries(visit.vault), Devices(visit.vault)
-        device = devices.known(visit.cookie_named(DEVICE_COOKIE))
-        place, ceiling = (f"device {device}", math.inf) if device else (visit.place(), MOST_EVERYWHERE)
+        tries = WrongTries(visit.vault)
+        tried = visit.try_place()
+        place, ceiling = tried.key, tried.ceiling
         if wait := tries.counted(place, ceiling):
             visit.vault.audit("locked out", place=place)
             return visit.page(429, locked_page(visit.project(), wait))
@@ -188,7 +200,7 @@ class Gateway:
         days = float(visit.settings.days)
         token = Logins(visit.vault).open(days, visit.handler.headers.get("User-Agent", ""))
         visit.vault.audit("logged in", place=place, login=hashed(token)[:12])
-        return visit.go("/", {"Set-Cookie": [visit.cookie(COOKIE, token, days), visit.cookie(DEVICE_COOKIE, devices.issue(), DEVICE_DAYS)]})
+        return visit.go("/", {"Set-Cookie": [visit.cookie(COOKIE, token, days), visit.cookie(DEVICE_COOKIE, Devices(visit.vault).issue(), DEVICE_DAYS)]})
 
     def log_in(self, visit: Visit) -> None:
         owner = Owner(visit.vault)
