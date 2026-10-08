@@ -126,6 +126,9 @@ function reset() {
                     <template #always>
                         <Chip>Always on</Chip>
                     </template>
+                    <template #fixed>
+                        <Chip>{{ row.value }}</Chip>
+                    </template>
                 </SwitchCase>
             </div>
         </div>
