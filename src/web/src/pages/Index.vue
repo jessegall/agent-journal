@@ -3,8 +3,8 @@ import {meta, word} from "../domain/spec.js";
 import {store} from "../state/store.js";
 import EmptyState from "../kit/EmptyState.vue";
 import TabBar from "../kit/TabBar.vue";
-import {useSighted} from "../composables/scrollback.js";
-import {computed, onUnmounted, ref, watch} from "vue";
+import PagedList from "../kit/PagedList.vue";
+import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
@@ -65,21 +65,14 @@ watch(
     {immediate: true}
 );
 useSlashFocus(search, () => library.value);
-const end = ref(null);
-const scrolled = ref(false);
-const moved = () => (scrolled.value = true);
-useSighted(end, () => scrolled.value && store.paging.more[props.type] && earlier(props.type));
-window.addEventListener("wheel", moved, {passive: true});
-window.addEventListener("touchmove", moved, {passive: true});
-onUnmounted(() => {
-    window.removeEventListener("wheel", moved);
-    window.removeEventListener("touchmove", moved);
-});
+const loadMore = () => earlier(props.type);
 const listed = computed(() =>
     [...(kind.value.filters?.length ? SHOWS[filter.value] || SHOWS.open : SHOWS.every)()]
         .filter((r) => !r.data?.hidden)
         .sort((a, b) => Boolean(a.data.system) - Boolean(b.data.system) || b.created - a.created || b.n - a.n)
 );
+
+const total = computed(() => (COUNTS[filter.value] || COUNTS.every)());
 
 const groups = computed(() => {
     const buckets = {};
@@ -89,6 +82,7 @@ const groups = computed(() => {
         .map((k) => ({
             key: k,
             title: k === "open" && filter.value !== "open" ? "Closed" : GROUPS[k],
+            count: k === "open" && Object.keys(buckets).length === 1 ? total.value : undefined,
             list: buckets[k],
         }))
         .concat(held.value);
@@ -161,6 +155,7 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
                 }}{{ filter !== "open" || !all.length ? " yet" : "" }}.
             </EmptyState>
         </template>
+        <PagedList :shown="listed.length" :total="total" :more="Boolean(store.paging.more[type]) && listed.length < total" :load="loadMore">
         <SwitchCase :value="library ? 'library' : kind.listed_as_cards ? 'document' : kind.view">
             <template #library>
                 <DocumentLibrary
@@ -194,7 +189,7 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
                 <RowGroups :groups="groups" :type="type" />
             </template>
         </SwitchCase>
-        <div ref="end" class="end" />
+        </PagedList>
     </section>
 </template>
 
