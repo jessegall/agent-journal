@@ -61,13 +61,14 @@ class Comparison:
 
 @dataclass(frozen=True)
 class Shape:
-    """What a record's copy is made of: the sync's own protocol number, which changes rarely, and the migrations its rows went through."""
+    """What a record's copy is made of: the sync's own protocol number, which changes rarely, the migrations its rows went through, and the epoch a restore moves on."""
 
     protocol: int
     migrations: frozenset[str]
+    epoch: int = 0
 
     def compared(self, server: "Shape") -> Comparison:
-        if self.protocol != server.protocol:
+        if self.protocol != server.protocol or self.epoch != server.epoch:
             return Comparison(Step.PULL_AGAIN)
         missing = server.migrations - self.migrations
         if missing:
