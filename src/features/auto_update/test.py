@@ -446,7 +446,8 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         patch.setattr(install, "complete", lambda folder: False)
         patch.delenv(install.REPAIRED, raising=False)
         patch.setattr(install, "configure", lambda site, site_root: ["configured"])
-        patch.setattr(install, "loaded", lambda: SimpleNamespace(migrate=lambda site_root: [], ship_sequences=lambda site_root: "sequences", ship_profiles=lambda site_root: "profiles"))
+        patch.setattr(install, "loaded", lambda: SimpleNamespace(migrate=lambda site_root: [], ship_sequences=lambda site_root: "sequences", ship_profiles=lambda site_root: "profiles",
+                                                                managed=managed))
         patch.setattr(install, "retire", lambda site_root: 3)
         patch.setattr(install, "pack", lambda site_root: "packed")
         patch.setattr(managed, "remember_managed", lambda site, site_root: None)
