@@ -5,7 +5,7 @@ from engine import bus
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
 from controllers.types import Environments, Features
-from resources.base import SYSTEM
+from resources.base import RAISED, SYSTEM
 
 SWITCHES: dict[str, tuple[int, dict[str, bool]]] = {}
 GENERATION = [0]
@@ -50,6 +50,12 @@ def rebooted(event=None, record=None) -> None:
     else:
         booted(record)
     bus.defer_once("warm what a change cleared", warmed)
+
+
+def switch_changed(event, record) -> None:
+    if event.action == RAISED:
+        return
+    rebooted(event, record)
 
 
 def warmed() -> None:
