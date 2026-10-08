@@ -3,6 +3,7 @@ from functools import cached_property
 from pathlib import Path
 from resources.types import COMPACTING, WORKING
 from providers import PROVIDERS, workspace_folders
+from providers.base import REFUSED
 from providers.payload import HookEvent
 from agents.terminal import seat_session
 from engine import runtime
@@ -58,6 +59,9 @@ class SubagentRow(Loaded):
     @property
     def address(self) -> str:
         return self.session or self.id
+
+    def is_refused(self) -> bool:
+        return self.status == REFUSED
 
 
 class SeatReport:

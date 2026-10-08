@@ -10,7 +10,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, PeerNote, Turn
 from providers.payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
-from providers.base import BackgroundTasks, HookCommand, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
+from providers.base import REFUSED, BackgroundTasks, HookCommand, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
 from providers.jsonl import complete_lines, last_lines, parsed_row, rows
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
@@ -490,7 +490,7 @@ class Claude(Provider):
             if BACKGROUNDED.search(block.result) and block.tool_use_id not in crew.moved_to_background:
                 crew.moved_to_background.add(block.tool_use_id)
                 crew.uses.extend(use for use in crew.window if use.id == block.tool_use_id and not use.background)
-            crew.ended.setdefault(block.tool_use_id, ("refused" if self.refused_by_hook(block) else "returned", row.at))
+            crew.ended.setdefault(block.tool_use_id, (REFUSED if self.refused_by_hook(block) else "returned", row.at))
             if block.is_error:
                 crew.errors.setdefault(block.tool_use_id, block.result.rpartition("hook error:")[2].strip())
         return crew
@@ -512,7 +512,7 @@ class Claude(Provider):
         subagents = []
         for use in (u for u in uses if u.name in DISPATCHES):
             session = sessions.get(use.id)
-            status, done = ("refused", ended[use.id][1]) if use.id in held.errors else ended.get(use.id, ("", 0.0))
+            status, done = (REFUSED, ended[use.id][1]) if use.id in held.errors else ended.get(use.id, ("", 0.0))
             written = session.stat().st_mtime if session is not None and session.is_file() else 0.0
             writing = now - written <= QUIET_SUBAGENT
             behind = use.background or use.id in held.moved_to_background

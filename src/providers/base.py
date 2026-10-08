@@ -50,6 +50,9 @@ class HookCommand:
         return self.text not in found and (LEGACY in found or ("/hook." in found and any(ending in found for ending in endings)))
 
 
+REFUSED = "refused"
+
+
 @dataclass(frozen=True)
 class SubagentRow:
     id: str

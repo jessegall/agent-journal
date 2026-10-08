@@ -89,7 +89,7 @@ def subagents_kept(record, primary) -> list[Kept]:
         return []
     follow_up, agents = PROVIDERS[primary.provider].follow_up, Agents(record, actor=SYSTEM)
     kept = []
-    for sub in (sub for sub in subagents if sub.address not in gone):
+    for sub in (sub for sub in subagents if sub.address not in gone and not sub.is_refused()):
         own = agents.rows.by_title(sub.session) if sub.session else None
         name, _, job = sub.task.partition(":")
         kept.append(Kept(sub.kind or "subagent", name.strip(), (job or name).strip(), tuple(own.touched_files) if own else (), not sub.running,
