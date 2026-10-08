@@ -104,6 +104,21 @@ def test_a_machine_that_handed_an_environment_over_is_refused_when_it_writes_aga
         "a push writes only the scope its connection's machine was handed"
     assert Pushing("laptop").attributed({"member": "server", "title": "x"}) == {"member": "laptop", "title": "x"}, \
         "the member of a pushed row comes from the connection, whatever the row says"
+    from engine.handover import accept, give
+    from engine.offline import Waiting
+    mine = fresh()
+    given = give(mine, "", "server")
+    assert (given, "refused" in refused(lambda: Todos(mine, actor=AGENT).create("after handing it over"))) == (Lease("server", 1), True), \
+        "a machine that hands an environment over writes it no more"
+    assert "refused" in refused(lambda: give(mine, "", "laptop")), "a machine that no longer holds it cannot hand it on"
+    server_copy = fresh()
+    there = Record(server_copy.root, server_copy.env, writer=Lease("server", 1))
+    assert accept(there, "", given) == given and refused(lambda: Todos(there, actor=AGENT).create("written on the server")) == "", \
+        "the server takes the lease and writes the environment"
+    assert "older" in refused(lambda: accept(there, "", given)), "a handover is taken once: the same epoch again is refused"
+    waiting_here = fresh()
+    Waiting(waiting_here.root).hold("", "todo", "create", ["still waiting"])
+    assert "still wait" in refused(lambda: give(waiting_here, "", "server")), "writes still waiting for the server go first, then the environment is handed over"
 
 
 def test_a_write_into_an_environment_another_machine_holds_waits_for_it_as_a_request():
