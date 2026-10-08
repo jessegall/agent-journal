@@ -33,7 +33,10 @@ const searching = ref(false);
 
 function markClick(data) {
     if (data.search) return {click: () => (searching.value = true)};
-    if (data.page) return {click: () => (store.pluginPage = {plugin: data.name, open: data.page})};
+    if (data.page) {
+        const settled = data.settled ? {how: data.settled, at: data.settledAt} : null;
+        return {click: () => (store.pluginPage = {plugin: data.name, open: data.page, settled})};
+    }
     return data.row ? {click: () => openRef(data.row)} : {};
 }
 </script>

@@ -4,7 +4,7 @@ from pathlib import Path
 from features.base import Feature
 from features.journal import Journal
 from features.plugins import services
-from features.plugins.commands import ClearLog, Configure, Disable, Enable, Install, Preview, Purge, Raise, Upgrade
+from features.plugins.commands import ClearLog, Configure, Disable, Enable, Install, Preview, Purge, Raise, Settle, Upgrade
 from features.plugins.details import PluginsDetails
 from features.plugins.host import watch
 from features.plugins.fitting import SuggestFittingPlugins
@@ -18,7 +18,7 @@ class Plugins(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.routes.add(get_plugin_dashboard, get_pages, get_services, post_plugins_preview, post_plugin_upgrade_preview, get_plugin_log)
-        for command in (Preview(), Install(), Upgrade(), Enable(), Disable(), Configure(), Raise(), Purge(), ClearLog()):
+        for command in (Preview(), Install(), Upgrade(), Enable(), Disable(), Configure(), Raise(), Settle(), Purge(), ClearLog()):
             journal.commands.add("plugin", command)
         journal.client.formatter(PluginChatRules())
         journal.agent.interceptor(AskPluginsToRefuse())

@@ -13,7 +13,8 @@ from features.plugins.paths import data, folder, log
 from features.plugins.preview import preview
 from features.plugins.setup import prepared
 from features.plugins.staging import alone, token
-from resources.base import Refused
+from controllers.types import Agents
+from resources.base import Refused, SYSTEM
 
 VERSION = version()
 
@@ -122,9 +123,17 @@ class Configure(Command):
 class Raise(Command):
     name = "raise"
 
-    def run(self, context: Context, plugins, plugin: str, event: str, brief: str, open: str = ""):
-        raised(plugins.record, plugin, "", Posting(event=event, brief=brief, open=open))
+    def run(self, context: Context, plugins, plugin: str, event: str, brief: str, open: str = "", key: str = ""):
+        raised(plugins.record, plugin, "", Posting(event=event, brief=brief, open=open, key=key))
         return f"{plugin}.{event} raised"
+
+
+class Settle(Command):
+    name = "settle"
+
+    def run(self, context: Context, plugins, plugin: str, key: str, how: str = "fixed"):
+        settled = Agents(plugins.record, actor=SYSTEM).settle_cards(plugin, key, how)
+        return f"{settled} marks of {plugin} settled as {how}"
 
 
 class Purge(Command):

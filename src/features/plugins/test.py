@@ -311,6 +311,13 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert Agents(record, actor=SYSTEM).primary().data["cards"][-1]["page"] == "sins/sin/deep-nesting/src/B.php", \
         "and a raise that names a dashboard page gives its card that page to open"
     assert "declares no event" in refused(lambda: Raise().run(None, plugins, "typed", "made-up", "")), "and refuses one it does not declare"
+    Raise().run(None, plugins, "typed", "sin-found", "keyed one", key="sin:1")
+    Raise().run(None, plugins, "typed", "sin-found", "keyed two", key="sin:2")
+    from features.plugins.commands import Settle
+    Settle().run(None, plugins, "typed", "sin:1", "repented")
+    marks = {card["detail"]: card for card in Agents(record, actor=SYSTEM).primary().data["cards"] if card["detail"].startswith("keyed")}
+    assert (marks["keyed one"]["tone"], marks["keyed one"]["settled"], marks["keyed two"]["tone"], "settled" in marks["keyed two"]) == ("good", "repented", "warn", False), \
+        "journal plugin settle turns only the cards with that key good and keeps their text"
     off()
     assert apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "made-up"}}) == [], "an event the manifest does not declare is refused"
     everything = {"whisper": "psst", "say": "hello", "notify": {"title": "Heads up", "brief": "b"}, "notice": "A notice", "todo": {"title": "From a plugin"},
