@@ -4,7 +4,7 @@ from controllers.base import Arguments, Controller
 from engine.extension import Extension
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
-from resources.base import AGENT, Refused
+from resources.base import AGENT, Refused, USER
 from resources import types
 from controllers.marks import action
 
@@ -38,6 +38,7 @@ class Features(Controller):
         if key not in known:
             raise Refused(f"{name} has no setting {key!r}; its settings are {', '.join(known)}")
         check_choices(name, {key: setting_value(value)})
+        refuse_a_secret(name, [key], self.actor)
         before = self._held(name, key)
         self.record.change_setting(name, {key: setting_value(value)})
         if self.actor == AGENT and self._held(name, key) != before:
@@ -60,6 +61,21 @@ def check_choices(name: str, values: dict) -> None:
     for setting in SETTING_KEYS.keyed().get(name, ()):
         if setting.name in values and not setting.allows(values[setting.name]):
             raise Refused(f"{name} {setting.name} is one of {', '.join(map(str, setting.choices))}, not {values[setting.name]!r}")
+
+
+def secrets_in(name: str, keys) -> list[str]:
+    """The settings among the keys that hold a picked secret."""
+    return [setting.name for setting in SETTING_KEYS.keyed().get(name, ()) if setting.secret and setting.name in keys]
+
+
+def refuse_a_secret(name: str, keys, actor: str) -> None:
+    """Only the person picks which secret a feature uses; an agent never does."""
+    if actor != USER and secrets_in(name, keys):
+        raise Refused(f"only you pick the key of {name}, under Integrations in the viewer")
+
+
+def writes_a_secret(settings: dict) -> bool:
+    return any(secrets_in(name, values) for name, values in settings.items() if isinstance(values, dict))
 
 
 def changes_a_command(record, name: str, key: str, value) -> bool:

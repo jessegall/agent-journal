@@ -3,7 +3,7 @@ from enum import Enum
 from pathlib import Path
 
 from controllers.base import Arguments
-from controllers.features import writes_what_runs
+from controllers.features import writes_a_secret, writes_what_runs
 from controllers.types import CONTROLLERS
 from engine.fields import Loaded
 from engine.paths import known_environment
@@ -170,6 +170,8 @@ def allowed(root: Path, environment: str, route: Route, params: dict, body: dict
     """A named page or action is open, and one that runs a command only right after the phone unlocked; anything unnamed is closed, and a phone gets only what its person's rights grant."""
     reached = reach(route, GenericPath.from_json(params))
     home = Record(root, environment)
+    if reached == post("/api/{env}/settings") and writes_a_secret(body):
+        return Reach.CLOSED
     if reached not in NAMED or not rights_of(home).may_reach(home, member, reached):
         return Reach.CLOSED
     if unlocked or not (reached in RUNS or reached.asks_to_run(Record(root, environment), Arguments.given(body, params), body)):

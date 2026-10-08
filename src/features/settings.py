@@ -6,12 +6,14 @@ from resources.text import paragraphs
 class Setting:
     def __init__(self, name: str, default, title: str, abstract: str = "", unit: str = "", under: str = "",
                  choices: tuple[str, ...] = (), labels: tuple[tuple[str, str], ...] = (), examples: tuple[tuple[str, str], ...] = (), hidden: bool = False,
-                 runs_commands: bool = False, scope: str = ENVIRONMENT):
+                 runs_commands: bool = False, scope: str = ENVIRONMENT, secret: bool = False):
         self.name, self.default, self.title, self.abstract, self.unit, self.under = name, default, paragraphs(title), paragraphs(abstract), unit, under
         self.choices, self.labels, self.examples, self.hidden, self.runs_commands = choices, dict(labels), dict(examples), hidden, runs_commands
-        self.scope = scope
+        self.scope, self.secret = scope, secret
 
     def kind(self) -> str:
+        if self.secret:
+            return "secret"
         if self.choices:
             return "choice"
         if isinstance(self.default, bool):
@@ -26,6 +28,8 @@ class Setting:
                 "scope": self.scope}
 
     def allows(self, value) -> bool:
+        if self.secret:
+            return isinstance(value, str)
         return not self.choices or value in self.choices
 
 

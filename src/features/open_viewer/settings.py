@@ -1,5 +1,5 @@
 import features
-from controllers.features import check_choices
+from controllers.features import check_choices, refuse_a_secret
 from controllers.types import Features, Nudges
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
@@ -32,6 +32,7 @@ def apply(record: Record, body: dict, actor: str) -> dict:
     for name, values in body.items():
         if isinstance(values, dict):
             check_choices(name, values)
+            refuse_a_secret(name, values, actor)
     before = switches(record)
     for key, value in body.items():
         if key == Record.features and isinstance(value, dict):
