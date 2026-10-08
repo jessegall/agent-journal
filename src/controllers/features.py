@@ -4,7 +4,7 @@ from controllers.base import Arguments, Controller
 from engine.extension import Extension
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
-from resources.base import Refused
+from resources.base import AGENT, Refused
 from resources import types
 from controllers.marks import action
 
@@ -38,8 +38,16 @@ class Features(Controller):
         if key not in known:
             raise Refused(f"{name} has no setting {key!r}; its settings are {', '.join(known)}")
         check_choices(name, {key: setting_value(value)})
+        before = self._held(name, key)
         self.record.change_setting(name, {key: setting_value(value)})
+        if self.actor == AGENT and self._held(name, key) != before:
+            from controllers.types import Agents
+            Agents(self.record, actor=self.actor)._mark_primary(f"Changed {name}.{key} from {before} to {self._held(name, key)}", icon="settings")
         return self.record.setting(name, {})
+
+    def _held(self, name: str, key: str):
+        setting = next(setting for setting in SETTING_KEYS.keyed()[name] if setting.name == key)
+        return self.record.setting(name, {}).get(key, setting.default)
 
     def _runs_commands(self, word: str, arguments: Arguments) -> bool:
         if word != "configure":
