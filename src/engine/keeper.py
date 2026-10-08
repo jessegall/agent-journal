@@ -12,8 +12,7 @@ import urllib.request
 from dataclasses import asdict, dataclass, field, fields, replace
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from engine.stored import read_json, write_json  # noqa: E402
+from engine.stored import read_json, write_json
 
 TAKEN = 3
 WATCH = 0.5
@@ -189,7 +188,3 @@ def main(argv: list[str]) -> int:
         state(spec, ended, child, last_exit=child.wait(), why=why)
     held.close()
     return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))

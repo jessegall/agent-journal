@@ -178,7 +178,7 @@ def spawn(spec: ServiceSpec, lifeline: int) -> int:
     replace(ServiceState.read(spec.status), port=spec.port, url=spec.url, owner=os.getpid()).write(spec.status)
     Path(spec.log).parent.mkdir(parents=True, exist_ok=True)
     with open(spec.log, "ab", buffering=0) as log:
-        kept = subprocess.Popen([*entry("engine.keeper"), str(lifeline), spec.spec],
+        kept = subprocess.Popen([*entry("keeper"), str(lifeline), spec.spec],
                                 pass_fds=(lifeline,) if lifeline >= 0 else (), stdin=subprocess.DEVNULL,
                                 stdout=log, stderr=log, start_new_session=True)
     return kept.pid
