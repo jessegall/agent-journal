@@ -5,7 +5,7 @@ from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents
 from engine import bus
 from engine.events.base import AgentEvent
-from engine.gates import AFTERWARDS, CANCELERS, POLICIES, RESPONDERS, HookCall
+from engine.gates import CANCELERS, RESPONDERS, HookCall
 from engine.reach import Guard
 from engine.wording import APPENDS
 from features.format import FORMATTERS
@@ -108,7 +108,7 @@ class AgentHooks:
             refused = interceptor.intercept(context, call.hook.tool) or ""
             return limited(context, interceptor, refused) if interceptor.limit else refused
         policy.guard = guard
-        (POLICIES if interceptor.refuses else AFTERWARDS).add(None, policy)
+        interceptor.runs.policies().add(None, policy)
 
     def canceler(self, canceler: Canceler) -> None:
         feature, guard = self.feature, Guard.of(canceler)

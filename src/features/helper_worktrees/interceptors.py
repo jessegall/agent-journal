@@ -6,12 +6,14 @@ from engine.reach import Reach
 from engine.worktree import checkout
 from features.helper_worktrees.controller import Worktrees
 from features.parts import AgentContext, ToolInterceptor
+from engine.gates import Runs
 from providers.catalogue import workspace_folders
 from resources.base import SYSTEM
 
 
 class TellDrift(ToolInterceptor):
     reach = Reach.BOTH
+    runs = Runs.ASYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         hook = context.hook
@@ -22,11 +24,13 @@ class TellDrift(ToolInterceptor):
         if drifted is None:
             return ""
         row, found = drifted
-        return context.feature.line("drifted", {"working": row.working, "commits": found.commits, "path": row.path})[0]
+        context.agent.whisper("drifted", working=row.working, commits=found.commits, path=row.path)
+        return ""
 
 
 class StayInYourCheckout(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         hook = context.hook

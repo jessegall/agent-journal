@@ -1,3 +1,5 @@
+from itertools import takewhile
+
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSent, ClockTicked
 from engine.events.resources import MessageCreated
@@ -5,6 +7,7 @@ from engine.transcript import IDLE as AGENT_IDLE
 from features import actions, trigger, watched
 from features.nudges.sending import Nudge, Sent, send
 from features.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Context, Handler, ToolInterceptor
+from engine.gates import Runs
 from features.recital import COMMANDS, mentioned, searched
 from features.triggers.controller import Triggers, holding
 from features.triggers.resource import DENY, FROM_USER, HOLD, IDLE, INSTRUCT, MESSAGE, NUDGE, START, WORKING, Trigger
@@ -85,15 +88,27 @@ class HoldWhileTheJournalShows(Handler):
             context.hold("held", holding(row.n), title=row.title, text=watched.filled(row.wording, found[0].values))
 
 
-class WatchWhatTheAgentDoes(ToolInterceptor):
+class DenyWhatTheAgentDoes(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.SYNC
     behaviour = WATCHING
 
     def intercept(self, context: AgentContext, call) -> str:
-        for row in firing(context, lambda scope: searched(call, scope)):
+        row = next((row for row in firing(context, lambda scope: searched(call, scope)) if row.does == DENY), None)
+        if row is None:
+            return ""
+        fire(context, context.agent.row, row)
+        return f"{row.title} - {row.wording or 'this call is denied by a trigger'}"
+
+
+class WatchWhatTheAgentDoes(ToolInterceptor):
+    reach = Reach.MAIN
+    runs = Runs.ASYNC
+    behaviour = WATCHING
+
+    def intercept(self, context: AgentContext, call) -> str:
+        for row in takewhile(lambda row: row.does != DENY, firing(context, lambda scope: searched(call, scope))):
             fire(context, context.agent.row, row)
-            if row.does == DENY:
-                return f"{row.title} - {row.wording or 'this call is denied by a trigger'}"
         return ""
 
 

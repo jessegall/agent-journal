@@ -3,7 +3,7 @@ from pathlib import Path
 
 from features.journal_laws.laws import cartoon_names, laws, refusal
 from engine.events.engine import AgentMessageSent
-from engine.gates import DISPATCHING
+from engine.gates import DISPATCHING, Runs
 from features.parts import AgentContext, Canceler, Handler, ToolInterceptor
 from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
 from providers.payload import ReadCall
@@ -22,8 +22,8 @@ class EnforceDispatchLaw(Canceler):
 
 class WhisperLawOnKeyword(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.ASYNC
     behaviour = WHISPER
-    refuses = False
 
     def intercept(self, context: AgentContext, call) -> str:
         whisper_laws(context, lambda scope: searched(call, scope))
@@ -59,6 +59,7 @@ def lines_in(path: Path) -> int:
 
 class RefuseWholeLongReads(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.SYNC
     def intercept(self, context: AgentContext, call) -> str:
         shell = call.shell_command
         cat = CAT.search(shell) if shell else None

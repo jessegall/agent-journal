@@ -58,6 +58,9 @@ def test_take_refuses_a_branch_behind_the_working_tip_and_lands_it_once_rebased(
     commit(project, "main.txt", "meanwhile\n")
     assert "phone-connection gained 1 commit" in worktrees.drift(row.n) and "does not contain" in worktrees.drift(row.n), \
         "drift names what the working branch gained and that the helper lacks its tip"
+    from engine.gates import Runs
+    from features.helper_worktrees.interceptors import TellDrift
+    assert TellDrift.runs == Runs.ASYNC, "drift is told in a message after the call is answered, never by holding the call back"
     assert "rebase it onto phone-connection" in refused(lambda: worktrees.take(row.n)), "a stale branch is refused, with the rebase to do"
     git(folder, "rebase", "-q", "phone-connection")
     assert worktrees.take(row.n).startswith("took 1 commit from helper-rhea onto phone-connection"), "a rebased branch is taken"

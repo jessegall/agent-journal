@@ -7,6 +7,7 @@ from features import trigger
 from features.trigger import Trigger
 from features.base import Behaviour, Line
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
+from engine.gates import Runs
 from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
 from engine.reach import Reach
 from engine.wording import plural
@@ -70,7 +71,7 @@ def recite(context: AgentContext, controller: type, text_of) -> None:
 
 class WhisperOnKeyword(ToolInterceptor):
     reach = Reach.MAIN
-    refuses = False
+    runs = Runs.ASYNC
 
     def __init__(self, controller: type):
         self.controller = controller

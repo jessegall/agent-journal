@@ -10,6 +10,7 @@ from engine.transcript import IDLE
 from features.journal import waiting
 from features.nudges.sending import Sent
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
+from engine.gates import Runs
 from features.work_tracking.details import WorkDetails
 from features.sequences.details import IN_CHAT, STEP, STEP_HELD, UNFINISHED
 from features.sequences.dispatch import board_of, dispatched_by_line, working_agent
@@ -201,6 +202,7 @@ def named_in(found: JournalCall, step: str) -> bool:
 
 class HoldJournalWritesForTheStep(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.SYNC
     def intercept(self, context: AgentContext, call) -> str:
         found = context.journal.get(Sequences).in_hand()
         if not found or found[2].get("followed") == found[2]["step"]:

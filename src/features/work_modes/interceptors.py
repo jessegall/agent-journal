@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.gates import DISPATCHING
+from engine.gates import DISPATCHING, Runs
 from engine.journal_calls import calls
 from engine.reach import Reach
 from features.parts import AgentContext, Canceler, ToolInterceptor
@@ -21,6 +21,7 @@ class RefuseDispatchInSolo(Canceler):
 
 class RefuseHelperInSolo(ToolInterceptor):
     reach = Reach.MAIN
+    runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         shell = call.shell_command
@@ -31,7 +32,7 @@ class RefuseHelperInSolo(ToolInterceptor):
 
 class RemindOrchestrator(ToolInterceptor):
     reach = Reach.MAIN
-    refuses = False
+    runs = Runs.ASYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         if not isinstance(call, WriteCall) or mode_of(context.record) != ORCHESTRATOR:

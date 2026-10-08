@@ -7,6 +7,7 @@ from engine.journal_calls import PUNCTUATION, JournalCall, pieces
 from engine.ran import SHELL
 from engine.reach import Reach
 from features.parts import AgentContext, Handler, ToolInterceptor
+from engine.gates import Runs
 
 TAKES_VALUE = {"--page", "--back"}
 OPEN = "open"
@@ -68,7 +69,7 @@ def searches(command: str) -> list[str]:
 
 class MarkHistorySearches(ToolInterceptor):
     reach = Reach.MAIN
-    refuses = False
+    runs = Runs.ASYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         for command in call.commands:

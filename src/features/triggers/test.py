@@ -14,10 +14,11 @@ def call(command: str) -> BashCall:
 def fired(record, command: str) -> str:
     from features import FEATURES
     from features.parts import AgentContext
-    from features.triggers.handlers import WatchWhatTheAgentDoes
-    feature = FEATURES["triggers"]
-    agent = Agents(record, actor="system").by_session("claude-1")
-    return WatchWhatTheAgentDoes().intercept(AgentContext.of(feature, record, agent), call(command))
+    from features.triggers.handlers import DenyWhatTheAgentDoes, WatchWhatTheAgentDoes
+    context = AgentContext.of(FEATURES["triggers"], record, Agents(record, actor="system").by_session("claude-1"))
+    denied = DenyWhatTheAgentDoes().intercept(context, call(command))
+    WatchWhatTheAgentDoes().intercept(context, call(command))
+    return denied
 
 
 def test_a_trigger_denies_a_command_and_nudges_on_a_word():
@@ -28,6 +29,10 @@ def test_a_trigger_denies_a_command_and_nudges_on_a_word():
                                           **{"words": ["--force"], "does": "deny", "words_in": "commands"})
     Triggers(record, actor="user").create("mind the migrations", text="run the migration test after touching them",
                                           **{"words": ["migration"], "does": "nudge"})
+    from engine.gates import Runs
+    from features.triggers.handlers import DenyWhatTheAgentDoes, WatchWhatTheAgentDoes
+    assert (DenyWhatTheAgentDoes.runs, WatchWhatTheAgentDoes.runs) == (Runs.SYNC, Runs.ASYNC), \
+        "a deny decides the call before it is answered; a nudge or an instruction is said after the answer"
     assert "no force pushes" in fired(record, "git push --force origin main"), "a deny refuses the call with its reason"
     assert fired(record, "grep migration engine") == "", "a nudge lets the call through"
     assert [n for n in nudges(record) if "mind the migrations" in n], "and says its line to the agent"
