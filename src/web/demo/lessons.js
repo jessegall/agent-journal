@@ -73,7 +73,7 @@ export const LESSONS = [
     },
     {
         key: "dumps",
-        title: "How to dump a pile of notes",
+        title: "How to hand the agent a batch of notes",
         teaches:
             "Drop a pasted note, a screenshot and a text file in one dump. The agent sorts them by subject into documents in a named collection, says what it is doing as it goes, and asks you one question in the dump.",
         layout: "default",

@@ -31,7 +31,7 @@ function keep() {
         <template #back>
             <h3 class="title">{{ ticket.title }}</h3>
             <template v-if="waits">
-                <p class="approval">Waits for your approval before it starts</p>
+                <p class="approval">Needs your approval before it starts</p>
             </template>
             <TextDisplay class="brief" :text="ticket.brief" />
         </template>

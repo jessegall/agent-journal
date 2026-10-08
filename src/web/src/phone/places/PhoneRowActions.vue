@@ -158,7 +158,7 @@ const answers = computed(() =>
                         {key: "own", label: "Answer in your own words", run: () => (form.value = own("Your answer", "Answer"))},
                         ...(props.row.completed
                             ? []
-                            : [{key: "dismiss", label: "Dismiss the question", sub: "Closes it without an answer", run: dismiss}]),
+                            : [{key: "dismiss", label: "Close the question", sub: "Closes it without an answer", run: dismiss}]),
                     ]
                   : []),
           ]

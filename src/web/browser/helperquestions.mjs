@@ -5,7 +5,7 @@ const QUESTION = "Which port should the server use?";
 const helper = {
     n: 91,
     type: "helper",
-    title: "Profile the slow hooks",
+    title: "Profile the slow start",
     completed: 0,
     created: 1,
     data: {name: "Leslie Lamportson", provider: "codex", model: "gpt-6-sol", environment: "main-leslie-lamportson", report: ""},

@@ -63,7 +63,7 @@ const briefToggle = () => {
         </template>
         <template v-if="stateKey === 'waiting' && plan">
             <Notice tone="wait">
-                Plan {{ plan }} waits for your approval. The agent starts work once you approve it.
+                Plan {{ plan }} needs your approval. The agent starts work once you approve it.
                 <template #actions>
                     <Btn small @click="emit('show-plan')">Show the plan</Btn>
                 </template>

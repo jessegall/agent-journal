@@ -365,7 +365,7 @@ const OWN = {
         choose: {label: "Pick an offer", fields: [text("pick", "Which offer?")], result: () => "Picked"},
         decline: {label: "Turn down an offer", fields: [text("pick", "Which offer?")], result: () => "Turned down"},
         direct: {label: "Say how to sort it", fields: [text("how", "How should it be sorted?", {area: true})], result: () => "Sent"},
-        dismiss: {label: "Dismiss", result: () => "Dismissed"},
+        dismiss: {label: "Close", result: () => "Closed"},
         remove: {label: "Remove it", danger: true, confirm: true, result: () => "Removed"},
         stop: {label: "Stop sorting", result: () => "Stopped"},
     },
@@ -377,7 +377,7 @@ const OWN = {
         uninject: {label: "Stop loading at session start", result: () => "No longer loads at start"},
     },
     message: {archive: {label: "Archive", fields: [text("why", "Why archive it?")], result: () => "Archived"}, edit: {label: "Change the words", fields: [text("text", "Your message", {value: (row) => row.brief, area: true})], result: () => "Changed"}},
-    question: {dismiss: {label: "Dismiss", when: standing, fields: [optional("why", "Why dismiss it?")], result: () => "Dismissed"}, complete: null},
+    question: {dismiss: {label: "Close", when: standing, fields: [optional("why", "Why close it?")], result: () => "Closed"}, complete: null},
     suggestion: {complete: null},
     sequence: {
         abandon: {label: "Stop the run", danger: true, fields: [optional("why", "Why stop it?")], body: {sure: true}, result: () => "Stopped"},

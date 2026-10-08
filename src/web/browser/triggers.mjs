@@ -15,7 +15,7 @@ await runScenarios(process.argv[2], {
         await page.getByRole("button", {name: /^New trigger/}).click();
         const dialog = page.getByRole("dialog", {name: "New trigger"});
         await option(dialog, WATCH).click();
-        await option(dialog, "The agent is idle").click();
+        await option(dialog, "The agent has been idle").click();
         await dialog.getByPlaceholder(/Name it/).fill(title);
         await dialog.getByPlaceholder(/Name it/).press("Enter");
         await dialog.locator("textarea").fill("Check your messages, {{minutes}} minutes have passed.");
@@ -24,7 +24,7 @@ await runScenarios(process.argv[2], {
         await dialog.waitFor({state: "detached"});
         const panel = page.locator("main, .side-panel, body").first();
         await panel.getByText("When the agent has been idle for more than 5 minutes").first().waitFor();
-        const fact = await option(page, "The agent is idle").getAttribute("aria-selected");
+        const fact = await option(page, "The agent has been idle").getAttribute("aria-selected");
         if (fact !== "true") throw new Error("the saved trigger did not show the fact it watches");
         await option(page, "A question has no answer").click();
         await panel.getByText("When a question has had no answer for more than 5 minutes").first().waitFor();
