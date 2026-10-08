@@ -17,8 +17,8 @@ class CloseHandled(Handler):
             return
         for message in read_and_open(context.journal):
             results = [*message.refs, *(s[SECTION.body] for s in message.sections)]
-            if results and answered(context.journal, message) and not context.journal.get(Messages).load(message.n).completed:
-                context.journal.get(Messages).complete(message.n, how=f"handled: {', '.join(dict.fromkeys(results))}")
+            if results and answered(context.journal, message):
+                context.journal.get(Messages)._closed_once(message.n, f"handled: {', '.join(dict.fromkeys(results))}")
 
 
 class CloseSeenByUser(Handler):
@@ -28,8 +28,8 @@ class CloseSeenByUser(Handler):
         messages = context.journal.get(Messages)
         for n in event.numbers:
             message = messages.load(n)
-            if not message.completed and not theirs(message) and USER in message.seen:
-                messages.complete(message.n, how="read by the user")
+            if not theirs(message) and USER in message.seen:
+                messages._closed_once(message.n, "read by the user")
 
 
 class CloseAnswered(Handler):
@@ -44,5 +44,5 @@ class CloseAnswered(Handler):
             if kind != "message" or not n.isdigit():
                 continue
             message = messages.load(n)
-            if not message.completed and theirs(message) and answered(context.journal, message):
-                messages.complete(message.n, how=f"{ANSWERS[event.type]} by the agent")
+            if theirs(message) and answered(context.journal, message):
+                messages._closed_once(message.n, f"{ANSWERS[event.type]} by the agent")
