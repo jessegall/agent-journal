@@ -16,8 +16,8 @@ TRAILER = re.compile(r"^Journal: todos done (\d+(?:(?: *, *(?:and +)?| +and +| +
 SWEEP_COMMITS = 300
 
 
-def landing_commits(checkout: Checkout, span: str, limit: int = 0) -> list[tuple[str, str, str]]:
-    out = git(["log", "--format=%H%x1f%s%x1f%B%x1e", *(["-n", str(limit)] if limit else []), span], checkout.top)
+def landing_commits(checkout: Checkout, span: str, limit: int = SWEEP_COMMITS) -> list[tuple[str, str, str]]:
+    out = git(["log", "--format=%H%x1f%s%x1f%B%x1e", "-n", str(limit), span], checkout.top)
     return [tuple(c.strip("\n").split("\x1f", 2)) for c in out.split("\x1e") if c.strip()]
 
 
@@ -75,7 +75,7 @@ class CloseRowsFromCommits(Handler):
         context.record.event_log.set_cursor_text(cursor, tip)
         if seen == tip:
             return
-        for sha, subject, body in (landing_commits(checkout, f"{seen}..{tip}") if seen else landing_commits(checkout, tip, limit=SWEEP_COMMITS)):
+        for sha, subject, body in (landing_commits(checkout, f"{seen}..{tip}") if seen else landing_commits(checkout, tip)):
             self.close(context, sha, subject, body, held_only=not seen)
 
     def log(self, project) -> list[tuple[str, str, str, str]]:
