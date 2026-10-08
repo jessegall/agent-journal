@@ -1,6 +1,6 @@
 // @vitest-environment node
 import {describe, expect, test} from "vitest";
-import {navGroups, navSections, same, settingChanges, timingEvery, timingMarks, timingUnit, timingWords, untitled} from "../src/domain/settingsCatalog.js";
+import {TABS, inTab, navGroups, navSections, same, settingChanges, timingEvery, timingMarks, timingUnit, timingWords, untitled} from "../src/domain/settingsCatalog.js";
 
 describe("timing words", () => {
     test.each([
@@ -101,4 +101,16 @@ test("the sidebar leaves out a heading with nothing under it", () => {
         {title: "Empty", groups: []},
     ];
     expect(navSections(sections).map((s) => [s.title, s.groups.map((g) => g.key)])).toEqual([["Project", ["u"]]]);
+});
+
+describe("the Agent tab", () => {
+    test("it is the first tab and holds the groups the server places in it", () => {
+        expect(TABS[0].key).toBe("agent");
+        const sections = [
+            {title: "Agent", groups: [{key: "agent", tab: "agent"}, {key: "viewer", tab: "features"}]},
+            {title: "Chat", groups: [{key: "chat", tab: "features"}]},
+        ];
+        expect(inTab(sections, "agent").map((s) => s.groups.map((g) => g.key))).toEqual([["agent"]]);
+        expect(inTab(sections, "features").map((s) => s.groups.map((g) => g.key))).toEqual([["viewer"], ["chat"]]);
+    });
 });

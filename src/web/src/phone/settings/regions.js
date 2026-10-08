@@ -3,6 +3,7 @@ import {tabLine} from "../../domain/settingsCatalog.js";
 const region = (key, title, icon, line, route = `region:${key}`) => ({key, title, icon, line, route});
 
 export const REGIONS = [
+    region("agent", "Agent", "bolt", tabLine("agent")),
     region("features", "Features", "bolt", tabLine("features")),
     region("notify", "Alerts on this phone", "bell", "When this phone gets an alert from your computer."),
     region("services", "Services", "play", tabLine("services")),
@@ -23,6 +24,6 @@ export const FILTERED = {
     off: {title: "Off", line: "Everything that is switched off now."},
 };
 
-export const TAB_OF = {features: "features", system: "system", developer: "developer"};
+export const TAB_OF = {agent: "agent", features: "features", system: "system", developer: "developer"};
 
 export const regionOf = (key) => REGIONS.find((one) => one.key === key) || {key, title: FILTERED[key]?.title || key, line: FILTERED[key]?.line || ""};

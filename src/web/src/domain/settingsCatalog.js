@@ -406,7 +406,8 @@ export function narrowed(sections, query, filter) {
 }
 
 export const TABS = [
-    {key: "features", title: "Features", line: "What the agent and the journal do. Each feature can be switched off on its own."},
+    {key: "agent", title: "Agent", line: "How the agent works, talks to you and keeps track of its work. Each of these can be switched off on its own."},
+    {key: "features", title: "Features", line: "What the journal does besides the agent's own settings, which are in the Agent tab. Each feature can be switched off on its own."},
     {key: "system", title: "System", line: "Project settings, updates, browser settings and shutting down."},
     {key: "services", title: "Services", line: "The processes the journal and its plugins keep running. Start, stop, restart and read their logs."},
     {key: "sharing", title: "Phone and share links", line: "Your phone and share links reach this journal through the tunler account below."},
