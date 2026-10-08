@@ -246,9 +246,16 @@ main.phone {
     position: relative;
     z-index: 56;
     border-radius: 14px;
-    outline: 3px solid var(--accent-text);
-    outline-offset: -3px;
     box-shadow: 0 0 0 9999px rgb(0 0 0 / 55%);
+}
+
+.phone .spot::after {
+    content: "";
+    position: absolute;
+    inset: var(--spot-hidden, 0px) 0 0;
+    border: 3px solid var(--accent-text);
+    border-radius: 14px;
+    pointer-events: none;
 }
 
 .phone button {
