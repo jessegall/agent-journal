@@ -466,20 +466,6 @@ class Tool(Shape, Resource):
     scope = PROJECT
 
 
-class Connection(Shape, Resource):
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Connection",
-        abstract="A service the project can reach, and which variable holds its token",
-        help="Never the token itself: the name of the variable that holds it.",
-    )
-    data_fields: ClassVar[list[Field]] = [
-        Field(TEXT, name="variable"),
-    ]
-    type = "connection"
-    subagent_writable = False
-    icon = "plug"
-    listed_under = UNLISTED
-    scope = PROJECT
 
 
 class Plugin(Shape, Resource):
@@ -622,8 +608,8 @@ def register(*classes) -> None:
     TYPES.update({c.type: c for c in classes})
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Fact, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Connection, Plugin, Environment, Ask, Nudge, FeatureRow)}
-LISTED = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "fact", "rule", "reminder", "notice", "reaction", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge", "feature")
+TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Fact, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Plugin, Environment, Ask, Nudge, FeatureRow)}
+LISTED = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "fact", "rule", "reminder", "notice", "reaction", "tool", "plugin", "environment", "work", "agent", "notification", "browser", "nudge", "feature")
 
 
 def ref_named(text: str) -> Ref:
