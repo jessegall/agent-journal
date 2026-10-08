@@ -165,7 +165,7 @@ class HelpersDetails(FeatureDetails):
         ),
         Line(
             name="refused",
-            title="helper {{n}}, {{name}}, cannot work: {{provider}} refused it",
+            title="helper {{n}}, {{name}}, cannot work because {{provider}} refused it",
             brief="""
                 {{provider}} said: {{reason}}. journal helper say cannot help while it refuses. Stop it with
                 journal helper stop {{n}}, then dispatch the job again on another provider, or journal helper finish {{n}}

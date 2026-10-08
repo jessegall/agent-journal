@@ -203,14 +203,13 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
         "one whose agent is gone is named at once, and said again until it is finished"
     assert "SettingsWarning: hooks must be an object" in stopped.brief, "the notice names the cause from the tail of its launch log"
     with launch_log(record.root, f"{record.env}-rhea").open("a") as log:
-        log.write("\x1b[31mCredit balance is too low\x1b[0m\n")
+        log.write("\x1b[31mYour workspace is out of credits. Ask your workspace owner to refill in order to continue.\x1b[0m\n")
     watch()
     refusal, = [n for n in Nudges(record, actor=SYSTEM).all() if "refused it" in n.title]
-    assert (refusal.title, "Credit balance is too low" in refusal.brief) == ("helper 1, Rhea, cannot work: claude refused it", True), \
-        "a helper its provider refuses to run is named at once with the provider's own words, so the job goes elsewhere"
-    from providers.codex import Codex
-    assert Codex.refusal_in("booting\nYour workspace is out of credits. Ask your workspace owner to refill in order to continue.") == \
-        "Your workspace is out of credits. Ask your workspace owner to refill in order to continue.", "Codex's refusal for want of credits is read from its output"
+    assert (refusal.title, "Your workspace is out of credits" in refusal.brief) == ("helper 1, Rhea, cannot work because codex refused it", True), \
+        "a Codex helper its workspace has no credits for is named at once with Codex's own words, so the job goes elsewhere"
+    from providers.claude import Claude
+    assert Claude.refusal_in("starting\nCredit balance is too low") == "Credit balance is too low", "Claude's refusal for want of credit is read from its output"
     Helpers(record, actor=AGENT).dispatch("Mira", "Write the hook docs", "claude", "sonnet")
     rhea, mira = (Helpers(Record(record.root, f"{record.env}-{name}"), actor=AGENT) for name in ("rhea", "mira"))
     Agents(Record(record.root, f"{record.env}-mira"), actor=SYSTEM).create("claude-mira")
