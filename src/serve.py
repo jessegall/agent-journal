@@ -264,7 +264,7 @@ def warm_commands() -> None:
 
 def warm_changed(root: Path) -> None:
     from commands.parser import parser
-    from surfaces.manifest import manifest
+    from features.open_viewer.manifest import manifest
     parser()
     manifest(root)
 

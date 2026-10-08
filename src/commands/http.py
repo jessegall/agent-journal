@@ -14,20 +14,18 @@ from typing import Iterator
 from urllib.parse import quote
 
 import features
-from surfaces.appoint import appoint, online
-from controllers.shared import row_shared, shared
+from features.open_viewer.appoint import appoint
+from controllers.shared import row_shared
 from surfaces.package import archive as extension_archive, info as extension_info
-from overview.summary import lately_summarized
 from engine.color import identity, set_color
 from engine.upgrades import check_now
 from agents.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
 from features.permission_prompts.skipping import Relaunch, set_skipped
 from engine.files import found_files
 from controllers.base import LAST, networked
-from controllers.types import Agents, CONTROLLERS, Environments
+from controllers.types import Agents, CONTROLLERS, Environments, Features
 from engine import attic, bus, runtime, typist, viewer
 from engine.package import CODE
-from surfaces.manifest import manifest
 from engine.version import version
 from engine.seats import terminal_of
 from agents.screen import screen_since
@@ -51,10 +49,8 @@ from resources.base import Missing
 
 from commands.invoke import invoked, takes_row
 from features.format import VIEWER, carded, formatted, shaped
-from surfaces.attachments import attachments
 from surfaces.everything import found
 from surfaces.listing import Listing, counted, listing
-from surfaces.settings import apply, settings
 from commands.dispatch import dispatch  # noqa: F401
 
 
@@ -206,7 +202,7 @@ def post_console(req: Request) -> Reply:
 
 @route("GET", "/api/manifest")
 def get_manifest(req: Request) -> Reply:
-    return Reply(200, manifest(req.root))
+    return Reply(200, invoked(req.as_user(Environments), "manifest"))
 
 
 @route("POST", "/api/update/check")
@@ -239,14 +235,12 @@ def post_identity(req: Request) -> Reply:
 
 @route("GET", "/api/summary")
 def get_summary(req: Request) -> Reply:
-    summary = lately_summarized(req.root)
-    return Reply(200, {**summary, "environments": [e for e in summary["environments"] if shared(e["name"])],
-                       "helpers": [e for e in summary["helpers"] if shared(e["name"])]})
+    return Reply(200, invoked(req.as_user(Environments), "summary"))
 
 
 @route("GET", "/api/agents")
 def get_agents(req: Request) -> Reply:
-    return Reply(200, [agent for agent in online(req.root) if shared(agent["environment"])])
+    return Reply(200, invoked(req.as_user(Agents), "online"))
 
 
 @route("POST", "/api/{env}/appoint")
@@ -352,17 +346,17 @@ def get_extension_zip(req: Request) -> Reply:
 @route("GET", "/api/{env}/events")
 def get_events(req: Request) -> Reply:
     asked = req.query_as(EventsQuery)
-    return Reply(200, [e.to_json() for e in req.record().event_log.events(asked.since, asked.last)])
+    return Reply(200, invoked(req.as_user(Environments), "events", named={"since": asked.since, "last": asked.last}))
 
 
 @route("GET", "/api/{env}/settings")
 def get_settings(req: Request) -> Reply:
-    return Reply(200, settings(req.record()))
+    return Reply(200, invoked(req.as_user(Features), "settings"))
 
 
 @route("POST", "/api/{env}/settings")
 def post_settings(req: Request) -> Reply:
-    return Reply(200, apply(req.record(), req.body, USER))
+    return Reply(200, invoked(req.as_user(Features), "save", named={"values": req.body}))
 
 
 @route("POST", "/api/upgrade")
@@ -425,7 +419,7 @@ def post_forget(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/files")
 def get_files(req: Request) -> Reply:
-    return Reply(200, attachments(req.record()))
+    return Reply(200, invoked(req.as_user(Environments), "attachments"))
 
 
 @route("GET", "/api/{env}/project-files")
@@ -600,7 +594,7 @@ def get_dashboard(req: Request) -> Reply:
     whole = "events" in req.query
     body = {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted)}
     if whole:
-        body.update(events=[e.to_json() for e in record.event_log.events(0, asked.events)], settings=settings(record))
+        body.update(events=invoked(req.as_user(Environments), "events", named={"last": asked.events}), settings=invoked(req.as_user(Features), "settings"))
     return Reply(200, body)
 
 

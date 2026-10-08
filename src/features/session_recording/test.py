@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from surfaces.manifest import built_in
+from features.open_viewer.manifest import built_in
 
 import features
 from controllers.types import Agents, Todos

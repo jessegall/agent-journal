@@ -377,6 +377,13 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     ask = lambda method, path, query=None, body=None: dispatch(method, path, record.root, query or {}, body or {})
     assert ask("GET", f"/api/{record.env}/settings").code == 200 and ask("POST", f"/api/{record.env}/settings", body={"ask_questions": {"hold": 1}}).code == 200, \
         "the settings are read and written through the viewer"
+    from commands.invoke import invoked
+    from controllers.types import Environments, Features
+    from resources.base import AGENT, Refused
+    assert invoked(Features(record, actor=AGENT), "settings") == ask("GET", f"/api/{record.env}/settings").body, "the viewer reads its settings through the command the CLI runs"
+    assert invoked(Environments(record, actor=AGENT), "events") == ask("GET", f"/api/{record.env}/events").body, "and its events"
+    with pytest.raises(Refused, match="only the user"):
+        invoked(Features(record, actor=AGENT), "save", named={"values": {"viewer": {"theme": "light"}}})
     assert ask("POST", "/api/identity", body={"color": "not-a-colour"}).code == 400, "an identity colour that is no colour is refused"
     named = ask("POST", "/api/identity", body={"color": "#aa3355"}).body
     assert named["root"] == str(record.root) and ask("GET", "/api/identity").body["root"] == str(record.root), "the identity names the root it serves"

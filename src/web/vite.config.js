@@ -13,7 +13,7 @@ const builtInManifest = () => ({
     resolveId: (id) => (id === BUILT_IN ? `\0${BUILT_IN}` : undefined),
     load(id) {
         if (id !== `\0${BUILT_IN}`) return undefined;
-        const dump = "import json, features; from surfaces.manifest import built_in; features.discover(); print(json.dumps(built_in()))";
+        const dump = "import json, features; from features.open_viewer.manifest import built_in; features.discover(); print(json.dumps(built_in()))";
         const json = execFileSync("python3", ["-c", dump], {
             cwd: fileURLToPath(new URL("..", import.meta.url)),
             env: {...process.env, PYTHONPATH: "."},
