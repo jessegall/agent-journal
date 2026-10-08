@@ -1,6 +1,7 @@
 import time
 
 from controllers.types import Works
+from features.boards.orchestration import orchestrating
 from features.parts import Command, Context
 from resources.base import Refused, titled
 
@@ -45,6 +46,8 @@ class AwaitWork(Command):
     def run(self, context: Context, works: Works, *words: str, n: int = 0, on: str = ""):
         n, awaiting = numbered(words, n, "say what you are waiting for: journal work await <n> \"<what>\"")
         named = ",".join(part.strip() for part in on.split(",") if part.strip())
+        if orchestrating(context.record) and any(part.startswith("helper:") for part in named.split(",")):
+            raise Refused("an orchestrating agent does not wait on a helper: end your turn, and you are told when it reports")
         row = in_hand(works, n) if n or works.active() else works.create(titled(f"Waiting on {awaiting}"))
         return works.update(row.n, awaiting=awaiting, awaiting_since=time.time(), awaiting_on=named)
 
