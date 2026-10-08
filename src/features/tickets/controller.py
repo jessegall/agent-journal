@@ -400,7 +400,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     @action
     def start(self, n: int, provider: str | None = None, model: str | None = None):
-        from agents.terminal import detached
+        from agents.terminal import detached, prompted
         from providers import DRIVERS, PROVIDERS
         self._confirmed(self.load(n))
         self.mark_seen()
@@ -435,8 +435,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             if fresh and into != "HEAD":
                 ticket = self._based(ticket, {name: tip(place, f"refs/heads/{self._branch(ticket)}") for name, place, _ in self._repositories(ticket)})
             detached(self.record.root, project, place, ticket.provider,
-                     driver.prompted(driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
-                     else driver.prompted(args, self._kickoff(ticket)))
+                     prompted(self.record.root, place, driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
+                     else prompted(self.record.root, place, args, self._kickoff(ticket)))
             return self.update(ticket.n, queued=False, queued_at=0.0, launched=time.time())
 
     def _kickoff(self, ticket) -> str:

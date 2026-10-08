@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from agents.terminal import Launched
+from agents.terminal import Launched, prompted
 from supervisor import LAUNCHED
 from controllers.types import Environments, Features
 from engine import runtime
@@ -18,9 +18,8 @@ PROVIDER = "claude"
 
 def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind: EnvironmentKind) -> str:
     from providers import DRIVERS
-    driver = DRIVERS[PROVIDER]
     prepared(record, name, abstract, owner, record.root.parent, kind)
-    return launched(record, name, PROVIDER, driver.prompted(driver.within([], worktree), prompt), record.root.parent)
+    return launched(record, name, PROVIDER, prompted(record.root, name, DRIVERS[PROVIDER].within([], worktree), prompt), record.root.parent)
 
 
 def prepared(record, name: str, abstract: str, owner: str, folder: Path, kind: EnvironmentKind) -> Record:

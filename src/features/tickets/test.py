@@ -134,7 +134,8 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     assert (env, agent, args[:2], skipped(Record(record.root, f"ticket-{ticket.n}"))) == \
         (f"ticket-{ticket.n}", "claude", ["--worktree", f"ticket-{ticket.n}"], True), \
         "the start stage launches the ticket's agent in its own worktree, in auto mode, so it never stops at a permission prompt"
-    assert "Draft a plan" in args[-1] and ticket.ref in args[-1], "a fresh start opens with the ticket and how to plan it"
+    kickoff = agents.terminal.launch_brief(record.root, env).read_text()
+    assert "Draft a plan" in kickoff and ticket.ref in kickoff, "a fresh start opens with the ticket and how to plan it"
     from controllers.types import Environments
     from agents.terminal import launching
     from features.parts import in_background

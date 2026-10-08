@@ -7,6 +7,7 @@ import controllers.types as types_module
 import features
 import resources.types as resources_module
 from controllers.base import Controller
+from agents.terminal import prompted
 from controllers.requests import request
 from controllers.types import Agents, Environments, Messages, Nudges, Todos
 from engine import attic, bus
@@ -139,12 +140,11 @@ class Helpers(Controller):
             given = Worktrees(self.record, actor=SYSTEM)._cut(place, helper=name)
             folder = Path(given.path)
             row = self.update(row.n, worktree=str(given.n))
-        driver = DRIVERS[provider]
         home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER)
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
         self._handed(row, home, handed)
         try:
-            launched(self.record, place, provider, driver.prompted(["--model", model], kickoff(row, folder, todo.n, handed)), folder)
+            launched(self.record, place, provider, prompted(self.record.root, place, ["--model", model], kickoff(row, folder, todo.n, handed)), folder)
         except Exception:
             give_back(self.record, handed)
             raise

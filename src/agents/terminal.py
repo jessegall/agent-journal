@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine.sessions import ACTIVE_ENV, Sessions, hold_build
 from engine import runtime
-from engine.stored import read_json, write_json
+from engine.stored import read_json, write_json, write_text
 from engine.package import CODE, code, entry_in
 from engine.extension import Extension
 from engine.fields import Loaded
@@ -23,6 +23,7 @@ AT_ONCE = Extension()
 
 LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
+BRIEFED = "Your instructions are in {path}. Read that file first, then carry them out."
 LAUNCH_ARGS: list = []
 OUTPUT_LINES: list = []
 
@@ -192,6 +193,18 @@ def refuse_past_cap(root: Path) -> None:
     running = len(Sessions(root).running())
     if caps and running >= min(caps):
         raise TooManyAgents.running(running)
+
+
+def launch_brief(root: Path, env: str) -> Path:
+    return runtime.folder(root) / "launches" / f"{env}.md"
+
+
+def prompted(root: Path, env: str, args: list[str], prompt: str) -> list[str]:
+    """The prompt waits in a file, so no phrase of it shows in the process list, where pkill -f would find it."""
+    brief = launch_brief(root, env)
+    brief.parent.mkdir(parents=True, exist_ok=True)
+    write_text(brief, prompt)
+    return [*args, BRIEFED.format(path=brief)]
 
 
 def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> int:

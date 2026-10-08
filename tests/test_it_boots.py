@@ -28,7 +28,7 @@ from engine.stored import append_text, write_text
 from install import STUBS, fetch
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM
-from scripts.boot_guard import PROJECT, WAIT, launches
+from scripts.boot_guard import PROJECT, WAIT, cleared, launches
 from scripts.checks.imports import imports, missing
 from serve import Handler, JournalServer
 from tests import isolation
@@ -226,6 +226,49 @@ def test_the_launcher_carries_its_running_agent_over_to_a_new_build(tmp_path):
 
     launches(tmp_path, root / "journal.py", "claude", during=upgraded)
     assert moved, "the launcher carried its running agent over to the new build"
+
+
+def test_an_upgrade_leaves_a_helper_running_and_its_job_out_of_the_process_list(tmp_path):
+    root = installed(tmp_path)
+    repository = released(tmp_path)
+    (tmp_path / "bin").mkdir()
+    standin = tmp_path / "bin" / "claude"
+    standin.write_text("#!/bin/sh\nwhile [ ! -f \"$0.quit\" ]; do sleep 0.1; done\n")
+    standin.chmod(0o755)
+    env = {**os.environ, "PATH": f"{tmp_path / 'bin'}{os.pathsep}{os.environ['PATH']}", "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_HOME": str(tmp_path / "home")}
+    env.pop("JOURNAL_ENV", None)
+    phrase = f"stop the stuck build {os.getpid()}-{time.time_ns()}"
+    launch = (f"import sys; sys.path.insert(0, {str(CODE)!r}); from pathlib import Path; from engine.record import Record; "
+              f"from agents.terminal import prompted; from features.agent_sessions.launch import launched, prepared; "
+              f"from resources.types import EnvironmentKind; record = Record(Path({str(root)!r}), 'main'); "
+              f"prepared(record, 'main-ada', 'a helper', '', record.root.parent, EnvironmentKind.HELPER); "
+              f"launched(record, 'main-ada', 'claude', prompted(record.root, 'main-ada', ['--model', 'opus'], {phrase!r}), record.root.parent)")
+
+    def running() -> tuple[int, int]:
+        listed = [line for line in subprocess.run(["ps", "-eo", "stat=,command="], capture_output=True, text=True, timeout=WAIT).stdout.splitlines()
+                  if not line.lstrip().startswith("Z")]
+        return sum(f"/bin/sh {standin}" in line for line in listed), sum("-m supervisor" in line and str(root) in line for line in listed)
+
+    def settled(wanted: tuple[int, int]) -> tuple[int, int]:
+        began = time.time()
+        while running() != wanted and time.time() - began < WAIT:
+            time.sleep(0.2)
+        return running()
+
+    try:
+        subprocess.run([sys.executable, "-c", launch], cwd=root.parent, env=env, capture_output=True, timeout=WAIT, check=True)
+        assert settled((1, 1)) == (1, 1), "the helper's agent and its supervisor start"
+        (repository / "src" / "channel.py").write_text((repository / "src" / "channel.py").read_text() + f"\nRELEASE = {os.urandom(8).hex()!r}\n")
+        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "a new build"], cwd=repository, capture_output=True, timeout=WAIT)
+        upgrade_from(repository, root)
+        time.sleep(5)
+        assert running() == (1, 1), "an upgrade reloads the helper's worker and leaves its agent and supervisor running"
+        matched = subprocess.run(["pgrep", "-f", phrase], capture_output=True, text=True, timeout=WAIT).stdout.split()
+        assert not matched, "no phrase of the helper's job is on a command line, so pkill -f aimed at a build or a test never ends a helper"
+    finally:
+        (tmp_path / "bin" / "claude.quit").touch()
+        subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "stop"], cwd=root.parent, env=env, capture_output=True, timeout=WAIT)
+        cleared(tmp_path)
 
 
 def test_the_journal_starts_on_a_record_with_a_damaged_row(tmp_path):
