@@ -1,9 +1,13 @@
 <script setup>
 import Btn from "../kit/Btn.vue";
+import MenuPanel from "../kit/MenuPanel.vue";
+import ToggleItem from "../kit/ToggleItem.vue";
+import {useAnchoredAction} from "../composables/anchored.js";
+import {store} from "../state/store.js";
 import CardSkeleton from "../kit/CardSkeleton.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import Switch from "../kit/Switch.vue";
-import {nextTick, onMounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import TextInput from "../kit/TextInput.vue";
@@ -16,6 +20,11 @@ const hits = ref([]);
 const more = ref(0);
 const attic = ref(false);
 const archived = ref(false);
+const picked = ref([]);
+const {anchor, toggle} = useAnchoredAction();
+const types = computed(() => (store.spec?.searchable || []).map((key) => ({key, title: store.spec.types[key]?.title || key})));
+const typesWord = computed(() => (picked.value.length ? `${picked.value.length} of ${types.value.length} types` : "Every type"));
+const pick = (key) => (picked.value = picked.value.includes(key) ? picked.value.filter((k) => k !== key) : [...picked.value, key]);
 const brought = ref({});
 const removed = ref([]);
 const restored = ref({});
@@ -37,7 +46,7 @@ async function run() {
         return;
     }
     try {
-        const [found, gone] = await Promise.all([api.search(query, archived.value), attic.value ? api.searchAttic(query) : []]);
+        const [found, gone] = await Promise.all([api.search(query, archived.value, picked.value), attic.value ? api.searchAttic(query) : []]);
         if (current === request) [hits.value, more.value, removed.value] = [found.hits, found.more, gone];
     } finally {
         if (current === request) searching.value = false;
@@ -54,7 +63,7 @@ async function bringBack(name) {
     restored.value = {...restored.value, [name]: true};
 }
 
-watch([attic, archived], run);
+watch([attic, archived, picked], run);
 
 watch(
     () => route.value.q,
@@ -79,6 +88,14 @@ watch(
             />
         </form>
         <div class="switches">
+            <Btn small :aria-expanded="!!anchor" @click="toggle">{{ typesWord }}</Btn>
+            <template v-if="anchor">
+                <MenuPanel :anchor="anchor" :min-width="200" :max-width="260" @click.stop @close="anchor = null">
+                    <template v-for="t in types" :key="t.key">
+                        <ToggleItem :on="picked.includes(t.key)" @click="pick(t.key)">{{ t.title }}</ToggleItem>
+                    </template>
+                </MenuPanel>
+            </template>
             <Switch :on="archived" word="Include archived items" @change="(on) => (archived = on)" />
             <Switch :on="attic" word="Include removed environments" @change="(on) => (attic = on)" />
         </div>

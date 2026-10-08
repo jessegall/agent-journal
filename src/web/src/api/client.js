@@ -661,8 +661,8 @@ export class ApiClient {
         return this.post(this.here("/mode"), {mode});
     }
 
-    search(q, archived = false) {
-        return this.get(this.here(`/search${query({q, ...(archived ? {archived: true} : {})})}`));
+    search(q, archived = false, resources = []) {
+        return this.get(this.here(`/search${query({q, ...(archived ? {archived: true} : {}), ...(resources.length ? {resources: resources.join(",")} : {})})}`));
     }
 
     restore(type, n) {
