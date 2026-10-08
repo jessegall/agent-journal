@@ -191,6 +191,11 @@ def test_the_demo_is_built_from_the_real_server_and_boots_through_the_stand_in(t
     monkeypatch.setattr(demoing.Scrubber, "leaks", lambda self, text: ["/home/someone"])
     with undoable(), pytest.raises(Refused, match="still holds the machine"):
         demo_built(folder, tmp_path / "again.json")
+    monkeypatch.setattr(demoing, "ask", lambda root, path, query=None: {"edits": [{"id": "e1"}]} if path.endswith("/edits") else f"{query['side']} {query['id']}")
+    assert dict(demoing.edits(record.root, record.env, [3])) == {"edits.3": {"edits": [{"id": "e1"}]}, "edited.3": {"e1": "after e1"}}, \
+        "each agent's edits are recorded with the file as it stood after each one"
+    monkeypatch.setattr(demoing, "phone_reads", lambda *given: (_ for _ in ()).throw(Refused("no phone")))
+    assert list(demoing.phoned(record.root, record.env)) == [], "a journal whose phone cannot be read records no phone answers"
 
 
 PLAY = WEB / "play.mjs"

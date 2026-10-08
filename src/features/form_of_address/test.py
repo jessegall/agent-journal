@@ -175,3 +175,14 @@ def test_the_upgrade_moves_the_cartoon_names_switch_into_the_profile_in_use():
     assert (chosen.title, chosen.naming, json.loads((record.home / "settings.json").read_text())) == \
         ("Butler (my copy)", CARTOON.text, {"journal_laws": {"output_lines": 400}}), \
         "the switch is gone, and a copy of the profile in use, now in use, names agents after cartoon characters"
+    assert run(record.root.parent / "no-journal-here") == [], "a folder with no environment has nothing to move"
+    other = shipped_record()
+    mine = Profiles(other, actor=SYSTEM).create("Mine", naming="")
+    choose(other, mine.n)
+    from engine.stored import read_json
+    held = read_json(other.home / "settings.json", dict, {})
+    (other.home / "settings.json").write_text(json.dumps({**held, "journal_laws": {"cartoon_names": True}}))
+    assert run(other.root) == [f"profile {mine.n}, Mine, names its agents as the journal did: after famous scientists and designers",
+                               f"profile {mine.n}, Mine, names its agents after cartoon characters, as the switch did"], \
+        "a profile of your own keeps the names it had, and when it is the one in use it takes the switch's cartoon names itself"
+    assert Profiles(other, actor=SYSTEM).load(mine.n).naming == CARTOON.text
