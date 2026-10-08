@@ -202,6 +202,7 @@ class Manager:
         self.seen: dict = {}
         self.waiting: dict = {}
         self.needed: dict = {}
+        self.spawned: dict[str, int] = {}
         self.owned = None
         self.token = uuid.uuid4().hex
         self.leading = False
@@ -291,9 +292,9 @@ class Manager:
         if spec.blocked:
             replace(current, state=BLOCKED, why=spec.blocked, at=now).write(spec.status)
             return False
-        if self.booting(current, now):
+        if self.booting(sid, current, now):
             return False
-        if self.died(current, now) and self.seen.get(sid) != current.at:
+        if self.died(sid, current) and self.seen.get(sid) != current.at:
             self.seen[sid] = current.at
             self.crashed(sid, now)
         stops = len(self.crashes.get(sid, []))
@@ -305,16 +306,19 @@ class Manager:
             return False
         write_json(spec_file(self.root, sid), asdict(replace(spec, owner=os.getpid())))
         replace(current, state="starting", keeper=0, owner=os.getpid(), port=spec.port, url=spec.url, at=now).write(spec.status)
-        self.start(spec, self.lifeline)
+        self.spawned[sid] = self.start(spec, self.lifeline)
         return True
 
-    def booting(self, current: ServiceState, now: float) -> bool:
-        return current.state == "starting" and not current.keeper and now - current.at <= BOOTING
+    def booting(self, sid: str, current: ServiceState, now: float) -> bool:
+        """A keeper just started has not written its state yet; one this manager started counts only while its process lives."""
+        if current.state != "starting" or current.keeper or now - current.at > BOOTING:
+            return False
+        return sid not in self.spawned or self.living(self.spawned[sid])
 
-    def died(self, current: ServiceState, now: float) -> bool:
+    def died(self, sid: str, current: ServiceState) -> bool:
         if current.state == "exited":
             return True
-        return current.state == "starting" and not self.living(current.keeper)
+        return current.state == "starting" and not self.living(current.keeper or self.spawned.get(sid, 0))
 
     def unneeded(self, spec: ServiceSpec, now: float) -> str:
         if not spec.when:
