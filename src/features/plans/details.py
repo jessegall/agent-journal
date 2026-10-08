@@ -34,9 +34,10 @@ class PlansDetails(FeatureDetails):
         phase's rows and tickets, and what happened last.
 
         When the user asks for a review of a plan, run journal plan review <n> before you dispatch
-        the reviewers: the plan is under review and cannot be approved until their report is
-        linked to it with journal report link <report n> plan:<n>, which returns it to building
-        for you to revise and mark ready again.
+        the reviewers, then link their report with journal report link <report n> plan:<n>: a
+        plan still under review goes back to building for you to revise and mark ready again.
+        The user may approve and start it at any moment of a review; a report that lands after
+        that is linked and leaves their decision standing.
 
         Only the user approves a plan, and then you start it with journal plan start <n>; only the user continues it past a checkpoint; with the auto
         feature on, checkpoints are passed without waiting.

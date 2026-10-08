@@ -74,15 +74,16 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     from tests.kit import nudges, report
     report(record, "working", "PreToolUse")
     by_agent.review(plan.n)
-    assert refused(lambda: by_user.approve(plan.n)) == f"plan {plan.n} is under review: its reviewers' report comes first", \
-        "a plan under review cannot be approved"
     from controllers.types import Reports
     review = Reports(record, actor=AGENT).create("what the reviewers found")
     Reports(record, actor=AGENT).link(review.n, plan.ref)
     assert by_agent.load(plan.n).data["status"] == "building", "linking the reviewers' report hands it back for revising"
     assert any(f"the review of plan {plan.n}, Port everything, is in - report {review.n}" in line for line in nudges(record)), "the agent is told when the reviewers' report is in"
     by_agent.ready(plan.n)
-    by_user.approve(plan.n)
+    by_agent.review(plan.n)
+    assert by_user.approve(plan.n).data["status"] == "approved", "asking for a review never stops you approving the plan"
+    Reports(record, actor=AGENT).link(Reports(record, actor=AGENT).create("a late review").n, plan.ref)
+    assert by_agent.load(plan.n).data["status"] == "approved", "a report that lands after you approved leaves your decision standing"
     by_agent.start(plan.n)
     assert [t.n for t in ready(record)] == [1, 2], "active: rows of the current phase are ready, in order; the others wait"
     assert refused(lambda: Works(record, actor=AGENT).create("a quick fix")).startswith("a plan is active"), "free work waits for the plan"
