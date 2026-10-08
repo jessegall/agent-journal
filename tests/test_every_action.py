@@ -73,7 +73,7 @@ CALLS = {
     "runCheck": [1], "setCheck": [1, "every", 5], "closeNotice": [1], "pinNotice": ["Pinned from a message", "message:1"], "editMessage": [1, "reworded"],
     "deleteTurn": ["message", 1], "touched": [1],
     "stopTask": [AGENT_N, "task-1", "a background run"], "updateComment": [1, "reworded"], "deleteComment": [1], "addToCollection": [1, ["todo:1"]],
-    "setStartsOn": [1, "todo.created"], "setSteps": [1, ["one step"]], "pinRule": [1], "profiles": [], "profileCallings": [], "profileSamples": [], "createProfile": [{"title": "walked", "brief": "x"}], "updateProfile": [1, {"brief": "y"}],
+    "setStartsOn": [1, "todo.created"], "setSteps": [1, ["one step"]], "pinRule": [1], "profiles": [], "profileCallings": [], "profileSamples": [], "profileNamings": [], "createProfile": [{"title": "walked", "brief": "x"}], "updateProfile": [1, {"brief": "y"}],
     "duplicateProfile": [1], "deleteProfile": [1], "configurePlugin": [1, "key", "value"],
     "clearPluginLog": [1], "removeEnvironment": [1, False], "sweepEnvironment": [1, False], "readAll": ["todo", [1]],
     "upload": ["todo", 1, {"file": "walked.txt"}], "events": [], "recentEvents": [10], "settings": [], "saveSettings": [{}],
@@ -226,7 +226,7 @@ def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
     code(record.root).mkdir(parents=True, exist_ok=True)
     (code(record.root) / "CHANGELOG.md").write_text("# changes\n")
     keys = {
-        "/api/manifest": {"actions", "actors", "build", "chat_kinds", "environment", "features", "fields", "groups", "methods", "priority", "project", "scopes", "types", "version", "views"},
+        "/api/manifest": {"actions", "actors", "build", "chat_kinds", "environment", "features", "fields", "groups", "methods", "models", "priority", "project", "scopes", "searchable", "types", "version", "views"},
         "/api/summary": {"color", "environments", "helpers", "project", "root", "start", "started", "version"},
         "/api/{env}/bar": {"queue"},
         "/api/{env}/family": {"links", "members"},
