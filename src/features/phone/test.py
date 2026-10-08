@@ -33,7 +33,7 @@ from features.sharing.server import ShareHandler
 from engine.viewer import SERVING
 from serve import Handler, JournalServer
 from features.sharing.services import wanted
-from resources.base import AGENT, SYSTEM, USER, Refused
+from resources.base import OWNER_ID, AGENT, SYSTEM, USER, Refused
 from resources.types import EnvironmentKind
 from tests.conftest import fresh
 
@@ -385,10 +385,10 @@ def test_only_the_user_connects_a_phone_and_nobody_sets_its_key(served, monkeypa
     from features.phone.allow_list import Reach
     from features.phone.members import MEMBER_RIGHTS, MemberRights
     sam = Phones(record, actor=USER).connect(7, "sam")["n"]
-    assert (Phones(record, actor=SYSTEM)._phone(sam).member, Phones(record, actor=SYSTEM)._phone(n).member) == ("sam", ""), \
+    assert (Phones(record, actor=SYSTEM)._phone(sam).member, Phones(record, actor=SYSTEM)._phone(n).member) == ("sam", OWNER_ID), \
         "a phone connected for a member is that member's, and the owner's stays the owner's"
     asked = lambda who: reached_by_phone(record.root, "GET", "/api/identity", {}, {}, record.env, True, who)
-    assert (asked(""), asked("sam")) == (Reach.OPEN, Reach.CLOSED), "a member's phone reaches nothing until the member's rights grant it, and the owner's phone is as before"
+    assert (asked(OWNER_ID), asked("sam")) == (Reach.OPEN, Reach.CLOSED), "a member's phone reaches nothing until the member's rights grant it, and the owner's phone is as before"
 
     class Grants(MemberRights):
         def may_reach(self, record, member, page):

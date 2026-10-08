@@ -170,7 +170,7 @@ def hold(home: Record) -> int:
 
 
 def reaches(home: Record, phone, row) -> bool:
-    if phone.member and not rights_of(home).sees(home, phone.member, row):
+    if not rights_of(home).sees(home, phone.member, row):
         return False
     environment = row.data.get("environment")
     if environment in (phone.environment, None, ""):

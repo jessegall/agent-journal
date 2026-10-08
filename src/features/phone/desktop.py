@@ -32,7 +32,7 @@ def closed(record, method: str, forwarded: str) -> bool:
     return found is not None and Page(found[0].method, found[0].pattern) in shut
 
 
-def phone_marks(environment: str, unlocked: bool, member: str = "") -> dict:
+def phone_marks(environment: str, unlocked: bool, member: str) -> dict:
     return {PHONE_ENVIRONMENT: environment, PHONE_UNLOCKED: "1" if unlocked else "0", PHONE_MEMBER: member}
 
 

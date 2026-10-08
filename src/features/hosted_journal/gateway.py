@@ -18,7 +18,7 @@ from engine.color import identity
 from engine.fields import Loaded
 from engine.viewer import lately_running
 from features.hosted_journal.settings import FromRecord, FromVault
-from features.hosted_journal.owner import MOST_EVERYWHERE, OWNER, SHORTEST, Devices, KeptLogin, Logins, Owner, Standing, WrongTries, hashed
+from features.hosted_journal.owner import MOST_EVERYWHERE, SHORTEST, Devices, KeptLogin, Logins, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.people import people_of
 from features.hosted_journal.hosting import Ask, Hosting
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page, taken_down_page
@@ -28,7 +28,7 @@ from features.phone.allow_list import Action, GenericPath, Page, post, reach
 from features.phone.desktop import Desktop, closed, encoded
 from features.sharing.origins import origins_of
 from features.trigger import DAY
-from resources.base import USER, Refused
+from resources.base import OWNER_ID, USER, Refused
 
 COOKIE = "__Host-journal"
 DEVICE_COOKIE = "__Host-journal-device"
@@ -304,7 +304,7 @@ class Gateway:
             return visit.go("/login")
         form = visit.form()
         below = people_of(visit.record).below_login()
-        return self.tried(visit, lambda: OWNER if owner.matches(form.password) else None, lambda: login_page(visit.project(), Notice.WRONG, below))
+        return self.tried(visit, lambda: OWNER_ID if owner.matches(form.password) else None, lambda: login_page(visit.project(), Notice.WRONG, below))
 
     def set_up(self, visit: Visit) -> None:
         owner = Owner(visit.vault)
@@ -321,7 +321,7 @@ class Gateway:
                 return None
             owner.set_password(form.password)
             visit.vault.audit("owner password set", place=visit.place())
-            return OWNER
+            return OWNER_ID
         return self.tried(visit, chosen, lambda: setup_page(visit.project(), Notice.WRONG_CODE))
 
     def log_out(self, visit: Visit) -> None:
@@ -389,7 +389,7 @@ class Gateway:
         if asked in owned:
             return owned[asked](visit)
         if phone := self.answered_by_phones(visit):
-            return self.answer_here(visit, *phone, visit.handler.rfile.read(size) if size else b"")
+            return self.answer_here(visit, login, *phone, visit.handler.rfile.read(size) if size else b"")
         if STREAM not in visit.handler.headers.get("Accept", ""):
             return Desktop(visit.handler, visit.handler.path, people.marks(visit, login), VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
         return self.streamed(visit, login, hashed(token), people.marks(visit, login))
@@ -418,9 +418,9 @@ class Gateway:
             return None
         return self.answered_here[reached.target], PhonePath.from_json(reached.params)
 
-    def answer_here(self, visit: Visit, answer: PhoneAnswer, path: PhonePath, raw: bytes) -> None:
+    def answer_here(self, visit: Visit, login: KeptLogin, answer: PhoneAnswer, path: PhonePath, raw: bytes) -> None:
         try:
-            asked = replace(PhoneRequest.from_json(json.loads(raw or b"{}")), n=path.n, member=Logins(visit.vault).member(visit.token()))
+            asked = replace(PhoneRequest.from_json(json.loads(raw or b"{}")), n=path.n, member=login.member)
             record = Record(visit.record.root, path.env)
             if path.n and Phones(record, actor=USER)._phone(path.n).member != asked.member:
                 raise Refused("a phone is answered only by the one who connected it")

@@ -25,9 +25,12 @@ from features.members.gate import MemberLogins
 from features.members.details import MembersDetails
 from features.members.roles import NOT_A_WRITER, Role
 from features.members.roster import INVITE_DAYS, Roster
-from features.phone.allow_list import RUNS, TO_WEIGH, VIEWER_SETTINGS
+from commands.dispatch import reached_by_phone
+from engine.record import Record
+from features.phone.allow_list import RUNS, TO_WEIGH, VIEWER_SETTINGS, Action, Reach, get
+from features.phone.members import rights_of
 from features.trigger import DAY
-from resources.base import AGENT, SYSTEM, USER, WRITER
+from resources.base import AGENT, OWNER_ID, SYSTEM, USER, WRITER
 
 MEMBER_PASSWORD = "a member's own password"
 FILLED = {"env": "main", "n": "1", "provider": "claude", "id": "web", "session": "s", "sha": "abc", "name": "x"}
@@ -262,3 +265,24 @@ def test_a_member_sees_only_the_environments_the_owner_shares_in_lists_rows_sear
     assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "nowhere"]}, owner).status == 400
     assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "garden"]}, owner).status == 200
     assert hosted.call("GET", "/api/garden/todo", Cookie=writer).status == 200 and "garden" in titles(writer), "a shared environment opens from the next request"
+
+
+def test_the_phone_asks_the_same_members_model_as_the_login_page(hosted):
+    owner = with_members(hosted)
+    member_login(hosted, "Ada", Role.READER)
+    member_login(hosted, "Bea", Role.WRITER)
+    roster, env = Roster(hosted.vault), hosted.record.env
+    ada, bea = roster.named("Ada").id, roster.named("Bea").id
+    garden = Record(hosted.record.root, Environments(hosted.record, actor=SYSTEM).create("garden").title)
+    rights, create = rights_of(hosted.record), Action("todo", "create")
+    assert isinstance(rights, MemberLogins), "the phone's rights are the members feature's own"
+    assert [rights.may_reach(hosted.record, who, create) for who in (OWNER_ID, ada, bea)] == [True, False, True], "a phone reaches what its person's role does"
+    assert not rights.may_reach(garden, bea, get("/api/identity")), "and nothing in an environment not shared with them"
+    assert [reached_by_phone(hosted.record.root, "POST", f"/api/{env}/todo", {}, {}, env, True, who) for who in (ada, bea)] == [Reach.CLOSED, Reach.OPEN]
+    here, there = Todos(hosted.record, actor=SYSTEM).create("In the start environment"), Todos(garden, actor=SYSTEM).create("In the garden")
+    assert (rights.sees(hosted.record, bea, here), rights.sees(garden, bea, there), rights.sees(garden, OWNER_ID, there)) == (True, False, True), \
+        "a phone is shown only rows of the environments shared with its person"
+    sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "garden"]}, owner)
+    assert rights.sees(garden, bea, there), "sharing an environment opens it to the phone as to the browser"
+    sent(hosted, "/api/hosting/members/remove", {"member": bea}, owner)
+    assert not rights.may_reach(hosted.record, bea, create) and not rights.sees(hosted.record, bea, here), "a removed member's phone reaches and sees nothing"

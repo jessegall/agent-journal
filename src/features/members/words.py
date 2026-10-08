@@ -1,8 +1,8 @@
 import re
 
 from controllers.base import WRITING_MEMBER
-from features.hosted_journal.owner import OWNER
-from resources.base import SECTION, USER, WRITER, Resource
+
+from resources.base import OWNER_ID, SECTION, USER, WRITER, Resource
 
 TEXTS = ("title", "abstract", "brief", "outcome")
 TAG = re.compile(r"</?untrusted\b[^>]*>")
@@ -45,4 +45,4 @@ class WrittenBy:
         if controller.actor != USER or controller.rows.exists(r.n):
             return
         member = WRITING_MEMBER.get()
-        r.data[WRITER] = OWNER if member is None else member
+        r.data[WRITER] = OWNER_ID if member is None else member

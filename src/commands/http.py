@@ -15,7 +15,7 @@ from urllib.parse import quote
 
 import features
 from surfaces.appoint import appoint, online
-from surfaces.shared import row_shared, shared
+from controllers.shared import row_shared, shared
 from surfaces.package import archive as extension_archive, info as extension_info
 from overview.summary import lately_summarized
 from engine.color import identity, set_color
