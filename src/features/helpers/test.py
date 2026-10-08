@@ -135,6 +135,12 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     launch_log(record.root, f"{record.env}-rhea").parent.mkdir(parents=True, exist_ok=True)
     launch_log(record.root, f"{record.env}-rhea").write_text("\x1b[1mSettingsWarning\x1b[0m: hooks must be an object\n")
     sessions.write(seated, pid=2 ** 22 + 7)
+    from engine import runtime
+    from supervisor import LAUNCHED
+    runtime.session_file(record.root, seated, LAUNCHED).write_text(f'{{"pid": {os.getpid()}}}')
+    watch()
+    assert not [n for n in Nudges(record, actor=SYSTEM).all() if "stopped running" in n.title], "a helper whose agent process is alive is never named as stopped"
+    runtime.session_file(record.root, seated, LAUNCHED).write_text('{"pid": %d}' % (2 ** 22 + 9))
     watch()
     stopped, = [n for n in Nudges(record, actor=SYSTEM).all() if "stopped running" in n.title]
     assert (stopped.title, stopped.until) == ("helper 1, Rhea, stopped running before it reported", ["helper.completed", "helper.deleted"]), \
