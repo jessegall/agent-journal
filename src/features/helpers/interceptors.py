@@ -42,7 +42,8 @@ def keep_with_its_helper(controller, n: int) -> None:
     if not at_work(controller.record, helper):
         return
     controller._refuse(f"todo {n} is handed to {helper.spoken}: only it marks it done, and taking its work closes it; "
-                       f"to close, strike or reassign it yourself, journal helper stop {helper.n} gives it back first")
+                       f"to close, strike or reassign it yourself, journal helper stop {helper.n} gives it back first; "
+                       f"journal helper say <helper> \"<text>\" --todos {n} moves it to another helper")
 
 
 class HandedRowsCloseOnlyThroughTheirHelper(ActionInterceptor):

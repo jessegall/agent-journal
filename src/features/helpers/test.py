@@ -329,6 +329,15 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     helpers.say(helpers.all()[-1].n, "also this one", todos=str(later))
     assert (todos.load(later).assigned, "check the certificate" in told[-1], told[-1].endswith("also this one")) == (helpers.all()[-1].ref, True, True), \
         "a follow-up with --todos hands a running helper those rows and names them in what it is told"
+    tess = helpers.all()[-1]
+    helpers.dispatch("Uma", "Take over", "codex", "gpt-5.5")
+    uma = helpers.all()[-1]
+    helpers.say(uma.n, "take this over", todos=str(later))
+    tess_list = Todos(Record(repo.record.root, tess.environment), actor=SYSTEM)
+    assert (todos.load(later).assigned, [t.title for t in tess_list.rows.standing() if t.handed == str(later)]) == (uma.ref, []), \
+        "a to-do held by one helper moves to another with helper say --todos, and leaves the first helper's own list"
+    assert any(f"now belongs to helper {uma.n}, Uma" in text for text in told), "and the first helper is told it left"
+    assert "moves it to another helper" in refused(lambda: todos.assign(later, tess.ref)), "todo assign names the command that moves a held to-do"
 
 
 def test_a_helper_launches_in_a_nested_checkout_named_by_its_path(monkeypatch, tmp_path):

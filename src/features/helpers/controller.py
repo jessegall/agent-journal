@@ -16,10 +16,10 @@ from engine.record import Record
 from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared, tell_in
 from features.helper_worktrees.controller import Worktrees
-from features.helpers.resource import Helper
+from features.helpers.resource import Helper, held_by_helper
 from features.plans.controller import delegate_plans_holding
 from features.helpers.reuse import HELPER_KIND, kept, knowing, named_paths, refusal
-from resources.base import AGENT, SYSTEM, USER, Refused, titled
+from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
 from controllers.marks import action
 from engine.wording import slugged
@@ -157,9 +157,26 @@ class Helpers(Controller):
         for row in rows:
             if row.completed:
                 raise Refused(f"todo {row.n} is already done; hand a helper only open to-dos")
-            if row.assigned:
+            if row.pending:
+                raise Refused(f"todo {row.n} is done by {row.assigned} and waits for its merge; it cannot move to another helper")
+            if row.assigned and self._holder(row) is None:
                 raise Refused(f"todo {row.n} is already assigned to {row.assigned}")
         return rows
+
+    def _holder(self, row: Todo) -> Helper | None:
+        """The helper that holds a to-do, when one still works on it."""
+        if not held_by_helper(row):
+            return None
+        n = Ref.parse(row.assigned).n
+        return self.load(n) if self.rows.exists(n) and not self.load(n).completed else None
+
+    def _left(self, holder: Helper, given: Todo, row: Helper) -> None:
+        """Tells the helper a to-do moved away from that it did, and takes it off that helper's own list."""
+        home = Record(self.record.root, holder.environment)
+        for copy in (t for t in Todos(home, actor=SYSTEM).rows.standing() if t.handed == str(given.n)):
+            Todos(home, actor=SYSTEM).strike(copy.n, f"moved to helper {row.n}, {row.name}")
+        tell_in(self.record, holder.environment, holder.provider,
+                f"To-do {given.n}, {given.title}, now belongs to helper {row.n}, {row.name}. Stop working on it and leave it out of your report.")
 
     @action
     def allow_suite(self, n: int) -> str:
@@ -207,8 +224,12 @@ class Helpers(Controller):
     def _handed(self, row, home: Record, handed: list[Todo]) -> None:
         listed, own = Todos(self.record, actor=SYSTEM), Todos(home, actor=SYSTEM)
         for given in handed:
+            holder = self._holder(given)
+            if holder is not None and holder.n == row.n:
+                continue
+            if holder is not None:
+                self._left(holder, given, row)
             listed.assign(given.n, to=row.ref)
-            delegate_plans_holding(self.record, given)
             own.create(given.title, brief=given.brief, handed=str(given.n))
             delegate_plans_holding(self.record, given)
 
