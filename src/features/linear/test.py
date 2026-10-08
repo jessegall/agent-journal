@@ -5,7 +5,8 @@ from types import SimpleNamespace
 
 from controllers.types import Questions
 from features.integrations.test import issue, linear_world
-from features.linear.commands import ProposeComment, SyncLinear
+from features.integrations.commands import SyncIntegration
+from features.linear.commands import ProposeComment
 from features.linear.reading import reply_of
 from features.linear.routes import WEBHOOK_BODY, LinearWebhook
 from features.linear.webhook import BODY_LIMIT, event_of, signed
@@ -52,7 +53,7 @@ def test_an_answer_from_linear_that_is_not_json_or_carries_errors_is_refused_wit
     assert reply_of(json.dumps({"data": {}})).errors == (), "an answer with data and no errors is read"
 
 
-def test_a_comment_is_proposed_only_on_a_ticket_from_linear_only_linear_syncs_and_an_agent_never_moves_a_ticket_off_linear(monkeypatch, tmp_path):
+def test_a_comment_is_proposed_only_on_a_ticket_from_linear_its_sync_word_checks_it_and_an_agent_never_moves_a_ticket_off_linear(monkeypatch, tmp_path):
     world = linear_world(monkeypatch, tmp_path, teams=[{"id": "t1", "key": "ENG", "name": "Engineering"}],
                          states=[{"id": "s1", "name": "Todo", "team": {"id": "t1"}}], issues=[issue(1, "2026-10-01T10:00:00Z")])
     record = world.record
@@ -63,9 +64,10 @@ def test_a_comment_is_proposed_only_on_a_ticket_from_linear_only_linear_syncs_an
     assert "did not come from Linear" in refused(lambda: ProposeComment().run(context, ours, 99, "Looks fixed")), "a comment is proposed only on a ticket from Linear"
     answer = ProposeComment().run(context, Tickets(record, actor=AGENT), ticket.n, "  Looks fixed on main  ")
     asked = Questions(record, actor=SYSTEM).all()[-1]
-    assert ("nothing is sent" in answer, asked.brief, asked.data.get("linear_comment"), world.fake.comments) == (True, "Looks fixed on main", True, []), \
+    assert ("nothing is sent" in answer, asked.brief, asked.data.get("proposal"), world.fake.comments) == (True, "Looks fixed on main", "linear", []), \
         "a proposed comment waits as your question and nothing reaches Linear"
-    assert "only linear" in refused(lambda: SyncLinear().run(context, None, "gmail")), "the sync word syncs Linear alone"
+    assert (SyncIntegration("linear").name, SyncIntegration("linear").run(context, None)) == ("sync_linear", f"checked {world.linear.details.title}"), \
+        "Linear's own sync word checks it now and says so"
     assert "change the source" in refused(lambda: Tickets(record, actor=AGENT).update(ticket.n, source="")), "an agent cannot move a ticket off Linear"
 
 
