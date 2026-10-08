@@ -172,12 +172,16 @@ def launch_log(root: Path, env: str) -> Path:
     return runtime.folder(root) / "launches" / f"{env}.log"
 
 
-def launch_failure(root: Path, env: str, lines: int = 3) -> str:
+def launch_output(root: Path, env: str) -> str:
+    """The tail of what an agent printed while it launched, without its colours."""
     log = launch_log(root, env)
     if not log.is_file():
         return ""
-    tail = [ANSI.sub("", line).strip() for line in log.read_text(errors="replace").splitlines()[-40:]]
-    return " ".join([line for line in tail if line][-lines:])[:400]
+    return "\n".join(ANSI.sub("", line).strip() for line in log.read_text(errors="replace").splitlines()[-40:])
+
+
+def launch_failure(root: Path, env: str, lines: int = 3) -> str:
+    return " ".join([line for line in launch_output(root, env).splitlines() if line][-lines:])[:400]
 
 
 class TooManyAgents(Refused):

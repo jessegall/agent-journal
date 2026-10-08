@@ -1,6 +1,6 @@
 import time
 
-from agents.terminal import Launched, launch_failure
+from agents.terminal import Launched, launch_failure, launch_output
 from controllers.types import Agents, Questions
 from engine.record import Record
 from engine.seats import terminal_of
@@ -12,6 +12,7 @@ from features.helpers.controller import Helpers
 from features.helpers.reuse import subagent_rows
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from features.trigger import MINUTE
+from providers import PROVIDERS
 from resources.base import SYSTEM
 from resources.types import FAILED
 
@@ -81,6 +82,14 @@ def gone(root, name: str, session) -> bool:
     return bool(session.pid) and not alive(session.pid) and not (launched.pid and alive(launched.pid))
 
 
+def refused_by_provider(root, row) -> str | None:
+    """Why the helper's provider refused to run it, as its launch output says, when it did."""
+    provider = PROVIDERS.get(row.provider)
+    if provider is None:
+        return None
+    return provider.refusal_in(launch_output(root, row.environment))
+
+
 class NameStoppedOrQuietHelpers(Handler):
     behaviour = "watch"
 
@@ -92,8 +101,15 @@ class NameStoppedOrQuietHelpers(Handler):
         root = context.record.root
         sessions = Sessions(root).all()
         for row in Helpers(context.record, actor=SYSTEM).rows.standing():
+            if row.report or row.stopped_by_user:
+                continue
+            refusal = refused_by_provider(root, row)
+            if refusal is not None:
+                if speaking.once("helper refused", f"{row.n}:{refusal}"):
+                    speaking.agent.say("refused", n=row.n, name=row.name, provider=row.provider, reason=refusal, rows=[row.ref])
+                continue
             theirs = {name: s for name, s in sessions.items() if s.environment == row.environment}
-            if row.report or row.stopped_by_user or not theirs:
+            if not theirs:
                 continue
             last_seen = max(s.last_heard for s in theirs.values())
             stopped = all(gone(root, name, s) for name, s in theirs.items())
