@@ -1,5 +1,6 @@
 <script setup>
 import Button from "./kit/Button.vue";
+import PhoneNewestButton from "./PhoneNewestButton.vue";
 import {waitingInOrder} from "./waiting.js";
 import {scrollIntoRoom} from "./reveal.js";
 import {ui} from "../state/ui.js";
@@ -23,7 +24,6 @@ import PhoneBoard from "./PhoneBoard.vue";
 import PhoneTabs from "./PhoneTabs.vue";
 import PhoneNeeds from "./PhoneNeeds.vue";
 import PhoneAgentSheet from "./PhoneAgentSheet.vue";
-import Icon from "../kit/Icon.vue";
 import {chipOpener} from "./peeked.js";
 import PhoneStatus from "./PhoneStatus.vue";
 import PhoneTurn from "./PhoneTurn.vue";
@@ -733,17 +733,7 @@ onMounted(startTourOnce);
                                 </template>
                             </div>
                             <template v-if="far">
-                                <Button
-                                    kind="round"
-                                    class="home-newest"
-                                    :aria-label="unseen ? `Scroll to newest, ${unseen} new` : 'Scroll to newest'"
-                                    @click="newest"
-                                >
-                                    <Icon name="down" :size="18" />
-                                    <template v-if="unseen">
-                                        <span class="home-unseen" aria-hidden="true">{{ unseen }}</span>
-                                    </template>
-                                </Button>
+                                <PhoneNewestButton :unseen="unseen" @newest="newest" />
                             </template>
                         </div>
                     </template>
@@ -1079,41 +1069,6 @@ onMounted(startTourOnce);
     flex: 1;
     flex-direction: column;
     min-height: 0;
-}
-
-.home-newest.round {
-    position: absolute;
-    bottom: calc(var(--dock, 140px) + 14px + var(--keyboard, 0px));
-    left: 50%;
-    z-index: 2;
-    margin-left: -22px;
-    color: var(--text);
-    animation: newest-in 200ms ease-out;
-}
-
-.home-unseen {
-    position: absolute;
-    top: -6px;
-    right: -8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 18px;
-    min-height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1;
-}
-
-@keyframes newest-in {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
 }
 
 .home-feed.spaced {
