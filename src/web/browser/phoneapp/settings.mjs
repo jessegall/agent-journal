@@ -45,6 +45,7 @@ await runScenarios(PAIR, {
     async "settings lists every region and a switch saves and stays"(page) {
         await region(page, "Agent");
         await top(page).locator(".page-line").getByText("How the agent works, talks to you and keeps track of its work.").waitFor({timeout: SHOWN});
+        await open(page, "Agent");
         const toggle = top(page).getByRole("switch").first();
         await toggle.waitFor({timeout: SHOWN});
         const before = await toggle.getAttribute("aria-checked");
@@ -54,6 +55,7 @@ await runScenarios(PAIR, {
         await page.getByPlaceholder("Message the agent").waitFor();
         await tab(page, "Everything");
         await everything(page, "Settings");
+        await open(page, "Agent");
         await open(page, "Agent");
         const after = await top(page).getByRole("switch").first().getAttribute("aria-checked");
         if (after === before) throw new Error("the switch went back after a reload");
