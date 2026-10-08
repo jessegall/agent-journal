@@ -18,7 +18,7 @@ from features.sharing.page_data import SharePages
 from features.sharing.passwords import hashed
 from features.sharing.resource import SHARED_TYPES, Share
 from engine.services import DOWN, FAILED, UP, log_file, status, want
-from features.sharing.address import Claim, relied_on, this_machine
+from features.sharing.address import Claim, own_address, relied_on, this_machine
 from features.sharing.tunnel import ADDRESS_REFUSED, DEFAULT_SERVER, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, last_lines, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
@@ -177,6 +177,8 @@ class Shares(ShareVisits, SharePages, Controller):
     @action
     def tunnel(self) -> dict:
         standing = {**tunler_status(), "server": self._host() or DEFAULT_SERVER}
+        if own := own_address(self.record):
+            return {**standing, "address": own[0], "problems": []}
         try:
             return {**standing, "address": self._address(), "problems": self._problems(standing)}
         except Refused as unreadable:
@@ -229,6 +231,8 @@ class Shares(ShareVisits, SharePages, Controller):
         return []
 
     def _address(self) -> str:
+        if own := own_address(self.record):
+            return own[0]
         host = self._host()
         return f"{self._subdomain()}.{host}" if host else ""
 

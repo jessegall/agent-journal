@@ -44,11 +44,17 @@ def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
         return default
 
 
-def replace(path: Path, raw: bytes) -> None:
+def replace(path: Path, raw: bytes, mode: int = 0o666) -> None:
+    """Writes the whole file or nothing: a failed write, such as on a full disk, leaves the old file as it was."""
     path.parent.mkdir(parents=True, exist_ok=True)
     spare = path.with_name(f".{path.name}.{os.getpid()}.{threading.get_ident()}")
-    spare.write_bytes(raw)
-    os.replace(spare, path)
+    try:
+        with os.fdopen(os.open(spare, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, mode), "wb") as written:
+            written.write(raw)
+        os.replace(spare, path)
+    except OSError:
+        spare.unlink(missing_ok=True)
+        raise
 
 
 def last_lines(path, lines: int) -> str:

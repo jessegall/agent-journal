@@ -1,0 +1,200 @@
+import errno
+import json
+import os
+import subprocess
+import threading
+from http.client import HTTPConnection
+from http.server import ThreadingHTTPServer
+from pathlib import Path
+from typing import NamedTuple
+from urllib.parse import urlencode
+
+import pytest
+
+from controllers.features import Features
+from engine import disk
+from engine.viewer import SERVING
+from features.hosted_journal.details import HostedJournalDetails
+from features.hosted_journal.gateway import COOKIE, MOST_STREAMS
+from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_TRIES, Logins, Owner, WrongTries, hashed
+from features.hosted_journal.vault import AUDIT, DiskFull, Vault
+from features.sharing.controller import Shares
+from features.sharing.routes import EVERY_OTHER, ROUTES
+from features.sharing.server import ShareHandler
+from resources.base import SYSTEM, USER
+from serve import Handler, JournalServer
+from tests.conftest import fresh
+
+ADDRESS = "journal.example.com"
+PASSWORD = "correct horse battery"
+WEB = Path(__file__).resolve().parents[2] / "web"
+SCENARIOS_WAIT = 240
+
+
+class Answer(NamedTuple):
+    status: int
+    headers: dict
+    text: str
+
+
+class Hosted(NamedTuple):
+    record: object
+    port: int
+    vault: Vault
+
+    def call(self, method: str, path: str, form: dict | None = None, **headers) -> Answer:
+        given = {"Host": f"127.0.0.1:{self.port}", **{name.replace("_", "-"): value for name, value in headers.items()}}
+        body = None if form is None else urlencode(form).encode()
+        if body is not None:
+            given = {"Content-Type": "application/x-www-form-urlencoded", "Origin": f"http://127.0.0.1:{self.port}", **given}
+        connection = HTTPConnection("127.0.0.1", self.port, timeout=10)
+        connection.request(method, path, body, given)
+        reply = connection.getresponse()
+        answer = Answer(reply.status, {name.lower(): value for name, value in reply.getheaders()}, reply.read().decode(errors="replace"))
+        connection.close()
+        return answer
+
+    def logged_in(self) -> str:
+        if not Owner(self.vault).has_password():
+            Owner(self.vault).set_password(PASSWORD)
+        return Logins(self.vault).open(7, "test")
+
+
+def serve(record) -> int:
+    server = ThreadingHTTPServer(("127.0.0.1", 0), type("Bound", (ShareHandler,), {"shares": Shares(record, actor=SYSTEM)}))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server.server_port
+
+
+@pytest.fixture
+def hosted():
+    import features
+    features.load()
+    record = fresh()
+    Features(record, actor=USER).switch(HostedJournalDetails.name, True)
+    Features(record, actor=USER).configure(HostedJournalDetails.name, "address", ADDRESS)
+    desk = JournalServer(("127.0.0.1", 0), type("Desk", (Handler,), {"root": record.root}))
+    threading.Thread(target=desk.serve_forever, daemon=True).start()
+    SERVING[str(record.root.resolve())] = f"http://127.0.0.1:{desk.server_port}/"
+    yield Hosted(record, serve(record), Vault(record.root))
+    desk.shutdown()
+
+
+def test_with_hosting_off_the_share_server_answers_no_login_and_no_viewer():
+    import features
+    features.load()
+    record = fresh()
+    port = serve(record)
+    off = Hosted(record, port, Vault(record.root))
+    assert off.call("GET", "/").status == 404
+    assert off.call("GET", "/login").status == 404
+    assert off.call("POST", "/login", {"password": PASSWORD}).status == 405
+    assert EVERY_OTHER not in ROUTES.keyed(record)
+    assert not Vault(record.root).folder.exists()
+
+
+def test_the_owner_sets_the_password_with_a_one_time_code_then_works_in_the_viewer_through_the_journals_own_loopback_check(hosted):
+    assert "Set up" in hosted.call("GET", "/login").text
+    code = Owner(hosted.vault).make_setup_code()
+    assert hosted.call("POST", "/setup", {"code": "nope", "password": PASSWORD, "again": PASSWORD}).status == 401
+    assert hosted.call("POST", "/setup", {"code": code, "password": "short", "again": "short"}).status == 400
+    made = hosted.call("POST", "/setup", {"code": code, "password": PASSWORD, "again": PASSWORD})
+    assert made.status == 303 and made.headers["location"] == "/"
+    cookie = made.headers["set-cookie"]
+    assert "Secure" in cookie and "HttpOnly" in cookie and "SameSite=Strict" in cookie
+    token = cookie.split(";")[0].split("=", 1)[1]
+    assert hosted.call("POST", "/setup", {"code": code, "password": PASSWORD, "again": PASSWORD}).headers["location"] == "/login"
+    viewer = hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={token}")
+    assert viewer.status == 200 and json.loads(viewer.text)
+    assert "Strict-Transport-Security".lower() in viewer.headers and "access-control-allow-origin" not in viewer.headers
+    assert "<div id=\"app\">" in hosted.call("GET", "/", Cookie=f"{COOKIE}={token}").text
+    folder = hosted.vault.folder
+    assert not folder.is_relative_to(hosted.record.root.resolve().parent)
+    assert folder.stat().st_mode & 0o777 == 0o700 and (folder / LOGINS).stat().st_mode & 0o777 == 0o600
+    logged = (folder / AUDIT).read_text()
+    assert "owner password set" in logged and PASSWORD not in logged and code not in logged and token not in logged
+    shares = Shares(hosted.record, actor=SYSTEM)
+    assert shares._address() == ADDRESS and shares.tunnel()["problems"] == []
+
+
+def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_minutes_pass(hosted):
+    Owner(hosted.vault).set_password(PASSWORD)
+    for _ in range(MOST_TRIES - 1):
+        assert hosted.call("POST", "/login", {"password": "wrong"}).status == 401
+    assert "Too many wrong tries" in hosted.call("POST", "/login", {"password": "wrong"}).text
+    assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 429
+    assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.9").status == 303
+    now = [1000.0]
+    tries = WrongTries(Vault(hosted.record.root, clock=lambda: now[0]))
+    for _ in range(MOST_TRIES):
+        tries.missed("198.51.100.1")
+    assert WrongTries(Vault(hosted.record.root, clock=lambda: now[0])).locked_for("198.51.100.1") == LOCKED_FOR
+    now[0] += LOCKED_FOR + 1
+    assert WrongTries(Vault(hosted.record.root, clock=lambda: now[0])).locked_for("198.51.100.1") == 0
+
+
+def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hosted):
+    Owner(hosted.vault).set_password(PASSWORD)
+    old = Logins(Vault(hosted.record.root, clock=lambda: 0.0)).open(7, "old phone")
+    page = hosted.call("GET", "/", Cookie=f"{COOKIE}={old}")
+    assert page.status == 303 and page.headers["location"] == "/login?notice=ran-out"
+    api = hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={old}")
+    assert api.status == 401 and json.loads(api.text)["login"] == "/login?notice=ran-out"
+    assert "Your login ran out" in hosted.call("GET", "/login?notice=ran-out").text
+    assert hosted.call("GET", "/").headers["location"] == "/login"
+
+
+def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_each_refusal(hosted):
+    token = hosted.logged_in()
+    origin = f"http://127.0.0.1:{hosted.port}"
+    for path in ("/api/run", "/api/upgrade", "/api/stop", "/api/hook/claude"):
+        assert hosted.call("POST", path, {}, Cookie=f"{COOKIE}={token}", Origin=origin).status == 403
+    assert hosted.call("POST", "/logout", {}, Cookie=f"{COOKIE}={token}").headers["location"] == "/login?notice=logged-out"
+    assert hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={token}").status == 401
+    logged = [json.loads(line) for line in (hosted.vault.folder / AUDIT).read_text().splitlines()]
+    assert sorted(line["path"] for line in logged if line["what"] == "refused") == ["/api/hook/claude", "/api/run", "/api/stop", "/api/upgrade"]
+
+
+def test_another_site_plain_http_from_outside_and_a_strange_host_are_refused(hosted):
+    token = hosted.logged_in()
+    assert hosted.call("POST", "/api/t/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin="https://evil.example").status == 403
+    assert hosted.call("POST", "/login", {"password": PASSWORD}, Origin="https://evil.example").status == 403
+    assert "only over https" in hosted.call("GET", "/", Host=ADDRESS, Cookie=f"{COOKIE}={token}").text
+    through = hosted.call("GET", "/api/identity", Host=ADDRESS, Cookie=f"{COOKIE}={token}", X_Forwarded_Proto="https")
+    assert through.status == 200
+    assert hosted.call("GET", "/api/identity", Host="journal.evil.example", Cookie=f"{COOKIE}={token}", X_Forwarded_Proto="https").status == 421
+
+
+def test_large_bodies_and_too_many_open_streams_are_refused(hosted):
+    token = hosted.logged_in()
+    origin = f"http://127.0.0.1:{hosted.port}"
+    big = hosted.call("POST", "/api/t/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin=origin, Content_Length=str(2 * 1024 * 1024))
+    assert big.status == 413
+    gateway = ROUTES.keyed(hosted.record)[EVERY_OTHER]
+    gateway.streams[hashed(token)] = MOST_STREAMS
+    assert hosted.call("GET", "/api/t/events", Cookie=f"{COOKIE}={token}", Accept="text/event-stream").status == 429
+    gateway.streams.clear()
+
+
+def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, monkeypatch):
+    token = hosted.logged_in()
+    kept = (hosted.vault.folder / LOGINS).read_text()
+
+    def full(*_):
+        raise OSError(errno.ENOSPC, "No space left on device")
+    monkeypatch.setattr(disk.os, "replace", full)
+    with pytest.raises(DiskFull):
+        Logins(hosted.vault).open(7, "another")
+    assert (hosted.vault.folder / LOGINS).read_text() == kept and token
+    assert not [path for path in hosted.vault.folder.iterdir() if path.name.startswith(".")]
+    assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 507
+
+
+@pytest.mark.skipif(not (WEB / "node_modules" / "playwright-core").is_dir(), reason="the viewer's npm packages are not installed")
+def test_login_failed_rate_limited_and_ran_out_show_in_a_browser(hosted):
+    Owner(hosted.vault).set_password(PASSWORD)
+    old = Logins(Vault(hosted.record.root, clock=lambda: 0.0)).open(7, "old")
+    env = {**os.environ, "HOSTED_URL": f"http://127.0.0.1:{hosted.port}/", "HOSTED_PASSWORD": PASSWORD, "HOSTED_OLD_LOGIN": old}
+    run = subprocess.run(["node", "browser/hosted/login.mjs"], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
+    assert run.returncode == 0, run.stderr[-2000:]
+    assert json.loads(run.stdout.strip().splitlines()[-1]) == {}

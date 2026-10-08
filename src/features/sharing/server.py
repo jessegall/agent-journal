@@ -14,11 +14,12 @@ from engine.package import data  # noqa: E402
 from features import running  # noqa: E402
 from features.sharing.controller import HEALTH, HEALTH_MARKER, LAYOUT_FILE  # noqa: E402
 from features.sharing.passwords import unlocked  # noqa: E402
+from features.sharing.services import LOOPBACK  # noqa: E402
 from features.sharing.visiting import SharedComment  # noqa: E402
 from features.sharing.page import PICTURES, Page, disposition, document, unshared  # noqa: E402
 from features.format import SHARED, formatted
 from features.sharing.preview import card, tags  # noqa: E402
-from features.sharing.routes import ROUTES, TICKS  # noqa: E402
+from features.sharing.routes import EVERY_OTHER, ROUTES, TICKS  # noqa: E402
 from controllers.faults import threw  # noqa: E402
 from engine.color import identity  # noqa: E402
 from resources.base import Refused  # noqa: E402
@@ -33,6 +34,7 @@ PACKED_FROM = 1024
 PACKED = ("text/", "application/javascript", "image/svg+xml")
 COMMENT_HEADER = "X-Shared-Comment"
 APP_PAGE = "share.html"
+OWN_PATHS = ("s", HEALTH)
 PREVIEW = "preview.png"
 APP_HEADERS = {"Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
                                           "font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}
@@ -48,7 +50,10 @@ HEADERS = {
 
 
 def routed(parts: list[str], record):
-    return ROUTES.keyed(record).get(parts[0]) if parts else None
+    """The feature route a path's first part names, or else the one that takes every path the share server does not answer itself."""
+    keyed = ROUTES.keyed(record)
+    first = parts[0] if parts else ""
+    return keyed.get(first) or (None if first in OWN_PATHS else keyed.get(EVERY_OTHER))
 
 
 @dataclass(frozen=True)
@@ -261,12 +266,12 @@ def ticking(shares, stopped: threading.Event) -> None:
                 threw(shares.record.root, shares.record.env, f"a share server tick: {getattr(tick, '__name__', tick)}")
 
 
-def serve(shares, port: int) -> None:
+def serve(shares, port: int, host: str = LOOPBACK) -> None:
     stopped = threading.Event()
     threading.Thread(target=ticking, args=(shares, stopped), daemon=True).start()
     handler = type("BoundShareHandler", (ShareHandler,), {"shares": shares, "timeout": READ_SECONDS})
     try:
-        with ThreadingHTTPServer(("127.0.0.1", int(port)), handler) as server:
+        with ThreadingHTTPServer((host, int(port)), handler) as server:
             server.serve_forever()
     finally:
         stopped.set()
@@ -282,7 +287,7 @@ def main(argv: list[str]) -> None:
     root = Path(argv[0])
     features.load(root)
     watch_change_log()
-    serve(Shares(Record(root, runtime.env(root)), actor=SYSTEM), int(argv[1]))
+    serve(Shares(Record(root, runtime.env(root)), actor=SYSTEM), int(argv[1]), *argv[2:3])
 
 
 if __name__ == "__main__":

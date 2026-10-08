@@ -4,11 +4,13 @@ import time
 from contextlib import suppress
 from pathlib import Path
 from engine import runtime
+from engine.extension import Extension
 from engine.proc import ran
 from engine.sessions import alive
 from engine.stored import write_text
 from engine.viewer import last, running
 
+STAYS_UP = Extension()
 WAIT = 15.0
 EVERY = 0.2
 ESCALATE = 5.0
@@ -77,3 +79,8 @@ def serving(root: Path) -> int:
     listed = ran(["ps", "-o", "command=", "-p", str(pid)]) if pid else None
     command = listed.stdout if listed else ""
     return pid if " serve" in command and any(form in command for form in (str(root), str(root.resolve()))) else 0
+
+
+def stays_up(record) -> bool:
+    """A journal whose server outlives its last agent, such as one on a server of its own."""
+    return any(keep(record.root) for keep in STAYS_UP.each(record))
