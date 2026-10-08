@@ -54,7 +54,7 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
         return {board.n for board in self.rows.standing() if board.paused}
 
     def of_message(self, message) -> int:
-        return next((ref.n for ref in map(Ref.parse, message.refs) if ref.type == Board.type), 0)
+        return next(iter(Ref.numbers_of(Board.type, message.refs)), 0)
 
     def finish(self, n: int) -> None:
         self.update(n, finished=time.time())
