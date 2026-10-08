@@ -387,6 +387,11 @@ export class ApiClient {
         return this.post(this.here(`/${type}/${action}`), body);
     }
 
+    press(button) {
+        const path = button.n ? `/${button.type}/${button.n}/${button.action}` : `/${button.type}/${button.action}`;
+        return this.post(this.here(path), button.body || {}, LONG_WAIT_MS);
+    }
+
     tasks(agent) {
         return this.command("todo", "tasks", {agent});
     }

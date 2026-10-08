@@ -38,11 +38,13 @@ class SecretsDetails(FeatureDetails):
         the attic, a worktree or a backup of the record; journal secret where prints its path.
         A deleted secret keeps its values for 30 days, then they are removed from the file.
 
-        For a site you use in a browser, never type a password into a page: run journal secret
-        login <name> <url>, and the user logs in once in the browser that opens and closes it.
-        The session is saved beside the values file, and the agent's browser tools start logged in
-        from their next start: Claude Code's Playwright server in the project's .mcp.json (the one
-        already there, or one the journal adds), any other Playwright tool Claude Code starts, such
-        as a Playwright plugin, through the agent's environment, and Codex's Playwright server in
-        the project's .codex/config.toml.
+        For a site you use in a browser, never type a password into a page: ask with journal
+        secret request "<site>" "<why>" --kind "browser login" --url <address>. The chat shows
+        the user a Log in button; only they press it, a browser opens on the address, they log in
+        and close it, and the card says they are logged in. The session is saved beside the
+        values file, and the agent's browser tools start logged in from their next start: Claude
+        Code's Playwright server in the project's .mcp.json (the one already there, or one the
+        journal adds), any other Playwright tool Claude Code starts, such as a Playwright plugin,
+        through the agent's environment, and Codex's Playwright server in the project's
+        .codex/config.toml.
     """

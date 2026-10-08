@@ -52,7 +52,7 @@ LOGIN_PAGE = {"hosting", "hostingUpgrade", "hostingTakeDown", "hostingMe", "memb
               "leaveJournal"}
 SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
 CALLS = {
-    "changelog": [], "connection": [], "connectTo": ["127.0.0.1:9"], "disconnectFromServer": [], "releases": [], "restore": ["todo", 1], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
+    "changelog": [], "connection": [], "connectTo": ["127.0.0.1:9"], "disconnectFromServer": [], "releases": [], "restore": ["todo", 1], "press": [{"label": "Read it", "type": "todo", "n": 1, "action": "read"}], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
     "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "startJournal": ["/nowhere/.journal", "codex"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
     "extension": [], "tunnelLogin": [{"endpoint": "127.0.0.1:9", "username": "walker", "password": "a password"}],
     "tunnelLogout": [], "tunlerVersion": [], "updateTunler": [], "installTunler": ["127.0.0.1:9"], "tunnelAnswering": [],

@@ -36,6 +36,7 @@ const answered = (group) => ({
 const groups = computed(() => choiceGroups(props.resource).map((group) => ({...group, answer: group.chosen && answered(group)})));
 const alone = computed(() => liveButtons(props.resource).filter((b) => !b.choice));
 const outcome = (button) => {
+    if (button.outcome) return `${button.outcome}.`;
     if (!button.say) return `Ran: ${doing(button)}.`;
     const sent = sentAs(button);
     return `Sent as your message${sent ? ` ${sent.n}` : ""}: “${button.say}”. The answer comes in the chat.`;
@@ -80,8 +81,7 @@ async function commitPress(button) {
     if (spent(button)) return;
     await run(button.label, async () => {
         if (button.say) await api.create("message", {brief: button.say, about: `${props.resource.type}:${props.resource.n}`});
-        else if (button.n) await api.act(button.type, button.n, button.action, button.body || {});
-        else await api.command(button.type, button.action, button.body || {});
+        else await api.press(button);
         const chosen = [...new Set([...pressed.value, button.label])];
         if (props.resource.type === "doc") {
             const updated = {...props.resource, data: {...props.resource.data, pressed: chosen}};
