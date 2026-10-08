@@ -30,6 +30,10 @@ A subagent that drew a design, wrote the code or ran the research keeps what it 
 
 A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task, such as "Dr. Einstein: profile the slow hooks" or "Coco Rams: draw the plan card". A designer can borrow from famous designers, a researcher from famous scientists, mixed up for fun.
 
+**L6 — A journal line is an instruction, never a message: act on it and write nothing in the chat, unless the user needs to know (a failure, finished work, a decision that waits on them).**
+
+A line that starts with [journal], a reminder, a notice or an old helper report is the journal telling the agent what to do, not the user speaking. Answering it fills the user's chat with noise. Act on it, or note it and carry on; write in the chat only what the user needs to know, such as a failure, a finished piece of work or a decision that waits on them.
+
 ## Rules
 
 - Every viewer heading and label says plainly what it is about
