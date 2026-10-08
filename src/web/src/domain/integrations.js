@@ -34,6 +34,8 @@ function minutesAgo(at) {
     return `${days} ${days === 1 ? "day" : "days"}`;
 }
 
+export const textOf = (settings, name, field) => String(settings?.[name]?.[field] || "");
+
 export const boardOf = (settings, name) => Number(settings?.[name]?.board) || 0;
 
 export const teamsOf = (settings, name) => String(settings?.[name]?.teams || "").split(",").filter(Boolean);

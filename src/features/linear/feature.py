@@ -10,6 +10,7 @@ from features.sharing.routes import ROUTES
 
 
 class Linear(LinearWork, IntegrationFeature):
+    key_refused = ("answered 401", "answered 403")
     details = LinearDetails
     origin = "https://api.linear.app"
 

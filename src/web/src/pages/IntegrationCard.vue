@@ -9,6 +9,7 @@ import SecretPicker from "../kit/SecretPicker.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Switch from "../kit/Switch.vue";
 import {store} from "../state/store.js";
+import GmailChoices from "./GmailChoices.vue";
 import LinearChoices from "./LinearChoices.vue";
 
 const props = defineProps({feature: {type: Object, required: true}});
@@ -92,6 +93,9 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
                 <p class="abstract">{{ signing ? login.waiting : login.line }}</p>
             </template>
             <SwitchCase :value="feature.name">
+                <template #gmail>
+                    <GmailChoices />
+                </template>
                 <template #linear>
                     <LinearChoices :states="state ? state.choices : []" />
                 </template>

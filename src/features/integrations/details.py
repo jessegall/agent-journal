@@ -5,6 +5,8 @@ from features.groups import Group
 from features.settings import Setting
 from resources.base import PROJECT
 
+REFUSED, UNREACHABLE = "refused", "unreachable"
+
 
 class IntegrationDetails(FeatureDetails):
     """What every integration shares: off until you switch it on, kept once for the project, and a key you pick from your secrets."""
