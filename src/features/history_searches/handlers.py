@@ -1,6 +1,7 @@
 import time
+from dataclasses import dataclass
 
-from controllers.types import Agents
+from controllers.types import CONTROLLERS, Agents
 from engine.events.engine import AgentMessageSent, CommandRan
 from engine.journal_calls import PUNCTUATION, JournalCall, pieces
 from engine.ran import SHELL
@@ -35,17 +36,24 @@ def back(call: JournalCall) -> int:
     return next((int(value) for value in given if value.isdigit()), 0)
 
 
-def label(call: JournalCall) -> str:
+@dataclass(frozen=True)
+class SearchMark:
+    label: str
+    title: str = ""
+
+
+def mark(call: JournalCall) -> SearchMark | None:
     words = asked(call)
     noun, terms = (words[0], words[1:]) if words else ("", [])
     if noun == "search" and terms:
-        return f"Searched the history for {' '.join(terms)!r}"
+        return SearchMark("Conversation search", repr(" ".join(terms)))
+    if noun in CONTROLLERS and terms[:1] == ["search"] and terms[1:]:
+        return SearchMark(f"{CONTROLLERS[noun].resource.details.title} search", repr(" ".join(terms[1:])))
     if noun == "conversation":
-        return {0: "Read back the conversation", 1: "Read back the conversation the last summary replaced"}.get(
-            back(call), f"Read back the conversation {back(call)} summaries ago")
+        return SearchMark("Conversation history", {0: "", 1: "before the last compaction"}.get(back(call), f"{back(call)} compactions back"))
     if noun == "user":
-        return "Read back your own words"
-    return ""
+        return SearchMark("Message history", "your messages")
+    return None
 
 
 def searches(command: str) -> list[str]:
@@ -55,7 +63,7 @@ def searches(command: str) -> list[str]:
         found = pieces(command)
     except ValueError:
         return []
-    return [text for call in map(journal_call, found) if call is not None and (text := label(call))]
+    return [found_mark for call in map(journal_call, found) if call is not None and (found_mark := mark(call))]
 
 
 class MarkHistorySearches(ToolInterceptor):
@@ -66,7 +74,7 @@ class MarkHistorySearches(ToolInterceptor):
         for command in call.commands:
             for found in searches(command):
                 key = f"search-{time.time_ns()}"
-                context.journal.get(Agents).card(context.agent.row.n, key=key, label=found, icon="search", tone="note")
+                context.journal.get(Agents).card(context.agent.row.n, key=key, label=found.label, title=found.title, icon="search", tone="note")
                 context.state.set(OPEN, key)
         return ""
 

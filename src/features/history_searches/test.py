@@ -17,8 +17,12 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     for command in ('cd x && journal search "phone link" 2>&1 | head -5', "journal --env main conversation --back=1", "journal user | tail",
                     "journal todo all", "grep journal search.py", 'journal search --page 2 "second page"'):
         assert run(command) == "", "a mark never holds the call"
-    marks = [card["label"] for card in Agents(record, actor=SYSTEM).load(agent.n).data.get("cards") or []]
-    assert marks == ["Searched the history for 'phone link'", "Read back the conversation the last summary replaced", "Read back your own words", "Searched the history for 'second page'"], marks
+    marks = [(card["label"], card.get("title", "")) for card in Agents(record, actor=SYSTEM).load(agent.n).data.get("cards") or []]
+    assert marks == [("Conversation search", "'phone link'"), ("Conversation history", "before the last compaction"), ("Message history", "your messages"),
+                     ("Conversation search", "'second page'")], marks
+    run("journal message search assign | head")
+    last = (Agents(record, actor=SYSTEM).load(agent.n).data.get("cards") or [])[-1]
+    assert (last["label"], last["title"]) == ("Message search", "'assign'"), "searching one kind of row names that kind and what was searched for"
 
 
 def test_a_search_mark_keeps_what_the_search_found_and_what_was_read_from_it_until_the_next_search_or_answer():
