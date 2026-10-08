@@ -324,7 +324,7 @@ def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500_for_ev
     assert post(record, "/api/{env}/work/start", {"title": "two"}).code == 400, "an action the row's state refuses is a 400"
 
 
-def test_the_command_line_refuses_in_words_and_exits_nonzero():
+def test_the_command_line_refuses_in_words_and_exits_nonzero(monkeypatch):
     features.load()
     record = fresh()
 
@@ -350,6 +350,12 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero():
     assert "usage:" in answered("help") and "usage:" in answered("help", "todo") and "no command" in answered("help", "nonsense"), "help answers for the whole journal, for one noun and for a word it does not have"
     assert answered("services", "list") != "", "services lists"
     assert ran("services", "bogus")[0] == 1, "a services word it does not know is refused in words"
+    from commands import queries
+    from engine.services import Manager
+    assert queries.attic_text(record, "never written anywhere").startswith("nothing in the removed environments mentions"), "an attic search with no hit says so"
+    assert queries.transcript(record, "") == [], "a session never named has no transcript"
+    monkeypatch.setattr(Manager, "tick", lambda self: (_ for _ in ()).throw(KeyboardInterrupt()))
+    assert "the services are stopped" in answered("services", "up"), "services up keeps the plugins' services until Ctrl-C, then says they stopped"
     assert answered("browser", "driving").startswith("{"), "a word that answers with a mapping prints it whole"
     report(record, "working", "PreToolUse")
     assert "this session: working after PreToolUse" in answered("--session", "claude-1", "verify"), "verify names what the asking session last reported"
