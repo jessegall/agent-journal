@@ -106,6 +106,17 @@ def parsed(text: str) -> JournalCall | None:
     return JournalCall(tuple(words)) if words and words[0] == "journal" else None
 
 
+def quoted_at(shell: str, end: int) -> bool:
+    quote = ""
+    for index, letter in enumerate(shell[:end]):
+        if not quote:
+            quote = letter if letter in "'\"" else ""
+        elif letter == quote and not (quote == '"' and shell[index - 1] == "\\"):
+            quote = ""
+    return bool(quote)
+
+
 def calls(shell: str) -> list[JournalCall]:
-    found = (JournalCall(("journal", *tokens(ENDS.split(shell[named.end():], maxsplit=1)[0]))) for named in NAMED.finditer(shell))
+    found = (JournalCall(("journal", *tokens(ENDS.split(shell[named.end():], maxsplit=1)[0])))
+             for named in NAMED.finditer(shell) if not quoted_at(shell, named.start()))
     return [call for call in found if call.noun]

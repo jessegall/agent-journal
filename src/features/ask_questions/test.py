@@ -181,6 +181,8 @@ def test_a_row_waits_on_one_question_and_the_user_can_dismiss_it():
     assert "command of its own" in codex(f"journal todo create x && {asking}"), "a Codex agent asks a question on its own too"
     assert ("command of its own" in shell(f"journal todo create x; {asking}"), "command of its own" in shell(f"{asking} | grep x"), "command of its own" in shell(asking)) == \
         (True, True, False), "a question is asked on its own, never chained or piped with other commands"
+    mention = "journal todo create x --brief 'later: journal question ask now' && journal todo list"
+    assert "command of its own" not in shell(mention), "a question command quoted inside an argument is only text, not a question"
 
 
 def test_a_question_is_dismissed_when_its_row_closes_and_asked_about_after_a_day():
