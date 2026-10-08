@@ -78,6 +78,14 @@ def touched(record, helper) -> tuple[str, ...]:
     return tuple(lines(branch.project, "diff", "--name-only", f"{branch.base}...{branch.ref}")) if branch.exists() else ()
 
 
+TEST_FILE = re.compile(r"(^|/)(tests?/|browser/[^/]*\.mjs$|test\.py$|test_[^/]*\.py$|[^/]*_test\.py$|[^/]*\.test\.(js|mjs|ts)$)")
+
+
+def written_tests(record, helper) -> tuple[str, ...]:
+    """The test files a helper added or changed, which it did not run and the agent that dispatched it does."""
+    return tuple(path for path in touched(record, helper) if TEST_FILE.search(path))
+
+
 def unlanded(record, helper) -> tuple[str, ...]:
     """What a helper committed that the project's branch lacks, by message, so a commit taken over by cherry-pick counts as landed."""
     branch = branch_of(record, helper)
