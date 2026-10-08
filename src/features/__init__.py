@@ -103,14 +103,15 @@ def seat(root: Path, homes: tuple[str, ...]) -> None:
         record = Record(root, home)
         rows = Features(record, actor=SYSTEM)
         known = {r.title: r for r in rows.rows.every()}
-        for name, feature in FEATURES.items():
-            if name not in known and feature.scope != PROJECT:
-                rows.create(name, enabled=feature.default_for(root))
-        for name, row in known.items():
-            if name not in FEATURES and not row.missing:
-                rows.update(row.n, missing=True)
-            elif name in FEATURES and row.missing:
-                rows.update(row.n, missing=False)
+        with bus.settled():
+            for name, feature in FEATURES.items():
+                if name not in known and feature.scope != PROJECT:
+                    rows.create(name, enabled=feature.default_for(root))
+            for name, row in known.items():
+                if name not in FEATURES and not row.missing:
+                    rows.update(row.n, missing=True)
+                elif name in FEATURES and row.missing:
+                    rows.update(row.n, missing=False)
         booted(record)
 
 
