@@ -5,9 +5,9 @@ import {agent} from "./leadAgent.js";
 import {useHelpers} from "./helpers.js";
 import {useSharedNow} from "./now.js";
 
-export function useWaiting(helpers = useHelpers().rows) {
+export function useWaiting(helpers = useHelpers().rows, who = agent, works = () => rows("work")) {
     const now = useSharedNow();
-    const waiting = computed(() => (stateOf(agent.value, rows("work")) === "waiting" ? waitingOn(agent.value, rows("work"), helpers.value, now.value) : null));
+    const waiting = computed(() => (stateOf(who.value, works()) === "waiting" ? waitingOn(who.value, works(), helpers.value, now.value) : null));
     const open = ref(false);
     const anchor = ref(null);
     const toggle = (event) => {

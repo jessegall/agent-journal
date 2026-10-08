@@ -369,6 +369,11 @@ const openSkills = () => go(route.value.env, "skills");
     min-height: 0;
 }
 
+.agent-inspector :deep(.thread) {
+    --home-gutter: 24px;
+    padding: 0 var(--home-gutter);
+}
+
 .fill {
     flex: 1;
     min-height: 0;

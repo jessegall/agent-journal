@@ -18,7 +18,7 @@ const emit = defineEmits(["close"]);
             <template v-for="item in waiting.items" :key="item.label">
                 <li :class="['waiting-item', {back: item.reported}]">
                     <span class="waiting-label">{{ item.label }}</span>
-                    <span class="waiting-report">{{ item.reported ? "Report ready" : "At work" }}</span>
+                    <span class="waiting-report">{{ item.status }}</span>
                     <span class="waiting-meta">
                         <template v-if="item.kind">
                             <Chip>{{ item.kind }}</Chip>

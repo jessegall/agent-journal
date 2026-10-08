@@ -3,7 +3,7 @@ import {agent} from "../composables/leadAgent.js";
 import {autoOn, steered, workMode} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import {barPlans, foldedPlans} from "../domain/plans.js";
-import {currentWork, lineOf, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
+import {currentWork, lineOf, named, queued, SILENT, stateOf, wordOf} from "../domain/agentState.js";
 import {silentIn} from "../domain/journals.js";
 import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
 import PlanMore from "./PlanMore.vue";
@@ -85,13 +85,12 @@ async function pauseOrResume() {
     }
 }
 const waiting = computed(() => queued(rows("todo"), autoOn.value, rows("question")));
-const line = computed(() =>
-    paused.value
-        ? "held until you resume it"
-        : silent.value
-          ? "started, but it never reported in"
-          : waitingNow.value?.line || lineOf(agent.value, rows("work"), waiting.value, helpers.value)
-);
+const line = computed(() => {
+    if (paused.value) return "held until you resume it";
+    if (silent.value) return "started, but it never reported in";
+    if (waitingNow.value) return current.value ? named(current.value) : "";
+    return lineOf(agent.value, rows("work"), waiting.value, helpers.value);
+});
 const inspect = () => peek("work", current.value.n);
 const roll = (event) => (waitingNow.value && !paused.value ? toggleWaiting(event) : current.value && inspect());
 const was = ref("");

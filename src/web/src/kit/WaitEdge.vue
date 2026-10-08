@@ -100,7 +100,7 @@ onUnmounted(() => clearTimeout(timer));
     stroke-dasharray: 0.05 0.95;
     stroke-dashoffset: 0;
     opacity: calc(1 - var(--i) * 0.17);
-    animation: lap 8s linear infinite;
+    animation: lap 8s cubic-bezier(0.35, 0.15, 0.65, 0.85) infinite;
     animation-delay: calc(-8s + var(--i) * 0.4s);
 }
 
@@ -146,6 +146,13 @@ onUnmounted(() => clearTimeout(timer));
 
 .legend:hover:not(:disabled) {
     color: var(--text);
+}
+
+.legend :deep(.chip) {
+    align-self: center;
+    padding: 0 6px;
+    font-size: 10px;
+    line-height: 14px;
 }
 
 .legend .chev {
