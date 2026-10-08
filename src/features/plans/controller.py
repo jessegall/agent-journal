@@ -55,6 +55,13 @@ def status_after(last: bool, waits: bool) -> str:
     return ACTIVE
 
 
+def delegate_plans_holding(record, todo) -> None:
+    plans = Plans(record, actor=SYSTEM)
+    for plan in plans.rows.every():
+        if plan.status in RUNNING and plan.has_in_phase(todo):
+            plans.delegate(plan.n)
+
+
 class Plans(Controller):
     resource = Plan
 
@@ -187,13 +194,6 @@ class Plans(Controller):
     @action
     def delegate(self, n: int, off: bool = False):
         return self.update(int(n), delegated=not off)
-
-    @action
-    def delegate_row(self, todo: int):
-        row = Todos(self.record, actor=self.actor).load(todo)
-        for plan in self._running():
-            if plan.has_in_phase(row):
-                self.delegate(plan.n)
 
     @action
     def dismiss(self, n: int):
