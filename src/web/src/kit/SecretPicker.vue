@@ -6,9 +6,9 @@ import {rows} from "../sync/rows.js";
 
 const props = defineProps({
     value: {type: String, default: ""},
-    pickedLine: {type: String, default: "The plugin gets the secret {title}."},
-    noneLine: {type: String, default: "No secret is picked, so the plugin gets no value."},
-    note: {type: String, default: "The plugin's services get this secret's value. Nothing else does."},
+    pickedLine: {type: String, default: "{title} is picked."},
+    noneLine: {type: String, default: "No secret is picked."},
+    note: {type: String, default: ""},
 });
 const emit = defineEmits(["pick"]);
 const secrets = computed(() => pickable(rows("secret").filter((row) => !row.deleted)));
