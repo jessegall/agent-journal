@@ -1,7 +1,12 @@
 import importlib
 import shutil
 
+import pytest
+
+import features
+from commands.invoke import invoked
 from controllers import stored
+from controllers.features import Features
 from controllers.requests import deliver, request
 from controllers.types import Rules, Todos
 from engine.event_log import EventLog
@@ -9,7 +14,8 @@ from engine.machines import Lease, this_machine
 from engine.numbers import BLOCK, Leases, Numbers, rows
 from engine.outbox import Request
 from engine.record import Record
-from resources.base import AGENT, PROJECT, USER
+from features.machines.details import MachinesDetails
+from resources.base import AGENT, PROJECT, SYSTEM, USER, Stale
 from tests.conftest import fresh, refused
 
 
@@ -106,4 +112,26 @@ def test_a_write_into_an_environment_another_machine_holds_waits_for_it_as_a_req
     assert deliver(record.root) == 2, "once this machine holds both, the waiting writes run"
     assert [r.title for r in Todos(there, actor=AGENT).all()] == ["filed from here"], "the to-do lands where it was meant"
     assert USER in Rules(record, actor=AGENT).load(rule.n).seen, "and the read mark with it"
+
+
+def test_two_people_pressing_the_same_row_with_the_machines_feature_on_the_second_is_refused():
+    features.load()
+    record = fresh()
+    todos = Todos(record, actor=USER)
+    row = todos.create("one row")
+    seen = row.updated
+    invoked(Todos(record, actor=USER), "update", (row.n,), {"title": "first press", "unchanged_since": seen})
+    invoked(Todos(record, actor=USER), "update", (row.n,), {"title": "second press", "unchanged_since": seen})
+    assert todos.load(row.n).title == "second press", "with the feature off, the last press wins, as on one machine"
+
+    Features(record, actor=SYSTEM).switch(MachinesDetails.name, True)
+    seen = todos.load(row.n).updated
+    invoked(Todos(record, actor=USER), "done", (row.n,), {"how": "first", "unchanged_since": seen})
+    for word, args in (("update", {"title": "late"}), ("section", {"title": "part", "body": "late"}), ("reopen", {"why": "late"}),
+                       ("delete", {"why": "late"})):
+        with pytest.raises(Stale):
+            invoked(Todos(record, actor=USER), word, (row.n,), {**args, "unchanged_since": seen})
+    assert (todos.load(row.n).outcome, todos.load(row.n).title) == ("first", "second press"), "the first press stands and the late ones change nothing"
+    invoked(Todos(record, actor=USER), "update", (row.n,), {"title": "fresh", "unchanged_since": todos.load(row.n).updated})
+    assert todos.load(row.n).title == "fresh", "a press made on what the row is now goes through"
 
