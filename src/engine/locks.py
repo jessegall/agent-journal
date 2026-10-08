@@ -4,13 +4,14 @@ import time
 from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
-from typing import IO
+from typing import IO, Callable
 
 from engine import waits
 
 MIGRATIONS = ContextVar("migrations", default=())
 MIGRATION_LOCK = ".migrations.lock"
 LOCK_WAIT = 30.0
+RETRY = 0.05
 RUNTIME = "runtime"
 
 
@@ -26,11 +27,8 @@ class SharedWrites:
 
     @contextmanager
     def joined(self):
-        with self.guard:
-            if not self.writers:
-                with waits.waited("writes"):
-                    acquire(self.held, fcntl.LOCK_SH)
-            self.writers += 1
+        with waits.waited("writes"):
+            wait_for(self.joined_now, self.held.name)
         try:
             yield
         finally:
@@ -38,6 +36,13 @@ class SharedWrites:
                 self.writers -= 1
                 if not self.writers:
                     fcntl.flock(self.held, fcntl.LOCK_UN)
+
+    def joined_now(self) -> bool:
+        with self.guard:
+            if not self.writers and not taken(self.held, fcntl.LOCK_SH):
+                return False
+            self.writers += 1
+            return True
 
 
 SHARED: dict[Path, SharedWrites] = {}
@@ -59,16 +64,24 @@ def shared_writes(root: Path) -> SharedWrites:
         return SHARED[root]
 
 
+def taken(held, operation: int) -> bool:
+    try:
+        fcntl.flock(held, operation | fcntl.LOCK_NB)
+    except BlockingIOError:
+        return False
+    return True
+
+
 def acquire(held, operation: int) -> None:
+    wait_for(lambda: taken(held, operation), held.name)
+
+
+def wait_for(taking: Callable[[], bool], name: str) -> None:
     deadline = time.monotonic() + LOCK_WAIT
-    while True:
-        try:
-            fcntl.flock(held, operation | fcntl.LOCK_NB)
-            return
-        except BlockingIOError as error:
-            if time.monotonic() >= deadline:
-                raise TimeoutError(held.name) from error
-            time.sleep(0.05)
+    while not taking():
+        if time.monotonic() >= deadline:
+            raise TimeoutError(name)
+        time.sleep(RETRY)
 
 
 def claim(path: Path):

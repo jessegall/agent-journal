@@ -520,6 +520,16 @@ def test_a_held_record_lock_lets_the_runtime_folder_write_and_times_out_every_ot
             worker.start()
             worker.join(WAIT)
     assert outcomes == {"runtime": "written", "record": "timed out"}, "a migration holds record writes back until they time out, and never the runtime folder"
+    with locks.hold_record_writes(root):
+        writers = [threading.Thread(target=writing, args=(f"together {n}", root / "environments" / "main" / "todo" / f"00{n}.md")) for n in range(4)]
+        began = time.monotonic()
+        for worker in writers:
+            worker.start()
+        for worker in writers:
+            worker.join(WAIT)
+        waited = time.monotonic() - began
+    assert ([outcomes[f"together {n}"] for n in range(4)], waited < 1.0) == (["timed out"] * 4, True), \
+        "writers held back together time out together, not one wait after another"
     writing("after", root / "environments" / "main" / "todo" / "001.md")
     assert outcomes["after"] == "written", "once the migration lets go the same write goes through"
 
