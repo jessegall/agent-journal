@@ -48,8 +48,8 @@ def marked_from(text: str, outside: Outside) -> str:
 
 
 def without_images(text: str) -> str:
-    """An outside source's words with each image shown as a link, so reading them loads nothing from the source's host."""
-    return HTML_IMAGE.sub("(image removed)", IMAGE.sub(lambda found: f"[{found[1] or 'image'} (image)]({found[2]})", text))
+    """An outside source's words with each image named and its address written out, which the viewer makes a link, so reading them loads nothing from the source's host."""
+    return HTML_IMAGE.sub("(image removed)", IMAGE.sub(lambda found: f"{found[1] or 'image'} (image): {found[2]}", text))
 
 
 def unmarked(text: str, record=None) -> str:

@@ -79,7 +79,7 @@ def refuse_a_secret(name: str, keys, actor: str) -> None:
 
 def refuse_a_secret_that_runs_commands(record, name: str, values: dict) -> None:
     """The key of an integration is for that integration alone: a secret that lets commands use it is not picked for one."""
-    from controllers.types import Secrets
+    from features.secrets.controller import Secrets
     from features.secrets.resource import SecretField
     for key in secrets_in(name, values):
         for secret in Secrets(record, actor=SYSTEM).rows.standing():
