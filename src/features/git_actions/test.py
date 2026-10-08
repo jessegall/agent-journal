@@ -72,6 +72,8 @@ def test_each_git_command_the_agent_runs_is_marked_in_the_chat(tmp_path):
     ran_git("git worktree remove $S/quote-hotfix", "")
     ran_git('git worktree add "${S:?}/x-hotfix" origin/main', "")
     ran_git("""git commit -q -m "$(printf 'subject\\n\\nbody')" """, "")
+    ran_git("for c in v1.4 v1.5; do git tag $c; done; git tag $c", "")
+    ran_git('git tag "$e" && git tag -d "${e}" && git push origin "$e"', "")
     assert marks() == [
         "Stashed 2 changed files", "Popped the latest stash", "Dropped the latest stash",
         "Merged `feature-x` into `main`", "Rebased `main` onto `main`", "Cherry-picked `abc1234` onto `main`",

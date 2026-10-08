@@ -54,9 +54,13 @@ class GitCall:
 
     def mark(self) -> str:
         describe = MARKS.get(self.verb)
-        if not describe or FAILED.search(self.output) or self.has(*FINISHING):
+        if not describe or FAILED.search(self.output) or self.has(*FINISHING) or self.is_unexpanded():
             return ""
         return describe(self)
+
+    def is_unexpanded(self) -> bool:
+        """The shell filled in a name this call only shows as a variable, so what git did cannot be known from it."""
+        return self.verb != "worktree" and any(SHELL_EXPANSION.search(arg) for arg in self.args)
 
 
 def calls(shell: str, output: str, folder: Path) -> list[GitCall]:
