@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from agents.terminal import Launched
+from controllers.types import Environments
 from engine.journal_calls import pieces
 from engine.reach import Reach
 from engine.worktree import checkout
@@ -30,7 +30,8 @@ class StayInYourCheckout(ToolInterceptor):
 
     def intercept(self, context: AgentContext, call) -> str:
         hook = context.hook
-        home = Path(Launched.read(context.record.root, hook.session).cwd or context.record.root.parent)
+        place = Environments(context.record, actor=SYSTEM).rows.by_title(context.record.env)
+        home = Path(place.folder if place and place.folder else context.record.root.parent)
         if not hook.cwd or self.checkout_of(Path(hook.cwd)) == self.checkout_of(home) or self.goes_home(call.shell_command, home):
             return ""
         return context.feature.line("strayed", {"folder": hook.cwd, "home": home})[0]

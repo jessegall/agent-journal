@@ -2,9 +2,10 @@ from pathlib import Path
 
 import features
 from engine.worktree import tip
+from controllers.types import Environments
 from features.helper_worktrees.controller import Worktrees
 from providers import PROVIDERS
-from resources.base import AGENT
+from resources.base import AGENT, SYSTEM
 from runner.hooks import handle
 from tests.conftest import refused
 from tests.kit import commit, git, project_on
@@ -139,6 +140,10 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
     codex = lambda command: handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "codex-1", "cwd": str(folder),
                                                                                     "tool_name": "exec_command", "tool_input": {"cmd": command}}).get("reason", "")
     assert ("another checkout" in codex("ls"), "another checkout" in codex(f"cd {project}")) == (True, False), "a Codex agent is held to its own checkout the same way"
+    Environments(record, actor=SYSTEM).create("helper-env", folder=str(folder))
+    inside = {**strayed, "agent_id": "rhea"}
+    assert "another checkout" not in handle(provider, record.root, "helper-env", inside).get("reason", ""), "a helper environment whose folder is a worktree works inside it"
+    assert "another checkout" in handle(provider, record.root, record.env, strayed).get("reason", ""), "the main agent in that same folder is still refused"
 
 
 def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():
