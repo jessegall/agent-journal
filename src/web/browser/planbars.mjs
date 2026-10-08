@@ -10,10 +10,11 @@ function readyPlan(title) {
     return plan;
 }
 
-async function approve(page, url, plan) {
+async function approve(page, url, plan, title) {
     await page.goto(`${url}#/main/plan/${plan}`);
-    await page.getByRole("button", {name: "Approve", exact: true}).click();
-    await page.getByRole("button", {name: "Approve", exact: true}).waitFor({state: "detached"});
+    const approve = page.locator("article.plan", {hasText: title}).getByRole("button", {name: "Approve", exact: true});
+    await approve.click();
+    await approve.waitFor({state: "detached"});
 }
 
 const bar = (page, title) => page.locator(".planbar", {hasText: title});
@@ -23,8 +24,8 @@ await runScenarios(process.argv[2], {
         const stamp = Date.now();
         const mine = readyPlan(`Mine ${stamp}`);
         const handed = readyPlan(`Handed ${stamp}`);
-        await approve(page, url, mine);
-        await approve(page, url, handed);
+        await approve(page, url, mine, `Mine ${stamp}`);
+        await approve(page, url, handed, `Handed ${stamp}`);
         journal("plan", "delegate", String(handed));
         journal("plan", "start", String(handed));
         journal("plan", "start", String(mine));
@@ -41,8 +42,9 @@ await runScenarios(process.argv[2], {
     async "from four active plans on, three show and the rest fold into a count"(page, url) {
         const stamp = Date.now();
         for (const name of ["One", "Two", "Three", "Four"]) {
-            const plan = readyPlan(`${name} ${stamp}`);
-            await approve(page, url, plan);
+            const title = `${name} ${stamp}`;
+            const plan = readyPlan(title);
+            await approve(page, url, plan, title);
             journal("plan", "delegate", String(plan));
         }
         await page.goto(url);
