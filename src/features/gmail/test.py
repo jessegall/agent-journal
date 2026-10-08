@@ -78,6 +78,11 @@ class World:
     gmail: object
 
 
+def mail_tickets(record) -> list:
+    from features.tickets.controller import Tickets
+    return [t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.source == "gmail"]
+
+
 def gmail_world(monkeypatch, tmp_path, **given):
     from features.boards.controller import Boards
     from features.gmail.mail import Mailbox
@@ -111,7 +116,7 @@ def test_mail_becomes_one_ticket_each_wrapped_as_untrusted_and_only_you_start_it
     record, server, gmail = world.record, world.server, world.gmail
     gmail.check(record)
     gmail.check(record)
-    tickets = [t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.source == "gmail"]
+    tickets = mail_tickets(record)
     assert sorted(t.title for t in tickets) == ["Hello", "Urgent"], "two syncs of the same mail leave one ticket for each"
     hostile = next(t for t in tickets if t.title == "Urgent")
     assert hostile.brief.startswith('<untrusted source="gmail"') and HOSTILE in hostile.brief, "mail telling the agent to run a command is saved wrapped, its words untouched inside the wrap"
@@ -119,7 +124,7 @@ def test_mail_becomes_one_ticket_each_wrapped_as_untrusted_and_only_you_start_it
     assert "only you start" in refused(lambda: Tickets(record, actor=AGENT).start(hostile.n)), "an agent cannot start a ticket from Gmail"
     server.mails[3] = raw("Third", "More")
     gmail.check(record)
-    assert len([t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.source == "gmail"]) == 3, "a later sync adds only the mail after the cursor"
+    assert len(mail_tickets(record)) == 3, "a later sync adds only the mail after the cursor"
 
 
 def test_an_answer_is_sent_only_when_you_press_send_and_goes_to_the_sender_with_the_exact_text(monkeypatch, tmp_path):
