@@ -3,6 +3,22 @@ from enum import StrEnum
 
 PROTOCOL = 1
 
+NEVER_TRAVELS_PATHS = ("runtime", "phone-push.json", "vault", "secrets")
+NEVER_TRAVELS_TYPES = ("phone",)
+NEVER_TRAVELS_FIELDS = {"share": ("token", "password"), "plugin": ("token",)}
+
+
+def travels(path: str) -> bool:
+    """Whether a file of the record is copied to another machine: its runtime, push keys, vault and secrets never are."""
+    return not any(part in NEVER_TRAVELS_PATHS for part in path.replace("\\", "/").split("/"))
+
+
+def travelling(type_: str, data: dict) -> dict | None:
+    """What of a row is copied to another machine: nothing for a type that stays, otherwise the row without its keys, hashes and tokens."""
+    if type_ in NEVER_TRAVELS_TYPES:
+        return None
+    return {name: value for name, value in data.items() if name not in NEVER_TRAVELS_FIELDS.get(type_, ())}
+
 
 class Step(StrEnum):
     IN_STEP = "in step"

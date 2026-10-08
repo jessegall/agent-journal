@@ -14,7 +14,7 @@ from engine.machines import Lease, this_machine
 from engine.numbers import BLOCK, Leases, Numbers, rows
 from engine.outbox import Request
 from engine.record import Record
-from engine.sync import PROTOCOL, Comparison, Shape, Step
+from engine.sync import NEVER_TRAVELS_FIELDS, NEVER_TRAVELS_TYPES, PROTOCOL, Comparison, Shape, Step, travelling, travels
 from features.machines.details import MachinesDetails
 from resources.base import AGENT, PROJECT, SYSTEM, USER, Stale
 from tests.conftest import fresh, refused
@@ -157,3 +157,23 @@ def test_the_sync_compares_its_own_protocol_number_and_the_migrations_a_copy_wen
         "a copy ahead of the server runs its newer migrations over what it pulls, instead of being rebuilt"
     assert Shape(PROTOCOL + 1, frozenset({"m1", "m2"})).compared(server) == Comparison(Step.PULL_AGAIN), \
         "only a new protocol number, not a new release, makes a copy pull everything again"
+
+
+def test_keys_hashes_and_tokens_never_travel_to_another_machine():
+    from resources.base import Resource
+
+    def kinds(base):
+        return [base, *(found for sub in base.__subclasses__() for found in kinds(sub))]
+
+    features.load()
+    secretive = {"key", "token", "hash", "password", "secret", "passkey", "challenge", "unlock"}
+    declared = {(kind.type, field.name) for kind in kinds(Resource) if getattr(kind, "type", "")
+                for field in kind.__dict__.get("data_fields", []) if secretive & set(field.name.split("_"))}
+    kept = {(type_, name) for type_, names in NEVER_TRAVELS_FIELDS.items() for name in names}
+    stays = {(type_, name) for type_, name in declared if type_ in NEVER_TRAVELS_TYPES}
+    assert declared - kept - stays <= {("secret", "secret_fields")}, \
+        f"every field named like a key, hash, token or password is withheld from the sync, or belongs to a row that stays: {sorted(declared - kept - stays)}"
+    assert (travels("record/runtime/sock"), travels("phone-push.json"), travels("a/vault/owner.json"), travels("todo/1.json")) == (False, False, False, True), \
+        "the files that hold keys and live state stay on their machine"
+    assert (travelling("phone", {"key": "x"}), travelling("share", {"target": "doc:1", "token": "t", "password": "p"})) == (None, {"target": "doc:1"}), \
+        "a phone never travels, and a share travels without its token or password"
