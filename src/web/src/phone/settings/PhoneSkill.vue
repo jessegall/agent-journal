@@ -8,6 +8,7 @@ import CellGroup from "../kit/CellGroup.vue";
 import Field from "../kit/Field.vue";
 import {toast} from "../kit/toast.js";
 import PhonePage from "./PhonePage.vue";
+import Skeleton from "../../kit/Skeleton.vue";
 
 const props = defineProps({target: {type: String, required: true}, back: {type: String, default: ""}});
 const emit = defineEmits(["back"]);
@@ -84,7 +85,7 @@ onMounted(async () => {
                 <p class="skill-status">{{ failed }}</p>
             </template>
             <template v-else-if="!text">
-                <p class="skill-status">Loading the skill…</p>
+                <Skeleton shape="text" label="Loading the skill" />
             </template>
             <template v-else>
                 <TextDisplay :text="text" />

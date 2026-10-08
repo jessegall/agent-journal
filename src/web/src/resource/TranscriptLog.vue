@@ -5,6 +5,7 @@ import {stamp} from "../format/time.js";
 import {route} from "../route.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
+import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({
     transcript: {type: Object, required: true},
@@ -49,7 +50,7 @@ defineExpose({scroller});
             </p>
         </template>
         <template v-if="loading && !turns.length">
-            <p class="none">Loading…</p>
+            <Skeleton label="Loading the transcript" />
         </template>
         <template v-else-if="!turns.length && !error">
             <p class="none">Nothing printed yet, or no transcript for this session.</p>

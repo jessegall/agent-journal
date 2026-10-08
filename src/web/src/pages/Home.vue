@@ -7,7 +7,7 @@ import {narrow} from "../platform/view.js";
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {open} from "../domain/records.js";
-import MessageSkeleton from "../kit/MessageSkeleton.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import HomeView from "./HomeView.vue";
 import DumpWindow from "../chat/DumpWindow.vue";
@@ -389,7 +389,7 @@ watch(
     <div class="home">
         <template v-if="!ready">
             <div class="home-loading">
-                <MessageSkeleton />
+                <Skeleton shape="messages" label="Loading messages" />
             </div>
         </template>
         <template v-else>

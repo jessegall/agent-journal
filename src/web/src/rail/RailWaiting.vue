@@ -3,10 +3,12 @@ import {meta, types} from "../domain/spec.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
+import Skeleton from "../kit/Skeleton.vue";
+import {store} from "../state/store.js";
 import {api} from "../api/client.js";
 import {peek, route} from "../route.js";
 import {finishedUnread, happened, open as openRows, unreadByUser} from "../domain/records.js";
-import {patched, rows} from "../sync/rows.js";
+import {hasLoaded, patched, rows} from "../sync/rows.js";
 import {age} from "../format/time.js";
 import {focusTurn} from "../platform/view.js";
 
@@ -34,6 +36,7 @@ const notifications = computed(() =>
         .sort((a, b) => b.created - a.created)
 );
 const cards = computed(() => (props.type ? waiting.value : notifications.value));
+const loaded = computed(() => (props.type ? hasLoaded(props.type) : store.booted));
 
 async function open(r) {
     if (props.type) {
@@ -60,7 +63,10 @@ async function dismiss(r) {
 </script>
 
 <template>
-    <template v-if="!cards.length">
+    <template v-if="!cards.length && !loaded">
+        <Skeleton :label="type ? `Loading what waits on you` : `Loading the notifications`" />
+    </template>
+    <template v-else-if="!cards.length">
         <div class="home-rail-empty">
             <Icon name="todos" />
             <p>{{ type ? "Nothing waiting on you." : "No notifications." }}</p>

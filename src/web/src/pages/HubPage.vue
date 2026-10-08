@@ -53,8 +53,8 @@ function toggleStopped() {
                     <IconCount icon="todos" :count="tally.todos" label="open to-dos" />
                 </span>
             </template>
-            <template v-if="loaded && running.length < 2">
-                <EmptyState class="hub-empty">
+            <template v-if="!loaded || running.length < 2">
+                <EmptyState class="hub-empty" :loading="!loaded">
                     Only this journal is running. Start another with
                     <code>journal claude</code>
                     in its project and it appears here.

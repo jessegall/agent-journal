@@ -22,6 +22,7 @@ import {installedPlugins} from "../composables/plugins.js";
 import {usePluginInstall} from "../composables/pluginInstall.js";
 import {usePoll} from "../composables/poll.js";
 import {sendMessage} from "../chat/outbox.js";
+import {hasLoaded} from "../sync/rows.js";
 
 const source = ref("");
 const guide = ref(false);
@@ -174,7 +175,7 @@ watch(
                 <p class="note">Sent to the agent; its answer comes in the chat.</p>
             </template>
             <template v-if="!plugins.length">
-                <EmptyState title="No plugin is installed">Paste a repository above to see what it would run.</EmptyState>
+                <EmptyState :loading="!hasLoaded('plugin')" title="No plugin is installed">Paste a repository above to see what it would run.</EmptyState>
             </template>
             <div class="cards">
                 <template v-for="p in plugins" :key="p.n">

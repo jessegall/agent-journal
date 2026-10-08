@@ -1,5 +1,6 @@
 <script setup>
 import EmptyState from "../kit/EmptyState.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {href, route} from "../route.js";
@@ -30,6 +31,9 @@ const blocks = (f) => statBlocks(f, largest.value);
     <section class="commit">
         <template v-if="error">
             <EmptyState class="empty">{{ error }}</EmptyState>
+        </template>
+        <template v-if="!commit && !error">
+            <Skeleton shape="text" label="Loading the commit" />
         </template>
         <template v-if="commit">
             <header class="head">

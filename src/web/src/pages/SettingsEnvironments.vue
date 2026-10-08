@@ -12,7 +12,7 @@ import StatusLabel from "../kit/StatusLabel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
-import {rows} from "../sync/rows.js";
+import {hasLoaded, rows} from "../sync/rows.js";
 import {isMain} from "../domain/environments.js";
 import {matches} from "../domain/settingsCatalog.js";
 
@@ -137,7 +137,7 @@ const empty = (e) => kindOf(e) === "sweep" && askOf(e).text === "There is nothin
         </ListBox>
     </template>
     <template v-if="!envRows.length">
-        <EmptyState class="settings-environments-empty">
+        <EmptyState class="settings-environments-empty" :loading="!hasLoaded('environment')">
             {{ query.trim() ? "No environment matches." : "There are no environments yet." }}
         </EmptyState>
     </template>

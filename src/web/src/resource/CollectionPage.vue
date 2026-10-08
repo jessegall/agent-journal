@@ -33,6 +33,7 @@ async function load(ref) {
 const refs = computed(() => (props.resource.refs || []).filter((ref) => ref !== props.resource.data?.source));
 watchEffect(() => !props.readOnly && refs.value.filter((ref) => !byRef(ref)).forEach(load));
 
+const fetching = computed(() => refs.value.some((ref) => !byRef(ref) && !(ref in fetched)));
 const members = computed(() =>
     refs.value
         .map((ref) => byRef(ref) || fetched[ref])
@@ -76,7 +77,7 @@ function hidePreview(r) {
         <template v-else>
             <section class="cards" aria-label="In this collection">
                 <template v-if="!members.length">
-                    <EmptyState class="empty">
+                    <EmptyState class="empty" :loading="fetching" shape="cards">
                         Nothing in this collection yet. Add an item to this collection.
                     </EmptyState>
                 </template>

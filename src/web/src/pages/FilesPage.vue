@@ -92,8 +92,8 @@ const pickKind = (key) => {
             <span class="grow" />
             <a class="flat" :href="href.page(route.env, 'doc')">Documents</a>
         </div>
-        <template v-if="loaded && !files.length">
-            <EmptyState class="none">
+        <template v-if="!loaded || !files.length">
+            <EmptyState class="none" :loading="!loaded">
                 No files are stored on this environment yet. Files attached to a message or added to a document show here.
             </EmptyState>
         </template>

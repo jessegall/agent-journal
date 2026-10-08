@@ -12,6 +12,7 @@ import ListBox from "../kit/ListBox.vue";
 import SettingNav from "../kit/SettingNav.vue";
 import Switch from "../kit/Switch.vue";
 import PluginSetting from "./PluginSetting.vue";
+import {hasLoaded} from "../sync/rows.js";
 
 const props = defineProps({query: {type: String, default: ""}});
 const emit = defineEmits(["saved"]);
@@ -88,7 +89,9 @@ watch(
 
 <template>
     <template v-if="!configurable.length">
-        <EmptyState class="plugin-settings-empty" title="No plugin has settings">Install a plugin from the Plugins page.</EmptyState>
+        <EmptyState class="plugin-settings-empty" :loading="!hasLoaded('plugin')" title="No plugin has settings">
+            Install a plugin from the Plugins page.
+        </EmptyState>
     </template>
     <template v-else>
         <div class="plugin-settings">

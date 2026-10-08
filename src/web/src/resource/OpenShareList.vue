@@ -4,6 +4,7 @@ import CopyButton from "../kit/CopyButton.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import Icon from "../kit/Icon.vue";
 import {endsOf, linkMessage, locked, viewsOf} from "../composables/shares.js";
+import {hasLoaded} from "../sync/rows.js";
 
 defineProps({
     waiting: {type: Array, required: true},
@@ -17,7 +18,9 @@ const emit = defineEmits(["approve", "stop"]);
 
 <template>
     <template v-if="!open.length && !waiting.length">
-        <EmptyState title="No open links">Links you make to this {{ kind }} show here until they end.</EmptyState>
+        <EmptyState :loading="!hasLoaded('share')" title="No open links">
+            Links you make to this {{ kind }} show here until they end.
+        </EmptyState>
     </template>
     <div class="open-shares">
         <template v-for="share in waiting" :key="share.n">

@@ -4,7 +4,7 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import ToggleItem from "../kit/ToggleItem.vue";
 import {useAnchoredAction} from "../composables/anchored.js";
 import {store} from "../state/store.js";
-import CardSkeleton from "../kit/CardSkeleton.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import Switch from "../kit/Switch.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
@@ -100,7 +100,7 @@ watch(
             <Switch :on="attic" word="Include removed environments" @change="(on) => (attic = on)" />
         </div>
         <template v-if="searching">
-            <CardSkeleton class="cards" />
+            <Skeleton class="cards" shape="cards" :count="3" label="Searching" />
         </template>
         <template v-if="route.q && !searching && !hits.length && !removed.length">
             <EmptyState class="empty">Nothing matches “{{ route.q }}”.</EmptyState>

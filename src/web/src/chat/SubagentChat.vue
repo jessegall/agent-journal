@@ -6,9 +6,11 @@ import {useScope} from "../composables/scope.js";
 import Compose from "./Compose.vue";
 import ChatNotice from "./ChatNotice.vue";
 import Turn from "./Turn.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({
     turns: {type: Array, required: true},
+    loading: Boolean,
     session: {type: String, required: true},
     task: {type: String, default: ""},
     readOnly: Boolean,
@@ -43,7 +45,10 @@ watch(
             <template v-for="turn in lines" :key="turn.ref">
                 <Turn :turn="turn" />
             </template>
-            <template v-if="!lines.length">
+            <template v-if="!lines.length && loading">
+                <Skeleton shape="messages" label="Loading the conversation" />
+            </template>
+            <template v-else-if="!lines.length">
                 <p class="none">Nothing said yet.</p>
             </template>
         </div>

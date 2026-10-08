@@ -4,6 +4,7 @@ import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import SidePanel from "../kit/SidePanel.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
 const text = ref("");
 const failed = ref("");
@@ -31,7 +32,7 @@ watch(
             <p class="skill-panel-note">{{ failed }}</p>
         </template>
         <template v-else-if="!text">
-            <p class="skill-panel-note">Loading the skill…</p>
+            <Skeleton shape="text" label="Loading the skill" />
         </template>
         <template v-else>
             <TextDisplay :text="text" />

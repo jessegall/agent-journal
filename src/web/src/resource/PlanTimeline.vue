@@ -3,15 +3,19 @@ import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {MOMENTS, momentDays, timeOf} from "../domain/timeline.js";
+import Skeleton from "../kit/Skeleton.vue";
 
-const props = defineProps({items: {type: Array, default: () => []}});
+const props = defineProps({items: {type: Array, default: () => []}, loading: Boolean});
 const emit = defineEmits(["open"]);
 const days = computed(() => momentDays(props.items));
 </script>
 
 <template>
     <section class="timeline" aria-label="Timeline">
-        <template v-if="!items.length">
+        <template v-if="!items.length && loading">
+            <Skeleton :count="3" label="Loading the timeline" />
+        </template>
+        <template v-else-if="!items.length">
             <p class="empty">Nothing has happened on this plan's to-dos yet.</p>
         </template>
         <template v-for="group in days" :key="group.day">

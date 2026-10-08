@@ -3,6 +3,7 @@ import {computed, ref} from "vue";
 import {sendMessage} from "../chat/outbox.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import ListRow from "../kit/ListRow.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
 import RoleCard from "../board/RoleCard.vue";
@@ -24,7 +25,10 @@ async function draft() {
 
 <template>
     <section class="organization">
-        <template v-if="domains && !domains.length">
+        <template v-if="!domains">
+            <Skeleton label="Loading the organization" />
+        </template>
+        <template v-else-if="!domains.length">
             <EmptyState>
                 There is no agent organization yet. It names the project's domains, like Backend or Design, and the roles under each that a
                 ticket's agent hands work to.

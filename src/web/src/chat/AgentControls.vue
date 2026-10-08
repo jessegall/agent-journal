@@ -5,10 +5,12 @@ import {api} from "../api/client.js";
 import ChoiceList from "../kit/ChoiceList.vue";
 import {pendingChoice} from "../domain/agents.js";
 import {age} from "../format/time.js";
+import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({control: String, agent: Object});
 const emit = defineEmits(["done"]);
-const controls = ref({groups: [], note: "Loading controls…"});
+const controls = ref({groups: [], note: ""});
+const loaded = ref(false);
 const controlling = ref("");
 const error = ref("");
 const data = computed(() => props.agent.data);
@@ -28,6 +30,8 @@ onMounted(async () => {
         controls.value = await api.agentControls(data.value.provider, data.value.model, data.value.effort);
     } catch (e) {
         error.value = e.message;
+    } finally {
+        loaded.value = true;
     }
 });
 
@@ -60,6 +64,9 @@ async function applyChoice(action, value) {
         <div class="bar-waiting">
             <span>{{ pending(control) }} is waiting for the agent to finish its turn.</span>
         </div>
+    </template>
+    <template v-if="!loaded">
+        <Skeleton :count="2" label="Loading the controls" />
     </template>
     <template v-for="group in chosen" :key="group.key">
         <template v-if="control !== 'context'">

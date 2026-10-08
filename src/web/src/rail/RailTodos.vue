@@ -3,6 +3,7 @@ import {computed} from "vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import {peek, peekThere, route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import {groupOf, GROUPS, planOf} from "../domain/records.js";
@@ -24,7 +25,10 @@ const groups = computed(() => {
 </script>
 
 <template>
-    <template v-if="!groups.length && !store.ticketTodos.length">
+    <template v-if="!groups.length && !scope.loaded('todo')">
+        <Skeleton label="Loading the to-dos" />
+    </template>
+    <template v-else-if="!groups.length && !store.ticketTodos.length">
         <div class="home-rail-empty">
             <Icon name="work" />
             <p>Nothing is on the list.</p>

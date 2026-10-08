@@ -4,6 +4,7 @@ import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 
 export const profiles = ref([]);
+export const profilesLoaded = ref(false);
 export const callings = ref({});
 export const samples = ref({});
 export const namings = ref([]);
@@ -26,6 +27,7 @@ export const sampleOf = (row) => samples.value[row.n] ?? row.data.sample;
 export async function loadProfiles() {
     const [rows, names, lines, styles] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples(), api.profileNamings()]);
     profiles.value = rows.filter((row) => !row.deleted);
+    profilesLoaded.value = true;
     callings.value = names;
     samples.value = lines;
     namings.value = styles;

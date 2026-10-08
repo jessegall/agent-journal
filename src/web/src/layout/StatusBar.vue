@@ -52,7 +52,7 @@ const helpersHeight = Math.min(520, Math.round(window.innerHeight * 0.7));
 const helpersOut = computed(() => helpers.value.filter(isWorking).length);
 const orchestratingHelpers = computed(() => (mode.value === ORCHESTRATOR ? helpersOut.value : 0));
 const helpersOpen = ref(false);
-const {rows: everyHelper, refresh: refreshEveryHelper} = useEveryHelper(helpersOpen);
+const {rows: everyHelper, loaded: everyHelperLoaded, refresh: refreshEveryHelper} = useEveryHelper(helpersOpen);
 const helpersAnchor = ref(null);
 const modeOptions = computed(() =>
     MODES.map((one) => ({
@@ -209,7 +209,7 @@ async function runBar(p) {
                         @click.stop
                         @close="helpersOpen = false"
                     >
-                        <HelperList :rows="everyHelper" @changed="refreshEveryHelper(), refreshHelpers()" @close="helpersOpen = false" />
+                        <HelperList :rows="everyHelper" :loading="!everyHelperLoaded" @changed="refreshEveryHelper(), refreshHelpers()" @close="helpersOpen = false" />
                     </MenuPanel>
                 </template>
             </template>

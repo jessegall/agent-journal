@@ -8,6 +8,7 @@ import SidePanel from "../kit/SidePanel.vue";
 import Switch from "../kit/Switch.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import TextInput from "../kit/TextInput.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({skill: {type: Object, required: true}, busy: Boolean});
 defineEmits(["close", "load", "always", "keywords"]);
@@ -76,7 +77,7 @@ watch(
                     <p class="skill-panel-status">{{ failed }}</p>
                 </template>
                 <template v-else-if="!text">
-                    <p class="skill-panel-status">Loading the skill…</p>
+                    <Skeleton shape="text" label="Loading the skill" />
                 </template>
                 <template v-else>
                     <TextDisplay :text="text" />

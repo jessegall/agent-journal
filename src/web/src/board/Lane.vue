@@ -8,6 +8,7 @@ import StageDot from "../kit/StageDot.vue";
 import {store} from "../state/store.js";
 import Card from "./Card.vue";
 import {moveEffect, refused} from "./moves.js";
+import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}, adds: Boolean});
 const MEANING_LABELS = {start: "A card dropped here starts its agent", review: "A card here waits for review"};
@@ -59,12 +60,7 @@ function drop() {
         </header>
         <div class="cards">
             <template v-if="loading">
-                <template v-for="i in 3" :key="i">
-                    <div class="skeleton">
-                        <span class="blank short" />
-                        <span class="blank" />
-                    </div>
-                </template>
+                <Skeleton shape="cards" :count="3" label="Loading the board" />
             </template>
             <template v-else>
                 <template v-for="card in lane.cards" :key="card.n">
@@ -147,32 +143,5 @@ function drop() {
     margin: 6px 2px;
     color: var(--text-3);
     font-size: 12px;
-}
-
-.skeleton {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    animation: skeleton-wait 1.6s ease-in-out infinite;
-}
-
-.blank {
-    display: block;
-    height: 10px;
-    border-radius: 99px;
-    background: color-mix(in srgb, var(--text-3) 22%, transparent);
-}
-
-.blank.short {
-    width: 30%;
-}
-
-@keyframes skeleton-wait {
-    50% {
-        opacity: 0.55;
-    }
 }
 </style>
