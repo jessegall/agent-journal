@@ -121,7 +121,7 @@ class WorkDetails(FeatureDetails):
             brief="""
                 it is blocked because: {{why}}. If it is not any more, journal todo unblock {{n}}. If it waits
                 on a person or a decision, make it a question to them: journal todo ask {{n}} "<who decides
-                what>", and the row waits on their answer. Otherwise tell the user in the chat what it waits
+                what>" --set options='[...]' --set pick=<n>, and the row waits on their answer. Otherwise tell the user in the chat what it waits
                 on, in their terms, and propose how to clear it.
             """,
         ),
@@ -176,7 +176,7 @@ class WorkDetails(FeatureDetails):
             title="nothing is ready: every open row waits",
             brief="""
                 {{rows}}. For each that waits on a person or a decision, put it to them now with journal todo ask <n>
-                "<who decides what>"; unblock any that can go on and work it. Stop only when each one waits on a question.
+                "<who decides what>" --set options='[...]' --set pick=<n>; unblock any that can go on and work it. Stop only when each one waits on a question.
             """,
         ),
         Line(

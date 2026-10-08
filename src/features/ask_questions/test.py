@@ -149,13 +149,21 @@ def test_a_row_waits_on_one_question_and_the_user_can_dismiss_it():
     from tests.conftest import refused
     record = fresh()
     row = Todos(record, actor=AGENT).create("Release it")
-    first = Todos(record, actor=AGENT).ask(row.n, "Release now or hold?")
+    assert "answers you can list" in refused(lambda: Todos(record, actor=AGENT).ask(row.n, "Release now or hold?")), \
+        "a question whose answers can be listed is refused without its options"
+    first = Todos(record, actor=AGENT).ask(row.n, "Release now or hold?", options=[{"title": "Release now"}, {"title": "Hold"}], pick=2)
     assert f"question {first.n}" in refused(lambda: Questions(record, actor=AGENT).create("Release now?", about=row.ref)), \
         "a second question on the same row is refused and names the one it waits on"
     dismissed = Questions(record, actor=USER).dismiss(first.n, why="already released")
     assert (bool(dismissed.completed), dismissed.data["dismissed"], dismissed.data["reason"]) == (True, True, "already released"), \
         "a dismissal closes the question with the user's reason"
     assert "not asked again" in dismissed.outcome, "the agent hears it is not to act on it or ask again"
+    asking = Questions(record, actor=AGENT)
+    assert ("answers you can list" in refused(lambda: asking.create("Has the client agreed to the data access?")),
+            "answers you can list" in refused(lambda: asking.create("Which package does the client have?"))) == (True, True), \
+        "a yes or no and a which are asked with their options"
+    assert asking.create("What is the client's billing address?").n and asking.create("Which administrations does the client keep?", free="description").n, \
+        "a free question is asked open, and one that only looks listable says it is free"
     assert Todos(record, actor=AGENT).ask(row.n, "Tag it as 5.2?").n, "once it is closed the row may ask again"
     open_one = Questions(record, actor=AGENT).create("Which port should the viewer use?")
     assert f"question {open_one.n} already asks this" in refused(lambda: Questions(record, actor=AGENT).create("Which port should the viewer use?")), \

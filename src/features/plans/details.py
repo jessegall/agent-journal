@@ -83,7 +83,7 @@ class PlansDetails(FeatureDetails):
                 {{rows}}. Look at what each waits on: unblock one that can go on now (journal todo unblock
                 <n>) and work it; a choice the user delegated to you, or one an earlier answer already settles,
                 is yours to decide now: decide it, say so on its row, and go on; make only a choice nobody has
-                settled a question, with journal todo ask <n> "<who decides what>"; keep the reason of the rest up
+                settled a question, with journal todo ask <n> "<who decides what>" --set options='[...]' --set pick=<n>; keep the reason of the rest up
                 to date. Then take the next ready row: a blocked row never ends the turn, and once only blocked
                 rows are left in a phase, every later phase's rows whose own waits are done are ready.
             """,

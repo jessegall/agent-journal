@@ -2,7 +2,7 @@ import json
 
 from engine.journal_calls import calls, pieces
 from engine.reach import Reach
-from features.ask_questions.choices import restates
+from features.ask_questions.choices import enumerable, restates
 from features.parts import ActionInterceptor, AgentContext, Context, ToolInterceptor
 from resources.base import AGENT, titled
 from resources.shapes import normalize_options
@@ -104,4 +104,15 @@ class OneAskPerRow(ActionInterceptor):
             return None
         if any(button.choice for button in unspent(rows.peek(int(n)))):
             controller._refuse(f"{kind} {n} already asks this through its buttons: wait for that answer, or take its buttons off first")
+        return None
+
+
+class OptionsWhenEnumerable(ActionInterceptor):
+    def intercept(self, feature_context: Context, controller, title: str = "", abstract: str = "", brief: str = "", **data):
+        if controller.type != "question" or controller.actor != AGENT or given_options(data.get("options")) or data.get("free"):
+            return None
+        if enumerable(title):
+            controller._refuse("this question has answers you can list (a yes or no, a which, or alternatives joined by or): give them with "
+                               "--set options='[{\"title\": \"...\", \"text\": \"...\"}]' --set pick=<n>, or decide it yourself when an earlier answer settles it; "
+                               "a question is open only for a name, a secret or a free description, and then says so with --set free=name|secret|description")
         return None
