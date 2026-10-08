@@ -332,10 +332,16 @@ class Helpers(Controller):
         if not place:
             raise Refused(f"helper {n}, {row.name}, has no environment left to stop")
         rows = unmarked(self.record, row)
-        stopped = places.stop(place.n) if agent_runs(self.record, row) else f"helper {n}, {row.name}, has no agent running; finish it"
+        stopped = self._stopped(row, places, place)
         give_back(self.record, rows)
         Agents(self.record, actor=SYSTEM)._mark_primary(f"Stopped helper {n}", name=row.name, icon="bot")
         return f"{stopped}{given_back(rows)}"
+
+    def _stopped(self, row, places: Environments, place) -> str:
+        if not agent_runs(self.record, row):
+            return f"helper {row.n}, {row.name}, has no agent running; finish it"
+        places.stop(place.n)
+        return f"helper {row.n}, {row.name}: its agent is stopped"
 
     @action(network=True)
     def complete(self, n: int, how: str = "", **data):
