@@ -23,6 +23,8 @@ UP, DOWN = "up", "down"
 BLOCKED, FAILED, NOT_NEEDED = "blocked", "failed", "not needed"
 RESTING = (BLOCKED, FAILED, NOT_NEEDED, "stopped", "exited")
 NEEDED_FOR = 600.0
+NOT_READY_FOR = 15.0
+NOT_READY = (126, 127)
 ASKED_WITHIN = 10.0
 BACKOFF = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
 KEEPER_EXIT = 3.0
@@ -323,15 +325,19 @@ class Manager:
     def unneeded(self, spec: ServiceSpec, now: float) -> str:
         if not spec.when:
             return ""
-        asked, why = self.needed.get(spec.id, (0.0, ""))
-        if now - asked < NEEDED_FOR:
+        asked, why, kept = self.needed.get(spec.id, (0.0, "", NEEDED_FOR))
+        if now - asked < kept:
             return why
+        kept = NEEDED_FOR
         try:
             ran = subprocess.run(spec.when, shell=True, cwd=self.root.parent, env={**os.environ, **spec.env}, capture_output=True, text=True, timeout=ASKED_WITHIN)
-            why = "" if ran.returncode == 0 else f"not needed here: {spec.when} answered {ran.returncode}{excerpt(ran.stdout)}"
+            if ran.returncode in NOT_READY:
+                why, kept = f"not ready yet: {spec.when} answered {ran.returncode}{excerpt(ran.stdout)}", NOT_READY_FOR
+            else:
+                why = "" if ran.returncode == 0 else f"not needed here: {spec.when} answered {ran.returncode}{excerpt(ran.stdout)}"
         except (OSError, subprocess.SubprocessError) as e:
             why = f"not needed here: {spec.when} could not be asked ({e})"
-        self.needed[spec.id] = (now, why)
+        self.needed[spec.id] = (now, why, kept)
         return why
 
     def crashed(self, sid: str, now: float) -> None:

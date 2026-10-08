@@ -501,6 +501,11 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten(monkeypatch):
     assert keeper.one(spec("flaky.web")) is False, "and is left alone until the wait is over"
     asked = spec("asked.web", when="exit 3")
     assert "answered 3" in keeper.unneeded(asked, now[0]) and "answered 3" in keeper.unneeded(asked, now[0] + 1.0), "a service that is not needed here says what the check answered, and the answer is kept for a while"
+    marker = record.root / "release-binary"
+    unready = spec("unready.web", when=f"test -e {marker} || exit 127")
+    assert "not ready yet" in keeper.unneeded(unready, now[0]), "a check whose command is not there yet says the service is not ready, not that it is not needed"
+    marker.write_text("")
+    assert keeper.unneeded(unready, now[0] + 16.0) == "", "and is asked again within seconds, so the service starts once the plugin's setup has written the command"
     from engine import services
     monkeypatch.setattr(services, "ASKED_WITHIN", 0.2)
     unaskable = spec("unaskable.web", when="sleep 5")
