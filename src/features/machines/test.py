@@ -1,4 +1,6 @@
 import importlib
+import re
+from pathlib import Path
 import shutil
 
 import pytest
@@ -175,8 +177,15 @@ def test_keys_hashes_and_tokens_never_travel_to_another_machine():
         f"every field named like a key, hash, token or password is withheld from the sync, or belongs to a row that stays: {sorted(declared - kept - stays)}"
     assert (travels("record/runtime/sock"), travels("phone-push.json"), travels("a/vault/owner.json"), travels("todo/1.json")) == (False, False, False, True), \
         "the files that hold keys and live state stay on their machine"
-    assert (travelling("phone", {"key": "x"}), travelling("share", {"target": "doc:1", "token": "t", "password": "p"})) == (None, {"target": "doc:1"}), \
+    assert (travelling("phone", {"key": "x"}, Path("/p")), travelling("share", {"target": "doc:1", "token": "t", "password": "p"}, Path("/p"))) == (None, {"target": "doc:1"}), \
         "a phone never travels, and a share travels without its token or password"
+    from engine.sync import relative, utc_minute
+    project = Path("/home/a/project")
+    assert (relative("/home/a/project/.claude/worktrees/x", project), relative("/home/a/.claude/projects/t.jsonl", project), relative("src/a.py", project)) == \
+        (".claude/worktrees/x", "", "src/a.py"), "a path inside the project is written from its root, one outside it stays on its machine"
+    assert travelling("helper", {"checkout": "/home/a/project/platform", "worktree": "/home/a/elsewhere", "name": "Rhea"}, project) == \
+        {"checkout": "platform", "worktree": "", "name": "Rhea"}, "a row's folders are made relative before the first copy exists"
+    assert re.fullmatch(r"\d{4}-\d\d-\d\d \d\d:\d\d UTC", utc_minute()), "a date written into a row's text says it is UTC"
 
 
 def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_against_the_servers():
@@ -189,3 +198,4 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
         "a copy with another protocol number pulls everything again, whichever release it is"
     assert "too old" in refused(lambda: connect(Hello("2.100.0", Shape(0, frozenset())), server)), \
         "a copy from before the sync carried its checks on what never travels is refused, not brought along"
+
