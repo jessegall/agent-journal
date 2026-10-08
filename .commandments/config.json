@@ -23,7 +23,8 @@
         "PlainViewerScriptTextDetector",
         "PlainViewerPageTextDetector",
         "SentenceLabelDetector",
-        "SentenceLabelScriptDetector"
+        "SentenceLabelScriptDetector",
+        "SearchMarkLabelDetector"
     ],
     "parallel": 2,
     "configure": {

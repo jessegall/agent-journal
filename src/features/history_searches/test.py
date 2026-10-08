@@ -18,11 +18,11 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
                     "journal todo all", "grep journal search.py", 'journal search --page 2 "second page"'):
         assert run(command) == "", "a mark never holds the call"
     marks = [(card["label"], card.get("title", "")) for card in Agents(record, actor=SYSTEM).load(agent.n).data.get("cards") or []]
-    assert marks == [("Conversation search", "'phone link'"), ("Conversation history", "before the last compaction"), ("Message history", "your messages"),
-                     ("Conversation search", "'second page'")], marks
+    assert marks == [("Searched the conversation", "'phone link'"), ("Read the conversation history", "before the last compaction"), ("Searched your messages", ""),
+                     ("Searched the conversation", "'second page'")], marks
     run("journal message search assign | head")
     last = (Agents(record, actor=SYSTEM).load(agent.n).data.get("cards") or [])[-1]
-    assert (last["label"], last["title"]) == ("Message search", "'assign'"), "searching one kind of row names that kind and what was searched for"
+    assert (last["label"], last["title"]) == ("Searched messages", "'assign'"), "searching one kind of row names that kind and what was searched for"
     import json
     from commands.cli import captured
     from providers.claude import Claude

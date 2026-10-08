@@ -15,7 +15,7 @@ class HistorySearchesDetails(FeatureDetails):
 
     help = """
         When the agent runs journal search, journal conversation or journal user, the chat shows a mark
-        naming the tool and what it looked for, such as "Conversation search 'tunler'",
-        "Message search 'assign'", "Conversation history before the last compaction" or
-        "Message history your messages", so you can see it looking before it answers.
+        saying what it did and what it looked for, such as "Searched the conversation 'tunler'",
+        "Searched messages 'assign'", "Read the conversation history before the last compaction" or
+        "Searched your messages", so you can see it looking before it answers.
     """

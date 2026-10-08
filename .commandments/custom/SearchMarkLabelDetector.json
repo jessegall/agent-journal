@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "name": "SearchMark"
+                        }
+                    ]
+                }
+            },
+            {
+                "textMatches": "(?i)^\\s*(\\S+ ){0,2}search$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "search-mark-label",
+        "description": "A chat mark for a search is titled '<Noun> search' and says nothing of what was done.",
+        "rule": "A mark says what the agent did, in plain words: 'Searched to-dos', 'Searched messages', 'Searched the conversation', 'Searched your messages', with the term beside it.",
+        "skill": "plain-viewer-text"
+    }
+}
