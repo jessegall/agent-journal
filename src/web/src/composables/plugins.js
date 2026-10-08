@@ -1,4 +1,5 @@
-import {computed} from "vue";
+import {computed, ref, watch} from "vue";
+import {api} from "../api/client.js";
 import {rows} from "../sync/rows.js";
 
 export const pluginFrom = (p) => ({
@@ -25,9 +26,9 @@ export const pluginFrom = (p) => ({
     })),
 });
 
-export const installedPlugins = () =>
-    computed(() =>
-        rows("plugin")
-            .filter((p) => !p.completed && !p.deleted)
-            .map(pluginFrom)
-    );
+export function installedPlugins() {
+    const whole = ref([]);
+    const load = () => api.list("plugin").then((got) => (whole.value = got.rows || []));
+    watch(() => rows("plugin").map((p) => `${p.n}:${p.updated}`).join(","), load, {immediate: true});
+    return computed(() => whole.value.filter((p) => !p.completed && !p.deleted).map(pluginFrom));
+}

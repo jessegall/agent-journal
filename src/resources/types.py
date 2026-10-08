@@ -487,6 +487,7 @@ class Plugin(Shape, Resource):
         Field(name="token"),
         Field(NUMBER, 0.0, name="read_at"),
     ]
+    light_in_dashboard = {"manifest": ("name", "version", "title", "description", "dashboards")}
     type = "plugin"
     event_labels = {"created": "Plugin installed", "completed": "Plugin closed"}
     status_labels = {"complete": "removing"}

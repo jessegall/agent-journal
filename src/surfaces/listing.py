@@ -44,6 +44,18 @@ class ListedRows(TypedDict):
     more: bool
 
 
+def lightened(controller, listed: ListedRows) -> ListedRows:
+    """The dashboard's rows keep only the named keys of the heavy fields their resource declares; the whole row is one request of its own."""
+    keeps = controller.resource.light_in_dashboard
+    if not keeps:
+        return listed
+
+    def light(row: dict) -> dict:
+        data = {**row["data"], **{field: {key: row["data"][field][key] for key in kept if key in row["data"][field]} for field, kept in keeps.items() if field in row["data"]}}
+        return {**row, "data": data}
+    return {**listed, "rows": [light(row) for row in listed["rows"]]}
+
+
 def listing(controller, record, wanted: Listing) -> ListedRows:
     summaries, stamp = controller.rows.summaries(), settled(record)
 
