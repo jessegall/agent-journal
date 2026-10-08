@@ -19,7 +19,7 @@ def skipped(record) -> bool:
 
 
 def set_skipped(record, on: bool) -> None:
-    record.set_setting(SETTING, {**record.setting(SETTING, {}), "skip": on})
+    record.change_setting(SETTING, {"skip": on})
 
 
 def prompted(record) -> None:

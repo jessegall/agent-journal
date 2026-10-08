@@ -43,7 +43,7 @@ def apply(record: Record, body: dict, actor: str) -> dict:
                                      **{n: o for n, o in asked.items() if "." in n}})
             continue
         if key == Record.viewer and isinstance(value, dict):
-            record.set_setting(key, {**record.viewer, **value})
+            record.change_setting(key, value)
             continue
         record.set_setting(key, value)
     for name in body:

@@ -120,4 +120,4 @@ def slate_of(record: Record) -> bool:
 
 
 def remember(record: Record, answer: bool) -> None:
-    record.set_setting(KEY, {**state(record), "last": answer})
+    record.change_setting(KEY, {"last": answer})

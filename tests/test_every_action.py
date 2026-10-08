@@ -453,6 +453,12 @@ def test_project_rows_made_at_once_from_two_environments_never_share_a_number():
         for thread in runs:
             thread.join()
         assert len(made) == len(set(made)), f"{type_} rows made at once from two environments share a number: {sorted(made)}"
+    first, second = Record(root, "east"), Record(root, "east")
+    first.setting("boards", {}), second.setting("boards", {})
+    first.change_setting("boards", {"orchestrating": True})
+    second.change_setting("boards", {"columns": 3})
+    assert Record(root, "east").setting("boards", {}) == {"orchestrating": True, "columns": 3}, \
+        "two writers that each read a setting before the other wrote it both keep their change"
 
 
 def test_every_type_with_its_own_word_for_create_is_created_over_http():
