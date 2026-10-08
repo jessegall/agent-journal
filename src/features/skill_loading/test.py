@@ -162,7 +162,7 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     assert call("Bash", command="journal plan phase 1 build --when done") == "", "once it is loaded, work goes on"
     from features.skill_loading.required import require
     from providers.transcript_cache import CACHE
-    require(record, "claude-1", {"journal-plans": datetime.now(timezone.utc).timestamp()})
+    require(record, transcript.stem, {"journal-plans": datetime.now(timezone.utc).timestamp()})
     assert "Skill: journal-plans" in call("Read", file_path="x.py"), "a skill required again after its last load is asked for again"
     again = {**loaded, "timestamp": datetime.now(timezone.utc).isoformat()}
     with CACHE.lock(CACHE.fold_key(transcript, PROVIDERS["claude"]().skill_loads, dict)):
