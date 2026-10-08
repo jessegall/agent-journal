@@ -3,12 +3,14 @@ import math
 import threading
 from collections import Counter
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from http.cookies import SimpleCookie
-from urllib.parse import parse_qs, parse_qsl, urlsplit
+from urllib.parse import parse_qs, urlsplit
 from urllib.request import urlopen
 
-from commands.dispatch import dispatch, resolve
+from commands.dispatch import rendered, resolve
+from engine.record import Record
+from features.phone.controller import Phones
 from engine.color import identity
 from engine.fields import Loaded
 from engine.viewer import lately_running
@@ -16,16 +18,40 @@ from features.hosted_journal.settings import FromRecord, FromVault
 from features.hosted_journal.owner import MOST_EVERYWHERE, SHORTEST, Devices, Logins, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page
 from features.hosted_journal.vault import DiskFull, RefusalLog, Vault
-from features.phone.allow_list import Action, GenericPath, actions, post, reach
+from features.phone.allow_list import Action, GenericPath, post, reach
 from features.phone.desktop import Desktop, closed, encoded
 from features.sharing.origins import origins_of
 from features.trigger import DAY
-from resources.base import Refused
+from resources.base import USER, Refused
 
 COOKIE = "__Host-journal"
 DEVICE_COOKIE = "__Host-journal-device"
 DEVICE_DAYS = 365
-PHONE_OWNER_ACTIONS = frozenset(actions("phone", "connect disconnect allow_passkey refuse_passkey"))
+
+
+@dataclass(frozen=True)
+class PhoneRequest(Loaded):
+    """What the viewer sends when the owner connects, disconnects or answers a phone's Face ID request."""
+
+    n: int = 0
+    days: int = 7
+
+
+@dataclass(frozen=True)
+class PhonePath(Loaded):
+    """The environment and phone a phone action's address names."""
+
+    env: str = ""
+    n: int = 0
+
+
+PhoneAnswer = Callable[[Phones, PhoneRequest], object]
+PHONE_OWNER_ACTIONS: dict[Action, PhoneAnswer] = {
+    Action("phone", "connect"): lambda phones, asked: phones.connect(asked.days),
+    Action("phone", "disconnect"): lambda phones, asked: phones.complete(asked.n, "disconnected in the viewer"),
+    Action("phone", "allow_passkey"): lambda phones, asked: phones.allow_passkey(asked.n),
+    Action("phone", "refuse_passkey"): lambda phones, asked: phones.refuse_passkey(asked.n),
+}
 NEVER_FROM_OUTSIDE = frozenset((post("/api/run"), post("/api/upgrade"), post("/api/stop"), post("/api/hook/{provider}"), post("/api/update"),
                                 post("/api/journals/start"), post("/api/services/{id}")))
 STREAM = "text/event-stream"
@@ -135,7 +161,7 @@ class Visit:
 class Gateway:
     """The only way into a journal on a server: the owner's login in front of the full viewer, forwarded to the journal on the server itself."""
 
-    def __init__(self, settings: "FromRecord | FromVault", answered_here: frozenset[Action]) -> None:
+    def __init__(self, settings: "FromRecord | FromVault", answered_here: dict[Action, PhoneAnswer]) -> None:
         self.settings = settings
         self.answered_here = answered_here
         self.streams: Counter[str] = Counter()
@@ -257,26 +283,30 @@ class Gateway:
         size = visit.length()
         if size > (UPLOAD_LIMIT if visit.url.path.endswith("/upload") else BODY_LIMIT):
             return visit.refuse(413, "too large")
-        if self.answers_here(visit):
-            return self.answer_here(visit, visit.handler.rfile.read(size) if size else b"")
+        if phone := self.answered_by_phones(visit):
+            return self.answer_here(visit, *phone, visit.handler.rfile.read(size) if size else b"")
         if STREAM not in visit.handler.headers.get("Accept", ""):
             return Desktop(visit.handler, visit.handler.path, {}, VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
         return self.streamed(visit, hashed(token))
 
-    def answers_here(self, visit: Visit) -> bool:
-        """Whether the login page itself answers this owner's request, as it does for connecting a phone when it keeps the phones' keys."""
+    def answered_by_phones(self, visit: Visit) -> tuple[PhoneAnswer, PhonePath] | None:
+        """The owner's phone action this request reaches, which the login page answers itself when it keeps the phones' keys."""
         found = resolve(visit.handler.command, urlsplit(encoded(visit.url)).path)
-        return found is not None and reach(found[0], GenericPath.from_json(found[1])) in self.answered_here
+        if found is None:
+            return None
+        action = reach(found[0], GenericPath.from_json(found[1]))
+        if action not in self.answered_here:
+            return None
+        return self.answered_here[action], PhonePath.from_json(found[1])
 
-    def answer_here(self, visit: Visit, raw: bytes) -> None:
+    def answer_here(self, visit: Visit, answer: PhoneAnswer, path: PhonePath, raw: bytes) -> None:
         try:
-            body = json.loads(raw or b"{}")
-        except ValueError:
-            return visit.refuse(400, "the request body is not JSON")
-        reply = dispatch(visit.handler.command, urlsplit(encoded(visit.url)).path, visit.record.root, dict(parse_qsl(visit.url.query)), body)
-        visit.handler.send(reply.code, reply.bytes(), {**VIEWER_HEADERS, "Content-Type": reply.kind})
-        if reply.after:
-            reply.after()
+            asked = replace(PhoneRequest.from_json(json.loads(raw or b"{}")), n=path.n)
+            record = Record(visit.record.root, path.env)
+            body = rendered(answer(Phones(record, actor=USER), asked), record)
+        except (ValueError, Refused) as refused:
+            return visit.handler.send(400, json.dumps({"error": str(refused)}).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
+        return visit.handler.send(200, json.dumps(body).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json"})
 
     def streamed(self, visit: Visit, login: str) -> None:
         with self.lock:

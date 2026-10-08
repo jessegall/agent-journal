@@ -55,7 +55,7 @@ class HostedJournalFeature(Feature):
     def register(self, journal: Journal) -> None:
         # In the login page's own process, started apart, nothing in the record can switch off or change what guards it.
         guarding = None if self.apart else self
-        ROUTES.add(guarding, Gateway(self.gateway_settings, PHONE_OWNER_ACTIONS if self.apart else frozenset()), key=EVERY_OTHER)
+        ROUTES.add(guarding, Gateway(self.gateway_settings, PHONE_OWNER_ACTIONS if self.apart else {}), key=EVERY_OTHER)
         CLOSED.add(guarding, NEVER_FROM_OUTSIDE)
         ORIGINS.add(guarding, self.origins)
         ANSWERS_AT.add(guarding, self.address)
