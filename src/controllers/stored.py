@@ -4,10 +4,12 @@ import zipfile
 from bisect import bisect_left
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable, TypeVar
 from resources.base import MEMORY, OWNER, PART_OF, Missing, Refused, Resource
 from engine.stored import append_text, read_json, write_json, write_text
 from engine.memo import Memo
 
+T = TypeVar("T")
 DAMAGED = "damaged"
 DRAFT_OF = "draft_of"
 
@@ -153,11 +155,18 @@ class RowStore:
         return {int(line) for line in whole.splitlines() if line.isdigit()}, since + len(whole.encode())
 
     def numbers(self) -> list[int]:
-        folder = self.folder()
-        return sorted(set(self._stamps(folder)) | set(self.packed()))
+        return self._scanned(lambda folder: sorted(set(self._stamps(folder)) | set(self.packed())))
 
     def summaries(self) -> list[dict]:
-        folder = self.folder()
+        return self._scanned(self._summaries)
+
+    def _scanned(self, scan: Callable[[Path], T]) -> T:
+        try:
+            return scan(self.folder())
+        except FileNotFoundError:
+            return scan(self.record.remake_folder(self.type, self.resource.scope))
+
+    def _summaries(self, folder: Path) -> list[dict]:
         moved = self._moved(folder)
         held = SUMMARIES.get(str(folder))
         if held and held[0] == moved:
