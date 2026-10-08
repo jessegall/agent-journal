@@ -3,6 +3,6 @@ import {defineConfig} from "vitest/config";
 
 export default defineConfig({
     plugins: [vue()],
-    define: {__DEMO__: false, __DEMO_BUILD__: JSON.stringify("test")},
-    test: {environment: "jsdom", include: ["tests/**/*.test.js"], testTimeout: 10000, onUnhandledError: (error) => !String(error.message).includes("The test journal does not know this")},
+    define: {__DEMO__: false},
+    test: {environment: "jsdom", include: ["tests/**/*.test.js"], testTimeout: 10000},
 });
