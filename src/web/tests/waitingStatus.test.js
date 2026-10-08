@@ -64,6 +64,7 @@ describe("the message box edge", () => {
         const {into, state} = mounted(waiting);
         expect(into.querySelector(".legend").textContent).toContain("Waiting");
         expect(into.querySelector(".wait-edge").classList.contains("waiting")).toBe(true);
+        expect([into.querySelectorAll(".glow").length, into.querySelectorAll(".dash, svg").length]).toEqual([1, 0]);
         state.waiting = null;
         await flush();
         expect(into.querySelector(".note").textContent).toContain("The test suite finished");
