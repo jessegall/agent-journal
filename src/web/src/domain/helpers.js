@@ -96,3 +96,16 @@ export function helpersHolding(todos, helpers) {
     const held = todos.map((todo) => helperHolding(todo, helpers)).filter(Boolean);
     return held.filter((row, i) => held.findIndex((other) => other.n === row.n) === i);
 }
+
+export function holdingRuns(todos, helpers) {
+    const runs = [];
+    for (const todo of todos) {
+        const holder = helperHolding(todo, helpers);
+        const last = runs.at(-1);
+        if (last && holder && last.holder && last.holder.n === holder.n) last.rows.push(todo);
+        else runs.push({holder: holder || null, rows: [todo]});
+    }
+    return runs;
+}
+
+export const grouped = (run) => Boolean(run.holder) && run.rows.length > 1;

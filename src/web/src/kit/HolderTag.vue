@@ -1,13 +1,17 @@
 <script setup>
-defineProps({name: {type: String, required: true}, state: {type: String, default: ""}, word: {type: String, required: true}});
+defineProps({name: {type: String, required: true}, state: {type: String, default: ""}, word: {type: String, default: ""}, closed: Boolean});
 const emit = defineEmits(["open"]);
 </script>
 
 <template>
-    <button type="button" class="holder" :title="`Open ${name}'s inspector`" @click="emit('open')">
-        <span :class="['holder-dot', state]" />
+    <button type="button" :class="['holder', {closed}]" :title="`Open ${name}'s inspector`" @click="emit('open')">
+        <template v-if="!closed">
+            <span :class="['holder-dot', state]" />
+        </template>
         <span class="holder-name">{{ name }}</span>
-        <span class="holder-word">{{ word }}</span>
+        <template v-if="word && !closed">
+            <span class="holder-word">{{ word }}</span>
+        </template>
     </button>
 </template>
 
@@ -53,6 +57,10 @@ const emit = defineEmits(["open"]);
 
 .holder-name {
     color: var(--text);
+}
+
+.holder.closed .holder-name {
+    color: var(--text-2);
 }
 
 .holder-word {
