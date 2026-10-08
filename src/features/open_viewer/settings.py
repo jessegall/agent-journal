@@ -1,5 +1,5 @@
 import features
-from controllers.features import check_choices, refuse_a_secret
+from controllers.features import check_choices, refuse_a_secret, refuse_a_secret_that_runs_commands
 from controllers.types import Features, Nudges
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
@@ -33,6 +33,7 @@ def apply(record: Record, body: dict, actor: str) -> dict:
         if isinstance(values, dict):
             check_choices(name, values)
             refuse_a_secret(name, values, actor)
+            refuse_a_secret_that_runs_commands(record, name, values)
     before = switches(record)
     for key, value in body.items():
         if key == Record.features and isinstance(value, dict):
@@ -47,9 +48,7 @@ def apply(record: Record, body: dict, actor: str) -> dict:
             record.change_setting(key, value)
             continue
         record.set_setting(key, value)
-    for name in body:
-        if name in features.FEATURES:
-            features.FEATURES[name].settings_changed(record, actor)
+    features.settings_changed(record, body, actor)
     if "boards" in body:
         written(record.root.parent, record)
     rebuild(record)

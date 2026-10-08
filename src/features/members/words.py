@@ -9,7 +9,10 @@ from resources.base import OWNER_ID, SECTION, USER, WRITER, Resource
 
 TEXTS = ("title", "abstract", "brief", "outcome")
 TAG = re.compile(r"</?untrusted\b[^>]*>")
-MARKED = re.compile(r'<untrusted (?:member="[^"]*"|source="[^"]*"(?: author="[^"]*")?)>(.*?)</untrusted>', re.S)
+MEMBER_MARKED = re.compile(r'<untrusted member="[^"]*">(.*?)</untrusted>', re.S)
+SOURCE_MARKED = re.compile(r'<untrusted source="[^"]*"(?: author="[^"]*")?>(.*?)</untrusted>', re.S)
+IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)\s]*)[^)]*\)")
+HTML_IMAGE = re.compile(r"<img\b[^>]*>", re.I)
 QUOTE = re.compile(r'["<>]')
 
 
@@ -44,8 +47,13 @@ def marked_from(text: str, outside: Outside) -> str:
     return f'<untrusted source="{QUOTE.sub("", outside.source)}"{author}>{TAG.sub("", text)}</untrusted>'
 
 
+def without_images(text: str) -> str:
+    """An outside source's words with each image shown as a link, so reading them loads nothing from the source's host."""
+    return HTML_IMAGE.sub("(image removed)", IMAGE.sub(lambda found: f"[{found[1] or 'image'} (image)]({found[2]})", text))
+
+
 def unmarked(text: str, record=None) -> str:
-    return MARKED.sub(r"\1", text)
+    return MEMBER_MARKED.sub(r"\1", SOURCE_MARKED.sub(lambda found: without_images(found[1]), text))
 
 
 def texts_of(row: Resource) -> set[str]:
