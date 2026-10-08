@@ -397,13 +397,18 @@ class Gateway:
     def end_logins_of(self, vault: Vault, member: str) -> int:
         """Ends every login of this member and cuts the live streams their browsers hold open, so nothing of theirs stays connected."""
         ended = Logins(vault).close_member(member)
+        self.cut_streams_of(member)
+        return ended
+
+    def cut_streams_of(self, member: str) -> int:
+        """Cuts the live streams a member's browsers hold open; a browser whose login still stands opens a new one, under what holds now."""
         with self.lock:
             streams = list(self.live.pop(member, ()))
         for stream in streams:
             # A stream that closed by itself in the meantime is already ended.
             with suppress(OSError):
                 stream.shutdown(socket.SHUT_RDWR)
-        return ended
+        return len(streams)
 
     def connected(self, now: float) -> frozenset[str]:
         """Who has the journal open: a live stream from their browser, or a request in the last two minutes."""

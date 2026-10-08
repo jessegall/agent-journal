@@ -88,9 +88,9 @@ class MemberLogins:
 
     def owner_actions(self, gateway: Gateway) -> dict[tuple[str, str], PageHandler]:
         return {("POST", "/api/hosting/members"): self.invite,
-                ("POST", "/api/hosting/members/role"): self.assign, ("POST", "/api/hosting/members/remove"): partial(self.remove, gateway),
+                ("POST", "/api/hosting/members/role"): partial(self.assign, gateway), ("POST", "/api/hosting/members/remove"): partial(self.remove, gateway),
                 ("POST", "/api/hosting/members/end-logins"): partial(self.end_logins, gateway),
-                ("POST", "/api/hosting/members/environments"): self.share}
+                ("POST", "/api/hosting/members/environments"): partial(self.share, gateway)}
 
     def refusal(self, visit: Visit, login: KeptLogin) -> str | None:
         member = Roster(visit.vault).present(login.member)
@@ -198,10 +198,11 @@ class MemberLogins:
         visit.vault.audit("member invited", place=visit.place(), member=made.member.id)
         return visit.json(201, {"member": made.member.summary(), "link": f"{visit.origin()}/join?code={made.code}"})
 
-    def assign(self, visit: Visit) -> None:
+    def assign(self, gateway: Gateway, visit: Visit) -> None:
         asked = visit.asked(Assigned)
         member = Roster(visit.vault).assign(asked.member, Role.named(asked.role))
         visit.vault.audit("member role changed", place=visit.place(), member=member.id, role=member.role)
+        gateway.cut_streams_of(member.id)
         return visit.json(200, {"member": member.summary()})
 
     def leave(self, gateway: Gateway, visit: Visit, login: KeptLogin) -> None:
@@ -231,11 +232,12 @@ class MemberLogins:
         visit.vault.audit("member's logins ended", place=visit.place(), member=member.id, logins_ended=ended)
         return visit.json(200, {"member": member.summary(), "ended": ended})
 
-    def share(self, visit: Visit) -> None:
+    def share(self, gateway: Gateway, visit: Visit) -> None:
         asked = visit.asked(Shared)
         unknown = [environment for environment in asked.environments if not known_environment(visit.record.root, environment)]
         if unknown:
             return visit.refuse(400, f"there is no environment {', '.join(unknown)}")
         member = Roster(visit.vault).share(asked.member, asked.environments)
         visit.vault.audit("member's environments changed", place=visit.place(), member=member.id, environments=list(member.environments))
+        gateway.cut_streams_of(member.id)
         return visit.json(200, {"member": member.summary()})

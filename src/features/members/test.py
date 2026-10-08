@@ -280,6 +280,20 @@ def test_a_member_sees_only_the_environments_the_owner_shares_in_lists_rows_sear
     assert hosted.call("GET", f"/api/{env}/environment/{garden.n}", Cookie=writer).status == 404
     assert not [hit for hit in json.loads(hosted.call("GET", f"/api/{env}/search?q=garden", Cookie=writer).text)["hits"] if hit["title"] == "garden"]
     assert "garden" not in [place["name"] for place in json.loads(hosted.call("GET", "/api/summary", Cookie=writer).text)["environments"]]
+    held = stream_of(hosted, writer)
+    cut = threading.Thread(target=drained, args=(held,))
+    cut.start()
+    assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "garden"]}, owner).status == 200
+    cut.join(5)
+    assert not cut.is_alive(), "changing what a member may see cuts the stream they hold open, so it reopens under what holds now"
+    assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env]}, owner).status == 200
+    held = stream_of(hosted, writer)
+    cut = threading.Thread(target=drained, args=(held,))
+    cut.start()
+    assert sent(hosted, "/api/hosting/members/role", {"member": bea, "role": "reader"}, owner).status == 200
+    cut.join(5)
+    assert not cut.is_alive(), "and so does changing their role"
+    assert sent(hosted, "/api/hosting/members/role", {"member": bea, "role": "writer"}, owner).status == 200
     assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "nowhere"]}, owner).status == 400
     assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "garden"]}, owner).status == 200
     assert hosted.call("GET", "/api/garden/todo", Cookie=writer).status == 200 and "garden" in titles(writer), "a shared environment opens from the next request"
