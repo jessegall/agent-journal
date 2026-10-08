@@ -73,6 +73,24 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on():
         assert quiet.due(1.0, YOUNG_AFTER) == (), "never while a request is being answered"
         assert quiet.due(1.0 + LONGEST_BUSY, YOUNG_AFTER) == (1,), "unless it has waited too long for a quiet moment"
     assert quiet.due(WHOLE_EVERY, 0) == (2,), "and everything is collected once a minute"
+    import gc
+
+    class OneTick:
+        def __init__(self):
+            self.asked = 0
+
+        def wait(self, seconds):
+            self.asked += 1
+            return self.asked > 1
+    times = iter([0.0, WHOLE_EVERY, WHOLE_EVERY])
+    collecting = QuietCollector(clock=lambda: next(times))
+    try:
+        collecting.run(OneTick())
+        assert (gc.isenabled(), collecting.whole_at, collecting.waiting_since) == (False, WHOLE_EVERY, 0.0), \
+            "the collector turns automatic collection off and, once a minute has gone by, collects everything and notes when"
+    finally:
+        gc.unfreeze()
+        gc.enable()
     log = record.root / "runtime" / "diagnostics.log"
     assert not log.exists(), "the diagnostic log is off by default"
     record.features = {**record.features, "dev_faults.log": True}
