@@ -38,7 +38,7 @@ async function noticeShown(page, url, title) {
 
 async function openCard(page, url) {
     await page.goto(`${url}#/main/settings`);
-    await page.getByRole("tab", {name: "Sharing"}).click();
+    await page.getByRole("tab", {name: "Phone and share links"}).click();
     await page.getByText("Connection to a server").first().waitFor({timeout: 30000});
 }
 
