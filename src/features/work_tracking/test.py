@@ -242,11 +242,17 @@ def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     parked = f"work {first.n}, the slow build, is still parked - can you continue it now?"
     assert nudges(record)[-1] == parked, "ending work reminds the agent of the work it parked"
     todos.complete(todos.create("a row done right after").n, how="done")
-    assert nudges(record).count(parked) == 1, "not again within the minute, so closing several at once says it once"
-    record.state("work_tracking").set("parked_named", 0)
+    assert nudges(record).count(parked) == 1, "closing more rows right after does not name it again"
     report(record, "working", "PostToolUse")
     todos.complete(todos.create("a row done later").n, how="done")
-    assert nudges(record).count(parked) == 2, "later, closing a to-do reminds it too"
+    assert nudges(record).count(parked) == 1, "nor does a later stop: parked work is the agent's choice, named once"
+    next_up = todos.create("ready to take")
+    works.action("resume")(first.n)
+    works.action("park")("the build takes two hours")
+    todos.complete(todos.create("a row done while another is ready").n, how="done")
+    assert nudges(record).count(parked) == 1, "while another to-do is ready, parked work is not named"
+    todos.complete(next_up.n, how="done")
+    assert nudges(record).count(parked) == 2, "once nothing else is ready, work parked again is named once more"
 
     record.set_setting("work_tracking", {"ask_blocked_every": 2})
     base, extra = todos.create("the base"), todos.create("another base")
