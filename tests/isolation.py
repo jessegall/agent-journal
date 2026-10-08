@@ -1,9 +1,11 @@
+import fcntl
 import os
 import shutil
 import signal
 import socket
 import sys
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -41,6 +43,19 @@ def base() -> Path:
 def world() -> Path:
     where = base() / worker()
     where.mkdir(parents=True, exist_ok=True)
+    return where
+
+
+def shared(name: str, make: Callable[[Path], None]) -> Path:
+    """A folder the first worker to ask makes once for the whole run, and every worker reads."""
+    where = base() / name
+    with open(base() / f"{name}.lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if not where.is_dir():
+            making = base() / f"{name}.making"
+            shutil.rmtree(making, ignore_errors=True)
+            make(making)
+            making.rename(where)
     return where
 
 
