@@ -119,9 +119,17 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
     project = record.root.parent
     own = {"command": "npx", "args": ["@playwright/mcp", "--browser", "chrome"]}
     (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"browser": own}}))
-    row = Secrets(record, actor=USER).create("Staging", kind="login")
-    said = Secrets(record, actor=AGENT).login("staging", "https://staging.example.com")
-    Secrets(record, actor=AGENT).login("Staging", "https://staging.example.com")
+    secrets = Secrets(record, actor=USER)
+    agent = Secrets(record, actor=AGENT)
+    assert "needs the site's address" in refused(lambda: agent.request("Staging", "to check the deploy", kind="browser login")), "a login is asked for with its address"
+    row = agent.request("Staging", "to check the deploy", kind="browser login", url="https://staging.example.com")
+    asked = next(m for m in Messages(record, actor=SYSTEM).rows.every() if m.title == "I want to log in on Staging, can you do that?")
+    assert asked.data["buttons"] == [{"label": "Log in", "type": "secret", "n": row.n, "action": "login", "outcome": "Logged in to Staging"}], \
+        "the agent's request puts a Log in button in the chat"
+    assert "only you log in" in refused(lambda: agent.login(row.n)) and opened == [], "the agent never opens the login itself"
+    from features.message_buttons.pressing import press
+    press(record, asked, "Log in", secrets.actor, "viewer")
+    said = secrets.login(row.n)
     logins = BrowserLogins(record.root)
     merged = json.loads(logins.merged.read_text())
     assert opened[0][:4] == ["npx", "-y", "playwright@latest", "open"] and "Restart the agent once" in said, "the browser opens for the user, and the agent is told to restart once"
@@ -134,7 +142,8 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
         "any other Playwright tool Claude Code starts, such as a plugin's, reads the saved logins from the agent's environment"
     codex = (project / ".codex" / "config.toml").read_text()
     assert "[mcp_servers.playwright]" in codex and f'"--storage-state", "{logins.merged}"' in codex, "Codex's browser tool starts from the saved logins too"
-    assert Secrets(record, actor=SYSTEM).load(row.n).session_expires == 2_000_000_000.0, "the secret records when its login runs out"
+    assert (Secrets(record, actor=SYSTEM).load(row.n).session_expires, Secrets(record, actor=SYSTEM).load(row.n).asked) == (2_000_000_000.0, ""), \
+        "the secret records when its login runs out, and no longer waits"
     from providers import PROVIDERS
     from runner.hooks import handle
     reason = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "cwd": str(record.root.parent),

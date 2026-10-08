@@ -5,14 +5,47 @@ export const KEPT_DAYS = 30;
 const DAY = 86400;
 
 export const KINDS = [
-    {key: "api key", title: "API key", icon: "key", line: "One key a service gave you, such as a token.", fields: [{name: "key", hidden: true}]},
-    {key: "login", title: "Login", icon: "lock", line: "A username and a password for a site or a tool.", fields: [{name: "username", hidden: false}, {name: "password", hidden: true}]},
-    {key: "custom", title: "Custom", icon: "tools", line: "Any other values, with fields you name yourself.", fields: [{name: "", hidden: true}]},
+    {
+        key: "api key",
+        title: "API key",
+        icon: "key",
+        line: "One key a service gave you, such as a token.",
+        fields: [{name: "key", hidden: true}],
+    },
+    {
+        key: "login",
+        title: "Login",
+        icon: "lock",
+        line: "A username and a password for a site or a tool.",
+        fields: [
+            {name: "username", hidden: false},
+            {name: "password", hidden: true},
+        ],
+    },
+    {
+        key: "custom",
+        title: "Custom",
+        icon: "tools",
+        line: "Any other values, with fields you name yourself.",
+        fields: [{name: "", hidden: true}],
+    },
 ];
 
-export const kindOf = (row) => KINDS.find((k) => k.key === row.data.kind) || KINDS[2];
+const BROWSER_LOGIN = {
+    key: "browser login",
+    title: "Browser login",
+    icon: "lock",
+    line: "A site the agent's browser stays logged in to, after you log in once.",
+    fields: [],
+};
 
-export const variableOf = (title, name) => `${title}_${name}`.toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+export const kindOf = (row) => [...KINDS, BROWSER_LOGIN].find((k) => k.key === row.data.kind) || KINDS[2];
+
+export const variableOf = (title, name) =>
+    `${title}_${name}`
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
 
 export const fieldsOf = (row) => row.data.secret_fields || [];
 
@@ -23,6 +56,7 @@ export const isWaiting = (row) => fieldsOf(row).some((field) => !isSet(row, fiel
 export const asking = (rows) => rows.filter((row) => row.data.asked && isWaiting(row));
 
 export function whenWords(row) {
+    if (row.data.kind === BROWSER_LOGIN.key) return row.data.session ? `Logged in ${ago(row.data.session)}` : "Not logged in yet";
     const used = row.data.used;
     if (used) return `Last used ${ago(used)}`;
     const filled = Object.values(row.data.filled || {});

@@ -36,6 +36,7 @@ class Button(Loaded):
     say: str = ""
     choice: str = ""
     ask: str = ""
+    outcome: str = ""
 
     @classmethod
     def from_payload(cls, given: dict) -> "Button":
@@ -44,7 +45,7 @@ class Button(Loaded):
 
     def to_json(self) -> dict:
         kept = {"label": self.label, "type": self.type, "action": self.action, "n": self.n, "body": self.body, "again": self.again,
-                "say": self.say, "choice": self.choice.strip(), "ask": self.ask.strip()}
+                "say": self.say, "choice": self.choice.strip(), "ask": self.ask.strip(), "outcome": self.outcome.strip()}
         return {key: value for key, value in kept.items() if value not in (None, False, "")}
 
 

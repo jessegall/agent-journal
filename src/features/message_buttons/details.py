@@ -30,7 +30,8 @@ class MessageButtonsDetails(FeatureDetails):
         button of that choice. The first button of a choice may carry "ask": the question the
         choice answers, shown above its buttons; without it the card says "Choose one".
         --set pick=<its number> on the row names the button you would pick, counting the buttons from 1;
-        the card marks it as the agent's pick.
+        the card marks it as the agent's pick. "outcome" on a button is what the card says once
+        it has run, such as "Logged in to Staging", in place of the command it ran.
 
         A document or a report you write can carry buttons too, with --set buttons when you create it.
         A button with "say" instead of a command sends that text to you as the user's message about

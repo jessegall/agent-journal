@@ -27,7 +27,9 @@ class Secrets(Controller):
         return super().create(title, abstract, brief, kind=chosen.value, **{"secret_fields": chosen.fields(title), **data})
 
     @action
-    def request(self, title: str, why: str, kind: str = Kind.API_KEY.value) -> Secret:
+    def request(self, title: str, why: str, kind: str = Kind.API_KEY.value, url: str = "") -> Secret:
+        if Kind.named(kind) is Kind.BROWSER_LOGIN:
+            return self._login_asked(title, why, url)
         row = self.create(title, kind=kind, asked=why)
         Messages(self.record, actor=AGENT).create(f"Please fill in the secret {title}", brief=f"I need it {why}. Fill it in on the Secrets page, never in the chat.\n\nsecret {row.n}")
         return row
@@ -66,19 +68,32 @@ class Secrets(Controller):
         return ""
 
     @action(here=True)
-    def login(self, name: str, url: str) -> str:
-        row = self._named(name)
+    def login(self, n: int) -> str:
+        if self.actor != USER:
+            self._refuse("only you log in, with the Log in button in the chat: ask for it with journal secret request --kind 'browser login' --url <address>")
+        row = self.load(n)
+        if not row.url:
+            raise Refused(f"secret {row.n}, {row.title}, has no site address to log in to")
         logins = BrowserLogins(self.record.root)
-        saved = logins.record(row.title, url)
+        saved = logins.record(row.title, row.url)
         merged = logins.merge()
         rewired = [provider().browser_logins(self.record.root.parent, merged) for provider in PROVIDERS.values()]
-        self.update(row.n, session=time.time(), session_expires=logins.expires(saved))
+        self.update(row.n, session=time.time(), session_expires=logins.expires(saved), asked="")
         restart = " Restart the agent once so its browser tool reads the saved logins." if any(rewired) else ""
-        return f"saved: the agent's own browser starts logged in to {url} from its next start.{restart}"
+        return f"saved: the agent's own browser starts logged in to {row.url} from its next start.{restart}"
 
     @action
     def where(self) -> str:
         return str(ValuesFile(self.record.root).path)
+
+    def _login_asked(self, title: str, why: str, url: str) -> Secret:
+        if not url:
+            raise Refused("a browser login needs the site's address: journal secret request <name> <why> --kind 'browser login' --url <address>")
+        row = self.create(title, kind=Kind.BROWSER_LOGIN.value, asked=why, url=url)
+        button = {"label": "Log in", "type": self.type, "n": row.n, "action": "login", "outcome": f"Logged in to {title}"}
+        Messages(self.record, actor=AGENT).create(f"I want to log in on {title}, can you do that?", buttons=[button],
+                                                  brief=f"I need it {why}. Log in opens a browser on {url}: log in there and close its window, and my browser keeps the login.\n\nsecret {row.n}")
+        return row
 
     def _stored(self, row: Secret, field: str, value: str) -> Secret:
         if not value:
