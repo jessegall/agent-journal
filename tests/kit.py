@@ -1,4 +1,3 @@
-import os
 import subprocess
 import sys
 import threading
@@ -8,9 +7,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from controllers.types import Agents, Nudges
-from install import UNVERIFIED
-from scripts.boot_guard import PROJECT
-from tests import isolation
 from engine.record import Record
 from resources.base import AGENT, SYSTEM
 from commands.cli import captured  # noqa: F401
@@ -124,28 +120,3 @@ def counted():
         yield ACTIVE.work
     finally:
         ACTIVE.work = None
-
-
-SOURCE = Path(__file__).resolve().parents[1] / "src"
-
-
-def installed(place: Path, code: Path) -> Path:
-    return install(place, code, {})
-
-
-def installed_to_start(place: Path, code: Path) -> Path:
-    """An install for a test that starts the build itself, so the installer does not start it once more to check it."""
-    return install(place, code, {UNVERIFIED: "1"})
-
-
-def install(place: Path, code: Path, env: dict) -> Path:
-    for agent in (".claude", ".codex"):
-        (place / PROJECT / agent).mkdir(parents=True)
-    subprocess.run([sys.executable, str(code / "install.py"), "upgrade", str(place / PROJECT)],
-                   env={**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1", **env}, capture_output=True, timeout=120, check=True)
-    return place / PROJECT / ".journal"
-
-
-def installed_once() -> Path:
-    """The run's one install of this build, which tests read or copy and never change."""
-    return isolation.shared("installed-once", lambda where: installed_to_start(where, SOURCE)) / PROJECT / ".journal"

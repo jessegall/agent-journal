@@ -13,7 +13,7 @@ import pytest
 
 from scripts.boot_guard import PROJECT
 from tests import phone_pages, shared_pages
-from tests.kit import installed_once
+from tests.conftest import installed_once
 
 HERE = Path(__file__).resolve().parents[1]
 CODE = HERE / "src"
