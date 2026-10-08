@@ -1,7 +1,22 @@
 <script setup>
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import {DOES, WHERE, doesOf, doesReason, plain, sentence, startedBy, whereReason} from "../domain/triggerWords.js";
+import {
+    DOES,
+    FACTS,
+    ONLY_WHEN,
+    REPEATS,
+    STATE_DOES,
+    WHEN,
+    WHERE,
+    doesOf,
+    doesReason,
+    factOf,
+    plain,
+    sentence,
+    startedBy,
+    whereReason,
+} from "../domain/triggerWords.js";
 import {open} from "../domain/records.js";
 import {ago} from "../format/time.js";
 import Btn from "../kit/Btn.vue";
@@ -11,6 +26,7 @@ import FormField from "../kit/FormField.vue";
 import InlineName from "../kit/InlineName.vue";
 import Notice from "../kit/Notice.vue";
 import TextArea from "../kit/TextArea.vue";
+import UnitTextInput from "../kit/UnitTextInput.vue";
 import ResourceBlock from "./ResourceBlock.vue";
 import TriggerSequences from "./TriggerSequences.vue";
 import WatchedWords from "./WatchedWords.vue";
@@ -39,6 +55,16 @@ const matches = computed(() => {
     return matched === 1 ? `Matched once, ${ago(last)}` : `Matched ${matched} times, last ${ago(last)}`;
 });
 const does = computed(() => doesOf(values.value.does));
+const state = computed(() => values.value.when === "state");
+const doings = computed(() => (state.value ? DOES.filter((option) => STATE_DOES.includes(option.value)) : DOES));
+const repeats = computed(() =>
+    REPEATS.some((r) => r.value === values.value.timing) ? REPEATS : [...REPEATS, {value: values.value.timing, label: `Every ${values.value.timing} minutes`}]
+);
+const textHelp = computed(() => {
+    if (values.value.does === "message") return "It reaches the chat as if you had typed it.";
+    return state.value ? "Write {{n}}, {{title}}, {{minutes}}, {{percent}} or {{count}} where it should say what was found." : "";
+});
+const pickable = (options, current) => options.map((option) => ({...option, current: option.value === current}));
 const choices = (options, current, unavailable) =>
     options.map((option) => ({...option, current: option.value === current, unavailable: readonly.value ? "" : unavailable[option.value]}));
 
@@ -51,6 +77,11 @@ async function commit(patch) {
     } catch (e) {
         error.value = e.message;
     }
+}
+
+function pickWhen(value) {
+    const leave = value === "state" && !STATE_DOES.includes(values.value.does);
+    commit({when: value, ...(leave ? {does: "nudge"} : {})});
 }
 
 function pickDoes(value) {
@@ -106,22 +137,50 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                 <span class="sum-matched">{{ matches }}</span>
             </template>
         </div>
-        <ResourceBlock heading="When these words appear">
-            <WatchedWords
-                ref="when"
-                :words="values.words || []"
-                :words-in="values.words_in || 'both'"
-                :scopes="WHERE"
-                :unavailable="whereReason(values)"
-                :readonly="readonly"
-                @words="(words) => commit({words})"
-                @where="(words_in) => commit({words_in})"
-            />
+        <ResourceBlock heading="What it watches">
+            <ChoiceList stacked :choices="pickable(WHEN, values.when || 'words')" :disabled="readonly" @pick="pickWhen" />
         </ResourceBlock>
+        <template v-if="state">
+            <ResourceBlock heading="When this is true in the journal">
+                <div class="then">
+                    <FormField label="What is true">
+                        <ChoiceList stacked :choices="pickable(FACTS, values.fact)" :disabled="readonly" @pick="(fact) => commit({fact})" />
+                    </FormField>
+                    <FormField label="Past how much">
+                        <UnitTextInput
+                            type="number"
+                            min="0"
+                            :value="values.over"
+                            :unit="factOf(values.fact).unit"
+                            :disabled="readonly"
+                            aria-label="Past how much"
+                            @change="commit({over: Number($event.target.value)})"
+                        />
+                    </FormField>
+                    <FormField label="While the agent is">
+                        <ChoiceList :choices="pickable(ONLY_WHEN, values.only_when || 'any')" :disabled="readonly" @pick="(only_when) => commit({only_when})" />
+                    </FormField>
+                </div>
+            </ResourceBlock>
+        </template>
+        <template v-else>
+            <ResourceBlock heading="When these words appear">
+                <WatchedWords
+                    ref="when"
+                    :words="values.words || []"
+                    :words-in="values.words_in || 'both'"
+                    :scopes="WHERE"
+                    :unavailable="whereReason(values)"
+                    :readonly="readonly"
+                    @words="(words) => commit({words})"
+                    @where="(words_in) => commit({words_in})"
+                />
+            </ResourceBlock>
+        </template>
         <ResourceBlock heading="What happens next">
             <div class="then">
                 <FormField label="What this trigger does">
-                    <ChoiceList stacked :choices="choices(DOES, values.does, doesReason(values))" :disabled="readonly" @pick="pickDoes" />
+                    <ChoiceList stacked :choices="choices(doings, values.does, doesReason(values))" :disabled="readonly" @pick="pickDoes" />
                     <template v-if="!readonly && values.words_in === 'user'">
                         <p class="help">
                             Blocking works on the agent's actions, not on your messages.
@@ -149,7 +208,7 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                     />
                 </template>
                 <template v-else>
-                    <FormField :label="does.ask" :help="values.does === 'message' ? 'It reaches the chat as if you had typed it.' : ''">
+                    <FormField :label="does.ask" :help="textHelp">
                         <TextArea
                             :value="values.text || ''"
                             :disabled="readonly"
@@ -157,6 +216,24 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                             @change="commit({text: $event.target.value})"
                         />
                     </FormField>
+                </template>
+                <template v-if="state && values.does !== 'hold'">
+                    <FormField label="How often it repeats">
+                        <ChoiceList :choices="pickable(repeats, values.timing || 0)" :disabled="readonly" @pick="(timing) => commit({timing})" />
+                    </FormField>
+                    <template v-if="values.timing">
+                        <FormField label="Most times for each">
+                            <UnitTextInput
+                                type="number"
+                                min="1"
+                                :value="values.most"
+                                unit="times"
+                                :disabled="readonly"
+                                aria-label="Most times for each"
+                                @change="commit({most: Number($event.target.value)})"
+                            />
+                        </FormField>
+                    </template>
                 </template>
             </div>
         </ResourceBlock>
