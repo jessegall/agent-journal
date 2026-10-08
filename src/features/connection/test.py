@@ -1,14 +1,19 @@
+import http.server
+import socket
 import subprocess
+import threading
+import time
 
 import features
 from controllers.types import Notices, Todos
 from engine.machines import Lease, this_machine
-from engine.offline import Waiting
+from engine.offline import Applied, Waiting, Write
 from engine.record import Record
 from engine.sync import PROTOCOL, Comparison, Hello, Release, Shape, Step
 from engine.version import version
 from features.connection.code import Pushed, pull, push
-from features.connection.linking import hand, join, local_hello, sync
+from features.connection.linking import Synced, hand, join, local_hello, sync
+from features.connection.transport import HttpTransport
 from migrations import applied
 from resources.base import AGENT, SYSTEM, USER, Event
 from tests.conftest import fresh, refused
@@ -125,3 +130,73 @@ def test_a_hosted_world_runs_a_server_and_two_local_copies_as_real_processes_tha
     port = world.server.port
     world.start(world.server)
     assert world.server.port == port and world.server.running(), "it comes back where it was"
+
+
+def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and_without_a_long_wait(tmp_path):
+    with socket.socket() as closed:
+        closed.bind(("127.0.0.1", 0))
+        gone = closed.getsockname()[1]
+    began = time.time()
+    assert "Connection refused" in refused(lambda: HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).hello()) and time.time() - began < 3, "a server that refuses the connection is met at once"
+    assert HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).send(Write("k", "", "todo", "create", ["x"])) is False, "and a write sent to it is kept, not lost"
+    with socket.socket() as stalled:
+        stalled.bind(("127.0.0.1", 0))
+        stalled.listen(1)
+        began = time.time()
+        assert refused(lambda: HttpTransport(f"http://127.0.0.1:{stalled.getsockname()[1]}", timeout=0.3).hello()) and time.time() - began < 3, "a server that accepts and never answers is given up on at the timeout"
+
+    class Down(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            self.send_response(503)
+            self.end_headers()
+
+        def log_message(self, *_):
+            pass
+
+    server = http.server.HTTPServer(("127.0.0.1", 0), Down)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        assert "503" in refused(lambda: HttpTransport(f"http://127.0.0.1:{server.server_port}").hello()), "a server taken down answers 503 and the refusal says so"
+    finally:
+        server.shutdown()
+
+
+def test_a_sync_that_meets_a_server_down_an_epoch_change_or_an_interrupted_push_keeps_what_waits_and_applies_nothing_twice():
+    record = fresh()
+    waiting = Waiting(record.root)
+    for name in ("first", "second", "third"):
+        waiting.hold("", "todo", "create", [name])
+    assert "does not answer" in refused(lambda: sync(record, Server(record.root, up=False))) and len(waiting.waiting()) == 3, "with the server down nothing is sent and every write is kept"
+    moved = Server(record.root)
+    answers = iter([moved.said, Hello(version(), Shape(PROTOCOL, moved.said.shape.migrations, 9), "server-1")])
+    moved.hello = lambda: next(answers)
+    assert "new epoch" in refused(lambda: sync(record, moved)) and waiting.waiting() == [], \
+        "an epoch change in the middle of a sync stops it before anything is pulled, after what was sent has gone"
+    again, taken, ran = Waiting(fresh().root), Applied(fresh().root), []
+    for name in ("first", "second", "third"):
+        again.hold("", "todo", "create", [name])
+
+    def interrupted(held):
+        if held.args[0] == "second":
+            raise OSError("the connection dropped")
+        return taken.apply(held, lambda write: ran.append(write.args[0]))
+    try:
+        again.flush(interrupted)
+    except OSError:
+        pass
+    assert ([w.args[0] for w in again.waiting()], ran) == (["second", "third"], ["first"]), "a push cut off in the middle keeps what the server did not take and drops what it did"
+    assert (again.flush(lambda held: taken.apply(held, lambda write: ran.append(write.args[0]))), ran) == (2, ["first", "second", "third"]), "the next try sends the rest, and nothing arrives twice"
+
+
+def test_a_handover_with_a_stale_lease_is_refused_on_both_sides():
+    from engine.handover import accept, give
+    from engine.machines import Pushing
+    here, there = fresh(), fresh()
+    first = give(here, "", "server-1")
+    accept(there, "", first)
+    second = Lease("laptop-2", 2)
+    accept(there, "", second)
+    assert "older" in refused(lambda: accept(there, "", first)), "a handover that arrives after a newer one is refused, not applied over it"
+    stale = Record(there.root, there.env, writer=Pushing("server-1"))
+    assert "refused" in refused(lambda: Todos(stale, actor=AGENT).create("pushed by the old holder")), "a push from the machine that held it before is refused"
+    assert "refused" in refused(lambda: give(here, "", "desk")), "and a machine that already handed an environment over cannot hand it on again"
