@@ -40,6 +40,8 @@ class Transport(Protocol):
 
     def handback(self, env: str) -> Lease: ...
 
+    def holder(self, env: str) -> Lease: ...
+
     def send(self, held: Write) -> Sent: ...
 
     def events(self, scope: str, env: str, since: int) -> list[Event]: ...
@@ -89,6 +91,9 @@ class HttpTransport:
 
     def handback(self, env: str) -> Lease:
         return Lease(**json.loads(self.ask("handback", {"env": env, "machine": this_machine()})))
+
+    def holder(self, env: str) -> Lease:
+        return Lease(**json.loads(self.ask("holder", {"env": env})))
 
     def send(self, held: Write) -> Sent:
         """A write the server could not be reached for, or failed on, is tried again; one it refused is not."""
