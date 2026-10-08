@@ -6,6 +6,7 @@ import EmptyList from "./EmptyList.vue";
 import NavBar from "./NavBar.vue";
 import SearchField from "./SearchField.vue";
 import {useScrolled} from "./scrolled.js";
+import ScreenFoot from "./ScreenFoot.vue";
 import Skeleton from "../../kit/Skeleton.vue";
 
 const SKELETON_AFTER = 150;
@@ -114,9 +115,7 @@ defineExpose({reload, rows});
             <slot name="bottom" />
         </div>
         <template v-if="$slots.foot">
-            <footer class="screen-foot">
-                <slot name="foot" />
-            </footer>
+            <ScreenFoot><slot name="foot" /></ScreenFoot>
         </template>
     </div>
 </template>

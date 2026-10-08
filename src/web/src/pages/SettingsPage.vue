@@ -6,24 +6,17 @@ import {narrow} from "../platform/view.js";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
-import EmptyState from "../kit/EmptyState.vue";
 import Icon from "../kit/Icon.vue";
 import PageBar from "../kit/PageBar.vue";
 import Segmented from "../kit/Segmented.vue";
-import SettingGroup from "../kit/SettingGroup.vue";
 import SettingNav from "../kit/SettingNav.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TabBar from "../kit/TabBar.vue";
 import TextInput from "../kit/TextInput.vue";
 import Toast from "../kit/Toast.vue";
-import AgentVoice from "./AgentVoice.vue";
-import ServicesList from "./ServicesList.vue";
+import SettingsPanes from "./SettingsPanes.vue";
+import SettingsPhoneGroup from "./SettingsPhoneGroup.vue";
 import DiagnosticsLog from "./DiagnosticsLog.vue";
-import SettingsEnvironments from "./SettingsEnvironments.vue";
-import PluginSettings from "./PluginSettings.vue";
-import SettingsRegion from "./SettingsRegion.vue";
-import SettingsConnection from "./SettingsConnection.vue";
-import SettingsTunnel from "./SettingsTunnel.vue";
 import {TABS, catalog, counts, inTab, narrowed, tabCounts, tabLine} from "../domain/settingsCatalog.js";
 import {remember, remembered} from "../platform/storage.js";
 import {useScrollSpy} from "../composables/scrollSpy.js";
@@ -33,7 +26,6 @@ import {store} from "../state/store.js";
 
 const TAB = "journal.settings.tab";
 const LISTED = ["agent", "features", "system", "sharing", "developer"];
-const FLUSH = ["plugins", "environments"];
 const known = (key) => TABS.some((t) => t.key === key);
 const opening = (...keys) => keys.find(known) || TABS[0].key;
 const tab = ref(opening(route.value.sub, remembered(TAB, "")));
@@ -185,62 +177,27 @@ onMounted(async () => {
                 <SettingNav class="settings-phone-list" sheet :sections="navSections" @pick="pick" />
             </template>
             <template #group>
-                <div class="settings-phone-group">
-                    <template v-if="phoneGroup">
-                        <SettingGroup sheet :group="phoneGroup" @change="save" @timing="saveTiming" @act="act">
-                            <template v-if="phoneGroup.key === 'voice'" #before>
-                                <AgentVoice />
-                            </template>
-                        </SettingGroup>
-                    </template>
-                    <template v-if="tab === 'sharing'">
-                        <SettingsTunnel />
-                        <SettingsConnection />
-                    </template>
-                </div>
+                <SettingsPhoneGroup :group="phoneGroup" :tab="tab" @change="save" @timing="saveTiming" @act="act" />
             </template>
             <template #page>
-                <div :class="['settings-body', {plain: !listed}]">
-                    <template v-if="!narrow && listed">
-                        <SettingNav class="settings-nav" :sections="navSections" :current="current" :searching="searching" @pick="pick" />
-                    </template>
-                    <div :class="['settings-content', {flush: FLUSH.includes(tab)}]">
-                        <SwitchCase :value="tab">
-                            <template #environments>
-                                <p class="settings-line">{{ tabLine("environments") }}</p>
-                                <SettingsEnvironments :query="query" />
-                            </template>
-                            <template #services>
-                                <p class="settings-line">{{ tabLine("services") }}</p>
-                                <ServicesList />
-                            </template>
-                            <template #plugins>
-                                <PluginSettings :query="query" @saved="saved = {text: `Saved: ${$event}`}" />
-                            </template>
-                            <template #default>
-                                <div class="settings-column">
-                                    <template v-for="region in regions" :key="region.key">
-                                        <SettingsRegion
-                                            :region="region"
-                                            :across="across"
-                                            :sheet="narrow"
-                                            @change="save"
-                                            @timing="saveTiming"
-                                            @act="act"
-                                        />
-                                    </template>
-                                    <template v-if="!groups.length && store.settings">
-                                        <EmptyState class="settings-empty" title="No setting matches">
-                                            Try other words, or
-                                            <Btn class="settings-reset" @click="showAll">show every setting</Btn>
-                                            .
-                                        </EmptyState>
-                                    </template>
-                                </div>
-                            </template>
-                        </SwitchCase>
-                    </div>
-                </div>
+                <SettingsPanes
+                    :tab="tab"
+                    :listed="listed"
+                    :narrow="narrow"
+                    :nav-sections="navSections"
+                    :current="current"
+                    :searching="searching"
+                    :query="query"
+                    :regions="regions"
+                    :across="across"
+                    :empty="!groups.length && Boolean(store.settings)"
+                    @pick="pick"
+                    @saved="(label) => (saved = {text: `Saved: ${label}`})"
+                    @change="save"
+                    @timing="saveTiming"
+                    @act="act"
+                    @show-all="showAll"
+                />
             </template>
         </SwitchCase>
 
@@ -279,23 +236,6 @@ onMounted(async () => {
     padding: 12px 16px 4px;
 }
 
-.settings-body.plain {
-    display: block;
-}
-
-.settings-content.flush {
-    padding: 0;
-}
-
-.settings-content.flush > .settings-line {
-    margin: 0;
-    padding: 20px 16px 14px;
-}
-
-.settings-body.plain .settings-content {
-    border-left: 0;
-}
-
 .settings-scope {
     display: inline-flex;
     align-items: center;
@@ -323,51 +263,6 @@ onMounted(async () => {
     background: var(--accent);
 }
 
-.settings-body {
-    display: grid;
-    grid-template-columns: 216px minmax(0, 1fr);
-    align-items: start;
-}
-
-.settings-nav {
-    position: sticky;
-    top: var(--page-bar-height, 52px);
-    max-height: calc(100vh - var(--page-bar-height, 52px) - 48px);
-    overflow-y: auto;
-    padding: 14px 10px;
-}
-
-.settings-content {
-    min-width: 0;
-    min-height: 100%;
-    padding: 26px 40px 40px;
-    border-left: 1px solid var(--border);
-}
-
-.settings-column {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    max-width: 760px;
-}
-
-.settings-empty {
-    padding: 32px 16px;
-}
-
-.settings-reset {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    cursor: pointer;
-}
-
-.settings-reset:hover {
-    color: var(--text);
-}
-
 .settings-back :deep(.btn-label) {
     display: inline-flex;
     align-items: center;
@@ -381,15 +276,6 @@ onMounted(async () => {
     font-size: 15px;
 }
 
-.settings.narrow .settings-body {
-    display: block;
-}
-
-.settings.narrow .settings-content {
-    padding: 16px;
-    border-left: 0;
-}
-
 .settings.narrow .settings-scope {
     display: none;
 }
@@ -400,11 +286,5 @@ onMounted(async () => {
 
 .settings-phone-list {
     padding: 0 16px 16px;
-}
-
-.settings-phone-group {
-    display: flex;
-    flex-direction: column;
-    padding: 16px;
 }
 </style>

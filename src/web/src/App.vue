@@ -1,14 +1,12 @@
 <script setup>
 import {useWindowEvent} from "./composables/windowEvent.js";
 import {chatOnly, narrow, soloView} from "./platform/view.js";
-import DetachedWindows from "./layout/DetachedWindows.vue";
 import WindowBar from "./layout/WindowBar.vue";
 import {activityVisible, closeOverlays} from "./actions/panels.js";
 
 import {computed, defineAsyncComponent, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
 import {PAGES, route} from "./route.js";
 import {project} from "./state/identity.js";
-import {ui} from "./state/ui.js";
 import {store} from "./state/store.js";
 import {boot} from "./sync/boot.js";
 import {usePolled, windowPolls} from "./sync/polled.js";
@@ -16,47 +14,23 @@ import Sidebar from "./layout/Sidebar.vue";
 import TopBar from "./layout/TopBar.vue";
 import StatusBar from "./layout/StatusBar.vue";
 import Activity from "./layout/Activity.vue";
-import SwitchCase from "./kit/SwitchCase.vue";
-import Home from "./pages/Home.vue";
-import Index from "./pages/Index.vue";
-import SettingsPage from "./pages/SettingsPage.vue";
-import SearchPage from "./pages/SearchPage.vue";
-import FilesPage from "./pages/FilesPage.vue";
-import CommitPage from "./pages/CommitPage.vue";
-import PluginPage from "./pages/PluginPage.vue";
-import PluginsPage from "./pages/PluginsPage.vue";
-import SecretsPage from "./pages/SecretsPage.vue";
-import IntegrationsPage from "./pages/IntegrationsPage.vue";
-import BoardPage from "./pages/BoardPage.vue";
-import OrganizationPage from "./pages/OrganizationPage.vue";
-import ResourcesPage from "./pages/ResourcesPage.vue";
-import SkillsPage from "./pages/SkillsPage.vue";
-import AboutPage from "./pages/AboutPage.vue";
-import HubPage from "./pages/HubPage.vue";
-import FilePage from "./pages/FilePage.vue";
 import Reader from "./resource/Reader.vue";
-import Lightbox from "./kit/Lightbox.vue";
-import Tooltip from "./kit/Tooltip.vue";
 import Btn from "./kit/Btn.vue";
 import EmptyState from "./kit/EmptyState.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
 import ChatWindow from "./layout/ChatWindow.vue";
 import ViewWindow from "./layout/ViewWindow.vue";
-import AwayCard from "./layout/AwayCard.vue";
-import SkillPanel from "./layout/SkillPanel.vue";
-import PluginPagePanel from "./layout/PluginPagePanel.vue";
-import ProjectFlash from "./layout/ProjectFlash.vue";
-import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
-import {firstChoice, loadProfiles, unchosen} from "./composables/profiles.js";
+import {loadProfiles, unchosen} from "./composables/profiles.js";
 import UpdateCover from "./layout/UpdateCover.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import BlockedNotice from "./layout/BlockedNotice.vue";
 import HostedBand from "./layout/HostedBand.vue";
 import Skeleton from "./kit/Skeleton.vue";
-import SuggestionLayer from "./chat/SuggestionLayer.vue";
 import {desktopActs} from "./chat/suggestionActs.js";
 import {useTurnLinks} from "./chat/turnLinks.js";
 import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
+import AppOverlays from "./AppOverlays.vue";
+import AppPages from "./AppPages.vue";
 
 const DemoBand = __DEMO__ ? defineAsyncComponent(() => import("../demo/DemoBand.vue")) : null;
 
@@ -223,25 +197,7 @@ watch(
                     </template>
                     <Transition name="page" mode="out-in">
                         <div :key="route.page || 'home'" class="page">
-                            <SwitchCase :value="page">
-                                <template #home><Home /></template>
-                                <template #settings><SettingsPage /></template>
-                                <template #search><SearchPage /></template>
-                                <template #files><FilesPage /></template>
-                                <template #commit><CommitPage /></template>
-                                <template #skills><SkillsPage /></template>
-                                <template #about><AboutPage /></template>
-                                <template #plugins><PluginsPage /></template>
-                                <template #secrets><SecretsPage /></template>
-                                <template #integrations><IntegrationsPage /></template>
-                                <template #kanban><BoardPage /></template>
-                                <template #organization><OrganizationPage /></template>
-                                <template #resources><ResourcesPage /></template>
-                                <template #page><PluginPage /></template>
-                                <template #hub><HubPage /></template>
-                                <template #file><FilePage /></template>
-                                <template #default><Index :type="route.page" /></template>
-                            </SwitchCase>
+                            <AppPages :page="page" />
                         </div>
                     </Transition>
                 </div>
@@ -262,26 +218,10 @@ watch(
                         @gone="gone(layer.key)"
                     />
                 </template>
-                <Lightbox />
-                <Tooltip />
                 <Transition name="quick">
                     <QuickMenu v-if="quick" ref="quickMenu" :opening="quickOpening" @close="quick = false" />
                 </Transition>
-                <template v-if="ui.away.open">
-                    <AwayCard />
-                </template>
-                <template v-if="store.skill">
-                    <SkillPanel />
-                </template>
-                <template v-if="store.pluginPage">
-                    <PluginPagePanel />
-                </template>
-                <ProjectFlash />
-                <template v-if="firstChoice">
-                    <FirstChoiceDialog />
-                </template>
-                <DetachedWindows />
-                <SuggestionLayer />
+                <AppOverlays />
             </div>
         </div>
     </template>
