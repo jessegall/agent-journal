@@ -243,3 +243,17 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
         "they are kept as already handled"
     assert (record.event_log.cursor(pulled_cursor(PROJECT)), record.event_log.cursor(pulled_cursor(""))) == (9001, 0), "each scope has a cursor of its own"
     off()
+    import hashlib
+    from engine.attachments import Attachment, described, fetch
+    held = root / "held"
+    held.mkdir()
+    (held / "photo.png").write_bytes(b"pixels")
+    wanted = described(held)
+    assert wanted == [Attachment("photo.png", 6, hashlib.sha1(b"pixels").hexdigest())], "a pull carries an attachment's name, size and digest and not its bytes"
+    here, calls = root / "here", []
+    read = lambda: calls.append("fetched") or b"pixels"
+    fetch(wanted[0], here, read)
+    fetch(wanted[0], here, read)
+    assert ((here / "photo.png").read_bytes(), calls) == (b"pixels", ["fetched"]), "an attachment is fetched when it is opened, once"
+    assert "over the" in refused(lambda: fetch(Attachment("big.bin", 30 * 1024 * 1024, "x"), here, read)) and "whole" in refused(lambda: fetch(Attachment("odd.bin", 3, "x"), here, read)), \
+        "one over the size limit is not fetched, and one that arrives other than described is not kept"
