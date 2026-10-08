@@ -33,7 +33,7 @@ from scripts.checks.imports import imports, missing
 from serve import Handler, JournalServer
 from tests import isolation
 from tests.conftest import fresh
-from tests.kit import installed, installed_to_start
+from tests.kit import installed, installed_once, installed_to_start
 
 def shipped(copy: Path) -> None:
     """One copy of the files the checkout ships, taken once, so every version a test reads comes from the same moment."""
@@ -363,7 +363,7 @@ def test_an_install_checks_the_hooks_it_wired_and_names_one_that_cannot_run(tmp_
 
 
 def test_a_session_for_another_journal_runs_that_journals_own_build(tmp_path):
-    here, there = installed(tmp_path / "here", CODE), installed(tmp_path / "there", CODE)
+    here, there = installed_once(), installed(tmp_path / "there", CODE)
     program = (f"import sys; from pathlib import Path; sys.path.insert(0, {str(here / 'journal.pyz')!r}); from engine.package import entry_in, own_build; "
              f"print(entry_in(Path({str(there)!r}), 'supervisor')[1], own_build(Path({str(here)!r})), own_build(Path({str(there)!r})), sep='|')")
     launched, mine, theirs = subprocess.run([sys.executable, "-c", program], capture_output=True, text=True, timeout=WAIT).stdout.strip().split("|")
