@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {useAttempt} from "../composables/attempt.js";
 import {complete, drafted, fieldsOf, saved} from "../domain/secrets.js";
@@ -14,7 +14,8 @@ const props = defineProps({n: {type: Number, required: true}});
 const emit = defineEmits(["back"]);
 const {busy, failure, attempt} = useAttempt();
 const one = computed(() => rows("secret").find((row) => row.n === props.n && !row.deleted) || null);
-const draft = ref(drafted(one.value));
+const draft = ref(null);
+watch(one, (row) => (draft.value = draft.value || (row && drafted(row))), {immediate: true});
 
 async function save() {
     const {done} = await attempt(() => api.updateSecret(props.n, saved(draft.value)));
@@ -29,8 +30,8 @@ async function remove() {
 
 <template>
     <div class="secrets">
-        <Btn small @click="emit('back')"><Icon name="back" :size="12" /> All secrets</Btn>
-        <template v-if="one">
+        <Btn class="secrets-back" small @click="emit('back')"><Icon name="back" :size="12" /> All secrets</Btn>
+        <template v-if="one && draft">
             <h3 class="secrets-title">{{ one.title }}</h3>
             <SecretForm :draft="draft">
                 <div class="secrets-values">

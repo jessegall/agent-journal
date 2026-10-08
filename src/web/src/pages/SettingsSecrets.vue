@@ -36,6 +36,10 @@ function show(next, n = 0) {
     max-width: 760px;
 }
 
+.secrets-back {
+    align-self: flex-start;
+}
+
 .secrets-title {
     margin: 0;
 }
