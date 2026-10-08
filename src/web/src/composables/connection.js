@@ -8,8 +8,8 @@ export async function loadConnection(address = "") {
     return connection.value;
 }
 
-export async function connectToServer(address) {
-    await api.connectTo(address.trim());
+export async function connectToServer(address, key) {
+    await api.connectTo(address.trim(), key.trim());
     return loadConnection();
 }
 

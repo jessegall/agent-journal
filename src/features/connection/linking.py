@@ -10,7 +10,7 @@ from engine.offline import Waiting, Write
 from engine.record import Record
 from engine.sync import CONNECTION, PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay, travels
 from engine.version import version
-from features.connection.transport import Transport
+from features.connection.transport import ServerKey, Transport
 from migrations import applied
 from resources.base import PROJECT, SYSTEM, Refused
 
@@ -25,7 +25,7 @@ class Travelling:
 
 @dataclass(frozen=True)
 class ConnectionView:
-    """What the viewer shows of the connection: the server's address, whether this copy is joined and how it stands, and what connecting would send."""
+    """What the viewer shows of the connection: the server's address, whether this copy is joined and how it stands, what connecting would send, and whether a machine key is kept here, never the key."""
 
     address: str
     connected: bool
@@ -34,6 +34,7 @@ class ConnectionView:
     travels: Travelling
     role: str
     synced_at: float
+    has_key: bool
 
 
 SERVER, HERE = "server", "here"
@@ -161,7 +162,7 @@ def view(record, address: str) -> ConnectionView:
     welcome = record.state(STATE).get("welcome") or {}
     connected = bool(address and welcome)
     return ConnectionView(address, connected, welcome.get("release", ""), welcome.get("step", ""), what_travels(record.root), role_of(connected),
-                          float(record.state(STATE).get("synced_at", 0.0)))
+                          float(record.state(STATE).get("synced_at", 0.0)), ServerKey(record.root).is_kept())
 
 
 def leave(record) -> None:
