@@ -101,8 +101,22 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     assert "message:1  dashboard.png — deployment graph with three regions" in search_text(record, "deployment graph", 0), \
         "journal search includes matching file tags"
     reply = dispatch("GET", "/api/t/search", record.root, {"q": "three regions"}, {})
-    assert reply.body[0]["matches"] == [{"name": "dashboard.png", "tags": "deployment graph with three regions", "url": "/api/t/message/1/files/dashboard.png"}], \
+    assert reply.body["hits"][0]["matches"] == [{"name": "dashboard.png", "tags": "deployment graph with three regions", "url": "/api/t/message/1/files/dashboard.png"}], \
         "viewer search identifies the matching attachment"
+    from features.format import card
+    messages.section(message.n, "Detail", "a long body the result card never shows")
+    shown = card(messages.load(message.n), record)
+    assert (shown["title"], shown["sections"], "outcome" in shown) == ("look at this", [{"title": "Detail"}], False), \
+        "a result card carries its formatted title and summary and only its section titles, never text it does not show"
+    from commands import http
+    messages.create("three regions again")
+    shown, http.SHOWN_HITS = http.SHOWN_HITS, 1
+    try:
+        narrowed = dispatch("GET", "/api/t/search", record.root, {"q": "three regions"}, {}).body
+    finally:
+        http.SHOWN_HITS = shown
+    assert ([hit["title"] for hit in narrowed["hits"]], narrowed["more"]) == (["three regions again"], 1), \
+        "a search shapes only the newest hits it shows and counts the rest"
     assert refused(lambda: messages.tag(message.n, "missing.png", "nothing")) == "message 1 has no file missing.png", \
         "unknown files cannot be tagged"
 
@@ -111,7 +125,7 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     assert [r.n for r in messages.search("three regions", archived=True)] == [message.n], "search finds an archived row when asked"
     assert "archived  message:1  look at this  (bring back with journal message restore 1)" in search_text(record, "three regions", 0, archived=True), \
         "journal search --archived says the hit is archived and how to bring it back"
-    assert dispatch("GET", "/api/t/search", record.root, {"q": "three regions", "archived": "true"}, {}).body[0]["deleted"], \
+    assert dispatch("GET", "/api/t/search", record.root, {"q": "three regions", "archived": "true"}, {}).body["hits"][0]["deleted"], \
         "viewer search marks an archived hit"
     messages.restore(message.n)
 

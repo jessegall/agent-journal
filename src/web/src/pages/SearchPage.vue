@@ -9,9 +9,11 @@ import Icon from "../kit/Icon.vue";
 import TextInput from "../kit/TextInput.vue";
 import {go, peek, route} from "../route.js";
 import ResourceCard from "../resource/ResourceCard.vue";
+import {moreHits} from "../domain/search.js";
 
 const q = ref(route.value.q);
 const hits = ref([]);
+const more = ref(0);
 const attic = ref(false);
 const archived = ref(false);
 const brought = ref({});
@@ -28,6 +30,7 @@ async function run() {
     const query = q.value.trim();
     go(route.value.env, "search", 0, q.value);
     hits.value = [];
+    more.value = 0;
     removed.value = [];
     searching.value = !!query;
     if (!query) {
@@ -35,7 +38,7 @@ async function run() {
     }
     try {
         const [found, gone] = await Promise.all([api.search(query, archived.value), attic.value ? api.searchAttic(query) : []]);
-        if (current === request) [hits.value, removed.value] = [found, gone];
+        if (current === request) [hits.value, more.value, removed.value] = [found.hits, found.more, gone];
     } finally {
         if (current === request) searching.value = false;
     }
@@ -115,6 +118,9 @@ watch(
                 </div>
             </template>
         </div>
+        <template v-if="more">
+            <p class="more">{{ moreHits(more) }}</p>
+        </template>
         <template v-if="removed.length">
             <h3 class="removed-head">In removed environments</h3>
             <ul class="removed">
@@ -162,6 +168,11 @@ watch(
 
 .empty {
     margin: 16px 0;
+}
+
+.more {
+    margin: 16px 0;
+    color: var(--text-3);
 }
 
 .switches {
