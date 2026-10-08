@@ -253,8 +253,7 @@ class Helpers(Controller):
         home = Record(self.record.root, row.environment)
         Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
         self._handed(row, home, handed)
-        if row.report:
-            Helpers(self.record, actor=SYSTEM).update(n, report="")
+        Helpers(self.record, actor=SYSTEM).update(n, report="", answering=True)
         return f"sent to {row.name}" + (f", with to-do {', '.join(str(t.n) for t in handed)}" if handed else "")
 
     @action
@@ -308,7 +307,7 @@ class Helpers(Controller):
 
     def _told(self, place, text: str, given_back_text: str = "") -> None:
         home = Record(self.record.root, place.launched_from)
-        row = Helpers(home, actor=SYSTEM).update(self._helper(place).n, report=text)
+        row = Helpers(home, actor=SYSTEM).update(self._helper(place).n, report=text, answering=False)
         bus.defer(lambda: self._relayed(home, row, text, given_back_text))
 
     @staticmethod
