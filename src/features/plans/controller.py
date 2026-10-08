@@ -178,7 +178,7 @@ class Plans(Controller):
         self._allowed(r, ACTIVE, APPROVED, PARKED)
         first_start = r.status == APPROVED
         for other in self.rows.every():
-            if other.n != r.n and other.status in RUNNING:
+            if other.n != r.n and other.status in RUNNING and not self._helped(other):
                 self._status(self.load(other.n), PARKED, *RUNNING, parked_for=r.n)
         started = self._status(r, ACTIVE, APPROVED, PARKED)
         if first_start:
@@ -263,6 +263,10 @@ class Plans(Controller):
             rows = kind(self.record, actor=self.actor)
             found += [rows.load(n) for n in phase.get(key, []) if rows.rows.exists(int(n))]
         return found
+
+    def _helped(self, plan) -> bool:
+        phase = plan.current_phase
+        return phase is not None and any(row.type != "todo" or row.assigned for row in self._members(phase) if not row.completed)
 
     def _complete(self, phase: dict) -> bool:
         return all(row.completed for row in self._members(phase))
