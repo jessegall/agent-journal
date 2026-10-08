@@ -2,7 +2,7 @@
 import {meta, types} from "../domain/spec.js";
 import People from "./People.vue";
 import TakeDown from "./TakeDown.vue";
-import {hostedOn, membersOn, sharingOn} from "../composables/settings.js";
+import {familyOn, hostedOn, membersOn, sharingOn} from "../composables/settings.js";
 import {ownsJournal} from "../composables/me.js";
 import {store} from "../state/store.js";
 import {demo} from "../platform/demo.js";
@@ -80,10 +80,13 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                 <Icon name="chat" />
             </button>
             <button
+                v-if="familyOn"
                 type="button"
                 :class="['icon-btn', {on: floatingFamily}]"
                 v-tip="
-                    floatingFamily ? 'Close the agent family tree' : 'Open the agent family tree: who started, sent out or messaged which agent'
+                    floatingFamily
+                        ? 'Close the agent family tree'
+                        : 'Open the agent family tree: who started, sent out or messaged which agent'
                 "
                 @click="toggleFamily"
             >
@@ -129,7 +132,9 @@ const {floating: floatingFamily, toggle: toggleFamily} = useFloatingFamily();
                     <TakeDown />
                 </template>
                 <form method="post" action="/logout" class="logout">
-                    <button type="submit" class="icon-btn" aria-label="Log out" v-tip="'Log out of this journal on its server'"><Icon name="lock" /></button>
+                    <button type="submit" class="icon-btn" aria-label="Log out" v-tip="'Log out of this journal on its server'">
+                        <Icon name="lock" />
+                    </button>
                 </form>
             </template>
             <template v-if="!full">

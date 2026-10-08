@@ -1,4 +1,5 @@
 import subprocess
+import pytest
 import features
 
 from controllers.types import Agents, Messages
@@ -267,6 +268,12 @@ def test_a_skills_keyword_makes_the_agent_load_it():
     assert typed(" roadmap, ,") == typed(["roadmap", " "]) == ["roadmap"], "words typed on the Skills page are kept, from a comma list or a list"
     assert keywords(record)["journal-plans"] == ["roadmap"], "and read back as the skill's keywords"
     assert dispatch("GET", f"/api/{record.env}/skills/no-such-skill", record.root, {}, {}).code == 404, "an unknown skill is not found"
+    from controllers.invoke import invoked
+    from resources.base import AGENT, Refused
+    for word, named in (("load_skill", {"skill": "journal-plans"}), ("keywords", {"skill": "journal-plans", "keywords": ["other"]})):
+        with pytest.raises(Refused, match="only the user"):
+            invoked(Agents(record, actor=AGENT), word, named=named)
+    assert keywords(record)["journal-plans"] == ["roadmap"], "an agent cannot ask for a skill or change its keywords in the user's name"
     require_named(record, agent, "here is the roadmap")
     assert "journal-plans" in outstanding(record, agent), "and the skill is owed before the next tool call"
     require_named(record, agent, "nothing to see")

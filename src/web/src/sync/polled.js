@@ -5,6 +5,7 @@ import {api} from "../api/client.js";
 import {usePoll} from "../composables/poll.js";
 import {takeEvents} from "./rows.js";
 import {floatWindow} from "../platform/view.js";
+import {barOn} from "../composables/settings.js";
 
 const LIVE = 5;
 const BUSY_EVERY = 500;
@@ -30,6 +31,7 @@ export const polled = {
         ask: () => api.bar(),
         every: () => (busy() ? BUSY_EVERY : CALM_EVERY),
         take: (got) => Array.isArray(got && got.queue) && (store.bar = got),
+        active: () => barOn.value,
     },
     agents: {key: "agents", ask: () => api.agents(LIVE), every: 1000, take: (got) => (store.agents = got)},
     pages: {key: "pages", ask: () => api.pages(), every: 5000, take: (got) => (store.pages = got), mainWindowOnly: true},

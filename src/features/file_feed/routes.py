@@ -1,8 +1,9 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
+from controllers.invoke import invoked
+from controllers.types import Agents
 from engine.fields import Loaded
-from features.file_feed.feed import NoSuchEdit, PAGE, Side, edited_file, edits_before, edits_since, notes
+from features.file_feed.feed import PAGE, Side
 from features.routing import Reply, Request, handles
-from resources.base import Missing, Refused
 
 
 @dataclass(frozen=True)
@@ -25,27 +26,22 @@ class EditedFileQuery(Loaded):
 
 @handles("GET", "/api/{env}/changes")
 def get_changes(req: Request) -> Reply:
-    return Reply(200, {"changes": [asdict(note) for note in reversed(notes(req.record()))]})
+    return Reply(200, invoked(req.as_user(Agents), "changes"))
 
 
 @handles("GET", "/api/{env}/agent/{n}/edits")
 def get_edits(req: Request) -> Reply:
     asked = req.query_as(EditsQuery)
-    return Reply(200, asdict(edits_since(req.record(), int(req.params["n"]), asked.since, asked.last)))
+    return Reply(200, invoked(req.as_user(Agents), "edits", (int(req.params["n"]),), {"since": asked.since, "last": asked.last}))
 
 
 @handles("GET", "/api/{env}/agent/{n}/edits/older")
 def get_older_edits(req: Request) -> Reply:
     asked = req.query_as(OlderEditsQuery)
-    return Reply(200, asdict(edits_before(req.record(), int(req.params["n"]), asked.before, asked.last)))
+    return Reply(200, invoked(req.as_user(Agents), "older_edits", (int(req.params["n"]),), {"before": asked.before, "last": asked.last}))
 
 
 @handles("GET", "/api/{env}/agent/{n}/edits/file")
 def get_edited_file(req: Request) -> Reply:
     asked = req.query_as(EditedFileQuery)
-    if asked.side not in Side:
-        raise Refused(f"side is {Side.BEFORE} or {Side.AFTER}")
-    try:
-        return Reply(200, asdict(edited_file(req.record(), int(req.params["n"]), asked.id, Side(asked.side))))
-    except NoSuchEdit as error:
-        raise Missing(str(error)) from error
+    return Reply(200, invoked(req.as_user(Agents), "edited_file", (int(req.params["n"]),), {"id": asked.id, "side": asked.side}))

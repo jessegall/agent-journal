@@ -377,7 +377,7 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     ask = lambda method, path, query=None, body=None: dispatch(method, path, record.root, query or {}, body or {})
     assert ask("GET", f"/api/{record.env}/settings").code == 200 and ask("POST", f"/api/{record.env}/settings", body={"ask_questions": {"hold": 1}}).code == 200, \
         "the settings are read and written through the viewer"
-    from commands.invoke import invoked
+    from controllers.invoke import invoked
     from controllers.types import Environments, Features
     from resources.base import AGENT, Refused
     assert invoked(Features(record, actor=AGENT), "settings") == ask("GET", f"/api/{record.env}/settings").body, "the viewer reads its settings through the command the CLI runs"

@@ -6,7 +6,7 @@ import shutil
 import pytest
 
 import features
-from commands.invoke import invoked
+from controllers.invoke import invoked
 from controllers import base, stored
 from controllers.features import Features
 from controllers.requests import deliver, request
