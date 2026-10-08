@@ -128,8 +128,8 @@ class Worktrees(Controller):
     def _adopt(self, folder: Path, helper: str):
         """Follows a checkout a helper was launched into though the journal did not cut it, so it hears when the branch it came from moves; one of another repository has no such branch."""
         project = self._project()
-        common = lambda where: git(where, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.strip()
-        if folder == project or common(folder) != common(project):
+        repository = common_dir(folder)
+        if folder == project or repository is None or repository != common_dir(project):
             return None
         upstream = git(folder, "rev-parse", "--abbrev-ref", "@{upstream}")
         working = upstream.stdout.strip() if upstream.returncode == 0 else self._working(project)
@@ -200,6 +200,13 @@ class Worktrees(Controller):
         if not working:
             raise Refused(f"{project} is on no branch, so there is no working branch to cut from")
         return working
+
+
+
+def common_dir(where: Path) -> str | None:
+    """The repository a folder belongs to, or None when git reads no repository there."""
+    found = git(where, "rev-parse", "--path-format=absolute", "--git-common-dir")
+    return found.stdout.strip() if found.returncode == 0 else None
 
 
 resources_module.register(Worktree)
