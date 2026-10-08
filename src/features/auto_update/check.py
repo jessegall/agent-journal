@@ -15,7 +15,7 @@ from features import running
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
 from engine.upgrades import newer, shared_parts, stale, upstream
-from install import changed_managed
+from features.journal_laws.managed import changed_managed
 
 INSTALL_WAIT = 600
 REFETCH_WAIT = 10

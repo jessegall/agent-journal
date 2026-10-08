@@ -1,5 +1,5 @@
 import re
-import install
+from features.journal_laws.managed import CURRENT, remember_rewritten, remembered_unchanged
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -37,7 +37,6 @@ class Briefing:
 FORM = 2
 BEGIN = f"<!-- BEGIN: agent-journal, form {FORM} (auto-generated, run `journal upgrade`) -->"
 END = f"<!-- END: agent-journal, form {FORM} -->"
-CURRENT = re.compile(r"<!-- BEGIN: agent-journal, form (\d+) [^\n]*-->.*?<!-- END: agent-journal, form \1 -->", re.DOTALL)
 CONFLICTED = re.compile(r"^(<{7}|>{7}) ", re.MULTILINE)
 BOM = "\ufeff"
 CURRENT_MARKERS = Markers("<!-- BEGIN: agent-journal, form", "<!-- END: agent-journal, form")
@@ -86,10 +85,10 @@ def brief(project: Path, record) -> Briefing:
             continue
         want = leading(had, managed) if had.strip() else f"# {title}\n\n{managed}\n"
         if want != had:
-            held = install.remembered_unchanged(project, record.root, project / name) if target.is_file() else False
+            held = remembered_unchanged(project, record.root, project / name) if target.is_file() else False
             write_text(target, mark + want)
             if held:
-                install.remember_rewritten(project, record.root, project / name)
+                remember_rewritten(project, record.root, project / name)
             written.append(project / name)
     return Briefing(tuple(written), tuple(left))
 

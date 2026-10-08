@@ -1,10 +1,9 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
 
-import install
 from resources.fields import Loaded
 from engine.disk import read_json
+from engine.version import version
 from features.hosted_journal.vault import Vault
 
 REQUEST = "hosting-request.json"
@@ -48,7 +47,7 @@ class Hosting:
 
     def status(self) -> HostingStatus:
         kept = UpdaterStatus.from_json(read_json(self.updater / STATUS, dict, {}))
-        installed = install.version_file(Path(install.__file__).parent).read_text().strip()
+        installed = version()
         return HostingStatus(installed, kept.latest or installed, kept.newer)
 
     def ask(self, what: Ask) -> None:

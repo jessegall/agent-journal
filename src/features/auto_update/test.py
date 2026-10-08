@@ -16,6 +16,7 @@ from controllers.types import Features
 from features import load
 from resources.base import SYSTEM
 from tests.conftest import fresh
+from features.journal_laws import managed
 
 
 def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_not_install_itself(monkeypatch):
@@ -91,7 +92,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     managed = record.root / "src" / "install.py"
     managed.parent.mkdir(parents=True, exist_ok=True)
     managed.write_text("generated\n")
-    install.remember_managed(record.root.parent, record.root)
+    managed.remember_managed(record.root.parent, record.root)
     managed.write_text("changed by hand\n")
     assert dispatch("POST", "/api/update", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], \
         "the Update button refuses files changed by hand"
@@ -114,12 +115,12 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     from features.journal_laws.briefing import brief
     managed.write_text("generated\n")
     brief(record.root.parent, record)
-    install.remember_managed(record.root.parent, record.root)
+    managed.remember_managed(record.root.parent, record.root)
     agents.write_text(agents.read_text() + "\nA line of the project's own.\n")
-    assert install.changed_managed(record.root.parent, record.root) == [], "a line outside the journal's block is not a change to its file"
+    assert managed.changed_managed(record.root.parent, record.root) == [], "a line outside the journal's block is not a change to its file"
     agents.write_text(agents.read_text().replace("form 2 (auto-generated", "form 2 (edited by hand"))
     managed.write_text("changed by hand\n")
-    assert install.archive_changed(record.root.parent, record.root, install.changed_managed(record.root.parent, record.root)).is_file(), "updating anyway copies the changed files to the attic first"
+    assert install.archive_changed(record.root.parent, record.root, managed.changed_managed(record.root.parent, record.root)).is_file(), "updating anyway copies the changed files to the attic first"
     managed.write_text("generated\n")
     check.checked_at = 0.0
     assert check.tick() == "update held for changed files", "automatic updates wait for a decision about changed files"
@@ -215,7 +216,7 @@ def test_an_install_over_version_1_leaves_only_its_own_hooks(tmp_path):
 def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     from controllers.types import Notifications
     from features.auto_update.announcing import announce
-    from install import LEGACY_COPY_MARKER
+    from features.journal_laws.managed import LEGACY_COPY_MARKER
     record = fresh()
     announce(record.root, "1.0.0")
     copy_note = record.root / "runtime" / LEGACY_COPY_MARKER
@@ -448,16 +449,16 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         patch.setattr(install, "loaded", lambda: SimpleNamespace(migrate=lambda site_root: [], ship_sequences=lambda site_root: "sequences", ship_profiles=lambda site_root: "profiles"))
         patch.setattr(install, "retire", lambda site_root: 3)
         patch.setattr(install, "pack", lambda site_root: "packed")
-        patch.setattr(install, "remember_managed", lambda site, site_root: None)
+        patch.setattr(managed, "remember_managed", lambda site, site_root: None)
         lines = install.finish(site, site_root)
         assert "package files an older installer did not know: disk full" in lines and "package moved into src/: 3 files out of the record" in lines and lines[-1] == "packed", \
             "a repair that cannot write is said, and the install still configures and packs"
         assert refreshed == [site_root], "a package that is the record itself is refreshed in place"
         patch.setattr(install, "retire", lambda site_root: 0)
         assert "migrations run" not in " ".join(lines) and "record already in shape" in lines, "a record already in shape is said so"
-        patch.setattr(install, "changed_managed", lambda site, site_root: ["a.md"])
+        patch.setattr(managed, "changed_managed", lambda site, site_root: ["a.md"])
         patch.setattr(install, "copy_legacy_managed", lambda site, site_root: ["copied"])
-        patch.setattr(install, "changed_message", lambda site, changed: "files you changed")
+        patch.setattr(managed, "changed_message", lambda site, changed: "files you changed")
         assert install.install(site, site_root) == ["files you changed"], "an install over files the user changed asks first"
         kept = []
         patch.setattr(install, "archive_changed", lambda site, site_root, changed: kept.append(changed))
