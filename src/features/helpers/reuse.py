@@ -1,6 +1,7 @@
 import re
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 from agents.seat import SubagentRow
 from controllers.types import Agents
@@ -18,6 +19,7 @@ LISTENING = (WorkState.IDLE, WorkState.REPORTED)
 HELPER_KIND = "helper"
 RETIRED = "retired"
 RETIRED_KEPT = 100
+LANDED_WINDOW = 1000
 SHOWN = 5
 
 
@@ -51,12 +53,27 @@ def is_fresh_kind(kind: str) -> bool:
     return any(word in kind for word in FRESH)
 
 
-def touched(record, helper) -> tuple[str, ...]:
+def branch_of(record, helper) -> tuple[Path, str, str]:
+    """The project, the commit a helper's worktree was cut from and the ref holding its work, or nothing at all when it has no worktree or the work is gone."""
     if not helper.worktree:
-        return ()
+        return Path(), "", ""
     cut, project = Worktrees(record, actor=SYSTEM).load(int(helper.worktree)), record.root.resolve().parent
     ref = next((ref for ref in (f"refs/heads/{cut.branch}", f"{KEPT}/{cut.title}") if present(project, ref)), "")
-    return tuple(lines(project, "diff", "--name-only", f"{cut.base}...{ref}")) if cut.base and ref else ()
+    return project, cut.base, ref
+
+
+def touched(record, helper) -> tuple[str, ...]:
+    project, base, ref = branch_of(record, helper)
+    return tuple(lines(project, "diff", "--name-only", f"{base}...{ref}")) if base and ref else ()
+
+
+def unlanded(record, helper) -> tuple[str, ...]:
+    """What a helper committed that the project's branch lacks, by message, so a commit taken over by cherry-pick counts as landed."""
+    project, base, ref = branch_of(record, helper)
+    if not (base and ref):
+        return ()
+    landed = set(lines(project, "log", "--format=%s", "-n", str(LANDED_WINDOW), "HEAD"))
+    return tuple(subject for subject in reversed(lines(project, "log", "--format=%s", f"{base}..{ref}")) if subject not in landed)
 
 
 def state_of(record, helper) -> WorkState:
