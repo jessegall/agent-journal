@@ -19,6 +19,7 @@ RECENT_BYTES = 1_000_000
 RECENT_ROWS = 1000
 FOLD_WAIT = 0.2
 FOLD_IN_PLACE_BYTES = 4_000_000
+FOLD_TAIL_BYTES = 64_000_000
 
 
 SHAPED_BY = ("engine.transcript",)
@@ -164,7 +165,7 @@ class TranscriptCache:
         if size < offset:
             offset, state = 0, start()
         if size > offset:
-            lines, offset = complete_lines(path, offset)
+            lines, offset = complete_lines(path, offset) if offset else last_lines(path, FOLD_TAIL_BYTES)
             state = deepcopy(state)
             for found in rows(lines, row_of):
                 state = fold(state, found)
