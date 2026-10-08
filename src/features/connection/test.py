@@ -353,5 +353,6 @@ def test_the_sync_routes_are_safe_to_ask_twice_name_who_holds_an_environment_and
         "a handover whose answer is lost while the server cannot be asked leaves this machine let go and says to run hand again"
     assert "not to this machine" in refused(lambda: hand(record.root, record.env, "here", HandsElsewhere(record.root))), \
         "a handback that names another machine is never taken here"
-    Features(record, actor=USER).switch("connection", True)
-    assert "name the server first" in refused(lambda: Environments(record, actor=USER).action("sync")()), "syncing with no server named says how to name one"
+    unnamed = fresh()
+    Features(unnamed, actor=USER).switch("connection", True)
+    assert "name the server first" in refused(lambda: Environments(unnamed, actor=USER).action("sync")()), "syncing with no server named says how to name one"
