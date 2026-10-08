@@ -43,7 +43,7 @@ the general model for careful work without invention, the strongest only for jud
 Unset means the orchestrator's own model, which is the wrong default. The journal carries this as a rule
 (`journal rules`); this file carries it so it is read before the first dispatch.
 
-Every dispatch prompt says the subagent never runs the whole test suite: it runs the tests beside what it changed, or `journal check touched <n>`.
+Every dispatch prompt says the subagent never runs tests: it writes the test that proves its change and names it in its report, and the main agent runs it.
 
 ## Controllers by reference
 

@@ -13,15 +13,14 @@ from resources.base import AGENT, SYSTEM, Ref
 from resources.types import HELPER
 
 FILES_KEPT = 50
-PYTEST = re.compile(r"(?:^|[\s;&|])(?:python3?\s+-m\s+)?pytest\b")
-NAMED_TESTS = re.compile(r"\.py\b|::|\s-k\b")
+TEST_RUN = re.compile(r"(?:^|[\s;&|])(?:(?:python3?\s+-m\s+)?pytest|vitest|npm\s+(?:run\s+)?test|node\s+\S*browser/\S+\.mjs|journal\s+(?:--\S+\s+\S+\s+)*check\s+(?:run|touched|gate))\b")
 
 
-def runs_whole_suite(shell: str) -> bool:
-    return bool(PYTEST.search(shell)) and not NAMED_TESTS.search(shell)
+def runs_tests(shell: str) -> bool:
+    return bool(TEST_RUN.search(shell))
 
 
-def may_run_whole_suite(record) -> bool:
+def may_run_tests(record) -> bool:
     place = Environments(record, actor=SYSTEM).rows.by_title(record.env)
     return bool(place and place.helping and Helpers(Record(record.root, place.launched_from), actor=SYSTEM).load(place.owned_by(HELPER)).whole_suite)
 
@@ -78,14 +77,14 @@ class OfferKeptAgentsFirst(Canceler):
         return refusal(census, int(context.settings.kept), dispatch.kind or "subagent", named_paths(f"{dispatch.description}\n{dispatch.prompt}"))
 
 
-class RefuseWholeSuiteToHelpers(ToolInterceptor):
+class RefuseTestRunsToHelpers(ToolInterceptor):
     reach = Reach.BOTH
     runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         place = Environments(context.record, actor=SYSTEM).rows.by_title(context.record.env)
         shell = call.shell_command
-        if not shell or not (context.agent.row.subagent or (place and place.helping)) or not runs_whole_suite(shell) or may_run_whole_suite(context.record):
+        if not shell or not (context.agent.row.subagent or (place and place.helping)) or not runs_tests(shell) or may_run_tests(context.record):
             return ""
-        return ("Helpers and subagents never run the whole test suite: run the tests beside what you changed, "
-                "or journal check touched <n> for the ones that cover your change. The agent that dispatched you can allow it with journal helper allow_suite.")
+        return ("Helpers and subagents write tests but never run them: write the test that proves your change, commit, and name it in your report so the agent that dispatched you runs it. "
+                "That agent can allow your runs with journal helper allow_suite.")
