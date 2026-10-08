@@ -1,4 +1,5 @@
 import base64
+import contextlib
 import json
 import os
 import re
@@ -68,8 +69,8 @@ def run_masked(command: tuple[str, ...], values: dict[str, str], masks: dict[str
         child = subprocess.Popen(command, stdin=subprocess.PIPE if given is not None else subprocess.DEVNULL,
                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environment)
         if given is not None:
-            child.stdin.write(given)
-            child.stdin.close()
+            with contextlib.suppress(BrokenPipeError), child.stdin as stdin:  # a program that never reads its input may exit first
+                stdin.write(given)
         out = sys.stdout.buffer
         for chunk in iter(lambda: child.stdout.read1(CHUNK), b""):
             out.write(masker.feed(chunk))
