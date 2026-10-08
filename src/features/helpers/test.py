@@ -141,6 +141,20 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     watch()
     watch()
     assert titles() == ["helper 1, Rhea, has done nothing for 25 minutes"], "one quiet for a while is named once, so the agent checks on it"
+    helper_agent = Agents(Record(record.root, f"{record.env}-rhea"), actor=SYSTEM)
+    helper_agent.create("codex-9")
+    helper_agent.update(helper_agent.primary_to_read().n, status="idle", at=time.time() - 3 * 60)
+    idle = lambda: [t for t in titles() if "stood idle" in t]
+    watch()
+    watch()
+    assert idle() == ["helper 1, Rhea, has stood idle for 3 minutes"], "a helper idle past the first time is named once"
+    helper_agent.update(helper_agent.primary_to_read().n, at=time.time() - 13 * 60)
+    watch()
+    assert len(idle()) == 2, "and again once the repeat time has passed"
+    Features(record, actor=SYSTEM).configure("helpers", "idle_repeats", "1")
+    helper_agent.update(helper_agent.primary_to_read().n, at=time.time() - 25 * 60)
+    watch()
+    assert len(idle()) == 2, "no more notices than the repeats setting allows"
     from agents.terminal import launch_log
     launch_log(record.root, f"{record.env}-rhea").parent.mkdir(parents=True, exist_ok=True)
     launch_log(record.root, f"{record.env}-rhea").write_text("\x1b[1mSettingsWarning\x1b[0m: hooks must be an object\n")
