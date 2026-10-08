@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.265.0 — A journal on a server that members share, a copy that connects to it, and questions that reach the agent
+- A journal on a server has members: the owner invites a person by name, the person joins from a one-time link, is a writer or a reader, sees only the environments the owner shares, and loses every login at once when removed. Every row names who made it, a member's words are read by agents marked as untrusted, and a member's phone reaches only what their rights grant.
+- A copy of a journal on your computer connects to one on a server from the viewer or `journal environment connect`: row and event numbers come from leased blocks, an environment is held by one machine at a time, what a copy writes while the server is away waits and goes when it is back, and the project's code travels through git with its nested repositories. What never travels (phones, keys, secrets, passwords) is written in one list and tested. The bar says whether this journal is the server or your copy, and the viewer shows each failed connection in plain words.
+- A question a helper or a lent subagent asks reaches the orchestrator at once and again while it waits, and the helpers list and the plan page show a helper that waits on one.
+- The orchestrator is told when a helper stands idle and is refused a wait that names a helper; a helper's report names the commits its branch holds that yours lacks, lists the tests it wrote, and reads a to-do handed to it by the number you know; a helper or subagent is refused every test run unless the dispatcher allows it; a launched agent's kickoff waits in a file instead of its command line.
+- A screenshot or file the agent names shows as a card in the chat, files dropped onto the chat box are attached to the message, opening an item over a page keeps the page's own address, and a plugin opens on the Plugins page.
+- Tags and status lines in the viewer read like a label and a value (Helper: Hedy, Waiting: the agent, Helpers: 4), a project rule flags one written as a sentence, and the press-everything run is a browser scenario like the others.
+- Faster to run: the suite, the browser scenarios and the viewer's unit tests set up less per test; the lesson tests play every lesson on the computer and the phone.
+- A shared link's password is refused after five wrong tries from one place, a stopped plugin service keeps the reason it stopped, history search is run by the server, and the images of a server install are pinned by digest.
+
 ## 2.264.2 — A transcript is never read whole by accident, and the skills check never judges from a stale reading
 - Every read of a conversation goes through one place that starts where the last read stopped; a read from the very start needs a named reason (only a search has one) and is logged.
 - A conversation read for the first time after an upgrade is read from its last 64 MB, not its whole length.
