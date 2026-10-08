@@ -1,5 +1,5 @@
 from features.base import Feature
-from features.connection.commands import ConnectToServer, HandEnvironment, SyncWithServer, transport_for
+from features.connection.commands import ConnectToServer, HandEnvironment, PullCode, PushCode, SyncWithServer, transport_for
 from features.connection.details import ConnectionDetails
 from features.connection.linking import fail_to_join, join
 from features.journal import Journal
@@ -10,7 +10,7 @@ class ConnectionFeature(Feature):
     details = ConnectionDetails
 
     def register(self, journal: Journal) -> None:
-        for command in (ConnectToServer(), HandEnvironment(), SyncWithServer()):
+        for command in (ConnectToServer(), HandEnvironment(), SyncWithServer(), PushCode(), PullCode()):
             journal.commands.add("environment", command)
 
     def settings_changed(self, record, actor: str) -> None:
