@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.262.0 — Secrets, and a faster journal
+- Secrets: keys and logins the agent may use without ever seeing them. Add them under Settings, Secrets, where the agent's requests wait at the top. Their values live in one owner-only file per project in your home folder (~/.config/agent-journal/secrets), never in the journal, git, a worktree or a backup, and no screen shows a value again.
+- The agent uses a secret with journal secret run <name> -- <command>: the command gets the value on its standard input (or its environment), a home folder of its own, and its output comes back with every form of the value masked. Shells, interpreters and build tools never get one, and helpers and subagents only when you share it.
+- A secret's value written into the journal by mistake is replaced with [secret <name>] before it is saved, and you are told to rotate it. Tools that name the secrets file are refused.
+- A plugin can ask for one of your secrets in a setting; its services get the value only once you pick the secret for it. The unused connection resource is gone.
+- Asking for a plan review no longer stops you approving or starting the plan.
+- Searching can include removed environments: switch on Include removed environments (or journal search --attic), and each hit offers to bring its environment back. Every search shows placeholder cards while it runs.
+- A Journal: todos done trailer closes its rows when its commit lands on main, wherever the commit was made, so work committed in a worktree closes too.
+- The checkout guard lets a helper work in its own worktree: it takes a session's home from its environment's folder.
+- Two environments changing different parts of one setting at once both keep their change.
+- The Claude hook, the pages list, the dashboard, the helper list and journal plugin raise are back inside their 50 ms budgets: a plugin's raised event no longer resets every feature switch, the hook stops re-reading the whole event log, and type folders are made once per record (and again if one goes missing).
+
 ## 2.261.0 — Plugin chat marks that turn green once fixed, and a dump demo that shows the dump
 - A plugin can raise an event with a key of its own and later settle it with journal plugin settle <plugin> <key>: the chat mark keeps saying what was found but turns green with the word you give it, a group of marks counts how many are fixed, and opening a settled mark says when it was fixed.
 - A chat mark whose dashboard page the plugin has since removed opens the dashboard's first page with a note, instead of an empty panel.
