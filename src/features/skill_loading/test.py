@@ -160,6 +160,31 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     loaded = {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": "journal-plans"}}]}}
     transcript.write_text(transcript.read_text() + json.dumps(loaded) + "\n")
     assert call("Bash", command="journal plan phase 1 build --when done") == "", "once it is loaded, work goes on"
+    import time
+    from providers import transcript_cache
+    from providers.transcript_cache import TranscriptCache, code_mark
+    folds, lines = TranscriptCache(tmp_path / "folds"), tmp_path / "lines.jsonl"
+
+    def counted(state: int, row: dict) -> int:
+        return state + 1
+    lines.write_text('{"a": 1}\n')
+    assert folds.folded(lines, counted, int, dict) == 1, "a transcript is folded line by line"
+    lines.write_text('{"a": 1}\n{"a": 2}\n')
+    with folds.lock((str(lines), "counted", code_mark())):
+        began = time.monotonic()
+        assert (folds.folded(lines, counted, int, dict), time.monotonic() - began < 1) == (1, True), \
+            "a fold another thread is busy with is not waited on: the last finished state comes back at once"
+    assert folds.folded(lines, counted, int, dict) == 2, "and the next call folds what was added"
+    transcript_cache.FOLD_IN_PLACE_BYTES, kept = 0, transcript_cache.FOLD_IN_PLACE_BYTES
+    try:
+        lines.write_text('{"a": 1}\n{"a": 2}\n{"a": 3}\n')
+        assert folds.folded(lines, counted, int, dict) == 2, "a long stretch to catch up on is folded behind, never while the caller waits"
+        waited = time.monotonic() + 2
+        while folds.folds[(str(lines), "counted", code_mark())][1] != 3 and time.monotonic() < waited:
+            time.sleep(0.01)
+        assert folds.folds[(str(lines), "counted", code_mark())][1] == 3, "and is there for the next call once done"
+    finally:
+        transcript_cache.FOLD_IN_PLACE_BYTES = kept
 
 
 def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_loaded():
