@@ -194,7 +194,7 @@ class Feature(ABC):
         return bool(record.features.get(self.keyed(key), self.behaviours[key].default))
 
     def choose(self, record, key: str, on: bool) -> None:
-        record.set_setting("features", {**record.setting("features", {}), self.keyed(key): bool(on)})
+        record.change_setting("features", {self.keyed(key): bool(on)})
 
     def cadence(self, record, key: str = "") -> Trigger:
         return trigger.saved(record, self.keyed(key), self.behaviours[key].trigger if key else self.trigger)

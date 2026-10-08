@@ -144,7 +144,7 @@ def keywords(record: Record) -> dict[str, list[str]]:
 
 def set_keywords(record: Record, name: str, words: list[str]) -> list[str]:
     settings = record.setting("skill_loading", {})
-    record.set_setting("skill_loading", {**settings, "keywords": {**(settings.get("keywords") or {}), name: words}})
+    record.change_setting("skill_loading", {"keywords": {**(settings.get("keywords") or {}), name: words}})
     return keywords(record).get(name, [])
 
 

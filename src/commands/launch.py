@@ -201,7 +201,7 @@ def launch(record: Record, agent: str, given: list[str] | None) -> str:
             print(f"journal: {set_aside(here, project, agent)}")
         else:
             remember(here, False)
-        here.set_setting(LAUNCHED, {**here.setting(LAUNCHED, {}), agent: driver.unresumed(args)})
+        here.change_setting(LAUNCHED, {agent: driver.unresumed(args)})
         url = start(record.root, project)
         print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
     except BaseException:

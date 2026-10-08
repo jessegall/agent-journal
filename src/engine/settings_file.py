@@ -21,13 +21,22 @@ class SettingsFile:
         SETTINGS_VERSION[0] += 1
         SETTINGS[str(self.file)] = (SETTINGS_VERSION[0], read_json(self.file, dict, {}))
 
-    def write(self, key: str, value) -> bool:
-        """Writes the key and says whether its value changed."""
+    def write(self, key: str, value, combine) -> bool:
+        """Writes the key, combined with what the file holds now, and says whether its value changed."""
         held = read_json(self.file, dict, {})
+        value = combine(held.get(key), value)
         if key in held and held[key] == value:
             return False
         write_json(self.file, {**held, key: value}, indent=2)
         return True
+
+
+def replaced(held, given):
+    return given
+
+
+def merged_into(held, given: dict) -> dict:
+    return {**(held if isinstance(held, dict) else {}), **given}
 
 
 class ProjectParts:
@@ -82,10 +91,10 @@ class ScopedSettings:
         for file in self.files.values():
             file.reread()
 
-    def write(self, key: str, value, locked) -> bool:
+    def write(self, key: str, value, locked, combine=replaced) -> bool:
         """Writes each part of the value to the file of its scope, and says whether the project's part changed."""
         changed = {}
         for scope, part in PROJECT_PARTS.split(key, value).items():
             with locked(scope):
-                changed[scope] = self.files[scope].write(key, part)
+                changed[scope] = self.files[scope].write(key, part, combine)
         return changed.get(PROJECT, False)

@@ -43,7 +43,7 @@ class RunningBoards:
 
     def _set_orchestrating(self, on: bool) -> None:
         from features.session_briefing.block import rebuild
-        self.record.set_setting("boards", {**self.record.setting("boards", {}), "orchestrating": on})
+        self.record.change_setting("boards", {"orchestrating": on})
         rebuild(self.record)
 
     @action

@@ -12,7 +12,7 @@ def pick(record, mode: str, actor: str) -> str:
         raise Refused(f"the work mode is one of {', '.join(MODES)}, not {mode!r}")
     if mode_of(record) == mode:
         return mode
-    record.set_setting(NAME, {**record.setting(NAME, {}), "mode": mode})
+    record.change_setting(NAME, {"mode": mode})
     from features import running
     from features.work_modes.feature import WorkModes
     running(WorkModes).to_primary(record, MODE_SET, actor=actor, mode=mode, meaning=MODES[mode])

@@ -38,7 +38,7 @@ class Features(Controller):
         if key not in known:
             raise Refused(f"{name} has no setting {key!r}; its settings are {', '.join(known)}")
         check_choices(name, {key: setting_value(value)})
-        self.record.set_setting(name, {**self.record.setting(name, {}), key: setting_value(value)})
+        self.record.change_setting(name, {key: setting_value(value)})
         return self.record.setting(name, {})
 
     def _runs_commands(self, word: str, arguments: Arguments) -> bool:

@@ -10,7 +10,7 @@ from typing import Callable
 
 from engine import bus, runtime, waits
 from engine.event_log import EventLog
-from engine.settings_file import PROJECT_PARTS, ScopedSettings
+from engine.settings_file import PROJECT_PARTS, ScopedSettings, merged_into
 from resources.base import ACTIONS, ACTORS, PROJECT, SYSTEM, Event
 from engine.state import State
 from engine.transaction import held_back
@@ -170,7 +170,12 @@ class Record:
             self.memo.pop("settings", None)
 
     def set_setting(self, key: str, value) -> None:
-        shared = self.settings_file.write(key, value, self.locked)
+        self._settled(key, self.settings_file.write(key, value, self.locked))
+
+    def change_setting(self, key: str, part: dict) -> None:
+        self._settled(key, self.settings_file.write(key, part, self.locked, merged_into))
+
+    def _settled(self, key: str, shared: bool) -> None:
         self.reread_settings()
         for record in [self, *(r for r in Record.every(self.root) if shared and r.env != self.env)]:
             record.emit("feature", 0, "stamped", SYSTEM, quiet=True, setting=key)
