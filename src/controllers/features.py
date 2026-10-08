@@ -74,8 +74,10 @@ def refuse_a_secret(name: str, keys, actor: str) -> None:
         raise Refused(f"only you pick the key of {name}, under Integrations in the viewer")
 
 
-def writes_a_secret(settings: dict) -> bool:
-    return any(secrets_in(name, values) for name, values in settings.items() if isinstance(values, dict))
+def writes_a_secret(body: dict) -> bool:
+    """Whether a request body would pick the secret of a feature, whether it is a settings write or a single setting."""
+    named = isinstance(body.get("name"), str) and bool(secrets_in(body["name"], [body.get("key")]))
+    return named or any(secrets_in(name, values) for name, values in body.items() if isinstance(values, dict))
 
 
 def changes_a_command(record, name: str, key: str, value) -> bool:
