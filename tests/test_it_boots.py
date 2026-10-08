@@ -34,19 +34,17 @@ from serve import Handler, JournalServer
 from tests import isolation
 from tests.conftest import fresh
 
-def shipped_once() -> Path:
+def shipped(copy: Path) -> None:
     """One copy of the files the checkout ships, taken once, so every version a test reads comes from the same moment."""
     checkout = Path(__file__).resolve().parents[1]
     names = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=checkout, capture_output=True, text=True, timeout=60).stdout.split()
-    copy = isolation.world() / "shipped"
     for name in names:
         if (checkout / name).is_file():
             (copy / name).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(checkout / name, copy / name)
-    return copy
 
 
-HERE = shipped_once()
+HERE = isolation.shared("shipped", shipped)
 CODE = HERE / "src"
 
 
@@ -84,11 +82,15 @@ def test_a_restart_brings_the_agent_back_under_the_same_supervisor(tmp_path):
     assert moved == [True], "the supervisor stops the agent and starts it again in the same session, and nothing is left running after"
 
 
-def released(place: Path) -> Path:
-    repository = place / "release"
+def release(repository: Path) -> None:
     shutil.copytree(HERE, repository, symlinks=True)
     for step in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "release"]):
         subprocess.run(["git", *step], cwd=repository, capture_output=True, timeout=WAIT)
+
+
+def released(place: Path) -> Path:
+    repository = place / "release"
+    subprocess.run(["git", "clone", "-q", "--local", str(isolation.shared("release", release)), str(repository)], capture_output=True, timeout=WAIT, check=True)
     return repository
 
 
