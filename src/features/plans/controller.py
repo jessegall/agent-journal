@@ -261,7 +261,7 @@ class Plans(Controller):
         found = []
         for key, kind in {PHASE.todos: Todos, **PHASE_ROWS.keyed()}.items():
             rows = kind(self.record, actor=self.actor)
-            found += [rows.load(n) for n in phase.get(key, []) if rows.rows.exists(int(n))]
+            found += [rows.rows.peek(int(n)) for n in phase.get(key, []) if rows.rows.exists(int(n))]
         return found
 
     def _helped(self, plan) -> bool:
@@ -271,8 +271,7 @@ class Plans(Controller):
     def _complete(self, phase: dict) -> bool:
         return all(row.completed for row in self._members(phase))
 
-    def _opened_early(self, found) -> bool:
-        plan = self.load(found.n)
+    def _opened_early(self, plan, found) -> bool:
         phase = plan.current_phase
         return plan.status == ACTIVE and phase is not None and found.phase > plan.current and self._only_waiting(phase)
 
@@ -285,9 +284,9 @@ class Plans(Controller):
 
     def _holds(self, todo) -> bool:
         plans = self.rows.every()
-        placements = [found for found in (plan.placement(todo) for plan in plans) if found]
+        placements = [(plan, found) for plan in plans if (found := plan.placement(todo))]
         if placements:
-            return all(found.holds and not self._opened_early(found) for found in placements)
+            return all(found.holds and not self._opened_early(plan, found) for plan, found in placements)
         return any(p.status == ACTIVE for p in plans) and int(todo.priority or LEVELS["default"]) < LEVELS["critical"]
 
     def _start_phase(self, plan) -> None:

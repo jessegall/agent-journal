@@ -62,6 +62,7 @@ class Record:
         self._depth = 0
         self._pending: list[Callable[[], None]] = []
         self.memo = {} if memo else None
+        self._folders: dict[tuple[str, str], Path] = {}
         self.event_log = EventLog(self.home, self.locked)
         self.settings_file = ScopedSettings(self.home, self.root)
 
@@ -70,9 +71,11 @@ class Record:
         return [cls(Path(root), home.name) for home in sorted(environments(root).glob("*/"))]
 
     def folder(self, type: str, scope: str = "") -> Path:
-        f = (self.root / RESOURCES if scope == PROJECT else self.home) / type
-        f.mkdir(parents=True, exist_ok=True)
-        return f
+        if (type, scope) not in self._folders:
+            f = (self.root / RESOURCES if scope == PROJECT else self.home) / type
+            f.mkdir(parents=True, exist_ok=True)
+            self._folders[type, scope] = f
+        return self._folders[type, scope]
 
     @contextmanager
     def locked(self, scope: str = ""):

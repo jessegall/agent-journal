@@ -1,4 +1,5 @@
 import json
+import time
 from contextlib import AbstractContextManager
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -88,6 +89,13 @@ class EventLog:
                 yield from (line for line in reversed(lines) if line.strip())
             if rest.strip():
                 yield rest
+
+    def started_at(self) -> float:
+        if self.file.is_file():
+            with self.file.open("rb") as fh:
+                for event in parsed(fh):
+                    return event.at
+        return time.time()
 
     def last_id(self) -> int:
         got = self.events(last=1)

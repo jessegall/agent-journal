@@ -66,8 +66,10 @@ class Plan(Shape, Resource):
         return [i for i, phase in enumerate(self.phases, 1) if not any(phase.get(field) for field in PHASE_FIELDS.values())]
 
     def placement(self, todo) -> Placement | None:
+        if self.status in ENDED:
+            return None
         number = self.phase_of("todo", todo.n)
-        if self.status in ENDED or not number:
+        if not number:
             return None
         phase = self.current_phase
         holds = self.status != ACTIVE or phase is None or todo.n not in phase[PHASE.todos]
