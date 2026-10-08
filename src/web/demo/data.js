@@ -4,7 +4,7 @@ import {PRESETS, arranged, fresh} from "../src/domain/panes.js";
 import {expand} from "./moments.js";
 import {scenario} from "./scenarios.js";
 
-const HIDDEN = [...DEFAULT_HIDDEN, "skills", "sequences", "notes"];
+const HIDDEN = [...DEFAULT_HIDDEN, "skills", "sequences", "notes", "commands", "commits"];
 
 const quiet = (shape) =>
     shape.dir ? {...shape, a: quiet(shape.a), b: quiet(shape.b)} : shape.tabs.includes("chat") ? {...shape, hide: HIDDEN} : shape;
