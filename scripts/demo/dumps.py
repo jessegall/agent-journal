@@ -5,7 +5,7 @@ from scripts.demo.session import Session
 
 NAME = "juniper-lane"
 FIRST_COMMIT = "Start the Juniper Lane allotment notes"
-FILING = "Filing a dump"
+FILING = "Sort dumped files"
 NOTE = "Work day is Saturday 12 October, 10:00 till 13:00. Bring gloves and a flask; the committee brings the tea urn. Jobs: clear the compost bays, mend the gate by plot 9, and cover the empty beds for winter."
 ROTA = "watering-rota.png"
 SEEDS = "seed-swap.txt"

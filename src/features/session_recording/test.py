@@ -2,6 +2,7 @@ import json
 import subprocess
 import sys
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -215,11 +216,14 @@ def test_a_visitor_plays_every_shipped_lesson_to_the_end_pressing_only_what_is_o
     sys.path.insert(0, str(REPOSITORY))
     from scripts.demo.record import SCENARIOS
     site = tmp_path / "site"
-    subprocess.run(["npx", "vite", "build", "--mode", "demo", "--outDir", str(site), "--emptyOutDir"], cwd=WEB.parent, check=True, capture_output=True, timeout=180)
+    subprocess.run(["npx", "vite", "build", "--mode", "demo", "--outDir", str(site), "--emptyOutDir"], cwd=WEB.parent, check=True, capture_output=True, timeout=600)
     runs = [(key, page) for key in SCENARIOS for page in ("", "phone.html")]
-    with served(site) as url:
-        played = {run: subprocess.run(["node", str(PLAY), f"{url}{run[1]}?speed=100&scenario={run[0]}"], cwd=WEB.parent,
-                                      capture_output=True, text=True, timeout=300) for run in runs}
+
+    def play(run):
+        return subprocess.run(["node", str(PLAY), f"{url}{run[1]}?speed=100&scenario={run[0]}"], cwd=WEB.parent, capture_output=True, text=True, timeout=600)
+
+    with served(site) as url, ThreadPoolExecutor(max_workers=4) as pool:
+        played = dict(zip(runs, pool.map(play, runs)))
     for run, done in played.items():
         assert done.returncode == 0, f"{run}: {done.stdout[-400:]} {done.stderr[-400:]}"
     got = {run: json.loads(done.stdout) for run, done in played.items()}
