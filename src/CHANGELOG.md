@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.257.1 — Settings show no empty headings, and a list inside a panel is never cut off
+- The settings sidebar shows a heading only when something is listed under it, so System no longer stands alone.
+- A drop-down list, such as the unit in a "how often" panel, now opens above everything around it and stays on screen, and picking from it keeps the panel it opened from open.
+- A panel that opens from a button follows that button when the page shifts, instead of closing.
+- Settings opens on the first tab when the tab your browser remembered no longer exists, instead of showing an empty page.
+- A side panel, such as New profile, always shows above everything on the page.
+
 ## 2.257.0 — Solo mode lets reading subagents through, the phone opens at the newest message, and nested repositories count for plugins
 - In solo mode only the main agent writes: a subagent that only reads (Explore, Plan, or an agent whose tools cannot edit files) is dispatched as usual, and one that can write, or a helper, is still refused.
 - The phone's chat always opens at the newest message. The line that marks what is new since you last looked stays where it is when you scroll back.

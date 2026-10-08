@@ -1,7 +1,7 @@
 <script setup>
 import {clamp} from "../format/number.js";
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import {useOutside} from "../composables/outside.js";
+import {anchorTo, useOutside} from "../composables/outside.js";
 
 defineOptions({inheritAttrs: false});
 const props = defineProps({
@@ -24,6 +24,7 @@ const size = computed(() => ({
 }));
 const EDGE = 8;
 const drawn = ref({w: 0, h: 0});
+const edge = ref(props.anchor ? props.anchor.getBoundingClientRect() : null);
 const viewport = () => ({left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight});
 const onScreen = (r) => ({
     left: Math.max(0, r.left),
@@ -37,33 +38,33 @@ const windowOf = (anchor) => {
 };
 const within = (limit, room) => `${Math.max(0, limit ? Math.min(limit, room) : room)}px`;
 
-function room(bounds, edge) {
+function room(bounds, at) {
     return {
-        below: bounds.bottom - edge.bottom - props.gap - EDGE,
-        above: edge.top - bounds.top - props.gap - EDGE,
+        below: bounds.bottom - at.bottom - props.gap - EDGE,
+        above: at.top - bounds.top - props.gap - EDGE,
         across: bounds.right - bounds.left - 2 * EDGE,
     };
 }
 
-function fitting(edge) {
+function fitting(at) {
     const own = windowOf(props.anchor);
-    const space = room(own, edge);
+    const space = room(own, at);
     const fits = drawn.value.w <= space.across && drawn.value.h <= Math.max(space.below, space.above);
     return fits ? own : viewport();
 }
 
 const place = computed(() => {
-    if (!props.anchor) return size.value;
-    const edge = props.anchor.getBoundingClientRect();
-    const bounds = fitting(edge);
-    const space = room(bounds, edge);
+    if (!edge.value) return size.value;
+    const at = edge.value;
+    const bounds = fitting(at);
+    const space = room(bounds, at);
     const {w, h} = drawn.value;
-    const leftward = props.align === "auto" ? edge.left + edge.right > bounds.left + bounds.right : props.align === "right";
-    const x = clamp(leftward ? edge.right - w : edge.left, bounds.left + EDGE, Math.max(bounds.left + EDGE, bounds.right - w - EDGE));
+    const leftward = props.align === "auto" ? at.left + at.right > bounds.left + bounds.right : props.align === "right";
+    const x = clamp(leftward ? at.right - w : at.left, bounds.left + EDGE, Math.max(bounds.left + EDGE, bounds.right - w - EDGE));
     const up = h > space.below && space.above > space.below;
     const vertical = up
-        ? {bottom: `${window.innerHeight - edge.top + props.gap}px`, maxHeight: within(props.maxHeight, space.above)}
-        : {top: `${edge.bottom + props.gap}px`, maxHeight: within(props.maxHeight, space.below)};
+        ? {bottom: `${window.innerHeight - at.top + props.gap}px`, maxHeight: within(props.maxHeight, space.above)}
+        : {top: `${at.bottom + props.gap}px`, maxHeight: within(props.maxHeight, space.below)};
     return {...size.value, ...vertical, left: `${x}px`, maxWidth: within(props.maxWidth, window.innerWidth - x - EDGE)};
 });
 const emit = defineEmits(["close"]);
@@ -80,20 +81,21 @@ const onKey = (e) => KEYS[e.key] && (e.preventDefault(), KEYS[e.key]());
 const measure = () => panel.value && (drawn.value = {w: panel.value.offsetWidth, h: panel.value.scrollHeight});
 const watcher = new ResizeObserver(measure);
 useOutside(panel, (e) => props.anchor && !props.anchor.contains(e.target) && emit("close"));
-const moved = (a, b) => Math.abs(a.left - b.left) > 1 || Math.abs(a.top - b.top) > 1;
+const moved = (a, b) => ["top", "left", "right", "bottom"].some((side) => Math.abs(a[side] - b[side]) > 1);
+const offScreen = (r) => r.bottom < 0 || r.top > window.innerHeight;
 let frame = 0;
-let opened = null;
 
 function follow() {
     if (props.anchor) {
-        const edge = props.anchor.getBoundingClientRect();
-        if (!props.anchor.isConnected || (opened && moved(edge, opened))) return emit("close");
-        opened = opened || edge;
+        const now = props.anchor.getBoundingClientRect();
+        if (!props.anchor.isConnected || offScreen(now)) return emit("close");
+        if (moved(now, edge.value)) edge.value = now;
     }
     frame = requestAnimationFrame(follow);
 }
 
 onMounted(() => {
+    if (props.anchor && panel.value) anchorTo(panel.value, props.anchor);
     measure();
     if (panel.value) watcher.observe(panel.value);
     if (!props.plain && items()[0]) items()[0].focus();

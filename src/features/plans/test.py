@@ -366,6 +366,18 @@ def test_a_row_struck_while_its_plan_is_unapproved_leaves_the_plan_and_stays_onc
     by_user.approve(approved.n)
     todos.strike(row, "dropped later")
     assert row in by_agent.load(approved.n).phases[0]["todos"], "once approved, a struck row stays in its phase"
+    given_up = by_agent.create("given up", goal="nothing")
+    by_agent.phase(given_up.n, "only phase", when="its rows close")
+    both = todos.create("in an abandoned plan and the running one").n
+    by_agent.place(given_up.n, 1, [both])
+    by_agent.abandon(given_up.n, "given up")
+    running = by_agent.create("running", goal="its row starts")
+    by_agent.phase(running.n, "only phase", when="its rows close")
+    by_agent.place(running.n, 1, [both])
+    by_agent.ready(running.n)
+    by_user.approve(running.n)
+    by_agent.start(running.n)
+    assert todos.start(both).status != "", "a row in the running plan's phase starts, even when an abandoned plan also holds it (issue 21)"
 
 
 def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch):

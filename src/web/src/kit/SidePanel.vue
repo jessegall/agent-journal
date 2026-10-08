@@ -17,35 +17,37 @@ const {visible, close, closed} = closing(emit, props);
 </script>
 
 <template>
-    <Transition name="side" appear @after-leave="closed">
-        <div v-if="visible" :class="['veil', {over, under: depth}]" :style="{'--depth': depth, zIndex: 40 - depth}" @click.self="close">
-            <aside :class="['panel', width]" role="dialog" :aria-label="title">
-                <template v-if="title">
-                    <header class="head">
-                        <div class="names">
-                            <h2>{{ title }}</h2>
-                            <template v-if="abstract">
-                                <TextDisplay class="abstract" :text="abstract" />
-                            </template>
+    <Teleport to="body">
+        <Transition name="side" appear @after-leave="closed">
+            <div v-if="visible" :class="['veil', {over, under: depth}]" :style="{'--depth': depth, zIndex: 40 - depth}" @click.self="close">
+                <aside :class="['panel', width]" role="dialog" :aria-label="title">
+                    <template v-if="title">
+                        <header class="head">
+                            <div class="names">
+                                <h2>{{ title }}</h2>
+                                <template v-if="abstract">
+                                    <TextDisplay class="abstract" :text="abstract" />
+                                </template>
+                            </div>
+                            <slot name="actions" />
+                            <CloseButton :title="closeLabel" @click="close" />
+                        </header>
+                        <div class="body">
+                            <slot />
                         </div>
-                        <slot name="actions" />
-                        <CloseButton :title="closeLabel" @click="close" />
-                    </header>
-                    <div class="body">
-                        <slot />
-                    </div>
-                    <template v-if="$slots.foot">
-                        <footer class="foot">
-                            <slot name="foot" />
-                        </footer>
+                        <template v-if="$slots.foot">
+                            <footer class="foot">
+                                <slot name="foot" />
+                            </footer>
+                        </template>
                     </template>
-                </template>
-                <template v-else>
-                    <slot />
-                </template>
-            </aside>
-        </div>
-    </Transition>
+                    <template v-else>
+                        <slot />
+                    </template>
+                </aside>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
 <style scoped>

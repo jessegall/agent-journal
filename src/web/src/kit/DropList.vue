@@ -1,7 +1,7 @@
 <script setup>
 import MenuItem from "./MenuItem.vue";
 import MenuPanel from "./MenuPanel.vue";
-import {onUnmounted, ref} from "vue";
+import {ref} from "vue";
 import Icon from "./Icon.vue";
 
 const props = defineProps({
@@ -16,30 +16,17 @@ const props = defineProps({
 });
 const emit = defineEmits(["pick"]);
 const open = ref(false);
-const root = ref(null);
-
-function away(e) {
-    if (root.value && !root.value.contains(e.target)) open.value = false;
-}
-
-function toggle() {
-    open.value = !open.value;
-    if (open.value) document.addEventListener("click", away, true);
-    else document.removeEventListener("click", away, true);
-}
+const head = ref(null);
 
 function choose(item) {
     open.value = false;
-    document.removeEventListener("click", away, true);
     emit("pick", item);
 }
-
-onUnmounted(() => document.removeEventListener("click", away, true));
 </script>
 
 <template>
-    <div ref="root" :class="['drop', {wide, bare}]">
-        <button type="button" :class="['drop-head', {on: open}]" :aria-expanded="open" @click="toggle">
+    <div :class="['drop', {wide, bare}]">
+        <button ref="head" type="button" :class="['drop-head', {on: open}]" :aria-expanded="open" @click="open = !open">
             <template v-if="icon">
                 <Icon :name="icon" :size="12" />
             </template>
@@ -47,7 +34,7 @@ onUnmounted(() => document.removeEventListener("click", away, true));
             <Icon name="chevron" :size="11" />
         </button>
         <template v-if="open">
-            <MenuPanel :min-width="menuWidth" :max-height="320">
+            <MenuPanel :anchor="head" :min-width="menuWidth" :max-height="320" @close="open = false">
                 <template v-for="item in items" :key="item.key">
                     <MenuItem :on="item.key === picked" @click="choose(item)">
                         <template v-if="item.running !== undefined">

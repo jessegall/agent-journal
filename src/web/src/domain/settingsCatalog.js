@@ -440,6 +440,10 @@ export function navGroups(groups) {
     });
 }
 
+export function navSections(sections) {
+    return sections.map((s) => ({...s, groups: navGroups(s.groups.filter((g) => !untitled(g)))})).filter((s) => s.groups.length);
+}
+
 export function navMark(g, searching) {
     if (g.mark) return {kind: "count", text: g.mark};
     if (searching) return {kind: "count", text: String(counted(g))};
