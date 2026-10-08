@@ -88,7 +88,7 @@ const compactions = (agents) =>
 const thoughts = (agents) => sessions(agents).flatMap((a) => (a.data.thoughts || []).map((t) => mark("thought", a, t.at, t.text)));
 
 const whispers = (agents) =>
-    sessions(agents).flatMap((a) => (a.data.whispers || []).map((w) => mark("whisper", a, w.at, w.title, {row: w.ref})));
+    sessions(agents).flatMap((a) => (a.data.whispers || []).map((w) => mark("whisper", a, w.at, w.title, {row: w.ref, words: w.words})));
 
 const cards = (agents) =>
     sessions(agents).flatMap((a) =>

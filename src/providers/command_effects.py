@@ -69,8 +69,12 @@ def in_project(path: str, cwd: str) -> bool:
     return project in target.parents and JOURNAL_DIR not in target.relative_to(project).parts[:1]
 
 
+def inside(text: str, cwd: str) -> str:
+    return text.replace(f"{cwd.rstrip('/')}/", "") if cwd else text
+
+
 def shell(row, hook: Hook) -> dict:
-    doing = hook.tool.doing.strip()[:400]
+    doing = inside(hook.tool.doing.strip(), hook.cwd)[:400]
     running = current_run(row)
     before = CommandRun(command=running.command, tool=running.tool, at=running.at, done=running.done, effect=running.effect,
                         changed=running.changed, result=running.result)
@@ -80,7 +84,7 @@ def shell(row, hook: Hook) -> dict:
         now = time.time()
         kind = effect(hook)
         started = CommandRun(command=doing, tool=hook.tool.name, at=now, effect=kind, before=before if before.done else None)
-        paths = hook.tool.paths
+        paths = tuple(inside(path, hook.cwd) for path in hook.tool.paths)
         ran = CommandRun(command=doing, tool=hook.tool.name, at=now, effect=kind, files=paths, subject="" if paths else hook.tool.subject)
         return {AgentRow.running: started.to_json(), AgentRow.commands: (list(row.commands) + [ran.to_json()])[-RING:]}
     if row.running and not running.done:

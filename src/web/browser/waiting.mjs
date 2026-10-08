@@ -18,9 +18,7 @@ await runScenarios(process.argv[2], {
     async "an agent waiting on a run says Waiting, what it waits on, and lists it"(page, url) {
         const n = await waitsOn(page, url, "the test suite");
         await page.locator(".statusbar-text b", {hasText: "Waiting"}).waitFor();
-        await page.locator(".statusbar-roll", {hasText: "on the test suite"}).waitFor();
-        const first = await page.locator(".statusbar-roll").innerText();
-        await page.waitForFunction((was) => document.querySelector(".statusbar-roll").innerText !== was, first);
+        if ((await page.locator(".statusbar-roll").innerText()).includes("the test suite")) throw new Error("the status bar repeats what the waiting badge says");
         await page.locator(".legend", {hasText: "Waiting"}).waitFor();
         await page.locator(".wait-edge.waiting").waitFor();
         await page.locator(".wait-mark").waitFor();

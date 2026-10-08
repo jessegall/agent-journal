@@ -28,6 +28,8 @@ export function backgroundRun(agent) {
 }
 
 const HELPER = "helper:";
+const STATUS_WORDS = {command: "Running", subagent: "Working", helper: "At work", question: "Waiting on you"};
+const statusOf = (item) => (item.reported ? "Report ready" : STATUS_WORDS[item.kind] || "At work");
 const BACK = ["reported", "finished"];
 const countOf = (n) => `${n} ${n === 1 ? "helper" : "helpers"}`;
 
@@ -52,6 +54,7 @@ export function waitingFor({text, on, since}, {runs = [], helpers = [], now = Da
         const began = item.since || since;
         const stop = item.reported && item.ended ? item.ended : now;
         item.out = began ? elapsed(stop - began) : "";
+        item.status = statusOf(item);
     });
     const helping = refs.length > 0 && refs.every((ref) => ref.startsWith(HELPER));
     const out = items.filter((item) => !item.reported).length;

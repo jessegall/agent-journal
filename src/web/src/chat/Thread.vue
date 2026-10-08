@@ -119,7 +119,7 @@ function unedit() {
 }
 const busy = computed(() => !!owner.value && ["working", "compacting"].includes(owner.value.data.status));
 const waiting = computed(() => waitsFor(rows("work")));
-const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting();
+const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(undefined, owner, () => rows("work"));
 const planCard = computed(() => cardPlan(rows("plan")));
 const reportDock = computed(() => dockedReport(rows("report")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dump"))));

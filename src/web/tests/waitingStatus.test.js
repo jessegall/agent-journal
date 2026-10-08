@@ -29,6 +29,8 @@ describe("the waiting word and its line", () => {
         );
         expect(two.line).toBe("on 2 helpers · 1m 00s");
         expect(two.items.map((item) => item.reported)).toEqual([true, false, false]);
+        expect(two.items.map((item) => item.status)).toEqual(["Report ready", "At work", "At work"]);
+        expect(waitingOn(agent(), [work()], [], NOW).items[0].status).toBe("At work");
     });
 
     test("an idle agent with nothing to wait on is ready, never waiting", () => {

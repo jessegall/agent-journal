@@ -91,7 +91,7 @@ class Session:
               for sub in self.subagents if sub.get("ended") and not sub.get("refusal")),
             *(self.mark(load["at"], "Loaded skill", "skills", icon="book", name=load["skill"], tone="good") for load in self.skill_loads),
             *(self.mark(done["at"], "The agent compacted its context", "compactions", icon="activity", tone="warn") for done in self.compactions),
-            *(self.mark(w["at"], w["title"], whisper_shows(w["ref"]), icon="reminders") for w in self.whispers),
+            *(self.mark(w["at"], w.get("words", w["title"]), whisper_shows(w["ref"]), icon="reminders") for w in self.whispers),
         ]
 
 
