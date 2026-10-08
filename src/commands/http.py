@@ -50,7 +50,7 @@ from features.routing import JSON, PLAIN, Reply, Request
 from resources.base import Missing
 
 from commands.invoke import invoked, takes_row
-from features.format import VIEWER, formatted, shaped
+from features.format import VIEWER, carded, formatted, shaped
 from surfaces.attachments import attachments, listed_types
 from surfaces.listing import Listing, counted, listing
 from surfaces.settings import apply, settings
@@ -84,6 +84,7 @@ def unanswered(root: Path) -> None:
 
 
 TRANSCRIPT_PAGE = 300
+SHOWN_HITS = 30
 STREAM_BEAT = 15.0
 
 @dataclass(frozen=True)
@@ -553,19 +554,23 @@ def get_file_diff(req: Request) -> Reply:
 def get_search(req: Request) -> Reply:
     term = req.query.get("q", "")
     if not term:
-        return Reply(200, [])
+        return Reply(200, {"hits": [], "more": 0})
     record = req.record()
-    want = term.lower()
-    out = []
+    found = []
     archived = req.query.get("archived") == "true"
     for type_ in listed_types():
         for r in CONTROLLERS[type_](record, actor=USER).search(term, archived):
-            matches = [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name, safe='')}"}
-                       for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
-            view = shaped(r, req.record(), VIEWER)
-            if row_shared(type_, view):
-                out.append({**view, "matches": matches})
-    return Reply(200, out)
+            if row_shared(type_, vars(r)):
+                found.append((type_, r))
+    found.sort(key=lambda hit: hit[1].updated, reverse=True)
+    hits = [{**carded(r, record, VIEWER), "matches": file_matches(record, type_, r, term)} for type_, r in found[:SHOWN_HITS]]
+    return Reply(200, {"hits": hits, "more": len(found) - len(hits)})
+
+
+def file_matches(record, type_: str, r, term: str) -> list[dict]:
+    want = term.lower()
+    return [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name, safe='')}"}
+            for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
 
 
 @route("GET", "/api/{env}/search/attic")

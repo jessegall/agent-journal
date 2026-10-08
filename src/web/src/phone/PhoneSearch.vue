@@ -11,6 +11,7 @@ import CellGroup from "./kit/CellGroup.vue";
 import NavBar from "./kit/NavBar.vue";
 import SearchField from "./kit/SearchField.vue";
 import {useScrolled} from "./kit/scrolled.js";
+import {moreHits} from "../domain/search.js";
 
 const WAIT = 250;
 
@@ -18,6 +19,7 @@ defineProps({target: {type: String, default: ""}, back: {type: String, default: 
 const emit = defineEmits(["back", "open", "command"]);
 const words = ref("");
 const items = ref([]);
+const more = ref(0);
 const searching = ref(false);
 const {under, scrolled} = useScrolled();
 const asked = computed(() => words.value.trim().toLowerCase());
@@ -30,14 +32,14 @@ const openFile = (item, file) => window.open(phone.fileUrl(item.type, item.n, fi
 
 watch(asked, (now) => {
     clearTimeout(timer);
-    if (!now) return (items.value = []);
+    if (!now) return ([items.value, more.value] = [[], 0]);
     timer = setTimeout(async () => {
         searching.value = true;
         try {
             const found = await api.search(now);
-            if (asked.value === now) items.value = found;
+            if (asked.value === now) [items.value, more.value] = [found.hits, found.more];
         } catch {
-            items.value = [];
+            [items.value, more.value] = [[], 0];
         } finally {
             searching.value = false;
         }
@@ -86,6 +88,9 @@ watch(asked, (now) => {
             </template>
             <template v-if="asked && !searching && !items.length && !places.length && !commands.length">
                 <p class="search-none">Nothing matches “{{ words }}”.</p>
+            </template>
+            <template v-if="more">
+                <p class="search-none">{{ moreHits(more) }}</p>
             </template>
             <p class="search-help">Finds places, commands, titles, text and attached files.</p>
         </div>

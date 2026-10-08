@@ -25,6 +25,7 @@ def worded(limit: int) -> Memo:
 
 
 SHAPED = worded(KEEP_SHAPED)
+CARDS = worded(KEEP_SHAPED)
 TEXTS = worded(KEEP_TEXTS)
 
 
@@ -75,6 +76,21 @@ def shape(r, record=None, surface: str = "") -> dict:
     if data:
         shaped_row["data"] = {**row["data"], **data}
     return shaped_row
+
+
+def carded(r, record, surface: str = "") -> dict:
+    return CARDS.get((str(record.home), r.type, r.n, r.updated, surface, settled(record)), None, lambda: card(r, record, surface))
+
+
+def card(r, record=None, surface: str = "") -> dict:
+    """What a result card shows, formatted: the title, the abstract or else the brief, and the section titles; no other text."""
+    row = as_dict(r)
+    shown = ("title", "abstract" if row.get("abstract") else "brief")
+    fields = {key: formatted(row.get(key), record, surface) for key in shown if row.get(key)}
+    fields = {**fields, **{key: plain(fields[key]) for key in PLAIN_FIELDS if key in fields}}
+    parts = [{SECTION.title: formatted(s.get(SECTION.title), record, surface)} for s in row.get("sections") or []]
+    data = {key: value for key, value in (row.get("data") or {}).items() if key not in getattr(r, "formatted_data", {})}
+    return {**{key: value for key, value in row.items() if key not in TEXT_FIELDS}, **fields, "sections": parts, "data": data}
 
 
 def markdown(row, record=None) -> str:

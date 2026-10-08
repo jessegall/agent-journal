@@ -396,7 +396,7 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     assert [ask("POST", "/api/services/sharing.server", body={"want": want}).code for want in ("up", "down", "restart")] == [200, 200, 200], "a service is asked to run, stop and restart"
     assert ask("GET", "/api/services/sharing.server/log").body["id"] == "sharing.server", "a service's log is read by its id"
     assert ask("GET", "/api/journals").code == 200, "the journals this machine knows are listed"
-    assert ask("GET", f"/api/{record.env}/search", {"q": ""}).body == [], "a search for nothing finds nothing"
+    assert ask("GET", f"/api/{record.env}/search", {"q": ""}).body == {"hits": [], "more": 0}, "a search for nothing finds nothing"
     row = Todos(record, actor=USER).create("a row with a file", brief="the brief")
     sent = b"--b\r\nContent-Disposition: form-data; name=f; filename=notes.txt\r\n\r\nhello\r\n--b\r\nContent-Disposition: form-data; name=x\r\n\r\nskipped\r\n--b--\r\n"
     uploaded = ask("POST", f"/api/{record.env}/todo/{row.n}/upload", body={"_type": "multipart/form-data; boundary=b", "_raw": sent})

@@ -234,21 +234,23 @@ def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
         "/api/{env}/agent": {"more", "rows"},
         "/api/{env}/agent/1/transcript": {"first", "total", "turns"},
         "/api/changelog": {"changed", "changelog", "checking", "latest", "newer", "repository", "updating", "version"},
+        "/api/{env}/search": {"hits", "more"},
     }
     wrong = {path: sorted(keys[path] ^ set(reply.body)) for path in keys if (reply := get(record, path)).code != 200 or set(reply.body) != keys[path]}
     assert wrong == {}, "each object the viewer reads has the keys it reads, and nothing else"
     assert "`journal plan create`" in get(record, "/api/manifest").body["features"]["plans"]["help"], \
         "a feature's help reaches the viewer through the formatters, its commands set as code"
     lists = {"/api/pages": set(), "/api/services": set(), "/api/journals": {"current", "port", "project", "root", "running", "version"},
-             "/api/{env}/events": {"action", "actor", "at", "data", "handled", "id", "n", "pid", "type"},
-             "/api/{env}/search": {"matches", "n", "ref", "title", "type"}}
-    asked = {"/api/{env}/events": {"since": "0"}, "/api/{env}/search": {"q": "row"}}
+             "/api/{env}/events": {"action", "actor", "at", "data", "handled", "id", "n", "pid", "type"}}
+    asked = {"/api/{env}/events": {"since": "0"}}
     bad = {}
     for path, shape in lists.items():
         reply = get(record, path, **asked.get(path, {}))
         if reply.code != 200 or not isinstance(reply.body, list) or any(not shape <= set(row) for row in reply.body) or (path in asked and not reply.body):
             bad[path] = (reply.code, reply.body)
     assert bad == {}, "each list the viewer reads is a list, and its rows have the keys it reads"
+    found = get(record, "/api/{env}/search", q="row").body["hits"]
+    assert found and all({"matches", "n", "ref", "title", "type"} <= set(hit) for hit in found), "each search hit has the keys the viewer reads"
     assert (reply := get(record, "/api/{env}/todo/1/choices")).code == 200 and isinstance(reply.body, dict), "a row's field choices are an object keyed by field"
 
 
