@@ -5,11 +5,31 @@ from engine.handover import accept, epoch_of, give, ready_to_give
 from engine.machines import Lease, this_machine
 from engine.offline import Waiting
 from engine.record import Record
-from engine.sync import PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay
+from engine.sync import PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay, travels
 from engine.version import version
 from features.connection.transport import Transport
 from migrations import applied
 from resources.base import PROJECT, SYSTEM, Refused
+
+@dataclass(frozen=True)
+class Travelling:
+    """What connecting would send to the server: how many files, how many bytes, from which environments; what never leaves this machine is not counted."""
+
+    files: int
+    bytes: int
+    environments: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ConnectionView:
+    """What the viewer shows of the connection: the server's address, whether this copy is joined and how it stands, and what connecting would send."""
+
+    address: str
+    connected: bool
+    release: str
+    step: str
+    travels: Travelling
+
 
 SERVER, HERE = "server", "here"
 STATE = "connection"
@@ -55,3 +75,20 @@ def sync(record, transport: Transport) -> dict:
     if not record.holds(PROJECT):
         pulled += replay(record, PROJECT, transport.events(PROJECT, record.env, record.event_log.cursor(pulled_cursor(PROJECT))))
     return {"sent": sent, "pulled": pulled}
+
+
+def what_travels(root: Path) -> Travelling:
+    found = [path for path in sorted(Path(root).rglob("*")) if path.is_file() and travels(path.relative_to(root).as_posix())]
+    environments = sorted({path.relative_to(root).parts[1] for path in found if path.relative_to(root).parts[0] == "environments" and len(path.relative_to(root).parts) > 2})
+    return Travelling(len(found), sum(path.stat().st_size for path in found), tuple(environments))
+
+
+def view(record, address: str) -> ConnectionView:
+    welcome = record.state(STATE).get("welcome") or {}
+    return ConnectionView(address, bool(address and welcome), welcome.get("release", ""), welcome.get("step", ""), what_travels(record.root))
+
+
+def leave(record) -> None:
+    """Disconnects: the server's address and what was learned of it are forgotten, and nothing already sent is taken back."""
+    record.change_setting("connection", {"address": ""})
+    record.state(STATE).remove("welcome")

@@ -23,6 +23,7 @@ import SettingsEnvironments from "./SettingsEnvironments.vue";
 import PluginSettings from "./PluginSettings.vue";
 import SettingsSecrets from "./SettingsSecrets.vue";
 import SettingsRegion from "./SettingsRegion.vue";
+import SettingsConnection from "./SettingsConnection.vue";
 import SettingsTunnel from "./SettingsTunnel.vue";
 import {TABS, catalog, counts, inTab, narrowed, tabCounts, tabLine} from "../domain/settingsCatalog.js";
 import {remember, remembered} from "../platform/storage.js";
@@ -195,6 +196,7 @@ onMounted(async () => {
                     </template>
                     <template v-if="tab === 'sharing'">
                         <SettingsTunnel />
+                        <SettingsConnection />
                     </template>
                 </div>
             </template>

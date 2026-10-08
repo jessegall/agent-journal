@@ -1,6 +1,7 @@
 <script setup>
 import SettingGroup from "../kit/SettingGroup.vue";
 import AgentVoice from "./AgentVoice.vue";
+import SettingsConnection from "./SettingsConnection.vue";
 import SettingsTunnel from "./SettingsTunnel.vue";
 
 defineProps({region: {type: Object, required: true}, across: Boolean, sheet: Boolean});
@@ -34,6 +35,7 @@ defineEmits(["change", "timing", "act"]);
                 <p class="settings-line">Tunler is the service that gives share links and phones their web address. Connect an account here.</p>
             </div>
             <SettingsTunnel />
+            <SettingsConnection />
         </template>
     </div>
 </template>
