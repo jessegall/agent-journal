@@ -68,7 +68,7 @@ def machine_key(root: Path, name: str) -> str:
     vault = Vault(root)
     key = MachineKeys(vault).make(name)
     vault.audit("machine key made", name=name)
-    return f"Machine key for {name}, shown only now: {key}\nOn that computer: journal environment connect <address> {key}"
+    return f"Machine key for {name}, shown only now: {key}\nOn that computer: journal environment connect --address <address> --key {key}, or give it in Settings, Connection to a server"
 
 
 def log_out_everywhere(root: Path) -> str:

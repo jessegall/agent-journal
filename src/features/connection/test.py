@@ -208,7 +208,7 @@ def test_a_hosted_world_runs_a_server_and_two_local_copies_as_real_processes_tha
     world.start(world.desk)
     assert len({world.server.port, world.laptop.port, world.desk.port}) == 3 and all(copy.running() for copy in world.copies.values()), \
         "the server and both local copies each run in a process and folder of their own"
-    asked = world.laptop.run("environment", "connect", world.server.address)
+    asked = world.laptop.run("environment", "connect", "--address", world.server.address)
     assert "Traceback" not in asked.stderr, "a local copy can be told to connect to the server by its address, and answers in words whatever the server says"
     world.stop(world.server)
     assert not world.server.running(), "the server can be stopped and started again on the same port, as the failure cases need"
@@ -217,7 +217,7 @@ def test_a_hosted_world_runs_a_server_and_two_local_copies_as_real_processes_tha
     assert world.server.port == port and world.server.running(), "it comes back where it was"
     as_you = ("--as", "user")
     world.laptop.run(*as_you, "feature", "switch", "connection")
-    assert "connected" in world.laptop.run(*as_you, "environment", "connect", world.server.address).stdout
+    assert "connected" in world.laptop.run(*as_you, "environment", "connect", "--address", world.server.address).stdout
     assert "from epoch 1" in world.laptop.run(*as_you, "environment", "hand", "main", "server").stdout, "the laptop hands its environment to the server"
     world.server.run(*as_you, "todo", "create", "Written on the server")
     assert "took in" in world.laptop.run(*as_you, "environment", "sync").stdout
