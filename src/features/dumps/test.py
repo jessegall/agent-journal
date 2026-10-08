@@ -154,6 +154,9 @@ def test_a_filed_dump_is_summed_up_with_suggestions_the_user_takes_or_leaves():
     asked = [m for m in Messages(record, actor=USER).rows.standing() if dump.ref in m.refs]
     assert [(m.brief, m.data["window"]) for m in asked] == [("Where did the room booking go?", dump.ref)], \
         "the user's own words reach the agent as a message written in the dump's window, which the main chat leaves out"
+    Messages(record, actor=AGENT).read(asked[0].n)
+    assert f"journal dump say {dump.n}" in refused(lambda: Messages(record, actor=AGENT).reply(asked[0].n, "Under Meetings.")), \
+        "a question asked in the dump is answered in the dump, never in the main chat"
     agent.say(dump.n, "It is under Meetings, as Room booking for Thursday.")
     assert agent.load(dump.n).data["log"][-1]["answer"], "an answer in the dump lands in its chat"
     assert not [c for c in CONTROLLERS["agent"](record).primary().data.get("cards") or [] if "dump" in c["label"]], "and nothing about it reaches the main chat"

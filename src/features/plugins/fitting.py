@@ -6,8 +6,8 @@ import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from controllers.types import Agents, Plugins
-from engine.events.agents import SessionStarted
+from controllers.types import Agents, Environments, Plugins
+from engine.events.engine import ClockTicked
 from engine.fields import Loaded
 from engine.stored import write_text
 from engine.upgrades import fetch
@@ -16,7 +16,7 @@ from features.parts import AgentContext, Handler
 from features.plugins.declared import Fits, called
 from features.plugins.lifecycle import fetched
 from features.plugins.paths import home
-from features.plugins.preview import RUNS_AS, preview_rows
+from features.plugins.preview import preview_rows
 from features.plugins.staging import Unreached
 from features.suggestions.controller import Decision, OPEN_SUGGESTIONS, Suggestions
 from resources.base import Refused, SYSTEM, USER
@@ -24,6 +24,7 @@ from resources.base import Refused, SYSTEM, USER
 LISTED = "plugins.json"
 KEPT = "plugin-offers.json"
 FRESH_FOR = 86400
+WORKED_FIRST = 3600
 LANGUAGES = {".php": "PHP", ".py": "Python", ".ts": "TypeScript", ".vue": "Vue", ".cs": "C#"}
 REFRESHING: dict[Path, threading.Lock] = {}
 
@@ -47,12 +48,7 @@ class Offer(Loaded):
         return f"Install the {self.title} plugin"
 
     def brief(self, found: list[str]) -> str:
-        commands = "\n".join(f"- {command}" for command in self.commands)
-        return f"""This project has {', '.join(found)}. The {self.title} plugin describes itself in its own words: "{self.description}"
-
-{RUNS_AS}
-
-{commands}"""
+        return f"This project has {', '.join(found)}, which the {self.title} plugin is made for."
 
 
 def written_in(names: list[str]) -> set[str]:
@@ -116,7 +112,8 @@ def suggest(record, offers: list[Offer]) -> None:
             continue
         if len(suggestions.rows.standing()) >= OPEN_SUGGESTIONS:
             return
-        suggestions.create(offer.suggestion(), brief=offer.brief(found), plugin=offer.source, commit=offer.commit, name=offer.title)
+        suggestions.create(offer.suggestion(), brief=offer.brief(found), plugin=offer.source, commit=offer.commit, name=offer.title,
+                           described=offer.description, runs=list(offer.commands))
 
 
 def refresh(record) -> None:
@@ -172,9 +169,16 @@ class InstallMark:
         self.card(label="Installed", name=called(made), state="done", ended=time.time(), row=made.ref)
 
 
+def in_use_since(record, agent) -> float:
+    place = Environments(record, actor=SYSTEM).rows.by_title(record.env)
+    return min(float(agent.started or time.time()), float(place.created) if place else time.time())
+
+
 class SuggestFittingPlugins(Handler):
-    def handle(self, context: AgentContext, event: SessionStarted) -> None:
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
         record = context.record
+        if time.time() - in_use_since(record, context.agent.row) < WORKED_FIRST:
+            return
         if offers_fresh(record.root):
             suggest(record, offers_kept(record.root))
             return
