@@ -14,19 +14,23 @@ from runner.gate import refusal
 from runner.hook_report import report
 
 
-def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
-    hook = Hook.read(raw, provider.tool_kinds)
+def read(provider, hook: Hook | dict) -> Hook:
+    return Hook.read(hook, provider.tool_kinds) if isinstance(hook, dict) else hook
+
+
+def answer(provider, root: Path, hook: Hook | dict, pid: int, prefer: str = "") -> dict:
+    hook = read(provider, hook)
     return handle(provider, root, HookBinding(root, provider, pid).environment(hook, prefer), hook)
 
 
-def handle(provider, root: Path, env: str, hook) -> dict:
-    hook = Hook.read(hook, provider.tool_kinds) if isinstance(hook, dict) else hook
+def handle(provider, root: Path, env: str, hook: Hook | dict) -> dict:
+    hook = read(provider, hook)
     if hook.event not in STATUS or runtime.off(root):
         return {}
     record = Record(root, env, memo=True)
     if provider.is_subagent(hook):
         return subagent_answer(provider, record, hook)
-    report(provider, record, hook)
+    bus.defer(lambda: report(provider, record, hook))
     call = HookCall(provider, record, hook, Agents(record, actor=SYSTEM)._shared(hook.session))
     return ANSWERS.get(hook.event, quiet)(call)
 

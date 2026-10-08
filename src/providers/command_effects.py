@@ -1,5 +1,4 @@
 import re
-import time
 from functools import singledispatch
 from pathlib import Path
 
@@ -81,16 +80,15 @@ def shell(row, hook: Hook) -> dict:
     if hook.event == HookEvent.USER_PROMPT_SUBMIT:
         return {AgentRow.running: CommandRun(before=before).to_json() if before.done else {}, AgentRow.commands: list(row.commands)}
     if hook.event == HookEvent.PRE_TOOL_USE and doing:
-        now = time.time()
         kind = effect(hook)
-        started = CommandRun(command=doing, tool=hook.tool.name, at=now, effect=kind, before=before if before.done else None)
+        started = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, before=before if before.done else None)
         paths = tuple(inside(path, hook.cwd) for path in hook.tool.paths)
-        ran = CommandRun(command=doing, tool=hook.tool.name, at=now, effect=kind, files=paths, subject="" if paths else hook.tool.subject)
+        ran = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, files=paths, subject="" if paths else hook.tool.subject)
         return {AgentRow.running: started.to_json(), AgentRow.commands: (list(row.commands) + [ran.to_json()])[-RING:]}
     if row.running and not running.done:
         result = outcome_of(hook, running.effect)
-        running = replace(running, done=time.time(), result=result if result else running.result)
-    return {AgentRow.running: running.to_json(), AgentRow.commands: stamped(command_runs(row), running, doing, time.time())}
+        running = replace(running, done=hook.at, result=result if result else running.result)
+    return {AgentRow.running: running.to_json(), AgentRow.commands: stamped(command_runs(row), running, doing, hook.at)}
 
 
 def outcome_of(hook: Hook, effect: str) -> Outcome | None:
