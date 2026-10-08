@@ -89,4 +89,10 @@ describe("the time a wait has lasted", () => {
         expect(two.line).toBe("on 2 helpers · 1m 07s");
         expect(two.items.map((item) => item.out)).toEqual(["1m 07s", "1m 07s"]);
     });
+
+    test("a run that ended stops its timer at the end and keeps how long it took", () => {
+        const runs = [{id: "run", running: false, ended: NOW - 600, task: "the suite"}];
+        const wait = waitingFor({text: "the suite", on: "run", since: NOW - 1440}, {runs, now: NOW});
+        expect(wait.items.map((item) => item.out)).toEqual(["14m 00s"]);
+    });
 });

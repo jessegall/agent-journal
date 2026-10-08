@@ -14,7 +14,7 @@ def back(context: AgentContext, ref: str) -> str | None:
         if not row.report and not row.completed:
             return None
         return f"{row.name}: {row.report[:KEPT]}" if row.report else f"{row.name} finished"
-    run = next((run for run in context.agent.row.runs if ref in (run.get("task_id"), run.get("id")) and run.get("ended")), None)
+    run = next((run for run in context.agent.row.runs if ref in (run.get("task_id"), run.get("id")) and not run.get("running")), None)
     return f"{run.get('task') or run.get('command') or ref} {run.get('status') or 'ended'}" if run else None
 
 
