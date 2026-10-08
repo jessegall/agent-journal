@@ -131,7 +131,7 @@ def test_the_command_line_answers_what_is_wired_what_is_set_and_what_a_command_d
     agents = Agents(record, actor=SYSTEM)
     agents.create("claude-1", provider="claude", transcript=str(tmp_path / "gone.jsonl"))
     agents.create("claude-2", provider="nobody", transcript=str(tmp_path))
-    assert read("search", "anything") == "\n", "a transcript that is gone or of no known provider finds nothing"
+    assert read("search", "zzqxnothing") == "\n", "a transcript that is gone or of no known provider finds nothing"
     assert read("conversation").strip() == "", "with no session named there is no conversation to read back"
     calls = []
     monkeypatch.setattr("commands.queries.launch", lambda rec, agent, args: calls.append((agent, args)) or "started")
