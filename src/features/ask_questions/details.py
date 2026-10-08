@@ -52,6 +52,12 @@ class AskQuestionsDetails(FeatureDetails):
         in the terminal: each question in the call is filed as a journal question with its
         options and the one labelled (Recommended) as your pick, and the call is refused with the
         numbers, so you carry on and hear the answer as an event.
+
+        A question is open, without options, only for a name, a secret or a free description,
+        and says so with --set free=name|secret|description. A yes or no, a which, or
+        alternatives joined by or carry their options and your pick, journal todo ask included;
+        one an earlier answer already settles is yours to decide. A status you could check or
+        wait on is no question: wait on the row and say so in the chat.
     """
 
     fixed = True

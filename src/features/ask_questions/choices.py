@@ -49,3 +49,11 @@ def restates(text: str, titles: list[str]) -> bool:
     starts = [BULLET.sub("", line).lower() for line in text.splitlines()]
     listed = sum(1 for title in titles if title and any(line.startswith(title.lower()) for line in starts))
     return len(RESTATED.findall(text)) >= len(titles) or listed == len(titles)
+
+
+YES_OR_NO = re.compile(r"^\s*(?:can|could|has|have|had|is|are|was|were|should|shall|do|does|did|will|would|may|must|plan|ok|okay|looked)\b[^?]*\?\s*$", re.IGNORECASE)
+ALTERNATIVES = re.compile(r"\bwhich\b|\b\w+ or \w+", re.IGNORECASE)
+
+
+def enumerable(title: str) -> bool:
+    return bool(YES_OR_NO.match(title) or ALTERNATIVES.search(title))
