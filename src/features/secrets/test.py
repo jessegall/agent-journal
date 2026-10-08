@@ -116,6 +116,9 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
         Path(command[-2].removeprefix("--save-storage=")).write_text(json.dumps({"cookies": [cookie], "origins": [{"origin": command[-1], "localStorage": []}]}))
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
     monkeypatch.setattr(subprocess, "run", browser)
+    project = record.root.parent
+    own = {"command": "npx", "args": ["@playwright/mcp", "--browser", "chrome"]}
+    (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"browser": own}}))
     row = Secrets(record, actor=USER).create("Staging", kind="login")
     said = Secrets(record, actor=AGENT).login("staging", "https://staging.example.com")
     Secrets(record, actor=AGENT).login("Staging", "https://staging.example.com")
@@ -124,8 +127,13 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
     assert opened[0][:4] == ["npx", "-y", "playwright@latest", "open"] and "Restart the agent once" in said, "the browser opens for the user, and the agent is told to restart once"
     assert (len(merged["cookies"]), len(merged["origins"])) == (1, 1), "logging in again replaces the saved session instead of adding a second"
     assert {stat.S_IMODE(path.stat().st_mode) for path in (logins.merged, logins.saved_for("Staging"))} == {0o600}, "only the owner reads a saved login"
-    server = json.loads((record.root.parent / ".mcp.json").read_text())["mcpServers"]["playwright"]
-    assert server["args"][-2:] == ["--storage-state", str(logins.merged)], "the agent's browser tool starts from the saved logins"
+    servers = json.loads((project / ".mcp.json").read_text())["mcpServers"]
+    assert list(servers) == ["browser"] and servers["browser"]["args"] == ["@playwright/mcp", "--browser", "chrome", "--isolated", "--storage-state", str(logins.merged)], \
+        "the project's own Playwright server starts from the saved logins, keeping its options, and no second one is added beside it"
+    assert json.loads((project / ".claude" / "settings.local.json").read_text())["env"]["PLAYWRIGHT_MCP_STORAGE_STATE"] == str(logins.merged), \
+        "any other Playwright tool Claude Code starts, such as a plugin's, reads the saved logins from the agent's environment"
+    codex = (project / ".codex" / "config.toml").read_text()
+    assert "[mcp_servers.playwright]" in codex and f'"--storage-state", "{logins.merged}"' in codex, "Codex's browser tool starts from the saved logins too"
     assert Secrets(record, actor=SYSTEM).load(row.n).session_expires == 2_000_000_000.0, "the secret records when its login runs out"
     from providers import PROVIDERS
     from runner.hooks import handle
