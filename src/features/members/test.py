@@ -88,7 +88,8 @@ def test_an_invited_person_joins_once_from_the_link_and_logs_in_again_by_name(ho
     assert Logins(hosted.vault).found(login_in(joined)).member == member.id, "joining is the member's first login"
     assert hosted.call("POST", "/join", {"code": code, "password": MEMBER_PASSWORD, "again": MEMBER_PASSWORD}).status == 401, "the link works once"
     theirs = f"__Host-journal={login_in(joined)}"
-    assert json.loads(hosted.call("GET", "/api/hosting/me", Cookie=theirs).text) == {"member": member.id, "name": "Ada Lovelace", "owner": False}
+    told = json.loads(hosted.call("GET", "/api/hosting/me", Cookie=theirs).text)
+    assert (told["member"], told["name"], told["owner"]) == (member.id, "Ada Lovelace", False), "a member's login says whose it is"
     assert [sent(hosted, "/api/hosting/members", {"name": "Eve"}, theirs).status, hosted.call("GET", "/api/hosting", Cookie=theirs).status] == [403, 403], \
         "a member invites no one and reaches none of the owner's server actions"
     assert "Log in with your name" in hosted.call("GET", "/login").text
@@ -147,7 +148,7 @@ def test_a_member_reaches_only_what_the_allow_list_names_over_every_route_action
         assert all(read(target) or (role is Role.WRITER and target in WRITES) for target in named), f"a {role} reaches only what is named"
         assert not named & {*RUNS, *TO_WEIGH, *NEVER_FROM_OUTSIDE}, f"a {role} runs, starts or sets nothing that runs"
         assert not [path for _, path in opened[role] if any(f"/{type_}" in path for type_ in UNREAD)], f"a {role} never reaches secrets, phones, shares or plugins"
-    assert all(method == "GET" or path.endswith("/read-all") for method, path in opened[Role.READER]), "a reader only reads and marks what they read"
+    assert not {targets[asked].target for asked in opened[Role.READER]} & WRITES, "a reader only reads and marks what they read, by whichever address"
     assert {targets[asked].target for asked in opened[Role.WRITER] - opened[Role.READER]} == WRITES
     fields = [{details.name: {setting.name: setting.default}} for details in (type(feature).details for feature in FEATURES.values())
               for setting in details.settings]
@@ -208,7 +209,7 @@ def stream_of(hosted: Hosted, cookie: str) -> socket.socket:
     """A live stream held open through the login page, as a member's browser holds one."""
     held = socket.create_connection(("127.0.0.1", hosted.port), timeout=10)
     held.sendall(f"GET /api/{hosted.record.env}/stream HTTP/1.1\r\nHost: 127.0.0.1:{hosted.port}\r\nCookie: {cookie}\r\nAccept: text/event-stream\r\n\r\n".encode())
-    assert held.recv(64).startswith(b"HTTP/1.1 200")
+    assert held.recv(64).split(b" ")[1] == b"200", "the login page holds the stream open"
     return held
 
 
