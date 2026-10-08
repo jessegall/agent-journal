@@ -161,13 +161,13 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     watch()
     assert len(idle()) == 2, "no more notices than the repeats setting allows"
     speaker = AgentContext.of(features.FEATURES["helpers"], record, Agents(record, actor=SYSTEM).primary()).agent
-    said = lambda minutes: speaker.say("idle", n=7, name="Zed", minutes=minutes)
+    repeat_line = lambda minutes: speaker.say("idle", n=7, name="Zed", minutes=minutes)
     counted = lambda: len([n for n in Nudges(record, actor=SYSTEM).all() if "Zed" in n.title])
-    said(4)
-    said(4)
+    repeat_line(4)
+    repeat_line(4)
     assert counted() == 1, "a line repeated word for word with nothing said between is said once"
-    said(5)
-    said(5)
+    repeat_line(5)
+    repeat_line(5)
     assert counted() == 2, "and a line with something new in it is said again"
     away = Record(record.root, f"{record.env}-rhea")
     Questions(away, actor=AGENT).create("Which port?", options=[{"title": "8421"}, {"title": "9000"}], pick=1)
@@ -326,12 +326,12 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     stranded = Todos(repo.record, actor=SYSTEM).create("held by a helper that is gone").n
     Todos(repo.record, actor=SYSTEM).assign(stranded, to="helper:99")
     assert todos.unassign(stranded).assigned == "", "a row held by a helper that no longer exists is the agent's to take back"
-    told = []
-    monkeypatch.setattr("features.helpers.controller.tell_in", lambda record, environment, provider, text: told.append(text) or True)
+    sent_texts = []
+    monkeypatch.setattr("features.helpers.controller.tell_in", lambda record, environment, provider, text: sent_texts.append(text) or True)
     helpers.dispatch("Tess", "More tunnel work", "codex", "gpt-5.5")
     later = todos.create("check the certificate").n
     helpers.say(helpers.all()[-1].n, "also this one", todos=str(later))
-    assert (todos.load(later).assigned, "check the certificate" in told[-1], told[-1].endswith("also this one")) == (helpers.all()[-1].ref, True, True), \
+    assert (todos.load(later).assigned, "check the certificate" in sent_texts[-1], sent_texts[-1].endswith("also this one")) == (helpers.all()[-1].ref, True, True), \
         "a follow-up with --todos hands a running helper those rows and names them in what it is told"
     tess = helpers.all()[-1]
     helpers.dispatch("Uma", "Take over", "codex", "gpt-5.5")
@@ -340,7 +340,7 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     tess_list = Todos(Record(repo.record.root, tess.environment), actor=SYSTEM)
     assert (todos.load(later).assigned, [t.title for t in tess_list.rows.standing() if t.handed == str(later)]) == (uma.ref, []), \
         "a to-do held by one helper moves to another with helper say --todos, and leaves the first helper's own list"
-    assert any(f"now belongs to helper {uma.n}, Uma" in text for text in told), "and the first helper is told it left"
+    assert any(f"now belongs to helper {uma.n}, Uma" in text for text in sent_texts), "and the first helper is told it left"
     assert "moves it to another helper" in refused(lambda: todos.assign(later, tess.ref)), "todo assign names the command that moves a held to-do"
 
 
