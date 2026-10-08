@@ -22,8 +22,8 @@ from resources.base import AGENT, PROJECT, SYSTEM, USER, Event
 from tests.conftest import fresh, hosted_world, refused  # noqa: F401
 
 
-def asked(title: str) -> Request:
-    return Request("", "todo", "create", [title])
+def asked(env: str, title: str) -> Request:
+    return Request(env, "todo", "create", [title])
 
 
 class Server:
@@ -129,30 +129,30 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
 def test_an_environment_goes_to_the_server_only_once_it_has_taken_the_new_epoch_and_comes_back_through_the_same_lease():
     record = fresh()
     down = Server(record.root, up=False)
-    assert "does not answer" in refused(lambda: hand(record.root, record.env, "server", down)) and record.holds(""), \
+    assert "does not answer" in refused(lambda: hand(record.root, record.env, "server", down)) and record.holds(record.env), \
         "a server that does not answer takes nothing and this machine keeps the environment"
-    Waiting(record.root).hold("", asked("waits"))
-    assert "still wait" in refused(lambda: hand(record.root, record.env, "server", Server(record.root))) and record.holds(""), "writes still waiting go first"
+    Waiting(record.root).hold(record.env, asked(record.env, "waits"))
+    assert "still wait" in refused(lambda: hand(record.root, record.env, "server", Server(record.root))) and record.holds(record.env), "writes still waiting go first"
     Waiting(record.root).flush(lambda held: Sent.TAKEN)
-    Outbox(record.root).send(asked("for another holder"))
+    Outbox(record.root).send(asked(record.env, "for another holder"))
     assert "still wait" in refused(lambda: hand(record.root, record.env, "server", Server(record.root))), "and so do requests waiting for another scope's holder"
     Outbox(record.root).take(lambda waiting: True)
     server = Server(record.root)
     lease = hand(record.root, record.env, "server", server)
-    assert (lease, server.handed, record.holds("")) == (Lease("server-1", 1), [(record.env, Lease("server-1", 1))], False), \
+    assert (lease, server.handed, record.holds(record.env)) == (Lease("server-1", 1), [(record.env, Lease("server-1", 1))], False), \
         "the server is told the new lease and this machine lets the environment go"
     back = hand(record.root, record.env, "here", server)
-    assert (back, Record(record.root, record.env).holds("")) == (Lease(this_machine(), 2), True), "handing it back takes the lease the server made, once"
+    assert (back, Record(record.root, record.env).holds(record.env)) == (Lease(this_machine(), 2), True), "handing it back takes the lease the server made, once"
     assert "server or to here" in refused(lambda: hand(record.root, record.env, "mars", server)), "an environment goes to the server or comes here, nowhere else"
     server.loses_answers = True
     lease = hand(record.root, record.env, "server", server)
-    assert (lease, server.leases[record.env], Record(record.root, record.env).holds("")) == (Lease("server-1", 3), Lease("server-1", 3), False), \
+    assert (lease, server.leases[record.env], Record(record.root, record.env).holds(record.env)) == (Lease("server-1", 3), Lease("server-1", 3), False), \
         "a handover whose answer is lost is settled by asking the server who holds the environment, so exactly one machine writes it"
     back = hand(record.root, record.env, "here", server)
-    assert (back, server.leases[record.env], Record(record.root, record.env).holds("")) == (Lease(this_machine(), 4), Lease(this_machine(), 4), True), \
+    assert (back, server.leases[record.env], Record(record.root, record.env).holds(record.env)) == (Lease(this_machine(), 4), Lease(this_machine(), 4), True), \
         "and so is a handback whose answer is lost"
     server.loses_answers, server.loses_handovers = False, True
-    assert "run hand again" in refused(lambda: hand(record.root, record.env, "server", server)) and not Record(record.root, record.env).holds(""), \
+    assert "run hand again" in refused(lambda: hand(record.root, record.env, "server", server)) and not Record(record.root, record.env).holds(record.env), \
         "a handover the server never took leaves this machine let go, never two writers, until hand is run again"
     server.loses_handovers = False
     assert hand(record.root, record.env, "server", server) == Lease("server-1", 5) == server.leases[record.env], "and running it again sends the same lease"
@@ -237,7 +237,7 @@ def test_a_hosted_world_runs_a_server_and_two_local_copies_as_real_processes_tha
     written = next(row.n for row in Todos(world.server.record(), actor=SYSTEM).all() if row.title == "Written on the server")
     assert any((event.type, event.action, event.n) == ("todo", "created", written) for event in world.laptop.record().event_log.events()), \
         "a write made on the server arrives on the laptop"
-    sent = Write("laptop-1", "", Request("main", "todo", "create", ["Written on the laptop"], actor=USER))
+    sent = Write("laptop-1", "main", Request("main", "todo", "create", ["Written on the laptop"], actor=USER))
     server = HttpTransport(world.server.address)
     assert [server.send(sent), server.send(sent)] == [Sent.TAKEN, Sent.TAKEN]
     assert [row.title for row in Todos(world.server.record(), actor=SYSTEM).all()].count("Written on the laptop") == 1, \
@@ -250,7 +250,7 @@ def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and
         gone = closed.getsockname()[1]
     began = time.time()
     assert "Connection refused" in refused(lambda: HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).hello()) and time.time() - began < 3, "a server that refuses the connection is met at once"
-    assert HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).send(Write("k", "", asked("x"))) is Sent.AWAY, "and a write sent to it is kept, not lost"
+    assert HttpTransport(f"http://127.0.0.1:{gone}", timeout=1).send(Write("k", "main", asked("main", "x"))) is Sent.AWAY, "and a write sent to it is kept, not lost"
     with socket.socket() as stalled:
         stalled.bind(("127.0.0.1", 0))
         stalled.listen(1)
@@ -275,7 +275,7 @@ def test_a_server_that_refuses_stalls_or_has_been_taken_down_is_met_in_words_and
         assert "taken down" in refused(lambda: HttpTransport(f"http://127.0.0.1:{server.server_port}").hello()), "a server taken down answers 503 and the refusal says so"
         outcomes = []
         for Down.status in (503, 500, 400, 403):
-            outcomes.append(HttpTransport(f"http://127.0.0.1:{server.server_port}").send(Write("k", "", asked("x"))))
+            outcomes.append(HttpTransport(f"http://127.0.0.1:{server.server_port}").send(Write("k", "main", asked("main", "x"))))
         assert outcomes == [Sent.AWAY, Sent.AWAY, Sent.REFUSED, Sent.REFUSED], "a write the server failed on is tried again, and one it refused is not"
     finally:
         server.shutdown()
@@ -285,7 +285,7 @@ def test_a_sync_that_meets_a_server_down_an_epoch_change_or_an_interrupted_push_
     record = fresh()
     waiting = Waiting(record.root)
     for name in ("first", "second", "third"):
-        waiting.hold("", asked(name))
+        waiting.hold(record.env, asked(record.env, name))
     assert "does not answer" in refused(lambda: sync(record, Server(record.root, up=False))) and len(waiting.waiting()) == 3, "with the server down nothing is sent and every write is kept"
     moved = Server(record.root)
     answers = iter([moved.said, Hello(version(), Shape(PROTOCOL, moved.said.shape.migrations, 9), "server-1")])
@@ -294,7 +294,7 @@ def test_a_sync_that_meets_a_server_down_an_epoch_change_or_an_interrupted_push_
         "an epoch change in the middle of a sync stops it before anything is pulled, after what was sent has gone"
     again, taken, ran = Waiting(fresh().root), Applied(fresh().root), []
     for name in ("first", "second", "third"):
-        again.hold("", asked(name))
+        again.hold(record.env, asked(record.env, name))
 
     def interrupted(held):
         if held.asked.args[0] == "second":
@@ -307,7 +307,7 @@ def test_a_sync_that_meets_a_server_down_an_epoch_change_or_an_interrupted_push_
     assert ([w.asked.args[0] for w in again.waiting()], ran) == (["second", "third"], ["first"]), "a push cut off in the middle keeps what the server did not take and drops what it did"
     assert (again.flush(lambda held: taken.apply(held, lambda write: ran.append(write.asked.args[0]))).sent, ran) == (2, ["first", "second", "third"]), "the next try sends the rest, and nothing arrives twice"
     for name in ("fourth", "turned down", "fifth"):
-        waiting.hold("", asked(name))
+        waiting.hold(record.env, asked(record.env, name))
     server = Server(record.root)
     assert (sync(record, server).sent, server.taken, waiting.waiting(), [held.asked.args for held in waiting.refused()]) == (2, ["fourth", "fifth"], [], [["turned down"]]), \
         "a write the server refused is set aside and the writes after it still go, in order"
@@ -343,7 +343,7 @@ def test_the_sync_routes_are_safe_to_ask_twice_name_who_holds_an_environment_and
     assert ask("holder", {"env": env}).body == {"machine": this_machine(), "epoch": 1}, "the server names who holds an environment and from which epoch"
     assert [ask("handback", {"env": env, "machine": "laptop-1"}).body for _ in range(2)] == [{"machine": "laptop-1", "epoch": 2}] * 2, \
         "a handback asked again names the lease it already gave"
-    late = asdict(Write("late-1", "", Request(env, "todo", "create", ["Sent after the server let go"], actor=USER)))
+    late = asdict(Write("late-1", env, Request(env, "todo", "create", ["Sent after the server let go"], actor=USER)))
     assert (ask("write", late).code, [row.title for row in Todos(server, actor=SYSTEM).all()]) == (400, []), \
         "a write into an environment the server no longer holds is refused, so the copy sets it aside"
     rule = Rules(server, actor=AGENT).create("Keep it plain", brief="why", keywords="plain")
@@ -362,7 +362,7 @@ def test_the_sync_routes_are_safe_to_ask_twice_name_who_holds_an_environment_and
     record = fresh()
     gone = Unreachable(record.root)
     gone.loses_handovers = True
-    assert "cannot be asked who holds it" in refused(lambda: hand(record.root, record.env, "server", gone)) and not Record(record.root, record.env).holds(""), \
+    assert "cannot be asked who holds it" in refused(lambda: hand(record.root, record.env, "server", gone)) and not Record(record.root, record.env).holds(record.env), \
         "a handover whose answer is lost while the server cannot be asked leaves this machine let go and says to run hand again"
     assert "not to this machine" in refused(lambda: hand(record.root, record.env, "here", HandsElsewhere(record.root))), \
         "a handback that names another machine is never taken here"

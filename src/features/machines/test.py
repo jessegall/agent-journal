@@ -237,7 +237,7 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
     from engine.offline import Applied, Sent, Waiting
     root = fresh().root
     waiting, applied, away = Waiting(root), Applied(root), {"down": True}
-    first, second = waiting.hold("", Request("", "todo", "create", ["first"])), waiting.hold("", Request("", "todo", "create", ["second"]))
+    first, second = waiting.hold("main", Request("main", "todo", "create", ["first"])), waiting.hold("main", Request("main", "todo", "create", ["second"]))
     ran = []
     deliver = lambda held: Sent.AWAY if away["down"] else applied.apply(held, lambda write: ran.append(write.asked.args[0]))
     assert (waiting.flush(deliver).sent, [w.asked.args[0] for w in waiting.waiting()]) == (0, ["first", "second"]), "while the server is away the writes wait, oldest first"
