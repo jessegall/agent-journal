@@ -1,26 +1,31 @@
 import json
+import math
 import threading
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass
 from http.cookies import SimpleCookie
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, parse_qsl, urlsplit
 from urllib.request import urlopen
 
+from commands.dispatch import dispatch, resolve
 from engine.color import identity
 from engine.fields import Loaded
 from engine.viewer import lately_running
-from features.hosted_journal.details import HostedJournalDetails
-from features.hosted_journal.owner import SHORTEST, Logins, Owner, Standing, WrongTries, hashed
+from features.hosted_journal.settings import FromRecord, FromVault
+from features.hosted_journal.owner import MOST_EVERYWHERE, SHORTEST, Devices, Logins, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page
 from features.hosted_journal.vault import DiskFull, RefusalLog, Vault
-from features.phone.allow_list import post
+from features.phone.allow_list import Action, GenericPath, actions, post, reach
 from features.phone.desktop import Desktop, closed, encoded
 from features.sharing.origins import origins_of
 from features.trigger import DAY
 from resources.base import Refused
 
 COOKIE = "__Host-journal"
+DEVICE_COOKIE = "__Host-journal-device"
+DEVICE_DAYS = 365
+PHONE_OWNER_ACTIONS = frozenset(actions("phone", "connect disconnect allow_passkey refuse_passkey"))
 NEVER_FROM_OUTSIDE = frozenset((post("/api/run"), post("/api/upgrade"), post("/api/stop"), post("/api/hook/{provider}"), post("/api/update"),
                                 post("/api/journals/start"), post("/api/services/{id}")))
 STREAM = "text/event-stream"
@@ -57,12 +62,12 @@ class LoginForm(Loaded):
 class Visit:
     """One request at the gateway: who sent it, from where, and the server's files it is checked against."""
 
-    def __init__(self, handler, refusals: RefusalLog) -> None:
+    def __init__(self, handler, refusals: RefusalLog, settings: "FromRecord | FromVault") -> None:
         self.handler = handler
         self.refusals = refusals
         self.record = handler.shares.record
         self.vault = Vault(self.record.root)
-        self.settings = HostedJournalDetails.values(self.record)
+        self.settings = settings.of(self.record)
         self.origins = origins_of(self.record)
         self.host = handler.headers.get("Host", "")
         self.url = urlsplit(handler.path)
@@ -74,7 +79,7 @@ class Visit:
         return self.on_this_machine() or self.origins.encrypted(self.handler)
 
     def addressed(self) -> bool:
-        return self.on_this_machine() or not self.settings["address"] or urlsplit(f"//{self.host}").hostname == self.settings["address"]
+        return self.on_this_machine() or not self.settings.address or urlsplit(f"//{self.host}").hostname == self.settings.address
 
     def same_origin(self) -> bool:
         return self.handler.headers.get("Origin") == self.origins.origin(self.handler)
@@ -82,9 +87,12 @@ class Visit:
     def place(self) -> str:
         return self.origins.place(self.handler)
 
-    def token(self) -> str:
-        kept = SimpleCookie(self.handler.headers.get("Cookie", "")).get(COOKIE)
+    def cookie_named(self, name: str) -> str:
+        kept = SimpleCookie(self.handler.headers.get("Cookie", "")).get(name)
         return kept.value if kept else ""
+
+    def token(self) -> str:
+        return self.cookie_named(COOKIE)
 
     def length(self) -> int:
         given = self.handler.headers.get("Content-Length", "")
@@ -99,8 +107,8 @@ class Visit:
     def project(self) -> str:
         return identity(self.record.root)["project"]
 
-    def cookie(self, token: str, days: float) -> dict:
-        return {"Set-Cookie": f"{COOKIE}={token}; Max-Age={int(days * DAY)}; Path=/; Secure; HttpOnly; SameSite=Strict"}
+    def cookie(self, name: str, value: str, days: float) -> str:
+        return f"{name}={value}; Max-Age={int(days * DAY)}; Path=/; Secure; HttpOnly; SameSite=Strict"
 
     def page(self, code: int, text: str, headers: dict | None = None) -> None:
         self.handler.send(code, text.encode(), {**PAGE_HEADERS, **(headers or {})})
@@ -116,7 +124,9 @@ class Visit:
 class Gateway:
     """The only way into a journal on a server: the owner's login in front of the full viewer, forwarded to the journal on the server itself."""
 
-    def __init__(self) -> None:
+    def __init__(self, settings: "FromRecord | FromVault", answered_here: frozenset[Action]) -> None:
+        self.settings = settings
+        self.answered_here = answered_here
         self.streams: Counter[str] = Counter()
         self.lock = threading.Lock()
         self.checking = threading.BoundedSemaphore(CHECKS_AT_ONCE)
@@ -127,10 +137,10 @@ class Gateway:
         }
 
     def get(self, handler, rest: list[str]) -> None:
-        self.serve(Visit(handler, self.refusals))
+        self.serve(Visit(handler, self.refusals, self.settings))
 
     def post(self, handler, rest: list[str]) -> None:
-        self.serve(Visit(handler, self.refusals))
+        self.serve(Visit(handler, self.refusals, self.settings))
 
     def serve(self, visit: Visit) -> None:
         if not visit.secure():
@@ -163,21 +173,22 @@ class Gateway:
             self.checking.release()
 
     def checked(self, visit: Visit, matched: Callable[[], bool], wrong: Callable[[], str]) -> None:
-        tries = WrongTries(visit.vault)
-        place = visit.place()
-        if wait := tries.counted(place):
+        tries, devices = WrongTries(visit.vault), Devices(visit.vault)
+        device = devices.known(visit.cookie_named(DEVICE_COOKIE))
+        place, ceiling = (f"device {device}", math.inf) if device else (visit.place(), MOST_EVERYWHERE)
+        if wait := tries.counted(place, ceiling):
             visit.vault.audit("locked out", place=place)
             return visit.page(429, locked_page(visit.project(), wait))
         if not matched():
             visit.vault.audit("wrong try", place=place, path=visit.url.path)
-            if wait := tries.locked_for(place):
+            if wait := tries.locked_for(place, ceiling):
                 return visit.page(429, locked_page(visit.project(), wait))
             return visit.page(401, wrong())
         tries.forget(place)
-        days = float(visit.settings["days"])
+        days = float(visit.settings.days)
         token = Logins(visit.vault).open(days, visit.handler.headers.get("User-Agent", ""))
         visit.vault.audit("logged in", place=place, login=hashed(token)[:12])
-        return visit.go("/", visit.cookie(token, days))
+        return visit.go("/", {"Set-Cookie": [visit.cookie(COOKIE, token, days), visit.cookie(DEVICE_COOKIE, devices.issue(), DEVICE_DAYS)]})
 
     def log_in(self, visit: Visit) -> None:
         owner = Owner(visit.vault)
@@ -212,7 +223,7 @@ class Gateway:
         token = visit.token()
         Logins(visit.vault).close(token)
         visit.vault.audit("logged out", place=visit.place(), login=hashed(token)[:12])
-        return visit.go("/login?notice=logged-out", visit.cookie("", 0))
+        return visit.go("/login?notice=logged-out", {"Set-Cookie": visit.cookie(COOKIE, "", 0)})
 
     def ready(self, visit: Visit) -> None:
         address = lately_running(visit.record.root)
@@ -234,9 +245,26 @@ class Gateway:
         size = visit.length()
         if size > (UPLOAD_LIMIT if visit.url.path.endswith("/upload") else BODY_LIMIT):
             return visit.refuse(413, "too large")
+        if self.answers_here(visit):
+            return self.answer_here(visit, visit.handler.rfile.read(size) if size else b"")
         if STREAM not in visit.handler.headers.get("Accept", ""):
             return Desktop(visit.handler, visit.handler.path, {}, VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
         return self.streamed(visit, hashed(token))
+
+    def answers_here(self, visit: Visit) -> bool:
+        """Whether the login page itself answers this owner's request, as it does for connecting a phone when it keeps the phones' keys."""
+        found = resolve(visit.handler.command, urlsplit(encoded(visit.url)).path)
+        return found is not None and reach(found[0], GenericPath.from_json(found[1])) in self.answered_here
+
+    def answer_here(self, visit: Visit, raw: bytes) -> None:
+        try:
+            body = json.loads(raw or b"{}")
+        except ValueError:
+            return visit.refuse(400, "the request body is not JSON")
+        reply = dispatch(visit.handler.command, urlsplit(encoded(visit.url)).path, visit.record.root, dict(parse_qsl(visit.url.query)), body)
+        visit.handler.send(reply.code, reply.bytes(), {**VIEWER_HEADERS, "Content-Type": reply.kind})
+        if reply.after:
+            reply.after()
 
     def streamed(self, visit: Visit, login: str) -> None:
         with self.lock:

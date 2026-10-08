@@ -7,7 +7,8 @@ from controllers.features import Features  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.record import Record  # noqa: E402
 from features.hosted_journal.details import HostedJournalDetails  # noqa: E402
-from features.hosted_journal.owner import Logins, Owner  # noqa: E402
+from features.hosted_journal.owner import Logins, Owner, WrongTries  # noqa: E402
+from features.hosted_journal.settings import GatewaySettings, keep_gateway_settings  # noqa: E402
 from features.hosted_journal.vault import Vault  # noqa: E402
 from resources.base import USER  # noqa: E402
 
@@ -31,6 +32,12 @@ def prepare(root: Path, address: str, listen: str, port: int, proxy: str) -> str
     return ""
 
 
+def gateway_settings(root: Path, address: str, proxy: str, days: int) -> str:
+    """Keeps the login page's own settings where only its user can write them, so nothing in the record changes them."""
+    keep_gateway_settings(root, GatewaySettings(address, proxy, days))
+    return ""
+
+
 def password_status(root: Path) -> str:
     return "" if Owner(Vault(root)).has_password() else WAITING
 
@@ -50,6 +57,13 @@ def reset_password(root: Path) -> str:
     return f"The owner's password is cleared and {ended} login(s) ended. Get a setup code to choose a new one."
 
 
+def clear_tries(root: Path) -> str:
+    vault = Vault(root)
+    cleared = WrongTries(vault).clear()
+    vault.audit("wrong tries cleared", count=cleared)
+    return f"{cleared} wrong tries cleared: every place may log in again."
+
+
 def log_out_everywhere(root: Path) -> str:
     vault = Vault(root)
     ended = Logins(vault).close_all()
@@ -66,18 +80,25 @@ def main(argv: list[str]) -> None:
     prepared.add_argument("--listen", default="0.0.0.0")
     prepared.add_argument("--port", type=int, default=8440)
     prepared.add_argument("--proxy", default="")
+    gateway = words.add_parser("gateway-settings", help="keep the login page's address, proxy and login days in its vault")
+    gateway.add_argument("--address", required=True)
+    gateway.add_argument("--proxy", default="")
+    gateway.add_argument("--days", type=int, default=7)
     words.add_parser("password-status", help="say whether the owner still has to choose a password")
     words.add_parser("setup-code", help="make a one-time code that sets the owner's password")
     words.add_parser("reset-password", help="clear the owner's password and end every login")
     words.add_parser("logout-everywhere", help="end every login")
+    words.add_parser("clear-tries", help="forget every wrong try, so a locked-out place may log in again")
     given = parser.parse_args(argv)
     root = given.root.resolve()
     commands = {
         "prepare": lambda: prepare(root, given.address, given.listen, given.port, given.proxy),
+        "gateway-settings": lambda: gateway_settings(root, given.address, given.proxy, given.days),
         "password-status": lambda: password_status(root),
         "setup-code": lambda: setup_code(root),
         "reset-password": lambda: reset_password(root),
         "logout-everywhere": lambda: log_out_everywhere(root),
+        "clear-tries": lambda: clear_tries(root),
     }
     try:
         text = commands[given.word]()

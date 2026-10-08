@@ -1,6 +1,7 @@
 import gzip
 import json
 import mimetypes
+import socket
 import sys
 from base64 import b64decode
 import threading
@@ -246,7 +247,8 @@ class ShareHandler(BaseHTTPRequestHandler):
     def send(self, code: int, body: bytes, headers: dict) -> None:
         self.send_response(code)
         for key, value in {**HEADERS, **headers, "Content-Length": str(len(body))}.items():
-            self.send_header(key, value)
+            for each in value if isinstance(value, list) else [value]:
+                self.send_header(key, each)
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(body)
@@ -266,15 +268,32 @@ def ticking(shares, stopped: threading.Event) -> None:
                 threw(shares.record.root, shares.record.env, f"a share server tick: {getattr(tick, '__name__', tick)}")
 
 
-def serve(shares, port: int, host: str = LOOPBACK) -> None:
+def bound_handler(shares) -> type[ShareHandler]:
+    return type("BoundShareHandler", (ShareHandler,), {"shares": shares, "timeout": READ_SECONDS})
+
+
+def run(shares, server: ThreadingHTTPServer) -> None:
     stopped = threading.Event()
     threading.Thread(target=ticking, args=(shares, stopped), daemon=True).start()
-    handler = type("BoundShareHandler", (ShareHandler,), {"shares": shares, "timeout": READ_SECONDS})
     try:
-        with ThreadingHTTPServer((host, int(port)), handler) as server:
+        with server:
             server.serve_forever()
     finally:
         stopped.set()
+
+
+def serve(shares, port: int, host: str = LOOPBACK) -> None:
+    run(shares, ThreadingHTTPServer((host, int(port)), bound_handler(shares)))
+
+
+def serve_on(shares, listening: socket.socket) -> None:
+    """Answers on a socket another process bound and handed over, so the port is never free for anyone else."""
+    host, port = listening.getsockname()[:2]
+    server = ThreadingHTTPServer((host, port), bound_handler(shares), bind_and_activate=False)
+    server.socket.close()
+    server.socket = listening
+    server.server_name, server.server_port = host, port
+    run(shares, server)
 
 
 def main(argv: list[str]) -> None:
