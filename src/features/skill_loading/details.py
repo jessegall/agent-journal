@@ -28,7 +28,7 @@ class SkillLoadingDetails(FeatureDetails):
     behaviours = [
         Behaviour(
             name="reload",
-            title="After the conversation is summarized, block file changes until the journal skill is loaded",
+            title="After the conversation is compacted, block file changes until the journal skill is loaded",
         ),
         Behaviour(
             name="chat",
@@ -65,7 +65,7 @@ class SkillLoadingDetails(FeatureDetails):
         Setting(
             name="recent",
             default=5,
-            title="After the conversation is summarized, also reload this many recently used skills",
+            title="After the conversation is compacted, also reload this many recently used skills",
             unit="skills",
         ),
     ]
