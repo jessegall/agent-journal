@@ -1,3 +1,5 @@
+import json
+
 import features
 from controllers.types import CONTROLLERS, Messages, Questions
 from features.boards.controller import Boards
@@ -277,6 +279,13 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
     assert (set(picked.describe()["choices"]), picked.describe()["choices"]["claude"] == list(PROVIDERS["claude"]().models()),
             picked.allows({"claude": "gpt-6-sol"}), picked.default["codex"]) == ({"claude", "codex"}, True, False, "gpt-6-sol"), \
         "the model setting offers each provider its own models, refuses a Codex model for Claude, and starts Codex on gpt-6-sol"
+    from migrations.m0071_board_models_per_provider import run as models_per_provider
+    old = record.root.parent / "old-journal"
+    old.mkdir()
+    (old / "settings.json").write_text(json.dumps({"boards": {"filler_model": "opus", "reviewer_model": {"claude": "haiku"}}, "talk": {"voice": "plain"}}))
+    assert [len(models_per_provider(old)), len(models_per_provider(old))] == [1, 0], "an upgrade moves a board model chosen before providers had their own, once"
+    assert json.loads((old / "settings.json").read_text())["boards"] == {"filler_model": {"claude": "opus"}, "reviewer_model": {"claude": "haiku"}}, \
+        "the model chosen before becomes Claude's, and one already per provider is left as it is"
     call = lambda command: {"session_id": "claude-1", "agent_id": "sub-1", "agent_type": "board-filler", "tool_name": "Bash",
                             "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
     said = lambda command: str(handle(PROVIDERS["claude"](), record.root, record.env, call(command)).get("reason", ""))

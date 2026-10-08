@@ -220,6 +220,16 @@ def test_an_environment_is_named_taken_left_swept_removed_and_brought_back_by_th
     from engine.attic import searched
     assert [(hit.environment, hit.title) for hit in searched(record.root, "LEDGER bug")] == [("beta", "the ledger bug")], \
         "a removed environment's rows are found in the attic, named with the environment that brings them back"
+    import tarfile
+    from engine.attic import archive_hits, title_of
+    broken, whole = record.root.parent / "broken.tar.gz", record.root.parent / "whole.tar.gz"
+    broken.write_text("not an archive")
+    nested = record.root.parent / "whole" / "environments"
+    nested.mkdir(parents=True)
+    with tarfile.open(whole, "w:gz") as tar:
+        tar.add(nested.parent, arcname="whole")
+    assert (archive_hits(broken, "ledger"), archive_hits(whole, "ledger"), title_of("---\n{not json\n---\nthe body")) == ([], [], ""), \
+        "an archive that cannot be read, a whole project's archive and a row whose heading is broken add nothing to a search"
     again = envs().unarchive("beta")
     assert again.title == "beta", "an archived environment comes back under its own name"
 
@@ -262,3 +272,12 @@ def test_the_upgrade_tags_every_environment_from_its_owner_and_a_helpers_folder_
     assert {row.title: row.kind for row in envs.rows.every()} == {
         "t": "main", "helper-ada": "helper", "role": "subagent", "ticket-3": "ticket", "platform-2": "helper", "feature": "main"}, \
         "the owner says the kind, and an unowned environment named after a helper's checkout is that helper's"
+    from migrations.m0010_project_folder import run as gathered
+    old = record.root.parent / "older"
+    for folder, text in ((old / "ticket", "first"), (old / "resources" / "ticket", "a copy")):
+        folder.mkdir(parents=True)
+        (folder / "1.md").write_text(text)
+    assert gathered(old) == "project records moved into project/: ticket", "an upgrade moves project records from either old folder into project/"
+    assert ((old / "project" / "ticket" / "1.md").read_text(), (old / "ticket").exists(), (old / "resources" / "ticket" / "1.md").exists()) == ("first", False, True), \
+        "an emptied old folder goes, and a record already moved is never overwritten by an older copy"
+    assert gathered(record.root.parent / "fresh-start") == "project records already in place", "a journal already laid out is left as it is"
