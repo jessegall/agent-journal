@@ -29,7 +29,7 @@ CODE_SECONDS = 600
 DAYS = (1, 7, 30)
 SEEN_EVERY = 60
 DEVICE_LONGEST = 60
-KEPT = ("key", "code", "short", "code_until", "expires", "environment", "journal", "days", "push", "pushed", "home", "tries", "passkey", "challenge", "unlock", "pending_passkey")
+KEPT = ("key", "code", "short", "code_until", "expires", "environment", "member", "journal", "days", "push", "pushed", "home", "tries", "passkey", "challenge", "unlock", "pending_passkey")
 SHORT_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 SHORT_LENGTH = 8
 WAITING_CARD = "waiting"
@@ -102,7 +102,7 @@ class Phones(Controller):
             raise Refused(f"a phone's {', '.join(sorted(set(data) & set(KEPT)))} are set only by scanning the code in the viewer's Connect your phone dialog")
 
     @action
-    def connect(self, days: int = 7) -> Code:
+    def connect(self, days: int = 7, member: str = "") -> Code:
         if self.actor != USER:
             raise Refused("only the user connects a phone, from the viewer's Connect your phone dialog")
         if int(days) not in DAYS:
@@ -110,7 +110,7 @@ class Phones(Controller):
         address = Shares(self.record, actor=SYSTEM)._address()
         if not address:
             raise Refused("a phone connects through the tunnel address, and this journal has none yet: log tunler in under Settings, Sharing, then connect again")
-        active = self._active()
+        active = self._active(member)
         if active is not None:
             raise Refused(f"{active.title} is connected: stop that session first, one phone at a time")
         for row in self._summaries():
@@ -118,7 +118,7 @@ class Phones(Controller):
                 self.complete(row["n"], how="a newer code replaced it")
         code = secrets.token_urlsafe(24)
         short = "".join(secrets.choice(SHORT_LETTERS) for _ in range(SHORT_LENGTH))
-        made = self._kept(super().create("A phone, not yet connected").n, environment=self.record.env, code=hashed(code), short=hashed(short),
+        made = self._kept(super().create("A phone, not yet connected").n, environment=self.record.env, member=member, code=hashed(code), short=hashed(short),
                           code_until=time.time() + CODE_SECONDS, days=int(days))
         return Code(n=made.n, link=f"https://{address}/p/#{code}", short=f"{short[:4]}-{short[4:]}", code_until=made.code_until, address=address)
 
@@ -132,7 +132,7 @@ class Phones(Controller):
                 self._missed()
                 return None
             phone = self._phone(found)
-            if phone.code_until < now or self._active() is not None:
+            if phone.code_until < now or self._active(phone.member) is not None:
                 return None
             key = secrets.token_urlsafe(32)
             named = titled(" ".join(str(device).split())[:DEVICE_LONGEST] or "A phone")
@@ -149,10 +149,13 @@ class Phones(Controller):
             if tries >= MOST_TRIES:
                 self.complete(row["n"], how=f"{MOST_TRIES} wrong codes were tried, so this code no longer works")
 
-    def _active(self) -> Phone | None:
+    def _actives(self) -> list[Phone]:
         now = time.time()
-        found = next((row["n"] for row in self._summaries() if row.get("key") and row.get("expires", 0) > now and not row["completed"] and not row["deleted"]), None)
-        return self._phone(found) if found else None
+        return [self._phone(row["n"]) for row in self._summaries() if row.get("key") and row.get("expires", 0) > now and not row["completed"] and not row["deleted"]]
+
+    def _active(self, member: str) -> Phone | None:
+        """The phone this member has connected, one at a time; the owner is the member named by an empty string."""
+        return next((phone for phone in self._actives() if phone.member == member), None)
 
     def _by_key(self, key: str) -> Phone | None:
         found = next((row["n"] for row in self._summaries() if key and row.get("key") == hashed(key) and not row["deleted"]), None)
@@ -198,12 +201,14 @@ class Phones(Controller):
         return self._kept(phone.n, push=endpoint, pushed=[item["ref"] for item in waiting(self._home(phone), phone)])
 
     def _notify(self) -> None:
-        phone = self._active()
-        if phone is None or phone.push is None:
-            return
         address = Shares(self.record, actor=SYSTEM)._address()
         if not address:
             return
+        for phone in self._actives():
+            if phone.push is not None:
+                self._tell(phone, address)
+
+    def _tell(self, phone: Phone, address: str) -> None:
         owed = [item["ref"] for item in waiting(self._home(phone), phone)]
         if set(owed) - set(phone.pushed):
             send(Keys.kept(self.record.root), phone.push, f"https://{address}")
@@ -328,7 +333,7 @@ def phones_live(root) -> bool:
 
 
 def phones_paired(root) -> bool:
-    return Phones(Record(root, runtime.env(root)), actor=SYSTEM)._active() is not None
+    return bool(Phones(Record(root, runtime.env(root)), actor=SYSTEM)._actives())
 
 
 def phones_told(shares) -> None:

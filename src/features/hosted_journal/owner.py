@@ -136,6 +136,11 @@ class Logins:
         login = self.found(token)
         return Standing.UNKNOWN if login is None else login.standing(self.vault.clock())
 
+    def member(self, token: str) -> str:
+        """Who this login belongs to: a member's id, or an empty string for the owner."""
+        login = KeptLogin.from_json(self.vault.read(LOGINS).get(hashed(token), {}))
+        return "" if login.is_owners() else login.member
+
     def close(self, token: str) -> None:
         with self.vault.held():
             kept = self.vault.read(LOGINS)

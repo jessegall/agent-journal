@@ -326,6 +326,9 @@ def test_another_site_plain_http_from_outside_a_strange_host_large_bodies_and_to
     assert (opened.status, "set-cookie" in opened.headers) == (200, False), "a link opens its own item and starts no login"
     assert hosted.call("GET", f"/s/{shared.token}/../api/identity").status == 404, "a link's address reaches nothing of the viewer"
     assert hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={shared.token}").status in (302, 303, 401), "a link's token is no login"
+    sam = Logins(hosted.vault).open(7, "test", "sam")
+    assert (Logins(hosted.vault).member(sam), Logins(hosted.vault).member(token), Logins(hosted.vault).member("unknown")) == ("sam", "", ""), \
+        "a login knows whose it is, which is what a phone connected through it belongs to"
     held = [gateway.checking.acquire() for _ in range(CHECKS_AT_ONCE)]
     assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 429 and all(held)
     for _ in held:

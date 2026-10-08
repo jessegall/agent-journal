@@ -22,6 +22,7 @@ PHONE_ENVIRONMENT = "X-Phone-Environment"
 PHONE_UNLOCKED = "X-Phone-Unlocked"
 MEMBER = "X-Journal-Member"
 SHARED = "X-Journal-Environments"
+PHONE_MEMBER = "X-Phone-Member"
 
 
 @dataclass(frozen=True)

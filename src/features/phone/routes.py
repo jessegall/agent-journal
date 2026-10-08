@@ -346,7 +346,7 @@ class PhoneRoutes:
             return None
         body = handler.rfile.read(size) if size else b""
         unlocked = self.phones(handler)._spend(phone, handler.headers.get(UNLOCK, ""), requested(handler.command, handler.path, body))
-        return Desktop(handler, handler.path.removeprefix("/p"), phone_marks(phone.environment, unlocked)).forward(body)
+        return Desktop(handler, handler.path.removeprefix("/p"), phone_marks(phone.environment, unlocked, phone.member)).forward(body)
 
     def attach(self, handler, rest: list[str]) -> None:
         if not self.trusted(handler, UPLOADED):
