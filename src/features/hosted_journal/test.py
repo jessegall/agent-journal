@@ -390,6 +390,10 @@ def test_another_site_plain_http_from_outside_a_strange_host_large_bodies_and_to
     for _ in held:
         gateway.checking.release()
     assert hosted.call("POST", "/login", {"password": PASSWORD}).status == 303
+    assert hosted.call("GET", "/login", Cookie=f"{COOKIE}={token}").headers["location"] == "/", "a browser that is logged in goes on to the viewer"
+    assert [hosted.call("POST", path, {"x": "y"}, Origin="https://evil.example").status for path in ("/setup", "/logout")] == [403, 403], \
+        "a setup or a logout from another site is refused"
+    assert hosted.call("POST", "/login", {"password": PASSWORD}, Content_Length=str(2 * 1024 * 1024)).status == 413, "a login form too large is refused unread"
 
 
 def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, monkeypatch, tmp_path):
@@ -529,4 +533,10 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
     with pytest.raises(Restarting):
         kept_apart.main(["keep", str(root), "--host", "127.0.0.1", "--port", "0"])
     assert started == [("serve", os.getuid(), "/")], "the keeper holds the port and starts the login page as its own user, from /, again after it ends"
+    guard = VaultGuard(Vault(root))
+    shown = guard.kept(41, {"key": "a phone key", "title": "Phone", "environment": "main"})
+    assert (shown, guard.read(41)["key"], guard.read(41)["environment"]) == ({"title": "Phone", "environment": "main", "key": KEPT_ELSEWHERE}, "a phone key", "main"), \
+        "a phone's key and environment are kept in the vault, and its row shows only that they are kept elsewhere"
+    guard.drop(41)
+    assert guard.read(41)["key"] == "", "a phone dropped from the vault keeps nothing there"
 
