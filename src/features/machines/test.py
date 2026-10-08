@@ -302,3 +302,18 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
         "applying a snapshot writes the files it tracks and touches nothing else"
     assert [(project / name).exists() for name in (".env", ".journal/settings.json")] == [True, True] and run("show", f"{made[0].ref}:a.txt") == "two", \
         "the environment file and the journal's record are left as they were"
+    import os
+    from controllers.types import Agents
+    from engine.sessions import Sessions
+    from features.machines.restart import Fate, after_restart
+    after = fresh()
+    finished = subprocess.Popen(["true"])
+    finished.wait()
+    for name, pid in (("claude-up", os.getpid()), ("claude-gone", finished.pid)):
+        Agents(after, actor=SYSTEM).create(name, status="working")
+        Sessions(after.root).bind(name, after.env, pid=pid)
+    assert after_restart(after) == {"claude-up": Fate.PICKED_UP, "claude-gone": Fate.LOST}, "after a restart an agent whose process runs is picked up and one whose process is gone is lost"
+    agents_now = Agents(after, actor=SYSTEM)
+    assert (agents_now.rows.by_title("claude-up").status, agents_now.rows.by_title("claude-gone").status) == ("working", "stopped"), "the lost one is shown as stopped"
+    after_restart(after)
+    assert [card["label"] for card in agents_now.rows.by_title("claude-gone").data["cards"]] == ["Agent lost in the restart"], "and marked once in the chat"

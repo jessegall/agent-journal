@@ -278,7 +278,18 @@ def warmed(root: Path, warm: threading.Event) -> None:
     except Exception:
         traceback.print_exc()
         os._exit(1)
+    settle_agents(root)
     gc.freeze()
+
+
+def settle_agents(root: Path) -> None:
+    try:
+        from engine.record import Record
+        from features.machines.restart import after_restart
+        for record in Record.every(root):
+            after_restart(record)
+    except Exception:
+        traceback.print_exc()
 
 
 def warm_viewer(root: Path, env: str, warm: threading.Event) -> None:
