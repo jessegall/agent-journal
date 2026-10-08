@@ -6,6 +6,7 @@ import {store} from "../state/store.js";
 export const profiles = ref([]);
 export const callings = ref({});
 export const samples = ref({});
+export const namings = ref([]);
 
 const form = () => (store.settings && store.settings.form_of_address) || {};
 
@@ -23,10 +24,11 @@ export const calls = (row) => callings.value[row.data.calling] || "";
 export const sampleOf = (row) => samples.value[row.n] ?? row.data.sample;
 
 export async function loadProfiles() {
-    const [rows, names, lines] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples()]);
+    const [rows, names, lines, styles] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples(), api.profileNamings()]);
     profiles.value = rows.filter((row) => !row.deleted);
     callings.value = names;
     samples.value = lines;
+    namings.value = styles;
 }
 
 export async function useProfile(row) {

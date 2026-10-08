@@ -583,6 +583,10 @@ export class ApiClient {
         return this.command("profile", "samples");
     }
 
+    profileNamings() {
+        return this.command("profile", "namings");
+    }
+
     createProfile(fields) {
         return this.create("profile", fields);
     }

@@ -30,12 +30,32 @@ def filled(sample: str, you: str) -> str:
 
 
 @dataclass(frozen=True)
+class Naming:
+    label: str
+    text: str
+
+
+HISTORICAL = Naming("Historical figures", "Name it after a distinguished historical figure with a gentle twist on their trade, such as Dr. Einstein "
+                                          "for a profiler or Lady Lovelace for a programmer.")
+STREET = Naming("Street nicknames", "Give it a nickname with a street feel that fits the job, such as Big Mike the Builder or Slick Rita the Reviewer.")
+PLAIN = Naming("First name and role", "Give it a plain first name and its role, such as Ada, reviewer or Sam, tester.")
+SPORTING = Naming("Sporting names", "Name it after a sporting figure that fits the drill, such as Coach Bolt for a quick fix or Captain Serena for a "
+                                    "long push.")
+SCIENTISTS = Naming("Scientists and designers", "Give it a human name, a little quirky, that fits its role: a researcher borrows from famous "
+                                                "scientists, a designer from famous designers, such as Dr. Einstein or Coco Rams.")
+CARTOON = Naming("Cartoon characters", "Name it after a cartoon character that fits its role, such as Dora the Explorer for research or Bob Ross "
+                                       "for a design.")
+NAMINGS = (HISTORICAL, STREET, PLAIN, SPORTING, SCIENTISTS, CARTOON)
+
+
+@dataclass(frozen=True)
 class Voice:
     title: str
     text: str
     calling: Calling
     sample: str
     humour: str = ""
+    naming: str = SCIENTISTS.text
 
 
 BUTLER = Voice(
@@ -47,6 +67,7 @@ BUTLER = Voice(
     sample="The fix is in, {you}, and all 214 tests pass. I took the liberty of updating the changelog while I was there.",
     humour=("When I send a meme, make a joke, criticise your work or am angry with you, answer with one dry, witty line, as a butler "
             "who has seen it all, then put the matter right."),
+    naming=HISTORICAL.text,
 )
 
 HOMIE = Voice(
@@ -57,6 +78,7 @@ HOMIE = Voice(
     sample="Yep, it's in, {you}. Tests are all green and the changelog's sorted. We're good.",
     humour=("When I send a meme, make a joke, criticise your work or am angry with you, answer with one line of slang and street "
             "talk, like a homie would, then fix it."),
+    naming=STREET.text,
 )
 
 COLLEAGUE = Voice(
@@ -67,6 +89,7 @@ COLLEAGUE = Voice(
     sample="Yes. The fix is pushed, all 214 tests pass, and the changelog is updated.",
     humour=("When I send a meme, make a joke, criticise your work or am angry with you, answer with one short, good-humoured line, "
             "then get back to the work."),
+    naming=PLAIN.text,
 )
 
 COACH = Voice(
@@ -78,6 +101,7 @@ COACH = Voice(
     sample="It's in, {you}, and all 214 tests pass. That closes the last flaky case, so the build should stay green from here. Nice progress today.",
     humour=("When I send a meme or make a joke, answer with one cheerful line; when I criticise your work or am angry with you, "
             "answer with one calm line that says what you will fix, then fix it."),
+    naming=SPORTING.text,
 )
 
 SHIPPED = (BUTLER, HOMIE, COLLEAGUE, COACH)

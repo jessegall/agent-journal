@@ -227,13 +227,18 @@ def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
 
 
 def test_the_naming_law_follows_the_chosen_style():
+    from features.form_of_address.controller import Profiles, ship
+    from features.form_of_address.voices import CARTOON
     from features.journal_laws.laws import carry, laws
+    from resources.base import SYSTEM
     record = fresh()
-    assert "a human name, a little quirky" in carry(record) and "Dr. Einstein" in dict((law.name, law.reason) for law in laws(record))["L5"], \
-        "by default subagents are named after famous people with a twist"
-    record.set_setting("journal_laws", {"cartoon_names": True})
-    assert "a cartoon character" in start_block(record) and "Dora the Explorer" in dict((law.name, law.reason) for law in laws(record))["L5"], \
-        "with cartoon names on, the law every session is handed asks for a cartoon character"
+    ship(record)
+    assert "Dr. Einstein" in carry(record) and "Lady Lovelace" in carry(record), \
+        "until a profile is chosen, agents are named as the Butler names them: historical figures with a twist on their trade"
+    own = Profiles(record, actor=SYSTEM).create("Mine", brief="Talk plainly.", sample="Yes.", naming=CARTOON.text)
+    record.set_setting("form_of_address", {"profile": str(own.n)})
+    assert "a cartoon character" in start_block(record) and "Dora the Explorer" in dict((law.name, law.text) for law in laws(record))["L5"], \
+        "the law every session is handed names agents in the style of the profile in use"
 
 
 def test_an_instruction_file_past_its_providers_limit_is_told_once_per_size_band():

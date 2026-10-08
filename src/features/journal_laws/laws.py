@@ -1,7 +1,10 @@
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
-from features.journal_laws.details import LawDetails
+from features.form_of_address.address import voice_of
+from features.form_of_address.voices import BUTLER
+
+NAMING_LAW = "L5"
 
 
 @dataclass(frozen=True)
@@ -26,36 +29,29 @@ LAWS = (
     Law("L4", "Related work goes back to the helper or subagent that already worked on it; never start a fresh one on work another already knows.",
         "A helper or subagent that drew a design, wrote the code or ran the research keeps what it learned. When new work changes its work, is related to it or touches the same code, send it there with a message (SendMessage, journal helper say) rather than dispatching a new one that has to rediscover everything; start fresh only when the earlier one is gone or the new work is unrelated.",
         ("subagent", "spawn_agent", "designer", "SendMessage", "helper dispatch"), "everything"),
-    Law("L5", "Every subagent dispatch names the agent: a human name, a little quirky, that fits its role.",
-        "A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task, such as \"Dr. Einstein: profile the slow hooks\" or \"Coco Rams: draw the plan card\". A designer can borrow from famous designers, a researcher from famous scientists, mixed up for fun.",
+    Law(NAMING_LAW, "Every subagent dispatch names the agent, in the naming style of the profile in use.",
+        "A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task. The profile in use says how its agents are named.",
         ("subagent", "spawn_agent", "dispatch"), "everything"),
 )
-CARTOON = Law("L5", "Every subagent dispatch names the agent: a cartoon character that fits its role.",
-              "A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task, such as \"Dora the Explorer: research the slow hooks\" or \"Bob Ross: paint the plan card\". A researcher can borrow from explorers and detectives, a designer from cartoon painters and builders.",
-              ("subagent", "spawn_agent", "dispatch"), "everything")
 
 GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
-NAMED = re.compile(r"^(?:[A-Z][\w.'-]*\s+){0,3}[A-Z][\w.'-]*\s*:\s*\S")
-
-NAMING = {False: "Start the description with a human name, a little quirky and fitting the role, then a colon and the task, like \"Dr. Einstein: profile the slow hooks\".",
-          True: "Start the description with a cartoon character fitting the role, then a colon and the task, like \"Dora the Explorer: research the slow hooks\"."}
+NAMED = re.compile(r"^[A-Z][\w.,'-]*(?:\s+[\w.,'-]+){0,3}\s*:\s*\S")
 
 
 def laws(record=None) -> tuple[Law, ...]:
-    if record is None or not cartoon_names(record):
-        return LAWS
-    return tuple(CARTOON if law.name == CARTOON.name else law for law in LAWS)
+    naming = naming_of(record)
+    return tuple(replace(law, text=f"{law.text} {naming}") if law.name == NAMING_LAW else law for law in LAWS)
 
 
-def cartoon_names(record) -> bool:
-    return bool(LawDetails.values(record).cartoon_names)
+def naming_of(record=None) -> str:
+    return BUTLER.naming if record is None else voice_of(record).naming
 
 
 def carry(record=None) -> str:
     rows = "\n".join(f"  - {law.text}  [{law.name}]" for law in laws(record))
     return f"LAWS THE JOURNAL SHIPS, always in force:\n{rows}"
 
-def refusal(dispatch, cartoon: bool = False) -> str:
+def refusal(dispatch, naming: str) -> str:
     if dispatch.kind in GENERIC and dispatch.task in GENERIC:
         return "Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."
     if dispatch.model_supported and not dispatch.model:
@@ -63,5 +59,5 @@ def refusal(dispatch, cartoon: bool = False) -> str:
     if not dispatch.offers_model():
         return f"{dispatch.model} is not a model this account offers. Choose one of {', '.join(dispatch.models)}."
     if dispatch.name_supported and not NAMED.match(dispatch.description):
-        return f"Journal law L5 requires a name on every subagent dispatch. {NAMING[cartoon]}"
+        return f"Journal law L5 requires a name on every subagent dispatch: start the description with the name, a colon, then the task. {naming}"
     return ""

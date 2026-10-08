@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from features.journal_laws.laws import cartoon_names, laws, refusal
+from features.journal_laws.laws import laws, naming_of, refusal
 from engine.events.engine import AgentMessageSent
 from engine.gates import DISPATCHING, Runs
 from features.parts import AgentContext, Canceler, Handler, ToolInterceptor
@@ -17,7 +17,7 @@ class EnforceDispatchLaw(Canceler):
     event = DISPATCHING
 
     def cancel(self, context: AgentContext, data) -> str:
-        return refusal(data, cartoon_names(context.record))
+        return refusal(data, naming_of(context.record))
 
 
 class WhisperLawOnKeyword(ToolInterceptor):
