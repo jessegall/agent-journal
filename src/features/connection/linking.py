@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from controllers.types import Notices
-from engine.handover import accept, epoch_of, give, nothing_waits, ready_to_give
+from engine.handover import accept, epoch_of, give, nothing_waits
 from engine.machines import Lease, this_machine
 from engine.offline import Waiting, Write
 from engine.record import Record
@@ -63,13 +63,48 @@ def hand(record_root: Path, env: str, to: str, transport: Transport) -> Lease:
     record = Record(record_root, env)
     if to == HERE:
         nothing_waits(record, f"take {env} back")
-        return accept(record, "", transport.handback(env))
+        return take_back(record, transport)
     if to != SERVER:
         raise Refused(f"hand an environment to {SERVER} or to {HERE}, not to {to!r}")
-    ready_to_give(record, "")
-    lease = Lease.read(record.scope_home("")).handed_to(transport.hello().machine)
-    transport.handover(env, lease)
-    return give(record, "", lease.machine)
+    return hand_to_server(record, transport)
+
+
+def hand_to_server(record, transport: Transport) -> Lease:
+    """This machine lets go first, under the next epoch, then tells the server; a lost answer is settled by asking the server who holds that epoch, and running hand again sends the same lease."""
+    if record.holds(""):
+        lease = give(record, "", transport.hello().machine)
+    else:
+        lease = Lease.read(record.scope_home(""))
+    try:
+        transport.handover(record.env, lease)
+    except OSError as lost:
+        settle(record, transport, lease, lost)
+    return lease
+
+
+def take_back(record, transport: Transport) -> Lease:
+    """The server lets go first and names this machine under the next epoch; a lost answer is settled by asking the server who holds the environment now."""
+    try:
+        lease = transport.handback(record.env)
+    except OSError as lost:
+        lease = held_by(record, transport, lost)
+    if lease.machine != this_machine():
+        raise Refused(f"the server handed {record.env} to {lease.machine}, not to this machine")
+    if Lease.read(record.scope_home("")) == lease:
+        return lease
+    return accept(record, "", lease)
+
+
+def settle(record, transport: Transport, lease: Lease, lost: OSError) -> None:
+    if held_by(record, transport, lost) != lease:
+        raise Refused(f"this machine let go of {record.env} at epoch {lease.epoch} and the server has not taken it yet: run hand again to finish") from lost
+
+
+def held_by(record, transport: Transport, lost: OSError) -> Lease:
+    try:
+        return transport.holder(record.env)
+    except OSError as unknown:
+        raise Refused(f"the server's answer about {record.env} was lost and it cannot be asked who holds it now: run hand again once it answers") from unknown
 
 
 def heard(transport: Transport) -> Hello:

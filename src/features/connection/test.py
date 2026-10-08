@@ -32,6 +32,7 @@ class Server:
     def __init__(self, root, epoch=0, up=True):
         self.said = Hello(version(), Shape(PROTOCOL, frozenset(applied(root)), epoch), "server-1")
         self.up, self.handed, self.taken, self.events_to_give = up, [], [], []
+        self.leases, self.loses_answers, self.loses_handovers = {}, False, False
 
     def hello(self):
         if not self.up:
@@ -41,10 +42,24 @@ class Server:
     def handover(self, env, lease):
         if not self.up:
             raise OSError("the server does not answer")
+        if self.loses_handovers:
+            raise TimeoutError("lost before the server took it")
         self.handed.append((env, lease))
+        self.leases[env] = lease
+        self.answer()
 
     def handback(self, env):
-        return Lease(this_machine(), 2)
+        if self.leases[env].machine != this_machine():
+            self.leases[env] = self.leases[env].handed_to(this_machine())
+        self.answer()
+        return self.leases[env]
+
+    def holder(self, env):
+        return self.leases[env]
+
+    def answer(self):
+        if self.loses_answers:
+            raise TimeoutError("the answer was lost on the way back")
 
     def send(self, held):
         if held.asked.args[0] == "turned down":
@@ -119,6 +134,18 @@ def test_an_environment_goes_to_the_server_only_once_it_has_taken_the_new_epoch_
     back = hand(record.root, record.env, "here", server)
     assert (back, Record(record.root, record.env).holds("")) == (Lease(this_machine(), 2), True), "handing it back takes the lease the server made, once"
     assert "server or to here" in refused(lambda: hand(record.root, record.env, "mars", server)), "an environment goes to the server or comes here, nowhere else"
+    server.loses_answers = True
+    lease = hand(record.root, record.env, "server", server)
+    assert (lease, server.leases[record.env], Record(record.root, record.env).holds("")) == (Lease("server-1", 3), Lease("server-1", 3), False), \
+        "a handover whose answer is lost is settled by asking the server who holds the environment, so exactly one machine writes it"
+    back = hand(record.root, record.env, "here", server)
+    assert (back, server.leases[record.env], Record(record.root, record.env).holds("")) == (Lease(this_machine(), 4), Lease(this_machine(), 4), True), \
+        "and so is a handback whose answer is lost"
+    server.loses_answers, server.loses_handovers = False, True
+    assert "run hand again" in refused(lambda: hand(record.root, record.env, "server", server)) and not Record(record.root, record.env).holds(""), \
+        "a handover the server never took leaves this machine let go, never two writers, until hand is run again"
+    server.loses_handovers = False
+    assert hand(record.root, record.env, "server", server) == Lease("server-1", 5) == server.leases[record.env], "and running it again sends the same lease"
 
 
 def test_syncing_sends_the_writes_that_waited_in_order_and_takes_in_what_happened_on_the_server_without_firing_features():
