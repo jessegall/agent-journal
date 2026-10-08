@@ -1,7 +1,10 @@
+import fcntl
 import json
 import os
+import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 from engine.disk import read_json, replace
@@ -13,6 +16,8 @@ SECRET = 0o600
 PRIVATE = 0o700
 AUDIT = "audit.log"
 AUDIT_BYTES = 1024 * 1024
+LOCK = "vault.lock"
+WRITING = threading.Lock()
 
 Clock = Callable[[], float]
 
@@ -35,6 +40,13 @@ class Vault:
             folder.mkdir(mode=PRIVATE, parents=True, exist_ok=True)
             folder.chmod(PRIVATE)
         return self.folder
+
+    @contextmanager
+    def held(self) -> Iterator[None]:
+        """One reader-and-writer at a time, across this process's threads and every other process on the server."""
+        with WRITING, os.fdopen(os.open(self.opened() / LOCK, os.O_WRONLY | os.O_CREAT, SECRET), "w") as kept:
+            fcntl.flock(kept, fcntl.LOCK_EX)
+            yield
 
     def read(self, name: str) -> dict:
         return read_json(self.folder / name, dict, {})
