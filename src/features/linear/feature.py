@@ -53,7 +53,7 @@ class ProposeComment(Command):
         if ticket.source != "linear" or not ticket.source_id:
             raise Refused(f"{ticket.ref} did not come from Linear")
         Questions(context.record, actor=AGENT).create(titled(f"Send this comment to Linear on {ticket.ref.replace(':', ' ')}"), brief=text.strip(),
-                                                      options=[{"title": SEND}, {"title": KEEP}], about=ticket.ref, linear_comment=True)
+                                                      options=[{"title": SEND}, {"title": KEEP}], pick=2, about=ticket.ref, linear_comment=True)
         return f"asked you whether to send it; nothing is sent until you press {SEND}"
 
 

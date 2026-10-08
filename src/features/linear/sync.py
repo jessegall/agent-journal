@@ -7,7 +7,7 @@ from features.tickets.controller import Tickets
 from features.integrations.client import Answer, IntegrationClient
 from features.integrations.state import Choice, IntegrationState
 from features.integrations.words import BODY, COMMENT, TITLE, cleaned
-from features.linear.reading import COMMENT, ISSUES, KNOWN, TEAMS, UPDATE, WORKFLOW, Issue, Reply, Team, reply_of
+from features.linear.reading import ADD_COMMENT, ISSUES, KNOWN, SET_STATE, TEAMS, WORKFLOW, Issue, Reply, Team, reply_of
 from features.members.words import words_from
 from resources.base import Refused, SYSTEM, titled
 
@@ -80,11 +80,11 @@ def workflow_of(client: IntegrationClient, limits: Limits, choices: Choices) -> 
 
 def send_status(client: IntegrationClient, issue: str, state: str) -> None:
     """Sets one Linear issue to one state: nothing else is sent."""
-    asked(client, Limits(), UPDATE, {"id": issue, "stateId": state})
+    asked(client, Limits(), SET_STATE, {"id": issue, "stateId": state})
 
 
 def send_comment(client: IntegrationClient, issue: str, body: str) -> None:
-    asked(client, Limits(), COMMENT, {"issueId": issue, "body": body})
+    asked(client, Limits(), ADD_COMMENT, {"issueId": issue, "body": body})
 
 
 def changed_issues(client: IntegrationClient, limits: Limits, choices: Choices, cursor: str) -> list[Issue]:

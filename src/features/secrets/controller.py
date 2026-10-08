@@ -8,6 +8,7 @@ from controllers.base import Controller
 from controllers.marks import action
 from controllers.types import Environments, Messages
 from features import FEATURES
+from features.secrets.keys import integration_key_variables
 from features.secrets.resource import Kind, Secret, SecretField
 from features.secrets.running import checked_program, run_masked
 from features.secrets.sessions import BrowserLogins
@@ -54,8 +55,10 @@ class Secrets(Controller):
     def run(self, name: str, *command: str, stdin: str = "", env: bool = False) -> str:
         row = self._named(name)
         self._shared_with_caller(row)
-        checked_program(command, row.programs)
         fields = [SecretField.from_json(raw) for raw in row.secret_fields]
+        if any(field.variable in integration_key_variables(self.record) for field in fields):
+            raise Refused(f"{row.title} is the key of an integration, which only the journal itself uses: no command is given it")
+        checked_program(command, row.programs)
         values = ValuesFile(self.record.root).values()
         if row.is_waiting() or any(field.variable not in values for field in fields):
             raise Refused(f"secret {row.n}, {row.title}, has no value yet: ask for it with journal secret request, and the user fills it in")

