@@ -262,7 +262,7 @@ def test_a_member_sees_only_the_environments_the_owner_shares_in_lists_rows_sear
         "an environment not shared stays shut by its address, its query and its live stream"
     assert "garden" in titles(owner) and "garden" not in titles(writer), "the list of environments holds only the shared ones"
     assert hosted.call("GET", f"/api/{env}/environment/{garden.n}", Cookie=writer).status == 404
-    assert not [hit for hit in json.loads(hosted.call("GET", f"/api/{env}/search?q=garden", Cookie=writer).text) if hit["title"] == "garden"]
+    assert not [hit for hit in json.loads(hosted.call("GET", f"/api/{env}/search?q=garden", Cookie=writer).text)["hits"] if hit["title"] == "garden"]
     assert "garden" not in [place["name"] for place in json.loads(hosted.call("GET", "/api/summary", Cookie=writer).text)["environments"]]
     assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "nowhere"]}, owner).status == 400
     assert sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "garden"]}, owner).status == 200
