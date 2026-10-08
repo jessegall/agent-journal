@@ -38,3 +38,8 @@ export function plainRefusal(message, action) {
 }
 
 export const sessionRow = (rows, session) => rows.find((row) => row.title === session) || null;
+
+export const environmentAgent = (rows) =>
+    [...rows].filter((row) => !row.deleted && !row.data.parent).sort((a, b) => b.updated - a.updated)[0] || null;
+
+export const agentOf = (rows, session, helper) => sessionRow(rows, session) || (helper ? environmentAgent(rows) : null);
