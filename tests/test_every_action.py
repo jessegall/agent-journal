@@ -48,6 +48,7 @@ BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "point", "p
 REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin", "tunnelLogout", "updateTunler", "installTunler",
         "tunnelAnswering", "tunnelDomains", "tunnelRelease", "tunnelReaddress", "tunnelCause", "restartTunnel", "setService", "installPlugin", "installSuggested", "upgradePlugin", "previewPlugin",
         "previewUpgrade", "launchAgent", "saveAgentHooks", "relaunchAgent", "runShell", "agentKeys", "runCheck", "connectPhone"}
+LOGIN_PAGE = {"hosting", "hostingUpgrade", "hostingTakeDown"}
 SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
 CALLS = {
     "changelog": [], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
@@ -203,7 +204,7 @@ def test_every_call_the_viewer_makes_is_answered_by_the_api_as_the_user():
     features.load()
     record = fresh()
     walked = viewer_calls(record.env)
-    unwalked = set(walked["methods"]) - set(CALLS) - BUILT
+    unwalked = set(walked["methods"]) - set(CALLS) - BUILT - LOGIN_PAGE
     assert unwalked == set(), "every method of the viewer's API client is walked here, or named as one that only builds a url"
     broken = [f"{name}: {sent.get('error') or sent['method'] + ' ' + sent['url']} - {why}"
               for name, requests in walked["sent"].items()

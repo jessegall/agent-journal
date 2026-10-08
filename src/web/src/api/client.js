@@ -95,6 +95,18 @@ export class ApiClient {
         return this.get("/upstream");
     }
 
+    hosting() {
+        return this.get("/hosting");
+    }
+
+    hostingUpgrade() {
+        return this.post("/hosting/upgrade", {});
+    }
+
+    hostingTakeDown() {
+        return this.post("/hosting/take-down", {});
+    }
+
     upgrade() {
         return this.post("/upgrade");
     }

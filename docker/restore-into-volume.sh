@@ -11,3 +11,5 @@ for kept in "$STAGED"/data/* "$STAGED"/data/.[!.]*; do
     [ -e "$kept" ] && mv "$kept" /data/
 done
 rm -rf "$STAGED"
+# A restored journal is a journal to bring back: the updater starts it once this folder no longer says it was taken down.
+rm -rf /data/updater

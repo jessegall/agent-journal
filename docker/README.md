@@ -63,5 +63,6 @@ and its vault are the only things kept from it.
 - `docker compose logs journal` — the journal's log; logins and refusals are in `/data/vault/*/audit.log` in the container.
 - `docker compose exec -u gateway journal hosted-journal logout-everywhere` — end every login.
 - `docker compose exec -u gateway journal hosted-journal reset-password` — clear the password; then get a new setup code.
+- Upgrading and taking down are done by the owner in the viewer. The updater checks the signed image every hour and says in the viewer when a newer one is out; it deploys that digest only when the owner presses Upgrade. Taking down logs out every browser and phone at once, then stops the journal and makes a final backup, kept past the usual pruning (`docker compose run --rm --entrypoint restic backup snapshots --tag final`). The data stays in the volume. `./restore.sh` of that backup, or removing the folder with `docker compose exec updater rm -rf /data/updater`, lets the updater start the journal again.
 - `./restore.sh [snapshot]` — put a backup back, unpacked beside the journal first so a bad snapshot changes nothing; `docker compose run --rm --entrypoint restic backup snapshots` lists them.
 - `./prove.sh` — build the image and prove the install on this machine's Docker, then remove what it made.

@@ -3,6 +3,7 @@ import {runScenarios} from "../harness.mjs";
 const URL_ = process.env.HOSTED_URL;
 const PASSWORD = process.env.HOSTED_PASSWORD;
 const OLD_LOGIN = process.env.HOSTED_OLD_LOGIN;
+const OWNER_LOGIN = process.env.HOSTED_OWNER_LOGIN;
 const MOST_TRIES = 5;
 
 async function logIn(page, password) {
@@ -37,5 +38,15 @@ await runScenarios(URL_, {
         await page.getByRole("alert").filter({hasText: "Too many wrong tries. Try again in 15 minutes."}).waitFor();
         await page.goto(`${url}login`);
         await page.getByRole("alert").filter({hasText: "Too many wrong tries"}).waitFor();
+    },
+    async "a newer version shows a banner with Upgrade, and Take down ends the login"(page, url) {
+        await page.context().setExtraHTTPHeaders({Cookie: `__Host-journal=${OWNER_LOGIN}`});
+        await page.goto(url);
+        await page.getByRole("status").filter({hasText: "is out. This server runs"}).waitFor();
+        await page.getByRole("button", {name: "Upgrade this server"}).click();
+        await page.getByText("The server is upgrading").waitFor();
+        await page.getByRole("button", {name: "Take this journal down"}).click();
+        await page.getByRole("alertdialog").getByRole("button", {name: "Take it down"}).click();
+        await page.getByText("This journal was taken down").waitFor();
     },
 }, {voice: false});

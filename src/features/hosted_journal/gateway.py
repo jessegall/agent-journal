@@ -3,7 +3,7 @@ import math
 import threading
 from collections import Counter
 from collections.abc import Callable
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from http.cookies import SimpleCookie
 from urllib.parse import parse_qs, urlsplit
 from urllib.request import urlopen
@@ -16,7 +16,9 @@ from engine.fields import Loaded
 from engine.viewer import lately_running
 from features.hosted_journal.settings import FromRecord, FromVault
 from features.hosted_journal.owner import MOST_EVERYWHERE, SHORTEST, Devices, Logins, Owner, Standing, WrongTries, hashed
-from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page
+from features.hosted_journal.hosting import Ask, Hosting
+from features.hosted_journal.pages import Notice, insecure_page, locked_page, login_page, setup_page, taken_down_page
+from features.hosted_journal.phones import VaultGuard
 from features.hosted_journal.vault import DiskFull, RefusalLog, Vault
 from features.phone.allow_list import Action, GenericPath, post, reach
 from features.phone.desktop import Desktop, closed, encoded
@@ -150,6 +152,9 @@ class Visit:
     def page(self, code: int, text: str, headers: dict | None = None) -> None:
         self.handler.send(code, text.encode(), {**PAGE_HEADERS, **(headers or {})})
 
+    def json(self, code: int, body: dict, headers: dict | None = None) -> None:
+        self.handler.send(code, json.dumps(body).encode(), {**VIEWER_HEADERS, "Content-Type": "application/json", **(headers or {})})
+
     def go(self, where: str, headers: dict | None = None) -> None:
         self.handler.send(303, b"", {**PAGE_HEADERS, "Location": where, **(headers or {})})
 
@@ -172,6 +177,10 @@ class Gateway:
             ("GET", "/login"): self.show_login, ("GET", "/setup"): lambda visit: visit.go("/login"), ("POST", "/login"): self.log_in,
             ("POST", "/setup"): self.set_up, ("POST", "/logout"): self.log_out, ("GET", "/ready"): self.ready,
         }
+        self.owner_actions: dict[tuple[str, str], Callable[[Visit], None]] = {
+            ("GET", "/api/hosting"): self.hosting_status, ("POST", "/api/hosting/upgrade"): self.upgrade,
+            ("POST", "/api/hosting/take-down"): self.take_down,
+        }
 
     def get(self, handler, rest: list[str]) -> None:
         self.serve(Visit(handler, self.refusals, self.settings))
@@ -184,6 +193,8 @@ class Gateway:
             return visit.page(403, insecure_page(visit.project()))
         if not visit.addressed():
             return visit.refuse(421, "this journal answers only at its own address")
+        if Hosting(visit.vault).down():
+            return visit.page(503, taken_down_page(visit.project()))
         try:
             return self.pages.get((visit.handler.command, visit.url.path), self.forward)(visit)
         except DiskFull as full:
@@ -271,6 +282,25 @@ class Gateway:
             return visit.handler.send(503, b"the journal is not answering", {"Content-Type": "text/plain"})
         return visit.handler.send(200, b"ok", {"Content-Type": "text/plain"})
 
+    def hosting_status(self, visit: Visit) -> None:
+        return visit.json(200, asdict(Hosting(visit.vault).status()))
+
+    def upgrade(self, visit: Visit) -> None:
+        Hosting(visit.vault).ask(Ask.UPGRADE)
+        return visit.json(202, {"asked": Ask.UPGRADE.value})
+
+    def take_down(self, visit: Visit) -> None:
+        """Ends every login and every phone's key before it asks the updater to stop the journal, so nothing is let in while it does."""
+        Hosting(visit.vault).ask(Ask.TAKE_DOWN)
+        ended = Logins(visit.vault).close_all()
+        VaultGuard(visit.vault).drop_all()
+        for record in Record.every(visit.record.root):
+            phones = Phones(record, actor=USER)
+            for phone in phones.connected():
+                phones.complete(phone.n, "ended when the journal was taken down")
+        visit.vault.audit("hosted journal taken down", place=visit.place(), logins_ended=ended)
+        return visit.json(202, {"asked": Ask.TAKE_DOWN.value}, {"Set-Cookie": visit.cookie(COOKIE, "", 0)})
+
     def forward(self, visit: Visit) -> None:
         token = visit.token()
         standing = Logins(visit.vault).standing(token)
@@ -283,6 +313,8 @@ class Gateway:
         size = visit.length()
         if size > (UPLOAD_LIMIT if visit.url.path.endswith("/upload") else BODY_LIMIT):
             return visit.refuse(413, "too large")
+        if owned := self.owner_actions.get((visit.handler.command, visit.url.path)):
+            return owned(visit)
         if phone := self.answered_by_phones(visit):
             return self.answer_here(visit, *phone, visit.handler.rfile.read(size) if size else b"")
         if STREAM not in visit.handler.headers.get("Accept", ""):

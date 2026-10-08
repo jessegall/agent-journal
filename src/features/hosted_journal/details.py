@@ -26,7 +26,7 @@ class HostedJournalDetails(FeatureDetails):
         Five wrong passwords from one place lock that place out for fifteen minutes, kept across
         restarts. A login lasts the number of days set here. The server never runs the journal's run,
         upgrade, stop or hook addresses for anyone who comes in from outside: the Docker image is
-        upgraded by Watchtower instead.
+        upgraded by its owner in the viewer, through the updater that checks the image's signature.
 
         The password, logins, wrong tries and the log of who logged in are kept in files only the
         server's user can read, outside the journal's own folder.

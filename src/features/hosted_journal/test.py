@@ -23,7 +23,8 @@ from engine.viewer import SERVING
 from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, DEVICE_COOKIE, MOST_STREAMS, Visit
 from features.hosted_journal.host import clear_tries
-from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, WrongTries, hashed
+from features.hosted_journal.hosting import Hosting
+from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.feature import APART
 from features.hosted_journal.phones import KEPT_ELSEWHERE, PHONES, VaultGuard
 from features.hosted_journal.settings import FromRecord, GatewaySettings, keep_gateway_settings
@@ -195,7 +196,8 @@ def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_ea
     encoded = ("/api/%72un", "/api/upgr%61de", "/api/st%6fp", "/api/hoo%6b/claude", "/api/upd%61te")
     for path in (*closed, *encoded):
         assert hosted.call("POST", path, {}, Cookie=f"{COOKIE}={token}", Origin=origin).status == 403, path
-    code = Phones(hosted.record, actor=USER).connect(7)["link"].rsplit("#", 1)[1]
+    connected = Phones(hosted.record, actor=USER).connect(7)
+    code = connected["link"].rsplit("#", 1)[1]
     phone_headers = {"Origin": origin, "X-Phone": "1", "Content-Type": "application/json"}
     forged = {**phone_headers, "Host": ADDRESS, "Origin": f"https://{ADDRESS}", "X-Forwarded-Proto": "https", "X-Forwarded-For": "203.0.113.4"}
     assert hosted.call("POST", "/p/pair", body=json.dumps({"code": code, "device": "phone"}), **forged).status == 403, "the phone too trusts only the named proxy"
@@ -208,6 +210,19 @@ def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_ea
     assert hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={token}").status == 401
     logged = [json.loads(line) for line in (hosted.vault.folder / AUDIT).read_text().splitlines()]
     assert {line["path"] for line in logged if line["what"] == "refused"} >= {*closed, *encoded}
+    owner = {"Cookie": f"{COOKIE}={hosted.logged_in()}", "Origin": origin}
+    assert hosted.call("GET", "/api/hosting").status == 401
+    assert hosted.call("POST", "/api/hosting/take-down", {}, Origin=origin).status == 401
+    assert hosted.call("POST", "/api/hosting/upgrade", {}, Cookie=owner["Cookie"], Origin="https://evil.example").status == 403
+    assert json.loads(hosted.call("GET", "/api/hosting", **owner).text)["newer"] is False
+    assert hosted.call("POST", "/api/hosting/upgrade", {}, **owner).status == 202
+    assert hosted.vault.read("hosting-request.json")["asked"] == "upgrade"
+    assert Phones(hosted.record, actor=USER).connected()
+    assert hosted.call("POST", "/api/hosting/take-down", {}, **owner).status == 202
+    assert hosted.vault.read("hosting-request.json")["asked"] == "take-down"
+    assert hosted.call("GET", "/api/identity", Cookie=owner["Cookie"]).status == 503
+    assert hosted.call("GET", "/login").status == 503 and Logins(hosted.vault).standing(owner["Cookie"].split("=", 1)[1]) is Standing.UNKNOWN
+    assert not Phones(hosted.record, actor=USER).connected()
 
 
 def test_another_site_plain_http_from_outside_a_strange_host_large_bodies_and_too_many_streams_are_refused(hosted):
@@ -268,8 +283,11 @@ def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, mo
 @pytest.mark.skipif(not (WEB / "node_modules" / "playwright-core").is_dir(), reason="the viewer's npm packages are not installed")
 def test_login_failed_rate_limited_and_ran_out_show_in_a_browser(hosted):
     Owner(hosted.vault).set_password(PASSWORD)
+    owner = Logins(hosted.vault).open(7, "scenario")
     old = Logins(Vault(hosted.record.root, clock=lambda: 0.0)).open(7, "old")
-    env = {**os.environ, "HOSTED_URL": f"http://127.0.0.1:{hosted.port}/", "HOSTED_PASSWORD": PASSWORD, "HOSTED_OLD_LOGIN": old}
+    Hosting(hosted.vault).updater.mkdir(parents=True, exist_ok=True)
+    (Hosting(hosted.vault).updater / "status.json").write_text(json.dumps({"latest": "99.0.0", "newer": True}))
+    env = {**os.environ, "HOSTED_URL": f"http://127.0.0.1:{hosted.port}/", "HOSTED_PASSWORD": PASSWORD, "HOSTED_OLD_LOGIN": old, "HOSTED_OWNER_LOGIN": owner}
     run = subprocess.run(["node", "browser/hosted/login.mjs"], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
     assert run.returncode == 0, run.stderr[-2000:]
     assert json.loads(run.stdout.strip().splitlines()[-1]) == {}

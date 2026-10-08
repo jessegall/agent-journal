@@ -47,6 +47,7 @@ import ProjectFlash from "./layout/ProjectFlash.vue";
 import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
 import {firstChoice, loadProfiles, unchosen} from "./composables/profiles.js";
 import UpgradeBand from "./layout/UpgradeBand.vue";
+import HostedBand from "./layout/HostedBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
 import SuggestionLayer from "./chat/SuggestionLayer.vue";
 import {desktopActs} from "./chat/suggestionActs.js";
@@ -210,6 +211,7 @@ watch(
                 <div class="main">
                     <div class="bar"><TopBar /></div>
                     <UpgradeBand />
+                    <HostedBand />
                     <template v-if="!full">
                         <StatusBar />
                     </template>
