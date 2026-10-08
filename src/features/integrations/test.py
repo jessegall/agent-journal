@@ -32,7 +32,7 @@ def test_only_you_pick_an_integrations_key_and_a_phone_never_does():
         "a settings write that holds a key is told apart, so the phone's allow list can close it"
     assert (writes_a_secret({"name": "linear", "key": "key", "value": "LINEAR_KEY"}), writes_a_secret({"name": "linear", "key": "enabled", "value": "x"})) == (True, False), \
         "and so is a single setting written by name, whichever route carries it"
-    from controllers.types import Secrets
+    from features.secrets.controller import Secrets
     asked = Secrets(record, actor=AGENT).request("Linear key", "for Linear")
     variable = asked.secret_fields[0]["variable"]
     Secrets(record, actor=USER).fill(asked.n, "key", "lin_api_secret_value")
@@ -168,7 +168,7 @@ def test_words_from_an_outside_source_are_wrapped_for_agents_and_plain_for_peopl
     kept = Todos(record, actor=SYSTEM).load(hostile.n).brief
     assert (kept.count("<untrusted"), kept.count("</untrusted>"), kept.endswith("</untrusted>")) == (1, 1, True), "a closing tag typed in an issue cannot end the wrap early: all of it stays inside one wrap"
     shown = formatted(kept, record, VIEWER)
-    assert "![" not in shown and "[pixel (image)](http://evil.example/pixel.png)" in shown, "people see a link where the issue had an image, so reading it loads nothing from its host"
+    assert "![" not in shown and "pixel (image): " in shown and "evil.example/pixel.png" in shown, "people see the image named with its address, which the viewer makes a link, so reading it loads nothing from its host"
 
 
 def test_issues_become_one_ticket_each_with_their_comments_once_and_one_that_leaves_keeps_its_ticket(monkeypatch, tmp_path):
