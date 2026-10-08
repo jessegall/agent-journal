@@ -28,6 +28,7 @@ function act() {
     <Transition name="toast">
         <template v-if="toast">
             <div :class="['toast', {top}]" role="status" @mouseenter="hovered = true" @mouseleave="((hovered = false), wait())">
+                <slot />
                 <span>{{ toast.text }}</span>
                 <template v-if="toast.action">
                     <button type="button" class="action" @click="act">{{ toast.label }}</button>

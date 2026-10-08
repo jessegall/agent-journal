@@ -47,6 +47,7 @@ import PluginPagePanel from "./layout/PluginPagePanel.vue";
 import ProjectFlash from "./layout/ProjectFlash.vue";
 import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
 import {firstChoice, loadProfiles, unchosen} from "./composables/profiles.js";
+import UpdateCover from "./layout/UpdateCover.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import BlockedNotice from "./layout/BlockedNotice.vue";
 import HostedBand from "./layout/HostedBand.vue";
@@ -213,6 +214,7 @@ watch(
                 <div class="main">
                     <div class="bar"><TopBar /></div>
                     <UpgradeBand />
+                    <UpdateCover />
                     <HostedBand />
                     <BlockedNotice />
                     <template v-if="!full">

@@ -5,6 +5,7 @@ import Btn from "../kit/Btn.vue";
 import Notice from "../kit/Notice.vue";
 import StateDot from "../kit/StateDot.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
+import {locked} from "../state/updating.js";
 
 const {about, changed, releases, error, status, update, start} = useUpdates();
 
@@ -25,7 +26,7 @@ onMounted(start);
                     </template>
                     <span>{{ status.text }}</span>
                     <template v-if="status.update && !changed.length">
-                        <Btn kind="primary" @click="update()">Update to {{ about.latest }}</Btn>
+                        <Btn kind="primary" :busy="locked()" @click="update()">Update to {{ about.latest }}</Btn>
                     </template>
                 </div>
                 <template v-if="status.update && changed.length">

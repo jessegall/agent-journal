@@ -1,20 +1,37 @@
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {wait} from "../platform/timing.js";
+import {begin, fail, runLate, updating} from "../state/updating.js";
 
 const CHECK_TRIES = 20;
 const UPDATE_TRIES = 150;
 
+export async function runUpdate(version, yes = false, chosen = "") {
+    begin(version);
+    try {
+        await api.update(yes, chosen);
+    } catch (failed) {
+        fail(failed.message);
+        return failed.message;
+    }
+    for (let tries = 0; tries < UPDATE_TRIES; tries++) {
+        await wait(2000);
+        const now = await api.changelog().catch(() => null);
+        if (now && now.version === version) return location.reload();
+    }
+    runLate();
+    return "The update is taking longer than expected. It carries on in the background; reload this page in a while.";
+}
+
 export function useUpdates() {
     const about = ref(null);
     const error = ref("");
-    const target = ref("");
     const releases = ref([]);
 
     const status = computed(() => {
         const a = about.value;
         if (!a) return null;
-        if (target.value) return {busy: true, text: `Updating to ${target.value}. The page reloads when it's done.`};
+        if (updating.version && !updating.failure && !updating.late) return {busy: true, text: `Updating to ${updating.version}. The page reloads when it's done.`};
         if (a.repository) return {text: "This is the journal's own repository, so it updates from its own code, not from a release."};
         if (a.checking) return {busy: true, text: "Checking for a newer version…"};
         if (a.newer) return {text: `Version ${a.latest} is out.`, update: true};
@@ -39,22 +56,9 @@ export function useUpdates() {
     }
 
     async function update(yes = false, version = "") {
-        target.value = version || about.value.latest;
         error.value = "";
-        try {
-            await api.update(yes, version);
-        } catch (failed) {
-            target.value = "";
-            error.value = failed.message;
-            return;
-        }
-        for (let tries = 0; tries < UPDATE_TRIES; tries++) {
-            await wait(2000);
-            const now = await api.changelog().catch(() => null);
-            if (now && now.version === target.value) return location.reload();
-        }
-        target.value = "";
-        error.value = "The update is taking longer than expected. It carries on in the background; reload this page in a while.";
+        const problem = await runUpdate(version || about.value.latest, yes, version);
+        if (problem) error.value = problem;
     }
 
     async function start() {
