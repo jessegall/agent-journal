@@ -8,6 +8,10 @@ MEMBER_RIGHTS = Extension()
 class MemberRights:
     """What a person's phone may do and see when no members feature answers: the owner's everything, a member's nothing."""
 
+    def enters(self, record: Record, member: str) -> bool:
+        """Whether this person may see the record's environment at all."""
+        return member == OWNER_ID
+
     def may_reach(self, record: Record, member: str, page) -> bool:
         return member == OWNER_ID
 

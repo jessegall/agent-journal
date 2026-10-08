@@ -28,6 +28,7 @@ from features.members.roster import INVITE_DAYS, Roster
 from commands.dispatch import reached_by_phone
 from engine.record import Record
 from features.phone.allow_list import RUNS, TO_WEIGH, VIEWER_SETTINGS, Action, Reach, get
+from features.phone.controller import Phones
 from features.phone.members import rights_of
 from features.routing import MEMBER, ROLE, SHARED, sender_of
 from features.trigger import DAY
@@ -66,6 +67,18 @@ def every_request() -> list[tuple[str, str]]:
 def visit_of(hosted: Hosted, method: str, path: str) -> Visit:
     handler = SimpleNamespace(shares=SimpleNamespace(record=hosted.record), headers={}, path=path, command=method)
     return Visit(handler, RefusalLog(60), FromRecord())
+
+
+def member_phone(hosted: Hosted, member: str) -> str:
+    """The key of a phone the member connects through the login page."""
+    made = Phones(hosted.record, actor=USER).connect(7, member)
+    paired = hosted.call("POST", "/p/pair", body=json.dumps({"code": made["link"].split("#", 1)[1], "device": "a member's phone"}),
+                         Origin=f"http://127.0.0.1:{hosted.port}", X_Phone="1", Content_Type="application/json")
+    return re.search(r"__Host-phone=([^;]+)", paired.headers["set-cookie"]).group(1)
+
+
+def phone_reads(hosted: Hosted, key: str) -> int:
+    return hosted.call("GET", "/p/feed", Cookie=f"__Host-phone={key}", X_Phone="1").status
 
 
 def login_in(answer: Answer) -> str:
@@ -298,5 +311,9 @@ def test_the_phone_asks_the_same_members_model_as_the_login_page(hosted, monkeyp
         "a phone is shown only rows of the environments shared with its person"
     sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": [env, "garden"]}, owner)
     assert rights.sees(garden, bea, there), "sharing an environment opens it to the phone as to the browser"
+    key = member_phone(hosted, bea)
+    assert phone_reads(hosted, key) == 200, "a member's phone reads the environment shared with them"
+    sent(hosted, "/api/hosting/members/environments", {"member": bea, "environments": ["garden"]}, owner)
+    assert phone_reads(hosted, key) == 403, "and nothing of it once it is no longer shared, its feed, lists and pages alike"
     sent(hosted, "/api/hosting/members/remove", {"member": bea}, owner)
     assert not rights.may_reach(hosted.record, bea, create) and not rights.sees(hosted.record, bea, here), "a removed member's phone reaches and sees nothing"

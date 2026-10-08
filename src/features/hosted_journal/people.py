@@ -30,6 +30,8 @@ class People(Protocol):
 
     def marks(self, visit: "Visit", login: KeptLogin) -> dict: ...
 
+    def enters(self, record: Record, member: str) -> bool: ...
+
     def may_reach(self, record: Record, member: str, page) -> bool: ...
 
     def sees(self, record: Record, member: str, row: Resource) -> bool: ...
@@ -57,6 +59,9 @@ class NoMembers:
 
     def marks(self, visit: "Visit", login: KeptLogin) -> dict:
         return {}
+
+    def enters(self, record: Record, member: str) -> bool:
+        return member == OWNER_ID
 
     def may_reach(self, record: Record, member: str, page) -> bool:
         return member == OWNER_ID
