@@ -6,6 +6,8 @@ await runScenarios(process.argv[2], {
         await page.goto(`${url}#/main/integrations`);
         const card = page.locator('[data-integration="linear"]');
         await card.waitFor();
+        await page.getByText("Outside services the journal can reach for you").first().waitFor();
+        await page.getByText("No integration is switched on").waitFor();
         await card.getByText("Use Linear").waitFor();
         await card.getByText("Key", {exact: true}).waitFor();
         await card.getByText("No key is picked, so Linear is not reached.").waitFor();

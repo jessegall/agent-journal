@@ -236,8 +236,8 @@ def test_words_from_an_outside_source_are_wrapped_for_agents_and_plain_for_peopl
         hostile = Todos(record, actor=SYSTEM).create("ENG-2 Hostile", brief=body)
     kept = Todos(record, actor=SYSTEM).load(hostile.n).brief
     assert (kept.count("<untrusted"), kept.count("</untrusted>"), kept.endswith("</untrusted>")) == (1, 1, True), "a closing tag typed in an issue cannot end the wrap early: all of it stays inside one wrap"
-    shown = formatted(kept, record, VIEWER)
-    assert "![" not in shown and "pixel (image): " in shown and "evil.example/pixel.png" in shown, "people see the image named with its address, which the viewer makes a link, so reading it loads nothing from its host"
+    viewed = formatted(kept, record, VIEWER)
+    assert "![" not in viewed and "pixel (image): " in viewed and "evil.example/pixel.png" in viewed, "people see the image named with its address, which the viewer makes a link, so reading it loads nothing from its host"
 
 
 def test_issues_become_one_ticket_each_with_their_comments_once_and_one_that_leaves_keeps_its_ticket(monkeypatch, tmp_path):
@@ -305,7 +305,7 @@ def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_pic
     import time
     from controllers.types import Notices
     from engine.events.engine import ClockTicked
-    from features.linear.feature import CheckLinear
+    from features.linear.handlers import CheckLinear
     from features.parts import Context
     from resources.base import SYSTEM
     world = linear_world(monkeypatch, tmp_path, issues=[issue(1, "2026-10-01T10:00:00Z")])
@@ -336,7 +336,7 @@ def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_pic
     linear.check(record)
     assert [n for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("integration") == "linear"] == [], "and it clears when a sync works again"
     from controllers.types import Questions
-    from features.linear.feature import ProposeComment
+    from features.linear.commands import ProposeComment
     from features.tickets.controller import Tickets
     ticket = next(t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.source == "linear")
     words = "Thanks, this is fixed in 1.2"
@@ -355,10 +355,10 @@ def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_pic
     assert fake.comments == [], "an agent answering for you sends nothing"
     asked = proposed()
     Questions(record, actor=USER).complete(asked.n, how="Send")
-    assert [(c.issue_id, c.body) for c in fake.comments] == [(ticket.source_id, words)], "your Send posts the comment exactly as it was shown"
+    assert [(c.issue_id, c.body) for c in fake.comments] == [(ticket.source_id, words)], "your Send posts the comment exactly as it was viewed"
     import io
     import json
-    from features.linear.feature import LinearWebhook
+    from features.linear.routes import LinearWebhook
     from features.linear.webhook import SIGNATURE, signed
     secret = "whsec_signing_value"
     ValuesFile(record.root).put("LINEAR_SIGNING", secret)

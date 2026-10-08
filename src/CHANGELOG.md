@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.0 — Integrations, starting with Linear
+- A new Integrations page and sidebar item list the outside services the journal can reach for you, each off until you switch it on and pick its key. The key is a secret only you pick; it is read by the journal's own process, sent only to the service's own address and never given to a command, a subprocess or an agent.
+- Linear: issues assigned to you in the teams you choose become tickets on a board you pick, each comment once, checked every five minutes or by Check now, and by Linear's webhook through your tunnel when you give it a signing secret. Their words are wrapped as untrusted for agents and read plainly by people; hidden characters are removed and long text is cut. An issue that leaves what you chose or is deleted keeps its ticket and says so.
+- Only you start or confirm a Linear ticket, even in auto mode. You can map each board stage to a Linear state and send status changes to Linear, and an agent can propose a comment that is posted only when you press Send.
+- Log in from the Linear card opens Linear's own sign-in in your browser and keeps the token as a secret. A second switch adds Linear's own MCP server to Claude's and Codex's project config; what an agent reads there is not marked untrusted, so it stays off until you turn it on.
+
 ## 2.266.1 — A hosted journal's login page refuses the pages that never run from outside
 - A journal on a server, whose login page runs apart under its own user, now refuses /api/run, /api/stop, /api/upgrade, agent hooks and service changes from outside at the login page itself; before, a logged-in browser's request for them was passed on to the journal. Members' own requests are answered again in that setup. Upgrade the server; nothing else to do.
 

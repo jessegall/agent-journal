@@ -1,22 +1,20 @@
 <script setup>
 import {computed} from "vue";
 import EmptyState from "../kit/EmptyState.vue";
-import {integrationsIn} from "../domain/integrations.js";
+import {integrationsIn, isOn} from "../domain/integrations.js";
 import {store} from "../state/store.js";
 import IntegrationCard from "./IntegrationCard.vue";
 
 const integrations = computed(() => integrationsIn(store.spec?.features));
+const anyOn = computed(() => integrations.value.some((feature) => isOn(store.settings, feature.name)));
 </script>
 
 <template>
     <section class="integrations">
         <div class="body">
-            <p class="lead">
-                An integration reads from an outside service you already use. Each stays off until you switch it on and pick the key it
-                signs in with. The journal keeps the key; an agent never sees it.
-            </p>
-            <template v-if="!integrations.length">
-                <EmptyState title="No integration yet">Integrations you can switch on show here.</EmptyState>
+            <p class="lead">Outside services the journal can reach for you.</p>
+            <template v-if="!anyOn">
+                <EmptyState title="No integration is switched on">Turn one on below, then choose its key.</EmptyState>
             </template>
             <div class="cards">
                 <template v-for="feature in integrations" :key="feature.name">

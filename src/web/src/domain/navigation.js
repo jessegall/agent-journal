@@ -7,7 +7,7 @@ export const PAGES = {
     skills: {title: "Skills", icon: "book", text: "The instructions the agent loads for each kind of work"},
     organization: {title: "Organization", icon: "agents", text: "The project's domains and the roles under them"},
     secrets: {title: "Secrets", icon: "key", text: "Keys and logins the agent may use without ever seeing them"},
-    integrations: {title: "Integrations", icon: "share", text: "Outside services the journal reads from, such as Linear"},
+    integrations: {title: "Integrations", icon: "share", text: "Outside services the journal can reach for you"},
     plugins: {title: "Plugins", icon: "plug", text: "Installed plugins, with their pages and settings"},
     settings: {title: "Settings", icon: "settings", text: "Features, notifications and how the viewer behaves"},
 };
