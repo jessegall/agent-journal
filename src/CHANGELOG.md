@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.260.0 — A question is asked once, and on its own
+- Asking a question must be a command of its own: chained or piped with other commands, it is refused, so one slip can no longer ask the same question twice. A question still open with the same title is refused too.
+- A message gets one answer from the agent: a second reply to it is refused and points at the first, to be added to there.
+- Answering a choice in your own words now closes it: its other buttons go, just as when you press one.
+- A row that already asks through its own choice buttons is not asked the same thing again as a question, and a question about a document shows in the document and the chat as one.
+
 ## 2.259.0 — Triggers that watch the journal, and a calmer dump window
 - A trigger can now fire on something true in the journal instead of words: a message of yours unanswered or unread for a while, work open without a log entry, the agent idle or its context full, a question left open, or ready to-dos with no work open. It reminds the agent, tells it what to do, or holds its writes until the matter is dealt with. Make and edit one in the viewer under Triggers, choosing 'When something in the journal is true'.
 - The dump window drops its green: a quiet Filed label, a plain summary with a tally of what was filed, the agent's suggestions as ordinary buttons inside the summary, grey counts under each file and one list of what was filed. Colour stays only while filing, for a question waiting on you, and for something that failed or is being removed. The phone's dump screens follow the same rules.
