@@ -132,7 +132,8 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
         return " ".join([*drifts()[before:], reason]).strip()
     helper = lambda: told({**read, "agent_id": "rhea"})
     assert helper() == "", "nothing is said while the working branch has not moved"
-    assert worktrees.all()[0].checked_tip == tip(project, "phone-connection"), "the tip it checked is kept, so the next tool call runs no git"
+    assert worktrees._checked_tips().get(str(worktrees.all()[0].n)) == tip(project, "phone-connection"), \
+        "the tip it checked is kept on this machine, not in the shared row, so the next tool call runs no git"
     commit(project, "main.txt", "meanwhile\n")
     told_tip = helper()
     assert (told_tip.startswith("phone-connection moved since your worktree was cut"), "1 commit" in told_tip, f"Rebase onto phone-connection in {folder}" in told_tip) == \

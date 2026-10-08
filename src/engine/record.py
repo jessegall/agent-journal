@@ -87,10 +87,12 @@ class Record:
     def scope_home(self, scope: str) -> Path:
         return self.root / RESOURCES if scope == PROJECT else self.home
 
+    def holds(self, scope: str) -> bool:
+        return self.writer.holds(Lease.read(self.scope_home(scope)))
+
     def fence(self, scope: str) -> None:
-        current = Lease.read(self.scope_home(scope))
-        if not self.writer.holds(current):
-            raise NotTheOwner.of(self.scope_name(scope), current)
+        if not self.holds(scope):
+            raise NotTheOwner.of(self.scope_name(scope), Lease.read(self.scope_home(scope)))
 
     def hand_over(self, scope: str, machine: str) -> Lease:
         with self.locked(scope):

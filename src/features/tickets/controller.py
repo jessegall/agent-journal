@@ -12,6 +12,8 @@ from features.permission_prompts.skipping import prompted
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.prioritised import Prioritised
+from controllers.requests import request
+from engine.outbox import Request
 from engine.given import given
 from features.boards.controller import Boards
 from features.boards.resource import DONE, START
@@ -112,23 +114,23 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     @action
     def approve_plan(self, n: int):
-        return self._decide_plan(n, READY, "approve", Plans.approve, "")
+        return self._decide_plan(n, READY, "approve", "approve", "")
 
     @action
     def continue_plan(self, n: int):
-        return self._decide_plan(n, WAITING, "continue", Plans.resume, "is past its checkpoint: carry on with its next phase.")
+        return self._decide_plan(n, WAITING, "continue", "resume", "is past its checkpoint: carry on with its next phase.")
 
-    def _decide_plan(self, n: int, status: str, word: str, act, told: str):
+    def _decide_plan(self, n: int, status: str, word: str, method: str, told: str):
         ticket = self.load(n)
         if self._plan_status(ticket) != status:
             self._refuse(f"{self.type} {ticket.n} has no plan waiting for you to {word}")
         if self.actor != AGENT:
-            act(self._plans(ticket), int(ticket.plan))
+            request(self.record.root, Request(ticket.work_environment, Plans.resource.type, method, [int(ticket.plan)], actor=self.actor))
             return ticket
         if not self._orchestrator_may(ticket, PLANS) or int(ticket.board) not in self._orchestrating():
             self._refuse(f"only the user may {word} the plan of {self.type} {ticket.n}, or the agent orchestrating its board when the "
                          f"board has {PLANS} set; never the agent that wrote it. Here: {self._why_not(ticket)}")
-        act(Plans(Record(self.record.root, ticket.work_environment), actor=SYSTEM), int(ticket.plan))
+        request(self.record.root, Request(ticket.work_environment, Plans.resource.type, method, [int(ticket.plan)]))
         if told and self.agent_session(ticket.n):
             try:
                 self.tell(ticket.n, f"Your plan {ticket.plan} " + told.format(plan=ticket.plan))

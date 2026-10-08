@@ -16,7 +16,6 @@ class Worktree(Shape, Resource):
         Field(default="", name="working"),
         Field(default="", name="base"),
         Field(default="", name="helper"),
-        Field(default="", name="checked_tip"),
         Field(default="", name="taken"),
     ]
     type = "worktree"
