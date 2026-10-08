@@ -50,7 +50,9 @@ class HelpersDetails(FeatureDetails):
         of those it does. You are told when it reports: its report shows in the chat as a message from
         it. journal helper say <n> "<text>" [--todos <n>,<n>] sends it a follow-up and hands it those to-dos; journal helper stop <n> ends its
         agent; once its work is taken (journal worktree take) or dropped, journal helper finish <n>
-        packs its environment away.
+        packs its environment away. Helpers write to one another the same way: from a helper,
+        journal helper say <n> "<text>" reaches the helper of that number at once, or at its next
+        turn while it is busy, on Codex and Claude alike, and journal helper peers lists them.
 
         --todos <n>,<n> hands the helper rows of your own list: they are its alone, so nobody else
         starts or closes them. The helper marks one with journal helper done <n> "<what

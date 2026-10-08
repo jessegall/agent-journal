@@ -202,6 +202,21 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     assert (stopped.title, stopped.until) == ("helper 1, Rhea, stopped running before it reported", ["helper.completed", "helper.deleted"]), \
         "one whose agent is gone is named at once, and said again until it is finished"
     assert "SettingsWarning: hooks must be an object" in stopped.brief, "the notice names the cause from the tail of its launch log"
+    Helpers(record, actor=AGENT).dispatch("Mira", "Write the hook docs", "claude", "sonnet")
+    rhea, mira = (Helpers(Record(record.root, f"{record.env}-{name}"), actor=AGENT) for name in ("rhea", "mira"))
+    Agents(Record(record.root, f"{record.env}-mira"), actor=SYSTEM).create("claude-mira")
+    pushed = []
+    monkeypatch.setattr("features.helpers.controller.tell_in", lambda home, environment, provider, text: pushed.append((provider, text)) or provider == "codex")
+    assert rhea.peers() == ["helper 2, Mira, on claude: Write the hook docs"], "a helper lists the other helpers its dispatcher started"
+    assert mira.say(1, "which hook is slowest?") == "sent to Rhea" and pushed[-1][0] == "codex" and 'answer with journal helper say 2 "<text>"' in pushed[-1][1], \
+        "a Claude helper's words reach a Codex helper at once, with how to answer"
+    asked = Messages(Record(record.root, f"{record.env}-rhea"), actor=SYSTEM).rows.every()[-1]
+    assert (asked.brief, asked.data["peer"]) == ("which hook is slowest?", "Mira"), "and wait in its chat as a message from that helper"
+    assert rhea.say(2, "the stop hook, 40ms") == "sent to Mira", "the Codex helper answers the Claude one the same way"
+    assert any("helper 1, Rhea, wrote in message" in row.title for row in Nudges(Record(record.root, f"{record.env}-mira"), actor=SYSTEM).rows.every()), \
+        "a helper busy in its turn finds the answer at its next one"
+    assert "hands out to-dos" in refused(lambda: mira.say(1, "take this", todos="1")) and "that is you" in refused(lambda: mira.say(2, "hello me")), \
+        "a helper sends words alone, and only to another helper"
     settings = record.root.parent / ".claude" / "settings.json"
     settings.parent.mkdir(exist_ok=True)
     settings.write_text('{"hooks": []}')
