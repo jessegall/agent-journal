@@ -27,13 +27,20 @@ def keep(root: Path, host: str, port: int) -> None:
     """As root: binds the login page's port once and holds it, starting the login page as its own user on it again whenever it ends."""
     listening = socket.create_server((host, port))
     user = pwd.getpwnam(USER)
-    env = {**{name: os.environ[name] for name in PASSED if name in os.environ},
-           "HOME": user.pw_dir, APART: "1", "PYTHONSAFEPATH": "1", "PYTHONDONTWRITEBYTECODE": "1"}
-    command = [sys.executable, "-P", "-m", "features.hosted_journal.apart", "serve", str(root), "--fd", str(listening.fileno())]
+    command, env = serving_command(root, listening.fileno()), serving_environment(user.pw_dir)
     while True:
         subprocess.run(command, pass_fds=(listening.fileno(),), user=user.pw_uid, group=grp.getgrnam(GROUP).gr_gid, extra_groups=[],
                        cwd="/", env=env, check=False)
         time.sleep(RESTART_SECONDS)
+
+
+def serving_command(root: Path, fd: int) -> list[str]:
+    return [sys.executable, "-P", "-m", "features.hosted_journal.apart", "serve", str(root), "--fd", str(fd)]
+
+
+def serving_environment(home: str) -> dict[str, str]:
+    return {**{name: os.environ[name] for name in PASSED if name in os.environ},
+            "HOME": home, APART: "1", "PYTHONSAFEPATH": "1", "PYTHONDONTWRITEBYTECODE": "1"}
 
 
 def serve(root: Path, fd: int) -> None:

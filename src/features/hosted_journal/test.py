@@ -29,6 +29,7 @@ from features.hosted_journal.host import clear_tries
 from features.hosted_journal.hosting import Hosting
 from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, Standing, WrongTries, hashed
 from features.hosted_journal.feature import APART
+from features.hosted_journal.apart import serving_command, serving_environment
 from features.hosted_journal.phones import KEPT_ELSEWHERE, PHONES, VaultGuard
 from features.hosted_journal.settings import FromRecord, GatewaySettings, keep_gateway_settings
 from features.hosted_journal.vault import AUDIT, VAULT, DiskFull, RefusalLog, Vault
@@ -372,10 +373,14 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
     root = hosted.record.root
     keep_gateway_settings(root, GatewaySettings(ADDRESS, "", 7))
     Owner(Vault(root)).set_password(PASSWORD)
+    monkeypatch.setenv("PYTHONPATH", str(SRC))
+    planted, ran = tmp_path / "project", tmp_path / "planted-code-ran"
+    for module in ("json.py", "features/__init__.py"):
+        (planted / module).parent.mkdir(parents=True, exist_ok=True)
+        (planted / module).write_text(f"open({str(ran)!r}, 'w')\n")
     listening = socket.create_server(("127.0.0.1", 0))
-    env = {**os.environ, APART: "1", "PYTHONPATH": str(SRC), "PYTHONSAFEPATH": "1"}
-    child = subprocess.Popen([sys.executable, "-P", "-m", "features.hosted_journal.apart", "serve", str(root), "--fd", str(listening.fileno())],
-                             pass_fds=(listening.fileno(),), env=env, cwd="/", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    child = subprocess.Popen(serving_command(root, listening.fileno()), pass_fds=(listening.fileno(),), env=serving_environment(str(tmp_path)), cwd=planted,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
         apart = Hosted(hosted.record, listening.getsockname()[1], Vault(root))
         began = time.time()
@@ -401,6 +406,12 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
         assert Phones(hosted.record, actor=SYSTEM).load(made["n"]).key == KEPT_ELSEWHERE and str(made["n"]) in Vault(root).read(PHONES)
         Features(hosted.record, actor=USER).switch(HostedJournalDetails.name, False)
         assert apart.call("GET", "/login").status == 200 and apart.call("POST", "/api/run", body="{}", Cookie=token, Origin=origin).status == 403
+        assert not ran.exists(), "code planted in the folder the login page starts from never runs as its user"
+        launcher, start = (DOCKER / "hosted-journal").read_text(), (DOCKER / "entrypoint.sh").read_text()
+        as_gateway = re.search(r'AS_GATEWAY="([^"]*)"', start)[1]
+        assert ("cd /\n" in launcher and "python3 -P " in launcher, "env -C / " in as_gateway and "PYTHONSAFEPATH=1" in as_gateway,
+                bool(re.search(r"env -C / .*python3 -P -m features.hosted_journal.apart keep", start))) == (True, True, True), \
+            "every command run as the login page's user starts in / and never imports from the folder it was started in"
     finally:
         child.terminate()
         child.wait(APART_WAIT)
