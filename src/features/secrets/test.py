@@ -124,7 +124,8 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
     assert "needs the site's address" in refused(lambda: agent.request("Staging", "to check the deploy", kind="browser login")), "a login is asked for with its address"
     row = agent.request("Staging", "to check the deploy", kind="browser login", url="https://staging.example.com")
     asked = next(m for m in Messages(record, actor=SYSTEM).rows.every() if m.title == "I want to log in on Staging, can you do that?")
-    assert asked.data["buttons"] == [{"label": "Log in", "type": "secret", "n": row.n, "action": "login", "outcome": "Logged in to Staging"}], \
+    assert asked.data["buttons"][0] == {"label": "Log in", "type": "secret", "n": row.n, "action": "login", "outcome": "Logged in to Staging",
+                                        "choice": "login", "ask": "Log in to Staging for the agent"}, \
         "the agent's request puts a Log in button in the chat"
     assert "only you log in" in refused(lambda: agent.login(row.n)) and opened == [], "the agent never opens the login itself"
     from features.message_buttons.pressing import press
@@ -149,6 +150,35 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
     reason = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "cwd": str(record.root.parent),
                                                                      "tool_name": "Read", "tool_input": {"file_path": str(logins.merged)}}).get("reason", "")
     assert "never read by an agent" in reason, "the saved logins are refused to the agent like the secrets file"
+
+
+def test_a_site_the_user_lets_the_agent_log_in_to_needs_no_button(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    features.load()
+    record = fresh()
+    opened = []
+
+    def browser(command, check):
+        opened.append(command[-1])
+        Path(command[-2].removeprefix("--save-storage=")).write_text(json.dumps({"cookies": [], "origins": []}))
+    monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
+    monkeypatch.setattr(subprocess, "run", browser)
+    user, agent = Secrets(record, USER), Secrets(record, actor=AGENT)
+    row = agent.request("Staging", "to check the deploy", kind="browser login", url="https://staging.example.com")
+    asked = lambda: [m for m in Messages(record, actor=SYSTEM).rows.every() if m.title == "I want to log in on Staging, can you do that?"]
+    assert [b["label"] for b in asked()[0].data["buttons"]] == ["Log in", "Always let the agent log in to this site"], \
+        "beside Log in, the card offers to let the agent log in to the site on its own"
+    assert "only you let" in refused(lambda: agent.allow_login(row.n)), "only the user lets the agent log in on its own"
+    user.allow_login(row.n)
+    assert (agent.request("Staging", "to check again", kind="browser login").n, len(asked()), opened) == (row.n, 1, ["https://staging.example.com"] * 2), \
+        "a site the user allowed is logged in to at once, with no second card"
+    user.revoke_login(row.n)
+    agent.request("Staging", "once more", kind="browser login")
+    assert (len(asked()), len(opened)) == (2, 2), "once the user takes it back, the agent asks with the button again"
+    from features import FEATURES
+    FEATURES["secrets"].choose(record, "logins", True)
+    agent.request("Staging", "and again", kind="browser login")
+    assert (len(asked()), len(opened)) == (2, 3), "with Agents log in on their own switched on, any saved site needs no button"
 
 
 def test_a_journal_on_a_server_keeps_its_own_values_which_no_backup_restore_or_other_machine_touches(tmp_path, monkeypatch):
