@@ -196,6 +196,19 @@ def test_keys_hashes_and_tokens_never_travel_to_another_machine():
     assert travelling("helper", {"checkout": "/home/a/project/platform", "worktree": "/home/a/elsewhere", "name": "Rhea"}, project) == \
         {"checkout": "platform", "worktree": "", "name": "Rhea"}, "a row's folders are made relative before the first copy exists"
     assert re.fullmatch(r"\d{4}-\d\d-\d\d \d\d:\d\d UTC", utc_minute()), "a date written into a row's text says it is UTC"
+    from engine.comparison import Differences, Listing, compare
+    before = Listing({"todo/1.md": "a", "todo/2.md": "b", "todo/3.md": "c", "environments/old/todo/1.md": "d", "environments/old/events.jsonl": "e"}, frozenset())
+    after = Listing({"todo/1.md": "a2", "doc/2.md": "b", "todo/4.md": "f"}, frozenset({"old"}))
+    assert compare(before, after) == Differences(added=("todo/4.md",), changed=("todo/1.md",), removed=("todo/3.md",), renamed=(("todo/2.md", "doc/2.md"),),
+                                                 archived=("environments/old/events.jsonl", "environments/old/todo/1.md")), \
+        "the comparison sees a rename as a rename, a removal as a removal, and an environment moved to the attic as archived rather than lost"
+    folder = fresh().root
+    (folder / "todo").mkdir()
+    (folder / "todo" / "1.md").write_text("x")
+    (folder / "runtime").mkdir()
+    (folder / "runtime" / "sock").write_text("live")
+    listed = Listing.of(folder).files
+    assert ("todo/1.md" in listed, [path for path in listed if path.startswith("runtime/")]) == (True, []), "a listing holds only the files that travel"
 
 
 def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_against_the_servers():
