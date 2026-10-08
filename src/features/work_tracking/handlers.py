@@ -132,7 +132,7 @@ class AskStillBlocked(Handler):
         agent = context.journal.get(Agents).primary()
         if not agent or closed % max(1, int(context.settings["ask_blocked_every"])):
             return
-        asked_at, now = state.get("asked", {}), time.time()
+        asked_at, now = dict(state.get("asked", {})), time.time()
         due = [r for r in context.journal.get(Todos).rows.standing() if r.blocked and now - float(asked_at.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]
         asked = questioned(context.record)
         for row in [r for r in due if r.ref not in asked]:
