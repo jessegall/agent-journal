@@ -14,13 +14,12 @@ from controllers.types import CONTROLLERS, Agents, Plugins
 from tests.kit import handle
 from engine.keeper import ServiceState
 from engine.runtime import folder as runtime_folder
-from engine.services import UP, Manager, allocate, status, status_file, want
+from engine.services import UP, Manager, allocate, status, status_file
 from features.plugins.services import plugin_services
 from features.plugins.commands import ClearLog
 from features.plugins.declared import Manifest
 from features.plugins.manifest import MANIFEST
 from features.plugins.paths import folder, home, log, plugin_socket
-from features.plugins.staging import alone
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh, refused
@@ -35,7 +34,7 @@ def alone(env="t"):
     return record
 
 
-def installed(record, name, guard, **manifest):
+def installed(record, name, guard="exit 0", **manifest):
     where = folder(record.root, name)
     home(record.root).mkdir(parents=True, exist_ok=True)
     where.mkdir(parents=True, exist_ok=True)
@@ -254,7 +253,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.plugins.declared import settings_of
     from features.plugins.environment import environment
     record = alone()
-    row = installed(record, "linter", "exit 0", settings={"quiet": {"title": "Quiet", "default": "", "env": "QUIET"}})
+    row = installed(record, "linter", settings={"quiet": {"title": "Quiet", "default": "", "env": "QUIET"}})
     plugins = Plugins(record, actor=SYSTEM)
     assert environment(record.root, "linter", Manifest.of(row.manifest), row.token)["QUIET"] == "", "unchanged, a setting is its default"
     from tests.kit import dispatch
@@ -292,14 +291,14 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.plugins.manifest import typed
     assert typed({"php": {"type": "flag"}, "strict": {"parent": "php"}})["strict"]["parent"] == "php", "a setting sits under the switch that turns it on"
     assert "no flag setting" in refused(lambda: typed({"php": {"type": "text"}, "strict": {"parent": "php"}})), "only under a switch"
-    typed = installed(record, "typed", "exit 0", settings={"on": {"type": "flag", "default": "true"}, "level": {"type": "options", "options": ["low", "high"]}},
+    typed = installed(record, "typed", settings={"on": {"type": "flag", "default": "true"}, "level": {"type": "options", "options": ["low", "high"]}},
                       events={"sin-found": {"title": "Sin found", "tone": "warn", "card": {"icon": "warn"}}, "checked": {"title": "Checked"}})
     assert "true or false" in refused(lambda: Configure().run(None, plugins, typed.n, "on", "yes")), "a switch takes true or false"
     assert "one of low, high" in refused(lambda: Configure().run(None, plugins, typed.n, "level", "mid")), "options take one of theirs"
     from features.secrets.values import ValuesFile
     from resources.base import USER
     ValuesFile(record.root).put("STRIPE_TEST_KEY", "sk-test-plugin-77")
-    payer = installed(record, "payer", "exit 0", settings={"stripe": {"type": "secret", "env": "STRIPE_KEY"}})
+    payer = installed(record, "payer", settings={"stripe": {"type": "secret", "env": "STRIPE_KEY"}})
     given = lambda: environment(record.root, "payer", Manifest.of(payer.manifest), payer.token, chosen=settings_of(plugins.load(payer.n)).chosen)["STRIPE_KEY"]
     assert given() == "", "a plugin gets no secret until it is given one"
     from features.plugins import manifest
@@ -447,7 +446,7 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten(monkeypatch):
     Manager(record.root, start=lambda spec, lifeline: started.append(spec.id) or 0, sources=(broken, fine)).tick()
     assert started == ["fine.web"] and status_file(record.root, "lost.web").exists(), \
         "a source that throws starts nothing of its own, stops nothing and never keeps the other sources' services from running"
-    from engine.services import Beat, beat_file
+    from engine.services import Beat
     clock, asked = [5000.0], []
 
     def counting(root, taken):
@@ -470,7 +469,7 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten(monkeypatch):
     from features import FEATURES
     from features.plugins.services import notice_stopped
     from controllers.types import Notices
-    installed(record, "server", "exit 0", services={"web": {"run": "serve {port} {dir}", "port": "auto", "env": {"WHERE": "{dir}"}}},
+    installed(record, "server", services={"web": {"run": "serve {port} {dir}", "port": "auto", "env": {"WHERE": "{dir}"}}},
               pages=[{"name": "home", "title": "Home", "service": "web", "path": "/start"}])
     spec, = plugin_services(record.root, set())
     assert (spec.id, spec.run, spec.env["WHERE"]) == ("server.web", f"serve {spec.port} {folder(record.root, 'server')}", str(folder(record.root, "server"))), \
@@ -783,7 +782,7 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
     from engine.services import DOWN, wanted
     from tests.kit import run
     record = alone()
-    plugin = installed(record, "checker", "exit 0", services={"web": {"run": "sleep 30"}})
+    plugin = installed(record, "checker", services={"web": {"run": "sleep 30"}})
     assert run(["--root", str(record.root), "--plugin", "checker", "check", "create", "The code keeps its shape", "--set", "command=sh check.sh"]) == 0
     assert run(["--root", str(record.root), "--plugin", "checker", "check", "create", "The code keeps its shape", "--set", "command=sh check-v2.sh"]) == 0
     assert [c.data["command"] for c in CONTROLLERS["check"](record, actor=USER).all()] == ["sh check-v2.sh"], \
@@ -813,7 +812,7 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
             pass
     server = HTTPServer(("127.0.0.1", 0), Answering)
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    installed(record, "answerer", "exit 0", on={"todo.created": {"run": "sh answer.sh"}})
+    installed(record, "answerer", on={"todo.created": {"run": "sh answer.sh"}})
     script = folder(record.root, "answerer") / "answer.sh"
     script.write_text("exit 1\n")
     host, now = Host(record.root, FEATURES["plugins"].journal), time.time()
@@ -833,11 +832,11 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
     from resources.base import PLUGIN
     Todos(record, actor=PLUGIN).create("Made by the answerer itself", plugin="answerer")
     assert host.step(now + 61) == 0, "a plugin is not told of the rows it made itself"
-    installed(record, "watcher", "exit 0", on={"plugin.updated": "true"}, load={"todo.created": ["journal"]})
+    installed(record, "watcher", on={"plugin.updated": "true"}, load={"todo.created": ["journal"]})
     Plugins(record, actor=SYSTEM).update(plugin.n, abstract="looked at again")
     Todos(record, actor=SYSTEM).create("One more for the watcher")
     assert host.step(now + 61) >= 1, "a plugin hears of other plugins changing, and the skills it loads on an event are asked for"
-    installed(record, "poster", "exit 0", on={"todo.created": {"post": f"http://127.0.0.1:{server.server_port}/event"}})
+    installed(record, "poster", on={"todo.created": {"post": f"http://127.0.0.1:{server.server_port}/event"}})
     host.step(now + 61)
     Todos(record, actor=SYSTEM).create("Posted one")
     host.step(now + 61)

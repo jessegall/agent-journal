@@ -203,17 +203,17 @@ def test_code_goes_through_git_as_snapshots_and_is_applied_only_over_files_not_c
 
 def test_a_hosted_world_runs_a_server_and_two_local_copies_as_real_processes_that_connect_and_sync(hosted_world):
     world = hosted_world
-    world.start(world.server)
-    world.start(world.laptop)
-    world.start(world.desk)
+    world.server.start()
+    world.laptop.start()
+    world.desk.start()
     assert len({world.server.port, world.laptop.port, world.desk.port}) == 3 and all(copy.running() for copy in world.copies.values()), \
         "the server and both local copies each run in a process and folder of their own"
     asked = world.laptop.run("environment", "connect", "--address", world.server.address)
     assert "Traceback" not in asked.stderr, "a local copy can be told to connect to the server by its address, and answers in words whatever the server says"
-    world.stop(world.server)
+    world.server.stop()
     assert not world.server.running(), "the server can be stopped and started again on the same port, as the failure cases need"
     port = world.server.port
-    world.start(world.server)
+    world.server.start()
     assert world.server.port == port and world.server.running(), "it comes back where it was"
     as_you = ("--as", "user")
     world.laptop.run(*as_you, "feature", "switch", "connection")

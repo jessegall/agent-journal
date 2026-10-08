@@ -21,6 +21,11 @@ def travels(path: str) -> bool:
     return not any(part in NEVER_TRAVELS_PATHS for part in path.replace("\\", "/").split("/"))
 
 
+def travelling_files(root: Path) -> list[Path]:
+    """Every file of the record that is copied to another machine, in path order."""
+    return sorted(path for path in Path(root).rglob("*") if path.is_file() and travels(path.relative_to(root).as_posix()))
+
+
 FOLDER_FIELDS = {"agent": ("cwd", "transcript"), "helper": ("worktree", "checkout"), "worktree": ("path",), "record": ("folder",), "environment": ("folder",)}
 
 

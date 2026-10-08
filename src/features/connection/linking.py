@@ -8,7 +8,7 @@ from engine.handover import accept, epoch_of, give, nothing_waits
 from engine.machines import Lease, this_machine
 from engine.offline import Waiting, Write
 from engine.record import Record
-from engine.sync import CONNECTION, PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay, travels
+from engine.sync import CONNECTION, PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay, travelling_files
 from engine.version import version
 from features.connection.transport import ServerKey, Transport
 from engine.ledger import applied
@@ -146,7 +146,7 @@ def notice_refused(record, refused: tuple[Write, ...]) -> None:
 
 
 def what_travels(root: Path) -> Travelling:
-    found = [path for path in sorted(Path(root).rglob("*")) if path.is_file() and travels(path.relative_to(root).as_posix())]
+    found = travelling_files(root)
     environments = sorted({path.relative_to(root).parts[1] for path in found if path.relative_to(root).parts[0] == "environments" and len(path.relative_to(root).parts) > 2})
     return Travelling(len(found), sum(path.stat().st_size for path in found), tuple(environments))
 

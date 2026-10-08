@@ -326,7 +326,7 @@ class Supervisor:
     def run(self) -> int:
         saved = self.saved
         try:
-            saved = saved or termios.tcgetattr(self.stdin)
+            saved = saved if saved is not None else termios.tcgetattr(self.stdin)
             tty.setraw(self.stdin)
         except termios.error:
             pass

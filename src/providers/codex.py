@@ -141,7 +141,7 @@ class SpawnedAgent:
     task: str
     type: str
     model: str
-    session: str
+    session: str | None
     at: float
     agent_path: str = ""
     refused: bool = False
@@ -498,20 +498,22 @@ class Codex(Provider):
     def subagent_row(self, path: Path, spawn: SpawnedAgent) -> dict:
         if spawn.refused:
             return SubagentRow(spawn.task, spawn.task, spawn.type, spawn.model, False, spawn.at, spawn.at, REFUSED, "").to_json()
-        session = spawn.session or self.spawned_session(path, spawn)
-        running, ended = self.subagent_state(path, session) if session else (True, 0.0)
+        session = spawn.session if spawn.session is not None else self.spawned_session(path, spawn)
+        if session is None:
+            return SubagentRow("", spawn.task, spawn.type, spawn.model, True, spawn.at, 0.0, "", "").to_json()
+        running, ended = self.subagent_state(path, session)
         return SubagentRow(session, spawn.task, spawn.type, spawn.model, running, spawn.at, ended, "" if running else "finished", session).to_json()
 
-    def spawned_session(self, path: Path, spawn: SpawnedAgent) -> str:
-        """The session of a subagent spawned directly whose answer named only its path, found among the rollouts written since."""
+    def spawned_session(self, path: Path, spawn: SpawnedAgent) -> str | None:
+        """The session of a subagent spawned directly whose answer named only its path, found among the rollouts written since, or None while none is found."""
         if not spawn.agent_path:
-            return ""
+            return None
         parent = Path(path).stem[-36:]
         for found in Path(path).parent.parent.glob("*/rollout-*.jsonl"):
             spawned = self.meta(found).source.subagent.thread_spawn if found.stat().st_mtime >= spawn.at else None
             if spawned and spawned.parent_thread_id == parent and spawned.agent_path == spawn.agent_path:
                 return found.stem[-36:]
-        return ""
+        return None
 
     def crew_rows(self, crew: CodexCrew, row: Row) -> CodexCrew:
         if row.type == "compacted":
@@ -548,7 +550,7 @@ class Codex(Provider):
         asked = crew.direct.pop(key, None)
         if asked:
             found, answer = SPAWNED.search(output), SpawnAnswer.from_json(arguments_of(output))
-            crew.subagents.append(SpawnedAgent(asked.task_name, asked.agent_type, asked.model, found[1] if found else "", at,
+            crew.subagents.append(SpawnedAgent(asked.task_name, asked.agent_type, asked.model, found[1] if found else None, at,
                                                answer.task_name, refused=not found and not answer.task_name))
         command = crew.pending.pop(key, "")
         cell = CELL_RUNNING.search(output)

@@ -163,14 +163,9 @@ class TranscriptCache:
     def counted_before(self, path: Path, read: Read) -> int:
         """Lines before a fresh read, from the cursor an earlier build kept, so turns stay numbered from the first line."""
         kept = self.stored((CURSOR, str(path)))
-        if not kept or not read.start <= kept[0] <= read.end:
+        if not kept or not read.holds(kept[0]):
             return 0
-        at, within = read.start, 0
-        for line in read.lines:
-            if at >= kept[0]:
-                break
-            at, within = at + len(line) + 1, within + 1
-        return max(0, kept[1] - within)
+        return max(0, kept[1] - read.lines_before(kept[0]))
 
     def before(self, path: Path, offset: int, span: int) -> bytes:
         return read_bytes(path, max(0, offset - span), offset)

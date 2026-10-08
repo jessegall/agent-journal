@@ -6,7 +6,7 @@ from engine import attic
 from engine.paths import ENVIRONMENTS
 from engine.proc import git
 from engine.snapshots import never_travels, repositories
-from engine.sync import travels
+from engine.sync import travelling_files
 
 
 @dataclass(frozen=True)
@@ -20,7 +20,7 @@ class Listing:
 
     @classmethod
     def of(cls, root: Path) -> "Listing":
-        found = sorted(path for path in Path(root).rglob("*") if path.is_file() and travels(path.relative_to(root).as_posix()))
+        found = travelling_files(root)
         files = {path.relative_to(root).as_posix(): hashlib.sha1(path.read_bytes()).hexdigest() for path in found}
         archived = frozenset(attic.STAMPED.sub("", archive.name[:-len(attic.SUFFIX)]) for archive in attic.folder(root).glob(f"*{attic.SUFFIX}"))
         return cls({path: digest for path, digest in files.items() if not path.startswith(f"{attic.folder(root).name}/")}, archived)

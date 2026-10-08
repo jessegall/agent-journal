@@ -5,9 +5,8 @@ from dataclasses import dataclass
 
 from controllers.base import SENDER
 
-from resources.base import OWNER_ID, SECTION, USER, WRITER, Resource
+from resources.base import OWNER_ID, USER, WRITER, Resource
 
-TEXTS = ("title", "abstract", "brief", "outcome")
 TAG = re.compile(r"</?untrusted\b[^>]*>")
 MEMBER_MARKED = re.compile(r'<untrusted member="[^"]*">(.*?)</untrusted>', re.S)
 SOURCE_MARKED = re.compile(r'<untrusted source="[^"]*"(?: author="[^"]*")?>(.*?)</untrusted>', re.S)
@@ -56,10 +55,6 @@ def unmarked(text: str, record=None) -> str:
     return MEMBER_MARKED.sub(r"\1", SOURCE_MARKED.sub(lambda found: without_images(found[1]), text))
 
 
-def texts_of(row: Resource) -> set[str]:
-    return {*(getattr(row, name) for name in TEXTS), *(part[key] for part in row.sections for key in (SECTION.title, SECTION.body))}
-
-
 class MemberWords:
     """Marks the words a member or an outside source writes into a row as untrusted, before any agent can read them; words already in the row stay as they were."""
 
@@ -67,15 +62,13 @@ class MemberWords:
         sender, outside = SENDER.get(), OUTSIDE.get()
         if sender is None and outside is None:
             return
-        kept = texts_of(controller.rows.peek(r.n)) if controller.rows.exists(r.n) else set()
+        kept = controller.rows.peek(r.n).texts() if controller.rows.exists(r.n) else set()
 
         def new(text: str) -> str:
             if not text or text in kept:
                 return text
             return marked_from(text, outside) if outside else marked(text, sender.member)
-        for name in TEXTS:
-            setattr(r, name, new(getattr(r, name)))
-        r.sections = [{**part, SECTION.title: new(part[SECTION.title]), SECTION.body: new(part[SECTION.body])} for part in r.sections]
+        r.rewrite_texts(new)
 
 
 class WrittenBy:
