@@ -9,7 +9,15 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     restart: unless-stopped
-    env_file: ${JOURNAL_ENV_FILE:-.env}
+    # Only what the journal and its agents use: backup credentials stay on the backup service.
+    environment:
+      JOURNAL_ADDRESS: ${JOURNAL_ADDRESS:?set JOURNAL_ADDRESS in .env}
+      GIT_REPOSITORY: ${GIT_REPOSITORY:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GIT_NAME: ${GIT_NAME:-}
+      GIT_EMAIL: ${GIT_EMAIL:-}
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:
       - journal:/data
     expose:
@@ -62,12 +70,13 @@ services:
     image: restic/restic:0.17.3
     profiles: [restore]
     env_file: ${JOURNAL_ENV_FILE:-.env}
-    entrypoint: ["/bin/sh", "-c", 'find /data -mindepth 1 -delete && restic restore "$$SNAPSHOT" --target / --host journal']
+    entrypoint: ["/bin/sh", "/restore.sh"]
     environment:
       RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:-/backups/restic}
       SNAPSHOT: ${SNAPSHOT:-latest}
     volumes:
       - journal:/data
+      - ./restore-into-volume.sh:/restore.sh:ro
       - ${BACKUP_FOLDER:-./backups}:/backups
 
   watchtower:

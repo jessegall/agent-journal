@@ -12,14 +12,14 @@ AS_GATEWAY="setpriv --reuid gateway --regid journal --init-groups env HOME=/data
 
 $AS_JOURNAL sh -eu <<'SETUP'
 umask 007
-if [ -n "${GIT_REPOSITORY:-}" ] && [ ! -d "$JOURNAL_PROJECT/.git" ] && [ -z "$(ls -A "$JOURNAL_PROJECT")" ]; then
-    git clone --quiet "$GIT_REPOSITORY" "$JOURNAL_PROJECT"
-fi
 git config --global user.name "${GIT_NAME:-Journal on a server}"
 git config --global user.email "${GIT_EMAIL:-journal@localhost}"
 if [ -n "${GITHUB_TOKEN:-}" ]; then
-    # The token stays in the environment; git reads it from there on each push.
+    # Set before the clone, so a private repository's token stays in the environment and never in .git/config.
     git config --global credential.https://github.com.helper '!f() { echo username=x-access-token; echo "password=$GITHUB_TOKEN"; }; f'
+fi
+if [ -n "${GIT_REPOSITORY:-}" ] && [ ! -d "$JOURNAL_PROJECT/.git" ] && [ -z "$(ls -A "$JOURNAL_PROJECT")" ]; then
+    git clone --quiet "$GIT_REPOSITORY" "$JOURNAL_PROJECT"
 fi
 mkdir -p "$JOURNAL_PROJECT/.claude"
 # Claude's first-run questions have no one to answer them on a server; its login comes from .env.

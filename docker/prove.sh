@@ -62,9 +62,14 @@ compose exec -T journal sh -c 'grep -rl "owner.json\|scrypt" /data/project/.jour
 
 compose exec -T journal sh -c 'echo kept > /data/project/proof.txt'
 compose run --rm -e BACKUP_ONCE=1 backup >/dev/null 2>&1 && pass "a backup snapshot is made" || fail "the backup failed"
+compose exec -T journal printenv RESTIC_PASSWORD >/dev/null 2>&1 && fail "the journal's agents can read the backup password" || pass "the backup password stays off the journal's container"
+compose stop journal >/dev/null 2>&1
+env SNAPSHOT=0000000000 docker compose --profile restore run --rm --no-deps restore >/dev/null 2>&1 && fail "a snapshot that does not exist was restored"
+compose --profile restore run --rm --no-deps --entrypoint cat restore /data/project/proof.txt 2>/dev/null | grep -q kept && pass "a snapshot that cannot be read leaves the volume as it was" || fail "a failed restore emptied the volume"
+compose start journal >/dev/null 2>&1
 compose exec -T journal rm /data/project/proof.txt
-SNAPSHOT=latest compose stop journal >/dev/null 2>&1
-compose --profile restore run --rm --no-deps restore >/dev/null 2>&1 || fail "the restore failed"
+compose stop journal >/dev/null 2>&1
+compose --profile restore run --rm --no-deps restore > "$WORK/restore.log" 2>&1 || { tail -5 "$WORK/restore.log"; fail "the restore failed"; }
 compose start journal >/dev/null 2>&1
 for _ in $(seq 1 90); do compose exec -T journal curl -fsS http://127.0.0.1:8440/ready >/dev/null 2>&1 && break; sleep 2; done
 [ "$(compose exec -T journal cat /data/project/proof.txt)" = "kept" ] && pass "the restore brings back a lost file" || fail "the restored volume lacks the file"
