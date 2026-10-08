@@ -32,10 +32,10 @@ def get_plugin_dashboard(req: Request) -> Reply:
 
 @handles("GET", "/api/pages")
 def get_pages(req: Request) -> Reply:
-    from engine.services import specs, status
+    from engine.services import status
     from features.plugins.declared import called, declared
     from features.plugins.services import plugin_services, plugins as installed
-    where = {spec.id: spec for spec in specs(req.root, (plugin_services,))}
+    where = {spec.id: spec for spec in plugin_services(req.root, set())}
     out = []
     for row in installed(req.root):
         plugin = called(row)

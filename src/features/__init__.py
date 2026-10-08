@@ -56,9 +56,9 @@ def wire() -> None:
 
 
 def subscribe() -> None:
-    from features.switches import environments_changed, rebooted
+    from features.switches import environments_changed, switch_changed
     if not SWITCHED:
-        SWITCHED.extend([*(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed)])
+        SWITCHED.extend([*(bus.on(kind, switch_changed) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed)])
 
 
 def sync_rows(root: Path) -> None:
