@@ -17,6 +17,7 @@ class Worktree(Shape, Resource):
         Field(default="", name="base"),
         Field(default="", name="helper"),
         Field(default="", name="taken"),
+        Field(default=False, name="adopted"),
     ]
     type = "worktree"
     icon = "branch"

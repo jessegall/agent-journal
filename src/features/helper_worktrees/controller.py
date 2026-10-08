@@ -125,9 +125,30 @@ class Worktrees(Controller):
     def _waiting(self, row) -> list:
         return [t for t in Todos(self.record, actor=SYSTEM).rows.standing() if t.merge_wait.worktree == str(row.n)]
 
+    def _adopt(self, folder: Path, helper: str):
+        """Follows a checkout a helper was launched into though the journal did not cut it, so it hears when the branch it came from moves; one of another repository has no such branch."""
+        project = self._project()
+        common = lambda where: git(where, "rev-parse", "--path-format=absolute", "--git-common-dir").stdout.strip()
+        if folder == project or common(folder) != common(project):
+            return None
+        upstream = git(folder, "rev-parse", "--abbrev-ref", "@{upstream}")
+        working = upstream.stdout.strip() if upstream.returncode == 0 else self._working(project)
+        base = git(folder, "merge-base", working, "HEAD").stdout.strip() or tip(project, working)
+        title = f"{helper.lower().replace(' ', '-')}-checkout"
+        for earlier in self.rows.standing():
+            if earlier.title == title:
+                super().complete(earlier.n, "replaced by a newer checkout of the same helper")
+        return self.create(title, path=str(folder), branch=current_branch(folder), working=working, base=base, helper=helper, adopted=True)
+
+    def _released(self, helper: str) -> None:
+        for row in (r for r in self.rows.standing() if r.adopted and r.helper == helper):
+            super().complete(row.n, "its helper finished; the checkout is left as it was")
+
     @action(network=True)
     def complete(self, n: int, how: str = "", **data):
         row = self._unfinished(n, "dropped")
+        if row.adopted:
+            return super().complete(n, how or "released; the checkout is left as it was", **data)
         project = self._project()
         folder = Path(row.path) if row.path else None
         if folder and folder.is_dir():

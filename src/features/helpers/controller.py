@@ -134,6 +134,8 @@ class Helpers(Controller):
             raise Refused(f"a helper needs a name, such as Rhea; {name!r} has no letters to name it by")
         place = Environments(self.record, actor=SYSTEM).unused(slugged(f"{self.record.env}-{slug}", limit=30), ": finish that helper first, or choose another name")
         row = self.create(job, brief=brief, name=name, provider=provider, model=model, environment=place, checkout=str(folder) if checkout else "")
+        if checkout:
+            Worktrees(self.record, actor=SYSTEM)._adopt(folder, row.name)
         for earlier in self.rows.standing():
             if earlier.n != row.n and earlier.environment == place:
                 Controller.complete(self, earlier.n, how=f"carried on by helper {row.n} in the same environment")
@@ -312,6 +314,7 @@ class Helpers(Controller):
             raise Refused(f"helper {n}, {row.name}, is still running: journal helper stop {n}, then finish it")
         rows = held(self.record, row)
         finished = super().complete(n, f"{how or 'finished; its environment is packed away'}{given_back(rows)}", **data)
+        Worktrees(self.record, actor=SYSTEM)._released(row.name)
         give_back(self.record, rows)
         Agents(self.record, actor=SYSTEM)._mark_primary(f"Finished helper {n}", name=row.name, icon="bot")
         bus.defer(lambda: self._packed(row, place))
