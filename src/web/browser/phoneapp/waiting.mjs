@@ -29,7 +29,7 @@ await runScenarios(
         async "the top bar has one picker for the journal, environment and agent, and the agent opens from its sheet"(page) {
             await waitingFeed(page);
             await home(page);
-            const picker = page.getByRole("button", {name: /^Journal /});
+            const picker = page.getByRole("button", {name: /^Journal .*agent Waiting/});
             await picker.waitFor({timeout: SHOWN});
             if ((await page.locator(".home-bar .top-btn").count()) !== 1) throw new Error("the top bar still has more than one picker");
             const words = await picker.innerText();
