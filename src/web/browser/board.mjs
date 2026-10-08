@@ -91,4 +91,19 @@ await runScenarios(process.argv[2], {
         await page.locator(".agent-inspector").waitFor();
         await shot(page, "plan-holder-inspector");
     },
+    async "a plan opened from another page shows its helpers at once, without waiting for the next poll"(page, url) {
+        const row = numberOf(journal("todo", "create", `Quick row ${Date.now()}`, "--brief", "x"));
+        const plan = numberOf(journal("plan", "create", `Quick plan ${Date.now()}`, "--set", "goal=something true"));
+        journal("plan", "phase", String(plan), "Build", "--when", "it is built");
+        journal("plan", "stage", String(plan), "todos");
+        journal("plan", "todos", String(plan), "1", String(row));
+        journal("todo", "assign", String(row), "helper:8");
+        const helper = {n: 8, ref: "helper:8", type: "helper", title: "Build fast", completed: 0, deleted: 0, seen: [], refs: [], state: "working",
+            data: {name: "Quinn Quick", environment: "quinn-env", provider: "claude", model: "sonnet"}};
+        await page.route(/\/api\/main\/helper\?/, (route) => reply(route, {rows: [helper]}));
+        await page.goto(`${url}#/main`);
+        await page.waitForTimeout(1000);
+        await page.evaluate((n) => (window.location.hash = `#/main/plan/${n}`), plan);
+        await page.locator(".holder", {hasText: "Quinn Quick"}).first().waitFor({timeout: 1500});
+    },
 });

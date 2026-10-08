@@ -8,6 +8,7 @@ const EVERY = 5000;
 
 export function useHelpers() {
     const fetched = ref([]);
+    const loaded = ref(false);
     const rows = computed(() =>
         fetched.value.map((row) => ({...row, asking: row.completed || row.data?.report ? "" : helperAsking(row, store.summary?.helpers)}))
     );
@@ -15,7 +16,10 @@ export function useHelpers() {
         "helpers",
         () => api.list("helper", {completed: true}).then((got) => got.rows || []),
         EVERY,
-        (got) => (fetched.value = got),
+        (got) => {
+            fetched.value = got;
+            loaded.value = true;
+        },
     );
-    return {rows, refresh};
+    return {rows, loaded, refresh};
 }

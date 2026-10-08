@@ -118,6 +118,17 @@ describe("a poll", () => {
         stop();
     });
 
+    test("a page that joins a poll another page runs is handed its last answer at once, before the next round", async () => {
+        const key = `poll-${++keys}`;
+        const ask = vi.fn().mockResolvedValue(["helper 1"]);
+        stops.push(startPoll(key, ask, 5000));
+        await passed(0);
+        const joined = vi.fn();
+        stops.push(startPoll(key, ask, 5000, joined));
+        expect(joined).toHaveBeenCalledWith(["helper 1"]);
+        expect(ask).toHaveBeenCalledTimes(1);
+    });
+
     test("when the first user of a shared poll leaves, the next round asks with the user that stayed", async () => {
         const key = `poll-${++keys}`;
         const first = vi.fn().mockResolvedValue("old");

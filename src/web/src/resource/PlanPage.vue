@@ -20,26 +20,32 @@ import ProgressBar from "../kit/ProgressBar.vue";
 const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean, closable: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
 const error = ref("");
-const {rows: helpers} = useHelpers();
+const {rows: helpers, loaded: helpersLoaded} = useHelpers();
 const inspected = ref(null);
+const fetching = ref(false);
 const scope = useScope();
 const status = computed(() => props.resource.data.status);
 const current = computed(() => props.resource.data.current || 1);
 const phases = computed(() =>
-    props.resource.data.phases.map((p, i) => ({
-        ...p,
-        i: i + 1,
-        rows: [
+    props.resource.data.phases.map((p, i) => {
+        const named = [
             ...p.todos.map((n) => scope.rows("todo").find((t) => t.n === n)),
             ...(p.tickets || []).map((n) => scope.rows("ticket").find((t) => t.n === n)),
-        ].filter(Boolean),
-    }))
+        ];
+        const rows = named.filter(Boolean);
+        return {...p, i: i + 1, rows, waiting: fetching.value ? named.length - rows.length : 0};
+    })
 );
 watchEffect(() => {
     if (props.readOnly) return;
     const known = new Set(scope.rows("todo").map((t) => t.n));
     const missing = props.resource.data.phases.flatMap((p) => p.todos).filter((n) => !known.has(n));
-    if (missing.length) scope.holding("todo", missing).catch((e) => (error.value = e.message));
+    if (!missing.length) return;
+    fetching.value = true;
+    scope
+        .holding("todo", missing)
+        .catch((e) => (error.value = e.message))
+        .finally(() => (fetching.value = false));
 });
 const data = computed(() => props.resource.data);
 const planned = computed(() => phases.value.flatMap((p) => p.rows));
@@ -133,6 +139,7 @@ async function run(action, body = {}) {
                     :current="p.i === current && (status === 'active' || status === 'waiting')"
                     :boning="building && stage === 'todos'"
                     :helpers="helpers"
+                    :helpers-loaded="helpersLoaded"
                     @inspect="inspected = $event"
                 />
             </template>
