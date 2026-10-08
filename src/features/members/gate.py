@@ -15,10 +15,11 @@ from features.hosted_journal.people import Act, PageHandler
 from features.hosted_journal.vault import Vault
 from features.members.pages import BELOW_LOGIN, join_page, member_login_page
 from features.members.roles import OWNER_ABILITIES, Abilities, Role
-from features.members.roster import Departure, Roster
+from features.members.roster import Departure, Member, Roster
+from features.phone.controller import Phones
 from features.routing import MEMBER, ROLE, SHARED
 from features.phone.allow_list import Action, Page
-from resources.base import OWNER_ID, Resource, as_dict
+from resources.base import OWNER_ID, USER, Resource, as_dict
 
 OWNER_NAME = "Owner"
 NOT_A_MEMBER = "You are no longer a member of this journal."
@@ -206,16 +207,23 @@ class MemberLogins:
     def leave(self, gateway: Gateway, visit: Visit, login: KeptLogin) -> None:
         if login.is_owners():
             return visit.block("The owner cannot leave their own journal; they can take it down.")
-        member = Roster(visit.vault).depart(login.member, Departure.LEFT)
-        ended = gateway.end_logins_of(visit.vault, member.id)
-        visit.vault.audit("member left", place=visit.place(), member=member.id, logins_ended=ended)
+        member = self._departed(gateway, visit, login.member, Departure.LEFT)
         return visit.json(200, {"member": member.summary(), "login": "/login?notice=left"}, {"Set-Cookie": visit.cookie(COOKIE, "", 0)})
 
     def remove(self, gateway: Gateway, visit: Visit) -> None:
-        member = Roster(visit.vault).depart(visit.asked(Picked).member, Departure.REMOVED)
-        ended = gateway.end_logins_of(visit.vault, member.id)
-        visit.vault.audit("member removed", place=visit.place(), member=member.id, logins_ended=ended)
+        member = self._departed(gateway, visit, visit.asked(Picked).member, Departure.REMOVED)
         return visit.json(200, {"member": member.summary()})
+
+    def _departed(self, gateway: Gateway, visit: Visit, member: str, how: Departure) -> Member:
+        """A member gone: their logins and open pages end, and every phone they connected is disconnected with its key dropped."""
+        departed = Roster(visit.vault).depart(member, how)
+        logins = gateway.end_logins_of(visit.vault, departed.id)
+        phones = Phones(visit.record, actor=USER)
+        theirs = [phone for phone in phones.connected() if phone.member == departed.id]
+        for phone in theirs:
+            phones.complete(phone.n, f"ended when its member {how.value} the journal")
+        visit.vault.audit(f"member {how.value}", place=visit.place(), member=departed.id, logins_ended=logins, phones_ended=len(theirs))
+        return departed
 
     def end_logins(self, gateway: Gateway, visit: Visit) -> None:
         member = Roster(visit.vault).required(visit.asked(Picked).member)

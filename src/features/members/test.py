@@ -239,6 +239,7 @@ def test_leaving_removal_and_logging_out_end_a_members_live_sessions_at_once_and
     roster = Roster(hosted.vault)
     ids = {name: roster.named(name).id for name in ("Ada", "Bea", "Cleo")}
     written = json.loads(sent(hosted, f"/api/{hosted.record.env}/todo", {"title": "Ada's to-do"}, ada).text)
+    ada_phone = member_phone(hosted, ids["Ada"])
     held = stream_of(hosted, ada)
     cut = threading.Thread(target=drained, args=(held,))
     cut.start()
@@ -247,6 +248,8 @@ def test_leaving_removal_and_logging_out_end_a_members_live_sessions_at_once_and
     assert not cut.is_alive(), "removing a member cuts the live stream their browser holds"
     assert hosted.call("GET", "/api/hosting/me", Cookie=ada).status == 401, "and their login ends at once"
     assert hosted.call("POST", "/member", {"name": "Ada", "password": MEMBER_PASSWORD}).status == 401, "a removed member cannot log in again"
+    assert phone_reads(hosted, ada_phone) == 410 and not Phones(hosted.record, actor=SYSTEM).connected(), \
+        "a removed member's phones are disconnected, their keys dropped, as when the journal is taken down"
     left = sent(hosted, "/api/hosting/leave", {}, bea)
     assert left.status == 200 and "Max-Age=0" in left.headers["set-cookie"] and hosted.call("GET", "/api/hosting/me", Cookie=bea).status == 401
     assert sent(hosted, "/api/hosting/leave", {}, owner).status == 403, "the owner does not leave their own journal"
