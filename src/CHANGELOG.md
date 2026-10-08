@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.261.0 — Plugin chat marks that turn green once fixed, and a dump demo that shows the dump
+- A plugin can raise an event with a key of its own and later settle it with journal plugin settle <plugin> <key>: the chat mark keeps saying what was found but turns green with the word you give it, a group of marks counts how many are fixed, and opening a settled mark says when it was fixed.
+- A chat mark whose dashboard page the plugin has since removed opens the dashboard's first page with a note, instead of an empty panel.
+- The dump demo opens the dump window when the recorded dump is made, shows its items being sorted, and closes it with the dump.
+- A dispatch the reuse limit refused, on Claude or Codex, no longer takes one of the kept places, so freeing places works again.
+- A tooltip shows when its button is redrawn under a mouse that has not moved, as happens while the page updates.
+
 ## 2.260.1 — A plan worked by helpers keeps running beside yours
 - Starting a plan no longer parks a plan whose current phase a helper or a ticket's agent is working: both stay active, and the one with helpers moves on as their rows close.
 - The record audit no longer calls a file gone because the project's file list finished building halfway through the audit.
