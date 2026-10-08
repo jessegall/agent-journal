@@ -40,7 +40,8 @@ class HttpTransport:
             with urllib.request.urlopen(request, timeout=self.timeout) as answer:
                 return answer.read().decode() or "{}"
         except urllib.error.HTTPError as error:
-            raise Refused(f"the server refused {path}: {error.code}") from error
+            taken_down = " (it has been taken down)" if error.code == 503 else ""
+            raise Refused(f"the server refused {path}: {error.code}{taken_down}") from error
 
     def hello(self) -> Hello:
         return Hello.read(json.loads(self.ask("hello")))

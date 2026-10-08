@@ -5,7 +5,7 @@ from engine.handover import accept, epoch_of, give, ready_to_give
 from engine.machines import Lease, this_machine
 from engine.offline import Waiting
 from engine.record import Record
-from engine.sync import PROTOCOL, Hello, Shape, Welcome, connect, pulled_cursor, replay
+from engine.sync import PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, pulled_cursor, replay
 from engine.version import version
 from features.connection.transport import Transport
 from migrations import applied
@@ -23,6 +23,8 @@ def join(record, transport: Transport) -> Welcome:
     """Asks the server who it is, checks that both can work together, and keeps the answer for the Settings card; a copy too old to carry the sync's checks is refused."""
     welcome = connect(local_hello(record), transport.hello())
     record.state(STATE).set("welcome", {"release": welcome.release.value, "step": welcome.comparison.step.value, "migrations": list(welcome.comparison.migrations)})
+    if welcome.release is not Release.SAME or welcome.comparison.step is not Step.IN_STEP:
+        Notices(record, actor=SYSTEM).create("This copy is not in step with the server", brief=f"Compared with the server this copy's release is {welcome.release.value}, and its record must {welcome.comparison.step.value} before it syncs.", tone="warn")
     return welcome
 
 
