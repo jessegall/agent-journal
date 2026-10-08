@@ -18,6 +18,10 @@ def edit(name, at=NOW, **more):
     return {"command": f"editing {name}", "tool": "Edit", "files": [name], "at": at, "effect": "writes", **more}
 
 
+def changed(name, at=NOW, **lines):
+    return edit(name, at, changed=lines)
+
+
 def queue(commands, now=NOW):
     return messages(grouped(ran(list(commands))), now)
 
@@ -86,9 +90,9 @@ def test_the_verb_is_the_root_and_the_only_unmuted_part():
     assert [text([shell(command)]) for command in ("python3 tools/build.py", "node", "bash <<EOF\necho\nEOF")] == \
         [[["running", "python3", "build.py"]], [["running", "node"]], [["running", "bash", "script"]]], \
         "a program that runs a script is named with the script, and a typed-in script is only called one"
-    assert coloured([edit("a.py", changed={"added": 3, "removed": 1}), edit("a.py", NOW + 1, changed={"added": 2})]) == \
+    assert coloured([changed("a.py", added=3, removed=1), changed("a.py", NOW + 1, added=2)]) == \
         [[("editing", "gray"), ("a.py", "muted"), (5, "green"), (1, "red")]], "edits of one file add up what was added and removed in green and red"
-    assert coloured([edit("a.py", changed={"added": 3}), edit("b.py", NOW + 1, changed={"removed": 2})])[0][2:] == [([3, 6], "green"), ([0, 2], "red")], \
+    assert coloured([changed("a.py", added=3), changed("b.py", NOW + 1, removed=2)])[0][2:] == [([3, 6], "green"), ([0, 2], "red")], \
         "edits of two files roll the running totals from one to the next"
     from features.status_bar.shell import parsed
     roots = lambda command: [(piece.root, piece.args) for piece in parsed(command)]
@@ -263,7 +267,6 @@ def codex_models(*models) -> list:
 def test_the_codex_model_and_effort_picker_moves_by_arrow_keys_and_refuses_what_the_catalog_lacks(tmp_path, monkeypatch):
     import json
     from providers import PROVIDERS
-    from resources.base import Refused
     codex = PROVIDERS["codex"]
     monkeypatch.setenv("HOME", str(tmp_path))
     (tmp_path / codex.home).mkdir()
@@ -334,5 +337,5 @@ def test_codex_usage_comes_from_the_newest_token_count_and_its_crew_from_the_rol
     assert (crew["subagents"], crew["compacting"]) == (1, True), "the rollout ending on a compaction says the agent is compacting"
     assert codex.subagent_state(main, "cccccccc-0000-0000-0000-000000000003") == (True, 0.0), "a subagent whose rollout is not written yet is running"
     from providers.codex import SpawnedAgent
-    assert (codex.spawned_session(main, SpawnedAgent("scan", "explorer", "m", "", 0.0)), codex.spawned_session(main, SpawnedAgent("scan", "explorer", "m", "", 0.0, "root/scan"))) == ("", ""), \
+    assert (codex.spawned_session(main, SpawnedAgent("scan", "explorer", "m", None, 0.0)), codex.spawned_session(main, SpawnedAgent("scan", "explorer", "m", None, 0.0, "root/scan"))) == (None, None), \
         "a subagent that was not given a path, or whose rollout has not been written, is not found among the sessions"

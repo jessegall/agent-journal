@@ -1,7 +1,7 @@
 from controllers.faults import threw
 from engine.markers import plain
 from features.switches import generation
-from resources.base import SECTION, as_dict
+from resources.base import SECTION, TEXT_FIELDS, as_dict
 from engine.extension import Extension
 from engine.memo import Memo
 
@@ -9,7 +9,6 @@ FORMATTERS = Extension()
 DOWNLOAD = "download"
 VIEWER = "viewer"
 SHARED = "shared"
-TEXT_FIELDS = ("title", "abstract", "brief", "outcome")
 PLAIN_FIELDS = ("title", "abstract")
 CATALOGUES: dict = {}
 KEEP_CATALOGUES = 8

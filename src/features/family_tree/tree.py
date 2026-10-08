@@ -123,7 +123,7 @@ def exchanged(turns) -> list[tuple[str, str, str]]:
         if note.direction == SENT and note.address:
             pairs.append((SENT, note.address, note.address))
         elif note.direction == PEER:
-            pairs.append((PEER, note.address or note.name, note.name or note.address))
+            pairs.append((PEER, note.address, note.name))
     return pairs
 
 

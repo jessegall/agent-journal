@@ -33,6 +33,18 @@ class Read:
     start: int
     end: int
 
+    def holds(self, offset: int) -> bool:
+        return self.start <= offset <= self.end
+
+    def lines_before(self, offset: int) -> int:
+        """How many of the read lines start before the byte offset in the file."""
+        at, counted = self.start, 0
+        for line in self.lines:
+            if at >= offset:
+                break
+            at, counted = at + len(line) + 1, counted + 1
+        return counted
+
 
 def read_bytes(path: Path, start: int, stop: int | None = None) -> bytes:
     """The one place a transcript is opened."""

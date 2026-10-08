@@ -296,28 +296,24 @@ def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
     monkeypatch.setattr("providers.drivers.ECHO_WAIT", 0)
     sent = []
 
-    def wrote(raw):
-        sent.append(raw)
-        if raw.startswith(b"/model"):
-            screen.write_bytes(screen.read_bytes() + b"\x1b[1mSwitch to Sonnet?\x1b[0m\r\n Enter to confirm \xc2\xb7 Esc to cancel")
-        return True
+    def answering(shown):
+        def typed(raw):
+            sent.append(raw)
+            if raw.startswith(b"/model"):
+                screen.write_bytes(shown(screen.read_bytes()))
+            return True
+        return typed
 
-    driver._wrote, driver.clear_input = wrote, lambda: None
-    assert driver.run_command("/model sonnet") and sent.count(b"\r") == 2, "the switch is typed and Claude's confirmation is answered with Enter"
+    switched = lambda: driver.run_command("/model sonnet") and sent.count(b"\r") == 2
+    driver._wrote, driver.clear_input = answering(lambda before: before + b"\x1b[1mSwitch to Sonnet?\x1b[0m\r\n Enter to confirm \xc2\xb7 Esc to cancel"), lambda: None
+    assert switched(), "the switch is typed and Claude's confirmation is answered with Enter"
     sent.clear()
     driver.run_command("/effort high")
     assert sent.count(b"\r") == 1, "a command that asks nothing gets no second Enter, even with an old prompt on screen"
     sent.clear()
     screen.write_bytes(b"")
-
-    def asked(raw):
-        sent.append(raw)
-        if raw.startswith(b"/model"):
-            screen.write_bytes(b"Switch model?\r\n Your next response will be slower and use more tokens\r\n \xe2\x9d\xaf 1. Yes, switch to Sonnet 5.5\r\n   2. No, go back")
-        return True
-
-    driver._wrote = asked
-    assert driver.run_command("/model sonnet") and sent.count(b"\r") == 2, "Claude's Switch model? question is answered with Enter, which takes Yes"
+    driver._wrote = answering(lambda before: b"Switch model?\r\n Your next response will be slower and use more tokens\r\n \xe2\x9d\xaf 1. Yes, switch to Sonnet 5.5\r\n   2. No, go back")
+    assert switched(), "Claude's Switch model? question is answered with Enter, which takes Yes"
 
 
 def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):

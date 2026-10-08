@@ -53,12 +53,16 @@ def code(root: Path) -> Path:
     return root / SRC
 
 
+def plain_file(path: Path) -> bool:
+    return path.is_file() and not path.is_symlink()
+
+
 def managed_paths(project: Path, root: Path) -> set[Path]:
-    paths = {path for path in code(root).rglob("*") if path.is_file() and not path.is_symlink()}
+    paths = {path for path in code(root).rglob("*") if plain_file(path)}
     for home in (".agents/skills", ".claude/skills"):
         folder = project / home
         paths.update(path for skill in folder.glob("journal*") if skill.is_dir() and not skill.is_symlink()
-                     for path in skill.rglob("*") if path.is_file() and not path.is_symlink())
+                     for path in skill.rglob("*") if plain_file(path))
     for home, extension in ((".claude/agents", "md"), (".codex/agents", "toml")):
         paths.update(path for path in (project / home).glob(f"*.{extension}") if path.is_file() and path.stem in
                      {"board-filler", "ticket-reviewer", "plan-reviewer", "goal-verifier"})

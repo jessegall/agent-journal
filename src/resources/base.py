@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass, field, asdict, replace
 from enum import Enum
 from types import SimpleNamespace
-from typing import ClassVar
+from typing import Callable, ClassVar
 
 from resources.text import paragraphs
 
@@ -78,6 +78,7 @@ class ResourceDetails:
 
 
 SECTION = names("title", "body")
+TEXT_FIELDS = ("title", "abstract", "brief", "outcome")
 
 
 def copied(value):
@@ -220,6 +221,15 @@ class Resource:
     deleted: float = 0.0
     completed: float = 0.0
     outcome: str = ""      # what completing it said: how a to-do was done, a question's answer, why a pin was struck
+
+    def texts(self) -> set[str]:
+        """Every text a person wrote into the row: its fields and its sections' titles and bodies."""
+        return {*(getattr(self, name) for name in TEXT_FIELDS), *(part[key] for part in self.sections for key in (SECTION.title, SECTION.body))}
+
+    def rewrite_texts(self, change: Callable[[str], str]) -> None:
+        for name in TEXT_FIELDS:
+            setattr(self, name, change(getattr(self, name)))
+        self.sections = [{**part, SECTION.title: change(part[SECTION.title]), SECTION.body: change(part[SECTION.body])} for part in self.sections]
 
     @property
     def ref(self) -> str:
