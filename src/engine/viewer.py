@@ -281,3 +281,48 @@ def running_journals() -> list:
         PROBED[0] = time.time()
         threading.Thread(target=probe, daemon=True).start()
     return PROBED[1]
+
+
+HEALTH_WAIT = 8.0
+MISSES_BEFORE_RESTART = 3
+STUCK_THREADS = "threads.txt"
+STOP_WAIT = 5.0
+
+
+def healthy(url: str, env: str, timeout: float = HEALTH_WAIT) -> bool:
+    try:
+        with urlopen(f"{url}api/{env}/health", timeout=timeout) as response:
+            return response.status == 200
+    except OSError:
+        return False
+
+
+class StuckServer:
+    def __init__(self, root: Path, env: str):
+        self.root, self.env, self.missed = Path(root), env, 0
+
+    def restarted(self) -> str:
+        url = running(self.root)
+        if not url or healthy(url, self.env):
+            self.missed = 0
+            return ""
+        self.missed += 1
+        if self.missed < MISSES_BEFORE_RESTART:
+            return ""
+        self.missed = 0
+        return self.restart(last(self.root).pid)
+
+    def restart(self, pid: int) -> str:
+        kept = runtime.folder(self.root) / f"threads-{int(time.time())}.txt"
+        os.kill(pid, signal.SIGUSR1)
+        time.sleep(1.0)
+        dumped = runtime.folder(self.root) / STUCK_THREADS
+        if dumped.is_file():
+            kept.write_text(dumped.read_text())
+        os.kill(pid, signal.SIGTERM)
+        until = time.time() + STOP_WAIT
+        while time.time() < until and alive(pid):
+            time.sleep(0.2)
+        if alive(pid):
+            os.kill(pid, signal.SIGKILL)
+        return str(kept)

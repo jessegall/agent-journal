@@ -17,6 +17,8 @@ from supervisor import HEAL, RELAUNCH, RELOAD, STOP  # noqa: E402
 from agents.terminal import TerminalSession, seated  # noqa: E402
 from agents.actors import Agent  # noqa: E402
 from engine.record import Record  # noqa: E402
+from controllers.types import Notifications  # noqa: E402
+from resources.base import SYSTEM  # noqa: E402
 from engine.package import CODE, installed_stamp, own_build  # noqa: E402
 from engine.sessions import Sessions, hold_build  # noqa: E402
 import features  # noqa: E402
@@ -43,6 +45,15 @@ def keep_viewer(root: Path, cwd: Path, watching, exits: list) -> object:
     thread = threading.Thread(target=lambda: exits.append(viewer.launch(root, cwd)[1]), daemon=True)
     thread.start()
     return thread
+
+
+def watch_server(root: Path, env: str, ending: threading.Event) -> None:
+    stuck = viewer.StuckServer(root, env)
+    while not ending.wait(VIEWER_EVERY):
+        kept = stuck.restarted()
+        if kept:
+            Notifications(Record(root, env), actor=SYSTEM).create("The viewer stopped answering, so the journal restarted it",
+                                                                    brief=f"Its requests were stuck for half a minute. What each thread was doing is kept in {kept}.")
 
 
 def moved(seat: TerminalSession) -> bool:
@@ -127,6 +138,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     supervising = threading.Thread(target=supervise, args=(root, engines), daemon=True)
     if keeps:
         supervising.start()
+        threading.Thread(target=watch_server, args=(root, env, engines), daemon=True).start()
     try:
         while True:
             time.sleep(TICK)

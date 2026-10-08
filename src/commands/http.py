@@ -37,7 +37,7 @@ from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
 from providers.base import Provider
-from resources.base import OPENED, USER, Refused, titled
+from resources.base import OPENED, PROJECT, USER, Refused, titled
 from engine.stored import last_lines
 from engine.git_view import commit, file_diff
 from engine.project_files import list_folder, matching, project_path, read_source
@@ -213,6 +213,13 @@ def post_update_check(req: Request) -> Reply:
 def get_identity(req: Request) -> Reply:
     names = [row["title"] for row in Environments(Record(req.root, runtime.env(req.root)), actor=USER).rows.summaries() if not row["deleted"]]
     return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "build": CODE.name, "pid": os.getpid(), "environments": names})
+
+
+@route("GET", "/api/{env}/health")
+def get_health(req: Request) -> Reply:
+    record = req.record()
+    with record.locked(), record.locked(PROJECT):
+        return Reply(200, {"locks": "taken"})
 
 
 @route("POST", "/api/identity")
