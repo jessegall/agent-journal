@@ -324,7 +324,8 @@ def test_another_site_plain_http_from_outside_a_strange_host_large_bodies_and_to
     shared = Shares(hosted.record, actor=USER).create(Docs(hosted.record, actor=USER).create("Shared", brief="open to a link").ref, password="tulip")
     opened = hosted.call("GET", f"/s/{shared.token}/", Authorization="Basic " + base64.b64encode(b"visitor:tulip").decode())
     assert (opened.status, "set-cookie" in opened.headers) == (200, False), "a link opens its own item and starts no login"
-    assert hosted.call("GET", f"/s/{shared.token}/../api/identity").status == 404, "a link's address reaches nothing of the viewer"
+    assert hosted.call("GET", f"/s/{shared.token}/../api/identity", Authorization="Basic " + base64.b64encode(b"visitor:tulip").decode()).status == 404, \
+        "a link's address reaches nothing of the viewer"
     assert hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={shared.token}").status in (302, 303, 401), "a link's token is no login"
     sam = Logins(hosted.vault).open(7, "test", "sam")
     assert (Logins(hosted.vault).found(sam).member, Logins(hosted.vault).found(token).member, Logins(hosted.vault).found("unknown")) == ("sam", OWNER_ID, None), \
