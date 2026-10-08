@@ -69,6 +69,14 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     assert (view(record, "https://server.example").connected, view(record, "https://server.example").step) == (True, "in step"), "a copy that has joined is shown as connected and how it stands"
     leave(record)
     assert (view(record, "").connected, record.setting("connection", {}).get("address")) == (False, ""), "disconnecting forgets the address and what was learned of the server"
+    join(record, newer)
+    marked = view(record, "https://server.example")
+    assert (marked.role, marked.synced_at) == ("your copy", 0.0), "a copy that has joined says it is a copy, and that it has not synced yet"
+    record.hand_over("", "server-1")
+    sync(record, Server(record.root))
+    assert view(record, "https://server.example").synced_at > 0, "and after a sync it says when"
+    monkeypatch.setenv("JOURNAL_ADDRESS", "journal.example.com")
+    assert view(record, "").role == "the server", "a journal that runs on a server says that it is the server"
     monkeypatch.setattr("features.connection.feature.transport_for", lambda address: Server(record.root, up=False))
     record.change_setting("connection", {"address": "https://server.example"})
     features.FEATURES["connection"].settings_changed(record, USER)

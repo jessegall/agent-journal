@@ -1,0 +1,17 @@
+<script setup>
+import {computed, onMounted} from "vue";
+import Chip from "../kit/Chip.vue";
+import {connection, loadConnection} from "../composables/connection.js";
+import {markerTone, markerWords} from "../domain/connection.js";
+import {ago} from "../format/time.js";
+
+const words = computed(() => (connection.value ? markerWords(connection.value, ago) : ""));
+
+onMounted(() => loadConnection());
+</script>
+
+<template>
+    <template v-if="words">
+        <Chip class="connection-mark" :tone="markerTone(connection)" :title="'Which journal this is, and how it stands with the other one'">{{ words }}</Chip>
+    </template>
+</template>

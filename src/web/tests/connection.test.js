@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {sizeWords, stepWords, travelsLine} from "../src/domain/connection.js";
+import {markerTone, markerWords, sizeWords, stepWords, travelsLine} from "../src/domain/connection.js";
 
 describe("what connecting to a server would send", () => {
     test("sizes are told in the unit a person reads", () => {
@@ -20,5 +20,13 @@ describe("what connecting to a server would send", () => {
             "The server's record started again, so this copy pulls everything afresh.",
             "",
         ]);
+    });
+
+    test("a marker says which journal this is, how it stands and when it last synced", () => {
+        const ago = (at) => `${at} ago`;
+        expect(markerWords({role: "your copy", step: "in step", synced_at: 120}, ago)).toBe("Your copy · in step · synced 120 ago");
+        expect(markerWords({role: "the server", step: "", synced_at: 0}, ago)).toBe("The server · not synced yet");
+        expect(markerWords({role: "", step: "in step", synced_at: 5}, ago)).toBe("");
+        expect([markerTone({step: "in step"}), markerTone({step: "upgrade here"})]).toEqual(["good", "warn"]);
     });
 });
