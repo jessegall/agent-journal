@@ -206,6 +206,16 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
         "releases are compared by number, not by text, and a copy behind is told which migrations it lacks"
     assert connect(Hello("2.266.0", Shape(PROTOCOL + 1, frozenset())), server) == Welcome(Release.AHEAD, Comparison(Step.PULL_AGAIN)), \
         "a copy with another protocol number pulls everything again, whichever release it is"
+    from engine.offline import Applied, Waiting
+    root = fresh().root
+    waiting, applied, away = Waiting(root), Applied(root), {"down": True}
+    first, second = waiting.hold("", "todo", "create", ["first"]), waiting.hold("", "todo", "create", ["second"])
+    ran = []
+    deliver = lambda held: not away["down"] and applied.apply(held, lambda write: ran.append(write.args[0]))
+    assert (waiting.flush(deliver), [w.args[0] for w in waiting.waiting()]) == (0, ["first", "second"]), "while the server is away the writes wait, oldest first"
+    away["down"] = False
+    assert (waiting.flush(deliver), waiting.waiting(), ran) == (2, [], ["first", "second"]), "once it is back they go in the order they were written"
+    assert (applied.apply(first, lambda write: ran.append("again")), ran) == (True, ["first", "second"]), "a write sent again after a lost answer is not applied twice"
     assert "too old" in refused(lambda: connect(Hello("2.100.0", Shape(0, frozenset())), server)), \
         "a copy from before the sync carried its checks on what never travels is refused, not brought along"
     from engine import bus
