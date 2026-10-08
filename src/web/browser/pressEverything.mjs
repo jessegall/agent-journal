@@ -1,14 +1,12 @@
 import {readFileSync} from "node:fs";
 import {reply, runScenarios} from "./harness.mjs";
 
-if (!process.env.PRESS_EVERYTHING) {
-    console.log("{}");
-    process.exit(0);
-}
-
+const FULL = Boolean(process.env.PRESS_EVERYTHING);
 const PAGES = [...readFileSync(new URL("../src/route.js", import.meta.url), "utf8").match(/PAGES = \[([^\]]*)\]/)[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 const CONTROLS = 'button, [role="button"], [role="switch"], [role="menuitem"], [role="radio"], [role="tab"]';
-const PRESSES_PER_PAGE = 60;
+const PRESSES_PER_PAGE = FULL ? 60 : 8;
+const PAGES_AT_ONCE = FULL ? 6 : 3;
+const IGNORED_STATUSES = [404, 409];
 const CROWD = 5;
 const SETTLE_MS = 200;
 const BUSY_WAIT_MS = 3000;
@@ -98,11 +96,17 @@ async function pressPage(browser, url, route, seen) {
             new MutationObserver((changes) => changes.forEach((change) => change.target.hasAttribute("data-busy") && window.pressedBusy++)).observe(document, {attributes: true, subtree: true, attributeFilter: ["data-busy"]});
         });
     });
+    const failures = [];
+    page.on("pageerror", (error) => failures.push(`${name}: the page threw "${String(error.message).slice(0, 80)}"`));
+    page.on("console", (message) => message.type() === "error" && !/Failed to load resource/.test(message.text()) && failures.push(`${name}: the console reported "${message.text().slice(0, 80)}"`));
+    page.on("response", (answer) => {
+        const asked = new URL(answer.url());
+        if (asked.pathname.startsWith("/api/") && answer.status() >= 400 && !IGNORED_STATUSES.includes(answer.status())) failures.push(`${name}: ${answer.request().method()} ${asked.pathname} answered ${answer.status()}`);
+    });
     await page.route(/\/api\/stop$/, (r) => reply(r, {}));
     await page.goto(`${url}#/main/${route}`);
     await page.waitForSelector(CONTROLS);
     await page.waitForTimeout(SETTLE_MS);
-    const failures = [];
     for (let pressed = 0; pressed < PRESSES_PER_PAGE; pressed++) {
         const next = (await candidates(page)).find((c) => c.usable && !seen.has(c.kind));
         if (!next) break;
@@ -126,7 +130,11 @@ await runScenarios(process.argv[2], {
         const browser = page.context().browser();
         const chrome = new Set();
         const failures = await pressPage(browser, url, "about", chrome);
-        const pages = await Promise.all(["", ...PAGES.filter((route) => route !== "about")].map((route) => pressPage(browser, url, route, new Set(chrome))));
+        const routes = ["", ...PAGES.filter((route) => route !== "about")];
+        const pages = [];
+        for (let at = 0; at < routes.length; at += PAGES_AT_ONCE) {
+            pages.push(...(await Promise.all(routes.slice(at, at + PAGES_AT_ONCE).map((route) => pressPage(browser, url, route, new Set(chrome))))));
+        }
         const all = [...failures, ...pages.flat()];
         if (all.length) throw new Error(all.join("; "));
     },
