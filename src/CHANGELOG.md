@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.266.0 — An Agent tab in Settings, a login button in the chat, search that finds everything, and a viewer that asks the journal's own commands
+- Settings has an Agent tab at the top that lists the agent's sessions, rules, skills, work tracking, plans, questions, messages and voice, with a Models group; every model picker offers each provider's own models.
+- The agent asks for a browser login with a button in the chat, saved logins reach every Playwright tool the agent has, and a site the user lets the agent log in to on its own needs no button. Secrets are a project-wide item in the Project section of the sidebar.
+- `journal search` finds what the viewer's search finds, every kind of row, conversations and attached files, grouped by type, and `--resources todo,message` narrows it; a search mark in the chat keeps its term and opens the search page with it filled in.
+- The viewer reads the manifest, summary, events, agent controls, transcripts, links, family tree, file feed, skills and status bar through journal commands the CLI runs too, and a check fails on a viewer endpoint no command uses.
+- Helpers: kept agents are limited for each type, a checkout a helper is launched into is followed like a worktree, a helper waiting on a question reads Waits for answer or Needs you, a helper's inspector shows its terminal and the brief and messages the main agent sent it, and a helper's report is named while it stands.
+- Sending a message never blocks sending the next one, and everything that loads shows one kit skeleton until its data is there, on the phone too.
+- The message box shows nothing once a wait is over, a finished wait no longer stays At work, and a transcript nobody has read answers at once with its newest turns and fills in behind.
+- Updating the journal locks the viewer under a cover with the version and the step until the new build answers; an update report strikes the items the user has since answered.
+- Voice profiles name how the agent calls its helpers and subagents and whom they report to; journal law L6 keeps a journal line out of the chat. A first budget breach of a request, command or hook files its own to-do.
+- A check tells the agent of each pull request waiting; a plugin service starts through one small keeper entry, waits for a command not found yet, and a plugin's update check follows its source's newest version.
+
 ## 2.265.0 — A journal on a server that members share, a copy that connects to it, and questions that reach the agent
 - A journal on a server has members: the owner invites a person by name, the person joins from a one-time link, is a writer or a reader, sees only the environments the owner shares, and loses every login at once when removed. Every row names who made it, a member's words are read by agents marked as untrusted, and a member's phone reaches only what their rights grant.
 - A copy of a journal on your computer connects to one on a server from the viewer or `journal environment connect`: row and event numbers come from leased blocks, an environment is held by one machine at a time, what a copy writes while the server is away waits and goes when it is back, and the project's code travels through git with its nested repositories. What never travels (phones, keys, secrets, passwords) is written in one list and tested. The bar says whether this journal is the server or your copy, and the viewer shows each failed connection in plain words.
