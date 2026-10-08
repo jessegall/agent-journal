@@ -1,6 +1,7 @@
 import errno
 import json
 import re
+import shutil
 import os
 import socket
 import subprocess
@@ -87,6 +88,44 @@ def serve(record) -> int:
     server = ThreadingHTTPServer(("127.0.0.1", 0), type("Bound", (ShareHandler,), {"shares": Shares(record, actor=SYSTEM)}))
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server.server_port
+
+
+COSIGN = """#!/bin/sh
+for each in "$@"; do ref="$each"; done
+while [ $# -gt 0 ]; do [ "$1" = --certificate-identity-regexp ] && pattern="$2"; shift; done
+printf '%s' "$SIGNED_BY" | grep -Eq "$pattern" || exit 1
+case "$ref" in *@sha256:*) [ "${ref##*@}" = "$IMAGE_DIGEST" ] || exit 1;; esac
+echo '[{"critical":{"image":{"docker-manifest-digest":"'"$IMAGE_DIGEST"'"}},"optional":{"Subject":"'"$SIGNED_BY"'"}}]'
+"""
+DOCKER_STUB = """#!/bin/sh
+echo "$*" >> "$CALLS"
+case "$1" in
+    ps) [ -n "$RUNNING" ] && echo abc;;
+    inspect) case "$*" in *Labels*) echo "$INSTALLED";; *) echo "$RUNNING";; esac;;
+esac
+exit 0
+"""
+RELEASE_SIGNER = "https://github.com/jessegall/agent-journal/.github/workflows/docker-image.yml@refs/tags/v"
+
+
+def updater_calls(tmp_path: Path, signed_by: str, running: str = "", installed: str = "", asked: str = "") -> list[str]:
+    """What docker is told when the updater runs once against a registry whose newest image is signed by the given identity."""
+    shutil.rmtree(tmp_path, ignore_errors=True)
+    for name, body in (("cosign", COSIGN), ("docker", DOCKER_STUB)):
+        (tmp_path / "bin").mkdir(parents=True, exist_ok=True)
+        (tmp_path / "bin" / name).write_text(body)
+        (tmp_path / "bin" / name).chmod(0o755)
+    for folder in ("compose", "state", "vault/one"):
+        (tmp_path / folder).mkdir(parents=True, exist_ok=True)
+    if asked:
+        (tmp_path / "vault/one/hosting-request.json").write_text(json.dumps({"asked": asked, "at": 1}))
+    script = (DOCKER / "update.sh").read_text().replace("cd /compose", f"cd {tmp_path / 'compose'}")
+    env = {**os.environ, "PATH": f"{tmp_path / 'bin'}:{os.environ['PATH']}", "COMPOSE_PROJECT_NAME": "proof", "UPDATE_ONCE": "1",
+           "JOURNAL_UPDATER_STATE": str(tmp_path / "state"), "JOURNAL_REQUESTS": str(tmp_path / "vault/*/hosting-request.json"),
+           "SIGNED_BY": signed_by, "IMAGE_DIGEST": "sha256:" + "a" * 64, "RUNNING": running, "INSTALLED": installed, "CALLS": str(tmp_path / "calls")}
+    subprocess.run(["sh", "-c", script], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=30, check=True)
+    calls = tmp_path / "calls"
+    return [line for line in calls.read_text().splitlines() if line.startswith("compose")] if calls.exists() else []
 
 
 @pytest.fixture
@@ -192,7 +231,7 @@ def test_a_login_that_ran_out_sends_the_page_and_the_viewer_back_to_log_in(hoste
     assert hosted.call("GET", "/").headers["location"] == "/login"
 
 
-def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_each_refusal(hosted):
+def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_each_refusal(hosted, tmp_path):
     token = hosted.logged_in()
     origin = f"http://127.0.0.1:{hosted.port}"
     closed = ("/api/run", "/api/upgrade", "/api/stop", "/api/hook/claude", "/api/update", "/api/journals/start", "/api/services/sharing.server")
@@ -214,6 +253,14 @@ def test_the_gateway_refuses_run_upgrade_stop_and_hook_for_the_owner_and_logs_ea
     assert not re.findall(r"uses: (?!\S+@[0-9a-f]{40}\b)", image), "every action is pinned by commit"
     assert "latest=false" in image and image.count("value=latest") == 1 and "is-ancestor" in image and "cosign verify" in image
     assert re.match(r"FROM \S+@sha256:[0-9a-f]{64}", (DOCKER / "Dockerfile").read_text())
+    deployed = f"compose --profile journal up -d --no-deps --pull always journal"
+    assert updater_calls(tmp_path, RELEASE_SIGNER + "2.300.0") == [deployed], "the first start deploys the signed image"
+    for stranger in (RELEASE_SIGNER.replace("tags/v", "heads/main"), RELEASE_SIGNER + "2.300.0-evil", "https://github.com/someone/else/.github/workflows/docker-image.yml@refs/tags/v2.300.0"):
+        assert updater_calls(tmp_path, stranger) == [], stranger
+    mine = "ghcr.io/jessegall/agent-journal@sha256:" + "b" * 64
+    assert updater_calls(tmp_path, RELEASE_SIGNER + "2.300.0", running=mine, installed="2.200.0") == [], "a running journal is upgraded only when its owner asks"
+    assert updater_calls(tmp_path, RELEASE_SIGNER + "2.300.0", running=mine, installed="2.200.0", asked="upgrade") == [deployed]
+    assert updater_calls(tmp_path, RELEASE_SIGNER + "2.100.0", running=mine, installed="2.200.0", asked="upgrade") == [], "never back to an older release"
     assert hosted.call("POST", "/logout", {}, Cookie=f"{COOKIE}={token}").headers["location"] == "/login?notice=logged-out"
     assert hosted.call("GET", "/api/identity", Cookie=f"{COOKIE}={token}").status == 401
     logged = [json.loads(line) for line in (hosted.vault.folder / AUDIT).read_text().splitlines()]
