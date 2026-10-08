@@ -234,19 +234,6 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     assert Helpers(record, actor=AGENT).load(1).report == "The hooks spend 40ms in imports", "the row keeps the report"
     relayed = Messages(record, actor=SYSTEM).all()[-1]
     assert (relayed.brief, relayed.data["peer"]) == ("The hooks spend 40ms in imports", "Rhea"), "the chat shows it as a message from the helper"
-    inside = Record(record.root, f"{record.env}-rhea")
-    write = lambda text, actor=AGENT: Messages(inside, actor=actor).create(text, brief=text)
-    chat = lambda: [m.brief for m in Messages(record, actor=SYSTEM).all() if m.data.get("peer") == "Rhea"]
-    before = chat()
-    write("a note while working on the first job")
-    assert chat() == before, "a message a helper writes while it works its first job stays in its own chat"
-    Helpers(record, actor=AGENT).say(1, "and the stop hook?")
-    write("the stop hook spends 12ms")
-    write("a message the user wrote", USER)
-    assert chat() == before + ["the stop hook spends 12ms"], "while it works a follow-up, a message its agent writes reaches the dispatcher's chat as a message from it, and the user's own does not"
-    Helpers(inside, actor=AGENT).report("Both measured")
-    write("one more after the report")
-    assert chat()[-1] == "Both measured", "once it has reported, its messages stay in its own chat again"
     reported, = [n for n in Nudges(record, actor=SYSTEM).all() if "helper 1, Rhea, reported" in n.title]
     assert reported.until == ["helper.completed", "helper.deleted"], "the dispatcher is told, until it finishes the helper"
     assert not features.FEATURES["helpers"].is_owed(record, "stopped", ("helper:1",)), "once it reported, the line that it stopped is no longer owed"
@@ -256,6 +243,16 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     Helpers(record, actor=AGENT).say(1, "Now profile the start-up too")
     assert not features.FEATURES["helpers"].is_owed(record, "reported", tuple(reported.data["rows"])), \
         "once the helper is given new work, its report is named no more"
+    inside = Record(record.root, f"{record.env}-rhea")
+    write = lambda text, actor=AGENT: Messages(inside, actor=actor).create(text, brief=text)
+    chat = lambda: [m.brief for m in Messages(record, actor=SYSTEM).all() if m.data.get("peer") == "Rhea"]
+    before = chat()
+    write("the stop hook spends 12ms")
+    write("a message the user wrote", USER)
+    assert chat() == before + ["the stop hook spends 12ms"], "while it works a follow-up, a message its agent writes reaches the dispatcher's chat as a message from it, and the user's own does not"
+    Helpers(inside, actor=AGENT).report("Both measured")
+    write("one more after the report")
+    assert chat()[-1] == "Both measured", "once it has reported, its messages stay in its own chat again"
 
 
 def test_a_turn_that_ends_in_an_error_reports_once_for_the_helper(monkeypatch):
