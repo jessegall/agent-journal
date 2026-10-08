@@ -1,7 +1,9 @@
+from dataclasses import asdict
+
 from controllers.types import Environments
 from engine.machines import this_machine
 from features.connection.code import pull, push
-from features.connection.linking import hand, join, sync
+from features.connection.linking import hand, join, leave, sync, view
 from features.connection.transport import HttpTransport, Transport
 from features.parts import Command, Context
 from resources.base import Refused
@@ -23,6 +25,8 @@ class ConnectToServer(Command):
 
     def run(self, context: Context, environments: Environments, address: str = "") -> str:
         welcome = join(context.record, server_of(context, address))
+        if address:
+            context.record.change_setting("connection", {"address": address})
         return f"connected: this journal is {welcome.release.value} of the server's release, and its record must {welcome.comparison.step.value} before it syncs"
 
 
@@ -59,3 +63,18 @@ class PullCode(Command):
     def run(self, context: Context, environments: Environments, name: str) -> str:
         written = pull(context.record.root.resolve().parent, name)
         return f"wrote {len(written)} files from {name}"
+
+
+class ShowConnection(Command):
+    name = "connection"
+
+    def run(self, context: Context, environments: Environments) -> dict:
+        return asdict(view(context.record, str(context.settings.address)))
+
+
+class DisconnectFromServer(Command):
+    name = "disconnect"
+
+    def run(self, context: Context, environments: Environments) -> str:
+        leave(context.record)
+        return "disconnected: nothing more is sent to the server, and what it already has stays there"

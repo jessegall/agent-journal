@@ -60,6 +60,15 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     newer.said = Hello("99.0.0", Shape(PROTOCOL, newer.said.shape.migrations, 0), "server-1")
     join(record, newer)
     assert any("not in step" in n.title for n in Notices(record, actor=SYSTEM).all()), "a server on a newer release leaves a notice that this copy is not in step with it"
+    from features.connection.linking import leave, view, what_travels
+    (record.root / "runtime").mkdir(exist_ok=True)
+    (record.root / "runtime" / "live").write_text("never travels")
+    travelled = what_travels(record.root)
+    assert travelled.files > 0 and travelled.bytes > 0 and view(record, "https://server.example").travels == travelled, \
+        "the viewer is told what connecting would send before it sends it, and live state is not counted"
+    assert (view(record, "https://server.example").connected, view(record, "https://server.example").step) == (True, "in step"), "a copy that has joined is shown as connected and how it stands"
+    leave(record)
+    assert (view(record, "").connected, record.setting("connection", {}).get("address")) == (False, ""), "disconnecting forgets the address and what was learned of the server"
     monkeypatch.setattr("features.connection.feature.transport_for", lambda address: Server(record.root, up=False))
     record.change_setting("connection", {"address": "https://server.example"})
     features.FEATURES["connection"].settings_changed(record, USER)

@@ -159,6 +159,18 @@ export class ApiClient {
         return `${this.base}/extension.zip`;
     }
 
+    connection(address = "") {
+        return this.command("environment", "connection", address ? {address} : {});
+    }
+
+    connectTo(address) {
+        return this.command("environment", "connect", {address});
+    }
+
+    disconnectFromServer() {
+        return this.command("environment", "disconnect");
+    }
+
     tunnelLogin(login) {
         return this.command("share", "login", login);
     }
