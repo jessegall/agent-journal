@@ -23,7 +23,7 @@ async function create() {
 
 <template>
     <div class="secrets">
-        <Btn small @click="emit('back')"><Icon name="back" :size="12" /> All secrets</Btn>
+        <Btn class="secrets-back" small @click="emit('back')"><Icon name="back" :size="12" /> All secrets</Btn>
         <h3 class="secrets-title">New secret</h3>
         <b>What kind of secret is it?</b>
         <div class="secrets-kinds" role="radiogroup" aria-label="Kind of secret">

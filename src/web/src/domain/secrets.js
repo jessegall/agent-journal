@@ -25,8 +25,9 @@ export const asking = (rows) => rows.filter((row) => row.data.asked && isWaiting
 export function whenWords(row) {
     const used = row.data.used;
     if (used) return `Last used ${ago(used)}`;
-    const set = Math.max(0, ...Object.values(row.data.filled || {}));
-    return set ? `Set ${ago(set)}` : "No value set yet";
+    const filled = Object.values(row.data.filled || {});
+    if (isWaiting(row)) return filled.length ? `${filled.length} of ${fieldsOf(row).length} values set` : "No value set yet";
+    return `Set ${ago(Math.max(...filled))}`;
 }
 
 export function daysLeft(row, now = Date.now() / 1000) {
