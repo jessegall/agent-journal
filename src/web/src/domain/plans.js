@@ -71,7 +71,7 @@ const joined = (words) => (words.length < 2 ? words.join("") : `${words.slice(0,
 export function withLine(helpers, tickets) {
     if (helpers.length) return `With ${helpers.length === 1 ? "helper" : "helpers"} ${joined(helpers)}`;
     if (tickets.length) return `With the agent on ${tickets.length === 1 ? "ticket" : "tickets"} ${joined(tickets)}`;
-    return "With helpers";
+    return "Delegated";
 }
 
 export function delegationOf(p, {todos, helpers, worktrees, tickets}) {
