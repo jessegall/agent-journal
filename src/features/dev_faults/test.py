@@ -198,6 +198,10 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
         reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
         reports.spent(record.root, record.env, "command", "todo all", 400)
         assert notified(record) == ["command todo all is slower than its budget"], "a request that met a server still warming is let be; a command is not"
+        reports.spent(record.root, record.env, "command", "search hooks", 400, whole_reads=("a search through every conversation",))
+        briefs = [r.brief for r in Notifications(record, actor=SYSTEM).rows.every() if "search hooks" in r.title]
+        assert any("it read a whole transcript for a search through every conversation" in brief for brief in briefs), \
+            "a slow command that read a whole transcript names that read, with its reason, as part of its time"
     finally:
         runtime.STARTED[0] = 0.0
     reports.spent(record.root, record.env, "request", "GET /api/pages", 400)

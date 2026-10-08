@@ -175,7 +175,8 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
         assert (folds.folded(lines, counted, int, dict), time.monotonic() - began < 1) == (1, True), \
             "a fold another thread is busy with is not waited on: the last finished state comes back at once"
     assert folds.folded(lines, counted, int, dict) == 2, "and the next call folds what was added"
-    kept = transcript_cache.FOLD_IN_PLACE_BYTES, transcript_cache.FOLD_TAIL_BYTES
+    from providers import jsonl
+    kept = transcript_cache.FOLD_IN_PLACE_BYTES, jsonl.FRESH_BYTES
     transcript_cache.FOLD_IN_PLACE_BYTES = 0
     try:
         lines.write_text('{"a": 1}\n{"a": 2}\n{"a": 3}\n')
@@ -184,12 +185,12 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
         while folds.folds[(str(lines), "counted", code_mark())][1] != 3 and time.monotonic() < waited:
             time.sleep(0.01)
         assert folds.folds[(str(lines), "counted", code_mark())][1] == 3, "and is there for the next call once done"
-        transcript_cache.FOLD_IN_PLACE_BYTES, transcript_cache.FOLD_TAIL_BYTES = 1_000_000, 20
+        transcript_cache.FOLD_IN_PLACE_BYTES, jsonl.FRESH_BYTES = 1_000_000, 20
         tail = tmp_path / "tail.jsonl"
         tail.write_text("".join(f'{{"a": {n}}}\n' for n in range(10)))
         assert folds.folded(tail, counted, int, dict) == 2, "a transcript folded for the first time is read from its tail, never from its first byte"
     finally:
-        transcript_cache.FOLD_IN_PLACE_BYTES, transcript_cache.FOLD_TAIL_BYTES = kept
+        transcript_cache.FOLD_IN_PLACE_BYTES, jsonl.FRESH_BYTES = kept
 
 
 def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_loaded():

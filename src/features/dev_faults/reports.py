@@ -56,11 +56,12 @@ class FaultReports:
         return bool(agent) and (told is None or agent.uses - int(told) >= TOLD_EVERY)
 
     def slow(self, record, kind: str, name: str, took: float, working: float | None = None, garbage: float = 0.0, waiting: float = 0.0,
-             after: float = 0.0) -> None:
+             after: float = 0.0, whole_reads: tuple[str, ...] = ()) -> None:
         if working is not None and working <= self.milliseconds(record, kind):
             return
         parts = [f"{working:.0f}ms of it working" if working is not None else "", f"{garbage:.0f}ms collecting garbage" if garbage >= 1 else "",
-                 f"{waiting:.0f}ms waiting on locks" if waiting >= 1 else "", f"then {after:.0f}ms more after it answered" if after >= 1 else ""]
+                 f"{waiting:.0f}ms waiting on locks" if waiting >= 1 else "", f"then {after:.0f}ms more after it answered" if after >= 1 else "",
+                 f"it read a whole transcript for {'; '.join(whole_reads)}" if whole_reads else ""]
         spent = ", ".join(part for part in parts if part)
         self.file(record, f"{kind} {name} {OVER}"[:80],
                   f"{took:.0f}ms last{f' ({spent})' if spent else ''}, against a budget of {self.milliseconds(record, kind)}ms.",
@@ -80,7 +81,9 @@ class FaultReports:
         (folder / f"{time.strftime('%H%M%S')}-{name.replace('/', '_').replace(' ', '-')}-{took:.0f}ms.txt").write_text(ALL_THREADS + out.getvalue())
 
     def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None, profile=None, garbage: float = 0.0,
-              waiting: float = 0.0, after: float = 0.0) -> None:
+              waiting: float = 0.0, after: float = 0.0, whole_reads: tuple[str, ...] = ()) -> None:
+        if whole_reads:
+            logged(root, f"{kind} {name} read a whole transcript for {'; '.join(whole_reads)}")
         if took < min(BUDGET.values() or [0]) or cold(kind, name) or runtime.tests_running(Path(root)):
             return
         try:
@@ -89,7 +92,7 @@ class FaultReports:
                 logged(root, f"slow {kind} {name} {took:.0f}ms" + (f", {working:.0f}ms working" if working is not None else "")
                        + (f", {waiting:.0f}ms waiting on locks" if waiting >= 1 else ""))
             if self.feature.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
-                self.slow(record, kind, name, took, working, garbage, waiting, after)
+                self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads)
                 if profile:
                     self.kept(root, name, took, profile)
         except (OSError, ValueError, KeyError):

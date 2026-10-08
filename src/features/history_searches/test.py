@@ -127,7 +127,8 @@ def test_the_turns_an_agent_spoke_are_read_from_its_transcript_a_whole_line_at_a
     import features
     from datetime import datetime, timezone
     from controllers.types import Agents
-    from providers.jsonl import complete_lines, parsed
+    import pytest
+    from providers.jsonl import Read, ReadFromStart, lines_after, lines_from, parsed
     from features.history_searches.handlers import searches
     assert searches("journal 'search never closed") == [], "a command line that cannot be split is no search"
     from providers.claude import Claude
@@ -139,8 +140,10 @@ def test_the_turns_an_agent_spoke_are_read_from_its_transcript_a_whole_line_at_a
     assert (parsed("not json", dict), parsed("[1]", lambda raw: raw["a"]), parsed('{"a": 2}', lambda raw: raw["a"])) == (None, None, 2), "a line that is no row of the shape is passed over"
     path = tmp_path / "t.jsonl"
     path.write_bytes(b'{"a": 1}\n{"b"')
-    assert complete_lines(path, 0) == ([b'{"a": 1}'], 9), "only whole lines are read, and the offset stops before the half-written one"
-    assert complete_lines(tmp_path / "missing.jsonl", 4) == ([], 4), "a file that is gone reads nothing and keeps its place"
+    assert lines_from(path, 0) == Read([b'{"a": 1}'], 0, 9), "only whole lines are read, and the offset stops before the half-written one"
+    assert lines_after(tmp_path / "missing.jsonl", 4) == Read([], 4, 4), "a file that is gone reads nothing and keeps its place"
+    with pytest.raises(ReadFromStart):
+        lines_after(path, 0)
     stamp = datetime.now(timezone.utc).isoformat()
     transcript = tmp_path / "claude-1.jsonl"
     transcript.write_text(json.dumps({"type": "assistant", "timestamp": stamp, "message": {"content": [{"type": "text", "text": "All done."}]}}) + "\n")
@@ -228,3 +231,45 @@ def test_a_provider_that_knows_nothing_extra_answers_neutrally(tmp_path):
     assert bare.commands_for("effort", "high", "m") == [], "one with no controls types nothing to choose an effort"
     assert (bare.dispatch_model("m"), bare.skills(None), bare.skills(tmp_path / "gone.jsonl"), bare.hook_files(tmp_path)) == ("m", [], [], [bare.config(tmp_path)]), \
         "it dispatches the model it was given, finds no skills loaded without a transcript, and keeps its hooks in the one file"
+
+
+def test_no_hook_reads_more_than_a_tail_of_a_long_transcript_and_a_new_build_keeps_its_line_numbers(tmp_path, monkeypatch):
+    import json
+    import time
+    import features
+    from engine import whole_reads
+    from providers import PROVIDERS, jsonl, transcript_cache
+    from runner.hooks import handle
+    from tests.conftest import fresh
+    features.load()
+    record = fresh()
+    cache = transcript_cache.CACHE
+    monkeypatch.setattr(cache, "folder", tmp_path / "folds")
+    monkeypatch.setattr(jsonl, "FRESH_BYTES", 64_000)
+    entry = lambda n: json.dumps({"type": "user", "timestamp": "2026-10-05T10:00:00Z", "message": {"content": f"line {n} " + "x" * 300}}) + "\n"
+    transcript = tmp_path / "claude-7.jsonl"
+    transcript.write_text("".join(entry(n) for n in range(6000)))
+    spans, read = [], jsonl.read_bytes
+
+    def measured(path, start, stop=None) -> bytes:
+        found = read(path, start, stop)
+        spans.append(len(found))
+        return found
+    monkeypatch.setattr(jsonl, "read_bytes", measured)
+    before = whole_reads.count()
+    for event in ("SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop"):
+        handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": event, "session_id": "claude-7", "transcript_path": str(transcript),
+                                                                "tool_name": "Read", "tool_input": {"file_path": "x.py"}, "cwd": str(record.root.parent)})
+    assert (bool(spans), max(spans) <= transcript_cache.RECENT_BYTES < transcript.stat().st_size, whole_reads.count() - before) == (True, True, 0), \
+        "no hook reads more than a tail of a long transcript, and none reads it whole"
+    last = PROVIDERS["claude"]().turns(transcript)[-1].line
+    cursor = cache.file((transcript_cache.CURSOR, str(transcript)))
+    waited = time.monotonic() + 2
+    while not cursor.exists() and time.monotonic() < waited:
+        time.sleep(0.01)
+    cache.transcripts.clear()
+    monkeypatch.setattr(transcript_cache, "code_mark", lambda: "a newer build")
+    assert PROVIDERS["claude"]().turns(transcript)[-1].line == last, "a new build reads the transcript from its tail again and still numbers its lines from the first"
+    searched = PROVIDERS["claude"]().every_turn(transcript, jsonl.WholeRead.SEARCH)
+    assert (len(searched) > len(PROVIDERS["claude"]().turns(transcript)), whole_reads.since(before)) == (True, (jsonl.WholeRead.SEARCH,)), \
+        "only a search reads a transcript whole, and the read is recorded with its reason"

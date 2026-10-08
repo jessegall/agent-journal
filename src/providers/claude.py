@@ -11,7 +11,7 @@ from pathlib import Path
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, PeerNote, Turn
 from providers.payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
 from providers.base import REFUSED, BackgroundTasks, HookCommand, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
-from providers.jsonl import complete_lines, last_lines, parsed_row, rows
+from providers.jsonl import lines_from, parsed_row, rows, tail_lines
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
@@ -562,17 +562,17 @@ class Claude(Provider):
         return found if found.is_file() else None
 
     def settling(self, path: Path) -> bool:
-        lines, _ = last_lines(path, SETTLE_BYTES)
+        lines = tail_lines(path, SETTLE_BYTES).lines
         for row in rows(reversed(lines), Row.from_payload):
             if row.type in ("user", "assistant"):
                 return row.type == "user" or (bool(row.blocks) and all(block.type == "thinking" for block in row.blocks))
         return False
 
     def thoughts(self, transcript: Path, offset: int) -> tuple[list[tuple[str, str]], int]:
-        lines, _ = complete_lines(transcript, offset)
+        read = lines_from(transcript, offset)
         blocks: dict[str, list[Block]] = {}
-        ends, at, done = [], offset, offset
-        for line in lines:
+        ends, at, done = [], read.start, read.start
+        for line in read.lines:
             at += len(line) + 1
             row = parsed_row(line, Row.from_payload)
             if row is None:

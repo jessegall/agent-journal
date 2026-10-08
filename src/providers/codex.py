@@ -8,7 +8,7 @@ from pathlib import Path
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, Turn
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow, bare
 from providers.base import REFUSED, BackgroundTasks, Provider, SubagentRow, running_and_latest
-from providers.jsonl import last_lines, parsed, rows
+from providers.jsonl import head_lines, parsed, rows, tail_lines
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Chunk, Payload, Row
 from engine.fields import Loaded
@@ -20,6 +20,7 @@ SHELL_TOOLS = ("exec", "exec_command", "shell", "shell_command")
 TOOLS = {**dict.fromkeys(SHELL_TOOLS, "Bash"), "apply_patch": "Edit"}
 SKILL_LOOP = re.compile(r"for\s+\w+\s+in\s+([^;]+);\s*do")
 TAIL_BYTES = 262144
+META_BYTES = 4_000_000
 READ_ONLY_SANDBOX = 'sandbox_mode = "read-only"'
 WINDOW_LABELS = {300: "5h", 1440: "1d", 10080: "7d"}
 SPAWN_IN_SCRIPT = re.compile(r"tools\.\w*spawn_agent\(")
@@ -368,7 +369,7 @@ class Codex(Provider):
         return [UsageWindow(limit.key, self.window_label(limit.minutes), limit.used, limit.minutes, limit.resets) for limit in limits]
 
     def token_counts(self, path: Path | None):
-        lines, _ = last_lines(path, TAIL_BYTES)
+        lines = tail_lines(path, TAIL_BYTES).lines
         for row in rows(reversed(lines), Row.from_payload):
             if row.type == "event_msg" and row.payload.type == "token_count":
                 yield row.payload
@@ -386,7 +387,7 @@ class Codex(Provider):
         return next(Path(path).parent.parent.glob(f"*/rollout-*-{session}.jsonl"), None)
 
     def failure(self, path: Path) -> Failure | None:
-        lines, _ = last_lines(path, TAIL_BYTES)
+        lines = tail_lines(path, TAIL_BYTES).lines
         ends = [line for line in lines if TASK_EVENTS.search(line)]
         return parsed(ends[-1].decode(errors="replace"), Failure.from_turn_end) if ends else None
 
@@ -452,7 +453,7 @@ class Codex(Provider):
 
     def subagent_state(self, path: Path, session: str) -> tuple[bool, float]:
         found = self.subagent_transcript(path, session)
-        events = TASK_EVENTS.findall(b"".join(last_lines(found, TAIL_BYTES)[0])) if found else []
+        events = TASK_EVENTS.findall(b"".join(tail_lines(found, TAIL_BYTES).lines)) if found else []
         running = not events or events[-1] == b"task_started"
         return running, 0.0 if running or not found else found.stat().st_mtime
 
@@ -546,8 +547,7 @@ class Codex(Provider):
         return {AgentRow.parent: self.meta(path).parent_thread}
 
     def meta(self, path: Path) -> Payload:
-        with Path(path).open("rb") as source:
-            found = next((row for row in rows(source, Row.from_payload) if row.type == "session_meta"), None)
+        found = next((row for row in rows(head_lines(path, META_BYTES).lines, Row.from_payload) if row.type == "session_meta"), None)
         return found.payload if found else Payload()
 
     def tool_uses(self, row: Row) -> list[ToolCall]:

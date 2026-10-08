@@ -206,13 +206,13 @@ def test_an_installed_update_tidies_at_once():
     assert not left.exists(), "a new version is housekept the moment it is announced, not an hour later"
 
 
-def test_tidy_drops_the_folds_of_an_old_code_mark_whole_and_keeps_the_current_one(monkeypatch):
+def test_tidy_keeps_the_saved_transcript_states_and_drops_an_old_builds_folds(monkeypatch):
     from features.runtime_cleanup.tidy import OTHER_MARKS_FOR, leftovers
-    from providers.transcript_cache import code_mark
+    from providers.transcript_cache import STATES
     record = fresh()
     folds = record.root.parent / "folds"
     monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", folds)
-    current, old, recent = folds / code_mark(), folds / "old-mark", folds / "another-build"
+    current, old, recent = folds / STATES, folds / "old-mark", folds / "another-build"
     for place in (current, old, recent):
         place.mkdir(parents=True)
         (place / "turns.pickle").write_bytes(b"folded")
@@ -221,7 +221,7 @@ def test_tidy_drops_the_folds_of_an_old_code_mark_whole_and_keeps_the_current_on
     os.utime(old, (stale, stale))
     leftovers(record.root)
     assert (current.exists(), old.exists(), recent.exists(), (folds / "flat.pickle").exists()) == (True, False, True, False), \
-        "an old mark's folds go in one folder, another build still running keeps its own, and folds from before marks had folders go"
+        "the saved states, which outlive an upgrade, stay; a folder of an old build's folds goes once it is old, and loose folds go"
 
 
 def test_the_attic_packs_unpacks_and_finds_what_was_put_away_and_a_stubborn_server_is_ended_in_steps(tmp_path, monkeypatch):
