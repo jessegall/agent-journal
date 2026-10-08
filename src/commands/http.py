@@ -51,7 +51,8 @@ from resources.base import Missing
 
 from commands.invoke import invoked, takes_row
 from features.format import VIEWER, carded, formatted, shaped
-from surfaces.attachments import attachments, listed_types
+from surfaces.attachments import attachments
+from surfaces.everything import found
 from surfaces.listing import Listing, counted, listing
 from surfaces.settings import apply, settings
 from commands.dispatch import dispatch  # noqa: F401
@@ -556,21 +557,12 @@ def get_search(req: Request) -> Reply:
     if not term:
         return Reply(200, {"hits": [], "more": 0})
     record = req.record()
-    found = []
-    archived = req.query.get("archived") == "true"
-    for type_ in listed_types():
-        for r in CONTROLLERS[type_](record, actor=USER).search(term, archived):
-            if row_shared(type_, vars(r)):
-                found.append((type_, r))
-    found.sort(key=lambda hit: hit[1].updated, reverse=True)
-    hits = [{**carded(r, record, VIEWER), "matches": file_matches(record, type_, r, term)} for type_, r in found[:SHOWN_HITS]]
-    return Reply(200, {"hits": hits, "more": len(found) - len(hits)})
-
-
-def file_matches(record, type_: str, r, term: str) -> list[dict]:
-    want = term.lower()
-    return [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name, safe='')}"}
-            for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
+    hits = sorted((hit for hit in found(record, USER, term, req.query.get("archived") == "true") if row_shared(hit.type, vars(hit.row))),
+                  key=lambda hit: hit.row.updated, reverse=True)
+    shown = [{**carded(hit.row, record, VIEWER), "matches": [{"name": name, "tags": tags, "url": f"/api/{record.env}/{hit.type}/{hit.row.n}/files/{quote(name, safe='')}"}
+                                                            for name, tags in hit.files]}
+             for hit in hits[:SHOWN_HITS]]
+    return Reply(200, {"hits": shown, "more": len(hits) - len(shown)})
 
 
 @route("GET", "/api/{env}/search/attic")

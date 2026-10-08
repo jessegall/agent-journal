@@ -10,6 +10,7 @@ from commands.launch import launch
 from engine import attic
 from engine.record import Record
 from resources.base import PROJECT
+from surfaces.everything import found
 from engine.seats import seats
 from engine.transcript import Turn, search as search_transcript
 from features.command_tags.reading import visible
@@ -74,16 +75,20 @@ def attic_text(record, term: str) -> str:
 
 
 def search_text(record, term: str, page: int, archived: bool = False) -> str:
-    want = term.lower()
     transcript_matches = "\n".join(turn_text(hit.turn, f"{hit.provider}:{hit.session}  ")
                                    for hit in search_transcript(environment_transcript(record), term, page))
-    file_hits = [f"  file  {r.ref}  {name}" + (f" — {tags}" if tags else "")
-                 for type_, controller in CONTROLLERS.items() for r in controller(record).rows.every()
-                 for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
-    archived_hits = [f"  archived  {r.ref}  {r.title}  (bring back with journal {r.type} restore {r.n})"
-                     for controller in CONTROLLERS.values() if archived
-                     for r in controller(record).search(term, archived=True) if r.deleted]
-    return "\n".join(part for part in (transcript_matches, "\n".join(file_hits), "\n".join(archived_hits)) if part)
+    hits = found(record, SYSTEM, term, archived)
+    types = list(dict.fromkeys(hit.type for hit in hits))
+    rows = "\n".join(f"{type_} ({len(here)})\n" + "\n".join(row_line(hit) for hit in here)
+                     for type_ in types if (here := [hit for hit in hits if hit.type == type_]))
+    files = "\n".join(f"  file  {hit.row.ref}  {name}" + (f" — {tags}" if tags else "") for hit in hits for name, tags in hit.files)
+    return "\n".join(part for part in (transcript_matches, rows, files) if part)
+
+
+def row_line(hit) -> str:
+    gone = f"  (archived, bring back with journal {hit.type} restore {hit.row.n})" if hit.row.deleted else ""
+    return f"  {hit.row.ref}  {hit.row.title}{gone}"
+
 
 def switched(ctx, on: bool) -> str:
     if on:

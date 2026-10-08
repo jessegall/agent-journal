@@ -123,8 +123,9 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     messages.delete(message.n, "cleaning up")
     assert [r.n for r in messages.search("three regions")] == [again.n], "search leaves archived rows out by default"
     assert [r.n for r in messages.search("three regions", archived=True)] == [again.n, message.n], "search finds an archived row when asked"
-    assert "archived  message:1  look at this  (bring back with journal message restore 1)" in search_text(record, "three regions", 0, archived=True), \
+    assert "message:1  look at this  (archived, bring back with journal message restore 1)" in search_text(record, "three regions", 0, archived=True), \
         "journal search --archived says the hit is archived and how to bring it back"
+    assert "message (2)\n" in search_text(record, "three regions", 0, archived=True), "journal search answers every kind of row, grouped by type, each hit with its reference, as the viewer's search does"
     assert dispatch("GET", "/api/t/search", record.root, {"q": "three regions", "archived": "true"}, {}).body["hits"][0]["deleted"], \
         "viewer search marks an archived hit"
     messages.restore(message.n)

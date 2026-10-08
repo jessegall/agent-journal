@@ -104,7 +104,7 @@ def built(only: str) -> argparse.ArgumentParser:
     add_query(cmds, "carry", "everything standing, in full", lambda ctx: briefing.carry(ctx["record"]))
     add_query(cmds, "start", "what a session is handed at its start", lambda ctx: briefing.start_block(ctx["record"]))
     add_query(cmds, "open", "open work", lambda ctx: briefing.lines(briefing.open_work(ctx["record"])))
-    add_query(cmds, "search", "every agent transcript in this environment and attached files; --attic searches removed environments instead; --archived also lists archived rows",
+    add_query(cmds, "search", "everything the viewer's search finds: every kind of row, every agent transcript in this environment and attached files, grouped by type; --attic searches removed environments instead; --archived also lists archived rows",
               lambda ctx: attic_text(ctx["record"], ctx["term"]) if ctx["attic"] else search_text(ctx["record"], ctx["term"], ctx["page"], ctx["archived"]),
               ("term", {}), ("--page", {"type": int, "default": 0}), ("--attic", {"action": "store_true"}), ("--archived", {"action": "store_true"}))
     add_query(cmds, "conversation", "the stretch the last summary replaced", lambda ctx: say(conversation(transcript(ctx["record"], ctx["session"]), ctx["back"])),
