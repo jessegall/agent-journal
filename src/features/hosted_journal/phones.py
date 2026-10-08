@@ -4,7 +4,8 @@ from features.phone.guard import RecordGuard
 PHONES = "phones.json"
 SECRET = ("key", "code", "short", "passkey", "challenge", "unlock", "pending_passkey")
 GUARDED = (*SECRET, "code_until", "expires", "tries", "days", "environment", "journal")
-INERT = {"key": "", "code": "", "short": "", "code_until": 0, "expires": 0, "tries": 0, "passkey": {}, "challenge": {}, "unlock": {}, "pending_passkey": {}}
+INERT = {"key": "", "code": "", "short": "", "code_until": 0, "expires": 0, "tries": 0, "days": 0, "environment": "", "journal": None,
+         "passkey": {}, "challenge": {}, "unlock": {}, "pending_passkey": {}}
 KEPT_ELSEWHERE = "kept by the login page"
 
 

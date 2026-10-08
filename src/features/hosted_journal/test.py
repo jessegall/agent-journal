@@ -25,7 +25,7 @@ from features.hosted_journal.gateway import CHECKS_AT_ONCE, COOKIE, DEVICE_COOKI
 from features.hosted_journal.host import clear_tries
 from features.hosted_journal.owner import LOCKED_FOR, LOGINS, MOST_EVERYWHERE, MOST_TRIES, Logins, Owner, WrongTries, hashed
 from features.hosted_journal.feature import APART
-from features.hosted_journal.phones import KEPT_ELSEWHERE, PHONES
+from features.hosted_journal.phones import KEPT_ELSEWHERE, PHONES, VaultGuard
 from features.hosted_journal.settings import FromRecord, GatewaySettings, keep_gateway_settings
 from features.hosted_journal.vault import AUDIT, VAULT, DiskFull, RefusalLog, Vault
 from features.trigger import DAY
@@ -313,6 +313,9 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
         paired = apart.call("POST", "/p/pair", body=json.dumps({"code": made["link"].rsplit("#", 1)[1], "device": "phone"}), **phone_headers)
         key = paired.headers["set-cookie"].split(";")[0]
         assert apart.call("GET", "/p/state", Cookie=key).status == 200
+        Phones(hosted.record, actor=SYSTEM)._kept(made["n"], environment="elsewhere", journal=str(tmp_path / "planted"))
+        assert json.loads(apart.call("GET", "/p/state", Cookie=key).text)["environment"] == "main", "the phone's environment comes from the vault"
+        assert {name: VaultGuard(Vault(root)).read(999)[name] for name in ("journal", "environment", "days")} == {"journal": None, "environment": "", "days": 0}
         assert Phones(hosted.record, actor=SYSTEM).load(made["n"]).key == KEPT_ELSEWHERE and str(made["n"]) in Vault(root).read(PHONES)
         Features(hosted.record, actor=USER).switch(HostedJournalDetails.name, False)
         assert apart.call("GET", "/login").status == 200 and apart.call("POST", "/api/run", body="{}", Cookie=token, Origin=origin).status == 403
