@@ -53,6 +53,46 @@ await runScenarios(process.argv[2], {
         await page.waitForFunction(() => document.querySelector('[data-integration="gmail"] [data-gmail-account]')?.value === "me@gmail.com");
         await shot(page, "integrations-gmail");
     },
+    async "at phone width the Linear card with a board picked, its stage rows and the Gmail card fit with no sideways scroll and no overlapping text"(page, url) {
+        const title = `Phone key ${Date.now()}`;
+        const board = `Phone board ${Date.now()}`;
+        journal("board", "create", board);
+        await page.setViewportSize({width: 390, height: 844});
+        await page.goto(`${url}#/main/secrets`);
+        await page.getByRole("button", {name: "New secret"}).click();
+        await page.getByRole("radio", {name: /Login/}).click();
+        await page.locator("#secret-title").fill(title);
+        await page.getByRole("button", {name: "Create secret"}).click();
+        await page.getByText("Not set").first().waitFor();
+        await page.goto(`${url}#/main/integrations`);
+        const linear = page.locator('[data-integration="linear"]');
+        await linear.waitFor();
+        await linear.getByText(title).click();
+        const use = linear.getByRole("switch", {name: "Use Linear"});
+        if ((await use.getAttribute("aria-checked")) !== "true") await use.click();
+        await linear.getByRole("switch", {name: "Use Linear", checked: true}).waitFor();
+        await linear.getByRole("option", {name: board}).click();
+        await linear.getByText(/When a ticket moves to .*, set the issue to/).first().waitFor();
+        const gmail = page.locator('[data-integration="gmail"]');
+        await gmail.waitFor();
+        const sideways = await page.evaluate(() => {
+            const wide = (el) => el.scrollWidth > el.clientWidth;
+            const found = [document.documentElement, document.querySelector(".integrations"), ...document.querySelectorAll("[data-integration]")].filter(Boolean).filter(wide);
+            const overlapping = [];
+            for (const row of document.querySelectorAll("[data-integration] .use, [data-integration] .team")) {
+                const boxes = [...row.children].map((child) => child.getBoundingClientRect()).filter((box) => box.width && box.height);
+                for (const [at, one] of boxes.entries()) {
+                    for (const other of boxes.slice(at + 1)) {
+                        if (one.left < other.right - 1 && other.left < one.right - 1 && one.top < other.bottom - 1 && other.top < one.bottom - 1) overlapping.push(row.textContent.trim().slice(0, 60));
+                    }
+                }
+            }
+            return {wide: found.map((el) => el.dataset.integration || el.className || el.tagName), overlapping};
+        });
+        if (sideways.wide.length) throw new Error(`at phone width these scroll sideways: ${sideways.wide.join(", ")}`);
+        if (sideways.overlapping.length) throw new Error(`at phone width these rows overlap: ${sideways.overlapping.join(" | ")}`);
+        await shot(page, "integrations-phone");
+    },
     async "an image in text from Linear shows as a link and loads nothing from its host"(page, url) {
         const asked = [];
         const host = createServer((request, answer) => (asked.push(request.url), answer.end("x"))).listen(0);
