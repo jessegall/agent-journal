@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {saveSettings} from "../actions/settings.js";
 import {usePoll, pollKey} from "../composables/poll.js";
-import {fetchingOn, isOn, keyOf, keyWords, mcpOn, settingsWith, stateWords, switchWords} from "../domain/integrations.js";
+import {fetchingOn, isOn, keyOf, keyWords, loginWords, mcpOn, settingsWith, stateWords, switchWords} from "../domain/integrations.js";
 import Btn from "../kit/Btn.vue";
 import SecretPicker from "../kit/SecretPicker.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -32,6 +32,18 @@ const mcp = computed(() => mcpOn(store.settings, props.feature.name));
 const fetching = computed(() => fetchingOn(store.settings, props.feature.name));
 const setMcp = (next) => saveSettings(settingsWith(store.settings, props.feature.name, {use_mcp: next}));
 const setFetching = (next) => saveSettings(settingsWith(store.settings, props.feature.name, {fetching: next}));
+const login = computed(() => loginWords(props.feature.title));
+const signing = ref(false);
+
+async function logIn() {
+    signing.value = true;
+    try {
+        await api.logInIntegration(props.feature.name);
+    } finally {
+        setTimeout(() => (signing.value = false), 5000);
+    }
+}
+
 const checking = ref(false);
 
 async function checkNow() {
@@ -73,6 +85,12 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
         <template v-if="on && fetching">
             <h4 class="key-label">{{ words.label }}</h4>
             <SecretPicker :value="key" :picked-line="words.picked" :none-line="words.none" :note="words.note" @pick="pick" />
+            <template v-if="feature.mcp_server">
+                <div class="acts">
+                    <Btn small :busy="signing" @click="logIn">{{ login.button }}</Btn>
+                </div>
+                <p class="abstract">{{ signing ? login.waiting : login.line }}</p>
+            </template>
             <SwitchCase :value="feature.name">
                 <template #linear>
                     <LinearChoices :states="state ? state.choices : []" />

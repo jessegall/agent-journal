@@ -129,6 +129,58 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
     assert ("journal-linear" in json.loads((project / ".mcp.json").read_text())["mcpServers"], "journal-linear" in (project / ".codex" / "config.toml").read_text()) == (False, False), \
         "switching it off takes the journal's entry out of both"
     assert json.loads((project / ".mcp.json").read_text())["mcpServers"]["linear"]["url"] == "https://own.example/mcp", "and still leaves the project's own entry"
+    import hashlib
+    import http.server
+    import threading
+    import urllib.parse
+    import urllib.request
+    from features.integrations.login import encoded, signed_in
+
+    class Oauth(http.server.BaseHTTPRequestHandler):
+        challenge = ""
+
+        def reply(self, body: dict) -> None:
+            raw = json.dumps(body).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
+
+        def do_GET(self):
+            base = f"http://127.0.0.1:{self.server.server_port}"
+            self.reply({"authorization_endpoint": f"{base}/authorize", "token_endpoint": f"{base}/token", "registration_endpoint": f"{base}/register"})
+
+        def do_POST(self):
+            body = self.rfile.read(int(self.headers["Content-Length"])).decode()
+            if self.path == "/register":
+                return self.reply({"client_id": "client-1"})
+            form = urllib.parse.parse_qs(body)
+            proven = encoded(hashlib.sha256(form["code_verifier"][0].encode()).digest()) == Oauth.challenge
+            self.reply({"access_token": "tok-xyz"} if form["code"] == ["abc"] and proven else {})
+
+        def log_message(self, *_):
+            pass
+
+    server = http.server.HTTPServer(("127.0.0.1", 0), Oauth)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    origin = f"http://127.0.0.1:{server.server_port}"
+
+    def browser(state_given: str = ""):
+        def opened(url: str) -> None:
+            asked = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+            Oauth.challenge = asked["code_challenge"][0]
+            sent = urllib.parse.urlencode({"code": "abc", "state": state_given or asked["state"][0]})
+            urllib.request.urlopen(f"{asked['redirect_uri'][0]}?{sent}", timeout=10).read()
+        return opened
+
+    try:
+        assert signed_in(origin, "test", browser()) == "Bearer tok-xyz", "the service's own sign-in gives a token as a bearer value, proven with the verifier the journal made"
+        assert "did not finish" in refused(lambda: signed_in(origin, "test", browser("another"))), "a sign-in that comes back with a state the journal did not make is refused"
+        variable = linear.log_in(record, browser(), origin)
+        assert (ValuesFile(record.root).values()[variable], linear.values(record).key) == ("Bearer tok-xyz", variable), "logging in keeps the token as a secret and makes it the key"
+        assert linear.client(record).key == "Bearer tok-xyz", "and the client signs in with it"
+    finally:
+        server.shutdown()
 
 
 KEY = "lin_api_secret_value"

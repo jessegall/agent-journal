@@ -682,6 +682,10 @@ export class ApiClient {
         return this.get(this.here(`/integration/${name}/webhook`));
     }
 
+    logInIntegration(name) {
+        return this.post(this.here(`/integration/${name}/login`));
+    }
+
     checkIntegration(name) {
         return this.post(this.here(`/integration/${name}/check`));
     }
