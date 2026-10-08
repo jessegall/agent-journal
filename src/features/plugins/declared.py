@@ -229,6 +229,11 @@ def named(plugins, name: str):
     return next((row for row in plugins.rows.standing() if called(row) == name), None)
 
 
+def removed(plugins, name: str):
+    """The newest row of a plugin of this name that was removed, which installing it again brings back."""
+    return next((row for row in reversed(plugins.rows.every()) if row.completed and called(row) == name), None)
+
+
 @dataclass(frozen=True)
 class PluginSettings(Loaded):
     ports: dict = field(default_factory=dict)

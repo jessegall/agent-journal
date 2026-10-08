@@ -202,6 +202,14 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     assert "remove it first" in refused(lambda: plugins.action("purge")(row.n)), "what an installed plugin keeps is never purged"
     plugins.complete(row.n, "removed")
     assert "is gone" in plugins.action("purge")(row.n), "once removed, what it kept can be purged"
+    again = plugins.action("install")(source, yes=True)
+    assert (again.n, bool(again.completed), len(Plugins(fine, actor=SYSTEM).rows.every())) == (row.n, False, 1), "a plugin removed and installed again comes back as the same row"
+    copy = Plugins(fine, actor=SYSTEM).create(again.title, manifest=again.manifest, source=again.source)
+    Plugins(fine, actor=SYSTEM).complete(copy.n, "removed")
+    from migrations.m0075_plugins_installed_once import run as fold
+    assert (len(fold(fine.root)), [kept.n for kept in Plugins(fine, actor=SYSTEM).rows.every(deleted=True)]) == (1, [row.n]), \
+        "an upgrade folds the copies of a plugin installed twice into the one still installed"
+    plugins.complete(row.n, "removed")
     from features.plugins import staging
     assert staging.address("owner/repo") == "https://github.com/owner/repo", "an owner and a repository name is a repository on GitHub"
     assert "neither a repository URL" in refused(lambda: staging.address("no such place")), "a source that is no repository and no folder is refused"

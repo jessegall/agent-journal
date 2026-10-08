@@ -8,7 +8,7 @@ from engine.services import UP, want
 from engine.version import version
 from engine.wording import fill
 from features.plugins.answer import apply
-from features.plugins.declared import Manifest, called, settings_with
+from features.plugins.declared import Manifest, called, removed, settings_with
 from features.plugins.environment import environment
 from features.plugins.manifest import MANIFEST, read
 from features.plugins.paths import data, folder, home, log, logged
@@ -78,7 +78,12 @@ def place(plugins, where: Path, linked: bool, manifest: Manifest, source: str, r
     held = ports if ports else {}
     if row:
         return plugins.update(row.n, abstract=manifest.description, settings=settings_with(row, ports=held), **kept)
-    return plugins.create(manifest.heading, abstract=manifest.description, enabled=True, settings={"ports": held}, token=secret, **kept)
+    fresh = {"abstract": manifest.description, "enabled": True, "settings": {"ports": held}, "token": secret, **kept}
+    earlier = removed(plugins, name)
+    if earlier is None:
+        return plugins.create(manifest.heading, **fresh)
+    plugins.reopen(earlier.n, "installed again")
+    return plugins.update(earlier.n, title=manifest.heading, **fresh)
 
 
 def welcomed(journal, plugins, manifest: Manifest, env: dict) -> None:
