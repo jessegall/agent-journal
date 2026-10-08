@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {asking, complete, creating, daysLeft, drafted, isWaiting, keptWords, saved, variableOf, whenWords} from "../src/domain/secrets.js";
+import {asking, complete, creating, daysLeft, drafted, handedVariable, isWaiting, keptWords, pickable, pickedBy, saved, variableOf, whenWords} from "../src/domain/secrets.js";
 
 const row = (data, more = {}) => ({n: 1, title: "Stripe test", abstract: "", brief: "", data: {kind: "login", secret_fields: [{name: "username", hidden: false, variable: "U"}, {name: "password", hidden: true, variable: "P"}], ...data}, ...more});
 
@@ -35,5 +35,14 @@ describe("secrets", () => {
         expect(saved(draft).secret_fields).toEqual([{name: "token", hidden: true, variable: "MAIL_TOKEN"}]);
         expect(creating(draft).kind).toBe("custom");
         expect(creating({...draft, kind: "login"})).not.toHaveProperty("secret_fields");
+    });
+
+    test("a plugin gets the first hidden field of the secret picked for it", () => {
+        const login = row({secret_fields: [{name: "username", hidden: false, variable: "U"}, {name: "password", hidden: true, variable: "P"}]});
+        const shown = row({secret_fields: [{name: "name", hidden: false, variable: "N"}]});
+        expect(handedVariable(login)).toBe("P");
+        expect(pickable([login, shown])).toEqual([login]);
+        expect(pickedBy([login, shown], "P")).toBe(login);
+        expect(pickedBy([login, shown], "")).toBeNull();
     });
 });

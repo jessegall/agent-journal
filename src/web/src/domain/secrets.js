@@ -74,3 +74,9 @@ export function creating(draft) {
 }
 
 export const complete = (draft) => Boolean(draft.title.trim() && draft.kind);
+
+export const handedVariable = (row) => (fieldsOf(row).find((field) => field.hidden) || {variable: ""}).variable;
+
+export const pickable = (rows) => rows.filter((row) => handedVariable(row));
+
+export const pickedBy = (rows, variable) => pickable(rows).find((row) => handedVariable(row) === variable) || null;
