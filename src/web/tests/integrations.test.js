@@ -55,8 +55,8 @@ describe("the Integrations page", () => {
         expect([signingOf({linear: {signing_key: "LINEAR_SIGNING"}}, "linear"), signingOf({}, "linear")]).toEqual(["LINEAR_SIGNING", ""]);
     });
 
-    test("offers the two switches, the MCP server one off and fetching one on until you change them", () => {
-        expect(switchWords("Linear")).toMatchObject({mcp: "Agents use Linear through its MCP server", fetching: "The journal fetches Linear into tickets"});
+    test("offers the two switches, the direct-use one off and fetching one on until you change them", () => {
+        expect(switchWords("Linear")).toMatchObject({mcp: "Agents can use Linear directly", fetching: "Read Linear into tickets"});
         expect(switchWords("Linear").mcpHelp).toContain("not marked untrusted");
         expect([mcpOn({}, "linear"), mcpOn({linear: {use_mcp: true}}, "linear"), fetchingOn({}, "linear"), fetchingOn({linear: {fetching: false}}, "linear")]).toEqual([false, true, true, false]);
     });
