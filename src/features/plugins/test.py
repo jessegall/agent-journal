@@ -210,6 +210,10 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     assert (len(fold(fine.root)), [kept.n for kept in Plugins(fine, actor=SYSTEM).rows.every(deleted=True)]) == (1, [row.n]), \
         "an upgrade folds the copies of a plugin installed twice into the one still installed"
     plugins.complete(row.n, "removed")
+    newer = Plugins(fine, actor=SYSTEM).create(again.title, manifest=again.manifest, source=again.source)
+    Plugins(fine, actor=SYSTEM).complete(newer.n, "removed")
+    assert (len(fold(fine.root)), [kept.n for kept in Plugins(fine, actor=SYSTEM).rows.every(deleted=True)], fold(fine.root)) == (1, [newer.n], []), \
+        "with every copy removed the newest is kept, and a second upgrade finds nothing to fold"
     from features.plugins import staging
     assert staging.address("owner/repo") == "https://github.com/owner/repo", "an owner and a repository name is a repository on GitHub"
     assert "neither a repository URL" in refused(lambda: staging.address("no such place")), "a source that is no repository and no folder is refused"
