@@ -1,5 +1,6 @@
 <script setup>
 import HandledNote from "../kit/HandledNote.vue";
+import {writerName} from "../composables/people.js";
 import Byline from "../kit/Byline.vue";
 import {computed, inject, nextTick, reactive, ref, watch} from "vue";
 import {useScope} from "../composables/scope.js";
@@ -45,7 +46,7 @@ const groups = computed(() => {
     ].filter((g) => g.rows.length);
 });
 const WHO = {user: "You", agent: "Agent"};
-const who = (c) => c.data?.visitor || WHO[c.seen[0]] || c.seen[0] || "Someone";
+const who = (c) => writerName(c.data) || c.data?.visitor || WHO[c.seen[0]] || c.seen[0] || "Someone";
 const plain = (text) => text.replace(/`/g, "");
 
 async function focusComment() {

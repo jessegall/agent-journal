@@ -1,29 +1,27 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
-import {memberStatus, ROLES, roleTitle} from "../domain/members.js";
+import {loadPeople, people} from "../composables/people.js";
+import {roleTitle} from "../domain/members.js";
 import CopyButton from "../kit/CopyButton.vue";
 import Dialog from "../kit/Dialog.vue";
 import ListRow from "../kit/ListRow.vue";
-import Segmented from "../kit/Segmented.vue";
 import AbilityList from "./AbilityList.vue";
 import InviteForm from "./InviteForm.vue";
+import MemberRow from "./MemberRow.vue";
 
 const props = defineProps({me: {type: Object, required: true}});
 const emit = defineEmits(["close"]);
-const members = ref([]);
+const REFRESH_MS = 15000;
 const invited = ref(null);
 const failure = ref("");
-
-async function load() {
-    if (props.me.owner) members.value = (await api.members()).members;
-}
+let timer = 0;
 
 async function attempt(work) {
     failure.value = "";
     try {
         await work();
-        await load();
+        await loadPeople();
     } catch (e) {
         failure.value = e.message;
     }
@@ -32,7 +30,11 @@ async function attempt(work) {
 const invite = (name, role) => attempt(async () => (invited.value = await api.inviteMember(name, role)));
 const assign = (member, role) => attempt(() => api.assignRole(member.id, role));
 
-onMounted(load);
+onMounted(() => {
+    loadPeople();
+    timer = setInterval(loadPeople, REFRESH_MS);
+});
+onUnmounted(() => clearInterval(timer));
 </script>
 
 <template>
@@ -42,20 +44,19 @@ onMounted(load);
                 <p class="you">You are {{ me.name }}, a {{ roleTitle(me.role).toLowerCase() }} in this journal.</p>
             </template>
             <AbilityList :abilities="me.abilities" />
+            <section class="members" aria-label="Members">
+                <h3 class="heading">Members</h3>
+                <template v-if="people.owner">
+                    <ListRow :title="people.owner.name" :text="people.owner.connected ? 'Connected now' : 'Not connected'" />
+                </template>
+                <template v-for="member in people.members" :key="member.id">
+                    <MemberRow :member="member" :owner="me.owner" @assign="(role) => assign(member, role)" />
+                </template>
+                <template v-if="!people.members.length">
+                    <p class="quiet">No one else can log in to this journal.</p>
+                </template>
+            </section>
             <template v-if="me.owner">
-                <section class="members" aria-label="Members">
-                    <h3 class="heading">Members</h3>
-                    <template v-for="member in members" :key="member.id">
-                        <ListRow :title="member.name" :text="memberStatus(member)">
-                            <template #end>
-                                <Segmented :options="ROLES" :value="member.role" @pick="(role) => assign(member, role)" />
-                            </template>
-                        </ListRow>
-                    </template>
-                    <template v-if="!members.length">
-                        <p class="quiet">Only you can log in to this journal.</p>
-                    </template>
-                </section>
                 <InviteForm @invite="invite" />
                 <template v-if="invited">
                     <div class="link">

@@ -54,10 +54,10 @@ class MemberLogins:
                 ("GET", "/member"): self.show_login, ("POST", "/member"): partial(self.log_in, gateway)}
 
     def actions(self, gateway: Gateway) -> dict[tuple[str, str], Act]:
-        return {("GET", "/api/hosting/me"): self.me}
+        return {("GET", "/api/hosting/me"): self.me, ("GET", "/api/hosting/members"): partial(self.listed, gateway)}
 
     def owner_actions(self, gateway: Gateway) -> dict[tuple[str, str], Page]:
-        return {("GET", "/api/hosting/members"): self.listed, ("POST", "/api/hosting/members"): self.invite,
+        return {("POST", "/api/hosting/members"): self.invite,
                 ("POST", "/api/hosting/members/role"): self.assign}
 
     def refusal(self, visit: Visit, login: KeptLogin) -> str | None:
@@ -115,8 +115,10 @@ class MemberLogins:
             return visit.refuse(403, NOT_A_MEMBER)
         return visit.json(200, asdict(Someone(member.id, member.name, member.role, False, member.role.abilities())))
 
-    def listed(self, visit: Visit) -> None:
-        return visit.json(200, {"members": [member.summary() for member in Roster(visit.vault).all()]})
+    def listed(self, gateway: Gateway, visit: Visit, login: KeptLogin) -> None:
+        connected = gateway.connected(visit.vault.clock())
+        members = [{**member.summary(), "connected": member.id in connected} for member in Roster(visit.vault).all()]
+        return visit.json(200, {"owner": {"name": OWNER_NAME, "connected": OWNER in connected}, "members": members})
 
     def invite(self, visit: Visit) -> None:
         asked = visit.asked(Invited)

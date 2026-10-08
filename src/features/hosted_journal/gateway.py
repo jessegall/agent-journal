@@ -67,6 +67,7 @@ MOST_STREAMS = 8
 CHECKS_AT_ONCE = 3
 REFUSALS_A_MINUTE = 60
 READY_SECONDS = 3
+CONNECTED_WITHIN = 120
 VIEWER_HEADERS = {
     "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
                                "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self'; "
@@ -220,6 +221,8 @@ class Gateway:
         self.settings = settings
         self.answered_here = answered_here
         self.streams: Counter[str] = Counter()
+        self.listening: Counter[str] = Counter()
+        self.last_seen: dict[str, float] = {}
         self.lock = threading.Lock()
         self.checking = threading.BoundedSemaphore(CHECKS_AT_ONCE)
         self.refusals = RefusalLog(REFUSALS_A_MINUTE)
@@ -368,6 +371,7 @@ class Gateway:
             return self.turned_away(visit, Standing.UNKNOWN)
         if (standing := login.standing(visit.vault.clock())) is not Standing.OPEN:
             return self.turned_away(visit, standing)
+        self.last_seen[login.member] = visit.vault.clock()
         if closed(visit.record, visit.handler.command, encoded(visit.url)):
             return visit.refuse(403, "the journal on a server never runs this for anyone who comes in from outside")
         if visit.handler.command == "POST" and not visit.same_origin():
@@ -392,6 +396,12 @@ class Gateway:
             return Desktop(visit.handler, visit.handler.path, member_mark(login), VIEWER_HEADERS).forward(visit.handler.rfile.read(size) if size else b"")
         return self.streamed(visit, login, hashed(token))
 
+    def connected(self, now: float) -> frozenset[str]:
+        """Who has the journal open: a live stream from their browser, or a request in the last two minutes."""
+        with self.lock:
+            listening = {member for member, open_streams in self.listening.items() if open_streams > 0}
+        return frozenset((*listening, *(member for member, at in self.last_seen.items() if now - at < CONNECTED_WITHIN)))
+
     def answered_by_phones(self, visit: Visit) -> tuple[PhoneAnswer, PhonePath] | None:
         """The owner's phone action this request reaches, which the login page answers itself when it keeps the phones' keys."""
         reached = visit.reached()
@@ -413,11 +423,13 @@ class Gateway:
             if self.streams[token] >= MOST_STREAMS:
                 return visit.refuse(429, f"one login keeps at most {MOST_STREAMS} live streams open; close a tab")
             self.streams[token] += 1
+            self.listening[login.member] += 1
         try:
             return Desktop(visit.handler, visit.handler.path, member_mark(login), VIEWER_HEADERS).forward(b"")
         finally:
             with self.lock:
                 self.streams[token] -= 1
+                self.listening[login.member] -= 1
 
     def turned_away(self, visit: Visit, standing: Standing) -> None:
         notice = "?notice=ran-out" if standing is Standing.RAN_OUT else ""

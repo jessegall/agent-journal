@@ -8,7 +8,7 @@ from features.hosted_journal.people import PEOPLE
 from features.journal import Journal
 from features.members.details import MembersDetails
 from features.members.gate import MemberLogins
-from features.members.words import MemberWords, unmarked
+from features.members.words import MemberWords, WrittenBy, unmarked
 
 
 class MembersFeature(Feature):
@@ -19,5 +19,6 @@ class MembersFeature(Feature):
         guarding = None if os.environ.get(APART) == "1" else self
         PEOPLE.add(guarding, MemberLogins())
         SAVE_MARKS.add(None, MemberWords())
+        SAVE_MARKS.add(None, WrittenBy())
         # People read a member's words plainly, even with the feature off; agents read them marked.
         FORMATTERS.add(None, (unmarked, (VIEWER, SHARED, DOWNLOAD)))

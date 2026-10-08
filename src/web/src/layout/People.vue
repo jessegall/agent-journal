@@ -1,12 +1,13 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import {loadMe, me} from "../composables/me.js";
+import {loadPeople} from "../composables/people.js";
 import Icon from "../kit/Icon.vue";
 import PeopleDialog from "./PeopleDialog.vue";
 
 const open = ref(false);
 
-onMounted(loadMe);
+onMounted(() => Promise.all([loadMe(), loadPeople()]));
 </script>
 
 <template>

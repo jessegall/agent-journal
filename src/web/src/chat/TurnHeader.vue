@@ -2,10 +2,12 @@
 import {computed} from "vue";
 import ReadTicks from "../kit/ReadTicks.vue";
 import {clock} from "../format/time.js";
+import {writerName} from "../composables/people.js";
 
 const props = defineProps({turn: {type: Object, required: true}});
 const mine = computed(() => props.turn.who === "user");
 const fromPhone = computed(() => String(props.turn.data?.via || "").startsWith("phone:"));
+const writer = computed(() => writerName(props.turn.data));
 </script>
 
 <template>
@@ -15,6 +17,10 @@ const fromPhone = computed(() => String(props.turn.data?.via || "").startsWith("
         </template>
         <template v-else-if="mine || turn.type === 'question'">
             <span class="thread-ref">{{ turn.type }} {{ turn.n }}</span>
+            <span class="thread-meta-dot" />
+        </template>
+        <template v-if="writer">
+            <span class="thread-writer">{{ writer }}</span>
             <span class="thread-meta-dot" />
         </template>
         <template v-if="mine && fromPhone">
@@ -46,6 +52,11 @@ const fromPhone = computed(() => String(props.turn.data?.via || "").startsWith("
     border-radius: 50%;
     background: var(--text-3);
     opacity: 0.7;
+}
+
+.thread-writer {
+    font-weight: 600;
+    color: var(--text-3);
 }
 
 .thread-ref {

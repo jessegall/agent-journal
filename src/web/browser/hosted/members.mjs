@@ -6,6 +6,7 @@ const INVITE_LINK = process.env.HOSTED_INVITE_LINK;
 const MEMBER_NAME = process.env.HOSTED_MEMBER_NAME;
 const MEMBER_PASSWORD = process.env.HOSTED_MEMBER_PASSWORD;
 const READER_LOGIN = process.env.HOSTED_READER_LOGIN;
+const WRITER_LOGIN = process.env.HOSTED_WRITER_LOGIN;
 
 await runScenarios(URL_, {
     async "the owner invites a person from People and gets the link to send them"(page, url) {
@@ -42,5 +43,14 @@ await runScenarios(URL_, {
         await page.getByPlaceholder("Message the agent").fill("hello from a reader");
         await page.keyboard.press("Enter");
         await page.getByRole("status").filter({hasText: "You can't do that. Readers read this journal"}).waitFor();
+    },
+    async "a writer's message carries their name, and People shows who is connected"(page, url) {
+        await page.context().setExtraHTTPHeaders({Cookie: `__Host-journal=${WRITER_LOGIN}`});
+        await page.goto(`${url}#/main`);
+        await page.getByPlaceholder("Message the agent").fill("hello from Eli");
+        await page.keyboard.press("Enter");
+        await page.locator(".thread-writer").filter({hasText: "Eli"}).first().waitFor();
+        await page.getByRole("button", {name: "People"}).click();
+        await page.getByRole("region", {name: "Members"}).getByText("Connected now").first().waitFor();
     },
 });

@@ -5,4 +5,17 @@ export const ROLES = [
 
 export const roleTitle = (key) => ROLES.find((role) => role.key === key)?.title || key;
 
-export const memberStatus = (member) => (member.joined ? "Joined" : "Invited, has not joined yet");
+export function memberStatus(member) {
+    if (!member.joined) return "Invited, has not joined yet";
+    return member.connected ? "Connected now" : "Not connected";
+}
+
+export const OWNER = "owner";
+
+export const FORMER_MEMBER = "A former member";
+
+export const writerOf = (data, names) => {
+    const member = data?.member;
+    if (!member || member === OWNER) return null;
+    return names[member] || FORMER_MEMBER;
+};
