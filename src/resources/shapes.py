@@ -2,7 +2,7 @@ from typing import ClassVar
 
 import json
 
-from resources.base import Field, Refused, declare, names
+from resources.base import WRITER, Field, Refused, declare, names
 
 TEXT, NUMBER, FLAG, LIST = "text", "number", "flag", "list"
 KINDS = {TEXT: str, NUMBER: (int, float), FLAG: bool, LIST: list}
@@ -80,7 +80,7 @@ class Shape:
     required: ClassVar[list[str]] = []
     labels: ClassVar[dict] = {}
     command_fields: ClassVar[frozenset[str]] = frozenset()
-    journal_fields: ClassVar[frozenset[str]] = frozenset()
+    journal_fields: ClassVar[frozenset[str]] = frozenset((WRITER,))
 
     @classmethod
     def unfilled(cls, data: dict) -> list[str]:
@@ -92,7 +92,7 @@ class Shape:
         cls.fields = {k: v.spec for base in reversed(cls.__mro__) for k, v in vars(base).items() if isinstance(v, Field) and v.spec}
         cls.required = [k for base in reversed(cls.__mro__) for k, v in vars(base).items() if isinstance(v, Field) and v.required]
         cls.command_fields = frozenset(k for base in cls.__mro__ for k, v in vars(base).items() if isinstance(v, Field) and v.runs_commands)
-        cls.journal_fields = frozenset(k for base in cls.__mro__ for k, v in vars(base).items() if isinstance(v, Field) and v.journal_only)
+        cls.journal_fields = frozenset((WRITER, *(k for base in cls.__mro__ for k, v in vars(base).items() if isinstance(v, Field) and v.journal_only)))
         cls.labels = {k: v for base in reversed(cls.__mro__) for k, v in vars(base).get("labels", {}).items()}
 
 

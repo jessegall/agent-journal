@@ -1,7 +1,8 @@
 import re
 
 from controllers.base import WRITING_MEMBER
-from resources.base import SECTION, Resource
+from features.hosted_journal.owner import OWNER
+from resources.base import SECTION, USER, WRITER, Resource
 
 TEXTS = ("title", "abstract", "brief", "outcome")
 TAG = re.compile(r"</?untrusted\b[^>]*>")
@@ -35,3 +36,13 @@ class MemberWords:
         for name in TEXTS:
             setattr(r, name, new(getattr(r, name)))
         r.sections = [{**part, SECTION.title: new(part[SECTION.title]), SECTION.body: new(part[SECTION.body])} for part in r.sections]
+
+
+class WrittenBy:
+    """Names on each row a person makes who made it: the owner, or the member the login page named."""
+
+    def __call__(self, controller, r: Resource) -> None:
+        if controller.actor != USER or controller.rows.exists(r.n):
+            return
+        member = WRITING_MEMBER.get()
+        r.data[WRITER] = OWNER if member is None else member

@@ -21,7 +21,8 @@ vi.mock("../src/api/client.js", () => ({
 const {default: People} = await import("../src/layout/People.vue");
 const {default: BlockedNotice} = await import("../src/layout/BlockedNotice.vue");
 const {me} = await import("../src/composables/me.js");
-const {memberStatus} = await import("../src/domain/members.js");
+const {memberStatus, writerOf} = await import("../src/domain/members.js");
+const {people} = await import("../src/composables/people.js");
 const {answered} = await import("../src/api/transport.js");
 
 const OWNER = {member: "owner", name: "Owner", role: "owner", owner: true, abilities: {can: ["Read every page of this journal"], cannot: []}};
@@ -55,22 +56,36 @@ const pressed = (label) => [...document.querySelectorAll("button")].find((button
 beforeEach(() => {
     document.body.innerHTML = "";
     me.value = null;
+    people.value = {owner: null, members: []};
     vi.clearAllMocks();
+    members.mockResolvedValue({owner: {name: "Owner", connected: true}, members: []});
 });
 
-test("a member reads as joined or as invited and not joined yet", () => {
-    expect(memberStatus({joined: 12})).toBe("Joined");
+test("a member reads as connected, not connected or invited and not joined yet", () => {
+    expect(memberStatus({joined: 12, connected: true})).toBe("Connected now");
+    expect(memberStatus({joined: 12, connected: false})).toBe("Not connected");
     expect(memberStatus({joined: 0})).toBe("Invited, has not joined yet");
+});
+
+test("a row names the member who wrote it, a former member when they are gone, and nobody for the owner", () => {
+    const names = {"m-1": "Ada"};
+    expect(writerOf({member: "m-1"}, names)).toBe("Ada");
+    expect(writerOf({member: "m-9"}, names)).toBe("A former member");
+    expect([writerOf({member: "owner"}, names), writerOf({}, names)]).toEqual([null, null]);
 });
 
 test("the owner invites a person as a reader and gets the link to send them", async () => {
     hostingMe.mockResolvedValue(OWNER);
-    members.mockResolvedValueOnce({members: []}).mockResolvedValue({members: [{id: "m-1", name: "Ada", role: "reader", joined: 0}]});
-    inviteMember.mockResolvedValue({member: {id: "m-1", name: "Ada"}, link: "https://journal.example.com/join?code=abc"});
+    members.mockResolvedValue({owner: {name: "Owner", connected: true}, members: []});
+    inviteMember.mockImplementation(async () => {
+        members.mockResolvedValue({owner: {name: "Owner", connected: true}, members: [{id: "m-1", name: "Ada", role: "reader", joined: 0}]});
+        return {member: {id: "m-1", name: "Ada"}, link: "https://journal.example.com/join?code=abc"};
+    });
     const into = await mounted(People);
     into.querySelector('[aria-label="People"]').click();
     await flush();
-    expect(document.body.textContent).toContain("Only you can log in to this journal.");
+    expect(document.body.textContent).toContain("No one else can log in to this journal.");
+    expect(document.body.textContent).toContain("Connected now");
     const field = document.querySelector("#invite-name");
     field.value = "Ada";
     field.dispatchEvent(new Event("input"));
@@ -85,7 +100,7 @@ test("the owner invites a person as a reader and gets the link to send them", as
 
 test("the owner makes a reader a writer from the members list", async () => {
     hostingMe.mockResolvedValue(OWNER);
-    members.mockResolvedValue({members: [{id: "m-1", name: "Ada", role: "reader", joined: 3}]});
+    members.mockResolvedValue({owner: {name: "Owner", connected: true}, members: [{id: "m-1", name: "Ada", role: "reader", joined: 3}]});
     assignRole.mockResolvedValue({});
     const into = await mounted(People);
     into.querySelector('[aria-label="People"]').click();
@@ -104,7 +119,7 @@ test("a member sees their role, what they can do and why they cannot do the rest
     expect(text).toContain("You are Ada, a reader in this journal.");
     expect(text).toContain("Write messages, to-dos, comments and documents, and answer questions. Your role is reader; the owner can make you a writer.");
     expect(document.querySelector("#invite-name")).toBeNull();
-    expect(members).not.toHaveBeenCalled();
+    expect(document.querySelector('[aria-label="Members"] [role="radio"]')).toBeNull();
 });
 
 test("a change the gateway blocks shows why, whichever control sent it", async () => {
