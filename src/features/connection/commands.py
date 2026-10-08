@@ -22,6 +22,7 @@ def server_of(context: Context, address: str = "") -> Transport:
 
 class ConnectToServer(Command):
     name = "connect"
+    user_only = True
 
     def run(self, context: Context, environments: Environments, address: str = "") -> str:
         welcome = join(context.record, server_of(context, address))
@@ -32,6 +33,7 @@ class ConnectToServer(Command):
 
 class HandEnvironment(Command):
     name = "hand"
+    user_only = True
 
     def run(self, context: Context, environments: Environments, env: str, to: str) -> str:
         lease = hand(context.record.root, env, to, server_of(context))
@@ -50,6 +52,7 @@ class SyncWithServer(Command):
 class PushCode(Command):
     name = "code_push"
     network = True
+    user_only = True
 
     def run(self, context: Context, environments: Environments) -> str:
         done = push(context.record.root.resolve().parent, this_machine()[:12])
@@ -74,6 +77,7 @@ class ShowConnection(Command):
 
 class DisconnectFromServer(Command):
     name = "disconnect"
+    user_only = True
 
     def run(self, context: Context, environments: Environments) -> str:
         leave(context.record)
