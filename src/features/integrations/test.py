@@ -288,6 +288,35 @@ def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_pic
     asked = proposed()
     Questions(record, actor=USER).complete(asked.n, how="Send")
     assert [(c.issue_id, c.body) for c in fake.comments] == [(ticket.source_id, words)], "your Send posts the comment exactly as it was shown"
+    import io
+    import json
+    from features.linear.feature import LinearWebhook
+    from features.linear.webhook import SIGNATURE, signed
+    secret = "whsec_signing_value"
+    ValuesFile(record.root).put("LINEAR_SIGNING", secret)
+    apply(record, {"linear": {**dict(linear.values(record)), "signing_key": "LINEAR_SIGNING"}}, USER)
+    event = lambda stamp: json.dumps({"type": "Issue", "action": "update", "webhookTimestamp": int(stamp * 1000), "data": {"id": ticket.source_id}}).encode()
+    title = lambda: Tickets(record, actor=SYSTEM).load(ticket.n).title
+    before = title()
+    fake.issues[0]["title"] = "Renamed through the webhook"
+    assert "not signed" in refused(lambda: linear.take(record, event(time.time()), "")) and "not signed" in refused(lambda: linear.take(record, event(time.time()), "00" * 32)), "an unsigned and a forged event are refused"
+    assert "too old" in refused(lambda: linear.take(record, (old := event(time.time() - 120)), signed(secret, old))), "a signed event older than a minute is refused"
+    assert title() == before, "and none of them changes a ticket"
+    fresh = event(time.time())
+    linear.take(record, fresh, signed(secret, fresh))
+    assert "Renamed through the webhook" in title(), "a signed event fetches its issue and updates its ticket"
+    assert "already taken" in refused(lambda: linear.take(record, fresh, signed(secret, fresh))), "the same event sent again is refused"
+    sent = []
+    handler = SimpleNamespace(headers={"Content-Length": str(len(fresh)), SIGNATURE: "00" * 32}, rfile=io.BytesIO(fresh), shares=SimpleNamespace(record=record), send=lambda code, body, headers: sent.append(code))
+    LinearWebhook(linear).post(handler, ["webhook"])
+    assert sent == [401], "the address on the share server answers a forged event with a refusal"
+    monkeypatch.setattr(linear, "webhook_address", lambda record: "https://home.tunler.example/linear/webhook")
+    fake.requests.clear()
+    ticked()
+    assert fake.requests == [], "while the webhook delivers, the clock only catches up every half hour"
+    monkeypatch.setattr(linear, "webhook_address", lambda record: "")
+    ticked()
+    assert fake.requests != [], "with the tunnel off the clock keeps polling"
 
 
 def test_the_key_reaches_only_the_request_header_and_an_error_that_echoes_it_is_stored_masked(monkeypatch, tmp_path):
