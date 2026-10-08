@@ -25,7 +25,7 @@ await runScenarios(process.argv[2], {
         if (await page.locator(".thread-turn.busy").count()) throw new Error("waiting shows again in the bar above the message box");
         const words = await page.locator(".legend").innerText();
         if (!words.startsWith("Waiting") || words.includes("test suite")) throw new Error("the label on the box says more than Waiting");
-        await page.locator(".edge .dash").first().waitFor({state: "attached"});
+        await page.locator(".wait-edge .glow").first().waitFor({state: "attached"});
         await page.locator(".flash-veil").waitFor({state: "detached"});
         await shot(page, "waiting-box");
         await page.locator(".legend").click();
