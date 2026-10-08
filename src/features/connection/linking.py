@@ -3,10 +3,12 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+from controllers.requests import request
 from controllers.types import Notices
 from engine.handover import accept, epoch_of, give, nothing_waits
 from engine.machines import Lease, this_machine
 from engine.offline import Waiting, Write
+from engine.outbox import Request
 from engine.record import Record
 from engine.sync import CONNECTION, PROTOCOL, Hello, Release, Shape, Step, Welcome, connect, replay, travelling_files
 from engine.version import version
@@ -51,12 +53,12 @@ def join(record, transport: Transport) -> Welcome:
     welcome = connect(local_hello(record), transport.hello())
     record.state(STATE).set("welcome", {"release": welcome.release.value, "step": welcome.comparison.step.value, "migrations": list(welcome.comparison.migrations)})
     if welcome.release is not Release.SAME or welcome.comparison.step is not Step.IN_STEP:
-        Notices(record, actor=SYSTEM).create("This copy is not in step with the server", brief=f"Compared with the server this copy's release is {welcome.release.value}, and its record must {welcome.comparison.step.value} before it syncs.", tone="warn")
+        warn(record, "This copy is not in step with the server", f"Compared with the server this copy's release is {welcome.release.value}, and its record must {welcome.comparison.step.value} before it syncs.")
     return welcome
 
 
 def fail_to_join(record, error: Exception) -> None:
-    Notices(record, actor=SYSTEM).create("Could not connect to the server", brief=str(error), tone="warn")
+    warn(record, "Could not connect to the server", str(error))
 
 
 def hand(record_root: Path, env: str, to: str, transport: Transport) -> Lease:
@@ -127,6 +129,7 @@ def sync(record, transport: Transport) -> Synced:
     flushed = Waiting(record.root).flush(transport.send)
     if flushed.refused:
         notice_refused(record, flushed.refused)
+        Waiting(record.root).flush(transport.send)
     if heard(transport).shape.epoch != epoch:
         raise Refused("the server has a new epoch since this sync began, so nothing is taken in; connect again to pull everything")
     pulled = 0
@@ -141,8 +144,12 @@ def sync(record, transport: Transport) -> Synced:
 
 def notice_refused(record, refused: tuple[Write, ...]) -> None:
     turned_down = "\n".join(f"- {held.asked.line()}" for held in refused)
-    Notices(record, actor=SYSTEM).create("The server turned down changes made here", tone="warn",
-                                         brief=f"The server refused these changes, so they were set aside and the changes after them went on:\n{turned_down}")
+    warn(record, "The server turned down changes made here", f"The server refused these changes, so they were set aside and the changes after them went on:\n{turned_down}")
+
+
+def warn(record, title: str, brief: str) -> None:
+    """A notice about the connection, written where the environment is written: here while this machine holds it, otherwise queued for the server with the other writes."""
+    request(record.root, Request(record.env, Notices.resource.type, "create", [title], {"brief": brief, "tone": "warn"}, actor=SYSTEM))
 
 
 def what_travels(root: Path) -> Travelling:
