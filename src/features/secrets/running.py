@@ -48,13 +48,18 @@ class Masker:
         return text
 
 
+NO_PROGRAMS = "this secret lists no programs, so it is given to none: the user names the programs it may go to on the Secrets page"
+
+
 def checked_program(command: tuple[str, ...], allowed: list[str]) -> str:
     if not command:
         raise Refused("name the command after --, such as journal secret run github -- gh api user")
     program = Path(command[0]).name
     if NEVER_GIVEN.match(program):
         raise Refused(f"a secret is never given to {program}: name the program that uses it directly, such as curl or gh")
-    if allowed and program not in allowed:
+    if not allowed:
+        raise Refused(NO_PROGRAMS)
+    if program not in allowed:
         raise Refused(f"this secret may be given only to {', '.join(allowed)}, not {program}")
     if shutil.which(command[0]) is None:
         raise Refused(f"no program {command[0]} here")

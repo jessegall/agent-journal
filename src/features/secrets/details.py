@@ -38,7 +38,7 @@ class SecretsDetails(FeatureDetails):
         "<text>" sends that text instead, with {<field>} filled in, such as --stdin
         "Authorization: Bearer {key}" for curl -H @-; --env gives the fields as environment
         variables instead. A secret never goes to a shell, an interpreter or a build tool, only
-        to the programs it lists, and to helpers and subagents only when the user shared it. journal secret all lists the secrets with their descriptions,
+        to the programs it lists, to none while it lists none, and to helpers and subagents only when the user shared it. journal secret all lists the secrets with their descriptions,
         instructions and fields; journal secret read <n> shows one. A value you made yourself,
         such as a generated password, is written to a file and moved into the secret with
         journal secret store <n> <field> <file>, which deletes the file.

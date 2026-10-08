@@ -53,7 +53,7 @@ const removeField = (index) => props.draft.fields.splice(index, 1);
                 <Btn small @click="addField"><Icon name="plus" :size="12" /> Add a field</Btn>
             </template>
         </FormField>
-        <FormField label="Programs" help="The commands that may be given this secret, such as gh or stripe.">
+        <FormField label="Programs" help="The commands that may be given this secret, such as gh or stripe. While none is listed, no command gets it.">
             <div class="secret-programs">
                 <template v-for="name in draft.programs" :key="name">
                     <Chip removable :label="name" @remove="draft.programs.splice(draft.programs.indexOf(name), 1)">{{ name }}</Chip>
