@@ -262,6 +262,9 @@ def test_stop_in_the_viewer_tells_the_agent_to_stop_that_task_in_its_providers_w
     agents.stop_task(agent.n, "b7wu1410l", description="Poll production")
     told = [n for n in Nudges(record).all() if n.title == "the user asked to stop Poll production"]
     assert [n.brief for n in told] == ["run TaskStop with task_id b7wu1410l now; then carry on with the work"], "once, in Claude's words"
+    agents.stamp(agent.n, status="stopped")
+    agents.stop_task(agent.n, "b8old", description="An old poll")
+    assert not [n for n in Nudges(record).all() if "An old poll" in n.title], "an agent whose session has stopped is never asked to stop a task, so no later session hears of it"
 
 
 def test_a_compaction_is_recorded_once_on_the_agent():
