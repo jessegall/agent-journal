@@ -11,7 +11,7 @@ from features.sharing.address import relied_on
 from features.sharing.controller import HEALTH, HEALTH_MARKER, Shares
 from features.sharing.details import HOST_DOWN, RESTARTED
 from features.sharing.services import SERVER, TUNNEL, wanted
-from features.sharing.tunnel import ADDRESS_REFUSED, READDRESSED, SIGNED_OUT, alerts, default_route, held_by_server, refused_address, tunler_status
+from features.sharing.tunnel import ADDRESS_REFUSED, READDRESSED, SIGNED_OUT, alerts, default_route, held_by_server, refused_address, watched_status
 from resources.base import SYSTEM, Refused
 
 
@@ -52,7 +52,7 @@ class TunnelWatch:
         if not wanted(record.root):
             return
         state = alerts(record.root)
-        if unusable := shares._unusable(tunler_status()):
+        if unusable := shares._unusable(watched_status()):
             alert_once(state, TUNLER_UNUSABLE, lambda: Messages(record, actor=SYSTEM).create("The tunnel cannot start", brief=unusable))
             return
         state.set(TUNLER_UNUSABLE, 0)

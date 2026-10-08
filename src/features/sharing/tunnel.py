@@ -142,14 +142,19 @@ STATUS_KEPT = 60
 KEPT_STATUS: dict = {}
 
 
-def tunler_status() -> dict:
-    if time.time() - KEPT_STATUS.get("at", 0) < STATUS_KEPT:
+def tunler_status() -> "TunnelStatus":
+    if "status" in KEPT_STATUS:
         return KEPT_STATUS["status"]
     asked = asked_status()
-    if asked["unreadable"]:
-        return asked
-    KEPT_STATUS.update(at=time.time(), status=asked)
+    if not asked["unreadable"]:
+        KEPT_STATUS.update(at=time.time(), status=asked)
     return asked
+
+
+def watched_status() -> "TunnelStatus":
+    if time.time() - KEPT_STATUS.get("at", 0) >= STATUS_KEPT:
+        KEPT_STATUS.clear()
+    return tunler_status()
 
 
 class TunnelStatus(TypedDict):

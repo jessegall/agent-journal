@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+from engine.memo import Memo
+
 
 REPLY_WITH = "reply_with"
 REPLY = "reply"
@@ -37,6 +39,7 @@ ARGUMENT = r'(?::[0-9]+|="[^"]*")?(?:' + EXTRA + r')*'
 CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+(?:,[0-9]+)*)|="([^"]*)")?((?:' + EXTRA + r')*)\]', re.M)
 NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')
 SETTING = re.compile(r"--set ([a-z_]+)=")
+READERS = Memo()
 
 
 def pattern(names) -> re.Pattern:
@@ -61,7 +64,7 @@ def runs(settings) -> dict:
 
 
 def reader(settings: dict) -> re.Pattern:
-    return pattern(dict.fromkeys((*RETIRED, *runs(settings))))
+    return READERS.get("runs", settings.runs, lambda: pattern(dict.fromkeys((*RETIRED, *runs(settings)))))
 
 
 def waits(text: str) -> bool:

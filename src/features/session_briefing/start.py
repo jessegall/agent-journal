@@ -3,6 +3,8 @@ from resources.base import SYSTEM, WHOM
 from resources.types import TYPES, priority
 from engine.extension import Extension
 
+WAITING = (None, "active", "waiting")
+
 
 def standing(record, type_: str) -> list:
     return CONTROLLERS[type_](record, actor=SYSTEM).rows.standing()
@@ -27,8 +29,16 @@ def status(record) -> str:
     return "\n".join(out)
 
 
+def waiting(type_: str, status: str | None, whom: str | None) -> bool:
+    return (type_ == "doc" or status in WAITING) and not whom
+
+
+def counted(record, type_: str) -> int:
+    return sum(1 for row in CONTROLLERS[type_](record, actor=SYSTEM).rows.standing_summaries() if not row["hidden"] and waiting(type_, row.get("status"), row.get(WHOM)))
+
+
 def handed(record, type_: str) -> list:
-    return [r for r in standing(record, type_) if (type_ == "doc" or r.data.get("status", "active") in ("active", "waiting")) and not r.data.get(WHOM)]
+    return [r for r in standing(record, type_) if waiting(type_, r.data.get("status"), r.data.get(WHOM))]
 
 
 QUIET = ("HANDLE THE JOURNAL QUIETLY. In the chat, talk only about the user's work. Never mention the journal's notifications, "
@@ -43,13 +53,16 @@ ADDRESS, ORCHESTRATION, LAW, SKILLS, MODE = 1, 2, 3, 4, 5
 def start_block(record) -> str:
     parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", QUIET,
              *(part(record) for _, part in sorted(START_PARTS.keyed(record).items()))]
-    for type_ in reversed(priority()):
-        kind = TYPES[type_]
-        rows = handed(record, type_) if kind.start_heading else []
-        if not rows:
-            continue
-        parts.append(f"{len(rows)} {kind.start_heading}." if kind.start_as_count else f"{kind.start_heading} ({len(rows)}):\n{lines(rows, lambda r: r.start_line())}")
+    parts += [handed_part(record, TYPES[type_]) for type_ in reversed(priority()) if TYPES[type_].start_heading]
     return "\n\n".join(p for p in parts if p) + "\n"
+
+
+def handed_part(record, kind) -> str:
+    if kind.start_as_count:
+        count = counted(record, kind.type)
+        return f"{count} {kind.start_heading}." if count else ""
+    rows = handed(record, kind.type)
+    return f"{kind.start_heading} ({len(rows)}):\n{lines(rows, lambda r: r.start_line())}" if rows else ""
 
 
 def carry(record) -> str:

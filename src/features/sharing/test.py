@@ -508,7 +508,7 @@ def test_an_address_owned_by_another_account_moves_to_a_new_one_once(monkeypatch
     asked, released, ours = [], [], []
     from features.sharing import controller as controller_words
     standing = {"installed": True, "command": "tunler", "logged_in": True, "rejected": False, "outdated": False, "account": "me", "host": "t.example", "unreadable": False}
-    monkeypatch.setattr(watchdog, "tunler_status", lambda: standing)
+    monkeypatch.setattr(watchdog, "watched_status", lambda: standing)
     monkeypatch.setattr(controller_words, "tunler_status", lambda: standing)
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
     monkeypatch.setattr(controller_words, "want", lambda root, sid, state, nonce=0.0: asked.append(sid))
@@ -568,14 +568,14 @@ def test_an_address_owned_by_another_account_moves_to_a_new_one_once(monkeypatch
     assert "only the user" in refused_with(lambda: Shares(record, actor=AGENT).readdress()), "only the user chooses a new address"
     restarts = len(asked)
     standing = {**standing, "installed": False, "logged_in": False}
-    monkeypatch.setattr(watchdog, "tunler_status", lambda: standing)
+    monkeypatch.setattr(watchdog, "watched_status", lambda: standing)
     log.write_text("")
     for _ in range(3):
         tick(record)
     unusable = [m for m in Messages(record).all() if m.title == "The tunnel cannot start"]
     assert [m.brief for m in unusable] == [controller_words.NOT_INSTALLED] and len(asked) == restarts, \
         "with tunler missing the user is told once, and nothing is restarted"
-    monkeypatch.setattr(watchdog, "tunler_status", lambda: {**standing, "installed": True})
+    monkeypatch.setattr(watchdog, "watched_status", lambda: {**standing, "installed": True})
     tick(record)
     assert len([m for m in Messages(record).all() if m.title == "The tunnel cannot start"]) == 1, "one that is installed but logged out is the same notice, not another"
     monkeypatch.setattr(controller_words, "reached", lambda url, wait: False)
@@ -838,6 +838,11 @@ def reads_an_unreadable_status_as_unknown(monkeypatch):
     before = len(asked)
     shares.check_tunnel()
     assert len(asked) > before, "Check again asks tunler afresh instead of answering from what was remembered"
+    tunnel.KEPT_STATUS.update(at=0, status={**STANDING, "unreadable": False})
+    before = len(asked)
+    assert (tunnel.tunler_status()["unreadable"], len(asked)) == (False, before), "the journal answers from the kept status until a login, logout or check changes it"
+    tunnel.watched_status()
+    assert len(asked) == before + 1, "the tunnel watch asks tunler again once its status is a minute old"
     tunnel.KEPT_STATUS.clear()
 
 
@@ -882,7 +887,7 @@ def machine_on(monkeypatch, record) -> Machine:
     import features.sharing.watchdog as watchdog
     features.load()
     machine = Machine(record)
-    monkeypatch.setattr(watchdog, "tunler_status", lambda: STANDING)
+    monkeypatch.setattr(watchdog, "watched_status", lambda: STANDING)
     monkeypatch.setattr(watchdog, "want", lambda root, sid, state, nonce=0.0: machine.asked.append(sid))
     monkeypatch.setattr(watchdog, "serving", lambda root: machine.tunnel_serving)
     monkeypatch.setattr(watchdog, "reached", lambda url, wait=0: machine.reaches)
