@@ -199,6 +199,9 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     tickets.update(ticket.n, launched=time.time() - 120)
     assert [(t.n, state.kind) for t, state in tickets._needing_a_look([board.n])] == [(ticket.n, "stopped")], \
         "a started ticket whose agent is gone needs a look; one launched a moment ago does not yet"
+    tickets.update(ticket.n, dependencies={third.ref: "confirmed"})
+    assert tickets._needing_a_look([board.n]) == [], "an agent idle because its ticket waits on an open ticket is not stuck"
+    tickets.update(ticket.n, dependencies={})
     assert tickets._revive(tickets.load(ticket.n)) and launched[-1][0] == f"ticket-{ticket.n}", "its agent is started again, once"
     tickets.update(ticket.n, launched=time.time() - 120)
     assert not tickets._revive(tickets.load(ticket.n)), "a second loss is told to the orchestrator instead of restarted"

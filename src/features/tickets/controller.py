@@ -162,12 +162,16 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def _plan_waits(self, ticket) -> bool:
         return self._plan_status(ticket) in (READY, WAITING)
 
+    def _idle_by_design(self, ticket) -> bool:
+        """A ticket that waits on open tickets, on its plan's approval or on its merge has an agent with nothing to do on purpose."""
+        return bool(self._waiting_on(ticket)) or self._plan_status(ticket) in (READY, WAITING, PLAN_DONE)
+
     def _needing_a_look(self, boards: list[int]) -> list[tuple]:
         sessions, running = Sessions(self.record.root).all(), len(self._running())
         started = [ticket for ticket in self.rows.standing() if ticket.work_environment and not ticket.halted and (ticket.agent_seen or ticket.launched)
                    and time.time() - ticket.launched > LAUNCHING_FOR and ticket.board and int(ticket.board) in boards]
         looked = [(ticket, self._runtime(ticket, sessions, running)) for ticket in started]
-        return [(ticket, state) for ticket, state in looked if state.kind in NEEDS_A_LOOK and not self._plan_waits(ticket)] + \
+        return [(ticket, state) for ticket, state in looked if state.kind in NEEDS_A_LOOK and not self._idle_by_design(ticket)] + \
                [(ticket, CardState("you", reason)) for ticket, _ in looked if (reason := self._off_branch(ticket))]
 
     def _revive(self, ticket) -> bool:
