@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.14 — One agent row per session, and the journal block once
+- An answer to a message from another session is never kept out of the chat, even when a journal line started the turn.
+- An upgrade folds an agent's duplicate rows for one session into the row that reported last, keeping every compaction and mark; the context popup's last compaction is right again.
+- The journal's block is written once, into AGENTS.md. CLAUDE.md keeps your own text and imports AGENTS.md, and a copy of the block left in it is taken out at the next upgrade.
+- The agent cell's running row is labelled Running.
+
 ## 2.267.13 — Lists, chats and cells follow what you do
 - Each tab of a list page fetches its own first page when opened and keeps its own Load more count; the Closed tab lists the closed rows newest closed first. The Files page shows a skeleton and asks for each tab's files a page at a time, filtered on the server by kind, by what they are attached to and by the words searched.
 - The inspector's chat stays where you scrolled when lines arrive and shows a Jump to latest pill; only your own send moves it down. A chat message's header stays on one line.
