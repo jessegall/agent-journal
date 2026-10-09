@@ -17,8 +17,8 @@ def report(provider, record: Record, hook: Hook) -> None:
                turn_wrote=hook.event != HookEvent.USER_PROMPT_SUBMIT and bool(row.turn_wrote or wrote))
     if hook.event == HookEvent.POST_TOOL_USE:
         bus.defer(lambda: ran.tool_ran(record, row.n, hook.tool))
-    if wrote:
-        bus.defer(lambda: files.announce_writes(record, row.n, skill_folders()))
+    if wrote or command_effects.may_change_files(hook):
+        bus.defer(lambda: files.announce_writes(record, row.n, skill_folders(), hook.cwd))
 
 
 def merged(provider, row, hook: Hook, facts: HookFacts) -> dict:

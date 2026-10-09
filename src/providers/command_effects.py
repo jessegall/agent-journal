@@ -60,6 +60,14 @@ def writes(hook: Hook) -> bool:
     return any(name in CHANGING for shell in hook.tool.commands for name in effects(shell))
 
 
+def may_change_files(hook: Hook) -> bool:
+    """A shell command changes files unless every part of it only reads or searches; the file feed diffs the tree, so an unknown command is counted."""
+    if not isinstance(hook.tool, BashCall):
+        return False
+    shells = [shell for shell in hook.tool.commands if without_journal(shell).strip()]
+    return any(not effects(shell) or set(effects(shell)) - {"reads", "searches"} for shell in shells)
+
+
 def in_project(path: str, cwd: str) -> bool:
     if not path or not cwd:
         return True

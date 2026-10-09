@@ -227,14 +227,27 @@ class Coalesced:
 ANNOUNCING = Coalesced()
 
 
-def announce_writes(record, agent: int, homes: tuple[str, ...]) -> None:
-    ANNOUNCING.run((str(record.root), record.env), lambda: announce(record, agent, homes))
-
-
-def announce(record, agent: int, homes: tuple[str, ...]) -> None:
+def checkout_of(record, cwd: str) -> Path:
+    """The git checkout an agent works in when it is not the project's own: a linked worktree or a repository of its own inside a project that is a repository."""
     project = record.root.parent
+    top = git(["rev-parse", "--show-toplevel"], cwd).strip() if cwd and Path(cwd).is_dir() and (project / ".git").exists() else ""
+    return Path(top).resolve() if top and Path(top).resolve() != project.resolve() else project
+
+
+def snapshot_name(record, folder: Path) -> str:
+    project = record.root.parent
+    return SNAPSHOT if folder in (project, project.resolve()) else f"{SNAPSHOT}-{folder.name}"
+
+
+def announce_writes(record, agent: int, homes: tuple[str, ...], cwd: str = "") -> None:
+    folder = checkout_of(record, cwd)
+    ANNOUNCING.run((str(record.root), record.env, str(folder)), lambda: announce(record, agent, homes, folder))
+
+
+def announce(record, agent: int, homes: tuple[str, ...], folder: Path) -> None:
+    project = folder
     now = blobs(record, project, homes)
-    with record.state(SNAPSHOT).changing() as held:
+    with record.state(snapshot_name(record, folder)).changing() as held:
         last = held.get("tree")
         held["tree"] = now
     if last is None:
