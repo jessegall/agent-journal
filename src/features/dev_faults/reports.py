@@ -69,6 +69,7 @@ class FaultReports:
         title = f"{kind} {name} {OVER}"[:80]
         brief = f"{took:.0f}ms last{f' ({spent})' if spent else ''}, against a budget of {self.milliseconds(record, kind)}ms."
         brief += f" Run by the helper in environment {by}." if by else ""
+        brief += f" The machine's load was {load():.1f} on {os.cpu_count()} cores."
         self.file(record, title, brief, kind=kind, target=name, worst=took)
         self.answer(record, title, brief)
 
@@ -145,8 +146,6 @@ class FaultReports:
             if self.feature.on(record, "log") and 0 < self.milliseconds(record, kind) < took:
                 logged(root, f"slow {kind} {name} {took:.0f}ms" + (f", {working:.0f}ms working" if working is not None else "")
                        + (f", {waiting:.0f}ms waiting on locks" if waiting >= 1 else "") + f", machine load {load():.1f} on {os.cpu_count()} cores")
-            if load() > (os.cpu_count() or 1):
-                return
             if self.feature.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
                 self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "")
                 if profile or stacks:
