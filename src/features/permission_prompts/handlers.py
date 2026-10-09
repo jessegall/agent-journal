@@ -27,4 +27,4 @@ class ShowWaitingPermission(Handler):
         context.journal.notice("waiting", tool=asking.tool, call=asking.call, tone="warn", session=session, action=PERMISSION, to=ORCHESTRATOR if orchestrator else "")
         main = Agents(orchestrator, actor=SYSTEM).primary_to_read() if orchestrator else None
         if main:
-            context.journal.journal.say(orchestrator, main, "routed", agent=context.record.env, tool=asking.tool, call=asking.call)
+            context.journal.journal.say(orchestrator, main, "routed", environment=context.record.env, tool=asking.tool, call=asking.call)
