@@ -54,7 +54,7 @@ LOGIN_PAGE = {"hosting", "hostingUpgrade", "hostingTakeDown", "hostingMe", "memb
               "leaveJournal"}
 SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
 CALLS = {
-    "changelog": [], "newFeature": [], "connection": [], "connectTo": ["127.0.0.1:9"], "disconnectFromServer": [], "releases": [], "restore": ["todo", 1], "press": [{"label": "Read it", "type": "todo", "n": 1, "action": "read"}], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
+    "changelog": [], "connection": [], "connectTo": ["127.0.0.1:9"], "disconnectFromServer": [], "releases": [], "restore": ["todo", 1], "press": [{"label": "Read it", "type": "todo", "n": 1, "action": "read"}], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
     "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "startJournal": ["/nowhere/.journal", "codex"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
     "extension": [], "tunnelLogin": [{"endpoint": "127.0.0.1:9", "username": "walker", "password": "a password"}],
     "tunnelLogout": [], "tunlerVersion": [], "updateTunler": [], "installTunler": ["127.0.0.1:9"], "tunnelAnswering": [],
@@ -63,7 +63,7 @@ CALLS = {
     "pluginDashboard": [1, "main"], "pluginLog": ["works"], "onlineAgents": [], "agentControls": ["claude"], "agentHooks": ["claude"],
     "saveAgentHooks": ["claude", {}], "list": ["todo"], "all": ["todo"], "dashboard": [["todo", "plan"]], "show": ["todo", 1],
     "create": ["todo", {"title": "walked by the viewer"}], "fieldChoices": ["todo", 1], "installPlugin": ["/nowhere/plugin"],
-    "upgradePlugin": [1, False], "planTimeline": [1], "ticketStatus": [1], "shareView": ["chat"], "hidePreview": ["doc", 1], "revision": [1, 1], "tasks": [AGENT_N],
+    "upgradePlugin": [1, False], "planTimeline": [1], "ticketStatus": [1], "shareView": ["chat"], "newFeatures": [], "markNewFeatureSeen": ["owl"], "hidePreview": ["doc", 1], "revision": [1, 1], "tasks": [AGENT_N],
     "board": [{}], "shift": [1, "Doing", {"why": "walked"}], "cancelWork": [1], "reviseWork": [1, "change one card", WALK],
     "followUpWork": [1, "and one more", WALK], "requestWork": [1, "a new card", WALK], "handWork": [1, "doc:1", "from this doc", WALK],
     "ticketBoard": [1], "dismissQuestion": [1, "not needed"], "noteSuggestionWindow": [1], "answerSuggestion": [1, "No, don't do this"],

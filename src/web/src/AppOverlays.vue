@@ -10,12 +10,12 @@ import ProjectFlash from "./layout/ProjectFlash.vue";
 import SkillPanel from "./layout/SkillPanel.vue";
 import NewFeatureDialog from "./kit/NewFeatureDialog.vue";
 import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
-import {dismissNewFeature, loadNewFeature, newFeature, useNewFeature} from "./composables/newFeature.js";
+import {dismissNewFeature, loadNewFeatures, newFeature, useNewFeature} from "./composables/newFeature.js";
 import {firstChoice} from "./composables/profiles.js";
 import {store} from "./state/store.js";
 import {ui} from "./state/ui.js";
 
-onMounted(loadNewFeature);
+onMounted(loadNewFeatures);
 </script>
 
 <template>
@@ -36,6 +36,7 @@ onMounted(loadNewFeature);
     </template>
     <template v-else-if="newFeature">
         <NewFeatureDialog
+            :key="newFeature.id"
             :eyebrow="newFeature.eyebrow"
             :title="newFeature.title"
             :text="newFeature.text"
