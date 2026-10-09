@@ -72,10 +72,14 @@ await runScenarios(process.argv[2], {
     async "an agent's inspector keeps the chat's padding and shows that agent's own waiting state"(page, url) {
         await whileWaiting(page, url, "the test suite", {id: "shell-1"}, async () => {
             await page.goto(`${url}#/main?open=agent:1`);
-            const thread = page.locator(".agent-inspector .thread");
-            await thread.waitFor();
-            const padding = await thread.evaluate((node) => getComputedStyle(node).paddingLeft);
-            if (padding !== "24px") throw new Error(`the inspector's chat has ${padding} of padding, not the main chat's 24px`);
+            const padded = () => {
+                const thread = document.querySelector(".agent-inspector .thread");
+                return thread && getComputedStyle(thread).paddingLeft === "24px";
+            };
+            if (!(await page.waitForFunction(padded).then(() => true, () => false))) {
+                const padding = await page.locator(".agent-inspector .thread").evaluate((thread) => getComputedStyle(thread).paddingLeft);
+                throw new Error(`the inspector's chat has ${padding} of padding, not the main chat's 24px`);
+            }
             await page.locator(".agent-inspector .legend", {hasText: "Waiting"}).waitFor();
             await shot(page, "inspector-chat");
             const box = await page.locator(".agent-inspector .legend").boundingBox();
