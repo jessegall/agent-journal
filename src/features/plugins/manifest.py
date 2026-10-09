@@ -8,10 +8,10 @@ from engine.upgrades import newer
 from resources.base import ACTIONS, Refused
 from resources.types import TYPES
 from engine.gates import CANCELABLE
-from features.plugins.declared import Manifest
+from features.plugins.declared import ASYNC, SYNC, Manifest
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
-KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "dashboards", "settings", "skills", "load", "installed", "events", "cancels", "fits")
+KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "dashboards", "settings", "skills", "load", "installed", "events", "cancels", "fits", "hooks")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS), "hook.*", *(f"hook.{e}" for e in (*EVENTS, DISPLAYED))}
@@ -54,6 +54,7 @@ def read(folder: Path, version: str = "") -> Manifest:
     checked["setup"] = steps(given.get("setup") or [])
     checked["services"] = services(given.get("services") or {})
     checked["on"] = handlers(given.get("on") or {})
+    checked["hooks"] = hooks(given.get("hooks") or {})
     if given.get("refuse_socket") and given["refuse_socket"] not in checked["services"]:
         raise Refused(f"plugin.json: refuse_socket names one of its services, not {given['refuse_socket']!r}")
     checked["chat"] = chat(given.get("chat") or [])
@@ -208,6 +209,17 @@ def loads(given, events: dict) -> dict:
             raise Refused(f"plugin.json: load {pattern!r} matches no event; it is a journal event, a hook.<event> or one of the plugin's own events")
         if not isinstance(skills, list) or not skills or not all(isinstance(skill, str) and skill for skill in skills):
             raise Refused(f"plugin.json: load {pattern!r} is a list of skill names")
+    return dict(given)
+
+
+def hooks(given) -> dict:
+    if not isinstance(given, dict):
+        raise Refused("plugin.json: hooks names each hook event the plugin listens to and whether it is sync or async")
+    for event, how in given.items():
+        if event not in EVENTS:
+            raise Refused(f"plugin.json: hooks {event!r} is not a hook event: {', '.join(EVENTS)}")
+        if how not in (SYNC, ASYNC):
+            raise Refused(f"plugin.json: hooks.{event} is {SYNC} (the tool call waits for the answer) or {ASYNC} (it runs beside the agent), not {how!r}")
     return dict(given)
 
 
