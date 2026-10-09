@@ -145,6 +145,31 @@ export async function earlier(...types) {
     return growing.length > 0;
 }
 
+const closedMore = (type) => `${type}:closed`;
+
+function addedRows(type, got) {
+    const held = store.rows[type] || [];
+    const known = new Set(held.map((r) => r.n));
+    store.rows[type] = [...got.rows.filter((r) => !known.has(r.n)), ...held].sort((a, b) => a.n - b.n);
+    store.paging.size[type] = store.rows[type].length;
+}
+
+export async function closedFirst(type) {
+    if (closedMore(type) in store.paging.more) return;
+    const got = await api.list(type, {last: PAGE, closed: true});
+    addedRows(type, got);
+    store.paging.more[closedMore(type)] = got.more;
+}
+
+export async function closedEarlier(type) {
+    const before = (store.rows[type] || []).filter((r) => r.completed).reduce((low, r) => Math.min(low, r.n), Infinity);
+    const got = await api.list(type, {last: PAGE, closed: true, before: Number.isFinite(before) ? before : 0});
+    addedRows(type, got);
+    store.paging.more[closedMore(type)] = got.more;
+}
+
+export const closedHasMore = (type) => Boolean(store.paging.more[closedMore(type)]);
+
 async function fetched(types, whole = false) {
     types.forEach((type) => changed.delete(type));
     types.forEach((type) => fetching.add(type));

@@ -11,7 +11,7 @@ import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, href, peek, route} from "../route.js";
 import {groupOf, GROUPS, open, recordCount} from "../domain/records.js";
-import {earlier, hasLoaded, rows} from "../sync/rows.js";
+import {closedEarlier, closedFirst, closedHasMore, earlier, hasLoaded, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
 import ResourceEnd from "../resource/ResourceEnd.vue";
@@ -65,11 +65,18 @@ watch(
     {immediate: true}
 );
 useSlashFocus(search, () => library.value);
-const loadMore = () => earlier(props.type);
+const closedTab = computed(() => filter.value === "closed");
+const loadMore = () => (closedTab.value ? closedEarlier(props.type) : earlier(props.type));
+const moreToLoad = computed(() => (closedTab.value ? closedHasMore(props.type) : Boolean(store.paging.more[props.type])) && listed.value.length < total.value);
+watch(
+    [closedTab, () => props.type],
+    ([on]) => on && closedFirst(props.type),
+    {immediate: true}
+);
 const listed = computed(() =>
     [...(kind.value.filters?.length ? SHOWS[filter.value] || SHOWS.open : SHOWS.every)()]
         .filter((r) => !r.data?.hidden)
-        .sort((a, b) => Boolean(a.data.system) - Boolean(b.data.system) || b.created - a.created || b.n - a.n)
+        .sort((a, b) => Boolean(a.data.system) - Boolean(b.data.system) || (closedTab.value ? b.completed - a.completed : 0) || b.created - a.created || b.n - a.n)
 );
 
 const total = computed(() => (COUNTS[filter.value] || COUNTS.every)());
@@ -155,7 +162,7 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
                 }}{{ filter !== "open" || !all.length ? " yet" : "" }}.
             </EmptyState>
         </template>
-        <PagedList :shown="listed.length" :total="total" :more="Boolean(store.paging.more[type]) && listed.length < total" :load="loadMore">
+        <PagedList :shown="listed.length" :total="total" :more="moreToLoad" :load="loadMore">
         <SwitchCase :value="library ? 'library' : kind.listed_as_cards ? 'document' : kind.view">
             <template #library>
                 <DocumentLibrary
