@@ -56,6 +56,8 @@ def rebooted(event=None, record=None) -> None:
 def switch_changed(event, record) -> None:
     if event.action == RAISED:
         return
+    if event.data.get("setting") not in (None, Record.features):
+        return
     if event.type == Features.resource.type and event.action == CREATED:
         booted(record)
         return

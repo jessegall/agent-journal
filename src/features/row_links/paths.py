@@ -12,6 +12,7 @@ EXT = ("py|js|mjs|cjs|ts|tsx|jsx|vue|md|json|css|scss|html|txt|log|yml|yaml|toml
 PATH = re.compile(rf"(^|[\s(])((?:/(?:[\w.-]+/)*[\w.-]*\.(?:{EXT}))|(?:\.{{1,2}}/)?(?:[\w.-]+/)*[\w.-]*\.(?:{EXT}))(:\d+(?:-\d+)?)?(?=[\s).,;:]|$)")
 SHA = re.compile(r"(^|[\s(])([0-9a-f]{7,40})(?=[\s).,;:]|$)")
 URL = re.compile(r"\bhttps?://[^\s<>\"'|\]*`]+[^\s<>\"'.,;:)|\]*`]")
+LOOKS_LINKED = re.compile(r"https?://|\.\w|[0-9a-f]{7}")
 DOTFILE = re.compile(r"^\.(gitignore|env|prettierrc)$")
 
 
@@ -84,6 +85,8 @@ class MarkPaths(TextFormatter):
     surfaces = (VIEWER,)
 
     def format(self, context: Context, text: str) -> str:
+        if not LOOKS_LINKED.search(text):
+            return text
         project = context.record.root.parent
         parts = re.split(r"(`[^`]*`)", text)
         names = labels([value for part in parts for value in found(part, project)])
