@@ -13,6 +13,7 @@ HERE = Path(__file__).resolve().parents[1] / "src"
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
+from engine.load import scaled
 from engine.viewer import busy
 from install import git_env
 from providers import DRIVERS
@@ -20,11 +21,6 @@ from providers import DRIVERS
 STANDIN = ("#!/bin/sh\ntouch \"$0.started\"\necho \"Ask Codex to do anything\"\n(read line; echo \"$line\" > \"$0.typed\") &\n"
            "while [ ! -f \"$0.quit\" ]; do sleep 0.1; done\n")
 OFFLINE = HERE.parent / "tests" / "fixtures" / "offline-bin"
-
-
-def scaled(seconds: float) -> float:
-    """The time a quiet machine needs, stretched by how many times the machine's load exceeds its cores."""
-    return seconds * max(1.0, os.getloadavg()[0] / (os.cpu_count() or 1))
 
 
 WAIT = scaled(45.0)

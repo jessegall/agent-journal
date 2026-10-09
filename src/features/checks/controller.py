@@ -12,6 +12,7 @@ from engine.package import entry
 from engine.proc import streamed
 from controllers.faults import threw
 from engine import runtime
+from engine.load import scaled
 from engine.locks import claim
 from engine.stored import read_json
 from features.checks.output import progress, steps, tail
@@ -141,7 +142,7 @@ class Checks(Controller):
         report = runtime.folder(self.record.root) / REPORTS / f"{n}.json"
         report.parent.mkdir(parents=True, exist_ok=True)
         report.unlink(missing_ok=True)
-        timeout = float(check.timeout)
+        timeout = scaled(float(check.timeout))
         code, output = self._shell(check.command, on_output, env={**os.environ, REPORT: str(report)}, timeout=timeout)
         check, took = self.load(n), time.time() - began
         kept = tail(output)
