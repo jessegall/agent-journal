@@ -1,9 +1,9 @@
 <script setup>
 import {meta} from "../domain/spec.js";
-import {searchTerms} from "../domain/documents.js";
-import {computed, onMounted, ref} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
+import PagedList from "../kit/PagedList.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
 import Segmented from "../kit/Segmented.vue";
 import TextInput from "../kit/TextInput.vue";
@@ -15,46 +15,50 @@ import {ageGroups} from "../format/time.js";
 import {openPictures} from "../platform/view.js";
 import {useSlashFocus} from "../composables/slashFocus.js";
 
-const files = ref([]);
-const loaded = ref(false);
-onMounted(async () => {
-    try {
-        files.value = await api.files();
-    } finally {
-        loaded.value = true;
-    }
-});
+const PAGE = 60;
+const SEARCH_WAIT = 250;
 const query = ref("");
-const kind = ref("");
+const kind = ref("all");
 const shelf = ref("");
 const search = ref(null);
 useSlashFocus(search);
-const KINDS = {"": () => true, images: (f) => f.image, other: (f) => !f.image};
-const count = (test) => files.value.filter(test).length;
+
+const counts = ref(null);
+const views = reactive({});
+const words = computed(() => query.value.trim());
+const key = computed(() => `${kind.value}|${shelf.value}|${words.value}`);
+const view = computed(() => views[key.value] || null);
+
+async function fetchPage(at, skip) {
+    const asked = {kind: kind.value, shelf: shelf.value, search: words.value, last: PAGE, skip};
+    const got = await api.filesPage(asked);
+    const held = views[at] || {files: []};
+    views[at] = {files: [...held.files, ...got.files], more: got.more, found: got.found};
+    counts.value = got.counts;
+}
+
+let waiting = 0;
+function open() {
+    clearTimeout(waiting);
+    if (views[key.value]) return;
+    const at = key.value;
+    waiting = setTimeout(() => fetchPage(at, 0), words.value ? SEARCH_WAIT : 0);
+}
+watch(key, open, {immediate: true});
+
+const loadMore = () => fetchPage(key.value, view.value.files.length);
 const kinds = computed(() => [
-    {key: "", label: `All ${files.value.length}`},
-    {key: "images", label: `Images ${count(KINDS.images)}`},
-    {key: "other", label: `Other files ${count(KINDS.other)}`},
+    {key: "all", label: `All ${counts.value ? counts.value.all : ""}`.trim()},
+    {key: "images", label: `Images ${counts.value ? counts.value.images : ""}`.trim()},
+    {key: "other", label: `Other files ${counts.value ? counts.value.other : ""}`.trim()},
 ]);
-const ofKind = computed(() => files.value.filter(KINDS[kind.value]));
-const shelves = computed(() => {
-    const counted = {};
-    for (const f of ofKind.value) counted[f.type] = (counted[f.type] || 0) + 1;
-    return [
-        {key: "", label: `Anywhere ${ofKind.value.length}`},
-        ...Object.entries(counted)
-            .sort((a, b) => b[1] - a[1])
-            .map(([type, n]) => ({key: type, label: `${meta(type)?.title || type}s ${n}`})),
-    ];
-});
-const searched = computed(() => searchTerms(query.value));
-const text = (f) => `${f.name} ${f.description || ""} ${f.title || ""} ${meta(f.type).title} ${f.n}`.toLowerCase();
-const listedFiles = computed(() =>
-    ofKind.value
-        .filter((f) => !shelf.value || f.type === shelf.value)
-        .filter((f) => searched.value.every((w) => text(f).includes(w)))
-        .sort((a, b) => b.at - a.at)
-);
+const shelves = computed(() => [
+    {key: "", label: `Anywhere ${Object.values(counts.value ? counts.value.shelves : {}).reduce((sum, n) => sum + n, 0)}`},
+    ...Object.entries(counts.value ? counts.value.shelves : {})
+        .sort((a, b) => b[1] - a[1])
+        .map(([type, n]) => ({key: type, label: `${meta(type)?.title || type}s ${n}`})),
+]);
+const listedFiles = computed(() => (view.value ? view.value.files : []));
 const groups = computed(() =>
     ageGroups(listedFiles.value, (f) => f.at).map((g) => ({
         ...g,
@@ -63,13 +67,13 @@ const groups = computed(() =>
     }))
 );
 const pictures = computed(() => listedFiles.value.filter((f) => f.image).map((f) => ({url: f.url, name: f.description || f.name})));
-const view = (f) =>
+const show = (f) =>
     openPictures(
         pictures.value,
         pictures.value.findIndex((p) => p.url === f.url)
     );
-const pickKind = (key) => {
-    kind.value = key;
+const pickKind = (picked) => {
+    kind.value = picked;
     shelf.value = "";
 };
 </script>
@@ -92,49 +96,52 @@ const pickKind = (key) => {
             <span class="grow" />
             <a class="flat" :href="href.page(route.env, 'doc')">Documents</a>
         </div>
-        <template v-if="!loaded || !files.length">
-            <EmptyState class="none" :loading="!loaded">
-                No files are stored on this environment yet. Files attached to a message or added to a document show here.
-            </EmptyState>
+        <template v-if="!view">
+            <EmptyState class="none" loading shape="rows" />
         </template>
-        <template v-else-if="loaded">
+        <template v-else-if="counts && !counts.all">
+            <EmptyState class="none">No files are stored on this environment yet. Files attached to a message or added to a document show here.</EmptyState>
+        </template>
+        <template v-else>
             <nav class="shelves" aria-label="Attachments">
                 <span class="shelves-label">Attached to</span>
                 <Segmented :options="shelves" :value="shelf" @pick="shelf = $event" />
             </nav>
             <template v-if="!listedFiles.length">
                 <EmptyState class="none">
-                    No file matches “{{ query.trim() }}”.
+                    No file matches “{{ words }}”.
                     <Btn small @click="query = ''">Clear the search</Btn>
                 </EmptyState>
             </template>
-            <template v-if="searched.length && listedFiles.length">
+            <template v-if="words && listedFiles.length">
                 <SectionHeading class="group-head">
-                    {{ listedFiles.length }} {{ listedFiles.length === 1 ? "file matches" : "files match" }}
+                    {{ view.found }} {{ view.found === 1 ? "file matches" : "files match" }}
                 </SectionHeading>
             </template>
-            <template v-for="g in groups" :key="g.title">
-                <section class="group">
-                    <SectionHeading class="group-head">
-                        {{ g.title }}
-                        <span class="group-n">{{ g.list.length }}</span>
-                    </SectionHeading>
-                    <template v-if="g.images.length">
-                        <div class="gallery">
-                            <template v-for="f in g.images" :key="f.url">
-                                <FileTile :file="f" @view="view(f)" />
-                            </template>
-                        </div>
-                    </template>
-                    <template v-if="g.others.length">
-                        <div class="rows">
-                            <template v-for="f in g.others" :key="f.url">
-                                <FileRow :file="f" />
-                            </template>
-                        </div>
-                    </template>
-                </section>
-            </template>
+            <PagedList :shown="listedFiles.length" :total="view.found" :more="view.more" :load="loadMore">
+                <template v-for="g in groups" :key="g.title">
+                    <section class="group">
+                        <SectionHeading class="group-head">
+                            {{ g.title }}
+                            <span class="group-n">{{ g.list.length }}</span>
+                        </SectionHeading>
+                        <template v-if="g.images.length">
+                            <div class="gallery">
+                                <template v-for="f in g.images" :key="f.url">
+                                    <FileTile :file="f" @view="show(f)" />
+                                </template>
+                            </div>
+                        </template>
+                        <template v-if="g.others.length">
+                            <div class="rows">
+                                <template v-for="f in g.others" :key="f.url">
+                                    <FileRow :file="f" />
+                                </template>
+                            </div>
+                        </template>
+                    </section>
+                </template>
+            </PagedList>
         </template>
     </section>
 </template>

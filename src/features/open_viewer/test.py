@@ -453,6 +453,18 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     named = ask("POST", "/api/identity", body={"color": "#aa3355"}).body
     assert named["root"] == str(record.root) and ask("GET", "/api/identity").body["root"] == str(record.root), "the identity names the root it serves"
     assert ask("GET", f"/api/{record.env}/health").body == {"locks": "taken"}, "the health check answers once it could take the record's locks"
+    from controllers.types import Messages
+    pictures = [tmp_path / "pixel.png", tmp_path / "other.png"]
+    notes = tmp_path / "notes.txt"
+    for path in (*pictures, notes):
+        path.write_bytes(b"x")
+    carrier = Messages(record, actor=USER).create("with files")
+    for path in (*pictures, notes):
+        Messages(record, actor=USER).attach(carrier.n, str(path), f"the {path.name}")
+    files = lambda **asked: ask("GET", f"/api/{record.env}/files/page", {k: str(v) for k, v in asked.items()}).body
+    first, rest = files(kind="images", last=1), files(kind="images", last=1, skip=1)
+    assert ([len(first["files"]), first["more"], len(rest["files"]), rest["more"]], first["counts"]["images"], files(kind="other")["found"], files(search="notes")["found"]) == ([1, True, 1, False], 2, 1, 1), \
+        "the Files page asks the server for one page of one kind of files at a time, filtered and searched there, with the counts of the whole set"
     http.unanswered(record.root)
     assert not runtime.hook_failures(record.root).exists(), "with no hook failures logged there is nothing to report"
     started = runtime.STARTED[0] = time.time()

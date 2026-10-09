@@ -7,7 +7,7 @@ from controllers.base import LAST
 from engine import typist
 from engine.seats import terminal_of
 from features.open_viewer.appoint import appoint, online
-from features.open_viewer.attachments import attachments
+from features.open_viewer.attachments import FILES_PAGE, FileKind, attachments, attachments_page
 from features.open_viewer.manifest import manifest
 from features.open_viewer.settings import apply, settings
 from features.open_viewer.transcripts import TRANSCRIPT_PAGE, paged, transcript_at
@@ -47,6 +47,13 @@ class ShowAttachments(Command):
 
     def run(self, context: Context, environments):
         return attachments(environments.record)
+
+
+class ShowAttachmentsPage(Command):
+    name = "attached"
+
+    def run(self, context: Context, environments, kind: FileKind = FileKind.ALL, shelf: str | None = None, search: str = "", last: int = FILES_PAGE, skip: int = 0):
+        return attachments_page(environments.record, kind, shelf, search, last, skip)
 
 
 class ShowSettings(Command):

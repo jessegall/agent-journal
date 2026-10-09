@@ -1,4 +1,5 @@
 import mimetypes
+from enum import StrEnum
 from pathlib import Path
 from typing import TypedDict
 from urllib.parse import quote
@@ -49,3 +50,34 @@ def attachments(record) -> list[AttachedFile]:
     summaries = tuple(c.rows.summaries() for _, c in controllers)
     return ATTACHED.get(str(record.home), summaries,
                         lambda: sorted((f for type_, c in controllers for f in listed_attachments(record, type_, c)), key=lambda x: -x["at"]))
+
+
+FILES_PAGE = 60
+
+
+class FileKind(StrEnum):
+    ALL = "all"
+    IMAGES = "images"
+    OTHER = "other"
+
+    def holds(self, file: AttachedFile) -> bool:
+        return self is FileKind.ALL or file["image"] is (self is FileKind.IMAGES)
+
+
+def matches(file: AttachedFile, words: list[str]) -> bool:
+    kind = CONTROLLERS[file["type"]].resource.title
+    text = f"{file['name']} {file['description']} {file['title']} {kind} {file['n']}".lower()
+    return all(word in text for word in words)
+
+
+def attachments_page(record, kind: FileKind = FileKind.ALL, shelf: str | None = None, search: str = "", last: int = FILES_PAGE, skip: int = 0) -> dict:
+    """One page of the attached files, newest first, filtered on the server by kind (images or other), by what they are attached to and by the words searched; the counts cover the whole set."""
+    every = attachments(record)
+    shown = [f for f in every if FileKind(kind).holds(f)]
+    shelves: dict[str, int] = {}
+    for f in shown:
+        shelves[f["type"]] = shelves.get(f["type"], 0) + 1
+    words = search.lower().split()
+    found = [f for f in shown if (shelf is None or f["type"] == shelf) and matches(f, words)]
+    return {"files": found[skip:skip + last], "more": len(found) > skip + last, "found": len(found),
+            "counts": {"all": len(every), "images": sum(f["image"] for f in every), "other": sum(not f["image"] for f in every), "shelves": shelves}}
