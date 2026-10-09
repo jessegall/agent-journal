@@ -197,6 +197,17 @@ def test_a_repository_with_nothing_in_it_a_missing_folder_and_a_job_that_fails_a
     assert ran[-1] == "after the failure", "a job that fails does not leave its key blocked"
 
 
+def test_a_test_run_inside_a_long_compound_background_command_is_named_by_its_test_part():
+    from providers.command_effects import test_command
+    from providers.tested import tested
+    command = f"journal work resume 5 --how '{'x' * 500}'; (cd /project && .venv/bin/python -m pytest -q src/features/plans/test.py > out.txt 2>&1)"
+    hook = Hook.read({"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command, "run_in_background": True}, "cwd": "/project"},
+                     Provider.tool_kinds)
+    shown = test_command(hook, command[:400])
+    assert shown == ".venv/bin/python -m pytest -q src/features/plans/test.py", "the test part is whole even when the shown command is cut before it"
+    assert (tested(shown).name, hook.tool.background) == ("Tests of plans", True), "it is named for what it tests, and it is known to run in the background"
+
+
 def test_edits_in_an_agents_own_worktree_reach_its_feed_and_a_shell_command_counts_unless_it_only_reads(tmp_path):
     project = project_with({"a.py": "one\n"})
     tree = project.root / "wt"

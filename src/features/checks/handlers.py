@@ -9,7 +9,7 @@ from engine.events.resources import ResourceEvent
 from engine.wording import digest
 from features.checks.output import summary
 from providers.payload import HookEvent
-from providers.tested import tested
+from providers.tested import testing_piece, tested
 from features.parts import AgentContext, Context, Handler
 from features.checks.controller import Checks
 from controllers.types import Agents, Notifications
@@ -60,7 +60,7 @@ class MarkTestRuns(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         row = context.agent.row
         run = CommandRun.from_json(row.running) if row.running else None
-        if not run or run.effect != TESTS or not context.once("test_run", f"{run.at}|{run.done}"):
+        if not run or run.effect != TESTS or run.background or not testing_piece(run.command) or not context.once("test_run", f"{run.at}|{run.done}"):
             return
         key = f"tests:{run.at}"
         ran = tested(run.command)
@@ -71,5 +71,6 @@ class MarkTestRuns(Handler):
         counts = ", ".join(part for part in (f"{result.passed} passed" if result and result.passed else "",
                                              f"{result.failed} failed" if result and result.failed else "") if part)
         failed = bool(result and (result.ok is False or result.failed))
-        context.journal.get(Agents).card(row.n, key=key, label="Tests failed" if failed else "Tests passed", icon="check", name=ran.name, command=ran.command, title=run.command,
+        label = "Tests failed" if failed else "Tests passed" if result else "Tests ran"
+        context.journal.get(Agents).card(row.n, key=key, label=label, icon="check", name=ran.name, command=ran.command, title=run.command,
                                     state="failed" if failed else "done", started=run.at, ended=run.done, detail=counts)

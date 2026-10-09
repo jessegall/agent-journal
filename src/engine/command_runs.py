@@ -51,11 +51,12 @@ class CommandRun(Loaded):
     changed: Delta | None = None
     result: Outcome | None = None
     before: "CommandRun | None" = None
+    background: bool = False
 
     def to_json(self) -> dict:
         kept = {"command": self.command, "tool": self.tool, "at": self.at, "done": self.done, "effect": self.effect, "subject": self.subject,
                 "files": list(self.files), "made": list(self.made), "changed": self.changed.to_json() if self.changed else None,
-                "result": self.result.to_json() if self.result else None, "before": self.before.to_json() if self.before else None}
+                "result": self.result.to_json() if self.result else None, "before": self.before.to_json() if self.before else None, "background": self.background}
         return {key: value for key, value in kept.items() if value}
 
     @property
