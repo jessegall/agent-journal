@@ -43,7 +43,7 @@ async function load(ref) {
 
 const refs = computed(() => (props.resource.refs || []).filter((ref) => ref !== props.resource.data?.source));
 const elsewhere = computed(() => refs.value.filter((ref) => placed(ref).env));
-const held = (ref) => (placed(ref).env ? fetched[ref] : byRef(ref) || fetched[ref]);
+const held = (ref) => byRef(ref) || fetched[ref];
 watchEffect(() => !props.readOnly && refs.value.filter((ref) => !held(ref)).forEach(load));
 usePoll(
     `collection-elsewhere:${props.resource.ref}`,

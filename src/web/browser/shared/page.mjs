@@ -3,6 +3,7 @@ import {reply, runScenarios} from "../harness.mjs";
 const OPEN = process.env.SHARED_OPEN;
 const ENDED = process.env.SHARED_ENDED;
 const MISSING = process.env.SHARED_MISSING;
+const COLLECTION = process.env.SHARED_COLLECTION;
 const COMMENTS = /\/comment$/;
 const ANSWERS = /\/answer$/;
 
@@ -52,6 +53,11 @@ await runScenarios(OPEN, {
         await page.getByPlaceholder("Your name").last().fill("Sam");
         await page.getByText("Back room", {exact: true}).click();
         await page.getByText(/that question is closed/).waitFor();
+    },
+    async "a shared collection lists a row of another environment beside its own"(page) {
+        await page.goto(COLLECTION);
+        await page.getByText("Proposal for visitors").first().waitFor();
+        await page.getByText("Plan from the ticket").first().waitFor();
     },
     async "a link that ended says so"(page) {
         await page.goto(ENDED);

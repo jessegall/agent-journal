@@ -2,6 +2,7 @@
 import SwitchCase from "../kit/SwitchCase.vue";
 import {sharedData, sharedFileUrl} from "../api/shared.js";
 import {computed, provide, reactive, ref, watch} from "vue";
+import {refParts} from "../domain/records.js";
 import {usePoll} from "../composables/poll.js";
 import Icon from "../kit/Icon.vue";
 import {counted} from "../format/number.js";
@@ -68,12 +69,13 @@ const errors = reactive({});
 provide("fileUrl", sharedFileUrl);
 
 function shareRow(reference, given) {
-    const [type, n] = reference.split(":");
+    const {env, type, n} = refParts(reference);
     const files = Object.fromEntries((given.files || []).map((name) => [name, ""]));
     return {
         ...given,
         type,
-        n: Number(n),
+        n,
+        env,
         ref: reference,
         refs: given.members || [],
         seen: [],
@@ -85,10 +87,10 @@ function shareRow(reference, given) {
 }
 
 function stock(rows, types = {}) {
-    const names = [...new Set([...Object.keys(KINDS), ...Object.keys(rows).map((ref) => ref.split(":")[0])])];
+    const names = [...new Set([...Object.keys(KINDS), ...Object.keys(rows).map((ref) => refParts(ref).type)])];
     store.spec = {priority: names, types: Object.fromEntries(names.map((name) => [name, kindOf(name, types[name])]))};
     const grouped = {};
-    for (const [ref, given] of Object.entries(rows)) (grouped[ref.split(":")[0]] ||= []).push(shareRow(ref, given));
+    for (const [ref, given] of Object.entries(rows)) (grouped[refParts(ref).type] ||= []).push(shareRow(ref, given));
     store.rows = grouped;
 }
 
@@ -117,8 +119,8 @@ const currentRef = computed(() => {
     return data.value?.rows[asked] ? asked : data.value?.share.target;
 });
 const rowOf = (ref) => {
-    const [type, n] = (ref || ":").split(":");
-    return (store.rows[type] || []).find((r) => r.n === Number(n)) || null;
+    const {env, type, n} = refParts(ref || ":");
+    return (store.rows[type] || []).find((r) => r.n === n && r.env === env) || null;
 };
 const currentRow = computed(() => rowOf(currentRef.value));
 const target = computed(() => rowOf(data.value?.share.target));

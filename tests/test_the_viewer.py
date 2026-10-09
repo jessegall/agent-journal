@@ -85,7 +85,7 @@ def test_the_viewer_answers_every_state_in_a_browser(shared_browser, scratch_vie
 @needs_node_modules
 def test_a_shared_page_answers_every_state_a_visitor_meets(shared_browser):
     with shared_pages.served() as pages:
-        shared_browser.play("browser/shared/page.mjs", SHARED_OPEN=pages.open, SHARED_ENDED=pages.ended, SHARED_MISSING=pages.missing)
+        shared_browser.play("browser/shared/page.mjs", SHARED_OPEN=pages.open, SHARED_ENDED=pages.ended, SHARED_MISSING=pages.missing, SHARED_COLLECTION=pages.collection)
 
 
 @needs_node_modules
