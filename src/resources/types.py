@@ -130,6 +130,7 @@ class Doc(Shape, Resource):
     loading = LAZY
     own_folder = True
     type = "doc"
+    summary_in_dashboard = True
     event_labels = {"created": "Doc written", "completed": "Doc closed"}
     status_labels = {"complete": "settling"}
     start_heading = "docs in the project; none is listed here, so look one up when a question needs it: journal doc search <term>, journal doc all"

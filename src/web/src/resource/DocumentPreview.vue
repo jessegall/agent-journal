@@ -1,11 +1,12 @@
 <script setup>
-import {computed} from "vue";
+import {computed, watchEffect} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import MarkedText from "../kit/MarkedText.vue";
 import {standing} from "../domain/documents.js";
 import {ago} from "../format/time.js";
+import {whole} from "../sync/rows.js";
 import ChoiceCard from "./ChoiceCard.vue";
 import ResourceFiles from "./ResourceFiles.vue";
 
@@ -13,6 +14,9 @@ const props = defineProps({doc: {type: Object, default: null}, words: {type: Arr
 const emit = defineEmits(["open", "hide"]);
 const state = computed(() => props.doc && standing(props.doc));
 const files = computed(() => Object.entries(props.doc?.data.files || {}));
+watchEffect(() => {
+    if (props.doc?.summary) whole("doc", props.doc.n).catch((error) => console.error(error));
+});
 const empty = computed(() => props.doc && !props.doc.abstract && !props.doc.brief && !props.doc.sections.length);
 </script>
 

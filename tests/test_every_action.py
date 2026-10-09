@@ -63,7 +63,7 @@ CALLS = {
     "pluginDashboard": [1, "main"], "pluginLog": ["works"], "onlineAgents": [], "agentControls": ["claude"], "agentHooks": ["claude"],
     "saveAgentHooks": ["claude", {}], "list": ["todo"], "all": ["todo"], "dashboard": [["todo", "plan"]], "show": ["todo", 1],
     "create": ["todo", {"title": "walked by the viewer"}], "fieldChoices": ["todo", 1], "installPlugin": ["/nowhere/plugin"],
-    "upgradePlugin": [1, False], "planTimeline": [1], "ticketStatus": [1], "helperTranscript": [1], "shareView": ["chat"], "newFeatures": [], "markNewFeatureSeen": ["owl"], "hidePreview": ["doc", 1], "revision": [1, 1], "tasks": [AGENT_N],
+    "upgradePlugin": [1, False], "planTimeline": [1], "ticketStatus": [1], "helperTranscript": [1], "locateDocs": ["needle"], "shareView": ["chat"], "newFeatures": [], "markNewFeatureSeen": ["owl"], "hidePreview": ["doc", 1], "revision": [1, 1], "tasks": [AGENT_N],
     "board": [{}], "shift": [1, "Doing", {"why": "walked"}], "cancelWork": [1], "reviseWork": [1, "change one card", WALK],
     "followUpWork": [1, "and one more", WALK], "requestWork": [1, "a new card", WALK], "handWork": [1, "doc:1", "from this doc", WALK],
     "ticketBoard": [1], "dismissQuestion": [1, "not needed"], "noteSuggestionWindow": [1], "answerSuggestion": [1, "No, don't do this"],
@@ -449,6 +449,23 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     reports_held = held_rows(record, "report", {"completed": "1", "last": "25"})
     CONTROLLERS["todo"](record, actor=USER).update(newest, brief="changed again")
     assert held_rows(record, "report", {"completed": "1", "last": "25"}) is reports_held, "a change to the to-dos rebuilds only the to-dos' rows, not the reports' held ones"
+    docs = CONTROLLERS["doc"](record, actor=USER)
+    haystack = docs.create("Haystack", brief="A brief that mentions needleword in passing")
+    docs.section(haystack.n, "Details", "Body text with needleword inside")
+    locate = lambda words: dispatch("GET", f"/api/{record.env}/doc/locate", record.root, {"words": words}, {}).body
+    assert [(hit["where"], "needleword" in hit["text"]) for hit in locate("needleword") if hit["n"] == haystack.n] == [("Details", True)], \
+        "the server finds a document by words inside it and says where, as the library's search shows it"
+    assert (locate("zzqqxx-no-such-words"), [hit["n"] for hit in locate("haystack needleword")]) == ([], [haystack.n]), \
+        "a word nothing holds finds nothing, and every word given must be held"
+    from types import SimpleNamespace
+    from controllers.doc_hits import DocHit, located, terms
+    pairing = SimpleNamespace(n=4, title="Phone pairing", abstract="", brief="How the QR code works", sections=[{"title": "Steps", "body": "Scan the code with the camera"}], files={"qr.png": "the code"})
+    camera = located(pairing, ["camera"])
+    assert (terms("  Phone   CODE "), terms("   "), located(pairing, ["phone", "nothing"]), located(pairing, ["phone"]), (camera.where, "camera" in camera.text)) == \
+        (["phone", "code"], [], None, DocHit(4, 8), ("Steps", True)), "words are split and lowered, every one must be held, a title hit scores highest with no excerpt, a section hit names the section and quotes it"
+    attached = SimpleNamespace(n=4, title="Plan", abstract="", brief="See [[doc 3|the **plan**]] for pairing", sections=[], files={"qr.png": "pairing picture"})
+    assert (located(attached, ["pairing"]), located(SimpleNamespace(**{**vars(attached), "files": {}}), ["pairing"])) == \
+        (DocHit(4, 3, "Attached file", "qr.png"), DocHit(4, 2, "", "See the plan for pairing")), "a file hit names the attached file, and a brief hit is quoted without markup"
     CONTROLLERS["todo"](record, actor=USER).update(1, brief="touched last, again")
     recent =dispatch("GET", f"/api/{record.env}/todo", record.root, {"last": "1", "by": "updated", "completed": "1"}, {}).body
     assert 1 in [r["n"] for r in recent["rows"]], "by=updated returns the most recently changed rows, however old their number"

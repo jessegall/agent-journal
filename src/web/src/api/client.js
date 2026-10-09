@@ -838,6 +838,10 @@ export class ApiClient {
         return this.post(this.here(`/agent/${encoded(session)}/relaunch`), {skip});
     }
 
+    locateDocs(words) {
+        return this.get(this.here(`/doc/locate${query({words})}`));
+    }
+
     helperTranscript(n, fields = {}) {
         return this.get(this.here(`/helper/${n}/transcript${query(fields)}`));
     }
