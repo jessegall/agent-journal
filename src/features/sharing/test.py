@@ -761,6 +761,16 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     from types import SimpleNamespace
     members = sharing._loaded_members(here, SimpleNamespace(member_refs=lambda: ["nothing:1", "todo:x", "todo:99999", todo.ref]))
     assert [member.n for member in members] == [todo.n], "a collection's members that are of no type, have no number or are gone are left out of the page"
+    from features.dumps.controller import Dumps
+    pile = Dumps(here, actor=USER).create("Pile", brief="pasted notes")
+    group = Collections(here, actor=USER).create("Filed from a pile", source=pile.ref)
+    inside = Docs(here, actor=USER).create("Filed", brief="in")
+    Collections(here, actor=USER).add(group.n, [pile.ref, inside.ref])
+    pile_share = sharing.create(f"collection:{group.n}")
+    assert sharing._scope(pile_share) == {group.ref, inside.ref}, "the dump a collection was filled from is hidden in the journal, so a share does not carry it"
+    later = Docs(here, actor=USER).create("Added later", brief="after the share")
+    Collections(here, actor=USER).add(group.n, [later.ref])
+    assert sharing._scope(pile_share) == {group.ref, inside.ref, later.ref}, "a row put into a shared collection after it was shared is shared too"
     drawn = page.markdown("## Plan\n\nSee `a<b` and **bold** text\n- one\n- two\n\n1. first\n> quoted\n> twice\n```\ncode <x>\n```\n| a | b |\n|---|---|\n| 1 | 2 |")
     assert all(part in drawn for part in ("<h4>Plan</h4>", "<code>a&lt;b</code>", "<strong>bold</strong>", "<ul><li>one</li><li>two</li></ul>", "<ol><li>first</li></ol>")), \
         "a shared page draws headings, code, bold text and lists"

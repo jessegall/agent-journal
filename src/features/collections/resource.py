@@ -26,4 +26,4 @@ class Collection(Shape, Resource):
     labels = {"abstract": "What belongs in it"}
 
     def member_refs(self) -> list[str]:
-        return list(self.refs)
+        return [ref for ref in self.refs if ref != self.source]
