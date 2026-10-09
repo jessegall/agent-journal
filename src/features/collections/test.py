@@ -1,5 +1,5 @@
 from controllers.types import CONTROLLERS, Docs, Messages, Todos
-from resources.base import AGENT, USER
+from resources.base import AGENT, USER, Ref
 from tests.conftest import fresh, refused
 
 
@@ -74,3 +74,34 @@ def test_old_group_folders_become_collections_and_what_pointed_at_them_follows(t
     assert (home / "collection" / "001.md").read_text() == "a group" and not (home / "group").exists(), "the rows moved with their folder"
     assert (home / "todo" / "001.md").read_text() == "belongs to collection:1", "a row that named the group names the collection"
     assert (tmp_path / "environments" / "second" / "group").exists(), "an environment that already has collections keeps its old folder untouched"
+
+
+def test_a_collection_holds_the_files_of_its_dump_and_of_its_members_and_its_own():
+    from migrations.m0079_dump_files_reach_their_collection import run
+
+    record = fresh()
+    dropped = record.root / "dropped"
+    dropped.mkdir()
+    (dropped / "animation.zip").write_bytes(b"z" * 2048)
+    (dropped / "logo.png").write_bytes(b"png")
+    dumps, collections = CONTROLLERS["dump"](record, actor=AGENT), CONTROLLERS["collection"](record, actor=AGENT)
+    dump = dumps.create("Animations")
+    dumps.attach(dump.n, str(dropped / "animation.zip"), "the idle loop")
+    collection = collections.load(next(iter(Ref.numbers_of("collection", dumps.load(dump.n).refs))))
+    assert list(collections.load(collection.n).files) == ["animation.zip"], "a file dropped on a dump lands in the dump's collection"
+    note = Messages(record, actor=AGENT).create("a note with a picture")
+    Messages(record, actor=AGENT).attach(note.n, str(dropped / "logo.png"))
+    collections.add(collection.n, [note.ref])
+    collections.attach(collection.n, str(dropped / "logo.png"))
+    held = collections.held_files(collection.n)
+    assert [(f["type"], f["name"], f["size"], f["image"]) for f in held] == \
+        [("collection", "animation.zip", 2048, False), ("collection", "logo.png", 3, True), ("message", "logo.png", 3, True)], \
+        "the files of the collection come first, then those of each member, with their size and whether they are pictures"
+    assert held[0]["description"] == "the idle loop", "a file keeps what it was described as"
+
+    left = collections.load(collection.n)
+    left.files.pop("animation.zip")
+    collections.rows.write_file(left)
+    assert run(record.root) == [f"{record.env} {dump.ref} file animation.zip is in collection:{collection.n}"], \
+        "a dump filed before keeps its files in its collection once the upgrade has run"
+    assert run(record.root) == [], "and the upgrade copies nothing twice"

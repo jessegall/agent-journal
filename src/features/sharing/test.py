@@ -771,6 +771,10 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     later = Docs(here, actor=USER).create("Added later", brief="after the share")
     Collections(here, actor=USER).add(group.n, [later.ref])
     assert sharing._scope(pile_share) == {group.ref, inside.ref, later.ref}, "a row put into a shared collection after it was shared is shared too"
+    (here.root / "held.txt").write_text("held")
+    Collections(here, actor=SYSTEM).attach(group.n, str(here.root / "held.txt"), "kept in the collection")
+    held = sharing._shared_data(pile_share)["rows"][group.ref]["held_files"]
+    assert [(f["name"], f["size"], f["description"]) for f in held] == [("held.txt", 4, "kept in the collection")], "a shared collection carries the files it holds, with their size, for its Files tab"
     from engine.record import Record
     ticket = Record(here.root, "ticket-1")
     ticket.home.mkdir(parents=True)

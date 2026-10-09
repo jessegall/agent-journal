@@ -5,6 +5,7 @@ from controllers.base import row_of
 from controllers.described import described_types
 from engine.markers import MARKER
 from engine.record import Record
+from features.collections.files import collected_files
 from features.format import SHARED, formatted, shape
 from features.plans.controller import Plans
 from features.sharing.views import shared_view
@@ -110,6 +111,8 @@ class SharePages:
                 "members": [m.ref for m in self._members(share, row) if m.ref in scope],
                 "completed": row.completed, "data": shared_fields(row, record),
             }
+            if row.type == "collection":
+                rows[ref]["held_files"] = collected_files(record, [row, *(m for m in self._members(share, row) if m.ref in scope)])
         described = described_types()
         kinds = {Ref.parse(ref).type for ref in rows}
         return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,

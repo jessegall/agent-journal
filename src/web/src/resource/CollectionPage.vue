@@ -9,6 +9,7 @@ import {usePoll} from "../composables/poll.js";
 import {byRef, refParts} from "../domain/records.js";
 import {planProgress} from "../domain/plans.js";
 import {age} from "../format/time.js";
+import {fileSize, isPicture} from "../format/files.js";
 import BoardLanes from "./BoardLanes.vue";
 import Chip from "../kit/Chip.vue";
 import {originOf} from "../domain/origin.js";
@@ -68,6 +69,20 @@ const members = computed(() =>
 const open = (r) => peekThere(r.env || route.value.env, r.type, r.n);
 const filePath = (r, name) => (r.env ? api.in(r.env) : api).fileUrl(r.type, r.n, name);
 
+const FILES_EVERY = 10000;
+const files = ref(props.resource.held_files || []);
+usePoll(
+    `collection-files:${props.resource.ref}`,
+    () => api.collectionFiles(props.resource.n),
+    FILES_EVERY,
+    (found) => (files.value = found),
+    () => !props.readOnly
+);
+const fileHref = (f) => (f.env ? api.in(f.env) : api).fileUrl(f.type, f.n, f.name);
+const downloadHref = (f) => (props.readOnly ? fileUrl(f.type, f.n, f.name) : fileHref(f));
+const pictureFiles = computed(() => files.value.filter((f) => f.image || isPicture(f.name)));
+const otherFiles = computed(() => files.value.filter((f) => !pictureFiles.value.includes(f)));
+
 const OWN_TABS = ["plan", "todo", "ticket", "board"];
 const ofType = (type) => members.value.filter((r) => r.type === type);
 const resources = computed(() => members.value.filter((r) => !OWN_TABS.includes(r.type)));
@@ -82,6 +97,7 @@ const tabs = computed(() =>
         {key: "todos", title: "To-dos", count: todos.value.length},
         {key: "tickets", title: "Tickets", count: tickets.value.length},
         {key: "boards", title: "Boards", count: boards.value.length},
+        {key: "files", title: "Files", count: files.value.length},
     ].filter((t) => t.key === "resources" || t.count)
 );
 const tab = computed({
@@ -125,11 +141,33 @@ function hidePreview(r) {
 </script>
 
 <template>
-    <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')">
+    <ResourceBody :resource="resource" :comments="false" :links="false" :attached="false" :read-only="readOnly" @close="emit('close')">
         <template v-if="tabs.length > 1">
             <TabBar v-model="tab" class="tabs" :tabs="tabs" />
         </template>
-        <template v-if="boards.length && tab === 'boards'">
+        <template v-if="files.length && tab === 'files'">
+            <section class="files" aria-label="Files in this collection">
+                <template v-if="pictureFiles.length">
+                    <div class="pictures">
+                        <template v-for="f in pictureFiles" :key="`${f.ref}/${f.name}`">
+                            <a class="picture" :href="downloadHref(f)" target="_blank" :title="`${f.name}, ${fileSize(f.size)}, from ${f.title}`">
+                                <img :src="downloadHref(f)" :alt="f.name" loading="lazy" />
+                                <span class="picture-name">{{ f.name }}</span>
+                            </a>
+                        </template>
+                    </div>
+                </template>
+                <template v-for="f in otherFiles" :key="`${f.ref}/${f.name}`">
+                    <div class="file">
+                        <Icon name="clip" :size="14" />
+                        <span class="file-name">{{ f.name }}</span>
+                        <span class="file-line">{{ fileSize(f.size) }} · from {{ f.title }}</span>
+                        <a class="download" :href="downloadHref(f)" :download="f.name" :title="`Download ${f.name}`">Download</a>
+                    </div>
+                </template>
+            </section>
+        </template>
+        <template v-else-if="boards.length && tab === 'boards'">
             <template v-for="r in boards" :key="r.at">
                 <BoardLanes :board="r" :plan-of="planOf" @open="open" @plan="openPlan" />
             </template>
@@ -214,6 +252,63 @@ function hidePreview(r) {
 <style scoped>
 .tabs {
     margin-bottom: 12px;
+}
+
+.pictures {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.picture {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--raised);
+    color: inherit;
+    text-decoration: none;
+}
+
+.picture img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.picture-name {
+    padding: 0 8px 6px;
+    overflow: hidden;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line, #e5e5e5);
+}
+
+.file-name {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.file-line {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.download {
+    color: var(--accent-text);
 }
 
 .todos,

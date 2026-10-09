@@ -40,6 +40,7 @@ const props = defineProps({
     comments: {type: Boolean, default: true},
     commentComposer: {type: Boolean, default: true},
     links: {type: Boolean, default: true},
+    attached: {type: Boolean, default: true},
     readOnly: Boolean,
     focus: {type: Number, default: 0},
 });
@@ -209,7 +210,7 @@ async function follow() {
         <template v-if="hasOutcome">
             <ResourceOutcome :resource="resource" :documented="Boolean(state)" />
         </template>
-        <template v-if="files.length">
+        <template v-if="attached && files.length">
             <ResourceFiles :resource="resource" :files="files" />
         </template>
         <template v-if="!readOnly">

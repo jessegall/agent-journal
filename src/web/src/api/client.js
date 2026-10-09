@@ -367,6 +367,10 @@ export class ApiClient {
         return this.post(this.here(`/plugin/${n}/upgrade`), {yes: true, again}, LONG_WAIT_MS);
     }
 
+    collectionFiles(n) {
+        return this.command("collection", "held_files", {n});
+    }
+
     ticketStatus(n) {
         return this.command("ticket", "status", {n});
     }
