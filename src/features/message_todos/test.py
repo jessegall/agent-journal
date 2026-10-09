@@ -163,11 +163,11 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
     from engine.record import Record
     listed = [row["n"] for row in Todos(Record(record.root, record.env), actor=SYSTEM).rows.summaries()]
     assert hurt.n not in listed and listed, "a row file that cannot be read is left out of the list, and the rest still list"
-    from controllers.stored import DEFER, INDEX, UNSAVED, WRITTEN, flush_indexes
+    from controllers.stored import DEFER, UNSAVED, WRITTEN, flush_indexes, index_file
     shelf = Todos(Record(record.root, record.env), actor=SYSTEM)
     folder = shelf.rows.folder()
     WRITTEN[str(folder)] = 0.0
-    (folder / INDEX).unlink(missing_ok=True)
+    index_file(folder).unlink(missing_ok=True)
     DEFER.set()
     try:
         added = Todos(record, actor=AGENT).create("a row the index has not seen")
@@ -175,11 +175,11 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
         INDEXED.clear()
         SUMMARIES.clear()
         shelf.rows.summaries()
-        waiting = (folder / INDEX).exists(), str(folder) in UNSAVED
+        waiting = index_file(folder).exists(), str(folder) in UNSAVED
         flush_indexes()
     finally:
         DEFER.clear()
-    assert (waiting, (folder / INDEX).exists(), str(folder) in UNSAVED) == ((False, True), True, False), \
+    assert (waiting, index_file(folder).exists(), str(folder) in UNSAVED) == ((False, True), True, False), \
         "a read that finds the row index due leaves its write to the background, which saves it; nothing waits for it on the request"
     assert any("could not be read" in notice.brief for notice in Notices(record, actor=SYSTEM).all()), "and the damage is filed for the user"
     import controllers.discussion as discussion
