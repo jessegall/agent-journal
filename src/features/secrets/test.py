@@ -73,8 +73,8 @@ def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch
     record = fresh()
     row = Secrets(record, actor=USER).create("GitHub", kind="api key")
     agent = Secrets(record, actor=AGENT)
-    assert "lists no programs" in refused(lambda: agent.run("GitHub", "cat")), "a secret that lists no programs is given to none"
-    assert "Programs it may go to" in refused(lambda: agent.run("GitHub", "cat")), "the refusal names the control on the Secrets page"
+    assert "No allowed programs" in refused(lambda: agent.run("GitHub", "cat")), "a secret with no allowed programs is given to none"
+    assert "Settings > Secrets > secret" in refused(lambda: agent.run("GitHub", "cat")), "the refusal names the page and the control"
     assert "only you name the programs" in refused(lambda: agent.update(row.n, programs=["cat"])), "an agent never sets the programs itself"
     assert "never given to bash" in refused(lambda: agent.propose_programs(row.n, "bash")), "a shell is not even proposed"
     agent.propose_programs(row.n, "cat")
@@ -103,7 +103,7 @@ def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch
         "a value split across two reads is still masked"
     assert "never given to bash" in refused(lambda: agent.run("GitHub", "bash", "-c", "cat")), "a shell or an interpreter never gets a secret"
     Secrets(record, actor=SYSTEM).update(row.n, programs=["gh"])
-    assert "only to gh" in refused(lambda: agent.run("GitHub", "cat")), "a secret goes only to the programs it lists"
+    assert "cat is not in secret" in refused(lambda: agent.run("GitHub", "cat")), "a secret goes only to the programs it lists"
     assert "main agent only" in refused(lambda: Secrets(record, actor=AGENT, agent="sub-1").run("GitHub", "gh")), "a subagent uses a secret only when it is shared"
     assert effects("journal secret run github -- git push origin main") == ["writes"], "the work gate sees what the wrapped command does"
     assert Secrets(record, actor=SYSTEM).load(row.n).used, "the secret records when it was last used"
