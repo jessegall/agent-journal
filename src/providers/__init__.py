@@ -6,6 +6,7 @@ from providers.catalogue import PROVIDER_TYPES, workspace_folders  # noqa: F401
 PROVIDERS = {p.name: p for p in PROVIDER_TYPES}
 
 DRIVERS = {d.name: d for d in (ClaudeDriver, CodexDriver)}
+DEFAULT_PROVIDER = ClaudeDriver.name
 
 
 

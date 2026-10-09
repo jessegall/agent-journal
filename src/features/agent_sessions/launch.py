@@ -8,18 +8,17 @@ from engine.record import Record
 from engine.seats import terminal_of
 from engine.sessions import Sessions, alive
 from engine.stop import ask_session
+from providers import DEFAULT_PROVIDER, DRIVERS
 from features.permission_prompts.skipping import prompted
 from resources.base import SYSTEM
 from resources.types import EnvironmentKind
 
 QUIET = ("dev_faults",)
-PROVIDER = "claude"
 
 
 def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind: EnvironmentKind) -> str:
-    from providers import DRIVERS
     prepared(record, name, abstract, owner, record.root.parent, kind)
-    return launched(record, name, PROVIDER, prompted_by_file(record.root, name, DRIVERS[PROVIDER].within([], worktree), prompt), record.root.parent)
+    return launched(record, name, DEFAULT_PROVIDER, prompted_by_file(record.root, name, DRIVERS[DEFAULT_PROVIDER].within([], worktree), prompt), record.root.parent)
 
 
 def prepared(record, name: str, abstract: str, owner: str, folder: Path, kind: EnvironmentKind) -> Record:

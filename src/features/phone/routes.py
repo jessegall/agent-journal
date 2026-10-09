@@ -9,6 +9,7 @@ from http.cookies import SimpleCookie
 
 from engine.multipart import UPLOAD_LIMIT, UPLOAD_LIMIT_MB
 from engine.record import Record
+from providers import DEFAULT_PROVIDER
 from resources.fields import Loaded
 from features.phone.controller import Phones
 from features.phone.allow_list import PhoneVisit
@@ -118,7 +119,7 @@ class Arranging(Loaded):
 class Starting(Loaded):
     journal: str = ""
     environment: str = ""
-    agent: str = "claude"
+    agent: str = DEFAULT_PROVIDER
 
 
 @dataclass(frozen=True)

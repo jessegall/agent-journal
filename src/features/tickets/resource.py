@@ -2,10 +2,10 @@ import re
 from dataclasses import dataclass
 from typing import ClassVar
 
+from providers import DEFAULT_PROVIDER
 from resources.base import CHECKPOINT, ESCALATED, FINISHED, PLAN_WAITS, PROJECT, STUCK, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Placed
 
-AGENT_CLI = "claude"
 ROOT = "."
 PROPOSED, CONFIRMED = "proposed", "confirmed"
 
@@ -48,7 +48,7 @@ class Ticket(Placed, Resource):
         Field(TEXT, name="work_environment", journal_only=True),
         Field(TEXT, "", name="base", journal_only=True),
         Field(default=dict, name="bases", journal_only=True),
-        Field(TEXT, AGENT_CLI, name="provider"),
+        Field(TEXT, DEFAULT_PROVIDER, name="provider"),
         Field(TEXT, "", name="model"),
         Field(NUMBER, 0.0, name="launched"),
         Field(NUMBER, 0.0, name="queued_at"),
