@@ -429,6 +429,9 @@ def test_the_command_line_runs_a_forced_command_prints_rows_and_refuses_what_the
     assert code == 0 and "a first row" in text, "a row prints in full"
     out, code = captured(["banana"], record.root)
     assert (code, "is not a command the server runs" in out) == (None, True), "the server runs only the nouns it knows"
+    from engine.version import version
+    assert captured(["version"], record.root) == (f"{version()}\n", 0), "the server answers a query such as version itself, with no Python start"
+    assert captured(["upgrade"], record.root)[1] is None, "a command that starts or stops a process still runs in a process of its own"
     from install import ASKS
     assert 'case "$1"' not in ASKS and '404|409|000|"") ;;' in ASKS, \
         "the journal command on the path sends every command and runs it here when the server does not, so a copy from another version never refuses one"
