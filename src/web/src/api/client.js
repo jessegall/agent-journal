@@ -291,10 +291,10 @@ export class ApiClient {
         return this.post(`/agent-hooks/${provider}`, {hooks});
     }
 
-    list(type, {last, completed = false, before = 0, since = 0, only = [], by = ""} = {}) {
+    list(type, {last, completed = false, closed = false, before = 0, since = 0, only = [], by = ""} = {}) {
         return this.get(
             this.here(
-                `/${type}${query({last, completed: completed ? "1" : undefined, before: before || undefined, since: since || undefined, n: only.join(",") || undefined, by: by || undefined})}`
+                `/${type}${query({last, completed: completed ? "1" : undefined, closed: closed ? "1" : undefined, before: before || undefined, since: since || undefined, n: only.join(",") || undefined, by: by || undefined})}`
             )
         );
     }

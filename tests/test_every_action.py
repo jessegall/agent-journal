@@ -433,6 +433,9 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     CONTROLLERS["todo"](record, actor=USER).update(1, brief="touched last")
     recent = dispatch("GET", f"/api/{record.env}/todo", record.root, {"last": "1", "by": "updated", "completed": "1"}, {}).body
     assert 1 in [r["n"] for r in recent["rows"]], "by=updated returns the most recently changed rows, however old their number"
+    CONTROLLERS["todo"](record, actor=USER).complete(3, "done")
+    shut = dispatch("GET", f"/api/{record.env}/todo", record.root, {"last": "500", "closed": "1"}, {}).body
+    assert 3 in [r["n"] for r in shut["rows"]] and all(r["completed"] for r in shut["rows"]), "a listing asked for closed rows returns only those, whatever else is open"
 
 
 def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():

@@ -17,6 +17,7 @@ class ListingQuery(Loaded):
     n: str = ""
     last: int = LAST
     completed: str = ""
+    closed: str = ""
     before: int = 0
     since: float = 0.0
     by: str = ""
@@ -27,6 +28,7 @@ class Listing:
     only: frozenset
     last: int
     completed: bool
+    closed: bool
     before: int
     since: float
     by_updated: bool
@@ -35,7 +37,7 @@ class Listing:
     def from_query(cls, query: dict) -> "Listing":
         asked = ListingQuery.from_json(query)
         only = frozenset(int(n) for n in asked.n.split(",") if n)
-        return cls(only=only, last=0 if only else asked.last, completed=asked.completed in ("1", "true"), before=asked.before,
+        return cls(only=only, last=0 if only else asked.last, completed=asked.completed in ("1", "true") or asked.closed in ("1", "true"), closed=asked.closed in ("1", "true"), before=asked.before,
                    since=asked.since, by_updated=asked.by == "updated")
 
 
@@ -68,7 +70,7 @@ def listing(controller, record, wanted: Listing) -> ListedRows:
 
 def _listed(controller, record, wanted: Listing, summaries: list, stamp: tuple) -> ListedRows:
     since, only, last = wanted.since, wanted.only, wanted.last
-    rows = [row for row in summaries if (since or only or not row["deleted"]) and (wanted.completed or not row["completed"])
+    rows = [row for row in summaries if (since or only or not row["deleted"]) and (wanted.completed or not row["completed"]) and (not wanted.closed or row["completed"])
             and (only or controller.resource.hidden_listed or not row.get("hidden"))
             and (not wanted.before or row["n"] < wanted.before) and row["updated"] > since and (not only or row["n"] in only)]
     if wanted.by_updated:
