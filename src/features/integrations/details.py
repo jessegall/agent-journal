@@ -23,7 +23,7 @@ class IntegrationDetails(FeatureDetails):
             name="key",
             default="",
             title="Key",
-            abstract="The secret this integration signs in with. Only you pick it, from your secrets",
+            abstract="The secret the journal itself signs in with, to sync. Agents do not use it; they reach the service through its MCP server. Only you pick it, from your secrets",
             scope=PROJECT,
             secret=True,
         ),

@@ -68,7 +68,7 @@ export const signingOf = (settings, name) => settings?.[name]?.signing_key || ""
 
 export const switchWords = (title) => ({
     mcp: `Agents can use ${title} directly`,
-    mcpHelp: `Agents get ${title}'s own tools. What they read there is not marked as untrusted. Off until you turn it on.`,
+    mcpHelp: `Agents reach ${title} through its own tools, not a stored key. What they read there is not marked as untrusted. Off until you turn it on.`,
     fetching: `Read ${title} into tickets`,
     fetchingHelp: `The journal reads ${title} and keeps what it finds as tickets. Off until you turn it on.`,
 });
