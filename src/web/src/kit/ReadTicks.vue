@@ -34,7 +34,8 @@ const state = computed(() => {
 }
 
 .ticks.read {
-    opacity: 0.8;
+    opacity: 1;
+    color: var(--read-tick);
 }
 
 .ticks.filed {
@@ -53,7 +54,10 @@ const state = computed(() => {
     stroke-width: 1.7;
 }
 
-.ticks.bubble.read,
+.ticks.bubble.read {
+    color: #8fd3ff;
+}
+
 .ticks.bubble.filed {
     color: #b9f6ca;
 }
