@@ -22,11 +22,14 @@ class LinkTodosToTheirMessage(Handler):
         answered = [int(n) for kind, _, n in (ref.partition(":") for ref in reply.refs) if kind == "message" and n.isdigit()]
         if not answered:
             return
+        since = time.time() - 60 * float(context.settings.minutes)
+        recent = [todo for todo in context.journal.get(Todos).rows.standing() if todo.created >= since]
+        if not recent:
+            return
         messages = context.journal.get(Messages)
         message = messages.load(answered[0])
         linked = {ref for row in messages.rows.summaries() for ref in row["refs"]}
-        since = time.time() - 60 * float(context.settings.minutes)
-        fresh = [todo for todo in context.journal.get(Todos).rows.standing() if todo.created >= since and todo.ref not in linked]
+        fresh = [todo for todo in recent if todo.ref not in linked]
         named_here = todos_named(reply.brief)
         speaking = context.to_primary()
         for todo in fresh:
