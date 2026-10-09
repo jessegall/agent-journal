@@ -1081,7 +1081,14 @@ def test_stopping_the_journal_stops_the_agent_of_every_helper_and_leaves_its_env
     finally:
         (bin_ / "quit-all").touch()
         main.kill()
-        subprocess.run(["pkill", "-9", "-f", f"{bin_}/claude"], capture_output=True)
+        main.communicate(timeout=WAIT)
+        cleared(tmp_path)
+        for _ in range(25):
+            left = subprocess.run(["pgrep", "-f", str(tmp_path).removeprefix("/private")], capture_output=True, text=True, timeout=WAIT).stdout.split()
+            if not left:
+                break
+            time.sleep(0.2)
+        assert not left, f"the test leaves processes of its scratch project running: {left}"
 
 
 def menu_in_terminal(*typed) -> tuple[str, int]:
