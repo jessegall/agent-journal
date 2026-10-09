@@ -40,6 +40,7 @@ SRC = "src"
 ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 2
 KEPT_COPIES = 1
+FRESH_FOR = 3600
 NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
 STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "keeper", "keeper.py": "keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
@@ -386,14 +387,19 @@ def keep_copy(root: Path) -> str:
     version = version_in(code(root), "unknown")
     attic = root / "attic"
     attic.mkdir(parents=True, exist_ok=True)
-    copy = attic / f"before-{version}-{int(time.time())}.tar.gz"
-    with tarfile.open(copy, "w:gz") as archive:
-        for entry in sorted(root.iterdir()):
-            if entry.name not in NOT_RECORD and not entry.name.startswith(("journal-", ARCHIVE)):
-                archive.add(entry, arcname=entry.name)
+    kept = sorted(attic.glob("before-*.tar.gz"), key=lambda f: f.stat().st_mtime, reverse=True)
+    if kept and time.time() - kept[0].stat().st_mtime < FRESH_FOR:
+        line = f"the copy of the record in {kept[0].relative_to(root.parent)} is under an hour old, so no new one is made"
+    else:
+        copy = attic / f"before-{version}-{int(time.time())}.tar.gz"
+        with tarfile.open(copy, "w:gz", compresslevel=0) as archive:
+            for entry in sorted(root.iterdir()):
+                if entry.name not in NOT_RECORD and not entry.name.startswith(("journal-", ARCHIVE)):
+                    archive.add(entry, arcname=entry.name)
+        line = f"a copy of the record is kept in {copy.relative_to(root.parent)}"
     for old in sorted(attic.glob("before-*.tar.gz"), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_COPIES:]:
         old.unlink(missing_ok=True)
-    return f"a copy of the record is kept in {copy.relative_to(root.parent)}"
+    return line
 
 
 def half_done(root: Path) -> bool:
@@ -436,7 +442,7 @@ def installed_here(root: Path, package: Path = PACKAGE) -> bool:
 
 
 def upgrading(project: Path, root: Path, version: str = "") -> list[str]:
-    done = [line for line in [keep_copy(root)] if line]
+    done = []
     source, temporary, newest = PACKAGE, None, ""
     reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
@@ -510,6 +516,8 @@ def finish(project: Path, root: Path) -> list[str]:
     done += configure(project, root)
     stepping(root, "Migrating the record")
     fresh = not (root / "migrations.json").is_file()
+    if loaded().migrations_pending(root):
+        done += [line for line in [keep_copy(root)] if line]
     ran = loaded().migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
     if fresh:
@@ -535,6 +543,27 @@ def compiled(source: bytes, name: str, stamp: float) -> bytes:
     return MAGIC_NUMBER + (0).to_bytes(4, "little") + int(stamp).to_bytes(4, "little") + (len(source) & 0xFFFFFFFF).to_bytes(4, "little") + marshal.dumps(code)
 
 
+@dataclass(frozen=True)
+class Entry:
+    source: bytes
+    compiled: bytes
+    moment: tuple
+
+
+def previous_entries(root: Path) -> dict[str, Entry]:
+    """What the archive the journal runs from already holds, so an upgrade compiles only the files that changed."""
+    built = (root / ARCHIVE).resolve()
+    if not built.is_file():
+        return {}
+    try:
+        with zipfile.ZipFile(built) as archive:
+            names = set(archive.namelist())
+            return {name: Entry(archive.read(name), archive.read(f"{name[:-3]}.pyc"), archive.getinfo(name).date_time)
+                    for name in sorted(names) if name.endswith(".py") and f"{name[:-3]}.pyc" in names}
+    except (OSError, zipfile.BadZipFile, KeyError):
+        return {}
+
+
 def start_refused(built: Path, root: Path) -> str:
     started = subprocess.run([sys.executable, str(built), "--root", str(root), "version"], cwd=root.parent, capture_output=True, text=True, timeout=120)
     if started.returncode == 0:
@@ -555,12 +584,16 @@ def pack(root: Path) -> str:
         built = target.with_suffix(".new")
         stamp = int(time.time()) // 2 * 2
         moment = time.localtime(stamp)[:6]
+        kept = previous_entries(root)
         with zipfile.ZipFile(built, "w", zipfile.ZIP_DEFLATED) as archive:
             for f in files:
                 name = f.relative_to(src).as_posix()
                 source = f.read_bytes()
-                archive.writestr(zipfile.ZipInfo(name, moment), source)
-                archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", moment), compiled(source, str(target / name), stamp))
+                held = kept.get(name)
+                unchanged = held is not None and held.source == source and held.compiled[:4] == MAGIC_NUMBER
+                archive.writestr(zipfile.ZipInfo(name, held.moment if unchanged else moment), source)
+                archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", held.moment if unchanged else moment),
+                                 held.compiled if unchanged else compiled(source, str(root / ARCHIVE / name), stamp))
         refused = start_refused(built, root)
         if refused:
             built.unlink(missing_ok=True)
@@ -635,6 +668,7 @@ class Package:
     upgrade_mark: Callable
     wait_for_commands: Callable
     mark_all_seen: Callable
+    migrations_pending: Callable
     restarting: Callable
     managed: ModuleType
 
@@ -650,6 +684,8 @@ def loaded() -> Package:
     from features.form_of_address.controller import ship as ship_profiles
     from features.agent_sessions.handlers import stop_ended
     from migrations import run as migrate
+    from migrations import pending
+    from engine.ledger import applied
     from migrations import shipped
     from providers import PROVIDERS
     from providers.base import LIBRARY, HookCommand
@@ -663,7 +699,7 @@ def loaded() -> Package:
     return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
                    served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
                    ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"), stop_ended=stop_ended,
-                   publish=publish, upgrade_mark=upgrade_mark, wait_for_commands=wait_for_commands, mark_all_seen=mark_all_seen, restarting=restarting, managed=managed)
+                   publish=publish, upgrade_mark=upgrade_mark, wait_for_commands=wait_for_commands, mark_all_seen=mark_all_seen, migrations_pending=lambda root: bool(pending(applied(root))), restarting=restarting, managed=managed)
 
 
 if __name__ == "__main__":

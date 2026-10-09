@@ -417,6 +417,8 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     with tarfile.open(saved[0]) as archive:
         assert "environments/main/todo.json" in archive.getnames() and not any(name.startswith(("runtime", "attic")) for name in archive.getnames()), \
             "the copy holds the record and nothing of the runtime or earlier copies"
+    assert "under an hour old" in install.keep_copy(journal) and len(list((journal / "attic").glob("before-*.tar.gz"))) == 1, \
+        "a copy of the record that is under an hour old is not made again"
     with (journal / "runtime" / "upgrade.lock").open("a") as held:
         fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
         assert install.upgrade(journal.parent, journal) == ["another upgrade of this journal is running; this one stepped aside"], \
@@ -533,6 +535,44 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         (install.code(site_root) / "CHANGELOG.md").write_text('## 2.9.0 — Two\n<!-- new-feature {"id": "owl", "title": "Owl", "text": "Hoot", "button": "Use it"} -->\n')
         install.finish(site, site_root)
         assert new_feature.seen(site_root) == ["squire"], "an update of an existing install marks nothing as seen: the features it brings are announced"
+        copies = []
+        patch.setattr(install, "keep_copy", lambda root: copies.append(root) or "a copy of the record is kept")
+        patch.setattr(install, "loaded", lambda: replace(stand_in, migrations_pending=lambda root: False))
+        install.finish(site, site_root)
+        assert copies == [], "an upgrade with no migration to run keeps no copy of the record"
+        patch.setattr(install, "loaded", lambda: replace(stand_in, migrations_pending=lambda root: True))
+        assert "a copy of the record is kept" in install.finish(site, site_root) and copies == [site_root], "one that is about to migrate the record keeps a copy first"
+        patch.setattr(install, "loaded", lambda: stand_in)
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("install_unpatched", install.__file__)
+        real = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(real)
+        packing = site_root.parent / "packing" / ".journal"
+        (packing / "src" / "engine").mkdir(parents=True)
+
+        def written(changed: str) -> None:
+            for stub in (packing / "src").rglob("*.py"):
+                stub.unlink()
+            (packing / "src" / "__main__.py").write_text("print('main')\n")
+            (packing / "src" / "engine" / "__init__.py").write_text("")
+            (packing / "src" / "engine" / "clock.py").write_text(f"NOW = {changed!r}\n")
+
+        compiling = []
+        real_compiled = real.compiled
+        patch.setattr(real, "compiled", lambda source, name, stamp: compiling.append(name) or real_compiled(source, name, stamp))
+        patch.setattr(real, "start_refused", lambda built, root: "")
+        patch.setattr(real, "loaded", lambda: SimpleNamespace(held_builds=lambda root: set(), point=lambda root, built: (
+            (root / real.ARCHIVE).unlink(missing_ok=True), (root / real.ARCHIVE).symlink_to(built))))
+        written("one")
+        real.pack(packing)
+        first = real.previous_entries(packing)
+        assert len(compiling) == 3 and set(first) == {"__main__.py", "engine/__init__.py", "engine/clock.py"}, "the first pack compiles every file"
+        compiling.clear()
+        written("two")
+        real.pack(packing)
+        second = real.previous_entries(packing)
+        assert (compiling, second["__main__.py"] == first["__main__.py"], second["engine/clock.py"].source) == ([str(packing / real.ARCHIVE / "engine/clock.py")], True, b"NOW = 'two'\n"), \
+            "a pack after a change compiles only the file that changed and keeps the other entries as they were"
         patch.setattr(install, "retire", lambda site_root: 0)
         assert "migrations run" not in " ".join(lines) and "record already in shape" in lines, "a record already in shape is said so"
         patch.setattr(managed, "changed_managed", lambda site, site_root: ["a.md"])
