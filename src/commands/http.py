@@ -55,6 +55,12 @@ from commands.dispatch import dispatch  # noqa: F401
 RESTART_GRACE = 15
 
 
+def heavy(failure: str) -> bool:
+    """A logged hook failure that carries the machine's load, and the load was above its cores."""
+    load = failure.split()[4:5]
+    return bool(load) and float(load[0]) > (os.cpu_count() or 1)
+
+
 def unanswered(root: Path) -> None:
     f = runtime.hook_failures(root)
     try:
@@ -66,8 +72,12 @@ def unanswered(root: Path) -> None:
     since = min(started - RESTART_GRACE, float(marked.read_text() or started)) if marked.is_file() else started - RESTART_GRACE
     lines = [line for line in logged.splitlines() if len(line.split()) > 2 and not since <= float(line.split()[0]) <= started + RESTART_GRACE]
     f.unlink(missing_ok=True)
+    overloaded = [line for line in lines if heavy(line)]
+    if overloaded:
+        with log_file(root).open("a") as log:
+            log.write(f"the hook got no answer {len(overloaded)} times while the machine's load was above its {os.cpu_count()} cores: {overloaded[-1]}\n")
     by_env: dict[str, list[str]] = {}
-    for line in lines:
+    for line in [line for line in lines if line not in overloaded]:
         named = line.split()[3:4]
         by_env.setdefault(named[0] if named else runtime.env(root), []).append(line)
     for env, logged in by_env.items():
