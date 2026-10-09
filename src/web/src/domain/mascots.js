@@ -1,12 +1,13 @@
 // Where each voice's mascot stands on the chat box, read off the first frame of its art (256 px cells):
 // line: the row that rests on the box's top edge, the feet of a voice that stands and the seat of one that sits;
-// edge: the column that meets the box's right edge, the right side of a standing voice and the end of the seat of a sitting one, so its legs dangle over the corner.
+// edge: the column that stands 12 px inside the box's right edge: the right side of a standing voice, the end of the seat of a sitting one, so its legs hang over the corner;
+// a sitting voice sits no further right than keeps its widest frame within 40 cells of it, or the pane's padding clips its legs and props.
 export const PLACES = {
     butler: {edge: 211, line: 232},
     coach: {edge: 191, line: 232},
     colleague: {edge: 105, line: 170, sits: true},
-    homie: {edge: 130, line: 175, sits: true},
-    squire: {edge: 135, line: 170, sits: true},
+    homie: {edge: 165, line: 175, sits: true},
+    squire: {edge: 188, line: 170, sits: true},
 };
 
 export const STILL = {edge: 200, line: 232};
