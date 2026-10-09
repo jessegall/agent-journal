@@ -1,7 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from controllers.base import Controller
+from controllers.doc_hits import located, terms
 from resources import types
 from resources.base import SECTION, Refused
 from controllers.marks import action
@@ -47,6 +48,17 @@ class Docs(Controller):
     @action
     def search(self, term: str, archived: bool = False):
         return [r for r in super().search(term, archived) if not r.hidden]
+
+    @action
+    def locate(self, words: str) -> list[dict]:
+        """The documents that hold every word given, each with how well it matches and where the words are, as the library's search shows them."""
+        asked = terms(words)
+        if not asked:
+            return []
+        texts = self._texts()
+        candidates = [n for n, (_, text) in texts.items() if all(word in text for word in asked) or any(word in f"doc {n}" for word in asked)]
+        found = (located(self.rows.peek(n), asked) for n in sorted(candidates, reverse=True) if self.rows.exists(n) and not self.rows.peek(n).deleted)
+        return [asdict(hit) for hit in sorted(filter(None, found), key=lambda hit: -hit.score)]
 
     @action
     def file(self, title: str, path: str):
