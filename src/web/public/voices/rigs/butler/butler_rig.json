@@ -146,6 +146,42 @@
       ]
     },
     {
+      "name": "eyes",
+      "file": "butler_eyes_happy.png",
+      "order": 20.5,
+      "parent": "head",
+      "pivot": [
+        84,
+        83
+      ],
+      "states": {
+        "happy": "butler_eyes_happy.png",
+        "open": "butler_eyes_open.png",
+        "half": "butler_eyes_half.png",
+        "closed": "butler_eyes_closed.png",
+        "surprised": "butler_eyes_surprised.png",
+        "look_left": "butler_eyes_look_left.png",
+        "look_right": "butler_eyes_look_right.png",
+        "look_up": "butler_eyes_look_up.png",
+        "look_down": "butler_eyes_look_down.png"
+      }
+    },
+    {
+      "name": "mouth",
+      "file": "butler_mouth_closed.png",
+      "order": 20.6,
+      "parent": "head",
+      "pivot": [
+        84,
+        83
+      ],
+      "states": {
+        "closed": "butler_mouth_closed.png",
+        "open": "butler_mouth_open.png",
+        "smile": "butler_mouth_smile.png"
+      }
+    },
+    {
       "name": "bow_tie",
       "file": "butler_bow_tie.png",
       "order": 22,

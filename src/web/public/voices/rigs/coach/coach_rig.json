@@ -146,6 +146,42 @@
       ]
     },
     {
+      "name": "eyes",
+      "file": "coach_eyes_happy.png",
+      "order": 20.5,
+      "parent": "head",
+      "pivot": [
+        82,
+        79
+      ],
+      "states": {
+        "happy": "coach_eyes_happy.png",
+        "open": "coach_eyes_open.png",
+        "half": "coach_eyes_half.png",
+        "closed": "coach_eyes_closed.png",
+        "surprised": "coach_eyes_surprised.png",
+        "look_left": "coach_eyes_look_left.png",
+        "look_right": "coach_eyes_look_right.png",
+        "look_up": "coach_eyes_look_up.png",
+        "look_down": "coach_eyes_look_down.png"
+      }
+    },
+    {
+      "name": "mouth",
+      "file": "coach_mouth_closed.png",
+      "order": 20.6,
+      "parent": "head",
+      "pivot": [
+        82,
+        79
+      ],
+      "states": {
+        "closed": "coach_mouth_closed.png",
+        "open": "coach_mouth_open.png",
+        "smile": "coach_mouth_smile.png"
+      }
+    },
+    {
       "name": "cap",
       "file": "coach_cap.png",
       "order": 30,

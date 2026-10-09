@@ -146,6 +146,42 @@
       ]
     },
     {
+      "name": "eyes",
+      "file": "colleague_eyes_happy.png",
+      "order": 20.5,
+      "parent": "head",
+      "pivot": [
+        76,
+        89
+      ],
+      "states": {
+        "happy": "colleague_eyes_happy.png",
+        "open": "colleague_eyes_open.png",
+        "half": "colleague_eyes_half.png",
+        "closed": "colleague_eyes_closed.png",
+        "surprised": "colleague_eyes_surprised.png",
+        "look_left": "colleague_eyes_look_left.png",
+        "look_right": "colleague_eyes_look_right.png",
+        "look_up": "colleague_eyes_look_up.png",
+        "look_down": "colleague_eyes_look_down.png"
+      }
+    },
+    {
+      "name": "mouth",
+      "file": "colleague_mouth_closed.png",
+      "order": 20.6,
+      "parent": "head",
+      "pivot": [
+        76,
+        89
+      ],
+      "states": {
+        "closed": "colleague_mouth_closed.png",
+        "open": "colleague_mouth_open.png",
+        "smile": "colleague_mouth_smile.png"
+      }
+    },
+    {
       "name": "glasses",
       "file": "colleague_glasses.png",
       "order": 25,

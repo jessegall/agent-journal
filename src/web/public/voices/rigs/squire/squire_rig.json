@@ -146,6 +146,42 @@
       ]
     },
     {
+      "name": "eyes",
+      "file": "squire_eyes_happy.png",
+      "order": 20.5,
+      "parent": "head",
+      "pivot": [
+        112,
+        107
+      ],
+      "states": {
+        "happy": "squire_eyes_happy.png",
+        "open": "squire_eyes_open.png",
+        "half": "squire_eyes_half.png",
+        "closed": "squire_eyes_closed.png",
+        "surprised": "squire_eyes_surprised.png",
+        "look_left": "squire_eyes_look_left.png",
+        "look_right": "squire_eyes_look_right.png",
+        "look_up": "squire_eyes_look_up.png",
+        "look_down": "squire_eyes_look_down.png"
+      }
+    },
+    {
+      "name": "mouth",
+      "file": "squire_mouth_closed.png",
+      "order": 20.6,
+      "parent": "head",
+      "pivot": [
+        112,
+        107
+      ],
+      "states": {
+        "closed": "squire_mouth_closed.png",
+        "open": "squire_mouth_open.png",
+        "smile": "squire_mouth_smile.png"
+      }
+    },
+    {
       "name": "helmet_plume",
       "file": "squire_helmet_plume.png",
       "order": 30,

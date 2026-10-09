@@ -165,5 +165,31 @@
         ]
       }
     }
-  ]
+  ],
+  "blink": {
+    "name": "blink",
+    "duration": 240,
+    "tracks": {
+      "eyes": [
+        [
+          0,
+          {
+            "state": "happy"
+          }
+        ],
+        [
+          70,
+          {
+            "state": "closed"
+          }
+        ],
+        [
+          170,
+          {
+            "state": "happy"
+          }
+        ]
+      ]
+    }
+  }
 }
