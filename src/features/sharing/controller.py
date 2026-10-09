@@ -59,7 +59,7 @@ UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
 LAYOUT_FILE = "layout.json"
 HEALTH = "health"
 HEALTH_MARKER = "journal-share-server"
-SHAREABLE = re.compile(r"^(?:doc|report|collection|plan)[: ]\d+$")
+SHAREABLE = re.compile(r"^(?:doc|report|collection|plan|ticket)[: ]\d+$")
 USER_SHARE_FIELDS = {"approved", "target", "password", "comments", "expires"}
 
 
