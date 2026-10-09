@@ -193,6 +193,13 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     assert "before any other write" in held(elsewhere, "claude-2"), "a session in another environment is held by the same title"
     todos.create(title)
     assert "before any other write" not in held(elsewhere, "claude-2"), "filing the to-do releases every session that holds it, in every environment"
+    from controllers.types import Environments
+    from resources.types import EnvironmentKind
+    Environments(record, actor=SYSTEM).create("helper-ada", owner="helper:1", launched_from=record.env, kind=EnvironmentKind.HELPER)
+    reports.spent(record.root, "helper-ada", "command", "todo all", 400.0, working=400.0)
+    assert any("Run by the helper in environment helper-ada" in row.brief for row in Notifications(record, actor=SYSTEM).rows.every()), \
+        "a helper's slow command lands in its dispatcher's environment and names who ran it"
+
 
 
 def test_the_budget_is_tunable_per_environment():
