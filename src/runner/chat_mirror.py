@@ -184,7 +184,11 @@ def send_to_chat(root: Path, session: str, text: str, turn: str | None = None, s
     row = Agents(record, actor=SYSTEM).rows.by_title(session)
     if row is None:
         return False
-    ledger = DisplayedLedger(root, session)
+    return send_row_to_chat(record, row, text, turn, streamed)
+
+
+def send_row_to_chat(record: Record, row, text: str, turn: str | None = None, streamed: bool = False) -> bool:
+    ledger = DisplayedLedger(record.root, row.title)
     key = fingerprint(text)
     mark = key if turn is None else turn
     with ledger.changing() as held:
