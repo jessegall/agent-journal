@@ -5,7 +5,7 @@ import pstats
 import time
 from pathlib import Path
 
-from controllers.types import Agents, Notifications, Todos
+from controllers.types import Agents, Environments, Notifications, Todos
 from engine import runtime
 from engine.record import Record
 from engine.wording import digest, plural
@@ -59,7 +59,7 @@ class FaultReports:
         return bool(agent) and (told is None or agent.uses - int(told) >= TOLD_EVERY)
 
     def slow(self, record, kind: str, name: str, took: float, working: float | None = None, garbage: float = 0.0, waiting: float = 0.0,
-             after: float = 0.0, whole_reads: tuple[str, ...] = ()) -> None:
+             after: float = 0.0, whole_reads: tuple[str, ...] = (), by: str = "") -> None:
         if working is not None and working <= self.milliseconds(record, kind):
             return
         parts = [f"{working:.0f}ms of it working" if working is not None else "", f"{garbage:.0f}ms collecting garbage" if garbage >= 1 else "",
@@ -68,6 +68,7 @@ class FaultReports:
         spent = ", ".join(part for part in parts if part)
         title = f"{kind} {name} {OVER}"[:80]
         brief = f"{took:.0f}ms last{f' ({spent})' if spent else ''}, against a budget of {self.milliseconds(record, kind)}ms."
+        brief += f" Run by the helper in environment {by}." if by else ""
         self.file(record, title, brief, kind=kind, target=name, worst=took)
         self.answer(record, title, brief)
 
@@ -82,6 +83,15 @@ class FaultReports:
     def opened(record, title: str) -> bool:
         """Whether a to-do of this title stands open in any environment of the project."""
         return any(Todos(each, actor=SYSTEM).rows.by_title(title, standing=True) is not None for each in Record.every(record.root))
+
+    @staticmethod
+    def dispatcher(record) -> Record:
+        """The environment that reads a breach: a helper's own breaches go to the environment that dispatched it."""
+        place = Environments(record, actor=SYSTEM).rows.by_title(record.env)
+        while place is not None and place.helping and place.launched_from:
+            record = Record(record.root, place.launched_from)
+            place = Environments(record, actor=SYSTEM).rows.by_title(record.env)
+        return record
 
     def lift(self, root: Path, title: str) -> None:
         """A to-do of a breach title was filed: every session in every environment that holds its writes is released at once."""
@@ -130,14 +140,15 @@ class FaultReports:
         if took < min(BUDGET.values() or [0]) or cold(Path(root), kind, name) or runtime.tests_running(Path(root)):
             return
         try:
-            record = Record(Path(root), env)
+            ran = Record(Path(root), env)
+            record = self.dispatcher(ran)
             if self.feature.on(record, "log") and 0 < self.milliseconds(record, kind) < took:
                 logged(root, f"slow {kind} {name} {took:.0f}ms" + (f", {working:.0f}ms working" if working is not None else "")
                        + (f", {waiting:.0f}ms waiting on locks" if waiting >= 1 else "") + f", machine load {load():.1f} on {os.cpu_count()} cores")
             if load() > (os.cpu_count() or 1):
                 return
             if self.feature.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
-                self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads)
+                self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "")
                 if profile or stacks:
                     self.kept(root, name, took, profile, stacks)
         except (OSError, ValueError, KeyError):
