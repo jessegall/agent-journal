@@ -19,6 +19,7 @@ from engine.record import Record  # noqa: E402
 from engine.runtime import TESTS_RUNNING  # noqa: E402
 from engine import locks  # noqa: E402
 from controllers import stored  # noqa: E402
+from install import package_files  # noqa: E402
 from scripts.boot_guard import PROJECT  # noqa: E402
 
 
@@ -44,8 +45,13 @@ def installed(place: Path, code: Path) -> Path:
 
 def first_install(code: Path) -> Path:
     """The run's one install of this code, packed and started once, which tests read or copy and never change."""
-    name = f"installed-{hashlib.sha256(str(code).encode()).hexdigest()[:10]}"
-    return isolation.shared(name, lambda where: install(where, code)) / PROJECT / ".journal"
+    return isolation.kept(f"installed-{shipped_digest(code)}", lambda where: install(where, code)) / PROJECT / ".journal"
+
+
+def shipped_digest(code: Path) -> str:
+    """Names the install by the files the installer ships, so unchanged code finds the install an earlier run made."""
+    files = sorted(package_files(code))
+    return hashlib.sha256(b"".join(f.as_posix().encode() + (code / f).read_bytes() for f in files) + str(code).encode()).hexdigest()[:16]
 
 
 def install(place: Path, code: Path) -> Path:
