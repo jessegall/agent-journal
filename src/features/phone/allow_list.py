@@ -50,7 +50,7 @@ class Action:
 
 
 @dataclass(frozen=True)
-class SettingsWrite(Loaded):
+class ViewerSettingsWrite(Loaded):
     """What a settings write sets among the viewer's own settings."""
 
     viewer: dict = field(default_factory=dict)
@@ -151,7 +151,7 @@ VIEWER_SETTINGS = frozenset(("away", "chat_hidden", "color_scheme", "tour_seen")
 
 ASKS_TO_RUN = {
     post("/api/{env}/settings"): lambda record, body: writes_what_runs(record, body)
-    or not SettingsWrite.from_json(body).changes_only(record.viewer, VIEWER_SETTINGS),
+    or not ViewerSettingsWrite.from_json(body).changes_only(record.viewer, VIEWER_SETTINGS),
     post("/api/{env}/agent/{session}/relaunch"): lambda record, body: Relaunch.from_json(body).skip,
 }
 
