@@ -47,7 +47,7 @@ function entryOf(e, now) {
     const focus = focusOf(e);
     const tool = e.agent && e.agent.tool ? `${e.agent.tool} ${fileName(e.agent.file)}`.trim() : "";
     const {state, reason} = standing(e, plan, now);
-    const title = (row && row.title) || focus.title;
+    const title = (row && ((row.data && row.data.latest) || row.title)) || focus.title;
     return {
         key: e.name,
         env: e.name,
