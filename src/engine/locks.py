@@ -100,14 +100,19 @@ def claim(path: Path):
 
 
 @contextmanager
-def hold_record_writes(root: Path):
+def hold_record_writes(root: Path, waiting: bool = True):
+    """Holds every record write back while it runs and says whether it got the hold: a caller that must not wait gets False at once when another process holds it."""
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     with (root / MIGRATION_LOCK).open("a") as held:
-        acquire(held, fcntl.LOCK_EX)
+        if waiting:
+            acquire(held, fcntl.LOCK_EX)
+        elif not taken(held, fcntl.LOCK_EX):
+            yield False
+            return
         token = MIGRATIONS.set((*MIGRATIONS.get(), root))
         try:
-            yield
+            yield True
         finally:
             MIGRATIONS.reset(token)
             fcntl.flock(held, fcntl.LOCK_UN)
