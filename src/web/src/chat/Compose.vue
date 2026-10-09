@@ -8,7 +8,7 @@ import {store} from "../state/store.js";
 
 import Icon from "../kit/Icon.vue";
 import WaitEdge from "../kit/WaitEdge.vue";
-import {attach, refusal} from "./attachments.js";
+import {attach, overLimit, refusal} from "./attachments.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 
 const props = defineProps({
@@ -120,9 +120,9 @@ function escaped(e) {
 }
 
 function attached(files) {
-    const {added, refused} = attach(draft.files, files);
+    const {added, refused, oversized} = attach(draft.files, files);
     draft.files.push(...added);
-    draft.error = refused.length ? refusal(refused) : "";
+    draft.error = [...oversized.map(overLimit), ...(refused.length ? [refusal(refused)] : [])].join(" ");
 }
 
 function pasted(e) {

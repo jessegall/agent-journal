@@ -549,6 +549,10 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     sent = b"--b\r\nContent-Disposition: form-data; name=f; filename=notes.txt\r\n\r\nhello\r\n--b\r\nContent-Disposition: form-data; name=x\r\n\r\nskipped\r\n--b--\r\n"
     uploaded = ask("POST", f"/api/{record.env}/todo/{row.n}/upload", body={"_type": "multipart/form-data; boundary=b", "_raw": sent})
     assert uploaded.body == {"files": ["notes.txt"]}, "a file sent from the viewer is attached to the row, and a field with no file is left out"
+    from io import BytesIO
+    from engine.multipart import spooled, uploads
+    with spooled(BytesIO(sent), len(sent)) as spool:
+        assert [(u.name, bytes(u.data)) for u in uploads("multipart/form-data; boundary=b", spool)] == [("notes.txt", b"hello")], "a body spooled to disk and read from there carries the same file"
     fetched = ask("GET", f"/api/{record.env}/todo/{row.n}/files/notes.txt")
     assert (fetched.code, fetched.body) == (200, b"hello"), "an attached file comes back as it was sent"
     assert ask("GET", f"/api/{record.env}/todo/{row.n}/files/missing.txt").code == 404, "a file that is not attached is not found"

@@ -1,5 +1,6 @@
 import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
+import {UPLOAD_LIMIT, overLimit} from "../chat/attachments.js";
 import {store} from "../state/store.js";
 import {TEXT_ITEM, itemLabel} from "../domain/dumpPile.js";
 import {counted} from "../format/number.js";
@@ -30,6 +31,8 @@ export function earlierDumps(every) {
 }
 
 export async function startDump(text, files) {
+    const oversized = files.find((file) => file.size > UPLOAD_LIMIT);
+    if (oversized) throw new Error(overLimit(oversized));
     const row = await api.create("dump", text ? {brief: text} : {title: files[0].name.slice(0, 80), brief: ""});
     for (const file of files) await api.upload("dump", row.n, file);
     return row;
