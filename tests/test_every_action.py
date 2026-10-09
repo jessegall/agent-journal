@@ -63,7 +63,7 @@ CALLS = {
     "pluginDashboard": [1, "main"], "pluginLog": ["works"], "onlineAgents": [], "agentControls": ["claude"], "agentHooks": ["claude"],
     "saveAgentHooks": ["claude", {}], "list": ["todo"], "all": ["todo"], "dashboard": [["todo", "plan"]], "show": ["todo", 1],
     "create": ["todo", {"title": "walked by the viewer"}], "fieldChoices": ["todo", 1], "installPlugin": ["/nowhere/plugin"],
-    "upgradePlugin": [1, False], "planTimeline": [1], "hidePreview": ["doc", 1], "revision": [1, 1], "tasks": [AGENT_N],
+    "upgradePlugin": [1, False], "planTimeline": [1], "ticketStatus": [1], "shareView": ["chat"], "hidePreview": ["doc", 1], "revision": [1, 1], "tasks": [AGENT_N],
     "board": [{}], "shift": [1, "Doing", {"why": "walked"}], "cancelWork": [1], "reviseWork": [1, "change one card", WALK],
     "followUpWork": [1, "and one more", WALK], "requestWork": [1, "a new card", WALK], "handWork": [1, "doc:1", "from this doc", WALK],
     "ticketBoard": [1], "dismissQuestion": [1, "not needed"], "noteSuggestionWindow": [1], "answerSuggestion": [1, "No, don't do this"],
@@ -230,7 +230,7 @@ def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
     (code(record.root) / "CHANGELOG.md").write_text("# changes\n")
     keys = {
         "/api/manifest": {"actions", "actors", "build", "chat_kinds", "environment", "features", "fields", "groups", "methods", "models", "priority", "project", "scopes", "searchable", "types", "version", "views"},
-        "/api/summary": {"color", "environments", "helpers", "project", "root", "start", "started", "tickets", "version"},
+        "/api/summary": {"color", "environments", "helpers", "project", "root", "start", "started", "tickets", "updating", "version"},
         "/api/{env}/bar": {"queue"},
         "/api/{env}/family": {"links", "members"},
         "/api/agent-controls/claude": {"groups", "note", "provider"},
