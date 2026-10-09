@@ -13,7 +13,8 @@ from features.tickets.resource import CONFIRMED
 from resources.base import SYSTEM, Ref, Refused
 
 SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status"),
-                 "ticket": ("stage", "dependencies")}
+                 "ticket": ("stage", "dependencies", "board"),
+                 "board": ("stages", "goal", "done_when", "meanings")}
 
 
 def shared_fields(row, record: Record) -> dict:
@@ -40,6 +41,8 @@ class SharePages:
         return found if found.env else Ref(found.type, found.n, row.home_env)
 
     def _loaded_members(self, record: Record, row) -> list:
+        if row.type == "board":
+            return [ticket for ticket in Tickets(record, actor=SYSTEM).rows.standing() if ticket.board == row.n]
         members = []
         for ref in row.member_refs():
             try:

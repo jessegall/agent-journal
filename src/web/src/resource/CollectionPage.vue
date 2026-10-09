@@ -9,6 +9,7 @@ import {usePoll} from "../composables/poll.js";
 import {byRef, refParts} from "../domain/records.js";
 import {planProgress} from "../domain/plans.js";
 import {age} from "../format/time.js";
+import BoardLanes from "./BoardLanes.vue";
 import ResourceBody from "./ResourceBody.vue";
 import ResourceRow from "./ResourceRow.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
@@ -62,18 +63,20 @@ const members = computed(() =>
 const open = (r) => peekThere(r.env || route.value.env, r.type, r.n);
 const filePath = (r, name) => (r.env ? api.in(r.env) : api).fileUrl(r.type, r.n, name);
 
-const OWN_TABS = ["plan", "todo", "ticket"];
+const OWN_TABS = ["plan", "todo", "ticket", "board"];
 const ofType = (type) => members.value.filter((r) => r.type === type);
 const resources = computed(() => members.value.filter((r) => !OWN_TABS.includes(r.type)));
 const plans = computed(() => ofType("plan"));
 const todos = computed(() => ofType("todo"));
 const tickets = computed(() => ofType("ticket"));
+const boards = computed(() => ofType("board"));
 const tabs = computed(() =>
     [
         {key: "resources", title: "Resources", count: resources.value.length},
         {key: "plans", title: "Plans", count: plans.value.length},
         {key: "todos", title: "To-dos", count: todos.value.length},
         {key: "tickets", title: "Tickets", count: tickets.value.length},
+        {key: "boards", title: "Boards", count: boards.value.length},
     ].filter((t) => t.key === "resources" || t.count)
 );
 const tab = computed({
@@ -121,7 +124,12 @@ function hidePreview(r) {
         <template v-if="tabs.length > 1">
             <TabBar v-model="tab" class="tabs" :tabs="tabs" />
         </template>
-        <template v-if="tickets.length && tab === 'tickets'">
+        <template v-if="boards.length && tab === 'boards'">
+            <template v-for="r in boards" :key="r.at">
+                <BoardLanes :board="r" @open="open" />
+            </template>
+        </template>
+        <template v-else-if="tickets.length && tab === 'tickets'">
             <section class="tickets" aria-label="Tickets in this collection">
                 <template v-for="r in tickets" :key="r.at">
                     <div class="ticket">
