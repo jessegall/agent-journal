@@ -21,8 +21,11 @@ def remaining(root: Path) -> dict:
     version, until, now = held.get("version"), float(held.get("until", 0)), time.time()
     if not version:
         return {}
+    if held.get("starting") and runtime.upgrading(root):
+        cancel(root)
+        return {}
     if held.get("starting"):
-        return {} if runtime.upgrading(root) or now - until > STARTING_FOR else {"version": version, "seconds": 0, "starting": True}
+        return {} if now - until > STARTING_FOR else {"version": version, "seconds": 0, "starting": True}
     return {"version": version, "seconds": max(0, round(until - now))} if until - now > -1 else {}
 
 
