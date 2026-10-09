@@ -100,8 +100,10 @@ button.mark:hover {
 }
 
 .mark .ico {
+    align-self: start;
     width: 12px;
     height: 12px;
+    margin-top: 2px;
 }
 
 .mark.tinted .ico {
