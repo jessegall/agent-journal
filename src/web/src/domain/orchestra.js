@@ -24,8 +24,6 @@ function nameOf(kind, n, row) {
     return kind ? "Ticket agent" : MAIN_AGENT;
 }
 
-const fileName = (path) => (path || "").split("/").pop();
-
 function standing(e, plan, now) {
     const state = envState(e);
     const counts = e.counts || {};
@@ -45,7 +43,7 @@ function entryOf(e, now) {
     const row = ownerRow(kind, n);
     const plan = (e.plans || []).find((p) => p.status !== "done") || (e.plans || [])[0] || null;
     const focus = focusOf(e);
-    const tool = e.agent && e.agent.tool ? `${e.agent.tool} ${fileName(e.agent.file)}`.trim() : "";
+    const doing = (e.agent && e.agent.doing) || "";
     const {state, reason} = standing(e, plan, now);
     const title = (row && ((row.data && row.data.latest) || row.title)) || focus.title;
     return {
@@ -56,13 +54,14 @@ function entryOf(e, now) {
         label: LABELS[kind] ? LABELS[kind](n) : "",
         name: nameOf(kind, n, row),
         title,
-        now: tool || (focus.known ? focus.title : ""),
+        says: (e.agent && e.agent.says) || "",
+        doing,
         model: (e.agent && e.agent.model) || (row && (row.model || (row.data && row.data.model))) || "",
         plan,
         at: (e.agent && e.agent.at) || 0,
         since: (e.work && e.work.created) || 0,
         waits: Boolean((e.work && e.work.awaiting) || (e.counts || {}).questions || (e.agent && e.agent.asking)),
-        card: {type: "ticket", n: Number(n), title, session: "", state, reason: reason || tool},
+        card: {type: "ticket", n: Number(n), title, session: "", state, reason: reason || doing},
     };
 }
 
@@ -81,7 +80,8 @@ function subagentsOf(e) {
         of: `of ${parent}`,
         name: splitTask(sub.task).name,
         title: splitTask(sub.task).job || sub.session,
-        now: sub.type || "",
+        says: "",
+        doing: sub.type || "",
         model: sub.model || "",
         plan: null,
         at: sub.running ? sub.active || sub.at : sub.ended || sub.at,

@@ -3,7 +3,7 @@ import time
 from features.status_bar.group import grouped, ran
 from features.status_bar.queue import queue as messages
 from features.status_bar.queue import HOLD
-from features.status_bar.bar import bar, current
+from features.status_bar.bar import bar, current, doing
 from tests.conftest import fresh, refused
 
 
@@ -113,6 +113,8 @@ def test_the_whole_bar_is_the_queue_and_nothing_else():
         commands = [read("before.py"), edit("now.py", NOW + 1)]
 
     assert [one["key"] for one in bar(Row(), NOW + 2)["queue"]] == ["reading before.py", "editing now.py"], "the bar is the queue"
+    assert (doing(Row(), NOW + 2), doing(type("Idle", (), {"commands": []})(), NOW)) == ("editing now.py", ""), \
+        "an agent's cell is given the bar's line for its latest activity, and nothing when it has done nothing"
 
 
 def test_a_terminal_answering_a_query_is_not_the_user_typing():
