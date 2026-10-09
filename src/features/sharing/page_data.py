@@ -7,10 +7,22 @@ from engine.markers import MARKER
 from engine.record import Record
 from features.format import SHARED, formatted, shape
 from features.plans.controller import Plans
+from features.tickets.controller import Tickets
+from features.tickets.resource import CONFIRMED
 from resources.base import SYSTEM, Ref, Refused
 
 SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status"),
-                 "ticket": ("stage",)}
+                 "ticket": ("stage", "dependencies")}
+
+
+def shared_fields(row, record: Record) -> dict:
+    """The fields of a row a share carries; a ticket shares only the waits its owner confirmed."""
+    data = {key: row.data[key] for key in SHARED_FIELDS.get(row.type, ()) if key in row.data}
+    if "dependencies" in data:
+        data["dependencies"] = {ref: stance for ref, stance in data["dependencies"].items() if stance == CONFIRMED}
+    if row.type == "ticket":
+        data["status"] = Tickets(Record(record.root, row.home_env or record.env), actor=SYSTEM).status(row.n)
+    return data
 
 
 def scoped(text: str, scope: set[str]) -> str:
@@ -74,7 +86,7 @@ class SharePages:
                 "sections": [{"title": scoped(s.get("title", ""), scope), "body": scoped(s.get("body", ""), scope)} for s in shaped.get("sections") or []],
                 "files": sorted(row.files), "pictures": dict(getattr(row, "pictures", {}) or {}),
                 "members": [m.ref for m in self._members(share, row) if m.ref in scope],
-                "completed": row.completed, "data": {key: row.data[key] for key in SHARED_FIELDS.get(row.type, ()) if key in row.data},
+                "completed": row.completed, "data": shared_fields(row, record),
             }
         described = described_types()
         kinds = {Ref.parse(ref).type for ref in rows}

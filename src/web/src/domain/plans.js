@@ -119,3 +119,9 @@ export function planButton(p) {
     if (p.completed) return null;
     return {ready: ["approve", "Approve"], reviewing: ["approve", "Approve"], waiting: ["continue", "Continue"], done: ["finish", "Close"]}[p.data.status] || null;
 }
+
+export function planProgress(resource) {
+    if (resource.type !== "plan") return null;
+    const {phases = [], status = "building", current = 1} = resource.data;
+    return {total: phases.length, finished: status === "done" ? phases.length : Math.max(0, current - 1), phase: Math.min(current, phases.length) || 1, status};
+}

@@ -23,6 +23,7 @@ export const route = computed(() => {
         n: n ? (/^\d+$/.test(n) ? Number(n) : n) : 0,
         q: params.get("q") || "",
         sub: params.get("sub") || "",
+        tab: params.get("tab") || "",
         plugin: params.get("plugin") || "",
         line: Number(params.get("line") || 0),
         at: params.get("at") || "",
@@ -112,6 +113,13 @@ export function showSession(sub) {
     else params.delete("sub");
     const rest = params.toString().replace(/%3A/g, ":");
     location.replace(`#${path}${rest ? `?${rest}` : ""}`);
+}
+
+export function showTab(tab) {
+    const [path, query = ""] = location.hash.replace(/^#/, "").split("?");
+    const params = new URLSearchParams(query);
+    params.set("tab", tab);
+    location.replace(`#${path}?${params.toString().replace(/%3A/g, ":").replace(/%2C/g, ",")}`);
 }
 
 export function unpeek() {

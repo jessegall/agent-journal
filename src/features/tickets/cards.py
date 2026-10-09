@@ -72,6 +72,20 @@ class TicketCards:
         return {**lanes.shaped(), "slots": asdict(self._slots(running, sessions)), "roles": self._roles(), "questions": asked,
                 "drafting": board.drafting, "expected": board.expected}
 
+    @action
+    def status(self, n: int) -> dict:
+        """Where a ticket stands: its plan with the progress of its rows, what its agent does now, and whether it works or awaits."""
+        from features.plans.progress import counts
+        ticket = self.load(n)
+        state = self._runtime(ticket, Sessions(self.record.root).all(), len(self._running()))
+        if not ticket.work_environment:
+            return {"state": state.text, "kind": state.kind}
+        place = Record(self.record.root, ticket.work_environment)
+        plan = self._plans(ticket).load(ticket.plan) if ticket.plan else None
+        done, total = counts(place, plan) if plan else (0, 0)
+        doing = next((w.title for w in Works(place, actor=SYSTEM).rows.standing() if not w.parked), "")
+        return {"plan": plan.title if plan else "", "done": done, "total": total, "now": doing, "kind": state.kind, "state": state.text}
+
     def _roles(self) -> list:
         from engine.organization import organization
         try:

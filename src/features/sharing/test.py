@@ -778,6 +778,16 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     Collections(here, actor=AGENT).add(group.n, [f"ticket-1/{away.ref}"])
     assert f"ticket-1/{away.ref}" in sharing._scope(pile_share), "a member from another environment is shared with the collection"
     assert sharing._shared_data(pile_share)["rows"][f"ticket-1/{away.ref}"]["title"] == "From the ticket", "and is read from its own environment"
+    from features.boards.controller import Boards
+    from features.tickets.controller import Tickets
+    board = Boards(here, actor=USER).create("Features", stages=["Ideas", "Building"])
+    tickets = Tickets(here, actor=USER)
+    first, second = tickets.create("First", board=board.n), tickets.create("Second", board=board.n)
+    tickets.depend(second.n, first.n)
+    Collections(here, actor=USER).add(group.n, [second.ref])
+    shared = sharing._shared_data(pile_share)["rows"][second.ref]["data"]
+    assert (shared["stage"], shared["dependencies"], shared["status"]) == ("Ideas", {first.ref: "confirmed"}, {"state": "", "kind": ""}), \
+        "a shared ticket carries its stage, the waits its owner confirmed and where its work stands, and no plan"
     drawn = page.markdown("## Plan\n\nSee `a<b` and **bold** text\n- one\n- two\n\n1. first\n> quoted\n> twice\n```\ncode <x>\n```\n| a | b |\n|---|---|\n| 1 | 2 |")
     assert all(part in drawn for part in ("<h4>Plan</h4>", "<code>a&lt;b</code>", "<strong>bold</strong>", "<ul><li>one</li><li>two</li></ul>", "<ol><li>first</li></ol>")), \
         "a shared page draws headings, code, bold text and lists"
