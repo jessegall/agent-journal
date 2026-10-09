@@ -1,5 +1,6 @@
 import cProfile
 import io
+import os
 import pstats
 import time
 from pathlib import Path
@@ -132,7 +133,9 @@ class FaultReports:
             record = Record(Path(root), env)
             if self.feature.on(record, "log") and 0 < self.milliseconds(record, kind) < took:
                 logged(root, f"slow {kind} {name} {took:.0f}ms" + (f", {working:.0f}ms working" if working is not None else "")
-                       + (f", {waiting:.0f}ms waiting on locks" if waiting >= 1 else ""))
+                       + (f", {waiting:.0f}ms waiting on locks" if waiting >= 1 else "") + f", machine load {load():.1f} on {os.cpu_count()} cores")
+            if load() > (os.cpu_count() or 1):
+                return
             if self.feature.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
                 self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads)
                 if profile or stacks:
@@ -148,6 +151,10 @@ class FaultReports:
             return False
         self.threw(record, message, where, stack, kind)
         return True
+
+
+def load() -> float:
+    return os.getloadavg()[0]
 
 
 def cold(root: Path, kind: str, name: str) -> bool:
