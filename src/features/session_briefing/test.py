@@ -283,6 +283,10 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     assert driver._post("todo 6 next", "journal") is False, "and keeps typing them for a while rather than losing more"
     driver.whisper("fact 9 \u2014 a whisper the channel cannot take")
     assert driver.held == [], "a whisper the channel cannot take is dropped, never typed into the terminal"
+    assert driver._held().typed_until > time.time(), "the lost line put the agent on typed lines for a while"
+    driver.recheck_channel()
+    assert driver._held().typed_until == 0.0, "a channel that answers again ends the typed fallback at the next check, without waiting it out"
+    assert DRIVERS["codex"](record, "codex-1").recheck_channel() is None, "a provider with no channel is asked nothing"
     alive.unlink()
     assert driver._post("todo 8 next", "journal") is False, "a channel whose file is gone takes nothing, and the line is typed instead"
 
