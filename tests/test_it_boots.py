@@ -25,7 +25,7 @@ from engine.record import Record
 from engine.sessions import Sessions, alive, hold_build
 from engine.stop import ask
 from engine.stored import append_text, write_text
-from install import STUBS, fetch
+from install import STUBS, fetch, version_in
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM
 from scripts.boot_guard import PROJECT, WAIT, cleared, ended, launches
@@ -324,6 +324,16 @@ def test_an_upgrade_keeps_a_build_a_live_session_runs_from(tmp_path):
     before = code_stamp(watched)
     point(root, old[0])
     assert code_stamp(watched) != before, "the server watches journal.pyz itself, so a new build it points at restarts the server"
+
+
+def test_an_upgrade_to_the_version_already_installed_fetches_nothing_and_keeps_the_build(tmp_path):
+    root = installed(tmp_path, CODE)
+    repository = released(tmp_path)
+    subprocess.run(["git", "tag", f"v{version_in(root / 'src')}"], cwd=repository, capture_output=True, timeout=WAIT, check=True)
+    build = (root / "journal.pyz").resolve()
+    upgraded = upgrade_from(repository, root)
+    assert ("package already at" in upgraded.stdout, "Traceback" in upgraded.stdout + upgraded.stderr, (root / "journal.pyz").resolve()) == (True, False, build), \
+        f"an upgrade to the installed version fetches and packs nothing:\n{upgraded.stdout}{upgraded.stderr}"
 
 
 def heals(root: Path, good: Path):
