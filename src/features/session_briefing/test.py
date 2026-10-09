@@ -272,11 +272,17 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     time.sleep(0.01)
     written({"type": "queue-operation", "operation": "enqueue", "timestamp": stamp(), "content": '<channel source="journal" from="journal">\ntodo 7 next\n</channel>'},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
+    assert driver._post("fact 9 \u2014 title\nits brief", "journal") is True, "a line of two lines is handed to the channel"
+    time.sleep(0.01)
+    written({"type": "queue-operation", "operation": "enqueue", "timestamp": stamp(), "content": '<channel source="journal" from="journal">\nfact 9 \u2014 title its brief\n</channel>'},
+            *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
     assert driver._post("todo 9 next", "journal") is True, "a line queued while the agent works, as a queue operation, keeps the channel in use"
     time.sleep(0.01)
     written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
     assert driver._post("work 1 open", "journal") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
     assert driver._post("todo 6 next", "journal") is False, "and keeps typing them for a while rather than losing more"
+    driver._whisper("fact 9 \u2014 a whisper the channel cannot take")
+    assert driver.held == [], "a whisper the channel cannot take is dropped, never typed into the terminal"
     alive.unlink()
     assert driver._post("todo 8 next", "journal") is False, "a channel whose file is gone takes nothing, and the line is typed instead"
 

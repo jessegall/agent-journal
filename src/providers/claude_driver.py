@@ -38,6 +38,10 @@ class Handed(Loaded):
         return {"lines": [asdict(h) for h in self.lines], "typed_until": self.typed_until}
 
 
+def flat(text: str) -> str:
+    return " ".join(text.split())
+
+
 def claude_state() -> Path:
     return Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home()) / ".claude.json"
 
@@ -109,7 +113,7 @@ class ClaudeDriver(Driver):
         pid = self.pid()
         return bool(pid) and Path(row.inbox).stem == str(pid)
 
-    def _post(self, line: str, by: str) -> bool:
+    def _post(self, line: str, by: str, tracked: bool = True) -> bool:
         root = self.record.root
         pid = self.pid()
         try:
@@ -119,8 +123,9 @@ class ClaudeDriver(Driver):
                 return False
             with runtime.channel_queue(root, pid).open("a") as queue:
                 queue.write(json.dumps({"content": line, "meta": {"from": by}}) + "\n")
-            held = self._held()
-            write_json(self._handed_file(), replace(held, lines=(*held.lines[-HANDED_KEPT:], HandedLine(line[:HANDED_TEXT], time.time()))).to_json())
+            if tracked:
+                held = self._held()
+                write_json(self._handed_file(), replace(held, lines=(*held.lines[-HANDED_KEPT:], HandedLine(line[:HANDED_TEXT], time.time()))).to_json())
             return True
         except OSError:
             return False
@@ -160,9 +165,9 @@ class ClaudeDriver(Driver):
         if not waiting or not last or not last.transcript:
             return True
         rows = Claude().recent_rows(Path(last.transcript))
-        arrived = [text for text in map(self._channel_text, rows) if CHANNEL_MARK in text]
+        arrived = [flat(text) for text in map(self._channel_text, rows) if CHANNEL_MARK in text]
         times = [row.at for row in rows]
-        lost = [h for h in waiting if not any(h.line in text for text in arrived) and sum(1 for at in times if at > h.at) >= MOVED_ON]
-        kept = tuple(h for h in waiting if not any(h.line in text for text in arrived) and h not in lost)
+        lost = [h for h in waiting if not any(flat(h.line) in text for text in arrived) and sum(1 for at in times if at > h.at) >= MOVED_ON]
+        kept = tuple(h for h in waiting if not any(flat(h.line) in text for text in arrived) and h not in lost)
         write_json(self._handed_file(), (Handed(typed_until=time.time() + TYPED_FOR) if lost else Handed(lines=kept)).to_json())
         return not lost

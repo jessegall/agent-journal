@@ -115,9 +115,11 @@ class Agent(Actor):
         for e in [e for e in self.pending if settled(self.record, e)]:
             self.pending.remove(e)
             self.notified(e)
-        yielding = [e for e in self.pending if event_data(self.record, e).get("yields")]
-        line, groups = render([e for e in self.pending if e not in yielding], self.record)
-        sent = self.driver.send(line, groups=groups, yielding=render(yielding, self.record)[0] if yielding else "")
+        whispers = [e for e in self.pending if event_data(self.record, e).get("whisper")]
+        yielding = [e for e in self.pending if event_data(self.record, e).get("yields") and e not in whispers]
+        line, groups = render([e for e in self.pending if e not in yielding and e not in whispers], self.record)
+        sent = self.driver.send(line, groups=groups, yielding=render(yielding, self.record)[0] if yielding else "",
+                                whispers=render(whispers, self.record)[0] if whispers else "")
         done = list(self.pending) if sent else []
         for e in done:
             if TYPES[e.type].stamped_when_notified:
