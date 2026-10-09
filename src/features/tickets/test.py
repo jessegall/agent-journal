@@ -485,8 +485,11 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     tick(record)
     assert any("Reviewing a ticket's plan, step 1 of 3" in line for line in nudges(record)), \
         "the minute check hands the orchestrator the review of the waiting plan, ahead of the board it runs"
+    Boards(record, actor=AGENT).orchestrate("off")
+    assert [waiting.n for waiting in Tickets(record, actor=SYSTEM)._awaiting_orchestrator()] == [ticket.n], \
+        "who orchestrates is the board's orchestrator field: once Play's run has ended, its waiting plans still reach that environment"
     Tickets(record, actor=AGENT).approve_plan(ticket.n)
-    assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it"
+    assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it, with or without a live run"
     assert "no plan waiting for you to approve" in refused(lambda: tickets.approve_plan(ticket.n)), "a plan that is already approved is not approved again"
     Plans(Record(record.root, "ticket-1"), actor=SYSTEM).update(plan.n, status="ready")
     tickets.approve_plan(ticket.n)
