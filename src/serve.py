@@ -300,6 +300,16 @@ def warm_replies(root: Path) -> None:
     Comments(record, actor=SYSTEM).rows.summaries()
 
 
+def warm_texts(root: Path) -> None:
+    """What a search of the to-dos and the messages reads, each row's text, so the first search after a start does not read every row."""
+    from controllers.types import Messages, Todos
+    from engine.record import Record
+    from resources.base import SYSTEM
+    record = Record(root, default_env(root))
+    for controller in (Todos, Messages):
+        controller(record, actor=SYSTEM)._texts()
+
+
 def warm_changed(root: Path) -> None:
     from commands.parser import parser
     from features.open_viewer.manifest import manifest
@@ -314,6 +324,7 @@ def warmed(root: Path, warm: threading.Event) -> None:
         warm_work(root)
         warm_replies(root)
         warm_viewer(root, default_env(root), warm)
+        warm_texts(root)
         WARMERS.append(lambda: warm_changed(root))
         read_transcripts(root)
     except Exception:
