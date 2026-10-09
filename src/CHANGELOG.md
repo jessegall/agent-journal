@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.18 — Helper stops that wait for the agent, and a steadier test suite
+- Saying something to a helper, stopping it, finishing it and the stopped notice all ask one method whether the helper's agent still runs, and a stop returns only once that answer is no, so a helper is never reported stopped while its agent is still running.
+- Closing a login and dropping a phone in a hosted journal go through one vault method. The imports check finds the test files that import from tests/ again.
+- A plain `pytest` in the repository runs one worker per core: `-n auto` is part of the default options.
+- Every browser scenario connects to one headless Chromium per test worker instead of launching its own; the browser tests take about a quarter less CPU. Ten fixed pauses in the scenarios now wait for what they were waiting for, and the inspector padding check no longer fails now and then.
+- Test installs start from the run's first packed build, so each install takes about half the CPU. A test that waits for processes left after a session stops at its deadline instead of hanging on a busy machine, and a scratch viewer server that never answers is stopped instead of left running. The installer's `AGENT_JOURNAL_UNVERIFIED` switch, which only the tests set, is gone.
+
 ## 2.267.17 — Open tabs reload, plugins update from the viewer, and whispers stop repeating
 - An open viewer tab sees a new build and reloads itself: the manifest named the bundle with a pattern that only matched the old bundle name, so no tab ever noticed an update. A tab already open on the old bundle needs one manual reload.
 - A plugin whose repository holds a newer version shows an Update bar at the top. A daily check of each plugin's repository finds it; Update runs the plugin's upgrade and leaves a chat mark naming the plugin and its version, on your side when you pressed Update.
