@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.67 — No cold dashboard after a formatting change
+- A formatting setting change warms the dashboard in the background, so the first request after it no longer formats every row view on the spot.
+
 ## 2.267.66 — Plans as rows in a collection, and one folder scan per request
 - A collection's Plans tab lists each plan as a full-width row: its title, the ticket it comes from, the phase it is in, a progress bar with done out of total, and its state; a click opens it, on the collection page and in a share.
 - A dashboard request scans each type's folder once and hands the rows to the listing and the counts.
