@@ -261,6 +261,12 @@ class Claude(Provider):
         write_text(f, json.dumps({**known, "mcpServers": {**servers, name: wanted}}, indent=2) + "\n")
         return True
 
+    def mcp_servers(self, project: Path) -> dict[str, str]:
+        own = read_json(Path.home() / ".claude.json", dict, {})
+        listed = [read_json(project / ".mcp.json", dict, {}), own, (own.get("projects") or {}).get(str(project)) or {}]
+        servers = {name: server for found in listed for name, server in (found.get("mcpServers") or {}).items() if isinstance(server, dict)}
+        return {name: str(server.get("url", "")) for name, server in servers.items()}
+
     def drop_mcp(self, project: Path, name: str) -> bool:
         f = project / ".mcp.json"
         known = read_json(f, dict, {})

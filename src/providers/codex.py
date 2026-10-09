@@ -3,6 +3,7 @@ from functools import cache
 from dataclasses import dataclass, field, replace
 import re
 import shutil
+import tomllib
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, Turn
@@ -337,6 +338,16 @@ class Codex(Provider):
         f.parent.mkdir(parents=True, exist_ok=True)
         write_text(f, wanted.lstrip("\n"))
         return True
+
+    def mcp_servers(self, project: Path) -> dict[str, str]:
+        servers: dict[str, str] = {}
+        for config in (Path.home() / self.home / "config.toml", project / self.home / "config.toml"):
+            try:
+                found = tomllib.loads(config.read_text()).get("mcp_servers") or {}
+            except (OSError, tomllib.TOMLDecodeError):
+                continue
+            servers.update({name: str(server.get("url", "")) for name, server in found.items() if isinstance(server, dict)})
+        return servers
 
     def drop_mcp(self, project: Path, name: str) -> bool:
         f = project / self.home / "config.toml"
