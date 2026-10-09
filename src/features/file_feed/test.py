@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from controllers.types import Agents, Works
+from engine import files
 from engine.files import announce, announce_writes, blobs
 from providers import skill_folders
 from features.file_feed.feed import PAGE, Side, edited_file, edits_before, edits_since
@@ -222,3 +223,19 @@ def test_edits_in_an_agents_own_worktree_reach_its_feed_and_a_shell_command_coun
     shell = lambda command: Hook.read({"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "cwd": str(tree)}, Provider.tool_kinds)
     assert [may_change_files(shell(command)) for command in ("cat a.py", "grep -rn one .", "python3 build.py", "git apply fix.patch", "journal todo all")] == \
         [False, False, True, True, False], "any shell command that is not only a read, a search or a journal command is checked for changes"
+
+
+def test_a_project_that_is_a_repository_and_holds_nested_repositories_feeds_the_edits_of_each():
+    project = project_with({"a.py": "one\n"})
+    nested = project.root / "api"
+    nested.mkdir()
+    (nested / "main.py").write_text("one\ntwo\n")
+    for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "start"]):
+        subprocess.run(["git", *command], cwd=nested, capture_output=True, timeout=10)
+    files.REPOSITORIES.clear()
+    project.changed()
+    (nested / "main.py").write_text("one\nTWO\nthree\n")
+    (project.root / "a.py").write_text("one\nmore\n")
+    project.changed()
+    cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(project.record, project.agent, 0, PAGE).edits}
+    assert cards == {"api/main.py": ("edit", 2, 1), "a.py": ("edit", 1, 0)}, "the edits of the project's own repository and of a repository nested in it are both in the feed"
