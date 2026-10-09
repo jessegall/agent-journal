@@ -355,6 +355,8 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero(monkeypatch):
         assert made[-1] == f"{noun} {CONTROLLERS[noun](record, actor=SYSTEM).all()[-1].n}", f"creating a {noun} ends its output with one line naming what it made"
     assert answered("services", "list") != "", "services lists"
     assert ran("services", "bogus")[0] == 1, "a services word it does not know is refused in words"
+    status, text = ran("secret", "run", "nosuch", "echo", "hi")
+    assert {"exit": status, "in words": text.startswith("! ")} == {"exit": 1, "in words": True}, f"a word that takes a list of words reaches its controller and is refused in words, never a crash: {text}"
     from commands import queries
     from engine.services import Manager
     assert queries.attic_text(record, "never written anywhere").startswith("nothing in the removed environments mentions"), "an attic search with no hit says so"
@@ -378,7 +380,7 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero(monkeypatch):
 def test_no_command_argument_shares_a_name_with_a_global_option():
     features.load()
     top = parser()
-    globals_ = {action.dest for action in top._actions if action.dest not in ("help", "command")}
+    globals_ = {action.dest for action in top._actions if action.dest not in ("help", "_command")}
     clashes = [f"{group} {verb}: {action.dest}"
                for group, nouns in top._subparsers._group_actions[0].choices.items() if nouns._subparsers
                for verb, command in nouns._subparsers._group_actions[0].choices.items()
