@@ -174,7 +174,7 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     assert call("Read", file_path="x.py") == "", "and once those lines are folded the load counts"
     import time
     from providers import transcript_cache
-    from providers.transcript_cache import TranscriptCache, code_mark
+    from providers.transcript_cache import FOLD_FORMAT, TranscriptCache
     folds, lines = TranscriptCache(tmp_path / "folds"), tmp_path / "lines.jsonl"
 
     def counted(state: int, row: dict) -> int:
@@ -182,7 +182,7 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     lines.write_text('{"a": 1}\n')
     assert folds.folded(lines, counted, int, dict) == 1, "a transcript is folded line by line"
     lines.write_text('{"a": 1}\n{"a": 2}\n')
-    with folds.lock((str(lines), "counted", code_mark())):
+    with folds.lock((str(lines), "counted", FOLD_FORMAT)):
         began = time.monotonic()
         assert (folds.folded(lines, counted, int, dict), time.monotonic() - began < 1) == (1, True), \
             "a fold another thread is busy with is not waited on: the last finished state comes back at once"
@@ -194,9 +194,9 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
         lines.write_text('{"a": 1}\n{"a": 2}\n{"a": 3}\n')
         assert folds.folded(lines, counted, int, dict) == 2, "a long stretch to catch up on is folded behind, never while the caller waits"
         waited = time.monotonic() + 2
-        while folds.folds[(str(lines), "counted", code_mark())][1] != 3 and time.monotonic() < waited:
+        while folds.folds[(str(lines), "counted", FOLD_FORMAT)][1] != 3 and time.monotonic() < waited:
             time.sleep(0.01)
-        assert folds.folds[(str(lines), "counted", code_mark())][1] == 3, "and is there for the next call once done"
+        assert folds.folds[(str(lines), "counted", FOLD_FORMAT)][1] == 3, "and is there for the next call once done"
         transcript_cache.FOLD_IN_PLACE_BYTES, jsonl.FRESH_BYTES = 1_000_000, 20
         tail = tmp_path / "tail.jsonl"
         tail.write_text("".join(f'{{"a": {n}}}\n' for n in range(10)))

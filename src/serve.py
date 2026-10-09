@@ -284,6 +284,8 @@ def warm_changed(root: Path) -> None:
 
 def warmed(root: Path, warm: threading.Event) -> None:
     try:
+        warm_commands()
+        warm_work(root)
         warm_viewer(root, default_env(root), warm)
         WARMERS.append(lambda: warm_changed(root))
         read_transcripts(root)
@@ -321,8 +323,6 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     tell_threads_on_signal(root)
     allow_open_files()
     server = serve(root, port)
-    warm_commands()
-    warm_work(root)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
     changed = threading.Event()
     halting = threading.Event()
