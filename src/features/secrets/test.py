@@ -74,6 +74,11 @@ def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch
     row = Secrets(record, actor=USER).create("GitHub", kind="api key")
     agent = Secrets(record, actor=AGENT)
     assert "lists no programs" in refused(lambda: agent.run("GitHub", "cat")), "a secret that lists no programs is given to none"
+    assert "Programs it may go to" in refused(lambda: agent.run("GitHub", "cat")), "the refusal names the control on the Secrets page"
+    assert "only you name the programs" in refused(lambda: agent.update(row.n, programs=["cat"])), "an agent never sets the programs itself"
+    assert "never given to bash" in refused(lambda: agent.propose_programs(row.n, "bash")), "a shell is not even proposed"
+    agent.propose_programs(row.n, "cat")
+    assert (Secrets(record, actor=SYSTEM).load(row.n).programs, Secrets(record, actor=SYSTEM).load(row.n).proposed) == ([], ["cat"]), "a proposal waits for the confirmation"
     from migrations.m0074_secrets_name_their_programs import run as tell_unlisted
     assert len(tell_unlisted(record.root)) == 1 and any("GitHub (secret" in notice.brief for notice in Notices(record, actor=SYSTEM).all()), \
         "an upgrade tells the user which secrets list no programs"
