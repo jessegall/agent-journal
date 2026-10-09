@@ -265,10 +265,8 @@ class Helpers(Controller):
         row = self._unfinished(n, "finished")
         handed = self._handable(numbers_in(todos))
         words = f"{handed_over(handed)}\n{text}" if handed else text
-        running = agent_runs(self.record, row)
-        if running:
-            tell_in(self.record, row.environment, row.provider, words)
-        else:
+        running = tell_in(self.record, row.environment, row.provider, words)
+        if not running:
             self._revive(row, words)
         home = Record(self.record.root, row.environment)
         Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)

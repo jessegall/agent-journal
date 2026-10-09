@@ -484,11 +484,17 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 f"{into if into != 'HEAD' else 'the project branch'} with journal ticket merge. "
                 f"Never merge it yourself, into that branch or any other."
                 + (f" Its owner is the {ticket.owner} domain: hand its work to that domain's lead first." if ticket.owner else "")
-                + (f" It waits on {', '.join(waits)}: write its plan now, but its plan is approved and its work begins once they are merged; "
-                   f"then bring {into if into != 'HEAD' else 'the project branch'} into your branch before you change code." if (waits := self._waiting_on(ticket)) else "")
+                + self._wait_note(ticket, into)
                 + (f" The user declined its proposed wait on {', '.join(ticket.declined)}: do not wait for them." if ticket.declined else "")
                 + "".join(f" It came from {ref}: read that request and the questions answered on it before you plan."
                           for ref in ticket.refs if ref.startswith("message:")))
+
+    def _wait_note(self, ticket, into: str) -> str:
+        waits = self._waiting_on(ticket)
+        if not waits:
+            return ""
+        return (f" It waits on {', '.join(waits)}: write its plan now, but its plan is approved and its work begins once they are merged; "
+                f"then bring {into if into != 'HEAD' else 'the project branch'} into your branch before you change code.")
 
     def start_queued(self) -> None:
         for n in self._queue():
