@@ -67,7 +67,7 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
             </template>
             <template v-if="entry.since">
                 <p class="aw-line">
-                    <span class="aw-key">Running for</span>
+                    <span class="aw-key">Running</span>
                     <JobTimer :since="entry.since" />
                 </p>
             </template>
