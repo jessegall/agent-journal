@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.63 — Counts that follow the change
+- A type's counts on the dashboard follow the rows a change touches instead of walking every row again, so a busy type such as messages no longer slows the dashboard.
+
 ## 2.267.62 — The viewer keeps its address
 - A project can set its viewer's port (viewer.port), and a restart waits for that port while the journal's own previous server still holds it, instead of moving to the next free one.
 
