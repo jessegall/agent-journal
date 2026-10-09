@@ -3,6 +3,8 @@ import threading
 import time
 from pathlib import Path
 
+import pytest
+
 import features
 from controllers.types import Features, Notifications
 from engine import runtime
@@ -12,6 +14,11 @@ from features.dev_faults.feature import DevFaults
 from resources.base import SYSTEM
 from tests.conftest import fresh
 from tests.kit import report
+
+
+@pytest.fixture(autouse=True)
+def quiet_machine(monkeypatch):
+    monkeypatch.setattr("features.dev_faults.reports.load", lambda: 0.0)
 
 
 def turned(record, on: bool):
@@ -252,7 +259,7 @@ def test_a_switch_sent_under_its_old_name_too_keeps_the_new_names_value():
     assert saved["features"]["dev_faults.budget"] is False, "the old name 'budget' in the same list must not turn it back on"
 
 
-def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budget():
+def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budget(monkeypatch):
     features.load()
     record, reports = fresh(), FEATURES["dev_faults"].reports
     turned(record, True)
@@ -282,6 +289,11 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
     assert "request GET /api/pages is slower than its budget" in notified(record), "once warm, the budget holds again"
     reports.spent(record.root, record.env, "request", "GET /api/main/board", 400)
     assert "request GET /api/main/board is slower than its budget" not in notified(record), "a request's first, cold run after a start is let be"
+    monkeypatch.setattr("features.dev_faults.reports.load", lambda: 500.0)
+    reports.spent(record.root, record.env, "request", "GET /api/main/loaded", 400)
+    reports.spent(record.root, record.env, "request", "GET /api/main/loaded", 400)
+    assert "request GET /api/main/loaded is slower than its budget" not in notified(record), "a breach while the machine's load is above its cores is logged, not filed"
+    monkeypatch.setattr("features.dev_faults.reports.load", lambda: 0.0)
     reports.spent(record.root, record.env, "request", "GET /api/main/board", 400)
     assert "request GET /api/main/board is slower than its budget" in notified(record), "its next run is held to the budget"
     from serve import environmental
