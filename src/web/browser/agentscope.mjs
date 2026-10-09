@@ -24,7 +24,6 @@ await runScenarios(process.argv[2], {
         await page.goto(`${url}#/main/agent/${agent}?sub=${SUBAGENT.session}`);
         await page.getByText("Terminal", {exact: true}).first().click();
         await page.getByText("No terminal of its own").waitFor({timeout: 10000});
-        await page.waitForTimeout(2500);
         await shot(page, "subagent-terminal");
         journal("agent", "delete", String(agent), "--why", "cleaning up");
     },
