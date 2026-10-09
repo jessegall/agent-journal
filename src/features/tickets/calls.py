@@ -37,11 +37,11 @@ def calls(tickets, ticket) -> list[tuple[str, str, dict, int]]:
 def ended_turns(place: Record, ticket) -> list[tuple[str, str, dict, int]]:
     """The last report of a ticket's agent when its turn ended after the orchestrator last spoke to it, whichever of its agent rows ended it, so a final report is never lost for lack of a message."""
     stopped = [row for row in Agents(place, actor=SYSTEM).rows.every()
-               if row.data["event"] == HookEvent.STOP and row.data["last_message"] and row.data["at"] > ticket.told]
+               if row.event == HookEvent.STOP and row.last_message and float(row.at) > ticket.told]
     if not stopped:
         return []
-    last = max(stopped, key=lambda row: row.data["at"])
-    return [("ticket_replied", f"turn:{last.n}:{int(last.data['at'])}", {"text": last.data["last_message"][:300]}, 0)]
+    last = max(stopped, key=lambda row: float(row.at))
+    return [("ticket_replied", f"turn:{last.n}:{int(float(last.at))}", {"text": last.last_message[:300]}, 0)]
 
 
 def waits_on_people(root, text: str) -> bool:
