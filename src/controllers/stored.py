@@ -26,6 +26,7 @@ def wholes(rows: list, part_of) -> list:
 SUMMARIES: dict[str, tuple] = {}
 STANDING: dict[str, tuple] = {}
 REFERRED: dict[str, tuple] = {}
+COUNTED: dict[tuple[str, str], tuple] = {}
 HELD = Memo()
 PACKS = Memo()
 INDEXED: dict[str, dict] = {}
@@ -230,7 +231,26 @@ class RowStore:
         for ref in row["refs"]:
             index.setdefault(ref, {})[row["n"]] = row
 
+    def counted(self, name: str, weigh: Callable[[dict], tuple[int, ...]], width: int) -> tuple[int, ...]:
+        """Sums weigh over the summaries, kept in step with them: a change adds and takes away only the rows it touched."""
+        rows = self.summaries()
+        key = (str(self.folder()), name)
+        held = COUNTED.get(key)
+        if held and held[0] is rows:
+            return held[1]
+        totals = tuple(sum(column) for column in zip(*map(weigh, rows))) or (0,) * width
+        COUNTED[key] = (rows, totals, weigh)
+        return totals
+
     def _carried(self, folder: Path, before: list[dict], rows: list[dict], changes: list[tuple[dict | None, dict | None]]) -> None:
+        self._carried_index(folder, before, rows, changes)
+        for key, held in [(key, held) for key, held in COUNTED.items() if key[0] == str(folder) and held[0] is before]:
+            _, totals, weigh = held
+            for gone, added in changes:
+                totals = tuple(total - was + now for total, was, now in zip(totals, weigh(gone) if gone else (0,) * len(totals), weigh(added) if added else (0,) * len(totals)))
+            COUNTED[key] = (rows, totals, weigh)
+
+    def _carried_index(self, folder: Path, before: list[dict], rows: list[dict], changes: list[tuple[dict | None, dict | None]]) -> None:
         held = REFERRED.get(str(folder))
         if not held or held[0] is not before:
             return

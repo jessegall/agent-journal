@@ -189,3 +189,26 @@ def test_a_row_another_process_changed_or_removed_is_patched_into_the_held_list_
     todos.rows.path(third.n).unlink()
     todos.rows._note(third.n)
     assert [row["n"] for row in Todos(record, actor=SYSTEM).rows.summaries()] == [first.n, second.n], "a row whose file is gone leaves the list"
+
+
+def test_a_type_keeps_its_counts_in_step_with_every_row_a_change_touches():
+    from overview.counts import counts, weigh
+    features.load()
+    record = fresh()
+    written = Messages(record, actor=AGENT)
+    reader = Messages(record, actor=USER)
+
+    def walked() -> dict:
+        rows = written.rows.summaries()
+        every, opened, unread = (sum(column) for column in zip(*map(weigh, rows))) if rows else (0, 0, 0)
+        return {"all": every, "open": opened, "unread": unread}
+
+    assert counts(written) == {"all": 0, "open": 0, "unread": 0}
+    first, second, third = (written.create(text).n for text in ("one", "two", "three"))
+    assert counts(written) == walked() == {"all": 3, "open": 3, "unread": 3}, "new rows are added one by one"
+    reader.read(second)
+    assert counts(written) == walked() == {"all": 3, "open": 3, "unread": 2}, "a row the user has seen is no longer unread"
+    Messages(record, actor=SYSTEM).complete(first, how="handled")
+    assert counts(written) == walked() == {"all": 3, "open": 2, "unread": 1}, "a closed row leaves the open and unread counts"
+    Messages(record, actor=SYSTEM).delete(third, "mistake")
+    assert counts(written) == walked() == {"all": 2, "open": 1, "unread": 0}, "a deleted row leaves every count"
