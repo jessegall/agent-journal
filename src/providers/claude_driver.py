@@ -69,6 +69,11 @@ class ClaudeDriver(Driver):
     LISTENING = 15.0
     MOVE_TO_BACKGROUND = b"\x02"
     ELSEWHERE = "Message @"
+    ASKS_ON_SCREEN = True
+    ASKING = (b"Doyouwanttoproceed?", b"Doyouwanttomake", b"Doyouwanttocreate")
+    ASKED_COMMAND = re.compile(r"(?:Bash command|Run shell command)\s+(.+?)\s+Do you want to proceed", re.S)
+    READY = b"?forshortcuts"
+    BUSY = b"esctointerrupt"
     name = "claude"
 
     @classmethod

@@ -97,6 +97,7 @@ class Engine:
         self.relayed = None
         self.peer_growth = Growth()
         self.failure_growth = Growth()
+        self.screen_call = ""
         self.typed_at = 0.0
         self.ticked_at = 0.0
         self.probed_at = 0.0
@@ -257,8 +258,9 @@ class Engine:
         if row is None:
             return
         asked = asking_row(driver.asked())
-        if asked.get("call") == row.asking.get("call"):
+        if asked.get("call") == row.asking.get("call") or (not asked and row.asking.get("call") != self.screen_call):
             return
+        self.screen_call = asked.get("call", "")
         Agents(self.record, actor=SYSTEM).update(row.n, asking=asked)
 
     def permitted(self) -> str:

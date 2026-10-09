@@ -58,6 +58,12 @@ class Driver(ABC):
     CONFIRM_AFTER = 0.0
     TAKES_CHANNEL = False
     ASKS_ON_SCREEN = False
+    ASKING: tuple = ()
+    ASKED_COMMAND: re.Pattern | None = None
+    ASKED_TOOL = "Bash"
+    READY = b""
+    BUSY = b""
+    PROMPT_TAIL = 8192
     SKIP_ARGS = ()
     RESUMING: dict[str, int] = {}
     PRINTED_SESSION: re.Pattern | None = None
@@ -220,7 +226,10 @@ class Driver(ABC):
         self._wrote(self.ALLOW if allow else self.DENY)
 
     def asked(self) -> Asking | None:
-        return None
+        if not self.asking():
+            return None
+        found = list(self.ASKED_COMMAND.finditer(self._screen_text())) if self.ASKED_COMMAND else []
+        return Asking(self.ASKED_TOOL, " ".join(found[-1][1].split())[:300] if found else "a command", time.time())
 
     def alive(self) -> bool:
         return self.fd >= 0 or typist.reachable(typist.path(self.record.root, self.session))
@@ -432,7 +441,20 @@ class Driver(ABC):
         return bool(self.PROMPT.search(self.last_printed().rstrip()))
 
     def asking(self) -> bool:
-        return False
+        """Whether the screen shows a question waiting for an answer: one of the asking phrases printed after the last ready or busy mark."""
+        if not self.ASKING:
+            return False
+        screen = self._screen()
+        return max(screen.rfind(phrase) for phrase in self.ASKING) > max(screen.rfind(self.READY), screen.rfind(self.BUSY))
+
+    def _screen_text(self) -> str:
+        return self._printed_tail().decode(errors="replace")
+
+    def _screen(self) -> bytes:
+        return b"".join(self._printed_tail().split())
+
+    def _printed_tail(self) -> bytes:
+        return plain(self.printed_tail(self.PROMPT_TAIL))
 
     def awaits_answer(self) -> bool:
         report = self.last_report()
