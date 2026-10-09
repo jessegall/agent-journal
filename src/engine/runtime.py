@@ -8,6 +8,7 @@ from engine.stored import read_json, write_json, write_text
 DEFAULT_ENV = "main"
 WARM_UP = 20.0
 STARTED: list[float] = [0.0]
+RESTARTED_AT: list[float] = [0.0]
 
 
 def folder(root: Path) -> Path:
@@ -159,7 +160,16 @@ def started_file(root: Path) -> Path:
 
 def mark_started(root: Path) -> None:
     STARTED[0] = time.time()
+    RESTARTED_AT[0] = restart_began(root)
+    restarting(root).unlink(missing_ok=True)
     write_text(started_file(root), str(STARTED[0]))
+
+
+def restart_began(root: Path) -> float:
+    try:
+        return float(restarting(root).read_text())
+    except (OSError, ValueError):
+        return 0.0
 
 
 def server_started(root: Path) -> float:
