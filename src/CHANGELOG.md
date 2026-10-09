@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.26 — Tickets plan ahead, closing test cards, and a locked viewer while updating
+- A ticket that waits on another starts its agent and writes its plan; the wait holds only approving the plan, so implementation begins once the tickets it waits on are merged.
+- A helper's 'Running tests' card closes when its run ends, also after it was moved to the background or killed.
+- The viewer is blurred and locked whenever the journal is upgrading, from any upgrade path and also after a refresh, and reloads when it is done.
+
 ## 2.267.25 — Collection tabs for plans, to-dos and tickets
 - A collection's page and its share show Resources, Plans, To-dos and Tickets as tabs of their own; a tab shows only when the collection holds that kind.
 
