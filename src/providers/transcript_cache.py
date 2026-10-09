@@ -1,10 +1,7 @@
-import importlib.util
 import pickle
-import pkgutil
 import time
 from collections import deque
 from copy import deepcopy
-from functools import cache
 from threading import Lock, Thread, get_ident
 from pathlib import Path
 from typing import Callable
@@ -24,15 +21,7 @@ STATES = "states"
 CURSOR = "cursor"
 
 
-SHAPED_BY = ("engine.transcript",)
-
-
-@cache
-def code_mark() -> str:
-    import providers
-    names = [*(f"providers.{module.name}" for module in sorted(pkgutil.iter_modules(providers.__path__), key=lambda found: found.name)), *SHAPED_BY]
-    sources = [importlib.util.find_spec(name) for name in names]
-    return digest("\n".join(spec.loader.get_source(spec.name) or "" for spec in sources), 12)
+FOLD_FORMAT = 1  # raised only when the shape of a kept fold or of a turn changes; a kept state older than that is not read
 
 
 def size_of(path: Path | None) -> int | None:
@@ -59,12 +48,15 @@ class TranscriptCache:
             return self.locks.setdefault(key, Lock())
 
     def file(self, key: tuple) -> Path:
-        return self.folder / STATES / f"{digest('|'.join(key), 20)}.pickle"
+        return self.folder / STATES / f"{digest('|'.join(map(str, key)), 20)}.pickle"
 
     def stored(self, key: tuple) -> tuple | None:
         try:
             return pickle.loads(self.file(key).read_bytes())
+        except FileNotFoundError:
+            return None
         except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError, TypeError):
+            self.file(key).unlink(missing_ok=True)
             return None
 
     def keep(self, key: tuple, offset: int, state, every: float, behind: bool = False) -> None:
@@ -106,7 +98,7 @@ class TranscriptCache:
         size = size_of(path)
         if size is None:
             return []
-        key = ("transcript", str(path), code_mark())
+        key = ("transcript", str(path), FOLD_FORMAT)
         offset, _, turns, _ = self.held_turns(path, key, size)
         if size - offset > FOLD_IN_PLACE_BYTES:
             self.turns_behind(path, key, extend)
@@ -172,7 +164,7 @@ class TranscriptCache:
 
     @staticmethod
     def fold_key(path: Path, fold, start) -> tuple:
-        return str(path), fold.__name__, code_mark(), *getattr(start, "__dataclass_fields__", ())
+        return str(path), fold.__name__, FOLD_FORMAT, *getattr(start, "__dataclass_fields__", ())
 
     def caught_up(self, path: Path, fold, start) -> bool:
         size = size_of(path)
