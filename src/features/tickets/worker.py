@@ -1,7 +1,7 @@
-from features.agent_sessions.launch import PROVIDER, start_agent_in
+from features.agent_sessions.launch import start_agent_in
 from features.plans.controller import Plans
 from features.plans.resource import PHASE
-from providers import DRIVERS
+from providers import DEFAULT_PROVIDER, DRIVERS
 from resources.base import SYSTEM
 from resources.types import EnvironmentKind
 
@@ -32,6 +32,6 @@ def start_worker(record, plan) -> str:
     name = worker_environment(plan)
     Plans(record, actor=SYSTEM).delegate(plan.n)
     if plan.worktree == SHARED:
-        Plans(record, actor=SYSTEM).update(plan.n, branch=DRIVERS[PROVIDER].branch(name))
+        Plans(record, actor=SYSTEM).update(plan.n, branch=DRIVERS[DEFAULT_PROVIDER].branch(name))
     return start_agent_in(record, name, name, f"Where the worker agent of plan {plan.n} orchestrates it", plan.ref, kickoff(plan), EnvironmentKind.TICKET)
 

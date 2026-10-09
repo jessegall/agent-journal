@@ -346,6 +346,10 @@ class Provider(ABC):
                          context=self.context(hook), asking=asking_row(self.asking(hook)), last_message=self.latest_words(hook), prompted=self.prompted(hook),
                          transcript_facts=self.session(hook.transcript))
 
+    def start_refusal(self, folder: Path) -> str:
+        """Why an agent of this provider would stop at start in this folder, or nothing when it would not."""
+        return ""
+
     def latest_words(self, hook: Hook) -> str:
         """What the agent last said, as the hook reports it: a provider whose hooks do not carry it reads it from the transcript."""
         return hook.last_message

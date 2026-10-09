@@ -261,8 +261,9 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     settings = record.root.parent / ".claude" / "settings.json"
     settings.parent.mkdir(exist_ok=True)
     settings.write_text('{"hooks": []}')
-    assert "hooks that are not an object" in refused(lambda: Helpers(record, actor=AGENT).dispatch("Zoe", "a job", "codex", "gpt-5.5")), \
-        "a checkout whose settings.json Claude Code would reject is not launched into"
+    assert "hooks that are not an object" in refused(lambda: Helpers(record, actor=AGENT).dispatch("Zoe", "a job", "claude", "sonnet")), \
+        "a checkout whose settings.json Claude Code would reject is not launched into by a Claude helper"
+    assert Helpers(record, actor=AGENT).dispatch("Zed", "a job", "codex", "gpt-5.5").startswith("helper"), "and a provider that takes no such file is not held back by it"
     Helpers(Record(record.root, f"{record.env}-rhea"), actor=AGENT).report("The hooks spend 40ms in imports")
     assert Helpers(record, actor=AGENT).load(1).report == "The hooks spend 40ms in imports", "the row keeps the report"
     relayed = Messages(record, actor=SYSTEM).all()[-1]

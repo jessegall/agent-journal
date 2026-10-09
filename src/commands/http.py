@@ -33,7 +33,7 @@ from engine.stepped import call_of
 from runner.spool import replay
 from runner.stepping import report_step
 from engine.record import Record
-from providers import PROVIDERS
+from providers import DEFAULT_PROVIDER, PROVIDERS
 from providers.payload import Hook
 from resources.base import OPENED, PROJECT, USER, Refused, titled
 from engine.stored import last_lines
@@ -158,7 +158,7 @@ class Forgotten(Loaded):
 @dataclass(frozen=True)
 class StartedJournal(Loaded):
     root: str = ""
-    agent: str = "claude"
+    agent: str = DEFAULT_PROVIDER
 
 
 @dataclass(frozen=True)

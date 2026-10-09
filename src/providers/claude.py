@@ -483,6 +483,19 @@ class Claude(Provider):
         used = next((row.tokens for row in reversed(self.recent_rows(path)) if row.tokens is not None), None)
         return None if used is None else round(100 * used / self.window(hook, used), 1)
 
+    def start_refusal(self, folder: Path) -> str:
+        path = folder / ".claude" / "settings.json"
+        if not path.is_file():
+            return ""
+        try:
+            settings = json.loads(path.read_text())
+        except ValueError:
+            return f"{path} is not valid JSON, so Claude Code would stop a helper at start with a dialog it cannot answer: fix the file first"
+        if not isinstance(settings, dict) or not isinstance(settings.get("hooks", {}), dict):
+            return (f"{path} holds hooks that are not an object, so Claude Code would stop a helper at start with a dialog it cannot answer: "
+                    f"make hooks an object or take it out of the file first")
+        return ""
+
     def turn(self, row: Row, line: int) -> Turn | None:
         if row.type == "attachment" and row.queued.kind == "peer":
             row = replace(row, type="user", origin=row.queued, text=row.prompt, blocks=())

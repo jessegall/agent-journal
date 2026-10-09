@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 
 from controllers.types import CONTROLLERS
 from engine.viewer import last
+from providers import DEFAULT_PROVIDER
 from providers.drivers import Driver
 from runner.engine import Engine
 from engine.record import Record
@@ -56,7 +57,7 @@ def cli(root: Path, env: str, argv: tuple, runs: int) -> float:
 
 def hook(root: Path, env: str, runs: int, command: list[str]) -> float:
     payload = json.dumps({"hook_event_name": "PreToolUse", "session_id": "speed-probe", "tool_name": "Read", "tool_input": {"file_path": "README.md"}})
-    return timed(lambda: subprocess.run([*command, "claude", str(root)], input=payload, capture_output=True, text=True, timeout=120, cwd=root.parent,
+    return timed(lambda: subprocess.run([*command, DEFAULT_PROVIDER, str(root)], input=payload, capture_output=True, text=True, timeout=120, cwd=root.parent,
                                         env={**os.environ, ACTIVE_ENV: "1", "JOURNAL_ENV": env}), runs)
 
 
