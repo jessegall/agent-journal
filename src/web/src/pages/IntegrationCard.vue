@@ -2,41 +2,24 @@
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {saveSettings} from "../actions/settings.js";
-import {usePoll, pollKey} from "../composables/poll.js";
-import {fetchingOn, isOn, keyOf, keyWords, loginWords, mcpOn, refusedKey, settingsWith, stateWords, switchWords} from "../domain/integrations.js";
+import {useIntegrationState} from "../composables/integrationState.js";
+import {loginLine, loginWords, mcpOn, refusedKey, settingsWith, stateWords, switchWords} from "../domain/integrations.js";
+import {showSession} from "../route.js";
 import Btn from "../kit/Btn.vue";
 import Console from "../kit/Console.vue";
-import SecretPicker from "../kit/SecretPicker.vue";
-import SwitchCase from "../kit/SwitchCase.vue";
 import Switch from "../kit/Switch.vue";
 import {store} from "../state/store.js";
-import GmailChoices from "./GmailChoices.vue";
-import LinearChoices from "./LinearChoices.vue";
 
 const props = defineProps({feature: {type: Object, required: true}});
-const EVERY = 15000;
-const on = computed(() => isOn(store.settings, props.feature.name));
-const key = computed(() => keyOf(store.settings, props.feature.name));
-const words = computed(() => keyWords(props.feature.title));
-const state = ref(null);
+const {on, state} = useIntegrationState(props.feature);
 const line = computed(() => stateWords(props.feature.title, on.value, state.value, refusedKey(props.feature, state.value)));
 const detail = computed(() => (on.value ? state.value?.last_error || "" : ""));
 const detailShown = ref(false);
-
-usePoll(
-    pollKey(),
-    () => (on.value ? api.integration(props.feature.name) : Promise.resolve(null)),
-    EVERY,
-    (got) => (state.value = got),
-    () => on.value
-);
-
 const switches = computed(() => switchWords(props.feature.title));
 const mcp = computed(() => mcpOn(store.settings, props.feature.name));
-const fetching = computed(() => fetchingOn(store.settings, props.feature.name));
 const setMcp = (next) => saveSettings(settingsWith(store.settings, props.feature.name, {use_mcp: next}));
-const setFetching = (next) => saveSettings(settingsWith(store.settings, props.feature.name, {fetching: next}));
 const login = computed(() => loginWords(props.feature.title));
+const loggedIn = computed(() => loginLine(props.feature.title, state.value));
 const signing = ref(false);
 
 async function logIn() {
@@ -48,19 +31,7 @@ async function logIn() {
     }
 }
 
-const checking = ref(false);
-
-async function checkNow() {
-    checking.value = true;
-    try {
-        state.value = await api.checkIntegration(props.feature.name);
-    } finally {
-        checking.value = false;
-    }
-}
-
 const switchTo = (next) => saveSettings({features: {[props.feature.name]: next}});
-const pick = (variable) => saveSettings(settingsWith(store.settings, props.feature.name, {key: variable}));
 </script>
 
 <template>
@@ -76,47 +47,30 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
         <template v-if="on">
             <template v-if="feature.mcp_server">
                 <div class="use">
+                    <span>{{ login.label }}</span>
+                    <Btn small :busy="signing" @click="logIn">{{ login.button }}</Btn>
+                </div>
+                <p class="abstract" data-login>{{ signing ? login.waiting : loggedIn }}</p>
+                <div class="use">
                     <span>{{ switches.mcp }}</span>
                     <Switch :on="mcp" :title="switches.mcp" @change="setMcp" />
                 </div>
-                <p class="abstract">{{ switches.mcpHelp }}</p>
             </template>
-            <div class="use">
-                <span>{{ switches.fetching }}</span>
-                <Switch :on="fetching" :title="switches.fetching" @change="setFetching" />
-            </div>
-        </template>
-        <h4 class="key-label">{{ words.label }}</h4>
-        <SecretPicker data-picker="key" :value="key" :picked-line="words.picked" :none-line="words.none" :note="words.note" @pick="pick" />
-        <template v-if="on && fetching">
-            <template v-if="feature.mcp_server">
+            <p class="state" data-state>{{ line }}</p>
+            <template v-if="detail">
                 <div class="acts">
-                    <Btn small :busy="signing" @click="logIn">{{ login.button }}</Btn>
+                    <Btn small @click="detailShown = !detailShown">{{ detailShown ? "Hide" : "Show" }}</Btn>
                 </div>
-                <p class="abstract">{{ signing ? login.waiting : login.line }}</p>
-            </template>
-            <SwitchCase :value="feature.name">
-                <template #gmail>
-                    <GmailChoices />
+                <template v-if="detailShown">
+                    <Console><pre class="detail">{{ detail }}</pre></Console>
                 </template>
-                <template #linear>
-                    <LinearChoices :states="state ? state.choices : []" />
-                </template>
-            </SwitchCase>
-        </template>
-        <p class="state" data-state>{{ line }}</p>
-        <template v-if="detail">
-            <div class="acts">
-                <Btn small @click="detailShown = !detailShown">{{ detailShown ? "Hide" : "Show" }}</Btn>
-            </div>
-            <template v-if="detailShown">
-                <Console><pre class="detail">{{ detail }}</pre></Console>
             </template>
-        </template>
-        <template v-if="on && fetching && key">
             <div class="acts">
-                <Btn small :busy="checking" @click="checkNow">Check now</Btn>
+                <Btn small @click="showSession(feature.name)">Settings</Btn>
             </div>
+        </template>
+        <template v-else>
+            <p class="state" data-state>{{ line }}</p>
         </template>
     </article>
 </template>
@@ -168,11 +122,5 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-}
-
-.key-label {
-    margin: 4px 0 0;
-    font-size: 12px;
-    font-weight: 600;
 }
 </style>

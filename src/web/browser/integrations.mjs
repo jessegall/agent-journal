@@ -18,15 +18,13 @@ const leavingThemOff = (cases) =>
     );
 
 await runScenarios(process.argv[2], leavingThemOff({
-    async "Linear is off at first and its card says how the key and the state read"(page, url) {
+    async "Linear is off at first and its card shows only the switch and the state, with the key on its settings page"(page, url) {
         await page.goto(`${url}#/main/integrations`);
         const card = page.locator('[data-integration="linear"]');
         await card.waitFor();
         await page.getByText("Outside services the journal can reach for you").first().waitFor();
         await card.getByText("Use Linear").waitFor();
-        await card.getByText("Key", {exact: true}).waitFor();
-        await card.getByText("No key is picked, so Linear is not reached.").waitFor();
-        await card.getByText("no command can use it").waitFor();
+        if (await card.getByText("Key", {exact: true}).count()) throw new Error("the card shows the key, which belongs on the settings page");
         if ((await card.getByRole("switch", {name: "Use Linear", exact: true}).getAttribute("aria-checked")) !== "false") throw new Error("Linear starts switched on");
         await card.locator("[data-state]").getByText("Off", {exact: true}).waitFor();
         await shot(page, "integrations-off");
@@ -41,13 +39,25 @@ await runScenarios(process.argv[2], leavingThemOff({
         await page.getByText("Not set").first().waitFor();
         await page.goto(`${url}#/main/integrations`);
         const card = page.locator('[data-integration="linear"]');
-        await card.locator('[data-picker="key"]').getByText(title).click();
-        await card.getByText(`Linear signs in with the secret ${title}.`).waitFor();
         await card.getByRole("switch", {name: "Use Linear", exact: true}).click();
+        await card.getByText("Not logged in to Linear.").waitFor();
+        await card.getByRole("button", {name: "Log in"}).waitFor();
+        await card.getByRole("switch", {name: "Agents can use Linear directly"}).waitFor();
         await card.locator("[data-state]").getByText(/Not checked yet|Last checked|Could not reach Linear/).waitFor();
-        await card.getByText("Webhook signing secret").waitFor();
-        await card.getByText(/Paste this address into Linear's webhook settings|Turn on sharing to get an address/).waitFor();
+        await card.getByRole("button", {name: "Settings"}).click();
+        const settings = page.locator('[data-settings="linear"]');
+        await settings.getByText("Linear settings").waitFor();
+        const reading = settings.getByRole("switch", {name: "Read Linear into tickets"});
+        if ((await reading.getAttribute("aria-checked")) !== "false") throw new Error("reading Linear into tickets starts switched on");
+        await reading.click();
+        await settings.locator('[data-picker="key"]').getByText(title).click();
+        await settings.getByText(`Linear signs in with the secret ${title}.`).waitFor();
+        await settings.getByText("Webhook signing secret").waitFor();
+        await settings.getByText(/Paste this address into Linear's webhook settings|Turn on sharing to get an address/).waitFor();
         await page.reload();
+        await page.locator('[data-settings="linear"]').getByRole("switch", {name: "Read Linear into tickets", checked: true}).waitFor();
+        await shot(page, "integrations-settings");
+        await page.getByRole("button", {name: "Integrations"}).click();
         await page.locator('[data-integration="linear"]').getByRole("switch", {name: "Use Linear", exact: true, checked: true}).waitFor();
         await shot(page, "integrations-on");
         const raw = '{"errors":[{"message":"Authentication required, not authenticated"}]}';
@@ -71,17 +81,21 @@ await runScenarios(process.argv[2], leavingThemOff({
         const switched = page.waitForResponse(written);
         await card.getByRole("switch", {name: "Use Gmail", exact: true}).click();
         await switched;
-        await card.locator("[data-gmail-account]").waitFor();
-        await card.locator("[data-gmail-search]").waitFor();
+        if (await card.locator("[data-gmail-account]").count()) throw new Error("the Gmail card shows the address, which belongs on the settings page");
+        await card.getByRole("button", {name: "Settings"}).click();
+        const settings = page.locator('[data-settings="gmail"]');
+        await settings.getByRole("switch", {name: "Read Gmail into tickets"}).click();
+        await settings.locator("[data-gmail-account]").waitFor();
+        await settings.locator("[data-gmail-search]").waitFor();
         const saved = page.waitForResponse((answer) => written(answer) && (answer.request().postData() || "").includes("me@gmail.com"));
-        await card.locator("[data-gmail-account]").fill("me@gmail.com");
-        await card.locator("[data-gmail-account]").blur();
+        await settings.locator("[data-gmail-account]").fill("me@gmail.com");
+        await settings.locator("[data-gmail-account]").blur();
         await saved;
         await page.reload();
-        await page.waitForFunction(() => document.querySelector('[data-integration="gmail"] [data-gmail-account]')?.value === "me@gmail.com");
+        await page.waitForFunction(() => document.querySelector('[data-settings="gmail"] [data-gmail-account]')?.value === "me@gmail.com");
         await shot(page, "integrations-gmail");
     },
-    async "at phone width the Linear card with a board picked, its stage rows and the Gmail card fit with no sideways scroll and no overlapping text"(page, url) {
+    async "at phone width the Linear settings with a board picked and its stage rows fit with no sideways scroll and no overlapping text"(page, url) {
         const title = `Phone key ${Date.now()}`;
         const board = `Phone board ${Date.now()}`;
         journal("board", "create", board);
@@ -95,20 +109,22 @@ await runScenarios(process.argv[2], leavingThemOff({
         await page.getByText(title).first().waitFor();
         await page.goto(`${url}#/main/integrations`);
         await page.locator(".project-flash").waitFor({state: "detached"});
-        const linear = page.locator('[data-integration="linear"]');
-        await linear.waitFor();
-        await linear.locator('[data-picker="key"]').getByRole("option", {name: title}).click();
-        const use = linear.getByRole("switch", {name: "Use Linear", exact: true});
+        const card = page.locator('[data-integration="linear"]');
+        await card.waitFor();
+        const use = card.getByRole("switch", {name: "Use Linear", exact: true});
         if ((await use.getAttribute("aria-checked")) !== "true") await use.click();
-        await linear.getByRole("switch", {name: "Use Linear", exact: true, checked: true}).waitFor();
+        await card.getByRole("switch", {name: "Use Linear", exact: true, checked: true}).waitFor();
+        await card.getByRole("button", {name: "Settings"}).click();
+        const linear = page.locator('[data-settings="linear"]');
+        const reading = linear.getByRole("switch", {name: "Read Linear into tickets"});
+        if ((await reading.getAttribute("aria-checked")) !== "true") await reading.click();
+        await linear.locator('[data-picker="key"]').getByRole("option", {name: title}).click();
         await linear.getByRole("option", {name: board}).click();
         await linear.getByText(/When a ticket moves to .*, set the issue to/).first().waitFor();
-        const gmail = page.locator('[data-integration="gmail"]');
-        await gmail.waitFor();
         const sideways = await page.evaluate(async () => {
             const wide = (el) => el.scrollWidth > el.clientWidth;
-            const rows = () => [...document.querySelectorAll("[data-integration] .use, [data-integration] .team")];
-            const layout = () => JSON.stringify([document.documentElement.scrollWidth, document.documentElement.clientWidth, document.querySelectorAll("[data-integration]").length,
+            const rows = () => [...document.querySelectorAll("[data-settings] .use, [data-settings] .team")];
+            const layout = () => JSON.stringify([document.documentElement.scrollWidth, document.documentElement.clientWidth, document.querySelectorAll("[data-settings]").length,
                 ...rows().flatMap((row) => [...row.children].map((child) => Object.values(child.getBoundingClientRect().toJSON()).map(Math.round)))]);
             const frame = () => new Promise((next) => requestAnimationFrame(() => next()));
             await document.fonts.ready;
@@ -118,7 +134,7 @@ await runScenarios(process.argv[2], leavingThemOff({
                 steady = now === seen ? steady + 1 : 0;
                 seen = now;
             }
-            const found = [document.documentElement, document.querySelector(".integrations"), ...document.querySelectorAll("[data-integration]")].filter(Boolean).filter(wide);
+            const found = [document.documentElement, document.querySelector(".integrations"), ...document.querySelectorAll("[data-settings]")].filter(Boolean).filter(wide);
             const overlapping = [];
             for (const row of rows()) {
                 const boxes = [...row.children].map((child) => child.getBoundingClientRect()).filter((box) => box.width && box.height);
@@ -128,7 +144,7 @@ await runScenarios(process.argv[2], leavingThemOff({
                     }
                 }
             }
-            return {wide: found.map((el) => el.dataset.integration || el.className || el.tagName), overlapping};
+            return {wide: found.map((el) => el.dataset.settings || el.className || el.tagName), overlapping};
         });
         if (sideways.wide.length) throw new Error(`at phone width these scroll sideways: ${sideways.wide.join(", ")}`);
         if (sideways.overlapping.length) throw new Error(`at phone width these rows overlap: ${sideways.overlapping.join(" | ")}`);

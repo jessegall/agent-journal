@@ -115,7 +115,7 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
     Features(record, actor=USER).configure("linear", "key", "LINEAR_KEY")
     second = linear.client(record)
     assert (second is first, second.key) == (False, "lin_first"), "and built again when its key is picked, through journal feature configure as through the settings write"
-    apply(record, {"linear": {"key": "LINEAR_KEY", "board": 1}}, USER)
+    apply(record, {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": 1}}, USER)
     assert linear.client(record) is not second, "the settings write does the same"
     ValuesFile(record.root).put("LINEAR_KEY", "lin_rotated")
     linear.client(record).current()
@@ -235,7 +235,7 @@ def linear_world(monkeypatch, tmp_path, **given) -> World:
     monkeypatch.setattr(linear, "origin", fake.start())
     board = Boards(record, actor=SYSTEM).create("Linear issues")
     ValuesFile(record.root).put("LINEAR_KEY", KEY)
-    apply(record, {"linear": {"key": "LINEAR_KEY", "board": board.n, "teams": "t1"}, "features": {"linear": True}}, USER)
+    apply(record, {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board.n, "teams": "t1"}, "features": {"linear": True}}, USER)
     return World(record, fake, linear)
 
 
@@ -303,8 +303,8 @@ def test_issues_become_one_ticket_each_with_their_comments_once_and_one_that_lea
     import json
     board = linear.choices(record).board
     stages = Boards(record, actor=SYSTEM).load(board).stages
-    mapped = {"linear": {"key": "LINEAR_KEY", "board": board, "teams": "t1", "stage_states": {stages[0]: "s1", stages[1]: "s2"}}}
-    assert "needs" in refused(lambda: apply(record, {"linear": {"key": "LINEAR_KEY", "board": board, "teams": "t1", "stage_states": {}, "send_status": True}}, USER)), \
+    mapped = {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board, "teams": "t1", "stage_states": {stages[0]: "s1", stages[1]: "s2"}}}
+    assert "needs" in refused(lambda: apply(record, {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board, "teams": "t1", "stage_states": {}, "send_status": True}}, USER)), \
         "status changes can only be turned on after a stage is mapped"
     apply(record, {"linear": {**mapped["linear"], "send_status": True}}, USER)
     linear.check(record)
@@ -345,7 +345,7 @@ def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_pic
     apply(record, {"linear": {"key": "", "board": 0, "teams": ""}}, USER)
     ticked()
     assert fake.requests == [], "with no key or board picked nothing is asked of Linear"
-    apply(record, {"linear": {"key": "LINEAR_KEY", "board": board, "teams": ""}}, USER)
+    apply(record, {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board, "teams": ""}}, USER)
     ticked()
     assert read_state(record.root, "linear").last_checked > 0 and len(fake.requests) > 0, "with a key and a board the clock checks Linear and notes when"
     fake.requests.clear()
