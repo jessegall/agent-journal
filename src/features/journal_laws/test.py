@@ -26,15 +26,20 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     (project / "CLAUDE.md").write_text("# Kept\n")
     assert [f.name for f in brief(project, record).written] == ["AGENTS.md", "CLAUDE.md"], "the briefing writes both agent files"
     assert (project / "CLAUDE.md").read_text().startswith("# Kept\n") is True, "the briefing preserves project text"
+    assert ((project / "CLAUDE.md").read_text().count(BEGIN), "@AGENTS.md" in (project / "CLAUDE.md").read_text().splitlines(), (project / "AGENTS.md").read_text().count(BEGIN)) == (0, True, 1), \
+        "the journal's block is written once, into AGENTS.md, and CLAUDE.md imports it"
     (project / "relative").mkdir()
     with chdir(project / "relative"):
         brief(Path("."), record)
     assert (project / "relative" / "AGENTS.md").read_text().splitlines()[0] == f"# {(project / 'relative').name}", \
         "a relative project path still names its briefing"
-    (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text().replace("least expensive", "edited"))
+    (project / "AGENTS.md").write_text((project / "AGENTS.md").read_text().replace("least expensive", "edited"))
     brief(project, record)
-    assert ((project / "CLAUDE.md").read_text().count(BEGIN), "edited" in (project / "CLAUDE.md").read_text()) == (1, False), \
+    assert ((project / "AGENTS.md").read_text().count(BEGIN), "edited" in (project / "AGENTS.md").read_text()) == (1, False), \
         "the managed block is restored once"
+    (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text() + f"\n{BEGIN}\nold copy\n<!-- END: agent-journal, form 2 -->\n")
+    brief(project, record)
+    assert ((project / "CLAUDE.md").read_text().count(BEGIN), (project / "CLAUDE.md").read_text().count("@AGENTS.md")) == (0, 1), "a copy of the block left in CLAUDE.md is taken out, and the import stays once"
     odd = tmp_path / "odd"
     odd.mkdir()
     (odd / "CLAUDE.md").write_bytes("\ufeff# Marked\n".encode())
@@ -62,7 +67,7 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     assert len(checking().runs) == 1, "a rule injected into the block is checked at the next start"
     from features.journal_laws.briefing import instructions_hash
     seen = instructions_hash(project, record)
-    (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text().replace("cannot be switched off", "ship with every journal"))
+    (project / "AGENTS.md").write_text((project / "AGENTS.md").read_text().replace("cannot be switched off", "ship with every journal"))
     assert instructions_hash(project, record) == seen, "the block's own wording changing starts no check; its laws and injected rules do"
     seen = record.state("journal_laws").get("instructions")
     (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text() + "\nNever deploy on Mondays.\n")

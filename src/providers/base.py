@@ -138,6 +138,7 @@ class Provider(ABC):
     home = ""
     question_tools = frozenset()
     briefing_file = ""
+    briefing_import = ""
     skill_home = ""
     shared_files: tuple = ()
     shared_if_ignored: tuple = ()
