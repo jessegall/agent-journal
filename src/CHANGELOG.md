@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.77 — A sequence interrupted by another waits at its step
+- A sequence run cannot be moved on while another run of the same agent is in hand: next names the run in hand and says the interrupted one waits at its step, and it is handed back there when the newer run ends, so a refused action is never skipped.
+
 ## 2.267.76 — A reopened ticket stays open and starts again
 - A reopened ticket whose branch was merged is not closed again by the next sweep: it counts as merged only after new commits.
 - A reopened ticket's environment is restored as the ticket's own, so it stays out of the environment lists; a plan the environment no longer holds counts as no plan, so the board lists every ticket and the start asks the agent for a new plan.
