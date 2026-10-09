@@ -435,6 +435,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         self._confirmed(self.load(n))
         self.mark_seen()
         ticket = self.bind(int(n))
+        if ticket.board and self._board(ticket).finished:
+            Boards(self.record, actor=SYSTEM).reopen(int(ticket.board))
         into = self._into(self.load(n))
         if into != "HEAD" and any(name == "." and not present(place, into) for name, place, _ in self._repositories(self.load(n))):
             self._refuse(f"its board works on the branch {into}, which does not exist; make it, or change the board's branch")
