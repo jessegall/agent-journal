@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.68 — Dashboard reads never wait on a lock
+- A dashboard read never writes: a due row-index flush is left to the server's background thread, so a read no longer waits on the write lock while another write is busy.
+- A reply writes the message it answers once instead of twice.
+
 ## 2.267.67 — No cold dashboard after a formatting change
 - A formatting setting change warms the dashboard in the background, so the first request after it no longer formats every row view on the spot.
 
