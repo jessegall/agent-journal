@@ -284,6 +284,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     shipped = [card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n]
     assert [(card["n"], card["state"]) for card in shipped] == [(ticket.n, "done")], "and stays in that column, so the board shows what is done"
     assert Docs(record).load(written.n).completed == 0.0, "and what it proposed counts from the merge on"
+    lonely = project.parent / "worktrees-of-the-test" / ticket.work_environment
+    git("worktree", "add", "-q", "--detach", str(lonely))
     cleared = tickets.clear_worktrees()
     assert (cleared, [line for line in git("worktree", "list", "--porcelain").stdout.splitlines() if line.endswith(ticket.work_environment)], git("branch", "--list", f"worktree-{ticket.work_environment}").stdout.strip() != "") == \
         ([ticket.work_environment], [], True), "the worktree of a closed ticket is removed by itself and its branch stays"
