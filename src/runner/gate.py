@@ -71,14 +71,27 @@ def run_answer(call: HookCall, journal: JournalCall) -> bool:
     return code == 0
 
 
-def first_try(call: HookCall) -> bool:
-    return call.record.state(ANSWERED, call.session).claim(call.hook.tool_use, time.time(), keep=KEPT_ANSWERED)
+def ran_already(call: HookCall, journal: JournalCall) -> bool:
+    """Whether this very command of this very call ran before: the refusal of a call comes more than once when the agent tries it again."""
+    return call.record.state(ANSWERED, call.session).get(answered_key(call, journal)) is not None
+
+
+def answered_key(call: HookCall, journal: JournalCall) -> str:
+    return f"{call.hook.tool_use}:{journal.line}"
+
+
+def answered(call: HookCall, journal: JournalCall) -> bool:
+    """Runs a command the refusal answers in the call's place, and keeps that it ran only when it did, so a command that failed is tried again and never listed as run."""
+    if ran_already(call, journal):
+        return True
+    if not run_answer(call, journal):
+        return False
+    return call.record.state(ANSWERED, call.session).claim(answered_key(call, journal), time.time(), keep=KEPT_ANSWERED) or True
 
 
 def alongside(call: HookCall, line: ShellLine) -> str:
     answering = [journal for journal in line.calls if line.runnable and answers(journal) and call.hook.tool_use]
-    retried = bool(answering) and not first_try(call)
-    done = [journal for journal in answering if retried or run_answer(call, journal)]
+    done = [journal for journal in answering if answered(call, journal)]
     left = [journal for journal in line.calls if journal not in done]
     return "".join([f" — these journal commands on the same line ran, so do not run them again: {'; '.join(j.line for j in done)}" if done else "",
                     f" — and these were on the same line, so they did not run either: {'; '.join(j.line for j in left)}" if left else ""])

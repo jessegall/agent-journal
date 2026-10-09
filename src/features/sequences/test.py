@@ -279,6 +279,10 @@ def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer
     assert "take it up" in first and "ran, so do not run them again: journal todo create filed" in first and "did not run either: journal work start 'other work'" in first, first
     assert [row.title for row in CONTROLLERS["todo"](record, actor=AGENT).all()].count("filed") == 1 and "do not run them again" in again, \
         "the filing command of a refused line runs once, however often the same tool call's hook arrives"
+    failing = lambda: refused("journal message reply 99999 'on it'; journal work start 'other work'", "use-failing")
+    first, again = failing(), failing()
+    assert "do not run them again: journal message reply 99999" not in first + again and "did not run either" in first + again, \
+        "a command of a refused line that failed is never listed as run, and a second try does not say it ran"
     sequences.follow(made.n)
     assert "take it up" not in refused("journal work start 'other work'"), "once taken up, journal commands go through"
 
