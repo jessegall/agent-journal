@@ -52,9 +52,10 @@ def formatted(text: str, record=None, surface: str = "") -> str:
 
 
 def formatting(record) -> str:
-    """What the formatters read: the saved settings of the features that own one, so a setting nothing here reads leaves every formatted text cached."""
-    return SIGNATURES.get(str(record.home), (record.settings_file.held()[0], generation()),
-                          lambda: json.dumps([(feature.name, dict(feature.values(record))) for feature in FORMATTING_FEATURES], sort_keys=True, default=str))
+    """What the formatters read: whether the features that own one are on, and their saved settings, so a setting nothing here reads leaves every formatted text cached."""
+    enabled = tuple(feature.enabled(record) for feature in FORMATTING_FEATURES)
+    return SIGNATURES.get(str(record.home), (record.settings_file.held()[0], generation(), enabled),
+                          lambda: json.dumps([(feature.name, on, dict(feature.values(record))) for feature, on in zip(FORMATTING_FEATURES, enabled)], sort_keys=True, default=str))
 
 
 def settled(record) -> tuple:
