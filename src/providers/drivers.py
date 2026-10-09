@@ -60,6 +60,7 @@ class Driver(ABC):
     ASKS_ON_SCREEN = False
     SKIP_ARGS = ()
     RESUMING: dict[str, int] = {}
+    PRINTED_SESSION: re.Pattern | None = None
     WORKTREE: tuple = ()
     WORKTREES: tuple = ()
     EXIT = ""
@@ -202,6 +203,12 @@ class Driver(ABC):
             else:
                 kept.append(arg)
         return kept
+
+    @classmethod
+    def printed_session(cls, text: str) -> str:
+        """The conversation an agent named when it ended, in the line it prints to resume it; empty when it printed none."""
+        found = cls.PRINTED_SESSION.findall(text) if cls.PRINTED_SESSION else []
+        return found[-1] if found else ""
 
     @classmethod
     def resumed(cls, args: list[str], conversation: str) -> list[str]:

@@ -58,6 +58,7 @@ class ClaudeDriver(Driver):
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
     SKIP_ARGS = ("--dangerously-skip-permissions",)
     RESUMING = {"--resume": 1, "-r": 1, "--continue": 0, "-c": 0}
+    PRINTED_SESSION = re.compile(r"claude --resume ([0-9a-fA-F-]{8,})")
     WORKTREE = ("--worktree", "-w")
     WORKTREES = Claude.worktrees
     EXIT = "/exit"

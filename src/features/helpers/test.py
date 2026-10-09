@@ -101,6 +101,11 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
         "a to-do one helper holds is not handed to another"
     assert "only a helper reads or marks" in refused(lambda: helpers.done(finished, "x")), "the agent that dispatched a helper closes its own to-dos itself"
     assert "no session left" in refused(lambda: helpers.say(1, "hello")), "a helper that is not running and has no session to go on in cannot be told anything"
+    from providers import DRIVERS
+    assert (DRIVERS["codex"].printed_session("bye\nTo continue this session, run codex resume 0199aa11-bb22-7c33-8d44-556677889900\n"),
+            DRIVERS["claude"].printed_session("claude --resume 0199aa11-bb22-7c33-8d44-556677889900"), DRIVERS["codex"].printed_session("nothing printed")) == \
+        ("0199aa11-bb22-7c33-8d44-556677889900", "0199aa11-bb22-7c33-8d44-556677889900", ""), \
+        "the session an agent named when it ended is read from its launch log, so an ended helper resumes its own session"
     from engine.sessions import Sessions
     from features.agent_sessions.launch import running_in, stop_in, tell_in
     Sessions(record.root).bind("claude-8", "helper-env", provider="claude")

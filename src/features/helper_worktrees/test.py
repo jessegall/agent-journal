@@ -176,13 +176,12 @@ def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():
     worktrees.cut("rhea")
     row = worktrees.all()[0]
     folder = Path(row.path)
-    last = commit(folder, "helper.txt", "kept\n")
+    commit(folder, "helper.txt", "kept\n")
     (folder / "loose.txt").write_text("not committed\n")
-    assert "uncommitted changes" in refused(lambda: worktrees.complete(row.n)), "uncommitted work is never thrown away"
-    (folder / "loose.txt").unlink()
     worktrees.complete(row.n)
     assert (folder.exists(), git(project, "branch", "--list", "helper-rhea")) == (False, ""), "the worktree and its branch are gone"
-    assert git(project, "rev-parse", "refs/journal/helpers/rhea") == last, "its last commit is kept under refs/journal/helpers"
+    kept = git(project, "rev-parse", "refs/journal/helpers/rhea")
+    assert git(project, "show", f"{kept}:loose.txt") == "not committed", "work left uncommitted is committed to the branch first and kept under refs/journal/helpers, never refused or thrown away"
     assert refused(lambda: worktrees.take(row.n)) == f"worktree {row.n} is dropped", "a dropped worktree takes nothing"
 
 

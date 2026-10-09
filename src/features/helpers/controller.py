@@ -7,7 +7,7 @@ import controllers.types as types_module
 import features
 import resources.types as resources_module
 from controllers.base import Controller
-from agents.terminal import detached, prompted
+from agents.terminal import detached, launch_output, prompted
 from controllers.requests import request
 from controllers.types import Agents, Environments, Messages, Nudges, Todos
 from engine import attic, bus
@@ -280,7 +280,7 @@ class Helpers(Controller):
     def _revive(self, row: Helper, words: str) -> None:
         """Starts a stopped helper's agent again in its session, with the new work as its first turn."""
         from providers import DRIVERS, PROVIDERS
-        earlier = Sessions(self.record.root).last(row.environment, row.provider)
+        earlier = Sessions(self.record.root).last(row.environment, row.provider) or DRIVERS[row.provider].printed_session(launch_output(self.record.root, row.environment))
         if earlier and not PROVIDERS[row.provider]().conversation_file(earlier):
             earlier = ""
         if not earlier:

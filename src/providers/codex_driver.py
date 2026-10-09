@@ -28,6 +28,7 @@ class CodexDriver(Driver):
     OPENING = "The journal started this session."
     CONFIRM_AFTER = 3.0
     RESUME = "resume"
+    PRINTED_SESSION = re.compile(r"codex resume ([0-9a-fA-F-]{8,})")
     CONTINUING = ("continue", "--continue")
     name = "codex"
 
