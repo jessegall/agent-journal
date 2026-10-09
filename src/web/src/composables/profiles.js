@@ -3,7 +3,7 @@ import {saveSettings} from "../actions/settings.js";
 import {api} from "../api/client.js";
 import {MOMENTS, placeOf} from "../domain/mascots.js";
 import {store} from "../state/store.js";
-import {loadAnimations, ofKind, urlOf} from "./voiceAnimations.js";
+import {loadAnimations, ofKind, scheduleOf, urlOf} from "./voiceAnimations.js";
 
 export const profiles = ref([]);
 export const profilesLoaded = ref(false);
@@ -29,8 +29,8 @@ export const mascotOn = computed(() => form().mascot !== false);
 export const mascotOf = computed(() => {
     const row = standing.value;
     if (!mascotOn.value || !row?.data.art) return null;
-    const urls = (kind) => ofKind(row.n, kind).map((animation) => urlOf(row.n, animation));
-    return {blink: urls(MOMENTS.blinking)[0] ?? null, acts: urls(MOMENTS.waiting), place: placeOf(row.data.art)};
+    const sheets = (kind) => ofKind(row.n, kind).map((animation) => ({url: urlOf(row.n, animation), edit: animation.edit, path: animation.path}));
+    return {blink: sheets(MOMENTS.blinking)[0] ?? null, acts: sheets(MOMENTS.waiting), schedule: scheduleOf(row.n), place: placeOf(row.data.art)};
 });
 
 export const calls =(row) => callings.value[row.data.calling] || row.data.address || "";

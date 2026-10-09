@@ -15,15 +15,42 @@ export const placeOf = (art) => PLACES[art.replace(/\.\w+$/, "")] ?? STILL;
 // The kind of animation the mascot plays at each moment; any other kind a voice carries shows in its dialog only.
 export const MOMENTS = {blinking: "blink", waiting: "idle"};
 
-export const BLINK_SECONDS = {min: 3, max: 6};
-export const ACT_SECONDS = {min: 10, max: 30};
+export const CELL = 256;
+export const FRAME_MS = 286;
+
+export const frameMs = (edit, index) => edit?.frames?.[index]?.ms || edit?.ms || FRAME_MS;
+
+export const frameShift = (edit, index) => ({x: edit?.frames?.[index]?.x || 0, y: edit?.frames?.[index]?.y || 0});
+
+// When a voice's mascot plays what, until the voice saves a schedule of its own: seconds between blinks, seconds between its other idle animations.
+export const DEFAULT_SCHEDULE = {blink: {min: 5, max: 10}, idle: {min: 20, max: 30}, weights: {}};
+
+export const weightOf = (schedule, path) => schedule.weights?.[path] ?? 1;
+
+// The chance, in percent, that an idle animation is the one picked: its weight among the weights of all the voice's idle animations.
+export const chanceOf = (schedule, paths, path) => {
+    const total = paths.reduce((sum, other) => sum + weightOf(schedule, other), 0);
+    return total ? Math.round((100 * weightOf(schedule, path)) / total) : 0;
+};
+
+// The idle animation to play next: picked by weight, never the one that played last when there is another.
+export const pickWeighted = (items, schedule, last, random = Math.random()) => {
+    const options = items.length > 1 ? items.filter((item) => item !== last) : items;
+    const total = options.reduce((sum, item) => sum + weightOf(schedule, item.path), 0);
+    if (!total) return options[Math.floor(random * options.length)];
+    let left = random * total;
+    return options.find((item) => (left -= weightOf(schedule, item.path)) < 0) ?? options[options.length - 1];
+};
+
+// A tuning with one frame changed, the others kept, as many frames as the sheet holds.
+export const withFrame = (edit, count, at, patch) => {
+    const frames = Array.from({length: count}, (_, index) => ({x: 0, y: 0, ms: 0, ...edit?.frames?.[index]}));
+    frames[at] = {...frames[at], ...patch};
+    return {ms: edit?.ms || 0, frames};
+};
 
 export const afterSeconds = ({min, max}, random = Math.random()) => (min + random * (max - min)) * 1000;
 
-export const otherThan = (list, last, random = Math.random()) => {
-    const options = list.length > 1 ? list.filter((item) => item !== last) : list;
-    return options[Math.floor(random * options.length)];
-};
 
 // ?mascot=showcase plays every animation of every voice back to back, naming each beside the mascot.
 export const showcaseOn = (url = window.location) => new URLSearchParams(url.search).get("mascot") === "showcase" || /[?&]mascot=showcase/.test(url.hash);

@@ -1,71 +1,79 @@
 <script setup>
-import {computed, ref} from "vue";
-import {animationLabel, groupedByKind} from "../domain/mascots.js";
-import {animations, dropAnimations, urlOf} from "../composables/voiceAnimations.js";
+import {computed, ref, watch} from "vue";
+import {groupedByKind, placeOf} from "../domain/mascots.js";
+import {animations, dropAnimations, saveEdit, saveSchedule, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import EmptyState from "../kit/EmptyState.vue";
+import FrameStrip from "../kit/FrameStrip.vue";
 import Notice from "../kit/Notice.vue";
-import SectionHeading from "../kit/SectionHeading.vue";
-import SpritePlayer from "../kit/SpritePlayer.vue";
+import AnimationList from "./AnimationList.vue";
+import AnimationStage from "./AnimationStage.vue";
+import FrameFields from "./FrameFields.vue";
+import ScheduleFields from "./ScheduleFields.vue";
 
 const props = defineProps({row: {type: Object, required: true}});
 defineEmits(["close"]);
 
+const EMPTY = {ms: 0, frames: []};
+const copy = (value) => JSON.parse(JSON.stringify(value));
+
 const groups = computed(() => groupedByKind(animations.value[props.row.n] || []));
 const flat = computed(() => groups.value.flatMap((group) => group.items));
-const chosen = ref(null);
-const playing = ref(false);
-const turn = ref(0);
-const everything = ref(false);
+const idle = computed(() => groups.value.find((group) => group.kind === "idle")?.items || []);
+const path = ref("");
+const chosen = computed(() => flat.value.find((animation) => animation.path === path.value) || null);
+const playing = ref(true);
+const at = ref(0);
+const count = ref(0);
+const draft = ref(copy(EMPTY));
+const plan = ref(copy(scheduleOf(props.row.n)));
 const over = ref(false);
 const busy = ref(false);
 const failed = ref("");
 const picker = ref(null);
 
-const place = computed(() => flat.value.findIndex((animation) => animation.path === chosen.value?.path));
+const saved = computed(() => chosen.value?.edit || EMPTY);
+const edited = computed(() => JSON.stringify(draft.value) !== JSON.stringify(saved.value));
+const planned = computed(() => JSON.stringify(plan.value) !== JSON.stringify(scheduleOf(props.row.n)));
+const place = computed(() => placeOf(props.row.data.art || ""));
 
-function show(animation) {
-    chosen.value = animation;
-    replay();
-}
-
-function replay() {
-    if (!chosen.value) return;
-    turn.value += 1;
+function pick(animation) {
+    path.value = animation.path;
+    draft.value = copy(animation.edit || EMPTY);
+    at.value = 0;
+    count.value = 0;
     playing.value = true;
 }
 
-function step(by) {
-    everything.value = false;
-    const next = flat.value[place.value + by];
-    if (next) show(next);
-}
+watch(flat, (list) => !chosen.value && list.length && pick(list[0]), {immediate: true});
+watch(() => scheduleOf(props.row.n), (now) => (plan.value = copy(now)));
 
-function playEverything() {
-    everything.value = true;
-    show(flat.value[0]);
-}
-
-function ended() {
+const moveTo = (index) => {
     playing.value = false;
-    const next = everything.value ? flat.value[place.value + 1] : null;
-    if (next) show(next);
-    else everything.value = false;
-}
+    at.value = Math.max(0, Math.min(index, count.value - 1));
+};
 
-async function take(files) {
-    if (!files.length) return;
+async function run(work) {
     busy.value = true;
     failed.value = "";
     try {
-        await dropAnimations(props.row, files);
+        await work();
     } catch (error) {
         failed.value = error.message;
     } finally {
         busy.value = false;
     }
 }
+
+const saveFrames = () => run(() => saveEdit(props.row, chosen.value, draft.value.ms || draft.value.frames.length ? draft.value : null));
+const resetFrames = () => run(async () => {
+    draft.value = copy(EMPTY);
+    await saveEdit(props.row, chosen.value, null);
+});
+const savePlan = () => run(() => saveSchedule(props.row, plan.value));
+const resetPlan = () => run(() => saveSchedule(props.row, null));
+const take = (files) => files.length && run(() => dropAnimations(props.row, files));
 
 function dropped(event) {
     over.value = false;
@@ -79,50 +87,54 @@ function picked(event) {
 </script>
 
 <template>
-    <Dialog :title="`${row.title} animations`" wide @close="$emit('close')">
-        <div :class="['voice-animations', {over}]" @dragover.prevent="over = true" @dragleave="over = false" @drop.prevent="dropped">
-            <div class="voice-animations-list">
-                <template v-for="group in groups" :key="group.kind">
-                    <SectionHeading>{{ group.kind }}</SectionHeading>
-                    <template v-for="animation in group.items" :key="animation.path">
-                        <button
-                            type="button"
-                            :class="['voice-animations-item', {current: animation.path === chosen?.path}]"
-                            @click="everything = false; show(animation)"
-                        >
-                            {{ animation.name ? animation.name.replace(/_/g, " ") : "default" }}
-                            <template v-if="!animation.shipped"><span class="voice-animations-mine">yours</span></template>
-                        </button>
-                    </template>
-                </template>
+    <Dialog :title="`${row.title} animations`" large @close="$emit('close')">
+        <div :class="['editor', {over}]" @dragover.prevent="over = true" @dragleave="over = false" @drop.prevent="dropped">
+            <aside class="editor-list">
+                <AnimationList :groups="groups" :chosen="path" :schedule="plan" @pick="pick" />
                 <template v-if="!groups.length">
                     <EmptyState>This voice has no animations yet. Drop sheets or a ZIP here.</EmptyState>
                 </template>
-            </div>
-            <div class="voice-animations-stage">
-                <div class="voice-animations-screen">
-                    <template v-if="chosen">
-                        <SpritePlayer :url="urlOf(row.n, chosen)" :playing="playing" :turn="turn" @ended="ended" />
-                    </template>
-                    <template v-else>
-                        <span class="voice-animations-hint">Pick an animation to play it at its real size.</span>
-                    </template>
+            </aside>
+            <section class="editor-middle">
+                <template v-if="chosen">
+                    <AnimationStage
+                        :url="urlOf(row.n, chosen)"
+                        :place="place"
+                        :playing="playing"
+                        :frame="at"
+                        :edit="draft"
+                        @frame="at = $event"
+                        @measured="count = $event"
+                    />
+                    <div class="editor-controls">
+                        <Btn small kind="primary" @click="playing = !playing">{{ playing ? "Pause" : "Play" }}</Btn>
+                        <Btn small :disabled="playing || at < 1" @click="moveTo(at - 1)">Previous frame</Btn>
+                        <Btn small :disabled="playing || at >= count - 1" @click="moveTo(at + 1)">Next frame</Btn>
+                    </div>
+                    <FrameStrip :url="urlOf(row.n, chosen)" :count="count" :current="at" @pick="moveTo" />
+                </template>
+            </section>
+            <aside class="editor-side">
+                <template v-if="chosen">
+                    <FrameFields :edit="draft" :at="at" :count="count" :locked="playing" @change="draft = $event" />
+                    <div class="editor-buttons">
+                        <Btn small kind="primary" :disabled="!edited" :busy="busy" @click="saveFrames">Save frames</Btn>
+                        <Btn small :disabled="!chosen.edit && !edited" @click="resetFrames">Reset</Btn>
+                    </div>
+                </template>
+                <ScheduleFields :schedule="plan" :idle="idle" @change="plan = $event" />
+                <div class="editor-buttons">
+                    <Btn small kind="primary" :disabled="!planned" :busy="busy" @click="savePlan">Save schedule</Btn>
+                    <Btn small @click="resetPlan">Reset</Btn>
                 </div>
-                <span class="voice-animations-name">{{ chosen ? animationLabel(chosen) : "" }}</span>
-                <div class="voice-animations-controls">
-                    <Btn small :disabled="place < 1" @click="step(-1)">Previous</Btn>
-                    <Btn small :disabled="!chosen" @click="everything = false; replay()">Replay</Btn>
-                    <Btn small :disabled="place < 0 || place >= flat.length - 1" @click="step(1)">Next</Btn>
-                    <Btn small kind="primary" :disabled="!flat.length" @click="playEverything">Play all</Btn>
-                </div>
-            </div>
+            </aside>
         </div>
         <template v-if="failed">
             <Notice>{{ failed }}</Notice>
         </template>
         <template #foot>
-            <div class="voice-animations-foot">
-                <span class="voice-animations-drop">Drop PNG sheets or a ZIP here, named like idle_wave.png, working_left.png or blink.png.</span>
+            <div class="editor-foot">
+                <span class="editor-drop">Drop PNG sheets or a ZIP here, named like idle_wave.png, working_left.png or blink.png.</span>
                 <input ref="picker" type="file" accept=".png,.zip,image/png,application/zip" multiple hidden @change="picked" />
                 <Btn small :busy="busy" @click="picker.click()">Add animations</Btn>
             </div>
@@ -131,101 +143,58 @@ function picked(event) {
 </template>
 
 <style scoped>
-.voice-animations {
+.editor {
     display: flex;
-    gap: 16px;
-    height: 340px;
+    gap: 18px;
+    height: 560px;
     border: 1px dashed transparent;
     border-radius: 10px;
 }
 
-.voice-animations.over {
+.editor.over {
     border-color: var(--accent);
     background: color-mix(in srgb, var(--accent) 6%, transparent);
 }
 
-.voice-animations-list {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-    padding-right: 6px;
+.editor-list {
+    flex: none;
+    width: 200px;
     overflow-y: auto;
 }
 
-.voice-animations-item {
+.editor-middle {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    font-size: 13px;
-    text-align: left;
-    cursor: pointer;
-}
-
-.voice-animations-item:hover,
-.voice-animations-item.current {
-    background: var(--hover, color-mix(in srgb, var(--text) 8%, transparent));
-}
-
-.voice-animations-mine {
-    color: var(--text-3);
-    font-size: 11px;
-}
-
-.voice-animations-stage {
-    display: flex;
-    flex: none;
+    flex: 1;
     flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    width: 220px;
+    gap: 12px;
+    min-width: 0;
+    overflow-y: auto;
 }
 
-.voice-animations-screen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 200px;
-    height: 200px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-}
-
-.voice-animations-hint {
-    padding: 0 14px;
-    color: var(--text-3);
-    font-size: 12px;
-    text-align: center;
-}
-
-.voice-animations-name {
-    min-height: 18px;
-    color: var(--text-2);
-    font-size: 12.5px;
-}
-
-.voice-animations-controls {
+.editor-controls,
+.editor-buttons {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 6px;
 }
 
-.voice-animations-foot {
+.editor-side {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 14px;
+    width: 250px;
+    overflow-y: auto;
+}
+
+.editor-foot {
     display: flex;
     align-items: center;
     gap: 12px;
     width: 100%;
 }
 
-.voice-animations-drop {
+.editor-drop {
     flex: 1;
     color: var(--text-3);
     font-size: 12px;

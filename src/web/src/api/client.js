@@ -621,6 +621,18 @@ export class ApiClient {
         return this.command("profile", "samples");
     }
 
+    tuneAnimation(n, path, edit) {
+        return this.act("profile", n, "tune", {path, edit});
+    }
+
+    profileSchedules() {
+        return this.command("profile", "schedules");
+    }
+
+    scheduleVoice(n, plan) {
+        return this.act("profile", n, "schedule", {plan});
+    }
+
     profileAnimations() {
         return this.command("profile", "animations");
     }

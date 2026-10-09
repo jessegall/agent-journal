@@ -15,6 +15,8 @@ class Profile(Shape, Resource):
         Field(default="", name="address"),
         Field(default="", name="art"),
         Field(FLAG, False, name="system"),
+        Field(default=dict, name="animation_edits"),
+        Field(default=dict, name="animation_schedule"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Profile",
@@ -34,4 +36,4 @@ class Profile(Shape, Resource):
     command_names = {"complete": "retire"}
     scope = PROJECT
     view = DOCUMENT
-    progress = ("agent_name", "files", "pictures")
+    progress = ("agent_name", "files", "pictures", "animation_edits", "animation_schedule")
