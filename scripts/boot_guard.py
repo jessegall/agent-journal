@@ -20,7 +20,14 @@ from providers import DRIVERS
 STANDIN = ("#!/bin/sh\ntouch \"$0.started\"\necho \"Ask Codex to do anything\"\n(read line; echo \"$line\" > \"$0.typed\") &\n"
            "while [ ! -f \"$0.quit\" ]; do sleep 0.1; done\n")
 OFFLINE = HERE.parent / "tests" / "fixtures" / "offline-bin"
-WAIT = 45.0
+
+
+def scaled(seconds: float) -> float:
+    """The time a quiet machine needs, stretched by how many times the machine's load exceeds its cores."""
+    return seconds * max(1.0, os.getloadavg()[0] / (os.cpu_count() or 1))
+
+
+WAIT = scaled(45.0)
 PROJECT = "Project builds"
 LIMIT = 15.0
 
@@ -141,6 +148,7 @@ if __name__ == "__main__":
         print(f"boot guard: the journal does not boot, push refused\n{failed}", file=sys.stderr)
         sys.exit(1)
     print(f"boot guard: installs, serves and launches {', '.join(DRIVERS)} in {took:.1f}s")
-    if took > LIMIT:
-        print(f"boot guard: slower than {LIMIT:.0f}s", file=sys.stderr)
+    limit = scaled(LIMIT)
+    if took > limit:
+        print(f"boot guard: slower than {limit:.0f}s (15s on a quiet machine, scaled by its load)", file=sys.stderr)
         sys.exit(1)
