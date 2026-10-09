@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.23 — Shared plans with their to-dos and timeline, ticket agents on the home screen, plain secrets, faster upgrades
+- A shared collection carries the to-dos and timeline of a plan it holds from another environment, such as a ticket's plan, and opening one of its to-dos opens it from that environment.
+- The home screen shows a cell for each ticket's agent. A ticket whose board branch a nested repository lacks starts from that repository's default branch and says so. Listing rows and counting edited lines no longer fail on a row or a blob that vanished.
+- Saying something to a helper finds it running as soon as it is launched. A slow journal command a helper runs is reported to whoever dispatched it.
+- A helper's pill stays inside its plan phase card, and a helper's Brief line shows chips and code.
+- Secrets use plain labels (Allowed programs), a secret made with instructions arrives with its programs allowed, and a request for a key points at an MCP server that already reaches the service.
+- An upgrade to the version already installed does nothing, and every journal command starts faster (the scrubber reads its word list only when used).
+
 ## 2.267.22 — Collections with members from other environments open and count them
 - A collection's card counts a member of another environment by its own type, so a collection holding `ticket-1/plan:1` no longer breaks the page it is shown on, in the viewer and in a share.
 - On a shared collection's page, clicking a member of another environment opens that member instead of the collection again.
