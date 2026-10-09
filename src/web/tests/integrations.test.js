@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {textOf, boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, loginWords, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
+import {textOf, boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, loginWords, refusedKey, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
 
 const NOW = Date.now() / 1000;
 
@@ -19,7 +19,10 @@ describe("the Integrations page", () => {
         expect(stateWords("Linear", false, null)).toBe("Off");
         expect(stateWords("Linear", true, {last_checked: NOW - 4 * 60 - 5})).toBe("Last checked 4 minutes ago");
         expect(stateWords("Linear", true, {last_checked: NOW - 5})).toBe("Last checked just now");
-        expect(stateWords("Linear", true, {last_checked: NOW - 60, last_error: "the key was refused"})).toBe("Could not reach Linear: the key was refused");
+        expect(stateWords("Linear", true, {last_checked: NOW - 60, last_error: "timed out"})).toBe("Could not reach Linear.");
+        expect(stateWords("Linear", true, {last_error: "answered 401"}, true)).toBe("Linear did not accept the key. Pick another key.");
+        expect(refusedKey({key_refused: ["answered 401"]}, {last_error: "https://api.linear.app answered 401: {}"})).toBe(true);
+        expect(refusedKey({key_refused: ["answered 401"]}, {last_error: "timed out"})).toBe(false);
         expect(stateWords("Linear", true, null)).toBe("Not checked yet");
     });
 
@@ -64,5 +67,6 @@ describe("the Integrations page", () => {
     test("says what Log in does", () => {
         expect(loginWords("Linear")).toMatchObject({button: "Log in"});
         expect(loginWords("Linear").line).toContain("Linear's own sign-in in your browser");
+        expect(loginWords("Linear").line).not.toContain("as the key");
     });
 });

@@ -3,8 +3,9 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {saveSettings} from "../actions/settings.js";
 import {usePoll, pollKey} from "../composables/poll.js";
-import {fetchingOn, isOn, keyOf, keyWords, loginWords, mcpOn, settingsWith, stateWords, switchWords} from "../domain/integrations.js";
+import {fetchingOn, isOn, keyOf, keyWords, loginWords, mcpOn, refusedKey, settingsWith, stateWords, switchWords} from "../domain/integrations.js";
 import Btn from "../kit/Btn.vue";
+import Console from "../kit/Console.vue";
 import SecretPicker from "../kit/SecretPicker.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Switch from "../kit/Switch.vue";
@@ -18,7 +19,9 @@ const on = computed(() => isOn(store.settings, props.feature.name));
 const key = computed(() => keyOf(store.settings, props.feature.name));
 const words = computed(() => keyWords(props.feature.title));
 const state = ref(null);
-const line = computed(() => stateWords(props.feature.title, on.value, state.value));
+const line = computed(() => stateWords(props.feature.title, on.value, state.value, refusedKey(props.feature, state.value)));
+const detail = computed(() => (on.value ? state.value?.last_error || "" : ""));
+const detailShown = ref(false);
 
 usePoll(
     pollKey(),
@@ -102,6 +105,14 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
             </SwitchCase>
         </template>
         <p class="state" data-state>{{ line }}</p>
+        <template v-if="detail">
+            <div class="acts">
+                <Btn small @click="detailShown = !detailShown">{{ detailShown ? "Hide" : "Show" }}</Btn>
+            </div>
+            <template v-if="detailShown">
+                <Console><pre class="detail">{{ detail }}</pre></Console>
+            </template>
+        </template>
         <template v-if="on && fetching && key">
             <div class="acts">
                 <Btn small :busy="checking" @click="checkNow">Check now</Btn>
@@ -134,6 +145,12 @@ const pick = (variable) => saveSettings(settingsWith(store.settings, props.featu
 
 .title {
     font-weight: 600;
+}
+
+.detail {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .abstract,

@@ -1,5 +1,5 @@
 import {createServer} from "node:http";
-import {journal, numberOf, runScenarios, shot} from "./harness.mjs";
+import {journal, numberOf, reply, runScenarios, shot} from "./harness.mjs";
 
 const switchOff = () => ["linear", "gmail"].forEach((name) => journal("feature", "switch", name, "--no-on"));
 
@@ -50,6 +50,15 @@ await runScenarios(process.argv[2], leavingThemOff({
         await page.reload();
         await page.locator('[data-integration="linear"]').getByRole("switch", {name: "Use Linear", exact: true, checked: true}).waitFor();
         await shot(page, "integrations-on");
+        const raw = '{"errors":[{"message":"Authentication required, not authenticated"}]}';
+        await page.route(/\/api\/main\/integration\/linear$/, (route) => reply(route, {last_checked: 0, last_error: `https://api.linear.app answered 401: ${raw}`}));
+        await page.reload();
+        const line = page.locator('[data-integration="linear"] [data-state]');
+        await line.getByText("Linear did not accept the key. Pick another key.", {exact: true}).waitFor();
+        if (await page.getByText("Authentication required").count()) throw new Error("the card shows Linear's raw answer before Show is pressed");
+        await page.locator('[data-integration="linear"]').getByRole("button", {name: "Show"}).click();
+        await page.getByText("Authentication required", {exact: false}).waitFor();
+        await page.unroute(/\/api\/main\/integration\/linear$/);
     },
     async "Gmail is off at first and its card asks for the address and the mail to read once it is on"(page, url) {
         await page.goto(`${url}#/main/integrations`);

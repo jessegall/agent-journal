@@ -28,6 +28,7 @@ class IntegrationState(Loaded):
     paused_until: float = 0.0
     failures: int = 0
     webhook_at: float = 0.0
+    logged_in_at: float = 0.0
     choices: tuple[Choice, ...] = ()
 
 
