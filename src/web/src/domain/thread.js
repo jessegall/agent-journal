@@ -95,8 +95,9 @@ const cards = (agents) =>
         (a.data.cards || []).map((c) =>
             mark("card", a, c.at, c.label, {
                 icon: c.icon,
-                color: c.color,
-                tone: c.tone,
+                color: AGENT_ICONS.has(c.icon) ? SUBAGENT_COLOR : c.color,
+                tone: AGENT_ICONS.has(c.icon) ? "" : c.tone,
+                helper: c.helper,
                 label: c.label,
                 name: c.name || c.plugin,
                 detail: c.detail,
@@ -186,6 +187,7 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
 
 const GROUP_FROM = 4;
 export const SUBAGENT_COLOR = "#e2c55c";
+const AGENT_ICONS = new Set(["bot", "agents"]);
 const GROUPS = {
     skill: () => ({key: "skill", icon: "book", tone: "good", label: (n) => `${n} skills loaded`}),
     whisper: () => ({key: "whisper", icon: "rules", label: (n) => `${n} rules and facts recalled`}),

@@ -3,6 +3,9 @@ import {computed, ref} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import ChatMark from "../kit/ChatMark.vue";
 import SubagentMark from "./SubagentMark.vue";
+import TicketAgent from "../agents/TicketAgent.vue";
+import {helperCard, helperEnvironment, helperName, helperState} from "../domain/helpers.js";
+import {rows} from "../sync/rows.js";
 import WhisperMark from "./WhisperMark.vue";
 import MadeCard from "./MadeCard.vue";
 import SearchResults from "./SearchResults.vue";
@@ -31,6 +34,8 @@ const compactedMark = computed(() => ({icon: "activity", tone: "warn", label: "C
 const cardMark = computed(() => ({...data.value, at: props.turn.created}));
 
 const searching = ref(false);
+const inspecting = ref(0);
+const helper = computed(() => rows("helper").find((row) => row.n === inspecting.value) || null);
 
 function markClick(data) {
     if (data.search) return {click: () => (searching.value = true)};
@@ -38,6 +43,7 @@ function markClick(data) {
         const settled = data.settled ? {how: data.settled, at: data.settledAt} : null;
         return {click: () => (store.pluginPage = {plugin: data.name, open: data.page, settled})};
     }
+    if (data.helper) return {click: () => (inspecting.value = data.helper)};
     if (data.go) return {click: () => go(route.value.env, data.go)};
     return data.row ? {click: () => openRef(data.row)} : {};
 }
@@ -63,6 +69,16 @@ function markClick(data) {
                 <ChatMark :mark="cardMark" v-on="markClick(data)" />
                 <template v-if="searching">
                     <SearchResults :search="data.search" @close="searching = false" />
+                </template>
+                <template v-if="helper">
+                    <TicketAgent
+                        :card="helperCard(helper)"
+                        :env="helperEnvironment(helper)"
+                        kind="helper"
+                        :recorded="helperState(helper) === 'finished' ? helper.n : 0"
+                        :label="helperName(helper)"
+                        @close="inspecting = 0"
+                    />
                 </template>
             </div>
         </template>

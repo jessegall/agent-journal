@@ -98,6 +98,14 @@ describe("a search mark", () => {
     });
 });
 
+describe("a mark about a helper or a subagent", () => {
+    test("takes the agents' colour whatever tone it was filed with, and keeps the helper it opens", () => {
+        const card = (label, fields) => ({at: 5, label, icon: "bot", tone: "good", ...fields});
+        const got = turns({agent: [agent({cards: [card("Continued helper 3", {helper: 3}), card("Retired a subagent", {icon: "agents", at: 6})]})]});
+        expect(got.map((t) => [t.data.color, t.data.tone, t.data.helper])).toEqual([["#e2c55c", "", 3], ["#e2c55c", "", undefined]]);
+    });
+});
+
 describe("folding runs", () => {
     const loads = (n) => agent({skill_loads: Array.from({length: n}, (_, i) => ({at: 10 + i, skill: `s${i}`}))});
 
