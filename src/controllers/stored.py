@@ -1,4 +1,5 @@
 import os
+import threading
 import time
 import zipfile
 from bisect import bisect_left, insort
@@ -37,6 +38,8 @@ STAMPS_FRESH = 60.0
 STAMPS_RENEW = STAMPS_FRESH / 2
 WRITTEN: dict[str, float] = {}
 FLUSH_ROWS, FLUSH_SECONDS = 200, 300.0
+UNSAVED: dict[str, tuple[Path, dict]] = {}
+DEFER = threading.Event()
 OPEN: dict[str, tuple] = {}
 KEEP_OPEN = 64
 
@@ -105,6 +108,14 @@ class Stamped:
     stamps: dict
     inodes: dict
     noted: int
+
+def flush_indexes() -> None:
+    """Writes the row indexes that a read left to be saved later, so no request waits on a write of its own."""
+    for key in list(UNSAVED):
+        folder, rows = UNSAVED.pop(key)
+        write_json(folder / INDEX, dict(rows))
+        WRITTEN[key] = time.time()
+
 
 def renew_stamps() -> None:
     """Looks at every row file of the folders whose stamps near their expiry, so that no request pays for it."""
@@ -414,7 +425,9 @@ class RowStore:
             rows[n] = self._row(r, stamps[n])
         changed = len(stale) + len(gone)
         due = changed >= FLUSH_ROWS or time.time() - WRITTEN.get(str(folder), 0.0) >= FLUSH_SECONDS or not (folder / INDEX).is_file()
-        if changed and due:
+        if changed and due and DEFER.is_set():
+            UNSAVED[str(folder)] = (folder, rows)
+        elif changed and due:
             write_json(folder / INDEX, rows)
             WRITTEN[str(folder)] = time.time()
         if changed:

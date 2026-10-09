@@ -19,7 +19,7 @@ from features.auto_update.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
-from controllers.stored import renew_stamps  # noqa: E402
+from controllers.stored import DEFER, flush_indexes, renew_stamps  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone  # noqa: E402
 from features.routing import resolve  # noqa: E402
 from features.phone.allow_list import PhoneVisit, Reach  # noqa: E402
@@ -236,6 +236,7 @@ def watch_runtime(root: Path, halting: threading.Event) -> None:
     while not halting.wait(WATCH_SECONDS):
         runtime.refresh_flags(root)
         renew_stamps()
+        flush_indexes()
         if runtime.hook_failures(root).is_file():
             unanswered(root)
         runtime.restarting(root).unlink(missing_ok=True)
@@ -336,6 +337,7 @@ def warm_viewer(root: Path, env: str, warm: threading.Event) -> None:
 
 def run(root: Path, port: int = DEFAULT_PORT) -> None:
     sys.setswitchinterval(SWITCH_INTERVAL)
+    DEFER.set()
     runtime.mark_started(root)
     runtime.remember_git_user(root)
     tell_threads_on_signal(root)
