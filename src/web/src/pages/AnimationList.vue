@@ -16,7 +16,7 @@ const acts = (groups) => groups.flatMap((group) => group.items).filter(isAct).ma
             <template v-for="animation in group.items" :key="animation.path">
                 <button type="button" :class="['animation-list-row', {current: animation.path === chosen}]" @click="$emit('pick', animation)">
                     <span class="animation-list-name">{{ nameOf(animation) }}</span>
-                    <template v-if="animation.edit">
+                    <template v-if="animation.edited">
                         <span class="animation-list-note">edited</span>
                     </template>
                     <template v-if="!animation.shipped">

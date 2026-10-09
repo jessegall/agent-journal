@@ -119,7 +119,7 @@ function picked(event) {
                     <FrameFields :edit="draft" :at="at" :count="count" :locked="playing" @change="draft = $event" />
                     <div class="editor-buttons">
                         <Btn small kind="primary" :disabled="!edited" :busy="busy" @click="saveFrames">Save frames</Btn>
-                        <Btn small :disabled="!chosen.edit && !edited" @click="resetFrames">Reset</Btn>
+                        <Btn small :disabled="!chosen.edited && !edited" @click="resetFrames">Reset</Btn>
                     </div>
                 </template>
                 <ScheduleFields :schedule="plan" :idle="idle" @change="plan = $event" />
