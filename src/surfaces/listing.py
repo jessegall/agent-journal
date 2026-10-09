@@ -101,8 +101,8 @@ def encoded(controller, record, view: dict) -> bytes:
     return body
 
 
-def listing(controller, record, wanted: Listing) -> ListedRows:
-    summaries, stamp = controller.rows.summaries(), settled(record)
+def listing(controller, record, wanted: Listing, summaries: list | None = None) -> ListedRows:
+    summaries, stamp = summaries if summaries is not None else controller.rows.summaries(), settled(record)
 
     def listed() -> ListedRows:
         return _listed(controller, record, wanted, summaries, stamp)
@@ -165,25 +165,23 @@ def viewed(controller, record, n: int, row_stamp, settings: tuple) -> dict:
     return VIEWED.get((str(record.home), controller.type, n), (row_stamp, settings), lambda: shaped(controller.load(n), record, VIEWER))
 
 
-def counted(record, types) -> dict:
-    return {type_: counts(CONTROLLERS[type_](record, actor=USER)) for type_ in types}
-
-
 def listed_json(controller, record, listed: ListedRows) -> bytes:
     rows = b", ".join(encoded(controller, record, row) for row in listed["rows"])
     return b'{"rows": [' + rows + b'], "more": ' + (b"true" if listed["more"] else b"false") + b"}"
 
 
-def held_rows(record, type_: str, query: dict) -> bytes:
+def held_rows(record, type_: str, query: dict, controller=None, summaries: list | None = None) -> bytes:
     """One type's rows of the dashboard as the JSON they are sent as, made again only when that type's rows or the settings changed, so a type that changes every few seconds rebuilds only itself."""
-    controller = CONTROLLERS[type_](record, actor=USER)
-    stamp = Unchanged((controller.rows.summaries(),), settled(record))
-    return DASHBOARDS.get((str(record.home), type_, tuple(sorted(query.items()))), stamp, lambda: listed_json(controller, record, listing(controller, record, Listing.from_query(query))))
+    controller = controller or CONTROLLERS[type_](record, actor=USER)
+    summaries = summaries if summaries is not None else controller.rows.summaries()
+    stamp = Unchanged((summaries,), settled(record))
+    return DASHBOARDS.get((str(record.home), type_, tuple(sorted(query.items()))), stamp,
+                          lambda: listed_json(controller, record, listing(controller, record, Listing.from_query(query), summaries)))
 
 
 def dashboard(record, wanted: list[str], tallied: list[str], query: dict) -> tuple[bytes, bytes]:
     """The dashboard's lists and counts as the JSON they are sent as, each type's rows held apart."""
-    lists = b", ".join(json.dumps(type_).encode() + b": " + held_rows(record, type_, query) for type_ in wanted)
-    return b"{" + lists + b"}", json.dumps(counted(record, tallied)).encode()
-
-
+    controllers = {type_: CONTROLLERS[type_](record, actor=USER) for type_ in dict.fromkeys([*wanted, *tallied])}
+    scanned = {type_: controller.rows.summaries() for type_, controller in controllers.items()}
+    lists = b", ".join(json.dumps(type_).encode() + b": " + held_rows(record, type_, query, controllers[type_], scanned[type_]) for type_ in wanted)
+    return b"{" + lists + b"}", json.dumps({type_: counts(controllers[type_], scanned[type_]) for type_ in tallied}).encode()
