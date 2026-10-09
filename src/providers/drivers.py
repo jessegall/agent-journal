@@ -226,14 +226,12 @@ class Driver(ABC):
     def consent(cls, printed: bytes) -> bytes:
         return b""
 
-    def send(self, text: str = "", groups: dict | None = None, yielding: str = "", now: bool = False, by: str = JOURNAL, whispers: str = "") -> bool:
+    def send(self, text: str = "", groups: dict | None = None, yielding: str = "", now: bool = False, by: str = JOURNAL) -> bool:
         if now:
             return self._deliver(joined(text), by)
         line = joined(text)
         if line:
             self.held.append(line)
-        if joined(whispers):
-            self._whisper(joined(whispers))
         if joined(yielding):
             self.yielding.append(joined(yielding))
         for key, numbers in (groups or {}).items():
@@ -266,8 +264,9 @@ class Driver(ABC):
             return False
         return self._typed(f"{MARK} {line}", confirmed=True) if by == JOURNAL else self._typed(line, confirmed=self.ENTER_CAN_MISS)
 
-    def _whisper(self, line: str) -> None:
+    def whisper(self, text: str) -> None:
         """A whisper goes through the channel once; a provider with no channel takes it as a line, and a lost one is dropped, never typed."""
+        line = joined(text)
         if not self.TAKES_CHANNEL:
             self.held.append(line)
             return
