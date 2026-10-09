@@ -1672,7 +1672,7 @@ def test_a_damaged_ledger_is_refused_a_rolled_back_record_gets_its_files_back_an
     with pytest.raises(Refused, match="damaged migrations ledger"):
         migrations.applied(root)
     migrations.ledger(root).write_text(json.dumps({name: {"result": ""} for name in migrations.names()}))
-    assert migrations.run_locked(root) == [], "a record that another process finished migrating while this one waited has nothing left to run"
+    assert migrations.run_locked(root) == ([], None), "a record that another process finished migrating while this one waited has nothing left to run"
     backup = tmp_path / "backup"
     backup.mkdir()
     (backup / "record.json").write_text('{"kept": true}')
