@@ -329,7 +329,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
             subprocess.run(["git", *args], cwd=many.root.parent / repo, check=True, capture_output=True, timeout=30)
     across = Tickets(many, actor=USER)
     spanning = across.bind(across.create("Across both", board=Boards(many, actor=USER).create("Both", stages=["Shipped"], meanings={"Shipped": "done"}).n).n)
-    spanning = across._based(spanning, across._started_at(spanning, "HEAD"))
+    spanning = across._based(spanning, across._started_at(spanning))
     branch = f"worktree-{spanning.work_environment}"
     site = lambda *args: subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=many.root.parent / "site", check=True, capture_output=True, text=True, timeout=30)
     for repo in ("site", "chronos"):
