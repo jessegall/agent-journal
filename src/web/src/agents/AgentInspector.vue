@@ -82,7 +82,7 @@ usePoll(
     EVERY,
     (got) => {
         looked.value = true;
-        if (got) found.value = agentOf(got.rows, props.chatSession, props.kind === "helper");
+        if (got) found.value = agentOf(got.rows, props.chatSession, !subagent);
     }
 );
 const agent = computed(() => props.agent || found.value);

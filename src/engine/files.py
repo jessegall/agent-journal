@@ -79,13 +79,15 @@ MOST_FOUND = 50
 RESCAN_SECONDS = 300
 REPOSITORY_DEPTH = 2
 SKIPPED = {"node_modules", "vendor", "dist", "build"}
+LINKED_REPOSITORY = "160000"
 
 
 def project_repositories(project: Path) -> tuple[Path, ...]:
     held = REPOSITORIES.get(project)
     if held and time.time() - held[0] < RESCAN_SECONDS:
         return held[1]
-    found = (project,) if (project / ".git").exists() else tuple(sorted(nested_repositories(project, REPOSITORY_DEPTH)))
+    own = (project,) if (project / ".git").exists() else ()
+    found = (*own, *sorted(nested_repositories(project, REPOSITORY_DEPTH)))
     REPOSITORIES[project] = (time.time(), found)
     return found
 
@@ -120,7 +122,7 @@ def tracked_in(project: Path) -> dict:
     tree = {}
     for entry in git(["ls-files", "-s", "-z"], project).split("\0"):
         meta, _, path = entry.partition("\t")
-        if path:
+        if path and not meta.startswith(LINKED_REPOSITORY):
             tree[path] = meta.split()[1]
     INDEXES[project] = Indexed(stamp, tree)
     return tree
