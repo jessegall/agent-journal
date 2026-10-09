@@ -91,6 +91,21 @@ await runScenarios(process.argv[2], {
         await page.locator(".agent-inspector").waitFor();
         await shot(page, "plan-holder-inspector");
     },
+    async "a helper's inspector shows its Brief line as chips and code, never as raw markup"(page, url) {
+        const helper = numberOf(journal("helper", "create", `Brief helper ${Date.now()}`, "--brief", "Do `the build` for [[chip todo:3736|To-do 3736]].", "--set", "name=Brief Helper", "--set", "environment=brief-env"));
+        const row = numberOf(journal("todo", "create", `Brief row ${Date.now()}`, "--brief", "x"));
+        const plan = numberOf(journal("plan", "create", `Brief plan ${Date.now()}`, "--set", "goal=something true"));
+        journal("plan", "phase", String(plan), "Build", "--when", "it is built");
+        journal("plan", "stage", String(plan), "todos");
+        journal("plan", "todos", String(plan), "1", String(row));
+        journal("todo", "assign", String(row), `helper:${helper}`);
+        await page.goto(`${url}#/main/plan/${plan}`);
+        await page.locator(".holder").first().click();
+        const line = page.locator(".agent-inspector .openable-line");
+        await line.locator("code").waitFor({timeout: 45000});
+        if (/\[\[chip|`/.test(await line.innerText())) throw new Error("the inspector's Brief line shows raw markup");
+        await shot(page, "helper-inspector-brief");
+    },
     async "a plan opened from another page shows its helpers at once, without waiting for the next poll"(page, url) {
         const row = numberOf(journal("todo", "create", `Quick row ${Date.now()}`, "--brief", "x"));
         const plan = numberOf(journal("plan", "create", `Quick plan ${Date.now()}`, "--set", "goal=something true"));
