@@ -1841,3 +1841,17 @@ def test_a_chained_command_runs_through_the_rewrite_with_the_same_output_and_exi
     finally:
         server.terminate()
         server.wait(WAIT)
+
+
+def test_the_server_reads_the_messages_and_comments_a_reply_asks_for_when_it_starts():
+    from controllers.stored import SUMMARIES
+    from controllers.types import Comments, Messages
+    from serve import warm_replies
+    from tests.conftest import fresh
+    record = fresh()
+    message = Messages(record, actor=SYSTEM).create("Is the fix in?")
+    Comments(record, actor=SYSTEM).create("Yes", about=message.ref)
+    SUMMARIES.clear()
+    warm_replies(record.root)
+    held = {Path(folder).name for folder in SUMMARIES}
+    assert {"message", "comment"} <= held, "a start loads what a reply reads, so the first reply after it answers from memory"
