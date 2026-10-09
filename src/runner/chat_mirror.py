@@ -196,7 +196,6 @@ def send_row_to_chat(record: Record, row, text: str, turn: str | None = None, st
         if mark in sent or key in sent or key in matched:
             return True
         held[SENT] = [*sent, mark][-KEPT_SENT:]
-        if streamed:
-            held[MATCHED] = [*matched, key][-KEPT_SENT:]
+        held[MATCHED] = [*matched, key][-KEPT_SENT:]
     chat.send(record, row, text, turn=turn)
     return True

@@ -184,6 +184,10 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     before = len(chat())
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "g", "index": 0, "final": True, "delta": "   "}))
     assert len(chat()) == before, "a message of nothing but spaces is not posted"
+    from runner.chat_mirror import send_to_chat
+    send_to_chat(record.root, "claude-1", "Parked it for now.", "transcript:1791545582.1:abc")
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "index": 0, "final": True, "delta": "Parked it for now."}))
+    assert chat().count("Parked it for now.") == 1, "a turn the transcript carried first is not posted again when the display hook delivers the same words"
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Done. " * 80}]}}) + "\n")
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "Done. " * 80})
     assert any("paragraph" in line.lower() for line in nudges(record)), "a long answer in one block of sentences is told to be set in paragraphs"
