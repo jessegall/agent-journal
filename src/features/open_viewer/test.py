@@ -374,6 +374,13 @@ def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_a
     assert viewer.wait_for(kept, viewer.PORTS[0]) == viewer.PORT_WAIT, "and when that server is gone the port is waited for only the usual time"
     import shutil
     shutil.rmtree(viewer.marker(kept).parent)
+    import serve
+    monkeypatch.setattr("commands.parser.parser", lambda *given: None)
+    monkeypatch.setattr("features.open_viewer.manifest.manifest", lambda root: None)
+    asked = []
+    monkeypatch.setattr(serve, "dispatch", lambda method, path, *given: asked.append(path))
+    serve.warm_changed(kept)
+    assert asked == ["/api/main/dashboard"], "what a setting change cleared is warmed in the background, the dashboard's rows included, so no request pays for rebuilding them"
     from engine.record import Record
     from engine.runtime import env as runtime_env
     assert viewer.configured(kept) == 0, "a journal that has set no port of its own has none configured"
