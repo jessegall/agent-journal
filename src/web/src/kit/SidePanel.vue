@@ -2,6 +2,7 @@
 import CloseButton from "./CloseButton.vue";
 import TextDisplay from "./TextDisplay.vue";
 import {closing} from "../composables/closing.js";
+import {stacking} from "../composables/stacking.js";
 
 const props = defineProps({
     title: {type: String, default: ""},
@@ -14,12 +15,13 @@ const props = defineProps({
 });
 const emit = defineEmits(["close", "dismiss"]);
 const {visible, close, closed} = closing(emit, props);
+const layer = stacking(visible);
 </script>
 
 <template>
     <Teleport to="body">
         <Transition name="side" appear @after-leave="closed">
-            <div v-if="visible" :class="['veil', {over, under: depth}]" :style="{'--depth': depth, zIndex: 40 - depth}" @click.self="close">
+            <div v-if="visible" :class="['veil', {over, under: depth}]" :style="{'--depth': depth, zIndex: layer}" @click.self="close">
                 <aside :class="['panel', width]" role="dialog" :aria-label="title">
                     <template v-if="title">
                         <header class="head">
@@ -54,7 +56,6 @@ const {visible, close, closed} = closing(emit, props);
 .veil {
     position: fixed;
     inset: 0;
-    z-index: 40;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(3px);
 }

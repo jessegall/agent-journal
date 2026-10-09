@@ -2,6 +2,7 @@
 import CloseButton from "./CloseButton.vue";
 import {onUnmounted, ref, useId, watch} from "vue";
 import {closing} from "../composables/closing.js";
+import {stacking} from "../composables/stacking.js";
 import {useTrap} from "../composables/trap.js";
 
 const ARMED_AFTER_MS = 500;
@@ -21,6 +22,7 @@ const props = defineProps({
 });
 const emit = defineEmits(["close", "dismiss", "escape"]);
 const {visible, close, closed} = closing(emit, props);
+const layer = stacking(visible);
 const body = ref(null);
 const panel = ref(null);
 const heading = ref(null);
@@ -56,7 +58,7 @@ onUnmounted(() => watcher.disconnect());
 
 <template>
     <Transition name="dialog" appear @after-leave="closed">
-        <div v-if="visible" :class="['dialog', {large}]" @click.self="outside">
+        <div v-if="visible" :class="['dialog', {large}]" :style="{zIndex: layer}" @click.self="outside">
             <section
                 ref="panel"
                 :class="['dialog-panel', {fixed: !fits, small, tall, large, nudged}]"
@@ -91,7 +93,6 @@ onUnmounted(() => watcher.disconnect());
 .dialog {
     position: fixed;
     inset: 0;
-    z-index: 80;
     display: flex;
     align-items: center;
     justify-content: center;
