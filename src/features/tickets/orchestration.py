@@ -21,6 +21,8 @@ class TicketOrchestration:
 
     def _awaiting_orchestrator(self) -> list:
         boards = self._orchestrating()
+        if not boards:
+            return []
         return [ticket for ticket in self.rows.standing() if ticket.work_environment and ticket.board and int(ticket.board) in boards
                 and self._orchestrator_may(ticket, PLANS) and self._plan_status(ticket) in (READY, WAITING)]
 
@@ -30,6 +32,8 @@ class TicketOrchestration:
 
     def _awaiting_decisions(self) -> list:
         boards = self._orchestrating()
+        if not boards:
+            return []
         on_board = [ticket for ticket in self.rows.standing() if ticket.board and int(ticket.board) in boards]
         return [(ticket, WAITS) for ticket in on_board if PROPOSED in ticket.dependencies.values() and self._orchestrator_may(ticket, WAITS)] + \
                [(ticket, DRAFTS) for ticket in on_board if ticket.draft and self._orchestrator_may(ticket, DRAFTS)]
