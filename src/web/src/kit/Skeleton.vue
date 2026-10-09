@@ -152,6 +152,7 @@ const HEADING = [
 
 .skeleton-files {
     display: flex;
+    width: 100%;
     flex-direction: column;
     gap: 10px;
 }
