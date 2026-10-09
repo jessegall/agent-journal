@@ -296,15 +296,14 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     later = tickets.create("Engine on the tree", board=rewrite.n)
     tickets.depend(later.n, part.n)
     tickets.move(later.n, "Doing")
-    assert tickets.load(later.n).queued, "a ticket that waits on another queues"
+    assert tickets.load(later.n).launched and not tickets.load(later.n).queued, "a ticket that waits on another starts its agent to plan ahead"
     assert tickets.merge(part.n).completed and git("branch", "--show-current").stdout.strip() == home, \
         "journal ticket merge lands it on its board's branch without touching the checkout, and it closes"
     assert (record.root.parent / "released.txt").is_file() and "After the merge, echo released > released.txt ran" in \
         [c.brief for c in Comments(record, actor=USER).linked_to(part.ref)][-1], "the board's after-merge command runs once the ticket lands, and the ticket says how it went"
     tickets.start_queued()
     later = tickets.load(later.n)
-    assert later.base == git("rev-parse", "rewrite").stdout.strip() and not later.queued, \
-        "a queued ticket starts from its board branch's tip at launch, after what it waited on landed"
+    assert later.base == started and not later.queued, "a waiting ticket starts from its board branch's tip when it starts, before what it waited on landed"
     tickets.close_merged()
     assert not tickets.load(later.n).completed, "so it is not taken for merged the minute after it starts"
     elsewhere = Boards(record, actor=USER).create("Gone", stages=["Doing"], meanings={"Doing": "start"}, branch="missing")
@@ -429,10 +428,10 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     assert (user.load(docs.n).dependencies, "as the board's orchestrator: the docs describe the API" in user.comments(docs.n)[0].brief) == \
         ({api.ref: "confirmed"}, True), "the board's orchestrator decides it where the board lets it, and the ticket shows who and why"
     user.move(ui.n, "Building")
-    assert (launched, user.load(ui.n).queued) == ([], True), "a ticket waiting on an open one does not start"
+    assert (launched, user.load(ui.n).queued) == ([f"ticket-{ui.n}"], False), "a ticket waiting on an open one still starts its agent, to write its plan ahead"
+    assert f"waits on ticket {api.n}" in refused(lambda: user.approve_plan(ui.n)), "its plan is not approved while the ticket it waits on is open"
     user.complete(api.n, how="shipped")
-    user.start_queued()
-    assert (launched, user.load(ui.n).queued) == ([f"ticket-{ui.n}"], False), "once its dependency closes, the sweep starts it"
+    assert "has no plan waiting" in refused(lambda: user.approve_plan(ui.n)), "once its dependency closes, the wait no longer holds the plan"
     first, left, right, last = (user.create(title, board=board.n) for title in ("First", "Left", "Right", "Last"))
     for waiting, on in ((left, first), (right, first), (last, left), (last, right)):
         user.update(waiting.n, dependencies={**user.load(waiting.n).dependencies, on.ref: "confirmed"})
