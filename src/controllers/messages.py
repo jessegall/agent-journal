@@ -49,7 +49,7 @@ class Messages(Controller):
 
     @action
     def archive(self, n: int, why: str):
-        return self.delete(n, why)
+        return super().delete(n, why)
 
     @action
     def process(self, n: int, part: str, result: str):
