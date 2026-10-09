@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.75 — Every subagent shows in the agent grid while it runs
+- The subagent list is read again whenever the files in the session's subagents folder change, not only when the orchestrator's own transcript grows, so a subagent dispatched while its orchestrator waits shows at once.
+- What was announced as dispatched or returned is kept on the agent row, so a restart no longer announces every subagent again.
+
 ## 2.267.74 — A working agent is no longer marked stopped after an update
 - The silence of an update's pause no longer counts against the agent: the engine measures silence from its own start and from the resume, so an agent working right after an upgrade is not marked stopped and its Home status no longer says Idle.
 - A resumed subagent is found by the id its launch answered with, so it stays in the agent grid; a flag sent as the word "false" is read as false for every provider.
