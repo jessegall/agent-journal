@@ -468,6 +468,11 @@ def get_helper_transcript(req: Request) -> Reply:
     return Reply(200, invoked(req.as_user(CONTROLLERS["helper"]), "transcript", (int(req.params["n"]),), {"since": asked.since, "before": asked.before, "last": asked.last}))
 
 
+@route("GET", "/api/{env}/doc/locate")
+def get_doc_locate(req: Request) -> Reply:
+    return Reply(200, invoked(req.as_user(CONTROLLERS["doc"]), "locate", (), {"words": req.query.get("words", "")}))
+
+
 @route("GET", "/api/{env}/agent/{n}/links")
 def get_agent_links(req: Request) -> Reply:
     return Reply(200, invoked(req.as_user(Agents), "links", (int(req.params["n"]),)))
