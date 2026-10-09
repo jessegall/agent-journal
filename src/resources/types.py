@@ -161,8 +161,6 @@ class Report(Shape, Resource):
     )
     loading = LAZY
     type = "report"
-    agent_only = True
-    created_in_viewer = False
     event_labels = {"created": "Report written", "completed": "Report closed"}
     status_labels = {"complete": "archiving"}
     needs_attention = True

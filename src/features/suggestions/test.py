@@ -9,8 +9,6 @@ def test_the_agent_proposes_and_the_user_decides_accept_adjust_or_decline():
     mine = Suggestions(record, actor=AGENT)
     theirs = Suggestions(record, actor=USER)
     assert "made by the agent" in refused(lambda: theirs.create("My own idea")), "a suggestion is the agent's to make, never the user's"
-    from controllers.types import Reports
-    assert "made by the agent" in refused(lambda: Reports(record, actor=USER).create("A finding")), "and so is a report"
     todos = Todos(record, actor=USER)
 
     s = mine.create("split the module", brief="it is 900 lines and two ideas")
