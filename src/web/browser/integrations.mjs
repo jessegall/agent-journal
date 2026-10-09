@@ -61,20 +61,20 @@ await runScenarios(process.argv[2], leavingThemOff({
         await page.locator('[data-integration="linear"]').getByRole("switch", {name: "Use Linear", exact: true, checked: true}).waitFor();
         await shot(page, "integrations-on");
         const raw = '{"errors":[{"message":"Authentication required, not authenticated"}]}';
-        await page.route(/\/api\/main\/integration\/linear$/, (route) => reply(route, {last_checked: 0, last_error: `https://api.linear.app answered 401: ${raw}`}));
+        await page.route(/\/api\/main\/integration\/linear(\?|$)/, (route) => reply(route, {last_checked: 0, last_error: `https://api.linear.app answered 401: ${raw}`}));
         await page.reload();
         const line = page.locator('[data-integration="linear"] [data-state]');
         await line.getByText("Linear did not accept the key. Pick another key.", {exact: true}).waitFor();
         if (await page.getByText("Authentication required").count()) throw new Error("the card shows Linear's raw answer before Show is pressed");
         await page.locator('[data-integration="linear"]').getByRole("button", {name: "Show"}).click();
         await page.getByText("Authentication required", {exact: false}).waitFor();
-        await page.unroute(/\/api\/main\/integration\/linear$/);
+        await page.unroute(/\/api\/main\/integration\/linear(\?|$)/);
     },
     async "a card that is logged in offers Log out, which asks the server and shows Log in again"(page, url) {
         let at = Date.now() / 1000 - 120;
         const asked = [];
-        await page.route(/\/api\/main\/integration\/linear$/, (route) => reply(route, {last_checked: 0, logged_in_at: at}));
-        await page.route(/\/api\/main\/integration\/linear\/logout$/, (route) => (asked.push(route.request().method()), (at = 0), reply(route, {loggedOut: true})));
+        await page.route(/\/api\/main\/integration\/linear(\?|$)/, (route) => reply(route, {last_checked: 0, logged_in_at: at}));
+        await page.route(/\/api\/main\/integration\/linear\/logout(\?|$)/, (route) => (asked.push(route.request().method()), (at = 0), reply(route, {loggedOut: true})));
         await page.goto(`${url}#/main/integrations`);
         const card = page.locator('[data-integration="linear"]');
         await card.getByRole("switch", {name: "Use Linear", exact: true}).click();
@@ -84,8 +84,8 @@ await runScenarios(process.argv[2], leavingThemOff({
         await card.getByText("Not logged in to Linear.").waitFor();
         await card.getByRole("button", {name: "Log in"}).waitFor();
         if (asked.join() !== "POST") throw new Error("Log out did not ask the server once");
-        await page.unroute(/\/api\/main\/integration\/linear$/);
-        await page.unroute(/\/api\/main\/integration\/linear\/logout$/);
+        await page.unroute(/\/api\/main\/integration\/linear(\?|$)/);
+        await page.unroute(/\/api\/main\/integration\/linear\/logout(\?|$)/);
     },
     async "Gmail is off at first and its card asks for the address and the mail to read once it is on"(page, url) {
         await page.goto(`${url}#/main/integrations`);

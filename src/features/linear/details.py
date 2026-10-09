@@ -17,7 +17,7 @@ class LinearDetails(IntegrationDetails):
 
     title = "Linear"
 
-    abstract = "Your Linear issues, read into tickets by the journal; the key stays in your secrets"
+    abstract = "Lets your agents work in Linear"
 
     help = """
         A ticket with the source linear came from a Linear issue. Read it like any ticket, but its title, brief and comments are
