@@ -513,9 +513,9 @@ class Controller(Files, Links, Discussed):
 
     @marks.action
     def search(self, term: str, archived: bool = False) -> list[Resource]:
-        want = term.lower()
-        texts = self._texts(archived)
-        hits = (row["n"] for row in reversed(self.rows.summaries()) if (archived or not row["deleted"]) and row["n"] in texts and want in texts[row["n"]][1])
+        want, rows = term.lower(), self.rows.summaries()
+        texts = self._texts(archived, rows)
+        hits = (row["n"] for row in reversed(rows) if (archived or not row["deleted"]) and row["n"] in texts and want in texts[row["n"]][1])
         return [self.rows.peek(n) for n, _ in zip(hits, range(LAST))]
 
     def load(self, n: int | str) -> Resource:
@@ -537,10 +537,11 @@ class Controller(Files, Links, Discussed):
         self.rows.warm()
         self._texts()
 
-    def _texts(self, archived: bool = False) -> dict[int, tuple[str, str]]:
-        """Each row's searchable text beside the stamp it was read at, kept between searches and read again only for a changed row."""
+    def _texts(self, archived: bool = False, rows: list[dict] | None = None) -> dict[int, tuple[str, str]]:
+        """Each row's searchable text beside the stamp it was read at, kept between searches and read again only for a changed row; the summaries a search already holds are passed in."""
         folder = str(self.rows.folder())
-        kept, rows, seen = SEARCHABLE.setdefault(folder, {}), self.rows.summaries(), SEARCHED.get(folder)
+        rows = self.rows.summaries() if rows is None else rows
+        kept, seen = SEARCHABLE.setdefault(folder, {}), SEARCHED.get(folder)
         if seen and seen[0] is rows and (seen[1] or not archived):
             return kept
         for row in rows:

@@ -1,6 +1,7 @@
 import argparse
 import faulthandler
 import os
+import stat
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -48,19 +49,23 @@ class SourcedTurn:
     def text(self) -> str:
         return self.turn.text
 
+    @property
+    def lowered(self) -> str:
+        return self.turn.lowered
+
 def environment_transcript(record) -> list[SourcedTurn]:
+    """Every turn of the environment's agents' conversations in order, each conversation once: its file is found by one stat, the same file by its device and inode."""
     seen = set()
     turns = []
     for row in Agents(record, actor=SYSTEM).rows.every():
         provider = PROVIDERS.get(row.provider)
-        path = Path(row.transcript).expanduser() if row.transcript else None
         try:
-            path = path.resolve(strict=True) if path else None
+            found = os.stat(Path(row.transcript).expanduser()) if row.transcript else None
         except (OSError, RuntimeError):
             continue
-        if not provider or not path or not path.is_file() or path in seen:
+        if not provider or not found or not stat.S_ISREG(found.st_mode) or (found.st_dev, found.st_ino) in seen:
             continue
-        seen.add(path)
+        seen.add((found.st_dev, found.st_ino))
         for turn in every_turn(row):
             turns.append((turn.at, row.n, turn.line, SourcedTurn(row.provider, row.title, turn)))
     turns.sort(key=lambda item: item[:3])

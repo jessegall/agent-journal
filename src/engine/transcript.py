@@ -1,3 +1,4 @@
+from functools import cached_property
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TypedDict
@@ -34,6 +35,10 @@ class Turn:
     @property
     def key(self) -> str:
         return f"transcript:{self.at}:{digest(self.text, 12)}"
+
+    @cached_property
+    def lowered(self) -> str:
+        return self.text.lower()
 
     @property
     def has_agent_text(self) -> bool:
@@ -76,7 +81,7 @@ def page(turns: list[Turn], since: int = 0, before: int = 0, size: int = 300, ca
 
 def search(turns: list[Turn], term: str, page: int = 0, size: int = 25) -> list[Turn]:
     want = term.lower()
-    hits = [t for t in reversed(turns) if want in t.text.lower()]
+    hits = [t for t in reversed(turns) if want in t.lowered]
     return hits[page * size:(page + 1) * size]
 
 
