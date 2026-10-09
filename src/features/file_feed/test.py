@@ -3,11 +3,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from controllers.types import Agents, Works
-from engine.files import announce, blobs
+from engine.files import announce, announce_writes, blobs
 from providers import skill_folders
 from features.file_feed.feed import PAGE, Side, edited_file, edits_before, edits_since
 from engine.record import Record
-from providers.command_effects import inside, writes
+from providers.command_effects import inside, may_change_files, writes
+from providers.base import Provider
 from providers.codex import Codex
 from providers.payload import Hook
 from tests.conftest import fresh
@@ -20,7 +21,7 @@ class Project:
     agent: int
 
     def changed(self) -> None:
-        announce(self.record, self.agent, skill_folders())
+        announce(self.record, self.agent, skill_folders(), self.root)
 
 
 def project_with(files: dict[str, str]) -> Project:
@@ -31,7 +32,7 @@ def project_with(files: dict[str, str]) -> Project:
     for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "start"]):
         subprocess.run(["git", *command], cwd=project, capture_output=True, timeout=10)
     row = Agents(record, actor="system").by_session("claude-1")
-    announce(record, row.n, skill_folders())
+    announce(record, row.n, skill_folders(), project)
     return Project(record, project, row.n)
 
 
@@ -148,10 +149,10 @@ def test_a_project_folder_of_repositories_feeds_the_edits_of_each():
         for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "start"]):
             subprocess.run(["git", *command], cwd=project / name, capture_output=True, timeout=10)
     agent = Agents(record, actor="system").by_session("claude-1").n
-    announce(record, agent, skill_folders())
+    announce(record, agent, skill_folders(), project)
     (project / "site" / "main.py").write_text("one\nTWO\nthree\n")
     (project / "api" / "new.py").write_text("fresh\n")
-    announce(record, agent, skill_folders())
+    announce(record, agent, skill_folders(), project)
     cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(record, agent, 0, PAGE).edits}
     assert cards == {"site/main.py": ("edit", 2, 1), "api/new.py": ("new", 1, 0)}, cards
 
@@ -194,3 +195,17 @@ def test_a_repository_with_nothing_in_it_a_missing_folder_and_a_job_that_fails_a
         coalesced.run("key", failing)
     coalesced.run("key", lambda: ran.append("after the failure"))
     assert ran[-1] == "after the failure", "a job that fails does not leave its key blocked"
+
+
+def test_edits_in_an_agents_own_worktree_reach_its_feed_and_a_shell_command_counts_unless_it_only_reads(tmp_path):
+    project = project_with({"a.py": "one\n"})
+    tree = project.root / "wt"
+    subprocess.run(["git", "worktree", "add", "-q", str(tree), "-b", "own"], cwd=project.root, capture_output=True, timeout=10)
+    announce_writes(project.record, project.agent, skill_folders(), str(tree))
+    (tree / "a.py").write_text("one\ntwo\n")
+    announce_writes(project.record, project.agent, skill_folders(), str(tree))
+    cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(project.record, project.agent, 0, PAGE).edits}
+    assert cards == {"a.py": ("edit", 1, 0)}, "a file changed in the agent's own worktree is in its file changes"
+    shell = lambda command: Hook.read({"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "cwd": str(tree)}, Provider.tool_kinds)
+    assert [may_change_files(shell(command)) for command in ("cat a.py", "grep -rn one .", "python3 build.py", "git apply fix.patch", "journal todo all")] == \
+        [False, False, True, True, False], "any shell command that is not only a read, a search or a journal command is checked for changes"
