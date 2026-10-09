@@ -61,7 +61,8 @@ def unanswered(root: Path) -> None:
     except FileNotFoundError:
         return
     started = runtime.STARTED[0]
-    since = min(started - RESTART_GRACE, runtime.RESTARTED_AT[0] or started)
+    marked = runtime.restarting(root)
+    since = min(started - RESTART_GRACE, float(marked.read_text() or started)) if marked.is_file() else started - RESTART_GRACE
     lines = [line for line in logged.splitlines() if len(line.split()) > 2 and not since <= float(line.split()[0]) <= started + RESTART_GRACE]
     f.unlink(missing_ok=True)
     by_env: dict[str, list[str]] = {}

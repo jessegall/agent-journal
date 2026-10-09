@@ -235,6 +235,7 @@ def watch_runtime(root: Path, halting: threading.Event) -> None:
         runtime.refresh_flags(root)
         if runtime.hook_failures(root).is_file():
             unanswered(root)
+        runtime.restarting(root).unlink(missing_ok=True)
 
 
 def keep_services(root: Path, halting: threading.Event) -> None:
