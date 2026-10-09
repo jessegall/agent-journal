@@ -1,4 +1,5 @@
 <script setup>
+import Illustration from "../../kit/Illustration.vue";
 import MoreButton from "./MoreButton.vue";
 import SwipeRow from "./SwipeRow.vue";
 
@@ -9,6 +10,7 @@ defineProps({
     state: {type: String, default: ""},
     lead: {type: Object, default: null},
     trail: {type: Array, default: () => []},
+    art: {type: String, default: ""},
 });
 const emit = defineEmits(["open", "more"]);
 </script>
@@ -16,7 +18,12 @@ const emit = defineEmits(["open", "more"]);
 <template>
     <SwipeRow :label="title" :lead="lead" :trail="trail" @open="emit('open')" @hold="emit('more')">
         <div class="item-row">
-            <span :class="['item-dot', state]" aria-hidden="true" />
+            <template v-if="art">
+                <Illustration :src="art" :size="44" />
+            </template>
+            <template v-else>
+                <span :class="['item-dot', state]" aria-hidden="true" />
+            </template>
             <span class="item-main">
                 <span class="item-title">{{ title }}</span>
                 <template v-if="meta.length">

@@ -25,3 +25,17 @@ describe("the picture of a voice", () => {
         expect([card.querySelector("img")?.getAttribute("src"), plain.querySelector("img")]).toEqual(["/voices/squire.webp", null]);
     });
 });
+
+describe("the phone's list of voices", () => {
+    test("shows a voice's picture in place of the dot, and the dot for a row without one", async () => {
+        const ItemRow = (await import("../src/phone/kit/ItemRow.vue")).default;
+        const withArt = await shown(ItemRow, {title: "Squire", about: "Profile 5", art: "/voices/squire.webp"});
+        const without = await shown(ItemRow, {title: "My own", about: "Profile 6"});
+        expect([withArt.querySelector("img")?.getAttribute("src"), withArt.querySelector(".item-dot"), without.querySelector("img"), !!without.querySelector(".item-dot")]).toEqual([
+            "/voices/squire.webp",
+            null,
+            null,
+            true,
+        ]);
+    });
+});

@@ -9,6 +9,7 @@ import {loadSpec} from "./manifest.js";
 import ActionSheet from "./kit/ActionSheet.vue";
 import PagedList from "../kit/PagedList.vue";
 import PhoneNew from "./PhoneNew.vue";
+import {artOf} from "../composables/profiles.js";
 import ItemRow from "./kit/ItemRow.vue";
 import ListScreen from "./kit/ListScreen.vue";
 import {newestFirst} from "./kit/listed.js";
@@ -155,6 +156,7 @@ onMounted(async () => {
                 :about="`${kind.one} ${row.n}`"
                 :meta="lines(row)"
                 :state="dotOf(row)"
+                :art="target === 'profile' ? artOf(row) : ''"
                 @open="emit('open', row.ref)"
                 @more="acting = row"
             />
@@ -172,6 +174,7 @@ onMounted(async () => {
                                 :about="`${kind.one} ${row.n}`"
                                 :meta="lines(row)"
                                 state="done"
+                                :art="target === 'profile' ? artOf(row) : ''"
                                 @open="emit('open', row.ref)"
                                 @more="acting = row"
                             />
