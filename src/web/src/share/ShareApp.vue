@@ -13,6 +13,7 @@ import PlanPage from "../resource/PlanPage.vue";
 import CommentBar from "./CommentBar.vue";
 import ShareComments from "./ShareComments.vue";
 import ShareStrip from "./ShareStrip.vue";
+import ShareView from "./ShareView.vue";
 import PlanTimeline from "../resource/PlanTimeline.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
 import Lightbox from "../kit/Lightbox.vue";
@@ -60,6 +61,7 @@ const FACTS = {
     collection: (r) => [counted(r.refs.length, "item")],
 };
 const REFRESH_MS = 20000;
+const VIEW_REFRESH_MS = 5000;
 const data = ref(null);
 const failed = ref(false);
 const reconnecting = ref(false);
@@ -111,7 +113,7 @@ function ask() {
     });
 }
 
-usePoll("shared", ask, REFRESH_MS, take, () => !failed.value);
+usePoll("shared", ask, () => (data.value?.view ? VIEW_REFRESH_MS : REFRESH_MS), take, () => !failed.value);
 
 const currentRef = computed(() => {
     const open = route.value.open;
@@ -166,6 +168,9 @@ watch(currentRef, () => (read.value = 0));
                 <h1>This link doesn't open anything</h1>
                 <p>It may have ended, or the address is not complete.</p>
             </main>
+        </template>
+        <template v-else-if="data?.view">
+            <ShareView :view="data.view" :ends="ends" />
         </template>
         <template v-else-if="currentRow">
             <template v-if="reconnecting">

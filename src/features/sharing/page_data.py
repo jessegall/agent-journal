@@ -74,6 +74,9 @@ class SharePages:
         return found if found.parent == folder and found.is_file() else None
 
     def _shared_data(self, share) -> dict:
+        if share.view:
+            return {"share": {"target": f"view:{share.view}", "expires": share.expires, "comments": False}, "rows": {}, "comments": [], "timelines": {}, "types": {},
+                    "view": shared_view(self._home(share), share.view)}
         scope = self._scope(share)
         record = self._home(share)
         rows = {}

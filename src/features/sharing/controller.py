@@ -21,6 +21,7 @@ from engine.services import DOWN, FAILED, UP, log_file, status, want
 from features.sharing.address import Claim, own_address, relied_on, this_machine
 from features.sharing.tunnel import ADDRESS_REFUSED, DEFAULT_SERVER, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, last_lines, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
 from features.sharing.visiting import ShareVisits, sharing_feature
+from features.sharing.views import VIEWS
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
@@ -108,6 +109,16 @@ class Shares(ShareVisits, SharePages, Controller):
         return super().create(f"Layout {name.strip() or 'without a name'}", abstract=f"{self._link(token)}/{LAYOUT_FILE}",
                               brief="one-time link" if once else f"link until {expires}", token=token, layout=shape, once=bool(once),
                               expires=until(expires), approved=True)
+
+    @action
+    def share_view(self, view: str, expires: str = "7d", once: bool = False):
+        if self.actor != USER:
+            raise Refused("only the user shares a view, from its menu in the viewer")
+        if view not in VIEWS:
+            raise Refused(f"a view to share is one of {', '.join(VIEWS)}")
+        token = str(uuid.uuid4())
+        return super().create(f"Shared {view} view", abstract=self._link(token), brief="one-time link" if once else f"link until {expires}",
+                              token=token, view=view, once=bool(once), expires=until(expires), approved=True)
 
     def _layout_opened(self, share) -> None:
         if share.once:

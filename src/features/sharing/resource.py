@@ -14,7 +14,7 @@ def ended(completed: float, expires: float) -> bool:
 class Share(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Share",
-        abstract="A link that lets someone outside the journal view one document, report, collection or plan, and nothing else",
+        abstract="A link that lets someone outside the journal view one document, report, collection or plan, or the agents or chat view as they change, and nothing else",
         help="journal share create <ref> makes one and prints its link and what it opens; journal share stop <n> ends it at once.",
     )
     data_fields: ClassVar[list[Field]] = [
@@ -28,6 +28,7 @@ class Share(Shape, Resource):
         Field(FLAG, True, name="agent_replies"),
         Field(default=dict, name="layout"),
         Field(FLAG, False, name="once"),
+        Field(TEXT, name="view"),
     ]
     type = "share"
     icon = "share"
