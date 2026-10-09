@@ -198,17 +198,20 @@ def test_a_type_keeps_its_counts_in_step_with_every_row_a_change_touches():
     written = Messages(record, actor=AGENT)
     reader = Messages(record, actor=USER)
 
-    def walked() -> dict:
+    def walked() -> tuple[int, int, int]:
         rows = written.rows.summaries()
-        every, opened, unread = (sum(column) for column in zip(*map(weigh, rows))) if rows else (0, 0, 0)
-        return {"all": every, "open": opened, "unread": unread}
+        return tuple(sum(column) for column in zip(*map(weigh, rows))) if rows else (0, 0, 0)
 
-    assert counts(written) == {"all": 0, "open": 0, "unread": 0}
+    def kept() -> tuple[int, int, int]:
+        found = counts(written)
+        return found["all"], found["open"], found["unread"]
+
+    assert kept() == (0, 0, 0)
     first, second, third = (written.create(text).n for text in ("one", "two", "three"))
-    assert counts(written) == walked() == {"all": 3, "open": 3, "unread": 3}, "new rows are added one by one"
+    assert kept() == walked() == (3, 3, 3), "new rows are added one by one"
     reader.read(second)
-    assert counts(written) == walked() == {"all": 3, "open": 3, "unread": 2}, "a row the user has seen is no longer unread"
+    assert kept() == walked() == (3, 3, 2), "a row the user has seen is no longer unread"
     Messages(record, actor=SYSTEM).complete(first, how="handled")
-    assert counts(written) == walked() == {"all": 3, "open": 2, "unread": 1}, "a closed row leaves the open and unread counts"
+    assert kept() == walked() == (3, 2, 1), "a closed row leaves the open and unread counts"
     Messages(record, actor=SYSTEM).delete(third, "mistake")
-    assert counts(written) == walked() == {"all": 2, "open": 1, "unread": 0}, "a deleted row leaves every count"
+    assert kept() == walked() == (2, 1, 0), "a deleted row leaves every count"
