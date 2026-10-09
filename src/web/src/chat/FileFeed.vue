@@ -109,6 +109,7 @@ function onScroll(e) {
                         :ago="fresh(c.at, now)"
                         :rows="c.rows"
                         :half="view.columns || c.half"
+                        :picture="c.image ? scope.api.editedImageUrl(props.agent, c.latest) : ''"
                         :entering="c.id === latest"
                         :fresh="latest"
                     />

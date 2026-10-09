@@ -8,7 +8,8 @@ const SMALL_ROWS = 6;
 const SMALL_CHARS = 44;
 
 const small = (card) =>
-    card.kind === "deleted" || (card.rows.length <= SMALL_ROWS && card.rows.every((row) => row.text.length <= SMALL_CHARS));
+    !card.image &&
+    (card.kind === "deleted" || (card.rows.length <= SMALL_ROWS && card.rows.every((row) => row.text.length <= SMALL_CHARS)));
 const joins = (card, edit) => card.path === edit.path && card.kind !== "deleted" && edit.kind !== "deleted";
 const tagged = (edit) => edit.rows.map((row) => ({...row, edit: edit.id}));
 

@@ -18,6 +18,7 @@ const props = defineProps({
     lines: {type: Number, default: 0},
     whole: {type: Object, default: null},
     entering: Boolean,
+    picture: {type: String, default: ""},
     fresh: {type: String, default: ""},
 });
 
@@ -102,7 +103,12 @@ onUnmounted(() => sized && sized.disconnect());
             <p class="diff-card-note">{{ whole.error }}</p>
         </template>
         <template v-if="!gone && !folded">
-            <div ref="grow" class="diff-card-grow">
+            <template v-if="picture">
+                <a class="diff-card-picture" :href="picture" target="_blank" rel="noopener">
+                    <img :src="picture" :alt="name" loading="lazy" />
+                </a>
+            </template>
+            <div v-else ref="grow" class="diff-card-grow">
                 <div ref="body" class="diff-card-diff">
                     <div class="diff-card-rows">
                         <template v-for="(row, i) in listed" :key="i">
@@ -133,6 +139,20 @@ onUnmounted(() => sized && sized.disconnect());
     border-radius: 9px;
     background: var(--raised);
     transition: width 0.4s var(--ease);
+}
+
+.diff-card-picture {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    background: var(--bg);
+}
+
+.diff-card-picture img {
+    max-width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+    border-radius: 4px;
 }
 
 .diff-card.half {

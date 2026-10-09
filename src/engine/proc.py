@@ -46,6 +46,15 @@ def streamed(args: list[str], cwd, timeout: float, on_output, env: dict | None =
     return (None if child.returncode < 0 else child.returncode), output.decode(errors="replace")
 
 
+def git_blob(cwd, sha: str, timeout: float = 5) -> bytes | None:
+    """The bytes of one stored file, exactly as they were, or nothing when this repository does not hold it."""
+    try:
+        done = subprocess.run(["git", "cat-file", "blob", sha], cwd=cwd, capture_output=True, timeout=timeout, env=git_env())
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return done.stdout if done.returncode == 0 else None
+
+
 def git_objects(cwd, shas: list[str], timeout: float = 5) -> dict[str, str]:
     if not shas:
         return {}

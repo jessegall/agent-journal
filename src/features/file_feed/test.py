@@ -143,7 +143,7 @@ def test_older_edits_page_back_and_an_edit_gives_its_whole_file():
     assert (listed.code, len(listed.body["edits"])) == (200, 1), "the older page is served as the viewer asks for it"
 
 
-def test_a_project_folder_of_repositories_feeds_the_edits_of_each():
+def test_a_folder_of_repositories_and_a_repository_holding_nested_ones_feed_the_edits_of_each():
     record = fresh()
     project = record.root.parent
     for name in ("api", "site"):
@@ -158,6 +158,20 @@ def test_a_project_folder_of_repositories_feeds_the_edits_of_each():
     announce(record, agent, skill_folders(), project)
     cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(record, agent, 0, PAGE).edits}
     assert cards == {"site/main.py": ("edit", 2, 1), "api/new.py": ("new", 1, 0)}, cards
+
+    project = project_with({"a.py": "one\n"})
+    nested = project.root / "api"
+    nested.mkdir()
+    (nested / "main.py").write_text("one\ntwo\n")
+    for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "start"]):
+        subprocess.run(["git", *command], cwd=nested, capture_output=True, timeout=10)
+    files.REPOSITORIES.clear()
+    project.changed()
+    (nested / "main.py").write_text("one\nTWO\nthree\n")
+    (project.root / "a.py").write_text("one\nmore\n")
+    project.changed()
+    cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(project.record, project.agent, 0, PAGE).edits}
+    assert cards == {"api/main.py": ("edit", 2, 1), "a.py": ("edit", 1, 0)}, "the edits of the project's own repository and of a repository nested in it are both in the feed"
 
 
 def test_a_repository_with_nothing_in_it_a_missing_folder_and_a_job_that_fails_are_all_handled_quietly(tmp_path):
@@ -225,17 +239,14 @@ def test_edits_in_an_agents_own_worktree_reach_its_feed_and_a_shell_command_coun
         [False, False, True, True, False], "any shell command that is not only a read, a search or a journal command is checked for changes"
 
 
-def test_a_project_that_is_a_repository_and_holds_nested_repositories_feeds_the_edits_of_each():
-    project = project_with({"a.py": "one\n"})
-    nested = project.root / "api"
-    nested.mkdir()
-    (nested / "main.py").write_text("one\ntwo\n")
-    for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "start"]):
-        subprocess.run(["git", *command], cwd=nested, capture_output=True, timeout=10)
-    files.REPOSITORIES.clear()
+
+def test_a_picture_a_helper_makes_is_a_card_with_its_bytes_even_where_the_project_ignores_pictures():
+    from features.file_feed.feed import edited_image
+    project = project_with({"a.py": "one\n", ".gitignore": "*.png\n"})
+    picture = bytes([137, 80, 78, 71, 13, 10, 26, 10, 0, 255, 254, 0, 1, 2, 3])
+    (project.root / "art").mkdir()
+    (project.root / "art" / "rig.png").write_bytes(picture)
     project.changed()
-    (nested / "main.py").write_text("one\nTWO\nthree\n")
-    (project.root / "a.py").write_text("one\nmore\n")
-    project.changed()
-    cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(project.record, project.agent, 0, PAGE).edits}
-    assert cards == {"api/main.py": ("edit", 2, 1), "a.py": ("edit", 1, 0)}, "the edits of the project's own repository and of a repository nested in it are both in the feed"
+    cards = edits_since(project.record, project.agent, 0, PAGE).edits
+    assert [(card.path, card.kind, card.image, card.rows) for card in cards] == [("art/rig.png", "new", True, ())], "an ignored picture is a card with no lines to diff"
+    assert edited_image(project.record, project.agent, cards[0].id).data == picture, "the card's picture comes back byte for byte"
