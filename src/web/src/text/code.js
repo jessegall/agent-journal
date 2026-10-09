@@ -1,6 +1,7 @@
 import {withoutChips} from "./words.js";
 import {highlight} from "./highlight.js";
 import {register} from "./index.js";
+import "./copyBlock.js";
 
 const FENCE = /^(```|~~~)\s*(\w+)?\s*$/;
 const INDENTED = /^\s{4,}\S/;
@@ -29,7 +30,7 @@ function guess(lines) {
 
 function block(lines, lang) {
     const code = highlight(unescape(lines.join("\n")), lang || guess(lines)).join("\n");
-    return {kind: "html", html: `<pre class="chat-code"><code>${code}</code></pre>`};
+    return {kind: "html", html: `<div class="chat-code-block"><button type="button" class="chat-code-copy">Copy</button><pre class="chat-code"><code>${code}</code></pre></div>`};
 }
 
 function lift(text) {
