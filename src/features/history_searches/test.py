@@ -258,9 +258,11 @@ def test_the_turns_an_agent_spoke_are_read_from_its_transcript_a_whole_line_at_a
     assert [t.kind for t in seen[4:]] == ["superseded", "human"], "a line typed again under the same parent replaces the first try"
     assert len(seen) == 6, "a subagent's own rows and rows that say nothing are left out"
     crossed = tmp_path / "claude-5.jsonl"
-    crossed.write_text(json.dumps(user_line('<cross-session-message from="Coco">the report is ready</cross-session-message>')) + "\n")
+    crossed.write_text(json.dumps({"type": "queue-operation", "operation": "enqueue", "timestamp": stamp,
+                                   "content": '<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="Coco" from-mode="bypass">\nthe report is ready\n</cross-session-message>'}) + "\n")
     heard = Claude().turns(crossed)[0]
-    assert (heard.kind, heard.peer.name, heard.text) == ("peer", "Coco", "the report is ready"), "a message another Claude Code session sent is an agent's message, named for that session, in its own words"
+    assert (heard.kind, heard.peer.address, heard.peer.name, heard.text) == ("peer", "uds:/tmp/cc-socks/1.sock", "Coco", "the report is ready"), \
+        "a message another Claude Code session sent is an agent's message, named for that session, in its own words"
     listed = tmp_path / "claude-4.jsonl"
     listed.write_text(json.dumps(user_line([{"type": "tool_result", "tool_use_id": "z", "content": [{"type": "text", "text": "a result in parts"}, "stray", {"type": "text", "text": "and more"}]}])) + "\n")
     assert [turn.text for turn in Claude().turns(listed)] == ["a result in parts\nand more"], "a tool's result given in parts is read as one text"

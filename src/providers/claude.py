@@ -28,7 +28,8 @@ SESSIONS = "uds:"
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 STATUS_SCRIPT = "claude-status.sh"
 CHANNEL_MARK = '<channel source="journal"'
-CROSS_SESSION = re.compile(r'^<cross-session-message\s+from="([^"]*)"[^>]*>(.*?)</cross-session-message>$', re.S)
+CROSS_SESSION = re.compile(r"^<cross-session-message\s+([^>]*)>(.*?)</cross-session-message>$", re.S)
+FROM_NAME, FROM_ADDRESS = re.compile(r'\bfrom-name="([^"]*)"'), re.compile(r'\bfrom="([^"]*)"')
 BASH_INPUT = re.compile(r"^<bash-input>(.*)</bash-input>$", re.S)
 COMMAND_NAME = re.compile(r"<command-name>(.*?)</command-name>", re.S)
 COMMAND_ARGS = re.compile(r"<command-args>(.*?)</command-args>", re.S)
@@ -487,6 +488,8 @@ class Claude(Provider):
             row = replace(row, type="user", origin=row.queued, text=row.prompt, blocks=())
         if row.type == "attachment" and CROSS_SESSION.match(row.prompt.strip()):
             row = replace(row, type="user", text=row.prompt, blocks=())
+        if row.type == "queue-operation" and CROSS_SESSION.match(row.content.strip()):
+            row = replace(row, type="user", text=row.content, blocks=())
         if (row.sidechain and not row.agent_id) or row.type not in ("user", "assistant"):
             return None
         text = row.text if row.text is not None else "\n".join(block.text for block in row.of_type("text"))
@@ -506,7 +509,10 @@ class Claude(Provider):
             peer, text = PeerNote(PEER, row.origin.sender, row.origin.name), row.origin.body if row.origin.body else text
         cross = CROSS_SESSION.match(text.strip()) if kind in (HUMAN, INJECTED) else None
         if cross:
-            kind, peer, text = PEER, PeerNote(PEER, cross[1], cross[1]), cross[2].strip()
+            sender = FROM_ADDRESS.search(cross[1])
+            named = FROM_NAME.search(cross[1])
+            address = sender[1] if sender else ""
+            kind, peer, text = PEER, PeerNote(PEER, address, named[1] if named else address), cross[2].strip()
         sent = next((use for use in uses if use.name == SENDS and use.to), None)
         if sent:
             kind, peer, text = PEER, PeerNote(SENT, sent.to), sent.message if sent.message else text
