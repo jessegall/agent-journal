@@ -3,7 +3,6 @@ import {computed, useId} from "vue";
 import {resets, resettable as canReset} from "../domain/settingsCatalog.js";
 import Btn from "./Btn.vue";
 import Chip from "./Chip.vue";
-import ChoiceList from "./ChoiceList.vue";
 import ColorSwatch from "./ColorSwatch.vue";
 import FormField from "./FormField.vue";
 import ResetButton from "./ResetButton.vue";
@@ -19,9 +18,6 @@ const emit = defineEmits(["change", "timing", "act"]);
 
 const id = useId();
 const field = computed(() => ["number", "text", "choice"].includes(props.row.kind));
-const LONG = 50;
-const stacked = computed(() => props.sheet || props.row.options.reduce((n, o) => n + o.label.length, 0) > LONG);
-const choices = computed(() => props.row.options.map((o) => ({value: o.key, label: o.label, current: o.key === props.row.value})));
 const resettable = computed(() => canReset(props.row));
 
 function reset() {
@@ -57,12 +53,7 @@ function reset() {
                         <TextInput :id="id" class="setting-text" :value="row.value" @change="emit('change', $event.target.value)" />
                     </template>
                     <template #choice>
-                        <template v-if="stacked">
-                            <ChoiceList stacked :choices="choices" @pick="emit('change', $event)" />
-                        </template>
-                        <template v-else>
-                            <Segmented :options="row.options" :value="row.value" @pick="emit('change', $event)" />
-                        </template>
+                        <Segmented wrap :fill="sheet" :options="row.options" :value="row.value" @pick="emit('change', $event)" />
                     </template>
                 </SwitchCase>
             </FormField>
@@ -216,10 +207,6 @@ function reset() {
 
 .setting-row.field {
     display: block;
-}
-
-.setting-row.field :deep(.choices.stacked) {
-    align-self: flex-start;
 }
 
 .setting-number {

@@ -1,6 +1,5 @@
 <script setup>
 import {computed, useId} from "vue";
-import ChoiceList from "../kit/ChoiceList.vue";
 import FormField from "../kit/FormField.vue";
 import LineList from "../kit/LineList.vue";
 import Switch from "../kit/Switch.vue";
@@ -15,10 +14,6 @@ const id = useId();
 const flag = computed(() => props.setting.type === "flag");
 const on = computed(() => props.setting.value === "true");
 const segments = computed(() => props.setting.options.map((option) => ({key: String(option), label: String(option)})));
-const short = computed(() => props.setting.options.length <= 4 && segments.value.reduce((n, o) => n + o.label.length, 0) <= 44);
-const choices = computed(() =>
-    props.setting.options.map((option) => ({value: String(option), label: String(option), current: props.setting.value === String(option)}))
-);
 </script>
 
 <template>
@@ -38,12 +33,7 @@ const choices = computed(() =>
             <FormField :label="setting.title" :for="id" :help="setting.help">
                 <SwitchCase :value="setting.type">
                     <template #options>
-                        <template v-if="short">
-                            <Segmented :options="segments" :value="setting.value" @pick="(value) => emit('change', setting.key, value)" />
-                        </template>
-                        <template v-else>
-                            <ChoiceList stacked :choices="choices" @pick="(value) => emit('change', setting.key, value)" />
-                        </template>
+                        <Segmented wrap :options="segments" :value="setting.value" @pick="(value) => emit('change', setting.key, value)" />
                     </template>
                     <template #list>
                         <LineList :value="setting.value" @change="(value) => emit('change', setting.key, value)" />
@@ -143,9 +133,5 @@ const choices = computed(() =>
 
 .setting-children {
     padding-left: 22px;
-}
-
-.setting :deep(.choices.stacked) {
-    align-self: flex-start;
 }
 </style>

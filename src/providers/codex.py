@@ -102,8 +102,15 @@ class CodexModel:
                 and isinstance(levels, list) and all(isinstance(level, dict) and level.get("effort") for level in levels))
 
     @property
+    def label(self) -> str:
+        """The name Codex gives the model, without its GPT- prefix and with the family first: GPT-6.1-Sol is Sol 6.1."""
+        bare_name = re.sub(r"^GPT-", "", self.display_name, flags=re.IGNORECASE)
+        versioned = re.fullmatch(r"(\d+(?:\.\d+)*)-(.+)", bare_name)
+        return f"{versioned[2]} {versioned[1]}" if versioned else bare_name
+
+    @property
     def choice(self) -> dict:
-        return {"value": self.slug, "label": self.display_name}
+        return {"value": self.slug, "label": self.label}
 
 
 def polled(text: str) -> list[Chunk]:
@@ -280,7 +287,7 @@ class Codex(Provider):
         return self.configuration().model or chosen
 
     def model_labels(self) -> dict[str, str]:
-        return {model.slug: model.display_name for model in self.catalog()}
+        return {model.slug: model.label for model in self.catalog()}
 
     @classmethod
     @cache
