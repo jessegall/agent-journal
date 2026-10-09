@@ -246,6 +246,14 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     assert Helpers(record, actor=AGENT).load(1).report == "The hooks spend 40ms in imports", "the row keeps the report"
     relayed = Messages(record, actor=SYSTEM).all()[-1]
     assert (relayed.brief, relayed.data["peer"]) == ("The hooks spend 40ms in imports", "Rhea"), "the chat shows it as a message from the helper"
+    Helpers(record, actor=SYSTEM).update(1, answering=True)
+    in_rhea = Record(record.root, f"{record.env}-rhea")
+    Messages(in_rhea, actor=AGENT).create("Passed. Commit it.", brief="Passed. Commit it.", idempotency="turn-7")
+    Messages(in_rhea, actor=AGENT).create("A question for you", brief="A question for you")
+    asked_of_main = [m for m in Messages(record, actor=SYSTEM).all() if m.data.get("peer") == "Rhea" and m.brief in ("Passed. Commit it.", "A question for you")]
+    assert [m.brief for m in asked_of_main] == ["A question for you"], "a helper's working notes, the words of its own turns, stay in its inspector; only what it writes to its dispatcher reaches the main chat"
+    Messages(record, actor=SYSTEM).force_delete(asked_of_main[0].n)
+    Helpers(record, actor=SYSTEM).update(1, answering=False)
     reported, = [n for n in Nudges(record, actor=SYSTEM).all() if "helper 1, Rhea, reported" in n.title]
     assert reported.until == ["helper.completed", "helper.deleted"], "the dispatcher is told, until it finishes the helper"
     assert not features.FEATURES["helpers"].is_owed(record, "stopped", ("helper:1",)), "once it reported, the line that it stopped is no longer owed"
