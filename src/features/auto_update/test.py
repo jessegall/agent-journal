@@ -120,6 +120,22 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert (len(running(record.root)), bool(closed.running.get("done")), steps[:1], gave_up[0].startswith("gave up waiting for `npm test`")) == \
         (0, True, ["Waiting for 1 running command to finish"], True), "an update waits a bounded time for the commands in flight, then names the one it gave up on and marks it ended"
     assert wait_for_commands(record.root, steps.append, wait=0.05, every=0.01) == [], "with nothing running the update does not wait"
+    from features.auto_update import waiting
+    report(record, "working", "PreToolUse", session="claude-8", provider="claude", commands=[{"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()}],
+           running={"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()})
+    began = time.time()
+    assert (wait_for_commands(record.root, steps.append, wait=5, every=0.01), time.time() - began < 1) == ([], True), \
+        "the command that runs the upgrade is never waited for, nor marked ended"
+    report(record, "working", "PreToolUse", session="claude-8", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": time.time()}],
+           running={"command": "npm test", "tool": "Bash", "at": time.time()})
+    kept = waiting.ancestors, waiting.pid_of
+    waiting.ancestors, waiting.pid_of = lambda: {4242}, lambda sessions, row: 4242
+    try:
+        began = time.time()
+        assert (wait_for_commands(record.root, steps.append, wait=5, every=0.01), time.time() - began < 1) == ([], True), \
+            "a command run by an agent that is a parent of the upgrade is the upgrade's own, and is never waited for"
+    finally:
+        waiting.ancestors, waiting.pid_of = kept
     runtime.upgrade_mark(record.root).write_text("Migrating the record")
     assert runtime.upgrade_step(record.root) == "Migrating the record", "the running upgrade says which step it is on, in the mark it holds"
     runtime.upgrade_mark(record.root).unlink()
