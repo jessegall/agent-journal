@@ -115,7 +115,7 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
     Features(record, actor=USER).configure("linear", "key", "LINEAR_KEY")
     second = linear.client(record)
     assert (second is first, second.key) == (False, "lin_first"), "and built again when its key is picked, through journal feature configure as through the settings write"
-    apply(record, {"linear": {"key": "LINEAR_KEY", "board": 1}}, USER)
+    apply(record, {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": 1}}, USER)
     assert linear.client(record) is not second, "the settings write does the same"
     ValuesFile(record.root).put("LINEAR_KEY", "lin_rotated")
     linear.client(record).current()
@@ -198,8 +198,14 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
         assert "no sign-in came back" in refused(lambda: signed_in(origin, "test", lambda url: None)), "a sign-in that never comes back is given up on"
         monkeypatch.setattr("features.integrations.login.WAIT", 180.0)
         variable = linear.log_in(record, browser(), origin)
-        assert (ValuesFile(record.root).values()[variable], linear.values(record).key) == ("Bearer tok-xyz", variable), "logging in keeps the token as a secret and makes it the key"
-        assert linear.client(record).key == "Bearer tok-xyz", "and the client signs in with it"
+        key_before = linear.values(record).key
+        assert ValuesFile(record.root).values()[variable] == "Bearer tok-xyz", "logging in keeps the token as a secret"
+        assert linear.values(record).key == key_before, "the token is made for the MCP server, so it never becomes the key the journal reads with"
+        assert read_state(record.root, "linear").logged_in_at > 0, "and the state remembers when you logged in"
+        linear.log_out(record, origin)
+        assert variable not in ValuesFile(record.root).values(), "logging out drops the token from the secrets file"
+        assert read_state(record.root, "linear").logged_in_at == 0, "clears the state"
+        assert not linear.values(record).use_mcp, "and switches the MCP server off"
     finally:
         server.shutdown()
 
@@ -233,7 +239,7 @@ def linear_world(monkeypatch, tmp_path, **given) -> World:
     monkeypatch.setattr(linear, "origin", fake.start())
     board = Boards(record, actor=SYSTEM).create("Linear issues")
     ValuesFile(record.root).put("LINEAR_KEY", KEY)
-    apply(record, {"linear": {"key": "LINEAR_KEY", "board": board.n, "teams": "t1"}, "features": {"linear": True}}, USER)
+    apply(record, {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board.n, "teams": "t1"}, "features": {"linear": True}}, USER)
     return World(record, fake, linear)
 
 
@@ -301,8 +307,8 @@ def test_issues_become_one_ticket_each_with_their_comments_once_and_one_that_lea
     import json
     board = linear.choices(record).board
     stages = Boards(record, actor=SYSTEM).load(board).stages
-    mapped = {"linear": {"key": "LINEAR_KEY", "board": board, "teams": "t1", "stage_states": {stages[0]: "s1", stages[1]: "s2"}}}
-    assert "needs" in refused(lambda: apply(record, {"linear": {"key": "LINEAR_KEY", "board": board, "teams": "t1", "stage_states": {}, "send_status": True}}, USER)), \
+    mapped = {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board, "teams": "t1", "stage_states": {stages[0]: "s1", stages[1]: "s2"}}}
+    assert "needs" in refused(lambda: apply(record, {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board, "teams": "t1", "stage_states": {}, "send_status": True}}, USER)), \
         "status changes can only be turned on after a stage is mapped"
     apply(record, {"linear": {**mapped["linear"], "send_status": True}}, USER)
     linear.check(record)
@@ -343,7 +349,7 @@ def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_pic
     apply(record, {"linear": {"key": "", "board": 0, "teams": ""}}, USER)
     ticked()
     assert fake.requests == [], "with no key or board picked nothing is asked of Linear"
-    apply(record, {"linear": {"key": "LINEAR_KEY", "board": board, "teams": ""}}, USER)
+    apply(record, {"linear": {"key": "LINEAR_KEY", "fetching": True, "board": board, "teams": ""}}, USER)
     ticked()
     assert read_state(record.root, "linear").last_checked > 0 and len(fake.requests) > 0, "with a key and a board the clock checks Linear and notes when"
     fake.requests.clear()

@@ -16,10 +16,12 @@ export const keyWords = (title) => ({
     note: `The key is only for ${title}, and no command can use it. Add one on the Secrets page.`,
 });
 
-export function stateWords(title, on, state) {
+export const refusedKey = (feature, state) => (feature.key_refused || []).some((mark) => (state?.last_error || "").includes(mark));
+
+export function stateWords(title, on, state, refused = false) {
     if (!on) return "Off";
     if (state?.paused_until > Date.now() / 1000) return `Paused until ${clock(state.paused_until)}, because ${title}'s request limit is nearly used`;
-    if (state?.last_error) return `Could not reach ${title}: ${state.last_error}`;
+    if (state?.last_error) return refused ? `${title} did not accept the key. Pick another key.` : `Could not reach ${title}.`;
     if (!state?.last_checked) return "Not checked yet";
     const since = age(state.last_checked);
     return since === "now" ? "Last checked just now" : `Last checked ${minutesAgo(state.last_checked)} ago`;
@@ -68,14 +70,20 @@ export const switchWords = (title) => ({
     mcp: `Agents can use ${title} directly`,
     mcpHelp: `Agents get ${title}'s own tools. What they read there is not marked as untrusted. Off until you turn it on.`,
     fetching: `Read ${title} into tickets`,
+    fetchingHelp: `The journal reads ${title} and keeps what it finds as tickets. Off until you turn it on.`,
 });
 
 export const mcpOn = (settings, name) => Boolean(settings?.[name]?.use_mcp);
 
-export const fetchingOn = (settings, name) => settings?.[name]?.fetching !== false;
+export const fetchingOn = (settings, name) => Boolean(settings?.[name]?.fetching);
 
 export const loginWords = (title) => ({
+    label: `Log in to ${title}`,
     button: "Log in",
-    line: `Log in opens ${title}'s own sign-in in your browser. The journal keeps the token as a secret and uses it as the key.`,
+    out: "Log out",
     waiting: `Waiting for you to finish signing in to ${title}.`,
 });
+
+export const loginLine = (title, state) => (state?.logged_in_at ? `Logged in to ${title} ${minutesAgo(state.logged_in_at)} ago.` : `Not logged in to ${title}.`);
+
+export const loggedIn = (state) => Boolean(state?.logged_in_at);

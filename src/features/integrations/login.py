@@ -25,10 +25,11 @@ OPEN_BROWSER = webbrowser.open
 class Endpoints(Loaded):
     """Where a service's own sign-in lives: the page to send you to, where the code is exchanged, and where this journal registers itself."""
 
-    aliases: ClassVar[dict] = {"authorize": ("authorization_endpoint",), "token": ("token_endpoint",), "register": ("registration_endpoint",)}
+    aliases: ClassVar[dict] = {"authorize": ("authorization_endpoint",), "token": ("token_endpoint",), "register": ("registration_endpoint",), "revocation": ("revocation_endpoint",)}
     authorize: str = ""
     token: str = ""
     register: str = ""
+    revocation: str = ""
 
 
 @dataclass(frozen=True)
@@ -118,3 +119,12 @@ def signed_in(origin: str, name: str, opener: Callable[[str], object] = OPEN_BRO
     if not token:
         raise Refused("the service gave no token")
     return f"Bearer {token}"
+
+
+def revoked(origin: str, bearer: str) -> None:
+    """Asks the service to void a token it gave, where it offers that; the token is dropped here whatever it answers."""
+    endpoints = discovered(origin)
+    if not endpoints.revocation:
+        return
+    form = urllib.parse.urlencode({"token": bearer.removeprefix("Bearer ")})
+    fetched(endpoints.revocation, form.encode(), {"Content-Type": "application/x-www-form-urlencoded"})

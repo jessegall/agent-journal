@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {textOf, boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, loginWords, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
+import {textOf, boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, loggedIn, loginLine, loginWords, refusedKey, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
 
 const NOW = Date.now() / 1000;
 
@@ -19,7 +19,10 @@ describe("the Integrations page", () => {
         expect(stateWords("Linear", false, null)).toBe("Off");
         expect(stateWords("Linear", true, {last_checked: NOW - 4 * 60 - 5})).toBe("Last checked 4 minutes ago");
         expect(stateWords("Linear", true, {last_checked: NOW - 5})).toBe("Last checked just now");
-        expect(stateWords("Linear", true, {last_checked: NOW - 60, last_error: "the key was refused"})).toBe("Could not reach Linear: the key was refused");
+        expect(stateWords("Linear", true, {last_checked: NOW - 60, last_error: "timed out"})).toBe("Could not reach Linear.");
+        expect(stateWords("Linear", true, {last_error: "answered 401"}, true)).toBe("Linear did not accept the key. Pick another key.");
+        expect(refusedKey({key_refused: ["answered 401"]}, {last_error: "https://api.linear.app answered 401: {}"})).toBe(true);
+        expect(refusedKey({key_refused: ["answered 401"]}, {last_error: "timed out"})).toBe(false);
         expect(stateWords("Linear", true, null)).toBe("Not checked yet");
     });
 
@@ -55,14 +58,17 @@ describe("the Integrations page", () => {
         expect([signingOf({linear: {signing_key: "LINEAR_SIGNING"}}, "linear"), signingOf({}, "linear")]).toEqual(["LINEAR_SIGNING", ""]);
     });
 
-    test("offers the two switches, the direct-use one off and fetching one on until you change them", () => {
+    test("offers the two switches, the direct-use one off and fetching one off until you turn it on", () => {
         expect(switchWords("Linear")).toMatchObject({mcp: "Agents can use Linear directly", fetching: "Read Linear into tickets"});
         expect(switchWords("Linear").mcpHelp).toContain("not marked as untrusted");
-        expect([mcpOn({}, "linear"), mcpOn({linear: {use_mcp: true}}, "linear"), fetchingOn({}, "linear"), fetchingOn({linear: {fetching: false}}, "linear")]).toEqual([false, true, true, false]);
+        expect([mcpOn({}, "linear"), mcpOn({linear: {use_mcp: true}}, "linear"), fetchingOn({}, "linear"), fetchingOn({linear: {fetching: true}}, "linear")]).toEqual([false, true, false, true]);
     });
 
     test("says what Log in does", () => {
         expect(loginWords("Linear")).toMatchObject({button: "Log in"});
-        expect(loginWords("Linear").line).toContain("Linear's own sign-in in your browser");
+        expect(loginWords("Linear")).toMatchObject({label: "Log in to Linear", out: "Log out"});
+        expect([loggedIn(null), loggedIn({logged_in_at: 0}), loggedIn({logged_in_at: NOW})]).toEqual([false, false, true]);
+        expect(loginLine("Linear", null)).toBe("Not logged in to Linear.");
+        expect(loginLine("Linear", {logged_in_at: NOW - 125})).toBe("Logged in to Linear 2 minutes ago.");
     });
 });
