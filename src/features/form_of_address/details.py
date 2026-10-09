@@ -20,13 +20,13 @@ class FormOfAddressDetails(FeatureDetails):
 
     help = """
         Every session start, and every start after a compaction, tells the agent how to talk to you, in the voice of
-        the profile you choose: Butler, Homie, Colleague or Coach. Until you choose, it talks as the Butler: your
+        the profile you choose: Butler, Homie, Colleague, Coach or Squire. Until you choose, it talks as the Butler: your
         title, Sir by default, and your first name, like Sir Example, now and then a 🎩. The name is the one set
         here, or else the first name git knows you by; the title is only ever what you set here. A change here
         reaches the running agent at once.
 
         A profile holds how the agent talks, what it calls you, its humour (how it answers a meme, a joke,
-        criticism or anger: one line in its own manner, then the matter put right) and a sample line. The four
+        criticism or anger: one line in its own manner, then the matter put right) and a sample line. The five
         that ship with the journal are locked; make a copy of one to change it, or write your own.
 
         The voice changes only the tone of the chat and how the agent addresses you, never the journal's own
