@@ -53,10 +53,13 @@ class SourcedTurn:
     def lowered(self) -> str:
         return self.turn.lowered
 
+MERGED: dict = {}
+
+
 def environment_transcript(record) -> list[SourcedTurn]:
-    """Every turn of the environment's agents' conversations in order, each conversation once: its file is found by one stat, the same file by its device and inode."""
+    """Every turn of the environment's agents' conversations in order, each conversation once: its file is found by one stat, the same file by its device and inode; the merge is kept while no conversation has changed."""
     seen = set()
-    turns = []
+    sources = []
     for row in Agents(record, actor=SYSTEM).rows.every():
         provider = PROVIDERS.get(row.provider)
         try:
@@ -66,10 +69,16 @@ def environment_transcript(record) -> list[SourcedTurn]:
         if not provider or not found or not stat.S_ISREG(found.st_mode) or (found.st_dev, found.st_ino) in seen:
             continue
         seen.add((found.st_dev, found.st_ino))
-        for turn in every_turn(row):
-            turns.append((turn.at, row.n, turn.line, SourcedTurn(row.provider, row.title, turn)))
+        sources.append((row, every_turn(row)))
+    kept = MERGED.get((record.root, record.env))
+    if kept and len(kept[0]) == len(sources) and all((row.n, row.title) == named and here is turns for (row, here), (named, turns) in zip(sources, kept[0])):
+        return kept[1]
+    turns = [(turn.at, row.n, turn.line, SourcedTurn(row.provider, row.title, turn)) for row, here in sources for turn in here]
     turns.sort(key=lambda item: item[:3])
-    return [item[-1] for item in turns]
+    merged = [item[-1] for item in turns]
+    MERGED[record.root, record.env] = ([((row.n, row.title), here) for row, here in sources], merged)
+    return merged
+
 
 def attic_text(record, term: str) -> str:
     hits = attic.searched(record.root, term)

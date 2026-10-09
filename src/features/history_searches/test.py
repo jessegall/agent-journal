@@ -50,6 +50,11 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     assert (captured(["--env", record.env, "search", "haystack"], record.root)[0].count("haystack") >= 1, len(reads)) == (True, 1), \
         "a restart reads the conversation back from the folds kept on disk, not from the file again"
     assert search_folds.restored(transcript, transcript.stat().st_size) is not None, "the folds are kept beside the transcript's size and position"
+    from commands.queries import environment_transcript
+    assert environment_transcript(record) is environment_transcript(record), "the merged turns of the conversations are kept while none of them has changed, not sorted again for every search"
+    with transcript.open("a") as out:
+        out.write(json.dumps({"type": "user", "uuid": "u9", "timestamp": "2026-10-08T10:09:00Z", "message": {"role": "user", "content": "a newer line"}}) + "\n")
+    assert "a newer line" in [turn.text for turn in environment_transcript(record)], "a conversation that grew is merged again"
 
 
 def test_a_search_mark_keeps_what_the_search_found_and_what_was_read_from_it_until_the_next_search_or_answer():
