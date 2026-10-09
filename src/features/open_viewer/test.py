@@ -455,6 +455,15 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     assert ask("GET", f"/api/{record.env}/health").body == {"locks": "taken"}, "the health check answers once it could take the record's locks"
     http.unanswered(record.root)
     assert not runtime.hook_failures(record.root).exists(), "with no hook failures logged there is nothing to report"
+    started = runtime.STARTED[0] = time.time()
+    told: list = []
+    monkeypatch.setattr(http, "broke", lambda *_, **__: told.append(1))
+    runtime.hook_failures(record.root).write_text(f"{started - 3} 000 claude {record.env}\n{started + 3} 000 claude {record.env}\n")
+    http.unanswered(record.root)
+    assert not told, "a hook that got no answer while the server restarted, warm-up included, is not reported"
+    runtime.hook_failures(record.root).write_text(f"{started + http.RESTART_GRACE + 5} 000 claude {record.env}\n")
+    http.unanswered(record.root)
+    assert told, "a hook with no answer long after the server was up is reported"
     assert ask("GET", "/api/agent-hooks/nobody").code == 404, "hooks of a provider that does not exist are not found"
     wired = ask("GET", "/api/agent-hooks/claude").body
     assert {"path", "hooks", "elsewhere"} <= set(wired), "a provider's hooks come with the file that holds them"
