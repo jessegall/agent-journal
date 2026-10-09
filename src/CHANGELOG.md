@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.76 — A reopened ticket stays open and starts again
+- A reopened ticket whose branch was merged is not closed again by the next sweep: it counts as merged only after new commits.
+- A reopened ticket's environment is restored as the ticket's own, so it stays out of the environment lists; a plan the environment no longer holds counts as no plan, so the board lists every ticket and the start asks the agent for a new plan.
+- A note to a busy ticket agent is left as a message in its environment and reaches it through the journal, instead of being reported stuck.
+- A hook that finds the server busy under load waits up to 3 seconds and spools the event, instead of calling the server down; misses are reported after five.
+- A long command moved to the background names the call that ran long, with its real duration, for every provider.
+- A refused chained command names only the commands that actually ran.
+
 ## 2.267.75 — Every subagent shows in the agent grid while it runs
 - The subagent list is read again whenever the files in the session's subagents folder change, not only when the orchestrator's own transcript grows, so a subagent dispatched while its orchestrator waits shows at once.
 - What was announced as dispatched or returned is kept on the agent row, so a restart no longer announces every subagent again.
