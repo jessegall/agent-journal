@@ -1,0 +1,169 @@
+{
+  "voice": "colleague",
+  "canvas": [
+    256,
+    256
+  ],
+  "layers": [
+    {
+      "name": "thigh_right",
+      "file": "colleague_thigh_right.png",
+      "order": 0,
+      "parent": "torso",
+      "pivot": [
+        65,
+        144
+      ]
+    },
+    {
+      "name": "shin_right",
+      "file": "colleague_shin_right.png",
+      "order": 1,
+      "parent": "thigh_right",
+      "pivot": [
+        88,
+        189
+      ]
+    },
+    {
+      "name": "foot_right",
+      "file": "colleague_foot_right.png",
+      "order": 2,
+      "parent": "shin_right",
+      "pivot": [
+        96,
+        207
+      ]
+    },
+    {
+      "name": "thigh_left",
+      "file": "colleague_thigh_left.png",
+      "order": 3,
+      "parent": "torso",
+      "pivot": [
+        101,
+        147
+      ]
+    },
+    {
+      "name": "shin_left",
+      "file": "colleague_shin_left.png",
+      "order": 4,
+      "parent": "thigh_left",
+      "pivot": [
+        128,
+        183
+      ]
+    },
+    {
+      "name": "foot_left",
+      "file": "colleague_foot_left.png",
+      "order": 5,
+      "parent": "shin_left",
+      "pivot": [
+        143,
+        194
+      ]
+    },
+    {
+      "name": "upper_arm_right",
+      "file": "colleague_upper_arm_right.png",
+      "order": 7,
+      "parent": "torso",
+      "pivot": [
+        37,
+        103
+      ]
+    },
+    {
+      "name": "forearm_right",
+      "file": "colleague_forearm_right.png",
+      "order": 8,
+      "parent": "upper_arm_right",
+      "pivot": [
+        28,
+        141
+      ]
+    },
+    {
+      "name": "hand_right",
+      "file": "colleague_hand_right.png",
+      "order": 9,
+      "parent": "forearm_right",
+      "pivot": [
+        25,
+        150
+      ]
+    },
+    {
+      "name": "upper_arm_left",
+      "file": "colleague_upper_arm_left.png",
+      "order": 11,
+      "parent": "torso",
+      "pivot": [
+        115,
+        105
+      ]
+    },
+    {
+      "name": "forearm_left",
+      "file": "colleague_forearm_left.png",
+      "order": 12,
+      "parent": "upper_arm_left",
+      "pivot": [
+        128,
+        125
+      ]
+    },
+    {
+      "name": "hand_left",
+      "file": "colleague_hand_left.png",
+      "order": 13,
+      "parent": "forearm_left",
+      "pivot": [
+        132,
+        117
+      ]
+    },
+    {
+      "name": "torso",
+      "file": "colleague_torso.png",
+      "order": 15,
+      "parent": null,
+      "pivot": [
+        77,
+        131
+      ]
+    },
+    {
+      "name": "head",
+      "file": "colleague_head.png",
+      "order": 20,
+      "parent": "torso",
+      "pivot": [
+        76,
+        89
+      ]
+    },
+    {
+      "name": "glasses",
+      "file": "colleague_glasses.png",
+      "order": 25,
+      "parent": "head",
+      "pivot": [
+        83,
+        46
+      ]
+    },
+    {
+      "name": "mug",
+      "file": "colleague_mug.png",
+      "order": 38,
+      "parent": "hand_left",
+      "pivot": [
+        114,
+        121
+      ]
+    }
+  ]
+}

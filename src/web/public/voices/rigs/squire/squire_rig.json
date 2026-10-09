@@ -1,0 +1,179 @@
+{
+  "voice": "squire",
+  "canvas": [
+    256,
+    256
+  ],
+  "layers": [
+    {
+      "name": "thigh_right",
+      "file": "squire_thigh_right.png",
+      "order": 0,
+      "parent": "torso",
+      "pivot": [
+        111,
+        154
+      ]
+    },
+    {
+      "name": "shin_right",
+      "file": "squire_shin_right.png",
+      "order": 1,
+      "parent": "thigh_right",
+      "pivot": [
+        113,
+        173
+      ]
+    },
+    {
+      "name": "foot_right",
+      "file": "squire_foot_right.png",
+      "order": 2,
+      "parent": "shin_right",
+      "pivot": [
+        116,
+        182
+      ]
+    },
+    {
+      "name": "thigh_left",
+      "file": "squire_thigh_left.png",
+      "order": 3,
+      "parent": "torso",
+      "pivot": [
+        141,
+        150
+      ]
+    },
+    {
+      "name": "shin_left",
+      "file": "squire_shin_left.png",
+      "order": 4,
+      "parent": "thigh_left",
+      "pivot": [
+        161,
+        177
+      ]
+    },
+    {
+      "name": "foot_left",
+      "file": "squire_foot_left.png",
+      "order": 5,
+      "parent": "shin_left",
+      "pivot": [
+        174,
+        183
+      ]
+    },
+    {
+      "name": "upper_arm_right",
+      "file": "squire_upper_arm_right.png",
+      "order": 7,
+      "parent": "torso",
+      "pivot": [
+        79,
+        114
+      ]
+    },
+    {
+      "name": "forearm_right",
+      "file": "squire_forearm_right.png",
+      "order": 8,
+      "parent": "upper_arm_right",
+      "pivot": [
+        61,
+        106
+      ]
+    },
+    {
+      "name": "hand_right",
+      "file": "squire_hand_right.png",
+      "order": 9,
+      "parent": "forearm_right",
+      "pivot": [
+        62,
+        112
+      ]
+    },
+    {
+      "name": "upper_arm_left",
+      "file": "squire_upper_arm_left.png",
+      "order": 11,
+      "parent": "torso",
+      "pivot": [
+        140,
+        123
+      ]
+    },
+    {
+      "name": "forearm_left",
+      "file": "squire_forearm_left.png",
+      "order": 12,
+      "parent": "upper_arm_left",
+      "pivot": [
+        161,
+        122
+      ]
+    },
+    {
+      "name": "hand_left",
+      "file": "squire_hand_left.png",
+      "order": 13,
+      "parent": "forearm_left",
+      "pivot": [
+        173,
+        112
+      ]
+    },
+    {
+      "name": "torso",
+      "file": "squire_torso.png",
+      "order": 15,
+      "parent": null,
+      "pivot": [
+        116,
+        145
+      ]
+    },
+    {
+      "name": "head",
+      "file": "squire_head.png",
+      "order": 20,
+      "parent": "torso",
+      "pivot": [
+        112,
+        107
+      ]
+    },
+    {
+      "name": "helmet_plume",
+      "file": "squire_helmet_plume.png",
+      "order": 30,
+      "parent": "head",
+      "pivot": [
+        107,
+        51
+      ]
+    },
+    {
+      "name": "shield",
+      "file": "squire_shield.png",
+      "order": 39,
+      "parent": "hand_right",
+      "pivot": [
+        62,
+        115
+      ]
+    },
+    {
+      "name": "quill",
+      "file": "squire_quill.png",
+      "order": 40,
+      "parent": "hand_left",
+      "pivot": [
+        175,
+        110
+      ]
+    }
+  ]
+}

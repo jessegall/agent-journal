@@ -1,0 +1,189 @@
+{
+  "voice": "butler",
+  "canvas": [
+    256,
+    256
+  ],
+  "layers": [
+    {
+      "name": "thigh_right",
+      "file": "butler_thigh_right.png",
+      "order": 0,
+      "parent": "torso",
+      "pivot": [
+        67,
+        160
+      ]
+    },
+    {
+      "name": "shin_right",
+      "file": "butler_shin_right.png",
+      "order": 1,
+      "parent": "thigh_right",
+      "pivot": [
+        64,
+        195
+      ]
+    },
+    {
+      "name": "foot_right",
+      "file": "butler_foot_right.png",
+      "order": 2,
+      "parent": "shin_right",
+      "pivot": [
+        61,
+        211
+      ]
+    },
+    {
+      "name": "thigh_left",
+      "file": "butler_thigh_left.png",
+      "order": 3,
+      "parent": "torso",
+      "pivot": [
+        99,
+        159
+      ]
+    },
+    {
+      "name": "shin_left",
+      "file": "butler_shin_left.png",
+      "order": 4,
+      "parent": "thigh_left",
+      "pivot": [
+        102,
+        195
+      ]
+    },
+    {
+      "name": "foot_left",
+      "file": "butler_foot_left.png",
+      "order": 5,
+      "parent": "shin_left",
+      "pivot": [
+        105,
+        211
+      ]
+    },
+    {
+      "name": "upper_arm_right",
+      "file": "butler_upper_arm_right.png",
+      "order": 7,
+      "parent": "torso",
+      "pivot": [
+        50,
+        91
+      ]
+    },
+    {
+      "name": "forearm_right",
+      "file": "butler_forearm_right.png",
+      "order": 8,
+      "parent": "upper_arm_right",
+      "pivot": [
+        21,
+        94
+      ]
+    },
+    {
+      "name": "hand_right",
+      "file": "butler_hand_right.png",
+      "order": 9,
+      "parent": "forearm_right",
+      "pivot": [
+        30,
+        60
+      ]
+    },
+    {
+      "name": "upper_arm_left",
+      "file": "butler_upper_arm_left.png",
+      "order": 11,
+      "parent": "torso",
+      "pivot": [
+        120,
+        108
+      ]
+    },
+    {
+      "name": "forearm_left",
+      "file": "butler_forearm_left.png",
+      "order": 12,
+      "parent": "upper_arm_left",
+      "pivot": [
+        146,
+        117
+      ]
+    },
+    {
+      "name": "hand_left",
+      "file": "butler_hand_left.png",
+      "order": 13,
+      "parent": "forearm_left",
+      "pivot": [
+        159,
+        100
+      ]
+    },
+    {
+      "name": "torso",
+      "file": "butler_torso.png",
+      "order": 15,
+      "parent": null,
+      "pivot": [
+        88,
+        144
+      ]
+    },
+    {
+      "name": "head",
+      "file": "butler_head.png",
+      "order": 20,
+      "parent": "torso",
+      "pivot": [
+        84,
+        83
+      ]
+    },
+    {
+      "name": "bow_tie",
+      "file": "butler_bow_tie.png",
+      "order": 22,
+      "parent": "torso",
+      "pivot": [
+        84,
+        91
+      ]
+    },
+    {
+      "name": "hat",
+      "file": "butler_hat.png",
+      "order": 30,
+      "parent": "head",
+      "pivot": [
+        73,
+        37
+      ]
+    },
+    {
+      "name": "towel",
+      "file": "butler_towel.png",
+      "order": 35,
+      "parent": "torso",
+      "pivot": [
+        138,
+        119
+      ]
+    },
+    {
+      "name": "tray_with_laptop",
+      "file": "butler_tray_with_laptop.png",
+      "order": 41,
+      "parent": "hand_left",
+      "pivot": [
+        164,
+        91
+      ]
+    }
+  ]
+}

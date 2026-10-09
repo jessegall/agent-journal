@@ -56,6 +56,14 @@ export class ApiClient {
         return `/${path}`;
     }
 
+    voiceRig(voice) {
+        return transport.request("GET", this.publicUrl(`voices/rigs/${voice}/${voice}_rig.json`));
+    }
+
+    voiceMoves(voice) {
+        return transport.request("GET", this.publicUrl(`voices/rigs/${voice}/${voice}_moves.json`));
+    }
+
     markNewFeatureSeen(id) {
         return this.post("/new-feature", {id});
     }
