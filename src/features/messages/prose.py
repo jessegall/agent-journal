@@ -23,7 +23,7 @@ class NameRunTogether(Handler):
 STANDALONE = re.compile(r"(?<![\w.,:/–—-])#?(\d+)(?![\w%:/–—-]|[.,]\d)")
 QUOTED = re.compile(r"`[^`]*`|\"[^\"]*\"|“[^”]*”")
 LISTED = re.compile(r"^\s*\d+[.)]\s", re.MULTILINE)
-NAMING = {"to-do", "to-dos", "version", "v", "line", "lines", "phase", "step", "port", "revision", "revisions", "number", "page", "row", "rows",
+NAMING = {"all", "to-do", "to-dos", "version", "v", "line", "lines", "phase", "step", "port", "revision", "revisions", "number", "page", "row", "rows",
           "commit", "id", "of", "and", "or", "under", "over", "than", "above", "below", "about", "around", "least", "most", "nearly",
           "only", "every", "first", "last", "top", "within", "past", "after", "http", "status", "code", "exit", "average", "averages"}
 VERBS = {"waits", "needs", "holds", "runs", "goes", "shows", "stays", "keeps", "closes", "opens", "starts", "ends", "lands", "takes",
@@ -37,7 +37,7 @@ def typed_before(text: str) -> bool:
 
 
 def unit_after(text: str) -> bool:
-    words = re.match(r"[ \t]*([a-z]+)(?:[ \t]+([a-z]+))?", text.lower())
+    words = re.match(r"[ \t]*([a-z]+)(?:[ \t]+([a-z]+))?(?:[ \t]+([a-z]+))?", text.lower())
     return bool(words) and (words.group(1) in COUNTING or any(len(w) > 3 and w.endswith("s") and w not in VERBS for w in words.groups() if w))
 
 
@@ -56,7 +56,7 @@ def is_status(before: str, value: int) -> bool:
 def bare(text: str) -> list[int]:
     text = LISTED.sub("", QUOTED.sub("", text))
     return list(dict.fromkeys(int(m.group(1)) for m in STANDALONE.finditer(text)
-                              if not typed_before(text[max(0, m.start() - 24):m.start()]) and not unit_after(text[m.end():m.end() + 16])
+                              if not typed_before(text[max(0, m.start() - 24):m.start()]) and not unit_after(text[m.end():m.end() + 28])
                               and not is_status(text[max(0, m.start() - 40):m.start()], int(m.group(1)))
                               and (int(m.group(1)) >= SMALL or HANDLED.search(text[max(0, m.start() - 24):m.start()]))))
 
