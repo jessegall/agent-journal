@@ -58,7 +58,8 @@ def scratch_viewer(tmp_path_factory):
         except OSError:
             time.sleep(0.5)
     else:
-        server.kill()
+        server.terminate()
+        server.wait(BOOT_WAIT)
         pytest.fail("the scratch install's server did not answer")
     try:
         yield Scratch(url, root)
