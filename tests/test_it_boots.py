@@ -1009,12 +1009,12 @@ def test_a_hook_reaches_a_busy_server_whose_heartbeat_is_late_and_no_second_serv
         slow.wait(timeout=10)
 
 
-def test_a_server_our_own_deadline_stopped_is_never_counted_as_a_crash(tmp_path, monkeypatch):
+def test_a_server_our_own_deadline_stopped_is_never_counted_as_a_crash(tmp_path, monkeypatch, free_port):
     from runner.worker import crashing
     root = tmp_path / ".journal"
     (root / "runtime").mkdir(parents=True)
     monkeypatch.setattr(viewer, "COMING_UP", 1.0)
-    monkeypatch.setattr(viewer, "PORTS", [59992])
+    monkeypatch.setattr(viewer, "PORTS", [free_port()])
     monkeypatch.setattr(viewer, "entry", lambda name: [sys.executable, "-c", "import time; time.sleep(600)"])
     exits = []
     for _ in range(3):
