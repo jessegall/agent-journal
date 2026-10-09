@@ -316,7 +316,15 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     monkeypatch.setattr(drivers, "ENTER_AFTER", 0)
     from pathlib import Path
     from providers.drivers import Driver
-    assert (Driver.latest(Path(".")), Driver.trusted(Path(".")), Driver.consent(b"anything"), Driver.opening(b"anything"), Driver.asked(None)) == ("", None, b"", "", None), \
+
+    class Plain(Driver):
+        name = "plain"
+
+        @classmethod
+        def command(cls, args, cwd=None):
+            return []
+
+    assert (Driver.latest(Path(".")), Driver.trusted(Path(".")), Driver.consent(b"anything"), Driver.opening(b"anything"), Plain(fresh(), "plain-1").asked()) == ("", None, b"", "", None), \
         "an agent whose driver knows nothing extra has no last conversation, nothing to trust, no question to answer, and no opening line"
     import agents.control as control
     from types import SimpleNamespace
