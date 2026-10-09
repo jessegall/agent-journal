@@ -11,7 +11,7 @@ def bar(row, now: float = 0.0) -> dict:
 def doing(row, now: float = 0.0) -> str:
     """The plain line for what an agent does now or did last, as the bar words it: the verb and what it touched, such as "Reading orchestra.js"."""
     latest = queue(grouped(ran(row.commands)), now)[-1:]
-    return " ".join(part_text(part) for one in latest for part in one["parts"] if part_text(part))
+    return " ".join(f"{part.get('prefix', '')}{text}" for one in latest for part in one["parts"] if (text := part_text(part)))
 
 
 def current(record) -> dict:
