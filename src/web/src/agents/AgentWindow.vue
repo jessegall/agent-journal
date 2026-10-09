@@ -14,6 +14,7 @@ const props = defineProps({entry: {type: Object, required: true}});
 const emit = defineEmits(["open"]);
 const state = computed(() => agentState(props.entry.card));
 const asks = computed(() => state.value.key !== "working" && props.entry.card.reason);
+const status = computed(() => asks.value || props.entry.doing);
 const now = useNow();
 const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value) : null));
 </script>
@@ -36,16 +37,16 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
             </span>
         </template>
         <p class="aw-title">{{ entry.title }}</p>
-        <template v-if="asks">
-            <p class="aw-asks">{{ entry.card.reason }}</p>
-        </template>
-        <template v-else-if="entry.now">
-            <p class="aw-now">{{ entry.now }}</p>
+        <template v-if="entry.says">
+            <p class="aw-says">{{ entry.says }}</p>
         </template>
         <template v-if="entry.plan">
             <Meter v-bind="planMeter(entry.plan)" />
         </template>
         <div class="aw-lines">
+            <template v-if="status">
+                <p :class="['aw-status', {asks}]" :title="status">{{ status }}</p>
+            </template>
             <p class="aw-line">
                 <span class="aw-key">Branch</span>
                 <span class="aw-branch">{{ entry.env }}</span>
@@ -234,33 +235,34 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
     background: color-mix(in srgb, var(--danger) 20%, transparent);
 }
 
-.aw-now,
-.aw-asks {
-    margin: 0;
+.aw-says {
+    display: -webkit-box;
+    margin: 6px 0 0;
     overflow: hidden;
     color: var(--text-3);
-    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+.aw-status {
+    grid-column: 1 / -1;
+    margin: 0 0 2px;
+    overflow: hidden;
+    color: var(--text-3);
     font-size: 11.5px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.aw-now {
-    display: -webkit-box;
-    margin-top: 6px;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    overflow-wrap: anywhere;
-    white-space: normal;
+.aw-status::first-letter {
+    text-transform: uppercase;
 }
 
-.aw-asks {
+.aw-status.asks {
     color: var(--tone-warn);
-    font-family: inherit;
-}
-
-.agent-window.stuck .aw-asks {
-    color: var(--danger);
 }
 </style>

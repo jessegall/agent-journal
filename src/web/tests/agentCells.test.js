@@ -32,5 +32,11 @@ test("the timer shows how long the agent has been on its current job", async () 
 test("every cell carries its model, whether or not a tool is running", () => {
     const quiet = {name: "main", owner: "", agent: {model: "claude-sonnet-5-5"}, counts: {}, plans: [], subagents: [{session: "s", parent: 1, type: "Explore", model: "claude-haiku-5-5", running: true}]};
     const cells = orchestraOf([{...quiet, owner: "helper:3"}], [], 1000);
-    expect(cells.map((c) => [c.kind, c.model, c.now])).toEqual([["helper", "claude-sonnet-5-5", ""], ["subagent", "claude-haiku-5-5", "Explore"]]);
+    expect(cells.map((c) => [c.kind, c.model, c.doing])).toEqual([["helper", "claude-sonnet-5-5", ""], ["subagent", "claude-haiku-5-5", "Explore"]]);
+});
+
+test("a cell shows what the agent said and the plain line of what it does, never a tool name", () => {
+    const working = {name: "main", owner: "helper:3", agent: {tool: "Bash", file: "", says: "The cover now keeps its version.", doing: "Reading orchestra.js"}, counts: {}, plans: [], subagents: []};
+    const [cell] = orchestraOf([working], [], 1000);
+    expect([cell.says, cell.doing, JSON.stringify(cell)]).toEqual(["The cover now keeps its version.", "Reading orchestra.js", expect.not.stringContaining("Bash")]);
 });
