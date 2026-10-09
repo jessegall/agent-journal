@@ -22,7 +22,7 @@ from typing import TypedDict
 
 def built() -> str:
     page = data("web", "dist", "index.html")
-    found = re.search(r"assets/(index-[^\"]+\.js)", page.read_text()) if page.is_file() else None
+    found = re.search(r'<script[^>]*type="module"[^>]*src="[^"]*assets/([^"]+\.js)"', page.read_text()) if page.is_file() else None
     return found.group(1) if found else ""
 
 

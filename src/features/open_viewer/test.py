@@ -1,3 +1,4 @@
+import re
 import json
 import time
 
@@ -467,6 +468,8 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
         "the Files page asks the server for one page of one kind of files at a time, filtered and searched there, with the counts of the whole set"
     http.unanswered(record.root)
     assert not runtime.hook_failures(record.root).exists(), "with no hook failures logged there is nothing to report"
+    from features.open_viewer.manifest import built
+    assert re.fullmatch(r"main-[\w-]+\.js", built()), "the manifest names the bundle the page loads, whatever the bundle is called, so an open tab sees a new build and reloads"
     started = runtime.STARTED[0] = time.time()
     told: list = []
     monkeypatch.setattr(http, "broke", lambda *_, **__: told.append(1))
