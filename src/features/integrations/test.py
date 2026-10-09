@@ -198,8 +198,10 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
         assert "no sign-in came back" in refused(lambda: signed_in(origin, "test", lambda url: None)), "a sign-in that never comes back is given up on"
         monkeypatch.setattr("features.integrations.login.WAIT", 180.0)
         variable = linear.log_in(record, browser(), origin)
-        assert (ValuesFile(record.root).values()[variable], linear.values(record).key) == ("Bearer tok-xyz", variable), "logging in keeps the token as a secret and makes it the key"
-        assert linear.client(record).key == "Bearer tok-xyz", "and the client signs in with it"
+        key_before = linear.values(record).key
+        assert ValuesFile(record.root).values()[variable] == "Bearer tok-xyz", "logging in keeps the token as a secret"
+        assert linear.values(record).key == key_before, "the token is made for the MCP server, so it never becomes the key the journal reads with"
+        assert read_state(record.root, "linear").logged_in_at > 0, "and the state remembers when you logged in"
     finally:
         server.shutdown()
 

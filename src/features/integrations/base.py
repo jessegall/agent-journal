@@ -1,8 +1,8 @@
 import threading
+import time
 from dataclasses import asdict, replace
 from urllib.parse import urlsplit
 
-from controllers.features import Features
 from controllers.types import Notices, Questions
 from engine import bus
 from features.base import Feature
@@ -96,10 +96,10 @@ class IntegrationFeature(Feature):
                 here.clear(notice, f"{self.details.title} answered again")
 
     def describe(self) -> dict:
-        return {**super().describe(), "mcp_server": self.details.mcp_server}
+        return {**super().describe(), "mcp_server": self.details.mcp_server, "key_refused": list(self.key_refused)}
 
     def log_in(self, record, opener=OPEN_BROWSER, origin: str = "") -> str:
-        """Signs in through the service's own page in your browser and keeps the token as a secret of its own, which becomes the key; only you press this."""
+        """Signs in through the service's own page in your browser and keeps the token as a secret of its own for the service's MCP server; only you press this. The token is made for that server, so the journal never reads with it as its key."""
         asked = origin or "{0.scheme}://{0.netloc}".format(urlsplit(self.details.mcp_server))
         value = signed_in(asked, f"agent-journal {record.root.parent.name}", opener)
         secrets = Secrets(record, actor=USER)
@@ -107,7 +107,7 @@ class IntegrationFeature(Feature):
         row = next((one for one in secrets.rows.every() if one.title == title and not one.deleted), None) or secrets.create(title, kind=Kind.API_KEY.value)
         secrets.fill(row.n, "key", value)
         variable = next(field["variable"] for field in secrets.load(row.n).secret_fields)
-        Features(record, actor=USER).configure(self.name, "key", variable)
+        write_state(record.root, self.name, replace(read_state(record.root, self.name), logged_in_at=time.time(), last_error=""))
         return variable
 
     def login_route(self):

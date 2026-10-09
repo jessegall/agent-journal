@@ -16,10 +16,12 @@ export const keyWords = (title) => ({
     note: `The key is only for ${title}, and no command can use it. Add one on the Secrets page.`,
 });
 
-export function stateWords(title, on, state) {
+export const refusedKey = (feature, state) => (feature.key_refused || []).some((mark) => (state?.last_error || "").includes(mark));
+
+export function stateWords(title, on, state, refused = false) {
     if (!on) return "Off";
     if (state?.paused_until > Date.now() / 1000) return `Paused until ${clock(state.paused_until)}, because ${title}'s request limit is nearly used`;
-    if (state?.last_error) return `Could not reach ${title}: ${state.last_error}`;
+    if (state?.last_error) return refused ? `${title} did not accept the key. Pick another key.` : `Could not reach ${title}.`;
     if (!state?.last_checked) return "Not checked yet";
     const since = age(state.last_checked);
     return since === "now" ? "Last checked just now" : `Last checked ${minutesAgo(state.last_checked)} ago`;
@@ -76,6 +78,6 @@ export const fetchingOn = (settings, name) => settings?.[name]?.fetching !== fal
 
 export const loginWords = (title) => ({
     button: "Log in",
-    line: `Log in opens ${title}'s own sign-in in your browser. The journal keeps the token as a secret and uses it as the key.`,
+    line: `Log in opens ${title}'s own sign-in in your browser. The journal keeps the token as a secret for the agents' direct use. Reading into tickets needs a key you pick.`,
     waiting: `Waiting for you to finish signing in to ${title}.`,
 });
