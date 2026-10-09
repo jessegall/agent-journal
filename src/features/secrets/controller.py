@@ -54,7 +54,7 @@ class Secrets(Controller):
     @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data) -> Secret:
         if self.actor == AGENT and ("programs" in data or "proposed" in data):
-            self._refuse("only you name the programs a secret may go to, under Programs it may go to on the Secrets page: propose one with journal secret propose_programs <n> <program>")
+            self._refuse(f"only you change a secret's Allowed programs, under Settings > Secrets > secret {n}: propose one with journal secret propose_programs {n} <program>")
         return super().update(n, title, abstract, brief, outcome, **data)
 
     @action
@@ -74,7 +74,7 @@ class Secrets(Controller):
         fields = [SecretField.from_json(raw) for raw in row.secret_fields]
         if any(field.variable in integration_key_variables(self.record) for field in fields):
             raise Refused(f"{row.title} is the key of an integration, which only the journal itself uses: no command is given it")
-        checked_program(command, row.programs)
+        checked_program(command, row.programs, row.n)
         values = ValuesFile(self.record.root).values()
         if row.is_waiting() or any(field.variable not in values for field in fields):
             raise Refused(f"secret {row.n}, {row.title}, has no value yet: ask for it with journal secret request, and the user fills it in")
