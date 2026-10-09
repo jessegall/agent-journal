@@ -221,7 +221,12 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     monkeypatch.setattr(engine.agent, "state", lambda: "idle")
     assert engine.probe() == "" and pressed == [], "an idle agent is never probed, however silent"
     monkeypatch.setattr(engine.agent, "state", lambda: "working")
-    assert engine.probe().startswith("silent for two minutes") and pressed == ["ctrl-c"], "a working agent silent for two minutes is probed with Ctrl-C"
+    agents = Agents(record, actor="system")
+    agents.update(agents.by_session("claude-1").n, running={"command": "sleep 900", "tool": "Bash", "at": time.time() - 60, "done": 0.0})
+    assert engine.probe() == "" and pressed == [], "an agent running a command is not probed for being silent"
+    agents.update(agents.by_session("claude-1").n, running={"command": "sleep 9000", "tool": "Bash", "at": time.time() - 2000, "done": 0.0})
+    assert engine.probe().startswith("silent for two minutes") and pressed == ["ctrl-c"], \
+        "a working agent silent for two minutes is probed with Ctrl-C, also while a command has run for over thirty minutes"
     import json
     from datetime import datetime, timedelta, timezone
     transcript = record.root / "rollout.jsonl"

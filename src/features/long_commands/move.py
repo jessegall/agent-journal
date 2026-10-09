@@ -4,7 +4,8 @@ from engine.command_runs import CommandRun, command_runs
 from engine.events.engine import ClockTicked
 from engine.gates import LONG_COMMAND, HookCall, cancelled
 from features.long_commands.details import KEPT, MOVED
-from features.long_commands.watch import background_tasks_of
+from engine.sessions import Sessions
+from features.long_commands.watch import background_tasks_of, running_part
 from features.parts import AgentContext, Handler
 from providers import DRIVERS, PROVIDERS
 from controllers.types import Agents
@@ -50,6 +51,8 @@ class MoveLongCommands(Handler):
         if not task:
             return self.close_unmoved(context, row, started)
         context.state.set("task", task)
+        if task not in tasks.ended:
+            self.show_running(context, row, started)
         if task in tasks.ended:
             context.state.set("ended", started)
             outcome = "failed" if task in tasks.failed else "done"
@@ -62,3 +65,11 @@ class MoveLongCommands(Handler):
             return
         context.state.set("ended", started)
         context.journal.get(Agents).card(row.n, key=f"command:{started}", state="done", ended=run.done)
+
+    def show_running(self, context: AgentContext, row, started: str) -> None:
+        """A chained command's card names only the part still running, as its process shows."""
+        run = next((one for one in command_runs(row) if str(one.at) == started), None)
+        part = running_part(Sessions(context.record.root).read(row.title).pid, run.command) if run else ""
+        if part and context.state.get("part") != part:
+            context.state.set("part", part)
+            context.journal.get(Agents).card(row.n, key=f"command:{started}", command=part)
