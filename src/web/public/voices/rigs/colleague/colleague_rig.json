@@ -7,143 +7,241 @@
   "layers": [
     {
       "name": "thigh_right",
-      "file": "colleague_thigh_right.png",
+      "file": "colleague_thigh_right_rest.png",
       "order": 0,
       "parent": "torso",
       "pivot": [
         65,
         144
-      ]
+      ],
+      "states": {
+        "rest": "colleague_thigh_right_rest.png",
+        "complete": "colleague_thigh_right.png",
+        "fade_25": "colleague_thigh_right_fade_25.png",
+        "fade_50": "colleague_thigh_right_fade_50.png",
+        "fade_75": "colleague_thigh_right_fade_75.png"
+      }
     },
     {
       "name": "shin_right",
-      "file": "colleague_shin_right.png",
+      "file": "colleague_shin_right_rest.png",
       "order": 1,
       "parent": "thigh_right",
       "pivot": [
         88,
         189
-      ]
+      ],
+      "states": {
+        "rest": "colleague_shin_right_rest.png",
+        "complete": "colleague_shin_right.png",
+        "fade_25": "colleague_shin_right_fade_25.png",
+        "fade_50": "colleague_shin_right_fade_50.png",
+        "fade_75": "colleague_shin_right_fade_75.png"
+      }
     },
     {
       "name": "foot_right",
-      "file": "colleague_foot_right.png",
+      "file": "colleague_foot_right_rest.png",
       "order": 2,
       "parent": "shin_right",
       "pivot": [
         96,
         207
-      ]
+      ],
+      "states": {
+        "rest": "colleague_foot_right_rest.png",
+        "complete": "colleague_foot_right.png",
+        "fade_25": "colleague_foot_right_fade_25.png",
+        "fade_50": "colleague_foot_right_fade_50.png",
+        "fade_75": "colleague_foot_right_fade_75.png"
+      }
     },
     {
       "name": "thigh_left",
-      "file": "colleague_thigh_left.png",
+      "file": "colleague_thigh_left_rest.png",
       "order": 3,
       "parent": "torso",
       "pivot": [
         101,
         147
-      ]
+      ],
+      "states": {
+        "rest": "colleague_thigh_left_rest.png",
+        "complete": "colleague_thigh_left.png",
+        "fade_25": "colleague_thigh_left_fade_25.png",
+        "fade_50": "colleague_thigh_left_fade_50.png",
+        "fade_75": "colleague_thigh_left_fade_75.png"
+      }
     },
     {
       "name": "shin_left",
-      "file": "colleague_shin_left.png",
+      "file": "colleague_shin_left_rest.png",
       "order": 4,
       "parent": "thigh_left",
       "pivot": [
         128,
         183
-      ]
+      ],
+      "states": {
+        "rest": "colleague_shin_left_rest.png",
+        "complete": "colleague_shin_left.png",
+        "fade_25": "colleague_shin_left_fade_25.png",
+        "fade_50": "colleague_shin_left_fade_50.png",
+        "fade_75": "colleague_shin_left_fade_75.png"
+      }
     },
     {
       "name": "foot_left",
-      "file": "colleague_foot_left.png",
+      "file": "colleague_foot_left_rest.png",
       "order": 5,
       "parent": "shin_left",
       "pivot": [
         143,
         194
-      ]
+      ],
+      "states": {
+        "rest": "colleague_foot_left_rest.png",
+        "complete": "colleague_foot_left.png",
+        "fade_25": "colleague_foot_left_fade_25.png",
+        "fade_50": "colleague_foot_left_fade_50.png",
+        "fade_75": "colleague_foot_left_fade_75.png"
+      }
     },
     {
       "name": "upper_arm_right",
-      "file": "colleague_upper_arm_right.png",
+      "file": "colleague_upper_arm_right_rest.png",
       "order": 7,
       "parent": "torso",
       "pivot": [
         37,
         103
-      ]
+      ],
+      "states": {
+        "rest": "colleague_upper_arm_right_rest.png",
+        "complete": "colleague_upper_arm_right.png",
+        "fade_25": "colleague_upper_arm_right_fade_25.png",
+        "fade_50": "colleague_upper_arm_right_fade_50.png",
+        "fade_75": "colleague_upper_arm_right_fade_75.png"
+      }
     },
     {
       "name": "forearm_right",
-      "file": "colleague_forearm_right.png",
+      "file": "colleague_forearm_right_rest.png",
       "order": 8,
       "parent": "upper_arm_right",
       "pivot": [
         28,
         141
-      ]
+      ],
+      "states": {
+        "rest": "colleague_forearm_right_rest.png",
+        "complete": "colleague_forearm_right.png",
+        "fade_25": "colleague_forearm_right_fade_25.png",
+        "fade_50": "colleague_forearm_right_fade_50.png",
+        "fade_75": "colleague_forearm_right_fade_75.png"
+      }
     },
     {
       "name": "hand_right",
-      "file": "colleague_hand_right.png",
+      "file": "colleague_hand_right_rest.png",
       "order": 9,
       "parent": "forearm_right",
       "pivot": [
         25,
         150
-      ]
+      ],
+      "states": {
+        "rest": "colleague_hand_right_rest.png",
+        "complete": "colleague_hand_right.png",
+        "fade_25": "colleague_hand_right_fade_25.png",
+        "fade_50": "colleague_hand_right_fade_50.png",
+        "fade_75": "colleague_hand_right_fade_75.png"
+      }
     },
     {
       "name": "upper_arm_left",
-      "file": "colleague_upper_arm_left.png",
+      "file": "colleague_upper_arm_left_rest.png",
       "order": 11,
       "parent": "torso",
       "pivot": [
         115,
         105
-      ]
+      ],
+      "states": {
+        "rest": "colleague_upper_arm_left_rest.png",
+        "complete": "colleague_upper_arm_left.png",
+        "fade_25": "colleague_upper_arm_left_fade_25.png",
+        "fade_50": "colleague_upper_arm_left_fade_50.png",
+        "fade_75": "colleague_upper_arm_left_fade_75.png"
+      }
     },
     {
       "name": "forearm_left",
-      "file": "colleague_forearm_left.png",
+      "file": "colleague_forearm_left_rest.png",
       "order": 12,
       "parent": "upper_arm_left",
       "pivot": [
         128,
         125
-      ]
+      ],
+      "states": {
+        "rest": "colleague_forearm_left_rest.png",
+        "complete": "colleague_forearm_left.png",
+        "fade_25": "colleague_forearm_left_fade_25.png",
+        "fade_50": "colleague_forearm_left_fade_50.png",
+        "fade_75": "colleague_forearm_left_fade_75.png"
+      }
     },
     {
       "name": "hand_left",
-      "file": "colleague_hand_left.png",
+      "file": "colleague_hand_left_rest.png",
       "order": 13,
       "parent": "forearm_left",
       "pivot": [
         132,
         117
-      ]
+      ],
+      "states": {
+        "rest": "colleague_hand_left_rest.png",
+        "complete": "colleague_hand_left.png",
+        "fade_25": "colleague_hand_left_fade_25.png",
+        "fade_50": "colleague_hand_left_fade_50.png",
+        "fade_75": "colleague_hand_left_fade_75.png"
+      }
     },
     {
       "name": "torso",
-      "file": "colleague_torso.png",
-      "order": 15,
+      "file": "colleague_torso_rest.png",
+      "order": -1,
       "parent": null,
       "pivot": [
         77,
         131
-      ]
+      ],
+      "states": {
+        "rest": "colleague_torso_rest.png",
+        "complete": "colleague_torso.png",
+        "fade_25": "colleague_torso_fade_25.png",
+        "fade_50": "colleague_torso_fade_50.png",
+        "fade_75": "colleague_torso_fade_75.png"
+      }
     },
     {
       "name": "head",
-      "file": "colleague_head.png",
+      "file": "colleague_head_rest.png",
       "order": 20,
       "parent": "torso",
       "pivot": [
         76,
         89
-      ]
+      ],
+      "states": {
+        "rest": "colleague_head_rest.png",
+        "complete": "colleague_head.png",
+        "fade_25": "colleague_head_fade_25.png",
+        "fade_50": "colleague_head_fade_50.png",
+        "fade_75": "colleague_head_fade_75.png"
+      }
     },
     {
       "name": "eyes",
@@ -163,7 +261,11 @@
         "look_left": "colleague_eyes_look_left.png",
         "look_right": "colleague_eyes_look_right.png",
         "look_up": "colleague_eyes_look_up.png",
-        "look_down": "colleague_eyes_look_down.png"
+        "look_down": "colleague_eyes_look_down.png",
+        "rest": "colleague_eyes_happy.png",
+        "fade_25": "colleague_eyes_fade_25.png",
+        "fade_50": "colleague_eyes_fade_50.png",
+        "fade_75": "colleague_eyes_fade_75.png"
       }
     },
     {
@@ -178,7 +280,12 @@
       "states": {
         "closed": "colleague_mouth_closed.png",
         "open": "colleague_mouth_open.png",
-        "smile": "colleague_mouth_smile.png"
+        "smile": "colleague_mouth_smile.png",
+        "rest": "colleague_mouth_closed.png",
+        "sip": "colleague_mouth_sip.png",
+        "fade_25": "colleague_mouth_fade_25.png",
+        "fade_50": "colleague_mouth_fade_50.png",
+        "fade_75": "colleague_mouth_fade_75.png"
       }
     },
     {
@@ -189,7 +296,13 @@
       "pivot": [
         83,
         46
-      ]
+      ],
+      "states": {
+        "rest": "colleague_glasses.png",
+        "fade_25": "colleague_glasses_fade_25.png",
+        "fade_50": "colleague_glasses_fade_50.png",
+        "fade_75": "colleague_glasses_fade_75.png"
+      }
     },
     {
       "name": "mug",
@@ -199,7 +312,13 @@
       "pivot": [
         114,
         121
-      ]
+      ],
+      "states": {
+        "rest": "colleague_mug.png",
+        "fade_25": "colleague_mug_fade_25.png",
+        "fade_50": "colleague_mug_fade_50.png",
+        "fade_75": "colleague_mug_fade_75.png"
+      }
     }
   ]
 }

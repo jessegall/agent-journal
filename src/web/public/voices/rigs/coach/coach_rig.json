@@ -7,143 +7,200 @@
   "layers": [
     {
       "name": "thigh_right",
-      "file": "coach_thigh_right.png",
+      "file": "coach_thigh_right_rest.png",
       "order": 0,
       "parent": "torso",
       "pivot": [
         70,
         160
-      ]
+      ],
+      "states": {
+        "rest": "coach_thigh_right_rest.png",
+        "complete": "coach_thigh_right.png"
+      }
     },
     {
       "name": "shin_right",
-      "file": "coach_shin_right.png",
+      "file": "coach_shin_right_rest.png",
       "order": 1,
       "parent": "thigh_right",
       "pivot": [
         52,
         197
-      ]
+      ],
+      "states": {
+        "rest": "coach_shin_right_rest.png",
+        "complete": "coach_shin_right.png"
+      }
     },
     {
       "name": "foot_right",
-      "file": "coach_foot_right.png",
+      "file": "coach_foot_right_rest.png",
       "order": 2,
       "parent": "shin_right",
       "pivot": [
         48,
         214
-      ]
+      ],
+      "states": {
+        "rest": "coach_foot_right_rest.png",
+        "complete": "coach_foot_right.png"
+      }
     },
     {
       "name": "thigh_left",
-      "file": "coach_thigh_left.png",
+      "file": "coach_thigh_left_rest.png",
       "order": 3,
       "parent": "torso",
       "pivot": [
         120,
         159
-      ]
+      ],
+      "states": {
+        "rest": "coach_thigh_left_rest.png",
+        "complete": "coach_thigh_left.png"
+      }
     },
     {
       "name": "shin_left",
-      "file": "coach_shin_left.png",
+      "file": "coach_shin_left_rest.png",
       "order": 4,
       "parent": "thigh_left",
       "pivot": [
         125,
         195
-      ]
+      ],
+      "states": {
+        "rest": "coach_shin_left_rest.png",
+        "complete": "coach_shin_left.png"
+      }
     },
     {
       "name": "foot_left",
-      "file": "coach_foot_left.png",
+      "file": "coach_foot_left_rest.png",
       "order": 5,
       "parent": "shin_left",
       "pivot": [
         128,
         210
-      ]
+      ],
+      "states": {
+        "rest": "coach_foot_left_rest.png",
+        "complete": "coach_foot_left.png"
+      }
     },
     {
       "name": "upper_arm_right",
-      "file": "coach_upper_arm_right.png",
+      "file": "coach_upper_arm_right_rest.png",
       "order": 7,
       "parent": "torso",
       "pivot": [
         48,
         96
-      ]
+      ],
+      "states": {
+        "rest": "coach_upper_arm_right_rest.png",
+        "complete": "coach_upper_arm_right.png"
+      }
     },
     {
       "name": "forearm_right",
-      "file": "coach_forearm_right.png",
+      "file": "coach_forearm_right_rest.png",
       "order": 8,
       "parent": "upper_arm_right",
       "pivot": [
         30,
         127
-      ]
+      ],
+      "states": {
+        "rest": "coach_forearm_right_rest.png",
+        "complete": "coach_forearm_right.png"
+      }
     },
     {
       "name": "hand_right",
-      "file": "coach_hand_right.png",
+      "file": "coach_hand_right_rest.png",
       "order": 9,
       "parent": "forearm_right",
       "pivot": [
         37,
         143
-      ]
+      ],
+      "states": {
+        "rest": "coach_hand_right_rest.png",
+        "complete": "coach_hand_right.png"
+      }
     },
     {
       "name": "upper_arm_left",
-      "file": "coach_upper_arm_left.png",
+      "file": "coach_upper_arm_left_rest.png",
       "order": 11,
       "parent": "torso",
       "pivot": [
         123,
         93
-      ]
+      ],
+      "states": {
+        "rest": "coach_upper_arm_left_rest.png",
+        "complete": "coach_upper_arm_left.png"
+      }
     },
     {
       "name": "forearm_left",
-      "file": "coach_forearm_left.png",
+      "file": "coach_forearm_left_rest.png",
       "order": 12,
       "parent": "upper_arm_left",
       "pivot": [
         147,
         96
-      ]
+      ],
+      "states": {
+        "rest": "coach_forearm_left_rest.png",
+        "complete": "coach_forearm_left.png"
+      }
     },
     {
       "name": "hand_left",
-      "file": "coach_hand_left.png",
+      "file": "coach_hand_left_rest.png",
       "order": 13,
       "parent": "forearm_left",
       "pivot": [
         160,
         68
-      ]
+      ],
+      "states": {
+        "rest": "coach_hand_left_rest.png",
+        "fist": "coach_hand_left_fist.png",
+        "complete": "coach_hand_left.png"
+      }
     },
     {
       "name": "torso",
-      "file": "coach_torso.png",
-      "order": 15,
+      "file": "coach_torso_rest.png",
+      "order": -1,
       "parent": null,
       "pivot": [
         96,
         146
-      ]
+      ],
+      "states": {
+        "rest": "coach_torso_rest.png",
+        "complete": "coach_torso.png"
+      }
     },
     {
       "name": "head",
-      "file": "coach_head.png",
+      "file": "coach_head_rest.png",
       "order": 20,
       "parent": "torso",
       "pivot": [
         82,
         79
-      ]
+      ],
+      "states": {
+        "rest": "coach_head_rest.png",
+        "complete": "coach_head.png"
+      }
     },
     {
       "name": "eyes",
@@ -163,7 +220,8 @@
         "look_left": "coach_eyes_look_left.png",
         "look_right": "coach_eyes_look_right.png",
         "look_up": "coach_eyes_look_up.png",
-        "look_down": "coach_eyes_look_down.png"
+        "look_down": "coach_eyes_look_down.png",
+        "rest": "coach_eyes_happy.png"
       }
     },
     {
@@ -178,7 +236,9 @@
       "states": {
         "closed": "coach_mouth_closed.png",
         "open": "coach_mouth_open.png",
-        "smile": "coach_mouth_smile.png"
+        "smile": "coach_mouth_smile.png",
+        "rest": "coach_mouth_closed.png",
+        "whistle": "coach_mouth_whistle.png"
       }
     },
     {

@@ -65,8 +65,8 @@ const scale = computed(() => ({transform: `scale(${props.size / 256})`}));
             <template v-for="layer in rig.layers" :key="layer.name">
                 <template v-for="file in layer.states ? Object.values(layer.states) : [layer.file]" :key="file">
                     <img
-                        v-show="file === fileOf(layer, pose)"
                         class="rig-layer"
+                        :class="{unseen: file !== fileOf(layer, pose)}"
                         :src="api.publicUrl(rigUrl(voice, file))"
                         alt=""
                         draggable="false"
@@ -103,5 +103,9 @@ const scale = computed(() => ({transform: `scale(${props.size / 256})`}));
     transform-origin: 0 0;
     image-rendering: auto;
     user-select: none;
+}
+
+.rig-layer.unseen {
+    visibility: hidden;
 }
 </style>
