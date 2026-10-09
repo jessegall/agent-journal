@@ -5,8 +5,8 @@ from pathlib import Path
 
 from agents.seat import SubagentRow
 from controllers.types import Agents
+from features.agent_sessions.launch import running_in
 from engine.record import Record
-from engine.sessions import Sessions
 from engine.worktree import lines, present
 from features.helper_worktrees.controller import KEPT, Worktrees
 from features.helpers.state import HelperAgent, HelperSnapshot, WorkState, helper_state
@@ -98,8 +98,8 @@ def unlanded(record, helper) -> tuple[str, ...]:
 
 
 def agent_runs(record, helper) -> bool:
-    """The one answer to whether a helper's agent runs, which stopping, finishing, the state shown and the limit on kept helpers all go by."""
-    return bool(Sessions(record.root).holder(helper.environment))
+    """The one answer to whether a helper's agent runs, which saying, stopping, finishing, the notices and the limit on kept helpers all go by."""
+    return bool(running_in(record, helper.environment))
 
 
 def state_of(record, helper) -> WorkState:
