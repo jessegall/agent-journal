@@ -9,6 +9,7 @@ const props = defineProps({
     options: {type: Array, default: () => []},
     value: {type: String, default: ""},
     empty: {type: String, default: "Pick one"},
+    prefix: {type: String, default: ""},
 });
 const emit = defineEmits(["pick"]);
 const {anchor, toggle} = useAnchoredAction();
@@ -22,7 +23,12 @@ function pick(value) {
 
 <template>
     <span class="menu-choice">
-        <Btn small :aria-expanded="!!anchor" @click="toggle">{{ current ? current.label : empty }}</Btn>
+        <Btn small :aria-expanded="!!anchor" @click="toggle">
+            <template v-if="prefix">
+                <span class="menu-choice-prefix">{{ prefix }}</span>
+            </template>
+            {{ current ? current.label : empty }}
+        </Btn>
         <template v-if="anchor">
             <MenuPanel :anchor="anchor" :min-width="180" :max-width="280" @click.stop @close="anchor = null">
                 <template v-for="option in options" :key="option.value">
@@ -32,3 +38,12 @@ function pick(value) {
         </template>
     </span>
 </template>
+
+<style scoped>
+.menu-choice-prefix {
+    margin-right: 7px;
+    padding-right: 7px;
+    border-right: 1px solid var(--border-2);
+    color: var(--text-3);
+}
+</style>
