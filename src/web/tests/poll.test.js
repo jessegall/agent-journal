@@ -12,6 +12,7 @@ const begin = (...args) => {
 beforeEach(() => {
     vi.useFakeTimers();
     vi.spyOn(Math, "random").mockReturnValue(1);
+    vi.spyOn(document, "hasFocus").mockReturnValue(true);
 });
 
 afterEach(() => {
@@ -90,18 +91,28 @@ describe("a poll", () => {
         expect(healthy.mock.calls.length).toBe(h);
     });
 
-    test("a hidden page stops asking and a shown one asks again", async () => {
+    test("a page out of view or out of focus asks ten times less often and a shown one asks at its pace again", async () => {
         const ask = vi.fn().mockResolvedValue("ok");
         begin(ask, 1000);
         await passed(0);
         Object.defineProperty(document, "hidden", {configurable: true, value: true});
         document.dispatchEvent(new Event("visibilitychange"));
-        await passed(20000);
+        await passed(5000);
         expect(ask).toHaveBeenCalledTimes(1);
+        await passed(5000);
+        expect(ask).toHaveBeenCalledTimes(2);
         Object.defineProperty(document, "hidden", {configurable: true, value: false});
         document.dispatchEvent(new Event("visibilitychange"));
         await passed(500);
-        expect(ask).toHaveBeenCalledTimes(2);
+        expect(ask).toHaveBeenCalledTimes(3);
+        document.hasFocus.mockReturnValue(false);
+        window.dispatchEvent(new Event("blur"));
+        await passed(5000);
+        expect(ask).toHaveBeenCalledTimes(3);
+        document.hasFocus.mockReturnValue(true);
+        window.dispatchEvent(new Event("focus"));
+        await passed(500);
+        expect(ask).toHaveBeenCalledTimes(4);
     });
 
     test("an inactive poll asks nothing and a stopped one stays stopped", async () => {

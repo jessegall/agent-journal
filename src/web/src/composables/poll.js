@@ -5,6 +5,7 @@ const BACKOFF_CAP_MS = 60000;
 const SLOW_FACTOR = 4;
 const WAKE_SPREAD_MS = 300;
 const POKE_GAP_MS = 1000;
+const UNSEEN_FACTOR = 10;
 
 const polls = new Map();
 let instance = 0;
@@ -27,15 +28,17 @@ const newest = (held) => [...held.users.values()].pop();
 const kept = (held) => polls.get(held.key) === held;
 const staggered = () => Math.random() * WAKE_SPREAD_MS;
 
+export const unseen = () => document.hidden || !document.hasFocus();
+
 function pause(held) {
-    const every = fastest(held);
+    const every = fastest(held) * (unseen() ? UNSEEN_FACTOR : 1);
     if (held.failures) return jittered(Math.min(BACKOFF_CAP_MS, every * 2 ** held.failures));
     return Math.max(every, SLOW_FACTOR * held.took);
 }
 
 function later(held, ms) {
     clearTimeout(held.timer);
-    if (document.hidden || !kept(held)) return;
+    if (!kept(held)) return;
     held.timer = setTimeout(() => round(held), ms);
 }
 
@@ -93,9 +96,11 @@ export function wakePolls() {
     });
 }
 
-document.addEventListener("visibilitychange", () =>
-    polls.forEach((held) => (document.hidden ? clearTimeout(held.timer) : later(held, staggered())))
-);
+const seen = () => polls.forEach((held) => later(held, unseen() ? pause(held) : staggered()));
+
+document.addEventListener("visibilitychange", seen);
+window.addEventListener("focus", seen);
+window.addEventListener("blur", seen);
 
 function leave(key, token) {
     const held = polls.get(key);
