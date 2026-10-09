@@ -162,18 +162,15 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
 }
 
 .aw-lines {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: baseline;
+    gap: 3px 8px;
     margin-top: auto;
 }
 
 .aw-line {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    min-width: 0;
-    margin: 0;
+    display: contents;
     font-size: 11.5px;
 }
 
