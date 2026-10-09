@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.24 — A Tickets tab in collections and their shares
+- A collection that holds tickets lists them under a Tickets tab with each ticket's stage and an Open plan button for the plan in its work environment, on the collection's page and in a share of it; a shared collection carries each ticket's plan with its to-dos and timeline.
+
 ## 2.267.23 — Shared plans with their to-dos and timeline, ticket agents on the home screen, plain secrets, faster upgrades
 - A shared collection carries the to-dos and timeline of a plan it holds from another environment, such as a ticket's plan, and opening one of its to-dos opens it from that environment.
 - The home screen shows a cell for each ticket's agent. A ticket whose board branch a nested repository lacks starts from that repository's default branch and says so. Listing rows and counting edited lines no longer fail on a row or a blob that vanished.
