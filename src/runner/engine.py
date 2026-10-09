@@ -23,7 +23,7 @@ from agents.seat import SeatReport
 from engine.wording import plural
 from engine.transcript import PEER
 from providers.turns import turns
-from runner.chat_mirror import send_to_chat
+from runner.chat_mirror import send_row_to_chat
 from engine.stored import Growth, read_json, write_json
 from resources.fields import Loaded
 
@@ -182,9 +182,9 @@ class Engine:
         fresh = written[known + 1:] if known is not None else written[-1:]
         write_json(f, asdict(now))
         for turn in fresh:
-            send_to_chat(self.record.root, row.title, turn.text, turn.key)
+            send_row_to_chat(self.record, row, turn.text, turn.key)
         for text in stopped:
-            send_to_chat(self.record.root, row.title, text)
+            send_row_to_chat(self.record, row, text)
 
     def elsewhere(self, e) -> bool:
         meant = event_data(self.record, e).get("session")
