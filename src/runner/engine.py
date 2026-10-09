@@ -6,7 +6,7 @@ from pathlib import Path
 from controllers.requests import deliver
 from controllers.types import CONTROLLERS, Agents, Messages, Notices, Notifications
 import features
-from engine import bus, chat, clock, ran, runtime
+from engine import bus, clock, ran, runtime
 from agents.actors import Actor, Agent, System, User, event_data
 from resources.types import BUSY, FAILED, IDLE, STOPPED, WORKING
 from providers.base import asking_row
@@ -23,6 +23,7 @@ from agents.seat import SeatReport
 from engine.wording import plural
 from engine.transcript import PEER
 from providers.turns import turns
+from runner.chat_mirror import send_to_chat
 from engine.stored import Growth, read_json, write_json
 from resources.fields import Loaded
 
@@ -69,11 +70,10 @@ class PeerLog(Loaded):
 
 @dataclass(frozen=True)
 class Announced(Loaded):
-    """How far an agent's turns reached the chat: the transcript line, the Stop hook's last message, and one it carried before the transcript had it."""
+    """How far an agent's turns reached the chat: the transcript line and the Stop hook's last message."""
 
     line: int = -1
     last_message: str = ""
-    carried: str = ""
 
 
 @dataclass(frozen=True)
@@ -180,14 +180,11 @@ class Engine:
         stopped = [row.last_message] if row.last_message and row.event == HookEvent.STOP and row.last_message != announced.last_message else []
         known = next((i for i, turn in enumerate(written) if turn.line == announced.line), None)
         fresh = written[known + 1:] if known is not None else written[-1:]
-        # The turn a Stop hook carried before the transcript had it already ran its tags and reached the chat; it is not sent again.
-        sent = [turn for turn in fresh if turn.text != announced.carried]
-        alone = [text for text in stopped if text not in {turn.text for turn in fresh}]
-        write_json(f, asdict(replace(now, carried=alone[-1] if alone else "")))
-        for turn in sent:
-            chat.send(self.record, row, turn.text, turn=turn.key)
-        for text in alone:
-            chat.send(self.record, row, text)
+        write_json(f, asdict(now))
+        for turn in fresh:
+            send_to_chat(self.record.root, row.title, turn.text, turn.key)
+        for text in stopped:
+            send_to_chat(self.record.root, row.title, text)
 
     def elsewhere(self, e) -> bool:
         meant = event_data(self.record, e).get("session")
