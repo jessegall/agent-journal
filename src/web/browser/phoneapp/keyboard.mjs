@@ -24,7 +24,12 @@ await runScenarios(
             await box.focus();
             await page.setViewportSize({width: PHONE.viewport.width, height: KEYBOARD_LEFT});
             await page.waitForFunction(() => window.visualViewport.height < 500);
-            await page.waitForTimeout(300);
+            await page
+                .waitForFunction((left) => {
+                    const at = document.querySelector('[placeholder="Message the agent"]').getBoundingClientRect();
+                    return at.top >= 0 && at.bottom <= left;
+                }, KEYBOARD_LEFT, {timeout: 3000})
+                .catch(() => null);
             const at = await box.boundingBox();
             if (at.y < 0 || at.y + at.height > KEYBOARD_LEFT) throw new Error(`the message box is at ${at.y}, outside the ${KEYBOARD_LEFT}px left above the keyboard`);
             if (!(await atBottom(page))) throw new Error("the chat is not at the bottom after focusing the message box");
@@ -37,7 +42,11 @@ await runScenarios(
             });
             await home(page);
             await page.locator("[data-hold]").first().waitFor();
-            await page.waitForTimeout(600);
+            await page.waitForFunction(() => {
+                let el = document.querySelector("[data-hold]");
+                while (el && !/auto|scroll/.test(getComputedStyle(el).overflowY)) el = el.parentElement;
+                return el && el.scrollHeight > el.clientHeight * 1.5 && el.scrollHeight - el.clientHeight - el.scrollTop < 4;
+            }, null, {timeout: 3000}).catch(() => null);
             const tall = await page.evaluate(() => {
                 let el = document.querySelector("[data-hold]");
                 while (el && !/auto|scroll/.test(getComputedStyle(el).overflowY)) el = el.parentElement;

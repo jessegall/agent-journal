@@ -102,7 +102,7 @@ await runScenarios(process.argv[2], {
             data: {name: "Quinn Quick", environment: "quinn-env", provider: "claude", model: "sonnet"}};
         await page.route(/\/api\/main\/helper\?/, (route) => reply(route, {rows: [helper]}));
         await page.goto(`${url}#/main`);
-        await page.waitForTimeout(1000);
+        await page.locator(".statusbar-text").waitFor();
         await page.evaluate((n) => (window.location.hash = `#/main/plan/${n}`), plan);
         await page.locator(".holder", {hasText: "Quinn Quick"}).first().waitFor({timeout: 1500});
     },

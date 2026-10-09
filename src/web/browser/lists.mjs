@@ -5,7 +5,6 @@ const RULES = 30;
 
 const looked = async (page, name) => {
     await page.getByRole("button", {name: "Load more"}).scrollIntoViewIfNeeded();
-    await page.waitForTimeout(3000);
     await shot(page, name);
 };
 

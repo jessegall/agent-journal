@@ -52,8 +52,10 @@ await runScenarios(process.argv[2], {
     async "choosing 30 days asks for a code that lasts 30 days"(page, url) {
         const {dialog, sent} = await opened(page, url, {tunnel: standing([]), answering: {reachable: true}});
         await dialog.getByText(CODE.short).waitFor({timeout: SHOWN});
+        const asked = page.waitForRequest((request) => /\/api\/main\/phone\/connect$/.test(request.url()) && request.postDataJSON().days === 30, {timeout: SHOWN});
         await dialog.getByRole("radio", {name: "30 days"}).click();
-        await new Promise((done) => setTimeout(done, 500));
-        if (sent.at(-1).days !== 30) throw new Error(`asked for ${JSON.stringify(sent)}`);
+        await asked.catch(() => {
+            throw new Error(`asked for ${JSON.stringify(sent)}`);
+        });
     },
 });

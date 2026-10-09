@@ -79,7 +79,6 @@ await runScenarios(process.argv[2], {
     },
     async "typing the first words brings the chat to the newest message"(page, url) {
         await home(page, url);
-        const gap = () => page.evaluate(() => { const s = document.querySelector(".thread-scroll"); return s.scrollHeight - s.clientHeight - s.scrollTop; });
         await page.evaluate(() => {
             const s = document.querySelector(".thread-scroll");
             const filler = document.createElement("div");
@@ -88,8 +87,10 @@ await runScenarios(process.argv[2], {
             s.scrollTop = 0;
         });
         await compose(page).pressSequentially("hello");
-        await page.waitForTimeout(SETTLE);
-        if ((await gap()) > 40) throw new Error("typing did not bring the chat to the bottom");
+        const reached = () => { const s = document.querySelector(".thread-scroll"); return s.scrollHeight - s.clientHeight - s.scrollTop <= 40; };
+        await page.waitForFunction(reached, null, {timeout: SETTLE}).catch(() => {
+            throw new Error("typing did not bring the chat to the bottom");
+        });
     },
     async "a message sent while the server is away is kept, and sent once when it is back"(page, url) {
         const marker = `away ${Date.now()}`;
@@ -125,7 +126,7 @@ await runScenarios(process.argv[2], {
         await compose(page).fill(marker);
         await sendButton(page).click();
         await page.getByText(marker).first().waitFor();
-        await settle(page);
+        await arrived(page, marker);
         if ((await stored(page, marker)) !== 1) throw new Error("the message with two pasted images was not sent");
         await page.screenshot({path: `${process.env.SHOT_DIR || "/tmp"}/pasted-images.png`});
     },
