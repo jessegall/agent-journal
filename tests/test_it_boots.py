@@ -607,6 +607,14 @@ def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(t
             time.sleep(0.5)
         return printed_times(text, times)
 
+    marker, marked = root / "runtime" / "restarting", threading.Event()
+
+    def watch_marker() -> None:
+        while not marked.is_set():
+            if marker.is_file():
+                marked.set()
+            time.sleep(0.01)
+    threading.Thread(target=watch_marker, daemon=True).start()
     touched = [0.0]
 
     def touch() -> None:
@@ -617,8 +625,12 @@ def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(t
     try:
         assert prints("http://127.0.0.1:"), "the server prints where it is serving"
         assert prints("restarting on the same port", touch), "a new build of the code restarts the server on the port it had"
-        assert (root / "runtime" / "restarting").is_file(), "the server marks its restart before it stops serving, so a hook meanwhile retries"
         assert prints("http://127.0.0.1:", times=2), "the restarted server serves again"
+        assert marked.wait(WAIT), "the server marks its restart before it stops serving, so a hook meanwhile retries"
+        gone = time.time() + WAIT
+        while marker.is_file() and time.time() < gone:
+            time.sleep(0.1)
+        assert not marker.is_file(), "and the new server takes the mark away once it answers, so a later crash is told"
         repository = released(tmp_path)
         (repository / "src" / "channel.py").write_text((repository / "src" / "channel.py").read_text() + f"\nRELEASE = {os.urandom(8).hex()!r}\n")
         subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "a new build"], cwd=repository, capture_output=True, timeout=WAIT)
