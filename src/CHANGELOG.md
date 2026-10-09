@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.10 — Journal commands stay inside their budget
+- Journal commands no longer start a git process each time: the server reads the git user name once at start and the commands read it from the runtime folder.
+- The first seconds after a start are not held against the budget for commands, as they already were not for requests.
+
 ## 2.267.9 — The engine waits out an upgrade quietly
 - While an upgrade is migrating the record, the engine's writes wait for it and are tried again on the next pass; nothing is reported as an engine error or told to the agent any more.
 
