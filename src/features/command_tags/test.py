@@ -130,6 +130,11 @@ def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
     engine.announce_written()
     assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["yes, here"], \
         "written mid-turn, no hook fired: the reply is posted as soon as the engine sees it"
+    rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "tool_use", "id": "toolu_1", "name": "Bash", "input": {"command": "ls"}}]}})
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    engine.announce_written()
+    assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["yes, here"], \
+        "a reply followed by tool calls in the same turn is posted once, as the reply, when the engine sees it"
     later = asked_and_read(record, "still there?")
     rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": f"[!reply:{later.n}] said while it restarted"}]}})
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
