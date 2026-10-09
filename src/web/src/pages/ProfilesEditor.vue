@@ -72,34 +72,48 @@ onMounted(loadProfiles);
         </template>
         <div class="profiles-card">
             <SectionHeading class="profiles-group">Included with the journal</SectionHeading>
-            <template v-for="row in shipped" :key="row.n">
-                <ProfileRow
-                    :row="row"
-                    :in-use="row.n === profileInUse"
-                    :standing="!profileInUse && standing && row.n === standing.n"
-                    @open="open = $event.n"
-                    @use="use"
-                    @duplicate="duplicate"
-                    @remove="remove"
-                />
-            </template>
+            <div class="profiles-grid">
+                <template v-for="row in shipped" :key="row.n">
+                    <ProfileRow
+                        :row="row"
+                        :in-use="row.n === profileInUse"
+                        :standing="!profileInUse && standing && row.n === standing.n"
+                        @open="open = $event.n"
+                        @use="use"
+                        @duplicate="duplicate"
+                        @remove="remove"
+                    />
+                </template>
+            </div>
             <SectionHeading class="profiles-group">Your profiles</SectionHeading>
-            <template v-for="row in own" :key="row.n">
-                <ProfileRow
-                    :row="row"
-                    :in-use="row.n === profileInUse"
-                    @open="open = $event.n"
-                    @use="use"
-                    @duplicate="duplicate"
-                    @remove="remove"
-                />
-            </template>
+            <div class="profiles-grid">
+                <template v-for="row in own" :key="row.n">
+                    <ProfileRow
+                        :row="row"
+                        :in-use="row.n === profileInUse"
+                        @open="open = $event.n"
+                        @use="use"
+                        @duplicate="duplicate"
+                        @remove="remove"
+                    />
+                </template>
+            </div>
             <template v-if="!own.length">
-                <EmptyState class="profiles-empty" :loading="!profilesLoaded">None yet. Make a copy of one above to change it, or press New profile.</EmptyState>
+                <EmptyState class="profiles-empty" :loading="!profilesLoaded">
+                    None yet. Make a copy of one above to change it, or press New profile.
+                </EmptyState>
             </template>
         </div>
         <template v-if="open && (open === NEW || panelRow)">
-            <ProfilePanel :row="panelRow" @close="open = 0" @use="use" @duplicate="duplicate" @remove="remove" @create="create" @changed="loadProfiles" />
+            <ProfilePanel
+                :row="panelRow"
+                @close="open = 0"
+                @use="use"
+                @duplicate="duplicate"
+                @remove="remove"
+                @create="create"
+                @changed="loadProfiles"
+            />
         </template>
         <Toast :toast="saved" :lasts="3500" @done="saved = null" />
     </section>
@@ -143,6 +157,13 @@ onMounted(loadProfiles);
     border-radius: 10px;
     background: var(--raised);
     overflow: hidden;
+}
+
+.profiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    padding: 0 15px 12px;
 }
 
 .profiles-group {

@@ -17,9 +17,9 @@ const emit = defineEmits(["open", "more"]);
 
 <template>
     <SwipeRow :label="title" :lead="lead" :trail="trail" @open="emit('open')" @hold="emit('more')">
-        <div class="item-row">
+        <div :class="['item-row', {pictured: art}]">
             <template v-if="art">
-                <Illustration :src="art" :size="44" />
+                <Illustration class="item-art" :src="art" :size="150" fill />
             </template>
             <template v-else>
                 <span :class="['item-dot', state]" aria-hidden="true" />
@@ -46,6 +46,14 @@ const emit = defineEmits(["open", "more"]);
     gap: 12px;
     min-height: 48px;
     padding: 10px 14px;
+}
+
+.item-row.pictured {
+    flex-wrap: wrap;
+}
+
+.item-art {
+    flex-basis: 100%;
 }
 
 .item-dot {

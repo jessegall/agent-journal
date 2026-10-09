@@ -26,11 +26,22 @@ describe("the picture of a voice", () => {
     });
 });
 
+describe("a large picture on top of a card", () => {
+    test("fills the width of its card at the height it is given", async () => {
+        const large = await shown(Illustration, {src: "/voices/squire.webp", size: 150, fill: true});
+        const image = large.querySelector("img");
+        expect([image.classList.contains("fill"), image.getAttribute("width"), image.getAttribute("height")]).toEqual([true, null, "150"]);
+        const card = await shown(PickCard, {title: "Squire", art: "/voices/squire.webp"});
+        expect(card.querySelector("img").getAttribute("height")).toBe("130");
+    });
+});
+
 describe("the phone's list of voices", () => {
     test("shows a voice's picture in place of the dot, and the dot for a row without one", async () => {
         const ItemRow = (await import("../src/phone/kit/ItemRow.vue")).default;
         const withArt = await shown(ItemRow, {title: "Squire", about: "Profile 5", art: "/voices/squire.webp"});
         const without = await shown(ItemRow, {title: "My own", about: "Profile 6"});
+        expect(withArt.querySelector(".item-row").classList.contains("pictured")).toBe(true);
         expect([withArt.querySelector("img")?.getAttribute("src"), withArt.querySelector(".item-dot"), without.querySelector("img"), !!without.querySelector(".item-dot")]).toEqual([
             "/voices/squire.webp",
             null,
