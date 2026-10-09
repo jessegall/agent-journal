@@ -1,6 +1,6 @@
 // @vitest-environment node
 import {describe, expect, test} from "vitest";
-import {asking, complete, creating, daysLeft, drafted, handedVariable, isWaiting, keptWords, pickable, pickedBy, saved, variableOf, whenWords} from "../src/domain/secrets.js";
+import {allowedProgram, asking, complete, creating, daysLeft, drafted, handedVariable, isWaiting, keptWords, pickable, pickedBy, saved, variableOf, whenWords} from "../src/domain/secrets.js";
 
 const row = (data, more = {}) => ({n: 1, title: "Stripe test", abstract: "", brief: "", data: {kind: "login", secret_fields: [{name: "username", hidden: false, variable: "U"}, {name: "password", hidden: true, variable: "P"}], ...data}, ...more});
 
@@ -45,5 +45,13 @@ describe("secrets", () => {
         expect(pickable([login, shown])).toEqual([login]);
         expect(pickedBy([login, shown], "P")).toBe(login);
         expect(pickedBy([login, shown], "")).toBeNull();
+    });
+
+    test("allowing a proposed program moves it into the programs the secret may go to", () => {
+        const draft = drafted(row({programs: ["gh"], proposed: ["curl", "gh"]}));
+        allowedProgram(draft, "curl");
+        allowedProgram(draft, "gh");
+        expect(saved(draft).programs).toEqual(["gh", "curl"]);
+        expect(saved(draft).proposed).toEqual([]);
     });
 });

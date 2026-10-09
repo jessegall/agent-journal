@@ -1,5 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
+import {allowedProgram} from "../domain/secrets.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
 import FormField from "../kit/FormField.vue";
@@ -14,7 +15,7 @@ const own = computed(() => props.draft.kind === "custom");
 
 function addProgram() {
     const name = program.value.trim();
-    if (name && !props.draft.programs.includes(name)) props.draft.programs.push(name);
+    if (name) allowedProgram(props.draft, name);
     program.value = "";
 }
 
@@ -53,12 +54,19 @@ const removeField = (index) => props.draft.fields.splice(index, 1);
                 <Btn small @click="addField"><Icon name="plus" :size="12" /> Add a field</Btn>
             </template>
         </FormField>
-        <FormField label="Programs" help="The commands that may be given this secret, such as gh or stripe. While none is listed, no command gets it.">
+        <FormField label="Programs it may go to" help="The programs this secret may be given to, one per entry, such as curl or gh. The agent can propose one, and you allow it here. Until one is listed, no program gets the secret.">
             <div class="secret-programs">
                 <template v-for="name in draft.programs" :key="name">
                     <Chip removable :label="name" @remove="draft.programs.splice(draft.programs.indexOf(name), 1)">{{ name }}</Chip>
                 </template>
             </div>
+            <template v-if="draft.proposed && draft.proposed.length">
+                <div class="secret-programs">
+                    <template v-for="name in draft.proposed" :key="name">
+                        <Btn small :aria-label="`Allow ${name}, which the agent proposed`" @click="allowedProgram(draft, name)"><Icon name="plus" :size="12" /> Allow {{ name }}</Btn>
+                    </template>
+                </div>
+            </template>
             <form class="secret-program-form" @submit.prevent="addProgram">
                 <TextInput :value="program" placeholder="Program name" aria-label="Program name" @input="program = $event.target.value" />
                 <Btn small :disabled="!program.trim()" @click="addProgram">Add program</Btn>

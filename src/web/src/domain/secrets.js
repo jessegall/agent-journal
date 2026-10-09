@@ -88,6 +88,7 @@ export function drafted(row) {
         kind: row ? row.data.kind : "",
         fields: row ? fieldsOf(row).map((field) => ({...field})) : [],
         programs: row ? [...(row.data.programs || [])] : [],
+        proposed: row ? [...(row.data.proposed || [])] : [],
         helpers: row ? Boolean(row.data.helpers) : false,
     };
 }
@@ -99,8 +100,14 @@ export function saved(draft) {
         brief: draft.brief.trim(),
         secret_fields: withFields(draft.fields, draft.title.trim()),
         programs: draft.programs,
+        proposed: draft.proposed,
         helpers: draft.helpers,
     };
+}
+
+export function allowedProgram(draft, name) {
+    draft.proposed = draft.proposed.filter((proposal) => proposal !== name);
+    if (!draft.programs.includes(name)) draft.programs.push(name);
 }
 
 export function creating(draft) {

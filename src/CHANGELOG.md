@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.15 — A secret's programs are yours to name
+- Every secret on the Secrets page has Programs it may go to, a list you add programs to and remove them from; the server refuses an agent that tries to set it. An agent proposes a program with journal secret propose_programs <n> <program>, and the proposal waits on that page for you to allow it. The refusal for a secret with no programs points to that control. Shells and interpreters are still never given a secret.
+
 ## 2.267.14 — One agent row per session, and the journal block once
 - An answer to a message from another session is never kept out of the chat, even when a journal line started the turn.
 - An upgrade folds an agent's duplicate rows for one session into the row that reported last, keeping every compaction and mark; the context popup's last compaction is right again.

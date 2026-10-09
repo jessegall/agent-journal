@@ -47,6 +47,7 @@ class Secret(Shape, Resource):
         Field(default=Kind.CUSTOM.value, name="kind"),
         Field(default=list, name="secret_fields"),
         Field(default=list, name="programs"),
+        Field(default=list, name="proposed"),
         Field(default=False, name="helpers"),
         Field(default=dict, name="filled", journal_only=True),
         Field(default=0.0, name="used", journal_only=True),

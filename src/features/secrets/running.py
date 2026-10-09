@@ -51,7 +51,7 @@ class Masker:
         return self.masked(text.encode()).decode(errors="replace")
 
 
-NO_PROGRAMS = "this secret lists no programs, so it is given to none: the user names the programs it may go to on the Secrets page"
+NO_PROGRAMS = "this secret lists no programs, so it is given to none: the user adds one under Programs it may go to on the Secrets page, or you propose one with journal secret propose_programs <n> <program>"
 
 
 def checked_program(command: tuple[str, ...], allowed: list[str]) -> str:

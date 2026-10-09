@@ -10,7 +10,7 @@ from controllers.types import Environments, Messages
 from features import FEATURES
 from features.secrets.keys import integration_key_variables
 from features.secrets.resource import Kind, Secret, SecretField
-from features.secrets.running import checked_program, run_masked
+from features.secrets.running import NEVER_GIVEN, checked_program, run_masked
 from features.secrets.sessions import BrowserLogins
 from features.secrets.values import ValuesFile
 from providers import PROVIDERS
@@ -50,6 +50,22 @@ class Secrets(Controller):
         value = made.read_text().strip()
         made.unlink()
         return self._stored(self.load(n), field, value)
+
+    @action
+    def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data) -> Secret:
+        if self.actor == AGENT and ("programs" in data or "proposed" in data):
+            self._refuse("only you name the programs a secret may go to, under Programs it may go to on the Secrets page: propose one with journal secret propose_programs <n> <program>")
+        return super().update(n, title, abstract, brief, outcome, **data)
+
+    @action
+    def propose_programs(self, n: int, program: str) -> Secret:
+        row = self.load(n)
+        name = Path(program).name
+        if NEVER_GIVEN.match(name):
+            raise Refused(f"a secret is never given to {name}: propose the program that uses it directly, such as curl or gh")
+        if name in row.programs or name in row.proposed:
+            return row
+        return super().update(n, proposed=[*row.proposed, name])
 
     @action(here=True)
     def run(self, name: str, *command: str, stdin: str = "", env: bool = False) -> str:
