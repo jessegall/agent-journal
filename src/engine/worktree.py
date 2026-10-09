@@ -69,10 +69,19 @@ def unused_name(project: Path) -> str:
     return next((name for name in names if name not in taken), f"worktree-{len(taken) + 1}")
 
 
-def linked(project: Path) -> dict[str, Path]:
+def worktrees(project: Path) -> list[Path]:
     listed = git(project, "worktree", "list", "--porcelain")
     folders = [line.split(" ", 1)[1] for line in listed.stdout.splitlines() if line.startswith("worktree ")] if not listed.returncode else []
-    return {Path(folder).name: Path(folder) for folder in folders[1:]}
+    return [Path(folder) for folder in folders[1:]]
+
+
+def linked(project: Path) -> dict[str, Path]:
+    return {folder.name: folder for folder in worktrees(project)}
+
+
+def owns(project: Path, folder: Path) -> bool:
+    """Whether a folder is a worktree of this repository: git lists it, whatever its folder and its admin folder are called, however far its checkout got."""
+    return folder.resolve() in {path.resolve() for path in worktrees(project)}
 
 
 def main_checkout(start: Path) -> Path:
@@ -84,7 +93,7 @@ def opened(project: Path, folder: Path, branch: str, name: str = "") -> Path:
     name = name or folder.name
     kept = f"{KEPT}/{name}"
     git(project, "worktree", "prune")
-    registered = folder.resolve() in {path.resolve() for path in linked(project).values()}
+    registered = owns(project, folder)
     if folder.is_dir() and not registered:
         raise SystemExit(f"journal: {folder} is a folder but not a worktree of this project; move it away and launch again")
     if not registered:
@@ -118,7 +127,7 @@ def changed(project: Path, branch: str, base: str) -> bool:
 
 def discarded(project: Path, folder: Path, branch: str, name: str) -> None:
     """Takes away what a start that never reached its agent left in one repository: its worktree, its branch and the ref that remembers it."""
-    if folder.resolve() in {path.resolve() for path in linked(project).values()}:
+    if owns(project, folder):
         git(project, "worktree", "remove", "--force", str(folder))
     git(project, "worktree", "prune")
     if branch and present(project, f"refs/heads/{branch}") and not checked_out(project, branch):
@@ -126,9 +135,15 @@ def discarded(project: Path, folder: Path, branch: str, name: str) -> None:
         git(project, "update-ref", "-d", f"{KEPT}/{name}")
 
 
-def leftover(project: Path, place: Path) -> bool:
-    """A plain folder inside a ticket's own worktree folder that no worktree owns, which only a start that failed partway leaves."""
-    return place.is_dir() and not place.is_symlink() and not (place / ".git").exists() and place.resolve() not in {path.resolve() for path in linked(project).values()}
+def set_aside(project: Path, place: Path, folder: Path) -> Path | None:
+    """Moves a folder that no worktree owns out of the way, into the worktree's own folder as .failed-<time>: only a start that failed partway leaves one, and nothing in it is deleted."""
+    if not place.is_dir() or place.is_symlink() or owns(project, place):
+        return None
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    away = next(folder / f".failed-{stamp}{suffix}" / place.relative_to(folder) for suffix in ("", *(f"-{n}" for n in range(2, 100))) if not (folder / f".failed-{stamp}{suffix}" / place.relative_to(folder)).exists())
+    away.parent.mkdir(parents=True, exist_ok=True)
+    place.rename(away)
+    return away
 
 
 def workspace(project: Path, folder: Path, folders: WorkspaceFolders) -> Path:
@@ -138,9 +153,8 @@ def workspace(project: Path, folder: Path, folders: WorkspaceFolders) -> Path:
     try:
         for repo in found:
             place, branch = folder / repo.relative_to(project), f"{BRANCHED}{name}"
-            if leftover(repo, place):
-                shutil.rmtree(place)
-            had = place.resolve() in {path.resolve() for path in linked(repo).values()}, present(repo, f"refs/heads/{branch}")
+            set_aside(repo, place, folder)
+            had = owns(repo, place), present(repo, f"refs/heads/{branch}")
             opened(repo, place, branch, name)
             made.append((repo, place, branch, *had))
         return arranged(project, folder, folders, found)

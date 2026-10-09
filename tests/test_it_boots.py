@@ -1857,33 +1857,55 @@ def test_the_server_reads_the_messages_and_comments_a_reply_asks_for_when_it_sta
     assert {"message", "comment"} <= held, "a start loads what a reply reads, so the first reply after it answers from memory"
 
 
-def test_a_worktree_set_that_fails_partway_removes_what_it_made_and_a_retry_clears_a_plain_leftover(tmp_path):
+def test_a_worktree_set_that_fails_partway_removes_what_it_made_and_a_retry_clears_a_half_made_one_of_the_same_name(tmp_path):
     import io
 
     from commands.cli import exit_code
-    from engine.worktree import WorkspaceFolders, linked, present, workspace
+    from engine.worktree import WorkspaceFolders, discarded, owns, present, worktrees, workspace
+
+    def git(repo: Path, *words: str) -> None:
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *words], cwd=repo, check=True, timeout=30, capture_output=True)
 
     def made_repo(name: str) -> Path:
         repo = tmp_path / "project" / name
         repo.mkdir(parents=True)
-        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True, timeout=30)
-        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "first"], cwd=repo, check=True, timeout=30)
+        git(repo, "init", "-q", "-b", "main")
+        (repo / "file.txt").write_text("one\n")
+        git(repo, "add", "-A")
+        git(repo, "commit", "-q", "-m", "first")
         return repo
 
     first, second, third = (made_repo(name) for name in ("first", "second", "third"))
     project, folders = tmp_path / "project", WorkspaceFolders(worktrees=((".claude", "worktrees"),))
-    folder = project / ".claude" / "worktrees" / "ticket-9"
-    (folder / "third" / ".git").mkdir(parents=True)
+    home = project / ".claude" / "worktrees"
+    git(third, "worktree", "add", "-q", "-b", "worktree-ticket-9", str(tmp_path / "elsewhere"))
     with pytest.raises(SystemExit):
-        workspace(project, folder, folders)
-    assert [linked(repo) for repo in (first, second)] == [{}, {}] and not any(present(repo, "refs/heads/worktree-ticket-9") for repo in (first, second)), \
-        "a start that fails at its third repository takes away the worktrees and branches it made in the first two"
-    (folder / "third" / ".git").rmdir()
-    (folder / "second").mkdir()
-    workspace(project, folder, folders)
-    assert all(repo.name in {path.name for path in linked(repo).values()} for repo in (first, second, third)) and all((folder / repo.name / ".git").exists() for repo in (first, second, third)), \
-        "a retry clears the plain folders a failed start left in its own folder and makes every worktree"
+        workspace(project, home / "ticket-9", folders)
+    assert [worktrees(repo) for repo in (first, second)] == [[], []] and not any(present(repo, "refs/heads/worktree-ticket-9") for repo in (first, second)) and not (home / "ticket-9").exists(), \
+        "a start that fails at its third repository takes away the worktrees, branches and folder it made in the first two"
+    git(third, "worktree", "remove", "--force", str(tmp_path / "elsewhere"))
+    git(third, "branch", "-D", "worktree-ticket-9")
+
+    git(second, "worktree", "add", "-q", "-b", "worktree-ticket-9", str(home / "ticket-9" / "second"))
+    git(second, "worktree", "add", "-q", "-b", "worktree-ticket-8", str(home / "ticket-8" / "second"))
+    half = home / "ticket-9" / "second"
+    for entry in half.iterdir():
+        if entry.name != ".git":
+            entry.unlink()
+    assert (owns(second, half), owns(second, home / "ticket-8" / "second")) == (True, True), \
+        "two worktrees of one repository whose folders carry the same name are both its own, whichever was made last, and a half-made checkout is still one"
+    discarded(second, half, "worktree-ticket-9", "ticket-9")
+    assert (owns(second, half), owns(second, home / "ticket-8" / "second"), half.exists(), present(second, "refs/heads/worktree-ticket-9"), present(second, "refs/heads/worktree-ticket-8")) == (False, True, False, False, True), \
+        "a retry removes the half-made worktree and its branch like any other, and leaves another ticket's worktree and branch alone"
+    git(second, "worktree", "remove", "--force", str(home / "ticket-8" / "second"))
+    git(second, "branch", "-D", "worktree-ticket-8")
+
+    (home / "ticket-9" / "first").mkdir(parents=True)
+    (home / "ticket-9" / "first" / "notes.txt").write_text("not a checkout\n")
+    workspace(project, home / "ticket-9", folders)
+    kept = list((home / "ticket-9").glob(".failed-*/first/notes.txt"))
+    assert all(owns(repo, home / "ticket-9" / repo.name) for repo in (first, second, third)) and len(kept) == 1, \
+        "a folder that no worktree owns is moved aside into the ticket's folder as .failed-<time>, nothing deleted, and every worktree is made"
     err = io.StringIO()
     assert (exit_code(SystemExit("journal: could not launch"), err), "could not launch" in err.getvalue(), exit_code(SystemExit(3), err), exit_code(SystemExit(), err)) == (1, True, 3, 0), \
         "a command that ends with a message answers 1 and says it; it is never parsed as a number"
-
