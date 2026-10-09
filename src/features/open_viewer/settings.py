@@ -54,6 +54,7 @@ def apply(record: Record, body: dict, actor: str) -> dict:
         written(record.root.parent, record)
     rebuild(record)
     after = switches(record)
+    features.switched(record, before, after, actor)
     aliases = renamed()
     turned = [f"{name} {'on' if on else 'off'}" for name, on in after.items() if name not in aliases and before.get(name) != on]
     if turned:

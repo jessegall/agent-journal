@@ -235,6 +235,9 @@ class Feature(ABC):
     def settings_changed(self, record, actor: str) -> None:
         return None
 
+    def switched(self, record, actor: str, on: bool) -> None:
+        return None
+
     def to_primary(self, record, line: str, actor: str = SYSTEM, **values) -> None:
         agent = Agents(record, actor=SYSTEM).primary()
         if agent:
