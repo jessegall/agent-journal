@@ -55,14 +55,14 @@ compose exec -T journal pgrep -u journal -x claude >/dev/null 2>&1 && pass "an a
 
 [ "$(docker inspect --format '{{.HostConfig.CapDrop}} {{.HostConfig.SecurityOpt}}' "$(compose ps -q journal)")" = "[ALL] [no-new-privileges:true]" ] && pass "the journal's container drops every capability it does not use" || fail "the journal's container keeps capabilities"
 [ "$(compose exec -T journal ps -o user= -p 1 | tr -d ' ')" = "journal" ] && pass "the journal and its agents run as the unprivileged user journal" || fail "the journal runs as another user"
-compose exec -T journal pgrep -u gateway -f "features.hosted_journal.apart serve" >/dev/null && pass "the login page runs as its own user, gateway" || fail "the login page does not run as gateway"
+compose exec -T journal pgrep -u gateway -f "commands.login_page serve" >/dev/null && pass "the login page runs as its own user, gateway" || fail "the login page does not run as gateway"
 MODES="$(compose exec -T -u gateway journal sh -c 'stat -c %a /data/vault /data/vault/*/ /data/vault/*/owner.json' | tr '\n' ' ')"
 echo "$MODES" | grep -Eq '^700 700 600 $' && pass "the password and logins sit in a folder only gateway can read" || fail "vault modes are $MODES"
 compose exec -T -u journal journal sh -c 'cat /data/vault/*/owner.json' >/dev/null 2>&1 && fail "an agent's user reads the password hash" || pass "an agent's user cannot read the password or logins"
 compose exec -T -u journal journal hosted-journal setup-code >/dev/null 2>&1 && fail "an agent's user made a setup code" || pass "an agent's user cannot make a setup code or reset the password"
 compose exec -T -u journal journal sh -c 'mkdir -p /data/project/features && for f in json.py features/__init__.py; do echo "open(\"/tmp/planted\", \"w\").write(\"ran\")" > /data/project/$f; done'
 compose exec -T -u gateway -w /data/project journal hosted-journal password-status >/dev/null 2>&1 || true
-compose exec -T journal pkill -u gateway -f "features.hosted_journal.apart serve" >/dev/null 2>&1 || true
+compose exec -T journal pkill -u gateway -f "commands.login_page serve" >/dev/null 2>&1 || true
 compose exec -T -u journal journal python3 -c 'import socket; socket.create_server(("0.0.0.0", 8440))' >/dev/null 2>&1 && fail "an agent's user took the login page's port" || pass "the login page's port stays held while the login page restarts"
 for _ in $(seq 1 30); do compose exec -T journal curl -fsS http://127.0.0.1:8440/ready >/dev/null 2>&1 && break; sleep 1; done
 compose exec -T journal test -e /tmp/planted && fail "code planted in the project ran as gateway" || pass "code planted in the project never runs as the login page's user"

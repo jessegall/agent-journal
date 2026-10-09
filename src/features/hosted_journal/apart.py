@@ -35,7 +35,7 @@ def keep(root: Path, host: str, port: int) -> None:
 
 
 def serving_command(root: Path, fd: int) -> list[str]:
-    return [sys.executable, "-P", "-m", "features.hosted_journal.apart", "serve", str(root), "--fd", str(fd)]
+    return [sys.executable, "-P", "-m", "commands.login_page", "serve", str(root), "--fd", str(fd)]
 
 
 def serving_environment(home: str) -> dict[str, str]:

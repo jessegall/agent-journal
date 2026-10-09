@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.266.1 — A hosted journal's login page refuses the pages that never run from outside
+- A journal on a server, whose login page runs apart under its own user, now refuses /api/run, /api/stop, /api/upgrade, agent hooks and service changes from outside at the login page itself; before, a logged-in browser's request for them was passed on to the journal. Members' own requests are answered again in that setup. Upgrade the server; nothing else to do.
+
 ## 2.266.0 — An Agent tab in Settings, a login button in the chat, search that finds everything, and a viewer that asks the journal's own commands
 - Settings has an Agent tab at the top that lists the agent's sessions, rules, skills, work tracking, plans, questions, messages and voice, with a Models group; every model picker offers each provider's own models.
 - The agent asks for a browser login with a button in the chat, saved logins reach every Playwright tool the agent has, and a site the user lets the agent log in to on its own needs no button. Secrets are a project-wide item in the Project section of the sidebar.
