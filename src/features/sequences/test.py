@@ -35,6 +35,9 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     second = CONTROLLERS["dump"](record, actor=USER).create("Review", brief="notes")
     assert steps()[-1] == f"sequence {filing['n']}, Sort dumped files, step 1 of 3 - Read each file" and len(steps()) == 5, \
         "a run started while another runs is handed at once, like a call"
+    assert "was handed to you first" in refused(lambda: sequences.next(filing["n"], about=first.ref)), \
+        "the run another run interrupted cannot be moved on while the newer run is in hand, so a refused action never closes it"
+    assert sequences.load(filing["n"]).runs[f"{record.env}|{first.ref}"]["step"] == 1, "and it stays at its step"
     for _ in range(3):
         sequences.follow(filing["n"], about=second.ref)
         sequences.next(filing["n"], about=second.ref)

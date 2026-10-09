@@ -129,6 +129,10 @@ class Sequences(Controller):
         r = self.load(n)
         key = self._run_key(r, about, f": journal sequence run {r.n} starts it")
         handing = bool(r.dispatch) and self.agent == r.dispatch
+        first = self.in_hand() if self.actor == AGENT and not handing else None
+        if first and (first[0].n, first[1]) != (r.n, key):
+            self._refuse(f"sequence {first[0].n}{self._flag(first[1])} was handed to you first, so sequence {r.n}{self._flag(key)} waits at step {r.runs[key]['step']}: "
+                         f"journal sequence follow {first[0].n}{self._flag(first[1])}, do what it says and move on; then sequence {r.n} is handed to you again at that step")
         if self.actor == AGENT and not handing and r.runs[key].get("followed") != r.runs[key]["step"]:
             self._refuse(f"step {r.runs[key]['step']} of sequence {r.n} was never taken up: journal sequence follow {r.n}"
                          f"{' --about ' + about if about else ''}, do what it says, then move on")
@@ -243,6 +247,11 @@ class Sequences(Controller):
 
     def _open(self) -> int:
         return sum(len(self._here(row.get("runs"))) for row in self.open_rows())
+
+    @staticmethod
+    def _flag(key: str) -> str:
+        run = RunKey.of(key)
+        return "" if run.by_hand else f" --about {run.about}"
 
     def _key(self, about: str | None) -> str:
         named = about.strip() if about is not None else ""
