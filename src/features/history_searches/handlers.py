@@ -11,6 +11,7 @@ from engine.gates import Runs
 
 TAKES_VALUE = {"--page", "--back"}
 OPEN = "open"
+WAITING = "waiting"
 OPENING = {"show", "read"}
 FOUND_LIMIT, READ_LIMIT, KEPT_READS = 4000, 2000, 20
 
@@ -67,16 +68,31 @@ def searches(command: str) -> list[str]:
     return [found_mark for call in map(journal_call, found) if call is not None and (found_mark := mark(call))]
 
 
+def marked(context: AgentContext, command: str, found: str | None = None) -> list[str]:
+    """One card for each search the command makes, with what it found once that is known; the keys are the cards'."""
+    keys = []
+    for one in searches(command):
+        key = f"search-{time.time_ns()}"
+        context.journal.get(Agents).card(context.agent.row.n, key=key, label=one.label, title=one.title, icon="search", tone="note",
+                                         **({} if found is None else {"found": found[:FOUND_LIMIT]}))
+        keys.append(key)
+    if keys:
+        context.state.set(OPEN, keys[-1])
+    return keys
+
+
+def labels(command: str) -> list[str]:
+    return [one.label for one in searches(command)]
+
+
 class MarkHistorySearches(ToolInterceptor):
     reach = Reach.MAIN
     runs = Runs.ASYNC
 
     def intercept(self, context: AgentContext, call) -> str:
         for command in call.commands:
-            for found in searches(command):
-                key = f"search-{time.time_ns()}"
-                context.journal.get(Agents).card(context.agent.row.n, key=key, label=found.label, title=found.title, icon="search", tone="note")
-                context.state.set(OPEN, key)
+            if keys := marked(context, command):
+                context.state.set(WAITING, [*(context.state.get(WAITING) or []), {"labels": labels(command), "keys": keys}])
         return ""
 
 
@@ -95,20 +111,31 @@ def opened(event: CommandRan) -> str:
 
 class KeepSearchResults(Handler):
     def handle(self, context: AgentContext, event: CommandRan) -> None:
-        key = context.state.get(OPEN)
         agents = context.journal.get(Agents)
-        if not key:
-            return
         if event.tool == SHELL and searches(event.command):
-            agents.card(context.agent.row.n, key=key, found=event.output[:FOUND_LIMIT])
+            self.found(context, event)
             return
+        key = context.state.get(OPEN)
         label = opened(event)
-        card = next((kept for kept in agents.load(context.agent.row.n).data.get("cards") or [] if kept.get("key") == key), None)
+        card = next((kept for kept in agents.load(context.agent.row.n).data.get("cards") or [] if kept.get("key") == key), None) if key else None
         if label and card:
             reads = [*card.get("reads", []), {"label": label, "text": event.output[:READ_LIMIT]}]
             agents.card(context.agent.row.n, key=key, reads=reads[:KEPT_READS])
+
+    def found(self, context: AgentContext, event: CommandRan) -> None:
+        """What a search found goes to the cards of that search, whichever searches ran at the same time; a search whose marks are not there yet gets them now."""
+        waiting = context.state.get(WAITING) or []
+        mine = next((entry for entry in waiting if entry["labels"] == labels(event.command)), None)
+        if mine is None:
+            marked(context, event.command, event.output)
+            return
+        context.state.set(WAITING, [entry for entry in waiting if entry is not mine])
+        context.state.set(OPEN, mine["keys"][-1])
+        for key in mine["keys"]:
+            context.journal.get(Agents).card(context.agent.row.n, key=key, found=event.output[:FOUND_LIMIT])
 
 
 class EndSearchReads(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
         context.state.remove(OPEN)
+        context.state.remove(WAITING)
