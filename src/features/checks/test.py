@@ -187,6 +187,27 @@ def test_a_failing_check_reaches_a_waiting_agent_and_is_told_again_only_when_it_
     checks.run(check.n, wait=True)
     assert nudged()[-1] == f"check {check.n} failed - issue 6 waits" and open_notices(record) == [f"check {check.n} failed - issue 6 waits"], \
         "a failure that reports something else is nudged again and replaces the one before"
+    import json
+    from providers import PROVIDERS
+    from tests.kit import handle
+    claude, folder = PROVIDERS["claude"](), record.root.parent
+    suite = f"cd {folder} && .venv/bin/python -m pytest -q src/features/plans/test.py > suite.txt 2>&1"
+    (folder / "suite.txt").write_text("4 passed, 2 failed in 1.0s\n")
+    transcript = folder / "s.jsonl"
+    asked = {"type": "assistant", "timestamp": "2026-09-23T00:01:00Z", "message": {"content": [{"type": "tool_use", "id": "tt", "name": "Bash", "input": {"command": suite, "run_in_background": True}}]}}
+    started = {"type": "user", "timestamp": "2026-09-23T00:01:01Z", "message": {"content": [{"type": "tool_result", "tool_use_id": "tt", "content": "Command running in background with ID: tb1"}]}}
+    transcript.write_text("".join(json.dumps(row) + "\n" for row in (asked, started)))
+    call = {"session_id": "claude-1", "transcript_path": str(transcript), "tool_name": "Bash", "tool_input": {"command": suite, "run_in_background": True}, "hook_event_name": "PreToolUse"}
+    marks = lambda: [(card["label"], card["state"], card.get("detail", "")) for card in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("cards", []) if card.get("key", "").startswith("tests:")]
+    handle(claude, record.root, record.env, call)
+    handle(claude, record.root, record.env, {**call, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "Command running in background with ID: tb1"}})
+    assert marks() == [("Running tests", "running", "")], "a test run started in the background shows as running, not as passed when the call returns"
+    ended = {"type": "user", "timestamp": "2026-09-23T00:02:00Z",
+             "message": {"content": f"<task-notification><task-id>tb1</task-id><output-file>{folder / 'suite.txt'}</output-file><status>completed</status></task-notification>"}}
+    with transcript.open("a") as more:
+        more.write(json.dumps(ended) + "\n")
+    handle(claude, record.root, record.env, {**call, "tool_input": {"command": "ls"}})
+    assert marks() == [("Tests failed", "failed", "4 passed, 2 failed")], "when its task ends the same card turns to the tally read from the run's output"
 
 
 def test_upgrades_rename_old_stored_keys_in_events_agents_checks_and_settings(tmp_path):
