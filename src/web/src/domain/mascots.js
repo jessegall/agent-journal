@@ -21,3 +21,15 @@ export const otherThan = (list, last, random = Math.random()) => {
     const options = list.length > 1 ? list.filter((item) => item !== last) : list;
     return options[Math.floor(random * options.length)];
 };
+
+// ?mascot=showcase plays every animation of every voice back to back, naming each beside the mascot.
+export const showcaseOn = (url = window.location) => new URLSearchParams(url.search).get("mascot") === "showcase" || /[?&]mascot=showcase/.test(url.hash);
+
+export const SHOWCASE_ACTS = ["blink", "idle_1", "idle_2", "idle_3", "idle_4", "idle_5"];
+
+export const showcaseStep = (index) => {
+    const voices = Object.keys(PLACES);
+    const voice = voices[Math.floor(index / SHOWCASE_ACTS.length) % voices.length];
+    const act = SHOWCASE_ACTS[index % SHOWCASE_ACTS.length];
+    return {voice, act, place: PLACES[voice], label: `${voice} · ${act.replace("_", " ")}`};
+};
