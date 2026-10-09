@@ -45,7 +45,7 @@ from features.sharing.tunnel import SERVER
 from controllers.types import Docs, Messages, Todos
 from resources.base import OWNER_ID, SYSTEM, USER
 from serve import Handler, JournalServer
-from tests.conftest import fresh, shared_browser  # noqa: F401  shared_browser is the fixture
+from tests.conftest import announced, fresh, shared_browser  # noqa: F401  shared_browser is the fixture
 
 ADDRESS = "journal.example.com"
 PASSWORD = "correct horse battery"
@@ -156,7 +156,7 @@ def updater_calls(tmp_path: Path, signed_by: str, asked: str | None = None, **fa
 def hosted():
     import features
     features.load()
-    record = fresh("main")
+    record = announced(fresh("main"))
     Features(record, actor=USER).switch(HostedJournalDetails.name, True)
     Features(record, actor=USER).configure(HostedJournalDetails.name, "address", ADDRESS)
     desk = JournalServer(("127.0.0.1", 0), type("Desk", (Handler,), {"root": record.root}))

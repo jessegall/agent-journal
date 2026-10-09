@@ -29,6 +29,14 @@ def fresh(env: str = "t") -> Record:
     return record
 
 
+def announced(record: Record) -> Record:
+    """A record served to a browser has seen the announcements, as a first install has: a dialog announcing a feature would cover the page a scenario clicks."""
+    from features.auto_update.new_feature import mark_all_seen
+    from features.auto_update.routes import CHANGELOG
+    mark_all_seen(record.root, CHANGELOG.read_text())
+    return record
+
+
 SOURCE = Path(__file__).resolve().parents[1] / "src"
 WEB = SOURCE / "web"
 SCENARIOS_WAIT = 240
