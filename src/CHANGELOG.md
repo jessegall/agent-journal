@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.62 — The viewer keeps its address
+- A project can set its viewer's port (viewer.port), and a restart waits for that port while the journal's own previous server still holds it, instead of moving to the next free one.
+
 ## 2.267.61 — A ticket closes on merge only with commits of its own
 - A ticket counts as merged only once a commit made on its own branch is in the target; a branch fast-forwarded onto the target's history stays open, and a ticket whose agent is working is never closed by the minute check.
 - journal ticket reopen brings a closed ticket back with its environment, its approved plan and its conversation, and journal ticket start resumes its agent there.
