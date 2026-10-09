@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.46 — A shared plan shows its rows loading
+- A plan opened in a share shows skeleton rows in its phases and timeline until its to-dos have arrived, never an empty list in between.
+
 ## 2.267.45 — Faster updates
 - An update re-packs only the files that changed, reusing the rest of the previous archive.
 - The record is copied before an update only when a migration will change it, without compression, and not again within the hour; Preparing the update no longer waits on it.
