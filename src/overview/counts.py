@@ -1,21 +1,14 @@
-from engine.memo import Memo
 from resources.base import USER
 
-TALLIED = Memo()
+
+def weigh(row: dict) -> tuple[int, int, int]:
+    """What one row adds to a type's counts: itself, whether it is open, and whether it is open and unread by the user."""
+    if row["deleted"] or row.get("hidden"):
+        return (0, 0, 0)
+    opened = not row["completed"]
+    return (1, int(opened), int(opened and USER not in (row.get("seen") or [])))
 
 
 def counts(controller) -> dict:
-    summaries = controller.rows.summaries()
-    return TALLIED.get((str(controller.record.home), controller.type), summaries, lambda: tally(summaries))
-
-
-def tally(summaries: list) -> dict:
-    found = {"all": 0, "open": 0, "unread": 0}
-    for row in summaries:
-        if row["deleted"] or row.get("hidden"):
-            continue
-        found["all"] += 1
-        if not row["completed"]:
-            found["open"] += 1
-            found["unread"] += USER not in (row.get("seen") or [])
-    return found
+    every, opened, unread = controller.rows.counted("overview", weigh, 3)
+    return {"all": every, "open": opened, "unread": unread}
