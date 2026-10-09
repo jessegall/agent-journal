@@ -18,17 +18,7 @@ class TicketOrchestration:
         ])
 
     def _orchestrating(self) -> list[int]:
-        from features.boards.details import BoardsDetails
-        from features.sequences.controller import Sequences
-        if not BoardsDetails.values(self.record).orchestrating:
-            return []
-        from features.boards.orchestrating import ORCHESTRATION
-        sequence = Sequences(self.record, actor=SYSTEM).rows.by_title(ORCHESTRATION.title)
-        keys = [RunKey.of(key) for key in (sequence.runs if sequence else {})]
-        running = {int(key.about.split(":")[1]) for key in keys if key.here(self.record.env) and key.about.startswith("board:")}
-        held = {board.n for board in Boards(self.record, actor=SYSTEM).rows.standing()
-                if not board.finished and board.orchestrator == self.record.env}
-        return sorted(running | held)
+        return sorted(board.n for board in Boards(self.record, actor=SYSTEM).rows.standing() if not board.finished and board.orchestrator == self.record.env)
 
     def _awaiting_orchestrator(self) -> list:
         boards = self._orchestrating()
