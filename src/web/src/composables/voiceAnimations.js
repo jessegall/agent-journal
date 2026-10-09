@@ -19,6 +19,8 @@ export async function dropAnimations(row, files) {
     await loadAnimations();
 }
 
+export const anchorOf = (row, animation, place) => api.anchorAnimation(row.n, animation.path, place);
+
 export async function saveEdit(row, animation, edit) {
     await api.tuneAnimation(row.n, animation.path, edit);
     await loadAnimations();

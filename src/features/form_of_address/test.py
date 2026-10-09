@@ -254,3 +254,7 @@ def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dro
         "a schedule, the weight of an idle animation and where the mascot is placed on the chat box are saved with the voice, the place within the cell"
     assert "least cannot be above" in refused(lambda: profiles.schedule(squire.n, {"blink": {"min": 9, "max": 2}})), "a range runs from the least to the most"
     assert "no animation" in refused(lambda: profiles.schedule(squire.n, {"weights": {"nope.png": 1}})), "only an animation the voice has gets a weight"
+    anchored = profiles.anchor(butler.n, "flat/butler_idle_bow_tie_atlas.png", False, 0, 232)
+    assert (anchored["firm"], anchored["frames"][0], anchored["frames"][3]) == (True, {"x": 0, "y": 0}, {"x": 11, "y": 0}), \
+        "anchoring finds, from the pixels, how far each frame's feet are from the first frame's and the offset that puts them back"
+    assert not profiles.anchor(squire.n, "flat/squire_idle_leg_swing_salute_atlas.png", True, 135, 170)["firm"], "a body that really moves is not given a guessed anchor"

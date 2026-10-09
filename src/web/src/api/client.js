@@ -621,6 +621,10 @@ export class ApiClient {
         return this.command("profile", "samples");
     }
 
+    anchorAnimation(n, path, place) {
+        return this.act("profile", n, "anchor", {path, sits: Boolean(place.sits), seat: place.seat || 0, line: place.line});
+    }
+
     tuneAnimation(n, path, edit) {
         return this.act("profile", n, "tune", {path, edit});
     }

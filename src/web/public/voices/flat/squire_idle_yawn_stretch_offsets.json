@@ -25,48 +25,48 @@
       "file": "squire_idle_yawn_stretch_2.png",
       "atlas_x": 256,
       "atlas_y": 0,
-      "offset_x": 0,
-      "offset_y": 0
+      "offset_x": 3,
+      "offset_y": -2
     },
     {
       "frame": 3,
       "file": "squire_idle_yawn_stretch_3.png",
       "atlas_x": 512,
       "atlas_y": 0,
-      "offset_x": 0,
-      "offset_y": 0
+      "offset_x": 3,
+      "offset_y": -2
     },
     {
       "frame": 4,
       "file": "squire_idle_yawn_stretch_4.png",
       "atlas_x": 768,
       "atlas_y": 0,
-      "offset_x": 0,
-      "offset_y": 0
+      "offset_x": 5,
+      "offset_y": -1
     },
     {
       "frame": 5,
       "file": "squire_idle_yawn_stretch_5.png",
       "atlas_x": 1024,
       "atlas_y": 0,
-      "offset_x": 0,
-      "offset_y": 0
+      "offset_x": 5,
+      "offset_y": -1
     },
     {
       "frame": 6,
       "file": "squire_idle_yawn_stretch_6.png",
       "atlas_x": 1280,
       "atlas_y": 0,
-      "offset_x": 0,
-      "offset_y": 0
+      "offset_x": 5,
+      "offset_y": -1
     },
     {
       "frame": 7,
       "file": "squire_idle_yawn_stretch_7.png",
       "atlas_x": 1536,
       "atlas_y": 0,
-      "offset_x": 0,
-      "offset_y": 0
+      "offset_x": 3,
+      "offset_y": -2
     },
     {
       "frame": 8,
