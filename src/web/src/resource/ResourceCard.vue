@@ -1,5 +1,6 @@
 <script setup>
 import {meta} from "../domain/spec.js";
+import {refParts} from "../domain/records.js";
 import {startWords} from "../domain/triggerWords.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Icon from "../kit/Icon.vue";
@@ -28,7 +29,7 @@ const holds = computed(() => {
     if (props.resource.type !== "collection") return [];
     const counted = {};
     for (const ref of props.resource.refs) {
-        const type = ref.split(":")[0];
+        const {type} = refParts(ref);
         if (meta(type).title) counted[type] = (counted[type] || 0) + 1;
     }
     return Object.entries(counted).map(([type, n]) => ({type, n, icon: meta(type).icon, title: meta(type).title}));

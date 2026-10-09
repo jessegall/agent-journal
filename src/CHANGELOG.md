@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.22 — Collections with members from other environments open and count them
+- A collection's card counts a member of another environment by its own type, so a collection holding `ticket-1/plan:1` no longer breaks the page it is shown on, in the viewer and in a share.
+- On a shared collection's page, clicking a member of another environment opens that member instead of the collection again.
+
 ## 2.267.21 — A shared collection shows a row of another environment
 - A share of a collection that holds a row from another environment, such as a ticket's own plan, now lists it on the shared page and opens it without an error; the page reads every member by its full environment/type:number.
 

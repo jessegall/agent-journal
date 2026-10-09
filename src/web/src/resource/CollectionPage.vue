@@ -6,7 +6,7 @@ import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {peekThere, route} from "../route.js";
 import {usePoll} from "../composables/poll.js";
-import {byRef} from "../domain/records.js";
+import {byRef, refParts} from "../domain/records.js";
 import {age} from "../format/time.js";
 import ResourceBody from "./ResourceBody.vue";
 import ResourceRow from "./ResourceRow.vue";
@@ -19,14 +19,9 @@ const fetched = reactive({});
 const loading = new Set();
 
 const ELSEWHERE_EVERY = 5000;
-const placed = (ref) => {
-    const [env, row] = ref.includes("/") ? ref.split("/") : ["", ref];
-    const [type, n] = row.split(":");
-    return {env, type, n: Number(n)};
-};
 
 async function read(ref) {
-    const {env, type, n} = placed(ref);
+    const {env, type, n} = refParts(ref);
     try {
         return await (env ? api.in(env) : api).show(type, n);
     } catch {
@@ -42,7 +37,7 @@ async function load(ref) {
 }
 
 const refs = computed(() => (props.resource.refs || []).filter((ref) => ref !== props.resource.data?.source));
-const elsewhere = computed(() => refs.value.filter((ref) => placed(ref).env));
+const elsewhere = computed(() => refs.value.filter((ref) => refParts(ref).env));
 const held = (ref) => byRef(ref) || fetched[ref];
 watchEffect(() => !props.readOnly && refs.value.filter((ref) => !held(ref)).forEach(load));
 usePoll(
@@ -56,7 +51,7 @@ usePoll(
 const fetching = computed(() => refs.value.some((ref) => !held(ref) && !(ref in fetched)));
 const members = computed(() =>
     refs.value
-        .map((ref) => (held(ref) ? {...held(ref), at: ref, env: placed(ref).env} : null))
+        .map((ref) => (held(ref) ? {...held(ref), at: ref, env: refParts(ref).env} : null))
         .filter((r) => r && !r.deleted)
         .sort((a, b) => (b.updated || b.created) - (a.updated || a.created))
 );
