@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.9 — The engine waits out an upgrade quietly
+- While an upgrade is migrating the record, the engine's writes wait for it and are tried again on the next pass; nothing is reported as an engine error or told to the agent any more.
+
 ## 2.267.8 — Test cards, file changes and chat marks follow what an agent really does
 - A test run in the chat is a card for the test runner's own part of a command, named for what it tests, and a run started in the background gets its card when it ends, with its tally read from its output; a finished run with no readable result says Tests ran. A python -m runner counts as a test run.
 - An agent's file changes show in its dialog when it works in a worktree or a checkout of its own, and any shell command that is not only a read or a search is checked for changes.
