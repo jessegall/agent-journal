@@ -1,6 +1,7 @@
 import time
 from pathlib import Path
 
+from engine.git import config_changed_at, git_user_name
 from engine.locks import RUNTIME
 from engine.stored import read_json, write_json, write_text
 
@@ -152,8 +153,46 @@ def off(root: Path) -> bool:
     return OFF.is_raised(root)
 
 
-def warming() -> bool:
-    return bool(STARTED[0]) and time.time() - STARTED[0] < WARM_UP
+def started_file(root: Path) -> Path:
+    return folder(root) / "started"
+
+
+def mark_started(root: Path) -> None:
+    STARTED[0] = time.time()
+    write_text(started_file(root), str(STARTED[0]))
+
+
+def server_started(root: Path) -> float:
+    if STARTED[0]:
+        return STARTED[0]
+    try:
+        return float(started_file(root).read_text())
+    except (OSError, ValueError):
+        return 0.0
+
+
+def git_user_file(root: Path) -> Path:
+    return folder(root) / "git-user"
+
+
+def remember_git_user(root: Path) -> str:
+    name = git_user_name(Path(root).parent)
+    write_text(git_user_file(root), name)
+    return name
+
+
+def git_user(root: Path) -> str:
+    try:
+        file = git_user_file(root)
+        if file.stat().st_mtime >= config_changed_at(Path(root).parent):
+            return file.read_text()
+    except OSError:
+        pass
+    return remember_git_user(root)
+
+
+def warming(root: Path) -> bool:
+    return time.time() - server_started(root) < WARM_UP
 
 
 UPGRADE_MARK = "upgrading"

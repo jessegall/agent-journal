@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from functools import cache
 from pathlib import Path
 
 from engine.proc import git
@@ -33,6 +32,11 @@ class Checkout:
         return text.removeprefix(BRANCH_REF) if text.startswith(BRANCH_REF) else DETACHED
 
     @property
+    def config(self) -> Path:
+        common = self.folder / "commondir"
+        return (self.folder / common.read_text().strip() if common.is_file() else self.folder) / "config"
+
+    @property
     def landing(self) -> str:
         try:
             return (self.folder / REMOTE_DEFAULT).read_text().strip().removeprefix("ref: ")
@@ -54,7 +58,6 @@ def checkout_of(folder: Path) -> Checkout | None:
     return None
 
 
-@cache
 def git_user_name(project: Path) -> str:
     return git(["config", "user.name"], project, timeout=2).strip()
 
@@ -63,3 +66,9 @@ def commits_since(project: Path, since: float, most: int = 0, timeout: float = 5
     limit = [f"-n{most}"] if most else []
     out = git(["log", f"--since=@{int(since)}", "--format=%H%x1f%s", *limit], project, timeout=timeout)
     return [(sha, subject) for sha, _, subject in (line.partition("\x1f") for line in out.splitlines()) if sha]
+
+
+def config_changed_at(project: Path) -> float:
+    checkout = checkout_of(project)
+    files = [Path.home() / ".gitconfig", *([checkout.config] if checkout else [])]
+    return max((f.stat().st_mtime for f in files if f.is_file()), default=0.0)

@@ -315,7 +315,8 @@ def warm_viewer(root: Path, env: str, warm: threading.Event) -> None:
 
 def run(root: Path, port: int = DEFAULT_PORT) -> None:
     sys.setswitchinterval(SWITCH_INTERVAL)
-    runtime.STARTED[0] = time.time()
+    runtime.mark_started(root)
+    runtime.remember_git_user(root)
     tell_threads_on_signal(root)
     allow_open_files()
     server = serve(root, port)

@@ -259,14 +259,25 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
     runtime.STARTED[0] = time.time()
     try:
         reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
+        reports.spent(record.root, record.env, "command", "work end", 400)
+        assert notified(record) == [], "a request or a command that met a server still warming is let be"
+        runtime.git_user_file(record.root).write_text("Remembered Name")
+        assert runtime.git_user(record.root) == "Remembered Name", "a command reads the git user name the server wrote at start, with no process started for it"
+        runtime.STARTED[0] = 0.0
+        runtime.started_file(record.root).write_text(str(time.time()))
+        reports.spent(record.root, record.env, "command", "work end", 400)
+        assert notified(record) == [], "a command run by its own process meets the warm-up through the server's start mark"
+        runtime.started_file(record.root).unlink()
         reports.spent(record.root, record.env, "command", "todo all", 400)
-        assert notified(record) == ["command todo all is slower than its budget"], "a request that met a server still warming is let be; a command is not"
+        assert notified(record) == ["command todo all is slower than its budget"], "a command is held to the budget once the server is warm, even on its first run"
         reports.spent(record.root, record.env, "command", "search hooks", 400, whole_reads=("a search through every conversation",))
         briefs = [r.brief for r in Notifications(record, actor=SYSTEM).rows.every() if "search hooks" in r.title]
         assert any("it read a whole transcript for a search through every conversation" in brief for brief in briefs), \
             "a slow command that read a whole transcript names that read, with its reason, as part of its time"
     finally:
         runtime.STARTED[0] = 0.0
+        runtime.started_file(record.root).unlink(missing_ok=True)
+        runtime.git_user_file(record.root).unlink(missing_ok=True)
     reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
     assert "request GET /api/pages is slower than its budget" in notified(record), "once warm, the budget holds again"
     reports.spent(record.root, record.env, "request", "GET /api/main/board", 400)
