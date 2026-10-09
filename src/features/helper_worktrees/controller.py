@@ -155,7 +155,7 @@ class Worktrees(Controller):
             if running_at(self.record.root, folder):
                 raise Refused(f"an agent is still running in {folder}: stop its helper first (journal helper stop <n>), then drop the worktree")
             if lines(folder, "status", "--porcelain"):
-                raise Refused(f"{folder} has uncommitted changes: commit them, or remove them, before dropping it")
+                self._committed(folder, row)
             git(project, "worktree", "remove", str(folder))
         if row.branch and present(project, f"refs/heads/{row.branch}"):
             git(project, "update-ref", f"{KEPT}/{row.title}", f"refs/heads/{row.branch}")
@@ -165,6 +165,13 @@ class Worktrees(Controller):
             listed.unassign(todo.n)
         self._marked("Dropped worktree", row)
         return super().complete(n, how or f"dropped; its last commit is kept at {KEPT}/{row.title}", **data)
+
+    def _committed(self, folder: Path, row) -> None:
+        """Keeps the output a helper left uncommitted as one commit on its branch, so freeing the worktree loses nothing."""
+        git(folder, "add", "-A")
+        made = git(folder, "commit", "-q", "-m", f"Work {row.title} left uncommitted when its worktree was freed")
+        if made.returncode:
+            raise Refused(f"{folder} has changes that could not be committed to {row.branch}: {(made.stderr or made.stdout).strip()}")
 
     def _marked(self, label: str, row) -> None:
         Agents(self.record, actor=SYSTEM)._mark_primary(label, name=row.title, icon="branch", detail=row.branch)
