@@ -2,6 +2,7 @@ export const AGENT_VIEWS = ["chat", "feed", "terminal"];
 export const PANEL_VIEWS = ["waiting", "question", "suggestion", "todos"];
 export const VIEWS = [...AGENT_VIEWS, ...PANEL_VIEWS, "family", "agents"];
 export const HEADER = 34;
+export const INSPECTOR_FEED = {lines: 5, flush: true, headers: false, collapse: false, editsOnly: false, removals: true, capped: false, columns: false};
 
 const WHOLE = {x: 0, y: 0, w: 1, h: 1};
 const EDGE_BAND = 0.25;
