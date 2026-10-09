@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.29 — Quieter hidden tabs, and no error for a file an update removes
+- A viewer tab that is out of view or out of focus polls ten times less often, and returns to normal when shown again.
+- The managed-files check counts a file removed between listing and reading as removed instead of raising, and waits while an update holds its mark.
+
 ## 2.267.28 — Background cards that close, collection tabs with ticket context, and a faster start
 - A command that never reported back is closed by the next one, so a 'moved to the background' card closes when its command ends, names only the part of a chain still running, and a working agent is never called silent or stuck.
 - A ticket agent waiting by design (on another ticket, on its plan's approval, or done and awaiting its merge) is no longer flagged as stuck.
