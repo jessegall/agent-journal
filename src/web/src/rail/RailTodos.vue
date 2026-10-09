@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, onMounted} from "vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
@@ -9,6 +9,9 @@ import {useScope} from "../composables/scope.js";
 import {groupOf, GROUPS, planOf} from "../domain/records.js";
 import {store} from "../state/store.js";
 
+const FINISHED_SHOWN = 20;
+
+const props = defineProps({finished: Boolean});
 const emit = defineEmits(["open"]);
 const scope = useScope();
 const show = (type, n) => (scope.env ? peekThere(scope.env, type, n) : peek(type, n));
@@ -22,13 +25,25 @@ const groups = computed(() => {
         .filter((key) => buckets[key])
         .map((key) => ({key, label: GROUPS[key], rows: buckets[key]}));
 });
+
+const done = computed(() =>
+    props.finished
+        ? scope
+              .rows("todo")
+              .filter((t) => t.completed && !t.deleted)
+              .sort((a, b) => b.completed - a.completed)
+              .slice(0, FINISHED_SHOWN)
+        : []
+);
+
+onMounted(() => props.finished && scope.recent && scope.recent("todo", FINISHED_SHOWN));
 </script>
 
 <template>
     <template v-if="!groups.length && !scope.loaded('todo')">
         <Skeleton label="Loading the to-dos" />
     </template>
-    <template v-else-if="!groups.length && !store.ticketTodos.length">
+    <template v-else-if="!groups.length && !done.length && !store.ticketTodos.length">
         <div class="home-rail-empty">
             <Icon name="work" />
             <p>Nothing is on the list.</p>
@@ -55,6 +70,21 @@ const groups = computed(() => {
                                 Plan {{ planOf(t).n }}
                             </span>
                         </template>
+                    </span>
+                    <span class="rail-row-title">{{ t.title }}</span>
+                </button>
+            </template>
+        </template>
+        <template v-if="done.length">
+            <div class="rail-group">
+                Finished
+                <span class="rail-group-n">{{ done.length }}</span>
+            </div>
+            <template v-for="t in done" :key="t.n">
+                <button type="button" class="rail-row" @click="emit('open', t.n)">
+                    <span class="rail-row-marks">
+                        <Dot kind="done" />
+                        <span class="rail-row-n">#{{ t.n }}</span>
                     </span>
                     <span class="rail-row-title">{{ t.title }}</span>
                 </button>
