@@ -1,3 +1,4 @@
+import threading
 import time
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from resources.base import SYSTEM
 
 SETTLE, SETTLE_STEP = 1.5, 0.05
 TURNS: dict[str, tuple] = {}
+READING: dict[str, threading.Lock] = {}
+READING_LOCK = threading.Lock()
 
 
 def settled(provider, path: Path, agent) -> None:
@@ -26,18 +29,31 @@ def _settled_provider(agent):
 
 
 def every_turn(agent) -> list:
-    """All the turns of an agent's transcript, read again only when the file has grown, so a search asks a warm copy instead of parsing the transcript each time."""
+    """All the turns of an agent's transcript: read whole once, then only what the file has grown by, so a search asks a warm copy instead of parsing the transcript each time."""
     try:
         provider = _settled_provider(agent)
         if not provider:
             return []
-        size = Path(agent.transcript).stat().st_size
+        path = Path(agent.transcript)
+        found = path.stat()
     except OSError:
         return []
-    held = TURNS.get(agent.transcript)
-    if not held or held[0] != size:
-        held = TURNS[agent.transcript] = (size, provider.every_turn(Path(agent.transcript), WholeRead.SEARCH))
-    return held[1]
+    with reading(agent.transcript):
+        held = TURNS.get(agent.transcript)
+        if held and held[1] == found.st_ino and held[0].end == found.st_size:
+            return held[0].turns
+        if held and held[1] == found.st_ino and held[0].end < found.st_size:
+            whole = provider.grown_turns(path, held[0])
+        else:
+            whole = provider.whole_turns(path, WholeRead.SEARCH)
+        TURNS[agent.transcript] = (whole, found.st_ino)
+        return whole.turns
+
+
+def reading(transcript: str) -> threading.Lock:
+    """One reader per transcript at a time, so two searches that meet on a transcript parse it once."""
+    with READING_LOCK:
+        return READING.setdefault(transcript, threading.Lock())
 
 
 def turns(agent) -> list:
