@@ -431,6 +431,8 @@ def upgrading(project: Path, root: Path, version: str = "") -> list[str]:
     reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
         newest = version or released()
+        if newest and newest == version_in(code(root)) and packed(root):
+            return done + [f"package already at {newest}"] + finish(project, root)
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
         _, failed = fetch(source, ref=f"refs/tags/v{newest}" if newest else "")
@@ -457,6 +459,10 @@ def upgrading(project: Path, root: Path, version: str = "") -> list[str]:
     return done
 
 
+def packed(root: Path) -> bool:
+    return (root / ARCHIVE).is_file() and not (code(root) / "__main__.py").is_file()
+
+
 def complete(folder: Path) -> bool:
     return all((folder / name).is_file() for name in PACKAGE_FILES) and all((folder / name).is_dir() for name in PACKED_DIRS)
 
@@ -476,7 +482,7 @@ def finish(project: Path, root: Path) -> list[str]:
     if PACKAGE.resolve() == root.resolve():
         refresh(PACKAGE, code(root))
     done = []
-    if not complete(code(root)) and not os.environ.get(REPAIRED):
+    if not packed(root) and not complete(code(root)) and not os.environ.get(REPAIRED):
         temporary = Path(tempfile.mkdtemp())
         _, failed = fetch(temporary / "package", ref=release_of(code(root)))
         try:
