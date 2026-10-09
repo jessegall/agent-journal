@@ -106,6 +106,15 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     Sessions(record.root).bind("claude-zed", helpers.load(2).environment, pid=os.getpid(), provider="claude")
     assert Helpers(record, actor=USER).stop(2).startswith(f"helper 2, {helpers.load(2).name}: its agent is stopped") and helpers.load(2).stopped_by_user, "when you stop a helper it is remembered as stopped by you"
     Sessions(record.root).write("claude-zed", pid=2 ** 22 + 7)
+    import threading
+    helpers.dispatch("Quin", "a job", "claude", "sonnet")
+    quin = Helpers(record, actor=SYSTEM).rows.standing()[-1]
+    Sessions(record.root).bind("claude-quin", quin.environment, pid=os.getpid(), provider="claude")
+    leaving = lambda: Sessions(record.root).write("claude-quin", pid=2 ** 22 + 7)
+    monkeypatch.setattr(Environments, "stop", lambda self, n: (threading.Timer(0.3, leaving).start(), self.load(n))[1])
+    helpers.stop(quin.n)
+    helpers.complete(quin.n)
+    assert Helpers(record, actor=SYSTEM).load(quin.n).completed, "a finish right after a stop waits for the agent to leave instead of answering that it still runs"
     later = todos.create("handed but never launched").n
     monkeypatch.setattr("features.helpers.controller.launched", lambda *given: (_ for _ in ()).throw(RuntimeError("no terminal")))
     assert "no terminal" in refused(lambda: helpers.dispatch("Yan", "a job", "claude", "sonnet", todos=str(later))) and todos.load(later).assigned == "", \
@@ -121,15 +130,6 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     Helpers(record, actor=SYSTEM).update(ghost.n, report="done for now")
     helpers.say(ghost.n, "one more thing")
     assert helpers.load(ghost.n).report == "", "a follow-up takes the helper's earlier report away, so the menu shows it working again"
-    import threading
-    helpers.dispatch("Quin", "a job", "claude", "sonnet")
-    quin = Helpers(record, actor=SYSTEM).rows.standing()[-1]
-    Sessions(record.root).bind("claude-quin", quin.environment, pid=os.getpid(), provider="claude")
-    leaving = lambda: Sessions(record.root).write("claude-quin", pid=2 ** 22 + 7)
-    monkeypatch.setattr(Environments, "stop", lambda self, n: (threading.Timer(0.3, leaving).start(), self.load(n))[1])
-    helpers.stop(quin.n)
-    helpers.complete(quin.n)
-    assert Helpers(record, actor=SYSTEM).load(quin.n).completed, "a finish right after a stop waits for the agent to leave instead of answering that it still runs"
 
 
 def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_a_nudge(monkeypatch):
