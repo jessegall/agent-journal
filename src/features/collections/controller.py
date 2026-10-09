@@ -1,6 +1,7 @@
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller, row_of
+from features.collections.files import collected_files
 from features.collections.resource import Collection
 from controllers.shared import shared
 from resources.base import Ref, Refused
@@ -31,8 +32,16 @@ class Collections(Controller):
 
     @action
     def members(self, n: int) -> list[str]:
-        found = []
+        return [f"{ref}  {row.title}" if Ref.parse(ref).env else f"{row.type} {row.n}  {row.title}" for ref, row in self._held(self.load(n))]
+
+    @action
+    def held_files(self, n: int) -> list[dict]:
+        """Every file of the collection and of the rows it holds, with the row each belongs to."""
         collection = self.load(n)
+        return collected_files(self.record, [collection, *(row for _, row in self._held(collection))])
+
+    def _held(self, collection) -> list[tuple]:
+        found = []
         for ref in collection.refs:
             if ref == collection.source:
                 continue
@@ -41,7 +50,7 @@ class Collections(Controller):
             except Refused:
                 continue
             if not row.deleted:
-                found.append(f"{ref}  {row.title}" if Ref.parse(ref).env else f"{row.type} {row.n}  {row.title}")
+                found.append((ref, row))
         return found
 
     def _member(self, ref: str):

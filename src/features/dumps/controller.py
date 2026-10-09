@@ -39,7 +39,11 @@ class Dumps(Controller):
     def attach(self, n: int, path: str, description: str = ""):
         if self.load(n).completed:
             self._refuse(f"dump {n} is already filed: start a new dump for more")
-        return super().attach(n, path, description)
+        saved = super().attach(n, path, description)
+        found = self._collection(saved)
+        if found:
+            self._collections().attach(found, path, description)
+        return saved
 
     def _collections(self):
         return Collections(self.record, actor=self.actor)
