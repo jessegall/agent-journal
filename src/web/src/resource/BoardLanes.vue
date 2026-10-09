@@ -32,17 +32,19 @@ const clauses = computed(() => props.board.data?.done_when || []);
                         <span>{{ lane.stage }}</span>
                         <span class="count">{{ lane.cards.length }}</span>
                     </div>
-                    <template v-for="r in lane.cards" :key="r.n">
-                        <div class="card">
-                            <button type="button" class="card-title" @click="emit('open', r)">{{ r.title }}</button>
-                            <template v-if="r.data?.status?.state">
-                                <span class="card-line">{{ r.data.status.state }}</span>
-                            </template>
-                            <template v-if="planOf(r)">
-                                <button type="button" class="card-plan" @click="emit('plan', r)">Open plan</button>
-                            </template>
-                        </div>
-                    </template>
+                    <div class="lane-cards">
+                        <template v-for="r in lane.cards" :key="r.n">
+                            <div class="card">
+                                <button type="button" class="card-title" @click="emit('open', r)">{{ r.title }}</button>
+                                <template v-if="r.data?.status?.state">
+                                    <span class="card-line">{{ r.data.status.state }}</span>
+                                </template>
+                                <template v-if="planOf(r)">
+                                    <button type="button" class="card-plan" @click="emit('plan', r)">Open plan</button>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </template>
         </div>
@@ -82,6 +84,14 @@ const clauses = computed(() => props.board.data?.done_when || []);
     padding: 8px;
     border-radius: 8px;
     background: var(--surface-2, rgba(127, 127, 127, 0.08));
+}
+
+.lane-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: min(60vh, 560px);
+    overflow-y: auto;
 }
 
 .lane-head {
