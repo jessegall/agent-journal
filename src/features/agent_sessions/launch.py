@@ -45,7 +45,18 @@ def running(launched: Launched) -> bool:
 
 def running_in(record, environment: str) -> str:
     session = Sessions(record.root).holder(environment)
-    return session if session and running(Launched.read(record.root, terminal_of(record.root, session))) else ""
+    if session:
+        return session if running(Launched.read(record.root, terminal_of(record.root, session))) else ""
+    return launched_in(record.root, environment)
+
+
+def launched_in(root: Path, environment: str) -> str:
+    """An agent launched into the environment counts from its launch, before its worker has seated its session."""
+    for path in runtime.sessions(root).glob(f"*/{LAUNCHED}"):
+        launched = Launched.read(root, path.parent.name)
+        if launched.env == environment and launched.pid and alive(launched.pid):
+            return path.parent.name
+    return ""
 
 
 def running_at(root: Path, folder: Path) -> bool:
@@ -60,7 +71,7 @@ def running_at(root: Path, folder: Path) -> bool:
 def driver_in(record, environment: str, provider: str):
     from providers import DRIVERS
     session = running_in(record, environment)
-    return DRIVERS[provider](Record(record.root, environment), terminal_of(record.root, session)) if session else None
+    return DRIVERS[provider](Record(record.root, environment), terminal_of(record.root, session) or session) if session else None
 
 
 def tell_in(record, environment: str, provider: str, text: str) -> bool:
