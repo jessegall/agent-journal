@@ -1,3 +1,4 @@
+import os
 import time
 from types import SimpleNamespace
 
@@ -20,6 +21,20 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
         "moved once, and the agent is told"
     from features.long_commands import move
     from providers.base import BackgroundTasks
+    monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks(started={"b1": started + 50}))
+    monkeypatch.setattr(move, "running_part", lambda pid, chain: "npm run slow")
+    tick(record)
+    assert Agents(record, actor="system").by_session("claude-1").data["cards"][-1]["command"] == "npm run slow", "the card of a chained command names the part still running"
+    import subprocess
+    from features.long_commands.watch import running_part
+    shell = subprocess.Popen(["sh", "-c", "sleep 25; echo finished"])
+    try:
+        time.sleep(0.5)
+        assert (running_part(os.getpid(), "cd x; sleep 25; echo finished"), running_part(0, "sleep 25")) == ("sleep 25", ""), \
+            "the part still running is read from the agent's process tree, and nothing when there is no process"
+    finally:
+        shell.kill()
+        shell.wait()
     monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks(started={"b1": started + 50}, ended={"b1": time.time()}, failed={"b1"}))
     tick(record)
     mark = Agents(record, actor="system").load(Agents(record, actor="system").by_session("claude-1").n).data["cards"][-1]

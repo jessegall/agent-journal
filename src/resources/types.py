@@ -396,6 +396,10 @@ class AgentRow(Shape, Resource):
         return bool(self.running and self.running.get("command") and not self.running.get("done"))
 
     @property
+    def command_running_for(self) -> float:
+        return time.time() - float(self.running["at"]) if self.command_running else 0.0
+
+    @property
     def background_run(self) -> str:
         return next((entry.get("task") or entry.get("command") or "a background run" for entry in self.runs if entry.get("running")), "")
 

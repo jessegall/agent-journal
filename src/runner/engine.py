@@ -41,6 +41,7 @@ OUTPUT_WAIT = 5.0
 TYPING_HOLD = 10.0
 
 SILENT_AFTER = 120.0
+LONG_COMMAND_AFTER = 1800.0
 FORCE_AFTER = 30.0
 PROBE_WAIT = 5.0
 
@@ -209,7 +210,7 @@ class Engine:
         if last is None or not driver.alive():
             return ""
         reported = float(last.at)
-        silent = time.time() - max(reported, self.typed_at) >= SILENT_AFTER and driver.quiet_for() >= SILENT_AFTER and not last.command_running
+        silent = time.time() - max(reported, self.typed_at) >= SILENT_AFTER and driver.quiet_for() >= SILENT_AFTER and (not last.command_running or last.command_running_for >= LONG_COMMAND_AFTER)
         if self.probed_at > reported:
             if time.time() - self.probed_at < PROBE_WAIT:
                 return "probed, waiting"
