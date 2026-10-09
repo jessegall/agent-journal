@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.3 — A settings save keeps the formatted texts
+- Saving a setting that no formatting reads no longer clears every formatted text, so a save in Settings is fast and the chat does not redraw; a switch of a formatting feature still refreshes the texts it changes.
+- Finishing a helper right after stopping it waits up to five seconds for its agent to leave instead of answering that the agent is still running.
+
 ## 2.267.2 — The faults hold finds the to-do in every environment
 - A to-do filed for a breach of the time budget now counts wherever it sits: the hold on the agent's writes lifts once an open to-do of that title exists in any environment, and a closed one starts its count again, so installing the journal and the agent's writes are no longer refused while the to-do is open.
 
