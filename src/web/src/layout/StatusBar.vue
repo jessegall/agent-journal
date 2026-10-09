@@ -24,6 +24,7 @@ import Spinner from "../kit/Spinner.vue";
 import {peek, route} from "../route.js";
 import ConnectionMark from "./ConnectionMark.vue";
 import Segmented from "../kit/Segmented.vue";
+import NewWorkBoard from "./NewWorkBoard.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import HelperList from "../chat/HelperList.vue";
 import {useEveryHelper, useHelpers} from "../composables/helpers.js";
@@ -182,6 +183,9 @@ async function runBar(p) {
                         @change="setAuto"
                     />
                     <Segmented class="statusbar-mode" :options="modeOptions" :value="mode" @pick="pickMode" />
+                    <template v-if="mode === ORCHESTRATOR">
+                        <NewWorkBoard @failed="toast = {text: $event}" />
+                    </template>
                     <ConnectionMark />
                     <button
                         type="button"

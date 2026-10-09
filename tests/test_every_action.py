@@ -79,7 +79,7 @@ CALLS = {
     "duplicateProfile": [1], "deleteProfile": [1], "configurePlugin": [1, "key", "value"],
     "clearPluginLog": [1], "removeEnvironment": [1, False], "sweepEnvironment": [1, False], "readAll": ["todo", [1]],
     "upload": ["todo", 1, {"file": "walked.txt"}], "events": [], "recentEvents": [10], "settings": [], "saveSettings": [{}],
-    "saveMode": ["solo"], "search": ["walked"], "searchAttic": ["walked"], "unarchive": ["gone"],
+    "saveMode": ["solo"], "saveNewWorkBoard": [0], "search": ["walked"], "searchAttic": ["walked"], "unarchive": ["gone"],
     "createSecret": [{"title": "walked", "kind": "api key"}], "updateSecret": [1, {"brief": "y"}], "fillSecret": [1, "key", "walked-value"],
     "deleteSecret": [1], "restoreSecret": [1], "revokeSecretLogin": [1], "secretsFile": [], "files": [], "filesPage": [{"kind": "all", "search": "walked", "last": 5, "skip": 0}], "changes": [], "commit": ["HEAD"], "projectFile": ["README.md"],
     "fileDiff": ["README.md"], "previewPlugin": ["/nowhere/plugin"], "previewUpgrade": [1], "findFiles": ["read"], "projectFiles": [],

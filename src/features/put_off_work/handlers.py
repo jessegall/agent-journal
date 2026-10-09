@@ -19,7 +19,8 @@ class NameDeferredWork(Handler):
         text = last_text(context.agent.row)
         found = DEFERS.search(text) if text else None
         if found and not self.parked_since(context, float(context.agent.row.at) - SINCE):
-            context.agent.say("deferred", words=found.group(0))
+            from features.work_modes.modes import filing
+            context.agent.say("deferred", words=found.group(0), filing=filing(context.record))
 
     def parked_since(self, context: Context, when: float) -> bool:
         return any(e.actor == AGENT and e.type == "todo" and e.action == "created" and e.at >= when for e in context.record.event_log.events(last=RECENT))

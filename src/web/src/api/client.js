@@ -690,6 +690,10 @@ export class ApiClient {
         return this.post(this.here("/mode"), {mode});
     }
 
+    saveNewWorkBoard(board) {
+        return this.post(this.here("/mode/board"), {board});
+    }
+
     integration(name) {
         return this.get(this.here(`/integration/${name}`));
     }
