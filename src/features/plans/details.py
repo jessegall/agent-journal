@@ -36,8 +36,8 @@ class PlansDetails(FeatureDetails):
         When the user asks for a review of a plan, run journal plan review <n> before you dispatch
         the reviewers, then link their report with journal report link <report n> plan:<n>: a
         plan still under review goes back to building for you to revise and mark ready again.
-        The user may approve and start it at any moment of a review; a report that lands after
-        that is linked and leaves their decision standing.
+        A plan under review cannot be approved: its Approve button is gone and the server refuses
+        an approval until the review's report is linked and you mark it ready again.
 
         Only the user approves a plan, and then you start it with journal plan start <n>; only the user continues it past a checkpoint; with the auto
         feature on, checkpoints are passed without waiting.
