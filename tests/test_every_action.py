@@ -515,6 +515,15 @@ def test_stopping_an_environment_asks_its_terminal_or_ends_the_process_that_hold
         assert child.wait(timeout=10) == -15, "an agent running on its own is ended through its process"
     finally:
         child.kill()
+    from tests.kit import bound_to_this_run
+    owner = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+    bound = subprocess.Popen(bound_to_this_run([sys.executable, "-c", "import time; time.sleep(60)"], watched=owner.pid))
+    try:
+        owner.kill()
+        owner.wait()
+        assert bound.wait(timeout=15) is not None, "a server started for a test run ends once the run's process is gone, even when that process was killed"
+    finally:
+        bound.kill()
     sessions.write("unknown", environment="ghost", provider="claude", seen=time.time())
     assert "its process is not found" in refused(lambda: places.stop(ghost.n)), "an agent with no terminal and no process is left to end where it runs"
     from engine.seats import live, offline

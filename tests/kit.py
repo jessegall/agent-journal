@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import threading
@@ -34,6 +35,25 @@ from runner.engine import Engine  # noqa: F401
 from runner.gate import PAUSED  # noqa: F401
 from runner.hooks import answer  # noqa: F401
 from runner.hooks import handle  # noqa: F401
+
+
+WATCH = (
+    "import os, signal, subprocess, sys, time\n"
+    "watched, child = int(sys.argv[1]), subprocess.Popen(sys.argv[2:])\n"
+    "signal.signal(signal.SIGTERM, lambda *_: child.terminate())\n"
+    "while child.poll() is None:\n"
+    "    try:\n"
+    "        os.kill(watched, 0)\n"
+    "    except OSError:\n"
+    "        child.terminate()\n"
+    "    time.sleep(0.5)\n"
+    "sys.exit(child.returncode)\n"
+)
+
+
+def bound_to_this_run(command: list[str], watched: int | None = None) -> list[str]:
+    """The command run under a watcher that ends it once the process `watched` (this one by default) is gone, however that process ended."""
+    return [sys.executable, "-c", WATCH, str(os.getpid() if watched is None else watched), *command]
 
 
 def appended(path: Path, *rows: dict) -> None:

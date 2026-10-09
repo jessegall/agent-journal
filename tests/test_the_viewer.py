@@ -14,6 +14,7 @@ import pytest
 from scripts.boot_guard import PROJECT, ended
 from tests import phone_pages, shared_pages
 from tests.conftest import installed_once
+from tests.kit import bound_to_this_run
 
 HERE = Path(__file__).resolve().parents[1]
 CODE = HERE / "src"
@@ -48,7 +49,7 @@ def scratch_viewer(tmp_path_factory):
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
     root = place / PROJECT / ".journal"
     port = free_port()
-    server = subprocess.Popen([sys.executable, str(root / "journal.py"), "--root", str(root), "serve", "--port", str(port)],
+    server = subprocess.Popen(bound_to_this_run([sys.executable, str(root / "journal.py"), "--root", str(root), "serve", "--port", str(port)]),
                               cwd=root.parent, env={**env, "AGENT_JOURNAL_ACTIVE": "1"}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     url = f"http://127.0.0.1:{port}/"
     began = time.time()
