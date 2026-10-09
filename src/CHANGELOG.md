@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.30 — Updates no longer re-read every transcript
+- The transcript cache is keyed by each transcript's path and the code that shapes a turn, never by the providers' code, so an update re-reads no transcript unless turn shaping changed; a cache that cannot be read or written is simply no cache.
+- After a restart the server answers before it warms up, and warms up in the background.
+
 ## 2.267.29 — Quieter hidden tabs, and no error for a file an update removes
 - A viewer tab that is out of view or out of focus polls ten times less often, and returns to normal when shown again.
 - The managed-files check counts a file removed between listing and reading as removed instead of raising, and waits while an update holds its mark.
