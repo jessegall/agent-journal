@@ -7,6 +7,7 @@ from providers.payload import AgentCall, BashCall, FetchCall, Hook, HookEvent, R
 from dataclasses import replace
 
 from engine.command_runs import CommandRun, Outcome, command_runs, current_run
+from providers.tested import testing_piece
 from resources.types import AgentRow
 
 KINDS = ((ReadCall, "reads"), (SearchCall, "searches"), (FetchCall, "fetches"), (AgentCall, "dispatches"), (SkillCall, "loads"))
@@ -89,14 +90,22 @@ def shell(row, hook: Hook) -> dict:
         return {AgentRow.running: CommandRun(before=before).to_json() if before.done else {}, AgentRow.commands: list(row.commands)}
     if hook.event == HookEvent.PRE_TOOL_USE and doing:
         kind = effect(hook)
-        started = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, before=before if before.done else None)
+        if kind == "tests":
+            doing = test_command(hook, doing)
+        background = isinstance(hook.tool, BashCall) and hook.tool.background
+        started = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, before=before if before.done else None, background=background)
         paths = tuple(inside(path, hook.cwd) for path in hook.tool.paths)
-        ran = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, files=paths, subject="" if paths else hook.tool.subject)
+        ran = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, files=paths, subject="" if paths else hook.tool.subject, background=background)
         return {AgentRow.running: started.to_json(), AgentRow.commands: (list(row.commands) + [ran.to_json()])[-RING:]}
     if row.running and not running.done:
         result = outcome_of(hook, running.effect)
         running = replace(running, done=hook.at, result=result if result else running.result)
     return {AgentRow.running: running.to_json(), AgentRow.commands: stamped(command_runs(row), running, doing, hook.at)}
+
+
+def test_command(hook: Hook, doing: str) -> str:
+    """The test runner's own part of a compound command, whole; the shown command may be cut short before it."""
+    return " ".join(next((piece for piece in map(testing_piece, hook.tool.commands) if piece), ())) or doing
 
 
 def outcome_of(hook: Hook, effect: str) -> Outcome | None:
