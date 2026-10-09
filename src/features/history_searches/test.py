@@ -98,7 +98,7 @@ def test_a_transcript_rewritten_in_place_is_read_again_not_served_from_the_cache
         assert (first.stored(("transcript", str(transcript), shape_mark())), stored.exists()) == (None, False), "a kept state that fails to load is dropped, not served"
     finally:
         transcript_cache.lines_from = original
-    blocked =tmp_path / "a-file-not-a-folder"
+    blocked = tmp_path / "a-file-not-a-folder"
     blocked.write_text("")
     cache = TranscriptCache(blocked)
     assert (cache.write(("a",), 1, "state"), cache.recent(tmp_path / "gone.jsonl", lambda raw: raw), cache.before(tmp_path / "gone.jsonl", 10, 5)) == (None, [], b""), \
