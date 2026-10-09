@@ -2,7 +2,7 @@ import mimetypes
 from pathlib import Path
 from engine import bus
 from engine.record import Record
-from engine.timing import Stopwatch, profiler
+from engine.timing import EVENT, Sampler, Stopwatch, profiler
 from controllers.faults import threw
 from engine.disk import DiskFull
 from resources.base import Missing, Refused
@@ -36,13 +36,13 @@ def hook_path(path: str) -> bool:
     return path.startswith(HOOK_PATH)
 
 
-def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Stopwatch, profile=None) -> Reply:
+def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Stopwatch, profile=None, stacks: str = "") -> Reply:
     if not reply.timed:
         return reply
     name = f"{method} {path}" if reply.named is None else f"{method} {path} ({reply.named})"
     answered = began.lap()
     kind = "hook" if hook_path(path) else "request"
-    return later(reply, lambda: began.announce(Record(root, env), kind, name, profile, answered))
+    return later(reply, lambda: began.announce(Record(root, env), kind, name, profile, answered, stacks))
 
 
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
@@ -59,6 +59,9 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
         return Reply(404, {"error": f"no environment {params['env']}"})
     profile = profiler(root)
     began = Stopwatch()
+    sampler = Sampler()
+    if bus.heard(EVENT):
+        sampler.start()
     req = Request(root, params, query, body)
     try:
         with bus.held() as queued:
@@ -72,7 +75,8 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
             finally:
                 if profile:
                     profile.disable()
-        return guarded(timed(later(reply, lambda: bus.release(queued)), root, params.get("env") or "main", method, path, began, profile),
+                stacks = sampler.stop()
+        return guarded(timed(later(reply, lambda: bus.release(queued)), root, params.get("env") or "main", method, path, began, profile, stacks),
                        root, req.env, f"after {method} {path}")
     except Missing as e:
         return Reply(404, {"error": str(e)})
