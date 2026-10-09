@@ -350,6 +350,9 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero(monkeypatch):
         return out.getvalue()
     assert "in force" in answered("verify") and f"settings on {record.env}" in answered("settings"), "verify and settings answer without raising"
     assert "usage:" in answered("help") and "usage:" in answered("help", "todo") and "no command" in answered("help", "nonsense"), "help answers for the whole journal, for one noun and for a word it does not have"
+    for noun, title in (("todo", "last line names it"), ("report", "a finding")):
+        made = answered(noun, "create", title).strip().splitlines()
+        assert made[-1] == f"{noun} {CONTROLLERS[noun](record, actor=SYSTEM).all()[-1].n}", f"creating a {noun} ends its output with one line naming what it made"
     assert answered("services", "list") != "", "services lists"
     assert ran("services", "bogus")[0] == 1, "a services word it does not know is refused in words"
     from commands import queries
