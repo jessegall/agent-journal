@@ -6,10 +6,10 @@ export const STEPS = ["Installing the new version", "Restarting the journal", "L
 const SECOND_STEP_AT = 8;
 const THIRD_STEP_AT = 25;
 
-export const updating = reactive({version: "", failure: "", late: false, since: 0});
+export const updating = reactive({version: "", failure: "", late: false, since: 0, external: false});
 
 export const stepAt = (seconds) => (seconds < SECOND_STEP_AT ? STEPS[0] : seconds < THIRD_STEP_AT ? STEPS[1] : STEPS[2]);
-export const locked = () => Boolean(updating.version) && !updating.failure && !updating.late;
+export const locked = () => Boolean(updating.version || updating.external) && !updating.failure && !updating.late;
 
 export function begin(version) {
     Object.assign(updating, {version, failure: "", late: false, since: Date.now() / 1000});
@@ -26,7 +26,16 @@ export function runLate() {
 }
 
 export function clear() {
-    Object.assign(updating, {version: "", failure: "", late: false, since: 0});
+    Object.assign(updating, {version: "", failure: "", late: false, since: 0, external: false});
+}
+
+// Follows the server's own report of an upgrade; true once an upgrade seen running has finished.
+export function follow(running) {
+    if (updating.version) return false;
+    if (running && !updating.external) Object.assign(updating, {external: true, since: Date.now() / 1000});
+    if (running || !updating.external) return false;
+    clear();
+    return true;
 }
 
 export const updatedTo = () => remembered(UPDATED_KEY, "");

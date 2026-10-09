@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, test} from "vitest";
-import {STEPS, begin, clear, fail, locked, runLate, stepAt, updatedTo, updating} from "../src/state/updating.js";
+import {STEPS, begin, clear, fail, follow, locked, runLate, stepAt, updatedTo, updating} from "../src/state/updating.js";
 
 beforeEach(() => {
     localStorage.clear();
@@ -21,5 +21,14 @@ describe("while the journal updates", () => {
         begin("2.265.0");
         runLate();
         expect(locked()).toBe(false);
+    });
+
+    test("an upgrade run outside the viewer locks it while the server reports it, and finishing asks for a reload", () => {
+        expect([follow(false), locked()]).toEqual([false, false]);
+        expect([follow(true), locked(), updating.version]).toEqual([false, true, ""]);
+        expect([follow(true), locked()]).toEqual([false, true]);
+        expect([follow(false), locked()]).toEqual([true, false]);
+        begin("2.265.0");
+        expect([follow(true), follow(false), locked()]).toEqual([false, false, true]);
     });
 });

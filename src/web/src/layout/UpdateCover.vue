@@ -31,7 +31,7 @@ watch(() => store.summary?.version, showArrival);
         <div class="cover" role="alertdialog" aria-live="polite" aria-label="Updating the journal" aria-busy="true">
             <div class="panel">
                 <Spinner :size="22" class="spin" />
-                <p class="title">Updating to {{ updating.version }}</p>
+                <p class="title">{{ updating.version ? `Updating to ${updating.version}` : "Updating the journal" }}</p>
                 <p class="step">{{ step }}</p>
                 <p class="foot">This page reloads by itself when it's done.</p>
             </div>
