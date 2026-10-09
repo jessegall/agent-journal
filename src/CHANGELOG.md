@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.50 — The first reply after a restart is quick
+- The server reads the messages and comments while it starts, so the first reply after a restart no longer pays to load them.
+
 ## 2.267.49 — A countdown before an update, agents paused while it runs, and voices that introduce themselves
 - An update that starts by itself first counts down ten seconds with a Cancel; Cancel skips that release, and the next one asks again. An update you start yourself begins at once.
 - While the journal updates, every agent is paused and told why, and resumed and told so once the new version runs; the agent whose own command runs the update is left alone.
