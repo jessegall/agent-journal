@@ -43,6 +43,8 @@ def post_update(req: Request) -> Reply:
     if changed and not req.body.get("yes"):
         return Reply(409, {"error": changed_message(req.root.parent, changed),
                            "changed": [path.relative_to(req.root.parent).as_posix() for path in changed]})
+    if runtime.upgrading(req.root):
+        raise Refused("an update is already running")
     chosen = req.body.get("version", "")
     if chosen and chosen not in release_versions():
         raise Refused(f"{chosen} is not a released version")

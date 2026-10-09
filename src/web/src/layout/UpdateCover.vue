@@ -10,7 +10,7 @@ import {forgetUpdate, locked, stepAt, updatedTo, updating} from "../state/updati
 import {go, route} from "../route.js";
 
 const now = useNow();
-const step = computed(() => stepAt(Math.max(0, now.value - updating.since)));
+const step = computed(() => updating.step || stepAt(Math.max(0, now.value - updating.since)));
 const arrived = ref(null);
 
 function showArrival(version) {
@@ -33,7 +33,6 @@ watch(() => store.summary?.version, showArrival);
                 <Spinner :size="22" class="spin" />
                 <p class="title">{{ updating.version ? `Updating to ${updating.version}` : "Updating the journal" }}</p>
                 <p class="step">{{ step }}</p>
-                <p class="foot">This page reloads by itself when it's done.</p>
             </div>
         </div>
     </template>
@@ -92,12 +91,6 @@ watch(() => store.summary?.version, showArrival);
     margin: 0;
     color: var(--text-2);
     font-size: 13px;
-}
-
-.foot {
-    margin: 6px 0 0;
-    color: var(--text-3);
-    font-size: 12px;
 }
 
 .arrived {

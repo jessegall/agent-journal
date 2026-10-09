@@ -52,7 +52,7 @@ export const polled = {
     online: {key: "online", ask: () => api.onlineAgents(), every: 5000, take: (got) => (store.online = got)},
     summary: {key: "summary", ask: () => api.summary(), every: 4000, take: (got) => {
             store.summary = got;
-            if (follow(Boolean(got.updating))) window.location.reload();
+            if (follow(Boolean(got.updating), got.step)) window.location.reload();
         },
     },
     manifest: {key: "manifest", ask: () => api.manifest(), every: 30000, take: (got) => (store.spec = got)},

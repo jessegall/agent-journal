@@ -412,12 +412,22 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False, version:
         prepared = prepare_managed(project, root, yes)
         if prepared.held is not None:
             return [prepared.held]
-        mark.touch()
+        mark.write_text("Preparing the update")
         loaded().restarting(root).write_text(str(time.time()))
         try:
-            return prepared.copied + upgrading(project, root, version)
+            waited = loaded().wait_for_commands(root, lambda text: stepping(root, text))
+            lines = waited + prepared.copied + upgrading(project, root, version)
+            stepping(root, "Restarting the journal")
+            return lines
         finally:
             mark.unlink(missing_ok=True)
+
+
+def stepping(root: Path, text: str) -> None:
+    """Says which step the running upgrade is on, in the mark it holds, for the viewer and the status line to read."""
+    mark = loaded().upgrade_mark(root)
+    if mark.exists():
+        mark.write_text(text)
 
 
 def installed_here(root: Path, package: Path = PACKAGE) -> bool:
@@ -430,6 +440,7 @@ def upgrading(project: Path, root: Path, version: str = "") -> list[str]:
     source, temporary, newest = PACKAGE, None, ""
     reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
+        stepping(root, "Fetching the new version")
         newest = version or released()
         if newest and newest == version_in(code(root)) and packed(root):
             return done + [f"package already at {newest}"] + finish(project, root)
@@ -442,6 +453,7 @@ def upgrading(project: Path, root: Path, version: str = "") -> list[str]:
     elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
         pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120, env=git_env())
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
+    stepping(root, "Installing the new files")
     try:
         changed, gone = refresh(source, code(root))
     except OSError as error:
@@ -494,7 +506,9 @@ def finish(project: Path, root: Path) -> list[str]:
         done.append(f"package files an older installer did not know: {failed or 'fetched'}")
         if not failed:
             return done + handed_over(project, root, (REPAIRED,))
+    stepping(root, "Setting up hooks and skills")
     done += configure(project, root)
+    stepping(root, "Migrating the record")
     ran = loaded().migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
     done.append(loaded().ship_sequences(root))
@@ -616,6 +630,7 @@ class Package:
     stop_ended: Callable
     publish: Callable
     upgrade_mark: Callable
+    wait_for_commands: Callable
     restarting: Callable
     managed: ModuleType
 
@@ -639,10 +654,11 @@ def loaded() -> Package:
     from engine.record import Record
     from engine.runtime import default_env, restarting, upgrade_mark
     from features.journal_laws import managed
+    from features.auto_update.waiting import wait_for_commands
     return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
                    served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
                    ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"), stop_ended=stop_ended,
-                   publish=publish, upgrade_mark=upgrade_mark, restarting=restarting, managed=managed)
+                   publish=publish, upgrade_mark=upgrade_mark, wait_for_commands=wait_for_commands, restarting=restarting, managed=managed)
 
 
 if __name__ == "__main__":

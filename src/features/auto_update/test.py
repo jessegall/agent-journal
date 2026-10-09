@@ -107,6 +107,22 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], "the updates page is told which files changed"
     announced = dispatch("GET", "/api/new-feature", record.root, {}, {})
     assert (announced.code, isinstance(announced.body, dict)) == (200, True), "the viewer asks the server which new feature the release announces, and an empty answer means none"
+    from controllers.types import Agents
+    from engine import runtime
+    from features.auto_update.waiting import running, wait_for_commands
+    from tests.kit import report
+    started = time.time()
+    report(record, "working", "PreToolUse", session="claude-9", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}],
+           running={"command": "npm test", "tool": "Bash", "at": started})
+    steps = []
+    gave_up = wait_for_commands(record.root, steps.append, wait=0.05, every=0.01)
+    closed = Agents(record, actor=SYSTEM).by_session("claude-9")
+    assert (len(running(record.root)), bool(closed.running.get("done")), steps[:1], gave_up[0].startswith("gave up waiting for `npm test`")) == \
+        (0, True, ["Waiting for 1 running command to finish"], True), "an update waits a bounded time for the commands in flight, then names the one it gave up on and marks it ended"
+    assert wait_for_commands(record.root, steps.append, wait=0.05, every=0.01) == [], "with nothing running the update does not wait"
+    runtime.upgrade_mark(record.root).write_text("Migrating the record")
+    assert runtime.upgrade_step(record.root) == "Migrating the record", "the running upgrade says which step it is on, in the mark it holds"
+    runtime.upgrade_mark(record.root).unlink()
     monkeypatch.setattr(routes, "release_versions", lambda: ["2.263.0", "2.262.0", "2.250.0"])
     monkeypatch.setattr(routes, "version", lambda: "2.263.0")
     assert dispatch("GET", "/api/releases", record.root, {}, {}).body == {"versions": ["2.262.0", "2.250.0"]}, "the updates page lists the released versions except the one running"
