@@ -415,6 +415,15 @@ class Codex(Provider):
             return Turn(line, TOOL, payload.output_text, TOOL, row.at)
         return None
 
+    def latest_words(self, hook: Hook) -> str:
+        if hook.last_message:
+            return hook.last_message
+        for row in rows(reversed(tail_lines(hook.transcript, TAIL_BYTES).lines), Row.from_payload):
+            payload = row.payload
+            if row.type == "response_item" and payload.type == "message" and payload.role == "assistant" and payload.text.strip():
+                return payload.text
+        return ""
+
     def context(self, hook: Hook) -> float | None:
         return next((round(100 * p.used_tokens / p.window, 1) for p in self.token_counts(hook.transcript) if p.used_tokens and p.window), None)
 

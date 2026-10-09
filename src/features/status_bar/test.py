@@ -117,6 +117,17 @@ def test_the_whole_bar_is_the_queue_and_nothing_else():
         "an agent's cell is given the bar's line for its latest activity, and nothing when it has done nothing"
     counted_row = type("Counted", (), {"commands": [changed("now.py", NOW + 1, added=12, removed=3)]})()
     assert doing(counted_row, NOW + 2) == "editing now.py +12 -3", "a line that counts what was added and removed is text, never a number the join chokes on"
+    import json
+    from controllers.types import Agents
+    from providers import PROVIDERS
+    from runner.hooks import handle
+    record = fresh()
+    transcript = record.root / "rollout.jsonl"
+    said = lambda role, text: json.dumps({"type": "response_item", "timestamp": "2026-10-09T10:00:00Z", "payload": {"type": "message", "role": role, "content": [{"type": "output_text" if role == "assistant" else "input_text", "text": text}]}}) + "\n"
+    transcript.write_text(said("user", "fix it") + said("assistant", "Reading the parser first") + said("assistant", "The parser is fixed"))
+    handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "codex-1", "transcript_path": str(transcript), "tool_name": "shell", "tool_input": {}})
+    assert Agents(record, actor="system").by_session("rollout").last_message == "The parser is fixed", \
+        "a Codex agent's cell says what it last said, read from its transcript where its hooks carry no message"
 
 
 def test_a_terminal_answering_a_query_is_not_the_user_typing():
