@@ -155,6 +155,7 @@ class Claude(Provider):
     tool_kinds = {**Provider.tool_kinds, "AskUserQuestion": AskCall, "CronCreate": LoopCall, "CronDelete": LoopEndCall}
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"
+    briefing_import = "AGENTS.md"
     skill_home = ".claude/skills"
     shared_files = (".claude/settings.local.json",)
     worktrees = (".claude", "worktrees")

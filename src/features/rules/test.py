@@ -78,15 +78,14 @@ def test_inject_and_uninject_change_the_rules_in_the_one_block_and_pin_notices_t
     claude_md.write_text("# My project\n\nkeep this.\n")
     agents_md.write_text("keep this too.\n")
     rules.inject(1)
-    assert (rules.load(1).injected, claude_md.read_text().startswith(f"# My project\n\n{BEGIN}\n"), agents_md.read_text().startswith(f"{BEGIN}\n"),
-            all(path.read_text().endswith(f"## Rules\n\n- name the model on every dispatch\n\n{END}\n\n{kept}\n")
-                for path, kept in ((claude_md, "keep this."), (agents_md, "keep this too.")))) == (True, True, True, True), \
-        "inject puts the rule in the one block, which leads both files under their title"
+    assert (rules.load(1).injected, claude_md.read_text(), agents_md.read_text().startswith(f"{BEGIN}\n"),
+            agents_md.read_text().endswith(f"## Rules\n\n- name the model on every dispatch\n\n{END}\n\nkeep this too.\n")) == (True, "# My project\n\n@AGENTS.md\n\nkeep this.\n", True, True), \
+        "inject puts the rule in the one block, in AGENTS.md, which CLAUDE.md imports"
     rules.update(1, title="name the model on every subagent dispatch")
-    assert all("- name the model on every subagent dispatch\n" in path.read_text() and path.read_text().count(BEGIN) == 1 for path in (claude_md, agents_md)) is True, \
-        "a change rewrites the one block in both files"
+    assert ("- name the model on every subagent dispatch\n" in agents_md.read_text(), agents_md.read_text().count(BEGIN), claude_md.read_text().count(BEGIN)) == (True, 1, 0), \
+        "a change rewrites the one block, in AGENTS.md"
     rules.uninject(1)
-    assert (rules.load(1).injected, "## Rules" in claude_md.read_text(), claude_md.read_text().endswith(f"{END}\n\nkeep this.\n")) == (False, False, True), \
+    assert (rules.load(1).injected, "## Rules" in agents_md.read_text(), agents_md.read_text().endswith(f"{END}\n\nkeep this too.\n")) == (False, False, True), \
         "uninject takes the rule out and keeps the law and the project's text"
     notice = rules.pin(1)
     assert (notice.title, notice.refs, notice.data["link"], notice.data["label"]) == \
@@ -129,8 +128,8 @@ def test_the_briefing_retires_the_old_blocks_and_leaves_a_file_it_cannot_read_sa
 
     empty = fresh()
     Rules(empty, actor=USER).inject(Rules(empty, actor=USER).create("only rule", keywords="word").n)
-    assert [(empty.root.parent / name).read_text().startswith(f"# {empty.root.parent.name}\n\n{BEGIN}\n") for name in ("AGENTS.md", "CLAUDE.md")] == [True] * 2, \
-        "no instruction files yet: both are made with the block under the project's name"
+    assert ((empty.root.parent / "AGENTS.md").read_text().startswith(f"# {empty.root.parent.name}\n\n{BEGIN}\n"), (empty.root.parent / "CLAUDE.md").read_text()) == (True, "@AGENTS.md\n"), \
+        "no instruction files yet: AGENTS.md is made with the block under the project's name, and CLAUDE.md imports it"
 
 
 def test_a_rule_the_agent_makes_is_sent_back_to_be_read_as_a_ruling_for_the_whole_project():

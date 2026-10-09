@@ -71,6 +71,7 @@ def brief(project: Path, record) -> Briefing:
     managed = block(record, injected(record))
     title = project.resolve().name
     written, left = [], []
+    imports = {cls.briefing_file: cls.briefing_import for cls in PROVIDERS.values() if cls.briefing_import}
     for name in briefing_files():
         target = (project / name).resolve()
         try:
@@ -83,7 +84,8 @@ def brief(project: Path, record) -> Briefing:
         if why:
             left.append(f"{name} left as it is: {why}")
             continue
-        want = leading(had, managed) if had.strip() else f"# {title}\n\n{managed}\n"
+        source = imports.get(name, "")
+        want = wanted(had, managed, title, "" if (project / source).resolve() == target else source)
         if want != had:
             held = remembered_unchanged(project, record.root, project / name) if target.is_file() else False
             write_text(target, mark + want)
@@ -122,6 +124,34 @@ def leading(had: str, managed: str) -> str:
     head, _, after = rest.partition(newline)
     separator = newline if after.startswith(newline) else newline + newline
     return f"{head}{newline}{newline}{managed}{separator}{after}"
+
+
+def wanted(had: str, managed: str, title: str, source: str) -> str:
+    """What a briefing file should read: an import of another briefing file, or the journal's block among the project's own text."""
+    if source:
+        return importing(had, source)
+    if had.strip():
+        return leading(had, managed)
+    return f"# {title}\n\n{managed}\n"
+
+
+def importing(had: str, source: str) -> str:
+    """The text of a briefing file that reads another one: the journal's block is taken out and a line importing that file is put in its place, once."""
+    newline = "\r\n" if "\r\n" in had else "\n"
+    rest = CURRENT.sub("", had)
+    for retired in RETIRED:
+        rest = retired.pattern.sub("", rest)
+    rest = re.sub(rf"(?:{newline}){{3,}}", newline * 2, rest).strip("\r\n")
+    line = f"@{source}"
+    if line in rest.splitlines():
+        return f"{rest}{newline}"
+    if not rest:
+        return f"{line}{newline}"
+    if not rest.startswith("# "):
+        return f"{line}{newline}{newline}{rest}{newline}"
+    head, _, after = rest.partition(newline)
+    after = after.lstrip("\r\n")
+    return f"{head}{newline}{newline}{line}{newline}" + (f"{newline}{after}{newline}" if after else "")
 
 
 def long_briefings(context, agent) -> list[Sent]:
