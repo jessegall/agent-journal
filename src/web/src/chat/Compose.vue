@@ -8,6 +8,7 @@ import {store} from "../state/store.js";
 
 import Icon from "../kit/Icon.vue";
 import WaitEdge from "../kit/WaitEdge.vue";
+import VoiceMascot from "./VoiceMascot.vue";
 import {attach, overLimit, refusal} from "./attachments.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 
@@ -210,6 +211,9 @@ async function use(tool) {
             </div>
         </Transition>
         <WaitEdge :waiting="waiting" @list="emit('waiting-list', $event)">
+            <template v-if="waiting">
+                <VoiceMascot />
+            </template>
             <div class="compose-box floating">
                 <template v-if="draft.files.length">
                     <div class="compose-files">

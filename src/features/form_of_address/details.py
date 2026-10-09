@@ -51,6 +51,13 @@ class FormOfAddressDetails(FeatureDetails):
             scope=PROJECT,
         ),
         Setting(
+            name="mascot",
+            default=True,
+            title="Show the voice's mascot on the chat box",
+            abstract="While the agent waits, the voice's mascot sits on the edge of the chat's text box and plays a short idle loop",
+            scope=PROJECT,
+        ),
+        Setting(
             name="profile",
             default="",
             title="Profile",
