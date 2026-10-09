@@ -438,9 +438,6 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         into = self._into(self.load(n))
         if into != "HEAD" and any(name == "." and not present(place, into) for name, place, _ in self._repositories(self.load(n))):
             self._refuse(f"its board works on the branch {into}, which does not exist; make it, or change the board's branch")
-        lacking = self._lacking(self.load(n))
-        if lacking:
-            self.comment(ticket.n, f"The board's branch {into} does not exist in {', '.join(lacking)}, so it starts from that repository's own default branch there")
         self._modelled(ticket, model, f"journal ticket start {ticket.n} --model <model>")
         you_started = bool(ticket.data.get("user_started")) or (self.actor == USER and self._from_outside(ticket))
         ticket = self.update(ticket.n, provider=provider or ticket.provider, model=model or ticket.model, halted=False, user_started=you_started)
@@ -458,14 +455,17 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 earlier = ""
             args = driver.within(["--model", ticket.model] if ticket.model else [], place)
             project = self.record.root.parent
+            if ticket.base and not ticket.agent_seen:
+                self._discard_failed_start(ticket)
+                ticket = self.update(ticket.n, base="", bases={})
             fresh = not ticket.base
             ticket = self._based(ticket, self._started_at(ticket))
-            for _, place, base in self._repositories(ticket) if into != "HEAD" else ():
-                stuck = branched(place, self._branch(ticket), base, fresh)
+            for _, repo, base in self._repositories(ticket) if into != "HEAD" else ():
+                stuck = branched(repo, self._branch(ticket), base, fresh)
                 if stuck:
                     self._refuse(stuck)
             if fresh and into != "HEAD":
-                ticket = self._based(ticket, {name: tip(place, f"refs/heads/{self._branch(ticket)}") for name, place, _ in self._repositories(ticket)})
+                ticket = self._based(ticket, {name: tip(repo, f"refs/heads/{self._branch(ticket)}") for name, repo, _ in self._repositories(ticket)})
             detached(self.record.root, project, place, ticket.provider,
                      prompted(self.record.root, place, driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
                      else prompted(self.record.root, place, args, self._kickoff(ticket)))

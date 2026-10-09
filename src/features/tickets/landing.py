@@ -1,7 +1,8 @@
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.worktree import changed, contains, default_branch, git, keep, linked, merged, present, roots, tip
+from engine.worktree import changed, contains, current_branch, discarded, git, keep, linked, merged, present, roots, tip
 from features.tickets.resource import Bases
 from controllers.marks import action
 
@@ -48,6 +49,15 @@ class TicketLanding:
         bases = Bases.of(tips)
         return self.update(ticket.n, base=bases.root, bases=bases.nested)
 
+    def _discard_failed_start(self, ticket) -> None:
+        """A start that left a base but never reached its agent leaves worktrees and branches at the wrong place; a retry takes them away and starts over."""
+        from providers import workspace_folders
+        project, branch = self.record.root.parent, self._branch(ticket)
+        folder = project.joinpath(*workspace_folders().worktree_home, ticket.work_environment)
+        for name, repo, _ in self._repositories(ticket):
+            discarded(repo, folder if name == "." else folder / name, branch, ticket.work_environment)
+        shutil.rmtree(folder, ignore_errors=True) if folder.is_dir() and not folder.is_symlink() else None
+
     def _clean(self, ticket) -> bool:
         folders = [linked(place).get(ticket.work_environment) for _, place, _ in self._repositories(ticket)]
         return all(folder and not git(folder, "status", "--porcelain").stdout.strip() for folder in folders)
@@ -72,9 +82,6 @@ class TicketLanding:
         return board.branch if board and board.branch else "HEAD"
 
     def _into_at(self, ticket, name: str, place: Path) -> str:
+        """The branch a ticket starts from and lands on in one repository: the board's in the project's own, the checked-out one in a nested repository."""
         into = self._into(ticket)
-        return into if into == "HEAD" or name == "." or present(place, into) else default_branch(place)
-
-    def _lacking(self, ticket) -> list[str]:
-        into = self._into(ticket)
-        return [name for name, place, _ in self._repositories(ticket) if into != "HEAD" and name != "." and not present(place, into)]
+        return into if into == "HEAD" or name == "." else current_branch(place) or "HEAD"
