@@ -100,7 +100,7 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     assert f"todo {taken} is already assigned to helper:7" in refused(lambda: helpers.dispatch("Zed", "a job", "claude", "sonnet", todos=str(taken))), \
         "a to-do one helper holds is not handed to another"
     assert "only a helper reads or marks" in refused(lambda: helpers.done(finished, "x")), "the agent that dispatched a helper closes its own to-dos itself"
-    assert "is not running" in refused(lambda: helpers.say(1, "hello")), "a helper that is not running cannot be told anything"
+    assert "no session left" in refused(lambda: helpers.say(1, "hello")), "a helper that is not running and has no session to go on in cannot be told anything"
     from engine.sessions import Sessions
     from features.agent_sessions.launch import running_in, stop_in, tell_in
     Sessions(record.root).bind("claude-8", "helper-env", provider="claude")
@@ -516,8 +516,10 @@ def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back
     runs(helpers.load(2))
     monkeypatch.setattr("features.helpers.reuse.touched", lambda record, row: ("src/features/nudges/standing.py",) if row.name == "Zed" else ())
     Agents(Record(record.root, helpers.load(2).environment), actor=SYSTEM).create("claude-zed", status=IDLE, at=time.time() - 600)
-    started_answer = helpers.dispatch("Ivy", "tidy nudges/standing.py", "claude", "sonnet")
-    assert "helper 2, Zed" in started_answer and "helper 1" not in started_answer, "a new helper's answer names the idle one that touched the files its job names"
+    named = refused(lambda: helpers.dispatch("Ivy", "tidy nudges/standing.py", "claude", "sonnet"))
+    assert "helper 2, Zed" in named and "helper 1" not in named and 'journal helper say 2 "<the new work>"' in named, \
+        "a dispatch is refused while an idle helper touched the files its job names, naming it with the line that sends it the work"
+    helpers.dispatch("Ivy", "tidy the docs", "claude", "sonnet")
     runs(helpers.load(3))
     record.set_setting("helpers", {"kept": 3})
     held_back = refused(lambda: helpers.dispatch("Bo", "change nudges/standing.py again", "claude", "sonnet"))
