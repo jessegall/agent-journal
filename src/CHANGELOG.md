@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.70 — The row index lives beside the rows, not among them
+- A type's row index is saved in its own folder, so saving it no longer makes the rows' folder look changed and the next read no longer re-scans every row.
+
 ## 2.267.69 — Faster search
 - A search reads each type's rows once instead of twice, keeps each conversation turn's searchable text, and finds conversation files with one check each.
 
