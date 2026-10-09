@@ -7,6 +7,18 @@ export const NOT_STARTED = {
     approved: "approved, not started yet",
     parked: "parked",
 };
+// How a plan's state reads in a list of plans.
+export const PLAN_STATE_WORDS = {
+    building: "Building",
+    draft: "Building",
+    ready: "Ready",
+    reviewing: "Under review",
+    approved: "Starting",
+    active: "Running",
+    waiting: "Checkpoint",
+    parked: "Paused",
+    done: "Done",
+};
 export const PLANNED = ["building", "draft", "ready", "reviewing"];
 export const PLAN_RUNNING = ["active", "waiting", "done", "approved"];
 export const PLAN_STATES = {
