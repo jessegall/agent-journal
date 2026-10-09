@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.36 — Helpers are reused, and a retired helper keeps its conversation
+- Sending work to a stopped helper starts it again with its context, and a new dispatch is refused while an idle helper that already knows the files exists.
+- Retiring a helper takes a reason, read back first; the chat marks a helper Reused, Continued or Retired.
+- The helpers list sorts helpers into Working, Waiting for work, Closed and Retired, and shows how often each was reused and when it was first dispatched.
+- A closed or retired helper's inspector shows its conversation.
+
 ## 2.267.35 — The Squire calls you Sir Knight, and a new voice says hello
 - A voice can address you in words of its own instead of your title and name: the Squire calls you Sir Knight, and now and then my liege.
 - When you change the voice, the agent is told at once, even while idle, and answers with one opening line in the new voice.
