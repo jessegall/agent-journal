@@ -202,6 +202,7 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
         "a number right after a word that reports an HTTP status is a status, not a row"
     assert bare("answered 20230 and closed 777") == [20230, 777], "a row number after a handling verb is still named, whatever the verb"
     assert bare(f"down from 980 loose files to {asked.n}; it waited {filed.n} before") == [], "a small number with no handling verb before it is a count"
+    assert bare("all 358 viewer unit tests pass, and 358 viewer unit tests ran") == [], "a number before a noun phrase ending in a plural, or after all, is a count"
     assert bare("a number under 250 is a count, and so is more than 300") == [], "a quantity word before a number makes it a count"
     assert formatted("a journal question with options; journal question ask", record, VIEWER) == "a journal question with options; `journal question ask`", "only a real command is code"
     shown = formatted("run python3 journal.py --root .journal upgrade, or pass --why", record, VIEWER)

@@ -686,6 +686,10 @@ export class ApiClient {
         return this.post(this.here(`/integration/${name}/login`));
     }
 
+    logOutIntegration(name) {
+        return this.post(this.here(`/integration/${name}/logout`));
+    }
+
     checkIntegration(name) {
         return this.post(this.here(`/integration/${name}/check`));
     }

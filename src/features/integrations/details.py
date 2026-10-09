@@ -34,5 +34,5 @@ class IntegrationDetails(FeatureDetails):
             abstract="Gives each agent the service's own tools. What an agent reads there is not marked as untrusted. Off unless you turn it on",
             scope=PROJECT,
         ),
-        Setting(name="fetching", default=True, title="Read it into tickets", abstract="The journal reads the service and keeps what it finds as tickets", scope=PROJECT),
+        Setting(name="fetching", default=False, title="Read it into tickets", abstract="The journal reads the service and keeps what it finds as tickets", scope=PROJECT),
     ]

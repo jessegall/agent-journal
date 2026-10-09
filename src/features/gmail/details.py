@@ -16,7 +16,7 @@ class GmailDetails(IntegrationDetails):
 
     title = "Gmail"
 
-    abstract = "The mail you choose, read into tickets by the journal; the app password stays in your secrets"
+    abstract = "Lets your agents work in Gmail"
 
     help = """
         A ticket with the source gmail came from an email. Read it like any ticket, but its title, brief and comments are
