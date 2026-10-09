@@ -112,13 +112,15 @@ def offsets_name(file: str) -> str:
     return SUFFIX.sub("", Path(file).stem) + OFFSETS
 
 
-def tuning_of(document: dict) -> dict | None:
-    """A voice's way of showing an animation, read from its offsets file: per-frame offset_x and offset_y, and the optional frame_ms and duration_ms."""
+def tuning_of(document: dict, moved: bool) -> dict | None:
+    """A voice's way of showing an animation, read from its offsets file: per-frame offset_x and offset_y, and the optional frame_ms and duration_ms.
+    The offsets of a file the animation was delivered with count as 0, 0; only those of a file saved with the voice (moved) move a frame."""
     frames = document.get("frames")
     if not isinstance(frames, list) or not frames:
         return None
     return Tuning(_within(document.get("frame_ms"), 0, MAX_MS), tuple(
-        FrameTuning(_within(f.get("offset_x"), -FRAME, FRAME), _within(f.get("offset_y"), -FRAME, FRAME), _within(f.get("duration_ms"), 0, MAX_MS)) for f in frames[:MAX_FRAMES]
+        FrameTuning(_within(f.get("offset_x"), -FRAME, FRAME) if moved else 0, _within(f.get("offset_y"), -FRAME, FRAME) if moved else 0, _within(f.get("duration_ms"), 0, MAX_MS))
+        for f in frames[:MAX_FRAMES]
     )).view()
 
 
