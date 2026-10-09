@@ -49,6 +49,11 @@ def test_a_keyword_matches_as_a_whole_word_only_where_its_row_says():
     assert shown == [(ran.ref, "in commands"), (wrote.ref, "in text")], f"each reminder is kept on the agent for the chat to show: {shown}"
     words = [w["words"] for w in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("whispers") or []]
     assert words == [f"Reminded the agent of fact {ran.n}", f"Reminded the agent of fact {wrote.n}"], "one wording for the computer's chat mark and the phone's"
+    hook(tool_name="Bash", tool_input={"command": "grep -rn said ."})
+    assert len([n for n in Nudges(record).all() if n.title.startswith("fact ")]) == 2, "a fact already whispered to a session is not whispered again while its words stay the same"
+    facts.update(ran.n, brief="the new reasoning")
+    hook(tool_name="Bash", tool_input={"command": "grep -rn said ."})
+    assert len([n for n in Nudges(record).all() if n.title.startswith("fact ")]) == 3, "a fact whose words changed is whispered again"
 
 
 def test_dismissing_a_fact_from_the_rail_is_not_told_to_the_agent_but_editing_it_is():

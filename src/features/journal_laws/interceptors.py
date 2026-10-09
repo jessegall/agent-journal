@@ -38,7 +38,7 @@ class WhisperLawInChat(Handler):
 
 def whisper_laws(context: AgentContext, text_of) -> None:
     for law in laws(context.record):
-        if mentioned(law.keywords, text_of(law.keywords_in)) and whisper_due(context, f"law:{law.name}"):
+        if mentioned(law.keywords, text_of(law.keywords_in)) and whisper_due(context, f"law:{law.name}", f"{law.text}|{law.reason}"):
             context.agent.whisper(WHISPER, type="law", n=law.name, title=law.text, brief=law.reason)
 
 
