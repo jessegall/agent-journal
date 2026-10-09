@@ -23,8 +23,10 @@ async function chooseVoice(browser, url) {
     await page.close();
 }
 
+export const openBrowser = () => (process.env.JOURNAL_BROWSER ? chromium.connect(process.env.JOURNAL_BROWSER) : chromium.launch());
+
 export async function runScenarios(url, scenarios, {voice = true, device = {}} = {}) {
-    const browser = await chromium.launch();
+    const browser = await openBrowser();
     if (voice) await chooseVoice(browser, url);
     const failures = {};
     try {

@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -28,6 +29,8 @@ def fresh(env: str = "t") -> Record:
 
 
 SOURCE = Path(__file__).resolve().parents[1] / "src"
+WEB = SOURCE / "web"
+SCENARIOS_WAIT = 240
 
 
 def installed(place: Path, code: Path) -> Path:
@@ -159,6 +162,32 @@ def viewer_functions_restored(request, monkeypatch):
     for name in changed:
         setattr(viewer, name, _VIEWER_FUNCTIONS[name])
     assert not changed, f"{request.node.nodeid} left engine.viewer.{', '.join(changed)} replaced for every later test"
+
+
+@dataclass(frozen=True)
+class SharedBrowser:
+    """The one headless Chromium a worker's browser scenarios connect to, instead of each launching its own."""
+    endpoint: str
+
+    def play(self, script: str, *args: str, **env: str) -> None:
+        """Runs a scenario script in this browser and fails the test with every scenario that failed."""
+        run = subprocess.run(["node", script, *args], cwd=WEB, env={**os.environ, **env, "JOURNAL_BROWSER": self.endpoint},
+                             capture_output=True, text=True, timeout=SCENARIOS_WAIT)
+        assert run.returncode == 0, run.stderr[-2000:]
+        failed = run.stdout.strip().splitlines()[-1]
+        assert failed == "{}", f"these scenarios of {script} failed: {failed}"
+
+
+@pytest.fixture(scope="session")
+def shared_browser():
+    server = subprocess.Popen(["node", "browser/chromium.mjs"], cwd=WEB, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    try:
+        endpoint = server.stdout.readline().strip()
+        assert endpoint, "the shared browser did not start"
+        yield SharedBrowser(endpoint)
+    finally:
+        server.terminate()
+        server.wait(SCENARIOS_WAIT)
 
 
 @pytest.fixture
