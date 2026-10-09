@@ -8,7 +8,7 @@ from typing import ClassVar
 
 from resources.fields import Loaded
 from engine.transcript import Turn
-from providers.jsonl import WholeRead, parsed_row, tail_lines, whole_lines
+from providers.jsonl import WholeRead, lines_after, parsed_row, tail_lines, whole_lines
 from providers.payload import AgentCall, AskCall, AskedQuestion, Asking, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, HookFacts, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from providers.transcript_cache import CACHE, RECENT_BYTES
 from resources.base import Refused
@@ -67,6 +67,14 @@ class SubagentRow:
 
     def to_json(self) -> dict:
         return asdict(self)
+
+
+@dataclass(frozen=True)
+class Whole:
+    """Every turn of a transcript up to a byte offset, with how many lines that is, so a transcript that only grew is read from where it ended."""
+    turns: list
+    end: int
+    lines: int
 
 
 @dataclass
@@ -277,7 +285,15 @@ class Provider(ABC):
         return self.refine(turns + self.read_turns(lines, count))
 
     def every_turn(self, path: Path, why: WholeRead) -> list:
-        return self.refine(self.read_turns(whole_lines(path, why).lines, 0))
+        return self.whole_turns(path, why).turns
+
+    def whole_turns(self, path: Path, why: WholeRead) -> Whole:
+        read = whole_lines(path, why)
+        return Whole(self.refine(self.read_turns(read.lines, 0)), read.end, len(read.lines))
+
+    def grown_turns(self, path: Path, held: Whole) -> Whole:
+        read = lines_after(path, held.end)
+        return Whole(self.extended(held.turns, read.lines, held.lines), read.end, held.lines + len(read.lines))
 
     def last_turns(self, path: Path, span: int = RECENT_BYTES) -> list:
         lines = tail_lines(path, span).lines
