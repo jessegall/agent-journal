@@ -1,0 +1,80 @@
+{
+  "voice": "colleague",
+  "animation": "idle_typing",
+  "frame_size": [
+    256,
+    256
+  ],
+  "atlas_file": "colleague_idle_typing_atlas.png",
+  "atlas_size": [
+    2048,
+    256
+  ],
+  "origin": "resting pose tile top-left at stage x=256, y=256; apply offset_x and offset_y in pixels",
+  "frames": [
+    {
+      "frame": 1,
+      "file": "colleague_idle_typing_1.png",
+      "atlas_x": 0,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": 0
+    },
+    {
+      "frame": 2,
+      "file": "colleague_idle_typing_2.png",
+      "atlas_x": 256,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": 0
+    },
+    {
+      "frame": 3,
+      "file": "colleague_idle_typing_3.png",
+      "atlas_x": 512,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": 0
+    },
+    {
+      "frame": 4,
+      "file": "colleague_idle_typing_4.png",
+      "atlas_x": 768,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": 0
+    },
+    {
+      "frame": 5,
+      "file": "colleague_idle_typing_5.png",
+      "atlas_x": 1024,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": 0
+    },
+    {
+      "frame": 6,
+      "file": "colleague_idle_typing_6.png",
+      "atlas_x": 1280,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": 0
+    },
+    {
+      "frame": 7,
+      "file": "colleague_idle_typing_7.png",
+      "atlas_x": 1536,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": 0
+    },
+    {
+      "frame": 8,
+      "file": "colleague_idle_typing_8.png",
+      "atlas_x": 1792,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": 0
+    }
+  ]
+}

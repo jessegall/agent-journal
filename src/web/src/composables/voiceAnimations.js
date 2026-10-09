@@ -12,8 +12,6 @@ export async function loadAnimations() {
 
 export const urlOf = (n, animation) => (animation.shipped ? api.publicUrl(`voices/${animation.path}`) : api.fileUrl("profile", n, animation.file));
 
-export const ofKind = (n, kind) => (animations.value[n] || []).filter((animation) => animation.kind === kind);
-
 export const scheduleOf = (n) => schedules.value[n] || DEFAULT_SCHEDULE;
 
 export async function dropAnimations(row, files) {

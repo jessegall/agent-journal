@@ -1,12 +1,12 @@
 <script setup>
-import {chanceOf} from "../domain/mascots.js";
+import {chanceOf, isAct, isBlink} from "../domain/mascots.js";
 import SectionHeading from "../kit/SectionHeading.vue";
 
 defineProps({groups: {type: Array, required: true}, chosen: {type: String, default: ""}, schedule: {type: Object, required: true}});
 defineEmits(["pick"]);
 
 const nameOf = (animation) => (animation.name ? animation.name.replace(/_/g, " ") : "default");
-const idle = (groups) => (groups.find((group) => group.kind === "idle")?.items || []).map((animation) => animation.path);
+const acts = (groups) => groups.flatMap((group) => group.items).filter(isAct).map((animation) => animation.path);
 </script>
 
 <template>
@@ -22,8 +22,11 @@ const idle = (groups) => (groups.find((group) => group.kind === "idle")?.items |
                     <template v-if="!animation.shipped">
                         <span class="animation-list-note">yours</span>
                     </template>
-                    <template v-if="group.kind === 'idle'">
-                        <span class="animation-list-chance" title="How often this one plays, of the voice's idle animations">{{ chanceOf(schedule, idle(groups), animation.path) }}%</span>
+                    <template v-if="isBlink(animation)">
+                        <span class="animation-list-note">blink</span>
+                    </template>
+                    <template v-else-if="isAct(animation)">
+                        <span class="animation-list-chance" title="How often this one plays, of the voice's idle animations besides the blink">{{ chanceOf(schedule, acts(groups), animation.path) }}%</span>
                     </template>
                 </button>
             </template>

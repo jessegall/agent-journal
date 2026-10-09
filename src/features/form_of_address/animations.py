@@ -13,6 +13,9 @@ MAX_BYTES = 40_000_000
 MAX_FRAMES = 64
 MAX_MS = 10_000
 MAX_GAP = 3600
+OFFSETS = "_offsets.json"
+ORIGIN = "resting pose tile top-left at stage x=256, y=256; apply offset_x and offset_y in pixels"
+SHEET = re.compile(r"_(sheet|atlas)\.png$", re.I)
 MAX_WEIGHT = 1000
 
 
@@ -104,6 +107,37 @@ def _within(value, low: int, high: int) -> int:
         raise Refused(f"{value!r} is not a number") from error
 
 
+def offsets_name(file: str) -> str:
+    """The offsets file that goes with a sheet: its name without the sheet or atlas ending, then _offsets.json."""
+    return SUFFIX.sub("", Path(file).stem) + OFFSETS
+
+
+def tuning_of(document: dict) -> dict | None:
+    """A voice's way of showing an animation, read from its offsets file: per-frame offset_x and offset_y, and the optional frame_ms and duration_ms."""
+    frames = document.get("frames")
+    if not isinstance(frames, list) or not frames:
+        return None
+    return Tuning(_within(document.get("frame_ms"), 0, MAX_MS), tuple(
+        FrameTuning(_within(f.get("offset_x"), -FRAME, FRAME), _within(f.get("offset_y"), -FRAME, FRAME), _within(f.get("duration_ms"), 0, MAX_MS)) for f in frames[:MAX_FRAMES]
+    )).view()
+
+
+def offsets_document(animation: Animation, tuning: Tuning, base: dict | None, size: tuple[int, int], voice: str = "") -> dict:
+    """The offsets file for a tuning, in the format the animations are delivered in: the delivered file with its offsets and times replaced, or a new one for a sheet that came without."""
+    stem = SUFFIX.sub("", Path(animation.file).stem)
+    document = dict(base) if base else {
+        "voice": voice, "animation": "_".join(part for part in (animation.kind, animation.name) if part), "frame_size": [FRAME, FRAME], "atlas_file": Path(animation.file).name,
+        "atlas_size": list(size), "origin": ORIGIN,
+        "frames": [{"frame": i + 1, "file": f"{stem}_{i + 1}.png", "atlas_x": i * FRAME, "atlas_y": 0, "offset_x": 0, "offset_y": 0} for i in range(max(1, size[0] // FRAME))],
+    }
+    frames = []
+    for index, frame in enumerate(document["frames"]):
+        tuned = tuning.frames[index] if index < len(tuning.frames) else FrameTuning()
+        frames.append({**{k: v for k, v in frame.items() if k != "duration_ms"}, "offset_x": tuned.x, "offset_y": tuned.y, **({"duration_ms": tuned.ms} if tuned.ms else {})})
+    document = {k: v for k, v in document.items() if k != "frame_ms"}
+    return {**document, **({"frame_ms": tuning.ms} if tuning.ms else {}), "frames": frames}
+
+
 def voice_of(art: str) -> str:
     return Path(art).stem.lower()
 
@@ -124,7 +158,9 @@ def unpacked(archive: Path, into: Path) -> list[Path]:
     """The sheets of a dropped ZIP, written flat into a folder under a safe name; anything that is not a sheet is left in the archive."""
     sheets = []
     with zipfile.ZipFile(archive) as zipped:
-        entries = [e for e in zipped.infolist() if not e.is_dir() and Path(e.filename).suffix.lower() == ".png" and not Path(e.filename).name.startswith(".")]
+        entries = [e for e in zipped.infolist() if not e.is_dir() and not Path(e.filename).name.startswith(".") and not e.filename.startswith("__MACOSX")]
+        delivered = [e for e in entries if SHEET.search(e.filename) or e.filename.endswith(OFFSETS)]
+        entries = delivered if any(SHEET.search(e.filename) for e in delivered) else [e for e in entries if Path(e.filename).suffix.lower() == ".png"]
         if len(entries) > MAX_ENTRIES or sum(e.file_size for e in entries) > MAX_BYTES:
             raise Refused(f"the ZIP holds too many or too large sheets: at most {MAX_ENTRIES} files and {MAX_BYTES // 1_000_000} MB")
         for entry in entries:

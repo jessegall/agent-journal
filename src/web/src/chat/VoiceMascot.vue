@@ -58,7 +58,7 @@ function ended() {
     const wasAct = !playing.value.still;
     playing.value = null;
     waitForBlink();
-    if (wasAct) waitForAct();
+    if (wasAct && mascot.value.acts.length) waitForAct();
 }
 
 function stop() {
@@ -74,10 +74,10 @@ watch(
     (now) => {
         if (showcase) return;
         stop();
-        if (!now?.acts.length) return;
-        rested.value = now.acts[0];
+        if (!now || !(now.acts.length || now.blink)) return;
+        rested.value = now.acts[0] ?? now.blink;
         waitForBlink();
-        waitForAct();
+        if (now.acts.length) waitForAct();
     },
     {immediate: true}
 );

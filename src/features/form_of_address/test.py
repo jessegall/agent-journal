@@ -234,9 +234,10 @@ def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dro
     notes.write_text("no")
     assert "not an animation" in refused(lambda: profiles.attach(squire.n, str(notes))), "a file that is no sheet is refused with how to name one"
     sheet_path = "idle_wave.png"
-    profiles.tune(squire.n, sheet_path, {"ms": 120, "frames": [{"x": 4, "y": -2, "ms": 400}, {"x": 99999}]})
+    profiles.tune(squire.n, sheet_path, {"ms": 120, "frames": [{"x": 99999, "y": -2, "ms": 400}]})
     tuned = next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edit"]
-    assert (tuned["ms"], tuned["frames"][0], tuned["frames"][1]["x"]) == (120, {"x": 4, "y": -2, "ms": 400}, 256), "the offsets and times are kept beside the sheet, within the cell"
+    assert (tuned["ms"], tuned["frames"][0]) == (120, {"x": 256, "y": -2, "ms": 400}), "the offsets and times are kept beside the sheet in its offsets file, within the cell"
+    assert "idle_wave_offsets.json" in profiles.load(squire.n).files, "as the offsets file the animations are delivered with"
     assert "has no animation" in refused(lambda: profiles.tune(squire.n, "nope.png", {"ms": 1})), "only an animation the voice has can be tuned"
     profiles.tune(squire.n, sheet_path)
     assert next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edit"] is None, "with no tuning it goes back to the sheet as it is"

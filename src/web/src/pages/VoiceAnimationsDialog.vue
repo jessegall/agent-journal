@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {groupedByKind, placeOf} from "../domain/mascots.js";
+import {groupedByKind, isAct, placeOf} from "../domain/mascots.js";
 import {animations, dropAnimations, saveEdit, saveSchedule, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
@@ -20,7 +20,7 @@ const copy = (value) => JSON.parse(JSON.stringify(value));
 
 const groups = computed(() => groupedByKind(animations.value[props.row.n] || []));
 const flat = computed(() => groups.value.flatMap((group) => group.items));
-const idle = computed(() => groups.value.find((group) => group.kind === "idle")?.items || []);
+const idle = computed(() => flat.value.filter(isAct));
 const path = ref("");
 const chosen = computed(() => flat.value.find((animation) => animation.path === path.value) || null);
 const playing = ref(true);
