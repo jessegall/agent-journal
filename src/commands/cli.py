@@ -46,7 +46,8 @@ def context(args: dict) -> CommandContext:
 
 READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read", "board"}
 LOCAL = {"browser"}
-SERVED_QUERIES = frozenset({"search"})
+SERVED_QUERIES = frozenset({"search", "status", "carry", "start", "open", "conversation", "user", "nothing", "version", "enable", "disable",
+                            "verify", "settings", "help", "tidy"})
 
 
 def served() -> frozenset:
@@ -55,7 +56,7 @@ def served() -> frozenset:
 
 
 def asked_of_server(argv: list[str]) -> bool:
-    """Whether the server runs this command with the warm copies it keeps: a noun's command, or a query that reads the whole history, such as search."""
+    """Whether the server runs this command with the warm copies it keeps: a noun's command or a query; only what starts, stops or holds a process runs in a process of its own."""
     return noun_of(argv) in served() or first_word(argv) in SERVED_QUERIES
 
 
