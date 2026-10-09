@@ -1,7 +1,8 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import {api} from "../../api/client.js";
-import {pendingChoice} from "../../domain/agents.js";
+import {lastCompaction, pendingChoice} from "../../domain/agents.js";
+import {store} from "../../state/store.js";
 import {age} from "../../format/time.js";
 import Icon from "../../kit/Icon.vue";
 import Cell from "../kit/Cell.vue";
@@ -24,8 +25,8 @@ const line = computed(() => {
     if (!data.value) return "";
     if (props.target === "model") return data.value.model || "Not reported";
     if (props.target === "effort") return `Effort ${data.value.effort || "not reported"}`;
-    const marks = data.value.compactions || [];
-    const compacted = marks.length ? `last compacted ${age(marks[marks.length - 1].at)}` : "not compacted yet";
+    const at = lastCompaction(store.agents);
+    const compacted = at ? `last compacted ${age(at)}` : "not compacted yet";
     return `${Math.round(Number(data.value.context || 0))}% of the agent's memory is used; the conversation was ${compacted}`;
 });
 
