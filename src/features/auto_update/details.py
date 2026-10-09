@@ -21,7 +21,7 @@ class AutoUpdateDetails(FeatureDetails):
     abstract = "Installs a newer journal by itself, or tells the agent to install it."
 
     help = """
-        Every five minutes each session's worker compares the newest release tag on GitHub with
+        Every half hour each session's worker compares the newest release tag on GitHub with
         the one installed, and a launch checks once before the agent starts, so updates keep
         coming while the server is down.
 
@@ -42,7 +42,7 @@ class AutoUpdateDetails(FeatureDetails):
         conversation, and the chat shows a mark saying so.
     """
 
-    trigger = Trigger(every=5, unit=MINUTES)
+    trigger = Trigger(every=30, unit=MINUTES)
 
     settings = [
         Setting(
