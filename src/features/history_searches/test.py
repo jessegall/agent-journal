@@ -379,3 +379,24 @@ def test_a_long_transcript_answers_its_newest_turns_at_once_and_fills_in_behind(
     whole = claude.turns(transcript)
     assert (len(whole) > len(first), whole[-1].text, whole[0].text.startswith("question 0")) == (True, "answer 199", True), \
         "and fills in with the rest once the read behind it has caught up"
+
+
+def test_searches_made_at_the_same_time_each_keep_what_they_found():
+    from engine import ran
+    from features import FEATURES
+    from features.history_searches.handlers import MarkHistorySearches
+    features.load()
+    record = fresh()
+    agents = Agents(record, actor=SYSTEM)
+    agent = agents.by_session("claude-1")
+    context = AgentContext.of(FEATURES["history_searches"], record, agent)
+    first, second = 'journal message search "Coco Runwright"', 'journal user | head'
+    for command in (first, second):
+        MarkHistorySearches().intercept(context, BashCall("Bash", {"command": command}, {}, command=command))
+    ran.announce(record, agent.n, "Bash", first, "message 7 Coco Runwright")
+    ran.announce(record, agent.n, "Bash", second, "you said hello")
+    cards = agents.load(agent.n).data["cards"]
+    assert [(card["label"], card["found"]) for card in cards] == [('Searched messages for "Coco Runwright"', "message 7 Coco Runwright"), ("Searched your messages", "you said hello")], \
+        "every search mark gets its own result, so every one opens what it found"
+    ran.announce(record, agent.n, "Bash", 'journal search "late"', "todo 1 late")
+    assert agents.load(agent.n).data["cards"][-1]["found"] == "todo 1 late", "a search whose mark is not there yet gets its mark and its result together"
