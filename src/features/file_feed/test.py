@@ -41,9 +41,11 @@ def test_hidden_and_secret_files_never_enter_the_edit_feed_or_git_objects():
     (project.root / ".env").write_text("untracked hidden credential")
     (project.root / "credentials").mkdir()
     (project.root / "credentials" / "prod.json").write_text("untracked folder credential")
+    (project.root / "SecretForm.vue").write_text("<template>a form for a secret</template>\n")
     project.changed()
-    assert set(blobs(project.record, project.root, skill_folders())) == {"visible.py"}
-    assert not edits_since(project.record, project.agent, 0, PAGE).edits
+    assert set(blobs(project.record, project.root, skill_folders())) == {"visible.py", "SecretForm.vue"}, \
+        "a view file is shown whatever its name says, a file named for a credential is not"
+    assert [card.path for card in edits_since(project.record, project.agent, 0, PAGE).edits] == ["SecretForm.vue"], "and an edit to it is a card"
     for path in (".env", "credentials/prod.json"):
         sha = subprocess.run(["git", "hash-object", path], cwd=project.root, capture_output=True, text=True, check=True).stdout.strip()
         assert subprocess.run(["git", "cat-file", "-e", sha], cwd=project.root, capture_output=True).returncode != 0

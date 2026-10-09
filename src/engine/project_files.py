@@ -15,7 +15,7 @@ WALK_LIMIT = 200000
 UNLISTED = ("__pycache__", "node_modules")
 SOURCE_LIMIT = 400000
 SECRET = re.compile(r"^id_(rsa|dsa|ecdsa|ed25519)|credential|secret|passw|token|service-account|kubeconfig|^auth\.json$|^wp-config\.php$|\.(pem|key|p12|pfx|keystore|jks|kdbx|env|p8|ppk|tfstate|tfvars|gpg|asc)$", re.I)
-STYLE = re.compile(r"\.(css|scss|sass|less|svg)$", re.I)
+VIEW = re.compile(r"\.(vue|jsx|tsx|svelte|css|scss|sass|less|svg)$", re.I)
 
 
 @dataclass(frozen=True)
@@ -61,7 +61,7 @@ def readable_path(project: Path, target: Path) -> bool:
 
 
 def readable_part(part: str, last: bool) -> bool:
-    return not part.startswith(".") and (not SECRET.search(part) or last and bool(STYLE.search(part)))
+    return not part.startswith(".") and (not SECRET.search(part) or last and bool(VIEW.search(part)))
 
 
 def read_source(project: Path, asked: str) -> ProjectSource:
