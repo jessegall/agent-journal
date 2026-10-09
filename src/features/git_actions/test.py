@@ -123,11 +123,11 @@ def test_a_chained_command_runs_part_by_part_and_each_part_marks_the_chat_once_i
     agent = Agents(record, actor=SYSTEM).by_session("claude-1")
     hook = Hook.read({"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_use_id": "toolu_x1", "permission_mode": "bypassPermissions", "tool_name": "Bash",
                       "tool_input": {"command": "git tag v9; git push origin main", "description": "tag and push"}}, PROVIDERS["claude"]().tool_kinds)
-    answer = rewrite(PROVIDERS["claude"](), root, "t", hook)["hookSpecificOutput"]
+    answer = rewrite(PROVIDERS["claude"](), root, "t", hook, {})["hookSpecificOutput"]
     assert (answer["permissionDecision"], answer["updatedInput"]["description"], "journal_step 2 'git push origin main'" in answer["updatedInput"]["command"]) == ("allow", "tag and push", True), \
         "the agent runs the stepped command, with the rest of its input as it was"
     assert not rewrite(PROVIDERS["claude"](), root, "t", Hook.read({**json.loads(json.dumps({"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_use_id": "toolu_x2",
-                      "tool_name": "Bash", "tool_input": {"command": "a; b"}}))}, PROVIDERS["claude"]().tool_kinds)), "a session that asks before it runs commands is never answered with an allow"
+                      "tool_name": "Bash", "tool_input": {"command": "a; b"}}))}, PROVIDERS["claude"]().tool_kinds), {}), "a session that asks before it runs commands is never answered with an allow"
     call = SteppedCall("claude-1", "t", "git tag v9; git push origin main", ("git tag v9", "git push origin main"))
     write_json(file_of(root, "toolu_x1"), call.to_json())
     marks = lambda: [card["label"] for card in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("cards") or []]

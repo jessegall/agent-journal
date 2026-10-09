@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 
 from engine.command_runs import CommandRun, command_runs
 from engine.events.engine import ClockTicked
@@ -7,7 +8,9 @@ from features.long_commands.details import KEPT, MOVED
 from engine.sessions import Sessions
 from features.long_commands.watch import background_tasks_of, running_part
 from features.parts import AgentContext, Handler
-from providers import DRIVERS, PROVIDERS
+from providers import DRIVERS, PROVIDERS, transcript_reader
+from providers.command_effects import settled
+from resources.base import SYSTEM
 from controllers.types import Agents
 
 FOREGROUND = "Bash"
@@ -27,6 +30,8 @@ class MoveLongCommands(Handler):
         if last.tool != FOREGROUND or last.done:
             return
         started = str(last.at)
+        if self.has_come_back(context, row):
+            return
         provider = row.provider
         driver = DRIVERS.get(provider)
         seconds = int(time.time() - float(started))
@@ -77,3 +82,11 @@ class MoveLongCommands(Handler):
         if part and context.state.get("part") != part:
             context.state.set("part", part)
             context.journal.get(Agents).card(row.n, key=f"command:{started}", command=part)
+
+    def has_come_back(self, context: AgentContext, row) -> bool:
+        """An open call the transcript shows as answered did end, though its end was lost on the way (a hook that got no answer from a busy server is dropped), so it is closed and never moved."""
+        reader = transcript_reader(row)
+        if reader is None or reader.command_is_open(Path(row.transcript)):
+            return False
+        Agents(context.record, actor=SYSTEM).update(row.n, **settled(row, time.time()))
+        return True

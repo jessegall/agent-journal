@@ -126,6 +126,12 @@ class BackgroundTasks:
     outputs: dict[str, str] = field(default_factory=dict)
 
 
+@dataclass
+class OpenCommands:
+    asked: dict[str, str] = field(default_factory=dict)
+    answered: set[str] = field(default_factory=set)
+
+
 class Provider(ABC):
     tool_kinds: ClassVar[dict] = {"Bash": BashCall, "Read": ReadCall, "NotebookRead": ReadCall, "Edit": WriteCall, "MultiEdit": WriteCall, "Write": WriteCall,
                                   "NotebookEdit": WriteCall, "Grep": SearchCall, "Glob": SearchCall, "WebSearch": SearchCall, "WebFetch": FetchCall,
@@ -200,9 +206,9 @@ class Provider(ABC):
         return {"decision": "block", "reason": reason,
                 "hookSpecificOutput": {"hookEventName": HookEvent.PRE_TOOL_USE, "permissionDecision": "deny", "permissionDecisionReason": reason}}
 
-    def rewritten(self, hook: Hook, command: str) -> dict:
-        """The answer that makes the agent run this command in place of the one it asked for, when the provider can: none by default."""
-        return {}
+    def rewritten(self, hook: Hook, command: str, answered: dict) -> dict:
+        """The answer with the instruction that makes the agent run this command in place of the one it asked for, when the provider can: the answer as it was by default."""
+        return answered
 
     def refused(self, response: dict) -> bool:
         return Decision.from_json(response).decision == "block"
@@ -398,6 +404,10 @@ class Provider(ABC):
     def skill_names(self, names: set, row) -> set:
         names.update(self.skills_in(self.tool_uses(row)))
         return names
+
+    def command_is_open(self, path: Path) -> bool:
+        """Whether a shell command the agent asked for has not come back yet, by the agent's own transcript; a provider that cannot tell says yes."""
+        return True
 
     def folded(self, path: Path, fold, start):
         return CACHE.folded(path, fold, start, self.row_of)

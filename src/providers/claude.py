@@ -11,7 +11,7 @@ from pathlib import Path
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, PeerNote, Turn
 from providers.payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
 from providers.tested import testing_piece
-from providers.base import REFUSED, BackgroundTasks, HookCommand, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
+from providers.base import REFUSED, BackgroundTasks, HookCommand, OpenCommands, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
 from providers.jsonl import lines_from, parsed_row, rows, tail_lines
 from providers.payload import Dispatch, Hook, HookEvent, ToolCall
 from providers.claude_rows import Block, Row
@@ -370,10 +370,11 @@ class Claude(Provider):
         chunk = Chunk.from_json(raw)
         return chunk if chunk.event == DISPLAYED else None
 
-    def rewritten(self, hook: Hook, command: str) -> dict:
+    def rewritten(self, hook: Hook, command: str, answered: dict) -> dict:
         if hook.permission_mode != BYPASSING:
-            return {}
-        return {"hookSpecificOutput": {"hookEventName": HookEvent.PRE_TOOL_USE, "permissionDecision": "allow", "updatedInput": {**hook.tool.tool_input, "command": command}}}
+            return answered
+        instruction = {"permissionDecision": "allow", "updatedInput": {**hook.tool.tool_input, "command": command}}
+        return {**answered, "hookSpecificOutput": {"hookEventName": HookEvent.PRE_TOOL_USE, **(answered.get("hookSpecificOutput") or {}), **instruction}}
 
     def shell_wrapper(self, script: Path) -> dict:
         return {"CLAUDE_CODE_SHELL_PREFIX": str(script)}
@@ -392,6 +393,15 @@ class Claude(Provider):
             fresh = [link.rstrip(".,;)") for link in WORK_LINK.findall(block.text)]
             found.links = [*(link for link in found.links if link not in fresh), *dict.fromkeys(fresh)][-KEPT_LINKS:]
         return found
+
+    def command_is_open(self, path: Path) -> bool:
+        opened = self.folded(path, self.open_command_rows, OpenCommands)
+        return not opened.asked or any(use not in opened.answered for use in opened.asked)
+
+    def open_command_rows(self, opened: OpenCommands, row: Row) -> OpenCommands:
+        opened.asked.update({use.id: use.command for use in self.tool_uses(row) if row.type == "assistant" and use.name == "Bash"})
+        opened.answered.update(block.tool_use_id for block in self.results(row))
+        return opened
 
     def background_tasks(self, path: Path) -> BackgroundTasks:
         return self.folded(path, self.task_rows, BackgroundTasks)

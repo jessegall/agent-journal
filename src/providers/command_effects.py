@@ -86,13 +86,18 @@ def closed_at(runs: list[dict], at: float) -> list[dict]:
     return [one if one.get("done") else {**one, "done": at} for one in runs]
 
 
+def settled(row, at: float) -> dict:
+    """The row's changes when its open call is known to have ended at this time, though no end was reported."""
+    running = current_run(row)
+    if running.done:
+        return {}
+    ended = replace(running, done=at)
+    return {AgentRow.running: ended.to_json(), AgentRow.commands: stamped(command_runs(row), ended, "", at)}
+
+
 def refused(row, hook: Hook) -> dict:
     """The row's changes when a hook refused the call that just started, which then never runs and never reports back."""
-    running = current_run(row)
-    if running.done or running.at != hook.at:
-        return {}
-    ended = replace(running, done=hook.at)
-    return {AgentRow.running: ended.to_json(), AgentRow.commands: stamped(command_runs(row), ended, "", hook.at)}
+    return settled(row, hook.at) if current_run(row).at == hook.at else {}
 
 
 def shell(row, hook: Hook) -> dict:
