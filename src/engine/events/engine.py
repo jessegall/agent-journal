@@ -84,6 +84,7 @@ class Measured(TypedEvent):
     waiting: float = 0.0
     whole_reads: tuple[str, ...] = ()
     profile: object = None
+    stacks: str = ""
 
     @classmethod
     def read(cls, event) -> "Measured":

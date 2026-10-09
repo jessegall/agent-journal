@@ -110,15 +110,19 @@ class FaultReports:
         title = VIEWER[kind].format(where=where) if kind in VIEWER else f"{THREW} {message}"
         self.file(record, title[:80], f"{message}\n\n{where}\n\n{stack}"[:SAID], kind=kind, target=where, stack=stack)
 
-    def kept(self, root, name: str, took: float, profile: cProfile.Profile) -> None:
+    def kept(self, root, name: str, took: float, profile: cProfile.Profile | None, stacks: str) -> None:
         out = io.StringIO()
-        pstats.Stats(profile, stream=out).sort_stats("cumulative").print_stats(30)
+        if profile:
+            out.write(ALL_THREADS)
+            pstats.Stats(profile, stream=out).sort_stats("cumulative").print_stats(30)
+        if stacks:
+            out.write(f"\nWhere every thread was while this ran:\n\n{stacks}")
         folder = runtime.profiles(root)
         folder.mkdir(exist_ok=True)
-        (folder / f"{time.strftime('%H%M%S')}-{name.replace('/', '_').replace(' ', '-')}-{took:.0f}ms.txt").write_text(ALL_THREADS + out.getvalue())
+        (folder / f"{time.strftime('%H%M%S')}-{name.replace('/', '_').replace(' ', '-')}-{took:.0f}ms.txt").write_text(out.getvalue())
 
     def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None, profile=None, garbage: float = 0.0,
-              waiting: float = 0.0, after: float = 0.0, whole_reads: tuple[str, ...] = ()) -> None:
+              waiting: float = 0.0, after: float = 0.0, whole_reads: tuple[str, ...] = (), stacks: str = "") -> None:
         if whole_reads:
             logged(root, f"{kind} {name} read a whole transcript for {'; '.join(whole_reads)}")
         if took < min(BUDGET.values() or [0]) or cold(kind, name) or runtime.tests_running(Path(root)):
@@ -130,8 +134,8 @@ class FaultReports:
                        + (f", {waiting:.0f}ms waiting on locks" if waiting >= 1 else ""))
             if self.feature.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
                 self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads)
-                if profile:
-                    self.kept(root, name, took, profile)
+                if profile or stacks:
+                    self.kept(root, name, took, profile, stacks)
         except (OSError, ValueError, KeyError):
             return
 
