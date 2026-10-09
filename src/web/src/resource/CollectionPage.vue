@@ -70,8 +70,14 @@ const tabs = computed(() =>
         {key: "tickets", title: "Tickets", count: tickets.value.length},
     ].filter((t) => t.key === "cards" || t.count)
 );
-const planOf = (r) => (r.data?.plan && r.data?.work_environment ? `${r.data.work_environment}/plan:${r.data.plan}` : "");
-const openPlan = (r) => peekThere(r.data.work_environment, "plan", r.data.plan);
+const planOf = (r) =>
+    r.data?.plan && r.data?.work_environment
+        ? `${r.data.work_environment}/plan:${r.data.plan}`
+        : (r.refs || []).find((ref) => refParts(ref).type === "plan") || "";
+const openPlan = (r) => {
+    const {env, type, n} = refParts(planOf(r));
+    peekThere(env, type, n);
+};
 
 const firstLine = (r) =>
     String(r.abstract || r.brief || "")
@@ -97,7 +103,7 @@ function hidePreview(r) {
                     <div class="ticket">
                         <button type="button" class="ticket-title" @click="open(r)">{{ r.title }}</button>
                         <span class="ticket-stage">{{ r.data?.stage }}</span>
-                        <template v-if="planOf(r) && !readOnly">
+                        <template v-if="planOf(r)">
                             <button type="button" class="ticket-plan" @click="openPlan(r)">Open plan</button>
                         </template>
                     </div>
