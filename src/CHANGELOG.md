@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.51 — An automatic update shows itself from start to finish
+- Every open viewer shows the update cover by itself when an update starts on its own: the countdown, Starting the update, each step, then a reload once the new version runs, with no gap in between.
+- While an update is counting down or running, the viewer asks for its state every second, so short steps are seen.
+
 ## 2.267.50 — The first reply after a restart is quick
 - The server reads the messages and comments while it starts, so the first reply after a restart no longer pays to load them.
 
