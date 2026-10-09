@@ -46,8 +46,7 @@ class MoveLongCommands(Handler):
         context.state.set("task", "")
         context.agent.move_to_background()
         context.agent.say(MOVED, seconds=seconds)
-        context.journal.get(Agents).card(row.n, key=f"command:{started}", label="Moved a long command to the background", icon="terminal",
-                                    command=last.command, state="running", started=float(started))
+        context.journal.get(Agents)._moved_to_background(row, state="running", started=float(started))
 
     def follow(self, context: AgentContext, row, started: str) -> None:
         tasks = background_tasks_of(row)

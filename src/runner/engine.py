@@ -47,7 +47,6 @@ PROBE_WAIT = 5.0
 
 
 CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
-MOVED_ON = "Moved a long command to the background"
 RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
 PAUSED_FOR_UPDATE = "The journal is updating, so you are paused: start no new command and wait; you will be told when to continue."
 RESUMED_AFTER_UPDATE = "The journal has updated and resumed you now: carry on with exactly what you were doing; your open work stays open and is not to be parked."
@@ -436,7 +435,7 @@ class Engine:
     def moved_on(self) -> None:
         row = self.agent.driver.last_report()
         if row is not None:
-            Agents(self.record, actor=SYSTEM).card(row.n, label=MOVED_ON, icon="terminal", detail="Your message went in while the command runs on")
+            Agents(self.record, actor=SYSTEM)._moved_to_background(row, detail="Your message went in while the command runs on")
 
     def idle_without_report(self) -> bool:
         driver = self.agent.driver
