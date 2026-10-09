@@ -9,6 +9,6 @@ def weigh(row: dict) -> tuple[int, int, int]:
     return (1, int(opened), int(opened and USER not in (row.get("seen") or [])))
 
 
-def counts(controller) -> dict:
-    every, opened, unread = controller.rows.counted("overview", weigh, 3)
+def counts(controller, rows: list[dict] | None = None) -> dict:
+    every, opened, unread = controller.rows.counted("overview", weigh, 3, rows)
     return {"all": every, "open": opened, "unread": unread}

@@ -231,9 +231,9 @@ class RowStore:
         for ref in row["refs"]:
             index.setdefault(ref, {})[row["n"]] = row
 
-    def counted(self, name: str, weigh: Callable[[dict], tuple[int, ...]], width: int) -> tuple[int, ...]:
+    def counted(self, name: str, weigh: Callable[[dict], tuple[int, ...]], width: int, rows: list[dict] | None = None) -> tuple[int, ...]:
         """Sums weigh over the summaries, kept in step with them: a change adds and takes away only the rows it touched."""
-        rows = self.summaries()
+        rows = rows if rows is not None else self.summaries()
         key = (str(self.folder()), name)
         held = COUNTED.get(key)
         if held and held[0] is rows:
