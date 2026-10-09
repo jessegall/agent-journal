@@ -101,10 +101,10 @@ class MarkTestRuns(Handler):
         tasks = reader.background_tasks(Path(row.transcript))
         for task, command in tasks.commands.items():
             piece = " ".join(testing_piece(command))
-            if not piece or task not in tasks.ended or not context.once("test_run", f"background|{task}"):
+            if not piece or task not in tasks.ended:
                 continue
-            run = next((one for one in reversed(command_runs(row)) if one.background and one.effect == TESTS and one.command == piece), None)
-            if run is None:
+            run = next((one for one in reversed(command_runs(row)) if one.effect == TESTS and one.command == piece), None)
+            if run is None or not context.once("test_run", f"background|{task}"):
                 continue
             outcome = background_outcome(command, row.cwd, tasks.outputs.get(task, ""), "failed" if task in tasks.failed else "completed")
             self.finish(context, run, outcome, tasks.ended[task])
