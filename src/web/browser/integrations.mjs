@@ -77,11 +77,22 @@ await runScenarios(process.argv[2], {
         await linear.getByText(/When a ticket moves to .*, set the issue to/).first().waitFor();
         const gmail = page.locator('[data-integration="gmail"]');
         await gmail.waitFor();
-        const sideways = await page.evaluate(() => {
+        const sideways = await page.evaluate(async () => {
             const wide = (el) => el.scrollWidth > el.clientWidth;
+            const rows = () => [...document.querySelectorAll("[data-integration] .use, [data-integration] .team")];
+            const layout = () => JSON.stringify([document.documentElement.scrollWidth, document.documentElement.clientWidth, document.querySelectorAll("[data-integration]").length,
+                ...rows().flatMap((row) => [...row.children].map((child) => Object.values(child.getBoundingClientRect().toJSON()).map(Math.round)))]);
+            const frame = () => new Promise((next) => requestAnimationFrame(() => next()));
+            await document.fonts.ready;
+            for (let seen = layout(), steady = 0, tries = 0; steady < 3 && tries < 300; tries++) {
+                await frame();
+                const now = layout();
+                steady = now === seen ? steady + 1 : 0;
+                seen = now;
+            }
             const found = [document.documentElement, document.querySelector(".integrations"), ...document.querySelectorAll("[data-integration]")].filter(Boolean).filter(wide);
             const overlapping = [];
-            for (const row of document.querySelectorAll("[data-integration] .use, [data-integration] .team")) {
+            for (const row of rows()) {
                 const boxes = [...row.children].map((child) => child.getBoundingClientRect()).filter((box) => box.width && box.height);
                 for (const [at, one] of boxes.entries()) {
                     for (const other of boxes.slice(at + 1)) {
