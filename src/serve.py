@@ -277,6 +277,16 @@ def warm_work(root: Path) -> None:
     Todos(record, actor=SYSTEM).rows.standing()
 
 
+def warm_replies(root: Path) -> None:
+    """What answering a message reads, the messages and the comments linked to them, so the first reply after a start answers from memory."""
+    from controllers.types import Comments, Messages
+    from engine.record import Record
+    from resources.base import SYSTEM
+    record = Record(root, default_env(root))
+    Messages(record, actor=SYSTEM).rows.summaries()
+    Comments(record, actor=SYSTEM).rows.summaries()
+
+
 def warm_changed(root: Path) -> None:
     from commands.parser import parser
     from features.open_viewer.manifest import manifest
@@ -288,6 +298,7 @@ def warmed(root: Path, warm: threading.Event) -> None:
     try:
         warm_commands()
         warm_work(root)
+        warm_replies(root)
         warm_viewer(root, default_env(root), warm)
         WARMERS.append(lambda: warm_changed(root))
         read_transcripts(root)
