@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.31 — Shared views, chained commands part by part, and no lost hook events
+- The agents view and the chat can be shared read-only on a private link that follows them live.
+- A chained Bash command runs part by part: each part reports its start and end and marks the chat once it has run.
+- A call the transcript shows as answered is closed and never moved to the background, whatever happened to its end hook.
+- A hook event that decides nothing is kept in a spool when the server is slow to answer, and the server replays it in order.
+- The chat stays where you scrolled it: nothing that arrives pulls it to the bottom once you scroll up.
+- The instruction-files check runs on a fresh session start only, never after a compaction.
+
 ## 2.267.30 — Updates no longer re-read every transcript
 - The transcript cache is keyed by each transcript's path and the code that shapes a turn, never by the providers' code, so an update re-reads no transcript unless turn shaping changed; a cache that cannot be read or written is simply no cache.
 - After a restart the server answers before it warms up, and warms up in the background.
