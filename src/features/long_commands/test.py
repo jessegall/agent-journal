@@ -76,6 +76,20 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
         "a shell line and a slash command you typed are read with what they printed"
     assert Claude().work_links(transcript) == ["https://claude.ai/design/def?file=page.html", "https://github.com/jessegall/agent-journal/pull/8"], \
         "the links worth opening are kept once each, newest first, and an image inside a design is not one"
+    from providers.command_effects import background_outcome
+    out = tmp_path / "suite.txt"
+    out.write_text("....\n7 passed, 1 failed in 3.2s\n")
+    suite = f"journal work resume 2; (cd {tmp_path} && .venv/bin/python -m pytest -q src/features/plans/test.py > suite.txt 2>&1)"
+    asked = {"type": "assistant", "timestamp": "2026-09-23T00:01:00Z", "message": {"content": [{"type": "tool_use", "id": "tt", "name": "Bash", "input": {"command": suite, "run_in_background": True}}]}}
+    started = {"type": "user", "timestamp": "2026-09-23T00:01:01Z", "message": {"content": [{"type": "tool_result", "tool_use_id": "tt", "content": "Command running in background with ID: tb1"}]}}
+    ended = {"type": "user", "timestamp": "2026-09-23T00:02:00Z", "message": {"content": f"<task-notification><task-id>tb1</task-id><output-file>{out}</output-file><status>completed</status></task-notification>"}}
+    with transcript.open("a") as more:
+        more.write("".join(json.dumps(row) + "\n" for row in (asked, started, ended)))
+    tasks = Claude().background_tasks(transcript)
+    assert (tasks.commands["tb1"], "tb1" in tasks.ended, tasks.outputs["tb1"]) == (suite, True, str(out)), "a test run moved to the background keeps its command and the output file its end notice names"
+    outcome = background_outcome(suite, str(tmp_path), "", "completed")
+    assert (outcome.passed, outcome.failed) == (7, 1), "its result is the tally read from its output, even when the exit said completed"
+    assert background_outcome("run the thing", str(tmp_path), "", "failed").ok is False, "with no output to read, the exit it ended with decides"
 
 
 def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the_chat(monkeypatch):

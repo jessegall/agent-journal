@@ -103,6 +103,24 @@ def shell(row, hook: Hook) -> dict:
     return {AgentRow.running: running.to_json(), AgentRow.commands: stamped(command_runs(row), running, doing, hook.at)}
 
 
+OUTPUT_FILE = re.compile(r"(?:>>?|\btee(?:\s+-a)?)\s*([^\s;&|()<>]+)")
+KEPT_OUTPUT = 400_000
+CHANGED_FOLDER = re.compile(r"\bcd\s+([^\s;&|()]+)")
+
+
+def background_outcome(command: str, cwd: str, written: str, status: str) -> Outcome:
+    """What a test run that ended in the background found: its tally read from its output file, else the exit it ended with."""
+    candidates = [written, *(found for found in OUTPUT_FILE.findall(command) if not found.startswith("&"))]
+    folders = [*CHANGED_FOLDER.findall(command), cwd]
+    for name in filter(None, candidates):
+        for folder in filter(None, folders):
+            file = Path(folder, name)
+            found = test_outcome(file.read_bytes()[-KEPT_OUTPUT:].decode(errors="replace")) if file.is_file() else None
+            if found:
+                return found
+    return Outcome(ok=status == "completed")
+
+
 def test_command(hook: Hook, doing: str) -> str:
     """The test runner's own part of a compound command, whole; the shown command may be cut short before it."""
     return " ".join(next((piece for piece in map(testing_piece, hook.tool.commands) if piece), ())) or doing
@@ -135,7 +153,10 @@ def pull_result(hook: Hook) -> Outcome | None:
 
 
 def test_result(hook: Hook) -> Outcome | None:
-    output = printed(hook)
+    return test_outcome(printed(hook))
+
+
+def test_outcome(output: str) -> Outcome | None:
     tallies = [(int(m.group(1)), sum(int(n) for n in TALLY_FAILED.findall(m.group(0)))) for m in TALLY.finditer(output)]
     dotnet = DOTNET.findall(output)
     examples = EXAMPLES.findall(output)

@@ -122,6 +122,8 @@ class BackgroundTasks:
     commands: dict[str, str] = field(default_factory=dict)
     detached: dict[str, int] = field(default_factory=dict)
     printed: dict[str, float] = field(default_factory=dict)
+    used: dict[str, str] = field(default_factory=dict)
+    outputs: dict[str, str] = field(default_factory=dict)
 
 
 class Provider(ABC):
