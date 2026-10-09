@@ -233,3 +233,15 @@ def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dro
     notes = tmp_path / "notes.txt"
     notes.write_text("no")
     assert "not an animation" in refused(lambda: profiles.attach(squire.n, str(notes))), "a file that is no sheet is refused with how to name one"
+    sheet_path = "idle_wave.png"
+    profiles.tune(squire.n, sheet_path, {"ms": 120, "frames": [{"x": 4, "y": -2, "ms": 400}, {"x": 99999}]})
+    tuned = next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edit"]
+    assert (tuned["ms"], tuned["frames"][0], tuned["frames"][1]["x"]) == (120, {"x": 4, "y": -2, "ms": 400}, 256), "the offsets and times are kept beside the sheet, within the cell"
+    assert "has no animation" in refused(lambda: profiles.tune(squire.n, "nope.png", {"ms": 1})), "only an animation the voice has can be tuned"
+    profiles.tune(squire.n, sheet_path)
+    assert next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edit"] is None, "with no tuning it goes back to the sheet as it is"
+    assert profiles.schedules()[squire.n] == {"blink": {"min": 5, "max": 10}, "idle": {"min": 20, "max": 30}, "weights": {}}, "a voice with no schedule blinks every 5 to 10 seconds and plays an idle animation every 20 to 30"
+    profiles.schedule(squire.n, {"blink": {"min": 3, "max": 4}, "idle": {"min": 10, "max": 40}, "weights": {sheet_path: 3}})
+    assert profiles.schedules()[squire.n]["weights"] == {sheet_path: 3}, "a schedule and the weight of an idle animation are saved with the voice"
+    assert "least cannot be above" in refused(lambda: profiles.schedule(squire.n, {"blink": {"min": 9, "max": 2}})), "a range runs from the least to the most"
+    assert "no animation" in refused(lambda: profiles.schedule(squire.n, {"weights": {"nope.png": 1}})), "only an animation the voice has gets a weight"

@@ -5,7 +5,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
-from features.form_of_address.animations import Animation, shipped_animations, unpacked, voice_of
+from features.form_of_address.animations import Animation, Schedule, Tuning, shipped_animations, unpacked, voice_of
 from features.form_of_address.names import first_name, in_use, title
 from features.form_of_address.resource import Profile
 from features.form_of_address.voices import BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
@@ -60,13 +60,37 @@ class Profiles(Controller):
     @action
     def animations(self) -> dict:
         """Every voice's animations by profile number, found by file name: the sheets it ships with and the ones dropped on it."""
+        return {row.n: self._animations_of(row) for row in (self.load(row["n"]) for row in self.rows.summaries() if not row["deleted"])}
+
+    @action
+    def schedules(self) -> dict:
+        """When each voice's mascot plays what, by profile number, with the defaults filled in."""
+        return {row.n: Schedule.from_payload(row.animation_schedule, {a["path"] for a in self._animations_of(row)}).view()
+                for row in (self.load(row["n"]) for row in self.rows.summaries() if not row["deleted"])}
+
+    @action
+    def schedule(self, n: int, plan: dict | None = None):
+        """Saves how long a voice's mascot waits between blinks and between its other idle animations, and the weight of each idle animation; with no plan it goes back to the defaults."""
+        row = self.load(n)
+        known = {animation["path"] for animation in self._animations_of(row)}
+        return self.update(n, animation_schedule=Schedule.from_payload(plan, known).view() if plan else {})
+
+    def _animations_of(self, row) -> list[dict]:
         from commands.dispatch import WEB
-        found = {}
-        for row in (self.load(row["n"]) for row in self.rows.summaries() if not row["deleted"]):
-            shipped = [(a, a.file) for a in shipped_animations(WEB / "voices", row.art)]
-            dropped = [(a, a.file) for a in (Animation.of(name, voice_of(row.art)) for name in row.files) if a]
-            found[row.n] = [animation.view(path) for animation, path in [*shipped, *dropped]]
-        return found
+        shipped = shipped_animations(WEB / "voices", row.art)
+        dropped = [a for a in (Animation.of(name, voice_of(row.art)) for name in row.files) if a]
+        return [{**animation.view(), "edit": row.animation_edits.get(animation.file)} for animation in [*shipped, *dropped]]
+
+    @action
+    def tune(self, n: int, path: str, edit: dict | None = None):
+        """Saves how one animation of a voice is shown, its x and y offsets and its time per frame, beside its sheet; with no edit it goes back to the sheet as it is."""
+        row = self.load(n)
+        if path not in {animation["path"] for animation in self._animations_of(row)}:
+            raise Refused(f"{row.title} has no animation {path}")
+        kept = {name: tuning for name, tuning in row.animation_edits.items() if name != path}
+        if edit:
+            kept[path] = Tuning.from_payload(edit).view()
+        return self.update(n, animation_edits=kept)
 
     @action
     def attach(self, n: int, path: str, description: str = ""):
