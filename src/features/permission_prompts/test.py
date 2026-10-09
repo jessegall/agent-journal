@@ -1,4 +1,9 @@
+import os
+import time
+
 from controllers.types import Agents, Notices
+from engine.sessions import Sessions
+from runner.hooks import answer
 from tests.kit import handle
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM
@@ -183,3 +188,17 @@ def test_an_agents_controls_are_pressed_from_the_viewer_only_for_a_session_that_
     controls = dispatch("GET", "/api/agent-controls/claude", record.root, {"model": "opus", "effort": "high"}, {})
     assert controls.code == 200 and controls.body["provider"] == "claude", "the controls offered are the provider's"
     assert dispatch("GET", "/api/agent-controls/nobody", record.root, {}, {}).body["groups"] == [], "an agent with no controls offers none"
+
+
+def test_a_burst_of_tool_uses_writes_the_session_file_once_not_on_every_hook(monkeypatch):
+    record = fresh()
+    provider = PROVIDERS["claude"]()
+    hook = {"hook_event_name": "PreToolUse", "session_id": "claude-9", "tool_name": "Read", "tool_input": {"file_path": "/tmp/x"}}
+    answer(provider, record.root, hook, os.getpid(), record.env)
+    first = Sessions(record.root).read("claude-9").seen
+    answer(provider, record.root, hook, os.getpid(), record.env)
+    assert Sessions(record.root).read("claude-9").seen == first, "a second tool use within seconds leaves the session file as it was"
+    later = time.time() + 60
+    monkeypatch.setattr(time, "time", lambda: later)
+    answer(provider, record.root, hook, os.getpid(), record.env)
+    assert Sessions(record.root).read("claude-9").seen == later, "a minute on, the hook is heard again"

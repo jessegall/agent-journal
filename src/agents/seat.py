@@ -22,6 +22,7 @@ from dataclasses import dataclass
 DISPATCHED, RETURNED = "dispatched", "returned"
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
 LOOK_EVERY = 10.0
+HEARD_EVERY = 5.0
 
 
 def web_remote(url: str) -> str:
@@ -174,7 +175,9 @@ class HookBinding:
         env = held.environment if stays else self.bound(session, worked, prefer)
         if stays and not alive(held.pid):
             self.relaunched(session, held.pid)
-        self.sessions.touch(session, held.worked_in if self.provider.is_subagent(hook) else worked)
+        place = held.worked_in if self.provider.is_subagent(hook) else worked
+        if not stays or place != held.worked_in or time.time() - held.seen >= HEARD_EVERY:
+            self.sessions.touch(session, place)
         return env
 
     def moving(self, session: str, held: SessionRecord, worked: str) -> bool:

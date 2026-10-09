@@ -103,6 +103,8 @@ class FinishTheBoardWithItsLastTicket(Handler):
 
 def watched(tickets: Tickets) -> list:
     boards = tickets._orchestrating()
+    if not boards:
+        return []
     paused = Boards(tickets.record, actor=SYSTEM).paused()
     return [t for t in tickets.rows.standing() if t.work_environment and t.board and int(t.board) in boards and int(t.board) not in paused]
 
