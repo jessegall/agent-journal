@@ -57,10 +57,15 @@ await runScenarios(OPEN, {
     async "a shared collection lists a row of another environment beside its own"(page) {
         await page.goto(COLLECTION);
         await page.getByText("Proposal for visitors").first().waitFor();
+        await page.getByRole("tab", {name: /Plans/}).click();
         await page.getByText("Plan from the ticket").first().waitFor();
         await page.getByRole("tab", {name: /Tickets/}).click();
         await page.getByText("Fix the login page").first().waitFor();
         await page.getByText("Doing", {exact: true}).first().waitFor();
+        await page.getByRole("tab", {name: /Boards/}).click();
+        await page.getByText("Launch board").first().waitFor();
+        await page.getByText("Ideas", {exact: true}).first().waitFor();
+        await page.getByRole("button", {name: "Fix the login page"}).waitFor();
     },
     async "a link that ended says so"(page) {
         await page.goto(ENDED);
