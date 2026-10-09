@@ -36,7 +36,6 @@ LOOKUP_SECONDS = 10
 BOOTSTRAPPED = "AGENT_JOURNAL_BOOTSTRAPPED"
 HEALED = "AGENT_JOURNAL_HEALED"
 REPAIRED = "AGENT_JOURNAL_REPAIRED"
-UNVERIFIED = "AGENT_JOURNAL_UNVERIFIED"
 SRC = "src"
 ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 2
@@ -539,7 +538,7 @@ def pack(root: Path) -> str:
                 source = f.read_bytes()
                 archive.writestr(zipfile.ZipInfo(name, moment), source)
                 archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", moment), compiled(source, str(target / name), stamp))
-        refused = "" if os.environ.get(UNVERIFIED) else start_refused(built, root)
+        refused = start_refused(built, root)
         if refused:
             built.unlink(missing_ok=True)
             return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {refused}"

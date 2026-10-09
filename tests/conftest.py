@@ -1,5 +1,7 @@
+import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -16,7 +18,6 @@ from engine.record import Record  # noqa: E402
 from engine.runtime import TESTS_RUNNING  # noqa: E402
 from engine import locks  # noqa: E402
 from controllers import stored  # noqa: E402
-from install import UNVERIFIED  # noqa: E402
 from scripts.boot_guard import PROJECT  # noqa: E402
 
 
@@ -30,25 +31,31 @@ SOURCE = Path(__file__).resolve().parents[1] / "src"
 
 
 def installed(place: Path, code: Path) -> Path:
-    return install(place, code, {})
+    """An install that starts from the run's first install of this code, so the installer never packs and checks the same build again."""
+    root = place / PROJECT / ".journal"
+    root.mkdir(parents=True)
+    for build in first_install(code).glob("journal-*.pyz"):
+        shutil.copy2(build, root / build.name)
+    return install(place, code)
 
 
-def installed_to_start(place: Path, code: Path) -> Path:
-    """An install for a test that starts the build itself, so the installer does not start it once more to check it."""
-    return install(place, code, {UNVERIFIED: "1"})
+def first_install(code: Path) -> Path:
+    """The run's one install of this code, packed and started once, which tests read or copy and never change."""
+    name = f"installed-{hashlib.sha256(str(code).encode()).hexdigest()[:10]}"
+    return isolation.shared(name, lambda where: install(where, code)) / PROJECT / ".journal"
 
 
-def install(place: Path, code: Path, env: dict) -> Path:
+def install(place: Path, code: Path) -> Path:
     for agent in (".claude", ".codex"):
         (place / PROJECT / agent).mkdir(parents=True)
     subprocess.run([sys.executable, str(code / "install.py"), "upgrade", str(place / PROJECT)],
-                   env={**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1", **env}, capture_output=True, timeout=120, check=True)
+                   env={**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}, capture_output=True, timeout=120, check=True)
     return place / PROJECT / ".journal"
 
 
 def installed_once() -> Path:
-    """The run's one install of this build, which tests read or copy and never change."""
-    return isolation.shared("installed-once", lambda where: installed_to_start(where, SOURCE)) / PROJECT / ".journal"
+    """The run's one install of this build."""
+    return first_install(SOURCE)
 
 
 def holds(record: Record, session: str = "claude-1") -> dict:
