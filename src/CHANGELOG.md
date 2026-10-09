@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.16 — Quieter budget notices, and a round of viewer fixes
+- A request or hook that runs over its budget while the machine's load is above its cores is logged with the load and not filed as a to-do; on a quiet machine it is filed as before. The time a request reports after its answer is the work it left behind, not its wait in a queue.
+- A plugin's manifest declares each hook as sync or async; an async hook only runs beside the agent, and the install dialog says whether the agent waits.
+- A plan under review cannot be approved until the review's report is linked and the plan is ready again; its card shows no Approve meanwhile.
+- Reports stay user-creatable; only a suggestion is the agent's alone, and a type the agent alone makes has no New button.
+- The Brief and Report bars run edge to edge in the agent dialog. The Other plans popover is as wide as its content and stays inside the window. The agent cell's work line wraps to three lines.
+- The Files changed view shows a file-shaped skeleton where the cards appear, starts with Show removals, Flush and 5 lines on, and shows view files such as SecretForm.vue; only data files named for a credential stay hidden.
+- A hook that gets no answer while the machine's load is above its cores is logged with the load and not reported. A fact or rule is whispered once to a session and again only when its words change. A channel queue is no longer cut while its channel reads it, which had replayed every old notice after an upgrade.
+- A turn the transcript posted first is not posted again by the display hook. A test's journal server ends with the test run, and the restart test cannot miss the restart marker.
+
 ## 2.267.15 — A secret's programs are yours to name
 - Every secret on the Secrets page has Programs it may go to, a list you add programs to and remove them from; the server refuses an agent that tries to set it. An agent proposes a program with journal secret propose_programs <n> <program>, and the proposal waits on that page for you to allow it. The refusal for a secret with no programs points to that control. Shells and interpreters are still never given a secret.
 
