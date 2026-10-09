@@ -236,6 +236,7 @@ const HOLDER_BARS = [{width: "64px", height: 14}];
 }
 
 .held-tag {
+    min-width: 0;
     display: flex;
     align-items: center;
     padding-right: 6px;

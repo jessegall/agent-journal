@@ -17,7 +17,9 @@ const emit = defineEmits(["open"]);
 
 <style scoped>
 .holder {
-    flex: none;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -36,6 +38,7 @@ const emit = defineEmits(["open"]);
 }
 
 .holder-dot {
+    flex: none;
     width: 6px;
     height: 6px;
     border-radius: 50%;
@@ -56,7 +59,11 @@ const emit = defineEmits(["open"]);
 }
 
 .holder-name {
+    min-width: 0;
+    overflow: hidden;
     color: var(--text);
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .holder.closed .holder-name {
@@ -64,6 +71,8 @@ const emit = defineEmits(["open"]);
 }
 
 .holder-word {
+    flex: none;
     color: var(--text-3);
+    white-space: nowrap;
 }
 </style>
