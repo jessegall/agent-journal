@@ -1771,7 +1771,7 @@ def test_the_first_hooks_after_an_upgrade_answer_within_budget_on_a_long_transcr
     for event in ("SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse"):
         dispatch("POST", "/api/hook/claude", record.root, query, hook(event)).after()
     require(record, transcript.stem, {"journal": time.time()})
-    monkeypatch.setattr(transcript_cache, "code_mark", lambda: "the next release")
+    monkeypatch.setattr(transcript_cache, "shape_mark", lambda: "the next release")
     for held in (cache.transcripts, cache.folds, cache.recents):
         held.clear()
     answering, spans, read = threading.current_thread(), [], jsonl.read_bytes
