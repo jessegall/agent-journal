@@ -104,6 +104,7 @@ class Engine:
         self.controlled_at = 0.0
         self.carry_on = False
         self.paused = False
+        self.resumed_at = 0.0
         self.held_at = 0.0
         self.echoed_at = time.time()
         self.why = ""
@@ -214,7 +215,7 @@ class Engine:
         if last is None or not driver.alive():
             return ""
         reported = float(last.at)
-        silent = time.time() - max(reported, self.typed_at) >= SILENT_AFTER and driver.quiet_for() >= SILENT_AFTER and (not last.command_running or last.command_running_for >= LONG_COMMAND_AFTER)
+        silent = time.time() - max(reported, self.typed_at, self.resumed_at, self.born) >= SILENT_AFTER and driver.quiet_for() >= SILENT_AFTER and (not last.command_running or last.command_running_for >= LONG_COMMAND_AFTER)
         if self.probed_at > reported:
             if time.time() - self.probed_at < PROBE_WAIT:
                 return "probed, waiting"
@@ -347,6 +348,7 @@ class Engine:
             return self.held("Paused")
         if asked := take(self.record.root, self.names(), RESUME):
             self.paused = False
+            self.resumed_at = time.time()
             self.agent.mark("", "", paused=0, paused_for="")
             self.noted("Continued")
             self.agent.driver.send(RESUMED_AFTER_UPDATE if asked.value == UPDATE else RESUMED, now=True)
