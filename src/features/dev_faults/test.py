@@ -164,8 +164,9 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     asked = list(runtime.profiles(record.root).glob("*-stack-sample-500ms.txt"))
     assert len(asked) == 1 and "Where every thread was while this ran" in asked[0].read_text(), "the stack samples are kept beside the profile, or alone when no profile was taken"
     reports.spent(record.root, record.env, "command", "message all", 500.0, profile=profile)
+    earlier = set(runtime.profiles(record.root).glob("*.txt"))
     reports.spent(Path("/nonexistent/journal"), "main", "command", "message all", 500.0, profile=profile)
-    assert len(list(runtime.profiles(record.root).glob("*-message-all-500ms.txt"))) == 1, "a slow call that cannot be filed because its journal is gone is dropped, not raised"
+    assert set(runtime.profiles(record.root).glob("*.txt")) == earlier, "a slow call that cannot be filed because its journal is gone is dropped, not raised"
     from controllers.types import Todos
     from engine.gates import held
     title = Notifications(record, actor=SYSTEM).rows.every()[0].title
