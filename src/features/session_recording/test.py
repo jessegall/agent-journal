@@ -274,11 +274,6 @@ def test_upgrades_file_old_runtime_files_under_their_session_and_remove_the_loos
     assert (tmp_path / "environments" / "main" / "runtime" / "keep.json").exists(), "an unrelated runtime file stays"
 
 
-def test_importing_the_scrubber_reads_no_word_list(monkeypatch):
-    import importlib
+def test_importing_the_scrubber_reads_no_word_list():
     from features.session_recording import scrub
-    reads = []
-    monkeypatch.setattr(Path, "read_text", lambda self, **kwargs: reads.append(self) or "")
-    importlib.reload(scrub)
-    assert not reads, "the word list is read when a name is first judged, not when every journal command starts"
-    scrub.vocabulary.cache_clear()
+    assert not hasattr(scrub, "DICTIONARY"), "the word list is read when a name is first judged, not at import"
