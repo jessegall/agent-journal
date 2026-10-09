@@ -71,6 +71,8 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     assert instructions_hash(project, record) == seen, "the block's own wording changing starts no check; its laws and injected rules do"
     seen = record.state("journal_laws").get("instructions")
     (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text() + "\nNever deploy on Mondays.\n")
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-check", "source": "compact"})
+    assert (record.state("journal_laws").get("instructions"), len(checking().runs)) == (seen, 1), "a start after a compaction checks nothing"
     started()
     assert record.state("journal_laws").get("instructions") != seen, "and so is the project's own text changing"
 

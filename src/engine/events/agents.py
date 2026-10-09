@@ -14,6 +14,7 @@ class AgentReported(AgentEvent):
     session: str = ""
     size: int = 0
     skill: str = ""
+    compacted: bool = False
 
     @classmethod
     def name(cls) -> str:
