@@ -56,7 +56,8 @@ class TicketLanding:
         folder = project.joinpath(*workspace_folders().worktree_home, ticket.work_environment)
         for name, repo, _ in self._repositories(ticket):
             discarded(repo, folder if name == "." else folder / name, branch, ticket.work_environment)
-        shutil.rmtree(folder, ignore_errors=True) if folder.is_dir() and not folder.is_symlink() else None
+        if folder.is_dir() and not folder.is_symlink():
+            shutil.rmtree(folder, ignore_errors=True)
 
     def _clean(self, ticket) -> bool:
         folders = [linked(place).get(ticket.work_environment) for _, place, _ in self._repositories(ticket)]
