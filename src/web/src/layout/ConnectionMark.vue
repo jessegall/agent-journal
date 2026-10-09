@@ -16,3 +16,12 @@ watch(connectionOn, (on) => on && loadConnection(), {immediate: true});
         <Chip class="connection-mark" :tone="markerTone(connection)" :title="'Which journal this is, and how it stands with the other one'">{{ words }}</Chip>
     </template>
 </template>
+
+<style scoped>
+.chip.connection-mark {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
