@@ -31,7 +31,7 @@ def missing(module: str, name: str) -> str:
 
 
 if __name__ == "__main__":
-    sys.path.insert(0, str(HERE))
+    sys.path[:0] = [str(HERE), str(HERE.parent)]
     broken = [f"{path.relative_to(HERE)}:{node.lineno} {why}" for path, node in imports()
               for alias in node.names if (why := missing(node.module, alias.name))]
     print("\n".join(broken) or "every import resolves")
