@@ -461,12 +461,11 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     runtime.hook_failures(record.root).write_text(f"{started - 3} 000 claude {record.env}\n{started + 3} 000 claude {record.env}\n")
     http.unanswered(record.root)
     assert not told, "a hook that got no answer while the server restarted, warm-up included, is not reported"
+    import serve
     runtime.restarting(record.root).write_text(str(started - 60))
-    runtime.mark_started(record.root)
-    assert (runtime.restarting(record.root).exists(), runtime.RESTARTED_AT[0] < runtime.STARTED[0] - 59) == (False, True), \
-        "the new server takes the restart marker away and remembers when the restart began"
-    runtime.mark_started(record.root)
-    assert runtime.RESTARTED_AT[0] == 0.0, "a server that starts with no marker, as after a crash, hides nothing before its start"
+    waits = iter([False, True])
+    serve.watch_runtime(record.root, SimpleNamespace(wait=lambda _: next(waits)))
+    assert not runtime.restarting(record.root).exists(), "once the new server answers, the restart marker is taken away, so a later crash is told"
     started = runtime.STARTED[0]
     runtime.hook_failures(record.root).write_text(f"{started - http.RESTART_GRACE - 5} 000 claude {record.env}\n")
     http.unanswered(record.root)
