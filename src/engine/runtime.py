@@ -203,6 +203,14 @@ def upgrade_mark(root: Path) -> Path:
     return folder(root) / UPGRADE_MARK
 
 
+def upgrade_step(root: Path) -> str:
+    """The step the running upgrade says it is on."""
+    try:
+        return upgrade_mark(root).read_text().strip() if upgrading(root) else ""
+    except OSError:
+        return ""
+
+
 def upgrading(root: Path) -> bool:
     try:
         return time.time() - upgrade_mark(root).stat().st_mtime < UPGRADE_LONGEST

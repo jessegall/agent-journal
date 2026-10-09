@@ -31,4 +31,13 @@ describe("while the journal updates", () => {
         begin("2.265.0");
         expect([follow(true), follow(false), locked()]).toEqual([false, false, true]);
     });
+
+    test("the step the upgrade says it is on is kept while it runs, also for an update begun in the viewer", () => {
+        follow(true, "Migrating the record");
+        expect(updating.step).toBe("Migrating the record");
+        begin("2.265.0");
+        expect(updating.step).toBe("");
+        follow(true, "Restarting the journal");
+        expect([updating.step, locked()]).toEqual(["Restarting the journal", true]);
+    });
 });
