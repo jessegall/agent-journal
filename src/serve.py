@@ -15,6 +15,7 @@ from urllib.parse import parse_qsl, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features
+from engine.multipart import UPLOAD_LIMIT, UPLOAD_LIMIT_MB, spooled
 from features.auto_update.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
@@ -91,14 +92,25 @@ class Handler(BaseHTTPRequestHandler):
 
     def answer(self, method: str, url) -> None:
         length = self.headers["Content-Length"]
-        raw = self.rfile.read(int(length)) if length else b""
         kind = self.headers.get("Content-Type") or ""
+        if kind.startswith("multipart/"):
+            return self.reply_to(self.uploaded(method, url, int(length) if length else 0, kind))
+        raw = self.rfile.read(int(length)) if length else b""
         try:
-            body = {"_raw": raw, "_type": kind} if kind.startswith("multipart/") or kind.startswith("text/plain") else json.loads(raw or b"{}")
+            body = {"_raw": raw, "_type": kind} if kind.startswith("text/plain") else json.loads(raw or b"{}")
         except (json.JSONDecodeError, UnicodeDecodeError) as error:
-            reply = Reply(400, {"error": f"the request body is not JSON: {error}"})
-        else:
-            reply = self.answered_as(sender_of(self.headers), method, url, body)
+            return self.reply_to(Reply(400, {"error": f"the request body is not JSON: {error}"}))
+        self.reply_to(self.answered_as(sender_of(self.headers), method, url, body))
+
+    def uploaded(self, method: str, url, length: int, kind: str) -> Reply:
+        """The answer to a file upload, whose body is spooled to disk a chunk at a time and read from there, so a big file is never held whole."""
+        if length > UPLOAD_LIMIT:
+            self.close_connection = True
+            return Reply(413, {"error": f"that upload is {length // (1024 * 1024)} MB, over the {UPLOAD_LIMIT_MB} MB limit for one upload"})
+        with spooled(self.rfile, length) as raw:
+            return self.answered_as(sender_of(self.headers), method, url, {"_raw": raw, "_type": kind})
+
+    def reply_to(self, reply: Reply) -> None:
         self.send_response(reply.code)
         self.sibling()
         self.send_header("Content-Type", reply.kind)

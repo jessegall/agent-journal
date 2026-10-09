@@ -13,6 +13,7 @@ from urllib.request import urlopen
 from features.format import rendered
 from features.routing import resolve
 from engine.disk import KEPT_FREE_BYTES, DiskFull, free_bytes, nearly_full
+from engine.multipart import UPLOAD_LIMIT, UPLOAD_LIMIT_MB
 from engine.record import Record
 from features.phone.controller import Phones
 from engine.color import identity
@@ -66,7 +67,6 @@ NEVER_FROM_OUTSIDE = frozenset((post("/api/run"), post("/api/upgrade"), post("/a
 STREAM = "text/event-stream"
 FORM_LIMIT = 8192
 BODY_LIMIT = 1024 * 1024
-UPLOAD_LIMIT = 25 * 1024 * 1024
 MOST_STREAMS = 8
 CHECKS_AT_ONCE = 3
 REFUSALS_A_MINUTE = 60
@@ -391,7 +391,9 @@ class Gateway:
         if visit.handler.command == "POST" and not visit.same_origin():
             return visit.refuse(403, "a change comes only from this journal's own pages")
         size = visit.length()
-        if size > (UPLOAD_LIMIT if visit.url.path.endswith("/upload") else BODY_LIMIT):
+        if visit.url.path.endswith("/upload") and size > UPLOAD_LIMIT:
+            return visit.refuse(413, f"that upload is {size // (1024 * 1024)} MB, over the {UPLOAD_LIMIT_MB} MB limit for one upload")
+        if size > BODY_LIMIT and not visit.url.path.endswith("/upload"):
             return visit.refuse(413, "too large")
         asked = (visit.handler.command, visit.url.path)
         people = people_of(visit.record)

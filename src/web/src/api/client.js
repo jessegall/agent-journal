@@ -1,4 +1,5 @@
 import {href, route} from "../route.js";
+import {UPLOAD_LIMIT, overLimit} from "../chat/attachments.js";
 import {LONG_WAIT_MS, transport} from "./transport.js";
 
 const encoded = (value) => encodeURIComponent(value);
@@ -665,6 +666,7 @@ export class ApiClient {
     }
 
     upload(type, n, file) {
+        if (file.size > UPLOAD_LIMIT) return Promise.reject(new Error(overLimit(file)));
         const body = new FormData();
         body.append("file", file, file.name);
         return this.post(this.here(`/${type}/${n}/upload`), body);

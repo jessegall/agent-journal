@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass
 from typing import TypedDict
 from http.cookies import SimpleCookie
 
+from engine.multipart import UPLOAD_LIMIT, UPLOAD_LIMIT_MB
 from engine.record import Record
 from resources.fields import Loaded
 from features.phone.controller import Phones
@@ -34,7 +35,6 @@ PAGE_HEADERS = {**APP_HEADERS, "Content-Security-Policy": APP_HEADERS["Content-S
 COOKIE = "__Host-phone"
 HEADER = "X-Phone"
 UNLOCK = "X-Phone-Unlock"
-UPLOAD_LIMIT = 25 * 1024 * 1024
 UPLOADED = "application/octet-stream"
 BUILD = re.compile(r"assets/(phone-[\w-]+\.js)")
 
@@ -358,7 +358,7 @@ class PhoneRoutes:
         length = handler.headers.get("Content-Length", "")
         size = int(length) if length.isdigit() else 0
         if len(rest) != 2 or not rest[0].isdigit() or not 0 < size <= UPLOAD_LIMIT:
-            return handler.answer(413, "a file goes to one of this phone's messages, up to 25 MB")
+            return handler.answer(413, f"a file goes to one of this phone's messages, up to {UPLOAD_LIMIT_MB} MB")
         phone = self.phone(handler)
         if phone is None:
             return None
