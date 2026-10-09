@@ -34,4 +34,4 @@ class Profile(Shape, Resource):
     command_names = {"complete": "retire"}
     scope = PROJECT
     view = DOCUMENT
-    progress = ("agent_name",)
+    progress = ("agent_name", "files", "pictures")

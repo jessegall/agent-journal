@@ -1,7 +1,11 @@
+import tempfile
+from pathlib import Path
+
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
+from features.form_of_address.animations import Animation, shipped_animations, unpacked, voice_of
 from features.form_of_address.names import first_name, in_use, title
 from features.form_of_address.resource import Profile
 from features.form_of_address.voices import BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
@@ -52,6 +56,29 @@ class Profiles(Controller):
         row = self.load(n)
         return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=self._sample(row), introduction=row.introduction, humour=row.humour, naming=row.naming,
                            agent_name=row.agent_name, address=row.address, art=row.art)
+
+    @action
+    def animations(self) -> dict:
+        """Every voice's animations by profile number, found by file name: the sheets it ships with and the ones dropped on it."""
+        from commands.dispatch import WEB
+        found = {}
+        for row in (self.load(row["n"]) for row in self.rows.summaries() if not row["deleted"]):
+            shipped = [(a, a.file) for a in shipped_animations(WEB / "voices", row.art)]
+            dropped = [(a, a.file) for a in (Animation.of(name, voice_of(row.art)) for name in row.files) if a]
+            found[row.n] = [animation.view(path) for animation, path in [*shipped, *dropped]]
+        return found
+
+    @action
+    def attach(self, n: int, path: str, description: str = ""):
+        source = Path(path)
+        if source.suffix.lower() == ".zip":
+            with tempfile.TemporaryDirectory() as folder:
+                for sheet in unpacked(source, Path(folder)):
+                    super().attach(n, str(sheet), description)
+            return self.load(n)
+        if not Animation.of(source.name, voice_of(self.load(n).art)):
+            raise Refused(f"{source.name} is not an animation: name it <kind>_<name>.png, such as idle_wave.png, or drop a ZIP of them")
+        return super().attach(n, path, description)
 
     @action
     def callings(self) -> dict:

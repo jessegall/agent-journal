@@ -1,8 +1,9 @@
 import {computed, ref} from "vue";
 import {saveSettings} from "../actions/settings.js";
 import {api} from "../api/client.js";
-import {atlasOf, placeOf} from "../domain/mascots.js";
+import {MOMENTS, placeOf} from "../domain/mascots.js";
 import {store} from "../state/store.js";
+import {loadAnimations, ofKind, urlOf} from "./voiceAnimations.js";
 
 export const profiles = ref([]);
 export const profilesLoaded = ref(false);
@@ -26,10 +27,10 @@ export const artOf = (row) => (row.data.art ? api.publicUrl(`voices/${row.data.a
 export const mascotOn = computed(() => form().mascot !== false);
 
 export const mascotOf = computed(() => {
-    const art = standing.value?.data.art;
-    if (!mascotOn.value || !art) return null;
-    const voice = art.replace(/\.\w+$/, "");
-    return {blink: null, acts: [api.publicUrl(atlasOf(voice, "idle_1"))], place: placeOf(art)};
+    const row = standing.value;
+    if (!mascotOn.value || !row?.data.art) return null;
+    const urls = (kind) => ofKind(row.n, kind).map((animation) => urlOf(row.n, animation));
+    return {blink: urls(MOMENTS.blinking)[0] ?? null, acts: urls(MOMENTS.waiting), place: placeOf(row.data.art)};
 });
 
 export const calls =(row) => callings.value[row.data.calling] || row.data.address || "";
@@ -39,7 +40,7 @@ export const sampleOf = (row) => samples.value[row.n] ?? row.data.sample;
 export const introductionOf = (row) => row.data.introduction || sampleOf(row);
 
 export async function loadProfiles() {
-    const [rows, names, lines, styles] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples(), api.profileNamings()]);
+    const [rows, names, lines, styles] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples(), api.profileNamings(), loadAnimations()]);
     profiles.value = rows.filter((row) => !row.deleted);
     profilesLoaded.value = true;
     callings.value = names;
