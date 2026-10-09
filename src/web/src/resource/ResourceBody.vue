@@ -41,6 +41,7 @@ const props = defineProps({
     commentComposer: {type: Boolean, default: true},
     links: {type: Boolean, default: true},
     readOnly: Boolean,
+    focus: {type: Number, default: 0},
 });
 const talk = inject("talk", null);
 const talking = computed(() => Boolean(talk?.running.value));
@@ -228,7 +229,7 @@ async function follow() {
             <footer class="foot">seen by {{ seenBy }}</footer>
         </template>
         <template v-if="comments && kind?.takes_comments && !readOnly">
-            <Comments :resource="resource" :compose="commentComposer" />
+            <Comments :resource="resource" :compose="commentComposer" :focus="focus" />
         </template>
     </article>
 </template>
