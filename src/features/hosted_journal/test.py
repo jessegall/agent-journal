@@ -432,6 +432,9 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
                                                   key=hashed("forged"), expires=time.time() + DAY, environment="main")
         assert apart.call("GET", "/p/state", Cookie="__Host-phone=forged").status == 401, "a phone written into the record opens nothing"
         token = apart.call("POST", "/login", {"password": PASSWORD}).headers["set-cookie"].split(";")[0]
+        outside = [apart.call("POST", path, body="{}", Cookie=token, Origin=origin, Content_Type="application/json") for path in ("/api/run", "/api/stop", "/api/hook/claude")]
+        assert [(answer.status, "never runs this" in answer.text) for answer in outside] == [(403, True)] * 3, \
+            "the login page started as production starts it refuses what never comes from outside itself, before anything reaches the journal"
         made = json.loads(apart.call("POST", "/api/main/phone/connect", body='{"days": 7}', Cookie=token, Origin=origin, Content_Type="application/json").text)
         assert made["link"].startswith(f"https://{ADDRESS}/p/#")
         phone_headers = {"Origin": origin, "X-Phone": "1", "Content-Type": "application/json"}
