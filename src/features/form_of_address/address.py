@@ -10,6 +10,6 @@ def voice_of(record) -> Voice:
 
 def address(record) -> str:
     voice = voice_of(record)
-    instruction = voice.calling.instruction(voice.calling.called(title(record), first_name(record)))
+    instruction = voice.calling.instruction(voice.calling.called(title(record), first_name(record), voice.address))
     text = " ".join(part for part in (voice.text, instruction, voice.humour, PLAIN_WORDS) if part)
     return f"HOW THE USER WANTS YOU TO TALK, in their own words: {text}"

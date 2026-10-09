@@ -20,7 +20,7 @@ export const standing = computed(() => profiles.value.find((row) => row.n === pr
 
 export const person = computed(() => `${form().title}|${form().first_name}`);
 
-export const calls = (row) => callings.value[row.data.calling] || "";
+export const calls = (row) => callings.value[row.data.calling] || row.data.address || "";
 
 export const sampleOf = (row) => samples.value[row.n] ?? row.data.sample;
 
