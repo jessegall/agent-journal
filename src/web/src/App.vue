@@ -40,7 +40,7 @@ const bootError = ref("");
 let bootTimer = 0;
 function startBoot() {
     bootError.value = "";
-    bootTimer = setTimeout(() => (bootError.value = "The journal is taking too long to respond."), 10000);
+    bootTimer = setTimeout(() => (bootError.value = "The journal is taking too long to respond."), 60000);
     boot()
         .then(() => (bootError.value = ""))
         .catch((error) => (bootError.value = error.message || "The journal could not be reached."))
