@@ -62,6 +62,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     Messages(record, actor=AGENT).read(ask.n)
     footer = Todos(record, actor=AGENT).create("wire up the footer")
     Messages(record, actor=AGENT).process(ask.n, "please wire up the footer too", f"todo {footer.n}")
+    assert Messages(record).load(ask.n).completed, "a message processed into a row is handled at once, not when the agent next goes idle"
     report(record, "working", "PreToolUse")
     report(record, "idle", "Stop")
     assert Messages(record).load(ask.n).completed, "a message that asked for no answer is closed once the agent has filed what it asked for"

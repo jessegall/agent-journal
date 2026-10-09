@@ -2,7 +2,7 @@ from features.base import Feature
 from features.journal import Journal
 from features.messages.details import MessagesDetails
 from features.messages.formatters import CommandsAsCode
-from features.messages.closing import CloseAnswered, CloseHandled, CloseSeenByUser
+from features.messages.closing import CloseAnswered, CloseHandled, CloseProcessed, CloseSeenByUser
 from features.messages.inbox import NameUnanswered, NameUnread, ResetCountsOnArrival
 from features.messages.prose import NameBareNumbers, NameRunTogether
 from features.messages.saving import SaveAgentMessage
@@ -18,6 +18,7 @@ class MessagesFeature(Feature):
         journal.events.handler(NameUnanswered())
         journal.events.handler(CloseHandled())
         journal.events.handler(CloseSeenByUser())
+        journal.events.handler(CloseProcessed())
         journal.events.handler(CloseAnswered())
         journal.events.handler(NameRunTogether())
         journal.events.handler(NameBareNumbers())
