@@ -50,7 +50,7 @@ CARRY_ON = "Carry on with what you were doing; the model or effort change you we
 MOVED_ON = "Moved a long command to the background"
 RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
 PAUSED_FOR_UPDATE = "The journal is updating, so you are paused: start no new command and wait; you will be told when to continue."
-RESUMED_AFTER_UPDATE = "The journal has updated and resumed you now: carry on with what you were doing."
+RESUMED_AFTER_UPDATE = "The journal has updated and resumed you now: carry on with exactly what you were doing; your open work stays open and is not to be parked."
 
 
 def delivered(record, sessions: set[str], action: str, label: str) -> None:
