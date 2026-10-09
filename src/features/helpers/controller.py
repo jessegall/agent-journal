@@ -346,12 +346,14 @@ class Helpers(Controller):
         if not agent_runs(self.record, row):
             return f"helper {row.n}, {row.name}, has no agent running; finish it"
         places.stop(place.n)
-        Helpers(self.record, actor=SYSTEM).update(row.n, stop_asked=time.time())
+        self._await_exit(row)
+        if agent_runs(self.record, row):
+            raise Refused(f"helper {row.n}, {row.name}, did not leave within {STOP_WAIT:g} seconds; stop it again")
         return f"helper {row.n}, {row.name}: its agent is stopped"
 
     def _await_exit(self, row: Helper) -> None:
-        """A stop is asked of the agent's terminal and answered at once; the agent leaves a moment later, so a finish right after waits for it."""
-        until = row.stop_asked + STOP_WAIT
+        """A stop is asked of the agent's terminal and answered at once; the agent leaves a moment later, so the stop waits for it."""
+        until = time.time() + STOP_WAIT
         while agent_runs(self.record, row) and time.time() < until:
             time.sleep(STOP_POLL)
 
@@ -360,8 +362,6 @@ class Helpers(Controller):
         row = self._unfinished(n, "finished")
         places = Environments(self.record, actor=SYSTEM)
         place = places.rows.by_title(row.environment)
-        if agent_runs(self.record, row) and time.time() - row.stop_asked < STOP_WAIT:
-            self._await_exit(row)
         if agent_runs(self.record, row):
             raise Refused(f"helper {n}, {row.name}, is still running: journal helper stop {n}, then finish it")
         rows = held(self.record, row)

@@ -532,6 +532,9 @@ def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back
     assert "helper 3, Ivy" not in [k.name for k in kept(record, helpers.rows.standing())], "and it is not one of the helpers kept for reuse, so it holds no place against the limit"
     assert "no agent running" in helpers.stop(3) and not helpers.load(3).completed, "stopping it says that its agent is gone instead of refusing"
     assert helpers.complete(3).completed, "and finishing it then works, since the same check says its agent does not run"
+    monkeypatch.setattr(Environments, "stop", lambda self, n: (Sessions(record.root).write("Zed-agent", pid=gone.pid), self.load(n))[1])
+    assert "stopped" in helpers.stop(2) and not agent_runs(record, helpers.load(2)), "a stop returns only once the agent no longer runs"
+    assert helpers.complete(2).completed, "so a finish right after a stop succeeds at once"
     Agents(record, actor=SYSTEM).update(context.agent.row.n, subagent_rows=[{"id": "toolu_1", "task": "Ada: map the hooks", "type": "explore", "session": "a1"}])
     child = Agents(record, actor=SYSTEM).create("a1", parent="claude-1")
     KeepSubagentFiles().intercept(AgentContext.of(features.FEATURES["helpers"], record, child), SimpleNamespace(paths=(str(project / "src" / "hooks.py"),)))

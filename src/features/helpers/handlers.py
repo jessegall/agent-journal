@@ -9,7 +9,7 @@ from engine.events.resources import AgentChanged, MessageCreated
 from engine.sessions import Sessions, alive
 from features.ask_questions.handlers import QuestionAsked
 from features.helpers.controller import Helpers
-from features.helpers.reuse import subagent_rows
+from features.helpers.reuse import agent_runs, subagent_rows
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from features.trigger import MINUTE
 from providers import PROVIDERS
@@ -128,7 +128,7 @@ class NameStoppedOrQuietHelpers(Handler):
             if not theirs:
                 continue
             last_seen = max(s.last_heard for s in theirs.values())
-            stopped = all(gone(root, name, s) for name, s in theirs.items())
+            stopped = not agent_runs(context.record, row)
             if stopped and speaking.once("helper stopped", f"{row.n}:{last_seen}"):
                 speaking.agent.say("stopped", n=row.n, name=row.name, cause=launch_failure(context.record.root, row.environment), rows=[row.ref])
             elif not stopped and time.time() - last_seen >= quiet_after and speaking.once("helper quiet", f"{row.n}:{last_seen}"):
