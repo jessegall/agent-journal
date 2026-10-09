@@ -462,11 +462,20 @@ async function runBar(p) {
 
     .statusbar-tools {
         flex: 1 0 100%;
+        flex-wrap: wrap;
+        row-gap: 8px;
         justify-content: space-between;
     }
 
     .statusbar-tools::before {
         display: none;
+    }
+
+    .statusbar-agentset {
+        flex-wrap: wrap;
+        row-gap: 8px;
+        min-width: 0;
+        max-width: 100%;
     }
 }
 </style>
