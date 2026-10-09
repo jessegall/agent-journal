@@ -26,6 +26,25 @@ def test_a_collection_holds_rows_of_any_type_and_a_row_can_sit_in_several():
     assert collections.members(later.n) == ["todo 1  a task"], "a row that is gone for good is left out of its collection"
 
 
+def test_a_collection_holds_a_row_of_another_environment_and_reads_it_live():
+    import shutil
+    from engine.record import Record
+    record = fresh()
+    other = Record(record.root, "ticket-1")
+    other.home.mkdir(parents=True)
+    plans = CONTROLLERS["plan"](other, actor=AGENT)
+    plan = plans.create("Ticket plan", goal="done")
+    collections = CONTROLLERS["collection"](record, actor=AGENT)
+    launch = collections.create("Launch")
+    collections.add(launch.n, ["ticket-1/plan:1"])
+    assert collections.members(launch.n) == ["ticket-1/plan:1  Ticket plan"], "a ref that names an environment loads the row from that environment"
+    plans.update(plan.n, title="Renamed")
+    assert collections.members(launch.n) == ["ticket-1/plan:1  Renamed"], "the member is read live, never copied"
+    assert "no environment" in refused(lambda: collections.add(launch.n, ["nowhere/plan:1"])), "an environment that does not exist is refused"
+    shutil.rmtree(other.home)
+    assert collections.members(launch.n) == [], "a member whose environment is gone is left out quietly"
+
+
 def test_old_collections_filed_from_a_dump_name_their_dump():
     from migrations.m0057_collections_name_their_dump import run
 
