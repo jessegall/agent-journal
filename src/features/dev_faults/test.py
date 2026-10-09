@@ -157,6 +157,16 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     reports.slow(record, "command", "message all", 500.0, working=500.0)
     assert [t.title for t in todos.rows.standing()] == [title] and "before any other write" not in held(record, main.title), \
         "and the next breach files a fresh to-do instead of holding the writes"
+    from controllers.types import Agents
+    from engine.record import Record
+    from engine.wording import digest
+    elsewhere = Record(record.root, "elsewhere")
+    Agents(elsewhere, actor=SYSTEM).create("claude-2")
+    todos.delete(todos.rows.standing()[0].n, "archived again")
+    FEATURES["dev_faults"].hold(elsewhere, "overdue", digest(title, 12), title=title, times=30)
+    assert "before any other write" in held(elsewhere, "claude-2"), "a session in another environment is held by the same title"
+    todos.create(title)
+    assert "before any other write" not in held(elsewhere, "claude-2"), "filing the to-do releases every session that holds it, in every environment"
 
 
 def test_the_budget_is_tunable_per_environment():
