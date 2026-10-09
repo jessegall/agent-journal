@@ -620,7 +620,7 @@ class Claude(Provider):
         now = time.time()
         subagents = []
         for use in (u for u in uses if u.name in DISPATCHES):
-            session = sessions.get(use.id)
+            session = sessions.get(use.id) or self.session_of_task(path, ids.get(use.id, ""))
             status, done = (REFUSED, ended[use.id][1]) if use.id in held.errors else ended.get(use.id, ("", 0.0))
             written = session.stat().st_mtime if session is not None and session.is_file() else 0.0
             writing = now - written <= QUIET_SUBAGENT
@@ -648,6 +648,11 @@ class Claude(Provider):
         return {AgentRow.skills: self.skills_in(held.window), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
                 AgentRow.monitors: len(monitors), AgentRow.shell_rows: running_and_latest(shells),
                 AgentRow.subagent_rows: running_and_latest(subagents), AgentRow.monitor_rows: running_and_latest(monitors)}
+
+    def session_of_task(self, path: Path, task: str) -> Path | None:
+        """The conversation file of a subagent found by the id its launch answered with, for one whose meta file names another tool use, as a resumed one's does."""
+        found = Path(path).with_suffix("").joinpath("subagents", f"agent-{task}.jsonl") if task else None
+        return found if found is not None and found.is_file() else None
 
     def stop_instruction(self, task: str) -> str:
         return f"run TaskStop with task_id {task} now"

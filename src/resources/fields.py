@@ -50,6 +50,8 @@ def converter(kind):
         return lambda value: base(value) if isinstance(value, (dict,) if base is dict else (list, tuple)) and value else SKIPPED
     if base is str:
         return lambda value: value if isinstance(value, str) else str(value)
+    if base is bool:
+        return lambda value: value if isinstance(value, bool) else str(value).strip().lower() not in ("false", "0", "no", "off")
     if base is int:
         return lambda value: value if type(value) is int else int(float(value))
     return base

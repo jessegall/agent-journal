@@ -443,6 +443,12 @@ def test_a_background_subagent_stops_running_when_its_completion_arrives(tmp_pat
     assert not Claude().crew(transcript)["subagent_rows"][0]["running"], "its completion ends it, though its transcript was written just before"
     os.utime(session, (now, now))
     assert Claude().crew(transcript)["subagent_rows"][0]["running"], "resumed by a message, it writes again and runs again"
+    (folder / "agent-x1.meta.json").write_text(json.dumps({"toolUseId": "the-message-that-resumed-it"}))
+    assert Claude().crew(transcript)["subagent_rows"][0]["session"] == "x1", \
+        "a subagent whose meta file names another tool use, as a resumed one's does, is still found by the id its launch answered with, so it keeps its place in the grid"
+    from providers.payload import ToolCall
+    assert [ToolCall.from_payload("i", "Agent", 1.0, {"run_in_background": value}).background for value in ("true", "false", True, False)] == [True, False, True, False], \
+        "a flag Claude sends as the word true or false is read as what it says"
     with transcript.open("a") as f:
         f.write(json.dumps(completed(now + 1)) + "\n")
     assert not Claude().crew(transcript)["subagent_rows"][0]["running"], "and its next completion ends it again"
