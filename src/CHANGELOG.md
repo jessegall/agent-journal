@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.58 — No more hook errors on edits, helper marks that open, and a Copy button on every code block
+- The line for what an agent does counts added and removed lines as text, so a hook after an edit no longer logs an error.
+- Every chat mark about a helper or a subagent uses the agents' yellow, and a click opens that agent's dialog.
+- Every code block in the chat has its own Copy button.
+- The dashboard keeps each row as the JSON it is sent as and encodes only the rows whose view changed.
+- A starting server never waits for another process's migrations.
+
 ## 2.267.57 — The orchestrator answers its agents' permission requests
 - With auto mode and orchestrator mode both on, a helper's or ticket agent's permission request goes to the orchestrating agent, which allows or denies it with journal agent permit; the agent's cell says it waits on the orchestrator, not on you.
 - The viewer waits a minute before it says the journal is taking too long to respond.
