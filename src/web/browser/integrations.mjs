@@ -52,9 +52,7 @@ await runScenarios(process.argv[2], {
         await card.locator("[data-gmail-account]").fill("me@gmail.com");
         await card.locator("[data-gmail-account]").blur();
         await saved;
-        const read = page.waitForResponse((answer) => answer.request().method() === "GET" && /\/api\/main\/settings$/.test(answer.url()));
         await page.reload();
-        await read;
         await page.waitForFunction(() => document.querySelector('[data-integration="gmail"] [data-gmail-account]')?.value === "me@gmail.com");
         await shot(page, "integrations-gmail");
     },
