@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.52 — A ticket start that fails cleans up after itself
+- A ticket start no longer fails with an invalid path on a board with a branch.
+- A start that fails partway removes the worktrees, branches and folders it made, and a retry of the same ticket clears what a failed start left and starts over.
+- A nested repository's worktree starts at that repository's checked-out head, never at the board branch's merge-base.
+- A command's exit message is shown as a message, never read as a number.
+
 ## 2.267.51 — An automatic update shows itself from start to finish
 - Every open viewer shows the update cover by itself when an update starts on its own: the countdown, Starting the update, each step, then a reload once the new version runs, with no gap in between.
 - While an update is counting down or running, the viewer asks for its state every second, so short steps are seen.
