@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.20 — A collection holds rows of other environments
+- A collection can hold a row from another environment, written environment/type:number, such as `journal collection add 6 ticket-1/plan:1` for a ticket's own plan. The collection's page, and a share of the collection, read that row live from its own environment; a member whose environment is gone is left out.
+
 ## 2.267.19 — Check time limits that follow the load
 - A check's time limit stretches by how far the machine's load exceeds its cores, the same way the boot guard's does, so a check on a busy machine is no longer stopped early. The helper is shared from `engine/load.py`.
 
