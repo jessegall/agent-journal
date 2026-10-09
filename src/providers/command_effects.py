@@ -112,10 +112,14 @@ def shell(row, hook: Hook) -> dict:
         if kind == "tests":
             doing = test_command(hook, doing)
         background = isinstance(hook.tool, BashCall) and hook.tool.background
-        started = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, before=before if before.done else None, background=background)
+        started = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, before=before if before.done else None, background=background, id=hook.tool_use)
         paths = tuple(inside(path, hook.cwd) for path in hook.tool.paths)
-        ran = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, files=paths, subject="" if paths else hook.tool.subject, background=background)
+        ran = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, files=paths, subject="" if paths else hook.tool.subject, background=background, id=hook.tool_use)
         return {AgentRow.running: started.to_json(), AgentRow.commands: (closed_at(row.commands, hook.at) + [ran.to_json()])[-RING:]}
+    older = next((one for one in reversed(command_runs(row)) if hook.tool_use and one.id == hook.tool_use and not one.done and one.at != running.at), None)
+    if older:
+        ended = replace(older, done=hook.at, result=outcome_of(hook, older.effect) or older.result)
+        return {AgentRow.running: running.to_json(), AgentRow.commands: stamped(command_runs(row), ended, doing, hook.at)}
     if row.running and not running.done:
         result = outcome_of(hook, running.effect)
         running = replace(running, done=hook.at, result=result if result else running.result)

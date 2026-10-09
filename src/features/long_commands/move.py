@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 
-from engine.command_runs import CommandRun, command_runs
+from engine.command_runs import command_runs, waiting_run
 from engine.events.engine import ClockTicked
 from engine.gates import LONG_COMMAND, HookCall, cancelled
 from features.long_commands.details import KEPT, MOVED
@@ -13,7 +13,6 @@ from providers.command_effects import settled
 from resources.base import SYSTEM
 from controllers.types import Agents
 
-FOREGROUND = "Bash"
 SETTLE = 30.0
 
 
@@ -25,9 +24,8 @@ class MoveLongCommands(Handler):
         moved = context.state.get("moved")
         if moved and context.state.get("ended") != moved:
             self.follow(context, row, moved)
-        runs = command_runs(row)
-        last = runs[-1] if runs else CommandRun()
-        if last.tool != FOREGROUND or last.done:
+        last = waiting_run(row)
+        if last is None:
             return
         started = str(last.at)
         if self.has_come_back(context, row):
