@@ -51,7 +51,7 @@ from features.open_viewer.attachments import FileKind
 from features.format import VIEWER, carded, shaped
 from features.open_viewer.transcripts import TRANSCRIPT_PAGE
 from surfaces.everything import found
-from surfaces.listing import Listing, counted, lightened, listing
+from surfaces.listing import Listing, dashboard, listing
 from commands.dispatch import dispatch  # noqa: F401
 
 
@@ -564,13 +564,14 @@ def get_dashboard(req: Request) -> Reply:
     record = req.record()
     asked = req.query_as(DashboardQuery)
     wanted = [t for t in asked.types.split(",") if t in CONTROLLERS]
-    controllers = {t: CONTROLLERS[t](record, actor=USER) for t in wanted}
-    lists = {t: lightened(controller, listing(controller, record, Listing.from_query(req.query))) for t, controller in controllers.items()}
     whole = "events" in req.query
-    body = {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted)}
+    tallied = [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted
+    lists, tallies = dashboard(record, wanted, tallied, {key: value for key, value in req.query.items() if key != "events"})
+    body = b'{"rows": ' + lists + b', "counts": ' + tallies
     if whole:
-        body.update(events=invoked(req.as_user(Environments), "events", named={"last": asked.events}), settings=invoked(req.as_user(Features), "settings"))
-    return Reply(200, body)
+        events, settings = invoked(req.as_user(Environments), "events", named={"last": asked.events}), invoked(req.as_user(Features), "settings")
+        body += b', "events": ' + json.dumps(events).encode() + b', "settings": ' + json.dumps(settings).encode()
+    return Reply(200, body + b"}")
 
 
 @route("GET", "/api/{env}/{type}")

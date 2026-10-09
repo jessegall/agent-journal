@@ -430,8 +430,13 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     CONTROLLERS["todo"](record, actor=USER).delete(2, why="gone")
     named = dispatch("GET", f"/api/{record.env}/todo", record.root, {"n": "2", "completed": "1"}, {}).body
     assert [r["n"] for r in named["rows"]] == [2], "a row asked for by number is returned even when deleted"
+    on_dashboard = lambda: json.loads(dispatch("GET", f"/api/{record.env}/dashboard", record.root, {"types": "todo", "completed": "1", "last": "25"}, {}).body)["rows"]["todo"]["rows"]
+    newest = on_dashboard()[-1]["n"]
+    assert all(r["brief"] != "touched last" for r in on_dashboard()), "the dashboard is answered once before the row changes, so its body is held"
+    CONTROLLERS["todo"](record, actor=USER).update(newest, brief="touched last")
+    assert any(r["n"] == newest and r["brief"] == "touched last" for r in on_dashboard()), "a change to a row reaches the dashboard at once, never the body that was held"
     CONTROLLERS["todo"](record, actor=USER).update(1, brief="touched last")
-    recent = dispatch("GET", f"/api/{record.env}/todo", record.root, {"last": "1", "by": "updated", "completed": "1"}, {}).body
+    recent =dispatch("GET", f"/api/{record.env}/todo", record.root, {"last": "1", "by": "updated", "completed": "1"}, {}).body
     assert 1 in [r["n"] for r in recent["rows"]], "by=updated returns the most recently changed rows, however old their number"
     CONTROLLERS["todo"](record, actor=USER).complete(3, "done")
     shut = dispatch("GET", f"/api/{record.env}/todo", record.root, {"last": "500", "closed": "1"}, {}).body

@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass
 from typing import TypedDict
 
@@ -10,6 +11,17 @@ from overview.counts import counts
 
 LISTED = worded(KEEP_SHAPED)
 VIEWED = worded(KEEP_SHAPED)
+DASHBOARDS = worded(KEEP_SHAPED)
+
+
+class Unchanged:
+    """A stamp that holds while every list of rows is still the very list it was taken from and the settings are the same."""
+
+    def __init__(self, lists: tuple, settings: tuple):
+        self.lists, self.settings = lists, settings
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Unchanged) and self.settings == other.settings and len(self.lists) == len(other.lists) and all(a is b for a, b in zip(self.lists, other.lists))
 
 
 @dataclass(frozen=True)
@@ -95,5 +107,17 @@ def viewed(controller, record, n: int, row_stamp, settings: tuple) -> dict:
 
 def counted(record, types) -> dict:
     return {type_: counts(CONTROLLERS[type_](record, actor=USER)) for type_ in types}
+
+
+def dashboard(record, wanted: list[str], tallied: list[str], query: dict) -> tuple[bytes, bytes]:
+    """The dashboard's lists and counts as the JSON they are sent as, made again only when a list of rows or the settings changed."""
+    controllers = {t: CONTROLLERS[t](record, actor=USER) for t in dict.fromkeys([*wanted, *tallied])}
+    stamp = Unchanged(tuple(controller.rows.summaries() for controller in controllers.values()), settled(record))
+
+    def made() -> tuple[bytes, bytes]:
+        asked = Listing.from_query(query)
+        lists = {t: lightened(controllers[t], listing(controllers[t], record, asked)) for t in wanted}
+        return json.dumps(lists).encode(), json.dumps(counted(record, tallied)).encode()
+    return DASHBOARDS.get((str(record.home), tuple(wanted), tuple(tallied), tuple(sorted(query.items()))), stamp, made)
 
 
