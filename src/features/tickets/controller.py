@@ -1,7 +1,8 @@
 import time
 
 import controllers.types as types_module
-from controllers.types import Environments, Features
+from controllers.agents import WORKING_STATE
+from controllers.types import Agents, Environments, Features
 from engine.record import Record
 from engine.seats import terminal_of
 from engine.state import State
@@ -254,6 +255,23 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 pass
         return closed
 
+    @action
+    def reopen(self, n: int, why: str):
+        """Brings a closed ticket back with its environment, and with it its plan and agent conversation, in the board's start stage; journal ticket start then carries it on."""
+        ticket = super().reopen(n, why)
+        if not ticket.work_environment:
+            return ticket
+        environments = Environments(self.record, actor=SYSTEM)
+        if not environments.rows.by_title(ticket.work_environment):
+            environments.unarchive(ticket.work_environment)
+            place = environments.rows.by_title(ticket.work_environment)
+            environments.update(place.n, owner=ticket.ref, launched_from=self.record.env, kind=EnvironmentKind.TICKET)
+        board = self._board(ticket)
+        began = board.stage_for(START) if board else ""
+        if began and ticket.stage == board.stage_for(DONE):
+            return self.update(ticket.n, stage=began)
+        return ticket
+
     def raise_moment(self, n: int, moment: str, **data) -> None:
         self.record.emit(self.type, n, moment, SYSTEM, scope=self.resource.scope, **data)
 
@@ -276,7 +294,10 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return stopped
 
     def close_merged(self) -> list:
-        return self._closed([r for r in self.rows.standing() if r.work_environment and self._ran(r) and self._merged(r)])
+        return self._closed([r for r in self.rows.standing() if r.work_environment and self._ran(r) and not self._working(r) and self._merged(r)])
+
+    def _working(self, ticket) -> bool:
+        return Agents(Record(self.record.root, ticket.work_environment), actor=SYSTEM).state(ticket.work_environment) == WORKING_STATE
 
     def _closed(self, merged: list) -> list:
         for ticket in merged:

@@ -188,9 +188,15 @@ def keep(project: Path, name: str, branch: str) -> None:
         git(project, "update-ref", f"{KEPT}/{name}", f"refs/heads/{branch}")
 
 
+def authored(project: Path, branch: str) -> bool:
+    """Whether a commit was made on the branch itself: its reflog holds a commit entry, which moving it onto the target's history never adds."""
+    log = git(project, "reflog", "show", "--format=%gs", f"refs/heads/{branch}")
+    return any(line.startswith("commit") for line in log.stdout.splitlines())
+
+
 def merged(project: Path, branch: str, base: str, into: str = "HEAD") -> bool:
     ref = f"refs/heads/{branch}"
-    if not base or not present(project, ref) or tip(project, ref) == base:
+    if not base or not present(project, ref) or tip(project, ref) == base or not authored(project, branch):
         return False
     grew = git(project, "merge-base", "--is-ancestor", base, ref).returncode == 0
     return grew and git(project, "merge-base", "--is-ancestor", ref, into).returncode == 0
