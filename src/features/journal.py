@@ -3,6 +3,7 @@ from functools import cached_property
 
 from controllers.base import Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
+from engine.inputs import UPDATE
 from engine.wording import appended
 from features.wiring import AgentHooks, Client, Commands, Events, Routes
 from resources.base import SYSTEM, titled
@@ -76,7 +77,7 @@ class Journal:
 
     def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, whisper: bool = False, **values):
         spec = self.feature.declared_line(line)
-        if not spec.reach.reaches(agent.subagent) or (not spec.while_waiting and waiting(record, agent)):
+        if agent.paused_for == UPDATE or not spec.reach.reaches(agent.subagent) or (not spec.while_waiting and waiting(record, agent)):
             return None
         lead, yields = spec.lead, not spec.while_waiting
         message = self.message(Nudges, line, values, actor, session=agent.title, private=private, whisper=whisper, lead=lead, yields=yields, reply_kept=spec.reply_kept,
