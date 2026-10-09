@@ -23,6 +23,7 @@ ARCHIVES_FOR = 90 * DAY
 PROFILES_KEPT = 50
 FOLDS_FOR = 7 * DAY
 OTHER_MARKS_FOR = DAY
+LISTENING_FOR = 60
 
 
 @dataclass(frozen=True)
@@ -61,8 +62,13 @@ def tidy_files(root: Path, days: float) -> Tidied:
     spent = older(kept.glob("launches/*.log"), days * DAY) + older(ended_captures(root), ENDED_FOR)
     for f in spent:
         f.unlink(missing_ok=True)
-    trimmed = [f for pattern, keep in TAILS.items() for f in kept.glob(pattern) if f.is_file() and trim(f, keep)]
+    trimmed = [f for pattern, keep in TAILS.items() for f in kept.glob(pattern) if f.is_file() and not listened_to(f) and trim(f, keep)]
     return Tidied(removed=len(removed), trimmed=len(trimmed), leftovers=left + len(spent))
+
+
+def listened_to(f: Path) -> bool:
+    """A queue a channel is reading is never cut: the channel keeps its place by byte offset, and a cut would send it back to the start."""
+    return f.suffix == ".jsonl" and f.parent.name == "channels" and time.time() - mtime(f.with_suffix(".on")) / 1e9 < LISTENING_FOR
 
 
 def ended_captures(root: Path) -> list[Path]:
