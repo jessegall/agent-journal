@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.65 — The dashboard reads its open rows from what it holds
+- A listing's open rows come from the held list of open rows instead of a walk through the whole history, so a type with few open rows no longer slows the dashboard.
+
 ## 2.267.64 — Agent cells say which ticket
 - A ticket's or plan's agent cell is named after it, such as Ticket 15 or Plan 3, and its kind reads Ticket agent or Plan agent.
 
