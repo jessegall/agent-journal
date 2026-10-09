@@ -99,7 +99,7 @@ watch(
 function took(type, got) {
     loaded.add(type);
     seen.value += 1;
-    store.rows[type] = got.rows;
+    store.rows[type] = [...got.rows, ...withoutAnswered((store.rows[type] || []).filter((r) => r.n === 0), got.rows)];
     store.paging.size[type] = store.paging.size[type] || PAGE;
     store.paging.more[type] = got.more;
 }
