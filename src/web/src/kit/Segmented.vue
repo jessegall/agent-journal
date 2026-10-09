@@ -37,6 +37,7 @@ const id = useId();
 .segmented {
     display: inline-flex;
     gap: 2px;
+    max-width: 100%;
     padding: 2px;
     border: 1px solid var(--border-2);
     border-radius: 7px;
