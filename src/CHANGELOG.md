@@ -10,6 +10,7 @@ newer version than the last one it saw is handed the same.
 - A release can announce a new feature in a dialog shown once after the update, with its own artwork and a button that turns the feature on.
 - An update shows the step it is on, refuses a second update while one runs, and waits at most a minute for running commands before it swaps the build.
 - A message the agent has read shows blue read ticks, in the chat and on the phone.
+- A comment shows on its row and in the chat the moment it is written, and never twice.
 - Replying to a message is faster: linking to-dos to their messages is skipped when no to-do was made lately.
 
 ## 2.267.32 — A board in a shared collection, and a faster dashboard
