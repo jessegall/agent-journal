@@ -228,9 +228,8 @@ def test_with_auto_and_orchestrator_on_a_helpers_permission_goes_to_the_orchestr
     waiting = asked(helper)
     assert [n.data["to"] for n in waiting] == ["orchestrator"], "the request is marked as the orchestrator's"
     lines = [n.title for n in Nudges(main, actor=SYSTEM).rows.every()]
-    assert "helper-ada waits for permission: Bash git push" in lines, "the orchestrating agent is told which agent, tool and call"
-    counts = summarize(helper.root)["environments"]
-    cell = next(e for e in counts if e["name"] == "helper-ada")["counts"]
+    assert "helper-ada waits for permission for Bash git push" in lines, "the orchestrating agent is told which agent, tool and call"
+    cell = next(e for e in summarize(helper.root)["helpers"] if e["name"] == "helper-ada")["counts"]
     assert (cell["prompts"], cell["routed"]) == (0, 1), "nothing waits on the user, and the cell counts it as the orchestrator's"
     assert "not yours" in refused(lambda: AnswerPermission().run(None, Agents(helper, actor=SYSTEM), "helper-ada", "allow")), "only the launching environment answers it"
     assert "no agent is running" in refused(lambda: AnswerPermission().run(None, Agents(main, actor=SYSTEM), "helper-ada", "allow")), "the launching environment's agent may, once the agent runs"

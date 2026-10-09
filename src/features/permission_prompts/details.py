@@ -46,7 +46,7 @@ class PermissionsDetails(FeatureDetails):
         ),
         Line(
             name="routed",
-            title="{{agent}} waits for permission: {{tool}} {{call}}",
-            brief="Answer it with journal agent permit {{agent}} allow, or journal agent permit {{agent}} deny.",
+            title="{{environment}} waits for permission for {{tool}} {{call}}",
+            brief="Answer it with journal agent permit {{environment}} allow, or journal agent permit {{environment}} deny.",
         ),
     ]
