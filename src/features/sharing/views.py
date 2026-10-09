@@ -36,7 +36,7 @@ def agent_lines(record: Record) -> list[dict]:
 def chat_lines(record: Record) -> list[dict]:
     messages = Messages(record, actor=SYSTEM)
     lines = []
-    for message in messages.rows.standing(closed_last=CHAT_LINES):
+    for message in sorted(messages.rows.every(), key=lambda row: row.created)[-CHAT_LINES:]:
         lines.append(ChatLine(message.author, formatted(message.brief or message.title, record, SHARED), message.created))
         lines += [ChatLine(reply.author, formatted(reply.brief or reply.title, record, SHARED), reply.created) for reply in messages.comments(message.n)]
     return [asdict(line) for line in sorted(lines, key=lambda line: line.at)[-CHAT_LINES:]]

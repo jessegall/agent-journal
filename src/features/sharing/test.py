@@ -788,9 +788,11 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     shared = sharing._shared_data(pile_share)["rows"][second.ref]["data"]
     assert (shared["stage"], shared["dependencies"], shared["status"]["state"], shared["status"]["plan"]) == ("Ideas", {first.ref: "confirmed"}, "", ""), \
         "a shared ticket carries its stage, the waits its owner confirmed and where its work stands, and no plan"
-    Messages(here, actor=USER).create("Is the build green?")
+    asked = Messages(here, actor=USER).create("Is the build green?")
+    Messages(here, actor=AGENT).comment(asked.n, "Yes, all green.")
     chat = Shares(here, actor=USER).share_view("chat")
-    assert [line["text"] for line in sharing._shared_data(chat)["view"]["lines"]] == ["Is the build green?"], "a shared chat view carries the messages between you and the agent"
+    assert [line["text"] for line in sharing._shared_data(chat)["view"]["lines"]] == ["Is the build green?", "Yes, all green."], \
+        "a shared chat view carries the messages between you and the agent, and a message the agent answered stays in it"
     agents = Shares(here, actor=USER).share_view("agents")
     assert sharing._shared_data(agents)["view"]["kind"] == "agents", "a shared agents view carries the agents that run"
     with pytest.raises(Refused):
