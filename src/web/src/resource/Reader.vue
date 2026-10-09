@@ -5,7 +5,7 @@ import {computed, provide, ref, watch, watchEffect} from "vue";
 import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, href, route, swap, unpeek} from "../route.js";
-import {PAGE, holding, rows} from "../sync/rows.js";
+import {PAGE, holding, rows, whole} from "../sync/rows.js";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -61,6 +61,9 @@ async function askRepair() {
 }
 watchEffect(() => {
     if (!scope && props.type && props.n && !resource.value) holding(props.type, [props.n]);
+});
+watchEffect(() => {
+    if (!scope && resource.value?.summary) whole(props.type, props.n).catch((error) => console.error(error));
 });
 watchEffect(() => {
     const part = resource.value && resource.value.data.part_of;

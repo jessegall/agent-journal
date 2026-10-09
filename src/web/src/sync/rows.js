@@ -96,10 +96,22 @@ watch(
         )
 );
 
+function stillWhole(held, arriving) {
+    const wholes = new Map(held.filter((r) => r.n > 0 && !r.summary).map((r) => [r.n, r]));
+    return arriving.map((r) => (r.summary && wholes.get(r.n)?.updated === r.updated ? wholes.get(r.n) : r));
+}
+
+export async function whole(type, n) {
+    const got = await api.list(type, {completed: true, only: [n]});
+    const row = got.rows.find((r) => r.n === n);
+    if (row) store.rows[type] = (store.rows[type] || []).map((r) => (r.n === n ? row : r));
+}
+
 function took(type, got) {
     loaded.add(type);
     seen.value += 1;
-    store.rows[type] = [...got.rows, ...withoutAnswered((store.rows[type] || []).filter((r) => r.n === 0), got.rows)];
+    const held = store.rows[type] || [];
+    store.rows[type] = [...stillWhole(held, got.rows), ...withoutAnswered(held.filter((r) => r.n === 0), got.rows)];
     store.paging.size[type] = store.paging.size[type] || PAGE;
     store.paging.more[type] = got.more;
 }
