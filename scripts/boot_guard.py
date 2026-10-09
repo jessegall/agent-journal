@@ -69,10 +69,10 @@ def launches(place: Path, entry: Path, name: str, during=None, alone: bool = Tru
 
 
 def lingering(place: Path, within: float = 10.0) -> list[str]:
-    calm = 0.0
+    calm, began = 0.0, time.time()
     while True:
         found = subprocess.run(["pgrep", "-fl", str(place).removeprefix("/private")], capture_output=True, text=True, timeout=WAIT).stdout.splitlines()
-        if not found or calm >= within:
+        if not found or calm >= within or time.time() - began >= WAIT:
             return found
         time.sleep(0.1)
         calm += 0.0 if busy() else 0.1
