@@ -282,6 +282,14 @@ class Driver(ABC):
     def _post(self, line: str, by: str, tracked: bool = True) -> bool:
         raise NotImplementedError(f"{self.PRODUCT} takes no channel")
 
+    def recheck_channel(self) -> None:
+        """While lines are typed because the channel failed, asks now and then whether it is up again; a provider with no channel has nothing to check."""
+        if self.TAKES_CHANNEL:
+            self._reopen_channel()
+
+    def _reopen_channel(self) -> None:
+        raise NotImplementedError(f"{self.PRODUCT} takes no channel")
+
     def run_shell(self, command: str) -> bool:
         return bool(self.SHELL) and self._typed(f"{self.SHELL}{command.strip()}", confirmed=False)
 

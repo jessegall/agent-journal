@@ -21,6 +21,7 @@ HANDED_KEPT = 20
 HANDED_TEXT = 80
 MOVED_ON = 4
 TYPED_FOR = 300
+RECHECK_EVERY = 30.0
 
 
 @dataclass(frozen=True)
@@ -53,6 +54,7 @@ class ClaudeDriver(Driver):
     SHELL = "!"
     INPUT_MARK = "❯".encode()
     TAKES_CHANNEL = True
+    rechecked = 0.0
     SUGGESTED = re.compile("(❯\u00a0)\x1b\\[2m([^\x1b\r\n]*)\x1b\\[22m".encode())
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
@@ -114,11 +116,27 @@ class ClaudeDriver(Driver):
         pid = self.pid()
         return bool(pid) and Path(row.inbox).stem == str(pid)
 
+    def _listening(self) -> bool:
+        pid = self.pid()
+        try:
+            return bool(pid) and time.time() - runtime.channel_alive(self.record.root, pid).stat().st_mtime <= self.LISTENING
+        except OSError:
+            return False
+
+    def _reopen_channel(self) -> None:
+        """Ends the typed fallback early once the channel answers again, so the next line goes over the channel and is checked as before."""
+        held = self._held()
+        if time.time() < self.rechecked + RECHECK_EVERY or time.time() >= held.typed_until:
+            return
+        self.rechecked = time.time()
+        if self.record.delivery.get("channel", True) and self._listening():
+            write_json(self._handed_file(), Handed(lines=held.lines).to_json())
+
     def _post(self, line: str, by: str, tracked: bool = True) -> bool:
         root = self.record.root
         pid = self.pid()
         try:
-            if not pid or not self.record.delivery.get("channel", True) or time.time() - runtime.channel_alive(root, pid).stat().st_mtime > self.LISTENING:
+            if not self.record.delivery.get("channel", True) or not self._listening():
                 return False
             if not self._delivering():
                 return False
