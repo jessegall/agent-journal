@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.33 — The Squire, new-feature announcements, update steps and blue read ticks
+<!-- new-feature {"id": "squire-voice", "title": "New chat voice: the Squire", "text": "Hail, good knight! Thy humble squire hath polished thine armour and awaits thy orders. Each task shall be a quest, the code thy realm, and every bug a foe most foul. Say the word, sir, and onwards we ride!", "button": "Use the Squire voice", "profile": "Squire", "note": "You can switch voices any time under Settings.", "art": "squire.webp"} -->
+- A new chat voice, the Squire: every task is a quest, the code is the realm and every bug a foe; he never drops the role in the chat and names his helpers as knights of the realm. Code, commits and docs stay plain.
+- A release can announce a new feature in a dialog shown once after the update, with its own artwork and a button that turns the feature on.
+- An update shows the step it is on, refuses a second update while one runs, and waits at most a minute for running commands before it swaps the build.
+- A message the agent has read shows blue read ticks, in the chat and on the phone.
+- Replying to a message is faster: linking to-dos to their messages is skipped when no to-do was made lately.
+
 ## 2.267.32 — A board in a shared collection, and a faster dashboard
 - A collection can hold a board: its page and its share show the board's goal, its done-when clauses and its lanes with each ticket's card and stage, read-only in a share.
 - Each ticket's plan opens from its card, in the Boards and Tickets tabs and in a share.
