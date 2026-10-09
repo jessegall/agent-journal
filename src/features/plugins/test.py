@@ -290,7 +290,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     plugins = Plugins(record, actor=SYSTEM)
     assert environment(record.root, "linter", Manifest.of(row.manifest), row.token)["QUIET"] == "", "unchanged, a setting is its default"
     from tests.kit import dispatch
-    light = dispatch("GET", f"/api/{record.env}/dashboard", record.root, {"types": "plugin"}, {}).body["rows"]["plugin"]["rows"][0]["data"]["manifest"]
+    light = json.loads(dispatch("GET", f"/api/{record.env}/dashboard", record.root, {"types": "plugin"}, {}).body)["rows"]["plugin"]["rows"][0]["data"]["manifest"]
     whole = dispatch("GET", f"/api/{record.env}/plugin", record.root, {}, {}).body["rows"][0]["data"]["manifest"]
     assert (light["name"], "settings" in light, "settings" in whole) == ("linter", False, True), \
         "the dashboard's plugin rows leave out the manifest's settings, and the plugin's own list keeps them"
