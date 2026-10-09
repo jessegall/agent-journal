@@ -195,7 +195,7 @@ def match_rank(path: str, wanted: str) -> int:
 
 def line_counts(project: Path, pairs: list[tuple[str, str]]) -> dict[tuple[str, str], LineCount]:
     texts = blob_texts(project, [sha for pair in pairs for sha in pair])
-    return {(before, after): LineCount.between(texts[before], texts[after]) for before, after in pairs}
+    return {(before, after): LineCount.between(texts.get(before, ""), texts.get(after, "")) for before, after in pairs}
 
 
 class Coalesced:

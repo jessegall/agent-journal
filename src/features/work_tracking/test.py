@@ -51,6 +51,9 @@ def test_edits_without_a_log_entry_hold_the_writes_until_the_work_is_logged():
     assert (counted.running["before"]["changed"]["added"], counted.running["before"]["files"]) == (5, ["a.py"]), \
         "an edit made while a command ran is counted on that command, even after the next one started"
     assert [one.get("changed", {}).get("added") for one in counted.commands] == [5, None], "and on its row in the list, never on a read at the same moment"
+    record_edit(agents.load(agent.n), record, works.rows.standing()[0], FileEdited(agent=agent.n, path="b.py", kind="edit", before="0" * 40, after="1" * 40, added=0))
+    assert [f["path"] for f in works.rows.standing()[0].changed if f["path"] == "b.py"] == ["b.py"], \
+        "an edit whose before blob was never stored is counted against an empty file, never a KeyError"
 
 
 def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
