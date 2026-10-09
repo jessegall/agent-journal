@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.19 — Check time limits that follow the load
+- A check's time limit stretches by how far the machine's load exceeds its cores, the same way the boot guard's does, so a check on a busy machine is no longer stopped early. The helper is shared from `engine/load.py`.
+
 ## 2.267.18 — Helper stops that wait for the agent, and a steadier test suite
 - Saying something to a helper, stopping it, finishing it and the stopped notice all ask one method whether the helper's agent still runs, and a stop returns only once that answer is no, so a helper is never reported stopped while its agent is still running.
 - Closing a login and dropping a phone in a hosted journal go through one vault method. The imports check finds the test files that import from tests/ again.
