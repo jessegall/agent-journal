@@ -95,8 +95,8 @@ def test_a_file_name_is_a_chip_when_one_project_file_has_it_and_the_agent_hears_
         f"parentheses around nothing but chips go: {bare}"
     report(record, "working", "PostToolUse")
     chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "the fix is in test.py")
-    told = [n.title for n in Nudges(record).all() if "test.py" in n.title]
-    assert told == ["test.py names 2 files in the project"], f"the agent is told to write the path: {told}"
+    nudged = [n.title for n in Nudges(record).all() if "test.py" in n.title]
+    assert nudged == ["test.py names 2 files in the project"], f"the agent is nudged to write the path: {nudged}"
     for nudge in Nudges(record).all():
         Nudges(record).delete(nudge.n, "cleared")
     chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "again: test.py")
@@ -169,3 +169,24 @@ def test_cold_project_indexing_is_shared_while_the_viewer_keeps_answering():
         finished = all(not worker.is_alive() for worker in workers) and all(not thread.is_alive() for thread in scan_threads)
         project_files.walk = actual_walk
         assert finished, "request and native scan threads finish before the wrapper is restored"
+
+
+def test_a_setting_change_leaves_formatted_rows_cached_unless_a_formatter_reads_it():
+    from controllers.types import Features
+    from resources.base import SYSTEM
+    load()
+    record = fresh()
+    todos = Todos(record, actor=USER)
+    row = todos.create("see message 1", brief="a brief with no path, no hash and no number")
+    first = shaped(todos.load(row.n), record, VIEWER)
+    Features(record, actor=SYSTEM).configure("helpers", "kept", "9")
+    assert shaped(todos.load(row.n), record, VIEWER) is first, "a setting no formatter reads leaves the formatted row cached"
+    Features(record, actor=SYSTEM).switch("row_links", False)
+    assert shaped(todos.load(row.n), record, VIEWER) is not first, "switching off a feature that owns a formatter formats it again"
+    from features.row_links.formatters import MarkRows
+    from features.row_links.paths import MarkPaths
+    from features.parts import Context
+    import features
+    here = Context.of(features.FEATURES["row_links"], record)
+    assert (MarkRows().format(here, "no digits here"), MarkPaths().format(here, "plain words, nothing linked")) == ("no digits here", "plain words, nothing linked"), \
+        "a text with no digit, address, file ending or hash goes through the link formatters unchanged"

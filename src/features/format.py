@@ -1,3 +1,5 @@
+import json
+
 from controllers.faults import threw
 from engine.markers import plain
 from features.switches import generation
@@ -15,6 +17,7 @@ KEEP_CATALOGUES = 8
 KEEP_SHAPED = 5000
 KEEP_TEXTS = 20000
 WORDED: list[Memo] = []
+FORMATTING_FEATURES: list = []
 
 
 def worded(limit: int) -> Memo:
@@ -23,6 +26,7 @@ def worded(limit: int) -> Memo:
     return memo
 
 
+SIGNATURES = Memo()
 SHAPED = worded(KEEP_SHAPED)
 CARDS = worded(KEEP_SHAPED)
 TEXTS = worded(KEEP_TEXTS)
@@ -47,8 +51,14 @@ def formatted(text: str, record=None, surface: str = "") -> str:
     return text
 
 
+def formatting(record) -> str:
+    """What the formatters read: the saved settings of the features that own one, so a setting nothing here reads leaves every formatted text cached."""
+    return SIGNATURES.get(str(record.home), (record.settings_file.held()[0], generation()),
+                          lambda: json.dumps([(feature.name, dict(feature.values(record))) for feature in FORMATTING_FEATURES], sort_keys=True, default=str))
+
+
 def settled(record) -> tuple:
-    return record.settings_file.held()[0], generation()
+    return formatting(record), generation()
 
 
 def formatted_item(text: str, record, surface: str) -> str:
@@ -84,8 +94,8 @@ def carded(r, record, surface: str = "") -> dict:
 def card(r, record=None, surface: str = "") -> dict:
     """What a result card shows, formatted: the title, the abstract or else the brief, and the section titles; no other text."""
     row = as_dict(r)
-    shown = ("title", "abstract" if row.get("abstract") else "brief")
-    fields = {key: formatted(row.get(key), record, surface) for key in shown if row.get(key)}
+    kept_fields = ("title", "abstract" if row.get("abstract") else "brief")
+    fields = {key: formatted(row.get(key), record, surface) for key in kept_fields if row.get(key)}
     fields = {**fields, **{key: plain(fields[key]) for key in PLAIN_FIELDS if key in fields}}
     parts = [{SECTION.title: formatted(s.get(SECTION.title), record, surface)} for s in row.get("sections") or []]
     data = {key: value for key, value in (row.get("data") or {}).items() if key not in getattr(r, "formatted_data", {})}

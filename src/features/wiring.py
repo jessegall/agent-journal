@@ -8,7 +8,7 @@ from engine.events.base import AgentEvent
 from engine.gates import CANCELERS, RESPONDERS, HookCall
 from engine.reach import Guard
 from engine.wording import APPENDS
-from features.format import FORMATTERS
+from features.format import FORMATTERS, FORMATTING_FEATURES
 from features.parts import ActionInterceptor, AgentContext, Canceler, Command, Context, Handler, TextFormatter, ToolInterceptor
 from resources.base import SYSTEM, USER, Refused
 from features.routing import FEATURE_ROUTES
@@ -59,6 +59,8 @@ class Client:
 
     def formatter(self, formatter: TextFormatter) -> None:
         feature = self.feature
+        if feature not in FORMATTING_FEATURES:
+            FORMATTING_FEATURES.append(feature)
         FORMATTERS.add(None, (lambda text, record: formatter.format(Context.of(feature, record), text)
                            if not record or (feature.enabled(record) and wanted(formatter, feature, record, None, timed=False)) else text,
                            formatter.surfaces))

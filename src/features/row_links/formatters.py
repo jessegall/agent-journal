@@ -10,6 +10,7 @@ from resources.types import TYPES
 
 KEPT = re.compile(r"`[^`]*`|" + MARKER.pattern)
 CODE = re.compile(r"`[^`]*`")
+DIGIT = re.compile(r"\d")
 
 
 @cache
@@ -61,13 +62,13 @@ def chipped(text: str, record=None) -> str:
     names, found = named(places)
 
     def chip(m) -> str:
-        said = Mention.of(m, names)
-        if record is not None and not all(exists(record, said.env, said.name, int(n)) for n in said.numbers):
+        mention = Mention.of(m, names)
+        if record is not None and not all(exists(record, mention.env, mention.name, int(n)) for n in mention.numbers):
             return m.group(0)
-        if len(said.numbers) == 1:
-            return marked("chip", said.ref(said.numbers[0]), m.group(0))
-        chips = [marked("chip", said.ref(n), f"{said.spelled} {n}") for n in said.numbers]
-        there = "" if said.env is None else f" in {said.env}"
+        if len(mention.numbers) == 1:
+            return marked("chip", mention.ref(mention.numbers[0]), m.group(0))
+        chips = [marked("chip", mention.ref(n), f"{mention.spelled} {n}") for n in mention.numbers]
+        there = "" if mention.env is None else f" in {mention.env}"
         return f"{', '.join(chips[:-1])} and {chips[-1]}{there}"
 
     return found.sub(chip, text)
@@ -92,6 +93,8 @@ class MarkRows(TextFormatter):
     surfaces = (VIEWER, SHARED)
 
     def format(self, context: Context, text: str) -> str:
+        if not DIGIT.search(text):
+            return text
         return outside(KEPT, text, lambda part: chipped(part, context.record), lambda kept: spanned(kept, context.record))
 
 
