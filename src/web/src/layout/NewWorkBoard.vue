@@ -26,8 +26,7 @@ async function pick(value) {
 
 <template>
     <span class="new-work-board" title="The board the orchestrating agent files new requests on, as tickets; with No board they become to-dos">
-        <span class="new-work-board-label">Board</span>
-        <MenuChoice :options="options" :value="current" empty="No board" @pick="pick" />
+        <MenuChoice :options="options" :value="current" empty="No board" prefix="Board" @pick="pick" />
     </span>
 </template>
 
@@ -37,10 +36,5 @@ async function pick(value) {
     align-items: center;
     gap: 6px;
     flex: none;
-}
-
-.new-work-board-label {
-    color: var(--text-3);
-    font-size: 12px;
 }
 </style>
