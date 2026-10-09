@@ -244,6 +244,14 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     from engine.runtime import default_env
     from engine.record import Record
     notified = [n for n in Notifications(Record(record.root, default_env(record.root))).rows.every() if n.title == "Journal updated to 1.0.1"]
+    from features.auto_update.new_feature import new_features
+    notes = ('# Changelog\n\n## 2.9.0 — A voice\n- It talks.\n<!-- new-feature {"id": "squire", "title": "New chat voice: the Squire", "text": "Hail!", '
+             '"button": "Use the Squire voice", "profile": "Squire", "art": "squire.png"} -->\n\n## 2.8.0 — Fixes\n- Fixed.\n\n'
+             '## 2.7.0 — Broken\n<!-- new-feature {not json} -->\n')
+    found = new_features(notes)
+    assert ([(one.id, one.version, one.profile, one.art, one.eyebrow) for one in found]
+            == [("squire", "2.9.0", "Squire", "announcements/squire.png", "Hey, new feature")]), \
+        "a changelog entry announces a new feature beside its notes, with the artwork file shipped with it; an entry that announces none or announces it wrong adds nothing"
     assert (len(notified), "user" in notified[0].seen) == (1, True), "announced once, already seen"
     assert ".journal/attic/before-update-1.0.0-123" in notified[0].brief and not copy_note.exists(), \
         "the update notice names the copy of legacy managed files once"

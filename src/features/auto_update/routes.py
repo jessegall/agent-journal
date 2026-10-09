@@ -1,10 +1,12 @@
 import features
 import threading
+from dataclasses import asdict
 from engine import runtime
 from engine.package import data
 from engine.record import Record
 from engine.upgrades import FETCHING, newer, upstream
 from engine.version import version
+from features.auto_update.new_feature import new_features
 from features.routing import Reply, Request, handles
 from resources.base import Refused
 from features.journal_laws.managed import changed_managed, changed_message
@@ -24,6 +26,12 @@ def get_changelog(req: Request) -> Reply:
                        "checking": FETCHING.locked(), "updating": runtime.upgrade_mark(req.root).exists(),
                        "repository": journal_repository(req.root.parent),
                        "changed": [path.relative_to(req.root.parent).as_posix() for path in changed_managed(req.root.parent, req.root)]})
+
+
+@handles("GET", "/api/new-feature")
+def get_new_feature(req: Request) -> Reply:
+    found = new_features(CHANGELOG.read_text()) if CHANGELOG.is_file() else []
+    return Reply(200, asdict(found[0]) if found else {})
 
 
 @handles("POST", "/api/update")
