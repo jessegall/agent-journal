@@ -21,7 +21,7 @@ const artMissing = ref(false);
         <div class="new-feature">
             <div class="new-feature-glow" />
             <template v-if="art && !artMissing">
-                <img class="new-feature-art" :src="`/${art}`" alt="" @error="artMissing = true" />
+                <img class="new-feature-art" :src="art" alt="" @error="artMissing = true" />
             </template>
             <template v-else>
                 <div class="new-feature-badge">
