@@ -508,7 +508,10 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     assert not told, "a hook that got no answer while the server restarted, warm-up included, is not reported"
     runtime.hook_failures(record.root).write_text(f"{started + 100} 000 claude {record.env} 500.0\n")
     http.unanswered(record.root)
-    assert told and "machine load 500.0" in told[-1], "a hook that got no answer is reported whatever the load, with the load beside it"
+    assert not told, "a hook that got no answer once is not reported: it kept the event in its spool and the agent never noticed"
+    runtime.hook_failures(record.root).write_text("".join(f"{started + 100 + i} 000 claude {record.env} 500.0\n" for i in range(5)))
+    http.unanswered(record.root)
+    assert told and "machine load 500.0" in told[-1], "a hook that keeps getting no answer is reported, with the load beside it"
     told.clear()
     import serve
     import threading

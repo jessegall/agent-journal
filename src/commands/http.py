@@ -56,6 +56,7 @@ from commands.dispatch import dispatch  # noqa: F401
 
 
 RESTART_GRACE = 15
+MISSES_TO_REPORT = 5
 
 
 def unanswered(root: Path) -> None:
@@ -74,6 +75,8 @@ def unanswered(root: Path) -> None:
         named = line.split()[3:4]
         by_env.setdefault(named[0] if named else runtime.env(root), []).append(line)
     for env, logged in by_env.items():
+        if len(logged) < MISSES_TO_REPORT:
+            continue
         codes = sorted({line.split()[1] for line in logged})
         load = logged[-1].split()[4:5]
         beside = f", machine load {load[0]} on {os.cpu_count()} cores" if load else ""

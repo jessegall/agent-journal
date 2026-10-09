@@ -688,7 +688,7 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         "a heal runs the installer under src/ when it is there, else fetches the package and runs again marked as healed"
 
 
-def test_a_hook_never_waits_more_than_a_moment_for_a_server_that_is_down_slow_or_refusing(tmp_path):
+def test_a_hook_never_waits_more_than_a_moment_for_a_server_that_is_down_and_a_few_seconds_for_one_too_busy_to_beat(tmp_path):
     import http.server
     import socket
     import threading
@@ -731,11 +731,15 @@ def test_a_hook_never_waits_more_than_a_moment_for_a_server_that_is_down_slow_or
     Answer.pause = 3.0
     server = http.server.ThreadingHTTPServer(("127.0.0.1", port), Answer)
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    beat(60)
+    beat(120)
     slow, took = run()
-    assert (slow.stdout, took < 1.0) == ("", True), "a server too slow to beat is asked once, briefly, and the hook goes on"
+    assert (slow.stdout, took < 1.0) == ("", True), "a server that has not beaten for minutes is asked once, briefly, and the hook goes on"
     logged = (tmp_path / "runtime" / "hook-failures.log").read_text().split()
     assert (logged[1:4], float(logged[4]) >= 0) == (["down", "claude", "main"], True), "and says so in the log, with the machine's load at that moment"
+    Answer.pause = 1.0
+    beat(20)
+    late, took = run()
+    assert (late.stdout.strip(), 1.0 <= took < 3.0) == ('{"reason": "served"}', True), "a server whose beat is late, as under load, is given a few seconds to answer before the hook goes on"
     Answer.pause = 0.0
     beat(0)
     served, _ = run()

@@ -3,7 +3,11 @@
 agent=$1
 root=$2
 heartbeat_age=5
-# a server that is not beating is down, restarting or hung: the hook gives it this long, once, and never waits for it
+# a heartbeat that is late but not old is a server too busy to beat on time, as on a machine under load: the hook asks it once,
+# long enough to answer, and spools the event when it does not
+late_age=60
+late_wait=3
+# a server that is not beating for longer is down, restarting or hung: the hook gives it this long, once, and never waits for it
 unhealthy_wait=0.05
 healthy_wait=10
 body=$(mktemp) || exit 0
@@ -32,7 +36,10 @@ read -r at url < "$root/runtime/heartbeat" 2>/dev/null || down
 # a late heartbeat is a busy server as often as a dead one: ask it once, briefly, before giving up
 stale=
 wait_for=$healthy_wait
-[ $(( $(date +%s) - at )) -le $heartbeat_age ] || { stale=1; wait_for=$unhealthy_wait; }
+age=$(( $(date +%s) - at ))
+if [ $age -gt $late_age ]; then stale=1; wait_for=$unhealthy_wait
+elif [ $age -gt $heartbeat_age ]; then wait_for=$late_wait
+fi
 sent_to=
 while :; do
   if [ -n "$sent_to" ]; then
