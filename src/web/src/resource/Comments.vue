@@ -12,6 +12,8 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import {quoted, withQuote} from "../format/quote.js";
 import {age} from "../format/time.js";
 import {markPassage, passageIn} from "../platform/passage.js";
+import {pendingRow} from "../domain/placeholders.js";
+import {optimistic} from "../sync/rows.js";
 import {usePromised} from "../composables/promised.js";
 import Compose from "../chat/Compose.vue";
 
@@ -115,9 +117,21 @@ async function post(made) {
     }
 }
 
+const notSaved = ref("");
+
 function comment(target, refs, brief) {
+    if (!scope.env) return commentHere(target, refs, brief);
     const made = promise({type: "comment", brief, refs, target});
     post(made);
+    return made;
+}
+
+function commentHere(target, refs, brief) {
+    const made = pendingRow("comment:pending-", {type: "comment", brief, refs});
+    notSaved.value = "";
+    optimistic("comment", made, () => scope.api.act(target.type, target.n, target.action, {text: brief})).catch((e) => {
+        notSaved.value = e.message;
+    });
     return made;
 }
 
@@ -259,6 +273,9 @@ async function send(text) {
         </section>
     </template>
     <template v-if="props.compose">
+        <template v-if="notSaved">
+            <p class="unsaved">Couldn't save the comment: {{ notSaved }}</p>
+        </template>
         <div class="comment-write">
             <Compose
                 :placeholder="quote ? 'Say something about this passage…' : 'Write a comment…'"

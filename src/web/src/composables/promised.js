@@ -1,31 +1,12 @@
 import {ref} from "vue";
-
-let made = 0;
+import {pendingRow} from "../domain/placeholders.js";
 
 export function usePromised(released = () => {}) {
     const pending = ref([]);
     const linked = new Map();
 
     function promise(row) {
-        made += 1;
-        const placeholder = {
-            ref: `pending:${made}`,
-            n: 0,
-            title: "",
-            abstract: "",
-            brief: "",
-            refs: [],
-            seen: ["user"],
-            sections: [],
-            data: {},
-            created: Date.now() / 1000,
-            updated: 0,
-            deleted: 0,
-            completed: 0,
-            who: "user",
-            pending: true,
-            ...row,
-        };
+        const placeholder = pendingRow("pending:", row);
         pending.value = [...pending.value, placeholder];
         return placeholder;
     }

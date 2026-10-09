@@ -15,4 +15,14 @@ describe("a row the viewer added while its create call was out", () => {
         expect(withoutAnswered([other, placeholder], [other, real])).toEqual([other]);
         expect(withoutAnswered([other, placeholder], [other])).toEqual([other, placeholder]);
     });
+
+    test("a comment the viewer wrote is answered by the server's comment with its words, and never by an older one on the same row", () => {
+        const wrote = {type: "comment", n: 0, refs: ["doc:3"], brief: "Check the second table", created: 1000, data: {}};
+        const older = {type: "comment", n: 7, refs: ["doc:3"], brief: "Check the second table", created: 100, data: {}};
+        const other = {type: "comment", n: 8, refs: ["doc:3"], brief: "Something else", created: 1001, data: {}};
+        const arrived = {type: "comment", n: 9, refs: ["doc:3"], brief: "Check the second table", created: 1001, data: {}};
+        expect([answers(older, wrote), answers(other, wrote), answers(arrived, wrote)]).toEqual([false, false, true]);
+        const second = {...wrote, brief: "And the third"};
+        expect(withoutAnswered([wrote, second], [arrived])).toEqual([second]);
+    });
 });

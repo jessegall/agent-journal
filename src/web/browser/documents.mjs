@@ -34,6 +34,28 @@ await runScenarios(process.argv[2], {
             throw new Error("the newer document is marked as replaced");
         });
     },
+    async "a comment written on a document shows at once, before the server answers, and once the server's row arrives it is not shown twice"(page, url) {
+        const n = make(`Commented ${Date.now()}`, "text to comment on");
+        const words = `Please check this ${Date.now()}`;
+        let release;
+        const held = new Promise((resolve) => (release = resolve));
+        await page.route(new RegExp(`/api/main/doc/${n}/comment`), async (route) => {
+            await held;
+            await route.continue();
+        });
+        await page.goto(`${url}#/main/doc/${n}`);
+        await page.getByRole("button", {name: "Comments"}).click();
+        await page.getByPlaceholder("Write a comment…").fill(words);
+        await page.getByRole("button", {name: "Comment", exact: true}).click();
+        await page.getByText(words).first().waitFor({timeout: 2000});
+        release();
+        await page.waitForFunction((text) => document.body.innerText.includes(text) && !document.body.innerText.includes("Couldn't save"), words);
+        await page.waitForTimeout(1500);
+        const shown = await page.getByText(words).count();
+        await page.waitForTimeout(6000);
+        if ((await page.getByText(words).count()) !== shown) throw new Error("the comment changed how many times it is shown after the server's row arrived");
+        if ((await page.locator(".comment", {hasText: words}).count()) > 1) throw new Error("the comment is shown twice on its document");
+    },
     async "a library with nothing matching the search says so instead of staying empty"(page, url) {
         make(`Findable ${Date.now()}`, "something");
         await library(page, url);
