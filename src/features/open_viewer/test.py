@@ -481,6 +481,11 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     assert told and "machine load 500.0" in told[-1], "a hook that got no answer is reported whatever the load, with the load beside it"
     told.clear()
     import serve
+    import threading
+    from commands.parser import PARSERS
+    PARSERS.clear()
+    serve.warm_viewer(record.root, record.env, threading.Event())
+    assert not [key for key in PARSERS if key[0] == ""], "the warm-up leaves the parser of every command to the first help that asks for it"
     runtime.restarting(record.root).write_text(str(started - 60))
     waits = iter([False, True])
     serve.watch_runtime(record.root, SimpleNamespace(wait=lambda _: next(waits)))
