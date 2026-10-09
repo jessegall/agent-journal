@@ -40,6 +40,9 @@ class Turn:
     def lowered(self) -> str:
         return self.text.lower()
 
+    def __getstate__(self) -> dict:
+        return {name: value for name, value in self.__dict__.items() if name != "lowered"}
+
     @property
     def has_agent_text(self) -> bool:
         return self.who == "agent" and bool(self.text.strip())

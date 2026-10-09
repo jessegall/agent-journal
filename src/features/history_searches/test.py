@@ -27,7 +27,9 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     assert last["label"] == 'Searched messages for "assign"', "searching one kind of row names that kind and what was searched for"
     import json
     from commands.cli import captured
+    from providers import transcript_cache
     from providers.claude import Claude
+    monkeypatch.setattr(transcript_cache.CACHE, "folder", tmp_path / "folds")
     transcript = tmp_path / "s.jsonl"
     transcript.write_text(json.dumps({"type": "user", "uuid": "u1", "timestamp": "2026-10-08T10:00:00Z", "message": {"role": "user", "content": "find the needle please"}}) + "\n")
     Agents(record, actor=SYSTEM).update(agent.n, provider="claude", transcript=str(transcript))
@@ -42,6 +44,12 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     later = captured(["--env", record.env, "search", "haystack"], record.root)
     assert ("haystack" in later[0], len(reads), "needle" in captured(asked, record.root)[0]) == (True, 1, True), \
         "a transcript that has grown is read from where it ended, never whole again, and the turns read before are still found"
+    from providers import search_folds
+    from providers.turns import TURNS
+    TURNS.clear()
+    assert (captured(["--env", record.env, "search", "haystack"], record.root)[0].count("haystack") >= 1, len(reads)) == (True, 1), \
+        "a restart reads the conversation back from the folds kept on disk, not from the file again"
+    assert search_folds.restored(transcript, transcript.stat().st_size) is not None, "the folds are kept beside the transcript's size and position"
 
 
 def test_a_search_mark_keeps_what_the_search_found_and_what_was_read_from_it_until_the_next_search_or_answer():

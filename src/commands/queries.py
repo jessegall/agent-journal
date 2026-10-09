@@ -16,7 +16,7 @@ from engine.seats import seats
 from engine.transcript import Turn, search as search_transcript
 from features.command_tags.reading import visible
 from providers import PROVIDERS
-from providers.turns import every_turn
+from providers.turns import every_turn, loading
 from resources.base import Refused, SYSTEM
 from resources.types import AgentRow
 from engine import runtime
@@ -87,7 +87,8 @@ def search_text(record, term: str, page: int, archived: bool = False, resources:
     rows = "\n".join(f"{type_} ({len(here)})\n" + "\n".join(row_line(hit) for hit in here)
                      for type_ in types if (here := [hit for hit in hits if hit.type == type_]))
     files = "\n".join(f"  file  {hit.row.ref}  {name}" + (f" — {tags}" if tags else "") for hit in hits for name, tags in hit.files)
-    return "\n".join(part for part in (transcript_matches, rows, files) if part)
+    still = f"{loading()} conversations are still being read, so older matches may be missing: search again in a moment" if loading() else ""
+    return "\n".join(part for part in (transcript_matches, rows, files, still) if part)
 
 
 def row_line(hit) -> str:
