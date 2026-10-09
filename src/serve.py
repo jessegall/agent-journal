@@ -292,6 +292,7 @@ def warm_changed(root: Path) -> None:
     from features.open_viewer.manifest import manifest
     parser()
     manifest(root)
+    warm_dashboard(root, default_env(root))
 
 
 def warmed(root: Path, warm: threading.Event) -> None:
@@ -321,9 +322,13 @@ def settle_agents(root: Path) -> None:
         traceback.print_exc()
 
 
-def warm_viewer(root: Path, env: str, warm: threading.Event) -> None:
+def warm_dashboard(root: Path, env: str) -> None:
     from controllers.types import CONTROLLERS
     dispatch("GET", f"/api/{env}/dashboard", root, {"types": ",".join(CONTROLLERS), "completed": "1", "last": "25", "events": "100"}, {})
+
+
+def warm_viewer(root: Path, env: str, warm: threading.Event) -> None:
+    warm_dashboard(root, env)
     warm.set()
     dispatch("GET", f"/api/{env}/family", root, {}, {})
     dispatch("GET", "/api/manifest", root, {}, {})
