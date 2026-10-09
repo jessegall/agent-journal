@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.8 — Test cards, file changes and chat marks follow what an agent really does
+- A test run in the chat is a card for the test runner's own part of a command, named for what it tests, and a run started in the background gets its card when it ends, with its tally read from its output; a finished run with no readable result says Tests ran. A python -m runner counts as a test run.
+- An agent's file changes show in its dialog when it works in a worktree or a checkout of its own, and any shell command that is not only a read or a search is checked for changes.
+- The helper dialog shows its brief and report as one line each with an Open button, and its Chat and Transcript tabs lose their description bars. The chat box loses its waiting glow and shows three moving dots in its waiting badge, on the phone too.
+- A search mark in the chat names the term it searched for, and a click opens what the search found in a dialog.
+- The Linear and Gmail cards show the switch, the login with its state, direct use by agents and the state line; a logged in card offers Log out; reading into tickets is off by default; a card reads its state as soon as it is switched on; a switch with its label beside it has no tooltip.
+- A reply tag no longer runs twice and reports that it did not run: a message a handler consumed stays marked as sent.
+- Every create ends its output with one line naming what it made, such as todo 12.
+- A finished plan reads done, and an upgrade fixes the finished plans that kept parked or active.
+- A request that passes its budget keeps a stack sample of every thread beside its profile.
+
 ## 2.267.7 — Tooltips stay while the chat scrolls, and the first command after a start is quick
 - A tooltip now closes on a scroll only when the scrolled area holds the button it points at, so a chat that scrolls itself no longer takes it away.
 - The server prepares the command parsers and the open work and to-dos before it prints its address, so the first command after an install or a restart answers in under 10 ms instead of 200.
