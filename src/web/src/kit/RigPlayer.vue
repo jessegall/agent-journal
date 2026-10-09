@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {poseAt, rigUrl, transforms} from "../domain/rig.js";
+import {fileOf, poseAt, rigUrl, transforms} from "../domain/rig.js";
 
 const props = defineProps({
     voice: {type: String, required: true},
@@ -63,13 +63,16 @@ const scale = computed(() => ({transform: `scale(${props.size / 256})`}));
     <span class="rig-player" :style="{width: `${size}px`, height: `${size}px`}">
         <span class="rig-stage" :style="scale">
             <template v-for="layer in rig.layers" :key="layer.name">
-                <img
-                    class="rig-layer"
-                    :src="api.publicUrl(rigUrl(voice, layer.file))"
-                    alt=""
-                    draggable="false"
-                    :style="{transform: matrices[layer.name]}"
-                />
+                <template v-for="file in layer.states ? Object.values(layer.states) : [layer.file]" :key="file">
+                    <img
+                        v-show="file === fileOf(layer, pose)"
+                        class="rig-layer"
+                        :src="api.publicUrl(rigUrl(voice, file))"
+                        alt=""
+                        draggable="false"
+                        :style="{transform: matrices[layer.name]}"
+                    />
+                </template>
             </template>
         </span>
     </span>

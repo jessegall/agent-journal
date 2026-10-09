@@ -14,7 +14,7 @@ export async function loadRig(voice) {
     if (!voice || rigs.value[voice]) return rigs.value[voice];
     try {
         const [rig, moves] = await Promise.all([api.voiceRig(voice), api.voiceMoves(voice)]);
-        rigs.value = {...rigs.value, [voice]: {rig, moves: moves.moves}};
+        rigs.value = {...rigs.value, [voice]: {rig, moves: moves.moves, blink: moves.blink || null}};
     } catch {
         rigs.value = {...rigs.value, [voice]: null};
     }

@@ -146,6 +146,42 @@
       ]
     },
     {
+      "name": "eyes",
+      "file": "homie_eyes_happy.png",
+      "order": 20.5,
+      "parent": "head",
+      "pivot": [
+        91,
+        97
+      ],
+      "states": {
+        "happy": "homie_eyes_happy.png",
+        "open": "homie_eyes_open.png",
+        "half": "homie_eyes_half.png",
+        "closed": "homie_eyes_closed.png",
+        "surprised": "homie_eyes_surprised.png",
+        "look_left": "homie_eyes_look_left.png",
+        "look_right": "homie_eyes_look_right.png",
+        "look_up": "homie_eyes_look_up.png",
+        "look_down": "homie_eyes_look_down.png"
+      }
+    },
+    {
+      "name": "mouth",
+      "file": "homie_mouth_closed.png",
+      "order": 20.6,
+      "parent": "head",
+      "pivot": [
+        91,
+        97
+      ],
+      "states": {
+        "closed": "homie_mouth_closed.png",
+        "open": "homie_mouth_open.png",
+        "smile": "homie_mouth_smile.png"
+      }
+    },
+    {
       "name": "cap",
       "file": "homie_cap.png",
       "order": 30,

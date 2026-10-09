@@ -3,6 +3,9 @@ const REST = {rotate: 0, x: 0, y: 0};
 
 export const rigUrl = (voice, file) => `voices/rigs/${voice}/${file}`;
 
+export const fileOf = (layer, pose) =>
+    (layer.states && pose[layer.name]?.state ? layer.states[pose[layer.name].state] : layer.file) || layer.file;
+
 function keyAt(track, ms) {
     const after = track.findIndex(([at]) => at > ms);
     if (after === -1) return {...REST, ...track[track.length - 1][1]};
@@ -15,8 +18,15 @@ function keyAt(track, ms) {
     return {rotate: start.rotate + (end.rotate - start.rotate) * t, x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t};
 }
 
+function stateAt(track, ms) {
+    const passed = track.filter(([at, key]) => at <= ms && key.state);
+    return passed.length ? passed[passed.length - 1][1].state : null;
+}
+
 export function poseAt(animation, ms) {
-    return Object.fromEntries(Object.entries(animation.tracks).map(([part, track]) => [part, keyAt(track, ms)]));
+    return Object.fromEntries(
+        Object.entries(animation.tracks).map(([part, track]) => [part, {...keyAt(track, ms), state: stateAt(track, ms)}])
+    );
 }
 
 function own(layer, move) {
