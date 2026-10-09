@@ -1,6 +1,7 @@
 import {computed, ref} from "vue";
 import {saveSettings} from "../actions/settings.js";
 import {api} from "../api/client.js";
+import {placeOf} from "../domain/mascots.js";
 import {store} from "../state/store.js";
 
 export const profiles = ref([]);
@@ -24,7 +25,12 @@ export const artOf = (row) => (row.data.art ? api.publicUrl(`voices/${row.data.a
 
 export const mascotOn = computed(() => form().mascot !== false);
 
-export const idleSheetOf = (row = standing.value) => (row?.data.art ? api.publicUrl(`voices/${row.data.art.replace(/\.\w+$/, "")}_idle_sheet.png`) : "");
+export const mascotOf = computed(() => {
+    const art = standing.value?.data.art;
+    if (!mascotOn.value || !art) return null;
+    const sheet = (name) => api.publicUrl(`voices/${art.replace(/\.\w+$/, "")}_${name}_sheet.png`);
+    return {blink: sheet("blink"), acts: [1, 2, 3, 4, 5].map((n) => sheet(`idle_${n}`)), single: sheet("idle"), place: placeOf(art)};
+});
 
 export const calls =(row) => callings.value[row.data.calling] || row.data.address || "";
 
