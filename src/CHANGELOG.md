@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.44 — Refusals that say who decides, and a calmer update check
+- A refused ticket or board decision names who may take it and how, and never sends an agent its board lets decide back to the user.
+- The update check runs every half hour by default.
+
 ## 2.267.43 — A ticket's plan always reaches its board's orchestrator
 - Who orchestrates a board is its orchestrator field alone: a ticket plan waiting for approval starts the review for that environment, and it may approve the plan, also after the board's run has ended.
 
