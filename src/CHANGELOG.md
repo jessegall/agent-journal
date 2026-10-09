@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.13 — Lists, chats and cells follow what you do
+- Each tab of a list page fetches its own first page when opened and keeps its own Load more count; the Closed tab lists the closed rows newest closed first. The Files page shows a skeleton and asks for each tab's files a page at a time, filtered on the server by kind, by what they are attached to and by the words searched.
+- The inspector's chat stays where you scrolled when lines arrive and shows a Jump to latest pill; only your own send moves it down. A chat message's header stays on one line.
+- A turn that answers only journal lines stays out of the chat, even when a journal line hands over a message the agent already answered, and a turn is sent once. A helper's working notes stay in its inspector; only what it writes to you reaches the chat.
+- A message processed into a row is handled at once and its check marks colour. Delete is offered only on messages you sent, and the server refuses any other. A row's panel shows its comments once.
+- Connecting, disconnecting, logging in to and logging out of an integration, and a failing check or the run that clears it, show in the chat on your side.
+- The agent cell's last row is Running for or Last active, and a helper's cell shows its latest instruction. The context popup shows the real last compaction. The waiting dots light one at a time. The Brief and Report bars are flush. The Gmail browser case no longer loses its address under load.
+
 ## 2.267.12 — journal secret run works again
 - journal secret run works again: a word that takes a list of words, such as the command after the secret, no longer overwrites the command line's own command.
 
