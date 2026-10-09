@@ -307,11 +307,9 @@ def settle_agents(root: Path) -> None:
 
 
 def warm_viewer(root: Path, env: str, warm: threading.Event) -> None:
-    from commands.parser import parser
     from controllers.types import CONTROLLERS
     dispatch("GET", f"/api/{env}/dashboard", root, {"types": ",".join(CONTROLLERS), "completed": "1", "last": "25", "events": "100"}, {})
     warm.set()
-    parser()
     dispatch("GET", f"/api/{env}/family", root, {}, {})
     dispatch("GET", "/api/manifest", root, {}, {})
 
