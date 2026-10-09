@@ -60,7 +60,7 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
         self.update(n, finished=time.time())
         self.record.emit("board", n, FINISHED, SYSTEM, scope=PROJECT)
 
-    def reopen(self, n: int) -> None:
+    def unfinish(self, n: int) -> None:
         self.update(n, finished=0)
         self.record.emit("board", n, RESUMED, SYSTEM, scope=PROJECT)
 
