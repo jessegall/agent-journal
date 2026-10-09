@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.66 — Plans as rows in a collection, and one folder scan per request
+- A collection's Plans tab lists each plan as a full-width row: its title, the ticket it comes from, the phase it is in, a progress bar with done out of total, and its state; a click opens it, on the collection page and in a share.
+- A dashboard request scans each type's folder once and hands the rows to the listing and the counts.
+
 ## 2.267.65 — The dashboard reads its open rows from what it holds
 - A listing's open rows come from the held list of open rows instead of a walk through the whole history, so a type with few open rows no longer slows the dashboard.
 
