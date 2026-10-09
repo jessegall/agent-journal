@@ -9,7 +9,8 @@ from features.format import SHARED, formatted, shape
 from features.plans.controller import Plans
 from resources.base import SYSTEM, Ref, Refused
 
-SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status")}
+SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status"),
+                 "ticket": ("stage",)}
 
 
 def scoped(text: str, scope: set[str]) -> str:

@@ -9,6 +9,7 @@ from typing import NamedTuple
 from controllers.types import Docs
 from features.collections.controller import Collections
 from features.plans.controller import Plans
+from features.tickets.controller import Tickets
 from engine.record import Record
 from features.sharing.controller import Shares
 from features.sharing.server import ShareHandler
@@ -41,6 +42,8 @@ def served() -> Iterator[SharedPages]:
     away = Plans(ticket, actor=AGENT).create("Plan from the ticket", goal="Done elsewhere")
     group = Collections(record, actor=AGENT).create("Launch pile")
     Collections(record, actor=AGENT).add(group.n, [f"doc:{doc.n}", f"ticket-1/{away.ref}"])
+    login = Tickets(record, actor=USER).create("Fix the login page", stage="Doing")
+    Collections(record, actor=AGENT).add(group.n, [login.ref])
     pile = shares.create(f"collection:{group.n}")
     server = ThreadingHTTPServer(("127.0.0.1", 0), type("Bound", (ShareHandler,), {"shares": shares}))
     threading.Thread(target=server.serve_forever, daemon=True).start()

@@ -58,13 +58,20 @@ const members = computed(() =>
 const open = (r) => peekThere(r.env || route.value.env, r.type, r.n);
 const filePath = (r, name) => (r.env ? api.in(r.env) : api).fileUrl(r.type, r.n, name);
 
-const cards = computed(() => members.value.filter((r) => r.type !== "todo"));
+const LISTED = ["todo", "ticket"];
+const cards = computed(() => members.value.filter((r) => !LISTED.includes(r.type)));
 const todos = computed(() => members.value.filter((r) => r.type === "todo"));
+const tickets = computed(() => members.value.filter((r) => r.type === "ticket"));
 const tab = ref("cards");
-const tabs = computed(() => [
-    {key: "cards", title: "Cards", count: cards.value.length},
-    {key: "todos", title: "To-dos", count: todos.value.length},
-]);
+const tabs = computed(() =>
+    [
+        {key: "cards", title: "Cards", count: cards.value.length},
+        {key: "todos", title: "To-dos", count: todos.value.length},
+        {key: "tickets", title: "Tickets", count: tickets.value.length},
+    ].filter((t) => t.key === "cards" || t.count)
+);
+const planOf = (r) => (r.data?.plan && r.data?.work_environment ? `${r.data.work_environment}/plan:${r.data.plan}` : "");
+const openPlan = (r) => peekThere(r.data.work_environment, "plan", r.data.plan);
 
 const firstLine = (r) =>
     String(r.abstract || r.brief || "")
@@ -81,10 +88,23 @@ function hidePreview(r) {
 
 <template>
     <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')">
-        <template v-if="todos.length">
+        <template v-if="tabs.length > 1">
             <TabBar v-model="tab" class="tabs" :tabs="tabs" />
         </template>
-        <template v-if="todos.length && tab === 'todos'">
+        <template v-if="tickets.length && tab === 'tickets'">
+            <section class="tickets" aria-label="Tickets in this collection">
+                <template v-for="r in tickets" :key="r.at">
+                    <div class="ticket">
+                        <button type="button" class="ticket-title" @click="open(r)">{{ r.title }}</button>
+                        <span class="ticket-stage">{{ r.data?.stage }}</span>
+                        <template v-if="planOf(r) && !readOnly">
+                            <button type="button" class="ticket-plan" @click="openPlan(r)">Open plan</button>
+                        </template>
+                    </div>
+                </template>
+            </section>
+        </template>
+        <template v-else-if="todos.length && tab === 'todos'">
             <section class="todos" aria-label="To-dos in this collection">
                 <template v-for="r in todos" :key="r.at">
                     <ResourceRow :resource="r" @click="open(r)" />
@@ -132,9 +152,46 @@ function hidePreview(r) {
     margin-bottom: 12px;
 }
 
-.todos {
+.todos,
+.tickets {
     display: flex;
     flex-direction: column;
+}
+
+.ticket {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line, #e5e5e5);
+}
+
+.ticket-title {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ticket-stage {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.ticket-plan {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 .cards {

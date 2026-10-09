@@ -16,6 +16,9 @@ newer version than the last one it saw is handed the same.
 - A collection's card counts a member of another environment by its own type, so a collection holding `ticket-1/plan:1` no longer breaks the page it is shown on, in the viewer and in a share.
 - On a shared collection's page, clicking a member of another environment opens that member instead of the collection again.
 
+## 2.267.23 — Tickets in a collection
+- A collection's page and its share list the tickets it holds under a Tickets tab beside the cards and to-dos, each with its stage, and the page links a ticket to its plan in the ticket's own environment. A ticket can now be shared on its own.
+
 ## 2.267.21 — A shared collection shows a row of another environment
 - A share of a collection that holds a row from another environment, such as a ticket's own plan, now lists it on the shared page and opens it without an error; the page reads every member by its full environment/type:number.
 
