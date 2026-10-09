@@ -1,5 +1,5 @@
 import time
-from controllers.types import Comments, Todos
+from controllers.types import Comments, Environments, Todos
 from engine.record import Record
 from features.boards.controller import Boards
 from features.tickets.controller import Tickets
@@ -257,6 +257,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert tickets.close_merged() == [], "a branch with no recorded base and a ticket that never ran is never merged, however the board moved"
     ticket = tickets.update(ticket.n, base=git("rev-parse", f"worktree-{ticket.work_environment}").stdout.strip(), launched=time.time())
     assert tickets.close_merged() == [], "a branch still at the commit its ticket started from is not merged: the ticket has done nothing yet"
+    git("branch", "-f", f"worktree-{ticket.work_environment}", home)
+    assert tickets.close_merged() == [], "a branch the agent only fast-forwarded onto the target's history has no commit of its own, so it is not merged"
     git("switch", "-q", f"worktree-{ticket.work_environment}")
     git("commit", "-q", "--allow-empty", "-m", "dark mode")
     git("switch", "-q", home)
@@ -272,12 +274,19 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     tickets.keep_branches()
     assert git("rev-parse", f"refs/journal/worktrees/{ticket.work_environment}").stdout == git("rev-parse", f"worktree-{ticket.work_environment}").stdout, \
         "the backup ref follows the ticket's branch to its latest commit"
+    git("merge", "-q", "--no-edit", f"worktree-{ticket.work_environment}")
+    with monkeypatch.context() as busy:
+        busy.setattr(Tickets, "_working", lambda self, row: True)
+        assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "a ticket whose agent is working is left alone by the sweep, even when its branch landed"
     tickets.merge(ticket.n)
     closed = tickets.load(ticket.n)
     assert (bool(closed.completed), closed.stage) == (True, "Shipped"), "once merged it closes by itself, in its board's done stage"
     shipped = [card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n]
     assert [(card["n"], card["state"]) for card in shipped] == [(ticket.n, "done")], "and stays in that column, so the board shows what is done"
     assert Docs(record).load(written.n).completed == 0.0, "and what it proposed counts from the merge on"
+    reopened = tickets.reopen(ticket.n, "closed by mistake")
+    place = Environments(record, actor=SYSTEM).rows.by_title(ticket.work_environment)
+    assert (bool(reopened.completed), bool(place), place.owner if place else "") == (False, True, ticket.ref), "a reopened ticket gets its closed environment back, with its plan and conversation"
     import agents.terminal
     monkeypatch.setattr(agents.terminal, "detached", lambda *args: 1)
     git("branch", "rewrite")
