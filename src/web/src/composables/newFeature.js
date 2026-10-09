@@ -1,21 +1,21 @@
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import {remember, remembered} from "../platform/storage.js";
 import {loadProfiles, profiles, profilesLoaded, useProfile} from "./profiles.js";
 
-export const SEEN_KEY = "journal.new-feature.seen";
+const queue = ref([]);
 
-export const newFeature = ref(null);
+export const newFeature = computed(() => queue.value[0] || null);
 
-export async function loadNewFeature() {
-    const found = await api.newFeature().catch(() => null);
-    if (found && found.id && !remembered(SEEN_KEY, []).includes(found.id)) newFeature.value = found;
+export async function loadNewFeatures() {
+    const found = await api.newFeatures().catch(() => []);
+    queue.value = Array.isArray(found) ? found : [];
 }
 
 export function dismissNewFeature() {
-    if (!newFeature.value) return;
-    remember(SEEN_KEY, [...remembered(SEEN_KEY, []), newFeature.value.id]);
-    newFeature.value = null;
+    const [shown, ...later] = queue.value;
+    if (!shown) return;
+    queue.value = later;
+    api.markNewFeatureSeen(shown.id).catch(() => {});
 }
 
 export async function useNewFeature() {

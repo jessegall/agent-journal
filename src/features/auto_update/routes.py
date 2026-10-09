@@ -6,7 +6,7 @@ from engine.package import data
 from engine.record import Record
 from engine.upgrades import FETCHING, newer, upstream
 from engine.version import version
-from features.auto_update.new_feature import new_features
+from features.auto_update.new_feature import mark_seen, unseen
 from features.routing import Reply, Request, handles
 from resources.base import Refused
 from features.journal_laws.managed import changed_managed, changed_message
@@ -30,8 +30,13 @@ def get_changelog(req: Request) -> Reply:
 
 @handles("GET", "/api/new-feature")
 def get_new_feature(req: Request) -> Reply:
-    found = new_features(CHANGELOG.read_text()) if CHANGELOG.is_file() else []
-    return Reply(200, asdict(found[0]) if found else {})
+    return Reply(200, [asdict(one) for one in unseen(req.root, CHANGELOG.read_text() if CHANGELOG.is_file() else "")])
+
+
+@handles("POST", "/api/new-feature")
+def post_new_feature_seen(req: Request) -> Reply:
+    mark_seen(req.root, str(req.body.get("id", "")))
+    return Reply(200, {"seen": True})
 
 
 @handles("POST", "/api/update")

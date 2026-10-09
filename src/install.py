@@ -509,8 +509,11 @@ def finish(project: Path, root: Path) -> list[str]:
     stepping(root, "Setting up hooks and skills")
     done += configure(project, root)
     stepping(root, "Migrating the record")
+    fresh = not (root / "migrations.json").is_file()
     ran = loaded().migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
+    if fresh:
+        done.append(loaded().mark_all_seen(root, (code(root) / "CHANGELOG.md").read_text() if (code(root) / "CHANGELOG.md").is_file() else ""))
     done.append(loaded().ship_sequences(root))
     done.append(loaded().ship_profiles(root))
     done.append(loaded().stop_ended(root))
@@ -631,6 +634,7 @@ class Package:
     publish: Callable
     upgrade_mark: Callable
     wait_for_commands: Callable
+    mark_all_seen: Callable
     restarting: Callable
     managed: ModuleType
 
@@ -654,11 +658,12 @@ def loaded() -> Package:
     from engine.record import Record
     from engine.runtime import default_env, restarting, upgrade_mark
     from features.journal_laws import managed
+    from features.auto_update.new_feature import mark_all_seen
     from features.auto_update.waiting import wait_for_commands
     return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
                    served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
                    ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"), stop_ended=stop_ended,
-                   publish=publish, upgrade_mark=upgrade_mark, wait_for_commands=wait_for_commands, restarting=restarting, managed=managed)
+                   publish=publish, upgrade_mark=upgrade_mark, wait_for_commands=wait_for_commands, mark_all_seen=mark_all_seen, restarting=restarting, managed=managed)
 
 
 if __name__ == "__main__":

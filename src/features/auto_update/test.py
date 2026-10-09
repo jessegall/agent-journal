@@ -106,7 +106,17 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         "journal upgrade refuses the same changed file before touching it"
     assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], "the updates page is told which files changed"
     announced = dispatch("GET", "/api/new-feature", record.root, {}, {})
-    assert (announced.code, isinstance(announced.body, dict)) == (200, True), "the viewer asks the server which new feature the release announces, and an empty answer means none"
+    assert (announced.code, isinstance(announced.body, list)) == (200, True), "the viewer asks the server which new features are not yet seen, and an empty list means none"
+    from features.auto_update import new_feature
+    notes = ('## 2.9.0 — Two\n<!-- new-feature {"id": "owl", "title": "Owl", "text": "Hoot", "button": "Use it"} -->\n\n'
+             '## 2.8.0 — One\n<!-- new-feature {"id": "squire", "title": "Squire", "text": "Hail", "button": "Use it"} -->\n')
+    assert [one.id for one in new_feature.unseen(record.root, notes)] == ["squire", "owl"], "the new features of releases an update skipped over queue, oldest first"
+    new_feature.mark_seen(record.root, "squire")
+    new_feature.mark_seen(record.root, "squire")
+    assert ([one.id for one in new_feature.unseen(record.root, notes)], new_feature.seen(record.root)) == (["owl"], ["squire"]), \
+        "a new feature seen on the server is not announced again, wherever the viewer is opened next"
+    assert dispatch("POST", "/api/new-feature", record.root, {}, {"id": "owl"}).code == 200 and new_feature.unseen(record.root, notes) == [], \
+        "the viewer tells the server which new feature it has shown"
     from controllers.types import Agents
     from engine import runtime
     from features.auto_update.waiting import running, wait_for_commands
@@ -514,6 +524,15 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         assert "package files an older installer did not know: disk full" in lines and "package moved into src/: 3 files out of the record" in lines and lines[-1] == "packed", \
             "a repair that cannot write is said, and the install still configures and packs"
         assert refreshed == [site_root], "a package that is the record itself is refreshed in place"
+        (install.code(site_root) / "CHANGELOG.md").write_text('## 2.8.0 — One\n<!-- new-feature {"id": "squire", "title": "Squire", "text": "Hail", "button": "Use it"} -->\n')
+        from features.auto_update import new_feature
+        assert new_feature.seen(site_root) == [], "nothing is seen before the install ends"
+        install.finish(site, site_root)
+        assert new_feature.seen(site_root) == ["squire"], "a first install has nothing new to announce: its own changelog's features are seen from the start"
+        (site_root / "migrations.json").write_text("{}")
+        (install.code(site_root) / "CHANGELOG.md").write_text('## 2.9.0 — Two\n<!-- new-feature {"id": "owl", "title": "Owl", "text": "Hoot", "button": "Use it"} -->\n')
+        install.finish(site, site_root)
+        assert new_feature.seen(site_root) == ["squire"], "an update of an existing install marks nothing as seen: the features it brings are announced"
         patch.setattr(install, "retire", lambda site_root: 0)
         assert "migrations run" not in " ".join(lines) and "record already in shape" in lines, "a record already in shape is said so"
         patch.setattr(managed, "changed_managed", lambda site, site_root: ["a.md"])
