@@ -103,7 +103,7 @@ def test_the_board_picked_for_new_work_switches_what_the_agent_is_told_to_file()
     assert "no board 99" in refused(lambda: choose_board(record, 99, USER)), "a board that is not there is refused"
     assert dispatch("POST", f"/api/{record.env}/mode/board", record.root, {}, {"board": board.n}).body == {"board": board.n}, "the viewer's selector picks the board"
     assert f"NEW WORK: file each new request as a ticket on board {board.n}, Rewrite" in start_block(record), "a start carries where new work goes"
-    assert len(told(record, "where new work goes")) == 1 and "journal ticket create" in told(record, "where new work goes")[0].brief, "the agent is told once, with the command"
+    assert len(told(record, "where new work goes")) == 1 and "journal ticket create" in told(record, "where new work goes")[0].brief and "journal todo create" not in told(record, "where new work goes")[0].brief, "the agent is told once, to file tickets on the board it picked, never to-dos"
     choose_board(record, board.n, USER)
     assert len(told(record, "where new work goes")) == 1, "picking the same board tells nothing"
     pick(record, "builder", USER)

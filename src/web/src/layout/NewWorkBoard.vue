@@ -8,7 +8,7 @@ import {rows} from "../sync/rows.js";
 const emit = defineEmits(["failed"]);
 const NONE = "";
 const boards = computed(() => rows("board").filter((board) => !board.completed && !board.deleted));
-const options = computed(() => [{value: NONE, label: "None"}, ...boards.value.map((board) => ({value: String(board.n), label: board.title}))]);
+const options = computed(() => [{value: NONE, label: "No board"}, ...boards.value.map((board) => ({value: String(board.n), label: board.title}))]);
 const current = computed(() => String(store.settings.work_modes.board || NONE));
 const keep = (n) => (store.settings = {...store.settings, work_modes: {...store.settings.work_modes, board: n}});
 
@@ -25,9 +25,9 @@ async function pick(value) {
 </script>
 
 <template>
-    <span class="new-work-board" title="Where the orchestrating agent files new work: as tickets on this board, or as to-dos with None">
-        <span class="new-work-board-label">New work</span>
-        <MenuChoice :options="options" :value="current" empty="None" @pick="pick" />
+    <span class="new-work-board" title="The board the orchestrating agent files new requests on, as tickets; with No board they become to-dos">
+        <span class="new-work-board-label">Board</span>
+        <MenuChoice :options="options" :value="current" empty="No board" @pick="pick" />
     </span>
 </template>
 
