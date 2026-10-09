@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.49 — A countdown before an update, agents paused while it runs, and voices that introduce themselves
+- An update that starts by itself first counts down ten seconds with a Cancel; Cancel skips that release, and the next one asks again. An update you start yourself begins at once.
+- While the journal updates, every agent is paused and told why, and resumed and told so once the new version runs; the agent whose own command runs the update is left alone.
+- Each voice introduces itself on its card, in Settings and in the first-start dialog, which now shows all five voices in one row on a wide screen.
+
 ## 2.267.48 — The Board menu
 - The menu beside the mode switch reads Board and lists the project's boards by name, with No board for to-dos.
 - The notice after a pick tells the agent to file new requests as tickets on the board picked, never as to-dos.
