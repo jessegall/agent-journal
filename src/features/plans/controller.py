@@ -341,15 +341,16 @@ class Plans(Controller):
             CATCHING_UP.reset(entered)
 
     def _user_only(self, word: str) -> None:
-        if self.actor == AGENT:
-            self._refuse(f"only the user can {word} a plan: they do it in the viewer{self._orchestrator_route(word)}")
+        if self.actor != AGENT:
+            return
+        n = self._ticket_of_this_environment()
+        if n:
+            self._refuse(f"the plan of ticket {n} is {word}d through its ticket, by its board's orchestrator with journal ticket {word}_plan {n}, or by the user in the viewer")
+        self._refuse(f"only the user can {word} a plan: they do it in the viewer")
 
-    def _orchestrator_route(self, word: str) -> str:
+    def _ticket_of_this_environment(self) -> int:
         place = Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
-        n = place.owned_by("ticket") if place else 0
-        if not n:
-            return ""
-        return f". This is the plan of ticket {n}: the agent orchestrating its board does it with journal ticket {word}_plan {n}"
+        return place.owned_by("ticket") if place else 0
 
 
 resources_module.register(Plan)

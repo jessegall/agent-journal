@@ -386,7 +386,7 @@ def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start()
     drafted = Tickets(record, actor=AGENT).create("Dark mode", abstract="A dark theme for the viewer", board=board.n, draft=True)
     assert ("is a draft" in refused(lambda: Tickets(record, actor=USER).move(drafted.n, "Building")), Tickets(record).load(drafted.n).stage) == \
         (True, "Ideas"), "a draft cannot start, and stays where it was"
-    assert "only the user confirms" in refused(lambda: Tickets(record, actor=AGENT).confirm(drafted.n)), "the agent cannot confirm its own draft"
+    assert "does not let its orchestrator confirm the draft" in refused(lambda: Tickets(record, actor=AGENT).confirm(drafted.n)), "the agent cannot confirm a draft its board does not let it, and the refusal says which setting allows it"
     shown = lambda: [card["n"] for lane in Tickets(record, actor=USER).board(board.n)["lanes"] for card in lane["cards"]]
     assert drafted.n not in shown(), "a draft stays off the board"
     assert Tickets(record, actor=USER).confirm(drafted.n).draft is False, "the user confirms it"
@@ -422,7 +422,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     assert f"declined its proposed wait on {docs.ref}" in user._kickoff(kept), "the ticket's agent hears which wait was declined"
     assert "would wait on itself" in refused(lambda: user.depend(api.n, ui.n)), "a cycle is refused"
     agent.depend(docs.n, api.n)
-    assert "only the user" in refused(lambda: agent.accept_dependencies(docs.n, why="docs follow the API")), "an agent never decides a proposal"
+    assert "does not let its orchestrator accept or decline" in refused(lambda: agent.accept_dependencies(docs.n, why="docs follow the API")), "an agent decides a proposal only where its board lets its orchestrator"
     monkeypatch.setattr(Tickets, "_orchestrating", lambda self: [board.n])
     assert "orchestrator_accepts_waits" in refused(lambda: agent.accept_dependencies(docs.n, why="x")), "only where the board lets its orchestrator decide"
     Boards(record, actor=USER).update(board.n, orchestrator_accepts_waits=True)
@@ -466,7 +466,7 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     card = tickets.board(board.n)["lanes"][0]["cards"][0]
     assert ([action["label"] for action in card["actions"]], card["state"]) == (["Approve plan", "Read plan"], "you"), \
         "a plan waiting for approval puts Approve plan and Read plan on its ticket's card, and the card waits on the user"
-    assert "only the user" in refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n)), "only the user approves a ticket's plan"
+    assert "does not let its orchestrator approve the plan" in refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n)), "an agent approves a ticket's plan only where its board lets its orchestrator, and the refusal never sends it to the user"
     Boards(record, actor=USER).update(board.n, orchestrator_approves_plans=True, orchestrator_confirms_drafts=True)
     import features
     from features.sequences.shipped import ship
@@ -475,13 +475,13 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     report(record, "working", "PreToolUse")
     ship(record)
     before = refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n))
-    assert "never the agent that wrote it" in before and f"does not orchestrate board {board.n}" in before, \
-        "before the board is started, no agent orchestrates it, so none may approve, and the refusal says which condition is missing"
+    assert f"does not orchestrate board {board.n}" in before and f"--set orchestrator={record.env}" in before and "only the user" not in before, \
+        "before the board is started, no agent orchestrates it, so none may approve; the refusal names the board's orchestrator and how to take it, and never sends the agent to the user"
     Boards(record, actor=USER).start(board.n)
     assert Boards(record, actor=USER).load(board.n).orchestrator == record.env, "Play records the environment that runs the board"
     for elsewhere in ("ticket-1", "ticket-2"):
-        assert "never the agent that wrote it" in refused(lambda: Tickets(Record(record.root, elsewhere), actor=AGENT).approve_plan(ticket.n)), \
-            "neither the ticket's own agent nor a sibling ticket's may approve the plan"
+        assert f"{elsewhere} does not orchestrate board {board.n} ({record.env} does)" in refused(lambda: Tickets(Record(record.root, elsewhere), actor=AGENT).approve_plan(ticket.n)), \
+            "neither the ticket's own agent nor a sibling ticket's may approve the plan, and the refusal names the environment that does"
     tick(record)
     assert any("Reviewing a ticket's plan, step 1 of 3" in line for line in nudges(record)), \
         "the minute check hands the orchestrator the review of the waiting plan, ahead of the board it runs"

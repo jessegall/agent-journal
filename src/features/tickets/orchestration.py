@@ -9,13 +9,12 @@ REVIEW_MOMENTS = ("ticket.plan_waits", "ticket.checkpoint", "ticket.finished")
 
 
 class TicketOrchestration:
-    def _why_not(self, ticket) -> str:
+    def _refusal(self, ticket, permission: str, what: str) -> str:
         board = self._board(ticket)
-        return "; ".join([
-            f"board {board.n} has {PLANS} {'set' if board.data.get(PLANS) else 'unset'}",
-            f"{self.record.env} {'orchestrates' if board.n in self._orchestrating() else 'does not orchestrate'} board {board.n}"
-            + ("" if board.n in self._orchestrating() else f" (Play marks the environment that runs it; journal board update {board.n} --set orchestrator={self.record.env} takes it)"),
-        ])
+        if not getattr(board, permission):
+            return f"board {board.n} does not let its orchestrator {what}: journal board update {board.n} --set {permission}=true allows it, or the user does it in the viewer"
+        return (f"{self.record.env} does not orchestrate board {board.n} ({board.orchestrator or 'no environment'} does): its orchestrator may {what}; "
+                f"journal board update {board.n} --set orchestrator={self.record.env} makes this environment the orchestrator")
 
     def _orchestrating(self) -> list[int]:
         return sorted(board.n for board in Boards(self.record, actor=SYSTEM).rows.standing() if not board.finished and board.orchestrator == self.record.env)
@@ -40,11 +39,11 @@ class TicketOrchestration:
         return next((row["title"] for row in Sequences(self.record, actor=SYSTEM).open_rows() if row.get("starts_on") in REVIEW_MOMENTS
                      and any(RunKey.of(key).about == ticket.ref for key in row.get("runs") or {})), "")
 
-    def _as_orchestrator(self, ticket, permission: str, gate: str, done: str, why: str) -> None:
+    def _as_orchestrator(self, ticket, permission: str, what: str, done: str, why: str) -> None:
         if self.actor != AGENT:
             return
         if not (ticket.board and int(ticket.board) in self._orchestrating() and self._orchestrator_may(ticket, permission)):
-            self._refuse(f"only the user {gate}, or the agent orchestrating its board when the board has {permission} set")
+            self._refuse(self._refusal(ticket, permission, what))
         if not why.strip():
             self._refuse("say why, as the board's orchestrator: --why \"<reason>\"")
         self.comment(ticket.n, f"{done} as the board's orchestrator: {why.strip()}")
