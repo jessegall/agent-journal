@@ -28,7 +28,10 @@ def board_of(record):
 
 
 def filing(record) -> str:
-    board = board_of(record) if mode_of(record) == ORCHESTRATOR else None
+    return filing_on(board_of(record) if mode_of(record) == ORCHESTRATOR else None)
+
+
+def filing_on(board) -> str:
     if not board:
         return f"file new work as to-dos: {NEW_WORK_TO_DOS}"
     return (f"file each new request as a ticket on board {board.n}, {board.title}: journal ticket create \"<the work>\" --brief \"<what is wanted>\" "
@@ -46,8 +49,9 @@ def choose_board(record, n: int, actor: str) -> int:
     record.change_setting(NAME, {"board": n})
     from features import running
     from features.work_modes.feature import WorkModes
-    where = f"board {n}, {boards.load(n).title}" if n else "to-dos"
-    running(WorkModes).to_primary(record, BOARD_SET, actor=actor, where=where, filing=filing(record))
+    board = boards.load(n) if n else None
+    where = f"board {n}, {board.title}" if board else "to-dos"
+    running(WorkModes).to_primary(record, BOARD_SET, actor=actor, where=where, filing=filing_on(board))
     return n
 
 
