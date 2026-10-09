@@ -68,9 +68,12 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
                         <span class="aw-label">{{ entry.label }}</span>
                         <template v-if="entry.of">{{ entry.of }}</template>
                     </span>
-                    <template v-if="entry.since">
-                        <JobTimer class="aw-timer" :since="entry.since" />
-                    </template>
+                </p>
+            </template>
+            <template v-if="entry.since">
+                <p class="aw-line">
+                    <span class="aw-key">Running for</span>
+                    <JobTimer :since="entry.since" />
                 </p>
             </template>
         </div>
@@ -200,11 +203,6 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
 .aw-label {
     color: var(--text-3);
     font-variant-numeric: tabular-nums;
-}
-
-.aw-timer {
-    flex: none;
-    margin-left: auto;
 }
 
 .aw-seen {
