@@ -363,10 +363,17 @@ def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_a
     assert viewer.PROBED[0] > time.time() - 5, "an old list is refreshed in the background"
 
     monkeypatch.setattr(viewer, "other_journal_on", lambda port, root: False)
-    monkeypatch.setattr(viewer, "waited", lambda port: False)
+    monkeypatch.setattr(viewer, "waited", lambda port, seconds: False)
     monkeypatch.setattr(viewer, "free", lambda port: port != viewer.PORTS[0])
     assert viewer.available(kept, viewer.PORTS[0]) == viewer.PORTS[1] and "is still taken after" in capsys.readouterr().err, \
         "a port that stays taken is left for the next free one, and the move is said"
+    viewer.remember(kept, viewer.PORTS[0])
+    assert (viewer.wait_for(kept, viewer.PORTS[0]), viewer.wait_for(kept, viewer.PORTS[1])) == (viewer.OWN_PORT_WAIT, viewer.PORT_WAIT), \
+        "a journal whose own server still holds its port waits for it to leave, and waits the usual time for any other port"
+    monkeypatch.setattr(viewer, "alive", lambda pid: False)
+    assert viewer.wait_for(kept, viewer.PORTS[0]) == viewer.PORT_WAIT, "and when that server is gone the port is waited for only the usual time"
+    import shutil
+    shutil.rmtree(viewer.marker(kept).parent)
     monkeypatch.setattr(viewer, "running", lambda root: "")
     assert viewer.answered(kept, SimpleNamespace(poll=lambda: 3, returncode=3)) == ("", 3), "a server that ends before it answers hands back its exit code"
 
