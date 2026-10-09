@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.39 — A lighter dashboard, a quicker work await, and option lists in one group
+- The dashboard holds each type's rows apart, so a type that changes every few seconds rebuilds only itself, and sends reports, dumps and plans as summaries that the viewer reads whole when one is opened.
+- Releasing a write hold no longer reads every agent that never held one, and the start block is rewritten only when its text changed.
+- Every option list in Settings is one group that wraps onto a second line when it does not fit, never a column of cards.
+- Codex models are named family first without the GPT- prefix: Sol 6.1, Astra 6, Sol 6, Luna 6, Sol 5.6, Terra 5.6, Luna 5.6.
+
 ## 2.267.38 — A picture for every voice, and board columns that scroll
 - Every voice has its own picture, on its card in Settings and in the first-start dialog where you choose a voice; a copy of a voice keeps its picture.
 - A board's columns keep a maximum height and scroll their cards, with each column's heading in view, on the collection page and in a share.
