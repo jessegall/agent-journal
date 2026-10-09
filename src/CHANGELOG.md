@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.25 — Collection tabs for plans, to-dos and tickets
+- A collection's page and its share show Resources, Plans, To-dos and Tickets as tabs of their own; a tab shows only when the collection holds that kind.
+
 ## 2.267.24 — A Tickets tab in collections and their shares
 - A collection that holds tickets lists them under a Tickets tab with each ticket's stage and an Open plan button for the plan in its work environment, on the collection's page and in a share of it; a shared collection carries each ticket's plan with its to-dos and timeline.
 
