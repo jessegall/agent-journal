@@ -22,6 +22,7 @@ import ChatWindow from "./layout/ChatWindow.vue";
 import ViewWindow from "./layout/ViewWindow.vue";
 import {loadProfiles, unchosen} from "./composables/profiles.js";
 import UpdateCover from "./layout/UpdateCover.vue";
+import PluginUpdateBand from "./layout/PluginUpdateBand.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import BlockedNotice from "./layout/BlockedNotice.vue";
 import HostedBand from "./layout/HostedBand.vue";
@@ -189,6 +190,7 @@ watch(
                 <div class="main">
                     <div class="bar"><TopBar /></div>
                     <UpgradeBand />
+                    <PluginUpdateBand />
                     <UpdateCover />
                     <HostedBand />
                     <BlockedNotice />

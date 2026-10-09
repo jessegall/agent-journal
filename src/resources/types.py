@@ -485,6 +485,7 @@ class Plugin(Shape, Resource):
         Field(FLAG, name="linked"),
         Field(FLAG, name="enabled"),
         Field(name="manifest", runs_commands=True),
+        Field(name="update"),
         Field(name="settings", runs_commands=True),
         Field(name="token"),
         Field(NUMBER, 0.0, name="read_at"),
