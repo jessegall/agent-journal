@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.32 — A board in a shared collection, and a faster dashboard
+- A collection can hold a board: its page and its share show the board's goal, its done-when clauses and its lanes with each ticket's card and stage, read-only in a share.
+- Each ticket's plan opens from its card, in the Boards and Tickets tabs and in a share.
+- The dashboard sends its lists and counts from one held body, made again only when a list of rows or the settings changed.
+
 ## 2.267.31 — Shared views, chained commands part by part, and no lost hook events
 - The agents view and the chat can be shared read-only on a private link that follows them live.
 - A chained Bash command runs part by part: each part reports its start and end and marks the chat once it has run.
