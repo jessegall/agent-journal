@@ -1,48 +1,32 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
 import Icon from "./Icon.vue";
+import WorkingDots from "./WorkingDots.vue";
 
 const NOTE_SECONDS = 5;
-const SETTLE_SECONDS = 1.6;
 const props = defineProps({waiting: {type: Object, default: null}});
 const emit = defineEmits(["list"]);
 const note = ref(null);
-const lit = ref(false);
 let timer = 0;
 
 const open = computed(() => (props.waiting ? props.waiting.items.filter((item) => !item.reported).length : 0));
 const plural = (n) => `${n} ${n === 1 ? "helper" : "helpers"}`;
-function setNote(words, ended) {
+function setNote(words) {
     clearTimeout(timer);
-    note.value = {words, tick: true, ended};
-    lit.value = ended;
-    timer = setTimeout(() => {
-        note.value = null;
-        lit.value = false;
-    }, NOTE_SECONDS * 1000);
+    note.value = {words};
+    timer = setTimeout(() => (note.value = null), NOTE_SECONDS * 1000);
 }
 
-watch(
-    () => props.waiting,
-    (now, before) => {
-        if (!before || now) return;
-        clearTimeout(timer);
-        note.value = null;
-        lit.value = true;
-        timer = setTimeout(() => (lit.value = false), SETTLE_SECONDS * 1000);
-    }
-);
 watch(open, (now, before) => {
     if (!props.waiting?.helping || now >= before) return;
-    setNote(`${before - now} ${before - now === 1 ? "helper" : "helpers"} reported, ${now} still at work`, false);
+    setNote(`${before - now} ${before - now === 1 ? "helper" : "helpers"} reported, ${now} still at work`);
 });
 onUnmounted(() => clearTimeout(timer));
 </script>
 
 <template>
-    <div :class="['wait-edge', {waiting: Boolean(waiting), lit}]">
+    <div :class="['wait-edge', {waiting: Boolean(waiting)}]">
         <slot />
-        <span class="glow" aria-hidden="true" />
         <template v-if="note">
             <span class="note">
                 <Icon name="tick" :size="11" />
@@ -52,7 +36,7 @@ onUnmounted(() => clearTimeout(timer));
         <template v-else-if="waiting">
             <button type="button" class="legend" @click="emit('list', $event)">
                 Waiting
-                <span class="chev" />
+                <WorkingDots />
             </button>
         </template>
     </div>
@@ -62,25 +46,6 @@ onUnmounted(() => clearTimeout(timer));
 .wait-edge {
     position: relative;
     border-radius: var(--edge-radius, 12px);
-}
-
-.glow {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0;
-    box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--accent-text) 30%, transparent),
-        0 0 16px 3px color-mix(in srgb, var(--accent-text) 45%, transparent);
-}
-
-.waiting .glow {
-    animation: breathe 3.6s ease-in-out infinite;
-}
-
-.lit .glow {
-    animation: settle 1.6s ease-out forwards;
 }
 
 .legend {
@@ -110,15 +75,6 @@ onUnmounted(() => clearTimeout(timer));
     color: var(--text);
 }
 
-.legend .chev {
-    width: 5px;
-    height: 5px;
-    border-right: 1.3px solid var(--text-3);
-    border-bottom: 1.3px solid var(--text-3);
-    transform: rotate(-45deg);
-    margin-left: 1px;
-}
-
 .note {
     position: absolute;
     top: 0;
@@ -135,33 +91,5 @@ onUnmounted(() => clearTimeout(timer));
     color: var(--text);
     font-size: 12px;
     white-space: nowrap;
-}
-
-@keyframes breathe {
-    0%,
-    100% {
-        opacity: 0.2;
-    }
-
-    50% {
-        opacity: 0.85;
-    }
-}
-
-@keyframes settle {
-    from {
-        opacity: 0.9;
-    }
-
-    to {
-        opacity: 0;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .waiting .glow {
-        animation: none;
-        opacity: 0.5;
-    }
 }
 </style>
