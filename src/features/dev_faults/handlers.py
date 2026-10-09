@@ -1,8 +1,11 @@
+from dataclasses import dataclass
+from typing import ClassVar
+
 from engine.events.engine import Measured
-from engine.events.resources import ResourceCreated
+from engine.events.resources import ResourceCreated, ResourceEvent
 from features.dev_faults.reports import BUDGET
 from features.parts import Context, Handler
-from controllers.types import Notifications
+from controllers.types import Notifications, Todos
 from resources.base import SYSTEM
 
 
@@ -19,3 +22,13 @@ class LiftOverdueHold(Handler):
         for fault in Notifications(context.record, actor=SYSTEM).rows.standing():
             if fault.data.get("kind") in BUDGET:
                 context.feature.reports.settle(context.record, fault.title)
+
+
+@dataclass(frozen=True)
+class TodoCompleted(ResourceEvent):
+    on: ClassVar[str] = "todo.completed"
+
+
+class RestartCountOnClose(Handler):
+    def handle(self, context: Context, event: TodoCompleted) -> None:
+        context.feature.reports.restart(context.record.root, Todos(context.record, actor=SYSTEM).load(event.n).title)

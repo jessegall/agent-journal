@@ -72,16 +72,29 @@ class FaultReports:
     def answer(self, record, title: str, brief: str) -> None:
         """A first breach files its own to-do, and one seen over and over with no to-do open holds the agent's writes until one is filed."""
         fault = Notifications(record, actor=SYSTEM).rows.by_title(title, standing=True)
-        if fault is not None and int(fault.data["times"]) == 1 and Todos(record, actor=SYSTEM).rows.by_title(title, standing=True) is None:
+        if fault is not None and int(fault.data["times"]) == 1 and not self.opened(record, title):
             Todos(record, actor=SYSTEM).create(title, brief=f"{brief} The budget is {BUDGET.get(fault.data.get('kind'), 50)}ms: profile it, fix it, and verify the new time before the release.")
         self.settle(record, title)
+
+    @staticmethod
+    def opened(record, title: str) -> bool:
+        """Whether a to-do of this title stands open in any environment of the project."""
+        return any(Todos(each, actor=SYSTEM).rows.by_title(title, standing=True) is not None for each in Record.every(record.root))
+
+    def restart(self, root: Path, title: str) -> None:
+        """A to-do closed settles the notices before it: the count of that title starts again and its hold is lifted."""
+        for each in Record.every(root):
+            fault = Notifications(each, actor=SYSTEM).rows.by_title(title, standing=True)
+            if fault is not None:
+                Notifications(each, actor=SYSTEM).stamp(fault.n, times=0)
+                self.feature.release(each, digest(title, 12))
 
     def settle(self, record, title: str) -> None:
         fault = Notifications(record, actor=SYSTEM).rows.by_title(title, standing=True)
         if fault is None:
             return
         key = digest(title, 12)
-        if Todos(record, actor=SYSTEM).rows.by_title(title, standing=True) is not None:
+        if self.opened(record, title):
             return self.feature.release(record, key)
         if int(fault.data["times"]) >= HOLD_AFTER:
             self.feature.hold(record, "overdue", key, title=title, times=fault.data["times"])

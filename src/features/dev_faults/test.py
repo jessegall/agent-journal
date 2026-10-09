@@ -146,12 +146,17 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     title = Notifications(record, actor=SYSTEM).rows.every()[0].title
     todos = Todos(record, actor=SYSTEM)
     assert [t.title for t in todos.rows.standing()] == [title], "the first breach of a command files a to-do of its own"
-    todos.complete(todos.rows.standing()[0].n, "closed while the breach goes on")
+    todos.delete(todos.rows.standing()[0].n, "archived while the breach goes on")
     for _ in range(25):
         reports.slow(record, "command", "message all", 500.0, working=500.0)
     assert "before any other write" in held(record, main.title), "a breach seen over and over with no to-do open holds the agent's writes"
     todos.create(title)
     assert "before any other write" not in held(record, main.title), "filing the to-do lifts the hold"
+    todos.complete(todos.rows.standing()[0].n, "measured under the budget")
+    assert Notifications(record, actor=SYSTEM).rows.by_title(title).data["times"] == 0, "closing the to-do starts the count of that title again"
+    reports.slow(record, "command", "message all", 500.0, working=500.0)
+    assert [t.title for t in todos.rows.standing()] == [title] and "before any other write" not in held(record, main.title), \
+        "and the next breach files a fresh to-do instead of holding the writes"
 
 
 def test_the_budget_is_tunable_per_environment():
