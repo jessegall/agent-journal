@@ -17,22 +17,25 @@
     height: 4px;
     border-radius: 50%;
     background: var(--accent-text);
-    opacity: 0.5;
-    animation: working-dot 1.2s ease-in-out infinite;
+    opacity: 0.3;
+    animation: working-dot 2s ease-in-out infinite;
 }
 
 .working-dots i:nth-child(2) {
-    animation-delay: 0.15s;
+    animation-delay: 0.4s;
 }
 
 .working-dots i:nth-child(3) {
-    animation-delay: 0.3s;
+    animation-delay: 0.8s;
 }
 
 @keyframes working-dot {
-    50% {
+    10% {
         opacity: 1;
-        translate: 0 -2px;
+    }
+
+    20% {
+        opacity: 0.3;
     }
 }
 
