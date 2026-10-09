@@ -611,6 +611,7 @@ class Package:
     stop_ended: Callable
     publish: Callable
     upgrade_mark: Callable
+    restarting: Callable
     managed: ModuleType
 
 
@@ -631,12 +632,12 @@ def loaded() -> Package:
     from skills import LINKED, publish
     from features.boards.agent_types import written as agent_types
     from engine.record import Record
-    from engine.runtime import default_env, upgrade_mark
+    from engine.runtime import default_env, restarting, upgrade_mark
     from features.journal_laws import managed
     return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
                    served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
                    ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"), stop_ended=stop_ended,
-                   publish=publish, upgrade_mark=upgrade_mark, managed=managed)
+                   publish=publish, upgrade_mark=upgrade_mark, restarting=restarting, managed=managed)
 
 
 if __name__ == "__main__":
