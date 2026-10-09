@@ -6,7 +6,7 @@ defineProps({title: {type: String, required: true}, picked: Boolean, note: {type
 
 <template>
     <button type="button" role="radio" :aria-checked="picked" :class="['pick-card', {picked}]">
-        <Illustration :src="art" :size="72" />
+        <Illustration :src="art" :size="130" fill />
         <span class="pick-card-head">
             <span class="pick-card-dot" />
             {{ title }}

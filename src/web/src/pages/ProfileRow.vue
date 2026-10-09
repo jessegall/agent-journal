@@ -11,7 +11,7 @@ defineEmits(["open", "use", "duplicate", "remove"]);
 
 <template>
     <div :class="['profile-row', {current: inUse || standing}]">
-        <Illustration :src="artOf(row)" :size="56" />
+        <Illustration :src="artOf(row)" :size="150" fill />
         <button type="button" class="profile-row-main" @click="$emit('open', row)">
             <span class="profile-row-name">
                 {{ row.title }}
@@ -38,10 +38,11 @@ defineEmits(["open", "use", "duplicate", "remove"]);
 <style scoped>
 .profile-row {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 15px;
-    border-top: 1px solid var(--border);
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
 }
 
 .profile-row.current {
@@ -86,5 +87,6 @@ defineEmits(["open", "use", "duplicate", "remove"]);
     flex: none;
     align-items: center;
     gap: 6px;
+    margin-top: auto;
 }
 </style>
