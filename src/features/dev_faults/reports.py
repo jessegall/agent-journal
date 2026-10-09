@@ -81,13 +81,18 @@ class FaultReports:
         """Whether a to-do of this title stands open in any environment of the project."""
         return any(Todos(each, actor=SYSTEM).rows.by_title(title, standing=True) is not None for each in Record.every(record.root))
 
+    def lift(self, root: Path, title: str) -> None:
+        """A to-do of a breach title was filed: every session in every environment that holds its writes is released at once."""
+        for each in Record.every(root):
+            self.feature.release(each, digest(title, 12))
+
     def restart(self, root: Path, title: str) -> None:
-        """A to-do closed settles the notices before it: the count of that title starts again and its hold is lifted."""
+        """A to-do closed settles the notices before it: the count of that title starts again and every session that held its writes is released."""
         for each in Record.every(root):
             fault = Notifications(each, actor=SYSTEM).rows.by_title(title, standing=True)
             if fault is not None:
                 Notifications(each, actor=SYSTEM).stamp(fault.n, times=0)
-                self.feature.release(each, digest(title, 12))
+        self.lift(root, title)
 
     def settle(self, record, title: str) -> None:
         fault = Notifications(record, actor=SYSTEM).rows.by_title(title, standing=True)
