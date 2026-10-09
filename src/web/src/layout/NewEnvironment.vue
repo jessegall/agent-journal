@@ -51,7 +51,7 @@ async function create() {
             />
             <div class="new-env-agent">
                 <span>Start an agent</span>
-                <Switch :on="startAgent" title="Start an agent in it" @change="startAgent = $event" />
+                <Switch :on="startAgent" title="Start an agent in it" beside @change="startAgent = $event" />
             </div>
             <template v-if="startAgent">
                 <Segmented :options="PROVIDER_CHOICES" :value="provider" @pick="provider = $event" />
