@@ -16,6 +16,8 @@ from engine.record import Record
 from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared, tell_in
 from features.helper_worktrees.controller import Worktrees
+from features.open_viewer.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged
+from providers import PROVIDERS
 from features.form_of_address.address import voice_of
 from features.helpers.resource import Helper, held_by_helper
 from features.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
@@ -402,6 +404,7 @@ class Helpers(Controller):
         place = places.rows.by_title(row.environment)
         if agent_runs(self.record, row):
             raise Refused(f"helper {n}, {row.name}, is still running: journal helper stop {n}, then finish it")
+        self._recorded(row)
         rows = held(self.record, row)
         give_back(self.record, rows)
         finished = super().complete(n, f"{how or 'finished; its environment is packed away'}{given_back(rows)}", **data)
@@ -409,6 +412,19 @@ class Helpers(Controller):
         Agents(self.record, actor=SYSTEM)._mark_primary(f"Retired helper {n}", name=row.name, icon="bot")
         bus.defer(lambda: self._packed(row, place))
         return finished
+
+    def _recorded(self, row: Helper) -> None:
+        """Keeps where the helper's conversation is before its environment is packed away, so its inspector can still read it."""
+        agent = Agents(Record(self.record.root, row.environment), actor=SYSTEM).primary_to_read()
+        if agent and agent.transcript:
+            self.update(row.n, session=agent.title, transcript=agent.transcript)
+
+    @action
+    def transcript(self, n: int, since: int = 0, before: int = 0, last: int = TRANSCRIPT_PAGE) -> dict:
+        """The conversation of a retired helper, read from the provider's own file recorded when it was retired."""
+        row = self.load(n)
+        found = Transcript(PROVIDERS[row.provider](), Path(row.transcript)) if row.provider in PROVIDERS and row.transcript and Path(row.transcript).is_file() else NoTranscript()
+        return paged(found, self.record, since, before, last)
 
     def _packed_folder(self, title: str) -> None:
         home = Record(self.record.root, title).home

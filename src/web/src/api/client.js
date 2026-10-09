@@ -834,6 +834,10 @@ export class ApiClient {
         return this.post(this.here(`/agent/${encoded(session)}/relaunch`), {skip});
     }
 
+    helperTranscript(n, fields) {
+        return this.get(this.here(`/helper/${n}/transcript${query(fields)}`));
+    }
+
     transcript(agent, session, fields) {
         return this.get(this.here(`/agent/${agent}${session ? `/subagent/${session}` : ""}/transcript${query(fields)}`));
     }
