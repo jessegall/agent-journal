@@ -2,6 +2,7 @@ import inspect
 import pickle
 import time
 from collections import deque
+from contextlib import suppress
 from copy import deepcopy
 from functools import cache
 from threading import Lock, Thread, get_ident
@@ -58,12 +59,19 @@ class TranscriptCache:
 
     def stored(self, key: tuple) -> tuple | None:
         try:
-            return pickle.loads(self.file(key).read_bytes())
-        except FileNotFoundError:
+            raw = self.file(key).read_bytes()
+        except OSError:
             return None
-        except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError, TypeError):
+        try:
+            return pickle.loads(raw)
+        except (pickle.UnpicklingError, EOFError, AttributeError, ImportError, TypeError):
+            self.drop(key)
+            return None
+
+    def drop(self, key: tuple) -> None:
+        """A kept state that fails to load is removed; a cache that cannot be changed is left as it is."""
+        with suppress(OSError):
             self.file(key).unlink(missing_ok=True)
-            return None
 
     def keep(self, key: tuple, offset: int, state, every: float, behind: bool = False) -> None:
         if time.monotonic() - self.kept.get(key, 0.0) < every:
