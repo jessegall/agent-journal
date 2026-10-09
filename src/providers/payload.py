@@ -532,6 +532,7 @@ class Hook(Loaded):
     agent: str = ""
     prompt: str = ""
     tool_use: str = ""
+    permission_mode: str = ""
     tool: ToolUse = field(default_factory=ToolUse)
     at: float = field(default_factory=time.time)
 

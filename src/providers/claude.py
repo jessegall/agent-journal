@@ -13,7 +13,7 @@ from providers.payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, Loop
 from providers.tested import testing_piece
 from providers.base import REFUSED, BackgroundTasks, HookCommand, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
 from providers.jsonl import lines_from, parsed_row, rows, tail_lines
-from providers.payload import Dispatch, Hook, ToolCall
+from providers.payload import Dispatch, Hook, HookEvent, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
 from engine.proc import run
@@ -37,6 +37,7 @@ MODELS = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("claude-f
 BACKGROUNDED = re.compile(r"(?:backgrounded by user with ID|running in background with ID): (\w+)")
 TASK_ENDED = re.compile(r"<task-id>(\w+)</task-id>.*?<status>(\w+)</status>", re.S)
 TASK_OK = "completed"
+BYPASSING = "bypassPermissions"
 TASK_OUTPUT = re.compile(r"<task-id>(\w+)</task-id>(?:(?!</task-notification>).)*?<output-file>([^<]+)</output-file>", re.S)
 WORK_LINK = re.compile(r"https://(?:claude\.ai/(?:design|code/artifact|artifact)/|github\.com/[\w.-]+/[\w.-]+/pull/\d+|www\.figma\.com/)[^\s\"'<>)\]]*")
 KEPT_LINKS = 10
@@ -368,6 +369,11 @@ class Claude(Provider):
     def display_chunk(cls, raw: dict) -> Chunk | None:
         chunk = Chunk.from_json(raw)
         return chunk if chunk.event == DISPLAYED else None
+
+    def rewritten(self, hook: Hook, command: str) -> dict:
+        if hook.permission_mode != BYPASSING:
+            return {}
+        return {"hookSpecificOutput": {"hookEventName": HookEvent.PRE_TOOL_USE, "permissionDecision": "allow", "updatedInput": {**hook.tool.tool_input, "command": command}}}
 
     def shell_wrapper(self, script: Path) -> dict:
         return {"CLAUDE_CODE_SHELL_PREFIX": str(script)}

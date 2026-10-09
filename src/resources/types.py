@@ -349,6 +349,7 @@ class AgentRow(Shape, Resource):
         Field(default=list, name="touched_files"),
         Field(FLAG, False, name="compacting"),
         Field(default=dict, name="running"),
+        Field(default=dict, name="step"),
         Field(default=list, name="commands"),
         Field(default=list, name="queued_commands"),
         Field(default=dict, name="subagent_reports"),

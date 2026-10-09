@@ -1,6 +1,6 @@
 from engine.events.agents import AgentReported
 from engine.events.engine import CommandRan
-from engine.ran import SHELL
+from engine.ran import SHELL, STEP
 from engine.git import checkout_of
 from features.parts import ANY_BUT_PRE_TOOL_USE, AgentContext, Handler
 from controllers.types import Agents
@@ -26,7 +26,7 @@ class MarkBranchSwitches(Handler):
 
 class MarkGitActions(Handler):
     def handle(self, context: AgentContext, event: CommandRan) -> None:
-        if event.tool != SHELL:
+        if event.tool not in (SHELL, STEP) or event.stepped:
             return
         for call in calls(event.command, event.output, context.working_folder):
             label = call.mark()

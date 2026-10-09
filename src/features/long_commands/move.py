@@ -69,7 +69,11 @@ class MoveLongCommands(Handler):
     def show_running(self, context: AgentContext, row, started: str) -> None:
         """A chained command's card names only the part still running, as its process shows."""
         run = next((one for one in command_runs(row) if str(one.at) == started), None)
-        part = running_part(Sessions(context.record.root).read(row.title).pid, run.command) if run else ""
+        part = ""
+        if row.step:
+            part = row.step.get("command")
+        elif run:
+            part = running_part(Sessions(context.record.root).read(row.title).pid, run.command)
         if part and context.state.get("part") != part:
             context.state.set("part", part)
             context.journal.get(Agents).card(row.n, key=f"command:{started}", command=part)
