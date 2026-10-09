@@ -125,6 +125,9 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     helpers.stop(quin.n)
     helpers.complete(quin.n)
     assert Helpers(record, actor=SYSTEM).load(quin.n).completed, "a finish right after a stop waits for the agent to leave instead of answering that it still runs"
+    from controllers.base import networked
+    assert (networked("helper", "finish"), networked("helper", "retire"), networked("helper", "all")) == (True, True, False), \
+        "a command is known to wait on the agent by the word it is called with, not only by its method's name"
     later = todos.create("handed but never launched").n
     monkeypatch.setattr("features.helpers.controller.launched", lambda *given: (_ for _ in ()).throw(RuntimeError("no terminal")))
     assert "no terminal" in refused(lambda: helpers.dispatch("Yan", "a job", "claude", "sonnet", todos=str(later))) and todos.load(later).assigned == "", \
