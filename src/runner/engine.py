@@ -11,7 +11,7 @@ from agents.actors import Actor, Agent, System, User, event_data
 from resources.types import BUSY, FAILED, IDLE, STOPPED, WORKING
 from providers.base import asking_row
 from providers.drivers import AGENT_COMMAND
-from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take, waiting_commands
+from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, UPDATE, take, waiting_commands
 from engine.record import Record
 from controllers.faults import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
@@ -49,6 +49,8 @@ PROBE_WAIT = 5.0
 CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
 MOVED_ON = "Moved a long command to the background"
 RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
+PAUSED_FOR_UPDATE = "The journal is updating, so you are paused: start no new command and wait; you will be told when to continue."
+RESUMED_AFTER_UPDATE = "The journal has updated and resumed you now: carry on with what you were doing."
 
 
 def delivered(record, sessions: set[str], action: str, label: str) -> None:
@@ -334,15 +336,17 @@ class Engine:
             Agents(self.record, actor=SYSTEM).update(row.n, queued_commands=[asdict(c) for c in left])
 
     def pausing(self) -> str:
-        if take(self.record.root, self.names(), PAUSE):
+        if asked := take(self.record.root, self.names(), PAUSE):
             self.paused = True
-            self.agent.mark("", "", paused=time.time())
+            self.agent.mark("", "", paused=time.time(), paused_for=asked.value)
+            if asked.value == UPDATE:
+                self.agent.driver.send(PAUSED_FOR_UPDATE, now=True)
             return self.held("Paused")
-        if take(self.record.root, self.names(), RESUME):
+        if asked := take(self.record.root, self.names(), RESUME):
             self.paused = False
-            self.agent.mark("", "", paused=0)
+            self.agent.mark("", "", paused=0, paused_for="")
             self.noted("Continued")
-            self.agent.driver.send(RESUMED, now=True)
+            self.agent.driver.send(RESUMED_AFTER_UPDATE if asked.value == UPDATE else RESUMED, now=True)
             return "resumed"
         if not self.paused:
             return ""

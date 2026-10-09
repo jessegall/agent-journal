@@ -232,12 +232,14 @@ def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event
 
 
 def watch_runtime(root: Path, halting: threading.Event) -> None:
+    from features.auto_update.pausing import resume_when_done
     while not halting.wait(WATCH_SECONDS):
         runtime.refresh_flags(root)
         renew_stamps()
         if runtime.hook_failures(root).is_file():
             unanswered(root)
         runtime.restarting(root).unlink(missing_ok=True)
+        resume_when_done(root)
 
 
 def keep_services(root: Path, halting: threading.Event) -> None:

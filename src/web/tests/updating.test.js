@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, test} from "vitest";
-import {STEPS, begin, clear, fail, follow, locked, runLate, stepAt, updatedTo, updating} from "../src/state/updating.js";
+import {STEPS, begin, clear, counting, fail, follow, locked, runLate, stepAt, updatedTo, updating} from "../src/state/updating.js";
 
 beforeEach(() => {
     localStorage.clear();
@@ -39,5 +39,15 @@ describe("while the journal updates", () => {
         expect(updating.step).toBe("");
         follow(true, "Restarting the journal");
         expect([updating.step, locked()]).toEqual(["Restarting the journal", true]);
+    });
+
+    test("an automatic update counting down shows its version and the second it starts at, and a manual update starts at once", () => {
+        const before = Date.now() / 1000;
+        counting({version: "2.268.0", seconds: 10});
+        expect([updating.countdown.version, updating.countdown.until >= before + 10 - 1, locked()]).toEqual(["2.268.0", true, false]);
+        counting({});
+        expect(updating.countdown).toBe(null);
+        begin("2.268.0");
+        expect([updating.countdown, locked()]).toEqual([null, true]);
     });
 });

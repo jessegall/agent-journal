@@ -327,6 +327,7 @@ class AgentRow(Shape, Resource):
         Field(default="", name="effort"),
         Field(default=dict, name="pending"),
         Field(default=0, name="paused"),
+        Field(default="", name="paused_for"),
         Field(default=dict, name="asking"),
         Field(default="", name="last_message"),
         Field(default="", name="prompted"),
