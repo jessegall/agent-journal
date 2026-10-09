@@ -1,0 +1,80 @@
+{
+  "voice": "butler",
+  "animation": "idle_stroll_hat_tip",
+  "frame_size": [
+    256,
+    256
+  ],
+  "atlas_file": "butler_idle_stroll_hat_tip_atlas.png",
+  "atlas_size": [
+    2048,
+    256
+  ],
+  "origin": "resting pose tile top-left at stage x=256, y=256; apply offset_x and offset_y in pixels",
+  "frames": [
+    {
+      "frame": 1,
+      "file": "butler_idle_stroll_hat_tip_1.png",
+      "atlas_x": 0,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": 0
+    },
+    {
+      "frame": 2,
+      "file": "butler_idle_stroll_hat_tip_2.png",
+      "atlas_x": 256,
+      "atlas_y": 0,
+      "offset_x": -3,
+      "offset_y": -1
+    },
+    {
+      "frame": 3,
+      "file": "butler_idle_stroll_hat_tip_3.png",
+      "atlas_x": 512,
+      "atlas_y": 0,
+      "offset_x": -5,
+      "offset_y": 0
+    },
+    {
+      "frame": 4,
+      "file": "butler_idle_stroll_hat_tip_4.png",
+      "atlas_x": 768,
+      "atlas_y": 0,
+      "offset_x": -2,
+      "offset_y": 0
+    },
+    {
+      "frame": 5,
+      "file": "butler_idle_stroll_hat_tip_5.png",
+      "atlas_x": 1024,
+      "atlas_y": 0,
+      "offset_x": 3,
+      "offset_y": -1
+    },
+    {
+      "frame": 6,
+      "file": "butler_idle_stroll_hat_tip_6.png",
+      "atlas_x": 1280,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": -4
+    },
+    {
+      "frame": 7,
+      "file": "butler_idle_stroll_hat_tip_7.png",
+      "atlas_x": 1536,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": -2
+    },
+    {
+      "frame": 8,
+      "file": "butler_idle_stroll_hat_tip_8.png",
+      "atlas_x": 1792,
+      "atlas_y": 0,
+      "offset_x": 0,
+      "offset_y": 0
+    }
+  ]
+}

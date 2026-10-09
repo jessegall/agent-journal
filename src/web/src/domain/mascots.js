@@ -12,8 +12,11 @@ export const STILL = {edge: 200, foot: 232};
 
 export const placeOf = (art) => PLACES[art.replace(/\.\w+$/, "")] ?? STILL;
 
-// The kind of animation the mascot plays at each moment; any other kind a voice carries shows in its dialog only.
-export const MOMENTS = {blinking: "blink", waiting: "idle"};
+// A voice's blink is its idle animation named blinking (or the older blink kind); its other idle animations are the acts the mascot plays while it waits.
+// Any other kind a voice carries shows in its dialog only.
+export const BLINK_NAME = "blinking";
+export const isBlink = (animation) => animation.kind === "blink" || (animation.kind === "idle" && animation.name === BLINK_NAME);
+export const isAct = (animation) => animation.kind === "idle" && !isBlink(animation);
 
 export const CELL = 256;
 export const FRAME_MS = 286;
@@ -56,12 +59,15 @@ export const afterSeconds = ({min, max}, random = Math.random()) => (min + rando
 export const showcaseOn = (url = window.location) => new URLSearchParams(url.search).get("mascot") === "showcase" || /[?&]mascot=showcase/.test(url.hash);
 
 // The animations as the dialog lists them: grouped by kind, the moments' kinds first, then the rest by name.
-export const KIND_ORDER = Object.values(MOMENTS);
+export const KIND_ORDER = ["idle", "blink"];
 
 export const groupedByKind = (list) => {
     const kinds = [...new Set(list.map((animation) => animation.kind))];
     kinds.sort((a, b) => (KIND_ORDER.indexOf(a) + 1 || 99) - (KIND_ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b));
-    return kinds.map((kind) => ({kind, items: list.filter((animation) => animation.kind === kind)}));
+    return kinds.map((kind) => ({
+        kind,
+        items: list.filter((animation) => animation.kind === kind).sort((a, b) => isBlink(b) - isBlink(a) || a.name.localeCompare(b.name, undefined, {numeric: true})),
+    }));
 };
 
 export const animationLabel = (animation) => (animation.name ? `${animation.kind} ${animation.name.replace(/_/g, " ")}` : animation.kind);

@@ -1,3 +1,4 @@
+import json
 import tempfile
 from pathlib import Path
 
@@ -5,11 +6,12 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
-from features.form_of_address.animations import Animation, Schedule, Tuning, shipped_animations, unpacked, voice_of
+from features.form_of_address.animations import FRAME, OFFSETS, Animation, Schedule, Tuning, offsets_document, offsets_name, shipped_animations, tuning_of, unpacked, voice_of
 from features.form_of_address.names import first_name, in_use, title
 from features.form_of_address.resource import Profile
 from features.form_of_address.voices import BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
 from resources.base import SYSTEM, Refused
+from resources.pictures import dimensions
 
 COPY = " (my copy)"
 SHAPE = ("brief", "calling", "sample", "introduction", "humour", "naming", "address", "art")
@@ -79,18 +81,35 @@ class Profiles(Controller):
         from commands.dispatch import WEB
         shipped = shipped_animations(WEB / "voices", row.art)
         dropped = [a for a in (Animation.of(name, voice_of(row.art)) for name in row.files) if a]
-        return [{**animation.view(), "edit": row.animation_edits.get(animation.file)} for animation in [*shipped, *dropped]]
+        return [{**animation.view(), "edit": tuning_of(self._offsets_of(row, animation) or {})} for animation in [*shipped, *dropped]]
+
+    def _offsets_of(self, row, animation: Animation) -> dict | None:
+        """The offsets file of an animation: the one saved with the voice, else the one it was delivered with."""
+        from commands.dispatch import WEB
+        name = offsets_name(animation.file)
+        kept = self.folder(row.n) / name if name in row.files else None
+        delivered = WEB / "voices" / Path(animation.file).parent / name if animation.shipped else None
+        found = next((path for path in (kept, delivered) if path and path.is_file()), None)
+        return json.loads(found.read_text()) if found else None
 
     @action
     def tune(self, n: int, path: str, edit: dict | None = None):
-        """Saves how one animation of a voice is shown, its x and y offsets and its time per frame, beside its sheet; with no edit it goes back to the sheet as it is."""
+        """Saves how one animation of a voice is shown as its offsets file, offset_x and offset_y per frame and the optional frame_ms and duration_ms, beside the voice; with no edit it goes back to the delivered file."""
+        from commands.dispatch import WEB
         row = self.load(n)
-        if path not in {animation["path"] for animation in self._animations_of(row)}:
+        animation = next((a for a in (Animation.of(item["file"], voice_of(row.art), item["shipped"]) for item in self._animations_of(row)) if a and a.file == path), None)
+        if animation is None:
             raise Refused(f"{row.title} has no animation {path}")
-        kept = {name: tuning for name, tuning in row.animation_edits.items() if name != path}
-        if edit:
-            kept[path] = Tuning.from_payload(edit).view()
-        return self.update(n, animation_edits=kept)
+        name = offsets_name(animation.file)
+        if not edit:
+            return self.detach(n, name, "back to the delivered offsets") if name in row.files else row
+        sheet = WEB / "voices" / animation.file if animation.shipped else self.folder(n) / animation.file
+        size = dimensions(sheet) or (FRAME, FRAME)
+        document = offsets_document(animation, Tuning.from_payload(edit), self._offsets_of(row, animation), size, voice_of(row.art))
+        with tempfile.TemporaryDirectory() as folder:
+            written = Path(folder) / name
+            written.write_text(json.dumps(document, indent=2) + "\n")
+            return self.attach(n, str(written))
 
     @action
     def attach(self, n: int, path: str, description: str = ""):
@@ -100,6 +119,10 @@ class Profiles(Controller):
                 for sheet in unpacked(source, Path(folder)):
                     super().attach(n, str(sheet), description)
             return self.load(n)
+        if source.name.endswith(OFFSETS):
+            if not isinstance(json.loads(source.read_text()).get("frames"), list):
+                raise Refused(f"{source.name} is not an offsets file: it lists its frames with offset_x and offset_y")
+            return super().attach(n, path, description)
         if not Animation.of(source.name, voice_of(self.load(n).art)):
             raise Refused(f"{source.name} is not an animation: name it <kind>_<name>.png, such as idle_wave.png, or drop a ZIP of them")
         return super().attach(n, path, description)
