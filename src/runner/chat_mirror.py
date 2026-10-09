@@ -198,9 +198,5 @@ def send_row_to_chat(record: Record, row, text: str, turn: str | None = None, st
         held[SENT] = [*sent, mark][-KEPT_SENT:]
         if streamed:
             held[MATCHED] = [*matched, key][-KEPT_SENT:]
-    if chat.send(record, row, text, turn=turn):
-        return True
-    with ledger.changing() as held:
-        held[SENT] = [one for one in held.get(SENT, []) if one != mark]
-        held[MATCHED] = [one for one in held.get(MATCHED, []) if not streamed or one != key]
-    return False
+    chat.send(record, row, text, turn=turn)
+    return True
