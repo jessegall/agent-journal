@@ -262,6 +262,16 @@ def warm_commands() -> None:
         parser(noun)
 
 
+def warm_work(root: Path) -> None:
+    """What ending work reads, the work and the to-dos still open, so the first command after a start answers from memory."""
+    from controllers.types import Todos, Works
+    from engine.record import Record
+    from resources.base import SYSTEM
+    record = Record(root, default_env(root))
+    Works(record, actor=SYSTEM).rows.standing()
+    Todos(record, actor=SYSTEM).rows.standing()
+
+
 def warm_changed(root: Path) -> None:
     from commands.parser import parser
     from features.open_viewer.manifest import manifest
@@ -309,6 +319,8 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     tell_threads_on_signal(root)
     allow_open_files()
     server = serve(root, port)
+    warm_commands()
+    warm_work(root)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
     changed = threading.Event()
     halting = threading.Event()
@@ -320,7 +332,6 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     threading.Thread(target=server.collector.run, args=(halting,), daemon=True).start()
     threading.Thread(target=replay, args=(root,), daemon=True).start()
     threading.Thread(target=warm, args=(root,), daemon=True).start()
-    threading.Thread(target=warm_commands, daemon=True).start()
     threading.Thread(target=keep_services, args=(root, halting), daemon=True).start()
     try:
         server.serve_forever()
