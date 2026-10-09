@@ -75,6 +75,17 @@ def cleared(place: Path) -> None:
     subprocess.run(["pkill", "-9", "-f", str(place).removeprefix("/private")], capture_output=True, timeout=WAIT)
 
 
+def ended(place: Path) -> None:
+    """Ends every process that mentions the place, and fails when one still lives after a moment."""
+    cleared(place)
+    for _ in range(25):
+        left = subprocess.run(["pgrep", "-f", str(place).removeprefix("/private")], capture_output=True, text=True, timeout=WAIT).stdout.split()
+        if not left:
+            return
+        time.sleep(0.2)
+    raise AssertionError(f"processes of {place} are still running: {left}")
+
+
 def serves(journal: list[str], cwd: Path, env: dict) -> None:
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
