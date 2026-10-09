@@ -123,6 +123,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     @action
     def approve_plan(self, n: int):
+        waits = self._waiting_on(self.load(n))
+        if waits:
+            self._refuse(f"{self.type} {n} waits on {', '.join(ref.replace(':', ' ') for ref in waits)}: its plan is approved once they are merged")
         return self._decide_plan(n, READY, "approve", "approve", "")
 
     @action
@@ -444,7 +447,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 return self._hand_to_plan(ticket)
             if self._live(ticket):
                 return ticket
-            if self._waiting_on(ticket) or 0 < self._limit() <= len({r.work_environment for r in self._running()}):
+            if 0 < self._limit() <= len({r.work_environment for r in self._running()}):
                 return self.update(ticket.n, queued=True, queued_at=ticket.queued_at or time.time())
             driver, place = DRIVERS[ticket.provider], ticket.work_environment
             earlier = Sessions(self.record.root).last(place, ticket.provider)
@@ -490,7 +493,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 continue
 
     def _queue(self) -> list:
-        return [r.n for r in sorted((r for r in self.rows.standing() if r.queued and not self._waiting_on(r)), key=lambda r: r.queued_at)]
+        return [r.n for r in sorted((r for r in self.rows.standing() if r.queued), key=lambda r: r.queued_at)]
 
     @action
     def queue_before(self, n: int, other: int):
