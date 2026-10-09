@@ -58,18 +58,22 @@ const members = computed(() =>
 const open = (r) => peekThere(r.env || route.value.env, r.type, r.n);
 const filePath = (r, name) => (r.env ? api.in(r.env) : api).fileUrl(r.type, r.n, name);
 
-const LISTED = ["todo", "ticket"];
-const cards = computed(() => members.value.filter((r) => !LISTED.includes(r.type)));
-const todos = computed(() => members.value.filter((r) => r.type === "todo"));
-const tickets = computed(() => members.value.filter((r) => r.type === "ticket"));
-const tab = ref("cards");
+const OWN_TABS = ["plan", "todo", "ticket"];
+const ofType = (type) => members.value.filter((r) => r.type === type);
+const resources = computed(() => members.value.filter((r) => !OWN_TABS.includes(r.type)));
+const plans = computed(() => ofType("plan"));
+const todos = computed(() => ofType("todo"));
+const tickets = computed(() => ofType("ticket"));
+const tab = ref("resources");
 const tabs = computed(() =>
     [
-        {key: "cards", title: "Cards", count: cards.value.length},
+        {key: "resources", title: "Resources", count: resources.value.length},
+        {key: "plans", title: "Plans", count: plans.value.length},
         {key: "todos", title: "To-dos", count: todos.value.length},
         {key: "tickets", title: "Tickets", count: tickets.value.length},
-    ].filter((t) => t.key === "cards" || t.count)
+    ].filter((t) => t.key === "resources" || t.count)
 );
+const cards = computed(() => (tab.value === "plans" ? plans.value : resources.value));
 const planOf = (r) =>
     r.data?.plan && r.data?.work_environment
         ? `${r.data.work_environment}/plan:${r.data.plan}`
