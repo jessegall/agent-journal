@@ -16,7 +16,7 @@ from engine.seats import seats
 from engine.transcript import Turn, search as search_transcript
 from features.command_tags.reading import visible
 from providers import PROVIDERS
-from providers.turns import every_turn, loading
+from providers.turns import LoadLimit, every_turn, loading
 from resources.base import Refused, SYSTEM
 from resources.types import AgentRow
 from engine import runtime
@@ -57,11 +57,10 @@ MERGED: dict = {}
 LOAD_LIMIT = 0.4
 
 
-def environment_transcript(record) -> list[SourcedTurn]:
+def environment_transcript(record, limit: LoadLimit | None = None) -> list[SourcedTurn]:
     """Every turn of the environment's agents' conversations in order, each conversation once: its file is found by one stat, the same file by its device and inode; the merge is kept while no conversation has changed."""
     seen = set()
     sources = []
-    until = time.monotonic() + LOAD_LIMIT
     for row in reversed(Agents(record, actor=SYSTEM).rows.every()):
         provider = PROVIDERS.get(row.provider)
         try:
@@ -71,7 +70,7 @@ def environment_transcript(record) -> list[SourcedTurn]:
         if not provider or not found or not stat.S_ISREG(found.st_mode) or (found.st_dev, found.st_ino) in seen:
             continue
         seen.add((found.st_dev, found.st_ino))
-        sources.append((row, every_turn(row, until)))
+        sources.append((row, every_turn(row, limit)))
     kept = MERGED.get((record.root, record.env))
     if kept and len(kept[0]) == len(sources) and all((row.n, row.title) == named and here is turns for (row, here), (named, turns) in zip(sources, kept[0])):
         return kept[1]
@@ -91,14 +90,16 @@ def attic_text(record, term: str) -> str:
 
 
 def search_text(record, term: str, page: int, archived: bool = False, resources: str = "") -> str:
+    limit = LoadLimit.after(LOAD_LIMIT)
     transcript_matches = "\n".join(turn_text(hit.turn, f"{hit.provider}:{hit.session}  ")
-                                   for hit in search_transcript(environment_transcript(record), term, page))
+                                   for hit in search_transcript(environment_transcript(record, limit), term, page))
     hits = found(record, SYSTEM, term, archived, tuple(filter(None, resources.split(","))))
     types = list(dict.fromkeys(hit.type for hit in hits))
     rows = "\n".join(f"{type_} ({len(here)})\n" + "\n".join(row_line(hit) for hit in here)
                      for type_ in types if (here := [hit for hit in hits if hit.type == type_]))
     files = "\n".join(f"  file  {hit.row.ref}  {name}" + (f" — {tags}" if tags else "") for hit in hits for name, tags in hit.files)
-    still = f"{loading()} conversations are still being read, so older matches may be missing: search again in a moment" if loading() else ""
+    unread = max(loading(), len(limit.left))
+    still = f"{unread} conversations are still being read, so older matches may be missing: search again in a moment" if unread else ""
     return "\n".join(part for part in (transcript_matches, rows, files, still) if part)
 
 

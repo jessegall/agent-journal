@@ -1,6 +1,7 @@
 import subprocess
 import threading
 import time
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from engine.package import entry
@@ -41,7 +42,21 @@ def _settled_provider(agent):
     return provider
 
 
-def every_turn(agent, until: float = 0.0) -> list:
+@dataclass
+class LoadLimit:
+    """How long one search may spend loading conversations, and the ones it left to load behind its answer."""
+    until: float
+    left: list = field(default_factory=list)
+
+    @classmethod
+    def after(cls, seconds: float) -> "LoadLimit":
+        return cls(time.monotonic() + seconds)
+
+    def spent(self) -> bool:
+        return time.monotonic() > self.until
+
+
+def every_turn(agent, limit: LoadLimit | None = None) -> list:
     """All the turns of an agent's transcript for a search: kept on disk and in memory, extended by what the file has grown by; a large conversation nobody has read yet is read by a process of its own at low priority, and the search answers without it until then."""
     try:
         provider = _settled_provider(agent)
@@ -51,7 +66,8 @@ def every_turn(agent, until: float = 0.0) -> list:
         found = path.stat()
     except OSError:
         return []
-    if until and agent.transcript not in TURNS and time.monotonic() > until:
+    if limit and agent.transcript not in TURNS and limit.spent():
+        limit.left.append(agent.transcript)
         load_later(agent)
         return []
     with reading(agent.transcript):
