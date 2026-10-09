@@ -76,13 +76,16 @@ export const helperName = (row) => row.data?.name || `Helper ${row.n}`;
 export const helperEnvironment = (row) => row.data?.environment;
 export const helperReport = (row) => row.data?.report || "";
 
-export function helpersByState(rows) {
-    const ordered = helpersInOrder(rows, rows.length);
-    return {
-        open: ordered.filter((row) => helperState(row) !== "finished"),
-        closed: ordered.filter((row) => helperState(row) === "finished"),
-    };
+const SECTION_OF = {needs: "working", working: "working", running: "working", idle: "waiting", reported: "waiting", stopped: "closed", ended: "closed", refused: "closed", finished: "retired"};
+
+export function helpersBySection(rows) {
+    const ordered = [...rows].sort((a, b) => stateRank(helperState(a)) - stateRank(helperState(b)) || stateAt(b) - stateAt(a));
+    const sections = {working: [], waiting: [], closed: [], retired: []};
+    ordered.forEach((row) => sections[SECTION_OF[helperState(row)] || "working"].push(row));
+    return sections;
 }
+
+export const helperReuses = (row) => Number(row.data?.reuses || 0);
 
 export const helperCounts = (rows) => ({
     working: rows.filter(isWorking).length,

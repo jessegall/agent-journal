@@ -3,7 +3,6 @@ import {computed, ref} from "vue";
 import {useEscape} from "../composables/windowEvent.js";
 import {api} from "../api/client.js";
 import Dialog from "../kit/Dialog.vue";
-import {word} from "../domain/spec.js";
 import {agentState, ticketOf} from "../domain/ticketAgents.js";
 import {helperLine, helperName, helperReport, helperState} from "../domain/helpers.js";
 import {href, route} from "../route.js";
@@ -40,22 +39,15 @@ const STOP = {
         cancel: "Keep it running",
     },
 };
-const REMOVE = (who) => ({
-    key: "remove",
-    label: "Remove helper and its working copy",
-    title: "Removes its environment and its copy of the code. Its report and commits are kept.",
-    danger: true,
-    confirm: {
-        text: `Remove the environment of ${who} and its working copy of the code? Its report stays in the Helpers list under Closed, and the commits it made are kept.`,
-        button: "Remove it",
-        cancel: "Cancel",
-    },
-});
-
 const HELPER_STATES = {
     running: {key: "working", word: "Working", dot: "running"},
+    working: {key: "working", word: "Working", dot: "running"},
+    needs: {key: "working", word: "Needs you", dot: "running"},
     reported: {key: "reported", word: "Report ready", dot: "done"},
-    finished: {key: "idle", word: "Closed", dot: "done"},
+    idle: {key: "idle", word: "Waiting for work", dot: "idle"},
+    stopped: {key: "idle", word: "Closed, can take more work", dot: "done"},
+    ended: {key: "idle", word: "Closed, can take more work", dot: "done"},
+    finished: {key: "idle", word: "Retired", dot: "done"},
 };
 const filed = computed(() => {
     const there = env.value && env.value !== route.value.env;
@@ -70,7 +62,7 @@ const kicker = computed(() => ({plan: "Plan agent", helper: "Helper"})[props.kin
 const actions = computed(() => {
     if (!helper.value) return state.value.key === "stopped" ? [] : [STOP];
     const phase = helperState(helper.value);
-    return phase === "running" ? [STOP] : phase === "reported" ? [REMOVE(name.value)] : [];
+    return phase === "running" ? [STOP] : [];
 });
 const info = computed(() => ({
     kind: kicker.value,
@@ -87,8 +79,8 @@ const info = computed(() => ({
     actions: actions.value,
 }));
 
-async function run(key) {
-    if (helper.value) await api.act("helper", helper.value.n, key === "stop" ? "stop" : word("helper", "complete"));
+async function run() {
+    if (helper.value) await api.act("helper", helper.value.n, "stop");
     else await api.stopTicket(props.card.n);
     emit("stopped");
 }

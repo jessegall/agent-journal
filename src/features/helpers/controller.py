@@ -271,7 +271,7 @@ class Helpers(Controller):
         home = Record(self.record.root, row.environment)
         Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
         self._handed(row, home, handed)
-        Helpers(self.record, actor=SYSTEM).update(n, report="", answering=True, latest=titled(text))
+        Helpers(self.record, actor=SYSTEM).update(n, report="", answering=True, latest=titled(text), reuses=int(row.reuses) + 1)
         Agents(self.record, actor=SYSTEM)._mark_primary(f"{'Continued' if running else 'Reused'} helper {n}", name=row.name, icon="bot", detail=titled(text))
         return f"sent to {row.name}" + (f", with to-do {', '.join(str(t.n) for t in handed)}" if handed else "")
 

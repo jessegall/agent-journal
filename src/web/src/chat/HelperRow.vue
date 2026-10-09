@@ -1,11 +1,11 @@
 <script setup>
-import {helperLine, helperName, helperReport, helperState, helperTag, stateAt} from "../domain/helpers.js";
+import {helperLine, helperName, helperReport, helperReuses, helperState, helperTag, stateAt} from "../domain/helpers.js";
 import {nextTick, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
-import {word as commandWord} from "../domain/spec.js";
 import {ago} from "../format/time.js";
 import Btn from "../kit/Btn.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
+import TextInput from "../kit/TextInput.vue";
 import AgentStopButton from "./AgentStopButton.vue";
 
 const props = defineProps({row: {type: Object, required: true}});
@@ -14,6 +14,8 @@ const LINES = 5;
 const busy = ref(false);
 const refusal = ref("");
 const confirming = ref(false);
+const why = ref("");
+const RETIRABLE = ["reported", "stopped", "ended"];
 const whole = ref(false);
 const reportBox = ref(null);
 const clipped = ref(false);
@@ -23,11 +25,16 @@ const state = () => helperState(props.row);
 const tag = () => helperTag(props.row);
 const stateLabel = () => (state() === "finished" ? `Closed ${ago(stateAt(props.row))}` : tag().word);
 
-async function remove() {
+const reuseLine = () => {
+    const times = helperReuses(props.row);
+    return `${times ? `Reused ${times} ${times === 1 ? "time" : "times"} · ` : ""}First dispatched ${ago(props.row.created)}`;
+};
+
+async function retire() {
     busy.value = true;
     refusal.value = "";
     try {
-        await api.act("helper", props.row.n, commandWord("helper", "complete"));
+        await api.act("helper", props.row.n, "retire", {why: why.value, confirm: true});
         confirming.value = false;
         emit("changed");
     } catch (e) {
@@ -50,6 +57,7 @@ onMounted(() =>
                 <strong class="helper-name">{{ name() }}</strong>
                 <span class="helper-job" :title="row.title">{{ row.title }}</span>
                 <small>{{ helperLine(row) }}</small>
+                <small class="helper-reuse">{{ reuseLine() }}</small>
             </Btn>
             <div class="helper-side">
                 <span :class="['helper-state', tag().state]">{{ stateLabel() }}</span>
@@ -76,21 +84,22 @@ onMounted(() =>
                 </Btn>
             </template>
         </template>
-        <template v-if="state() === 'reported'">
+        <template v-if="RETIRABLE.includes(state())">
             <template v-if="confirming">
                 <div class="helper-confirm">
                     <p>
-                        Remove the environment of {{ name() }} and its working copy of the code? Its report stays here under Closed, and the
-                        commits it made are kept.
+                        Retire {{ name() }}? A retired helper cannot take more work. Tell why it cannot be reused: it can be given new work
+                        instead, and it keeps its context.
                     </p>
+                    <TextInput v-model="why" placeholder="Why it cannot be reused" />
                     <div class="helper-confirm-buttons">
-                        <Btn small @click="confirming = false">Cancel</Btn>
-                        <Btn small kind="danger" :busy="busy" @click="remove">Remove</Btn>
+                        <Btn small @click="confirming = false">Keep it</Btn>
+                        <Btn small kind="danger" :busy="busy" :disabled="!why.trim()" @click="retire">Retire it</Btn>
                     </div>
                 </div>
             </template>
             <template v-else>
-                <Btn small class="helper-remove" @click="confirming = true">Remove the helper and its worktree</Btn>
+                <Btn small class="helper-remove" @click="confirming = true">Retire this helper</Btn>
             </template>
         </template>
         <template v-if="refusal">
