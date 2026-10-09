@@ -125,13 +125,14 @@ def newest_among(summaries: list, last: int, wanted_row) -> list[dict]:
 def newest_listed(controller, wanted: Listing, summaries: list) -> tuple[list[dict], bool]:
     """The rows of the usual listing, the newest page and the open rows with it, and whether older rows are left out."""
     last, hidden_listed = wanted.last, controller.resource.hidden_listed
-    shown = lambda row: not row["deleted"] and (wanted.completed or not row["completed"]) and (hidden_listed or not row.get("hidden")) and row["updated"] > 0
-    newest = newest_among(summaries, last, shown)
-    kept = newest
+    listable = lambda row: (hidden_listed or not row.get("hidden")) and row["updated"] > 0
+    shown = lambda row: not row["deleted"] and (wanted.completed or not row["completed"]) and listable(row)
+    standing = controller.rows.standing_summaries()
+    open_newest = newest_among(standing, last, listable)
+    kept = open_newest
     if wanted.completed:
-        is_open = lambda row: not row["completed"] and shown(row)
-        open_rows = [row for row in summaries if is_open(row)] if controller.resource.listed_open else newest_among(summaries, last, is_open)
-        kept = sorted({row["n"]: row for row in (*open_rows, *newest)}.values(), key=lambda row: row["n"])
+        open_rows = [row for row in standing if listable(row)] if controller.resource.listed_open else open_newest
+        kept = sorted({row["n"]: row for row in (*open_rows, *newest_among(summaries, last, shown))}.values(), key=lambda row: row["n"])
     held = {row["n"] for row in kept}
     return kept, any(shown(row) and row["n"] not in held for row in reversed(summaries))
 
