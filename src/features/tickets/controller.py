@@ -190,7 +190,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _bind_to(self, n: int, name: str):
         ticket = self.update(int(n), work_environment=name)
-        return self._based(ticket, self._started_at(ticket, self._into(ticket)))
+        return self._based(ticket, self._started_at(ticket))
 
     def _plan_owner(self, name: str) -> int:
         return self._owned_by(name, "plan")
@@ -298,7 +298,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         for name, place, base in self._repositories(ticket):
             if name != "." and not changed(place, branch, base):
                 continue
-            into = self._into(ticket) if self._into(ticket) != "HEAD" else current_branch(place)
+            into = self._into_at(ticket, name, place) if self._into(ticket) != "HEAD" else current_branch(place)
             failed = merged_into(place, branch, into)
             if failed:
                 where = "" if name == "." else f" in {name}"
@@ -430,10 +430,11 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         self.mark_seen()
         ticket = self.bind(int(n))
         into = self._into(self.load(n))
-        missing = [name for name, place, _ in self._repositories(self.load(n)) if into != "HEAD" and not present(place, into)]
-        if missing:
-            where = "" if missing == ["."] else f" in {', '.join(missing)}"
-            self._refuse(f"its board works on the branch {into}, which does not exist{where}; make it, or change the board's branch")
+        if into != "HEAD" and any(name == "." and not present(place, into) for name, place, _ in self._repositories(self.load(n))):
+            self._refuse(f"its board works on the branch {into}, which does not exist; make it, or change the board's branch")
+        lacking = self._lacking(self.load(n))
+        if lacking:
+            self.comment(ticket.n, f"The board's branch {into} does not exist in {', '.join(lacking)}, so it starts from that repository's own default branch there")
         self._modelled(ticket, model, f"journal ticket start {ticket.n} --model <model>")
         you_started = bool(ticket.data.get("user_started")) or (self.actor == USER and self._from_outside(ticket))
         ticket = self.update(ticket.n, provider=provider or ticket.provider, model=model or ticket.model, halted=False, user_started=you_started)
@@ -452,7 +453,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             args = driver.within(["--model", ticket.model] if ticket.model else [], place)
             project = self.record.root.parent
             fresh = not ticket.base
-            ticket = self._based(ticket, self._started_at(ticket, into))
+            ticket = self._based(ticket, self._started_at(ticket))
             for _, place, base in self._repositories(ticket) if into != "HEAD" else ():
                 stuck = branched(place, self._branch(ticket), base, fresh)
                 if stuck:

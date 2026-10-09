@@ -153,6 +153,11 @@ def current_branch(project: Path) -> str:
     return git(project, "symbolic-ref", "--short", "HEAD").stdout.strip()
 
 
+def default_branch(project: Path) -> str:
+    remote = git(project, "symbolic-ref", "--short", "refs/remotes/origin/HEAD").stdout.strip()
+    return remote if remote and present(project, remote) else current_branch(project) or "HEAD"
+
+
 def checked_out(project: Path, branch: str) -> Path | None:
     listed = git(project, "worktree", "list", "--porcelain").stdout.split("\n\n")
     held = [block.splitlines() for block in listed if f"branch refs/heads/{branch}" in block.splitlines()]
