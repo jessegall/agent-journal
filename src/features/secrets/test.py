@@ -65,6 +65,17 @@ def test_a_deleted_secret_keeps_its_values_for_30_days(tmp_path, monkeypatch):
     assert (secrets._purge(), ValuesFile(record.root).values()) == (["GITHUB_KEY"], {}), "after 30 days its values leave the file"
 
 
+def test_a_secret_made_with_instructions_that_name_a_command_arrives_with_its_program_allowed(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
+    features.load()
+    record = fresh()
+    made = Secrets(record, actor=USER)
+    stated = made.create("Linear", kind="api key", brief="Send it as a header:\ncurl -H @- https://api.linear.app/graphql\nnever bash -c, never python -c")
+    assert stated.programs == ["curl"], "a program shown in the instructions is allowed, a shell or interpreter never is"
+    assert made.create("Plain", kind="api key", brief="Used by the billing job.").programs == [], "instructions that name no command leave the list empty"
+    assert made.create("Chosen", kind="api key", brief="curl -H @- https://x", programs=["gh"]).programs == ["gh"], "programs the user chose are kept"
+
+
 def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch, capsys):
     from features.secrets.running import Masker
     from providers.command_effects import effects
