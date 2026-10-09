@@ -387,7 +387,6 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     ahead = subprocess.run(["git", "rev-parse", "HEAD"], cwd=nested, check=True, capture_output=True, text=True, timeout=30).stdout.strip()
     assert (tickets._into_at(wide, "autoscaling", nested), tickets._started_at(wide)["autoscaling"]) == ("feature/activities", ahead), \
         "a nested repository checked out on a feature branch starts the ticket at that checkout's head, never at another branch it also has"
-    from controllers.types import Environments
     environments = Environments(record, actor=SYSTEM)
     stale = [*environments.rows.summaries(), {**environments.rows.summaries()[0], "n": 999, "deleted": 0}]
     monkeypatch.setattr(environments.rows, "summaries", lambda: stale)
