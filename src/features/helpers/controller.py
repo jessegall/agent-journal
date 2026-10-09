@@ -25,6 +25,8 @@ from controllers.marks import action
 from engine.wording import slugged
 from resources.types import EnvironmentKind
 
+STOP_WAIT, STOP_POLL = 5.0, 0.1
+
 
 def kickoff(row, folder: Path, todo: int, handed: list[Todo], dispatcher: str) -> str:
     return (f"You are {row.name}, a helper dispatched for one bounded job. The job: {row.title}\n\n{row.brief}\n\n"
@@ -344,13 +346,22 @@ class Helpers(Controller):
         if not agent_runs(self.record, row):
             return f"helper {row.n}, {row.name}, has no agent running; finish it"
         places.stop(place.n)
+        Helpers(self.record, actor=SYSTEM).update(row.n, stop_asked=time.time())
         return f"helper {row.n}, {row.name}: its agent is stopped"
+
+    def _await_exit(self, row: Helper) -> None:
+        """A stop is asked of the agent's terminal and answered at once; the agent leaves a moment later, so a finish right after waits for it."""
+        until = row.stop_asked + STOP_WAIT
+        while agent_runs(self.record, row) and time.time() < until:
+            time.sleep(STOP_POLL)
 
     @action(network=True)
     def complete(self, n: int, how: str = "", **data):
         row = self._unfinished(n, "finished")
         places = Environments(self.record, actor=SYSTEM)
         place = places.rows.by_title(row.environment)
+        if agent_runs(self.record, row) and time.time() - row.stop_asked < STOP_WAIT:
+            self._await_exit(row)
         if agent_runs(self.record, row):
             raise Refused(f"helper {n}, {row.name}, is still running: journal helper stop {n}, then finish it")
         rows = held(self.record, row)

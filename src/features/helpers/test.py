@@ -121,6 +121,15 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     Helpers(record, actor=SYSTEM).update(ghost.n, report="done for now")
     helpers.say(ghost.n, "one more thing")
     assert helpers.load(ghost.n).report == "", "a follow-up takes the helper's earlier report away, so the menu shows it working again"
+    import threading
+    helpers.dispatch("Quin", "a job", "claude", "sonnet")
+    quin = Helpers(record, actor=SYSTEM).rows.standing()[-1]
+    Sessions(record.root).bind("claude-quin", quin.environment, pid=os.getpid(), provider="claude")
+    leaving = lambda: Sessions(record.root).write("claude-quin", pid=2 ** 22 + 7)
+    monkeypatch.setattr(Environments, "stop", lambda self, n: (threading.Timer(0.3, leaving).start(), self.load(n))[1])
+    helpers.stop(quin.n)
+    helpers.complete(quin.n)
+    assert Helpers(record, actor=SYSTEM).load(quin.n).completed, "a finish right after a stop waits for the agent to leave instead of answering that it still runs"
 
 
 def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_a_nudge(monkeypatch):
@@ -352,8 +361,8 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     helpers.dispatch("Rhea", "The tunnel", "codex", "gpt-5.5", worktree=True, todos=f"{fixed},{dropped},{left}")
     assert plans.load(plan.n).delegated, "handing a helper a row of a plan's current phase delegates the plan"
     from features.plans.summary import helping, open_tickets
-    shown = helping(repo.record, plans.load(plan.n))
-    assert ([(h["name"], h["job"]) for h in shown], bool(shown[0]["branch"]), open_tickets(repo.record, plans.load(plan.n))) == ([("Rhea", "The tunnel")], True, []), \
+    listed = helping(repo.record, plans.load(plan.n))
+    assert ([(h["name"], h["job"]) for h in listed], bool(listed[0]["branch"]), open_tickets(repo.record, plans.load(plan.n))) == ([("Rhea", "The tunnel")], True, []), \
         "the plan names the helper working its phase, with its job and branch, and no tickets are open on it"
     row = helpers.load(1)
     helper = Helpers(Record(repo.record.root, row.environment), actor=AGENT)
