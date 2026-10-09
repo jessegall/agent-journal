@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.43 — A ticket's plan always reaches its board's orchestrator
+- Who orchestrates a board is its orchestrator field alone: a ticket plan waiting for approval starts the review for that environment, and it may approve the plan, also after the board's run has ended.
+
 ## 2.267.42 — Documents searched on the server, a lighter dashboard
 - Searching the library for words inside documents runs on the server, so the dashboard sends documents as summaries too and the preview reads a document whole when it opens.
 
