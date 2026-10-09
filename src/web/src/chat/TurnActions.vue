@@ -8,7 +8,6 @@ import ReplyTool from "./ReplyTool.vue";
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 const props = defineProps({
     turn: {type: Object, required: true},
-    mine: {type: Boolean, required: true},
     text: {type: String, required: true},
     picking: {type: Boolean, default: false},
 });
@@ -48,7 +47,7 @@ function react(face) {
             <button type="button" class="thread-tool" title="Copy the text of this" @click.stop="copy">
                 {{ copied ? "Copied" : "Copy" }}
             </button>
-            <template v-if="mine && !turn.completed">
+            <template v-if="turn.who === 'user' && !turn.completed">
                 <button
                     type="button"
                     class="thread-tool"
