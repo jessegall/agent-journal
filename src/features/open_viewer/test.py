@@ -473,6 +473,13 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     runtime.hook_failures(record.root).write_text(f"{started - 3} 000 claude {record.env}\n{started + 3} 000 claude {record.env}\n")
     http.unanswered(record.root)
     assert not told, "a hook that got no answer while the server restarted, warm-up included, is not reported"
+    runtime.hook_failures(record.root).write_text(f"{started + 100} 000 claude {record.env} 500.0\n")
+    http.unanswered(record.root)
+    assert not told, "a hook that got no answer while the machine's load was above its cores is logged with the load and not reported"
+    runtime.hook_failures(record.root).write_text(f"{started + 100} 000 claude {record.env} 0.1\n")
+    http.unanswered(record.root)
+    assert told, "a hook that got no answer on a quiet machine is reported"
+    told.clear()
     import serve
     runtime.restarting(record.root).write_text(str(started - 60))
     waits = iter([False, True])

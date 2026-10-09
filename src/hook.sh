@@ -15,8 +15,9 @@ keep() {
   rm -f "$body"
   exit 0
 }
+load() { uptime | sed 's/.*averages*: *//; s/,/ /g' | cut -d' ' -f1; }
 down() {
-  mkdir -p "$root/runtime" && printf '%s down %s %s\n' "$(date +%s)" "$agent" "$JOURNAL_ENV" >> "$root/runtime/hook-failures.log"
+  mkdir -p "$root/runtime" && printf '%s down %s %s %s\n' "$(date +%s)" "$agent" "$JOURNAL_ENV" "$(load)" >> "$root/runtime/hook-failures.log"
   keep
 }
 read -r at url < "$root/runtime/heartbeat" 2>/dev/null || down
@@ -43,7 +44,7 @@ out=${reply%
 case "$code" in
   200|403) [ -z "$out" ] || [ "$out" = "{}" ] || printf '%s\n' "$out" ;;
   *) { [ -z "$stale" ] || [ "${code:-000}" != 000 ]; } || down
-     printf '%s %s %s %s\n' "$(date +%s)" "${code:-000}" "$agent" "$JOURNAL_ENV" >> "$root/runtime/hook-failures.log"; keep ;;
+     printf '%s %s %s %s %s\n' "$(date +%s)" "${code:-000}" "$agent" "$JOURNAL_ENV" "$(load)" >> "$root/runtime/hook-failures.log"; keep ;;
 esac
 rm -f "$body"
 exit 0
