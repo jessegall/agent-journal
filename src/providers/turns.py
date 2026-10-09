@@ -21,6 +21,10 @@ TRIED: dict[str, float] = {}
 FIRST_INLINE = 200_000
 GROWN_INLINE = 4_000_000
 RETRY_AFTER = 600.0
+LATER: dict[str, object] = {}
+LATER_LOCK = threading.Lock()
+LOADER: threading.Thread | None = None
+PAUSE = 0.02
 
 
 def settled(provider, path: Path, agent) -> None:
@@ -37,7 +41,7 @@ def _settled_provider(agent):
     return provider
 
 
-def every_turn(agent) -> list:
+def every_turn(agent, until: float = 0.0) -> list:
     """All the turns of an agent's transcript for a search: kept on disk and in memory, extended by what the file has grown by; a large conversation nobody has read yet is read by a process of its own at low priority, and the search answers without it until then."""
     try:
         provider = _settled_provider(agent)
@@ -46,6 +50,9 @@ def every_turn(agent) -> list:
         path = Path(agent.transcript)
         found = path.stat()
     except OSError:
+        return []
+    if until and agent.transcript not in TURNS and time.monotonic() > until:
+        load_later(agent)
         return []
     with reading(agent.transcript):
         held = TURNS.get(agent.transcript)
@@ -68,6 +75,31 @@ def every_turn(agent) -> list:
         return whole.turns
 
 
+def load_later(agent) -> None:
+    """Leaves a conversation to a thread that loads its folds one at a time after the search has answered, so a search never waits on more than its time limit."""
+    global LOADER
+    with LATER_LOCK:
+        LATER[agent.transcript] = agent
+        if LOADER and LOADER.is_alive():
+            return
+        LOADER = threading.Thread(target=load_every_later, daemon=True)
+        LOADER.start()
+
+
+def load_every_later() -> None:
+    while True:
+        with LATER_LOCK:
+            if not LATER:
+                return
+            agent = next(iter(LATER.values()))
+        try:
+            every_turn(agent)
+        finally:
+            with LATER_LOCK:
+                LATER.pop(agent.transcript, None)
+        time.sleep(PAUSE)
+
+
 def begin_reading(agent) -> None:
     """Queues a conversation for the one low-priority process that keeps conversations' turns on disk, and leaves it be for a while after it was tried; loading() starts the process once the search has queued them all."""
     if time.monotonic() - TRIED.get(agent.transcript, -RETRY_AFTER) < RETRY_AFTER:
@@ -80,16 +112,16 @@ def loading() -> int:
     """How many conversations are queued or being read by the process of their own; starts the process when there is work and none runs."""
     global BUILDER
     if BUILDER and BUILDER.poll() is None:
-        return len(WAITING) + len(READ_NOW)
+        return len(WAITING) + len(READ_NOW) + len(LATER)
     if WAITING:
         READ_NOW.clear()
         READ_NOW.update(WAITING)
         WAITING.clear()
         pairs = [part for path, provider in READ_NOW.items() for part in (provider, path)]
         BUILDER = subprocess.Popen([*entry("providers.fold"), *pairs], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-        return len(READ_NOW)
+        return len(READ_NOW) + len(LATER)
     READ_NOW.clear()
-    return 0
+    return len(LATER)
 
 
 def reading(transcript: str) -> threading.Lock:

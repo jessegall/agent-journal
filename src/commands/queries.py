@@ -54,13 +54,15 @@ class SourcedTurn:
         return self.turn.lowered
 
 MERGED: dict = {}
+LOAD_LIMIT = 0.4
 
 
 def environment_transcript(record) -> list[SourcedTurn]:
     """Every turn of the environment's agents' conversations in order, each conversation once: its file is found by one stat, the same file by its device and inode; the merge is kept while no conversation has changed."""
     seen = set()
     sources = []
-    for row in Agents(record, actor=SYSTEM).rows.every():
+    until = time.monotonic() + LOAD_LIMIT
+    for row in reversed(Agents(record, actor=SYSTEM).rows.every()):
         provider = PROVIDERS.get(row.provider)
         try:
             found = os.stat(Path(row.transcript).expanduser()) if row.transcript else None
@@ -69,7 +71,7 @@ def environment_transcript(record) -> list[SourcedTurn]:
         if not provider or not found or not stat.S_ISREG(found.st_mode) or (found.st_dev, found.st_ino) in seen:
             continue
         seen.add((found.st_dev, found.st_ino))
-        sources.append((row, every_turn(row)))
+        sources.append((row, every_turn(row, until)))
     kept = MERGED.get((record.root, record.env))
     if kept and len(kept[0]) == len(sources) and all((row.n, row.title) == named and here is turns for (row, here), (named, turns) in zip(sources, kept[0])):
         return kept[1]
