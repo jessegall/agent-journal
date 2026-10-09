@@ -4,8 +4,11 @@ from controllers.base import Controller
 from engine.sessions import Sessions
 from resources import types
 from controllers.marks import action
+from engine.command_runs import command_runs
 
 KEPT_CARDS = 50
+MOVED_TO_BACKGROUND = "Moved a long command to the background"
+FOREGROUND = "Bash"
 
 
 
@@ -47,6 +50,13 @@ class Agents(Controller):
         if "label" not in card:
             return row
         return self.appended(row, "cards", {"at": time.time(), **card}, KEPT_CARDS)
+
+    def _moved_to_background(self, row, **card):
+        """The one card for a long command that carries on in the background, whichever provider's agent runs it: it names the command still running, and a second call for the same command adds to the same card."""
+        runs = command_runs(row)
+        last = runs[-1] if runs and runs[-1].tool == FOREGROUND and not runs[-1].done else None
+        command = {"key": f"command:{last.at}", "command": last.command} if last else {}
+        return self.card(row.n, label=MOVED_TO_BACKGROUND, icon="terminal", **command, **card)
 
     def _mark_primary(self, label: str, **card):
         primary = self.primary_to_read()

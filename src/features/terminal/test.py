@@ -367,6 +367,11 @@ def test_the_engine_nudges_only_when_idle_and_passes_over_events_from_before_it_
 
     engine.moved_on()
     assert Agents(engine.record).by_session("claude-1").data.get("cards"), "a message typed while a command runs leaves a card"
+    running = Agents(engine.record, actor=SYSTEM).by_session("codex-9")
+    Agents(engine.record, actor=SYSTEM).update(running.n, provider="codex", commands=[{"command": "npm run build", "tool": "Bash", "at": 5.0}])
+    Agents(engine.record, actor=SYSTEM)._moved_to_background(Agents(engine.record, actor=SYSTEM).load(running.n), detail="a message went in")
+    card = Agents(engine.record, actor=SYSTEM).load(running.n).data["cards"][-1]
+    assert (card["label"], card["command"]) == ("Moved a long command to the background", "npm run build"), "the card for a command moved to the background names the command, whichever provider runs the agent"
     import features
     from types import SimpleNamespace
     from agents.actors import Agent
