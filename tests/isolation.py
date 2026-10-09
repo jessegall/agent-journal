@@ -12,6 +12,7 @@ REPO = Path(__file__).resolve().parents[1]
 HOME = "AGENT_JOURNAL_HOME"
 OFFLINE = REPO / "tests" / "fixtures" / "offline-bin"
 BAND = 6
+KEPT_FOLDERS = 3
 SERIAL = {
     "tests/test_viewer_port.py": "viewer",
     "tests/test_hook_server.py": "viewer",
@@ -46,15 +47,31 @@ def world() -> Path:
     return where
 
 
-def shared(name: str, make: Callable[[Path], None]) -> Path:
-    """A folder the first worker to ask makes once for the whole run, and every worker reads."""
-    where, made = base() / name, base() / f"{name}.made"
-    with open(base() / f"{name}.lock", "w") as lock:
+def made_once(folder: Path, name: str, make: Callable[[Path], None]) -> Path:
+    folder.mkdir(parents=True, exist_ok=True)
+    where, made = folder / name, folder / f"{name}.made"
+    with open(folder / f"{name}.lock", "w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        if not made.is_file():
+        if not made.is_file() or not where.is_dir():
             shutil.rmtree(where, ignore_errors=True)
             make(where)
             made.touch()
+    return where
+
+
+def shared(name: str, make: Callable[[Path], None]) -> Path:
+    """A folder the first worker to ask makes once for the whole run, and every worker reads."""
+    return made_once(base(), name, make)
+
+
+def kept(name: str, make: Callable[[Path], None]) -> Path:
+    """A folder made once for everything named alike, across runs, so a run on unchanged code finds it already made."""
+    folder = Path(tempfile.gettempdir()) / "agent-journal-kept"
+    where = made_once(folder, name, make)
+    os.utime(where)
+    for old in sorted((f for f in folder.iterdir() if f.is_dir()), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_FOLDERS:]:
+        shutil.rmtree(old, ignore_errors=True)
+        old.with_name(f"{old.name}.made").unlink(missing_ok=True)
     return where
 
 
