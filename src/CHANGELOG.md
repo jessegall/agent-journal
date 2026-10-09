@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.4 — Filing a breach to-do frees the agent's writes
+- Filing or closing the to-do for a breach of the time budget now releases every agent session whose writes that breach holds, in every environment, so an agent held by it can write again at once instead of at the next breach.
+
 ## 2.267.3 — A settings save keeps the formatted texts
 - Saving a setting that no formatting reads no longer clears every formatted text, so a save in Settings is fast and the chat does not redraw; a switch of a formatting feature still refreshes the texts it changes.
 - Finishing a helper right after stopping it waits up to five seconds for its agent to leave instead of answering that the agent is still running.
