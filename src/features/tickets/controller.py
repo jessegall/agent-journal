@@ -2,7 +2,7 @@ import time
 
 import controllers.types as types_module
 from controllers.agents import WORKING_STATE
-from controllers.types import Agents, Environments, Features
+from controllers.types import Agents, Environments, Features, Messages
 from engine.record import Record
 from engine.seats import terminal_of
 from engine.state import State
@@ -27,7 +27,7 @@ from features.tickets.orchestration import DRAFTS, PLANS, WAITS, TicketOrchestra
 from features.tickets.resource import CONFIRMED, PROPOSED, Ticket, card_back
 from controllers.types import Comments
 from features.plans.controller import ACTIVE, DONE as PLAN_DONE, READY, WAITING, Plans
-from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM, USER
+from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM, USER, titled
 from resources.shapes import rank_before
 from controllers.marks import action
 from resources.types import EnvironmentKind
@@ -91,7 +91,10 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     @action
     def tell(self, n: int, note: str):
         ticket = self.load(n)
-        if not self._driver(ticket, "tell").send(note.strip(), now=True, by=self.record.env):
+        driver = self._driver(ticket, "tell")
+        if self._working(ticket):
+            Messages(Record(self.record.root, ticket.work_environment), actor=AGENT).create(titled(note), brief=note.strip(), from_main=True)
+        elif not driver.send(note.strip(), now=True, by=self.record.env):
             self._refuse(f"the note to {self.type} {ticket.n}'s agent stayed in its input box; its agent may be stuck")
         return self.update(ticket.n, told=time.time())
 
@@ -121,8 +124,10 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _plan_of(self, ticket):
         """The plan a ticket points at, or nothing when that row is not in its environment, so a missing plan stops nothing."""
+        if not (ticket.plan and ticket.work_environment):
+            return None
         plans = self._plans(ticket)
-        return plans.load(ticket.plan) if ticket.plan and plans.rows.exists(ticket.plan) else None
+        return plans.load(ticket.plan) if plans.rows.exists(ticket.plan) else None
 
     def _plans(self, ticket) -> Plans:
         return Plans(Record(self.record.root, ticket.work_environment), actor=self.actor)

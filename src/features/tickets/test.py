@@ -696,6 +696,13 @@ def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
         assert (typed, "told" in tickets.load(second.n).data) == (["hello"], True), "a note to a ticket's agent is typed into its terminal and remembered"
         scoped.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by: False))
         assert "stayed in its input box" in refused(lambda: tickets.tell(second.n, "again")), "a note the terminal would not take says its agent may be stuck"
+        scoped.setattr(Tickets, "_working", lambda self, found: True)
+        from controllers.types import Messages
+        before = len(Messages(Record(record.root, tickets.load(second.n).work_environment), actor=SYSTEM).rows.every())
+        tickets.tell(second.n, "carry on with the tests")
+        after = Messages(Record(record.root, tickets.load(second.n).work_environment), actor=SYSTEM).rows.every()
+        assert (len(after) - before, after[-1].brief, typed) == (1, "carry on with the tests", ["hello"]), \
+            "a note to an agent that is busy is left as a message in its environment for it to read, never typed over its work or called stuck"
     assert "no provider 'nowhere'" in refused(lambda: tickets.start(fourth.n, provider="nowhere")), "a provider the journal does not know is refused before anything starts"
     assert "never started" in refused(lambda: tickets.merge(fifth.n)), "a ticket that never started has no branch to merge"
     from commands.http import dispatch
