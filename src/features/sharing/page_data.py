@@ -7,6 +7,7 @@ from engine.markers import MARKER
 from engine.record import Record
 from features.format import SHARED, formatted, shape
 from features.plans.controller import Plans
+from features.sharing.views import shared_view
 from features.tickets.controller import Tickets
 from features.tickets.resource import CONFIRMED
 from resources.base import SYSTEM, Ref, Refused
