@@ -30,6 +30,7 @@ PACKS = Memo()
 INDEXED: dict[str, dict] = {}
 STAMPED: dict[str, "Stamped"] = {}
 STAMPS_FRESH = 60.0
+STAMPS_RENEW = STAMPS_FRESH / 2
 WRITTEN: dict[str, float] = {}
 FLUSH_ROWS, FLUSH_SECONDS = 200, 300.0
 OPEN: dict[str, tuple] = {}
@@ -100,6 +101,18 @@ class Stamped:
     stamps: dict
     inodes: dict
     noted: int
+
+def renew_stamps() -> None:
+    """Looks at every row file of the folders whose stamps near their expiry, so that no request pays for it."""
+    now = time.monotonic()
+    for key, held in list(STAMPED.items()):
+        if now - held.checked < STAMPS_RENEW:
+            continue
+        try:
+            RowStore.restat(Path(key), os.stat(key).st_mtime_ns, None, now)
+        except OSError:
+            STAMPED.pop(key, None)
+
 
 class RowStore:
     def __init__(self, record, resource, order, visible, also, on_damage):
@@ -281,19 +294,7 @@ class RowStore:
                 changed, noted = self._noted(folder, held.noted)
                 if changed:
                     return self._restamped(folder, mark, held, changed, noted)
-            noted = self._noted_end(folder)
-            stamps, inodes = {}, {}
-            for e in os.scandir(folder):
-                if not (e.name.endswith(".md") and e.name[:-3].isdigit()):
-                    continue
-                n = int(e.name[:-3])
-                inodes[n] = e.inode()
-                if fresh and held.inodes.get(n) == inodes[n]:
-                    stamps[n] = held.stamps[n]
-                else:
-                    stamps[n] = stamp_of(e.stat())
-            STAMPED[str(folder)] = Stamped(mark, held.checked if fresh else now, stamps, inodes, noted)
-            return stamps
+            return self.restat(folder, mark, held if fresh else None, now)
         stamps = {}
         for e in os.scandir(folder):
             if not e.is_dir() or not e.name.isdigit():
@@ -303,6 +304,23 @@ class RowStore:
             except OSError:
                 continue
             stamps[int(e.name)] = stamp_of(found)
+        return stamps
+
+    @staticmethod
+    def restat(folder: Path, mark: int, trusted: "Stamped | None", now: float) -> dict[int, str]:
+        """Stamps every row file of a folder, trusting the held stamp of a file whose inode is unchanged when `trusted` is given."""
+        noted = RowStore._noted_end(folder)
+        stamps, inodes = {}, {}
+        for e in os.scandir(folder):
+            if not (e.name.endswith(".md") and e.name[:-3].isdigit()):
+                continue
+            n = int(e.name[:-3])
+            inodes[n] = e.inode()
+            if trusted and trusted.inodes.get(n) == inodes[n]:
+                stamps[n] = trusted.stamps[n]
+            else:
+                stamps[n] = stamp_of(e.stat())
+        STAMPED[str(folder)] = Stamped(mark, trusted.checked if trusted else now, stamps, inodes, noted)
         return stamps
 
     def _restamped(self, folder: Path, mark: int, held: Stamped, changed: set[int], noted: int) -> dict[int, str]:
