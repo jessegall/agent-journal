@@ -10,7 +10,7 @@ from controllers.types import Environments, Messages
 from features import FEATURES
 from features.secrets.keys import integration_key_variables
 from features.secrets.resource import Kind, Secret, SecretField
-from features.secrets.running import NEVER_GIVEN, checked_program, run_masked
+from features.secrets.running import NEVER_GIVEN, checked_program, programs_named, run_masked
 from features.secrets.sessions import BrowserLogins
 from features.secrets.values import ValuesFile
 from providers import PROVIDERS
@@ -26,7 +26,8 @@ class Secrets(Controller):
     @action
     def create(self, title: str, abstract: str = "", brief: str = "", kind: str = Kind.CUSTOM.value, **data) -> Secret:
         chosen = Kind.named(kind)
-        return super().create(title, abstract, brief, kind=chosen.value, **{"secret_fields": chosen.fields(title), **data})
+        stated = {} if data.get("programs") else {"programs": programs_named(brief)}
+        return super().create(title, abstract, brief, kind=chosen.value, **{"secret_fields": chosen.fields(title), **data, **stated})
 
     @action
     def request(self, title: str, why: str, kind: str = Kind.API_KEY.value, url: str = "") -> Secret:
