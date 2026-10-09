@@ -1,5 +1,6 @@
 <script setup>
-import {found, searchTerms, standing} from "../domain/documents.js";
+import {searchTerms, standing} from "../domain/documents.js";
+import {api} from "../api/client.js";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -56,9 +57,25 @@ const sorted = computed(() =>
     )
 );
 const searched = computed(() => searchTerms(props.query));
+const located = ref(new Map());
+let askedLast = 0;
+
+async function locate() {
+    const words = props.query.trim();
+    const mine = (askedLast += 1);
+    if (!words) {
+        located.value = new Map();
+        return;
+    }
+    const got = await api.locateDocs(words);
+    if (mine === askedLast) located.value = new Map(got.map((hit) => [hit.n, hit]));
+}
+
+const shelfSignature = computed(() => props.docs.map((doc) => `${doc.n}:${doc.updated}`).join(","));
+watch([() => props.query, shelfSignature], () => locate().catch((error) => console.error(error)), {immediate: true});
 const hits = computed(() =>
     sorted.value
-        .map((doc) => ({doc, hit: found(doc, searched.value)}))
+        .map((doc) => ({doc, hit: located.value.get(doc.n)}))
         .filter((h) => h.hit)
         .sort((a, b) => b.hit.score - a.hit.score)
 );

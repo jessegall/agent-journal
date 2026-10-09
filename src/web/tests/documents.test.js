@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {found, searchTerms, standing} from "../src/domain/documents.js";
+import {searchTerms, standing} from "../src/domain/documents.js";
 
 const doc = (fields = {}, data = {}) => ({n: 4, title: "Plan", abstract: "", brief: "", sections: [], outcome: "", completed: 0, ...fields, data});
 const asking = (label, chosen = false, ask = "Approve it?") => ({
@@ -33,33 +33,8 @@ describe("the standing of a document", () => {
 });
 
 describe("finding a document", () => {
-    const row = doc({title: "Phone pairing", brief: "How the QR code works", sections: [{title: "Steps", body: "Scan the code with the camera"}]}, {files: {"qr.png": "the code"}});
-
     test("terms are split on spaces and lowered", () => {
         expect(searchTerms("  Phone   CODE ")).toEqual(["phone", "code"]);
         expect(searchTerms("   ")).toEqual([]);
-    });
-
-    test("every term has to appear somewhere", () => {
-        expect(found(row, ["phone", "nothing"])).toBeNull();
-    });
-
-    test("a title hit scores highest and carries no excerpt", () => {
-        expect(found(row, ["phone"])).toEqual({score: 8, where: "", text: ""});
-    });
-
-    test("a section hit names the section and quotes it", () => {
-        const hit = found(row, ["camera"]);
-        expect(hit.where).toBe("Steps");
-        expect(hit.text).toContain("camera");
-    });
-
-    test("a file hit names the attached file", () => {
-        expect(found(doc({}, {files: {"qr.png": "pairing picture"}}), ["pairing"])).toMatchObject({where: "Attached file", text: "qr.png"});
-    });
-
-    test("a brief hit is quoted without markup", () => {
-        const hit = found(doc({brief: "See [[doc 3|the **plan**]] for pairing"}), ["pairing"]);
-        expect(hit.text).toBe("See the plan for pairing");
     });
 });
