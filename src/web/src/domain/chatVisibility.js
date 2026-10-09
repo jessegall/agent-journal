@@ -9,7 +9,7 @@ export const VISIBILITY_GROUPS = [
             {key: "subagents", label: "Subagents", icon: "agents"},
             {key: "compactions", label: "Conversation shortened", icon: "gauge"},
             {key: "made", label: "Documents the agent made", icon: "docs"},
-            {key: "acknowledgements", label: "Replies that only say a reminder was seen", icon: "check"},
+            {key: "acknowledgements", label: "Acknowledged reminders", icon: "check"},
         ],
     },
     {
