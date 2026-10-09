@@ -135,6 +135,24 @@ def discarded(project: Path, folder: Path, branch: str, name: str) -> None:
         git(project, "update-ref", "-d", f"{KEPT}/{name}")
 
 
+def freed(project: Path, folder: Path) -> bool:
+    """Removes a worktree that holds nothing unsaved, keeping its branch; false when it is not one or holds changes."""
+    if not owns(project, folder) or git(folder, "status", "--porcelain").stdout.strip():
+        return False
+    removed = git(project, "worktree", "remove", str(folder)).returncode == 0
+    git(project, "worktree", "prune")
+    return removed
+
+
+def scratch_cleared(folder: Path) -> None:
+    """Removes the temporary folders the agents of every provider kept for a working folder."""
+    from providers import PROVIDERS
+    for provider in PROVIDERS.values():
+        scratch = provider().scratch_of(folder)
+        if scratch is not None and scratch.is_dir():
+            shutil.rmtree(scratch, ignore_errors=True)
+
+
 def set_aside(project: Path, place: Path, folder: Path) -> Path | None:
     """Moves a folder that no worktree owns out of the way, into the worktree's own folder as .failed-<time>: only a start that failed partway leaves one, and nothing in it is deleted."""
     if not place.is_dir() or place.is_symlink() or owns(project, place):

@@ -329,6 +329,10 @@ class Provider(ABC):
     def stop_instruction(self, task: str) -> str:
         return f"stop task {task} now"
 
+    def scratch_of(self, folder: Path) -> Path | None:
+        """The temporary folder this provider's agent keeps for a working folder, which goes with the folder; none when it keeps no such folder."""
+        return None
+
     def conversation_file(self, conversation: str) -> Path | None:
         return None
 

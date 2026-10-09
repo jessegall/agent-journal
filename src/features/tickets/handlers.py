@@ -34,6 +34,7 @@ class LookAfterTickets(Handler):
         tickets.close_merged()
         tickets.start_queued()
         tickets._stop_orphaned()
+        tickets.clear_worktrees()
         raise_waiting_plans(context, tickets)
         pass_on_calls(context, tickets)
         look_at_stuck(context, tickets)
