@@ -1,7 +1,7 @@
 import {mkdtempSync, writeFileSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
-import {journal, numberOf, runScenarios, shot} from "./harness.mjs";
+import {journal, numberOf, reply, runScenarios, shot} from "./harness.mjs";
 
 const SETTLE = 1500;
 const MESSAGES = /\/api\/main\/message(\?|$)/;
@@ -201,5 +201,15 @@ await runScenarios(process.argv[2], {
         await card.getByRole("button", {name: "Yes, I want this"}).click();
         await decided(page, n, "accept");
         await card.getByText(/You said yes\.\s+Added to-do/).waitFor();
+    },
+    async "a search mark names the term, and a click opens what the search found in a dialog, not the search page"(page, url) {
+        const card = {at: Date.now() / 1000, key: "search-1", label: 'Searched to-dos for "dashboard"', icon: "search", tone: "note", found: "todo 12  Dashboard cards", reads: []};
+        const agent = {n: 1, ref: "agent:1", type: "agent", title: "Main agent", completed: 0, deleted: 0, seen: [], refs: [], data: {status: "idle", at: Date.now() / 1000, cards: [card]}};
+        await page.route(/\/api\/main\/agent\?/, (route) => reply(route, {rows: [agent]}));
+        await home(page, url);
+        await page.getByText('Searched to-dos for "dashboard"').first().click();
+        const dialog = page.getByRole("dialog", {name: 'Searched to-dos for "dashboard"'});
+        await dialog.getByText("todo 12  Dashboard cards").waitFor();
+        if (new URL(page.url()).hash.includes("search")) throw new Error("the click opened the search page");
     },
 });
