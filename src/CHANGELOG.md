@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.34 — Announcements wait until seen, and an agent's finished to-dos
+- New-feature announcements wait until you have seen them: one missed while you were away shows the next time you open the viewer, several show one after another, oldest first, and a first install announces none.
+- An agent's To-dos tab lists the to-dos it finished too, under Finished, the latest first.
+
 ## 2.267.33 — The Squire, new-feature announcements, update steps and blue read ticks
 <!-- new-feature {"id": "squire-voice", "title": "New chat voice: the Squire", "text": "Hail, good knight! Thy humble squire hath polished thine armour and awaits thy orders. Each task shall be a quest, the code thy realm, and every bug a foe most foul. Say the word, sir, and onwards we ride!", "button": "Use the Squire voice", "profile": "Squire", "note": "You can switch voices any time under Settings.", "art": "squire.webp"} -->
 - A new chat voice, the Squire: every task is a quest, the code is the realm and every bug a foe; he never drops the role in the chat and names his helpers as knights of the realm. Code, commits and docs stay plain.
