@@ -34,7 +34,7 @@ from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
 from controllers.types import warm  # noqa: E402
 from providers.turns import read_transcripts  # noqa: E402
-from runner.chat_mirror import replay  # noqa: E402
+from runner.spool import replay  # noqa: E402
 from engine.runtime import default_env
 from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, entry
 
