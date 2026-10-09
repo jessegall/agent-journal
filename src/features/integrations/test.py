@@ -202,6 +202,10 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
         assert ValuesFile(record.root).values()[variable] == "Bearer tok-xyz", "logging in keeps the token as a secret"
         assert linear.values(record).key == key_before, "the token is made for the MCP server, so it never becomes the key the journal reads with"
         assert read_state(record.root, "linear").logged_in_at > 0, "and the state remembers when you logged in"
+        linear.log_out(record, origin)
+        assert variable not in ValuesFile(record.root).values(), "logging out drops the token from the secrets file"
+        assert read_state(record.root, "linear").logged_in_at == 0, "clears the state"
+        assert not linear.values(record).use_mcp, "and switches the MCP server off"
     finally:
         server.shutdown()
 

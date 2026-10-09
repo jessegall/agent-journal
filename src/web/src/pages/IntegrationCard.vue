@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {saveSettings} from "../actions/settings.js";
 import {useIntegrationState} from "../composables/integrationState.js";
-import {loginLine, loginWords, mcpOn, refusedKey, settingsWith, stateWords, switchWords} from "../domain/integrations.js";
+import {loggedIn, loginLine, loginWords, mcpOn, refusedKey, settingsWith, stateWords, switchWords} from "../domain/integrations.js";
 import {showSession} from "../route.js";
 import Btn from "../kit/Btn.vue";
 import Console from "../kit/Console.vue";
@@ -19,7 +19,7 @@ const switches = computed(() => switchWords(props.feature.title));
 const mcp = computed(() => mcpOn(store.settings, props.feature.name));
 const setMcp = (next) => saveSettings(settingsWith(store.settings, props.feature.name, {use_mcp: next}));
 const login = computed(() => loginWords(props.feature.title));
-const loggedIn = computed(() => loginLine(props.feature.title, state.value));
+const loginState = computed(() => loginLine(props.feature.title, state.value));
 const signing = ref(false);
 
 async function logIn() {
@@ -28,6 +28,18 @@ async function logIn() {
         await api.logInIntegration(props.feature.name);
     } finally {
         setTimeout(() => (signing.value = false), 5000);
+    }
+}
+
+const loggingOut = ref(false);
+
+async function logOut() {
+    loggingOut.value = true;
+    try {
+        await api.logOutIntegration(props.feature.name);
+        state.value = await api.integration(props.feature.name);
+    } finally {
+        loggingOut.value = false;
     }
 }
 
@@ -48,9 +60,14 @@ const switchTo = (next) => saveSettings({features: {[props.feature.name]: next}}
             <template v-if="feature.mcp_server">
                 <div class="use">
                     <span>{{ login.label }}</span>
-                    <Btn small :busy="signing" @click="logIn">{{ login.button }}</Btn>
+                    <template v-if="loggedIn(state)">
+                        <Btn small :busy="loggingOut" @click="logOut">{{ login.out }}</Btn>
+                    </template>
+                    <template v-else>
+                        <Btn small :busy="signing" @click="logIn">{{ login.button }}</Btn>
+                    </template>
                 </div>
-                <p class="abstract" data-login>{{ signing ? login.waiting : loggedIn }}</p>
+                <p class="abstract" data-login>{{ signing ? login.waiting : loginState }}</p>
                 <div class="use">
                     <span>{{ switches.mcp }}</span>
                     <Switch :on="mcp" :title="switches.mcp" @change="setMcp" />
