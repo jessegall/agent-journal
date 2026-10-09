@@ -30,6 +30,16 @@ from overview.summary import summarize
 from tests.conftest import fresh, refused
 
 
+def agent_leaves(root):
+    """A stop that ends the agent's session, as the real one does."""
+    def stop(places, n):
+        place = places.load(n)
+        for session in Sessions(root).holders(place.title):
+            Sessions(root).write(session, pid=2 ** 22 + 7)
+        return place
+    return stop
+
+
 def started(monkeypatch) -> list:
     calls = []
     monkeypatch.setattr("agents.terminal.detached", lambda root, cwd, env, agent, args: calls.append((cwd, env, agent, args, launch_brief(root, env).read_text())) or 1)
@@ -102,7 +112,7 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     helpers.dispatch("Zed", "a job", "claude", "sonnet", todos=str(mine))
     zed = Helpers(Record(record.root, helpers.load(2).environment), actor=AGENT)
     assert zed.done(mine, "handled") == f"todo {mine} is done" and todos.load(mine).completed, "a helper without a worktree closes its to-do at once"
-    monkeypatch.setattr(Environments, "stop", lambda self, n: self.load(n))
+    monkeypatch.setattr(Environments, "stop", agent_leaves(record.root))
     Sessions(record.root).bind("claude-zed", helpers.load(2).environment, pid=os.getpid(), provider="claude")
     assert Helpers(record, actor=USER).stop(2).startswith(f"helper 2, {helpers.load(2).name}: its agent is stopped") and helpers.load(2).stopped_by_user, "when you stop a helper it is remembered as stopped by you"
     Sessions(record.root).write("claude-zed", pid=2 ** 22 + 7)
@@ -202,12 +212,12 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     from agents.terminal import launch_log
     launch_log(record.root, f"{record.env}-rhea").parent.mkdir(parents=True, exist_ok=True)
     launch_log(record.root, f"{record.env}-rhea").write_text("\x1b[1mSettingsWarning\x1b[0m: hooks must be an object\n")
-    sessions.write(seated, pid=2 ** 22 + 7)
     from engine import runtime
     from supervisor import LAUNCHED
     runtime.session_file(record.root, seated, LAUNCHED).write_text(f'{{"pid": {os.getpid()}}}')
     watch()
     assert not [n for n in Nudges(record, actor=SYSTEM).all() if "stopped running" in n.title], "a helper whose agent process is alive is never named as stopped"
+    sessions.write(seated, pid=2 ** 22 + 7)
     runtime.session_file(record.root, seated, LAUNCHED).write_text('{"pid": %d}' % (2 ** 22 + 9))
     watch()
     stopped, = [n for n in Nudges(record, actor=SYSTEM).all() if "stopped running" in n.title]
@@ -317,7 +327,7 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
                                                      "tool_input": {"command": "git status"}, "cwd": cut.path}, os.getpid())
     assert Sessions(repo.record.root).environment("main-agent") == repo.record.env, "the main agent working in a helper's worktree stays in its own environment"
     from controllers.types import Environments as Places
-    monkeypatch.setattr(Places, "stop", lambda self, n: self.load(n))
+    monkeypatch.setattr(Places, "stop", agent_leaves(repo.record.root))
     Sessions(repo.record.root).bind("helper-rhea", row.environment, pid=os.getpid(), provider="codex")
     assert helpers.stop(1) == f"helper 1, {helpers.load(1).name}: its agent is stopped", "the agent stops a running helper, and is told so in one sentence, never the environment's raw fields"
     Sessions(repo.record.root).write("helper-rhea", pid=2 ** 22 + 7)
@@ -404,7 +414,7 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     Todos(repo.record, actor=USER).reopen(dropped, "not yet")
     assert not todos.load(dropped).pending and todos.load(dropped).assigned == row.ref, "you can pull a row waiting for its merge back, and it stays the helper's"
     helper.done(dropped, "names the cause")
-    monkeypatch.setattr(Environments, "stop", lambda self, n: self.load(n))
+    monkeypatch.setattr(Environments, "stop", agent_leaves(repo.record.root))
     assert helpers.stop(1).endswith(f"given back: to-do {left}") and todos.load(left).assigned == "", "stopping the helper gives back what it did not mark"
     Worktrees(repo.record, actor=SYSTEM).complete(int(row.worktree))
     assert (todos.load(dropped).assigned, todos.load(dropped).pending) == ("", None), "dropping its worktree untaken gives back what waited for the merge"
