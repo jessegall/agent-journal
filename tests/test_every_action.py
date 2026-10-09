@@ -1038,6 +1038,12 @@ def test_a_row_of_every_type_written_behind_the_stores_back_shows_up_in_lists_fr
         facts["a bulk of rows past the flush count all show up"] = {n: f"bulk row {n}" for n in bulk}.items() <= listed(controller).items()
         facts["a bulk past the flush count is written to the index"] = {first.n, base, *bulk} <= {int(n) for n in read_json(controller.rows.folder() / stored.INDEX, dict, {})}
         monkeypatch.undo()
+        monkeypatch.setattr(stored, "STAMPS_RENEW", 0.0)
+        listed(controller)
+        written_elsewhere(controller, first.n, "edited once more")
+        stored.renew_stamps()
+        facts["an edit shows after the server renews the stamps, with no listing paying for it"] = listed(controller).get(first.n) == "edited once more"
+        monkeypatch.undo()
         reckon(wrong, type_, facts)
     assert wrong == {}, "a row written by another process shows up in lists for every type"
 

@@ -19,6 +19,7 @@ from features.auto_update.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
+from controllers.stored import renew_stamps  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone  # noqa: E402
 from features.routing import resolve  # noqa: E402
 from features.phone.allow_list import PhoneVisit, Reach  # noqa: E402
@@ -233,6 +234,7 @@ def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event
 def watch_runtime(root: Path, halting: threading.Event) -> None:
     while not halting.wait(WATCH_SECONDS):
         runtime.refresh_flags(root)
+        renew_stamps()
         if runtime.hook_failures(root).is_file():
             unanswered(root)
         runtime.restarting(root).unlink(missing_ok=True)
