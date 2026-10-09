@@ -81,9 +81,12 @@ def inside(text: str, cwd: str) -> str:
     return text.replace(f"{cwd.rstrip('/')}/", "") if cwd else text
 
 
-def closed_at(runs: list[dict], at: float) -> list[dict]:
-    """A new tool call or prompt means every earlier call has ended, also one that never reported back, such as a call a hook refused or the user interrupted."""
-    return [one if one.get("done") else {**one, "done": at} for one in runs]
+PARALLEL_WITHIN = 2.0
+
+
+def closed_at(runs: list[dict], at: float, parallel: float = PARALLEL_WITHIN) -> list[dict]:
+    """A new tool call or prompt means every earlier call has ended, also one that never reported back, such as a call a hook refused or the user interrupted; calls started together run side by side, so one that began a moment ago and is named by its tool-use id is left to end by its own report."""
+    return [one if one.get("done") or one.get("id") and at - one.get("at", 0.0) < parallel else {**one, "done": at} for one in runs]
 
 
 def settled(row, at: float) -> dict:
@@ -106,7 +109,7 @@ def shell(row, hook: Hook) -> dict:
     before = CommandRun(command=running.command, tool=running.tool, at=running.at, done=running.done, effect=running.effect,
                         changed=running.changed, result=running.result)
     if hook.event == HookEvent.USER_PROMPT_SUBMIT:
-        return {AgentRow.running: CommandRun(before=before).to_json() if before.done else {}, AgentRow.commands: closed_at(row.commands, hook.at)}
+        return {AgentRow.running: CommandRun(before=before).to_json() if before.done else {}, AgentRow.commands: closed_at(row.commands, hook.at, 0.0)}
     if hook.event == HookEvent.PRE_TOOL_USE and doing:
         kind = effect(hook)
         if kind == "tests":
@@ -116,9 +119,9 @@ def shell(row, hook: Hook) -> dict:
         paths = tuple(inside(path, hook.cwd) for path in hook.tool.paths)
         ran = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, files=paths, subject="" if paths else hook.tool.subject, background=background, id=hook.tool_use)
         return {AgentRow.running: started.to_json(), AgentRow.commands: (closed_at(row.commands, hook.at) + [ran.to_json()])[-RING:]}
-    older = next((one for one in reversed(command_runs(row)) if hook.tool_use and one.id == hook.tool_use and not one.done and one.at != running.at), None)
-    if older:
-        ended = replace(older, done=hook.at, result=outcome_of(hook, older.effect) or older.result)
+    other = next((one for one in reversed(command_runs(row)) if hook.tool_use and one.id == hook.tool_use and one.at != running.at), None)
+    if other:
+        ended = other if other.done else replace(other, done=hook.at, result=outcome_of(hook, other.effect) or other.result)
         return {AgentRow.running: running.to_json(), AgentRow.commands: stamped(command_runs(row), ended, doing, hook.at)}
     if row.running and not running.done:
         result = outcome_of(hook, running.effect)
