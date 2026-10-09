@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {ACT_SECONDS, afterSeconds, BLINK_SECONDS, otherThan, showcaseOn, showcaseStep} from "../domain/mascots.js";
+import {ACT_SECONDS, afterSeconds, atlasOf, BLINK_SECONDS, otherThan, showcaseOn, showcaseStep} from "../domain/mascots.js";
 import {api} from "../api/client.js";
 import {loadProfiles, mascotOf, profilesLoaded} from "../composables/profiles.js";
 
@@ -21,6 +21,7 @@ if (!profilesLoaded.value) loadProfiles().catch(console.error);
 
 const measured = (url) =>
     new Promise((resolve) => {
+        if (!url) return resolve(null);
         const probe = new Image();
         probe.onload = () => resolve({url, frames: Math.round(probe.naturalWidth / probe.naturalHeight)});
         probe.onerror = () => resolve(null);
@@ -47,7 +48,7 @@ const waitForAct = () => (actTimer = setTimeout(act, afterSeconds(ACT_SECONDS)))
 
 async function showNext() {
     const step = showcaseStep(stage++);
-    const sheet = await measured(api.publicUrl(`voices/${step.voice}_${step.act}_sheet.png`));
+    const sheet = await measured(api.publicUrl(atlasOf(step.voice, step.act)));
     if (!sheet) return showNext();
     staged.value = step;
     play({...sheet, still: false});
