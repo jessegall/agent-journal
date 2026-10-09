@@ -1,8 +1,12 @@
+import os
+import re
+import subprocess
 import time
 from collections.abc import Callable
 
 from controllers.types import Agents
 from engine.record import Record
+from engine.sessions import Sessions
 from engine.wording import clipped
 from providers.command_effects import settled
 from resources.base import SYSTEM
@@ -10,11 +14,32 @@ from resources.base import SYSTEM
 WAIT_SECONDS = 60.0
 CHECK_EVERY = 2.0
 SHOWN = 60
+UPGRADE = re.compile(r"\b(?:journal(?:\.py)?|install\.py)\b.*\bupgrade\b")
+
+
+def parent_of(pid: int) -> int:
+    found = subprocess.run(["ps", "-o", "ppid=", "-p", str(pid)], capture_output=True, text=True, timeout=5).stdout.strip()
+    return int(found) if found.isdigit() else 0
+
+
+def ancestors() -> set[int]:
+    """The processes this one runs under, up to the first."""
+    found, pid = set(), os.getppid()
+    while pid > 1 and pid not in found:
+        found.add(pid)
+        pid = parent_of(pid)
+    return found
 
 
 def running(root) -> list[tuple[Record, object]]:
-    """Every live agent whose shell command is still running, in every environment."""
-    return [(record, row) for record in Record.every(root) for row in Agents(record, actor=SYSTEM).rows.standing() if row.live and row.command_running]
+    """Every live agent whose shell command is still running, in every environment, leaving out the command that runs the upgrade itself."""
+    mine, sessions = ancestors(), Sessions(root)
+    return [(record, row) for record in Record.every(root) for row in Agents(record, actor=SYSTEM).rows.standing()
+            if row.live and row.command_running and not UPGRADE.search(row.running["command"]) and pid_of(sessions, row) not in mine]
+
+
+def pid_of(sessions: Sessions, row) -> int:
+    return sessions.read(row.title).pid
 
 
 def ended(record: Record, row, waited: float) -> str:
