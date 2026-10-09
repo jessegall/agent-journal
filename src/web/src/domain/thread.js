@@ -102,7 +102,6 @@ const cards = (agents) =>
                 detail: c.detail,
                 command: c.command,
                 title: c.title,
-                term: c.term,
                 row: c.ref || c.row,
                 page: c.page,
                 settled: c.settled,
