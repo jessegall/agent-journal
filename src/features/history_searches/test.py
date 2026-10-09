@@ -257,6 +257,10 @@ def test_the_turns_an_agent_spoke_are_read_from_its_transcript_a_whole_line_at_a
     assert (seen[3].kind, seen[3].peer.address, seen[3].text) == ("peer", "nina", "hello nina"), "a message the agent sent to a peer is read as sent"
     assert [t.kind for t in seen[4:]] == ["superseded", "human"], "a line typed again under the same parent replaces the first try"
     assert len(seen) == 6, "a subagent's own rows and rows that say nothing are left out"
+    crossed = tmp_path / "claude-5.jsonl"
+    crossed.write_text(json.dumps(user_line('<cross-session-message from="Coco">the report is ready</cross-session-message>')) + "\n")
+    heard = Claude().turns(crossed)[0]
+    assert (heard.kind, heard.peer.name, heard.text) == ("peer", "Coco", "the report is ready"), "a message another Claude Code session sent is an agent's message, named for that session, in its own words"
     listed = tmp_path / "claude-4.jsonl"
     listed.write_text(json.dumps(user_line([{"type": "tool_result", "tool_use_id": "z", "content": [{"type": "text", "text": "a result in parts"}, "stray", {"type": "text", "text": "and more"}]}])) + "\n")
     assert [turn.text for turn in Claude().turns(listed)] == ["a result in parts\nand more"], "a tool's result given in parts is read as one text"
