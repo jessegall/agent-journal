@@ -7,11 +7,12 @@ import Icon from "../kit/Icon.vue";
 import {peekThere, route, showTab} from "../route.js";
 import {usePoll} from "../composables/poll.js";
 import {byRef, refParts} from "../domain/records.js";
-import {planProgress} from "../domain/plans.js";
+import {PLAN_STATE_WORDS, planProgress} from "../domain/plans.js";
 import {age} from "../format/time.js";
 import {fileSize, isPicture} from "../format/files.js";
 import BoardLanes from "./BoardLanes.vue";
 import Chip from "../kit/Chip.vue";
+import ListRow from "../kit/ListRow.vue";
 import {originOf} from "../domain/origin.js";
 import ResourceBody from "./ResourceBody.vue";
 import ResourceRow from "./ResourceRow.vue";
@@ -104,7 +105,7 @@ const tab = computed({
     get: () => (tabs.value.some((t) => t.key === route.value.tab) ? route.value.tab : "resources"),
     set: showTab,
 });
-const cards = computed(() => (tab.value === "plans" ? plans.value : resources.value));
+const phaseOf = (r) => r.data?.phases?.[(r.data.current || 1) - 1]?.title || "";
 const openPlan = (r) => {
     const {env, type, n} = refParts(planOf(r));
     peekThere(env, type, n);
@@ -172,30 +173,54 @@ function hidePreview(r) {
                 <BoardLanes :board="r" :plan-of="planOf" @open="open" @plan="openPlan" />
             </template>
         </template>
+        <template v-else-if="plans.length && tab === 'plans'">
+            <section class="rows" aria-label="Plans in this collection">
+                <template v-for="r in plans" :key="r.at">
+                    <ListRow :title="r.title" :label="`Open plan ${r.n}, ${r.title}`" @open="open(r)">
+                        <template #side>
+                            <template v-if="originOf(r)">
+                                <Chip :title="`From ${originOf(r)}`">{{ originOf(r) }}</Chip>
+                            </template>
+                            <span class="list-row-note">{{ PLAN_STATE_WORDS[planProgress(r).status] || planProgress(r).status }}</span>
+                        </template>
+                        <span class="list-row-line">Phase {{ planProgress(r).phase }} of {{ planProgress(r).total }}<template v-if="phaseOf(r)">: {{ phaseOf(r) }}</template></span>
+                        <ProgressBar
+                            class="list-row-bar"
+                            :value="planProgress(r).finished"
+                            :max="Math.max(1, planProgress(r).total)"
+                            :tone="planProgress(r).status === 'done' ? 'good' : planProgress(r).status === 'waiting' ? 'warn' : ''"
+                            thin
+                        />
+                        <span class="list-row-line">{{ planProgress(r).finished }} of {{ planProgress(r).total }} done</span>
+                    </ListRow>
+                </template>
+            </section>
+        </template>
         <template v-else-if="tickets.length && tab === 'tickets'">
-            <section class="tickets" aria-label="Tickets in this collection">
+            <section class="rows" aria-label="Tickets in this collection">
                 <template v-for="r in tickets" :key="r.at">
-                    <div class="ticket">
-                        <button type="button" class="ticket-title" @click="open(r)">{{ r.title }}</button>
-                        <span class="ticket-stage">{{ r.data?.stage }}</span>
-                        <template v-if="planOf(r)">
-                            <button type="button" class="ticket-plan" :title="`Open the plan of ticket ${r.n}, ${r.title}`" @click="openPlan(r)">Open plan of ticket {{ r.n }}</button>
+                    <ListRow :title="r.title" @open="open(r)">
+                        <template #side>
+                            <span class="list-row-note">{{ r.data?.stage }}</span>
+                            <template v-if="planOf(r)">
+                                <button type="button" class="list-row-link" :title="`Open the plan of ticket ${r.n}, ${r.title}`" @click="openPlan(r)">Open plan of ticket {{ r.n }}</button>
+                            </template>
                         </template>
                         <template v-if="waitsOf(r).length">
-                            <span class="ticket-line">Waits on {{ waitsOf(r).join(", ") }}</span>
+                            <span class="list-row-line">Waits on {{ waitsOf(r).join(", ") }}</span>
                         </template>
                         <template v-if="statusOf(r)?.plan">
-                            <span class="ticket-line ticket-plan-name">{{ statusOf(r).plan }}</span>
-                            <ProgressBar class="ticket-bar" :value="statusOf(r).done" :max="Math.max(1, statusOf(r).total)" :tone="statusOf(r).kind === 'you' ? 'warn' : ''" thin />
-                            <span class="ticket-line">{{ statusOf(r).done }} of {{ statusOf(r).total }} done</span>
+                            <span class="list-row-line">{{ statusOf(r).plan }}</span>
+                            <ProgressBar class="list-row-bar" :value="statusOf(r).done" :max="Math.max(1, statusOf(r).total)" :tone="statusOf(r).kind === 'you' ? 'warn' : ''" thin />
+                            <span class="list-row-line">{{ statusOf(r).done }} of {{ statusOf(r).total }} done</span>
                         </template>
                         <template v-if="statusOf(r)?.now">
-                            <span class="ticket-line">Now: {{ statusOf(r).now }}</span>
+                            <span class="list-row-line">Now: {{ statusOf(r).now }}</span>
                         </template>
                         <template v-if="statusOf(r)?.state">
-                            <span :class="['ticket-line', 'ticket-state', statusOf(r).kind]">{{ statusOf(r).state }}</span>
+                            <span :class="['list-row-line', statusOf(r).kind]">{{ statusOf(r).state }}</span>
                         </template>
-                    </div>
+                    </ListRow>
                 </template>
             </section>
         </template>
@@ -213,7 +238,7 @@ function hidePreview(r) {
                         Nothing in this collection yet. Add an item to this collection.
                     </EmptyState>
                 </template>
-                <template v-for="r in cards" :key="r.at">
+                <template v-for="r in resources" :key="r.at">
                     <div class="card-wrap">
                         <button type="button" class="card" @click="open(r)">
                             <template v-if="picture(r)">
@@ -228,10 +253,6 @@ function hidePreview(r) {
                             <span class="title">{{ r.title }}</span>
                             <template v-if="originOf(r)">
                                 <Chip class="origin" :title="`From ${originOf(r)}`">{{ originOf(r) }}</Chip>
-                            </template>
-                            <template v-if="planProgress(r)">
-                                <span class="line">Phase {{ planProgress(r).phase }} of {{ planProgress(r).total }} · {{ planProgress(r).status }}</span>
-                                <ProgressBar :value="planProgress(r).finished" :max="Math.max(1, planProgress(r).total)" :tone="planProgress(r).status === 'done' ? 'good' : ''" thin />
                             </template>
                             <template v-if="firstLine(r)">
                                 <span class="line">{{ firstLine(r) }}</span>
@@ -312,52 +333,9 @@ function hidePreview(r) {
 }
 
 .todos,
-.tickets {
+.rows {
     display: flex;
     flex-direction: column;
-}
-
-.ticket {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--line, #e5e5e5);
-}
-
-.ticket-title {
-    flex: 1;
-    min-width: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.ticket-line,
-.ticket-stage {
-    font-size: 12px;
-    opacity: 0.7;
-}
-
-.ticket-line,
-.ticket-bar {
-    flex-basis: 100%;
-}
-
-.ticket-plan {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    font-size: 12px;
-    text-decoration: underline;
-    cursor: pointer;
 }
 
 .cards {
