@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.59 — A closed board's orchestrator still decides for its open tickets
+- A board's orchestrator approves plans and decides for every open ticket on it, also after the board has closed; starting a ticket on a closed board reopens it.
+- An upload's body is cut at its boundaries instead of read line by line, so dropping files is quick.
+- A command that waits on its agent is known by the method behind its word, so journal helper finish is not reported as slow.
+
 ## 2.267.58 — No more hook errors on edits, helper marks that open, and a Copy button on every code block
 - The line for what an agent does counts added and removed lines as text, so a hook after an edit no longer logs an error.
 - Every chat mark about a helper or a subagent uses the agents' yellow, and a click opens that agent's dialog.
