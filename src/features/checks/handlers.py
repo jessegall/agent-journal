@@ -55,6 +55,12 @@ class ReportCheckResult(Handler):
             speaking.agent.say("failed", title=title, n=check.n)
 
 
+def verdict(result, failed: bool) -> str:
+    if failed:
+        return "Tests failed"
+    return "Tests passed" if result else "Tests ran"
+
+
 class MarkTestRuns(Handler):
     hooks = (HookEvent.PRE_TOOL_USE, HookEvent.POST_TOOL_USE)
     def handle(self, context: AgentContext, event: AgentReported) -> None:
@@ -71,6 +77,5 @@ class MarkTestRuns(Handler):
         counts = ", ".join(part for part in (f"{result.passed} passed" if result and result.passed else "",
                                              f"{result.failed} failed" if result and result.failed else "") if part)
         failed = bool(result and (result.ok is False or result.failed))
-        label = "Tests failed" if failed else "Tests passed" if result else "Tests ran"
-        context.journal.get(Agents).card(row.n, key=key, label=label, icon="check", name=ran.name, command=ran.command, title=run.command,
+        context.journal.get(Agents).card(row.n, key=key, label=verdict(result, failed), icon="check", name=ran.name, command=ran.command, title=run.command,
                                     state="failed" if failed else "done", started=run.at, ended=run.done, detail=counts)
