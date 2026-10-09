@@ -35,15 +35,17 @@ def free_bytes(folder: Path) -> int:
 class Growth:
     def __init__(self):
         self.size = -1
+        self.stamp: tuple = ()
 
-    def grew(self, path: Path) -> bool:
+    def grew(self, path: Path, stamp: tuple = ()) -> bool:
+        """Whether the file is a different size than last asked, or the stamp of what goes with it changed."""
         try:
             size = path.stat().st_size
         except OSError:
             return False
-        if size == self.size:
+        if (size, stamp) == (self.size, self.stamp):
             return False
-        self.size = size
+        self.size, self.stamp = size, stamp
         return True
 
 

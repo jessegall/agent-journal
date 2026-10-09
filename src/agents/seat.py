@@ -103,9 +103,10 @@ class SeatReport:
         if not path or time.time() - self.crewed_at < LOOK_EVERY:
             return
         self.crewed_at = time.time()
-        if not self.crew_growth.grew(Path(path)):
+        provider = PROVIDERS[last.provider]() if last.provider in PROVIDERS else None
+        if not self.crew_growth.grew(Path(path), provider.crew_stamp(Path(path)) if provider else ()):
             return
-        facts = PROVIDERS[last.provider]().crew(Path(path)) if last.provider in PROVIDERS else {}
+        facts = provider.crew(Path(path)) if provider else {}
         self.subagents_moved(last, facts.get(AgentRow.subagent_rows))
         if facts and any(last.data.get(k) != v for k, v in facts.items()):
             compacting = facts.get(AgentRow.compacting)
@@ -117,7 +118,7 @@ class SeatReport:
             return
         known = self.subagents_ended
         if known is None:
-            known = {sub.id: sub.ended for sub in map(SubagentRow.from_json, last.subagent_rows)}
+            known = {**{sub.id: sub.ended for sub in map(SubagentRow.from_json, last.subagent_rows)}, **last.announced}
         agents = Agents(self.record, actor=SYSTEM)
         rows = [SubagentRow.from_json(sub) for sub in subagents]
         for sub in rows:
@@ -127,6 +128,8 @@ class SeatReport:
             if sub.ended and not known.get(sub.id):
                 agents.subagent(last.n, RETURNED, **data, status=sub.status)
         self.subagents_ended = {sub.id: sub.ended for sub in rows}
+        if self.subagents_ended != last.announced:
+            Agents(self.record, actor=SYSTEM).update(last.n, announced=self.subagents_ended)
 
     def write(self, why: str) -> None:
         self.branch()

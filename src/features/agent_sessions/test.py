@@ -334,6 +334,15 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
         seat.subagents_moved(last, subagents)
     heard = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.event_log.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
     assert heard == [("dispatched", "audit the hooks", "auditor", "sonnet"), ("returned", "audit the hooks", "auditor", "sonnet")], heard
+    restarted = SeatReport(record, agent=None)
+    final = Agents(record, actor=AGENT).load(row.n)
+    restarted.subagents_moved(final, [final.data["subagent_rows"][0], {**running, "ended": 9.0, "status": "completed"}])
+    again = [e.action for e in record.event_log.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
+    assert again == ["dispatched", "returned"], "a seat started after a restart does not announce again what the row says was announced"
+    from engine.disk import Growth
+    watching = Growth()
+    assert (watching.grew(record.root, ()), watching.grew(record.root, ()), watching.grew(record.root, (("agent-x.jsonl", 5),))) == (True, False, True), \
+        "the crew is read again when the files beside the transcript change, though the transcript itself did not grow"
     import json
     from providers.claude import Claude
     transcript = record.root / "main.jsonl"
@@ -342,6 +351,7 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
                 {"type": "tool_use", "id": "bg", "name": "Agent", "input": {"description": "Rex: research", "subagent_type": "Explore", "model": "haiku", "run_in_background": True}}]}},
             {"type": "user", "uuid": "b", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "fg", "content": "One finding"},
                                                                                    {"type": "tool_result", "tool_use_id": "bg", "content": "Async agent launched"}]}}]
+    assert Claude().crew_stamp(transcript) == (), "a conversation with no subagents folder has an empty stamp"
     for agent, use in (("fg1", "fg"), ("bg1", "bg")):
         folder = transcript.with_suffix("") / "subagents"
         folder.mkdir(parents=True, exist_ok=True)
@@ -349,6 +359,9 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
         (folder / f"agent-{agent}.jsonl").write_text("{}\n")
     answered = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 2))
     transcript.write_text("".join(json.dumps({**row, "timestamp": answered}) + "\n" for row in rows))
+    before = Claude().crew_stamp(transcript)
+    (transcript.with_suffix("") / "subagents" / "agent-bg1.jsonl").write_text("{}\n{}\n")
+    assert Claude().crew_stamp(transcript) != before, "a subagent writing changes the stamp, so a waiting orchestrator's crew is read again"
     crew = {sub["task"]: sub["running"] for sub in Claude().crew(transcript)["subagent_rows"]}
     assert crew == {"Ada: review": False, "Rex: research": True}, "a subagent that returned its answer is done; one sent to the background works on until it goes quiet"
 

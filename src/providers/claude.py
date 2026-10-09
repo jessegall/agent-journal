@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import shlex
 import shutil
@@ -648,6 +649,13 @@ class Claude(Provider):
         return {AgentRow.skills: self.skills_in(held.window), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
                 AgentRow.monitors: len(monitors), AgentRow.shell_rows: running_and_latest(shells),
                 AgentRow.subagent_rows: running_and_latest(subagents), AgentRow.monitor_rows: running_and_latest(monitors)}
+
+    def crew_stamp(self, path: Path) -> tuple:
+        folder = Path(path).with_suffix("").joinpath("subagents")
+        try:
+            return tuple(sorted((entry.name, entry.stat().st_size) for entry in os.scandir(folder) if entry.name.endswith((".jsonl", ".meta.json"))))
+        except OSError:
+            return ()
 
     def session_of_task(self, path: Path, task: str) -> Path | None:
         """The conversation file of a subagent found by the id its launch answered with, for one whose meta file names another tool use, as a resumed one's does."""
