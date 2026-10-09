@@ -81,7 +81,7 @@ class Profiles(Controller):
         from commands.dispatch import WEB
         shipped = shipped_animations(WEB / "voices", row.art)
         dropped = [a for a in (Animation.of(name, voice_of(row.art)) for name in row.files) if a]
-        return [{**animation.view(), "edit": tuning_of(self._offsets_of(row, animation) or {}, offsets_name(animation.file) in row.files), "edited": offsets_name(animation.file) in row.files}
+        return [{**animation.view(), "edit": tuning_of(self._offsets_of(row, animation) or {}), "edited": offsets_name(animation.file) in row.files}
                 for animation in [*shipped, *dropped]]
 
     def _offsets_of(self, row, animation: Animation) -> dict | None:

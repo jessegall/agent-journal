@@ -1,7 +1,7 @@
 import {computed, ref} from "vue";
 import {saveSettings} from "../actions/settings.js";
 import {api} from "../api/client.js";
-import {isAct, isBlink, placeOf} from "../domain/mascots.js";
+import {isAct, isBlink, placeOf, placedAt} from "../domain/mascots.js";
 import {store} from "../state/store.js";
 import {animations, loadAnimations, scheduleOf, urlOf} from "./voiceAnimations.js";
 
@@ -32,7 +32,7 @@ export const mascotOf = computed(() => {
     const all = animations.value[row.n] || [];
     const sheet = (animation) => ({url: urlOf(row.n, animation), edit: animation.edit, path: animation.path});
     const blink = all.find(isBlink);
-    return {blink: blink ? sheet(blink) : null, acts: all.filter(isAct).map(sheet), schedule: scheduleOf(row.n), place: placeOf(row.data.art)};
+    return {blink: blink ? sheet(blink) : null, acts: all.filter(isAct).map(sheet), schedule: scheduleOf(row.n), place: placedAt(placeOf(row.data.art), scheduleOf(row.n).place)};
 });
 
 export const calls =(row) => callings.value[row.data.calling] || row.data.address || "";

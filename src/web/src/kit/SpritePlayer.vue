@@ -12,7 +12,6 @@ const props = defineProps({
 });
 const emit = defineEmits(["ended", "frame", "measured"]);
 const frames = ref(0);
-const cell = ref(CELL);
 const at = ref(0);
 let timer = 0;
 
@@ -42,8 +41,7 @@ watch(
         const probe = new Image();
         probe.onload = () => {
             if (url !== props.url) return;
-            cell.value = probe.naturalHeight || CELL;
-            frames.value = Math.max(1, Math.round(probe.naturalWidth / cell.value));
+            frames.value = Math.max(1, Math.round(probe.naturalWidth / probe.naturalHeight));
             emit("measured", frames.value);
             schedule();
         };
@@ -60,19 +58,15 @@ watch(
 );
 onUnmounted(halt);
 
-// size is how large a 256 px cell shows; a larger cell (a character at the centre of a 768 px one) shows the same character at the same size, its box centred on where the 256 px one stood.
 const scale = computed(() => props.size / CELL);
 const look = computed(() => {
     const shift = frameShift(props.edit, at.value);
-    const box = cell.value * scale.value;
-    const margin = ((cell.value - CELL) / 2) * scale.value;
     return {
-        width: `${box}px`,
-        height: `${box}px`,
-        margin: `${-margin}px 0 0 ${-margin}px`,
+        width: `${props.size}px`,
+        height: `${props.size}px`,
         backgroundImage: `url(${props.url})`,
-        backgroundSize: `${box * frames.value}px ${box}px`,
-        backgroundPosition: `${-at.value * box}px 0`,
+        backgroundSize: `${props.size * frames.value}px ${props.size}px`,
+        backgroundPosition: `${-at.value * props.size}px 0`,
         transform: `translate(${shift.x * scale.value}px, ${shift.y * scale.value}px)`,
     };
 });

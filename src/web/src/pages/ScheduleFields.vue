@@ -8,6 +8,7 @@ const emit = defineEmits(["change"]);
 const paths = computed(() => props.idle.map((animation) => animation.path));
 const number = (event) => Number(event.target.value) || 0;
 const range = (kind, end, event) => emit("change", {...props.schedule, [kind]: {...props.schedule[kind], [end]: number(event)}});
+const move = (axis, event) => emit("change", {...props.schedule, place: {...props.schedule.place, [axis]: number(event)}});
 const weigh = (path, event) => emit("change", {...props.schedule, weights: {...props.schedule.weights, [path]: number(event)}});
 const nameOf = (animation) => (animation.name ? animation.name.replace(/_/g, " ") : "default");
 </script>
@@ -28,6 +29,14 @@ const nameOf = (animation) => (animation.name ? animation.name.replace(/_/g, " "
             <span>to</span>
             <input type="number" min="1" :value="schedule.idle.max" aria-label="Most seconds between idle animations" @input="range('idle', 'max', $event)" />
             <span>seconds</span>
+        </div>
+        <span class="schedule-title">Place on the chat box</span>
+        <div class="schedule-line">
+            <span>Move right</span>
+            <input type="number" :value="schedule.place?.x || 0" aria-label="Pixels to move right" @input="move('x', $event)" />
+            <span>down</span>
+            <input type="number" :value="schedule.place?.y || 0" aria-label="Pixels to move down" @input="move('y', $event)" />
+            <span>px</span>
         </div>
         <template v-if="idle.length">
             <span class="schedule-title">Which idle animation plays</span>

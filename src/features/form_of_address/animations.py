@@ -17,6 +17,7 @@ OFFSETS = "_offsets.json"
 ORIGIN = "resting pose tile top-left at stage x=256, y=256; apply offset_x and offset_y in pixels"
 SHEET = re.compile(r"_(sheet|atlas)\.png$", re.I)
 MAX_WEIGHT = 1000
+MAX_SPOT = 128
 
 
 @dataclass(frozen=True)
@@ -81,11 +82,23 @@ class Gap:
 
 
 @dataclass(frozen=True)
+class Spot:
+    """How far a voice's mascot is moved from where its art puts it on the chat box, in pixels of its 256 px cell: right and down."""
+    x: int = 0
+    y: int = 0
+
+    @classmethod
+    def from_payload(cls, payload: dict) -> "Spot":
+        return cls(_within(payload.get("x"), -MAX_SPOT, MAX_SPOT), _within(payload.get("y"), -MAX_SPOT, MAX_SPOT))
+
+
+@dataclass(frozen=True)
 class Schedule:
     """When a voice's mascot plays what: how long it waits between blinks and between its other idle animations, and the weight that picks which idle animation plays."""
     blink: Gap = Gap(5, 10)
     idle: Gap = Gap(20, 30)
     weights: tuple[tuple[str, int], ...] = ()
+    place: Spot = Spot()
 
     @classmethod
     def from_payload(cls, payload: dict, known: set[str]) -> "Schedule":
@@ -94,10 +107,10 @@ class Schedule:
         if unknown:
             raise Refused(f"no animation {unknown[0]} to weigh")
         return cls(Gap.from_payload(payload.get("blink") or {"min": 5, "max": 10}, "blink"), Gap.from_payload(payload.get("idle") or {"min": 20, "max": 30}, "idle"),
-                   tuple(sorted((path, _within(weight, 0, MAX_WEIGHT)) for path, weight in weights.items())))
+                   tuple(sorted((path, _within(weight, 0, MAX_WEIGHT)) for path, weight in weights.items())), Spot.from_payload(payload.get("place") or {}))
 
     def view(self) -> dict:
-        return {"blink": asdict(self.blink), "idle": asdict(self.idle), "weights": dict(self.weights)}
+        return {"blink": asdict(self.blink), "idle": asdict(self.idle), "weights": dict(self.weights), "place": asdict(self.place)}
 
 
 def _within(value, low: int, high: int) -> int:
@@ -112,15 +125,13 @@ def offsets_name(file: str) -> str:
     return SUFFIX.sub("", Path(file).stem) + OFFSETS
 
 
-def tuning_of(document: dict, moved: bool) -> dict | None:
-    """A voice's way of showing an animation, read from its offsets file: per-frame offset_x and offset_y, and the optional frame_ms and duration_ms.
-    The offsets of a file the animation was delivered with count as 0, 0; only those of a file saved with the voice (moved) move a frame."""
+def tuning_of(document: dict) -> dict | None:
+    """A voice's way of showing an animation, read from its offsets file: per-frame offset_x and offset_y, and the optional frame_ms and duration_ms."""
     frames = document.get("frames")
     if not isinstance(frames, list) or not frames:
         return None
     return Tuning(_within(document.get("frame_ms"), 0, MAX_MS), tuple(
-        FrameTuning(_within(f.get("offset_x"), -FRAME, FRAME) if moved else 0, _within(f.get("offset_y"), -FRAME, FRAME) if moved else 0, _within(f.get("duration_ms"), 0, MAX_MS))
-        for f in frames[:MAX_FRAMES]
+        FrameTuning(_within(f.get("offset_x"), -FRAME, FRAME), _within(f.get("offset_y"), -FRAME, FRAME), _within(f.get("duration_ms"), 0, MAX_MS)) for f in frames[:MAX_FRAMES]
     )).view()
 
 

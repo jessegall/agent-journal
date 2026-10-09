@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {groupedByKind, isAct, placeOf} from "../domain/mascots.js";
+import {groupedByKind, isAct, placeOf, placedAt} from "../domain/mascots.js";
 import {animations, dropAnimations, saveEdit, saveSchedule, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
@@ -36,7 +36,7 @@ const picker = ref(null);
 const saved = computed(() => chosen.value?.edit || EMPTY);
 const edited = computed(() => JSON.stringify(draft.value) !== JSON.stringify(saved.value));
 const planned = computed(() => JSON.stringify(plan.value) !== JSON.stringify(scheduleOf(props.row.n)));
-const place = computed(() => placeOf(props.row.data.art || ""));
+const place = computed(() => placedAt(placeOf(props.row.data.art || ""), plan.value.place));
 
 function pick(animation) {
     path.value = animation.path;
