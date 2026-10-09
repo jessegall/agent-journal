@@ -31,7 +31,7 @@ def transcript(record, session: str):
         return []
     row = Agents(record, actor=SYSTEM).by_session(session)
     provider = PROVIDERS.get(row.provider)
-    return provider().turns(row.transcript) if provider else []
+    return provider().turns(Path(row.transcript)) if provider else []
 
 def turn_text(turn, source: str = "") -> str:
     return f"{source}{turn.line:>6}  {turn.who:<7} {visible(turn.text)}"
