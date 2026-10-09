@@ -15,8 +15,13 @@ def plain_file(path: Path) -> bool:
     return path.is_file() and not path.is_symlink()
 
 
+def is_bytecode(path: Path) -> bool:
+    """Python writes bytecode beside the code at any moment, so it is no file the journal manages."""
+    return "__pycache__" in path.parts
+
+
 def managed_paths(project: Path, root: Path) -> set[Path]:
-    paths = {path for path in (root / SRC).rglob("*") if plain_file(path)}
+    paths = {path for path in (root / SRC).rglob("*") if plain_file(path) and not is_bytecode(path)}
     for home in (".agents/skills", ".claude/skills"):
         folder = project / home
         paths.update(path for skill in folder.glob("journal*") if skill.is_dir() and not skill.is_symlink()
@@ -77,7 +82,7 @@ def changed_managed(project: Path, root: Path) -> list[Path]:
         return []
     remembered = json.loads(target.read_text())
     changed = {project / name for name, digest in remembered.items()
-               if not (project / name).is_file() or managed_hash(project / name) != digest}
+               if not is_bytecode(Path(name)) and (not (project / name).is_file() or managed_hash(project / name) != digest)}
     changed.update(path for path in managed_paths(project, root)
                    if path.relative_to(project).as_posix() not in remembered and managed_bytes(path))
     return sorted(changed)
