@@ -1,10 +1,12 @@
 import re
+import sys
 import time
 import traceback
 from pathlib import Path
 
 from controllers.types import Notices
 from engine import runtime
+from engine.locks import MigrationsRunning
 from engine.record import Record
 from resources.base import SYSTEM
 
@@ -63,6 +65,8 @@ def broke(record, trouble: str, driver=None, where: str = "the engine") -> None:
 
 
 def threw(root: Path, env: str, where: str, driver=None) -> None:
+    if isinstance(sys.exc_info()[1], MigrationsRunning):
+        return
     trouble = traceback.format_exc()
     try:
         with log_file(root).open("a") as log:

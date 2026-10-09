@@ -571,6 +571,22 @@ def test_a_held_record_lock_lets_the_runtime_folder_write_and_times_out_every_ot
         "writers held back together time out together, not one wait after another"
     writing("after", root / "environments" / "main" / "todo" / "001.md")
     assert outcomes["after"] == "written", "once the migration lets go the same write goes through"
+    from controllers.faults import log_file, threw
+    caught = []
+
+    def engine_pass() -> None:
+        try:
+            write_text(root / "environments" / "main" / "todo" / "002.md", "held back")
+        except TimeoutError as error:
+            caught.append(error)
+            threw(root, "main", "the engine")
+
+    with locks.hold_record_writes(root):
+        worker = threading.Thread(target=engine_pass)
+        worker.start()
+        worker.join(WAIT)
+    assert [type(error) for error in caught] == [locks.MigrationsRunning], "a write held back by a migration says so in its own exception"
+    assert not log_file(root).exists(), "an engine pass that waited out an upgrade's migration is tried again quietly, never reported as an error"
 
 
 def test_a_running_server_restarts_on_a_new_build_and_exits_when_asked_to_stop(tmp_path):
