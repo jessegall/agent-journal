@@ -15,6 +15,10 @@ RETRY = 0.05
 RUNTIME = "runtime"
 
 
+class MigrationsRunning(TimeoutError):
+    """An upgrade is migrating the record, so a write waited for its lock and gave up; the write is tried again once the upgrade ends."""
+
+
 def journal_roots(path: Path) -> tuple[Path, ...]:
     return tuple(parent for parent in path.parents if parent.name == ".journal")
 
@@ -80,7 +84,7 @@ def wait_for(taking: Callable[[], bool], name: str) -> None:
     deadline = time.monotonic() + LOCK_WAIT
     while not taking():
         if time.monotonic() >= deadline:
-            raise TimeoutError(name)
+            raise MigrationsRunning(name)
         time.sleep(RETRY)
 
 
