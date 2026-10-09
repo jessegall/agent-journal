@@ -39,6 +39,9 @@ def test_a_turn_that_only_answers_a_journal_line_is_kept_out_of_the_chat_unless_
     Messages(record, actor=AGENT).react(thanks.n, "🙏")
     assert answered("That thank-you is acknowledged.", delivered=(f"message:{thanks.n}",)) == [True], \
         "a message the agent already reacted to, handed over again by a journal line, asks for nothing: the answer is kept out"
+    from_peer = Messages(record, actor=AGENT).create("a broken command here", brief="a broken command here", peer="smart-farmers", from_session="uds:/tmp/b.sock")
+    assert answered("On it: a hotfix is under way.", delivered=(f"message:{from_peer.n}",)) == [False], \
+        "an answer to a message from another session is never kept out of the chat, even in a turn a journal line started"
     assert answered("Understood.", prompt="carry on") == [False], "a turn the person started is never hidden"
     assert answered("The suite broke on the gate.", failure="the turn failed") == [False], "a failed turn is never hidden"
     assert answered("Got it, but which branch should I use?") == [False], "a question waiting on the person is never hidden"

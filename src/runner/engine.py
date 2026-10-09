@@ -158,7 +158,9 @@ class Engine:
                 continue
             if t.peer.direction == PEER:
                 names[t.peer.address] = t.peer.name
-                Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, peer=t.peer.name)
+                made = Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, peer=t.peer.name, from_session=t.peer.address)
+                agents = Agents(self.record, actor=SYSTEM)
+                agents.update(row.n, delivered=[*agents.load(row.n).delivered, made.ref])
             else:
                 Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, sent_to=names.get(t.peer.address, t.peer.address))
         write_json(f, asdict(PeerLog(newest, names)))

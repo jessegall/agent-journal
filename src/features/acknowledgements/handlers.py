@@ -22,8 +22,11 @@ def reply_kept(context: Context, delivered: list[str]) -> bool:
 
 
 def written_by_person(record, ref: Ref) -> bool:
-    """A message the agent or another agent wrote, such as a helper's report, is a journal line to answer silently, not a message from the person."""
-    return ref.type != Messages.resource.type or USER in row_of(record, ref).seen[:1]
+    """A message the agent or another agent wrote, such as a helper's report, is a journal line to answer silently, not a message from the person; one that came from another session is a peer's words and is always answered in the chat."""
+    if ref.type != Messages.resource.type:
+        return True
+    message = row_of(record, ref)
+    return USER in message.seen[:1] or bool(message.data.get("from_session"))
 
 
 def awaiting_person(context: Context, ref: Ref) -> bool:
