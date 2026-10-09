@@ -76,6 +76,16 @@ def test_a_secret_made_with_instructions_that_name_a_command_arrives_with_its_pr
     assert made.create("Chosen", kind="api key", brief="curl -H @- https://x", programs=["gh"]).programs == ["gh"], "programs the user chose are kept"
 
 
+def test_a_key_is_not_requested_for_a_service_a_connected_mcp_server_reaches(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    features.load()
+    record = fresh()
+    (record.root.parent / ".mcp.json").write_text(json.dumps({"mcpServers": {"linear-server": {"type": "http", "url": "https://mcp.linear.app/mcp"}}}))
+    agent = Secrets(record, actor=AGENT)
+    assert "linear-server" in refused(lambda: agent.request("Linear API key", "to read issues")), "the request points at the MCP server instead of asking for a key"
+    assert agent.request("Stripe key", "to list charges").title == "Stripe key", "a service no connected server reaches is still asked for"
+
+
 def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch, capsys):
     from features.secrets.running import Masker
     from providers.command_effects import effects

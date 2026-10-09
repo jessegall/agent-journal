@@ -9,6 +9,7 @@ from controllers.marks import action
 from controllers.types import Environments, Messages
 from features import FEATURES
 from features.secrets.keys import integration_key_variables
+from features.secrets.reach import servers_reaching
 from features.secrets.resource import Kind, Secret, SecretField
 from features.secrets.running import NEVER_GIVEN, checked_program, programs_named, run_masked
 from features.secrets.sessions import BrowserLogins
@@ -33,6 +34,9 @@ class Secrets(Controller):
     def request(self, title: str, why: str, kind: str = Kind.API_KEY.value, url: str = "") -> Secret:
         if Kind.named(kind) is Kind.BROWSER_LOGIN:
             return self._login_asked(title, why, url)
+        if servers := servers_reaching(self.record.root.parent, title):
+            raise Refused(f"{title} is already reachable through the MCP server {', '.join(servers)}: use its tools instead of a stored key. "
+                          f"If they cannot do what you need, tell the user what is missing in the chat.")
         row = self.create(title, kind=kind, asked=why)
         Messages(self.record, actor=AGENT).create(f"Please fill in the secret {title}", brief=f"I need it {why}. Fill it in on the Secrets page, never in the chat.\n\nsecret {row.n}")
         return row
