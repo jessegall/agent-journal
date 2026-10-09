@@ -4,11 +4,31 @@ import {journal, runScenarios, shot} from "./harness.mjs";
 
 const VALUE = "sk-test-7c1e94ab5f20";
 
+const gone = (error) => {
+    if (error.code !== "ENOENT") throw error;
+};
+
 function filesUnder(folder) {
-    return readdirSync(folder).flatMap((name) => {
-        const path = join(folder, name);
-        return statSync(path).isDirectory() ? filesUnder(path) : [path];
-    });
+    try {
+        return readdirSync(folder).flatMap((name) => {
+            const path = join(folder, name);
+            try {
+                return statSync(path).isDirectory() ? filesUnder(path) : [path];
+            } catch (error) {
+                return gone(error) ?? [];
+            }
+        });
+    } catch (error) {
+        return gone(error) ?? [];
+    }
+}
+
+function holdsValue(file) {
+    try {
+        return readFileSync(file).includes(VALUE);
+    } catch (error) {
+        return gone(error) ?? false;
+    }
 }
 
 await runScenarios(process.argv[2], {
@@ -34,7 +54,7 @@ await runScenarios(process.argv[2], {
         if ((await page.content()).includes(VALUE)) throw new Error("the value is in the page");
         const path = await page.locator(".secrets-path code").innerText();
         if (!readFileSync(path, "utf8").includes(VALUE)) throw new Error(`the value is not in the values file ${path}`);
-        const leaked = filesUnder(process.env.JOURNAL_SCRATCH_ROOT).filter((file) => readFileSync(file).includes(VALUE));
+        const leaked = filesUnder(process.env.JOURNAL_SCRATCH_ROOT).filter(holdsValue);
         if (leaked.length) throw new Error(`the value is in the record: ${leaked.join(", ")}`);
         if (bodies.some((body) => body.includes(VALUE))) throw new Error("the value came back in a response");
         await shot(page, "secret-list");
