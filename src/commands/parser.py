@@ -96,7 +96,7 @@ def built(only: str) -> argparse.ArgumentParser:
     top.add_argument("--cwd", default="", help=argparse.SUPPRESS)
     top.add_argument("--agent", dest="as_agent", default=os.environ.get("JOURNAL_AGENT", ""))
     top.add_argument("--plugin", dest="as_plugin", default=os.environ.get("JOURNAL_PLUGIN", ""), help=argparse.SUPPRESS)
-    cmds = top.add_subparsers(dest="command", required=True)
+    cmds = top.add_subparsers(dest="_command", required=True)
     for type_, controller in CONTROLLERS.items():
         t = cmds.add_parser(type_, help=controller.resource.details.abstract, description=controller.resource.details.help)
         acts = t.add_subparsers(dest="action", required=True)

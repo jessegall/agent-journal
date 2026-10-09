@@ -123,7 +123,7 @@ def run(argv: list[str], out=None, err=None) -> int:
     try:
         parsed, passed = parser(noun).parse_known_args(argv)
         args = vars(parsed)
-        command = args.pop("command")
+        command = args.pop("_command")
         if passed and command not in DRIVERS:
             parser(noun).error(f"unrecognized arguments: {' '.join(passed)}")
     except Misused as e:

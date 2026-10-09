@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.12 — journal secret run works again
+- journal secret run works again: a word that takes a list of words, such as the command after the secret, no longer overwrites the command line's own command.
+
 ## 2.267.11 — An upgrade's restart is not a hook error
 - A hook that gets no answer while an upgrade restarts the server, and during the new server's first seconds, is no longer told to the agent as an error.
 - A server that crashes and comes back still shows its hook failures: the restart marker is taken away once the new server has started.
