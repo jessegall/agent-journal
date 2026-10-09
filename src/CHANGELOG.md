@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.71 — A ticket's edits show, nested repositories included
+- A ticket's inspector finds its environment's agent the way a helper's does, so Files changed and Terminal no longer say "No agent yet" while the ticket's agent works.
+- A project that is a repository and holds nested repositories feeds the edits of each, not only the root's.
+- Pictures an agent makes show in its Files changed, even where the project's .gitignore ignores them.
+- A plugin that declares its own command ends every notice it sends with the exact command to run inside the repository that holds the file, so an agent never installs it to check a sin.
+- A Codex agent's cell says what it last said.
+- A file of up to 100 MB can be sent; the viewer names the file that is over the limit.
+- The chat mark for a compaction reads Conversation compacted; the file feed's loading rows fill the panel; the update cover keeps its spinner above the title in every step.
+
 ## 2.267.70 — The row index lives beside the rows, not among them
 - A type's row index is saved in its own folder, so saving it no longer makes the rows' folder look changed and the next read no longer re-scans every row.
 
