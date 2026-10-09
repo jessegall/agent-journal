@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.42 — Documents searched on the server, a lighter dashboard
+- Searching the library for words inside documents runs on the server, so the dashboard sends documents as summaries too and the preview reads a document whole when it opens.
+
 ## 2.267.41 — Voice pictures you can see
 - Each voice's picture sits large on top of its card, with its name and sample below, in Settings, in the first-start dialog and in the phone's voice list.
 
