@@ -129,6 +129,14 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     bytecode.write_bytes(b"compiled")
     assert bytecode not in managed.managed_paths(record.root.parent, record.root) and managed.changed_managed(record.root.parent, record.root) == [], \
         "bytecode Python writes beside the code is neither managed nor read, so a write racing the read cannot fail it"
+    assert managed.managed_hash(record.root / "src" / "removed.py") == managed.managed_hash(record.root / "src" / "never.py"), \
+        "a file an upgrade removed between listing and reading holds nothing, and is no error"
+    from engine import runtime
+    agents.write_text(agents.read_text().replace("form 2 (auto-generated", "form 2 (edited by hand"))
+    runtime.upgrade_mark(record.root).touch()
+    assert managed.changed_managed(record.root.parent, record.root) == [], "while an upgrade holds its mark, nothing is checked against the files it is rewriting"
+    runtime.upgrade_mark(record.root).unlink()
+    agents.write_text(agents.read_text().replace("form 2 (edited by hand", "form 2 (auto-generated"))
     agents.write_text(agents.read_text().replace("form 2 (auto-generated", "form 2 (edited by hand"))
     installer.write_text("changed by hand\n")
     assert install.archive_changed(record.root.parent, record.root, managed.changed_managed(record.root.parent, record.root)).is_file(), "updating anyway copies the changed files to the attic first"

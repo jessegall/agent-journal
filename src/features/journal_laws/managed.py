@@ -3,6 +3,7 @@ import json
 import re
 from pathlib import Path
 
+from engine import runtime
 from engine.package import SRC
 from providers.base import journal_hook
 
@@ -37,6 +38,14 @@ def managed_paths(project: Path, root: Path) -> set[Path]:
     return paths
 
 
+def read_whole(path: Path) -> bytes:
+    """A file an upgrade removed between listing and reading is a removed file: it holds nothing."""
+    try:
+        return path.read_bytes()
+    except FileNotFoundError:
+        return b""
+
+
 def managed_bytes(path: Path) -> bytes:
     if path.name in ("settings.local.json", "hooks.json"):
         settings = json.loads(path.read_text())
@@ -48,7 +57,7 @@ def managed_bytes(path: Path) -> bytes:
             managed["statusLine"] = status
         return json.dumps(managed, sort_keys=True).encode()
     if path.name not in ("CLAUDE.md", "AGENTS.md"):
-        return path.read_bytes()
+        return read_whole(path)
     text = path.read_text(errors="replace")
     return "\n".join(match.group() for match in CURRENT.finditer(text)).encode()
 
@@ -78,7 +87,7 @@ def remember_rewritten(project: Path, root: Path, path: Path) -> None:
 
 def changed_managed(project: Path, root: Path) -> list[Path]:
     target = root / MANAGED
-    if not target.is_file():
+    if not target.is_file() or runtime.upgrading(root):
         return []
     remembered = json.loads(target.read_text())
     changed = {project / name for name, digest in remembered.items()
