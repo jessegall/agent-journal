@@ -500,3 +500,18 @@ def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkey
     assert stopped == [f"session-plan-{plan.n}"], "a plan's agent is left running while one of its tickets is still open"
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("no agent")))
     assert tickets._hand_to_plan(straggler).queued, "a ticket the plan's agent cannot be told of waits in the queue"
+    fifth = approved("fifth", "six")
+    by_user.start(fifth)
+    by_user.park(fifth)
+    by_agent.complete(fifth, how="done by hand")
+    assert (by_agent.load(fifth).status, by_agent.load(fifth).completed > 0) == ("done", True), "finishing a parked plan makes it done, not parked"
+    stuck = approved("stuck", "seven")
+    by_user.start(stuck)
+    by_user.park(stuck)
+    from migrations.m0077_finished_plans_are_done import run as finished_plans_done
+    stale = by_agent.load(stuck)
+    stale.completed = time.time()
+    by_agent.rows.persist(stale)
+    assert finished_plans_done(record.root) == [f"plan {stuck} in {record.env} is finished, so it is done and no longer parked"], \
+        "an upgrade marks a finished plan that kept its parked status as done"
+    assert by_agent.load(stuck).status == "done", "and it reads done afterwards"

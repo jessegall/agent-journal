@@ -213,6 +213,11 @@ class Plans(Controller):
         return self._status(r, ACTIVE, WAITING)
 
     @action
+    def complete(self, n: int, how: str = "", **data):
+        kept = self.load(n).status
+        return super().complete(n, how, **{**data, "status": ABANDONED if kept == ABANDONED else DONE})
+
+    @action
     def abandon(self, n: int, why: str = ""):
         plan = self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, REVIEWING, APPROVED, ACTIVE, WAITING, PARKED, why=why)
         return self.complete(plan.n, how=why if why else "abandoned")
