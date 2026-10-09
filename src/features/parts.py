@@ -37,6 +37,9 @@ class Speaker:
     def whisper(self, line: str, **values):
         return self.feature.journal.whisper(self.record, self.row, line, **values)
 
+    def remind(self, line: str, **values):
+        return self.feature.journal.remind(self.record, self.row, line, **values)
+
     def move_to_background(self) -> dict:
         from agents.control import move_to_background
         return move_to_background(self.record.root, self.record.env, self.session)

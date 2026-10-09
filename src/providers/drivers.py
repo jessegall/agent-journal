@@ -226,12 +226,14 @@ class Driver(ABC):
     def consent(cls, printed: bytes) -> bytes:
         return b""
 
-    def send(self, text: str = "", groups: dict | None = None, yielding: str = "", now: bool = False, by: str = JOURNAL) -> bool:
+    def send(self, text: str = "", groups: dict | None = None, yielding: str = "", now: bool = False, by: str = JOURNAL, whispers: str = "") -> bool:
         if now:
             return self._deliver(joined(text), by)
         line = joined(text)
         if line:
             self.held.append(line)
+        if joined(whispers):
+            self._whisper(joined(whispers))
         if joined(yielding):
             self.yielding.append(joined(yielding))
         for key, numbers in (groups or {}).items():
@@ -264,7 +266,14 @@ class Driver(ABC):
             return False
         return self._typed(f"{MARK} {line}", confirmed=True) if by == JOURNAL else self._typed(line, confirmed=self.ENTER_CAN_MISS)
 
-    def _post(self, line: str, by: str) -> bool:
+    def _whisper(self, line: str) -> None:
+        """A whisper goes through the channel once; a provider with no channel takes it as a line, and a lost one is dropped, never typed."""
+        if not self.TAKES_CHANNEL:
+            self.held.append(line)
+            return
+        self._post(line, JOURNAL, tracked=False)
+
+    def _post(self, line: str, by: str, tracked: bool = True) -> bool:
         raise NotImplementedError(f"{self.PRODUCT} takes no channel")
 
     def run_shell(self, command: str) -> bool:

@@ -74,12 +74,12 @@ class Journal:
     def agent(self) -> AgentHooks:
         return AgentHooks(self.feature)
 
-    def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, **values):
+    def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, whisper: bool = False, **values):
         spec = self.feature.declared_line(line)
         if not spec.reach.reaches(agent.subagent) or (not spec.while_waiting and waiting(record, agent)):
             return None
         lead, yields = spec.lead, not spec.while_waiting
-        message = self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, yields=yields, reply_kept=spec.reply_kept,
+        message = self.message(Nudges, line, values, actor, session=agent.title, private=private, whisper=whisper, lead=lead, yields=yields, reply_kept=spec.reply_kept,
                                **spec.asking(self.feature.name))
         added = appended(f"{self.feature.name}.{line}", {**values, "record": record}, "").removeprefix(" - ")
         said = replace(message, brief=". ".join(part for part in (added, message.brief) if part))
@@ -89,6 +89,10 @@ class Journal:
 
     def whisper(self, record, agent, line: str, actor: str = SYSTEM, **values):
         return self.say(record, agent, line, private=True, actor=actor, **values)
+
+    def remind(self, record, agent, line: str, actor: str = SYSTEM, **values):
+        """A keyword reminder: private like a whisper, and reaching the agent only through the channel."""
+        return self.say(record, agent, line, private=True, actor=actor, whisper=True, **values)
 
     def notify(self, record, line: str, actor: str = SYSTEM, **values):
         return self.send(record, self.message(Notifications, line, values, actor))
