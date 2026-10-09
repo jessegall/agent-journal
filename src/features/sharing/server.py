@@ -146,6 +146,8 @@ class ShareHandler(BaseHTTPRequestHandler):
                 return self.page(404, unshared())
             self.shares._layout_opened(share)
             return self.send(200, json.dumps(share.layout).encode(), {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"})
+        if share.view and rest not in ([], ["data.json"]) and rest[:1] != ["assets"]:
+            return self.page(404, unshared())
         app = APP_DIR / APP_PAGE
         if not rest and app.is_file():
             if not self.path.split("?", 1)[0].endswith("/"):
@@ -222,6 +224,8 @@ class ShareHandler(BaseHTTPRequestHandler):
         self.page(200, document(formatted(row.title, record, SHARED), body, share.expires, back))
 
     def preview(self, share) -> str:
+        if share.view:
+            return ""
         row = self.shares._shared_row(share, share.target)
         host = self.headers.get("Host", "")
         page = f"{'http' if host.startswith(('127.0.0.1', 'localhost')) else 'https'}://{host}/s/{share.token}"

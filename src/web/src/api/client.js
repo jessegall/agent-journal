@@ -231,6 +231,10 @@ export class ApiClient {
         return this.act("phone", n, "refuse_passkey");
     }
 
+    shareView(view, {expires = "7d", once = false} = {}) {
+        return this.command("share", "share_view", {view, expires, once});
+    }
+
     shareLayout(name, layout, {expires = "7d", once = false} = {}) {
         return this.command("share", "share_layout", {name, layout: JSON.stringify(layout), expires, once});
     }
