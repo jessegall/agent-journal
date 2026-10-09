@@ -44,6 +44,7 @@ class TranscriptCache:
         self.recents: dict[str, tuple[int, list]] = {}
         self.folds: dict[tuple, tuple] = {}
         self.transcripts: dict[str, tuple] = {}
+        self.glimpsed: dict[str, tuple] = {}
         self.kept: dict[tuple, float] = {}
         self.locks: dict[tuple, Lock] = {}
         self.guard = Lock()
@@ -133,9 +134,19 @@ class TranscriptCache:
         return held
 
     def glimpse(self, path: Path, extend: Callable[[list, list[bytes], int], list]) -> list:
-        """The newest turns at once, while the whole read catches up behind."""
+        """The newest turns at once, while the whole read catches up behind; kept while the file is as it was, so opening the same chat again parses nothing."""
+        try:
+            stamp = path.stat()
+        except OSError:
+            return []
+        mark = (stamp.st_size, stamp.st_mtime_ns, stamp.st_ino)
+        kept = self.glimpsed.get(str(path))
+        if kept and kept[0] == mark:
+            return kept[1]
         read = tail_lines(path, RECENT_BYTES)
-        return extend([], read.lines, self.counted_before(path, read))
+        turns = extend([], read.lines, self.counted_before(path, read))
+        self.glimpsed[str(path)] = (mark, turns)
+        return turns
 
     def turns_behind(self, path: Path, key: tuple, extend: Callable[[list, list[bytes], int], list]) -> None:
         lock = self.lock(key)
