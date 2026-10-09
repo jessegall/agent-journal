@@ -91,7 +91,7 @@ class TicketCards:
         if not ticket.work_environment:
             return asdict(TicketStatus(state.kind, state.text))
         place = Record(self.record.root, ticket.work_environment)
-        plan = self._plans(ticket).load(ticket.plan) if ticket.plan else None
+        plan = self._plan_of(ticket)
         done, total = counts(place, plan) if plan else (0, 0)
         doing = next((w.title for w in Works(place, actor=SYSTEM).rows.standing() if not w.parked), "")
         return asdict(TicketStatus(state.kind, state.text, plan.title if plan else "", done, total, doing))

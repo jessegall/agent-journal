@@ -194,13 +194,17 @@ class Environments(Controller):
 
     @action
     def unarchive(self, name: str):
+        return self.restored(name)
+
+    def restored(self, name: str, **fields):
+        """Brings the newest archive of an environment back, as the row it had, or with the fields a caller who knows who works there gives it."""
         home = environment_home(self.record.root, name)
         archive = attic.latest(self.record.root, name)
         if not archive:
             raise Refused(f"no archived environment {name!r} in attic/")
         self.unused(name, ": rename it before bringing the archived one back")
         attic.unpack(archive, home)
-        return self.create(name)
+        return self.create(name, **fields)
 
     @action
     def rename(self, n: int, name: str):

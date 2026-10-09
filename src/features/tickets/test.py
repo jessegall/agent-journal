@@ -287,6 +287,13 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     reopened = tickets.reopen(ticket.n, "closed by mistake")
     place = Environments(record, actor=SYSTEM).rows.by_title(ticket.work_environment)
     assert (bool(reopened.completed), bool(place), place.owner if place else "") == (False, True, ticket.ref), "a reopened ticket gets its closed environment back, with its plan and conversation"
+    from resources.types import EnvironmentKind
+    assert (place.kind, tickets.close_merged(), bool(tickets.load(ticket.n).completed)) == (EnvironmentKind.TICKET, [], False), \
+        "its environment stays a ticket's, hidden from the lists, and the sweep does not close it again the minute it is open, though its branch was merged"
+    assert git("rev-parse", f"worktree-{ticket.work_environment}").stdout.strip() == tickets.load(ticket.n).base, "work is counted from where the merged branch stands"
+    assert (tickets._plan_of(tickets.update(ticket.n, plan=99)), tickets._plan_status(tickets.load(ticket.n))) == (None, ""), \
+        "a plan the ticket's environment no longer holds stops nothing: a start does not fail on it"
+    tickets.update(ticket.n, plan=0)
     import agents.terminal
     monkeypatch.setattr(agents.terminal, "detached", lambda *args: 1)
     git("branch", "rewrite")

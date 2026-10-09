@@ -119,6 +119,11 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             self._emit(ticket.n, ESCALATED)
         return ticket
 
+    def _plan_of(self, ticket):
+        """The plan a ticket points at, or nothing when that row is not in its environment, so a missing plan stops nothing."""
+        plans = self._plans(ticket)
+        return plans.load(ticket.plan) if ticket.plan and plans.rows.exists(ticket.plan) else None
+
     def _plans(self, ticket) -> Plans:
         return Plans(Record(self.record.root, ticket.work_environment), actor=self.actor)
 
@@ -154,7 +159,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         from features.plans.progress import first_open_phase
         if not ticket.plan:
             return ""
-        plan = self._plans(ticket).load(ticket.plan)
+        plan = self._plan_of(ticket)
+        if plan is None:
+            return ""
         if plan.status == PLAN_DONE and first_open_phase(Record(self.record.root, ticket.work_environment), plan):
             return ACTIVE
         return plan.status
@@ -257,20 +264,23 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     @action
     def reopen(self, n: int, why: str):
-        """Brings a closed ticket back with its environment, and with it its plan and agent conversation, in the board's start stage; journal ticket start then carries it on."""
+        """Brings a closed ticket back with its environment, and with it its plan and agent conversation, in the board's start stage; a branch that was merged starts again from where it landed, so the sweep does not close the ticket the minute it is open; journal ticket start then carries it on."""
         ticket = super().reopen(n, why)
         if not ticket.work_environment:
             return ticket
         environments = Environments(self.record, actor=SYSTEM)
         if not environments.rows.by_title(ticket.work_environment):
-            environments.unarchive(ticket.work_environment)
-            place = environments.rows.by_title(ticket.work_environment)
-            environments.update(place.n, owner=ticket.ref, launched_from=self.record.env, kind=EnvironmentKind.TICKET)
+            environments.restored(ticket.work_environment, owner=ticket.ref, launched_from=self.record.env, kind=EnvironmentKind.TICKET)
+        if ticket.plan and self._plan_of(ticket) is None:
+            ticket = self.update(ticket.n, plan=0)
+        if self._merged(ticket):
+            ticket = self._based(ticket, self._landed_at(ticket))
         board = self._board(ticket)
         began = board.stage_for(START) if board else ""
         if began and ticket.stage == board.stage_for(DONE):
-            return self.update(ticket.n, stage=began)
-        return ticket
+            ticket = self.update(ticket.n, stage=began)
+        self.comment(ticket.n, f"Reopened: {why}. journal {self.type} start {ticket.n} carries it on in its earlier conversation.")
+        return self.load(ticket.n)
 
     def raise_moment(self, n: int, moment: str, **data) -> None:
         self.record.emit(self.type, n, moment, SYSTEM, scope=self.resource.scope, **data)
@@ -497,7 +507,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def _kickoff(self, ticket) -> str:
         into = self._into(ticket)
         return (f"You work {ticket.ref}, {ticket.title}, in this environment and its worktree. {ticket.brief}\n"
-                + (f"Continue its plan {ticket.plan}: journal plan progress {ticket.plan} says where it stands. " if ticket.plan else
+                + (f"Continue its plan {ticket.plan}: journal plan progress {ticket.plan} says where it stands. " if self._plan_of(ticket) else
                    f"Draft a plan for it with journal plan create and link it with journal ticket update {ticket.n} --set plan=<n>. ")
                 + f"When it is complete, mark it ready with journal plan ready; it starts once it is approved, by the user or by the agent "
                 f"orchestrating the board, and you are told when. Hand domain work out with journal todo delegate. "
