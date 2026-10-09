@@ -248,6 +248,16 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
     white-space: nowrap;
 }
 
+.aw-now {
+    display: -webkit-box;
+    margin-top: 6px;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
 .aw-asks {
     color: var(--tone-warn);
     font-family: inherit;
