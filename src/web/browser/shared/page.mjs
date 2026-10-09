@@ -66,6 +66,10 @@ await runScenarios(OPEN, {
         await page.getByText("Launch board").first().waitFor();
         await page.getByText("Ideas", {exact: true}).first().waitFor();
         await page.getByRole("button", {name: "Fix the login page"}).waitFor();
+        await page.getByText("Visitors log in without a reload").waitFor();
+        await page.getByText("A wrong password is refused").waitFor();
+        await page.getByRole("button", {name: "Open plan"}).first().click();
+        await page.getByText("Done elsewhere").first().waitFor();
     },
     async "a link that ended says so"(page) {
         await page.goto(ENDED);

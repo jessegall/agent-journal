@@ -2,17 +2,29 @@
 import {computed} from "vue";
 import {rows} from "../sync/rows.js";
 
-const props = defineProps({board: Object});
-const emit = defineEmits(["open"]);
+const props = defineProps({board: Object, planOf: {type: Function, default: () => ""}});
+const emit = defineEmits(["open", "plan"]);
 const tickets = computed(() => rows("ticket").filter((r) => !r.deleted && r.data?.board === props.board.n));
 const lanes = computed(() =>
     (props.board.data?.stages || []).map((stage) => ({stage, cards: tickets.value.filter((r) => r.data?.stage === stage)}))
 );
+const goal = computed(() => props.board.data?.goal || "");
+const clauses = computed(() => props.board.data?.done_when || []);
 </script>
 
 <template>
     <section class="board" :aria-label="`Board ${board.title}`">
         <h3 class="board-title">{{ board.title }}</h3>
+        <template v-if="goal">
+            <p class="goal">{{ goal }}</p>
+        </template>
+        <template v-if="clauses.length">
+            <ul class="clauses" aria-label="Done when">
+                <template v-for="clause in clauses" :key="clause">
+                    <li>{{ clause }}</li>
+                </template>
+            </ul>
+        </template>
         <div class="lanes">
             <template v-for="lane in lanes" :key="lane.stage">
                 <div class="lane">
@@ -21,7 +33,15 @@ const lanes = computed(() =>
                         <span class="count">{{ lane.cards.length }}</span>
                     </div>
                     <template v-for="r in lane.cards" :key="r.n">
-                        <button type="button" class="card" @click="emit('open', r)">{{ r.title }}</button>
+                        <div class="card">
+                            <button type="button" class="card-title" @click="emit('open', r)">{{ r.title }}</button>
+                            <template v-if="r.data?.status?.state">
+                                <span class="card-line">{{ r.data.status.state }}</span>
+                            </template>
+                            <template v-if="planOf(r)">
+                                <button type="button" class="card-plan" @click="emit('plan', r)">Open plan</button>
+                            </template>
+                        </div>
                     </template>
                 </div>
             </template>
@@ -33,6 +53,18 @@ const lanes = computed(() =>
 .board-title {
     margin: 0 0 8px;
     font-size: 14px;
+}
+
+.goal {
+    margin: 0 0 6px;
+    font-size: 13px;
+}
+
+.clauses {
+    margin: 0 0 10px;
+    padding-left: 18px;
+    font-size: 12px;
+    opacity: 0.8;
 }
 
 .lanes {
@@ -64,14 +96,34 @@ const lanes = computed(() =>
 }
 
 .card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     padding: 8px;
     border: 1px solid var(--line, #e5e5e5);
     border-radius: 6px;
     background: var(--surface, transparent);
+    font-size: 13px;
+}
+
+.card-title,
+.card-plan {
+    padding: 0;
+    border: 0;
+    background: none;
     color: inherit;
     font: inherit;
-    font-size: 13px;
     text-align: left;
     cursor: pointer;
+}
+
+.card-line {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.card-plan {
+    font-size: 12px;
+    text-decoration: underline;
 }
 </style>

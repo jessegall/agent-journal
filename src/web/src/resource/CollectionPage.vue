@@ -41,7 +41,10 @@ async function load(ref) {
 }
 
 const refs = computed(() => (props.resource.refs || []).filter((ref) => ref !== props.resource.data?.source));
-const planOf = (r) => (r.data?.plan && r.data?.work_environment ? `${r.data.work_environment}/plan:${r.data.plan}` : "");
+const planOf = (r) => {
+    if (props.readOnly) return (r.refs || []).find((ref) => refParts(ref).type === "plan") || "";
+    return r.data?.plan && r.data?.work_environment ? `${r.data.work_environment}/plan:${r.data.plan}` : "";
+};
 const elsewhere = computed(() => refs.value.filter((ref) => refParts(ref).env));
 const held = (ref) => byRef(ref) || fetched[ref];
 watchEffect(() => !props.readOnly && refs.value.filter((ref) => !held(ref)).forEach(load));
@@ -126,7 +129,7 @@ function hidePreview(r) {
         </template>
         <template v-if="boards.length && tab === 'boards'">
             <template v-for="r in boards" :key="r.at">
-                <BoardLanes :board="r" @open="open" />
+                <BoardLanes :board="r" :plan-of="planOf" @open="open" @plan="openPlan" />
             </template>
         </template>
         <template v-else-if="tickets.length && tab === 'tickets'">
@@ -135,7 +138,7 @@ function hidePreview(r) {
                     <div class="ticket">
                         <button type="button" class="ticket-title" @click="open(r)">{{ r.title }}</button>
                         <span class="ticket-stage">{{ r.data?.stage }}</span>
-                        <template v-if="planOf(r) && !readOnly">
+                        <template v-if="planOf(r)">
                             <button type="button" class="ticket-plan" @click="openPlan(r)">Open plan</button>
                         </template>
                         <template v-if="waitsOf(r).length">

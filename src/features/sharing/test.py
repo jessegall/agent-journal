@@ -759,7 +759,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     Docs(here, actor=USER).delete(gone.n, "obsolete")
     assert sharing._scope(ended) == set(), "a row deleted after it was shared shares nothing"
     from types import SimpleNamespace
-    members = sharing._loaded_members(here, SimpleNamespace(home_env="", member_refs=lambda: ["nothing:1", "todo:x", "todo:99999", todo.ref]))
+    members = sharing._loaded_members(here, SimpleNamespace(type="collection", home_env="", member_refs=lambda: ["nothing:1", "todo:x", "todo:99999", todo.ref]))
     assert [member.n for member in members] == [todo.n], "a collection's members that are of no type, have no number or are gone are left out of the page"
     from features.dumps.controller import Dumps
     pile = Dumps(here, actor=USER).create("Pile", brief="pasted notes")
@@ -788,6 +788,15 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     shared = sharing._shared_data(pile_share)["rows"][second.ref]["data"]
     assert (shared["stage"], shared["dependencies"], shared["status"]["state"], shared["status"]["plan"]) == ("Ideas", {first.ref: "confirmed"}, "", ""), \
         "a shared ticket carries its stage, the waits its owner confirmed and where its work stands, and no plan"
+    Boards(here, actor=USER).update(board.n, goal="Dark mode ships", done_when=["Every screen follows the theme"])
+    made = Plans(ticket, actor=AGENT).create("Plan of the first ticket", goal="Dark mode")
+    tickets.update(first.n, work_environment="ticket-1", plan=made.n)
+    Collections(here, actor=USER).add(group.n, [board.ref])
+    on_board = sharing._shared_data(pile_share)["rows"]
+    assert (f"ticket-1/{made.ref}" in sharing._scope(pile_share), on_board[first.ref]["members"]) == (True, [f"ticket-1/{made.ref}"]), \
+        "the plan of a ticket on a shared board is shared with it and named among the ticket's members, so its card opens it"
+    assert (first.ref in sharing._scope(pile_share), on_board[board.ref]["data"]["goal"], on_board[board.ref]["data"]["done_when"], on_board[board.ref]["data"]["stages"], on_board[first.ref]["data"]["board"]) == \
+        (True, "Dark mode ships", ["Every screen follows the theme"], ["Ideas", "Building"], board.n), "a board in a shared collection brings its tickets, its stages, its goal and its done-when clauses"
     asked = Messages(here, actor=USER).create("Is the build green?")
     Messages(here, actor=AGENT).comment(asked.n, "Yes, all green.")
     chat = Shares(here, actor=USER).share_view("chat")

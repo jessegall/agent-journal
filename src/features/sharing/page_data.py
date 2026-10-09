@@ -40,11 +40,18 @@ class SharePages:
         found = Ref.parse(ref)
         return found if found.env else Ref(found.type, found.n, row.home_env)
 
+    @staticmethod
+    def _member_refs(row) -> list[str]:
+        """What a row holds in a share: its own members, and for a ticket the plan of its work environment, which its card opens."""
+        if row.type == "ticket" and row.work_environment and row.plan:
+            return [f"{row.work_environment}/plan:{row.plan}"]
+        return row.member_refs()
+
     def _loaded_members(self, record: Record, row) -> list:
         if row.type == "board":
             return [ticket for ticket in Tickets(record, actor=SYSTEM).rows.standing() if ticket.board == row.n]
         members = []
-        for ref in row.member_refs():
+        for ref in self._member_refs(row):
             try:
                 member = row_of(record, self._placed(row, ref))
             except Refused:
