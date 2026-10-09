@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.53 — Two tickets' worktrees of one repository stay apart
+- A worktree is recognised by git's own list of its repository, whatever its folder is called, so two tickets' worktrees of one nested repository no longer collapse into one.
+- A retry removes a half-made worktree of its own failed start with git worktree remove and deletes its branch; a folder no worktree owns is moved aside, never deleted.
+
 ## 2.267.52 — A ticket start that fails cleans up after itself
 - A ticket start no longer fails with an invalid path on a board with a branch.
 - A start that fails partway removes the worktrees, branches and folders it made, and a retry of the same ticket clears what a failed start left and starts over.
