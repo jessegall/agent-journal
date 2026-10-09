@@ -45,6 +45,8 @@ describe("while the journal updates", () => {
         const before = Date.now() / 1000;
         counting({version: "2.268.0", seconds: 10});
         expect([updating.countdown.version, updating.countdown.until >= before + 10 - 1, locked()]).toEqual(["2.268.0", true, false]);
+        counting({version: "2.268.0", seconds: 0, starting: true});
+        expect([updating.countdown.starting, locked()]).toEqual([true, false]);
         counting({});
         expect(updating.countdown).toBe(null);
         begin("2.268.0");
