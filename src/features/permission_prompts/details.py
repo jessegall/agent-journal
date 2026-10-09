@@ -28,6 +28,11 @@ class PermissionsDetails(FeatureDetails):
         When your terminal asks for permission, the chat shows which call it is for, and
         Allow or Deny answers the prompt in the terminal.
 
+        In an environment a helper or a ticket's agent works in, a permission request goes to the
+        orchestrating agent that launched it, when that environment runs on auto in orchestrator
+        mode: the agent is told which call it is and answers with journal agent permit. Nothing
+        then waits on you, and the agent's cell says it waits on the orchestrator.
+
         You run without permission prompts unless the Skip permission prompts switch in
         Settings is turned off; flipping it restarts you in the same conversation, with or
         without your skip flag.
@@ -38,5 +43,10 @@ class PermissionsDetails(FeatureDetails):
             name="waiting",
             title="Waiting for permission - {{tool}} {{call}}",
             brief="{{call}}",
+        ),
+        Line(
+            name="routed",
+            title="{{agent}} waits for permission: {{tool}} {{call}}",
+            brief="Answer it with journal agent permit {{agent}} allow, or journal agent permit {{agent}} deny.",
         ),
     ]

@@ -4,6 +4,7 @@ from engine.seats import live_session
 from engine.sessions import Sessions
 from features.base import Feature
 from features.journal import Journal
+from features.permission_prompts.commands import AnswerPermission
 from features.permission_prompts.details import PermissionsDetails
 from features.permission_prompts.handlers import ShowWaitingPermission
 from features.permission_prompts.skipping import launch_args, skipped
@@ -18,6 +19,7 @@ class PermissionPrompts(Feature):
         if launch_args not in LAUNCH_ARGS:
             LAUNCH_ARGS.append(launch_args)
         journal.events.handler(ShowWaitingPermission())
+        journal.commands.add("agent", AnswerPermission())
 
     def settings_view(self, record) -> dict:
         primary = Agents(record, actor=SYSTEM).primary_to_read()

@@ -1,13 +1,17 @@
 import os
 import time
 
-from controllers.types import Agents, Notices
+from controllers.types import Agents, Environments, Notices, Nudges
+from engine.record import Record
+from features.permission_prompts.commands import AnswerPermission
+from overview.summary import summarize
+from resources.types import EnvironmentKind
 from engine.sessions import Sessions
 from runner.hooks import answer
 from tests.kit import handle
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM
-from tests.conftest import fresh
+from tests.conftest import fresh, refused
 
 
 def test_a_permission_the_agent_waits_on_is_shown_in_the_chat_until_it_is_answered():
@@ -202,3 +206,40 @@ def test_a_burst_of_tool_uses_writes_the_session_file_once_not_on_every_hook(mon
     monkeypatch.setattr(time, "time", lambda: later)
     answer(provider, record.root, hook, os.getpid(), record.env)
     assert Sessions(record.root).read("claude-9").seen == later, "a minute on, the hook is heard again"
+
+
+def asked(env: Record):
+    provider = PROVIDERS["claude"]()
+    hook = {"hook_event_name": "PermissionRequest", "session_id": f"claude-{env.env}", "tool_name": "Bash", "tool_input": {"command": "git push"}}
+    handle(provider, env.root, env.env, hook)
+    return [n for n in Notices(env, actor=SYSTEM).rows.standing() if n.data.get("action") == "permission"]
+
+
+def helper_of(main: Record) -> Record:
+    Environments(main, actor=SYSTEM).create("helper-ada", owner="helper:1", launched_from=main.env, kind=EnvironmentKind.HELPER)
+    return Record(main.root, "helper-ada")
+
+
+def test_with_auto_and_orchestrator_on_a_helpers_permission_goes_to_the_orchestrating_agent_not_the_user():
+    main = fresh()
+    main.set_setting("work_modes", {"mode": "orchestrator"})
+    Agents(main, actor=SYSTEM).create("claude-main")
+    helper = helper_of(main)
+    waiting = asked(helper)
+    assert [n.data["to"] for n in waiting] == ["orchestrator"], "the request is marked as the orchestrator's"
+    lines = [n.title for n in Nudges(main, actor=SYSTEM).rows.every()]
+    assert "helper-ada waits for permission: Bash git push" in lines, "the orchestrating agent is told which agent, tool and call"
+    counts = summarize(helper.root)["environments"]
+    cell = next(e for e in counts if e["name"] == "helper-ada")["counts"]
+    assert (cell["prompts"], cell["routed"]) == (0, 1), "nothing waits on the user, and the cell counts it as the orchestrator's"
+    assert "not yours" in refused(lambda: AnswerPermission().run(None, Agents(helper, actor=SYSTEM), "helper-ada", "allow")), "only the launching environment answers it"
+    assert "no agent is running" in refused(lambda: AnswerPermission().run(None, Agents(main, actor=SYSTEM), "helper-ada", "allow")), "the launching environment's agent may, once the agent runs"
+
+
+def test_outside_auto_and_orchestrator_mode_a_permission_request_stays_the_users():
+    main = fresh()
+    Agents(main, actor=SYSTEM).create("claude-main")
+    helper = helper_of(main)
+    assert [n.data.get("to", "") for n in asked(helper)] == [""], "in builder mode nothing is routed"
+    assert [n.title for n in Nudges(main, actor=SYSTEM).rows.every()] == [], "and the main agent is told nothing"
+    assert "not yours" in refused(lambda: AnswerPermission().run(None, Agents(main, actor=SYSTEM), "helper-ada", "allow")), "its agent may not answer it"

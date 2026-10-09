@@ -29,6 +29,7 @@ function standing(e, plan, now) {
     const counts = e.counts || {};
     if (state === "stopped") return {state: "stopped", reason: "its agent is not running"};
     if (counts.prompts) return {state: "you", reason: "a permission waits for you"};
+    if (counts.routed) return {state: "running", reason: "a permission waits on the orchestrator"};
     if (e.agent.asking || counts.questions) return {state: "you", reason: "a question waits for you"};
     if (plan && PLAN_WAITS[plan.status]) return {state: "you", reason: PLAN_WAITS[plan.status]};
     if (!isActive(state)) return {state: "idle", reason: "idle"};
