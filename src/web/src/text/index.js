@@ -32,8 +32,8 @@ function spans(text) {
     const held = text.replace(/`([^`\n]+)`/g, (whole, code) => `\u0000${codes.push(`<code>${code}</code>`) - 1}\u0000`);
     const html = held
         .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
-        .replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1<em>$2</em>")
-        .replace(/(^|[\s(])_([^_\n]+)_/g, "$1<em>$2</em>")
+        .replace(/(^|[\s(])\*(?!\s)([^*\n]*[^*\s])\*/g, "$1<em>$2</em>")
+        .replace(/(^|[\s(])_(?!\s)([^_\n]*[^_\s])_(?!\w)/g, "$1<em>$2</em>")
         .replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
     return html.replace(/\u0000(\d+)\u0000/g, (whole, i) => codes[Number(i)]);
 }
