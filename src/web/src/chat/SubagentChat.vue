@@ -6,7 +6,9 @@ import {useScope} from "../composables/scope.js";
 import Compose from "./Compose.vue";
 import ChatNotice from "./ChatNotice.vue";
 import Turn from "./Turn.vue";
+import JumpPill from "../kit/JumpPill.vue";
 import Skeleton from "../kit/Skeleton.vue";
+import {useFollow} from "../composables/follow.js";
 
 const props = defineProps({
     turns: {type: Array, required: true},
@@ -24,10 +26,14 @@ const lines = computed(() => [...transcriptLines.value, ...sent.value].sort((a, 
 const pins = computed(() =>
     rows("notice").filter((notice) => notice.data.agent === props.session && !notice.completed && !standingLink(notice))
 );
-const send = (text) => api.create("message", {brief: text, sent_to: props.session});
+const {following, unseen, snap, landed, jump, scrolled, wheeled} = useFollow(log);
+const send = (text) => {
+    jump();
+    return api.create("message", {brief: text, sent_to: props.session});
+};
 watch(
     () => lines.value.length,
-    () => nextTick(() => log.value && (log.value.scrollTop = log.value.scrollHeight)),
+    (now, before) => nextTick(() => (before === undefined ? snap() : landed(now - before))),
     {immediate: true}
 );
 </script>
@@ -41,15 +47,20 @@ watch(
                 </template>
             </div>
         </template>
-        <div ref="log" class="log">
-            <template v-for="turn in lines" :key="turn.ref">
-                <Turn :turn="turn" />
-            </template>
-            <template v-if="!lines.length && loading">
-                <Skeleton shape="messages" label="Loading the conversation" />
-            </template>
-            <template v-else-if="!lines.length">
-                <p class="none">Nothing said yet.</p>
+        <div class="frame">
+            <div ref="log" class="log" @scroll.passive="scrolled" @wheel.passive="wheeled">
+                <template v-for="turn in lines" :key="turn.ref">
+                    <Turn :turn="turn" />
+                </template>
+                <template v-if="!lines.length && loading">
+                    <Skeleton shape="messages" label="Loading the conversation" />
+                </template>
+                <template v-else-if="!lines.length">
+                    <p class="none">Nothing said yet.</p>
+                </template>
+            </div>
+            <template v-if="!following && lines.length">
+                <JumpPill :count="unseen" @jump="jump" />
             </template>
         </div>
         <template v-if="!readOnly">
@@ -71,6 +82,14 @@ watch(
 .composer {
     flex: none;
     padding: 0 24px 16px;
+}
+
+.frame {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .log {
