@@ -41,7 +41,7 @@ const inspected = ref(null);
                 <HelperRow :row="row" @changed="emit('changed')" @inspect="inspected = row" />
             </template>
             <template v-if="grouped.closed.length">
-                <FoldGroup flush label="Closed" :count="grouped.closed.length" :open="closedOpen" @toggle="closedOpen = !closedOpen">
+                <FoldGroup bar class="helpers-closed" label="Closed" :count="grouped.closed.length" :open="closedOpen" @toggle="closedOpen = !closedOpen">
                     <template v-for="row in grouped.closed" :key="row.n">
                         <HelperRow :row="row" @changed="emit('changed')" @inspect="inspected = row" />
                     </template>
@@ -97,6 +97,10 @@ const inspected = ref(null);
     min-height: 0;
     overflow-y: auto;
     padding-top: 4px;
+}
+
+.helpers-closed {
+    --fold-bleed: 6px;
 }
 
 .helpers-none {

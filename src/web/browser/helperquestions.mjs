@@ -26,4 +26,19 @@ await runScenarios(process.argv[2], {
         await row.getByText(QUESTION).waitFor();
         await shot(page, "helper-question");
     },
+    async "the Closed bar in the helpers list runs edge to edge and folds the closed helpers until pressed"(page, url) {
+        const closed = {...helper, n: 92, title: "Old job", completed: 5, state: "finished", data: {...helper.data, name: "Ada Keywright", environment: "main-ada"}};
+        await page.route(/\/api\/main\/helper\?/, (route) => reply(route, {rows: [helper, closed]}));
+        await page.goto(url);
+        await page.locator(".statusbar-helpers").click();
+        const bar = page.getByRole("button", {name: /^Closed/});
+        await bar.waitFor();
+        if (await page.getByText("Ada Keywright").count()) throw new Error("the closed helpers show before the Closed bar is pressed");
+        const panel = await page.locator(".menu-panel").last().boundingBox();
+        const box = await bar.boundingBox();
+        if (Math.abs(box.x - panel.x) > 2 || Math.abs(box.x + box.width - (panel.x + panel.width)) > 2) throw new Error(`the Closed bar spans ${box.x}-${box.x + box.width}, not the popover's ${panel.x}-${panel.x + panel.width}`);
+        await bar.click();
+        await page.getByText("Ada Keywright").waitFor();
+        await shot(page, "helpers-closed-bar");
+    },
 });
