@@ -55,6 +55,10 @@ def test_each_chosen_profile_speaks_in_its_own_voice_and_calls_you_as_it_says():
         lines[voice.title] = start_block(record)
     assert all(voice.text in lines[voice.title] for voice in SHIPPED), "each shipped profile's own voice reaches the start block"
     assert 'Address me as "Ada"' in lines["Homie"] and "Never address me by name or title" in lines["Colleague"], "a profile says what it calls you"
+    assert 'Address me as "Sir Knight"' in lines["Squire"] and "Captain" not in lines["Squire"], "the Squire calls you by words of its own, never by your title and name"
+    squire = Profiles(record, actor=SYSTEM).load(number_of(record, "Squire"))
+    assert (squire.address, Profiles(record, actor=SYSTEM).samples()[squire.n].split()[-1]) == ("Sir Knight", "Knight!"), \
+        "a voice carries its own form of address, and its sample says it"
     choose(record, 999)
     assert SHIPPED[0].text in start_block(record), "a choice that names no profile talks as the Butler"
 
@@ -70,6 +74,8 @@ def test_a_profile_in_use_cannot_be_deleted_and_changing_it_reaches_the_running_
     profiles.update(own.n, brief="Keep every answer to two lines.")
     briefs = [n.brief for n in Nudges(record).all() if n.title == "the user changed how you talk to them"]
     assert any("two lines" in brief for brief in briefs), "editing the profile in use tells the agent at once"
+    assert all("one opening sentence in the new voice" in brief for brief in briefs) and len(briefs) >= 2, \
+        "every change of voice, choosing a profile as much as editing it, tells the agent to answer with one opening sentence in the new voice"
     choose(record, 0)
     profiles.delete(own.n)
 

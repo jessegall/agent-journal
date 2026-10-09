@@ -65,6 +65,6 @@ class FormOfAddressDetails(FeatureDetails):
             name=VOICE_SET,
             while_waiting=True,
             title="the user changed how you talk to them",
-            brief="From now on: {{voice}}",
+            brief="From now on: {{voice}} Answer this with one opening sentence in the new voice in the chat, so the user hears the change, and add nothing else about it.",
         ),
     ]

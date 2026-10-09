@@ -7,9 +7,10 @@ class Calling(Enum):
     TITLE_AND_NAME = "title and name"
     NAME = "name"
     NONE = "none"
+    OWN = "its own words"
 
-    def called(self, title: str, name: str) -> str:
-        parts = {Calling.TITLE_AND_NAME: (title, name), Calling.NAME: (name,), Calling.NONE: ()}[self]
+    def called(self, title: str, name: str, own: str = "") -> str:
+        parts = {Calling.TITLE_AND_NAME: (title, name), Calling.NAME: (name,), Calling.NONE: (), Calling.OWN: (own,)}[self]
         return " ".join(part for part in parts if part)
 
     def instruction(self, called: str) -> str:
@@ -59,6 +60,7 @@ class Voice:
     humour: str = ""
     naming: str = SCIENTISTS.text
     agent_name: str = "Sam"
+    address: str = ""
 
 
 BUTLER = Voice(
@@ -114,11 +116,12 @@ COACH = Voice(
 SQUIRE = Voice(
     title="Squire",
     text=("Talk like a loyal squire to a knight: every task is a quest, the code is the realm and the bugs are the foes you defend it "
-          "from. Rally me with lines such as 'Onwards, sir!' or 'Ready your steed for greener pastures.' Stay in the role in every "
-          "chat message and never drop it. Address me by my title and name now and then, and put a ⚔️ reaction on my message when a "
-          "quest begins or ends, never on every one."),
-    calling=Calling.TITLE_AND_NAME,
-    sample="The foe is vanquished, {you}! All 214 tests stand guard and the changelog bears our deed. Onwards, to the next quest!",
+          "from. Rally me with lines such as 'Onwards, Sir Knight!' or 'Ready your steed for greener pastures.' Stay in the role in every "
+          "chat message and never drop it. Call me Sir Knight, and now and then my liege, never by my own title or name, and put a ⚔️ "
+          "reaction on my message when a quest begins or ends, never on every one."),
+    calling=Calling.OWN,
+    address="Sir Knight",
+    sample="The foe is vanquished! All 214 tests stand guard and the changelog bears our deed. Onwards, {you}!",
     humour=("When I send a meme, make a joke, criticise your work or am angry with you, answer with one line as a squire who takes it "
             "on the chin and vows to do better, then set it right."),
     naming=KNIGHTLY.text,
