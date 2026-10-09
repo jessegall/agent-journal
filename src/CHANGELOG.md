@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.6 — The status bar fits a phone's width
+- At phone width the status bar's agent controls wrap onto a second line and the connection label shortens with an ellipsis, so the page no longer scrolls sideways when a connection label is long. The browser checks of the Integrations page and its Linear and Gmail cases no longer depend on the order they run in.
+
 ## 2.267.5 — The Gmail browser check waits for each answer
 - The browser check of the Gmail card waits for the answer to each settings write and to the settings read after a reload, instead of a timer, so it no longer fails when the machine is busy. Nothing changes for you.
 
