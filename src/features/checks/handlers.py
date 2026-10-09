@@ -2,13 +2,17 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.command_runs import CommandRun
+from pathlib import Path
+
+from engine.command_runs import CommandRun, command_runs
 from engine.events.engine import ClockTicked
 from engine.events.agents import AgentReported
 from engine.events.resources import ResourceEvent
 from engine.wording import digest
 from features.checks.output import summary
 from providers.payload import HookEvent
+from providers import transcript_reader
+from providers.command_effects import background_outcome
 from providers.tested import testing_piece, tested
 from features.parts import AgentContext, Context, Handler
 from features.checks.controller import Checks
@@ -63,19 +67,40 @@ def verdict(result, failed: bool) -> str:
 
 class MarkTestRuns(Handler):
     hooks = (HookEvent.PRE_TOOL_USE, HookEvent.POST_TOOL_USE)
+
     def handle(self, context: AgentContext, event: AgentReported) -> None:
+        self.finish_background(context)
         row = context.agent.row
         run = CommandRun.from_json(row.running) if row.running else None
-        if not run or run.effect != TESTS or run.background or not testing_piece(run.command) or not context.once("test_run", f"{run.at}|{run.done}"):
+        if not run or run.effect != TESTS or not testing_piece(run.command) or not context.once("test_run", f"{run.at}|{run.done}"):
             return
-        key = f"tests:{run.at}"
         ran = tested(run.command)
-        if not run.done:
-            context.journal.get(Agents).card(row.n, key=key, label="Running tests", icon="check", name=ran.name, command=ran.command, title=run.command, state="running", started=run.at)
+        if not run.done or run.background:
+            context.journal.get(Agents).card(row.n, key=f"tests:{run.at}", label="Running tests", icon="check", name=ran.name, command=ran.command, title=run.command,
+                                             state="running", started=run.at)
             return
-        result = run.result
+        self.finish(context, run, run.result, run.done)
+
+    def finish_background(self, context: AgentContext) -> None:
+        row = context.agent.row
+        reader = transcript_reader(row)
+        if reader is None:
+            return
+        tasks = reader.background_tasks(Path(row.transcript))
+        for task, command in tasks.commands.items():
+            piece = " ".join(testing_piece(command))
+            if not piece or task not in tasks.ended or not context.once("test_run", f"background|{task}"):
+                continue
+            run = next((one for one in reversed(command_runs(row)) if one.background and one.effect == TESTS and one.command == piece), None)
+            if run is None:
+                continue
+            outcome = background_outcome(command, row.cwd, tasks.outputs.get(task, ""), "failed" if task in tasks.failed else "completed")
+            self.finish(context, run, outcome, tasks.ended[task])
+
+    def finish(self, context: AgentContext, run: CommandRun, result, ended: float) -> None:
+        ran = tested(run.command)
         counts = ", ".join(part for part in (f"{result.passed} passed" if result and result.passed else "",
                                              f"{result.failed} failed" if result and result.failed else "") if part)
         failed = bool(result and (result.ok is False or result.failed))
-        context.journal.get(Agents).card(row.n, key=key, label=verdict(result, failed), icon="check", name=ran.name, command=ran.command, title=run.command,
-                                    state="failed" if failed else "done", started=run.at, ended=run.done, detail=counts)
+        context.journal.get(Agents).card(context.agent.row.n, key=f"tests:{run.at}", label=verdict(result, failed), icon="check", name=ran.name, command=ran.command,
+                                         title=run.command, state="failed" if failed else "done", started=run.at, ended=ended, detail=counts)
