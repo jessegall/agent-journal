@@ -65,7 +65,10 @@ def gate_file(root: Path, env: str, session: str) -> Path:
 
 
 def hold(record, session: str, key: str, given: Hold) -> None:
-    gate = record.state_at(gate_file(record.root, record.env, session))
+    path = gate_file(record.root, record.env, session)
+    if not given.why and not path.is_file():
+        return
+    gate = record.state_at(path)
     if gate.get(key) == (asdict(given) if given.why else None):
         return
     with gate.changing() as holds:

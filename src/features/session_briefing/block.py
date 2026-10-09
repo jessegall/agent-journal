@@ -23,4 +23,6 @@ def briefing(call) -> str:
 def rebuild(record) -> None:
     block = start_block(record)
     for compacted in (False, True):
-        write_text(start_file(record.root, record.env, compacted), COMPACTED + block if compacted else block)
+        path, text = start_file(record.root, record.env, compacted), COMPACTED + block if compacted else block
+        if not path.is_file() or path.read_text() != text:
+            write_text(path, text)
