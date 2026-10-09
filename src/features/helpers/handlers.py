@@ -13,6 +13,7 @@ from features.helpers.reuse import subagent_rows
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from features.trigger import MINUTE
 from providers import PROVIDERS
+from controllers.stored import IDEMPOTENCY
 from resources.base import AGENT, SYSTEM, titled
 from resources.types import FAILED
 
@@ -60,7 +61,7 @@ def subagent_name(record, agent: str) -> str:
 
 
 class RelayAnswerToDispatcher(Handler):
-    """While a helper works a follow-up, a message its agent writes in its own environment reaches the dispatcher's chat as a message from the helper, as its report does."""
+    """While a helper works a follow-up, a message it writes to its dispatcher in its own environment reaches the dispatcher's chat as a message from the helper, as its report does; the words of its own turns, kept as messages by the chat, are its working notes and stay in its inspector."""
 
     def handle(self, context: Context, event: MessageCreated) -> None:
         helpers = Helpers(context.record, actor=SYSTEM)
@@ -69,7 +70,7 @@ class RelayAnswerToDispatcher(Handler):
             return
         helper = helpers._helper(place)
         written = Messages(context.record, actor=SYSTEM).load(event.n)
-        if not helper.answering or written.data.get("from_main") or written.data.get("peer"):
+        if not helper.answering or written.data.get("from_main") or written.data.get("peer") or written.data.get(IDEMPOTENCY):
             return
         Messages(Record(context.record.root, place.launched_from), actor=AGENT).create(titled(written.brief), brief=written.brief, peer=helper.name)
 
