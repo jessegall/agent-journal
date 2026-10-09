@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {textOf, boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, loginLine, loginWords, refusedKey, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
+import {textOf, boardOf, integrationsIn, isOn, keyOf, keyWords, mapped, settingsWith, signingOf, stageStatesOf, switchWords, mcpOn, fetchingOn, loggedIn, loginLine, loginWords, refusedKey, stateWords, statesFor, teamsOf, webhookWords, withStageState, withTeam} from "../src/domain/integrations.js";
 
 const NOW = Date.now() / 1000;
 
@@ -66,7 +66,8 @@ describe("the Integrations page", () => {
 
     test("says what Log in does", () => {
         expect(loginWords("Linear")).toMatchObject({button: "Log in"});
-        expect(loginWords("Linear").label).toBe("Log in to Linear");
+        expect(loginWords("Linear")).toMatchObject({label: "Log in to Linear", out: "Log out"});
+        expect([loggedIn(null), loggedIn({logged_in_at: 0}), loggedIn({logged_in_at: NOW})]).toEqual([false, false, true]);
         expect(loginLine("Linear", null)).toBe("Not logged in to Linear.");
         expect(loginLine("Linear", {logged_in_at: NOW - 125})).toBe("Logged in to Linear 2 minutes ago.");
     });

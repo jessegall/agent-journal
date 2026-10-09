@@ -80,7 +80,10 @@ export const fetchingOn = (settings, name) => Boolean(settings?.[name]?.fetching
 export const loginWords = (title) => ({
     label: `Log in to ${title}`,
     button: "Log in",
+    out: "Log out",
     waiting: `Waiting for you to finish signing in to ${title}.`,
 });
 
 export const loginLine = (title, state) => (state?.logged_in_at ? `Logged in to ${title} ${minutesAgo(state.logged_in_at)} ago.` : `Not logged in to ${title}.`);
+
+export const loggedIn = (state) => Boolean(state?.logged_in_at);
