@@ -443,6 +443,21 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     root = tmp_path.resolve()
     assert install.installed_here(root, root / "journal-2.1.0-abc.pyz"), "an older build beside the record fetches the release rather than reading itself"
     assert not install.installed_here(root, moved), "a checkout elsewhere is read as the package"
+    from engine.heal import pruned
+    from engine.sessions import held_builds
+    kept = tmp_path / "builds"
+    kept.mkdir()
+    for name in ("journal-2.1.0-aaa.pyz", "journal-2.2.0-bbb.pyz", "journal-2.3.0-ccc.pyz"):
+        (kept / name).write_text(name)
+    (kept / "journal.pyz").symlink_to("journal-2.3.0-ccc.pyz")
+    from engine import runtime
+    runtime.builds(kept).mkdir(parents=True, exist_ok=True)
+    (runtime.builds(kept) / str(os.getpid())).write_text("journal-2.1.0-aaa.pyz")
+    assert (sorted(pruned(kept)), sorted(build.name for build in kept.glob("journal-*.pyz")), held_builds(kept)) == \
+        (["journal-2.2.0-bbb.pyz"], ["journal-2.1.0-aaa.pyz", "journal-2.3.0-ccc.pyz"], {"journal-2.1.0-aaa.pyz"}), \
+        "once the new build has started every older one is removed, except a build a live process still runs from"
+    (kept / "journal.pyz").unlink()
+    assert pruned(kept) == [], "with no build in use, nothing is removed"
     journal = tmp_path / "project" / ".journal"
     (journal / "environments" / "main").mkdir(parents=True)
     (journal / "environments" / "main" / "todo.json").write_text("{}")

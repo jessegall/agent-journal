@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.worktree import changed, contains, current_branch, discarded, git, keep, linked, merged, present, roots, tip
+from engine.worktree import changed, contains, current_branch, discarded, freed, git, keep, linked, merged, present, roots, scratch_cleared, tip
 from features.tickets.resource import Bases
 from controllers.marks import action
 
@@ -64,6 +64,23 @@ class TicketLanding:
     def _clean(self, ticket) -> bool:
         folders = [linked(place).get(ticket.work_environment) for _, place, _ in self._repositories(ticket)]
         return all(folder and not git(folder, "status", "--porcelain").stdout.strip() for folder in folders)
+
+    @action
+    def clear_worktrees(self) -> list[str]:
+        """Removes the worktree of every closed ticket whose branch is kept and that no agent runs in, with the scratch folder of its agent; the branch stays, and starting the ticket again cuts the worktree from it."""
+        from features.agent_sessions.launch import running_at
+        closed = [r for r in self.rows.every() if r.completed and r.work_environment]
+        cleared = []
+        for _, place, _ in self._repositories(closed[0]) if closed else ():
+            held = linked(place)
+            for ticket in closed:
+                folder = held.get(ticket.work_environment)
+                if folder is None or running_at(self.record.root, folder) or not present(place, f"refs/heads/{self._branch(ticket)}"):
+                    continue
+                if freed(place, folder):
+                    scratch_cleared(folder)
+                    cleared.append(ticket.work_environment)
+        return cleared
 
     @action
     def keep_branches(self) -> None:

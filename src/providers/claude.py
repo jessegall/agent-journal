@@ -665,6 +665,9 @@ class Claude(Provider):
     def stop_instruction(self, task: str) -> str:
         return f"run TaskStop with task_id {task} now"
 
+    def scratch_of(self, folder: Path) -> Path | None:
+        return Path("/private/tmp" if sys.platform == "darwin" else "/tmp") / f"claude-{os.getuid()}" / re.sub(r"[^A-Za-z0-9]", "-", str(Path(folder).resolve()))
+
     def conversation_file(self, conversation: str) -> Path | None:
         return next(iter(sorted((Path.home() / self.home / "projects").glob(f"*/{conversation}.jsonl"))), None)
 

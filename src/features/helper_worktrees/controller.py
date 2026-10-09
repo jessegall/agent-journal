@@ -9,7 +9,7 @@ from engine import runtime
 from engine.state import State
 from engine.wording import plural
 from features.agent_sessions.launch import running_at
-from engine.worktree import contains, current_branch, git, included, lines, link_folders, present, share_journal, tip
+from engine.worktree import contains, current_branch, freed, git, included, lines, link_folders, present, scratch_cleared, share_journal, tip
 from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
 from controllers.types import Agents, Todos
@@ -60,11 +60,14 @@ class Worktrees(Controller):
         project = self._project()
         working = self._working(project)
         folder, branch = project.joinpath(*workspace_folders().worktree_home, name), f"{BRANCH}{name}"
-        if self.rows.by_title(name, standing=True) or folder.exists() or present(project, f"refs/heads/{branch}"):
-            raise Refused(f"the worktree {name} is taken: drop it, or choose another name")
         base = tip(project, working)
         if not base:
             raise Refused(f"{working} has no commits yet, so there is nothing to cut from: make a first commit")
+        finished = self.rows.by_title(name, standing=True)
+        if finished and self._reusable(finished):
+            return self._reused(finished, working, base, helper)
+        if finished or folder.exists() or present(project, f"refs/heads/{branch}"):
+            raise Refused(f"the worktree {name} is taken: drop it, or choose another name")
         made = git(project, "worktree", "add", "-q", "-b", branch, str(folder), base)
         if made.returncode:
             raise Refused(f"the worktree {name} could not be made: {made.stderr.strip()}")
@@ -72,6 +75,21 @@ class Worktrees(Controller):
         link_folders(project, folder)
         share_journal(folder, self.record.root, workspace_folders())
         return self.create(name, path=str(folder), branch=branch, working=working, base=base, helper=helper)
+
+    def _reusable(self, row) -> bool:
+        """A worktree whose work was taken, that no agent runs in and that holds nothing unsaved is cut again for the same name instead of a second one."""
+        folder = Path(row.path) if row.path else None
+        return bool(row.taken and not row.adopted and folder and folder.is_dir() and not running_at(self.record.root, folder) and not lines(folder, "status", "--porcelain"))
+
+    def _reused(self, row, working: str, base: str, helper: str):
+        """Moves a finished worktree to the working branch's tip, keeping what its branch held under the ref of the dropped ones."""
+        project, folder = self._project(), Path(row.path)
+        if row.branch and present(project, f"refs/heads/{row.branch}"):
+            git(project, "update-ref", f"{KEPT}/{row.title}", f"refs/heads/{row.branch}")
+        moved = git(folder, "checkout", "-q", "-B", row.branch, base)
+        if moved.returncode:
+            raise Refused(f"the worktree {row.title} could not be reused: {(moved.stderr or moved.stdout).strip()}")
+        return self.update(row.n, working=working, base=base, helper=helper, taken="")
 
     @action
     def drift(self, n: int) -> str:
@@ -157,6 +175,7 @@ class Worktrees(Controller):
             if lines(folder, "status", "--porcelain"):
                 self._committed(folder, row)
             git(project, "worktree", "remove", str(folder))
+            scratch_cleared(folder)
         if row.branch and present(project, f"refs/heads/{row.branch}"):
             git(project, "update-ref", f"{KEPT}/{row.title}", f"refs/heads/{row.branch}")
             git(project, "branch", "-D", row.branch)
@@ -165,6 +184,18 @@ class Worktrees(Controller):
             listed.unassign(todo.n)
         self._marked("Dropped worktree", row)
         return super().complete(n, how or f"dropped; its last commit is kept at {KEPT}/{row.title}", **data)
+
+    @action(network=True)
+    def clear_taken(self) -> list[str]:
+        """Drops every worktree whose work was taken and that no agent runs in, keeping its last commit, so finished worktrees do not pile up on the disk."""
+        cleared = []
+        for row in (r for r in self.rows.standing() if r.taken and not r.adopted and r.path and Path(r.path).is_dir()):
+            try:
+                self.complete(row.n, "its work was taken, so its worktree was cleared")
+            except Refused:
+                continue
+            cleared.append(row.title)
+        return cleared
 
     def _committed(self, folder: Path, row) -> None:
         """Keeps the output a helper left uncommitted as one commit on its branch, so freeing the worktree loses nothing."""

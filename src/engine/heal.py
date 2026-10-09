@@ -3,6 +3,7 @@ from pathlib import Path
 
 from engine import runtime
 from engine.package import ARCHIVE, point
+from engine.sessions import held_builds
 from engine.stored import read_json, write_json
 
 
@@ -34,3 +35,18 @@ def heal(root: Path) -> str:
     write_json(ledger(root), {"builds": bad, "at": at})
     point(root, previous)
     return f"journal: {current.name} would not start, so the journal went back to {previous.name}"
+
+
+def pruned(root: Path) -> list[str]:
+    """Removes every build but the one running once it has started, except a build a process still runs from; the next update has this one to go back to, and an older version is fetched from git when it is wanted."""
+    root = Path(root)
+    if not (root / ARCHIVE).exists():
+        return []
+    current = (root / ARCHIVE).resolve()
+    held = held_builds(root)
+    removed = []
+    for build in root.glob("journal-*.pyz"):
+        if build.resolve() != current and build.name not in held:
+            build.unlink(missing_ok=True)
+            removed.append(build.name)
+    return removed

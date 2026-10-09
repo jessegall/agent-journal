@@ -331,7 +331,16 @@ def warmed(root: Path, warm: threading.Event) -> None:
         traceback.print_exc()
         os._exit(1)
     settle_agents(root)
+    prune_builds(root)
     gc.freeze()
+
+
+def prune_builds(root: Path) -> None:
+    try:
+        from engine.heal import pruned
+        pruned(root)
+    except Exception:
+        traceback.print_exc()
 
 
 def settle_agents(root: Path) -> None:
