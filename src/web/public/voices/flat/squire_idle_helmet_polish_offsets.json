@@ -25,7 +25,7 @@
       "file": "squire_idle_helmet_polish_2.png",
       "atlas_x": 256,
       "atlas_y": 0,
-      "offset_x": 0,
+      "offset_x": 1,
       "offset_y": 0
     },
     {
@@ -33,7 +33,7 @@
       "file": "squire_idle_helmet_polish_3.png",
       "atlas_x": 512,
       "atlas_y": 0,
-      "offset_x": 0,
+      "offset_x": 1,
       "offset_y": 0
     },
     {
@@ -41,31 +41,31 @@
       "file": "squire_idle_helmet_polish_4.png",
       "atlas_x": 768,
       "atlas_y": 0,
-      "offset_x": 0,
-      "offset_y": 0
+      "offset_x": -8,
+      "offset_y": -4
     },
     {
       "frame": 5,
       "file": "squire_idle_helmet_polish_5.png",
       "atlas_x": 1024,
       "atlas_y": 0,
-      "offset_x": 0,
-      "offset_y": 0
+      "offset_x": -8,
+      "offset_y": -4
     },
     {
       "frame": 6,
       "file": "squire_idle_helmet_polish_6.png",
       "atlas_x": 1280,
       "atlas_y": 0,
-      "offset_x": 0,
-      "offset_y": 0
+      "offset_x": -8,
+      "offset_y": -4
     },
     {
       "frame": 7,
       "file": "squire_idle_helmet_polish_7.png",
       "atlas_x": 1536,
       "atlas_y": 0,
-      "offset_x": 0,
+      "offset_x": 1,
       "offset_y": 0
     },
     {

@@ -6,6 +6,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
+from features.form_of_address.anchoring import Region, anchored, silhouettes
 from features.form_of_address.animations import FRAME, OFFSETS, Animation, Schedule, Tuning, offsets_document, offsets_name, shipped_animations, tuning_of, unpacked, voice_of
 from features.form_of_address.names import first_name, in_use, title
 from features.form_of_address.resource import Profile
@@ -93,19 +94,34 @@ class Profiles(Controller):
         found = next((path for path in (kept, delivered) if path and path.is_file()), None)
         return json.loads(found.read_text()) if found else None
 
+    def _animation_at(self, row, path: str) -> Animation:
+        found = next((a for a in (Animation.of(item["file"], voice_of(row.art), item["shipped"]) for item in self._animations_of(row)) if a and a.file == path), None)
+        if found is None:
+            raise Refused(f"{row.title} has no animation {path}")
+        return found
+
+    def _sheet_of(self, row, animation: Animation) -> Path:
+        from commands.dispatch import WEB
+        return WEB / "voices" / animation.file if animation.shipped else self.folder(row.n) / animation.file
+
+    @action
+    def anchor(self, n: int, path: str, sits: bool = False, seat: int = 0, line: int = 0):
+        """The offsets that keep the feet of a voice that stands, or the seat of one that sits, where the first frame of an animation has them, from the pixels of its sheet; nothing is saved until the frames are."""
+        row = self.load(n)
+        shapes = silhouettes(self._sheet_of(row, self._animation_at(row, path)))
+        shifts, firm = anchored(shapes, Region.of(shapes[0], bool(sits), int(seat), int(line)))
+        return {"frames": [{"x": x, "y": y} for x, y in shifts], "firm": firm}
+
     @action
     def tune(self, n: int, path: str, edit: dict | None = None):
         """Saves how one animation of a voice is shown as its offsets file, offset_x and offset_y per frame and the optional frame_ms and duration_ms, beside the voice; with no edit it goes back to the delivered file."""
         from commands.dispatch import WEB
         row = self.load(n)
-        animation = next((a for a in (Animation.of(item["file"], voice_of(row.art), item["shipped"]) for item in self._animations_of(row)) if a and a.file == path), None)
-        if animation is None:
-            raise Refused(f"{row.title} has no animation {path}")
+        animation = self._animation_at(row, path)
         name = offsets_name(animation.file)
         if not edit:
             return self.detach(n, name, "back to the delivered offsets") if name in row.files else row
-        sheet = WEB / "voices" / animation.file if animation.shipped else self.folder(n) / animation.file
-        size = dimensions(sheet) or (FRAME, FRAME)
+        size = dimensions(self._sheet_of(row, animation)) or (FRAME, FRAME)
         document = offsets_document(animation, Tuning.from_payload(edit), self._offsets_of(row, animation), size, voice_of(row.art))
         with tempfile.TemporaryDirectory() as folder:
             written = Path(folder) / name

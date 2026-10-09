@@ -1,11 +1,16 @@
 <script setup>
-import {computed, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {afterSeconds, animationLabel, pickWeighted, placeOf, placedAt, showcaseOn} from "../domain/mascots.js";
 import {animations, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import {loadProfiles, mascotOf, profiles, profilesLoaded} from "../composables/profiles.js";
 import SpritePlayer from "../kit/SpritePlayer.vue";
 
+const NARROWEST_BOX = 320;
+
 const mascot = computed(() => mascotOf.value);
+const anchor = ref(null);
+const roomy = ref(true);
+let watching = null;
 const showcase = showcaseOn();
 const rested = ref(null);
 const playing = ref(null);
@@ -82,7 +87,16 @@ watch(
     {immediate: true}
 );
 if (showcase) watch(steps, () => staged.value || showNext(), {immediate: true});
-onUnmounted(stop);
+onMounted(() => {
+    const box = anchor.value?.parentElement;
+    if (!box || typeof ResizeObserver === "undefined") return;
+    watching = new ResizeObserver(() => (roomy.value = box.clientWidth >= NARROWEST_BOX));
+    watching.observe(box);
+});
+onUnmounted(() => {
+    watching?.disconnect();
+    stop();
+});
 
 const shown = computed(() => playing.value ?? (showcase ? staged.value : rested.value));
 const place = computed(() => (showcase ? staged.value?.place : mascot.value.place));
@@ -90,7 +104,8 @@ const placed = computed(() => ({"--edge": place.value.edge, "--line": place.valu
 </script>
 
 <template>
-    <template v-if="shown">
+    <span ref="anchor" class="voice-mascot-anchor" hidden></span>
+    <template v-if="shown && roomy">
         <span class="voice-mascot" :style="placed" aria-hidden="true">
             <SpritePlayer :key="turn" :url="shown.url" :edit="shown.edit" :playing="Boolean(playing)" @ended="ended" />
         </span>

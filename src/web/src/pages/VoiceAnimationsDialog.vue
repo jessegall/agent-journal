@@ -1,7 +1,7 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import {groupedByKind, isAct, placeOf, placedAt} from "../domain/mascots.js";
-import {animations, dropAnimations, saveEdit, saveSchedule, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
+import {anchorOf, animations, dropAnimations, saveEdit, saveSchedule, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -32,6 +32,7 @@ const over = ref(false);
 const busy = ref(false);
 const failed = ref("");
 const picker = ref(null);
+const anchorNote = ref("");
 
 const saved = computed(() => chosen.value?.edit || EMPTY);
 const edited = computed(() => JSON.stringify(draft.value) !== JSON.stringify(saved.value));
@@ -40,6 +41,7 @@ const place = computed(() => placedAt(placeOf(props.row.data.art || ""), plan.va
 
 function pick(animation) {
     path.value = animation.path;
+    anchorNote.value = "";
     draft.value = copy(animation.edit || EMPTY);
     at.value = 0;
     count.value = 0;
@@ -66,6 +68,14 @@ async function run(work) {
     }
 }
 
+const anchoring = computed(() => placeOf(props.row.data.art || ""));
+const anchorFrames = () =>
+    run(async () => {
+        const found = await anchorOf(props.row, chosen.value, anchoring.value);
+        anchorNote.value = found.firm ? "" : "No steady spot found: the body of this animation moves. Set the frames by hand.";
+        if (!found.firm) return;
+        draft.value = {ms: draft.value.ms || 0, frames: found.frames.map((frame, index) => ({...frame, ms: draft.value.frames?.[index]?.ms || 0}))};
+    });
 const saveFrames = () => run(() => saveEdit(props.row, chosen.value, draft.value.ms || draft.value.frames.length ? draft.value : null));
 const resetFrames = () => run(async () => {
     draft.value = copy(EMPTY);
@@ -120,7 +130,11 @@ function picked(event) {
                     <div class="editor-buttons">
                         <Btn small kind="primary" :disabled="!edited" :busy="busy" @click="saveFrames">Save frames</Btn>
                         <Btn small :disabled="!chosen.edited && !edited" @click="resetFrames">Reset</Btn>
+                        <Btn small :busy="busy" @click="anchorFrames">{{ anchoring.sits ? "Anchor the seat" : "Anchor the feet" }}</Btn>
                     </div>
+                    <template v-if="anchorNote">
+                        <Notice>{{ anchorNote }}</Notice>
+                    </template>
                 </template>
                 <ScheduleFields :schedule="plan" :idle="idle" @change="plan = $event" />
                 <div class="editor-buttons">
