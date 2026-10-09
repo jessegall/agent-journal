@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.5 — The Gmail browser check waits for each answer
+- The browser check of the Gmail card waits for the answer to each settings write and to the settings read after a reload, instead of a timer, so it no longer fails when the machine is busy. Nothing changes for you.
+
 ## 2.267.4 — Filing a breach to-do frees the agent's writes
 - Filing or closing the to-do for a breach of the time budget now releases every agent session whose writes that breach holds, in every environment, so an agent held by it can write again at once instead of at the next breach.
 
