@@ -414,7 +414,9 @@ class Helpers(Controller):
         return finished
 
     def _recorded(self, row: Helper) -> None:
-        """Keeps where the helper's conversation is before its environment is packed away, so its inspector can still read it."""
+        """Keeps where the helper's conversation is before its environment is packed away, so its inspector can still read it; a helper that never had an environment has no conversation."""
+        if not row.environment:
+            return
         agent = Agents(Record(self.record.root, row.environment), actor=SYSTEM).primary_to_read()
         if agent and agent.transcript:
             self.update(row.n, session=agent.title, transcript=agent.transcript)
