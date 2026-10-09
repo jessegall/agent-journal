@@ -142,6 +142,22 @@ const artMissing = ref(false);
     gap: 6px;
 }
 
+.new-feature-actions :deep(.btn) {
+    justify-content: center;
+    text-align: center;
+}
+
+.new-feature-actions :deep(.btn:not(.primary)) {
+    border-color: transparent;
+    background: none;
+    color: var(--text-3);
+}
+
+.new-feature-actions :deep(.btn:not(.primary):hover) {
+    background: var(--hover);
+    color: var(--text);
+}
+
 .new-feature-note {
     margin: 14px 0 0;
     color: var(--text-3);
