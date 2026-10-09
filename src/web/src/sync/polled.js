@@ -1,5 +1,6 @@
 import {agent} from "../composables/leadAgent.js";
 import {store} from "../state/store.js";
+import {follow} from "../state/updating.js";
 import {isActive} from "../domain/journals.js";
 import {api} from "../api/client.js";
 import {usePoll} from "../composables/poll.js";
@@ -49,7 +50,11 @@ export const polled = {
         take: (got) => Array.isArray(got) && (store.ticketTodos = got),
     },
     online: {key: "online", ask: () => api.onlineAgents(), every: 5000, take: (got) => (store.online = got)},
-    summary: {key: "summary", ask: () => api.summary(), every: 4000, take: (got) => (store.summary = got)},
+    summary: {key: "summary", ask: () => api.summary(), every: 4000, take: (got) => {
+            store.summary = got;
+            if (follow(Boolean(got.updating))) window.location.reload();
+        },
+    },
     manifest: {key: "manifest", ask: () => api.manifest(), every: 30000, take: (got) => (store.spec = got)},
     journals: {key: "journals", ask: () => api.journals(), every: 10000, take: (got) => (store.journals = got)},
     events: {key: "events", ask: pollEvents, every: 5000, take: takePolled, active: () => !store.streamOpen},

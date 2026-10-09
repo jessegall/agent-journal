@@ -242,7 +242,7 @@ def post_identity(req: Request) -> Reply:
 
 @route("GET", "/api/summary")
 def get_summary(req: Request) -> Reply:
-    return Reply(200, invoked(req.as_user(Environments), "summary"))
+    return Reply(200, {**invoked(req.as_user(Environments), "summary"), "updating": runtime.upgrading(req.root)})
 
 
 @route("GET", "/api/agents")
