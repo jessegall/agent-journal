@@ -1,7 +1,23 @@
 import {createServer} from "node:http";
 import {journal, numberOf, runScenarios, shot} from "./harness.mjs";
 
-await runScenarios(process.argv[2], {
+const switchOff = () => ["linear", "gmail"].forEach((name) => journal("feature", "switch", name, "--no-on"));
+
+const leavingThemOff = (cases) =>
+    Object.fromEntries(
+        Object.entries(cases).map(([name, run]) => [
+            name,
+            async (page, url) => {
+                try {
+                    await run(page, url);
+                } finally {
+                    switchOff();
+                }
+            },
+        ])
+    );
+
+await runScenarios(process.argv[2], leavingThemOff({
     async "Linear is off at first and its card says how the key and the state read"(page, url) {
         await page.goto(`${url}#/main/integrations`);
         const card = page.locator('[data-integration="linear"]');
@@ -125,4 +141,4 @@ await runScenarios(process.argv[2], {
             host.close();
         }
     },
-});
+}));
