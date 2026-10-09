@@ -2,6 +2,7 @@ import {remember, remembered} from "../platform/storage.js";
 import {ref, toRaw, watch} from "vue";
 import {api, onWrite} from "../api/client.js";
 import {onOutboxChange} from "../chat/outbox.js";
+import {withoutAnswered} from "../domain/placeholders.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 
@@ -77,7 +78,7 @@ export async function holding(type, numbers) {
         absent.set(type, none);
         if (!got.rows.length) return;
         const known = new Set((store.rows[type] || []).map((r) => r.n));
-        store.rows[type] = [...(store.rows[type] || []), ...got.rows.filter((r) => !known.has(r.n))].sort((a, b) => a.n - b.n);
+        store.rows[type] = [...withoutAnswered(store.rows[type] || [], got.rows), ...got.rows.filter((r) => !known.has(r.n))].sort((a, b) => a.n - b.n);
         store.paging.size[type] = store.rows[type].length;
     } finally {
         missing.forEach((n) => pending.delete(n));
@@ -108,7 +109,7 @@ export async function load(type) {
     const starting = new Set((store.rows[type] || []).map((r) => r.n));
     const got = await api.list(type, {last: size, completed: true});
     const listed = new Set(got.rows.map((r) => r.n));
-    const arriving = (store.rows[type] || []).filter((r) => !starting.has(r.n) && !listed.has(r.n));
+    const arriving = withoutAnswered((store.rows[type] || []).filter((r) => !starting.has(r.n) && !listed.has(r.n)), got.rows);
     took(type, {...got, rows: [...got.rows, ...arriving].sort((a, b) => a.n - b.n)});
     store.paging.size[type] = size;
     return store.rows[type];
@@ -120,7 +121,7 @@ async function caughtUp(type) {
     if (got.more) return load(type);
     const held = store.rows[type] || [];
     const fresh = new Map(got.rows.map((r) => [r.n, r]));
-    const kept = held.filter((r) => !fresh.has(r.n)).concat(got.rows.filter((r) => !r.deleted));
+    const kept = withoutAnswered(held.filter((r) => !fresh.has(r.n)), got.rows).concat(got.rows.filter((r) => !r.deleted));
     store.rows[type] = kept.sort((a, b) => a.n - b.n);
     store.paging.size[type] = store.rows[type].length;
     return store.rows[type];
