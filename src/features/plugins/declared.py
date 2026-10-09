@@ -200,6 +200,7 @@ class Manifest(Loaded):
     dashboards: tuple[Dashboard, ...] = ()
     settings: tuple[Setting, ...] = ()
     skills: str = ""
+    command: str = ""
     installed: str = ""
     events: tuple[DeclaredEvent, ...] = ()
     cancels: dict = field(default_factory=dict)

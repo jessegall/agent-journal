@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from controllers.types import Agents, Plugins, Todos
 from engine.gates import Hold, hold
 from resources.fields import Loaded
+from features.plugins.paths import folder
 from features.plugins.declared import Look, declared, named, settings_of, settings_choosing
 from resources.base import PLUGIN, PROJECT, RAISED, Refused, SYSTEM, check_abstract, check_title
 
@@ -39,7 +40,16 @@ def held(record, session: str, plugin: str, why: str) -> None:
 def nudged(record, journal, plugin: str, session: str, text: str, private: bool) -> None:
     row = Agents(record, actor=SYSTEM)._session_or_primary(session)
     if row:
-        journal.say(record, row, "plugin", private=private, actor=PLUGIN, title=plugin, brief=text, plugin=plugin)
+        journal.say(record, row, "plugin", private=private, actor=PLUGIN, title=plugin, brief=f"{text}{own_command(record, plugin)}", plugin=plugin)
+
+
+def own_command(record, plugin: str) -> str:
+    """The line telling the agent how to run the plugin's own executable from the repository it stands in, so it never installs one."""
+    row = named(Plugins(record, actor=PLUGIN), plugin)
+    command = declared(row).command if row else ""
+    if not command:
+        return ""
+    return f"\n\nThe {plugin} command is installed already: run {folder(record.root, plugin) / command} inside the repository that holds the file (cd there first). Install nothing."
 
 
 def raised(record, plugin: str, session: str, asked: Posting) -> None:
