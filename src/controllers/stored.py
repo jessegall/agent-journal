@@ -25,6 +25,7 @@ def wholes(rows: list, part_of) -> list:
     return [row for row in rows if not part_of(row)]
 SUMMARIES: dict[str, tuple] = {}
 STANDING: dict[str, tuple] = {}
+REFERRED: dict[str, tuple] = {}
 HELD = Memo()
 PACKS = Memo()
 INDEXED: dict[str, dict] = {}
@@ -212,6 +213,35 @@ class RowStore:
                 return self._patched(folder, moved, held[1], loose, touched)
         return self._summarised(folder, moved, [loose[n] for n in sorted(loose) if not loose[n].get(DAMAGED)])
 
+    def linking(self) -> dict[str, dict[int, dict]]:
+        """The rows that name each ref, kept in step with the summaries so asking who links a row never scans them all."""
+        rows = self.summaries()
+        held = REFERRED.get(str(self.folder()))
+        if held and held[0] is rows:
+            return held[1]
+        index: dict[str, dict[int, dict]] = {}
+        for row in rows:
+            self._referred(index, row)
+        REFERRED[str(self.folder())] = (rows, index)
+        return index
+
+    @staticmethod
+    def _referred(index: dict[str, dict[int, dict]], row: dict) -> None:
+        for ref in row["refs"]:
+            index.setdefault(ref, {})[row["n"]] = row
+
+    def _carried(self, folder: Path, before: list[dict], rows: list[dict], changes: list[tuple[dict | None, dict | None]]) -> None:
+        held = REFERRED.get(str(folder))
+        if not held or held[0] is not before:
+            return
+        index = held[1]
+        for gone, added in changes:
+            for ref in (gone or {}).get("refs", ()):
+                index.get(ref, {}).pop(gone["n"], None)
+            if added:
+                self._referred(index, added)
+        REFERRED[str(folder)] = (rows, index)
+
     def standing_summaries(self) -> list[dict]:
         rows = self.summaries()
         held = STANDING.get(str(self.folder()))
@@ -224,13 +254,17 @@ class RowStore:
     def _patched(self, folder: Path, moved: Moved, held: list[dict], loose: dict[int, dict], touched: set[int]) -> list[dict]:
         rows = list(held)
         listed = {row["n"]: row for row in held if row["n"] in touched}
+        carried: list[tuple[dict | None, dict | None]] = []
         for n in sorted(touched):
             if n in listed:
                 self._unlisted(rows, listed[n])
             row = loose.get(n) or self.packed().get(n)
-            if row and not row.get(DAMAGED) and not is_part(row):
-                insort(rows, row, key=listed_order)
+            added = row if row and not row.get(DAMAGED) and not is_part(row) else None
+            if added:
+                insort(rows, added, key=listed_order)
+            carried.append((listed.get(n), added))
         SUMMARIES[str(folder)] = (moved, rows)
+        self._carried(folder, held, rows, carried)
         return rows
 
     def _moved(self, folder: Path) -> Moved:
@@ -254,13 +288,16 @@ class RowStore:
         before_row = known.get(n) or self.packed().get(n)
         if before_row is not None:
             self._unlisted(rows, before_row)
+        added = None
         if r is None:
             known.pop(n, None)
         else:
             known[n] = self._row(r, stamp_of(self.path(n).stat()))
             if not is_part(known[n]):
-                insort(rows, known[n], key=listed_order)
+                added = known[n]
+                insort(rows, added, key=listed_order)
         SUMMARIES[str(folder)] = (self._moved(folder), rows)
+        self._carried(folder, held[1], rows, [(before_row, added)])
 
     @staticmethod
     def _unlisted(rows: list[dict], row: dict) -> None:

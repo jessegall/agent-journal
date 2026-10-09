@@ -1,6 +1,7 @@
 from resources.base import Resource
 from resources.types import ref_named
 from controllers.marks import action
+from controllers.stored import listed_order
 
 
 class Links:
@@ -21,4 +22,8 @@ class Links:
 
     @action
     def linked_to(self, ref: str) -> list[Resource]:
-        return [self.load(row["n"]) for row in self.rows.summaries() if ref in row["refs"] and not row["deleted"]]
+        named = sorted(self.rows.linking().get(ref, {}).values(), key=listed_order)
+        return [self.load(row["n"]) for row in named if not row["deleted"]]
+
+    def is_linked(self, ref: str) -> bool:
+        return bool(self.rows.linking().get(ref))

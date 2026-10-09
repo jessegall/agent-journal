@@ -38,6 +38,11 @@ def answered(journal, message) -> bool:
     return replied(journal, message) or any(r.author == AGENT for r in journal.get(Reactions).linked_to(message.ref))
 
 
+def answers(kind: str, message) -> bool:
+    """Whether an answer of this kind, written just now, settles the message: a reply always does, a reaction unless the message asks."""
+    return kind == "comment" or not asks(message)
+
+
 def read_and_open(journal) -> list:
     return [m for m in journal.get(Messages).rows.standing() if AGENT in m.seen and theirs(m)]
 

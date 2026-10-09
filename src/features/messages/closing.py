@@ -1,7 +1,7 @@
 from engine.events.agents import AgentReported
 from engine.events.resources import MessageUpdated, ResourceCreated
 from engine.transcript import IDLE
-from features.messages.answering import answered, read_and_open, theirs
+from features.messages.answering import answered, answers, read_and_open, theirs
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SECTION, USER
 from controllers.types import CONTROLLERS, Messages
@@ -61,5 +61,5 @@ class CloseAnswered(Handler):
             if kind != "message" or not n.isdigit():
                 continue
             message = messages.load(n)
-            if theirs(message) and answered(context.journal, message):
+            if theirs(message) and answers(event.type, message):
                 messages._closed_once(message.n, f"{ANSWERS[event.type]} by the agent")

@@ -28,8 +28,7 @@ class LinkTodosToTheirMessage(Handler):
             return
         messages = context.journal.get(Messages)
         message = messages.load(answered[0])
-        linked = {ref for row in messages.rows.summaries() for ref in row["refs"]}
-        fresh = [todo for todo in recent if todo.ref not in linked]
+        fresh = [todo for todo in recent if not messages.is_linked(todo.ref)]
         named_here = todos_named(reply.brief)
         speaking = context.to_primary()
         for todo in fresh:
