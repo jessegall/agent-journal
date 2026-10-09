@@ -23,6 +23,7 @@ class Helper(Shape, Resource):
         Field(default=False, name="answering"),
         Field(default=False, name="stopped_by_user"),
         Field(default=False, name="whole_suite"),
+        Field(default=0, name="reuses"),
     ]
     type = HELPER
     icon = "bot"

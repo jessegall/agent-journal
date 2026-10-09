@@ -26,19 +26,37 @@ await runScenarios(process.argv[2], {
         await row.getByText(QUESTION).waitFor();
         await shot(page, "helper-question");
     },
-    async "the Closed bar in the helpers list runs edge to edge and folds the closed helpers until pressed"(page, url) {
+    async "the Retired bar in the helpers list runs edge to edge and folds the retired helpers until pressed"(page, url) {
         const closed = {...helper, n: 92, title: "Old job", completed: 5, state: "finished", data: {...helper.data, name: "Ada Keywright", environment: "main-ada"}};
         await page.route(/\/api\/main\/helper\?/, (route) => reply(route, {rows: [helper, closed]}));
         await page.goto(url);
         await page.locator(".statusbar-helpers").click();
-        const bar = page.getByRole("button", {name: /^Closed/});
+        const bar = page.getByRole("button", {name: /^Retired/});
         await bar.waitFor();
-        if (await page.getByText("Ada Keywright").count()) throw new Error("the closed helpers show before the Closed bar is pressed");
+        if (await page.getByText("Ada Keywright").count()) throw new Error("the retired helpers show before the Retired bar is pressed");
         const panel = await page.locator(".menu-panel").last().boundingBox();
         const box = await bar.boundingBox();
-        if (Math.abs(box.x - panel.x) > 2 || Math.abs(box.x + box.width - (panel.x + panel.width)) > 2) throw new Error(`the Closed bar spans ${box.x}-${box.x + box.width}, not the popover's ${panel.x}-${panel.x + panel.width}`);
+        if (Math.abs(box.x - panel.x) > 2 || Math.abs(box.x + box.width - (panel.x + panel.width)) > 2) throw new Error(`the Retired bar spans ${box.x}-${box.x + box.width}, not the popover's ${panel.x}-${panel.x + panel.width}`);
         await bar.click();
         await page.getByText("Ada Keywright").waitFor();
         await shot(page, "helpers-closed-bar");
+    },
+    async "the helpers list sorts helpers into working, waiting, closed and retired, and each says how often it was reused"(page, url) {
+        const rows = [
+            {...helper, n: 93, title: "Busy job", state: "working", data: {...helper.data, name: "Grace Hopperton", environment: "main-grace"}},
+            {...helper, n: 94, title: "Idle job", state: "idle", data: {...helper.data, name: "Edsger Dijkstrap", environment: "main-edsger", reuses: 3}},
+            {...helper, n: 95, title: "Stopped job", state: "stopped", data: {...helper.data, name: "Alan Turingale", environment: "main-alan"}},
+            {...helper, n: 96, title: "Retired job", completed: 5, state: "finished", data: {...helper.data, name: "Ada Keywright", environment: "main-ada"}},
+        ];
+        await page.route(/\/api\/main\/helper\?/, (route) => reply(route, {rows}));
+        await page.goto(url);
+        await page.locator(".statusbar-helpers").click();
+        for (const title of ["Working", "Waiting for work", "Closed, can take more work"]) await page.getByRole("heading", {name: title}).waitFor();
+        await page.getByText("Reused 3 times").waitFor();
+        await page.getByText(/First dispatched/).first().waitFor();
+        await page.getByRole("button", {name: /^Retired/}).waitFor();
+        await page.locator(".helper", {hasText: "Alan Turingale"}).getByRole("button", {name: "Retire this helper"}).click();
+        await page.getByPlaceholder("Why it cannot be reused").waitFor();
+        await shot(page, "helpers-sections");
     },
 });

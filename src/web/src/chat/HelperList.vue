@@ -1,8 +1,9 @@
 <script setup>
-import {helperCard, helperCounts, helperEnvironment, helperName, helpersByState} from "../domain/helpers.js";
+import {helperCard, helperCounts, helperEnvironment, helperName, helpersBySection} from "../domain/helpers.js";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import CloseButton from "../kit/CloseButton.vue";
+import Btn from "../kit/Btn.vue";
 import FoldGroup from "../kit/FoldGroup.vue";
 import TicketAgent from "../agents/TicketAgent.vue";
 import HelperRow from "./HelperRow.vue";
@@ -10,14 +11,19 @@ import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({rows: {type: Array, default: () => []}, loading: Boolean});
 const emit = defineEmits(["changed", "close"]);
-const grouped = computed(() => helpersByState(props.rows));
+const sections = computed(() => helpersBySection(props.rows));
 const counts = computed(() => helperCounts(props.rows));
 const countsLine = computed(() =>
     [counts.value.working && `${counts.value.working} working`, counts.value.reported && `${counts.value.reported} with reports`]
         .filter(Boolean)
         .join(" · ")
 );
-const closedOpen = ref(false);
+const OPEN_SECTIONS = [
+    {key: "working", title: "Working"},
+    {key: "waiting", title: "Waiting for work"},
+    {key: "closed", title: "Closed, can take more work"},
+];
+const retiredOpen = ref(false);
 const inspected = ref(null);
 </script>
 
@@ -37,13 +43,20 @@ const inspected = ref(null);
             <template v-else-if="!rows.length">
                 <p class="helpers-none">No helpers have been started here.</p>
             </template>
-            <template v-for="row in grouped.open" :key="row.n">
-                <HelperRow :row="row" @changed="emit('changed')" @inspect="inspected = row" />
-            </template>
-            <template v-if="grouped.closed.length">
-                <FoldGroup bar class="helpers-closed" label="Closed" :count="grouped.closed.length" :open="closedOpen" @toggle="closedOpen = !closedOpen">
-                    <template v-for="row in grouped.closed" :key="row.n">
+            <template v-for="section in OPEN_SECTIONS" :key="section.key">
+                <template v-if="sections[section.key].length">
+                    <h5 class="helpers-section">{{ section.title }}</h5>
+                    <template v-for="row in sections[section.key]" :key="row.n">
                         <HelperRow :row="row" @changed="emit('changed')" @inspect="inspected = row" />
+                    </template>
+                </template>
+            </template>
+            <template v-if="sections.retired.length">
+                <FoldGroup bar class="helpers-closed" label="Retired" :count="sections.retired.length" :open="retiredOpen" @toggle="retiredOpen = !retiredOpen">
+                    <template v-for="row in sections.retired" :key="row.n">
+                        <Btn kind="text" class="helpers-retired" v-tip="`Open this helper's inspector`" @click="inspected = row">
+                            {{ helperName(row) }}
+                        </Btn>
                     </template>
                 </FoldGroup>
             </template>
@@ -101,6 +114,22 @@ const inspected = ref(null);
 
 .helpers-closed {
     --fold-bleed: 6px;
+}
+
+.helpers-section {
+    margin: 10px 8px 2px;
+    color: var(--text-3);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.helpers-retired {
+    display: block;
+    padding: 4px 8px;
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .helpers-none {

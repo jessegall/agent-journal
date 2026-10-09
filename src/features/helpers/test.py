@@ -143,6 +143,7 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     helpers.say(ghost.n, "one more thing")
     assert helpers.load(ghost.n).report == "", "a follow-up takes the helper's earlier report away, so the menu shows it working again"
     assert helpers.load(ghost.n).latest == "one more thing", "and is kept as the latest instruction, which the helper's cell shows in place of its first job"
+    assert helpers.load(ghost.n).reuses == 2, "each follow-up counts as one more use of the helper, which its cell shows"
 
 
 def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_a_nudge(monkeypatch):
