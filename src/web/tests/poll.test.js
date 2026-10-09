@@ -155,3 +155,35 @@ describe("a poll", () => {
         expect(taken).toHaveBeenCalledWith("new");
     });
 });
+
+describe("while the update cover is up", () => {
+    test("every poll but the update's own status holds its question, and asks again once the cover is gone", async () => {
+        const {begin: startUpdate, clear} = await import("../src/state/updating.js");
+        const other = vi.fn().mockResolvedValue("row");
+        const status = vi.fn().mockResolvedValue("status");
+        startUpdate("2.0.0");
+        startPoll("summary", status, 1000);
+        stops.push(() => {});
+        begin(other, 1000);
+        await passed(0);
+        expect([status.mock.calls.length, other.mock.calls.length]).toEqual([1, 0]);
+        clear();
+        await passed(1000);
+        expect(other).toHaveBeenCalled();
+    });
+});
+
+describe("a fetch while the update cover is up", () => {
+    test("is turned away before it is sent, except the update's status", async () => {
+        const {transport} = await import("../src/api/transport.js");
+        const {begin: startUpdate, clear} = await import("../src/state/updating.js");
+        const sent = vi.fn().mockResolvedValue(new Response("{}", {status: 200}));
+        vi.stubGlobal("fetch", sent);
+        startUpdate("2.0.0");
+        await expect(transport.request("GET", "/api/main/todo")).rejects.toMatchObject({updating: true});
+        await transport.request("GET", "/api/summary");
+        expect(sent.mock.calls.map((call) => call[0])).toEqual(["/api/summary"]);
+        clear();
+        vi.unstubAllGlobals();
+    });
+});

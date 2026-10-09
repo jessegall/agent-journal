@@ -1,4 +1,5 @@
 import {holdPressed} from "../platform/pressed.js";
+import {covered} from "../state/updating.js";
 
 const WAIT_MS = 20000;
 const UPLOAD_WAIT_MS = 300000;
@@ -6,6 +7,9 @@ export const LONG_WAIT_MS = 600000;
 const RELOAD_TRIES = 6;
 const RELOAD_PAUSE_MS = 500;
 const LOCKED = 428;
+const UPDATE_STATUS = "/api/summary";
+
+export const asksUpdateStatus = (url) => url.split("?")[0].endsWith(UPDATE_STATUS);
 
 const failure = (status, message) => Object.assign(new Error(message), {status});
 
@@ -100,6 +104,7 @@ class Transport {
 
     request(method, url, body, wait = 0) {
         if (method !== "GET") return this.send(method, url, body, wait).then((got) => (this.written(url), got));
+        if (covered() && !asksUpdateStatus(url)) return Promise.reject(Object.assign(new Error("The journal is updating."), {updating: true}));
         if (this.asked.has(url)) return this.asked.get(url);
         const endpoint = url.split("?")[0];
         const tries = this.tries;
