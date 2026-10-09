@@ -63,7 +63,7 @@ CALLS = {
     "pluginDashboard": [1, "main"], "pluginLog": ["works"], "onlineAgents": [], "agentControls": ["claude"], "agentHooks": ["claude"],
     "saveAgentHooks": ["claude", {}], "list": ["todo"], "all": ["todo"], "dashboard": [["todo", "plan"]], "show": ["todo", 1],
     "create": ["todo", {"title": "walked by the viewer"}], "fieldChoices": ["todo", 1], "installPlugin": ["/nowhere/plugin"],
-    "upgradePlugin": [1, False], "planTimeline": [1], "ticketStatus": [1], "shareView": ["chat"], "newFeatures": [], "markNewFeatureSeen": ["owl"], "hidePreview": ["doc", 1], "revision": [1, 1], "tasks": [AGENT_N],
+    "upgradePlugin": [1, False], "planTimeline": [1], "ticketStatus": [1], "helperTranscript": [1], "shareView": ["chat"], "newFeatures": [], "markNewFeatureSeen": ["owl"], "hidePreview": ["doc", 1], "revision": [1, 1], "tasks": [AGENT_N],
     "board": [{}], "shift": [1, "Doing", {"why": "walked"}], "cancelWork": [1], "reviseWork": [1, "change one card", WALK],
     "followUpWork": [1, "and one more", WALK], "requestWork": [1, "a new card", WALK], "handWork": [1, "doc:1", "from this doc", WALK],
     "ticketBoard": [1], "dismissQuestion": [1, "not needed"], "noteSuggestionWindow": [1], "answerSuggestion": [1, "No, don't do this"],

@@ -24,6 +24,8 @@ class Helper(Shape, Resource):
         Field(default=False, name="stopped_by_user"),
         Field(default=False, name="whole_suite"),
         Field(default=0, name="reuses"),
+        Field(default="", name="session", journal_only=True),
+        Field(default="", name="transcript", journal_only=True),
     ]
     type = HELPER
     icon = "bot"

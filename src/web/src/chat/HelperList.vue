@@ -1,5 +1,5 @@
 <script setup>
-import {helperCard, helperCounts, helperEnvironment, helperName, helpersBySection} from "../domain/helpers.js";
+import {helperCard, helperCounts, helperEnvironment, helperName, helperState, helpersBySection} from "../domain/helpers.js";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import CloseButton from "../kit/CloseButton.vue";
@@ -66,6 +66,7 @@ const inspected = ref(null);
                 :card="helperCard(inspected)"
                 :env="helperEnvironment(inspected)"
                 kind="helper"
+                :recorded="helperState(inspected) === 'finished' ? inspected.n : 0"
                 :label="helperName(inspected)"
                 @close="inspected = null"
                 @stopped="emit('changed')"

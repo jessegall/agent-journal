@@ -334,7 +334,16 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     Sessions(repo.record.root).bind("helper-rhea", row.environment, pid=os.getpid(), provider="codex")
     assert helpers.stop(1) == f"helper 1, {helpers.load(1).name}: its agent is stopped", "the agent stops a running helper, and is told so in one sentence, never the environment's raw fields"
     Sessions(repo.record.root).write("helper-rhea", pid=2 ** 22 + 7)
+    conversation = repo.record.root.parent / "rhea-conversation.jsonl"
+    conversation.write_text("{}\n")
+    agents = Agents(Record(repo.record.root, row.environment), actor=SYSTEM)
+    agents.update(agents.by_session("helper-rhea").n, transcript=str(conversation), status="idle")
     helpers.complete(1)
+    assert (helpers.load(1).session, helpers.load(1).transcript) == ("helper-rhea", str(conversation)), "retiring records where the helper's conversation is, before its environment is packed away"
+    from engine.transcript import Turn
+    from features.open_viewer.transcripts import Transcript
+    monkeypatch.setattr(Transcript, "turns", lambda self: [Turn(1, "agent", "Done and reported", kind="agent", at=1.0)])
+    assert [turn["text"] for turn in helpers.transcript(1)["turns"]] == ["Done and reported"], "a retired helper's conversation is read from the provider's own file, which retiring never touches"
     assert not Environments(repo.record, actor=SYSTEM).rows.by_title(f"{repo.record.env}-rhea"), "its environment is packed away"
     assert Worktrees(repo.record, actor=SYSTEM).load(cut.n).completed and not Path(cut.path).exists(), "its worktree is dropped"
     assert "is finished" in refused(lambda: helpers.say(1, "more")), "a finished helper takes no follow-up"

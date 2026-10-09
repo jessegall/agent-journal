@@ -59,4 +59,26 @@ await runScenarios(process.argv[2], {
         await page.getByPlaceholder("Why it cannot be reused").waitFor();
         await shot(page, "helpers-sections");
     },
+    async "the inspector of a closed helper and of a retired helper both show their transcript"(page, url) {
+        const closed = {...helper, n: 97, title: "Stopped job", state: "stopped", data: {...helper.data, name: "Alan Turingale", environment: "main-alan", provider: "claude"}};
+        const retired = {...helper, n: 98, title: "Retired job", completed: 5, state: "finished", data: {...helper.data, name: "Ada Keywright", environment: "main-ada", provider: "claude", transcript: "/somewhere/ada.jsonl"}};
+        const said = (text) => ({total: 1, first: 1, turns: [{line: 1, who: "agent", kind: "agent", at: 1, tools: [], text, clipped: false}]});
+        await page.route(/\/api\/main\/helper\?/, (route) => reply(route, {rows: [closed, retired]}));
+        await page.route(/\/api\/main-alan\/agent\?/, (route) =>
+            reply(route, {rows: [{n: 5, type: "agent", title: "claude-alan", abstract: "", brief: "", refs: [], seen: [], sections: [], created: 1, updated: 2, deleted: 0, completed: 0, data: {status: "stopped", provider: "claude"}}], more: false})
+        );
+        await page.route(/\/api\/main-alan\/agent\/5\/transcript/, (route) => reply(route, said("Closed helper said this")));
+        await page.route(/\/api\/main\/helper\/98\/transcript/, (route) => reply(route, said("Retired helper said this")));
+        await page.goto(url);
+        await page.locator(".statusbar-helpers").click();
+        await page.getByText("Alan Turingale").first().click();
+        await page.getByText("Transcript", {exact: true}).first().click();
+        await page.getByText("Closed helper said this").first().waitFor();
+        await page.keyboard.press("Escape");
+        await page.getByRole("button", {name: /^Retired/}).click();
+        await page.getByRole("button", {name: "Ada Keywright"}).click();
+        await page.getByText("Transcript", {exact: true}).first().click();
+        await page.getByText("Retired helper said this").first().waitFor();
+        await shot(page, "helpers-transcripts");
+    },
 });

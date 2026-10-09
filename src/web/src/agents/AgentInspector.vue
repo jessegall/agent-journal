@@ -44,6 +44,7 @@ const props = defineProps({
     skills: {type: Array, default: () => []},
     provider: {type: String, default: ""},
     run: {type: Function, default: async () => {}},
+    recorded: {type: Number, default: 0},
 });
 const emit = defineEmits(["back", "close", "open-subagent"]);
 const EVERY = 5000;
@@ -127,7 +128,8 @@ usePoll(
 
 const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
-const transcript = useTranscript(() => (agent.value ? agent.value.n : 0), props.session, scroller, there);
+const recordedReader = {env: () => api.env(), transcript: (_agent, _session, fields) => api.helperTranscript(props.recorded, fields)};
+const transcript = useTranscript(() => props.recorded || (agent.value ? agent.value.n : 0), props.session, scroller, props.recorded ? recordedReader : there);
 const {turns, total, loading: transcriptLoading} = transcript;
 
 const AVAILABLE = {

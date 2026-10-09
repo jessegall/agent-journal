@@ -16,6 +16,7 @@ const props = defineProps({
     kind: {type: String, default: "ticket"},
     label: {type: String, default: ""},
     plan: {type: Number, default: 0},
+    recorded: {type: Number, default: 0},
 });
 const emit = defineEmits(["close", "stopped"]);
 
@@ -97,6 +98,7 @@ async function run() {
                 :plan="plan"
                 :chat-session="card.session"
                 :run="run"
+                :recorded="recorded"
                 @close="open = false"
             />
         </template>
