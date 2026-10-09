@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.48 — The Board menu
+- The menu beside the mode switch reads Board and lists the project's boards by name, with No board for to-dos.
+- The notice after a pick tells the agent to file new requests as tickets on the board picked, never as to-dos.
+
 ## 2.267.47 — Pick a board for new work
 - With orchestrator mode on, a New work menu beside the mode switch picks where new requests go: None, or one of the project's open boards. With a board picked, the orchestrating agent files each new request as a ticket on it and starts it, then reviews, approves and merges its plan; with None it files to-dos as before.
 
