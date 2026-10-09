@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.73 — The family view reads transcripts again
+- The family tree and the conversation query hand a transcript to its provider as a path, so opening an environment's family no longer fails after 2.267.72.
+- The journal's law L4 says a helper is reused by its whole session: one whose agent ended is resumed in the session it ran, never started again under the same name.
+
 ## 2.267.72 — A ticket's final report always reaches its orchestrator
 - A ticket agent that ends its turn with a report, with no message written, still reaches the orchestrator, and an orchestrator waiting on its board is woken by it.
 - A helper whose agent ended takes new work by resuming its own session, with its context, instead of starting fresh.
