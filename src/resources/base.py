@@ -158,7 +158,6 @@ class Pruned(Enum):
 @dataclass
 class Resource:
     details: ClassVar[ResourceDetails] = ResourceDetails()
-    home_env = ""   # the environment a row read from another one came from; "" for a row of the reader's own
     command_names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
     status_labels: ClassVar[dict] = {}    # how the bar says a command on it: {"complete": "answering"}
     formatted_data: ClassVar[dict] = {}  # data lists whose items carry words a person reads: {"cards": ("detail",)}
@@ -212,6 +211,7 @@ class Resource:
         Field(default="", name="environment"),
     ]
     type = ""              # the type's name; its title, abstract and help are the type's own words
+    home_env = ""   # the environment a row read from another one came from; "" for a row of the reader's own
     n: int = 0
     title: str = ""
     abstract: str = ""
