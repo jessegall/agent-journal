@@ -63,11 +63,17 @@ await runScenarios(process.argv[2], {
         await page.getByRole("radio", {name: /Login/}).click();
         await page.locator("#secret-title").fill(title);
         await page.getByRole("button", {name: "Create secret"}).click();
-        await page.getByText("Not set").first().waitFor();
+        await page.getByRole("dialog").waitFor({state: "detached"});
+        await page.getByText(title).first().waitFor();
         await page.goto(`${url}#/main/integrations`);
+        await page.locator(".project-flash").waitFor({state: "detached"});
         const linear = page.locator('[data-integration="linear"]');
         await linear.waitFor();
-        await linear.getByText(title).click();
+        await page.waitForFunction(
+            (name) => [...document.querySelectorAll('[data-integration="linear"] [role="option"]')].filter((option) => option.textContent.includes(name)).length === 1,
+            title
+        );
+        await linear.getByRole("option", {name: title}).click();
         const use = linear.getByRole("switch", {name: "Use Linear"});
         if ((await use.getAttribute("aria-checked")) !== "true") await use.click();
         await linear.getByRole("switch", {name: "Use Linear", checked: true}).waitFor();
