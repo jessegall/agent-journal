@@ -73,7 +73,7 @@ def place(plugins, where: Path, linked: bool, manifest: Manifest, source: str, r
         target.symlink_to(where)
     else:
         where.rename(target)
-    kept = {"source": source, "revision": ref, "commit": commit, "version": said_version(target, manifest), "linked": linked, "manifest": manifest.stored}
+    kept = {"source": source, "revision": ref, "commit": commit, "version": said_version(target, manifest), "linked": linked, "manifest": manifest.stored, "update": {}}
     published(plugins.record.root, name, manifest)
     held = ports if ports else {}
     if row:

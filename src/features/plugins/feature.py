@@ -3,7 +3,7 @@ from pathlib import Path
 
 from features.base import Feature
 from features.journal import Journal
-from features.plugins import services
+from features.plugins import services, updates
 from features.plugins.commands import ClearLog, Configure, Disable, Enable, Install, Preview, Purge, Raise, Settle, Upgrade
 from features.plugins.details import PluginsDetails
 from features.plugins.host import watch
@@ -33,3 +33,4 @@ class Plugins(Feature):
     def host(self, root: Path) -> None:
         threading.Thread(target=watch, args=(Path(root), self.journal), daemon=True).start()
         threading.Thread(target=services.keep, args=(Path(root), self), daemon=True).start()
+        threading.Thread(target=updates.keep, args=(Path(root),), daemon=True).start()

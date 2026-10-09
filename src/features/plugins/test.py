@@ -214,13 +214,22 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     git("commit", "-q", "--allow-empty", "-m", "two", cwd=tmp_path / "upgraded")
     assert "Nothing has changed yet" in plugins.action("upgrade")(row.n), "an upgrade shows what it would change before it does it"
     assert looking() is False, "and when there is something new"
+    from features.plugins import updates
+    updates.check(fine.root)
+    assert plugins.load(row.n).update.get("name") == "works" and plugins.load(row.n).update["version"], \
+        "the daily check of a plugin's repository keeps its newer version, by name, on the plugin's row"
     git("tag", "v1.1.0", cwd=tmp_path / "upgraded")
     pinned = plugins.action("upgrade")(row.n, yes=True, ref=git_head(tmp_path / "upgraded"))
     assert (pinned.commit != row.commit, pinned.revision) == (True, ""), "and moves the plugin to the new commit, the commit that confirmed it never becoming the ref it follows"
     git("commit", "-q", "--allow-empty", "-m", "three", cwd=tmp_path / "upgraded")
     git("tag", "v1.2.0", cwd=tmp_path / "upgraded")
     assert looking() is False, "a later check fetches the newest release the source gained, not the commit it was upgraded to"
-    assert plugins.action("upgrade")(row.n, yes=True, ref=git_head(tmp_path / "upgraded")).commit == git_head(tmp_path / "upgraded"), "and the upgrade lands on it"
+    Agents(fine, actor=SYSTEM).by_session("claude-1")
+    landed = Plugins(fine, actor=USER).action("upgrade")(row.n, yes=True, ref=git_head(tmp_path / "upgraded"))
+    assert landed.commit == git_head(tmp_path / "upgraded"), "and the upgrade lands on it"
+    marks = [(c["label"], c["name"], c["detail"], c["side"]) for c in Agents(fine, actor=SYSTEM).primary().data.get("cards", []) if c["label"] == "Updated plugin"]
+    assert (marks[-1], landed.update.get("version", "")) == (("Updated plugin", landed.title, f"Version {landed.version}", USER), ""), \
+        "an update the user pressed leaves a mark naming the plugin and its version on the user's side, and clears the newer version from its row"
     assert (plugins.action("disable")(row.n).enabled, plugins.action("enable")(row.n).enabled) == (False, True), "a plugin is switched off and on again"
     assert "remove it first" in refused(lambda: plugins.action("purge")(row.n)), "what an installed plugin keeps is never purged"
     plugins.complete(row.n, "removed")

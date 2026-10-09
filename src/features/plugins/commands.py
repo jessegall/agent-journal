@@ -14,7 +14,7 @@ from features.plugins.preview import preview
 from features.plugins.setup import prepared
 from features.plugins.staging import alone, followed, token
 from controllers.types import Agents
-from resources.base import Refused, SYSTEM, USER
+from resources.base import AGENT, Refused, SYSTEM, USER
 
 VERSION = version()
 
@@ -82,7 +82,18 @@ class Upgrade(Command):
                 return f"{preview(manifest, row.source, commit)}\n\n{difference(declared(row), manifest)}\nNothing has changed yet. To upgrade to exactly this, run it again with --yes --ref {commit}"
             ports = {**ports_for(root, manifest), **settings.ports}
             install_staged(context.journal, plugins, stage, row.source, "" if ref is None else ref, row.token, ports, settings.chosen, row)
-        return plugins.load(n)
+        return marked_updated(plugins, n)
+
+
+def marked_updated(plugins, n: int):
+    """Leaves a chat mark naming the plugin and its new version, on the user's side when the user pressed Update."""
+    updated = plugins.load(n)
+    agents = Agents(plugins.record, actor=SYSTEM)
+    primary = agents.primary_to_read()
+    if primary:
+        agents.card(primary.n, key=f"plugin:{n}:{updated.version}", label="Updated plugin", name=updated.title, detail=f"Version {updated.version}",
+                    icon="plug", tone="good", side=USER if plugins.actor == USER else AGENT)
+    return updated
 
 
 class Enable(Command):
