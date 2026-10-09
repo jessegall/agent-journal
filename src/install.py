@@ -414,6 +414,7 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False, version:
         if prepared.held is not None:
             return [prepared.held]
         mark.touch()
+        loaded().restarting(root).write_text(str(time.time()))
         try:
             return prepared.copied + upgrading(project, root, version)
         finally:
