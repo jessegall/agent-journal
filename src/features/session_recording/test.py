@@ -272,3 +272,13 @@ def test_upgrades_file_old_runtime_files_under_their_session_and_remove_the_loos
         (tmp_path / "environments" / "main" / "runtime" / name).write_text("{}")
     assert remove_loose(tmp_path) == "feature state moved into the record: 4 old runtime files removed", "the loose feature state files are removed"
     assert (tmp_path / "environments" / "main" / "runtime" / "keep.json").exists(), "an unrelated runtime file stays"
+
+
+def test_importing_the_scrubber_reads_no_word_list(monkeypatch):
+    import importlib
+    from features.session_recording import scrub
+    reads = []
+    monkeypatch.setattr(Path, "read_text", lambda self, **kwargs: reads.append(self) or "")
+    importlib.reload(scrub)
+    assert not reads, "the word list is read when a name is first judged, not when every journal command starts"
+    scrub.vocabulary.cache_clear()

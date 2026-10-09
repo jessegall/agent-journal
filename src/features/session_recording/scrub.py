@@ -2,6 +2,7 @@ import json
 import getpass
 import re
 import socket
+from functools import cache
 from pathlib import Path
 
 from engine.viewer import known
@@ -27,17 +28,20 @@ def dictionary() -> frozenset:
         return frozenset()
 
 
+@cache
+def vocabulary() -> frozenset:
+    return dictionary()
+
+
 def word(name: str) -> bool:
     lowered = name.lower()
-    return not DICTIONARY or lowered in DICTIONARY or lowered.removesuffix("s") in DICTIONARY
+    known_words = vocabulary()
+    return not known_words or lowered in known_words or lowered.removesuffix("s") in known_words
 
 
 def private(name: str) -> bool:
     return len(name) >= SHORTEST_NAME and name.lower() not in STAND_INS and not name.startswith("tmp") and not TUNNEL.search(f"{name}.com") and (bool(NAMED.search(name)) or not word(name))
 
-
-
-DICTIONARY = dictionary()
 
 class Scrubber:
     def __init__(self, folders: list[str] | None = None):
