@@ -12,7 +12,7 @@ import {age} from "../format/time.js";
 import {fileSize, isPicture} from "../format/files.js";
 import BoardLanes from "./BoardLanes.vue";
 import Chip from "../kit/Chip.vue";
-import ListRow from "../kit/ListRow.vue";
+import DetailRow from "../kit/DetailRow.vue";
 import {originOf} from "../domain/origin.js";
 import ResourceBody from "./ResourceBody.vue";
 import ResourceRow from "./ResourceRow.vue";
@@ -176,51 +176,51 @@ function hidePreview(r) {
         <template v-else-if="plans.length && tab === 'plans'">
             <section class="rows" aria-label="Plans in this collection">
                 <template v-for="r in plans" :key="r.at">
-                    <ListRow :title="r.title" :label="`Open plan ${r.n}, ${r.title}`" @open="open(r)">
+                    <DetailRow :title="r.title" :label="`Open plan ${r.n}, ${r.title}`" @open="open(r)">
                         <template #side>
                             <template v-if="originOf(r)">
                                 <Chip :title="`From ${originOf(r)}`">{{ originOf(r) }}</Chip>
                             </template>
-                            <span class="list-row-note">{{ PLAN_STATE_WORDS[planProgress(r).status] || planProgress(r).status }}</span>
+                            <span class="detail-row-note">{{ PLAN_STATE_WORDS[planProgress(r).status] || planProgress(r).status }}</span>
                         </template>
-                        <span class="list-row-line">Phase {{ planProgress(r).phase }} of {{ planProgress(r).total }}<template v-if="phaseOf(r)">: {{ phaseOf(r) }}</template></span>
+                        <span class="detail-row-line">Phase {{ planProgress(r).phase }} of {{ planProgress(r).total }}<template v-if="phaseOf(r)">: {{ phaseOf(r) }}</template></span>
                         <ProgressBar
-                            class="list-row-bar"
+                            class="detail-row-bar"
                             :value="planProgress(r).finished"
                             :max="Math.max(1, planProgress(r).total)"
                             :tone="planProgress(r).status === 'done' ? 'good' : planProgress(r).status === 'waiting' ? 'warn' : ''"
                             thin
                         />
-                        <span class="list-row-line">{{ planProgress(r).finished }} of {{ planProgress(r).total }} done</span>
-                    </ListRow>
+                        <span class="detail-row-line">{{ planProgress(r).finished }} of {{ planProgress(r).total }} done</span>
+                    </DetailRow>
                 </template>
             </section>
         </template>
         <template v-else-if="tickets.length && tab === 'tickets'">
             <section class="rows" aria-label="Tickets in this collection">
                 <template v-for="r in tickets" :key="r.at">
-                    <ListRow :title="r.title" @open="open(r)">
+                    <DetailRow :title="r.title" @open="open(r)">
                         <template #side>
-                            <span class="list-row-note">{{ r.data?.stage }}</span>
+                            <span class="detail-row-note">{{ r.data?.stage }}</span>
                             <template v-if="planOf(r)">
-                                <button type="button" class="list-row-link" :title="`Open the plan of ticket ${r.n}, ${r.title}`" @click="openPlan(r)">Open plan of ticket {{ r.n }}</button>
+                                <button type="button" class="detail-row-link" :title="`Open the plan of ticket ${r.n}, ${r.title}`" @click="openPlan(r)">Open plan of ticket {{ r.n }}</button>
                             </template>
                         </template>
                         <template v-if="waitsOf(r).length">
-                            <span class="list-row-line">Waits on {{ waitsOf(r).join(", ") }}</span>
+                            <span class="detail-row-line">Waits on {{ waitsOf(r).join(", ") }}</span>
                         </template>
                         <template v-if="statusOf(r)?.plan">
-                            <span class="list-row-line">{{ statusOf(r).plan }}</span>
-                            <ProgressBar class="list-row-bar" :value="statusOf(r).done" :max="Math.max(1, statusOf(r).total)" :tone="statusOf(r).kind === 'you' ? 'warn' : ''" thin />
-                            <span class="list-row-line">{{ statusOf(r).done }} of {{ statusOf(r).total }} done</span>
+                            <span class="detail-row-line">{{ statusOf(r).plan }}</span>
+                            <ProgressBar class="detail-row-bar" :value="statusOf(r).done" :max="Math.max(1, statusOf(r).total)" :tone="statusOf(r).kind === 'you' ? 'warn' : ''" thin />
+                            <span class="detail-row-line">{{ statusOf(r).done }} of {{ statusOf(r).total }} done</span>
                         </template>
                         <template v-if="statusOf(r)?.now">
-                            <span class="list-row-line">Now: {{ statusOf(r).now }}</span>
+                            <span class="detail-row-line">Now: {{ statusOf(r).now }}</span>
                         </template>
                         <template v-if="statusOf(r)?.state">
-                            <span :class="['list-row-line', statusOf(r).kind]">{{ statusOf(r).state }}</span>
+                            <span :class="['detail-row-line', statusOf(r).kind]">{{ statusOf(r).state }}</span>
                         </template>
-                    </ListRow>
+                    </DetailRow>
                 </template>
             </section>
         </template>
