@@ -11,6 +11,9 @@ export const updating = reactive({version: "", failure: "", late: false, since: 
 export const stepAt = (seconds) => (seconds < SECOND_STEP_AT ? STEPS[0] : seconds < THIRD_STEP_AT ? STEPS[1] : STEPS[2]);
 export const locked = () => Boolean(updating.version || updating.external) && !updating.failure && !updating.late;
 
+// Whether the update cover is up: counting down to an update, or one under way.
+export const covered = () => Boolean(updating.countdown) || locked();
+
 // The automatic update the server is counting down to, with the second it starts at; none clears it.
 export function counting(countdown) {
     if (countdown && countdown.version) updating.target = countdown.version;
