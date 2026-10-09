@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.11 — An upgrade's restart is not a hook error
+- A hook that gets no answer while an upgrade restarts the server, and during the new server's first seconds, is no longer told to the agent as an error.
+- A server that crashes and comes back still shows its hook failures: the restart marker is taken away once the new server has started.
+
 ## 2.267.10 — Journal commands stay inside their budget
 - Journal commands no longer start a git process each time: the server reads the git user name once at start and the commands read it from the runtime folder.
 - The first seconds after a start are not held against the budget for commands, as they already were not for requests.
