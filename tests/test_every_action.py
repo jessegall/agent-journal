@@ -436,6 +436,20 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     CONTROLLERS["todo"](record, actor=USER).update(newest, brief="touched last")
     assert any(r["n"] == newest and r["brief"] == "touched last" for r in on_dashboard()), "a change to a row reaches the dashboard at once, never the body that was held"
     CONTROLLERS["todo"](record, actor=USER).update(1, brief="touched last")
+    written = CONTROLLERS["report"](record, actor=USER).create("Long report", brief="start " + "text " * 200 + "the very end")
+    CONTROLLERS["report"](record, actor=USER).section(written.n, "Part one", "section body " * 50)
+    asked = {"types": "report,todo", "completed": "1", "last": "25"}
+    sent = lambda: json.loads(dispatch("GET", f"/api/{record.env}/dashboard", record.root, asked, {}).body)["rows"]
+    summary = next(r for r in sent()["report"]["rows"] if r["n"] == written.n)
+    whole_row = next(r for r in dispatch("GET", f"/api/{record.env}/report", record.root, {"n": str(written.n), "completed": "1"}, {}).body["rows"] if r["n"] == written.n)
+    assert (summary["summary"], len(summary["brief"]) <= 300, [s["body"] for s in summary["sections"]], summary["sections"][0]["title"]) == (True, True, [""], "Part one"), \
+        "the dashboard sends a report as its summary: the start of its text and the titles of its sections"
+    assert (whole_row.get("summary"), whole_row["brief"].endswith("the very end"), len(whole_row["sections"][0]["body"]) > 100) == (None, True, True), "and the row asked for by number is whole"
+    from surfaces.listing import held_rows
+    reports_held = held_rows(record, "report", {"completed": "1", "last": "25"})
+    CONTROLLERS["todo"](record, actor=USER).update(newest, brief="changed again")
+    assert held_rows(record, "report", {"completed": "1", "last": "25"}) is reports_held, "a change to the to-dos rebuilds only the to-dos' rows, not the reports' held ones"
+    CONTROLLERS["todo"](record, actor=USER).update(1, brief="touched last, again")
     recent =dispatch("GET", f"/api/{record.env}/todo", record.root, {"last": "1", "by": "updated", "completed": "1"}, {}).body
     assert 1 in [r["n"] for r in recent["rows"]], "by=updated returns the most recently changed rows, however old their number"
     CONTROLLERS["todo"](record, actor=USER).complete(3, "done")

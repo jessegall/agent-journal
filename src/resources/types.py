@@ -161,6 +161,7 @@ class Report(Shape, Resource):
     )
     loading = LAZY
     type = "report"
+    summary_in_dashboard = True
     event_labels = {"created": "Report written", "completed": "Report closed"}
     status_labels = {"complete": "archiving"}
     needs_attention = True

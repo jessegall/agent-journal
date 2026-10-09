@@ -56,6 +56,13 @@ await runScenarios(process.argv[2], {
         if ((await page.getByText(words).count()) !== shown) throw new Error("the comment changed how many times it is shown after the server's row arrived");
         if ((await page.locator(".comment", {hasText: words}).count()) > 1) throw new Error("the comment is shown twice on its document");
     },
+    async "a long report is sent to the page as a summary and shows its whole text once it is opened"(page, url) {
+        const title = `Long report ${Date.now()}`;
+        const ending = `the-last-words-${Date.now()}`;
+        const n = numberOf(journal("report", "create", title, "--brief", `${"start of a long text ".repeat(40)}${ending}`));
+        await page.goto(`${url}#/main/report/${n}`);
+        await page.getByText(ending).first().waitFor({timeout: 8000});
+    },
     async "a library with nothing matching the search says so instead of staying empty"(page, url) {
         make(`Findable ${Date.now()}`, "something");
         await library(page, url);

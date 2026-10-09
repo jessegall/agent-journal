@@ -175,6 +175,7 @@ class Resource:
     agent_only: ClassVar[bool] = False           # the agent makes it; a user create is refused and its page has no New
     start_heading: ClassVar[str] = ""          # its heading in the start block, empty when it is not handed to a session
     start_as_count: ClassVar[bool] = False     # handed as a count, not row by row
+    summary_in_dashboard: ClassVar[bool] = False  # the dashboard sends its rows without their text, and the viewer reads a row whole when it opens one
     light_in_dashboard: ClassVar[dict[str, tuple[str, ...]]] = {}  # a heavy data field and the keys of it the dashboard's rows keep
     subagent_writable: ClassVar[bool] = True         # a subagent lent the environment may write it
     takes_comments: ClassVar[bool] = True   # its inspector has a comment section

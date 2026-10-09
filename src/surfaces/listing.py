@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TypedDict
 
 from controllers.base import LAST
@@ -58,15 +58,32 @@ class ListedRows(TypedDict):
     more: bool
 
 
+SUMMARY_TEXT = 300
+
+
+@dataclass(frozen=True)
+class Summary:
+    """What a row keeps when only its summary is sent: the start of its text and the titles of its sections, marked so the viewer reads the whole row when it opens it."""
+
+    brief: str
+    sections: list
+    summary: bool = True
+
+    @classmethod
+    def of(cls, row: dict) -> "Summary":
+        return cls(row["brief"][:SUMMARY_TEXT], [{"title": section.get("title", ""), "body": ""} for section in row["sections"]])
+
+
 def lightened(controller, listed: ListedRows) -> ListedRows:
-    """The dashboard's rows keep only the named keys of the heavy fields their resource declares; the whole row is one request of its own."""
-    keeps = controller.resource.light_in_dashboard
-    if not keeps:
+    """The dashboard's rows keep only the named keys of the heavy fields their resource declares, and a resource that sends summaries sends them without their text; the whole row is one request of its own."""
+    resource = controller.resource
+    keeps = resource.light_in_dashboard
+    if not keeps and not resource.summary_in_dashboard:
         return listed
 
     def light(row: dict) -> dict:
         data = {**row["data"], **{field: {key: row["data"][field][key] for key in kept if key in row["data"][field]} for field, kept in keeps.items() if field in row["data"]}}
-        return {**row, "data": data}
+        return {**row, "data": data, **asdict(Summary.of(row))} if resource.summary_in_dashboard else {**row, "data": data}
     return {**listed, "rows": [light(row) for row in listed["rows"]]}
 
 
@@ -109,15 +126,17 @@ def counted(record, types) -> dict:
     return {type_: counts(CONTROLLERS[type_](record, actor=USER)) for type_ in types}
 
 
-def dashboard(record, wanted: list[str], tallied: list[str], query: dict) -> tuple[bytes, bytes]:
-    """The dashboard's lists and counts as the JSON they are sent as, made again only when a list of rows or the settings changed."""
-    controllers = {t: CONTROLLERS[t](record, actor=USER) for t in dict.fromkeys([*wanted, *tallied])}
-    stamp = Unchanged(tuple(controller.rows.summaries() for controller in controllers.values()), settled(record))
+def held_rows(record, type_: str, query: dict) -> bytes:
+    """One type's rows of the dashboard as the JSON they are sent as, made again only when that type's rows or the settings changed, so a type that changes every few seconds rebuilds only itself."""
+    controller = CONTROLLERS[type_](record, actor=USER)
+    stamp = Unchanged((controller.rows.summaries(),), settled(record))
+    return DASHBOARDS.get((str(record.home), type_, tuple(sorted(query.items()))), stamp,
+                          lambda: json.dumps(lightened(controller, listing(controller, record, Listing.from_query(query)))).encode())
 
-    def made() -> tuple[bytes, bytes]:
-        asked = Listing.from_query(query)
-        lists = {t: lightened(controllers[t], listing(controllers[t], record, asked)) for t in wanted}
-        return json.dumps(lists).encode(), json.dumps(counted(record, tallied)).encode()
-    return DASHBOARDS.get((str(record.home), tuple(wanted), tuple(tallied), tuple(sorted(query.items()))), stamp, made)
+
+def dashboard(record, wanted: list[str], tallied: list[str], query: dict) -> tuple[bytes, bytes]:
+    """The dashboard's lists and counts as the JSON they are sent as, each type's rows held apart."""
+    lists = b", ".join(json.dumps(type_).encode() + b": " + held_rows(record, type_, query) for type_ in wanted)
+    return b"{" + lists + b"}", json.dumps(counted(record, tallied)).encode()
 
 
