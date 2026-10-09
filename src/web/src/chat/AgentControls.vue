@@ -3,7 +3,8 @@ import UsageMeter from "./UsageMeter.vue";
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import ChoiceList from "../kit/ChoiceList.vue";
-import {pendingChoice} from "../domain/agents.js";
+import {lastCompaction, pendingChoice} from "../domain/agents.js";
+import {store} from "../state/store.js";
 import {age} from "../format/time.js";
 import Skeleton from "../kit/Skeleton.vue";
 
@@ -16,8 +17,8 @@ const error = ref("");
 const data = computed(() => props.agent.data);
 const filled = computed(() => Math.round(Number(data.value.context || 0)));
 const compacted = computed(() => {
-    const marks = data.value.compactions || [];
-    return marks.length ? `Conversation last compacted ${age(marks[marks.length - 1].at)}` : "Not compacted yet";
+    const at = lastCompaction(store.agents);
+    return at ? `Conversation last compacted ${age(at)}` : "Not compacted yet";
 });
 const chosen = computed(() => controls.value.groups.filter((group) => group.key === props.control));
 const current = computed(() => (props.control === "effort" ? `effort ${data.value.effort || "not reported"}` : data.value.model));

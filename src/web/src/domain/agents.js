@@ -27,6 +27,9 @@ const stopped = (a) => (a.data.status === "stopped" ? 1 : 0);
 export const leadOf = (agents) =>
     [...agents].filter((a) => !a.data.parent).sort((a, b) => stopped(a) - stopped(b) || (b.data.at || 0) - (a.data.at || 0))[0] || null;
 
+export const lastCompaction = (agents) =>
+    Math.max(0, ...agents.filter((a) => !a.data.parent).flatMap((a) => (a.data.compactions || []).map((m) => m.at))) || null;
+
 export const runningData = (agent) => (agent && agent.data.status !== "stopped" ? agent.data : null);
 
 const PAST = {pause: "paused", resume: "resumed", stop: "stopped", remove: "removed"};
