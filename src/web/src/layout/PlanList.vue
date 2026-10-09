@@ -80,6 +80,9 @@ async function run(action, p) {
 .plan-list :deep(.menu-panel:not(.anchored)) {
     right: 0;
     top: calc(100% + 6px);
+    width: max-content;
+    min-width: 260px;
+    max-width: calc(100vw - 36px);
 }
 
 .plan-list.up :deep(.menu-panel:not(.anchored)) {
@@ -89,7 +92,7 @@ async function run(action, p) {
 
 .plan-list-body {
     width: 348px;
-    max-width: calc(100vw - 36px);
+    max-width: 100%;
 }
 
 .plan-list-head {
