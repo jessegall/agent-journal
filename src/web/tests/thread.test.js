@@ -151,3 +151,11 @@ describe("an agent's reply to a comment", () => {
         expect(got[1].brief).toBe("> the passage\n\nbecause");
     });
 });
+
+describe("a compaction of the conversation", () => {
+    test("is marked in the chat as Conversation compacted, the word Claude Code uses", () => {
+        const shown = JSON.stringify(turns({agent: [agent({compactions: [{at: 5}]})]}));
+        expect(shown).toContain("Conversation compacted");
+        expect(shown).not.toContain("shortened");
+    });
+});
