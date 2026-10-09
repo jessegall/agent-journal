@@ -209,7 +209,7 @@ class Engine:
         if last is None or not driver.alive():
             return ""
         reported = float(last.at)
-        silent = time.time() - max(reported, self.typed_at) >= SILENT_AFTER and driver.quiet_for() >= SILENT_AFTER
+        silent = time.time() - max(reported, self.typed_at) >= SILENT_AFTER and driver.quiet_for() >= SILENT_AFTER and not last.command_running
         if self.probed_at > reported:
             if time.time() - self.probed_at < PROBE_WAIT:
                 return "probed, waiting"

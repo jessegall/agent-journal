@@ -392,6 +392,10 @@ class AgentRow(Shape, Resource):
         return [entry for kind in RUN_KINDS for entry in self.data.get(kind) or []]
 
     @property
+    def command_running(self) -> bool:
+        return bool(self.running and self.running.get("command") and not self.running.get("done"))
+
+    @property
     def background_run(self) -> str:
         return next((entry.get("task") or entry.get("command") or "a background run" for entry in self.runs if entry.get("running")), "")
 

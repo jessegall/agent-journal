@@ -1,4 +1,5 @@
 import time
+from types import SimpleNamespace
 
 import agents.control
 from controllers.types import Agents
@@ -268,3 +269,32 @@ def test_a_codex_script_cell_the_agent_waits_on_is_followed_to_its_end(tmp_path)
         "waiting on a cell shows it printing, a failed answer ends it failed, a completed one ends it clean"
     assert "cell:99" not in tasks.ended, "a wait on a cell nobody started ends nothing"
     assert ("5" in tasks.ended and "5" in tasks.failed), "an end the transcript showed before the command's start still ends it, failed"
+
+
+def test_a_call_that_never_reported_back_is_closed_and_a_command_that_ended_before_its_move_closes_its_card(monkeypatch, tmp_path):
+    import json
+    from features.long_commands import move
+    from providers import PROVIDERS
+    from providers.base import BackgroundTasks
+    from providers.command_effects import refused
+    from tests.kit import handle
+    record = fresh()
+    moved = []
+    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
+    started = time.time() - 45
+    report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}])
+    tick(record)
+    report(record, "working", "PostToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started, "done": time.time() - 40}])
+    monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks())
+    tick(record)
+    marks = lambda: Agents(record, actor="system").by_session("claude-1").data["cards"]
+    assert [(c["label"], c["state"]) for c in marks()] == [("Moved a long command to the background", "done")], \
+        "a command that ended before it could be moved closes its card instead of running for ever"
+    (tmp_path / "claude-2.jsonl").write_text("")
+    claude, call = PROVIDERS["claude"](), {"session_id": "claude-2", "transcript_path": str(tmp_path / "claude-2.jsonl"), "tool_name": "Bash", "hook_event_name": "PreToolUse"}
+    handle(claude, record.root, record.env, {**call, "tool_input": {"command": "ls"}})
+    handle(claude, record.root, record.env, {**call, "tool_input": {"command": "pwd"}})
+    row = Agents(record, actor="system").by_session("claude-2")
+    assert [bool(one.get("done")) for one in row.commands] == [True, False], "a call that never reported back is closed when the next one starts"
+    assert refused(row, SimpleNamespace(at=float(row.running["at"]))).keys() == {"running", "commands"} and not refused(row, SimpleNamespace(at=1.0)), \
+        "a call a hook refused is closed at once, and only the call that was refused"

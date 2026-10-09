@@ -186,7 +186,7 @@ class TicketCards:
         if not float(row.at):
             return CardState("running", "starting")
         quiet = row.quiet_for
-        if row.status != IDLE and quiet > SILENT_AFTER:
+        if row.status != IDLE and quiet > SILENT_AFTER and not row.command_running and not row.background_run:
             return CardState("you", f"silent for {int(quiet // 60)}m")
         if row.status == IDLE and quiet > SILENT_AFTER and not row.background_run:
             return CardState("you", f"idle for {int(quiet // 60)}m with nothing running in the background")
