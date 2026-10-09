@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.35 — The Squire calls you Sir Knight, and a new voice says hello
+- A voice can address you in words of its own instead of your title and name: the Squire calls you Sir Knight, and now and then my liege.
+- When you change the voice, the agent is told at once, even while idle, and answers with one opening line in the new voice.
+
 ## 2.267.34 — Announcements wait until seen, and an agent's finished to-dos
 - New-feature announcements wait until you have seen them: one missed while you were away shows the next time you open the viewer, several show one after another, oldest first, and a first install announces none.
 - An agent's To-dos tab lists the to-dos it finished too, under Finished, the latest first.
