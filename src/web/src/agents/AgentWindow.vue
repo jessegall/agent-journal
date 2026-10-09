@@ -36,11 +36,6 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
             </span>
         </template>
         <p class="aw-title">{{ entry.title }}</p>
-        <template v-if="quiet">
-            <p :class="['aw-seen', quiet.tone, {waits: entry.waits && quiet.tone}]" :title="`Last sign of life from the agent`">
-                Last active {{ clock(entry.at) }} · {{ quiet.ago }}
-            </p>
-        </template>
         <template v-if="asks">
             <p class="aw-asks">{{ entry.card.reason }}</p>
         </template>
@@ -74,6 +69,12 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
                 <p class="aw-line">
                     <span class="aw-key">Running for</span>
                     <JobTimer :since="entry.since" />
+                </p>
+            </template>
+            <template v-else-if="quiet">
+                <p class="aw-line" title="Last sign of life from the agent">
+                    <span class="aw-key">Last active</span>
+                    <span :class="['aw-seen', quiet.tone, {waits: entry.waits && quiet.tone}]">{{ clock(entry.at) }} · {{ quiet.ago }}</span>
                 </p>
             </template>
         </div>
