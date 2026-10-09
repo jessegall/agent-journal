@@ -225,6 +225,9 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     agents.update(agents.by_session("claude-1").n, running={"command": "sleep 900", "tool": "Bash", "at": time.time() - 60, "done": 0.0})
     assert engine.probe() == "" and pressed == [], "an agent running a command is not probed for being silent"
     agents.update(agents.by_session("claude-1").n, running={"command": "sleep 9000", "tool": "Bash", "at": time.time() - 2000, "done": 0.0})
+    engine.resumed_at = later + SILENT_AFTER
+    assert engine.probe() == "" and pressed == [], "an agent the journal just resumed after an update has the silence of the pause forgiven, so it is not interrupted and marked stopped"
+    engine.resumed_at = 0.0
     assert engine.probe().startswith("silent for two minutes") and pressed == ["ctrl-c"], \
         "a working agent silent for two minutes is probed with Ctrl-C, also while a command has run for over thirty minutes"
     import json
