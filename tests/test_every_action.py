@@ -449,6 +449,14 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     reports_held = held_rows(record, "report", {"completed": "1", "last": "25"})
     CONTROLLERS["todo"](record, actor=USER).update(newest, brief="changed again")
     assert held_rows(record, "report", {"completed": "1", "last": "25"}) is reports_held, "a change to the to-dos rebuilds only the to-dos' rows, not the reports' held ones"
+    from surfaces.listing import ENCODED
+    todos = CONTROLLERS["todo"](record, actor=AGENT)
+    on_dashboard()
+    encoded_before = {key: body for key, (_, body) in ENCODED.items() if key[1] == "todo"}
+    todos.update(newest, brief="changed a third time")
+    on_dashboard()
+    encoded_after = {key: body for key, (_, body) in ENCODED.items() if key[1] == "todo"}
+    assert [key[2] for key in encoded_before if encoded_after[key] is not encoded_before[key]] == [newest], "a change to one to-do encodes that row again and no other"
     docs = CONTROLLERS["doc"](record, actor=USER)
     haystack = docs.create("Haystack", brief="A brief that mentions needleword in passing")
     docs.section(haystack.n, "Details", "Body text with needleword inside")
