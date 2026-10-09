@@ -33,6 +33,7 @@ LAUNCHING = "viewer.launching"
 COMING_UP = 20.0
 STOPPED_BY_US = 0
 PORT_WAIT = 30.0
+OWN_PORT_WAIT = 300.0
 SERVED_ON = 8430
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
 
@@ -171,14 +172,21 @@ def other_journal_on(port: int, root: Path) -> bool:
     return reply is not None and Path(reply.root).resolve() != root.resolve()
 
 
+def wait_for(root: Path, port: int) -> float:
+    """How long a journal waits for the port it served on: the usual wait, and while its own server is still alive and holds it, until that server has left."""
+    was = last(root)
+    return OWN_PORT_WAIT if was.port == port and was.pid and alive(was.pid) else PORT_WAIT
+
+
 def available(root: Path, prefer: int = 0) -> int:
     other = prefer in PORTS and other_journal_on(prefer, root)
-    if prefer in PORTS and not other and waited(prefer):
+    patience = wait_for(root, prefer)
+    if prefer in PORTS and not other and waited(prefer, patience):
         return prefer
     if other:
         print(f"journal: port {prefer} is another project's journal now; this viewer moves to a free port", file=sys.stderr)
     elif prefer:
-        print(f"journal: port {prefer} is still taken after {PORT_WAIT:g}s; the viewer moves, and a tab left open on it will not reach this journal", file=sys.stderr)
+        print(f"journal: port {prefer} is still taken after {patience:g}s; the viewer moves, and a tab left open on it will not reach this journal", file=sys.stderr)
     for port in PORTS:
         if free(port):
             return port
