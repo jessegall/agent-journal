@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.37 — A seen announcement stays seen
+- An announcement leaves the queue the moment you answer it, whether with its button, Not now, Escape or by closing it, and never shows again after a reload.
+- A seen mark the server did not take is reported, kept in the browser and sent again, never dropped in silence.
+
 ## 2.267.36 — Helpers are reused, and a retired helper keeps its conversation
 - Sending work to a stopped helper starts it again with its context, and a new dispatch is refused while an idle helper that already knows the files exists.
 - Retiring a helper takes a reason, read back first; the chat marks a helper Reused, Continued or Retired.
