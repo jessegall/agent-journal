@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.17 — Open tabs reload, plugins update from the viewer, and whispers stop repeating
+- An open viewer tab sees a new build and reloads itself: the manifest named the bundle with a pattern that only matched the old bundle name, so no tab ever noticed an update. A tab already open on the old bundle needs one manual reload.
+- A plugin whose repository holds a newer version shows an Update bar at the top. A daily check of each plugin's repository finds it; Update runs the plugin's upgrade and leaves a chat mark naming the plugin and its version, on your side when you pressed Update.
+- A keyword reminder (a fact, rule or law) reaches the agent through the channel only: it is not retried, not typed into the terminal, and dropped when the channel cannot take it. The check that a handed line arrived ignores line breaks.
+- The Closed bar in the helpers list runs edge to edge and folds the closed helpers until pressed. The agent cell's rows are a two-column grid, so every value starts at the same place.
+- A shared collection no longer carries the dump it was filled from.
+
 ## 2.267.16 — Quieter budget notices, and a round of viewer fixes
 - A request or hook that runs over its budget while the machine's load is above its cores is logged with the load and not filed as a to-do; on a quiet machine it is filed as before. The time a request reports after its answer is the work it left behind, not its wait in a queue.
 - A plugin's manifest declares each hook as sync or async; an async hook only runs beside the agent, and the install dialog says whether the agent waits.
