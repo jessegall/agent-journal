@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.1 — A finished helper never keeps a to-do
+- Finishing a helper gives its to-dos back before it marks the helper finished, so a finish that breaks later, as when releasing its worktree fails, no longer leaves a finished helper holding rows nobody can start. An upgrade gives back the rows that finished helpers still hold.
+- A reply tag followed by tool calls in the same turn is checked to be picked up as a reply; nothing changes for you.
+
 ## 2.267.0 — Integrations, starting with Linear
 - A new Integrations page and sidebar item list the outside services the journal can reach for you, each off until you switch it on and pick its key. The key is a secret only you pick; it is read by the journal's own process, sent only to the service's own address and never given to a command, a subprocess or an agent.
 - Linear: issues assigned to you in the teams you choose become tickets on a board you pick, each comment once, checked every five minutes or by Check now, and by Linear's webhook through your tunnel when you give it a signing secret. Their words are wrapped as untrusted for agents and read plainly by people; hidden characters are removed and long text is cut. An issue that leaves what you chose or is deleted keeps its ticket and says so.
