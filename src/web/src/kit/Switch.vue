@@ -1,5 +1,5 @@
 <script setup>
-defineProps({on: Boolean, word: {type: String, default: ""}, title: {type: String, default: ""}, framed: Boolean, labelled: Boolean, large: Boolean});
+defineProps({on: Boolean, word: {type: String, default: ""}, title: {type: String, default: ""}, framed: Boolean, labelled: Boolean, large: Boolean, beside: Boolean});
 const emit = defineEmits(["change"]);
 </script>
 
@@ -9,7 +9,8 @@ const emit = defineEmits(["change"]);
         :class="['switch-button', {framed}]"
         role="switch"
         :aria-checked="on ? 'true' : 'false'"
-        v-tip="title"
+        :aria-label="title"
+        v-tip="beside ? '' : title"
         @click="emit('change', !on)"
     >
         <span :class="['switch', {on, labelled, large}]">
