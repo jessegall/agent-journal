@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.7 — Tooltips stay while the chat scrolls, and the first command after a start is quick
+- A tooltip now closes on a scroll only when the scrolled area holds the button it points at, so a chat that scrolls itself no longer takes it away.
+- The server prepares the command parsers and the open work and to-dos before it prints its address, so the first command after an install or a restart answers in under 10 ms instead of 200.
+- The tests that start a scratch journal end every process they started and fail when one is left running.
+
 ## 2.267.6 — The status bar fits a phone's width
 - At phone width the status bar's agent controls wrap onto a second line and the connection label shortens with an ellipsis, so the page no longer scrolls sideways when a connection label is long. The browser checks of the Integrations page and its Linear and Gmail cases no longer depend on the order they run in.
 
