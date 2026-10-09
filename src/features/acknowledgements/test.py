@@ -35,9 +35,18 @@ def test_a_turn_that_only_answers_a_journal_line_is_kept_out_of_the_chat_unless_
     assert answered("Okay, on it.", delivered=("message:7",)) == [False], "an answer to a message is never hidden"
     relayed = Messages(record, actor=AGENT).create("helper 3 reported", brief="the helper is done", peer="Zed")
     assert answered("That is the helper's earlier report.", delivered=(f"message:{relayed.n}",)) == [True], "an answer to a helper's report, which the journal pushed, is kept out like any journal line"
+    thanks = Messages(record, actor="user").create("thanks a lot")
+    Messages(record, actor=AGENT).react(thanks.n, "🙏")
+    assert answered("That thank-you is acknowledged.", delivered=(f"message:{thanks.n}",)) == [True], \
+        "a message the agent already reacted to, handed over again by a journal line, asks for nothing: the answer is kept out"
     assert answered("Understood.", prompt="carry on") == [False], "a turn the person started is never hidden"
     assert answered("The suite broke on the gate.", failure="the turn failed") == [False], "a failed turn is never hidden"
     assert answered("Got it, but which branch should I use?") == [False], "a question waiting on the person is never hidden"
+    hook("UserPromptSubmit", prompt="[journal] todo 5 next")
+    agents.update(row.n, delivered=[f"nudge:{kept.n}"])
+    for _ in range(2):
+        chat.send(record, agents.load(row.n), "Carrying on with the same turn.", turn="t1")
+    assert len([m for m in Messages(record).all() if m.brief == "Carrying on with the same turn."]) == 1, "a turn sent twice by two paths reaches the chat once"
 
 
 def test_a_line_delivered_mid_turn_keeps_the_message_the_turn_answers():

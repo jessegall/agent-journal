@@ -2,7 +2,8 @@ from controllers.base import row_of
 from controllers.types import Messages, Nudges
 from engine.events.engine import AgentMessageSending
 from features.command_tags.reading import CARRIED
-from features.parts import AgentContext, Handler
+from features.messages.answering import answered
+from features.parts import AgentContext, Context, Handler
 from providers.base import JOURNAL
 from features.acknowledgements.details import KEPT_OUT
 from resources.base import AGENT, USER, Ref, Refused, titled
@@ -10,12 +11,12 @@ from resources.base import AGENT, USER, Ref, Refused, titled
 ALWAYS_KEPT = ("message", "question", "comment")
 
 
-def reply_kept(record, delivered: list[str]) -> bool:
+def reply_kept(context: Context, delivered: list[str]) -> bool:
     try:
         refs = [Ref.parse(ref) for ref in delivered]
-        if not refs or any(ref.type in ALWAYS_KEPT and written_by_person(record, ref) for ref in refs):
+        if not refs or any(ref.type in ALWAYS_KEPT and awaiting_person(context, ref) for ref in refs):
             return True
-        return any(row_of(record, ref).data.get("reply_kept") for ref in refs if ref.type == Nudges.resource.type)
+        return any(row_of(context.record, ref).data.get("reply_kept") for ref in refs if ref.type == Nudges.resource.type)
     except Refused:
         return True
 
@@ -25,6 +26,13 @@ def written_by_person(record, ref: Ref) -> bool:
     return ref.type != Messages.resource.type or USER in row_of(record, ref).seen[:1]
 
 
+def awaiting_person(context: Context, ref: Ref) -> bool:
+    """A message, question or comment from the person that nothing has answered yet; one the agent already reacted to or answered, handed over again by a journal line, asks for nothing."""
+    if not written_by_person(context.record, ref):
+        return False
+    return ref.type != Messages.resource.type or not answered(context.journal, context.journal.get(Messages).load(ref.n))
+
+
 def tells_something(row, text: str) -> bool:
     return bool(row.failure or row.turn_wrote or "?" in text or CARRIED.search(text))
 
@@ -32,9 +40,11 @@ def tells_something(row, text: str) -> bool:
 class HideJournalOnlyTurns(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
         row, text = context.agent.row, event.text.strip()
-        if event.data.get("stopped") or row.prompted != JOURNAL or tells_something(row, text):
+        if event.data.get("stopped") or row.prompted != JOURNAL:
             return
-        if reply_kept(context.record, row.delivered):
+        if tells_something(row, text) or reply_kept(context, row.delivered):
+            if not context.once("sent turn", str(event.data.get("turn", ""))):
+                event.stop()
             return
         event.stop()
         if context.once("kept out", "told"):
