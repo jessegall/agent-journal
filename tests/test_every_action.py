@@ -490,8 +490,8 @@ def test_every_type_with_its_own_word_for_create_is_created_over_http():
     renamed = [type_ for type_, resource in TYPES.items() if "create" in resource.command_names]
     answers = {type_: dispatch("POST", f"/api/{record.env}/{type_}", record.root, {}, {"title": f"a {type_} from the viewer", "brief": "why", **needed(type_)})
                for type_ in renamed}
-    assert {type_: reply.code for type_, reply in answers.items()} == {type_: 201 for type_ in renamed}, \
-        {type_: reply.body for type_, reply in answers.items() if reply.code != 201}
+    assert {type_: reply.code for type_, reply in answers.items()} == {type_: 400 if TYPES[type_].agent_only else 201 for type_ in renamed}, \
+        "every type is created over http except those only the agent makes, which the server refuses"
 
 
 def test_stopping_an_environment_asks_its_terminal_or_ends_the_process_that_holds_it():
@@ -773,7 +773,7 @@ def test_a_row_of_every_type_moved_to_another_environment_keeps_its_words_and_fi
         if type(controller).move is not Controller.move:
             continue
         users = acting(type_, record, USER)
-        row = users.create(f"a {type_} to carry", brief="the brief", **needed(type_))
+        row = acting(type_, record, SYSTEM if resource.agent_only else USER).create(f"a {type_} to carry", brief="the brief", **needed(type_))
         users.attach(row.n, str(source))
         moved = users.move(row.n, "west")
         there = CONTROLLERS[type_](Record(record.root, "west"), actor=USER)

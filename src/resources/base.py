@@ -170,6 +170,7 @@ class Resource:
     cleared_by: ClassVar[str] = CLEARED     # what takes it off the user's list: opening it, completing it, or the user clearing it
     filters: ClassVar[tuple] = (OPEN, CLOSED)   # the ways its list can be narrowed, shown as the tabs above it
     created_in_viewer: ClassVar[bool] = True     # its page offers a New button
+    agent_only: ClassVar[bool] = False           # the agent makes it; a user create is refused and its page has no New
     start_heading: ClassVar[str] = ""          # its heading in the start block, empty when it is not handed to a session
     start_as_count: ClassVar[bool] = False     # handed as a count, not row by row
     light_in_dashboard: ClassVar[dict[str, tuple[str, ...]]] = {}  # a heavy data field and the keys of it the dashboard's rows keep

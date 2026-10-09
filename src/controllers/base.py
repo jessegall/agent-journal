@@ -242,6 +242,8 @@ class Controller(Files, Links, Discussed):
 
     @marks.action
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
+        if self.resource.agent_only and self.actor == USER:
+            self._refuse(f"a {self.type} is made by the agent, never by you")
         key = data.get(IDEMPOTENCY, "")
         made = self.rows.by_idempotency(key) if key else None
         if made is not None:
