@@ -461,6 +461,17 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     runtime.hook_failures(record.root).write_text(f"{started - 3} 000 claude {record.env}\n{started + 3} 000 claude {record.env}\n")
     http.unanswered(record.root)
     assert not told, "a hook that got no answer while the server restarted, warm-up included, is not reported"
+    runtime.restarting(record.root).write_text(str(started - 60))
+    runtime.mark_started(record.root)
+    assert (runtime.restarting(record.root).exists(), runtime.RESTARTED_AT[0] < runtime.STARTED[0] - 59) == (False, True), \
+        "the new server takes the restart marker away and remembers when the restart began"
+    runtime.mark_started(record.root)
+    assert runtime.RESTARTED_AT[0] == 0.0, "a server that starts with no marker, as after a crash, hides nothing before its start"
+    started = runtime.STARTED[0]
+    runtime.hook_failures(record.root).write_text(f"{started - http.RESTART_GRACE - 5} 000 claude {record.env}\n")
+    http.unanswered(record.root)
+    assert told, "after a crash, with no marker, a failure from before the new server's grace is reported"
+    told.clear()
     runtime.hook_failures(record.root).write_text(f"{started + http.RESTART_GRACE + 5} 000 claude {record.env}\n")
     http.unanswered(record.root)
     assert told, "a hook with no answer long after the server was up is reported"
