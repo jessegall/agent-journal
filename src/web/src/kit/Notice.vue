@@ -71,8 +71,11 @@ defineProps({
     margin-left: auto;
 }
 
+.notice-brief,
 .notice-report {
-    --band: var(--tone-good);
+    border-left: 0;
+    border-radius: 0;
+    background: var(--bg-2);
 }
 
 .notice-wait {
