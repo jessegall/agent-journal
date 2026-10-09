@@ -101,7 +101,9 @@ await runScenarios(process.argv[2], leavingThemOff({
         if (await card.locator("[data-gmail-account]").count()) throw new Error("the Gmail card shows the address, which belongs on the settings page");
         await card.getByRole("button", {name: "Settings"}).click();
         const settings = page.locator('[data-settings="gmail"]');
+        const fetchingSaved = page.waitForResponse(written);
         await settings.getByRole("switch", {name: "Read Gmail into tickets"}).click();
+        await fetchingSaved;
         await settings.locator("[data-gmail-account]").waitFor();
         await settings.locator("[data-gmail-search]").waitFor();
         const saved = page.waitForResponse((answer) => written(answer) && (answer.request().postData() || "").includes("me@gmail.com"));
