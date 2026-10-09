@@ -11,7 +11,7 @@ import {ui} from "../state/ui.js";
 
 const summary = computed(() => store.summary);
 const every = computed(() =>
-    orchestraOf(summary.value && summary.value.environments, summary.value && summary.value.helpers, Date.now() / 1000)
+    orchestraOf(summary.value && summary.value.environments, summary.value && [...(summary.value.helpers || []), ...(summary.value.tickets || [])], Date.now() / 1000)
 );
 const slots = ref([]);
 watch(every, (now) => (slots.value = slotsFor(slots.value, now)), {immediate: true});
