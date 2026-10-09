@@ -471,16 +471,25 @@ class RowStore:
         for row in rows:
             self.load(row["n"])
 
+    def _peeked(self, rows) -> list[Resource]:
+        found = []
+        for row in rows:
+            try:
+                found.append(self.peek(row["n"]))
+            except Missing:
+                continue
+        return found
+
     def viewed(self) -> list[Resource]:
-        return [self.peek(row["n"]) for row in self.summaries() if not row["deleted"]]
+        return self._peeked(row for row in self.summaries() if not row["deleted"])
 
     def attached(self) -> list[Resource]:
-        return [self.peek(row["n"]) for row in self.summaries() if row["files"] and not row["deleted"]]
+        return self._peeked(row for row in self.summaries() if row["files"] and not row["deleted"])
 
     def every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:
-            rows = [self.peek(row["n"]) for row in self.summaries()]
+            rows = self._peeked(self.summaries())
             rows = wholes([r for r in rows if deleted or not r.deleted], lambda r: r.data.get(PART_OF))
             if memo is None:
                 return self.order(rows)
@@ -492,9 +501,9 @@ class RowStore:
         return [*own, *self.also()]
 
     def kept(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
-        standing = [self.peek(row["n"]) for row in self.standing_summaries()]
+        standing = self._peeked(self.standing_summaries())
         if not closed_since:
             return self.order(standing)
         closed = [row for row in self.summaries() if row["completed"] and not row["deleted"] and row["completed"] >= closed_since]
         kept = sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed
-        return self.order(standing + [self.peek(row["n"]) for row in kept])
+        return self.order(standing + self._peeked(kept))

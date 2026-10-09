@@ -369,6 +369,11 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     wide = tickets.load(tickets.create("Wide", board=rewrite.n).n)
     assert (tickets._lacking(wide), tickets._into_at(wide, "autoscaling", nested), tickets._into_at(wide, ".", project)) == (["autoscaling"], "trunk", "rewrite"), \
         "a nested repository without the board's branch falls back to its own default branch; the project's own repository keeps the board's"
+    from controllers.types import Environments
+    environments = Environments(record, actor=SYSTEM)
+    stale = [*environments.rows.summaries(), {**environments.rows.summaries()[0], "n": 999, "deleted": 0}]
+    monkeypatch.setattr(environments.rows, "summaries", lambda: stale)
+    assert 999 not in [env.n for env in environments.rows.every()], "an environment removed between the listing and the read is left out of the list, never raised as Missing"
 
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
