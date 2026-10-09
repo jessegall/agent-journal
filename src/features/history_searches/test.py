@@ -62,6 +62,12 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
         time.sleep(0.02)
     monkeypatch.setattr(queries, "LOAD_LIMIT", 0.4)
     assert "haystack" in captured(["--env", record.env, "search", "haystack"], record.root)[0], "the next search finds it once it is loaded"
+    import serve
+    from controllers.base import SEARCHABLE
+    SEARCHABLE.clear()
+    serve.warm_texts(record.root)
+    assert any(folder.endswith("todo") for folder in SEARCHABLE) and any(folder.endswith("message") for folder in SEARCHABLE), \
+        "a start reads the text of every to-do and message once, in the warm-up, so the first search after it reads nothing"
     from commands.queries import environment_transcript
     assert environment_transcript(record) is environment_transcript(record), "the merged turns of the conversations are kept while none of them has changed, not sorted again for every search"
     with transcript.open("a") as out:
