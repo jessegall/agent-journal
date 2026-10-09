@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.56 — Updates that never take the viewer offline, quicker replies, and agent cells that say what is happening
+- An update's backup is copied before the lock and only its changes under it, a starting server never waits for another process's migrations, and the dump-files step runs in one quick pass, so the server keeps answering through an update.
+- A reply no longer scans every message and comment: who links a row comes from an index kept with the row summaries.
+- A tool-use hook rewrites its session file at most every few seconds, and the ticket nudges skip their work when no board is orchestrated here.
+- A cell on Home shows what the agent last said and a plain line for what it is doing, never a bare tool name.
+- A running command's card in the chat has its icon beside its label at the top.
+
 ## 2.267.55 — The Board chip
 - The board menu beside the mode switch is one chip: Board, a thin divider, then the board's name; a click anywhere on it opens the menu.
 
