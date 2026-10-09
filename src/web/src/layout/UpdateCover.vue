@@ -39,9 +39,11 @@ watch(() => store.summary?.version, showArrival);
     <template v-if="updating.countdown && !locked()">
         <div class="cover" role="alertdialog" aria-live="polite" aria-label="Updating the journal">
             <div class="panel">
-                <p class="title">Updating to {{ updating.countdown.version }}</p>
                 <template v-if="updating.countdown.starting">
                     <Spinner :size="22" class="spin" />
+                </template>
+                <p class="title">Updating to {{ updating.countdown.version }}</p>
+                <template v-if="updating.countdown.starting">
                     <p class="step">Starting the update</p>
                 </template>
                 <template v-else>
