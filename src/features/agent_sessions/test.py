@@ -287,6 +287,14 @@ def test_a_compaction_is_recorded_once_on_the_agent():
     assert describe(record.root) == [], "a stopping task already described is left alone"
     assert mend(record.root) == [f"t agent {agent.n}: 1 marks without a label"], "a chat mark without a label is dropped"
     assert agents.load(agent.n).data["cards"] == [{"label": "kept"}], "the labelled marks stay"
+    from migrations.m0078_one_agent_row_per_session import run as fold
+    twin = agents.create("claude-1", status="stopped")
+    agents.stamp(twin.n, compactions=[{"at": 5.0}, {"at": 9.0}], at=1)
+    agents.stamp(agent.n, compactions=[{"at": 7.0}], at=50)
+    assert fold(record.root) == [f"session claude-1 had 2 agent rows in {record.env}, so {twin.n} was folded into {agent.n}"], "a session with two agent rows is folded into the one that reported last"
+    assert ([row.n for row in agents.rows.every() if row.title == "claude-1" and not row.deleted], [mark["at"] for mark in agents.load(agent.n).data["compactions"]]) == ([agent.n], [5.0, 7.0, 9.0]), \
+        "one row is left and it keeps every compaction in order"
+    assert fold(record.root) == [], "a session with one row is left alone"
     record.set_setting("agent_sessions", {"quiet": 1})
     record.set_setting("triggers", {"agent_sessions.liveness": {"every": 0, "unit": "minutes"}})
     report(record, "working", "PreToolUse", session="claude-2")
