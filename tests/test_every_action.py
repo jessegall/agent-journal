@@ -1141,6 +1141,11 @@ def test_an_upload_and_the_file_route_stay_inside_the_rows_folder_for_every_type
             "a refused call leaves the attached files as they were": sorted(controller.load(row.n).files) == attached == ["a.txt", "b.txt"],
         })
     assert wrong == {}, "an upload and the file route stay inside the row's folder for every type"
+    from engine.multipart import uploads
+    binary = b"PK\x03\x04\r\n\r\nzip\x00\xff\r\n"
+    raw = b'--cut\r\nContent-Disposition: form-data; name="note"\r\n\r\nno file here\r\n--cut\r\nContent-Disposition: form-data; name="file"; filename="a.zip"\r\nContent-Type: application/zip\r\n\r\n' + binary + b"\r\n--cut--\r\n"
+    assert [(u.name, bytes(u.data)) for u in uploads("multipart/form-data; boundary=cut", raw)] == [("a.zip", binary)], \
+        "a file's bytes come out exactly as sent, blank lines inside them included, and a part that is no file is left out"
 
 
 def test_no_chip_marker_is_kept_in_a_row_of_any_type_or_reaches_a_command_or_a_nudge():

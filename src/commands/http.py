@@ -3,8 +3,6 @@ import mimetypes
 import os
 import tempfile
 import time
-from email import policy
-from email.parser import BytesParser
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -14,6 +12,7 @@ from typing import Iterator
 from urllib.parse import quote
 
 import features
+from engine.multipart import uploads
 from features.auto_update.countdown import remaining
 from controllers.shared import row_shared
 from surfaces.package import archive as extension_archive, info as extension_info
@@ -631,17 +630,13 @@ def get_file(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/{type}/{n}/upload")
 def post_upload(req: Request) -> Reply:
-    message = BytesParser(policy=policy.default).parsebytes(b"Content-Type: " + req.body["_type"].encode() + b"\r\n\r\n" + req.body["_raw"])
     controller = req.controller()
     n = int(req.params["n"])
     names = []
     with tempfile.TemporaryDirectory() as folder:
-        for part in message.iter_parts():
-            name = part.get_filename()
-            if not name:
-                continue
-            f = contained(Path(folder), name)
-            f.write_bytes(part.get_payload(decode=True))
+        for sent in uploads(req.body["_type"], req.body["_raw"]):
+            f = contained(Path(folder), sent.name)
+            f.write_bytes(sent.data)
             controller.attach(n, str(f))
             names.append(f.name)
     return Reply(200, {"files": names})
