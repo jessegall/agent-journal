@@ -162,6 +162,8 @@ def run(argv: list[str], out=None, err=None) -> int:
         if getattr(got, "preface", ""):
             print(got.preface, file=out)
         print(got.dump() if hasattr(got, "dump") else got, file=out)
+        if method == "create" and hasattr(got, "n"):
+            print(f"{command} {got.n}", file=out)
     return 0
 
 

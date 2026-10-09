@@ -138,14 +138,16 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     reports.spent(record.root, record.env, "command", "message all", 500.0, profile=profile)
     kept = list(runtime.profiles(record.root).glob("*-message-all-500ms.txt"))
     assert len(kept) == 1 and "function calls" in kept[0].read_text(), "a slow call over the budget keeps its profile in a file named for what was slow"
-    from engine.timing import SAMPLE_AFTER, Sampler
+    from engine.timing import Sampler
     sampler = Sampler()
     sampler.start()
-    time.sleep(SAMPLE_AFTER * 1.8)
+    waited = time.time()
+    while not sampler.taken and time.time() - waited < 5:
+        time.sleep(0.01)
     stacks = sampler.stop()
     assert "(this request)" in stacks and "test_" in stacks, "a request that runs past the sample time records where its thread and every other thread were"
-    reports.spent(record.root, record.env, "request", "GET /api/main/dashboard", 500.0, stacks=stacks)
-    asked = list(runtime.profiles(record.root).glob("*-GET-_api_main_dashboard-500ms.txt"))
+    reports.spent(record.root, record.env, "command", "stack sample", 500.0, stacks=stacks)
+    asked = list(runtime.profiles(record.root).glob("*-stack-sample-500ms.txt"))
     assert len(asked) == 1 and "Where every thread was while this ran" in asked[0].read_text(), "the stack samples are kept beside the profile, or alone when no profile was taken"
     reports.spent(record.root, record.env, "command", "message all", 500.0, profile=profile)
     reports.spent(Path("/nonexistent/journal"), "main", "command", "message all", 500.0, profile=profile)
