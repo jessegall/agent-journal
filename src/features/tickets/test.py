@@ -614,6 +614,15 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     assert ticket_calls.handed_in(tickets, ticket), "a done plan on a clean branch with its agent idle is handed in"
     monkeypatch.setattr(Tickets, "_clean", lambda self, found: False)
     assert not ticket_calls.handed_in(tickets, ticket), "a dirty branch is not handed in"
+    from types import SimpleNamespace as Told
+    assert ticket_calls.ended_turns(record, Told(told=0)) == [], "a turn that has not ended says nothing"
+    report(record, "working", "PreToolUse", session="claude-9")
+    report(record, "idle", "Stop", session="claude-9", last_message="Final report: all done")
+    report(record, "working", "PreToolUse", session="claude-10")
+    ended = ticket_calls.ended_turns(record, Told(told=0))
+    assert [(kind, values["text"]) for kind, _, values, _ in ended] == [("ticket_replied", "Final report: all done")], \
+        "a ticket agent's last report reaches the orchestrator even with no message written and another agent row working"
+    assert ticket_calls.ended_turns(record, Told(told=time.time() + 5)) == [], "a report from before the orchestrator last spoke to the agent is not told again"
     from types import SimpleNamespace
     from controllers.types import Questions
     whispered = []

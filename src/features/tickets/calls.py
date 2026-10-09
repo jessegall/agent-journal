@@ -5,6 +5,7 @@ from engine.record import Record
 from engine.worktree import git
 from features.plans.controller import DONE as PLAN_DONE
 from features.tickets.details import TicketsDetails
+from providers.payload import HookEvent
 from resources.base import AGENT, SYSTEM
 from controllers.agents import WORKING_STATE
 
@@ -28,8 +29,19 @@ def calls(tickets, ticket) -> list[tuple[str, str, dict, int]]:
     messages = Messages(place, actor=SYSTEM)
     written = [messages.load(row["n"]) for row in messages.rows.summaries() if ticket.told and row["seen"][:1] == [AGENT] and row["updated"] > ticket.told and not row["deleted"]]
     replies = [("ticket_replied", message.ref, {"text": message.title}, 0) for message in written if message.created > ticket.told]
+    replies += ended_turns(place, ticket)
     done = [(PLAN_DONE_CALL, f"plan:{ticket.plan}", {}, soon)] if handed_in(tickets, ticket) else []
     return asks + awaits + replies + done
+
+
+def ended_turns(place: Record, ticket) -> list[tuple[str, str, dict, int]]:
+    """The last report of a ticket's agent when its turn ended after the orchestrator last spoke to it, whichever of its agent rows ended it, so a final report is never lost for lack of a message."""
+    stopped = [row for row in Agents(place, actor=SYSTEM).rows.every()
+               if row.data.get("event") == HookEvent.STOP and row.data.get("last_message") and float(row.data.get("at") or 0) > float(ticket.told or 0)]
+    if not stopped:
+        return []
+    last = max(stopped, key=lambda row: float(row.data.get("at") or 0))
+    return [("ticket_replied", f"turn:{last.n}:{int(float(last.data['at']))}", {"text": last.data["last_message"][:300]}, 0)]
 
 
 def waits_on_people(root, text: str) -> bool:
