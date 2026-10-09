@@ -6,6 +6,7 @@ from engine.package import data
 from engine.record import Record
 from engine.upgrades import FETCHING, newer, upstream
 from engine.version import version
+from features.auto_update.countdown import cancel
 from features.auto_update.new_feature import mark_seen, unseen
 from features.routing import Reply, Request, handles
 from resources.base import Refused
@@ -55,6 +56,12 @@ def post_update(req: Request) -> Reply:
         raise Refused(f"{chosen} is not a released version")
     threading.Thread(target=installed, args=(req.root, bool(req.body.get("yes")), chosen), daemon=True).start()
     return Reply(200, {"updating": True})
+
+
+@handles("POST", "/api/update/cancel")
+def post_update_cancel(req: Request) -> Reply:
+    cancel(req.root)
+    return Reply(200, {"cancelled": True})
 
 
 @handles("GET", "/api/releases")

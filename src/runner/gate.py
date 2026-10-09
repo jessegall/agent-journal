@@ -4,11 +4,13 @@ from dataclasses import dataclass
 from engine.command_line import command_line
 from engine import bus
 from engine.journal_calls import JournalCall, pieces
+from engine.inputs import UPDATE
 from engine.gates import AFTERWARDS, DISPATCHING, POLICIES, HookCall, cancelled
 from engine.reach import Reach
 from resources.base import AGENT
 
 PAUSED = "The user paused the agent: wait, and carry on only once you are resumed."
+PAUSED_FOR_UPDATE = "The journal is updating and has paused you: start no command, wait, and carry on only once you are told to continue."
 PAUSE = Reach.BOTH
 EXPANDING = ("$", "`", "<<")
 ANSWERED, KEPT_ANSWERED = "answers_ran", 200
@@ -53,7 +55,7 @@ def gated(call: HookCall) -> str | None:
 
 def refusal(call: HookCall) -> str | None:
     if paused(call):
-        return PAUSED
+        return PAUSED_FOR_UPDATE if call.row.paused_for == UPDATE else PAUSED
     why = gated(call)
     if why is None:
         return None

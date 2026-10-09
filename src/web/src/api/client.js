@@ -63,6 +63,10 @@ export class ApiClient {
         return this.get("/changelog");
     }
 
+    cancelUpdate() {
+        return this.post("/update/cancel", {});
+    }
+
     checkForUpdate() {
         return this.post("/update/check", {});
     }

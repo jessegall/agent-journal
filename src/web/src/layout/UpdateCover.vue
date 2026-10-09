@@ -4,6 +4,8 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import Toast from "../kit/Toast.vue";
+import {api} from "../api/client.js";
+import {report} from "../platform/faults.js";
 import {useNow} from "../composables/now.js";
 import {store} from "../state/store.js";
 import {forgetUpdate, locked, stepAt, updatedTo, updating} from "../state/updating.js";
@@ -12,6 +14,7 @@ import {go, route} from "../route.js";
 const now = useNow();
 const step = computed(() => updating.step || stepAt(Math.max(0, now.value - updating.since)));
 const arrived = ref(null);
+const left = computed(() => (updating.countdown ? Math.max(0, Math.ceil(updating.countdown.until - now.value)) : 0));
 
 function showArrival(version) {
     const target = updatedTo();
@@ -22,12 +25,26 @@ function showArrival(version) {
 
 const reload = () => window.location.reload();
 
+function cancel() {
+    updating.countdown = null;
+    api.cancelUpdate().catch((error) => report("threw", error.message, "POST /api/update/cancel"));
+}
+
 onMounted(() => showArrival(store.summary?.version));
 watch(() => store.summary?.version, showArrival);
 </script>
 
 <template>
-    <template v-if="locked()">
+    <template v-if="updating.countdown && !locked()">
+        <div class="cover" role="alertdialog" aria-live="polite" aria-label="Updating the journal">
+            <div class="panel">
+                <p class="title">Updating to {{ updating.countdown.version }}</p>
+                <p class="step">Starts in {{ left === 1 ? "1 second" : `${left} seconds` }}</p>
+                <Btn small class="cancel" @click="cancel">Cancel</Btn>
+            </div>
+        </div>
+    </template>
+    <template v-else-if="locked()">
         <div class="cover" role="alertdialog" aria-live="polite" aria-label="Updating the journal" aria-busy="true">
             <div class="panel">
                 <Spinner :size="22" class="spin" />
@@ -73,6 +90,10 @@ watch(() => store.summary?.version, showArrival);
     background: var(--raised);
     box-shadow: var(--tip-shadow);
     text-align: center;
+}
+
+.cancel {
+    margin-top: 10px;
 }
 
 .spin {

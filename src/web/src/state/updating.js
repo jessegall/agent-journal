@@ -6,10 +6,15 @@ export const STEPS = ["Installing the new version", "Restarting the journal", "L
 const SECOND_STEP_AT = 8;
 const THIRD_STEP_AT = 25;
 
-export const updating = reactive({version: "", failure: "", late: false, since: 0, external: false, step: ""});
+export const updating = reactive({version: "", failure: "", late: false, since: 0, external: false, step: "", countdown: null});
 
 export const stepAt = (seconds) => (seconds < SECOND_STEP_AT ? STEPS[0] : seconds < THIRD_STEP_AT ? STEPS[1] : STEPS[2]);
 export const locked = () => Boolean(updating.version || updating.external) && !updating.failure && !updating.late;
+
+// The automatic update the server is counting down to, with the second it starts at; none clears it.
+export function counting(countdown) {
+    updating.countdown = countdown && countdown.version ? {version: countdown.version, until: Date.now() / 1000 + countdown.seconds} : null;
+}
 
 export function begin(version) {
     Object.assign(updating, {version, failure: "", late: false, since: Date.now() / 1000, step: ""});
@@ -26,7 +31,7 @@ export function runLate() {
 }
 
 export function clear() {
-    Object.assign(updating, {version: "", failure: "", late: false, since: 0, external: false, step: ""});
+    Object.assign(updating, {version: "", failure: "", late: false, since: 0, external: false, step: "", countdown: null});
 }
 
 // Follows the server's own report of an upgrade; true once an upgrade seen running has finished.

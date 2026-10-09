@@ -130,6 +130,37 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert (len(running(record.root)), bool(closed.running.get("done")), steps[:1], gave_up[0].startswith("gave up waiting for `npm test`")) == \
         (0, True, ["Waiting for 1 running command to finish"], True), "an update waits a bounded time for the commands in flight, then names the one it gave up on and marks it ended"
     assert wait_for_commands(record.root, steps.append, wait=0.05, every=0.01) == [], "with nothing running the update does not wait"
+    import threading
+    from features.auto_update import countdown
+    assert (countdown.wait(record.root, "2.9.0", seconds=0.1, every=0.01), countdown.remaining(record.root)) == (True, {}), "an automatic update that is not cancelled runs after its countdown"
+    counted = []
+    runner = threading.Thread(target=lambda: counted.append(countdown.wait(record.root, "2.9.1", seconds=5, every=0.01)))
+    runner.start()
+    time.sleep(0.1)
+    assert countdown.remaining(record.root)["version"] == "2.9.1" and dispatch("GET", "/api/summary", record.root, {}, {}).body["countdown"]["version"] == "2.9.1", \
+        "the viewer is told which update is counting down"
+    assert dispatch("POST", "/api/update/cancel", record.root, {}, {}).code == 200
+    runner.join(2)
+    assert (counted, countdown.remaining(record.root)) == ([False], {}), "cancelling the countdown skips that update"
+    from engine import inputs
+    from engine.sessions import Sessions
+    from features.auto_update import pausing
+    for session, pid in (("claude-1", 1111), ("claude-2", 4242)):
+        Sessions(record.root).write(session, pid=pid)
+    monkeypatch.setattr(pausing, "live", lambda root: [(None, SimpleNamespace(session=name, provider="claude")) for name in ("claude-1", "claude-2")])
+    monkeypatch.setattr(pausing, "ancestors", lambda: {4242})
+
+    def queued() -> list:
+        return sorted((one.session, one.action, one.value) for one in (inputs.read_json(path, inputs.Input.from_json, None) for path in runtime.inputs(record.root).glob("*.json")) if one)
+
+    assert pausing.pause_all(record.root) == ["paused 1 agent for the update"] and queued()[-1:] == [("claude-1", inputs.PAUSE, inputs.UPDATE)], \
+        "an update pauses every live agent for the update, but the one whose own command runs it"
+    runtime.upgrade_mark(record.root).write_text("Installing the new files")
+    assert (pausing.resume_when_done(record.root), len(pausing.paused(record.root))) == (0, 1), "the agents stay paused while the update runs"
+    runtime.upgrade_mark(record.root).unlink()
+    assert (pausing.resume_when_done(record.root), pausing.paused(record.root), ("claude-1", inputs.RESUME, inputs.UPDATE) in queued()) == (1, [], True), \
+        "once the update is over they are resumed, each told so, once"
+    assert pausing.resume_when_done(record.root) == 0
     from features.auto_update import waiting
     report(record, "working", "PreToolUse", session="claude-8", provider="claude", commands=[{"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()}],
            running={"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()})

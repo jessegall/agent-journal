@@ -255,6 +255,10 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME)
     assert (engine.pausing(), engine.paused, calls[-1]) == ("resumed", False, f"send {engine_module.RESUMED}"), "resuming tells the agent to carry on"
     assert engine.pausing() == ""
+    inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
+    assert (engine.pausing(), engine.paused, f"send {engine_module.PAUSED_FOR_UPDATE}" in calls) == ("Paused", True, True), "an agent paused for the update is told so"
+    inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
+    assert (engine.pausing(), engine.paused, calls[-1]) == ("resumed", False, f"send {engine_module.RESUMED_AFTER_UPDATE}"), "and is told when it may go on"
 
     calls.clear()
     inputs.queue(root, "claude-1", (), "Force through", action=inputs.FORCE)

@@ -13,6 +13,7 @@ BACKGROUND = "background"
 SHELL = "shell"
 PAUSE = "pause"
 RESUME = "resume"
+UPDATE = "the update"
 KEYS = (FORCE, PERMIT, BACKGROUND, PAUSE, RESUME)
 
 
