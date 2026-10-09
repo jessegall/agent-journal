@@ -19,7 +19,7 @@ const emit = defineEmits(["click"]);
         @click.stop="props.clickable && emit('click')"
     >
         <Icon :name="props.icon" :size="props.small ? 10 : 12" />
-        <span>{{ props.label }}</span>
+        <span class="label" :title="props.label">{{ props.label }}</span>
     </component>
 </template>
 
@@ -38,6 +38,13 @@ const emit = defineEmits(["click"]);
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.bubble-header .label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .bubble-header.clickable {
