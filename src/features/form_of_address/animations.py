@@ -17,6 +17,7 @@ OFFSETS = "_offsets.json"
 ORIGIN = "resting pose tile top-left at stage x=256, y=256; apply offset_x and offset_y in pixels"
 SHEET = re.compile(r"_(sheet|atlas)\.png$", re.I)
 MAX_WEIGHT = 1000
+RIGS = "rigs"
 MAX_SPOT = 128
 
 
@@ -160,7 +161,8 @@ def shipped_animations(voices: Path, art: str) -> list[Animation]:
     voice = voice_of(art)
     if not voice or not voices.is_dir():
         return []
-    for folder in [*sorted((p for p in voices.rglob("*") if p.is_dir()), reverse=True), voices]:
+    sheets = (p for p in voices.rglob("*") if p.is_dir() and RIGS not in p.relative_to(voices).parts)
+    for folder in [*sorted(sheets, reverse=True), voices]:
         found = [Animation.of(str(f.relative_to(voices)), voice, shipped=True) for f in sorted(folder.glob(f"{voice}_*.png"))]
         if any(found):
             return [animation for animation in found if animation]

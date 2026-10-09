@@ -7,143 +7,205 @@
   "layers": [
     {
       "name": "thigh_right",
-      "file": "homie_thigh_right.png",
+      "file": "homie_thigh_right_rest.png",
       "order": 0,
       "parent": "torso",
       "pivot": [
         91,
         156
-      ]
+      ],
+      "states": {
+        "rest": "homie_thigh_right_rest.png",
+        "complete": "homie_thigh_right.png"
+      }
     },
     {
       "name": "shin_right",
-      "file": "homie_shin_right.png",
+      "file": "homie_shin_right_rest.png",
       "order": 1,
       "parent": "thigh_right",
       "pivot": [
         112,
         187
-      ]
+      ],
+      "states": {
+        "rest": "homie_shin_right_rest.png",
+        "complete": "homie_shin_right.png"
+      }
     },
     {
       "name": "foot_right",
-      "file": "homie_foot_right.png",
+      "file": "homie_foot_right_rest.png",
       "order": 2,
       "parent": "shin_right",
       "pivot": [
         124,
         208
-      ]
+      ],
+      "states": {
+        "rest": "homie_foot_right_rest.png",
+        "complete": "homie_foot_right.png"
+      }
     },
     {
       "name": "thigh_left",
-      "file": "homie_thigh_left.png",
+      "file": "homie_thigh_left_rest.png",
       "order": 3,
       "parent": "torso",
       "pivot": [
         137,
         156
-      ]
+      ],
+      "states": {
+        "rest": "homie_thigh_left_rest.png",
+        "complete": "homie_thigh_left.png"
+      }
     },
     {
       "name": "shin_left",
-      "file": "homie_shin_left.png",
+      "file": "homie_shin_left_rest.png",
       "order": 4,
       "parent": "thigh_left",
       "pivot": [
         157,
         185
-      ]
+      ],
+      "states": {
+        "rest": "homie_shin_left_rest.png",
+        "complete": "homie_shin_left.png"
+      }
     },
     {
       "name": "foot_left",
-      "file": "homie_foot_left.png",
+      "file": "homie_foot_left_rest.png",
       "order": 5,
       "parent": "shin_left",
       "pivot": [
         173,
         204
-      ]
+      ],
+      "states": {
+        "rest": "homie_foot_left_rest.png",
+        "complete": "homie_foot_left.png"
+      }
     },
     {
       "name": "upper_arm_right",
-      "file": "homie_upper_arm_right.png",
+      "file": "homie_upper_arm_right_rest.png",
       "order": 7,
       "parent": "torso",
       "pivot": [
         46,
         118
-      ]
+      ],
+      "states": {
+        "rest": "homie_upper_arm_right_rest.png",
+        "reach": "homie_upper_arm_right_reach.png",
+        "complete": "homie_upper_arm_right.png"
+      }
     },
     {
       "name": "forearm_right",
-      "file": "homie_forearm_right.png",
+      "file": "homie_forearm_right_rest.png",
       "order": 8,
       "parent": "upper_arm_right",
       "pivot": [
         69,
         144
-      ]
+      ],
+      "states": {
+        "rest": "homie_forearm_right_rest.png",
+        "reach": "homie_forearm_right_reach.png",
+        "complete": "homie_forearm_right.png"
+      }
     },
     {
       "name": "hand_right",
-      "file": "homie_hand_right.png",
-      "order": 9,
+      "file": "homie_hand_right_rest.png",
+      "order": 45,
       "parent": "forearm_right",
       "pivot": [
         100,
         137
-      ]
+      ],
+      "states": {
+        "rest": "homie_hand_right_rest.png",
+        "grip": "homie_hand_right_grip.png",
+        "complete": "homie_hand_right.png"
+      }
     },
     {
       "name": "upper_arm_left",
-      "file": "homie_upper_arm_left.png",
+      "file": "homie_upper_arm_left_rest.png",
       "order": 11,
       "parent": "torso",
       "pivot": [
         136,
         115
-      ]
+      ],
+      "states": {
+        "rest": "homie_upper_arm_left_rest.png",
+        "reach": "homie_upper_arm_left_reach.png",
+        "complete": "homie_upper_arm_left.png"
+      }
     },
     {
       "name": "forearm_left",
-      "file": "homie_forearm_left.png",
+      "file": "homie_forearm_left_rest.png",
       "order": 12,
       "parent": "upper_arm_left",
       "pivot": [
         134,
         135
-      ]
+      ],
+      "states": {
+        "rest": "homie_forearm_left_rest.png",
+        "reach": "homie_forearm_left_reach.png",
+        "complete": "homie_forearm_left.png"
+      }
     },
     {
       "name": "hand_left",
-      "file": "homie_hand_left.png",
-      "order": 13,
+      "file": "homie_hand_left_rest.png",
+      "order": 46,
       "parent": "forearm_left",
       "pivot": [
         122,
         138
-      ]
+      ],
+      "states": {
+        "rest": "homie_hand_left_rest.png",
+        "grip": "homie_hand_left_grip.png",
+        "complete": "homie_hand_left.png"
+      }
     },
     {
       "name": "torso",
-      "file": "homie_torso.png",
-      "order": 15,
+      "file": "homie_torso_rest.png",
+      "order": -1,
       "parent": null,
       "pivot": [
         96,
         149
-      ]
+      ],
+      "states": {
+        "rest": "homie_torso_rest.png",
+        "complete": "homie_torso.png"
+      }
     },
     {
       "name": "head",
-      "file": "homie_head.png",
+      "file": "homie_head_rest.png",
       "order": 20,
       "parent": "torso",
       "pivot": [
         91,
         97
-      ]
+      ],
+      "states": {
+        "rest": "homie_head_rest.png",
+        "complete": "homie_head.png"
+      }
     },
     {
       "name": "eyes",
@@ -163,7 +225,8 @@
         "look_left": "homie_eyes_look_left.png",
         "look_right": "homie_eyes_look_right.png",
         "look_up": "homie_eyes_look_up.png",
-        "look_down": "homie_eyes_look_down.png"
+        "look_down": "homie_eyes_look_down.png",
+        "rest": "homie_eyes_happy.png"
       }
     },
     {
@@ -178,7 +241,9 @@
       "states": {
         "closed": "homie_mouth_closed.png",
         "open": "homie_mouth_open.png",
-        "smile": "homie_mouth_smile.png"
+        "smile": "homie_mouth_smile.png",
+        "rest": "homie_mouth_closed.png",
+        "strain": "homie_mouth_strain.png"
       }
     },
     {
