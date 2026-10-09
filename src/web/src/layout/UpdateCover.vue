@@ -55,7 +55,11 @@ watch(() => store.summary?.version, showArrival);
         <div class="cover" role="alertdialog" aria-live="polite" aria-label="Updating the journal" aria-busy="true">
             <div class="panel">
                 <Spinner :size="22" class="spin" />
-                <p class="title">{{ updating.version ? `Updating to ${updating.version}` : "Updating the journal" }}</p>
+                <p class="title">
+                    {{
+                        updating.version || updating.target ? `Updating to ${updating.version || updating.target}` : "Updating the journal"
+                    }}
+                </p>
                 <p class="step">{{ step }}</p>
             </div>
         </div>

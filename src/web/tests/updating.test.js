@@ -48,7 +48,7 @@ describe("while the journal updates", () => {
         counting({version: "2.268.0", seconds: 0, starting: true});
         expect([updating.countdown.starting, locked()]).toEqual([true, false]);
         counting({});
-        expect(updating.countdown).toBe(null);
+        expect([updating.countdown, updating.target]).toEqual([null, "2.268.0"]);
         begin("2.268.0");
         expect([updating.countdown, locked()]).toEqual([null, true]);
     });

@@ -137,7 +137,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     runtime.upgrade_mark(record.root).write_text("Preparing the update")
     assert countdown.remaining(record.root) == {}, "once the upgrade holds the mark the steps take over from the countdown"
     runtime.upgrade_mark(record.root).unlink()
-    countdown.cancel(record.root)
+    assert countdown.remaining(record.root) == {}, "and a finished upgrade does not bring the starting phase back"
     counted = []
     runner = threading.Thread(target=lambda: counted.append(countdown.wait(record.root, "2.9.1", seconds=5, every=0.01)))
     runner.start()
