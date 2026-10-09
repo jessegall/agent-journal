@@ -44,6 +44,7 @@ from features.routing import JSON, PLAIN, Reply, Request
 from resources.base import Missing
 
 from controllers.invoke import invoked, takes_row
+from features.open_viewer.attachments import FileKind
 from features.format import VIEWER, carded, shaped
 from features.open_viewer.transcripts import TRANSCRIPT_PAGE
 from surfaces.everything import found
@@ -395,6 +396,21 @@ def post_forget(req: Request) -> Reply:
 @route("GET", "/api/{env}/files")
 def get_files(req: Request) -> Reply:
     return Reply(200, invoked(req.as_user(Environments), "attachments"))
+
+
+@dataclass(frozen=True)
+class FilesQuery(Loaded):
+    kind: FileKind = FileKind.ALL
+    shelf: str | None = None
+    search: str = ""
+    last: int = 60
+    skip: int = 0
+
+
+@route("GET", "/api/{env}/files/page")
+def get_files_page(req: Request) -> Reply:
+    asked = req.query_as(FilesQuery)
+    return Reply(200, invoked(req.as_user(Environments), "attached", named={"kind": asked.kind, "shelf": asked.shelf, "search": asked.search, "last": asked.last, "skip": asked.skip}))
 
 
 @route("GET", "/api/{env}/project-files")

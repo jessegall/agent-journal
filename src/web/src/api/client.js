@@ -714,6 +714,10 @@ export class ApiClient {
         return this.get(this.here("/files"));
     }
 
+    filesPage({kind, shelf, search, last, skip}) {
+        return this.get(this.here(`/files/page${query({kind, shelf: shelf || undefined, search: search || undefined, last, skip: skip || undefined})}`));
+    }
+
     changes() {
         return this.get(this.here("/changes"));
     }
