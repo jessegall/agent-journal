@@ -115,7 +115,7 @@ usePoll("shared", ask, REFRESH_MS, take, () => !failed.value);
 
 const currentRef = computed(() => {
     const open = route.value.open;
-    const asked = open ? `${open.type}:${open.n}` : "";
+    const asked = open ? `${open.env ? `${open.env}/` : ""}${open.type}:${open.n}` : "";
     return data.value?.rows[asked] ? asked : data.value?.share.target;
 });
 const rowOf = (ref) => {
