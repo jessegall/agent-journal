@@ -132,6 +132,7 @@ const activity = computed(() =>
 const away = ref(false);
 const planOpen = ref(true);
 let lastTop = 0;
+let lastScroll = 0;
 let planTimer = 0;
 const PLAN_SETTLE = 180;
 const PLAN_MOVE = 500;
@@ -244,7 +245,7 @@ function toBottom(smooth = false) {
 
 watch(
     () => ui.flash.at,
-    () => nextTick(() => toBottom(settledOnce.value))
+    () => nextTick(() => away.value || toBottom(settledOnce.value))
 );
 
 watch(
@@ -296,6 +297,10 @@ function scrolledByHand() {
 function wheeled(e) {
     scrolledByHand();
     const s = scroller.value;
+    if (e.deltaY < 0 && s && s.scrollHeight > s.clientHeight + AT_BOTTOM) {
+        glidedAt = 0;
+        away.value = true;
+    }
     if (e.deltaY > 0 && s && s.scrollHeight - s.scrollTop - s.clientHeight <= AT_BOTTOM) settlePlan(true);
 }
 
@@ -341,10 +346,20 @@ function holdBottom() {
     setTimeout(() => pin.disconnect(), PLAN_MOVE);
 }
 
+function leftTheBottom(s) {
+    const up = s.scrollTop < lastScroll - 1;
+    lastScroll = s.scrollTop;
+    if (!up || s.scrollHeight - s.scrollTop - s.clientHeight <= AT_BOTTOM) return;
+    glidedAt = 0;
+    away.value = true;
+    if (settledOnce.value) scrolledUp.value = true;
+}
+
 function watchScroll() {
     const s = scroller.value;
     if (!s) return;
     const gap = followPlan(s);
+    leftTheBottom(s);
     if (Date.now() - glidedAt < GLIDE) return;
     const far = gap > 40;
     if (far && !away.value && !store.focus && Date.now() - scrolledAt > BY_HAND) {
