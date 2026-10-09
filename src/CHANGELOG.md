@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.57 — The orchestrator answers its agents' permission requests
+- With auto mode and orchestrator mode both on, a helper's or ticket agent's permission request goes to the orchestrating agent, which allows or denies it with journal agent permit; the agent's cell says it waits on the orchestrator, not on you.
+- The viewer waits a minute before it says the journal is taking too long to respond.
+
 ## 2.267.56 — Updates that never take the viewer offline, quicker replies, and agent cells that say what is happening
 - An update's backup is copied before the lock and only its changes under it, a starting server never waits for another process's migrations, and the dump-files step runs in one quick pass, so the server keeps answering through an update.
 - A reply no longer scans every message and comment: who links a row comes from an index kept with the row summaries.
