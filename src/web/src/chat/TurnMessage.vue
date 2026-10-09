@@ -228,7 +228,6 @@ async function drop() {
         </template>
         <TurnActions
             :turn="turn"
-            :mine="mine"
             :text="words.text"
             :picking="picking"
             @update:picking="picking = $event"

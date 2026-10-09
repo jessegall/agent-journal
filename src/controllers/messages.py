@@ -1,6 +1,6 @@
 from controllers.base import Controller, CONTROLLERS
 from resources import types
-from resources.base import AGENT, USER, Refused, Resource, titled
+from resources.base import AGENT, SYSTEM, USER, Refused, Resource, titled
 from controllers.comments import Comments
 from controllers.marks import action
 
@@ -16,6 +16,12 @@ class Messages(Controller):
     @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
         return super().update(n, titled(brief) if title is None and brief is not None else title, abstract, brief, outcome, **data)
+
+    @action
+    def delete(self, n: int, why: str = "") -> Resource:
+        if self.actor != SYSTEM and self.load(n).author != USER:
+            self._refuse(f"message {n} was not written by you: only a message you sent can be deleted")
+        return super().delete(n, why)
 
     def _imported(self, turns: list[tuple[str, str, float]], outcome: str) -> None:
         with self.record.locked():

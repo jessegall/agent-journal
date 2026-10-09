@@ -63,6 +63,11 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     footer = Todos(record, actor=AGENT).create("wire up the footer")
     Messages(record, actor=AGENT).process(ask.n, "please wire up the footer too", f"todo {footer.n}")
     assert Messages(record).load(ask.n).completed, "a message processed into a row is handled at once, not when the agent next goes idle"
+    from tests.conftest import refused
+    by_agent = Messages(record, actor=AGENT).create("a line from the agent")
+    assert "only a message you sent" in refused(lambda: Messages(record, actor=USER).delete(by_agent.n, "gone")), "a message the user did not write cannot be deleted, whoever asks"
+    Messages(record, actor=USER).delete(ask.n, "gone")
+    assert Messages(record).load(ask.n).deleted, "a message the user wrote can be deleted"
     report(record, "working", "PreToolUse")
     report(record, "idle", "Stop")
     assert Messages(record).load(ask.n).completed, "a message that asked for no answer is closed once the agent has filed what it asked for"
