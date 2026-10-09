@@ -62,7 +62,9 @@ const FACTS = {
 };
 const REFRESH_MS = 20000;
 const VIEW_REFRESH_MS = 5000;
+const SETTLED_AFTER = 2;
 const data = ref(null);
+const loads = ref(0);
 const failed = ref(false);
 const reconnecting = ref(false);
 const drafts = reactive({});
@@ -99,6 +101,7 @@ function stock(rows, types = {}) {
 function take(got) {
     stock(got.rows || {}, got.types || {});
     data.value = got;
+    loads.value += 1;
     failed.value = false;
     reconnecting.value = false;
 }
@@ -129,7 +132,13 @@ const target = computed(() => rowOf(data.value?.share.target));
 const kind = computed(() => target.value?.type || "");
 const look = computed(() => LOOKS[kind.value] || {noun: kind.value, icon: "docs"});
 const facts = computed(() => (target.value ? (FACTS[kind.value] || reading)(target.value) : []));
-const sideline = computed(() => timeline.value.length > 0 && !narrow.value);
+const missing = computed(() => {
+    const row = currentRow.value;
+    if (row?.type !== "plan" || loads.value >= SETTLED_AFTER) return false;
+    const held = new Set((store.rows.todo || []).filter((r) => r.env === row.env).map((r) => r.n));
+    return row.data.phases.some((phase) => phase.todos.some((n) => !held.has(n)));
+});
+const sideline = computed(() => (timeline.value.length > 0 || missing.value) && !narrow.value);
 const sent = ref([]);
 const thread = computed(() => {
     const known = data.value?.comments || [];
@@ -193,7 +202,7 @@ watch(currentRef, () => (read.value = 0));
                                 <CollectionPage :resource="currentRow" read-only />
                             </template>
                             <template #plan>
-                                <PlanPage :resource="currentRow" read-only pin-progress />
+                                <PlanPage :resource="currentRow" read-only pin-progress :holding="missing" />
                             </template>
                             <template #default>
                                 <ResourceBody :resource="currentRow" :comments="false" :links="false" read-only />
@@ -243,7 +252,12 @@ watch(currentRef, () => (read.value = 0));
                 <template v-if="sideline">
                     <aside class="share-timeline">
                         <h2 class="timeline-heading">Timeline</h2>
-                        <PlanTimeline :items="timeline" @open="(n) => peekThere(currentRow?.env || '', 'todo', n)" />
+                        <template v-if="missing">
+                            <Skeleton shape="text" :count="3" label="Loading the timeline" />
+                        </template>
+                        <template v-else>
+                            <PlanTimeline :items="timeline" @open="(n) => peekThere(currentRow?.env || '', 'todo', n)" />
+                        </template>
                     </aside>
                 </template>
             </div>

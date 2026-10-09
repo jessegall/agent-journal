@@ -72,6 +72,28 @@ await runScenarios(OPEN, {
         await page.getByRole("button", {name: "Open plan of ticket 1"}).first().click();
         await page.getByText("Done elsewhere").first().waitFor();
     },
+    async "a plan of another environment shows skeleton rows and a skeleton timeline until its to-dos have arrived"(page) {
+        await page.clock.install();
+        let replies = 0;
+        await page.route("**/data.json", async (route) => {
+            replies += 1;
+            const got = await route.fetch();
+            const body = await got.json();
+            if (replies === 1) {
+                for (const ref of Object.keys(body.rows)) if (ref.includes("todo:")) delete body.rows[ref];
+                for (const row of Object.values(body.rows)) row.members = row.members.filter((member) => !member.includes("todo:"));
+            }
+            await route.fulfill({response: got, json: body});
+        });
+        await page.goto(`${COLLECTION}#?tab=plans&open=plan:1@ticket-1`);
+        await page.getByText("Done elsewhere").first().waitFor();
+        await page.locator(".bones").first().waitFor();
+        await page.locator(".share-timeline [aria-label=\"Loading the timeline\"]").first().waitFor();
+        if (await page.getByText("Add the theme tokens").count()) throw new Error("the to-do showed before it had arrived");
+        await page.clock.fastForward(25000);
+        await page.getByText("Add the theme tokens").first().waitFor();
+        if (await page.locator(".bones").count()) throw new Error("the skeleton rows stayed after the to-dos arrived");
+    },
     async "a link that ended says so"(page) {
         await page.goto(ENDED);
         await page.getByText(/Nothing is shared on this link/).first().waitFor();

@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from http.server import ThreadingHTTPServer
 from typing import NamedTuple
 
-from controllers.types import Docs
+from controllers.types import Docs, Todos
 from features.collections.controller import Collections
 from features.plans.controller import Plans
 from features.boards.controller import Boards
@@ -41,6 +41,10 @@ def served() -> Iterator[SharedPages]:
     ticket = Record(record.root, "ticket-1")
     ticket.home.mkdir(parents=True)
     away = Plans(ticket, actor=AGENT).create("Plan from the ticket", goal="Done elsewhere")
+    Plans(ticket, actor=AGENT).phase(away.n, "Build it", when="it is built")
+    Plans(ticket, actor=AGENT).stage(away.n, "todos")
+    Plans(ticket, actor=AGENT).place(away.n, 1, [Todos(ticket, actor=AGENT).create("Add the theme tokens").n])
+    Plans(ticket, actor=AGENT).ready(away.n)
     group = Collections(record, actor=AGENT).create("Launch pile")
     Collections(record, actor=AGENT).add(group.n, [f"doc:{doc.n}", f"ticket-1/{away.ref}"])
     board = Boards(record, actor=USER).create("Launch board", stages=["Ideas", "Doing"], goal="Visitors log in without a reload", done_when=["The login page loads", "A wrong password is refused"])
