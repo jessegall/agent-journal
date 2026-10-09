@@ -54,8 +54,10 @@ def wait_for_commands(root, step: Callable[[str], None], wait: float = WAIT_SECO
     """Waits a bounded time for the commands in flight to finish before the build is swapped, and names the ones it gave up on."""
     until = time.time() + wait
     open_runs = running(root)
-    while open_runs and time.time() < until:
+    while open_runs:
         step(f"Waiting for {len(open_runs)} running command{'s' if len(open_runs) > 1 else ''} to finish")
+        if time.time() >= until:
+            break
         time.sleep(every)
         open_runs = running(root)
     return [ended(record, row, wait) for record, row in open_runs]
