@@ -240,13 +240,6 @@ const openSkills = () => go(route.value.env, "skills");
             <template #view="{view, pane, tune}">
                 <SwitchCase :value="view">
                     <template #chat>
-                        <p class="pane-note">
-                            {{
-                                subagent
-                                    ? `What the main agent asked this subagent, and what it answered. It can't be messaged.`
-                                    : "The conversation with this agent."
-                            }}
-                        </p>
                         <template v-if="subagent">
                             <SubagentChat :turns="turns" :loading="transcriptLoading" :session="chatSession || session" read-only />
                         </template>
@@ -255,9 +248,6 @@ const openSkills = () => go(route.value.env, "skills");
                         </template>
                     </template>
                     <template #transcript>
-                        <p class="pane-note">
-                            What the agent did, step by step. {{ turns.length ? `${turns.length} of ${total} lines · live` : "Live" }}
-                        </p>
                         <TranscriptLog ref="log" class="fill" :transcript="transcript" :entries="turns" :env="env" />
                     </template>
                     <template #terminal>

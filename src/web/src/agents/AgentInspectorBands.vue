@@ -1,10 +1,9 @@
 <script setup>
-import {ref, watch} from "vue";
 import {clock} from "../format/time.js";
 import {briefOpen} from "../composables/briefBand.js";
 import Btn from "../kit/Btn.vue";
 import Notice from "../kit/Notice.vue";
-import TextDisplay from "../kit/TextDisplay.vue";
+import OpenableText from "../kit/OpenableText.vue";
 
 defineProps({
     confirm: {type: Object, default: null},
@@ -16,13 +15,6 @@ defineProps({
     resume: {type: Object, default: null},
 });
 const emit = defineEmits(["cancel", "confirmed", "show-plan", "resume"]);
-const reportOpen = ref(false);
-watch(briefOpen, (open) => open && (briefWhole.value = true));
-const briefWhole = ref(false);
-const briefToggle = () => {
-    briefWhole.value = !briefWhole.value;
-    briefOpen.value = briefWhole.value;
-};
 </script>
 
 <template>
@@ -41,24 +33,22 @@ const briefToggle = () => {
         </template>
         <template v-if="brief">
             <Notice tone="brief">
-                <strong>Brief from the main agent</strong>
-                <small class="inspector-sent">Sent {{ clock(brief.at) }}</small>
-                <TextDisplay :class="['inspector-brief', {whole: briefWhole}]" :text="brief.text" />
-                <template #actions>
-                    <Btn small @click="briefToggle">{{ briefWhole ? "Show less" : "Show the whole brief" }}</Btn>
-                </template>
+                <OpenableText label="Brief" title="Brief from the main agent" :text="brief.text" :shown="briefOpen" @close="briefOpen = false">
+                    <template #more>
+                        <small class="inspector-sent">Sent {{ clock(brief.at) }}</small>
+                    </template>
+                </OpenableText>
             </Notice>
         </template>
         <template v-if="report">
             <Notice tone="report">
-                <strong>Its report</strong>
-                <TextDisplay :class="['inspector-report', {whole: reportOpen}]" :text="report.text" />
-                <template #actions>
-                    <Btn small @click="reportOpen = !reportOpen">{{ reportOpen ? "Show less" : "Show the whole report" }}</Btn>
-                    <template v-if="report.href">
-                        <Btn small :href="report.href">{{ report.label }}</Btn>
+                <OpenableText label="Report" title="Its report" :text="report.text">
+                    <template #more>
+                        <template v-if="report.href">
+                            <Btn small :href="report.href">{{ report.label }}</Btn>
+                        </template>
                     </template>
-                </template>
+                </OpenableText>
             </Notice>
         </template>
         <template v-if="stateKey === 'waiting' && plan">
@@ -96,36 +86,9 @@ const briefToggle = () => {
     display: none;
 }
 
-.inspector-report {
-    margin-top: 4px;
-    max-height: 5.4em;
-    overflow: hidden;
-    color: var(--text-2);
-    font-weight: 400;
-}
-
 .inspector-sent {
-    margin-left: 8px;
+    flex: none;
     color: var(--text-3);
     font-weight: 400;
-}
-
-.inspector-brief {
-    display: block;
-    margin-top: 4px;
-    max-height: 3.6em;
-    overflow: hidden;
-    color: var(--text-2);
-    font-weight: 400;
-}
-
-.inspector-brief.whole {
-    max-height: 260px;
-    overflow-y: auto;
-}
-
-.inspector-report.whole {
-    max-height: 40vh;
-    overflow-y: auto;
 }
 </style>
