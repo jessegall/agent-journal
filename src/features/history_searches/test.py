@@ -26,6 +26,7 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     last = (Agents(record, actor=SYSTEM).load(agent.n).data.get("cards") or [])[-1]
     assert last["label"] == 'Searched messages for "assign"', "searching one kind of row names that kind and what was searched for"
     import json
+    import time
     from commands.cli import captured
     from providers import transcript_cache
     from providers.claude import Claude
@@ -50,6 +51,17 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     assert (captured(["--env", record.env, "search", "haystack"], record.root)[0].count("haystack") >= 1, len(reads)) == (True, 1), \
         "a restart reads the conversation back from the folds kept on disk, not from the file again"
     assert search_folds.restored(transcript, transcript.stat().st_size) is not None, "the folds are kept beside the transcript's size and position"
+    from commands import queries
+    from providers import turns as turns_module
+    TURNS.clear()
+    monkeypatch.setattr(queries, "LOAD_LIMIT", -1.0)
+    over = captured(["--env", record.env, "search", "haystack"], record.root)[0]
+    assert "conversations are still being read" in over, "a conversation the time limit left out is loaded behind the answer, and the search says how many are still being read"
+    waited = time.monotonic() + 5
+    while turns_module.LATER and time.monotonic() < waited:
+        time.sleep(0.02)
+    monkeypatch.setattr(queries, "LOAD_LIMIT", 0.4)
+    assert "haystack" in captured(["--env", record.env, "search", "haystack"], record.root)[0], "the next search finds it once it is loaded"
     from commands.queries import environment_transcript
     assert environment_transcript(record) is environment_transcript(record), "the merged turns of the conversations are kept while none of them has changed, not sorted again for every search"
     with transcript.open("a") as out:
