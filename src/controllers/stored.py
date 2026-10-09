@@ -17,6 +17,7 @@ DRAFT_OF = "draft_of"
 IDEMPOTENCY = "idempotency"
 
 INDEX = "index.json"
+CACHE = ".index"
 CHANGES = "changes.log"
 PACKED = "packed"
 ARCHIVE = "zip"
@@ -49,6 +50,11 @@ def mtime(path: Path) -> int:
         return path.stat().st_mtime_ns
     except OSError:
         return 0
+
+
+def index_file(folder: Path) -> Path:
+    """Where a folder keeps the index of its rows: in a folder of its own, so saving it never changes the modification time of the folder that holds the rows."""
+    return folder / CACHE / INDEX
 
 
 def numbered(n: int) -> str:
@@ -109,11 +115,17 @@ class Stamped:
     inodes: dict
     noted: int
 
+def saved(folder: Path, rows: dict) -> None:
+    """Writes a folder's row index to its place, and takes away the index an older version left beside the rows."""
+    write_json(index_file(folder), rows)
+    (folder / INDEX).unlink(missing_ok=True)
+
+
 def flush_indexes() -> None:
     """Writes the row indexes that a read left to be saved later, so no request waits on a write of its own."""
     for key in list(UNSAVED):
         folder, rows = UNSAVED.pop(key)
-        write_json(folder / INDEX, dict(rows))
+        saved(folder, dict(rows))
         WRITTEN[key] = time.time()
 
 
@@ -408,7 +420,7 @@ class RowStore:
     def _loose(self, folder: Path) -> dict[int, dict]:
         stamps = self._stamps(folder)
         held = INDEXED.get(str(folder))
-        known = held or {int(n): row for n, row in read_json(folder / INDEX, dict, {}).items()}
+        known = held or {int(n): row for n, row in read_json(index_file(folder), dict, read_json(folder / INDEX, dict, {})).items()}
         needed = {"created", IDEMPOTENCY, "files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
         stale = self._stale(stamps, known, INDEXED_AT.get(str(folder)) if held else None, needed)
         gone = known.keys() - stamps.keys()
@@ -424,11 +436,11 @@ class RowStore:
                 continue
             rows[n] = self._row(r, stamps[n])
         changed = len(stale) + len(gone)
-        due = changed >= FLUSH_ROWS or time.time() - WRITTEN.get(str(folder), 0.0) >= FLUSH_SECONDS or not (folder / INDEX).is_file()
+        due = changed >= FLUSH_ROWS or time.time() - WRITTEN.get(str(folder), 0.0) >= FLUSH_SECONDS or not index_file(folder).is_file()
         if changed and due and DEFER.is_set():
             UNSAVED[str(folder)] = (folder, rows)
         elif changed and due:
-            write_json(folder / INDEX, rows)
+            saved(folder, rows)
             WRITTEN[str(folder)] = time.time()
         if changed:
             PENDING.setdefault(str(folder), set()).update(gone, stale)
