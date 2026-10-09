@@ -462,6 +462,14 @@ def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_ba
     (root / "runtime" / "heartbeat").unlink(missing_ok=True)
     hook(display)
     assert list((root / "runtime" / "unsent").glob("*.json")), "the display hook keeps what the server could not take"
+    unsent = lambda: sorted((root / "runtime" / "unsent").glob("*.json"))
+    after = {"hook_event_name": "PostToolUse", "session_id": "s1", "cwd": str(root.parent), "tool_name": "Bash", "tool_input": {"command": "echo spooled"}, "tool_response": {"stdout": "spooled"}}
+    kept_before = len(unsent())
+    hook(after)
+    hook({**after, "hook_event_name": "PreToolUse"})
+    spooled = unsent()[kept_before:]
+    assert len(spooled) == 1 and json.loads(spooled[0].read_text())["body"]["hook_event_name"] == "PostToolUse", \
+        "an event that decides nothing is kept in the spool whole, and one that decides something is not"
     server = serving()
     try:
         began, listed = time.time(), ""
@@ -472,6 +480,12 @@ def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_ba
         server.terminate()
         server.wait(WAIT)
     assert "said while the server was down" in listed, "a message shown while the server was down reaches the chat once it is back"
+    from controllers.types import Agents
+    from engine.record import Record
+    from engine import runtime as runtime_folder
+    from resources.base import SYSTEM
+    assert not unsent() and Agents(Record(root, runtime_folder.env(root)), actor=SYSTEM).by_session("s1").data.get("tool") == "Bash", \
+        "and so does an event the hook kept: the server replays it, and the spool is empty"
 
 
 def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatch):
@@ -1778,3 +1792,52 @@ def test_the_first_hooks_after_an_upgrade_answer_within_budget_on_a_long_transcr
         f"the first hooks after an upgrade answer within their budget on a long transcript; they worked {[round(ms) for ms in working]} ms"
     assert (max(spans, default=0) <= transcript_cache.RECENT_BYTES, whole_reads.count() - before) == (True, 0), \
         "and read only a bounded tail of it while they answer and after, never the whole transcript"
+
+
+def test_a_chained_command_runs_through_the_rewrite_with_the_same_output_and_exit_status_and_each_part_reports(tmp_path):
+    root = installed(tmp_path, CODE)
+    project = root.parent
+    env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": ""}
+    journal = [sys.executable, str(root / "journal.py"), "--root", str(root)]
+    wired = json.loads((project / ".claude" / "settings.local.json").read_text())["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
+    for args in (("init", "-q", "-b", "main"), ("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "start")):
+        subprocess.run(["git", *args], cwd=project, capture_output=True, timeout=WAIT, check=True)
+    server = subprocess.Popen([*journal, "serve", "--port", "0"], cwd=project, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        began = time.time()
+        while time.time() - began < WAIT and not (root / "runtime" / "heartbeat").is_file():
+            time.sleep(0.1)
+        cases = ["echo a; echo b && false || echo c", "printf 'x\\ny\\n' | sort -r | head -1; echo done", "cd /tmp && pwd; ls /nonexistent-dir 2>&1 | head -1; echo $?",
+                 "echo out; echo err >&2; exit 3", "git tag v1; echo tagged"]
+        rewritten = 0
+        for at, command in enumerate(cases):
+            asked = {"hook_event_name": "PreToolUse", "session_id": "s1", "cwd": str(project), "permission_mode": "bypassPermissions", "tool_use_id": f"toolu_e2e{at}",
+                     "tool_name": "Bash", "tool_input": {"command": command}}
+            answer = subprocess.run(["sh", "-c", wired], input=json.dumps(asked), text=True, env=env, capture_output=True, timeout=WAIT).stdout
+            stepped = json.loads(answer)["hookSpecificOutput"]["updatedInput"]["command"]
+            rewritten += "journal_step" in stepped
+            run = lambda text: subprocess.run(["sh", "-c", text], cwd=project, capture_output=True, text=True, timeout=WAIT)
+            if "git tag" in command:
+                subprocess.run(["git", "tag", "-d", "v1"], cwd=project, capture_output=True, timeout=WAIT)
+            original = run(command)
+            if "git tag" in command:
+                subprocess.run(["git", "tag", "-d", "v1"], cwd=project, capture_output=True, timeout=WAIT)
+            through = run(stepped)
+            assert (through.stdout, through.stderr, through.returncode) == (original.stdout, original.stderr, original.returncode), f"{command!r} gives the same output and exit status through the rewrite"
+        assert rewritten == len(cases), "every chained command was rewritten into steps"
+        heredoc = {"hook_event_name": "PreToolUse", "session_id": "s1", "cwd": str(project), "permission_mode": "bypassPermissions", "tool_use_id": "toolu_e2eh",
+                   "tool_name": "Bash", "tool_input": {"command": "cat <<EOF\nhello\nEOF\necho after"}}
+        left = subprocess.run(["sh", "-c", wired], input=json.dumps(heredoc), text=True, env=env, capture_output=True, timeout=WAIT).stdout
+        assert "updatedInput" not in left, "a command with a heredoc is left whole"
+        from controllers.types import Agents
+        from engine import runtime as runtime_folder
+        from engine.record import Record
+        from resources.base import SYSTEM
+        began, marks = time.time(), []
+        while "Tagged `v1`" not in marks and time.time() - began < WAIT:
+            time.sleep(0.3)
+            marks = [card.get("label") for card in Agents(Record(root, runtime_folder.env(root)), actor=SYSTEM).by_session("s1").data.get("cards") or []]
+        assert "Tagged `v1`" in marks, "the part that tagged reported to the server and marked the chat once it had run"
+    finally:
+        server.terminate()
+        server.wait(WAIT)

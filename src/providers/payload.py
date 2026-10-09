@@ -518,6 +518,29 @@ def call_of(raw: dict, kinds: dict) -> ToolUse:
 
 
 @dataclass(frozen=True)
+class InputRewrite:
+    """The instruction that makes a provider run a tool with this input in place of the one the agent asked for."""
+
+    tool_input: dict
+    command: str
+
+    def to_json(self) -> dict:
+        return {"permissionDecision": "allow", "updatedInput": {**self.tool_input, "command": self.command}}
+
+
+@dataclass(frozen=True)
+class RewrittenAnswer:
+    """The answer the gates gave with an input rewrite folded into its pre-tool-use output."""
+
+    answered: dict
+    rewrite: InputRewrite
+
+    def to_json(self) -> dict:
+        output = {"hookEventName": HookEvent.PRE_TOOL_USE, **(self.answered.get("hookSpecificOutput") or {}), **self.rewrite.to_json()}
+        return {**self.answered, "hookSpecificOutput": output}
+
+
+@dataclass(frozen=True)
 class Hook(Loaded):
     aliases = {"event": ("hook_event_name",), "session": ("session_id",), "transcript": ("transcript_path",),
                "last_message": ("last_assistant_message",), "agent": ("agent_id",), "tool_use": ("tool_use_id", "call_id")}

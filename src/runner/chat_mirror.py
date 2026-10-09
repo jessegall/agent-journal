@@ -62,13 +62,13 @@ def unsent(root: Path) -> Path:
     return runtime.folder(root) / "unsent"
 
 
-def replay(root: Path) -> None:
+def replay_file(root: Path, kept: Path, body: dict | None = None) -> None:
+    """A kept display event goes to the chat; the file is taken whatever it holds."""
+    raw = body if body is not None else read_json(kept, dict, {})
+    kept.unlink(missing_ok=True)
     with REPLAYING:
-        for f in sorted(unsent(root).glob("*.json"), key=lambda f: (f.stat().st_mtime_ns, f.name)):
-            raw = read_json(f, dict, {})
-            f.unlink(missing_ok=True)
-            for chunk in display_chunks(raw):
-                shown(root, chunk)
+        for chunk in display_chunks(raw):
+            shown(root, chunk)
 
 
 def display_chunks(raw: dict) -> list[Chunk]:
@@ -76,7 +76,6 @@ def display_chunks(raw: dict) -> list[Chunk]:
 
 
 def displayed(root: Path, chunk: Chunk) -> None:
-    replay(root)
     shown(root, chunk)
 
 

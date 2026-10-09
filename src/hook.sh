@@ -8,10 +8,18 @@ unhealthy_wait=0.05
 healthy_wait=10
 body=$(mktemp) || exit 0
 cat > "$body"
+# an event that decides nothing is kept in the spool, with who sent it, and the server replays it in order when it next reads;
+# one that decides something (a refusal, a context, a nudge at the stop) is answered now or not at all
+spool() {
+  mkdir -p "$root/runtime/unsent" || return
+  name="$root/runtime/unsent/$(date +%s)-$$"
+  { printf '{"agent":"%s","env":"%s","pid":%s,"body":' "$agent" "$JOURNAL_ENV" "${PPID:-0}"; cat "$body"; printf '}'; } > "$name.tmp" && mv "$name.tmp" "$name.json"
+}
 keep() {
-  if grep -q '"hook_event_name" *: *"MessageDisplay"' "$body"; then
-    mkdir -p "$root/runtime/unsent" && mv "$body" "$root/runtime/unsent/$(date +%s)-$$.json"
-  fi
+  case $(grep -o '"hook_event_name" *: *"[A-Za-z]*"' "$body" | head -1) in
+    *PreToolUse*|*PermissionRequest*|*UserPromptSubmit*|*Stop\"|*SessionStart*) ;;
+    *) spool ;;
+  esac
   rm -f "$body"
   exit 0
 }

@@ -13,7 +13,7 @@ from providers.payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, Loop
 from providers.tested import testing_piece
 from providers.base import REFUSED, BackgroundTasks, HookCommand, OpenCommands, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
 from providers.jsonl import lines_from, parsed_row, rows, tail_lines
-from providers.payload import Dispatch, Hook, HookEvent, ToolCall
+from providers.payload import Dispatch, Hook, HookEvent, InputRewrite, RewrittenAnswer, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
 from engine.proc import run
@@ -373,8 +373,7 @@ class Claude(Provider):
     def rewritten(self, hook: Hook, command: str, answered: dict) -> dict:
         if hook.permission_mode != BYPASSING:
             return answered
-        instruction = {"permissionDecision": "allow", "updatedInput": {**hook.tool.tool_input, "command": command}}
-        return {**answered, "hookSpecificOutput": {"hookEventName": HookEvent.PRE_TOOL_USE, **(answered.get("hookSpecificOutput") or {}), **instruction}}
+        return RewrittenAnswer(answered, InputRewrite(hook.tool.tool_input, command)).to_json()
 
     def shell_wrapper(self, script: Path) -> dict:
         return {"CLAUDE_CODE_SHELL_PREFIX": str(script)}

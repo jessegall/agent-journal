@@ -30,6 +30,7 @@ from controllers.faults import broke, log_file
 from runner.chat_mirror import displayed
 from runner.hooks import answer
 from engine.stepped import call_of
+from runner.spool import replay
 from runner.stepping import report_step
 from engine.record import Record
 from providers import PROVIDERS
@@ -84,6 +85,7 @@ def unanswered(root: Path) -> None:
 
 SHOWN_HITS = 30
 STREAM_BEAT = 15.0
+SPOOLED_AT_ONCE = 25
 
 @dataclass(frozen=True)
 class HookQuery(Loaded):
@@ -194,7 +196,8 @@ def post_hook(req: Request) -> Reply:
     provider = PROVIDERS[req.params["provider"]]()
     chunk = provider.display_chunk(req.body)
     if chunk is not None:
-        return Reply(200, {}, after=lambda: displayed(req.root, chunk), after_lane=chunk.session)
+        return Reply(200, {}, after=lambda: (replay(req.root), displayed(req.root, chunk)), after_lane=chunk.session)
+    replay(req.root, SPOOLED_AT_ONCE)
     hook = Hook.read({**req.body, "inbox": asked.inbox}, provider.tool_kinds)
     out = answer(provider, req.root, hook, asked.pid, asked.env)
     return Reply(403 if provider.refused(out) else 200, out, after_lane=hook.session)
