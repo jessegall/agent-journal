@@ -26,6 +26,7 @@ WORDS = ("title", "abstract", "brief")
 FIELD_WRITES = ("create", "update", "set")
 LAST = 25
 SEARCHABLE: dict[str, dict[int, tuple[float, str]]] = {}
+SEARCHED: dict[str, tuple[list, bool]] = {}
 
 
 @dataclass(frozen=True)
@@ -532,12 +533,16 @@ class Controller(Files, Links, Discussed):
 
     def _texts(self, archived: bool = False) -> dict[int, tuple[str, str]]:
         """Each row's searchable text beside the stamp it was read at, kept between searches and read again only for a changed row."""
-        kept = SEARCHABLE.setdefault(str(self.rows.folder()), {})
-        for row in self.rows.summaries():
+        folder = str(self.rows.folder())
+        kept, rows, seen = SEARCHABLE.setdefault(folder, {}), self.rows.summaries(), SEARCHED.get(folder)
+        if seen and seen[0] is rows and (seen[1] or not archived):
+            return kept
+        for row in rows:
             version = row["stamp"]
             if row["deleted"] and not archived or kept.get(row["n"], (None,))[0] == version:
                 continue
             kept[row["n"]] = (version, searchable(self.rows.peek(row["n"])))
+        SEARCHED[folder] = (rows, archived or bool(seen and seen[0] is rows and seen[1]))
         return kept
 
     @marks.action
