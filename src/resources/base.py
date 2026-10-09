@@ -158,6 +158,7 @@ class Pruned(Enum):
 @dataclass
 class Resource:
     details: ClassVar[ResourceDetails] = ResourceDetails()
+    home_env = ""   # the environment a row read from another one came from; "" for a row of the reader's own
     command_names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
     status_labels: ClassVar[dict] = {}    # how the bar says a command on it: {"complete": "answering"}
     formatted_data: ClassVar[dict] = {}  # data lists whose items carry words a person reads: {"cards": ("detail",)}
@@ -233,8 +234,6 @@ class Resource:
         for name in TEXT_FIELDS:
             setattr(self, name, change(getattr(self, name)))
         self.sections = [{**part, SECTION.title: change(part[SECTION.title]), SECTION.body: change(part[SECTION.body])} for part in self.sections]
-
-    home_env = ""   # the environment a row read from another one came from; "" for a row of the reader's own
 
     @property
     def ref(self) -> str:

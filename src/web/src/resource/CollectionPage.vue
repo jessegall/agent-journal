@@ -4,7 +4,8 @@ import EmptyState from "../kit/EmptyState.vue";
 import {computed, inject, reactive, ref, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
-import {peek} from "../route.js";
+import {peekThere, route} from "../route.js";
+import {usePoll} from "../composables/poll.js";
 import {byRef} from "../domain/records.js";
 import {age} from "../format/time.js";
 import ResourceBody from "./ResourceBody.vue";
@@ -17,29 +18,50 @@ const emit = defineEmits(["close"]);
 const fetched = reactive({});
 const loading = new Set();
 
-async function load(ref) {
-    if (fetched[ref] || loading.has(ref)) return;
-    loading.add(ref);
-    const [type, n] = ref.split(":");
+const ELSEWHERE_EVERY = 5000;
+const placed = (ref) => {
+    const [env, row] = ref.includes("/") ? ref.split("/") : ["", ref];
+    const [type, n] = row.split(":");
+    return {env, type, n: Number(n)};
+};
+
+async function read(ref) {
+    const {env, type, n} = placed(ref);
     try {
-        fetched[ref] = await api.show(type, Number(n));
+        return await (env ? api.in(env) : api).show(type, n);
     } catch {
-        fetched[ref] = null;
-    } finally {
-        loading.delete(ref);
+        return null;
     }
 }
 
-const refs = computed(() => (props.resource.refs || []).filter((ref) => ref !== props.resource.data?.source));
-watchEffect(() => !props.readOnly && refs.value.filter((ref) => !byRef(ref)).forEach(load));
+async function load(ref) {
+    if (fetched[ref] || loading.has(ref)) return;
+    loading.add(ref);
+    fetched[ref] = await read(ref);
+    loading.delete(ref);
+}
 
-const fetching = computed(() => refs.value.some((ref) => !byRef(ref) && !(ref in fetched)));
+const refs = computed(() => (props.resource.refs || []).filter((ref) => ref !== props.resource.data?.source));
+const elsewhere = computed(() => refs.value.filter((ref) => placed(ref).env));
+const held = (ref) => (placed(ref).env ? fetched[ref] : byRef(ref) || fetched[ref]);
+watchEffect(() => !props.readOnly && refs.value.filter((ref) => !held(ref)).forEach(load));
+usePoll(
+    `collection-elsewhere:${props.resource.ref}`,
+    () => Promise.all(elsewhere.value.map(async (ref) => [ref, await read(ref)])),
+    ELSEWHERE_EVERY,
+    (found) => found.forEach(([ref, row]) => (fetched[ref] = row)),
+    () => !props.readOnly && elsewhere.value.length > 0
+);
+
+const fetching = computed(() => refs.value.some((ref) => !held(ref) && !(ref in fetched)));
 const members = computed(() =>
     refs.value
-        .map((ref) => byRef(ref) || fetched[ref])
+        .map((ref) => (held(ref) ? {...held(ref), at: ref, env: placed(ref).env} : null))
         .filter((r) => r && !r.deleted)
         .sort((a, b) => (b.updated || b.created) - (a.updated || a.created))
 );
+const open = (r) => peekThere(r.env || route.value.env, r.type, r.n);
+const filePath = (r, name) => (r.env ? api.in(r.env) : api).fileUrl(r.type, r.n, name);
 
 const cards = computed(() => members.value.filter((r) => r.type !== "todo"));
 const todos = computed(() => members.value.filter((r) => r.type === "todo"));
@@ -54,11 +76,11 @@ const firstLine = (r) =>
         .split("\n")
         .find((line) => line.trim()) || "";
 const hidden = reactive(new Set());
-const picture = (r) => (r.data?.hide_preview || hidden.has(r.ref) ? "" : Object.keys(r.data?.pictures || {})[0] || "");
+const picture = (r) => (r.data?.hide_preview || hidden.has(r.at) ? "" : Object.keys(r.data?.pictures || {})[0] || "");
 
 function hidePreview(r) {
-    hidden.add(r.ref);
-    api.hidePreview(r.type, r.n).catch(() => hidden.delete(r.ref));
+    hidden.add(r.at);
+    (r.env ? api.in(r.env) : api).hidePreview(r.type, r.n).catch(() => hidden.delete(r.at));
 }
 </script>
 
@@ -69,8 +91,8 @@ function hidePreview(r) {
         </template>
         <template v-if="todos.length && tab === 'todos'">
             <section class="todos" aria-label="To-dos in this collection">
-                <template v-for="r in todos" :key="r.ref">
-                    <ResourceRow :resource="r" @click="peek(r.type, r.n)" />
+                <template v-for="r in todos" :key="r.at">
+                    <ResourceRow :resource="r" @click="open(r)" />
                 </template>
             </section>
         </template>
@@ -81,11 +103,11 @@ function hidePreview(r) {
                         Nothing in this collection yet. Add an item to this collection.
                     </EmptyState>
                 </template>
-                <template v-for="r in cards" :key="r.ref">
+                <template v-for="r in cards" :key="r.at">
                     <div class="card-wrap">
-                        <button type="button" class="card" @click="peek(r.type, r.n)">
+                        <button type="button" class="card" @click="open(r)">
                             <template v-if="picture(r)">
-                                <img class="thumb" :src="fileUrl(r.type, r.n, picture(r))" :alt="picture(r)" loading="lazy" />
+                                <img class="thumb" :src="r.env ? filePath(r, picture(r)) : fileUrl(r.type, r.n, picture(r))" :alt="picture(r)" loading="lazy" />
                             </template>
                             <span class="kind">
                                 <Icon :name="meta(r.type).icon" :size="12" />
