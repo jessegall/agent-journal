@@ -101,7 +101,7 @@ function reset() {
                 </template>
                 <SwitchCase :value="row.kind">
                     <template #switch>
-                        <Switch :on="row.value" :large="sheet" :title="row.label" @change="emit('change', $event)" />
+                        <Switch :on="row.value" :large="sheet" :title="row.label" beside @change="emit('change', $event)" />
                     </template>
                     <template #color>
                         <ColorSwatch :value="row.value" :label="row.label" @change="emit('change', $event)" />

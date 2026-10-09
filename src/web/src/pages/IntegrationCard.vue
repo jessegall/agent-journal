@@ -54,7 +54,7 @@ const switchTo = (next) => saveSettings({features: {[props.feature.name]: next}}
         <p class="abstract">{{ feature.abstract }}</p>
         <div class="use">
             <span>{{ feature.label }}</span>
-            <Switch :on="on" :title="feature.label" @change="switchTo" />
+            <Switch :on="on" :title="feature.label" beside @change="switchTo" />
         </div>
         <template v-if="on">
             <template v-if="feature.mcp_server">
@@ -70,7 +70,7 @@ const switchTo = (next) => saveSettings({features: {[props.feature.name]: next}}
                 <p class="abstract" data-login>{{ signing ? login.waiting : loginState }}</p>
                 <div class="use">
                     <span>{{ switches.mcp }}</span>
-                    <Switch :on="mcp" :title="switches.mcp" @change="setMcp" />
+                    <Switch :on="mcp" :title="switches.mcp" beside @change="setMcp" />
                 </div>
             </template>
             <p class="state" data-state>{{ line }}</p>
