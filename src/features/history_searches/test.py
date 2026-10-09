@@ -68,7 +68,7 @@ def test_a_search_mark_keeps_what_the_search_found_and_what_was_read_from_it_unt
 def test_a_transcript_rewritten_in_place_is_read_again_not_served_from_the_cache(tmp_path):
     import json
     from providers import PROVIDERS
-    from providers.transcript_cache import FOLD_FORMAT
+    from providers.transcript_cache import shape_mark
     claude = PROVIDERS["claude"]()
     entry = lambda text: json.dumps({"type": "user", "timestamp": "2026-10-05T10:00:00Z", "message": {"content": text}}) + "\n"
     transcript = tmp_path / "s-1.jsonl"
@@ -87,7 +87,7 @@ def test_a_transcript_rewritten_in_place_is_read_again_not_served_from_the_cache
     try:
         first = TranscriptCache(tmp_path / "kept")
         turns = first.transcript(transcript, extend)
-        stored = first.file(("transcript", str(transcript), FOLD_FORMAT))
+        stored = first.file(("transcript", str(transcript), shape_mark()))
         waited = time.monotonic() + 2
         while not stored.exists() and time.monotonic() < waited:
             time.sleep(0.01)
@@ -102,12 +102,12 @@ def test_a_transcript_rewritten_in_place_is_read_again_not_served_from_the_cache
     assert (cache.write(("a",), 1, "state"), cache.recent(tmp_path / "gone.jsonl", lambda raw: raw), cache.before(tmp_path / "gone.jsonl", 10, 5)) == (None, [], b""), \
         "a cache that cannot be written, and a transcript that is gone, leave nothing and fail nothing"
     lines = lambda turns, read, count: turns + [line.decode() for line in read]
-    busy = cache.lock(("transcript", str(transcript), FOLD_FORMAT))
+    busy = cache.lock(("transcript", str(transcript), shape_mark()))
     busy.acquire()
     try:
         assert cache.transcript(transcript, lines) == [entry("the first word!").strip(), entry("and more of them").strip()], \
             "a transcript another request is reading answers with its newest lines instead of waiting"
-        cache.turns_behind(transcript, ("transcript", str(transcript), FOLD_FORMAT), lines)
+        cache.turns_behind(transcript, ("transcript", str(transcript), shape_mark()), lines)
         assert not cache.behind, "a read already going on is not queued a second time"
     finally:
         busy.release()
@@ -318,8 +318,8 @@ def test_no_hook_reads_more_than_a_tail_of_a_long_transcript_and_a_new_build_kee
     while not cursor.exists() and time.monotonic() < waited:
         time.sleep(0.01)
     cache.transcripts.clear()
-    monkeypatch.setattr(transcript_cache, "FOLD_FORMAT", transcript_cache.FOLD_FORMAT + 1)
-    assert PROVIDERS["claude"]().turns(transcript)[-1].line == last, "a new fold format reads the transcript from its tail again and still numbers its lines from the first"
+    monkeypatch.setattr(transcript_cache, "shape_mark", lambda: "a newer way of shaping turns")
+    assert PROVIDERS["claude"]().turns(transcript)[-1].line == last, "a new way of shaping turns reads the transcript from its tail again and still numbers its lines from the first"
     searched = PROVIDERS["claude"]().every_turn(transcript, jsonl.WholeRead.SEARCH)
     assert (len(searched) > len(PROVIDERS["claude"]().turns(transcript)), whole_reads.since(before)) == (True, (jsonl.WholeRead.SEARCH,)), \
         "only a search reads a transcript whole, and the read is recorded with its reason"

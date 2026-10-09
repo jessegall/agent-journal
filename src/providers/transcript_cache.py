@@ -1,7 +1,9 @@
+import inspect
 import pickle
 import time
 from collections import deque
 from copy import deepcopy
+from functools import cache
 from threading import Lock, Thread, get_ident
 from pathlib import Path
 from typing import Callable
@@ -21,7 +23,11 @@ STATES = "states"
 CURSOR = "cursor"
 
 
-FOLD_FORMAT = 1  # raised only when the shape of a kept fold or of a turn changes; a kept state older than that is not read
+@cache
+def shape_mark() -> str:
+    """A digest of the code that shapes a turn, so a release that changes how turns are shaped reads them again and every other release reads nothing."""
+    from engine import transcript, wording
+    return digest(inspect.getsource(transcript) + inspect.getsource(wording.digest), 12)
 
 
 def size_of(path: Path | None) -> int | None:
@@ -98,7 +104,7 @@ class TranscriptCache:
         size = size_of(path)
         if size is None:
             return []
-        key = ("transcript", str(path), FOLD_FORMAT)
+        key = ("transcript", str(path), shape_mark())
         offset, _, turns, _ = self.held_turns(path, key, size)
         if size - offset > FOLD_IN_PLACE_BYTES:
             self.turns_behind(path, key, extend)
@@ -164,7 +170,7 @@ class TranscriptCache:
 
     @staticmethod
     def fold_key(path: Path, fold, start) -> tuple:
-        return str(path), fold.__name__, FOLD_FORMAT, *getattr(start, "__dataclass_fields__", ())
+        return str(path), fold.__name__, shape_mark(), *getattr(start, "__dataclass_fields__", ())
 
     def caught_up(self, path: Path, fold, start) -> bool:
         size = size_of(path)
