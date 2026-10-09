@@ -79,8 +79,5 @@ class Ticket(Placed, Resource):
     shown_fields = ("board", "stage", "source", "owner", "work_environment", "plan")
     fixed_fields = ("source", "work_environment", "plan")
 
-    def member_refs(self) -> list[str]:
-        return [f"{self.work_environment}/plan:{self.plan}"] if self.work_environment and self.plan else []
-
     def base_of(self, repository: str) -> str:
         return self.base if repository == ROOT else self.bases.get(repository, "")

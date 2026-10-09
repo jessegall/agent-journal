@@ -4,12 +4,14 @@ import EmptyState from "../kit/EmptyState.vue";
 import {computed, inject, reactive, ref, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
-import {peekThere, route} from "../route.js";
+import {peekThere, route, showTab} from "../route.js";
 import {usePoll} from "../composables/poll.js";
 import {byRef, refParts} from "../domain/records.js";
+import {planProgress} from "../domain/plans.js";
 import {age} from "../format/time.js";
 import ResourceBody from "./ResourceBody.vue";
 import ResourceRow from "./ResourceRow.vue";
+import ProgressBar from "../kit/ProgressBar.vue";
 import TabBar from "../kit/TabBar.vue";
 
 const props = defineProps({resource: Object, readOnly: Boolean});
@@ -19,6 +21,7 @@ const fetched = reactive({});
 const loading = new Set();
 
 const ELSEWHERE_EVERY = 5000;
+const STATUS_EVERY = 10000;
 
 async function read(ref) {
     const {env, type, n} = refParts(ref);
@@ -37,6 +40,7 @@ async function load(ref) {
 }
 
 const refs = computed(() => (props.resource.refs || []).filter((ref) => ref !== props.resource.data?.source));
+const planOf = (r) => (r.data?.plan && r.data?.work_environment ? `${r.data.work_environment}/plan:${r.data.plan}` : "");
 const elsewhere = computed(() => refs.value.filter((ref) => refParts(ref).env));
 const held = (ref) => byRef(ref) || fetched[ref];
 watchEffect(() => !props.readOnly && refs.value.filter((ref) => !held(ref)).forEach(load));
@@ -64,7 +68,6 @@ const resources = computed(() => members.value.filter((r) => !OWN_TABS.includes(
 const plans = computed(() => ofType("plan"));
 const todos = computed(() => ofType("todo"));
 const tickets = computed(() => ofType("ticket"));
-const tab = ref("resources");
 const tabs = computed(() =>
     [
         {key: "resources", title: "Resources", count: resources.value.length},
@@ -73,15 +76,32 @@ const tabs = computed(() =>
         {key: "tickets", title: "Tickets", count: tickets.value.length},
     ].filter((t) => t.key === "resources" || t.count)
 );
+const tab = computed({
+    get: () => (tabs.value.some((t) => t.key === route.value.tab) ? route.value.tab : "resources"),
+    set: showTab,
+});
 const cards = computed(() => (tab.value === "plans" ? plans.value : resources.value));
-const planOf = (r) =>
-    r.data?.plan && r.data?.work_environment
-        ? `${r.data.work_environment}/plan:${r.data.plan}`
-        : (r.refs || []).find((ref) => refParts(ref).type === "plan") || "";
 const openPlan = (r) => {
     const {env, type, n} = refParts(planOf(r));
     peekThere(env, type, n);
 };
+
+const waitsOf = (r) =>
+    Object.entries(r.data?.dependencies || {})
+        .filter(([, stance]) => stance === "confirmed")
+        .map(([ref]) => tickets.value.find((t) => `ticket:${t.n}` === ref && t.env === r.env) || {title: ref.replace(":", " ")})
+        .filter((other) => !other.completed)
+        .map((other) => other.title);
+
+const statuses = reactive({});
+const statusOf = (r) => (props.readOnly ? r.data?.status : statuses[r.at]);
+usePoll(
+    `collection-tickets:${props.resource.ref}`,
+    () => Promise.all(tickets.value.map(async (r) => [r.at, await (r.env ? api.in(r.env) : api).ticketStatus(r.n).catch(() => null)])),
+    STATUS_EVERY,
+    (found) => found.forEach(([at, status]) => (statuses[at] = status)),
+    () => !props.readOnly && tickets.value.length > 0
+);
 
 const firstLine = (r) =>
     String(r.abstract || r.brief || "")
@@ -107,8 +127,22 @@ function hidePreview(r) {
                     <div class="ticket">
                         <button type="button" class="ticket-title" @click="open(r)">{{ r.title }}</button>
                         <span class="ticket-stage">{{ r.data?.stage }}</span>
-                        <template v-if="planOf(r)">
+                        <template v-if="planOf(r) && !readOnly">
                             <button type="button" class="ticket-plan" @click="openPlan(r)">Open plan</button>
+                        </template>
+                        <template v-if="waitsOf(r).length">
+                            <span class="ticket-line">Waits on {{ waitsOf(r).join(", ") }}</span>
+                        </template>
+                        <template v-if="statusOf(r)?.plan">
+                            <span class="ticket-line ticket-plan-name">{{ statusOf(r).plan }}</span>
+                            <ProgressBar class="ticket-bar" :value="statusOf(r).done" :max="Math.max(1, statusOf(r).total)" :tone="statusOf(r).kind === 'you' ? 'warn' : ''" thin />
+                            <span class="ticket-line">{{ statusOf(r).done }} of {{ statusOf(r).total }} done</span>
+                        </template>
+                        <template v-if="statusOf(r)?.now">
+                            <span class="ticket-line">Now: {{ statusOf(r).now }}</span>
+                        </template>
+                        <template v-if="statusOf(r)?.state">
+                            <span :class="['ticket-line', 'ticket-state', statusOf(r).kind]">{{ statusOf(r).state }}</span>
                         </template>
                     </div>
                 </template>
@@ -141,6 +175,10 @@ function hidePreview(r) {
                                 <span class="when">{{ age(r.updated || r.created) }}</span>
                             </span>
                             <span class="title">{{ r.title }}</span>
+                            <template v-if="planProgress(r)">
+                                <span class="line">Phase {{ planProgress(r).phase }} of {{ planProgress(r).total }} · {{ planProgress(r).status }}</span>
+                                <ProgressBar :value="planProgress(r).finished" :max="Math.max(1, planProgress(r).total)" :tone="planProgress(r).status === 'done' ? 'good' : ''" thin />
+                            </template>
                             <template v-if="firstLine(r)">
                                 <span class="line">{{ firstLine(r) }}</span>
                             </template>
@@ -170,6 +208,7 @@ function hidePreview(r) {
 
 .ticket {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     gap: 10px;
     padding: 8px 0;
@@ -188,9 +227,15 @@ function hidePreview(r) {
     cursor: pointer;
 }
 
+.ticket-line,
 .ticket-stage {
     font-size: 12px;
     opacity: 0.7;
+}
+
+.ticket-line,
+.ticket-bar {
+    flex-basis: 100%;
 }
 
 .ticket-plan {

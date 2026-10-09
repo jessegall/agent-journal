@@ -7,14 +7,11 @@ import Icon from "../kit/Icon.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 import {age} from "../format/time.js";
 import {computed} from "vue";
+import {planProgress} from "../domain/plans.js";
 import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
 
 const props = defineProps({resource: Object});
-const plan = computed(() => {
-    if (props.resource.type !== "plan") return null;
-    const {phases = [], status = "building", current = 1} = props.resource.data;
-    return {total: phases.length, finished: status === "done" ? phases.length : Math.max(0, current - 1), status};
-});
+const plan = computed(() => planProgress(props.resource));
 const update = computed(() =>
     isUpdate(props.resource)
         ? {
