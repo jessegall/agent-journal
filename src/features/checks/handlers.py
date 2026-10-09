@@ -17,6 +17,7 @@ from providers.tested import testing_piece, tested
 from features.parts import AgentContext, Context, Handler
 from features.checks.controller import Checks
 from controllers.types import Agents, Notifications
+from resources.base import SYSTEM, USER
 
 
 @dataclass(frozen=True)
@@ -42,11 +43,13 @@ class ReportCheckResult(Handler):
         check = context.journal.get(Checks).load(event.n)
         last = check.last_run
         output = last.output
-        title = check.failure_title(summary(output) or check.title)
+        headline = summary(output) or check.title
+        title = check.failure_title(headline)
         filed = [row for row in context.journal.get(Notifications).linked_to(check.ref) if not row.completed]
         if last.ok:
             for stale in filed:
                 context.journal.clear(stale, "the check passes again")
+                self.mark(context, check, f"Check {check.n} passes again", tone="good", key=f"check:{check.n}:cleared:{stale.n}")
             return
         reported = digest(output, 12)
         if any(row.data.get("reported") == reported for row in filed):
@@ -54,9 +57,18 @@ class ReportCheckResult(Handler):
         for stale in filed:
             context.journal.clear(stale, "the check reports something else now")
         context.journal.notify("failing", title=title, output=output if output else "it said nothing", about=check.ref, reported=reported)
+        self.mark(context, check, f"Check {check.n} failed:", name=headline, tone="danger", key=f"check:{check.n}:{reported}")
         speaking = context.to_primary()
         if speaking:
             speaking.agent.say("failed", title=title, n=check.n)
+
+
+    def mark(self, context: Context, check, label: str, **card) -> None:
+        """Shows the check's state in the chat on your side, addressed to the agent, and opening the check."""
+        agents = Agents(context.record, actor=SYSTEM)
+        row = agents.primary()
+        if row:
+            agents.card(row.n, label=label, icon="check", side=USER, row=check.ref, **card)
 
 
 def verdict(result, failed: bool) -> str:

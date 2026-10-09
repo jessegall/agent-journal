@@ -187,6 +187,14 @@ def test_a_failing_check_reaches_a_waiting_agent_and_is_told_again_only_when_it_
     checks.run(check.n, wait=True)
     assert nudged()[-1] == f"check {check.n} failed - issue 6 waits" and open_notices(record) == [f"check {check.n} failed - issue 6 waits"], \
         "a failure that reports something else is nudged again and replaces the one before"
+    marked = lambda: [(c["label"], c.get("name"), c["row"]) for c in Agents(record, actor=SYSTEM).primary().data["cards"] if c.get("side") == USER]
+    assert marked() == [(f"Check {check.n} failed:", "issue 5 waits", check.ref), (f"Check {check.n} failed:", "issue 6 waits", check.ref)], \
+        "each different failure shows in the chat on your side, addressed to the agent and opening the check; the same one again adds nothing"
+    again = checks.create("Passes in the end", command="exit 1")
+    checks.run(again.n, wait=True)
+    checks.update(again.n, command="true")
+    checks.run(again.n, wait=True)
+    assert marked()[-1][:1] == (f"Check {again.n} passes again",), "a run that clears a failure shows a quiet mark too"
     import json
     from providers import PROVIDERS
     from tests.kit import handle
