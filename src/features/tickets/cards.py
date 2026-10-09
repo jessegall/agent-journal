@@ -48,6 +48,16 @@ class CardState:
 
 
 @dataclass(frozen=True)
+class TicketStatus:
+    kind: str
+    state: str
+    plan: str = ""
+    done: int = 0
+    total: int = 0
+    now: str = ""
+
+
+@dataclass(frozen=True)
 class Slots:
     running: list
     limit: int
@@ -79,12 +89,12 @@ class TicketCards:
         ticket = self.load(n)
         state = self._runtime(ticket, Sessions(self.record.root).all(), len(self._running()))
         if not ticket.work_environment:
-            return {"state": state.text, "kind": state.kind}
+            return asdict(TicketStatus(state.kind, state.text))
         place = Record(self.record.root, ticket.work_environment)
         plan = self._plans(ticket).load(ticket.plan) if ticket.plan else None
         done, total = counts(place, plan) if plan else (0, 0)
         doing = next((w.title for w in Works(place, actor=SYSTEM).rows.standing() if not w.parked), "")
-        return {"plan": plan.title if plan else "", "done": done, "total": total, "now": doing, "kind": state.kind, "state": state.text}
+        return asdict(TicketStatus(state.kind, state.text, plan.title if plan else "", done, total, doing))
 
     def _roles(self) -> list:
         from engine.organization import organization
