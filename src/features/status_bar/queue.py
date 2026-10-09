@@ -104,9 +104,9 @@ def walked(parts: list[Part]) -> float:
 
 def part_text(part: Part) -> str:
     value = part["value"]
-    if isinstance(value, str):
-        return value
-    return value[0] if value else ""
+    if isinstance(value, list):
+        value = value[0] if value else ""
+    return str(value)
 
 
 def named_parts(found: list, noun: str) -> list:

@@ -115,6 +115,8 @@ def test_the_whole_bar_is_the_queue_and_nothing_else():
     assert [one["key"] for one in bar(Row(), NOW + 2)["queue"]] == ["reading before.py", "editing now.py"], "the bar is the queue"
     assert (doing(Row(), NOW + 2), doing(type("Idle", (), {"commands": []})(), NOW)) == ("editing now.py", ""), \
         "an agent's cell is given the bar's line for its latest activity, and nothing when it has done nothing"
+    counted_row = type("Counted", (), {"commands": [changed("now.py", NOW + 1, added=12, removed=3)]})()
+    assert doing(counted_row, NOW + 2) == "editing now.py +12 -3", "a line that counts what was added and removed is text, never a number the join chokes on"
 
 
 def test_a_terminal_answering_a_query_is_not_the_user_typing():
