@@ -10,6 +10,8 @@ import {byRef, refParts} from "../domain/records.js";
 import {planProgress} from "../domain/plans.js";
 import {age} from "../format/time.js";
 import BoardLanes from "./BoardLanes.vue";
+import Chip from "../kit/Chip.vue";
+import {originOf} from "../domain/origin.js";
 import ResourceBody from "./ResourceBody.vue";
 import ResourceRow from "./ResourceRow.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
@@ -139,7 +141,7 @@ function hidePreview(r) {
                         <button type="button" class="ticket-title" @click="open(r)">{{ r.title }}</button>
                         <span class="ticket-stage">{{ r.data?.stage }}</span>
                         <template v-if="planOf(r)">
-                            <button type="button" class="ticket-plan" @click="openPlan(r)">Open plan</button>
+                            <button type="button" class="ticket-plan" :title="`Open the plan of ticket ${r.n}, ${r.title}`" @click="openPlan(r)">Open plan of ticket {{ r.n }}</button>
                         </template>
                         <template v-if="waitsOf(r).length">
                             <span class="ticket-line">Waits on {{ waitsOf(r).join(", ") }}</span>
@@ -186,6 +188,9 @@ function hidePreview(r) {
                                 <span class="when">{{ age(r.updated || r.created) }}</span>
                             </span>
                             <span class="title">{{ r.title }}</span>
+                            <template v-if="originOf(r)">
+                                <Chip class="origin" :title="`From ${originOf(r)}`">{{ originOf(r) }}</Chip>
+                            </template>
                             <template v-if="planProgress(r)">
                                 <span class="line">Phase {{ planProgress(r).phase }} of {{ planProgress(r).total }} · {{ planProgress(r).status }}</span>
                                 <ProgressBar :value="planProgress(r).finished" :max="Math.max(1, planProgress(r).total)" :tone="planProgress(r).status === 'done' ? 'good' : ''" thin />

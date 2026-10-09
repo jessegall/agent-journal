@@ -17,6 +17,12 @@ SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo
                  "board": ("stages", "goal", "done_when", "meanings")}
 
 
+def origin_of(record: Record, environment: str) -> str:
+    """Where a member from another environment comes from: the ticket whose work environment it is, by number and title, or the environment's own name."""
+    ticket = next((t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.work_environment == environment), None)
+    return f"Ticket {ticket.n} · {ticket.title}" if ticket else environment
+
+
 def shared_fields(row, record: Record) -> dict:
     """The fields of a row a share carries; a ticket shares only the waits its owner confirmed."""
     data = {key: row.data[key] for key in SHARED_FIELDS.get(row.type, ()) if key in row.data}
@@ -24,6 +30,8 @@ def shared_fields(row, record: Record) -> dict:
         data["dependencies"] = {ref: stance for ref, stance in data["dependencies"].items() if stance == CONFIRMED}
     if row.type == "ticket":
         data["status"] = Tickets(Record(record.root, row.home_env or record.env), actor=SYSTEM).status(row.n)
+    if row.home_env:
+        data["origin"] = origin_of(record, row.home_env)
     return data
 
 
