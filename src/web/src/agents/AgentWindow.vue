@@ -179,8 +179,9 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
 
 .aw-key {
     flex: none;
-    width: 44px;
+    min-width: 44px;
     color: var(--text-4);
+    white-space: nowrap;
 }
 
 .aw-branch {
