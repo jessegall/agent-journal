@@ -11,7 +11,7 @@ from engine.gates import CANCELABLE
 from features.plugins.declared import ASYNC, SYNC, Manifest
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
-KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "dashboards", "settings", "skills", "load", "installed", "events", "cancels", "fits", "hooks")
+KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "dashboards", "settings", "skills", "command", "load", "installed", "events", "cancels", "fits", "hooks")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS), "hook.*", *(f"hook.{e}" for e in (*EVENTS, DISPLAYED))}
@@ -80,6 +80,8 @@ def read(folder: Path, version: str = "") -> Manifest:
         raise Refused("plugin.json: installed is one command, run right after the plugin is installed or upgraded; its answer fills the settings")
     if "skills" in checked and (not isinstance(checked["skills"], str) or checked["skills"].startswith("/") or ".." in checked["skills"].split("/")):
         raise Refused("plugin.json: skills is a folder inside the plugin, holding one folder per skill with its SKILL.md")
+    if "command" in checked and (not isinstance(checked["command"], str) or checked["command"].startswith("/") or ".." in checked["command"].split("/")):
+        raise Refused("plugin.json: command is the plugin's own executable, a path inside the plugin, which the agent runs inside a repository to use the plugin")
     if "refuse_seconds" in checked and not isinstance(checked["refuse_seconds"], (int, float)):
         raise Refused("plugin.json: refuse_seconds is a number of seconds")
     return Manifest.of(checked)

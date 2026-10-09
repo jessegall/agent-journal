@@ -401,6 +401,16 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
                   "hold": "wait", "raise": [{"event": "sin-found"}, {"event": "sin-found"}], "settings": "not a dict"}
     assert apply(record, FEATURES["plugins"].journal, "typed", "", everything) == list(KEYS), "a plugin's answer may whisper, say, notify, notice, file a to-do, hold and raise"
     assert "From a plugin" in [t.title for t in Todos(record, actor=SYSTEM).all()], "a to-do a plugin answers with is filed"
+    from features.plugins import answer
+    plain = answer.own_command(record, "typed")
+    declared_before = answer.declared
+    answer.declared = lambda row: Manifest.of({"name": "typed", "command": "bin/tool"})
+    try:
+        said = answer.own_command(record, "typed")
+    finally:
+        answer.declared = declared_before
+    assert (plain, "plugins/typed/bin/tool inside the repository that holds the file" in said, "Install nothing" in said) == ("", True, True), \
+        "a plugin that declares its own command has its nudge say the exact command to run from inside the repository, so the agent installs nothing"
     from features.plugins.manifest import typed as checked
     shown = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},
                      "either": {"type": "flag", "when": [{"php": True}, {"vue": True}]}})
@@ -418,7 +428,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
         ({"name": "pp", "events": {"e": {"title": "E", "tone": "loud"}}}, "tone is one of"),
         ({"name": "pp", "events": {"e": {"title": "E", "card": {"size": 1}}}}, "unknown key 'size'"),
         ({"name": "pp", "cancels": {"todo.created": "x"}}, "events that can be cancelled"), ({"name": "pp", "installed": ["a"]}, "installed is one command"),
-        ({"name": "pp", "skills": "/abs"}, "skills is a folder inside the plugin"), ({"name": "pp", "refuse_seconds": "x"}, "a number of seconds"),
+        ({"name": "pp", "command": "../out"}, "command is the plugin's own executable"), ({"name": "pp", "skills": "/abs"}, "skills is a folder inside the plugin"), ({"name": "pp", "refuse_seconds": "x"}, "a number of seconds"),
         ({"name": "pp", "env": {"A": 1}}, "env names values"), ({"name": "pp", "requires": ["x"]}, "requires names one entry each"),
         ({"name": "pp", "requires": {"a": {"hint": "h"}}}, "requires.a needs check"), ({"name": "pp", "settings": {"a": {"type": "weird"}}}, "a setting is one of"),
         ({"name": "pp", "settings": {"a": {"type": "options"}}}, "needs a list of options"), ({"name": "pp", "settings": {"a": {"type": "flag", "when": 5}}}, "when names settings"),
