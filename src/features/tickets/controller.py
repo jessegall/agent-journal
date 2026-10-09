@@ -140,8 +140,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             request(self.record.root, Request(ticket.work_environment, Plans.resource.type, method, [int(ticket.plan)], actor=self.actor))
             return ticket
         if not self._orchestrator_may(ticket, PLANS) or int(ticket.board) not in self._orchestrating():
-            self._refuse(f"only the user may {word} the plan of {self.type} {ticket.n}, or the agent orchestrating its board when the "
-                         f"board has {PLANS} set; never the agent that wrote it. Here: {self._why_not(ticket)}")
+            self._refuse(self._refusal(ticket, PLANS, f"{word} the plan of {self.type} {ticket.n}"))
         request(self.record.root, Request(ticket.work_environment, Plans.resource.type, method, [int(ticket.plan)]))
         if told and self.agent_session(ticket.n):
             try:
@@ -377,7 +376,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _decide_dependencies(self, n: int, kept, done: str, why: str):
         ticket = self.load(n)
-        self._as_orchestrator(ticket, WAITS, f"accepts or declines a {self.type}'s proposed dependencies", done, why)
+        self._as_orchestrator(ticket, WAITS, f"accept or decline the proposed dependencies of {self.type} {ticket.n}", done, why)
         proposed = [ref for ref, stance in ticket.dependencies.items() if stance == PROPOSED]
         decided = {ref: CONFIRMED for ref in ticket.dependencies if ref not in proposed or kept(ref)}
         return self.update(ticket.n, dependencies=decided, declined=[r for r in [*ticket.declined, *proposed] if r not in decided])
@@ -425,7 +424,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def confirm(self, n: int, why: str = ""):
         ticket = self.load(n)
         self._only_you(ticket, "confirm")
-        self._as_orchestrator(ticket, DRAFTS, f"confirms a drafted {self.type}, with its button or in the viewer", "Confirmed the draft", why)
+        self._as_orchestrator(ticket, DRAFTS, f"confirm the draft of {self.type} {ticket.n}", "Confirmed the draft", why)
         return self.update(ticket.n, draft=False)
 
     @action
@@ -547,7 +546,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _confirmed(self, ticket) -> None:
         if ticket.draft:
-            self._refuse(f"{self.type} {ticket.n} is a draft: the user confirms it before it starts")
+            by = "the user in the viewer" if self._from_outside(ticket) else f"its board's orchestrator (journal {self.type} confirm {ticket.n} --why \"<reason>\") or the user in the viewer"
+            self._refuse(f"{self.type} {ticket.n} is a draft and does not start until it is confirmed, by {by}")
 
     def _field_choices(self, r: Resource) -> dict:
         from engine.organization import organization
