@@ -23,7 +23,7 @@ const close = () => {
 <template>
     <span class="openable">
         <strong class="openable-label">{{ label }}</strong>
-        <span class="openable-line">{{ firstSentence(text) }}</span>
+        <TextDisplay class="openable-line" inline :text="firstSentence(text)" />
         <Btn small @click="open = true">Open</Btn>
         <slot name="more" />
     </span>
