@@ -1,0 +1,169 @@
+{
+  "voice": "homie",
+  "canvas": [
+    256,
+    256
+  ],
+  "layers": [
+    {
+      "name": "thigh_right",
+      "file": "homie_thigh_right.png",
+      "order": 0,
+      "parent": "torso",
+      "pivot": [
+        91,
+        156
+      ]
+    },
+    {
+      "name": "shin_right",
+      "file": "homie_shin_right.png",
+      "order": 1,
+      "parent": "thigh_right",
+      "pivot": [
+        112,
+        187
+      ]
+    },
+    {
+      "name": "foot_right",
+      "file": "homie_foot_right.png",
+      "order": 2,
+      "parent": "shin_right",
+      "pivot": [
+        124,
+        208
+      ]
+    },
+    {
+      "name": "thigh_left",
+      "file": "homie_thigh_left.png",
+      "order": 3,
+      "parent": "torso",
+      "pivot": [
+        137,
+        156
+      ]
+    },
+    {
+      "name": "shin_left",
+      "file": "homie_shin_left.png",
+      "order": 4,
+      "parent": "thigh_left",
+      "pivot": [
+        157,
+        185
+      ]
+    },
+    {
+      "name": "foot_left",
+      "file": "homie_foot_left.png",
+      "order": 5,
+      "parent": "shin_left",
+      "pivot": [
+        173,
+        204
+      ]
+    },
+    {
+      "name": "upper_arm_right",
+      "file": "homie_upper_arm_right.png",
+      "order": 7,
+      "parent": "torso",
+      "pivot": [
+        46,
+        118
+      ]
+    },
+    {
+      "name": "forearm_right",
+      "file": "homie_forearm_right.png",
+      "order": 8,
+      "parent": "upper_arm_right",
+      "pivot": [
+        69,
+        144
+      ]
+    },
+    {
+      "name": "hand_right",
+      "file": "homie_hand_right.png",
+      "order": 9,
+      "parent": "forearm_right",
+      "pivot": [
+        100,
+        137
+      ]
+    },
+    {
+      "name": "upper_arm_left",
+      "file": "homie_upper_arm_left.png",
+      "order": 11,
+      "parent": "torso",
+      "pivot": [
+        136,
+        115
+      ]
+    },
+    {
+      "name": "forearm_left",
+      "file": "homie_forearm_left.png",
+      "order": 12,
+      "parent": "upper_arm_left",
+      "pivot": [
+        134,
+        135
+      ]
+    },
+    {
+      "name": "hand_left",
+      "file": "homie_hand_left.png",
+      "order": 13,
+      "parent": "forearm_left",
+      "pivot": [
+        122,
+        138
+      ]
+    },
+    {
+      "name": "torso",
+      "file": "homie_torso.png",
+      "order": 15,
+      "parent": null,
+      "pivot": [
+        96,
+        149
+      ]
+    },
+    {
+      "name": "head",
+      "file": "homie_head.png",
+      "order": 20,
+      "parent": "torso",
+      "pivot": [
+        91,
+        97
+      ]
+    },
+    {
+      "name": "cap",
+      "file": "homie_cap.png",
+      "order": 30,
+      "parent": "head",
+      "pivot": [
+        91,
+        39
+      ]
+    },
+    {
+      "name": "headphones",
+      "file": "homie_headphones.png",
+      "order": 32,
+      "parent": "torso",
+      "pivot": [
+        87,
+        110
+      ]
+    }
+  ]
+}

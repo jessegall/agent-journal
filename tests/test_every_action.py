@@ -44,7 +44,7 @@ from commands import http  # noqa: F401
 VIEWER = Path(__file__).resolve().parents[1] / "src" / "web" / "src"
 RECORDER = Path(__file__).with_name("viewer_calls.mjs")
 UNBOUND = ("unexpected keyword argument", "missing a required argument", "positional argument")
-BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "point", "page", "origin", "journal", "pluginUrl", "publicUrl", "markdownUrl", "fileUrl",
+BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "point", "page", "origin", "journal", "pluginUrl", "publicUrl", "voiceRig", "voiceMoves", "markdownUrl", "fileUrl",
          "extensionZip", "stream", "layoutFrom", "editedImageUrl"}
 REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin", "tunnelLogout", "updateTunler", "installTunler",
         "tunnelAnswering", "tunnelDomains", "tunnelRelease", "tunnelReaddress", "tunnelCause", "restartTunnel", "setService", "installPlugin", "installSuggested", "upgradePlugin", "previewPlugin",

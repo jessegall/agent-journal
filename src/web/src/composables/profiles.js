@@ -4,6 +4,7 @@ import {api} from "../api/client.js";
 import {isAct, isBlink, placeOf, placedAt} from "../domain/mascots.js";
 import {store} from "../state/store.js";
 import {animations, loadAnimations, scheduleOf, urlOf} from "./voiceAnimations.js";
+import {voiceOfArt} from "./voiceRigs.js";
 
 export const profiles = ref([]);
 export const profilesLoaded = ref(false);
@@ -32,7 +33,7 @@ export const mascotOf = computed(() => {
     const all = animations.value[row.n] || [];
     const sheet = (animation) => ({url: urlOf(row.n, animation), edit: animation.edit, path: animation.path});
     const blink = all.find(isBlink);
-    return {blink: blink ? sheet(blink) : null, acts: all.filter(isAct).map(sheet), schedule: scheduleOf(row.n), place: placedAt(placeOf(row.data.art), scheduleOf(row.n).place)};
+    return {voice: voiceOfArt(row.data.art), blink: blink ? sheet(blink) : null, acts: all.filter(isAct).map(sheet), schedule: scheduleOf(row.n), place: placedAt(placeOf(row.data.art), scheduleOf(row.n).place)};
 });
 
 export const calls =(row) => callings.value[row.data.calling] || row.data.address || "";
