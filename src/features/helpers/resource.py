@@ -20,6 +20,7 @@ class Helper(Shape, Resource):
         Field(default="", name="checkout", journal_only=True),
         Field(default="", name="report"),
         Field(default=False, name="answering"),
+        Field(default=0.0, name="stop_asked"),
         Field(default=False, name="stopped_by_user"),
         Field(default=False, name="whole_suite"),
     ]
