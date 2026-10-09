@@ -41,7 +41,7 @@ async function checkNow() {
         </header>
         <div class="use">
             <span>{{ switches.fetching }}</span>
-            <Switch :on="fetching" :title="switches.fetching" @change="setFetching" />
+            <Switch :on="fetching" :title="switches.fetching" beside @change="setFetching" />
         </div>
         <p class="note">{{ switches.fetchingHelp }}</p>
         <template v-if="fetching">
