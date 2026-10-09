@@ -25,7 +25,7 @@ await runScenarios(process.argv[2], {
         await page.getByText("Not set").first().waitFor();
         await page.goto(`${url}#/main/integrations`);
         const card = page.locator('[data-integration="linear"]');
-        await card.getByText(title).click();
+        await card.locator('[data-picker="key"]').getByText(title).click();
         await card.getByText(`Linear signs in with the secret ${title}.`).waitFor();
         await card.getByRole("switch", {name: "Use Linear"}).click();
         await card.locator("[data-state]").getByText(/Not checked yet|Last checked|Could not reach Linear/).waitFor();
@@ -69,7 +69,7 @@ await runScenarios(process.argv[2], {
         await page.locator(".project-flash").waitFor({state: "detached"});
         const linear = page.locator('[data-integration="linear"]');
         await linear.waitFor();
-        await linear.getByRole("option", {name: title}).click();
+        await linear.locator('[data-picker="key"]').getByRole("option", {name: title}).click();
         const use = linear.getByRole("switch", {name: "Use Linear"});
         if ((await use.getAttribute("aria-checked")) !== "true") await use.click();
         await linear.getByRole("switch", {name: "Use Linear", checked: true}).waitFor();

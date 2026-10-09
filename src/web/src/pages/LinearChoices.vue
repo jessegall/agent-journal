@@ -100,7 +100,7 @@ const pickTeam = (id, on) => saveSettings(settingsWith(store.settings, NAME, {te
             </div>
         </template>
         <h4 class="label">{{ words.label }}</h4>
-        <SecretPicker :value="signing" :picked-line="words.picked" :none-line="words.none" :note="words.note" @pick="pickSigning" />
+        <SecretPicker data-picker="signing" :value="signing" :picked-line="words.picked" :none-line="words.none" :note="words.note" @pick="pickSigning" />
         <template v-if="address">
             <p class="line">{{ words.address }}</p>
             <div class="team">
