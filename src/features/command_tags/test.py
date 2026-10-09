@@ -159,6 +159,7 @@ def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transc
         handle(PROVIDERS["claude"](), record.root, record.env, stop)
         engine.announce_written()
     assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["done"], "posted once, from the hook's own text"
+    assert not [n for n in nudges(record) if "did not run" in n], "the engine's pass over the Stop text sends it through the ledger the hook used, so its reply tag does not run a second time"
     rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": f"[!reply:{message.n}] done"}]}})
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     engine.announce_written()
