@@ -31,7 +31,7 @@ from engine.record import Record
 from engine.stored import read_json, write_text
 from engine.transaction import snapshot, undoable
 from engine.wording import noun
-from overview.counts import tally
+from overview.counts import weigh
 from overview.summary import environment, summarize
 from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, SYSTEM, USER
 from resources.pictures import dimensions
@@ -677,7 +677,7 @@ def test_the_overview_counts_only_live_rows_and_splits_a_helper_environment_out(
     features.load()
     rows = [{"deleted": 0, "completed": 0, "seen": []}, {"deleted": 0, "completed": 0, "seen": [USER]}, {"deleted": 0, "completed": 5, "seen": []},
             {"deleted": 5, "completed": 0, "seen": []}, {"deleted": 0, "completed": 0, "seen": [], "hidden": True}]
-    assert tally(rows) == {"all": 3, "open": 2, "unread": 1}, "deleted and hidden rows are not counted, closed rows are all but not open, and a seen row is not unread"
+    assert tuple(sum(column) for column in zip(*map(weigh, rows))) == (3, 2, 1), "deleted and hidden rows are not counted, closed rows are all but not open, and a seen row is not unread"
     record = fresh()
     todos, messages = (CONTROLLERS[type_](record, actor=SYSTEM) for type_ in ("todo", "message"))
     todos.create("kept")
