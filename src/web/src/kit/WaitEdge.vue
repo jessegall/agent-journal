@@ -17,6 +17,14 @@ function setNote(words) {
     timer = setTimeout(() => (note.value = null), NOTE_SECONDS * 1000);
 }
 
+watch(
+    () => props.waiting,
+    (now, before) => {
+        if (!before || now) return;
+        clearTimeout(timer);
+        note.value = null;
+    }
+);
 watch(open, (now, before) => {
     if (!props.waiting?.helping || now >= before) return;
     setNote(`${before - now} ${before - now === 1 ? "helper" : "helpers"} reported, ${now} still at work`);

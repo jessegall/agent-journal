@@ -57,18 +57,17 @@ describe("the message box edge", () => {
         return {into, state};
     }
 
-    test("a wait puts the word Waiting on the border, and an ended wait lights it once and says nothing", async () => {
+    test("a wait puts the word Waiting and three moving dots on the border, with no glow, and an ended wait says nothing", async () => {
         const waiting = waitingFor({text: "the test suite", on: "", since: NOW - 60}, {now: NOW});
         const {into, state} = mounted(waiting);
         expect(into.querySelector(".legend").textContent).toContain("Waiting");
         expect(into.querySelector(".wait-edge").classList.contains("waiting")).toBe(true);
-        expect([into.querySelectorAll(".glow").length, into.querySelectorAll(".dash, svg").length]).toEqual([1, 0]);
+        expect([into.querySelectorAll(".glow").length, into.querySelectorAll(".legend .working-dots i").length]).toEqual([0, 3]);
         expect([into.querySelector(".legend")?.textContent.trim(), into.querySelectorAll(".legend .chip").length]).toEqual(["Waiting", 0]);
         state.waiting = null;
         await flush();
         expect(into.querySelector(".note")).toBeNull();
         expect(into.querySelector(".legend")).toBeNull();
-        expect(into.querySelector(".wait-edge").classList.contains("lit")).toBe(true);
     });
 
     test("each helper report says who is still at work, and the last one says nothing", async () => {
