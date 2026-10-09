@@ -23,13 +23,14 @@ const error = ref("");
 const inspected = ref(null);
 const fetching = ref(false);
 const scope = useScope();
+const here = (type) => scope.rows(type).filter((r) => (r.env || "") === (props.resource.env || ""));
 const status = computed(() => props.resource.data.status);
 const current = computed(() => props.resource.data.current || 1);
 const phases = computed(() =>
     props.resource.data.phases.map((p, i) => {
         const named = [
-            ...p.todos.map((n) => scope.rows("todo").find((t) => t.n === n)),
-            ...(p.tickets || []).map((n) => scope.rows("ticket").find((t) => t.n === n)),
+            ...p.todos.map((n) => here("todo").find((t) => t.n === n)),
+            ...(p.tickets || []).map((n) => here("ticket").find((t) => t.n === n)),
         ];
         const rows = named.filter(Boolean);
         return {...p, i: i + 1, rows, waiting: fetching.value ? named.length - rows.length : 0};
@@ -38,7 +39,7 @@ const phases = computed(() =>
 const {rows: helpers, loaded: helpersLoaded} = useHelpersHolding(computed(() => phases.value.flatMap((p) => p.rows)));
 watchEffect(() => {
     if (props.readOnly) return;
-    const known = new Set(scope.rows("todo").map((t) => t.n));
+    const known = new Set(here("todo").map((t) => t.n));
     const missing = props.resource.data.phases.flatMap((p) => p.todos).filter((n) => !known.has(n));
     if (!missing.length) return;
     fetching.value = true;
