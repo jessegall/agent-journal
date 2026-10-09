@@ -210,8 +210,8 @@ def test_a_type_keeps_its_counts_in_step_with_every_row_a_change_touches():
     first, second, third = (written.create(text).n for text in ("one", "two", "three"))
     assert kept() == walked() == (3, 3, 3), "new rows are added one by one"
     reader.read(second)
-    assert kept() == walked() == (3, 3, 2), "a row the user has seen is no longer unread"
+    assert kept() == walked() == (3, 2, 2), "a message of the agent the user has seen closes, and leaves the open and unread counts"
     Messages(record, actor=SYSTEM).complete(first, how="handled")
-    assert kept() == walked() == (3, 2, 1), "a closed row leaves the open and unread counts"
+    assert kept() == walked() == (3, 1, 1), "a row closed another way leaves them too"
     Messages(record, actor=SYSTEM).delete(third, "mistake")
-    assert kept() == walked() == (2, 1, 0), "a deleted row leaves every count"
+    assert kept() == walked() == (2, 0, 0), "a deleted row leaves every count"
