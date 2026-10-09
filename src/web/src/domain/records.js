@@ -24,13 +24,14 @@ export const linkedTo = (ref) =>
 
 export function refParts(ref) {
     const [whole, section = ""] = ref.split("#");
-    const [type, n, lines = ""] = whole.split(":");
-    return {type, n: Number(n), part: section || lines};
+    const [env, ...rest] = whole.includes("/") ? whole.split("/") : ["", whole];
+    const [type, n, lines = ""] = rest.join("/").split(":");
+    return {env, type, n: Number(n), part: section || lines};
 }
 
 export function byRef(ref) {
-    const {type, n} = refParts(ref);
-    return rows(type).find((r) => r.n === n) || null;
+    const {env, type, n} = refParts(ref);
+    return rows(type).find((r) => r.n === n && (r.env || "") === env) || null;
 }
 
 export function waitsOn(r) {

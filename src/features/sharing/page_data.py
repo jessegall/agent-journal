@@ -7,7 +7,7 @@ from engine.markers import MARKER
 from engine.record import Record
 from features.format import SHARED, formatted, shape
 from features.plans.controller import Plans
-from resources.base import SYSTEM, Refused
+from resources.base import SYSTEM, Ref, Refused
 
 SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status")}
 
@@ -20,11 +20,16 @@ class SharePages:
     def _shared_row(self, share, ref: str):
         return row_of(self._home(share), ref)
 
+    def _placed(self, row, ref: str) -> Ref:
+        """A member ref spelled bare belongs to the environment its row came from."""
+        found = Ref.parse(ref)
+        return found if found.env else Ref(found.type, found.n, row.home_env)
+
     def _loaded_members(self, record: Record, row) -> list:
         members = []
         for ref in row.member_refs():
             try:
-                member = row_of(record, ref)
+                member = row_of(record, self._placed(row, ref))
             except Refused:
                 continue
             if not member.deleted and not member.data.get("system"):
@@ -64,7 +69,7 @@ class SharePages:
                 "completed": row.completed, "data": {key: row.data[key] for key in SHARED_FIELDS.get(row.type, ()) if key in row.data},
             }
         described = described_types()
-        kinds = {ref.partition(":")[0] for ref in rows}
+        kinds = {Ref.parse(ref).type for ref in rows}
         return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,
                 "comments": [asdict(c) for c in self._shared_comments(share, scope)] if share.comments else [],
                 "timeline": self._timeline(share, scope),

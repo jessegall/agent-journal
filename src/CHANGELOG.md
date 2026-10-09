@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.21 — A shared collection shows a row of another environment
+- A share of a collection that holds a row from another environment, such as a ticket's own plan, now lists it on the shared page and opens it without an error; the page reads every member by its full environment/type:number.
+
 ## 2.267.20 — A collection holds rows of other environments
 - A collection can hold a row from another environment, written environment/type:number, such as `journal collection add 6 ticket-1/plan:1` for a ticket's own plan. The collection's page, and a share of the collection, read that row live from its own environment; a member whose environment is gone is left out.
 
