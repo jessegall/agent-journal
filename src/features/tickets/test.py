@@ -127,7 +127,9 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
     tickets = Tickets(record, actor=USER)
     ticket = tickets.create("Dark mode", board=board.n)
+    Boards(record, actor=SYSTEM).finish(board.n)
     tickets.move(ticket.n, "Building")
+    assert not Boards(record, actor=SYSTEM).load(board.n).finished, "a ticket started on a closed board opens that board again"
     from engine.record import Record
     from features.permission_prompts.skipping import skipped
     env, agent, args = launched[0]
@@ -491,8 +493,9 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     assert any("Reviewing a ticket's plan, step 1 of 3" in line for line in nudges(record)), \
         "the minute check hands the orchestrator the review of the waiting plan, ahead of the board it runs"
     Boards(record, actor=AGENT).orchestrate("off")
+    Boards(record, actor=SYSTEM).finish(board.n)
     assert [waiting.n for waiting in Tickets(record, actor=SYSTEM)._awaiting_orchestrator()] == [ticket.n], \
-        "who orchestrates is the board's orchestrator field: once Play's run has ended, its waiting plans still reach that environment"
+        "who orchestrates is the board's orchestrator field: once Play's run has ended and the board has closed, its open tickets' waiting plans still reach that environment"
     Tickets(record, actor=AGENT).approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it, with or without a live run"
     assert "no plan waiting for you to approve" in refused(lambda: tickets.approve_plan(ticket.n)), "a plan that is already approved is not approved again"

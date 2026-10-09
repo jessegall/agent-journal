@@ -17,7 +17,9 @@ class TicketOrchestration:
                 f"journal board update {board.n} --set orchestrator={self.record.env} makes this environment the orchestrator")
 
     def _orchestrating(self) -> list[int]:
-        return sorted(board.n for board in Boards(self.record, actor=SYSTEM).rows.standing() if not board.finished and board.orchestrator == self.record.env)
+        holding = {int(ticket.board) for ticket in self.rows.standing() if ticket.board}
+        return sorted(board.n for board in Boards(self.record, actor=SYSTEM).rows.standing()
+                      if board.orchestrator == self.record.env and (not board.finished or board.n in holding))
 
     def _awaiting_orchestrator(self) -> list:
         boards = self._orchestrating()
