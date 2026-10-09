@@ -1,7 +1,8 @@
 <script setup>
-import {calls, sampleOf} from "../composables/profiles.js";
+import {artOf, calls, sampleOf} from "../composables/profiles.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
+import Illustration from "../kit/Illustration.vue";
 import ProfileMenu from "./ProfileMenu.vue";
 
 defineProps({row: {type: Object, required: true}, inUse: Boolean, standing: Boolean});
@@ -10,6 +11,7 @@ defineEmits(["open", "use", "duplicate", "remove"]);
 
 <template>
     <div :class="['profile-row', {current: inUse || standing}]">
+        <Illustration :src="artOf(row)" :size="56" />
         <button type="button" class="profile-row-main" @click="$emit('open', row)">
             <span class="profile-row-name">
                 {{ row.title }}

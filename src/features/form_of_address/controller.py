@@ -8,7 +8,7 @@ from features.form_of_address.voices import BUTLER, NAMINGS, SCIENTISTS, SHIPPED
 from resources.base import SYSTEM, Refused
 
 COPY = " (my copy)"
-SHAPE = ("brief", "calling", "sample", "humour", "naming", "address")
+SHAPE = ("brief", "calling", "sample", "humour", "naming", "address", "art")
 
 
 class Profiles(Controller):
@@ -17,7 +17,7 @@ class Profiles(Controller):
     def voice(self, n: int) -> Voice:
         r = self.rows.peek(n)
         return Voice(title=r.title, text=r.brief, calling=Calling(r.calling), sample=r.sample, humour=r.humour, naming=r.naming,
-                     agent_name=r.agent_name, address=r.address)
+                     agent_name=r.agent_name, address=r.address, art=r.art)
 
     def standing(self) -> Voice:
         try:
@@ -51,7 +51,7 @@ class Profiles(Controller):
     def duplicate(self, n: int):
         row = self.load(n)
         return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=self._sample(row), humour=row.humour, naming=row.naming,
-                           agent_name=row.agent_name, address=row.address)
+                           agent_name=row.agent_name, address=row.address, art=row.art)
 
     @action
     def callings(self) -> dict:
@@ -87,7 +87,7 @@ def ship(record) -> list[str]:
     held = {r.title: r for r in (profiles.load(row["n"]) for row in profiles.rows.summaries() if not row["deleted"]) if r.system}
     made = []
     for voice in SHIPPED:
-        shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample, "humour": voice.humour, "naming": voice.naming, "address": voice.address}
+        shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample, "humour": voice.humour, "naming": voice.naming, "address": voice.address, "art": voice.art}
         if voice.title not in held:
             profiles.create(voice.title, **shape, agent_name=voice.agent_name, system=True)
         elif {name: getattr(held[voice.title], name) for name in SHAPE} != shape:
