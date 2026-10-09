@@ -16,7 +16,12 @@ class Discussed:
         return made
 
     def _mark_commented(self, n: int, made: Resource) -> Resource:
-        return self.save(self.load(n), "commented", comment=made.n)
+        """Saves the row the comment is about with the comment named, unless a handler of the new comment has just saved it with the commenter among those who saw it: then it only says so."""
+        row = self.load(n)
+        if self.actor in row.seen and row.updated >= made.created:
+            self._emit(n, "commented", comment=made.n)
+            return row
+        return self.save(row, "commented", comment=made.n)
 
     @action
     def comments(self, n: int) -> list[Resource]:
