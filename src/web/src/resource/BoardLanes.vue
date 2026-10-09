@@ -40,7 +40,7 @@ const clauses = computed(() => props.board.data?.done_when || []);
                                     <span class="card-line">{{ r.data.status.state }}</span>
                                 </template>
                                 <template v-if="planOf(r)">
-                                    <button type="button" class="card-plan" @click="emit('plan', r)">Open plan</button>
+                                    <button type="button" class="card-plan" :title="`Open the plan of ticket ${r.n}, ${r.title}`" @click="emit('plan', r)">Open plan of ticket {{ r.n }}</button>
                                 </template>
                             </div>
                         </template>

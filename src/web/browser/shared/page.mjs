@@ -59,6 +59,7 @@ await runScenarios(OPEN, {
         await page.getByText("Proposal for visitors").first().waitFor();
         await page.getByRole("tab", {name: /Plans/}).click();
         await page.getByText("Plan from the ticket").first().waitFor();
+        await page.getByText("Ticket 1 · Fix the login page").first().waitFor();
         await page.getByRole("tab", {name: /Tickets/}).click();
         await page.getByText("Fix the login page").first().waitFor();
         await page.getByText("Doing", {exact: true}).first().waitFor();
@@ -68,7 +69,7 @@ await runScenarios(OPEN, {
         await page.getByRole("button", {name: "Fix the login page"}).waitFor();
         await page.getByText("Visitors log in without a reload").waitFor();
         await page.getByText("A wrong password is refused").waitFor();
-        await page.getByRole("button", {name: "Open plan"}).first().click();
+        await page.getByRole("button", {name: "Open plan of ticket 1"}).first().click();
         await page.getByText("Done elsewhere").first().waitFor();
     },
     async "a link that ended says so"(page) {

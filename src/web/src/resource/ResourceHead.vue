@@ -1,7 +1,9 @@
 <script setup>
 import {MENUED, meta} from "../domain/spec.js";
 import {computed} from "vue";
+import Chip from "../kit/Chip.vue";
 import CloseButton from "../kit/CloseButton.vue";
+import {originOf} from "../domain/origin.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Chapters from "./Chapters.vue";
@@ -40,6 +42,9 @@ const chaptered = computed(
                 <Icon :name="kind.icon" :size="13" />
                 {{ isUpdate(resource) ? updateLabel(resource) : `${kind.title} ${resource.n}` }}
             </span>
+            <template v-if="originOf(resource)">
+                <Chip class="origin" :title="`From ${originOf(resource)}`">{{ originOf(resource) }}</Chip>
+            </template>
             <template v-if="state && !readOnly">
                 <SwitchCase :value="state.key">
                     <template #replaced>

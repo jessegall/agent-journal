@@ -795,6 +795,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     on_board = sharing._shared_data(pile_share)["rows"]
     assert (f"ticket-1/{made.ref}" in sharing._scope(pile_share), on_board[first.ref]["members"]) == (True, [f"ticket-1/{made.ref}"]), \
         "the plan of a ticket on a shared board is shared with it and named among the ticket's members, so its card opens it"
+    assert on_board[f"ticket-1/{made.ref}"]["data"]["origin"] == f"Ticket {first.n} · First", "a member from another environment names the ticket whose environment it comes from, so ten plans side by side can be told apart"
     assert (first.ref in sharing._scope(pile_share), on_board[board.ref]["data"]["goal"], on_board[board.ref]["data"]["done_when"], on_board[board.ref]["data"]["stages"], on_board[first.ref]["data"]["board"]) == \
         (True, "Dark mode ships", ["Every screen follows the theme"], ["Ideas", "Building"], board.n), "a board in a shared collection brings its tickets, its stages, its goal and its done-when clauses"
     asked = Messages(here, actor=USER).create("Is the build green?")
