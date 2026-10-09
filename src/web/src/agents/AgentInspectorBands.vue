@@ -78,8 +78,15 @@ const emit = defineEmits(["cancel", "confirmed", "show-plan", "resume"]);
     display: flex;
     flex: none;
     flex-direction: column;
-    gap: 8px;
-    padding: 8px 16px;
+}
+
+.inspector-bands > :deep(.notice) {
+    margin: 8px 16px;
+}
+
+.inspector-bands > :deep(.notice-brief),
+.inspector-bands > :deep(.notice-report) {
+    margin: 0;
 }
 
 .inspector-bands:empty {
