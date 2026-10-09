@@ -753,13 +753,13 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     plans.place(plan.n, 1, [todo.n])
     Todos(here, actor=USER).complete(todo.n, "built")
     sharing = Shares(here, actor=USER)
-    assert [moment["kind"] for moment in sharing._shared_data(sharing.create(plan.ref))["timeline"]] == ["done"], "a shared plan carries what happened to its to-dos"
+    assert [moment["kind"] for moment in sharing._shared_data(sharing.create(plan.ref))["timelines"][plan.ref]] == ["done"], "a shared plan carries what happened to its to-dos"
     gone = Docs(here, actor=USER).create("Gone", brief="x")
     ended = sharing.create(gone.ref)
     Docs(here, actor=USER).delete(gone.n, "obsolete")
     assert sharing._scope(ended) == set(), "a row deleted after it was shared shares nothing"
     from types import SimpleNamespace
-    members = sharing._loaded_members(here, SimpleNamespace(member_refs=lambda: ["nothing:1", "todo:x", "todo:99999", todo.ref]))
+    members = sharing._loaded_members(here, SimpleNamespace(home_env="", member_refs=lambda: ["nothing:1", "todo:x", "todo:99999", todo.ref]))
     assert [member.n for member in members] == [todo.n], "a collection's members that are of no type, have no number or are gone are left out of the page"
     from features.dumps.controller import Dumps
     pile = Dumps(here, actor=USER).create("Pile", brief="pasted notes")

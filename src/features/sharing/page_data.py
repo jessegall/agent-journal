@@ -40,10 +40,17 @@ class SharePages:
         return self._loaded_members(self._home(share), collection)
 
     def _scope(self, share) -> set[str]:
+        """The shared row and every row it holds, and what those rows hold in turn, such as the to-dos of a plan in a shared collection."""
         target = self._shared_row(share, share.target)
         if target.deleted:
             return set()
-        return {share.target, *(m.ref for m in self._members(share, target))}
+        scope, waiting = {share.target}, [target]
+        while waiting:
+            for member in self._members(share, waiting.pop()):
+                if member.ref not in scope:
+                    scope.add(member.ref)
+                    waiting.append(member)
+        return scope
 
     def _shared_file(self, share, ref: str, name: str) -> Path | None:
         row = self._shared_row(share, ref)
@@ -72,13 +79,16 @@ class SharePages:
         kinds = {Ref.parse(ref).type for ref in rows}
         return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,
                 "comments": [asdict(c) for c in self._shared_comments(share, scope)] if share.comments else [],
-                "timeline": self._timeline(share, scope),
+                "timelines": self._timelines(share, scope),
                 "types": {kind: described[kind] for kind in kinds if kind in described}}
 
-    def _timeline(self, share, scope: set[str]) -> list[dict]:
-        kind, _, n = share.target.partition(":")
-        if kind != "plan":
-            return []
-        record = self._home(share)
+    def _timelines(self, share, scope: set[str]) -> dict[str, list[dict]]:
+        """Each shared plan's timeline, keyed by the plan's ref, holding the moments of its to-dos the share shows."""
+        home = self._home(share)
+        return {ref: self._timeline(home, Ref.parse(ref), scope) for ref in scope if Ref.parse(ref).type == "plan"}
+
+    def _timeline(self, home: Record, plan: Ref, scope: set[str]) -> list[dict]:
+        record = Record(home.root, plan.env) if plan.env else home
+        todo = lambda n: str(Ref("todo", n, plan.env))
         return [{**moment, "text": scoped(formatted(moment["text"], record, SHARED), scope)}
-                for moment in Plans(record, actor=SYSTEM).timeline(int(n)) if f"todo:{moment['todo']}" in scope]
+                for moment in Plans(record, actor=SYSTEM).timeline(plan.n) if todo(moment["todo"]) in scope]

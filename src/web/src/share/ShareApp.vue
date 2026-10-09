@@ -18,7 +18,7 @@ import ResourceBody from "../resource/ResourceBody.vue";
 import Lightbox from "../kit/Lightbox.vue";
 import Notice from "../kit/Notice.vue";
 import EmptyState from "../kit/EmptyState.vue";
-import {peek, route} from "../route.js";
+import {peek, peekThere, route} from "../route.js";
 import {store} from "../state/store.js";
 import Skeleton from "../kit/Skeleton.vue";
 
@@ -147,7 +147,7 @@ function follow(e) {
 function showThread() {
     document.getElementById("share-comments")?.scrollIntoView({behavior: "smooth", block: "start"});
 }
-const timeline = computed(() => (currentRow.value?.type === "plan" ? data.value?.timeline || [] : []));
+const timeline = computed(() => data.value?.timelines?.[currentRef.value] || []);
 const away = computed(() => currentRef.value !== data.value?.share.target);
 const ends = computed(() => {
     const at = data.value?.share.expires;
@@ -208,7 +208,7 @@ watch(currentRef, () => (read.value = 0));
                                         <span class="timeline-toggle">{{ timelineOpen ? "Hide" : "Show" }}</span>
                                     </button>
                                     <template v-if="timelineOpen">
-                                        <PlanTimeline :items="timeline" @open="(n) => peek('todo', n)" />
+                                        <PlanTimeline :items="timeline" @open="(n) => peekThere(currentRow?.env || '', 'todo', n)" />
                                     </template>
                                 </section>
                             </div>
@@ -238,7 +238,7 @@ watch(currentRef, () => (read.value = 0));
                 <template v-if="sideline">
                     <aside class="share-timeline">
                         <h2 class="timeline-heading">Timeline</h2>
-                        <PlanTimeline :items="timeline" @open="(n) => peek('todo', n)" />
+                        <PlanTimeline :items="timeline" @open="(n) => peekThere(currentRow?.env || '', 'todo', n)" />
                     </aside>
                 </template>
             </div>
