@@ -29,7 +29,7 @@ def busy(seconds: float) -> None:
         pass
 
 def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
-    monkeypatch.setitem(runtime.STARTED, 0, 0.0)
+    monkeypatch.setattr(runtime, "STARTED", [0.0])
     features.load()
     record = fresh()
     turned(record, False)
