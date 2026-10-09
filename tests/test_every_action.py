@@ -458,6 +458,20 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     encoded_after = {key: body for key, (_, body) in ENCODED.items() if key[1] == "todo"}
     assert [key[2] for key in encoded_before if encoded_after[key] is not encoded_before[key]] == [newest], "a change to one to-do encodes that row again and no other"
     docs = CONTROLLERS["doc"](record, actor=USER)
+    from surfaces.listing import Listing, newest_listed
+    shelf = CONTROLLERS["todo"](record, actor=AGENT)
+    made = [shelf.create(f"listed {i}").n for i in range(8)]
+    for n in made[:5:2]:
+        shelf.complete(n, "done")
+    shelf.delete(made[3], why="gone")
+    rows = shelf.rows.summaries()
+    for last, completed in ((2, False), (3, True), (100, True), (100, False)):
+        wanted = Listing(only=frozenset(), last=last, completed=completed, closed=False, before=0, since=0.0, by_updated=False)
+        shown = [row for row in rows if not row["deleted"] and (completed or not row["completed"]) and row["updated"] > 0]
+        every = sorted({row["n"]: row for row in (*[r for r in shown if not r["completed"]], *shown[-last:])}.values(), key=lambda row: row["n"]) if completed else shown[-last:]
+        kept, more = newest_listed(shelf, wanted, rows)
+        assert ([row["n"] for row in kept], more) == ([row["n"] for row in every], len(shown) > len(every)), \
+            f"the newest page and the open rows of a listing of {last} rows (completed: {completed}) are what filtering the whole history gives, found from its newest end"
     haystack = docs.create("Haystack", brief="A brief that mentions needleword in passing")
     docs.section(haystack.n, "Details", "Body text with needleword inside")
     locate = lambda words: dispatch("GET", f"/api/{record.env}/doc/locate", record.root, {"words": words}, {}).body

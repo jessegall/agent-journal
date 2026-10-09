@@ -111,8 +111,36 @@ def listing(controller, record, wanted: Listing) -> ListedRows:
     return LISTED.get((str(record.home), controller.type, wanted), (summaries, stamp), listed)
 
 
+def newest_among(summaries: list, last: int, wanted_row) -> list[dict]:
+    """The newest `last` rows that pass, oldest first, found from the newest end so a long history is never walked through."""
+    found, at = [], len(summaries)
+    while at and len(found) < last:
+        at -= 1
+        if wanted_row(summaries[at]):
+            found.append(summaries[at])
+    found.reverse()
+    return found
+
+
+def newest_listed(controller, wanted: Listing, summaries: list) -> tuple[list[dict], bool]:
+    """The rows of the usual listing, the newest page and the open rows with it, and whether older rows are left out."""
+    last, hidden_listed = wanted.last, controller.resource.hidden_listed
+    shown = lambda row: not row["deleted"] and (wanted.completed or not row["completed"]) and (hidden_listed or not row.get("hidden")) and row["updated"] > 0
+    newest = newest_among(summaries, last, shown)
+    kept = newest
+    if wanted.completed:
+        is_open = lambda row: not row["completed"] and shown(row)
+        open_rows = [row for row in summaries if is_open(row)] if controller.resource.listed_open else newest_among(summaries, last, is_open)
+        kept = sorted({row["n"]: row for row in (*open_rows, *newest)}.values(), key=lambda row: row["n"])
+    held = {row["n"] for row in kept}
+    return kept, any(shown(row) and row["n"] not in held for row in reversed(summaries))
+
+
 def _listed(controller, record, wanted: Listing, summaries: list, stamp: tuple) -> ListedRows:
     since, only, last = wanted.since, wanted.only, wanted.last
+    if last and not (since or only or wanted.before or wanted.by_updated or wanted.closed):
+        kept, more = newest_listed(controller, wanted, summaries)
+        return {"rows": [view for row in kept if (view := readable(controller, record, row["n"], row.get("stamp"), stamp))], "more": more}
     rows = [row for row in summaries if (since or only or not row["deleted"]) and (wanted.completed or not row["completed"]) and (not wanted.closed or row["completed"])
             and (only or controller.resource.hidden_listed or not row.get("hidden"))
             and (not wanted.before or row["n"] < wanted.before) and row["updated"] > since and (not only or row["n"] in only)]
