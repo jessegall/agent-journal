@@ -308,7 +308,7 @@ const openSkills = () => go(route.value.env, "skills");
                         </template>
                         <template v-else>
                             <div class="fill scroll rail-gutter">
-                                <RailTodos @open="loadTodo" />
+                                <RailTodos finished @open="loadTodo" />
                             </div>
                         </template>
                     </template>
