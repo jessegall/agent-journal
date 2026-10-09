@@ -28,6 +28,6 @@ class PutOffWorkDetails(FeatureDetails):
         Line(
             name="deferred",
             title="work deferred in words, not parked",
-            brief='"{{words}}" is the title of a to-do: journal todo create "<title>" --brief, then say so',
+            brief='"{{words}}" is new work: {{filing}}, then say so',
         ),
     ]

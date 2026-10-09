@@ -2,7 +2,7 @@ import features
 from controllers.types import Agents, Nudges, Works
 from features.session_briefing.start import start_block
 from features.work_modes.details import NAME
-from features.work_modes.modes import mode_of, pick
+from features.work_modes.modes import choose_board, filing, mode_of, pick
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from runner.hooks import handle
@@ -89,3 +89,25 @@ def test_an_upgrade_turns_auto_mode_on_and_renames_the_hands_on_mode():
     assert rename(record.root) == ["t: the work mode hands-on is now builder"], "the old mode name is renamed"
     assert record.setting(NAME) == {"mode": "builder", "other": 1}, "the other work-mode settings stay"
     assert rename(record.root) == [], "a mode that is already named builder is left alone"
+
+
+def test_the_board_picked_for_new_work_switches_what_the_agent_is_told_to_file():
+    features.load()
+    record = fresh()
+    Agents(record, actor=SYSTEM).create("claude-1")
+    from commands.http import dispatch
+    from features.boards.controller import Boards
+    board = Boards(record, actor=USER).create("Rewrite", stages=["Doing", "Done"])
+    pick(record, "orchestrator", USER)
+    assert "NEW WORK" not in start_block(record) and "journal todo create" in filing(record), "with no board picked, new work is filed as to-dos as before"
+    assert "no board 99" in refused(lambda: choose_board(record, 99, USER)), "a board that is not there is refused"
+    assert dispatch("POST", f"/api/{record.env}/mode/board", record.root, {}, {"board": board.n}).body == {"board": board.n}, "the viewer's selector picks the board"
+    assert f"NEW WORK: file each new request as a ticket on board {board.n}, Rewrite" in start_block(record), "a start carries where new work goes"
+    assert len(told(record, "where new work goes")) == 1 and "journal ticket create" in told(record, "where new work goes")[0].brief, "the agent is told once, with the command"
+    choose_board(record, board.n, USER)
+    assert len(told(record, "where new work goes")) == 1, "picking the same board tells nothing"
+    pick(record, "builder", USER)
+    assert "NEW WORK" not in start_block(record) and "journal todo create" in filing(record), "outside orchestrator mode the board is not used: to-dos"
+    pick(record, "orchestrator", USER)
+    choose_board(record, 0, USER)
+    assert "NEW WORK" not in start_block(record) and len(told(record, "where new work goes")) == 2, "None goes back to to-dos and the agent is told"
