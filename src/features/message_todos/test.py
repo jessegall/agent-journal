@@ -61,6 +61,16 @@ def test_a_message_is_filed_replied_edited_and_processed_by_the_agent_that_reads
     assert "> make the tunnel restart itself" in made.brief and "both are on the list" in made.brief, "a reply quotes what it answers"
     assert Comments(record, actor=AGENT).load(made.n).files, "a reply can carry a file"
     assert f"message:{second.n}" in Comments(record, actor=AGENT).load(made.n).refs, "a reply to several messages is linked to each"
+    from controllers.stored import RowStore
+    third = user.create("one more small question")
+    agent.read(third.n)
+    saved, written = [], RowStore.write_file
+    RowStore.write_file = lambda self, r: saved.append((r.type, r.n)) or written(self, r)
+    try:
+        agent.reply(str(third.n), "a short answer")
+    finally:
+        RowStore.write_file = written
+    assert (saved.count(("message", third.n)), saved.count(("comment", 2))) == (1, 1), "a reply writes the message it answers once, since its closing already says it was commented, and its comment once"
     assert "has been read" in refused(lambda: user.edit(first.n, "changed")), "a message that was read cannot be reworded by the person"
     fresh_one = user.create("a draft")
     assert user.edit(fresh_one.n, "a better draft").brief == "a better draft", "a message nobody read can be reworded"
