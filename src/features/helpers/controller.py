@@ -261,7 +261,7 @@ class Helpers(Controller):
         home = Record(self.record.root, row.environment)
         Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
         self._handed(row, home, handed)
-        Helpers(self.record, actor=SYSTEM).update(n, report="", answering=True)
+        Helpers(self.record, actor=SYSTEM).update(n, report="", answering=True, latest=titled(text))
         return f"sent to {row.name}" + (f", with to-do {', '.join(str(t.n) for t in handed)}" if handed else "")
 
     @action

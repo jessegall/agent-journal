@@ -19,6 +19,7 @@ class Helper(Shape, Resource):
         Field(default="", name="worktree", journal_only=True),
         Field(default="", name="checkout", journal_only=True),
         Field(default="", name="report"),
+        Field(default="", name="latest"),
         Field(default=False, name="answering"),
         Field(default=0.0, name="stop_asked"),
         Field(default=False, name="stopped_by_user"),
