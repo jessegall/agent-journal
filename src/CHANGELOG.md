@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.38 — A picture for every voice, and board columns that scroll
+- Every voice has its own picture, on its card in Settings and in the first-start dialog where you choose a voice; a copy of a voice keeps its picture.
+- A board's columns keep a maximum height and scroll their cards, with each column's heading in view, on the collection page and in a share.
+
 ## 2.267.37 — A seen announcement stays seen
 - An announcement leaves the queue the moment you answer it, whether with its button, Not now, Escape or by closing it, and never shows again after a reload.
 - A seen mark the server did not take is reported, kept in the browser and sent again, never dropped in silence.
