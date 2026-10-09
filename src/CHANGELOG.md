@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.41 — Voice pictures you can see
+- Each voice's picture sits large on top of its card, with its name and sample below, in Settings, in the first-start dialog and in the phone's voice list.
+
 ## 2.267.40 — A member from another environment names its ticket
 - A collection member that lives in another environment carries a badge naming the ticket it belongs to, such as Ticket 3 · Fix the login page, or the environment's name when no ticket has it, on its card and in the page or panel it opens, in the collection and in a share.
 - The plan buttons of the Tickets and Boards tabs read Open plan of ticket N, with the ticket's title in the tooltip.
