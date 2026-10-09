@@ -544,6 +544,9 @@ class Environment(Shape, Resource):
     def is_main(self) -> bool:
         return self.kind == EnvironmentKind.MAIN
 
+    def is_ticket(self) -> bool:
+        return self.kind == EnvironmentKind.TICKET
+
     def owned_by(self, kind: str) -> int:
         return int(self.owner.split(":")[1]) if self.owner.startswith(f"{kind}:") else 0
 

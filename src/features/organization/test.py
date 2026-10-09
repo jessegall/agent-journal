@@ -256,6 +256,10 @@ def test_every_environment_is_made_with_its_kind_and_only_main_ones_are_listed_t
     assert ([e["name"] for e in summary["environments"]], shown(record.root)) == ([record.env], (record.env,)), \
         "the viewer and the phone list only the environments a main agent works in"
     assert [e["owner"] for e in summary["helpers"]] == ["helper:1"], "a helper's environment is listed with the helpers"
+    envs.create("ticket-3", owner="ticket:3")
+    summary = summarize(record.root)
+    assert ([e["owner"] for e in summary["tickets"]], [e["owner"] for e in summary["helpers"]]) == (["ticket:3"], ["helper:1"]), \
+        "a ticket's environment is listed with the ticket agents, so the home screen shows its cell"
 
 
 def test_the_upgrade_tags_every_environment_from_its_owner_and_a_helpers_folder_named_one_as_a_helper():

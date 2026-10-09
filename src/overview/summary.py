@@ -121,6 +121,7 @@ class JournalSummary(TypedDict):
     color: str
     environments: list[dict]
     helpers: list[dict]
+    tickets: list[dict]
 
 
 def summarize(root: Path) -> JournalSummary:
@@ -131,4 +132,5 @@ def summarize(root: Path) -> JournalSummary:
     names = dict.fromkeys([start, *(e.title for e in standing)])
     return {"project": root.resolve().parent.name, "root": str(root), "version": version(), "start": start, "started": runtime.STARTED[0], "color": identity(root)["color"],
             "environments": [{**environment(Record(root, name)), "owner": owners.get(name, "")} for name in names],
-            "helpers": [{**environment(Record(root, e.title)), "owner": e.owner} for e in every if e.helping]}
+            "helpers": [{**environment(Record(root, e.title)), "owner": e.owner} for e in every if e.helping],
+            "tickets": [{**environment(Record(root, e.title)), "owner": e.owner} for e in every if e.is_ticket()]}
