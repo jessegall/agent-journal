@@ -57,6 +57,11 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
         timed(Reply(200, {}, after=lambda: busy(0.08)), record.root, record.env, "POST", "/api/hook/claude", Stopwatch()).after()
     assert notified(record) == ["request GET /api/main/message is slower than its budget"], \
         "work done after the answer is sent is not held against the budget the agent waits on"
+    heard = []
+    with monkeypatch.context() as patched:
+        patched.setattr(Stopwatch, "announce", lambda self, *args: heard.append(args[-1]))
+        timed(Reply(200, {}, after=lambda: time.sleep(0.05)), record.root, record.env, "GET", "/api/main/dashboard", Stopwatch()).after()
+    assert 40 < heard[-1] < 250, "the time reported after an answer is what the work left behind took, not how long it waited in the queue"
     from engine.after_answer import AfterAnswer
     workers, ran = AfterAnswer.started(1), []
     with workers.answering_hook():
