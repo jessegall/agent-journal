@@ -144,13 +144,13 @@ watch(
                                     </div>
                                 </template>
                                 <template v-else>
-                                    <ResourceBody :resource="resource" :comment-composer="false" @close="close" />
+                                    <ResourceBody :resource="resource" :comment-composer="false" :focus="focusComment" @close="close" />
                                 </template>
                             </div>
                         </Transition>
                     </div>
                     <template v-if="takesComments">
-                        <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
+                        <Comments :resource="resource" :show-thread="false" />
                     </template>
                 </div>
             </template>
