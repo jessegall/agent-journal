@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.worktree import changed, contains, git, keep, linked, merged, present, roots, tip
+from engine.worktree import changed, contains, default_branch, git, keep, linked, merged, present, roots, tip
 from features.tickets.resource import Bases
 from controllers.marks import action
 
@@ -28,7 +28,7 @@ class Landing:
 class TicketLanding:
     def _off_branch(self, ticket) -> str:
         into = self._into(ticket)
-        off = [(name, base) for name, place, base in self._repositories(ticket) if into != "HEAD" and base and not contains(place, base, into)]
+        off = [(name, base) for name, place, base in self._repositories(ticket) if into != "HEAD" and base and not contains(place, base, self._into_at(ticket, name, place))]
         if not off:
             return ""
         name, base = off[0]
@@ -39,9 +39,9 @@ class TicketLanding:
     def _repositories(self, ticket) -> list[tuple[str, Path, str]]:
         return [(name, place, ticket.base_of(name)) for name, place in roots(self.record.root.parent).items()]
 
-    def _started_at(self, ticket, into: str) -> dict:
+    def _started_at(self, ticket) -> dict:
         branch = self._branch(ticket)
-        return {name: tip(place, into) if not base or not present(place, f"refs/heads/{branch}") else base
+        return {name: tip(place, self._into_at(ticket, name, place)) if not base or not present(place, f"refs/heads/{branch}") else base
                 for name, place, base in self._repositories(ticket)}
 
     def _based(self, ticket, tips: dict[str, str]):
@@ -63,10 +63,18 @@ class TicketLanding:
         return DRIVERS[ticket.provider].branch(ticket.work_environment)
 
     def _merged(self, ticket) -> bool:
-        branch, into = self._branch(ticket), self._into(ticket)
-        states = [(landing.merged(), landing.changed()) for landing in (Landing(place, branch, base, into) for _, place, base in self._repositories(ticket))]
+        branch = self._branch(ticket)
+        states = [(landing.merged(), landing.changed()) for landing in (Landing(place, branch, base, self._into_at(ticket, name, place)) for name, place, base in self._repositories(ticket))]
         return any(done for done, _ in states) and all(done or not moved for done, moved in states)
 
     def _into(self, ticket) -> str:
         board = self._board(ticket)
         return board.branch if board and board.branch else "HEAD"
+
+    def _into_at(self, ticket, name: str, place: Path) -> str:
+        into = self._into(ticket)
+        return into if into == "HEAD" or name == "." or present(place, into) else default_branch(place)
+
+    def _lacking(self, ticket) -> list[str]:
+        into = self._into(ticket)
+        return [name for name, place, _ in self._repositories(ticket) if into != "HEAD" and name != "." and not present(place, into)]

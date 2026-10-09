@@ -116,8 +116,8 @@ class TicketCards:
         if key not in REPOSITORY_STATES:
             if len(REPOSITORY_STATES) > STATES_KEPT:
                 REPOSITORY_STATES.clear()
-            branch, into = self._branch(ticket), self._into(ticket)
-            REPOSITORY_STATES[key] = [{"name": name, "branch": branch, "state": Landing(place, branch, base, into).state()}
+            branch = self._branch(ticket)
+            REPOSITORY_STATES[key] = [{"name": name, "branch": branch, "state": Landing(place, branch, base, self._into_at(ticket, name, place)).state()}
                                       for name, place, base in self._repositories(ticket)]
         return REPOSITORY_STATES[key]
 

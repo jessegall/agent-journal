@@ -362,6 +362,13 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert tickets._clean(tickets.load(second.n)) is False, "a ticket with no worktree of its own is not clean"
     assert [Landing(project, f"worktree-{ticket.work_environment}", ticket.base, home).state(), Landing(project, f"worktree-{second.work_environment}", ticket.base, home).state()] \
         == ["merged", "changed"], "a branch is merged, changed or untouched by where its commits are"
+    nested = project / "autoscaling"
+    nested.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "trunk"], cwd=nested, check=True, timeout=30)
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "first"], cwd=nested, check=True, timeout=30)
+    wide = tickets.load(tickets.create("Wide", board=rewrite.n).n)
+    assert (tickets._lacking(wide), tickets._into_at(wide, "autoscaling", nested), tickets._into_at(wide, ".", project)) == (["autoscaling"], "trunk", "rewrite"), \
+        "a nested repository without the board's branch falls back to its own default branch; the project's own repository keeps the board's"
 
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
