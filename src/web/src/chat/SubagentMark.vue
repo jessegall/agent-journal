@@ -39,11 +39,12 @@ const mark = computed(() => ({
 }));
 const openable = computed(() => ({...mark.value, title: "Open the subagent"}));
 const reported = computed(() => ({...mark.value, card: card.value}));
+const reportedOpenable = computed(() => ({...reported.value, title: "Open the subagent"}));
 </script>
 
 <template>
-    <template v-if="session && !report">
-        <ChatMark :mark="openable" @click="open" />
+    <template v-if="session">
+        <ChatMark :mark="report ? reportedOpenable : openable" @click="open" />
     </template>
     <template v-else>
         <ChatMark :mark="reported" />

@@ -175,7 +175,7 @@ class Helpers(Controller):
         except Exception:
             give_back(self.record, handed)
             raise
-        Agents(self.record, actor=SYSTEM)._mark_primary(f"Dispatched helper {row.n}", name=row.name, icon="bot", detail=f"{provider} {model}")
+        Agents(self.record, actor=SYSTEM)._mark_primary(f"Dispatched helper {row.n}", name=row.name, icon="bot", helper=row.n, detail=f"{provider} {model}")
         return row
 
     def _handable(self, numbers: tuple[int, ...]) -> list[Todo]:
@@ -274,7 +274,7 @@ class Helpers(Controller):
         Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
         self._handed(row, home, handed)
         Helpers(self.record, actor=SYSTEM).update(n, report="", answering=True, latest=titled(text), reuses=int(row.reuses) + 1)
-        Agents(self.record, actor=SYSTEM)._mark_primary(f"{'Continued' if running else 'Reused'} helper {n}", name=row.name, icon="bot", detail=titled(text))
+        Agents(self.record, actor=SYSTEM)._mark_primary(f"{'Continued' if running else 'Reused'} helper {n}", name=row.name, icon="bot", helper=row.n, detail=titled(text))
         return f"sent to {row.name}" + (f", with to-do {', '.join(str(t.n) for t in handed)}" if handed else "")
 
     def _revive(self, row: Helper, words: str) -> None:
@@ -368,7 +368,7 @@ class Helpers(Controller):
         rows = unmarked(self.record, row)
         stopped = self._stopped(row, places, place)
         give_back(self.record, rows)
-        Agents(self.record, actor=SYSTEM)._mark_primary(f"Stopped helper {n}", name=row.name, icon="bot")
+        Agents(self.record, actor=SYSTEM)._mark_primary(f"Stopped helper {n}", name=row.name, icon="bot", helper=int(n))
         return f"{stopped}{given_back(rows)}"
 
     def _stopped(self, row, places: Environments, place) -> str:
@@ -409,7 +409,7 @@ class Helpers(Controller):
         give_back(self.record, rows)
         finished = super().complete(n, f"{how or 'finished; its environment is packed away'}{given_back(rows)}", **data)
         Worktrees(self.record, actor=SYSTEM)._released(row.name)
-        Agents(self.record, actor=SYSTEM)._mark_primary(f"Retired helper {n}", name=row.name, icon="bot")
+        Agents(self.record, actor=SYSTEM)._mark_primary(f"Retired helper {n}", name=row.name, icon="bot", helper=int(n))
         bus.defer(lambda: self._packed(row, place))
         return finished
 
