@@ -50,6 +50,13 @@ class Vault:
     def write(self, name: str, data: dict) -> None:
         replace(self.opened() / name, json.dumps(data).encode(), SECRET)
 
+    def drop(self, name: str, key: str) -> None:
+        """Takes one key out of a vault file, under the vault's lock."""
+        with self.held():
+            kept = self.read(name)
+            kept.pop(key, None)
+            self.write(name, kept)
+
     def remove(self, name: str) -> None:
         (self.folder / name).unlink(missing_ok=True)
 

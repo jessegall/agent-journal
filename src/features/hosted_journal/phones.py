@@ -30,10 +30,7 @@ class VaultGuard(RecordGuard):
         return shown
 
     def drop(self, n: int) -> None:
-        with self.vault.held():
-            phones = self.vault.read(PHONES)
-            phones.pop(str(n), None)
-            self.vault.write(PHONES, phones)
+        self.vault.drop(PHONES, str(n))
 
     def drop_all(self) -> None:
         with self.vault.held():

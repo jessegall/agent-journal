@@ -137,10 +137,7 @@ class Logins:
         return Standing.UNKNOWN if login is None else login.standing(self.vault.clock())
 
     def close(self, token: str) -> None:
-        with self.vault.held():
-            kept = self.vault.read(LOGINS)
-            kept.pop(hashed(token), None)
-            self.vault.write(LOGINS, kept)
+        self.vault.drop(LOGINS, hashed(token))
 
     def close_member(self, member: str) -> int:
         with self.vault.held():
