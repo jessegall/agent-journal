@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.47 — Pick a board for new work
+- With orchestrator mode on, a New work menu beside the mode switch picks where new requests go: None, or one of the project's open boards. With a board picked, the orchestrating agent files each new request as a ticket on it and starts it, then reviews, approves and merges its plan; with None it files to-dos as before.
+
 ## 2.267.46 — A shared plan shows its rows loading
 - A plan opened in a share shows skeleton rows in its phases and timeline until its to-dos have arrived, never an empty list in between.
 
