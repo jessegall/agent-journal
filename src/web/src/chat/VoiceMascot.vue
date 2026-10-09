@@ -64,10 +64,9 @@ watch(
     async (now) => {
         stop();
         if (!now) return;
-        const [blink, ...found] = await Promise.all([now.blink, ...now.acts, now.single].map(measured));
+        const [blink, ...found] = await Promise.all([now.blink, ...now.acts].map(measured));
         if (mascot.value !== now) return;
-        const numbered = found.slice(0, now.acts.length).filter(Boolean);
-        acts = numbered.length ? numbered : found.slice(now.acts.length).filter(Boolean);
+        acts = found.filter(Boolean);
         if (!acts.length) return;
         blinks = blink && {...blink, still: true};
         rested.value = acts[0];
@@ -82,26 +81,24 @@ const shown = computed(() => playing.value ?? rested.value);
 const look = computed(() => ({
     backgroundImage: `url(${shown.value.url})`,
     "--frames": shown.value.frames,
-    "--inset": `${mascot.value.place.inset}px`,
-    "--lift": `${mascot.value.place.lift}px`,
-    "--walk": `${mascot.value.place.walk}px`,
+    "--edge": mascot.value.place.edge,
+    "--foot": mascot.value.place.foot,
 }));
-const walks = computed(() => Boolean(playing.value) && !playing.value.still);
 </script>
 
 <template>
     <template v-if="mascot && rested">
-        <span :key="turn" :class="['voice-mascot', {playing: Boolean(playing), walking: walks}]" :style="look" aria-hidden="true" @animationend="ended"></span>
+        <span :key="turn" :class="['voice-mascot', {playing: Boolean(playing)}]" :style="look" aria-hidden="true" @animationend="ended"></span>
     </template>
 </template>
 
 <style scoped>
 .voice-mascot {
-    --size: 120px;
+    --size: 128px;
     --rate: 3.5;
     position: absolute;
-    top: calc(var(--size) * -200 / 256 - var(--lift));
-    right: calc(var(--size) * (230 - 256) / 256 + var(--inset));
+    top: calc(var(--size) * var(--foot) / -256);
+    right: calc(12px + var(--size) * (var(--edge) - 256) / 256);
     z-index: 1;
     width: var(--size);
     height: var(--size);
@@ -115,12 +112,6 @@ const walks = computed(() => Boolean(playing.value) && !playing.value.still);
     animation: voice-mascot-idle calc(var(--frames) / var(--rate) * 1s) steps(var(--frames)) 1;
 }
 
-.voice-mascot.walking {
-    animation:
-        voice-mascot-idle calc(var(--frames) / var(--rate) * 1s) steps(var(--frames)) 1,
-        voice-mascot-walk calc(var(--frames) / var(--rate) * 1s) steps(var(--frames)) 1;
-}
-
 @keyframes voice-mascot-idle {
     from {
         background-position-x: 0;
@@ -128,17 +119,6 @@ const walks = computed(() => Boolean(playing.value) && !playing.value.still);
 
     to {
         background-position-x: calc(var(--size) * var(--frames) * -1);
-    }
-}
-
-@keyframes voice-mascot-walk {
-    0%,
-    100% {
-        transform: translateX(0);
-    }
-
-    50% {
-        transform: translateX(calc(var(--walk) * -1));
     }
 }
 
