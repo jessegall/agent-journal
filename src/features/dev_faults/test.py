@@ -148,8 +148,9 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     profile = cProfile.Profile()
     profile.runcall(busy, 0.01)
     reports = FEATURES["dev_faults"].reports
+    earlier = set(runtime.profiles(record.root).glob("*.txt"))
     reports.spent(record.root, record.env, "command", "message all", 500.0, profile=profile)
-    kept = list(runtime.profiles(record.root).glob("*-message-all-500ms.txt"))
+    kept = [f for f in runtime.profiles(record.root).glob("*-message-all-500ms.txt") if f not in earlier]
     assert len(kept) == 1 and "function calls" in kept[0].read_text(), "a slow call over the budget keeps its profile in a file named for what was slow"
     from engine.timing import Sampler
     sampler = Sampler()
