@@ -75,6 +75,7 @@ await runScenarios(process.argv[2], {
         await page.getByText("Transcript", {exact: true}).first().click();
         await page.getByText("Closed helper said this").first().waitFor();
         await page.keyboard.press("Escape");
+        await page.locator(".statusbar-helpers").click();
         await page.getByRole("button", {name: /^Retired/}).click();
         await page.getByRole("button", {name: "Ada Keywright"}).click();
         await page.getByText("Transcript", {exact: true}).first().click();
