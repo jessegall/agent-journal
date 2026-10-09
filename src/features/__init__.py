@@ -138,6 +138,13 @@ def settings_changed(record, names, actor: str) -> None:
             FEATURES[name].settings_changed(record, actor)
 
 
+def switched(record, before: dict, after: dict, actor: str) -> None:
+    """Tells each feature whose switch moved which way it went."""
+    for name, on in after.items():
+        if name in FEATURES and before.get(name) != on:
+            FEATURES[name].switched(record, actor, bool(on))
+
+
 def describe() -> dict:
     return {name: f.describe() for name, f in FEATURES.items()}
 

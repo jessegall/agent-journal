@@ -12,6 +12,7 @@ import TurnMessage from "./TurnMessage.vue";
 import TurnReceipt from "./TurnReceipt.vue";
 import TurnThought from "./TurnThought.vue";
 import {useTurnLinks} from "./turnLinks.js";
+import {route, go} from "../route.js";
 import {store} from "../state/store.js";
 
 const props = defineProps({turn: Object});
@@ -37,6 +38,7 @@ function markClick(data) {
         const settled = data.settled ? {how: data.settled, at: data.settledAt} : null;
         return {click: () => (store.pluginPage = {plugin: data.name, open: data.page, settled})};
     }
+    if (data.go) return {click: () => go(route.value.env, data.go)};
     return data.row ? {click: () => openRef(data.row)} : {};
 }
 </script>

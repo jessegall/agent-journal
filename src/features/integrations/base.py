@@ -4,7 +4,7 @@ from dataclasses import asdict, replace
 from urllib.parse import urlsplit
 
 from controllers.features import Features
-from controllers.types import Notices, Questions
+from controllers.types import Agents, Notices, Questions
 from engine import bus
 from features.base import Feature
 from features.integrations.commands import SyncIntegration
@@ -46,6 +46,17 @@ class IntegrationFeature(Feature):
     def settings_changed(self, record, actor: str) -> None:
         self.clients.pop(str(record.home), None)
         self.wire_mcp(record)
+
+    def switched(self, record, actor: str, on: bool) -> None:
+        if actor == USER:
+            self.mark_user_action(record, "Connected" if on else "Disconnected")
+
+    def mark_user_action(self, record, label: str) -> None:
+        """Shows in the chat, on your side, that you connected, disconnected or logged in or out of the service; it opens the Integrations page."""
+        agents = Agents(record, actor=SYSTEM)
+        row = agents.primary()
+        if row:
+            agents.card(row.n, label=label, name=self.details.title, icon="plug", side=USER, state="done", go="integrations")
 
     @property
     def mcp_name(self) -> str:
@@ -116,6 +127,7 @@ class IntegrationFeature(Feature):
         secrets.fill(row.n, "key", value)
         variable = next(field["variable"] for field in secrets.load(row.n).secret_fields)
         write_state(record.root, self.name, replace(read_state(record.root, self.name), logged_in_at=time.time(), last_error=""))
+        self.mark_user_action(record, "Logged in to")
         return variable
 
     def log_out(self, record, origin: str = "") -> None:
@@ -137,6 +149,7 @@ class IntegrationFeature(Feature):
                 features.configure(self.name, "key", "")
         write_state(record.root, self.name, IntegrationState())
         features.configure(self.name, "use_mcp", "false")
+        self.mark_user_action(record, "Logged out of")
 
     def login_route(self):
         name = self.name

@@ -197,6 +197,13 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
         monkeypatch.setattr("features.integrations.login.WAIT", 0.2)
         assert "no sign-in came back" in refused(lambda: signed_in(origin, "test", lambda url: None)), "a sign-in that never comes back is given up on"
         monkeypatch.setattr("features.integrations.login.WAIT", 180.0)
+        from controllers.types import Agents
+        from resources.base import SYSTEM
+        from tests.kit import report
+        report(record, "working", "PreToolUse")
+        apply(record, {"features": {"linear": True}}, USER)
+        apply(record, {"features": {"linear": False}}, USER)
+        apply(record, {"features": {"linear": True}}, USER)
         variable = linear.log_in(record, browser(), origin)
         key_before = linear.values(record).key
         assert ValuesFile(record.root).values()[variable] == "Bearer tok-xyz", "logging in keeps the token as a secret"
@@ -206,6 +213,9 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
         assert variable not in ValuesFile(record.root).values(), "logging out drops the token from the secrets file"
         assert read_state(record.root, "linear").logged_in_at == 0, "clears the state"
         assert not linear.values(record).use_mcp, "and switches the MCP server off"
+        marks = [c for c in Agents(record, actor=SYSTEM).primary().data["cards"] if c.get("side") == USER]
+        assert ([c["label"] for c in marks][-4:], {(c["name"], c["go"]) for c in marks}) == (["Disconnected", "Connected", "Logged in to", "Logged out of"], {("Linear", "integrations")}), \
+            "the chat shows on your side that you disconnected, connected, logged in and logged out, each opening the Integrations page"
     finally:
         server.shutdown()
 
