@@ -53,7 +53,7 @@ class Record:
     skills = Setting(list)
     questions = Setting(dict)
     delivery = Setting(dict, project=("channel",))
-    viewer = Setting(dict, project=("color_scheme", "chat_hidden", "away", "tour_seen", "open_with"))
+    viewer = Setting(dict, project=("color_scheme", "chat_hidden", "away", "tour_seen", "open_with", "port"))
 
     def __init__(self, root: Path, env: str, memo: bool = False, writer: ThisMachine | Pushing | Lease = ThisMachine()):
         self.root = Path(root)

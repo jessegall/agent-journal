@@ -374,6 +374,22 @@ def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_a
     assert viewer.wait_for(kept, viewer.PORTS[0]) == viewer.PORT_WAIT, "and when that server is gone the port is waited for only the usual time"
     import shutil
     shutil.rmtree(viewer.marker(kept).parent)
+    from engine.record import Record
+    from engine.runtime import env as runtime_env
+    assert viewer.configured(kept) == 0, "a journal that has set no port of its own has none configured"
+    Record(kept, runtime_env(kept)).change_setting("viewer", {"port": viewer.PORTS[2]})
+    assert viewer.configured(kept) == viewer.PORTS[2], "the port a project sets for its viewer is the one it is configured for"
+    Record(kept, runtime_env(kept)).change_setting("viewer", {"port": 80})
+    assert viewer.configured(kept) == 0, "a port outside the viewer ports is ignored"
+    Record(kept, runtime_env(kept)).change_setting("viewer", {"port": viewer.PORTS[2]})
+    asked = []
+    monkeypatch.setattr(viewer, "running", lambda root: "")
+    monkeypatch.setattr(viewer, "elsewhere", lambda root: "")
+    monkeypatch.setattr(viewer, "available", lambda root, prefer: asked.append(prefer) or (_ for _ in ()).throw(RuntimeError("stop")))
+    with pytest.raises(RuntimeError, match="stop"):
+        viewer.launch(kept, kept.parent)
+    assert asked == [viewer.PORTS[2]], "a launch asks for the configured port, not for the one it last served on"
+    shutil.rmtree(viewer.marker(kept).parent)
     monkeypatch.setattr(viewer, "running", lambda root: "")
     assert viewer.answered(kept, SimpleNamespace(poll=lambda: 3, returncode=3)) == ("", 3), "a server that ends before it answers hands back its exit code"
 
