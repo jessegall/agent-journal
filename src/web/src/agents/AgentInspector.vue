@@ -24,7 +24,7 @@ import AgentPanes from "./AgentPanes.vue";
 import {scopeIn} from "../composables/scope.js";
 import {useTranscript} from "../composables/transcript.js";
 import {briefOf} from "../domain/transcript.js";
-import {INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
+import {INSPECTOR_FEED, INSPECTOR_PRESETS, matches, thumbnail} from "../domain/panes.js";
 import {levelOf} from "../domain/verbosity.js";
 import {agentOf, plainRefusal} from "../domain/agents.js";
 import {age} from "../format/time.js";
@@ -294,6 +294,7 @@ const openSkills = () => go(route.value.env, "skills");
                                 :agent="agent.n"
                                 :flush="!!pane.flush"
                                 :options="pane.feed || null"
+                                :defaults="INSPECTOR_FEED"
                                 @options="(feed) => tune({feed})"
                             />
                         </template>

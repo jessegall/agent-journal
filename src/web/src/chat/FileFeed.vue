@@ -11,7 +11,7 @@ import {useFollow} from "../composables/follow.js";
 import {useNow} from "../composables/now.js";
 import {fresh} from "../format/time.js";
 
-const props = defineProps({agent: {type: Number, required: true}, flush: Boolean, options: {type: Object, default: null}});
+const props = defineProps({agent: {type: Number, required: true}, flush: Boolean, options: {type: Object, default: null}, defaults: {type: Object, default: null}});
 const scope = useScope();
 const emit = defineEmits(["options"]);
 const DEFAULTS = {
@@ -34,7 +34,7 @@ const follow = useFollow(scroller);
 const {following, unseen, jump, scrolled, wheeled} = follow;
 const {cards, ready, latest, older, loadOlder} = useFileFeed(props.agent, follow, scope.api);
 const now = useNow();
-const view = computed(() => ({...DEFAULTS, ...(props.options || {})}));
+const view = computed(() => ({...DEFAULTS, ...(props.defaults || {}), ...(props.options || {})}));
 const flushed = computed(() => props.flush || view.value.flush);
 const filter = ref("");
 const folds = ref({});
