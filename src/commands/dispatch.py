@@ -1,4 +1,5 @@
 import mimetypes
+import time
 from pathlib import Path
 from engine import bus
 from engine.record import Record
@@ -42,7 +43,15 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Sto
     name = f"{method} {path}" if reply.named is None else f"{method} {path} ({reply.named})"
     answered = began.lap()
     kind = "hook" if hook_path(path) else "request"
-    return later(reply, lambda: began.announce(Record(root, env), kind, name, profile, answered, stacks))
+    earlier = reply.after
+
+    def after() -> None:
+        started = time.perf_counter()
+        if earlier:
+            earlier()
+        began.announce(Record(root, env), kind, name, profile, answered, stacks, (time.perf_counter() - started) * 1000)
+    reply.after = after
+    return reply
 
 
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:

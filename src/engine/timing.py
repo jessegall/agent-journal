@@ -71,14 +71,14 @@ class Stopwatch:
         return Lap((time.perf_counter() - self.wall) * 1000, (time.thread_time() - self.working) * 1000, waits.total() - self.waiting,
                    whole_reads.since(self.read_whole))
 
-    def announce(self, record: Record, kind: str, name: str, profile: cProfile.Profile | None = None, answered: Lap | None = None, stacks: str = "") -> None:
+    def announce(self, record: Record, kind: str, name: str, profile: cProfile.Profile | None = None, answered: Lap | None = None, stacks: str = "", after: float = 0.0) -> None:
         if not bus.heard(EVENT):
             return
         total = self.lap()
         answer = answered if answered else total
         bus.announce(None, TIMING, 0, MEASURED, SYSTEM, {
             "root": str(record.root), "env": record.env, "kind": kind, "target": name, "profile": profile, "stacks": stacks,
-            "took": answer.took, "working": answer.working, "after": total.took - answer.took,
+            "took": answer.took, "working": answer.working, "after": after,
             "garbage": (collecting() - self.garbage) * 1000, "waiting": answer.waiting,
             "whole_reads": list(answer.whole_reads)})
 
