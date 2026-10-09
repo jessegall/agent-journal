@@ -1501,7 +1501,7 @@ def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_
     from types import SimpleNamespace
     from engine.stored import write_json
     from engine.sessions import Sessions
-    from runner import chat_mirror
+    from runner import chat_mirror, spool
     from tests.kit import report
     record = fresh()
     report(record, "working", "PreToolUse")
@@ -1512,7 +1512,7 @@ def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_
     (folder / "2.json").write_text("not json")
     seen = []
     monkeypatch.setattr(chat_mirror, "shown", lambda root, chunk: seen.append(chunk.delta))
-    chat_mirror.replay(root)
+    spool.replay(root)
     assert seen == ["replayed words"] and not list(folder.glob("*.json")), "what was displayed while the journal was down is shown once it is up, and a file that is not readable is dropped"
     monkeypatch.undo()
 
