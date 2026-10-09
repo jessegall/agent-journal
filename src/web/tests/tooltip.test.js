@@ -114,3 +114,13 @@ test("leaving the button closes it after a short wait", async () => {
     vi.advanceTimersByTime(HIDE_AFTER + LEAVE_FOR + 1);
     expect(shown.key).toBeNull();
 });
+
+test("scrolling a list that does not hold the button leaves the bubble open, and scrolling the page closes it", async () => {
+    const list = document.body.appendChild(document.createElement("div"));
+    point("one");
+    await settle();
+    list.dispatchEvent(new Event("scroll"));
+    expect(shown.key).toBe("mode:one");
+    document.dispatchEvent(new Event("scroll"));
+    expect(shown.key).toBeNull();
+});

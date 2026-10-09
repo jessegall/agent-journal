@@ -131,7 +131,7 @@ export function listen(doc = document) {
             hushed = shown.key;
             hide(true);
         }),
-        on("scroll", () => hide(true), true),
+        on("scroll", (e) => (!(e.target instanceof Node) || e.target.contains(known.get(shown.key)?.el)) && hide(true), true),
         on("click", (e) => {
             if (touched) {
                 touched = false;
