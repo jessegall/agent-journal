@@ -20,6 +20,8 @@ export const standing = computed(() => profiles.value.find((row) => row.n === pr
 
 export const person = computed(() => `${form().title}|${form().first_name}`);
 
+export const artOf = (row) => (row.data.art ? api.publicUrl(`voices/${row.data.art}`) : "");
+
 export const calls = (row) => callings.value[row.data.calling] || row.data.address || "";
 
 export const sampleOf = (row) => samples.value[row.n] ?? row.data.sample;

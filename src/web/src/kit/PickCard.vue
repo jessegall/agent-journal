@@ -1,9 +1,12 @@
 <script setup>
-defineProps({title: {type: String, required: true}, picked: Boolean, note: {type: String, default: ""}});
+import Illustration from "./Illustration.vue";
+
+defineProps({title: {type: String, required: true}, picked: Boolean, note: {type: String, default: ""}, art: {type: String, default: ""}});
 </script>
 
 <template>
     <button type="button" role="radio" :aria-checked="picked" :class="['pick-card', {picked}]">
+        <Illustration :src="art" :size="72" />
         <span class="pick-card-head">
             <span class="pick-card-dot" />
             {{ title }}

@@ -61,6 +61,7 @@ class Voice:
     naming: str = SCIENTISTS.text
     agent_name: str = "Sam"
     address: str = ""
+    art: str = ""
 
 
 BUTLER = Voice(
@@ -74,6 +75,7 @@ BUTLER = Voice(
             "who has seen it all, then put the matter right."),
     naming=HISTORICAL.text,
     agent_name="Alfred",
+    art="butler.webp",
 )
 
 HOMIE = Voice(
@@ -86,6 +88,7 @@ HOMIE = Voice(
             "talk, like a homie would, then fix it."),
     naming=STREET.text,
     agent_name="Lil Agent",
+    art="homie.webp",
 )
 
 COLLEAGUE = Voice(
@@ -98,6 +101,7 @@ COLLEAGUE = Voice(
             "then get back to the work."),
     naming=PLAIN.text,
     agent_name="Sam",
+    art="colleague.webp",
 )
 
 COACH = Voice(
@@ -111,6 +115,7 @@ COACH = Voice(
             "answer with one calm line that says what you will fix, then fix it."),
     naming=SPORTING.text,
     agent_name="Coach",
+    art="coach.webp",
 )
 
 SQUIRE = Voice(
@@ -126,6 +131,7 @@ SQUIRE = Voice(
             "on the chin and vows to do better, then set it right."),
     naming=KNIGHTLY.text,
     agent_name="Squire",
+    art="squire.webp",
 )
 
 SHIPPED = (BUTLER, HOMIE, COLLEAGUE, COACH, SQUIRE)

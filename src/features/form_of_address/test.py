@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import features
 from controllers.types import Nudges
 from features.form_of_address.controller import Profiles, ship
@@ -45,6 +47,11 @@ def test_the_four_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrad
     row.brief = "stale wording"
     Profiles(record, actor=SYSTEM).save(row, "updated")
     assert ship(record) == ["Homie"] and ship(record) == [], "an upgrade puts the shipped wording back, and only that"
+    shipped_art = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).art for row in profiles.rows.summaries()}
+    assert shipped_art == {"Butler": "butler.webp", "Homie": "homie.webp", "Colleague": "colleague.webp", "Coach": "coach.webp", "Squire": "squire.webp"}, \
+        "each shipped profile carries its illustration"
+    folder = Path(__file__).resolve().parents[2] / "web" / "public" / "voices"
+    assert all((folder / art).is_file() for art in shipped_art.values()), "and the picture it names ships with the viewer"
 
 
 def test_each_chosen_profile_speaks_in_its_own_voice_and_calls_you_as_it_says():
@@ -85,6 +92,7 @@ def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three()
     profiles = Profiles(record, actor=USER)
     copy = profiles.duplicate(number_of(record, "Coach"))
     assert copy.title == "Coach (my copy)" and not copy.system and copy.brief == SHIPPED[3].text, "a copy carries the voice and is yours to change"
+    assert (copy.art, profiles.create("Plain", brief="x", sample="y").art) == ("coach.webp", ""), "a copy keeps its picture and a profile made without one shows none"
     assert profiles.update(copy.n, brief="Cheer less.").brief == "Cheer less.", "a copy can be edited"
     assert profiles.update(copy.n, calling="none").calling == "none", "and how it calls you can be changed"
     assert refused(lambda: profiles.update(copy.n, calling="sir")), "to one of the three only"

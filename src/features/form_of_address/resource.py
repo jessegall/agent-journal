@@ -12,6 +12,7 @@ class Profile(Shape, Resource):
         Field(default="", name="naming"),
         Field(default="", name="agent_name"),
         Field(default="", name="address"),
+        Field(default="", name="art"),
         Field(FLAG, False, name="system"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
