@@ -94,6 +94,15 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
         calls.append(row().asking["call"])
     assert calls == ["printf 'hi' > hello.txt", "rm hello.txt"], "a second approval right after the first replaces the command shown in the chat"
     claude = DRIVERS["claude"]
+    danger = ("⏺ Bash(rm -rf $DIR/)\r\nBash command\r\n\r\n  rm -rf $DIR/\r\n  Remove the directory\r\n\r\n Dangerous rm operation on possibly-empty variable path\r\n"
+              " Do you want to proceed?\r\n ❯ 1. Yes\r\n   2. No\r\n")
+    asker = claude(fresh(), "claude-danger")
+    asker.printed.parent.mkdir(parents=True, exist_ok=True)
+    asker.printed.write_bytes(f"esc to interrupt\r\n{danger}".encode())
+    assert (asker.asking(), asker.asked().tool, "Dangerous rm operation" in asker.asked().call) == (True, "Bash", True), \
+        "Claude's own safety question, which sends no permission request, is read off its screen with the command it names"
+    asker.printed.write_bytes(f"{danger}\r\nesc to interrupt".encode())
+    assert asker.asked() is None, "once the command runs again, nothing is asked"
     warning = "WARNING: Loading development channels\r\n--dangerously-load-development-channels is for local channel development only.\r\n" \
               "❯ 1. I am using this for local development\r\n  2. Exit\r\nEnter to confirm".encode()
     assert (claude.consent(warning), claude.consent(warning + "\r\n❯ ".encode())) == (b"\r", b""), \

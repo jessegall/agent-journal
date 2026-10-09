@@ -2,8 +2,7 @@ import re
 import time
 from pathlib import Path
 
-from providers.payload import Asking
-from providers.drivers import Driver, plain, squeezed
+from providers.drivers import Driver, squeezed
 
 
 class CodexDriver(Driver):
@@ -18,6 +17,7 @@ class CodexDriver(Driver):
     ASKED_COMMAND = re.compile(r"Would you like to run the following command\?.*\$ (.+?)\s*›\s*1\.\s*Yes, proceed", re.S)
     ALLOW = b"y"
     ASKS_ON_SCREEN = True
+    ASKED_TOOL = "exec_command"
     ENTER_CAN_MISS = True
     QUEUED = b"Messagestobesubmittedafternexttoolcall"
     RUNNING = b"backgroundterminalrunning"
@@ -45,25 +45,6 @@ class CodexDriver(Driver):
     def at_prompt(self) -> bool:
         plain = self._screen()
         return plain.rfind(self.READY) > plain.rfind(self.BUSY) and self.quiet_for() >= self.QUIET
-
-    def asking(self) -> bool:
-        plain = self._screen()
-        return max(plain.rfind(phrase) for phrase in self.ASKING) > max(plain.rfind(self.READY), plain.rfind(self.BUSY))
-
-    def asked(self) -> Asking | None:
-        if not self.asking():
-            return None
-        found = list(self.ASKED_COMMAND.finditer(self._screen_text()))
-        return Asking("exec_command", found[-1][1].strip()[:300] if found else "a command", time.time())
-
-    def _screen_text(self) -> str:
-        return self._printed_tail().decode(errors="replace")
-
-    def _screen(self) -> bytes:
-        return b"".join(self._printed_tail().split())
-
-    def _printed_tail(self) -> bytes:
-        return plain(self.printed_tail(self.PROMPT_TAIL))
 
     @classmethod
     def command(cls, args: list[str], cwd: Path | None = None) -> list[str]:
