@@ -238,6 +238,9 @@ def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dro
     tuned = next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edit"]
     assert (tuned["ms"], tuned["frames"][0]) == (120, {"x": 256, "y": -2, "ms": 400}), "the offsets and times are kept beside the sheet in its offsets file, within the cell"
     assert "idle_wave_offsets.json" in profiles.load(squire.n).files, "as the offsets file the animations are delivered with"
+    assert next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edited"], "and the animation is marked as edited"
+    delivered = next(a for a in profiles.animations()[squire.n] if a["shipped"] and a["name"] == "leg_swing_salute")
+    assert (delivered["edited"], len(delivered["edit"]["frames"])) == (False, 8), "a delivered animation shows the offsets it came with, unedited"
     assert "has no animation" in refused(lambda: profiles.tune(squire.n, "nope.png", {"ms": 1})), "only an animation the voice has can be tuned"
     profiles.tune(squire.n, sheet_path)
     assert next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edit"] is None, "with no tuning it goes back to the sheet as it is"

@@ -3,7 +3,7 @@ import {computed} from "vue";
 import {CELL} from "../domain/mascots.js";
 import SpritePlayer from "../kit/SpritePlayer.vue";
 
-const SCALE = 1.25;
+const SCALE = 1.5;
 const MARGIN = 24;
 const BOX_ROOM = 70;
 
