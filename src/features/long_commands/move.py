@@ -10,6 +10,7 @@ from providers import DRIVERS, PROVIDERS
 from controllers.types import Agents
 
 FOREGROUND = "Bash"
+SETTLE = 30.0
 
 
 class MoveLongCommands(Handler):
@@ -47,9 +48,17 @@ class MoveLongCommands(Handler):
         task = context.state.get("task") or next((name for name, at in sorted(tasks.started.items(), key=lambda kv: kv[1])
                                                   if at >= float(started)), "")
         if not task:
-            return
+            return self.close_unmoved(context, row, started)
         context.state.set("task", task)
         if task in tasks.ended:
             context.state.set("ended", started)
             outcome = "failed" if task in tasks.failed else "done"
             context.journal.get(Agents).card(row.n, key=f"command:{started}", state=outcome, ended=tasks.ended[task])
+
+    def close_unmoved(self, context: AgentContext, row, started: str) -> None:
+        """A command that ended before it could be moved never starts a background task, so its card closes with the command."""
+        run = next((one for one in command_runs(row) if str(one.at) == started and one.done), None)
+        if run is None or time.time() - run.done < SETTLE:
+            return
+        context.state.set("ended", started)
+        context.journal.get(Agents).card(row.n, key=f"command:{started}", state="done", ended=run.done)

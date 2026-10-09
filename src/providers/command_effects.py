@@ -81,13 +81,27 @@ def inside(text: str, cwd: str) -> str:
     return text.replace(f"{cwd.rstrip('/')}/", "") if cwd else text
 
 
+def closed_at(runs: list[dict], at: float) -> list[dict]:
+    """A new tool call or prompt means every earlier call has ended, also one that never reported back, such as a call a hook refused or the user interrupted."""
+    return [one if one.get("done") else {**one, "done": at} for one in runs]
+
+
+def refused(row, hook: Hook) -> dict:
+    """The row's changes when a hook refused the call that just started, which then never runs and never reports back."""
+    running = current_run(row)
+    if running.done or running.at != hook.at:
+        return {}
+    ended = replace(running, done=hook.at)
+    return {AgentRow.running: ended.to_json(), AgentRow.commands: stamped(command_runs(row), ended, "", hook.at)}
+
+
 def shell(row, hook: Hook) -> dict:
     doing = inside(hook.tool.doing.strip(), hook.cwd)[:400]
     running = current_run(row)
     before = CommandRun(command=running.command, tool=running.tool, at=running.at, done=running.done, effect=running.effect,
                         changed=running.changed, result=running.result)
     if hook.event == HookEvent.USER_PROMPT_SUBMIT:
-        return {AgentRow.running: CommandRun(before=before).to_json() if before.done else {}, AgentRow.commands: list(row.commands)}
+        return {AgentRow.running: CommandRun(before=before).to_json() if before.done else {}, AgentRow.commands: closed_at(row.commands, hook.at)}
     if hook.event == HookEvent.PRE_TOOL_USE and doing:
         kind = effect(hook)
         if kind == "tests":
@@ -96,7 +110,7 @@ def shell(row, hook: Hook) -> dict:
         started = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, before=before if before.done else None, background=background)
         paths = tuple(inside(path, hook.cwd) for path in hook.tool.paths)
         ran = CommandRun(command=doing, tool=hook.tool.name, at=hook.at, effect=kind, files=paths, subject="" if paths else hook.tool.subject, background=background)
-        return {AgentRow.running: started.to_json(), AgentRow.commands: (list(row.commands) + [ran.to_json()])[-RING:]}
+        return {AgentRow.running: started.to_json(), AgentRow.commands: (closed_at(row.commands, hook.at) + [ran.to_json()])[-RING:]}
     if row.running and not running.done:
         result = outcome_of(hook, running.effect)
         running = replace(running, done=hook.at, result=result if result else running.result)

@@ -131,10 +131,16 @@ class NameStoppedOrQuietHelpers(Handler):
             stopped = not agent_runs(context.record, row)
             if stopped and speaking.once("helper stopped", f"{row.n}:{last_seen}"):
                 speaking.agent.say("stopped", n=row.n, name=row.name, cause=launch_failure(context.record.root, row.environment), rows=[row.ref])
-            elif not stopped and time.time() - last_seen >= quiet_after and speaking.once("helper quiet", f"{row.n}:{last_seen}"):
+            elif not stopped and time.time() - last_seen >= quiet_after and not self.running_command(context, row) and speaking.once("helper quiet", f"{row.n}:{last_seen}"):
                 speaking.agent.say("quiet", n=row.n, name=row.name, minutes=int((time.time() - last_seen) // MINUTE))
             if not stopped:
                 self.name_idle(context, speaking, row)
+
+    @staticmethod
+    def running_command(context: AgentContext, row) -> bool:
+        """A helper waiting on a long command or a background run says nothing while it works, so it is not quiet."""
+        agent = Agents(Record(context.record.root, row.environment), actor=SYSTEM).primary_to_read()
+        return bool(agent) and (agent.command_running or bool(agent.background_run))
 
     def name_idle(self, context: AgentContext, speaking: AgentContext, row) -> None:
         agent = Agents(Record(context.record.root, row.environment), actor=SYSTEM).primary_to_read()

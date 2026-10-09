@@ -693,7 +693,8 @@ def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
     tickets.update(fourth.n, dependencies={first.ref: "confirmed"})
     assert (reasons()[fifth.n], tickets._runtime(tickets.load(fourth.n), {}, 0).text.startswith(f"waiting on ticket {first.n}")) == (f"the agent proposes it waits on ticket {first.n}", True), \
         "a card says which ticket its agent proposed it waits on, and which it is held by"
-    watching = lambda **row: tickets._live_state(SimpleNamespace(**{"asking": False, "at": 5.0, "quiet_for": 0.0, "status": "working", "background_run": False, **row}), "ticket-x").text
-    assert [watching(asking=True), watching(at=0.0), watching(quiet_for=SILENT_AFTER + 120), watching(status=IDLE, quiet_for=SILENT_AFTER + 120)] == \
-        ["waiting for you", "starting", "silent for 7m", "idle for 7m with nothing running in the background"], \
-        "a ticket's agent is called waiting, starting, silent or idle by what it last did and how long ago"
+    watching = lambda **row: tickets._live_state(SimpleNamespace(**{"asking": False, "at": 5.0, "quiet_for": 0.0, "status": "working", "background_run": False, "command_running": False, "tool": "", "file": "", **row}), "ticket-x").text
+    assert [watching(asking=True), watching(at=0.0), watching(quiet_for=SILENT_AFTER + 120), watching(status=IDLE, quiet_for=SILENT_AFTER + 120),
+            watching(quiet_for=SILENT_AFTER + 120, command_running=True)] == \
+        ["waiting for you", "starting", "silent for 7m", "idle for 7m with nothing running in the background", "working"], \
+        "a ticket's agent is called waiting, starting, silent or idle by what it last did and how long ago, and is never silent while a command runs"
