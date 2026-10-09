@@ -37,10 +37,10 @@ def test_the_start_block_talks_as_the_butler_until_a_profile_is_chosen_and_only_
     assert "HOW THE USER WANTS YOU TO TALK" not in start_block(record), "switched off, the start block says nothing about it"
 
 
-def test_the_four_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrade_rewrites_their_wording():
+def test_the_five_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrade_rewrites_their_wording():
     record = shipped_record()
     profiles = Profiles(record, actor=USER)
-    assert [row["title"] for row in profiles.rows.summaries()] == [voice.title for voice in SHIPPED], "the four ship as rows"
+    assert [row["title"] for row in profiles.rows.summaries()] == [voice.title for voice in SHIPPED], "the five ship as rows"
     n = number_of(record, "Homie")
     assert refused(lambda: profiles.update(n, brief="my own")) and refused(lambda: profiles.delete(n)), "a shipped profile cannot be changed or deleted"
     row = Profiles(record, actor=SYSTEM).load(n)
@@ -52,6 +52,9 @@ def test_the_four_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrad
         "each shipped profile carries its illustration"
     folder = Path(__file__).resolve().parents[2] / "web" / "public" / "voices"
     assert all((folder / art).is_file() for art in shipped_art.values()), "and the picture it names ships with the viewer"
+    held = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).introduction for row in profiles.rows.summaries()}
+    assert held == {voice.title: voice.introduction for voice in SHIPPED} and all(held.values()), "each shipped profile introduces itself in its own voice, kept on its row"
+    assert profiles.load(profiles.duplicate(n).n).introduction == held["Homie"], "a copy keeps the introduction, which its owner can then rewrite"
 
 
 def test_each_chosen_profile_speaks_in_its_own_voice_and_calls_you_as_it_says():

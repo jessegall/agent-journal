@@ -25,6 +25,7 @@ const blank = () => ({
     brief: "",
     calling: "title and name",
     sample: "",
+    introduction: "",
     humour: "",
     naming: "",
     agent_name: "",
@@ -39,6 +40,7 @@ const copyOf = (row) => ({
     brief: row.brief,
     calling: row.data.calling,
     sample: sampleOf(row),
+    introduction: row.data.introduction,
     humour: row.data.humour,
     naming: row.data.naming,
     agent_name: row.data.agent_name,
@@ -182,6 +184,14 @@ function startFrom(row) {
             </FormField>
             <FormField label="Address" help="Your title and first name are set in Settings › Agent, under Your title and name.">
                 <ChoiceList stacked :choices="choices" :disabled="locked" @pick="edit('calling', $event)" />
+            </FormField>
+            <FormField label="Introduction" help="A short “who am I” in its own voice. It is shown on the profile's card and in the first-start dialog.">
+                <TextArea
+                    :value="draft.introduction"
+                    :disabled="locked"
+                    placeholder="For example: Hi, I'm your colleague. Plain and brief: I say what I did and what comes next."
+                    @input="edit('introduction', $event.target.value)"
+                />
             </FormField>
             <FormField
                 label="Sample answer"
