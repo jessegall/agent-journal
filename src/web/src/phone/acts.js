@@ -152,8 +152,9 @@ export const PROFILE_FIELDS = [
     text("naming", "How it calls its helpers and subagents", {value: (row) => row.data.naming, area: true}),
     text("agent_name", "What helpers and subagents call it", {value: (row) => row.data.agent_name}),
     text("sample", "A sample line", {value: (row) => row.data.sample, area: true}),
+    optional("introduction", "A short introduction, in its own voice", {value: (row) => row.data.introduction, area: true}),
 ];
-export const NEW_PROFILE = {title: "", brief: "", data: {calling: "title and name", sample: "", humour: "", naming: "", agent_name: ""}};
+export const NEW_PROFILE = {title: "", brief: "", data: {calling: "title and name", sample: "", introduction: "", humour: "", naming: "", agent_name: ""}};
 const closed = (row) => Boolean(row.completed);
 const standing = (row) => !row.completed;
 const named = (row) => `${kindWord(row.type)} ${row.n}`;

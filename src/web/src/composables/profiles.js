@@ -26,6 +26,8 @@ export const calls = (row) => callings.value[row.data.calling] || row.data.addre
 
 export const sampleOf = (row) => samples.value[row.n] ?? row.data.sample;
 
+export const introductionOf = (row) => row.data.introduction || sampleOf(row);
+
 export async function loadProfiles() {
     const [rows, names, lines, styles] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples(), api.profileNamings()]);
     profiles.value = rows.filter((row) => !row.deleted);

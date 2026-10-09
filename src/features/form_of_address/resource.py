@@ -8,6 +8,7 @@ class Profile(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(default="", name="calling"),
         Field(default="", name="sample"),
+        Field(default="", name="introduction"),
         Field(default="", name="humour"),
         Field(default="", name="naming"),
         Field(default="", name="agent_name"),
@@ -22,7 +23,7 @@ class Profile(Shape, Resource):
               "--set calling=\"title and name\", name, none or \"its own words\" says what it calls you, and --set address=\"<words>\" holds those own words; --set humour=\"<how>\" is how it answers a "
               "meme, a joke, criticism or anger; --set naming=\"<how>\" is how it names the helpers and subagents it starts; "
               "--set agent_name=\"<name>\" is the name they address it by, and can be changed on every profile; "
-              "--set sample=\"<line>\" is how it answers the sample question, shown when you choose. The four that ship with the journal "
+              "--set sample=\"<line>\" is how it answers the sample question, shown in the profile's preview; --set introduction=\"<words>\" is a short 'who am I' in its own voice, shown on its card. The five that ship with the journal "
               "cannot be changed or removed: "
               "journal profile duplicate <n> makes one you can."),
     )

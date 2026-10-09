@@ -1,5 +1,5 @@
 <script setup>
-import {artOf, calls, sampleOf} from "../composables/profiles.js";
+import {artOf, calls, introductionOf} from "../composables/profiles.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
 import Illustration from "../kit/Illustration.vue";
@@ -22,7 +22,7 @@ defineEmits(["open", "use", "duplicate", "remove"]);
                     <Chip>In use until you choose</Chip>
                 </template>
             </span>
-            <span class="profile-row-sample">“{{ sampleOf(row) }}”</span>
+            <span class="profile-row-sample">{{ introductionOf(row) }}</span>
             <span class="profile-row-calls">{{ calls(row) ? `Calls you ${calls(row)}` : "Doesn't use your name" }}</span>
         </button>
         <span class="profile-row-actions">

@@ -3,9 +3,8 @@ import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import PickCard from "../kit/PickCard.vue";
-import {artOf, butler, profiles, sampleOf, useProfile} from "../composables/profiles.js";
+import {artOf, butler, introductionOf, profiles, useProfile} from "../composables/profiles.js";
 
-const QUESTION = "Is the fix in?";
 const picked = ref(0);
 const busy = ref(false);
 const shipped = computed(() => profiles.value.filter((row) => row.data.system));
@@ -22,14 +21,9 @@ async function choose(row) {
 </script>
 
 <template>
-    <Dialog title="Choose a profile" :closable="false" fits>
+    <Dialog title="Choose a profile" :closable="false" fits wide>
         <p class="first-choice-line">
-            Here is the same answer in four voices. Pick the one you want. You can change it, or write your own, any time in Settings
-            › Agent.
-        </p>
-        <p class="first-choice-question">
-            Each answers the sample question
-            <b>“{{ QUESTION }}”</b>
+            Each voice introduces itself below. Pick the one you want. You can change it, or write your own, any time in Settings › Agent.
         </p>
         <div class="first-choice-cards" role="radiogroup">
             <template v-for="row in shipped" :key="row.n">
@@ -40,7 +34,7 @@ async function choose(row) {
                     :note="row.n === butler.n ? 'The voice you have now' : ''"
                     @click="picked = row.n"
                 >
-                    {{ sampleOf(row) }}
+                    {{ introductionOf(row) }}
                 </PickCard>
             </template>
         </div>
@@ -50,7 +44,7 @@ async function choose(row) {
                     {{
                         chosen
                             ? `The agent will talk as ${chosen.title} from its next message.`
-                            : "Pick one of the four, or keep the voice you have now."
+                            : "Pick a voice, or keep the voice you have now."
                     }}
                 </span>
                 <Btn :busy="busy" @click="choose(butler)">Keep Butler</Btn>
@@ -69,20 +63,9 @@ async function choose(row) {
     font-size: 13px;
 }
 
-.first-choice-question {
-    margin: 0 0 10px;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.first-choice-question b {
-    color: var(--text-2);
-    font-weight: 500;
-}
-
 .first-choice-cards {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 10px;
 }
 
@@ -97,6 +80,12 @@ async function choose(row) {
     flex: 1;
     color: var(--text-3);
     font-size: 12px;
+}
+
+@media (max-width: 1120px) {
+    .first-choice-cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 600px) {
