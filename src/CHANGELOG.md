@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.60 — A quicker dashboard on a long history
+- A listing of the newest rows and the open ones is found from the newest end of the history, so a long history no longer slows every dashboard request.
+- Reopening a closed board for a started ticket no longer changes how a board is reopened by hand.
+
 ## 2.267.59 — A closed board's orchestrator still decides for its open tickets
 - A board's orchestrator approves plans and decides for every open ticket on it, also after the board has closed; starting a ticket on a closed board reopens it.
 - An upload's body is cut at its boundaries instead of read line by line, so dropping files is quick.
