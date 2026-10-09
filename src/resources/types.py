@@ -346,6 +346,7 @@ class AgentRow(Shape, Resource):
         Field(default=0, name="subagents"),
         Field(default=list, name="shell_rows"),
         Field(default=list, name="subagent_rows"),
+        Field(default=dict, name="announced"),
         Field(default=dict, name="loops"),
         Field(default=0, name="monitors"),
         Field(default=list, name="monitor_rows"),

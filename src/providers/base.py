@@ -319,6 +319,10 @@ class Provider(ABC):
     def tool_uses(self, row: dict) -> list[dict]:
         return []
 
+    def crew_stamp(self, path: Path) -> tuple:
+        """What besides the transcript tells that the agent's crew moved, such as the files its subagents write; nothing for a provider whose crew is all in the transcript."""
+        return ()
+
     def crew(self, path: Path) -> dict:
         return {}
 
