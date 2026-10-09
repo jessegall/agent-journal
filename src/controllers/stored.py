@@ -28,6 +28,8 @@ STANDING: dict[str, tuple] = {}
 HELD = Memo()
 PACKS = Memo()
 INDEXED: dict[str, dict] = {}
+PENDING: dict[str, set[int]] = {}
+INDEXED_AT: dict[str, dict[int, str]] = {}
 STAMPED: dict[str, "Stamped"] = {}
 STAMPS_FRESH = 60.0
 STAMPS_RENEW = STAMPS_FRESH / 2
@@ -205,7 +207,7 @@ class RowStore:
             return held[1]
         loose = self._loose(folder)
         if held and held[0].index_stamp == moved.index_stamp:
-            touched = self._differing(held[1], loose)
+            touched = PENDING.pop(str(folder), set())
             if len(touched) < FLUSH_ROWS:
                 return self._patched(folder, moved, held[1], loose, touched)
         return self._summarised(folder, moved, [loose[n] for n in sorted(loose) if not loose[n].get(DAMAGED)])
@@ -219,15 +221,9 @@ class RowStore:
         STANDING[str(self.folder())] = (rows, standing)
         return standing
 
-    def _differing(self, held: list[dict], loose: dict[int, dict]) -> set[int]:
-        listed = {row["n"]: row for row in held}
-        packed = self.packed()
-        shown = {n: row for n, row in loose.items() if not (row.get(DAMAGED) or is_part(row))}
-        return {n for n, row in shown.items() if listed.get(n) is not row} | {n for n in listed if n not in shown and n not in packed}
-
     def _patched(self, folder: Path, moved: Moved, held: list[dict], loose: dict[int, dict], touched: set[int]) -> list[dict]:
         rows = list(held)
-        listed = {row["n"]: row for row in held}
+        listed = {row["n"]: row for row in held if row["n"] in touched}
         for n in sorted(touched):
             if n in listed:
                 self._unlisted(rows, listed[n])
@@ -246,6 +242,7 @@ class RowStore:
         packed = [row for n, row in self.packed().items() if n not in seen]
         rows = wholes(sorted(loose + packed, key=listed_order), is_part)
         SUMMARIES[str(folder)] = (moved, rows)
+        PENDING.pop(str(folder), None)
         return rows
 
     def reindexed(self, n: int, before: Moved | None, r: Resource | None = None) -> None:
@@ -342,28 +339,39 @@ class RowStore:
 
     def _loose(self, folder: Path) -> dict[int, dict]:
         stamps = self._stamps(folder)
-        known = INDEXED.get(str(folder)) or {int(n): row for n, row in read_json(folder / INDEX, dict, {}).items()}
+        held = INDEXED.get(str(folder))
+        known = held or {int(n): row for n, row in read_json(folder / INDEX, dict, {}).items()}
         needed = {"created", IDEMPOTENCY, "files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
-        rows = {}
-        for n, stamp in stamps.items():
-            row = known.get(n)
-            if row is not None and row.get("stamp") == stamp and (DAMAGED in row or needed <= row.keys()):
-                rows[n] = row
-                continue
+        stale = self._stale(stamps, known, INDEXED_AT.get(str(folder)) if held else None, needed)
+        gone = known.keys() - stamps.keys()
+        rows = dict(known)
+        for n in gone:
+            del rows[n]
+        for n in stale:
             try:
                 r = self.load(n)
             except (Refused, OSError) as error:
-                rows[n] = {"n": n, DAMAGED: True, "stamp": stamp}
+                rows[n] = {"n": n, DAMAGED: True, "stamp": stamps[n]}
                 self.on_damage(str(self.path(n)), str(error))
                 continue
-            rows[n] = self._row(r, stamp)
-        changed = sum(1 for n, row in rows.items() if known.get(n) is not row) + len(known.keys() - rows.keys())
+            rows[n] = self._row(r, stamps[n])
+        changed = len(stale) + len(gone)
         due = changed >= FLUSH_ROWS or time.time() - WRITTEN.get(str(folder), 0.0) >= FLUSH_SECONDS or not (folder / INDEX).is_file()
         if changed and due:
             write_json(folder / INDEX, rows)
             WRITTEN[str(folder)] = time.time()
+        if changed:
+            PENDING.setdefault(str(folder), set()).update(gone, stale)
         INDEXED[str(folder)] = rows
+        INDEXED_AT[str(folder)] = stamps
         return rows
+
+    @staticmethod
+    def _stale(stamps: dict[int, str], known: dict[int, dict], seen: dict[int, str] | None, needed: set[str]) -> list[int]:
+        """The rows whose file differs from the row held for it; once a folder is held, only the stamps that differ from the last pass are looked at."""
+        if seen is not None:
+            return [n for n, _ in stamps.items() - seen.items()]
+        return [n for n, stamp in stamps.items() if (row := known.get(n)) is None or row.get("stamp") != stamp or not (DAMAGED in row or needed <= row.keys())]
 
     def by_idempotency(self, key: str) -> Resource | None:
         found = next((row["n"] for row in self.summaries() if row[IDEMPOTENCY] == key), None)

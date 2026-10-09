@@ -167,3 +167,25 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
     warm(record.root)
 
 
+
+
+def test_a_row_another_process_changed_or_removed_is_patched_into_the_held_list_alone():
+    import features
+    from controllers.types import Todos
+    from resources.base import AGENT, SYSTEM
+    from tests.conftest import fresh
+    features.load()
+    record = fresh()
+    todos = Todos(record, actor=AGENT)
+    first, second, third = (todos.create(title) for title in ("one", "two", "three"))
+    assert [row["title"] for row in todos.rows.summaries()] == ["one", "two", "three"], "the list is held once read"
+    kept = todos.rows.summaries()[0]
+    changed = todos.load(second.n)
+    changed.title = "two, reworded"
+    todos.rows.write_file(changed)
+    todos.rows._note(second.n)
+    assert [row["title"] for row in todos.rows.summaries()] == ["one", "two, reworded", "three"], "a row written by another process shows its new title"
+    assert todos.rows.summaries()[0] is kept, "a row nobody touched is the very row that was held"
+    todos.rows.path(third.n).unlink()
+    todos.rows._note(third.n)
+    assert [row["n"] for row in Todos(record, actor=SYSTEM).rows.summaries()] == [first.n, second.n], "a row whose file is gone leaves the list"
