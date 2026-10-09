@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.40 — A member from another environment names its ticket
+- A collection member that lives in another environment carries a badge naming the ticket it belongs to, such as Ticket 3 · Fix the login page, or the environment's name when no ticket has it, on its card and in the page or panel it opens, in the collection and in a share.
+- The plan buttons of the Tickets and Boards tabs read Open plan of ticket N, with the ticket's title in the tooltip.
+
 ## 2.267.39 — A lighter dashboard, a quicker work await, and option lists in one group
 - The dashboard holds each type's rows apart, so a type that changes every few seconds rebuilds only itself, and sends reports, dumps and plans as summaries that the viewer reads whole when one is opened.
 - Releasing a write hold no longer reads every agent that never held one, and the start block is rewritten only when its text changed.
