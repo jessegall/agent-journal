@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {afterSeconds, animationLabel, pickWeighted, placeOf, showcaseOn} from "../domain/mascots.js";
-import {animations, urlOf} from "../composables/voiceAnimations.js";
+import {afterSeconds, animationLabel, pickWeighted, placeOf, placedAt, showcaseOn} from "../domain/mascots.js";
+import {animations, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import {loadProfiles, mascotOf, profiles, profilesLoaded} from "../composables/profiles.js";
 import SpritePlayer from "../kit/SpritePlayer.vue";
 
@@ -41,7 +41,7 @@ const steps = computed(() =>
         (animations.value[row.n] || []).map((animation) => ({
             url: urlOf(row.n, animation),
             edit: animation.edit,
-            place: placeOf(row.data.art || ""),
+            place: placedAt(placeOf(row.data.art || ""), scheduleOf(row.n).place),
             label: `${row.title.toLowerCase()} \u00b7 ${animationLabel(animation)}`,
         }))
     )
@@ -86,7 +86,7 @@ onUnmounted(stop);
 
 const shown = computed(() => playing.value ?? (showcase ? staged.value : rested.value));
 const place = computed(() => (showcase ? staged.value?.place : mascot.value.place));
-const placed = computed(() => ({"--edge": place.value.edge, "--foot": place.value.foot}));
+const placed = computed(() => ({"--edge": place.value.edge, "--line": place.value.line}));
 </script>
 
 <template>
@@ -104,7 +104,7 @@ const placed = computed(() => ({"--edge": place.value.edge, "--foot": place.valu
 .voice-mascot {
     --size: 128px;
     position: absolute;
-    top: calc(var(--size) * var(--foot) / -256);
+    top: calc(var(--size) * var(--line) / -256);
     right: calc(12px + var(--size) * (var(--edge) - 256) / 256);
     z-index: 1;
     width: var(--size);
@@ -115,7 +115,7 @@ const placed = computed(() => ({"--edge": place.value.edge, "--foot": place.valu
 .voice-mascot-label {
     --size: 128px;
     position: absolute;
-    top: calc(var(--size) * var(--foot) / -256 + 8px);
+    top: calc(var(--size) * var(--line) / -256 + 8px);
     right: calc(12px + var(--size) * (1 + (var(--edge) - 256) / 256) + 8px);
     z-index: 1;
     color: var(--muted, #8a8f98);

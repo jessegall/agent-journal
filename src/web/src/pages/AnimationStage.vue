@@ -19,7 +19,7 @@ defineEmits(["frame", "measured"]);
 const size = CELL * SCALE;
 const left = 40;
 const top = 12;
-const ground = computed(() => top + props.place.foot * SCALE);
+const ground = computed(() => top + props.place.line * SCALE);
 const corner = computed(() => left + props.place.edge * SCALE + MARGIN * SCALE);
 </script>
 

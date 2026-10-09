@@ -1,16 +1,20 @@
 // Where each voice's mascot stands on the chat box, read off the first frame of its art (256 px cells):
-// edge: the pixel its right side ends at; foot: the pixel its feet stand on.
+// line: the row that rests on the box's top edge, the feet of a voice that stands and the seat of one that sits;
+// edge: the column that meets the box's right edge, the right side of a standing voice and the end of the seat of a sitting one, so its legs dangle over the corner.
 export const PLACES = {
-    butler: {edge: 211, foot: 232},
-    coach: {edge: 191, foot: 232},
-    colleague: {edge: 171, foot: 232},
-    homie: {edge: 204, foot: 232},
-    squire: {edge: 226, foot: 208},
+    butler: {edge: 211, line: 232},
+    coach: {edge: 191, line: 232},
+    colleague: {edge: 105, line: 170, sits: true},
+    homie: {edge: 130, line: 175, sits: true},
+    squire: {edge: 135, line: 170, sits: true},
 };
 
-export const STILL = {edge: 200, foot: 232};
+export const STILL = {edge: 200, line: 232};
 
 export const placeOf = (art) => PLACES[art.replace(/\.\w+$/, "")] ?? STILL;
+
+// A place moved right and down by the spot a voice saved, in pixels of its 256 px cell.
+export const placedAt = (place, spot) => ({...place, edge: place.edge - (spot?.x || 0), line: place.line - (spot?.y || 0)});
 
 // A voice's blink is its idle animation named blinking (or the older blink kind); its other idle animations are the acts the mascot plays while it waits.
 // Any other kind a voice carries shows in its dialog only.
@@ -26,7 +30,7 @@ export const frameMs = (edit, index) => edit?.frames?.[index]?.ms || edit?.ms ||
 export const frameShift = (edit, index) => ({x: edit?.frames?.[index]?.x || 0, y: edit?.frames?.[index]?.y || 0});
 
 // When a voice's mascot plays what, until the voice saves a schedule of its own: seconds between blinks, seconds between its other idle animations.
-export const DEFAULT_SCHEDULE = {blink: {min: 5, max: 10}, idle: {min: 20, max: 30}, weights: {}};
+export const DEFAULT_SCHEDULE = {blink: {min: 5, max: 10}, idle: {min: 20, max: 30}, weights: {}, place: {x: 0, y: 0}};
 
 export const weightOf = (schedule, path) => schedule.weights?.[path] ?? 1;
 

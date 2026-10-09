@@ -240,13 +240,17 @@ def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dro
     assert "idle_wave_offsets.json" in profiles.load(squire.n).files, "as the offsets file the animations are delivered with"
     assert next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edited"], "and the animation is marked as edited"
     delivered = next(a for a in profiles.animations()[squire.n] if a["shipped"] and a["name"] == "leg_swing_salute")
-    assert (delivered["edited"], len(delivered["edit"]["frames"]), {(f["x"], f["y"]) for f in delivered["edit"]["frames"]}) == (False, 8, {(0, 0)}), \
-        "a delivered animation starts every frame at 0, 0 whatever its offsets file says, and is not marked edited"
+    assert (delivered["edited"], len(delivered["edit"]["frames"]), any(f["y"] for f in delivered["edit"]["frames"])) == (False, 8, True), \
+        "a delivered animation keeps the offsets of its file and is not marked edited"
+    butler = profiles.rows.by_title("Butler")
+    stroll = next(a for a in profiles.animations()[butler.n] if a["name"] == "stroll_hat_tip")
+    assert {(f["x"], f["y"]) for f in stroll["edit"]["frames"]} == {(0, 0)}, "the Butler's stroll and hat tip is fixed in place"
     assert "has no animation" in refused(lambda: profiles.tune(squire.n, "nope.png", {"ms": 1})), "only an animation the voice has can be tuned"
     profiles.tune(squire.n, sheet_path)
     assert next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edit"] is None, "with no tuning it goes back to the sheet as it is"
-    assert profiles.schedules()[squire.n] == {"blink": {"min": 5, "max": 10}, "idle": {"min": 20, "max": 30}, "weights": {}}, "a voice with no schedule blinks every 5 to 10 seconds and plays an idle animation every 20 to 30"
-    profiles.schedule(squire.n, {"blink": {"min": 3, "max": 4}, "idle": {"min": 10, "max": 40}, "weights": {sheet_path: 3}})
-    assert profiles.schedules()[squire.n]["weights"] == {sheet_path: 3}, "a schedule and the weight of an idle animation are saved with the voice"
+    assert profiles.schedules()[squire.n] == {"blink": {"min": 5, "max": 10}, "idle": {"min": 20, "max": 30}, "weights": {}, "place": {"x": 0, "y": 0}}, "a voice with no schedule blinks every 5 to 10 seconds and plays an idle animation every 20 to 30"
+    profiles.schedule(squire.n, {"blink": {"min": 3, "max": 4}, "idle": {"min": 10, "max": 40}, "weights": {sheet_path: 3}, "place": {"x": 6, "y": 999}})
+    assert (profiles.schedules()[squire.n]["weights"], profiles.schedules()[squire.n]["place"]) == ({sheet_path: 3}, {"x": 6, "y": 128}), \
+        "a schedule, the weight of an idle animation and where the mascot is placed on the chat box are saved with the voice, the place within the cell"
     assert "least cannot be above" in refused(lambda: profiles.schedule(squire.n, {"blink": {"min": 9, "max": 2}})), "a range runs from the least to the most"
     assert "no animation" in refused(lambda: profiles.schedule(squire.n, {"weights": {"nope.png": 1}})), "only an animation the voice has gets a weight"
