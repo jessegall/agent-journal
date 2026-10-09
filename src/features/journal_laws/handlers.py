@@ -22,7 +22,7 @@ class NoticeLargestResult(Handler):
 
 class CheckChangedInstructions(Handler):
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
-        if in_background(context.record):
+        if in_background(context.record) or event.compacted:
             return
         state, seen = context.record.state(context.feature.name), instructions_hash(context.record.root.parent, context.record)
         known = state.get("instructions")
