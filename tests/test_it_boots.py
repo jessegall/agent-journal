@@ -267,6 +267,33 @@ def test_an_upgrade_leaves_a_helper_running_and_its_job_out_of_the_process_list(
         cleared(tmp_path)
 
 
+def test_a_helper_launched_into_an_environment_runs_from_its_launch(tmp_path):
+    root = installed(tmp_path, CODE)
+    (tmp_path / "bin").mkdir()
+    standin = tmp_path / "bin" / "claude"
+    standin.write_text("#!/bin/sh\nwhile [ ! -f \"$0.quit\" ]; do sleep 0.1; done\n")
+    standin.chmod(0o755)
+    env = {**os.environ, "PATH": f"{tmp_path / 'bin'}{os.pathsep}{os.environ['PATH']}", "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_HOME": str(tmp_path / "home")}
+    env.pop("JOURNAL_ENV", None)
+    head = (f"import sys; sys.path.insert(0, {str(CODE)!r}); from pathlib import Path; from engine.record import Record; "
+            f"from features.agent_sessions.launch import launched, prepared, running_in; "
+            f"from resources.types import EnvironmentKind; record = Record(Path({str(root)!r}), 'main'); ")
+    launch = head + "prepared(record, 'main-ada', 'a helper', '', record.root.parent, EnvironmentKind.HELPER); launched(record, 'main-ada', 'claude', ['--model', 'opus'], record.root.parent)"
+    asked = head + "print(running_in(record, 'main-ada'), running_in(record, 'main-bob'))"
+    try:
+        subprocess.run([sys.executable, "-c", launch], cwd=root.parent, env=env, capture_output=True, timeout=WAIT, check=True)
+        answer = ""
+        began = time.time()
+        while not answer.startswith("claude-") and time.time() - began < WAIT:
+            time.sleep(0.2)
+            answer = subprocess.run([sys.executable, "-c", asked], cwd=root.parent, env=env, capture_output=True, text=True, timeout=WAIT).stdout
+        assert answer.startswith("claude-") and answer.split(" ")[1].strip() == "", "the agent launched into an environment runs there, and nothing runs in another"
+    finally:
+        (tmp_path / "bin" / "claude.quit").touch()
+        subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "stop"], cwd=root.parent, env=env, capture_output=True, timeout=WAIT)
+        cleared(tmp_path)
+
+
 def test_the_journal_starts_on_a_record_with_a_damaged_row(tmp_path):
     place = tmp_path
     root = place / ".journal"

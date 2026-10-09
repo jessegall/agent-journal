@@ -35,6 +35,7 @@ class Launched(Loaded):
     args: tuple = ()
     cwd: str = ""
     launch: int = 0
+    env: str = ""
 
     @classmethod
     def read(cls, root: Path, session: str) -> "Launched":

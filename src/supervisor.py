@@ -143,7 +143,7 @@ class Supervisor:
 
     def record_launch(self) -> None:
         written = self.folder / f"{LAUNCHED}.writing"
-        written.write_text(json.dumps({"pid": self.pid, "command": self.command, "args": self.args, "cwd": str(self.cwd), "launch": self.launch}))
+        written.write_text(json.dumps({"pid": self.pid, "command": self.command, "args": self.args, "cwd": str(self.cwd), "launch": self.launch, "env": self.env}))
         os.replace(written, self.folder / LAUNCHED)
 
     def spawn(self, command: list[str], environ: dict) -> tuple[int, int]:
