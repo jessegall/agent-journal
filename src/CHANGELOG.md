@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.28 — Background cards that close, collection tabs with ticket context, and a faster start
+- A command that never reported back is closed by the next one, so a 'moved to the background' card closes when its command ends, names only the part of a chain still running, and a working agent is never called silent or stuck.
+- A ticket agent waiting by design (on another ticket, on its plan's approval, or done and awaiting its merge) is no longer flagged as stuck.
+- A collection remembers its open tab; its Tickets tab shows each ticket's plan progress, what its agent does now, its stage and its waits; its plan cards show progress, on the page and in a share.
+- Each opened panel or dialog stacks above the ones already open.
+- The server starts about twice as fast: it no longer builds every command's parser while warming up.
+- The changelog check no longer reads compiled Python files that another process is replacing.
+
 ## 2.267.27 — Journal commands answered by the warm server, and slow ones reported again
 - The server answers every journal command that does not start or stop a process, so version, status, help and the rest no longer start a fresh Python each time; on a busy machine that start took 9 to 19 seconds.
 - A slow request, command or hook is reported whatever the machine's load, with the load beside it, instead of being only logged while the machine is busy.
