@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.72 — A ticket's final report always reaches its orchestrator
+- A ticket agent that ends its turn with a report, with no message written, still reaches the orchestrator, and an orchestrator waiting on its board is woken by it.
+- A helper whose agent ended takes new work by resuming its own session, with its context, instead of starting fresh.
+- A provider's question on the terminal screen, such as Claude Code's "Do you want to proceed?", is noticed and routed for every provider, in bypass mode too.
+- While messages are typed because the Claude channel failed, the journal checks every 30 seconds whether the channel is back and switches to it.
+- Every search mark gets its own result and opens it; a message from another Claude Code session shows as an agent's card; an identifier with underscores no longer turns chat text into italics.
+- While the update cover shows, the viewer asks for nothing but the update's status; a dialog over a row stays open while results arrive.
+- Search keeps each conversation's turns on disk and loads them newest first within a time limit; a chat opened again serves its kept turns; saving settings no longer resolves every path on disk.
+
 ## 2.267.71 — A ticket's edits show, nested repositories included
 - A ticket's inspector finds its environment's agent the way a helper's does, so Files changed and Terminal no longer say "No agent yet" while the ticket's agent works.
 - A project that is a repository and holds nested repositories feeds the edits of each, not only the root's.
