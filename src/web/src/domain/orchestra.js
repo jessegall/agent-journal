@@ -5,7 +5,7 @@ import {helperName} from "./helpers.js";
 
 const SILENT_AFTER = 300;
 const OWNED = /^(ticket|plan|helper):(\d+)$/;
-const LABELS = {ticket: (n) => `#${n}`, plan: (n) => `Plan ${n}`, helper: (n) => `Helper ${n}`};
+const LABELS = {ticket: () => "Ticket agent", plan: () => "Plan agent", helper: (n) => `Helper ${n}`};
 const PLAN_WAITS = {ready: "its plan waits for your approval", waiting: "its plan is at a checkpoint"};
 
 const NAMED_TASK = /^([^:]{2,32}): (.+)$/;
@@ -20,8 +20,8 @@ export function splitTask(task) {
 
 function nameOf(kind, n, row) {
     if (kind === "helper") return row ? helperName(row) : LABELS.helper(n);
-    if (kind === "plan") return "Plan agent";
-    return kind ? "Ticket agent" : MAIN_AGENT;
+    if (kind === "plan") return `Plan ${n}`;
+    return kind ? `Ticket ${n}` : MAIN_AGENT;
 }
 
 function standing(e, plan, now) {
@@ -68,7 +68,7 @@ function entryOf(e, now) {
 
 function subagentsOf(e) {
     const [, kind = "", n = "0"] = OWNED.exec(e.owner) || [];
-    const parent = kind ? (kind === "helper" ? nameOf(kind, n, ownerRow(kind, n)) : LABELS[kind](n)) : "the main agent";
+    const parent = kind ? nameOf(kind, n, ownerRow(kind, n)) : "the main agent";
     return (e.subagents || []).map((sub) => ({
         key: `${e.name}:${sub.session}`,
         env: e.name,
