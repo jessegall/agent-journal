@@ -45,7 +45,7 @@ from features.sharing.tunnel import SERVER
 from controllers.types import Docs, Messages, Todos
 from resources.base import OWNER_ID, SYSTEM, USER
 from serve import Handler, JournalServer
-from tests.conftest import fresh
+from tests.conftest import fresh, shared_browser  # noqa: F401  shared_browser is the fixture
 
 ADDRESS = "journal.example.com"
 PASSWORD = "correct horse battery"
@@ -54,7 +54,6 @@ WEB = SRC / "web"
 DOCKER = SRC.parent / "docker"
 WORKFLOW = SRC.parent / ".github" / "workflows" / "docker-image.yml"
 APART_WAIT = 30
-SCENARIOS_WAIT = 240
 
 
 class Answer(NamedTuple):
@@ -363,7 +362,7 @@ def test_another_site_plain_http_from_outside_a_strange_host_large_bodies_and_to
     assert hosted.call("POST", "/api/main/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin="https://evil.example").status == 403
     assert hosted.call("POST", "/login", {"password": PASSWORD}, Origin="https://evil.example").status == 403
     outside = type("Outside", (), {"shares": Shares(hosted.record, actor=SYSTEM), "path": "/", "client_address": ("203.0.113.5", 4000),
-                                   "headers": {"Host": "localhost", "X-Forwarded-Proto": "https", "X-Forwarded-For": "198.51.100.7"}})
+                            "headers": {"Host": "localhost", "X-Forwarded-Proto": "https", "X-Forwarded-For": "198.51.100.7"}})
     visit = Visit(outside, RefusalLog(1), FromRecord())
     assert not visit.secure() and visit.place() == "203.0.113.5", "a peer that is not the named proxy decides neither https, locality nor its place"
     forged = {"Host": ADDRESS, "Cookie": f"{COOKIE}={token}", "X_Forwarded_Proto": "https", "X_Forwarded_For": "203.0.113.9"}
@@ -446,16 +445,14 @@ def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, mo
 
 
 @pytest.mark.skipif(not (WEB / "node_modules" / "playwright-core").is_dir(), reason="the viewer's npm packages are not installed")
-def test_login_failed_rate_limited_and_ran_out_show_in_a_browser(hosted):
+def test_login_failed_rate_limited_and_ran_out_show_in_a_browser(hosted, shared_browser):
     Owner(hosted.vault).set_password(PASSWORD)
     owner = Logins(hosted.vault).open(7, "scenario", OWNER_ID)
     old = Logins(Vault(hosted.record.root, clock=lambda: 0.0)).open(7, "old", OWNER_ID)
     Hosting(hosted.vault).updater.mkdir(parents=True, exist_ok=True)
     (Hosting(hosted.vault).updater / "status.json").write_text(json.dumps({"latest": "99.0.0", "newer": True}))
-    env = {**os.environ, "HOSTED_URL": f"http://127.0.0.1:{hosted.port}/", "HOSTED_PASSWORD": PASSWORD, "HOSTED_OLD_LOGIN": old, "HOSTED_OWNER_LOGIN": owner}
-    run = subprocess.run(["node", "browser/hosted/login.mjs"], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
-    assert run.returncode == 0, run.stderr[-2000:]
-    assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+    shared_browser.play("browser/hosted/login.mjs", HOSTED_URL=f"http://127.0.0.1:{hosted.port}/", HOSTED_PASSWORD=PASSWORD, HOSTED_OLD_LOGIN=old,
+                        HOSTED_OWNER_LOGIN=owner)
 
 
 def test_a_server_starts_no_more_agents_than_its_setting_allows(hosted, monkeypatch):
@@ -492,7 +489,7 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
         forged = {"Host": ADDRESS, "Origin": f"https://{ADDRESS}", "X_Forwarded_Proto": "https", "X_Forwarded_For": "203.0.113.9"}
         assert apart.call("POST", "/login", {"password": PASSWORD}, **forged).status == 403, "a proxy named in the record is not trusted"
         Phones(hosted.record, actor=SYSTEM)._kept(Phones(hosted.record, actor=SYSTEM).create("A forged phone").n,
-                                                  key=hashed("forged"), expires=time.time() + DAY, environment="main")
+                                           key=hashed("forged"), expires=time.time() + DAY, environment="main")
         assert apart.call("GET", "/p/state", Cookie="__Host-phone=forged").status == 401, "a phone written into the record opens nothing"
         token = apart.call("POST", "/login", {"password": PASSWORD}).headers["set-cookie"].split(";")[0]
         outside = [apart.call("POST", path, body="{}", Cookie=token, Origin=origin, Content_Type="application/json") for path in ("/api/run", "/api/stop", "/api/hook/claude")]

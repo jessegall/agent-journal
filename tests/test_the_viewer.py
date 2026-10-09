@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 import socket
@@ -23,8 +22,7 @@ VITEST = WEB / "node_modules" / ".bin" / "vitest"
 PLAYWRIGHT = WEB / "node_modules" / "playwright-core"
 BOOT_WAIT = 60
 UNITS_WAIT = 300
-SCENARIOS_WAIT = 240
-HELPERS = {"harness", "proxy"}
+HELPERS = {"harness", "proxy", "chromium"}
 PHONE_HELPERS = {"paired"}
 
 needs_node_modules = pytest.mark.skipif(not VITEST.is_file() or not PLAYWRIGHT.is_dir(), reason="the viewer's npm packages are not installed")
@@ -78,34 +76,25 @@ def test_the_viewers_own_code_passes_its_unit_tests():
 
 @needs_node_modules
 @pytest.mark.parametrize("script", sorted(path.stem for path in (WEB / "browser").glob("*.mjs") if path.stem not in HELPERS))
-def test_the_viewer_answers_every_state_in_a_browser(scratch_viewer, script):
-    env = {**os.environ, "JOURNAL_SCRATCH_ROOT": str(scratch_viewer.root), "JOURNAL_SCRATCH_URL": scratch_viewer.url, "JOURNAL_PYTHON": sys.executable}
-    run = subprocess.run(["node", f"browser/{script}.mjs", scratch_viewer.url], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
-    assert run.returncode == 0, run.stderr[-2000:]
-    assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+def test_the_viewer_answers_every_state_in_a_browser(shared_browser, scratch_viewer, script):
+    shared_browser.play(f"browser/{script}.mjs", scratch_viewer.url, JOURNAL_SCRATCH_ROOT=str(scratch_viewer.root), JOURNAL_SCRATCH_URL=scratch_viewer.url,
+                        JOURNAL_PYTHON=sys.executable)
 
 
 @needs_node_modules
-def test_a_shared_page_answers_every_state_a_visitor_meets():
+def test_a_shared_page_answers_every_state_a_visitor_meets(shared_browser):
     with shared_pages.served() as pages:
-        env = {**os.environ, "SHARED_OPEN": pages.open, "SHARED_ENDED": pages.ended, "SHARED_MISSING": pages.missing}
-        run = subprocess.run(["node", "browser/shared/page.mjs"], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
-    assert run.returncode == 0, run.stderr[-2000:]
-    assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+        shared_browser.play("browser/shared/page.mjs", SHARED_OPEN=pages.open, SHARED_ENDED=pages.ended, SHARED_MISSING=pages.missing)
 
 
 @needs_node_modules
 @pytest.mark.parametrize("script", sorted(path.stem for path in (WEB / "browser" / "phoneapp").glob("*.mjs") if path.stem not in PHONE_HELPERS))
-def test_a_paired_phone_answers_every_state_in_a_browser(script):
+def test_a_paired_phone_answers_every_state_in_a_browser(shared_browser, script):
     with phone_pages.served() as page:
-        run = subprocess.run(["node", f"browser/phoneapp/{script}.mjs", page.pair, page.desk], cwd=WEB, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
-    assert run.returncode == 0, run.stderr[-2000:]
-    assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+        shared_browser.play(f"browser/phoneapp/{script}.mjs", page.pair, page.desk)
 
 
 @needs_node_modules
-def test_a_paired_phone_settings_work_in_a_browser():
+def test_a_paired_phone_settings_work_in_a_browser(shared_browser):
     with phone_pages.served() as page:
-        run = subprocess.run(["node", "browser/phoneapp/settings.mjs", page.pair, page.desk], cwd=WEB, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
-    assert run.returncode == 0, run.stderr[-2000:]
-    assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+        shared_browser.play("browser/phoneapp/settings.mjs", page.pair, page.desk)

@@ -1,8 +1,6 @@
 import importlib
 import json
-import os
 import re
-import subprocess
 import time
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlsplit
@@ -15,7 +13,8 @@ from features import FEATURES
 from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, Visit
 from features.hosted_journal.owner import KeptLogin, Logins
 from features.hosted_journal.settings import FromRecord
-from features.hosted_journal.test import SCENARIOS_WAIT, WEB, Answer, Hosted, hosted  # noqa: F401  hosted is the fixture
+from features.hosted_journal.test import Answer, Hosted, hosted  # noqa: F401  hosted is the fixture
+from tests.conftest import shared_browser  # noqa: F401  shared_browser is the fixture
 from features.hosted_journal.vault import VAULT, RefusalLog, Vault
 from features.members.allow_list import READ_MARKS, READS, UNREAD, WRITES, read
 from features.members.gate import MemberLogins
@@ -111,18 +110,16 @@ def test_an_invited_person_joins_once_from_the_link_and_logs_in_again_by_name(ho
     assert Roster(week_on).invited_by(later) is None and Roster(hosted.vault).invited_by(later).name == "Bea", "an invite runs out after a week"
 
 
-def test_inviting_joining_roles_and_who_wrote_what_work_in_a_browser(hosted):
+def test_inviting_joining_roles_and_who_wrote_what_work_in_a_browser(hosted, shared_browser):
     owner = with_members(hosted)
     invite = json.loads(sent(hosted, "/api/hosting/members", {"name": "Bea"}, owner).text)["link"]
     roster = Roster(hosted.vault)
     roster.join(roster.invite("Dan", Role.WRITER, (hosted.record.env,)).code, MEMBER_PASSWORD)
     reader = member_login(hosted, "Cleo", Role.READER).split("=", 1)[1]
     writer = member_login(hosted, "Eli", Role.WRITER).split("=", 1)[1]
-    env = {**os.environ, "HOSTED_URL": f"http://127.0.0.1:{hosted.port}/", "HOSTED_OWNER_LOGIN": owner.split("=", 1)[1], "HOSTED_READER_LOGIN": reader, "HOSTED_WRITER_LOGIN": writer,
-           "HOSTED_INVITE_LINK": invite.replace("https://", "http://"), "HOSTED_MEMBER_NAME": "Dan", "HOSTED_MEMBER_PASSWORD": MEMBER_PASSWORD}
-    run = subprocess.run(["node", "browser/hosted/members.mjs"], cwd=WEB, env=env, capture_output=True, text=True, timeout=SCENARIOS_WAIT)
-    assert run.returncode == 0, run.stderr[-2000:]
-    assert json.loads(run.stdout.strip().splitlines()[-1]) == {}
+    shared_browser.play("browser/hosted/members.mjs", HOSTED_URL=f"http://127.0.0.1:{hosted.port}/", HOSTED_OWNER_LOGIN=owner.split("=", 1)[1], HOSTED_READER_LOGIN=reader,
+                        HOSTED_WRITER_LOGIN=writer, HOSTED_INVITE_LINK=invite.replace("https://", "http://"), HOSTED_MEMBER_NAME="Dan",
+                        HOSTED_MEMBER_PASSWORD=MEMBER_PASSWORD)
 
 
 def test_a_reader_only_reads_a_writer_writes_shared_rows_and_a_refusal_says_why(hosted):

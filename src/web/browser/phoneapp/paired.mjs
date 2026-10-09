@@ -1,4 +1,4 @@
-import {chromium} from "playwright-core";
+import {openBrowser} from "../harness.mjs";
 
 export const PAIR = process.argv[2];
 export const DESK = process.argv[3];
@@ -6,7 +6,7 @@ export const PHONE = {viewport: {width: 390, height: 844}, hasTouch: true, isMob
 export const SHOWN = 8000;
 
 export async function pairedState() {
-    const browser = await chromium.launch();
+    const browser = await openBrowser();
     const context = await browser.newContext(PHONE);
     const page = await context.newPage();
     await page.goto(PAIR);
