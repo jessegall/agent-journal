@@ -528,6 +528,22 @@ def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatc
         "a failed migration restores its backup before a waiting record write lands"
     monkeypatch.setattr(migrations, "names", lambda: ["m9998_touch"])
     assert migrations.run(root) == ["m9998_touch"] and not backups(), "a run that succeeds deletes its backup"
+    synced_row = root / "environments" / "main" / "todo" / "003.md"
+    kept.write_text("first")
+    backup = migrations.backed_up(root)
+    began = time.time()
+    kept.write_text("changed after the copy began")
+    synced_row.write_text("added after the copy began")
+    (root / "environments" / "main" / "todo" / "002.md").unlink()
+    migrations.synced(root, backup, began)
+    held = backup / "environments" / "main" / "todo"
+    assert (sorted(path.name for path in held.iterdir()), (held / "001.md").read_text()) == (["001.md", "003.md"], "changed after the copy began"), \
+        "a backup made before the lock is brought up to date under it: changed and added rows are copied, removed ones dropped"
+    shutil.rmtree(backup)
+    monkeypatch.setattr(migrations, "names", lambda: ["m9998_touch", "m9997_more"])
+    with locks.hold_record_writes(root):
+        began = time.monotonic()
+        assert (migrations.run(root, waiting=False), time.monotonic() - began < 1.0) == ([], True), "a server starting up while an upgrade migrates does not wait for its lock"
 
 
 def test_an_installer_left_with_only_itself_fetches_the_package_and_finishes(tmp_path):

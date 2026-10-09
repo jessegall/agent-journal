@@ -51,6 +51,51 @@ def backed_up(root: Path) -> Path:
     return backup
 
 
+SLACK = 2.0
+
+
+def synced(root: Path, backup: Path, since: float) -> None:
+    """Brings a backup made while the record was still being written up to the record as it is now: copies what changed since it began and drops what is gone, so only the changes are copied while writes are held."""
+    for name in RECORD:
+        source, kept = root / name, backup / name
+        if source.is_dir():
+            kept.mkdir(exist_ok=True)
+            synced_folder(source, kept, since - SLACK)
+        elif source.is_file() and (not kept.exists() or source.stat().st_mtime >= since - SLACK):
+            shutil.copy2(source, kept)
+        elif not source.exists() and kept.exists():
+            dropped(kept)
+
+
+def dropped(path: Path) -> None:
+    if path.is_dir() and not path.is_symlink():
+        shutil.rmtree(path)
+        return
+    path.unlink()
+
+
+def synced_folder(source: Path, kept: Path, since: float) -> None:
+    here = {entry.name: entry for entry in os.scandir(source)}
+    for entry in os.scandir(kept):
+        if entry.name not in here:
+            dropped(Path(entry.path))
+    for name, entry in here.items():
+        target = kept / name
+        if entry.is_symlink() or entry.is_file(follow_symlinks=False):
+            if not target.is_symlink() and target.is_file() and entry.is_file() and entry.stat().st_mtime < since:
+                continue
+            if target.is_dir() and not target.is_symlink():
+                shutil.rmtree(target)
+            elif target.exists() or target.is_symlink():
+                target.unlink()
+            shutil.copy2(entry.path, target, follow_symlinks=False)
+            continue
+        if target.exists() and not target.is_dir():
+            target.unlink()
+        target.mkdir(exist_ok=True)
+        synced_folder(Path(entry.path), target, since)
+
+
 def restored(root: Path, backup: Path) -> None:
     for name in RECORD:
         current, kept = root / name, backup / name
@@ -64,25 +109,45 @@ def restored(root: Path, backup: Path) -> None:
             shutil.copy2(kept, current)
 
 
-def run(root: Path) -> list[str]:
+def run(root: Path, waiting: bool = True) -> list[str]:
+    """Migrates the record. An upgrade waits for the write lock; a server starting up while one runs does not, and serves the record as it is."""
     import features
     features.load()
     root = Path(root)
     if not pending(applied(root)):
         return []
-    with hold_record_writes(root):
-        return run_locked(root)
+    began = time.time()
+    prepared = (backed_up(root), began) if waiting and has_record(root) else None
+    spare = prepared[0] if prepared else None
+    ran, backup = [], None
+    try:
+        with hold_record_writes(root, waiting) as held:
+            if held:
+                ran, backup = run_locked(root, prepared)
+    finally:
+        for kept in {spare, backup} - {None}:
+            shutil.rmtree(kept, ignore_errors=True)
+    return ran
+
+
+def has_record(root: Path) -> bool:
+    return root.is_dir() and any((root / name).exists() for name in RECORD)
 
 
 def pending(done: dict) -> list[str]:
     return [name for name in names() if name not in done]
 
 
-def run_locked(root: Path) -> list[str]:
+def run_locked(root: Path, prepared: tuple | None = None) -> tuple[list[str], Path | None]:
+    """The migrations still to run, with the backup that stands guard while they do; the caller deletes the backup once the lock is let go."""
     done = applied(root)
     if not pending(done):
-        return []
-    backup = backed_up(root) if root.is_dir() and any((root / name).exists() for name in RECORD) else None
+        return [], None
+    if prepared:
+        backup = prepared[0]
+        synced(root, backup, prepared[1])
+    else:
+        backup = backed_up(root) if has_record(root) else None
     ran = []
     steps = {name: importlib.import_module(f"migrations.{name}").run for name in pending(done)}
     last = {step: name for name, step in steps.items()}
@@ -96,8 +161,5 @@ def run_locked(root: Path) -> list[str]:
     except Exception:
         if backup:
             restored(root, backup)
-            shutil.rmtree(backup, ignore_errors=True)
         raise
-    if backup:
-        shutil.rmtree(backup, ignore_errors=True)
-    return ran
+    return ran, backup
