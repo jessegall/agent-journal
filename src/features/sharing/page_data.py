@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from pathlib import Path
 
-from controllers.base import CONTROLLERS
+from controllers.base import row_of
 from controllers.described import described_types
 from engine.markers import MARKER
 from engine.record import Record
@@ -18,21 +18,17 @@ def scoped(text: str, scope: set[str]) -> str:
 
 class SharePages:
     def _shared_row(self, share, ref: str):
-        kind, _, n = ref.partition(":")
-        return CONTROLLERS[kind](self._home(share), actor=SYSTEM).load(n)
+        return row_of(self._home(share), ref)
 
     def _loaded_members(self, record: Record, row) -> list:
         members = []
         for ref in row.member_refs():
-            kind, _, n = ref.partition(":")
-            if kind not in CONTROLLERS or not n.isdigit():
-                continue
             try:
-                row = CONTROLLERS[kind](record, actor=SYSTEM).load(n)
+                member = row_of(record, ref)
             except Refused:
                 continue
-            if not row.deleted and not row.data.get("system"):
-                members.append(row)
+            if not member.deleted and not member.data.get("system"):
+                members.append(member)
         return members
 
     def _members(self, share, collection) -> list:
@@ -42,13 +38,13 @@ class SharePages:
         target = self._shared_row(share, share.target)
         if target.deleted:
             return set()
-        return {share.target, *(f"{m.type}:{m.n}" for m in self._members(share, target))}
+        return {share.target, *(m.ref for m in self._members(share, target))}
 
     def _shared_file(self, share, ref: str, name: str) -> Path | None:
         row = self._shared_row(share, ref)
         if name not in row.files:
             return None
-        folder = self._home(share).folder(row.type, row.scope).joinpath(f"{row.n:03d}").resolve()
+        folder = Record(self._home(share).root, row.home_env or self._home(share).env).folder(row.type, row.scope).joinpath(f"{row.n:03d}").resolve()
         found = folder.joinpath(name).resolve()
         return found if found.parent == folder and found.is_file() else None
 
@@ -64,7 +60,7 @@ class SharePages:
                 "title": scoped(shaped.get("title", ""), scope), "abstract": scoped(shaped.get("abstract", ""), scope), "brief": scoped(shaped.get("brief", ""), scope),
                 "sections": [{"title": scoped(s.get("title", ""), scope), "body": scoped(s.get("body", ""), scope)} for s in shaped.get("sections") or []],
                 "files": sorted(row.files), "pictures": dict(getattr(row, "pictures", {}) or {}),
-                "members": [f"{m.type}:{m.n}" for m in self._members(share, row) if f"{m.type}:{m.n}" in scope],
+                "members": [m.ref for m in self._members(share, row) if m.ref in scope],
                 "completed": row.completed, "data": {key: row.data[key] for key in SHARED_FIELDS.get(row.type, ()) if key in row.data},
             }
         described = described_types()

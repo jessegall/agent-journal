@@ -11,6 +11,7 @@ from resources.fields import Loaded
 from engine.markers import plain
 from engine.offline import queue
 from engine.outbox import Request
+from engine.paths import known_environment
 from engine.record import Record
 from resources.base import OWNER, PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
@@ -557,7 +558,14 @@ def controller_of(record: Record, ref: "str | Ref", actor: str = SYSTEM) -> "Con
 
 
 def row_of(record: Record, ref: "str | Ref") -> Resource:
-    return controller_of(record, ref).load(Ref.parse(ref).n)
+    """The row a ref names, read live from its own environment when the ref names one."""
+    ref = Ref.parse(ref)
+    home = Record(record.root, ref.env) if ref.env else record
+    if ref.env and not known_environment(record.root, ref.env):
+        raise Refused(f"there is no environment {ref.env!r}")
+    row = controller_of(home, ref).load(ref.n)
+    row.home_env = ref.env
+    return row
 
 
 def register(*classes) -> None:

@@ -27,11 +27,17 @@ class Page:
         return html.escape(formatted(text, self.record, SHARED))
 
     def href(self, ref: str) -> str:
-        kind, _, n = ref.partition(":")
+        env, _, row = ref.rpartition("/")
+        if env:
+            return f"{self.root}/{quote(ref, safe='')}"
+        kind, _, n = row.partition(":")
         return f"{self.root}/{kind}/{n}"
 
     def file_href(self, ref: str, name: str) -> str:
-        kind, _, n = ref.partition(":")
+        env, _, row = ref.rpartition("/")
+        if env:
+            return f"{self.root}/files/{quote(ref, safe='')}/{quote(name, safe='')}"
+        kind, _, n = row.partition(":")
         return f"{self.root}/files/{kind}/{n}/{quote(name, safe='')}"
 
     def refs(self, text: str) -> str:
@@ -112,7 +118,7 @@ class Page:
         return "<table>" + "".join("<tr>" + "".join(f"<td>{self.inline(c)}</td>" for c in cells) + "</tr>" for cells in shown) + "</table>"
 
     def row(self, r) -> str:
-        ref = f"{r.type}:{r.n}"
+        ref = r.ref
         parts = [f"<h1>{self.title(r.title)}</h1>"]
         if r.abstract:
             parts.append(f'<p class="abstract">{self.inline(r.abstract)}</p>')
@@ -132,7 +138,7 @@ class Page:
 
     def collection(self, c, members: list) -> str:
         cards = "".join(
-            f'<li><a href="{self.href(f"{m.type}:{m.n}")}"><strong>{self.title(m.title)}</strong>'
+            f'<li><a href="{self.href(m.ref)}"><strong>{self.title(m.title)}</strong>'
             f'<span>{html.escape(m.abstract)}</span></a></li>' for m in members
         )
         about = f'<p class="abstract">{self.inline(c.abstract)}</p>' if c.abstract else ""

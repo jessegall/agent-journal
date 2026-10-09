@@ -103,13 +103,15 @@ def reworded(value, words):
 class Ref:
     type: str
     n: int
+    env: str = ""
 
     @classmethod
     def parse(cls, ref: "str | Ref") -> "Ref":
-        kind, _, n = str(ref).partition(":")
+        env, _, row = str(ref).rpartition("/")
+        kind, _, n = row.partition(":")
         if not kind or not n.isdigit():
-            raise Refused(f"{ref!r} is not a row: write it as type:number, like todo:785")
-        return cls(kind, int(n))
+            raise Refused(f"{ref!r} is not a row: write it as type:number, like todo:785, or environment/type:number for a row of another environment")
+        return cls(kind, int(n), env)
 
     @classmethod
     def numbers_of(cls, kind: str, refs: "list[str]") -> list[int]:
@@ -120,7 +122,7 @@ class Ref:
         return f"{self.type} {self.n}"
 
     def __str__(self) -> str:
-        return f"{self.type}:{self.n}"
+        return f"{self.env}/{self.type}:{self.n}" if self.env else f"{self.type}:{self.n}"
 
 
 def as_dict(r) -> dict:
@@ -232,9 +234,11 @@ class Resource:
             setattr(self, name, change(getattr(self, name)))
         self.sections = [{**part, SECTION.title: change(part[SECTION.title]), SECTION.body: change(part[SECTION.body])} for part in self.sections]
 
+    home_env = ""   # the environment a row read from another one came from; "" for a row of the reader's own
+
     @property
     def ref(self) -> str:
-        return f"{self.type}:{self.n}"
+        return str(Ref(self.type, self.n, self.home_env))
 
     def creation_order(self) -> tuple[float, int]:
         return self.created, self.n

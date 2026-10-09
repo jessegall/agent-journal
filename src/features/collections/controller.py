@@ -2,7 +2,8 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller, row_of
 from features.collections.resource import Collection
-from resources.base import Refused
+from controllers.shared import shared
+from resources.base import Ref, Refused
 from controllers.marks import action
 
 
@@ -40,10 +41,12 @@ class Collections(Controller):
             except Refused:
                 continue
             if not row.deleted:
-                found.append(f"{row.type} {row.n}  {row.title}")
+                found.append(f"{ref}  {row.title}" if Ref.parse(ref).env else f"{row.type} {row.n}  {row.title}")
         return found
 
     def _member(self, ref: str):
+        if not shared(Ref.parse(ref).env):
+            raise Refused(f"{ref} belongs to an environment that is not shared with you")
         row = row_of(self.record, ref)
         if row.data.get("system"):
             raise Refused(f"{ref} ships with the journal and cannot be put in a collection")

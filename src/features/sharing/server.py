@@ -165,6 +165,10 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.shown(share, share.target)
         if rest[0] == "files" and len(rest) == 4:
             return self.file(share, f"{rest[1]}:{rest[2]}", rest[3])
+        if rest[0] == "files" and len(rest) == 3:
+            return self.file(share, rest[1], rest[2])
+        if len(rest) == 1:
+            return self.shown(share, rest[0])
         if len(rest) == 2:
             return self.shown(share, f"{rest[0]}:{rest[1]}")
         return self.page(404, unshared())
@@ -212,7 +216,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         record = self.shares._home(share)
         page = Page(f"/s/{share.token}", scope, record)
         row = self.shares._shared_row(share, ref)
-        members = [m for m in self.shares._members(share, row) if f"{m.type}:{m.n}" in scope]
+        members = [m for m in self.shares._members(share, row) if m.ref in scope]
         body = page.collection(row, members) if members else page.row(row)
         back = None if ref == share.target else f"/s/{share.token}"
         self.page(200, document(formatted(row.title, record, SHARED), body, share.expires, back))
