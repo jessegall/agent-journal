@@ -282,11 +282,12 @@ class ToolUse(Loaded):
 class BashCall(ToolUse):
     command: str = ""
     printed: str = ""
+    background: bool = False
 
     @classmethod
     def from_payload(cls, name: str, given: dict, response: dict) -> "BashCall":
         printed = "\n".join(str(response[key]) for key in ("stdout", "stderr") if response.get(key))
-        return cls(name, given, response, command=given["command"], printed=printed)
+        return cls(name, given, response, command=given["command"], printed=printed, background=bool(given.get("run_in_background")))
 
     @property
     def words(self) -> tuple:
