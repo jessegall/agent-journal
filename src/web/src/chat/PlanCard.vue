@@ -22,6 +22,7 @@ const lifted = ref(false);
 const error = ref("");
 const status = computed(() => props.plan.data.status);
 const parked = computed(() => status.value === "parked");
+const reviewing = computed(() => status.value === "reviewing");
 const building = computed(() => status.value === "building" || status.value === "draft");
 const others = computed(() => otherPlans(rows("plan")));
 const phases = computed(() => props.plan.data.phases.map((ph, i) => ({n: i + 1, title: ph.title, rows: ph.todos.length})));
@@ -64,17 +65,19 @@ async function start() {
                     </span>
                 </template>
                 <Btn small @click="peek('plan', plan.n)">Open plan</Btn>
-                <Btn
-                    kind="primary"
-                    small
-                    class="plan-card-start"
-                    :disabled="building"
-                    v-tip="building ? 'You can approve it once the plan is ready' : 'Approve the plan; the agent starts it'"
-                    @click="start"
-                >
-                    <Icon name="start" />
-                    {{ parked ? "Resume" : "Approve" }}
-                </Btn>
+                <template v-if="!reviewing">
+                    <Btn
+                        kind="primary"
+                        small
+                        class="plan-card-start"
+                        :disabled="building"
+                        v-tip="building ? 'You can approve it once the plan is ready' : 'Approve the plan; the agent starts it'"
+                        @click="start"
+                    >
+                        <Icon name="start" />
+                        {{ parked ? "Resume" : "Approve" }}
+                    </Btn>
+                </template>
             </span>
             <CloseButton title="Hide from chat; it stays on the Plans page" @click="api.act('plan', plan.n, 'dismiss')" />
         </template>

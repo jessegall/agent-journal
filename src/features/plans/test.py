@@ -81,7 +81,10 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     assert any(f"the review of plan {plan.n}, Port everything, is in - report {review.n}" in line for line in nudges(record)), "the agent is told when the reviewers' report is in"
     by_agent.ready(plan.n)
     by_agent.review(plan.n)
-    assert by_user.approve(plan.n).data["status"] == "approved", "asking for a review never stops you approving the plan"
+    assert "is under review" in refused(lambda: by_user.approve(plan.n)), "a plan under review cannot be approved until the review's report is linked"
+    Reports(record, actor=AGENT).link(Reports(record, actor=AGENT).create("the second review").n, plan.ref)
+    by_agent.ready(plan.n)
+    assert by_user.approve(plan.n).data["status"] == "approved", "once the report is in and the plan is ready again you approve it"
     Reports(record, actor=AGENT).link(Reports(record, actor=AGENT).create("a late review").n, plan.ref)
     assert by_agent.load(plan.n).data["status"] == "approved", "a report that lands after you approved leaves your decision standing"
     by_agent.start(plan.n)

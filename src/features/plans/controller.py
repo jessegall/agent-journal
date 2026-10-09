@@ -174,7 +174,9 @@ class Plans(Controller):
     @action
     def approve(self, n: int):
         self._user_only("approve")
-        return self._status(self.load(n), APPROVED, DRAFT, READY, REVIEWING)
+        if self.load(n).status == REVIEWING:
+            self._refuse(f"plan {n} is under review: it can be approved once the review's report is linked and the plan is ready again")
+        return self._status(self.load(n), APPROVED, DRAFT, READY)
 
     @action
     def start(self, n: int):
