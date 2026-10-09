@@ -64,7 +64,13 @@ def runs_here(type_: str, name: str) -> bool:
 
 
 def command_held(type_: str, name: str):
-    return COMMANDS.get(type_, {}).get(name) or getattr(CONTROLLERS.get(type_), name, None)
+    """The command a word runs on a type: one the type registered, or the method behind the word, however the type renames it (finish is complete)."""
+    registered = COMMANDS.get(type_, {}).get(name)
+    if registered:
+        return registered
+    controller = CONTROLLERS.get(type_)
+    names = controller.resource.command_names if controller else {}
+    return getattr(controller, next((method for method, word in names.items() if word == name), name), None)
 SAVE_REWRITES = Extension()
 SAVE_MARKS = Extension()
 SAVE_CHECKS = Extension()
