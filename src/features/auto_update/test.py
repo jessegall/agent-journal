@@ -132,7 +132,12 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert wait_for_commands(record.root, steps.append, wait=0.05, every=0.01) == [], "with nothing running the update does not wait"
     import threading
     from features.auto_update import countdown
-    assert (countdown.wait(record.root, "2.9.0", seconds=0.1, every=0.01), countdown.remaining(record.root)) == (True, {}), "an automatic update that is not cancelled runs after its countdown"
+    assert (countdown.wait(record.root, "2.9.0", seconds=0.1, every=0.01), countdown.remaining(record.root)) == (True, {"version": "2.9.0", "seconds": 0, "starting": True}), \
+        "an automatic update that is not cancelled runs after its countdown, and is reported as starting until its upgrade holds the mark"
+    runtime.upgrade_mark(record.root).write_text("Preparing the update")
+    assert countdown.remaining(record.root) == {}, "once the upgrade holds the mark the steps take over from the countdown"
+    runtime.upgrade_mark(record.root).unlink()
+    countdown.cancel(record.root)
     counted = []
     runner = threading.Thread(target=lambda: counted.append(countdown.wait(record.root, "2.9.1", seconds=5, every=0.01)))
     runner.start()

@@ -13,7 +13,10 @@ export const locked = () => Boolean(updating.version || updating.external) && !u
 
 // The automatic update the server is counting down to, with the second it starts at; none clears it.
 export function counting(countdown) {
-    updating.countdown = countdown && countdown.version ? {version: countdown.version, until: Date.now() / 1000 + countdown.seconds} : null;
+    updating.countdown =
+        countdown && countdown.version
+            ? {version: countdown.version, until: Date.now() / 1000 + countdown.seconds, starting: Boolean(countdown.starting)}
+            : null;
 }
 
 export function begin(version) {

@@ -8,6 +8,7 @@ from engine.stored import read_json, write_json
 COUNTDOWN = 10.0
 CHECK_EVERY = 0.25
 STATE = "update-countdown.json"
+STARTING_FOR = 120.0
 
 
 def state(root: Path) -> Path:
@@ -15,10 +16,14 @@ def state(root: Path) -> Path:
 
 
 def remaining(root: Path) -> dict:
-    """The automatic update counting down, with the seconds it has left, or nothing when none is."""
+    """The automatic update counting down, with the seconds it has left, or starting until its upgrade holds the mark; nothing when none is."""
     held = read_json(state(root), dict, {})
-    seconds = float(held.get("until", 0)) - time.time()
-    return {"version": held["version"], "seconds": max(0, round(seconds))} if held.get("version") and seconds > -1 else {}
+    version, until, now = held.get("version"), float(held.get("until", 0)), time.time()
+    if not version:
+        return {}
+    if held.get("starting"):
+        return {} if runtime.upgrading(root) or now - until > STARTING_FOR else {"version": version, "seconds": 0, "starting": True}
+    return {"version": version, "seconds": max(0, round(until - now))} if until - now > -1 else {}
 
 
 def cancel(root: Path) -> None:
@@ -33,5 +38,5 @@ def wait(root: Path, version: str, seconds: float = COUNTDOWN, every: float = CH
         if read_json(state(root), dict, {}).get("version") != version:
             return False
         time.sleep(every)
-    cancel(root)
+    write_json(state(root), {"version": version, "until": until, "starting": True})
     return True

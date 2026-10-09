@@ -20,7 +20,8 @@ function showArrival(version) {
     const target = updatedTo();
     if (!target || !version) return;
     forgetUpdate();
-    if (target === version) arrived.value = {text: `Updated to ${version}`, label: "See what changed", action: () => go(route.value.env, "about")};
+    if (target === version)
+        arrived.value = {text: `Updated to ${version}`, label: "See what changed", action: () => go(route.value.env, "about")};
 }
 
 const reload = () => window.location.reload();
@@ -39,8 +40,14 @@ watch(() => store.summary?.version, showArrival);
         <div class="cover" role="alertdialog" aria-live="polite" aria-label="Updating the journal">
             <div class="panel">
                 <p class="title">Updating to {{ updating.countdown.version }}</p>
-                <p class="step">Starts in {{ left === 1 ? "1 second" : `${left} seconds` }}</p>
-                <Btn small class="cancel" @click="cancel">Cancel</Btn>
+                <template v-if="updating.countdown.starting">
+                    <Spinner :size="22" class="spin" />
+                    <p class="step">Starting the update</p>
+                </template>
+                <template v-else>
+                    <p class="step">Starts in {{ left === 1 ? "1 second" : `${left} seconds` }}</p>
+                    <Btn small class="cancel" @click="cancel">Cancel</Btn>
+                </template>
             </div>
         </div>
     </template>

@@ -12,7 +12,7 @@ from engine.state import State
 from engine.package import entry
 from engine.version import version
 from features import running
-from features.auto_update.countdown import wait
+from features.auto_update.countdown import cancel, wait
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM
 from engine.upgrades import newer, shared_parts, stale, upstream
@@ -128,6 +128,7 @@ class UpdateCheck:
                 return
             failed = installed(root, False, "")
         finally:
+            cancel(root)
             self.installing.release()
         settled(root, latest, failed)
         if failed:
