@@ -72,6 +72,12 @@ def give_back(record, todos: list[Todo]) -> None:
         listed.unassign(todo.n)
 
 
+def left_behind(record) -> list[Todo]:
+    """Open to-dos still assigned to a helper that has finished or is gone."""
+    helpers = Helpers(record, actor=SYSTEM)
+    return [todo for todo in Todos(record, actor=SYSTEM).rows.standing() if held_by_helper(todo) and helpers._holder(todo) is None]
+
+
 def stop_helpers(record: Record) -> None:
     root = record.root
     standing = [place for place in Environments(record, actor=SYSTEM).rows.standing() if place.helping and Sessions(root).holder(place.title)]
@@ -348,9 +354,9 @@ class Helpers(Controller):
         if agent_runs(self.record, row):
             raise Refused(f"helper {n}, {row.name}, is still running: journal helper stop {n}, then finish it")
         rows = held(self.record, row)
+        give_back(self.record, rows)
         finished = super().complete(n, f"{how or 'finished; its environment is packed away'}{given_back(rows)}", **data)
         Worktrees(self.record, actor=SYSTEM)._released(row.name)
-        give_back(self.record, rows)
         Agents(self.record, actor=SYSTEM)._mark_primary(f"Finished helper {n}", name=row.name, icon="bot")
         bus.defer(lambda: self._packed(row, place))
         return finished
