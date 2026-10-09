@@ -51,6 +51,10 @@ export class ApiClient {
         return this.get("/new-feature");
     }
 
+    publicUrl(path) {
+        return `/${path}`;
+    }
+
     markNewFeatureSeen(id) {
         return this.post("/new-feature", {id});
     }
