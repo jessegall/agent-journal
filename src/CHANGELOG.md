@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.2 — The faults hold finds the to-do in every environment
+- A to-do filed for a breach of the time budget now counts wherever it sits: the hold on the agent's writes lifts once an open to-do of that title exists in any environment, and a closed one starts its count again, so installing the journal and the agent's writes are no longer refused while the to-do is open.
+
 ## 2.267.1 — A finished helper never keeps a to-do
 - Finishing a helper gives its to-dos back before it marks the helper finished, so a finish that breaks later, as when releasing its worktree fails, no longer leaves a finished helper holding rows nobody can start. An upgrade gives back the rows that finished helpers still hold.
 - A reply tag followed by tool calls in the same turn is checked to be picked up as a reply; nothing changes for you.
