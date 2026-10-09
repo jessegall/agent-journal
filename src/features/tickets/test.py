@@ -369,8 +369,13 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     subprocess.run(["git", "init", "-q", "-b", "trunk"], cwd=nested, check=True, timeout=30)
     subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "first"], cwd=nested, check=True, timeout=30)
     wide = tickets.load(tickets.create("Wide", board=rewrite.n).n)
-    assert (tickets._lacking(wide), tickets._into_at(wide, "autoscaling", nested), tickets._into_at(wide, ".", project)) == (["autoscaling"], "trunk", "rewrite"), \
-        "a nested repository without the board's branch falls back to its own default branch; the project's own repository keeps the board's"
+    assert (tickets._into_at(wide, "autoscaling", nested), tickets._into_at(wide, ".", project)) == ("trunk", "rewrite"), \
+        "a nested repository starts from the branch it has checked out; the project's own repository keeps the board's"
+    subprocess.run(["git", "switch", "-q", "-c", "feature/activities"], cwd=nested, check=True, timeout=30)
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "feature work"], cwd=nested, check=True, timeout=30)
+    ahead = subprocess.run(["git", "rev-parse", "HEAD"], cwd=nested, check=True, capture_output=True, text=True, timeout=30).stdout.strip()
+    assert (tickets._into_at(wide, "autoscaling", nested), tickets._started_at(wide)["autoscaling"]) == ("feature/activities", ahead), \
+        "a nested repository checked out on a feature branch starts the ticket at that checkout's head, never at another branch it also has"
     from controllers.types import Environments
     environments = Environments(record, actor=SYSTEM)
     stale = [*environments.rows.summaries(), {**environments.rows.summaries()[0], "n": 999, "deleted": 0}]

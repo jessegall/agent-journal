@@ -1855,3 +1855,35 @@ def test_the_server_reads_the_messages_and_comments_a_reply_asks_for_when_it_sta
     warm_replies(record.root)
     held = {Path(folder).name for folder in SUMMARIES}
     assert {"message", "comment"} <= held, "a start loads what a reply reads, so the first reply after it answers from memory"
+
+
+def test_a_worktree_set_that_fails_partway_removes_what_it_made_and_a_retry_clears_a_plain_leftover(tmp_path):
+    import io
+
+    from commands.cli import exit_code
+    from engine.worktree import WorkspaceFolders, linked, present, workspace
+
+    def made_repo(name: str) -> Path:
+        repo = tmp_path / "project" / name
+        repo.mkdir(parents=True)
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True, timeout=30)
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "first"], cwd=repo, check=True, timeout=30)
+        return repo
+
+    first, second, third = (made_repo(name) for name in ("first", "second", "third"))
+    project, folders = tmp_path / "project", WorkspaceFolders(worktrees=((".claude", "worktrees"),))
+    folder = project / ".claude" / "worktrees" / "ticket-9"
+    (folder / "third" / ".git").mkdir(parents=True)
+    with pytest.raises(SystemExit):
+        workspace(project, folder, folders)
+    assert [linked(repo) for repo in (first, second)] == [{}, {}] and not any(present(repo, "refs/heads/worktree-ticket-9") for repo in (first, second)), \
+        "a start that fails at its third repository takes away the worktrees and branches it made in the first two"
+    (folder / "third" / ".git").rmdir()
+    (folder / "second").mkdir()
+    workspace(project, folder, folders)
+    assert all(repo.name in {path.name for path in linked(repo).values()} for repo in (first, second, third)) and all((folder / repo.name / ".git").exists() for repo in (first, second, third)), \
+        "a retry clears the plain folders a failed start left in its own folder and makes every worktree"
+    err = io.StringIO()
+    assert (exit_code(SystemExit("journal: could not launch"), err), "could not launch" in err.getvalue(), exit_code(SystemExit(3), err), exit_code(SystemExit(), err)) == (1, True, 3, 0), \
+        "a command that ends with a message answers 1 and says it; it is never parsed as a number"
+

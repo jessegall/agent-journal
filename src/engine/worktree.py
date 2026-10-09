@@ -116,11 +116,44 @@ def changed(project: Path, branch: str, base: str) -> bool:
     return present(project, ref) and tip(project, ref) != base
 
 
+def discarded(project: Path, folder: Path, branch: str, name: str) -> None:
+    """Takes away what a start that never reached its agent left in one repository: its worktree, its branch and the ref that remembers it."""
+    if folder.resolve() in {path.resolve() for path in linked(project).values()}:
+        git(project, "worktree", "remove", "--force", str(folder))
+    git(project, "worktree", "prune")
+    if branch and present(project, f"refs/heads/{branch}") and not checked_out(project, branch):
+        git(project, "branch", "-D", branch)
+        git(project, "update-ref", "-d", f"{KEPT}/{name}")
+
+
+def leftover(project: Path, place: Path) -> bool:
+    """A plain folder inside a ticket's own worktree folder that no worktree owns, which only a start that failed partway leaves."""
+    return place.is_dir() and not place.is_symlink() and not (place / ".git").exists() and place.resolve() not in {path.resolve() for path in linked(project).values()}
+
+
 def workspace(project: Path, folder: Path, folders: WorkspaceFolders) -> Path:
     name = folder.name
     found = repositories(project)
-    for repo in found:
-        opened(repo, folder / repo.relative_to(project), f"{BRANCHED}{name}", name)
+    existed, made = folder.exists(), []
+    try:
+        for repo in found:
+            place, branch = folder / repo.relative_to(project), f"{BRANCHED}{name}"
+            if leftover(repo, place):
+                shutil.rmtree(place)
+            had = place.resolve() in {path.resolve() for path in linked(repo).values()}, present(repo, f"refs/heads/{branch}")
+            opened(repo, place, branch, name)
+            made.append((repo, place, branch, *had))
+        return arranged(project, folder, folders, found)
+    except BaseException:
+        for repo, place, branch, had_tree, had_branch in reversed(made):
+            if not had_tree:
+                discarded(repo, place, branch if not had_branch else "", name)
+        if not existed:
+            shutil.rmtree(folder, ignore_errors=True)
+        raise
+
+
+def arranged(project: Path, folder: Path, folders: WorkspaceFolders, found: list[Path]) -> Path:
     if project in found:
         excluded(folder, [f"/{repo.name}/" for repo in found if repo != project], folders)
         return folder

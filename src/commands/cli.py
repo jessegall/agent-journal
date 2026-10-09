@@ -84,6 +84,14 @@ def noun_of(argv: list[str]) -> str:
     return word if word in CONTROLLERS else "-"
 
 
+def exit_code(left: SystemExit, err) -> int:
+    """What a command that ended itself answers: its number, or 1 with its words printed when it ended with a message."""
+    if isinstance(left.code, str):
+        print(left.code, file=err)
+        return 1
+    return 0 if left.code is None else int(left.code)
+
+
 def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
     noun, word = (list(plain_words(argv)) + ["", ""])[:2]
     if not argv or not asked_of_server(argv) or runs_here(noun, word):
@@ -92,7 +100,7 @@ def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
     try:
         code = run(["--root", str(root), *argv], out=out, err=err)
     except SystemExit as e:
-        code = 0 if e.code is None else int(e.code)
+        code = exit_code(e, err)
     except Exception as e:
         return f"! {type(e).__name__}: {e}", 1
     output = out.getvalue() or err.getvalue()
