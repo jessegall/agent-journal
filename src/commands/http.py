@@ -29,6 +29,8 @@ from engine.version import version
 from controllers.faults import broke, log_file
 from runner.chat_mirror import displayed
 from runner.hooks import answer
+from engine.stepped import call_of
+from runner.stepping import report_step
 from engine.record import Record
 from providers import PROVIDERS
 from providers.payload import Hook
@@ -89,6 +91,14 @@ class HookQuery(Loaded):
     env: str = ""
     inbox: str = ""
     pid: int = 0
+
+
+@dataclass(frozen=True)
+class StepQuery(Loaded):
+    token: str = ""
+    part: int = 0
+    phase: str = ""
+    status: int = 0
 
 
 @dataclass(frozen=True)
@@ -188,6 +198,15 @@ def post_hook(req: Request) -> Reply:
     hook = Hook.read({**req.body, "inbox": asked.inbox}, provider.tool_kinds)
     out = answer(provider, req.root, hook, asked.pid, asked.env)
     return Reply(403 if provider.refused(out) else 200, out, after_lane=hook.session)
+
+
+@route("POST", "/api/step")
+def post_step(req: Request) -> Reply:
+    asked = req.query_as(StepQuery)
+    call = call_of(req.root, asked.token)
+    if call is None or not 1 <= asked.part <= len(call.parts):
+        return Reply(404, {})
+    return Reply(200, {}, after=lambda: report_step(req.root, call, asked.part, asked.phase, asked.status))
 
 
 @route("POST", "/api/{env}/console")

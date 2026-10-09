@@ -56,6 +56,7 @@ class CommandRan(AgentEvent):
     tool: str = ""
     command: str = ""
     output: str = ""
+    stepped: bool = False
 
 
 @dataclass(frozen=True)

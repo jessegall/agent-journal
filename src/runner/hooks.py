@@ -12,6 +12,7 @@ from resources.types import AgentRow
 from runner import chat_mirror
 from runner.gate import refusal
 from runner.hook_report import end_refused, report
+from runner.stepping import combined, rewrite
 
 
 def read(provider, hook: Hook | dict) -> Hook:
@@ -33,9 +34,12 @@ def handle(provider, root: Path, env: str, hook: Hook | dict) -> dict:
     bus.defer(lambda: report(provider, record, hook))
     call = HookCall(provider, record, hook, Agents(record, actor=SYSTEM)._shared(hook.session))
     answered = ANSWERS.get(hook.event, quiet)(call)
-    if hook.event == HookEvent.PRE_TOOL_USE and provider.refused(answered):
+    if hook.event != HookEvent.PRE_TOOL_USE:
+        return answered
+    if provider.refused(answered):
         bus.defer(lambda: end_refused(record, hook))
-    return answered
+        return answered
+    return combined(answered, rewrite(provider, root, env, hook))
 
 
 def subagent_answer(provider, record: Record, hook: Hook) -> dict:

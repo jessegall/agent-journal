@@ -61,7 +61,7 @@ PHONE_OWNER_ACTIONS: dict[Action, PhoneAnswer] = {
     Action("phone", "refuse_passkey"): lambda phones, asked: phones.refuse_passkey(asked.n),
 }
 SYNC = "/api/sync/"
-NEVER_FROM_OUTSIDE = frozenset((post("/api/run"), post("/api/upgrade"), post("/api/stop"), post("/api/hook/{provider}"), post("/api/update"),
+NEVER_FROM_OUTSIDE = frozenset((post("/api/run"), post("/api/upgrade"), post("/api/stop"), post("/api/hook/{provider}"), post("/api/step"), post("/api/update"),
                                 post("/api/journals/start"), post("/api/services/{id}")))
 STREAM = "text/event-stream"
 FORM_LIMIT = 8192

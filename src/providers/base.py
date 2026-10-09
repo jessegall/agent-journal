@@ -200,6 +200,10 @@ class Provider(ABC):
         return {"decision": "block", "reason": reason,
                 "hookSpecificOutput": {"hookEventName": HookEvent.PRE_TOOL_USE, "permissionDecision": "deny", "permissionDecisionReason": reason}}
 
+    def rewritten(self, hook: Hook, command: str) -> dict:
+        """The answer that makes the agent run this command in place of the one it asked for, when the provider can: none by default."""
+        return {}
+
     def refused(self, response: dict) -> bool:
         return Decision.from_json(response).decision == "block"
 
