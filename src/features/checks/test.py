@@ -1,3 +1,5 @@
+import os
+
 import features
 from controllers.types import Notifications
 from features.checks.controller import Checks
@@ -159,12 +161,13 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     assert checks.load(chatty.n).last_run.ok, "a check that prints while it runs shows its progress and still ends on its result"
 
 
-def test_a_check_that_runs_out_of_time_says_so():
+def test_a_check_that_runs_out_of_time_says_so_and_its_limit_stretches_by_the_load(monkeypatch):
+    monkeypatch.setattr("engine.load.os.getloadavg", lambda: (3.0 * (os.cpu_count() or 1), 0.0, 0.0))
     record = fresh()
     check = Checks(record, actor=USER).create("Slow", command="echo started; sleep 5", timeout=1)
     last = Checks(record, actor=USER).run(check.n, wait=True).last
     assert (last["ok"], last["output"].splitlines()[0]) == (False, "started"), "the run fails and keeps what the command printed"
-    assert "ran out of time: stopped after 1 seconds" in last["output"].splitlines()[-1], "its last line names the time limit, which the failure notice shows"
+    assert "ran out of time: stopped after 3 seconds" in last["output"].splitlines()[-1], "its last line names the time limit stretched threefold by the load, which the failure notice shows"
 
 
 def test_a_failing_check_reaches_a_waiting_agent_and_is_told_again_only_when_it_changes():
