@@ -15,24 +15,17 @@ from resources.base import SYSTEM
 START = "start"
 
 
-def rewrite(provider, root: Path, env: str, hook: Hook) -> dict:
-    """The answer that runs a chained Bash command part by part, each part reporting when it starts and ends, or nothing when the command cannot be cut with certainty."""
+def rewrite(provider, root: Path, env: str, hook: Hook, answered: dict) -> dict:
+    """The answer that runs a chained Bash command part by part, each part reporting when it starts and ends, or the answer as it was when the command cannot be cut with certainty."""
     tool = hook.tool
     chain = chain_of(tool.command) if isinstance(tool, BashCall) else None
     if chain is None:
-        return {}
+        return answered
     token = re.sub(r"\W", "", hook.tool_use) or uuid.uuid4().hex
-    answer = provider.rewritten(hook, chain.stepped(token, str(runtime.folder(root) / "heartbeat")))
-    if answer:
+    rewritten = provider.rewritten(hook, chain.stepped(token, str(runtime.folder(root) / "heartbeat")), answered)
+    if rewritten is not answered:
         write_json(file_of(root, token), SteppedCall(hook.session, env, tool.command, chain.parts).to_json())
-    return answer
-
-
-def combined(answer: dict, rewritten: dict) -> dict:
-    """The answer the gates gave with the rewrite folded into its hook output."""
-    if not rewritten:
-        return answer
-    return {**answer, "hookSpecificOutput": {**(answer.get("hookSpecificOutput") or {}), **rewritten["hookSpecificOutput"]}}
+    return rewritten
 
 
 def report_step(root: Path, call: SteppedCall, part: int, phase: str, status: int) -> None:

@@ -12,7 +12,7 @@ from resources.types import AgentRow
 from runner import chat_mirror
 from runner.gate import refusal
 from runner.hook_report import end_refused, report
-from runner.stepping import combined, rewrite
+from runner.stepping import rewrite
 
 
 def read(provider, hook: Hook | dict) -> Hook:
@@ -39,7 +39,7 @@ def handle(provider, root: Path, env: str, hook: Hook | dict) -> dict:
     if provider.refused(answered):
         bus.defer(lambda: end_refused(record, hook))
         return answered
-    return combined(answered, rewrite(provider, root, env, hook))
+    return rewrite(provider, root, env, hook, answered)
 
 
 def subagent_answer(provider, record: Record, hook: Hook) -> dict:

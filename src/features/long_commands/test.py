@@ -1,3 +1,4 @@
+import json
 import os
 import time
 from types import SimpleNamespace
@@ -287,7 +288,6 @@ def test_a_codex_script_cell_the_agent_waits_on_is_followed_to_its_end(tmp_path)
 
 
 def test_a_call_that_never_reported_back_is_closed_and_a_command_that_ended_before_its_move_closes_its_card(monkeypatch, tmp_path):
-    import json
     from features.long_commands import move
     from providers import PROVIDERS
     from providers.base import BackgroundTasks
@@ -313,3 +313,15 @@ def test_a_call_that_never_reported_back_is_closed_and_a_command_that_ended_befo
     assert [bool(one.get("done")) for one in row.commands] == [True, False], "a call that never reported back is closed when the next one starts"
     assert refused(row, SimpleNamespace(at=float(row.running["at"]))).keys() == {"running", "commands"} and not refused(row, SimpleNamespace(at=1.0)), \
         "a call a hook refused is closed at once, and only the call that was refused"
+    transcript = tmp_path / "claude-3.jsonl"
+    asked = {"type": "assistant", "timestamp": "2026-09-23T00:00:00Z", "message": {"content": [{"type": "tool_use", "id": "t1", "name": "Bash", "input": {"command": "date; echo probe"}}]}}
+    answered = {"type": "user", "timestamp": "2026-09-23T00:00:01Z", "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "content": "probe"}]}}
+    transcript.write_text("".join(json.dumps(row) + "\n" for row in (asked, answered)))
+    lost = time.time() - 45
+    report(record, "working", "PreToolUse", session="claude-3", provider="claude", transcript=str(transcript), commands=[{"command": "date; echo probe", "tool": "Bash", "at": lost}],
+           running={"command": "date; echo probe", "tool": "Bash", "at": lost})
+    before = list(moved)
+    tick(record, "claude-3")
+    row = Agents(record, actor="system").by_session("claude-3")
+    assert (moved, bool(row.commands[-1].get("done")), bool(row.running.get("done"))) == (before, True, True), \
+        "a call the transcript shows as answered is closed and never moved to the background, though its end was lost on the way"
