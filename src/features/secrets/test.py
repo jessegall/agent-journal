@@ -96,7 +96,7 @@ def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch
     agent = Secrets(record, actor=AGENT)
     assert "No allowed programs" in refused(lambda: agent.run("GitHub", "cat")), "a secret with no allowed programs is given to none"
     assert "Settings > Secrets > secret" in refused(lambda: agent.run("GitHub", "cat")), "the refusal names the page and the control"
-    assert "only you name the programs" in refused(lambda: agent.update(row.n, programs=["cat"])), "an agent never sets the programs itself"
+    assert "Allowed programs" in refused(lambda: agent.update(row.n, programs=["cat"])), "an agent never sets the programs itself"
     assert "never given to bash" in refused(lambda: agent.propose_programs(row.n, "bash")), "a shell is not even proposed"
     agent.propose_programs(row.n, "cat")
     assert (Secrets(record, actor=SYSTEM).load(row.n).programs, Secrets(record, actor=SYSTEM).load(row.n).proposed) == ([], ["cat"]), "a proposal waits for the confirmation"

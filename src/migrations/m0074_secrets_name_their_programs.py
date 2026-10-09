@@ -7,7 +7,7 @@ from resources.base import SYSTEM
 
 
 def run(root: Path) -> list[str]:
-    """A secret with no allowed programs is given to none, so the user is told which secrets wait for them."""
+    """A secret that lists no programs is now given to none, so the user is told which secrets wait for their programs."""
     records = list(environment_records(Path(root)))
     if not records:
         return []
@@ -15,6 +15,6 @@ def run(root: Path) -> list[str]:
     if not unlisted:
         return []
     names = ", ".join(f"{row.title} (secret {row.n})" for row in unlisted)
-    Notices(records[0], actor=SYSTEM).create("Some secrets have no allowed programs", tone="warn",
-                                             brief=f"A secret now goes only to its Allowed programs, and these have none: {names}. Add them under Settings > Secrets.")
-    return [f"secret {row.n}, {row.title}, has No allowed programs until the user adds some" for row in unlisted]
+    Notices(records[0], actor=SYSTEM).create("Some secrets are given to no program until you list their programs", tone="warn",
+                                             brief=f"A secret now goes only to the programs it lists, and these list none: {names}. Add the programs each may go to on the Secrets page.")
+    return [f"secret {row.n}, {row.title}, lists no programs and is given to none until the user lists them" for row in unlisted]

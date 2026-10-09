@@ -435,6 +435,10 @@ class Provider(ABC):
     def drop_mcp(self, project: Path, name: str) -> bool:
         return False
 
+    def mcp_servers(self, project: Path) -> dict[str, str]:
+        """The MCP servers connected to this agent for the project, each name with its address."""
+        return {}
+
     def wiring_trouble(self, project: Path) -> str:
         command = self.wired(project)
         if not command:
