@@ -70,14 +70,17 @@ export const switchWords = (title) => ({
     mcp: `Agents can use ${title} directly`,
     mcpHelp: `Agents get ${title}'s own tools. What they read there is not marked as untrusted. Off until you turn it on.`,
     fetching: `Read ${title} into tickets`,
+    fetchingHelp: `The journal reads ${title} and keeps what it finds as tickets. Off until you turn it on.`,
 });
 
 export const mcpOn = (settings, name) => Boolean(settings?.[name]?.use_mcp);
 
-export const fetchingOn = (settings, name) => settings?.[name]?.fetching !== false;
+export const fetchingOn = (settings, name) => Boolean(settings?.[name]?.fetching);
 
 export const loginWords = (title) => ({
+    label: `Log in to ${title}`,
     button: "Log in",
-    line: `Log in opens ${title}'s own sign-in in your browser. The journal keeps the token as a secret for the agents' direct use. Reading into tickets needs a key you pick.`,
     waiting: `Waiting for you to finish signing in to ${title}.`,
 });
+
+export const loginLine = (title, state) => (state?.logged_in_at ? `Logged in to ${title} ${minutesAgo(state.logged_in_at)} ago.` : `Not logged in to ${title}.`);

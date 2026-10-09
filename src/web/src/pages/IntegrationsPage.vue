@@ -1,22 +1,30 @@
 <script setup>
 import {computed} from "vue";
 import {integrationsIn} from "../domain/integrations.js";
+import {route} from "../route.js";
 import {store} from "../state/store.js";
 import IntegrationCard from "./IntegrationCard.vue";
+import IntegrationSettings from "./IntegrationSettings.vue";
 
 const integrations = computed(() => integrationsIn(store.spec?.features));
+const opened = computed(() => integrations.value.find((feature) => feature.name === route.value.sub));
 </script>
 
 <template>
     <section class="integrations">
-        <div class="body">
-            <p class="lead">Outside services the journal can reach for you.</p>
-            <div class="cards">
-                <template v-for="feature in integrations" :key="feature.name">
-                    <IntegrationCard :feature="feature" />
-                </template>
+        <template v-if="opened">
+            <IntegrationSettings :feature="opened" />
+        </template>
+        <template v-else>
+            <div class="body">
+                <p class="lead">Outside services the journal can reach for you.</p>
+                <div class="cards">
+                    <template v-for="feature in integrations" :key="feature.name">
+                        <IntegrationCard :feature="feature" />
+                    </template>
+                </div>
             </div>
-        </div>
+        </template>
     </section>
 </template>
 
