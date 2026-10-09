@@ -105,6 +105,8 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert "--yes" in install.upgrade(record.root.parent, record.root)[0] and installer.read_text() == "changed by hand\n", \
         "journal upgrade refuses the same changed file before touching it"
     assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], "the updates page is told which files changed"
+    announced = dispatch("GET", "/api/new-feature", record.root, {}, {})
+    assert (announced.code, isinstance(announced.body, dict)) == (200, True), "the viewer asks the server which new feature the release announces, and an empty answer means none"
     monkeypatch.setattr(routes, "release_versions", lambda: ["2.263.0", "2.262.0", "2.250.0"])
     monkeypatch.setattr(routes, "version", lambda: "2.263.0")
     assert dispatch("GET", "/api/releases", record.root, {}, {}).body == {"versions": ["2.262.0", "2.250.0"]}, "the updates page lists the released versions except the one running"
