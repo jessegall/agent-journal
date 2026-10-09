@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.54 — Files in collections, a lighter dashboard, and agents that carry on after an update
+- A collection holds files and shows them on a Files tab, on its page and in its share: images previewed, other files with their name, size and a download. Files dropped on a dump land in its collection, and earlier dumps' files are added on upgrade.
+- A row another process changed is patched into the held lists without walking every row twice, and a repeated search no longer rereads every row.
+- An agent paused for an update hears nothing while paused, and is told on resuming that its open work stays open, so it carries on instead of parking it.
+
 ## 2.267.53 — Two tickets' worktrees of one repository stay apart
 - A worktree is recognised by git's own list of its repository, whatever its folder is called, so two tickets' worktrees of one nested repository no longer collapse into one.
 - A retry removes a half-made worktree of its own failed start with git worktree remove and deletes its branch; a folder no worktree owns is moved aside, never deleted.
