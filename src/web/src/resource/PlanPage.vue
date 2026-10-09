@@ -17,7 +17,7 @@ import {useHelpersHolding} from "../composables/helpers.js";
 import {helperCard, helperEnvironment, helperName} from "../domain/helpers.js";
 import ProgressBar from "../kit/ProgressBar.vue";
 
-const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean, closable: {type: Boolean, default: true}});
+const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean, holding: Boolean, closable: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
 const error = ref("");
 const inspected = ref(null);
@@ -33,7 +33,7 @@ const phases = computed(() =>
             ...(p.tickets || []).map((n) => here("ticket").find((t) => t.n === n)),
         ];
         const rows = named.filter(Boolean);
-        return {...p, i: i + 1, rows, waiting: fetching.value ? named.length - rows.length : 0};
+        return {...p, i: i + 1, rows, waiting: fetching.value || props.holding ? named.length - rows.length : 0};
     })
 );
 const {rows: helpers, loaded: helpersLoaded} = useHelpersHolding(computed(() => phases.value.flatMap((p) => p.rows)));
