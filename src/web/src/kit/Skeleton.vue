@@ -25,6 +25,15 @@ const CARD = [
     {id: "title", bars: [{width: "70%", height: 12}]},
     {id: "line", bars: [{width: "45%", height: 9}]},
 ];
+const FILE_HEAD = [
+    {width: "46%", height: 12},
+    {width: "52px", height: 9},
+];
+const FILE_CODE = [
+    {id: "first", bars: [{width: "88%", height: 9}]},
+    {id: "second", bars: [{width: "64%", height: 9}]},
+    {id: "third", bars: [{width: "76%", height: 9}]},
+];
 const ROW = [
     {width: "58%", height: 11},
     {width: "32%", height: 9},
@@ -54,6 +63,18 @@ const HEADING = [
                 <template v-for="index in count" :key="index">
                     <div class="skeleton-card">
                         <template v-for="line in CARD" :key="line.id">
+                            <SkeletonLine :bars="line.bars" />
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
+        <template #file>
+            <div class="skeleton-files" aria-busy="true" :aria-label="label">
+                <template v-for="index in count" :key="index">
+                    <div class="skeleton-file">
+                        <SkeletonLine class="skeleton-file-head" :bars="FILE_HEAD" />
+                        <template v-for="line in FILE_CODE" :key="line.id">
                             <SkeletonLine :bars="line.bars" />
                         </template>
                     </div>
@@ -127,6 +148,27 @@ const HEADING = [
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--raised);
+}
+
+.skeleton-files {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.skeleton-file {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--raised);
+}
+
+.skeleton-file-head {
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--border);
 }
 
 .skeleton-rows {

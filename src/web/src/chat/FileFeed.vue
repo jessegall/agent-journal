@@ -5,6 +5,7 @@ import {useScope} from "../composables/scope.js";
 import FeedBar from "./FeedBar.vue";
 import DiffCard from "../kit/DiffCard.vue";
 import EmptyState from "../kit/EmptyState.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import JumpPill from "../kit/JumpPill.vue";
 import {useFileFeed} from "../composables/fileFeed.js";
 import {useFollow} from "../composables/follow.js";
@@ -86,6 +87,9 @@ function onScroll(e) {
         <FeedBar :options="view" :filter="filter" @options="emit('options', $event)" @filter="filter = $event" @expand="expand" />
         <div ref="scroller" class="file-feed-scroll" @scroll.passive="onScroll" @wheel.passive="wheeled">
             <div class="file-feed-flow">
+                <template v-if="!ready">
+                    <Skeleton shape="file" :count="3" label="Loading the file changes" />
+                </template>
                 <template v-for="c in listed" :key="c.id">
                     <DiffCard
                         :flush="flushed"
@@ -111,8 +115,8 @@ function onScroll(e) {
                 </template>
             </div>
         </div>
-        <template v-if="!cards.length">
-            <EmptyState :loading="!ready" shape="cards" title="No edits yet">
+        <template v-if="ready && !cards.length">
+            <EmptyState title="No edits yet">
                 The agent's file edits appear here as it makes them.
             </EmptyState>
         </template>
