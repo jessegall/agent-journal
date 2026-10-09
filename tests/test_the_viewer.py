@@ -11,7 +11,7 @@ from typing import NamedTuple
 
 import pytest
 
-from scripts.boot_guard import PROJECT
+from scripts.boot_guard import PROJECT, ended
 from tests import phone_pages, shared_pages
 from tests.conftest import installed_once
 
@@ -61,9 +61,12 @@ def scratch_viewer(tmp_path_factory):
     else:
         server.kill()
         pytest.fail("the scratch install's server did not answer")
-    yield Scratch(url, root)
-    server.terminate()
-    server.wait(BOOT_WAIT)
+    try:
+        yield Scratch(url, root)
+    finally:
+        server.terminate()
+        server.wait(BOOT_WAIT)
+        ended(place)
 
 
 @needs_node_modules

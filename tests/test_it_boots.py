@@ -28,7 +28,7 @@ from engine.stored import append_text, write_text
 from install import STUBS, fetch
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM
-from scripts.boot_guard import PROJECT, WAIT, cleared, launches
+from scripts.boot_guard import PROJECT, WAIT, cleared, ended, launches
 from scripts.checks.imports import imports, missing
 from serve import Handler, JournalServer
 from tests import isolation
@@ -1082,13 +1082,7 @@ def test_stopping_the_journal_stops_the_agent_of_every_helper_and_leaves_its_env
         (bin_ / "quit-all").touch()
         main.kill()
         main.communicate(timeout=WAIT)
-        cleared(tmp_path)
-        for _ in range(25):
-            left = subprocess.run(["pgrep", "-f", str(tmp_path).removeprefix("/private")], capture_output=True, text=True, timeout=WAIT).stdout.split()
-            if not left:
-                break
-            time.sleep(0.2)
-        assert not left, f"the test leaves processes of its scratch project running: {left}"
+        ended(tmp_path)
 
 
 def menu_in_terminal(*typed) -> tuple[str, int]:
