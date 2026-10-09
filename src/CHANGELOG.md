@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.55 — The Board chip
+- The board menu beside the mode switch is one chip: Board, a thin divider, then the board's name; a click anywhere on it opens the menu.
+
 ## 2.267.54 — Files in collections, a lighter dashboard, and agents that carry on after an update
 - A collection holds files and shows them on a Files tab, on its page and in its share: images previewed, other files with their name, size and a download. Files dropped on a dump land in its collection, and earlier dumps' files are added on upgrade.
 - A row another process changed is patched into the held lists without walking every row twice, and a repeated search no longer rereads every row.
