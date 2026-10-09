@@ -91,10 +91,10 @@ describe("agent replies", () => {
 });
 
 describe("a search mark", () => {
-    test("keeps the term it searched for, so a click can open the search with it filled in", () => {
-        const searched = agent({cards: [{at: 5, label: "Searched the conversation", title: "'Johannes'", term: "Johannes", icon: "search", tone: "note", key: "search-1"}]});
+    test("keeps what the search found, so a click can show it", () => {
+        const searched = agent({cards: [{at: 5, label: 'Searched the conversation for "Johannes"', icon: "search", tone: "note", key: "search-1", found: "hit"}]});
         const got = turns({agent: [searched]});
-        expect(got.map((t) => [t.type, t.data.term])).toEqual([["card", "Johannes"]]);
+        expect(got.map((t) => [t.type, t.data.search])).toEqual([["card", {label: 'Searched the conversation for "Johannes"', found: "hit", reads: []}]]);
     });
 });
 

@@ -11,7 +11,6 @@ import TurnGroup from "./TurnGroup.vue";
 import TurnMessage from "./TurnMessage.vue";
 import TurnReceipt from "./TurnReceipt.vue";
 import TurnThought from "./TurnThought.vue";
-import {go, route} from "../route.js";
 import {useTurnLinks} from "./turnLinks.js";
 import {store} from "../state/store.js";
 
@@ -33,7 +32,6 @@ const cardMark = computed(() => ({...data.value, at: props.turn.created}));
 const searching = ref(false);
 
 function markClick(data) {
-    if (data.term) return {click: () => go(route.value.env, "search", 0, data.term)};
     if (data.search) return {click: () => (searching.value = true)};
     if (data.page) {
         const settled = data.settled ? {how: data.settled, at: data.settledAt} : null;
