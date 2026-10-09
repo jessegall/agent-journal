@@ -1,10 +1,10 @@
-from engine.git import git_user_name
+from engine import runtime
 from features.form_of_address.details import FormOfAddressDetails
 from features.form_of_address.voices import Calling
 
 
 def first_name(record) -> str:
-    return str(FormOfAddressDetails.values(record).first_name).strip() or (git_user_name(record.root.parent).split() or [""])[0]
+    return str(FormOfAddressDetails.values(record).first_name).strip() or (runtime.git_user(record.root).split() or [""])[0]
 
 
 def title(record) -> str:

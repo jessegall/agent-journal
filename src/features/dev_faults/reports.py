@@ -18,7 +18,8 @@ TOLD_EVERY = 25
 HOLD_AFTER = 20
 RETIRED = "slow"
 BUDGET = {"request": 50, "hook": 50, "command": 50}
-WARMED = ("request", "hook")
+FIRST_RUN_COLD = ("request", "hook")
+WARMED = (*FIRST_RUN_COLD, "command")
 SERVED: set[str] = set()
 VIEWER = {"overlap": "the viewer sent {where} twice at once", "page": "the viewer asked {where} for more than a page",
           "refetch": "the viewer refetched {where} with nothing changed"}
@@ -125,7 +126,7 @@ class FaultReports:
               waiting: float = 0.0, after: float = 0.0, whole_reads: tuple[str, ...] = (), stacks: str = "") -> None:
         if whole_reads:
             logged(root, f"{kind} {name} read a whole transcript for {'; '.join(whole_reads)}")
-        if took < min(BUDGET.values() or [0]) or cold(kind, name) or runtime.tests_running(Path(root)):
+        if took < min(BUDGET.values() or [0]) or cold(Path(root), kind, name) or runtime.tests_running(Path(root)):
             return
         try:
             record = Record(Path(root), env)
@@ -149,9 +150,9 @@ class FaultReports:
         return True
 
 
-def cold(kind: str, name: str) -> bool:
+def cold(root: Path, kind: str, name: str) -> bool:
     if kind not in WARMED:
         return False
-    first = name not in SERVED
+    first = kind in FIRST_RUN_COLD and name not in SERVED
     SERVED.add(name)
-    return first or runtime.warming()
+    return first or runtime.warming(root)
