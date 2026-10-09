@@ -1,4 +1,3 @@
-// The flat style: one atlas per voice, in voices/flat (the older sheets in voices stay aside, unused).
 // Where each voice's mascot stands on the chat box, read off the first frame of its art (256 px cells):
 // edge: the pixel its right side ends at; foot: the pixel its feet stand on.
 export const PLACES = {
@@ -13,7 +12,8 @@ export const STILL = {edge: 200, foot: 232};
 
 export const placeOf = (art) => PLACES[art.replace(/\.\w+$/, "")] ?? STILL;
 
-export const atlasOf = (voice, act) => `voices/flat/${voice}_${act}_atlas.png`;
+// The kind of animation the mascot plays at each moment; any other kind a voice carries shows in its dialog only.
+export const MOMENTS = {blinking: "blink", waiting: "idle"};
 
 export const BLINK_SECONDS = {min: 3, max: 6};
 export const ACT_SECONDS = {min: 10, max: 30};
@@ -28,11 +28,13 @@ export const otherThan = (list, last, random = Math.random()) => {
 // ?mascot=showcase plays every animation of every voice back to back, naming each beside the mascot.
 export const showcaseOn = (url = window.location) => new URLSearchParams(url.search).get("mascot") === "showcase" || /[?&]mascot=showcase/.test(url.hash);
 
-export const SHOWCASE_ACTS = ["idle_1"];
+// The animations as the dialog lists them: grouped by kind, the moments' kinds first, then the rest by name.
+export const KIND_ORDER = Object.values(MOMENTS);
 
-export const showcaseStep = (index) => {
-    const voices = Object.keys(PLACES);
-    const voice = voices[Math.floor(index / SHOWCASE_ACTS.length) % voices.length];
-    const act = SHOWCASE_ACTS[index % SHOWCASE_ACTS.length];
-    return {voice, act, place: PLACES[voice], label: `${voice} \u00b7 ${act.replace("_", " ")}`};
+export const groupedByKind = (list) => {
+    const kinds = [...new Set(list.map((animation) => animation.kind))];
+    kinds.sort((a, b) => (KIND_ORDER.indexOf(a) + 1 || 99) - (KIND_ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b));
+    return kinds.map((kind) => ({kind, items: list.filter((animation) => animation.kind === kind)}));
 };
+
+export const animationLabel = (animation) => (animation.name ? `${animation.kind} ${animation.name.replace(/_/g, " ")}` : animation.kind);

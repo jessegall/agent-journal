@@ -1,8 +1,8 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {ACT_SECONDS, afterSeconds, atlasOf, BLINK_SECONDS, otherThan, showcaseOn, showcaseStep} from "../domain/mascots.js";
-import {api} from "../api/client.js";
-import {loadProfiles, mascotOf, profilesLoaded} from "../composables/profiles.js";
+import {ACT_SECONDS, afterSeconds, animationLabel, BLINK_SECONDS, otherThan, placeOf, showcaseOn} from "../domain/mascots.js";
+import {animations, urlOf} from "../composables/voiceAnimations.js";
+import {loadProfiles, mascotOf, profiles, profilesLoaded} from "../composables/profiles.js";
 
 const mascot = computed(() => mascotOf.value);
 const rested = ref(null);
@@ -46,9 +46,20 @@ function act() {
 const waitForBlink = () => blinks && (blinkTimer = setTimeout(blink, afterSeconds(BLINK_SECONDS)));
 const waitForAct = () => (actTimer = setTimeout(act, afterSeconds(ACT_SECONDS)));
 
+const steps = computed(() =>
+    profiles.value.flatMap((row) =>
+        (animations.value[row.n] || []).map((animation) => ({
+            url: urlOf(row.n, animation),
+            place: placeOf(row.data.art || ""),
+            label: `${row.title.toLowerCase()} \u00b7 ${animationLabel(animation)}`,
+        }))
+    )
+);
+
 async function showNext() {
-    const step = showcaseStep(stage++);
-    const sheet = await measured(api.publicUrl(atlasOf(step.voice, step.act)));
+    if (!steps.value.length) return;
+    const step = steps.value[stage++ % steps.value.length];
+    const sheet = await measured(step.url);
     if (!sheet) return showNext();
     staged.value = step;
     play({...sheet, still: false});
@@ -91,7 +102,7 @@ watch(
     {immediate: true}
 );
 onUnmounted(stop);
-if (showcase) showNext();
+if (showcase) watch(steps, () => staged.value || showNext(), {immediate: true});
 
 const place = computed(() => (showcase ? staged.value?.place : mascot.value.place));
 const stood = computed(() => ({"--edge": place.value.edge, "--foot": place.value.foot}));

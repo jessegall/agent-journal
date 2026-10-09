@@ -621,6 +621,10 @@ export class ApiClient {
         return this.command("profile", "samples");
     }
 
+    profileAnimations() {
+        return this.command("profile", "animations");
+    }
+
     profileNamings() {
         return this.command("profile", "namings");
     }

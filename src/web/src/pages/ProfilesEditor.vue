@@ -8,11 +8,13 @@ import Notice from "../kit/Notice.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
 import Toast from "../kit/Toast.vue";
 import ProfilePanel from "./ProfilePanel.vue";
+import VoiceAnimationsDialog from "./VoiceAnimationsDialog.vue";
 import ProfileRow from "./ProfileRow.vue";
 
 const NEW = "new";
 const open = ref(0);
 const saved = ref(null);
+const animating = ref(null);
 const shipped = computed(() => profiles.value.filter((row) => row.data.system));
 const own = computed(() => profiles.value.filter((row) => !row.data.system));
 const panelRow = computed(() => (open.value === NEW ? null : profiles.value.find((row) => row.n === open.value)));
@@ -79,6 +81,7 @@ onMounted(loadProfiles);
                         :in-use="row.n === profileInUse"
                         :standing="!profileInUse && standing && row.n === standing.n"
                         @open="open = $event.n"
+                        @animations="animating = $event"
                         @use="use"
                         @duplicate="duplicate"
                         @remove="remove"
@@ -92,6 +95,7 @@ onMounted(loadProfiles);
                         :row="row"
                         :in-use="row.n === profileInUse"
                         @open="open = $event.n"
+                        @animations="animating = $event"
                         @use="use"
                         @duplicate="duplicate"
                         @remove="remove"
@@ -114,6 +118,9 @@ onMounted(loadProfiles);
                 @create="create"
                 @changed="loadProfiles"
             />
+        </template>
+        <template v-if="animating">
+            <VoiceAnimationsDialog :row="animating" @close="animating = null" />
         </template>
         <Toast :toast="saved" :lasts="3500" @done="saved = null" />
     </section>

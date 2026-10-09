@@ -203,3 +203,33 @@ def test_the_upgrade_moves_the_cartoon_names_switch_into_the_profile_in_use():
                                f"profile {mine.n}, Mine, names its agents after cartoon characters, as the switch did"], \
         "a profile of your own keeps the names it had, and when it is the one in use it takes the switch's cartoon names itself"
     assert Profiles(other, actor=SYSTEM).load(mine.n).naming == CARTOON.text
+
+
+def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dropped_sheets(tmp_path):
+    import zipfile
+    from features.form_of_address.animations import Animation, shipped_animations
+    named = ["squire_blink_sheet.png", "squire_idle_1_sheet.png", "working_left.png", "idle_wave_atlas.png"]
+    assert {(a.kind, a.name) for a in (Animation.of(file, "squire") for file in named)} == {("blink", ""), ("idle", "1"), ("working", "left"), ("idle", "wave")}, \
+        "a kind and a name come from the file name, with or without the voice, the sheet or the atlas ending"
+    assert Animation.of("notes.txt", "squire") is None, "only PNG sheets are animations"
+    voices = tmp_path / "voices"
+    (voices / "flat").mkdir(parents=True)
+    for file in ("squire_idle_1_sheet.png", "squire_blink_sheet.png", "flat/squire_idle_1_atlas.png"):
+        (voices / file).write_bytes(b"x")
+    assert [a.file for a in shipped_animations(voices, "squire.webp")] == ["flat/squire_idle_1_atlas.png"], "the newest folder holding a voice's animations is the one it plays; older sheets stay aside"
+    record = shipped_record()
+    profiles = Profiles(record, actor=USER)
+    squire = profiles.rows.by_title("Squire")
+    sheet = tmp_path / "idle_wave.png"
+    sheet.write_bytes(b"x")
+    profiles.attach(squire.n, str(sheet))
+    archive = tmp_path / "more.zip"
+    with zipfile.ZipFile(archive, "w") as zipped:
+        zipped.writestr("pack/working_left.png", b"x")
+        zipped.writestr("pack/readme.txt", "hi")
+    profiles.attach(squire.n, str(archive))
+    dropped = {(a["kind"], a["name"]) for a in profiles.animations()[squire.n] if not a["shipped"]}
+    assert dropped == {("idle", "wave"), ("working", "left")}, "a dropped sheet and the sheets of a dropped ZIP are stored with the voice and listed beside the shipped ones"
+    notes = tmp_path / "notes.txt"
+    notes.write_text("no")
+    assert "not an animation" in refused(lambda: profiles.attach(squire.n, str(notes))), "a file that is no sheet is refused with how to name one"
