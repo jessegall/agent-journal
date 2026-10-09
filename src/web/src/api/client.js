@@ -47,6 +47,10 @@ export class ApiClient {
         return this.env() ? `/${this.env()}${path}` : NO_ENV;
     }
 
+    newFeature() {
+        return this.get("/new-feature");
+    }
+
     changelog() {
         return this.get("/changelog");
     }

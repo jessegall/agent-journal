@@ -19,6 +19,7 @@ const props = defineProps({
     open: {type: Boolean, default: null},
     closable: {type: Boolean, default: true},
     modal: Boolean,
+    sheet: Boolean,
 });
 const emit = defineEmits(["close", "dismiss", "escape"]);
 const {visible, close, closed} = closing(emit, props);
@@ -58,10 +59,10 @@ onUnmounted(() => watcher.disconnect());
 
 <template>
     <Transition name="dialog" appear @after-leave="closed">
-        <div v-if="visible" :class="['dialog', {large}]" :style="{zIndex: layer}" @click.self="outside">
+        <div v-if="visible" :class="['dialog', {large, sheet}]" :style="{zIndex: layer}" @click.self="outside">
             <section
                 ref="panel"
-                :class="['dialog-panel', {fixed: !fits, small, tall, large, nudged}]"
+                :class="['dialog-panel', {fixed: !fits, small, tall, large, sheet, nudged}]"
                 role="dialog"
                 :aria-modal="modal || undefined"
                 :aria-label="modal ? undefined : title"
@@ -165,6 +166,18 @@ onUnmounted(() => watcher.disconnect());
     .dialog-panel.large {
         border: 0;
         border-radius: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .dialog.sheet {
+        align-items: flex-end;
+        padding: 12px;
+    }
+
+    .dialog-panel.sheet {
+        width: 100%;
+        border-radius: 16px;
     }
 }
 
