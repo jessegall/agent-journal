@@ -7,7 +7,7 @@ import controllers.types as types_module
 import features
 import resources.types as resources_module
 from controllers.base import Controller
-from agents.terminal import prompted
+from agents.terminal import detached, prompted
 from controllers.requests import request
 from controllers.types import Agents, Environments, Messages, Nudges, Todos
 from engine import attic, bus
@@ -18,7 +18,7 @@ from features.agent_sessions.launch import launched, prepared, tell_in
 from features.helper_worktrees.controller import Worktrees
 from features.form_of_address.address import voice_of
 from features.helpers.resource import Helper, held_by_helper
-from features.helpers.reuse import HELPER_KIND, agent_runs, kept, knowing, named_paths, refusal, unlanded, written_tests
+from features.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
 from controllers.marks import action
@@ -121,8 +121,17 @@ class Helpers(Controller):
         held_back = refusal(census, limits, HELPER_KIND, paths)
         if held_back:
             raise Refused(held_back)
+        reusable = self._reusable(provider, paths)
+        if reusable:
+            raise Refused(f"""A helper on {provider} that touched the files this job names is idle or closed; send the job to it, it goes on with what it knows:
+{reusable}""")
         row = self._dispatched(name, job, provider, model, brief, worktree, checkout, numbers_in(todos))
         return f"helper {row.n}, {name}, started on {provider} {model}; you are told when it reports{knowing(census, paths)}"
+
+    def _reusable(self, provider: str, paths: tuple[str, ...]) -> str:
+        found = [(row, helper_kept(self.record, row)) for row in self.rows.standing() if row.provider == provider and paths]
+        return "\n".join(f'- helper {row.n}, {row.name} ({row.title}): journal helper say {row.n} "<the new work>"'
+                         for row, one in found if one.idle and one.overlaps(paths))
 
     def _dispatched(self, name: str, job: str, provider: str, model: str, brief: str = "", worktree: bool = False, checkout: str = "",
                     todos: tuple[int, ...] = ()):
@@ -256,13 +265,33 @@ class Helpers(Controller):
         row = self._unfinished(n, "finished")
         handed = self._handable(numbers_in(todos))
         words = f"{handed_over(handed)}\n{text}" if handed else text
-        if not tell_in(self.record, row.environment, row.provider, words):
-            raise Refused(f"helper {n}, {row.name}, is not running; dispatch it again to go on")
+        running = agent_runs(self.record, row)
+        if running:
+            tell_in(self.record, row.environment, row.provider, words)
+        else:
+            self._revive(row, words)
         home = Record(self.record.root, row.environment)
         Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
         self._handed(row, home, handed)
         Helpers(self.record, actor=SYSTEM).update(n, report="", answering=True, latest=titled(text))
+        Agents(self.record, actor=SYSTEM)._mark_primary(f"{'Continued' if running else 'Reused'} helper {n}", name=row.name, icon="bot", detail=titled(text))
         return f"sent to {row.name}" + (f", with to-do {', '.join(str(t.n) for t in handed)}" if handed else "")
+
+    def _revive(self, row: Helper, words: str) -> None:
+        """Starts a stopped helper's agent again in its session, with the new work as its first turn."""
+        from providers import DRIVERS, PROVIDERS
+        earlier = Sessions(self.record.root).last(row.environment, row.provider)
+        if earlier and not PROVIDERS[row.provider]().conversation_file(earlier):
+            earlier = ""
+        if not earlier:
+            raise Refused(f"helper {row.n}, {row.name}, has no session left to go on in; dispatch the job again")
+        args = DRIVERS[row.provider].within(["--model", row.model], row.environment)
+        detached(self.record.root, self._folder(row), row.environment, row.provider, prompted(self.record.root, row.environment, DRIVERS[row.provider].resumed(args, earlier), words))
+
+    def _folder(self, row: Helper) -> Path:
+        if row.worktree:
+            return Path(Worktrees(self.record, actor=SYSTEM).load(int(row.worktree)).path)
+        return Path(row.checkout) if row.checkout else self.record.root.resolve().parent
 
     @action
     def peers(self) -> list[str]:
@@ -358,6 +387,17 @@ class Helpers(Controller):
             time.sleep(STOP_POLL)
 
     @action(network=True)
+    def retire(self, n: int, why: str = "", confirm: bool = False) -> str:
+        """Retires a helper for good: it names why it cannot be reused, and the first try reads that back."""
+        row = self._unfinished(n, "retired")
+        if not why.strip():
+            raise Refused(f"say why helper {n}, {row.name}, cannot take more work: journal helper retire {n} --why \"<reason>\"")
+        if not confirm:
+            raise Refused(f"Are you sure you can't reuse helper {n}, {row.name}? You said: {why.strip()}. Send it the work with journal helper say {n} \"<the new work>\" "
+                          f"(it starts again with its context), or retire it for good with journal helper retire {n} --why \"{why.strip()}\" --confirm")
+        return self.complete(n, how=f"retired: {why.strip()}")
+
+    @action(network=True)
     def complete(self, n: int, how: str = "", **data):
         row = self._unfinished(n, "finished")
         places = Environments(self.record, actor=SYSTEM)
@@ -368,7 +408,7 @@ class Helpers(Controller):
         give_back(self.record, rows)
         finished = super().complete(n, f"{how or 'finished; its environment is packed away'}{given_back(rows)}", **data)
         Worktrees(self.record, actor=SYSTEM)._released(row.name)
-        Agents(self.record, actor=SYSTEM)._mark_primary(f"Finished helper {n}", name=row.name, icon="bot")
+        Agents(self.record, actor=SYSTEM)._mark_primary(f"Retired helper {n}", name=row.name, icon="bot")
         bus.defer(lambda: self._packed(row, place))
         return finished
 

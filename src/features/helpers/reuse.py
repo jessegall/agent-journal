@@ -109,7 +109,7 @@ def state_of(record, helper) -> WorkState:
 
 
 def helper_kept(record, helper) -> Kept:
-    state, finish = state_of(record, helper), f"journal helper finish {helper.n}"
+    state, finish = state_of(record, helper), f'journal helper retire {helper.n} --why "<why it cannot be reused>"'
     message = f'journal helper say {helper.n} "<the new work>"' if state in LISTENING else finish
     return Kept(HELPER_KIND, f"helper {helper.n}, {helper.name}", helper.title, touched(record, helper), state not in BUSY_STATES, message, finish)
 
@@ -163,7 +163,7 @@ def refusal(census: list[Kept], limits: Settings, kind: str, paths: tuple[str, .
     offers = "\n".join(k.offer() for k in offered)
     return f"""{len(same)} agents of this kind ({kind}) are kept for reuse, the most this project keeps of one kind, and {len(idle)} of them wait for work. Send this work to one that knows it instead of starting another:
 {offers}
-Or free a place: journal helper finish <n> for a helper, journal agent retire <id> for a subagent."""
+Or free a place: journal helper retire <n> --why "<reason>" for a helper, journal agent retire <id> for a subagent."""
 
 
 def knowing(census: list[Kept], paths: tuple[str, ...]) -> str:

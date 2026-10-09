@@ -133,6 +133,8 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     assert "is still running" in refused(lambda: helpers.complete(ghost.n)), "a helper whose agent still runs is stopped before it is finished"
     lost = Helpers(record, actor=SYSTEM).create("Lost job", name="Lost", provider="claude", model="sonnet", environment="no-such-env")
     assert "has no environment left to stop" in refused(lambda: helpers.stop(lost.n)), "a helper whose environment is gone has nothing to stop"
+    assert "say why" in refused(lambda: helpers.retire(lost.n)), "retiring a helper takes a reason"
+    assert "Are you sure you can't reuse" in refused(lambda: helpers.retire(lost.n, why="its job is done")), "the reason is read back with the way to reuse the helper before it is retired"
     monkeypatch.setattr("features.helpers.controller.tell_in", lambda *given: True)
     assert helpers.say(ghost.n, "carry on") == "sent to Ghost", "a follow-up reaches a helper that is running"
     sent = Messages(Record(record.root, "helper-env"), actor=SYSTEM).rows.every()
