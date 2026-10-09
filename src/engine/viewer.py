@@ -178,6 +178,13 @@ def wait_for(root: Path, port: int) -> float:
     return OWN_PORT_WAIT if was.port == port and was.pid and alive(was.pid) else PORT_WAIT
 
 
+def configured(root: Path) -> int:
+    """The viewer port the project has set for itself, or 0 when it has set none or one outside the viewer ports."""
+    from engine.record import Record
+    port = Record(Path(root), runtime.env(Path(root))).viewer.get("port", 0)
+    return int(port) if str(port).isdigit() and int(port) in PORTS else 0
+
+
 def available(root: Path, prefer: int = 0) -> int:
     other = prefer in PORTS and other_journal_on(prefer, root)
     patience = wait_for(root, prefer)
@@ -227,7 +234,7 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
         already = running(root) or elsewhere(root)
         if already:
             return already, None
-        port = available(root, last(root).port)
+        port = available(root, configured(root) or last(root).port)
         command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]
         with log.open("a") as output:
             server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
