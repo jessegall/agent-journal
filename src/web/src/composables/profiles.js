@@ -29,7 +29,7 @@ export const mascotOf = computed(() => {
     const art = standing.value?.data.art;
     if (!mascotOn.value || !art) return null;
     const sheet = (name) => api.publicUrl(`voices/${art.replace(/\.\w+$/, "")}_${name}_sheet.png`);
-    return {blink: sheet("blink"), acts: [1, 2, 3, 4, 5].map((n) => sheet(`idle_${n}`)), single: sheet("idle"), place: placeOf(art)};
+    return {blink: sheet("blink"), acts: [1, 2, 3, 4, 5].map((n) => sheet(`idle_${n}`)), place: placeOf(art)};
 });
 
 export const calls =(row) => callings.value[row.data.calling] || row.data.address || "";

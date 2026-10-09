@@ -1,15 +1,14 @@
-// Where each voice's mascot stands on the chat box, beside the art it is drawn from.
-// inset: pixels the mascot sits left of the box's top-right corner; lift: pixels it sits above the border;
-// walk: pixels it travels left along the border and back while its animation plays (0 stays in place).
+// Where each voice's mascot stands on the chat box, read off the first frame of its art (256 px cells):
+// edge: the pixel its right side ends at; foot: the pixel its feet stand on.
 export const PLACES = {
-    squire: {inset: 0, lift: 0, walk: 0},
-    butler: {inset: 40, lift: 0, walk: 180},
-    homie: {inset: 0, lift: 0, walk: 0},
-    colleague: {inset: 0, lift: 0, walk: 0},
-    coach: {inset: 70, lift: 0, walk: 0},
+    butler: {edge: 228, foot: 242},
+    coach: {edge: 214, foot: 246},
+    colleague: {edge: 211, foot: 244},
+    homie: {edge: 235, foot: 239},
+    squire: {edge: 226, foot: 221},
 };
 
-export const STILL = {inset: 0, lift: 0, walk: 0};
+export const STILL = {edge: 230, foot: 244};
 
 export const placeOf = (art) => PLACES[art.replace(/\.\w+$/, "")] ?? STILL;
 
