@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.74 — A working agent is no longer marked stopped after an update
+- The silence of an update's pause no longer counts against the agent: the engine measures silence from its own start and from the resume, so an agent working right after an upgrade is not marked stopped and its Home status no longer says Idle.
+- A resumed subagent is found by the id its launch answered with, so it stays in the agent grid; a flag sent as the word "false" is read as false for every provider.
+- A message another Claude Code session sends is read from the queue where it arrives, with the sender's name, and shows as an agent's card.
+- No feature names a provider: the default provider is one fact in the provider seam, and the .claude/settings.json check holds back only a Claude helper.
+- A search counts the conversations its time limit left to load behind its answer and says so.
+
 ## 2.267.73 — The family view reads transcripts again
 - The family tree and the conversation query hand a transcript to its provider as a path, so opening an environment's family no longer fails after 2.267.72.
 - The journal's law L4 says a helper is reused by its whole session: one whose agent ended is resumed in the session it ran, never started again under the same name.
