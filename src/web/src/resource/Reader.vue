@@ -20,6 +20,7 @@ import Comments from "./Comments.vue";
 import UpdateReport from "./UpdateReport.vue";
 import {isUpdate} from "../domain/updates.js";
 import {scopeIn} from "../composables/scope.js";
+import {useKept} from "../composables/kept.js";
 import {usePoll} from "../composables/poll.js";
 import {useWindowEvent} from "../composables/windowEvent.js";
 
@@ -36,7 +37,8 @@ const ELSEWHERE_EVERY = 5000;
 const scope = props.env && props.env !== route.value.env ? scopeIn(props.env) : null;
 if (scope) provide("scope", scope);
 const rowsHere = scope ? scope.rows : rows;
-const resource = computed(() => (props.type ? rowsHere(props.type).find((r) => r.n === props.n) : null) || null);
+const stored = computed(() => (props.type ? rowsHere(props.type).find((r) => r.n === props.n) : null) || null);
+const resource = useKept(stored, () => `${props.type}:${props.n}`);
 
 async function readElsewhere() {
     await scope.holding(props.type, [props.n]);
