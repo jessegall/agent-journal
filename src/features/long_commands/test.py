@@ -44,6 +44,18 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
     tick(record, "ended-1")
     assert (moved, [n for n in nudges(record) if "1099816" in n]) == (["claude-1"], []), "a session that has ended is never told of, or moved for, the command it left running"
 
+    from dataclasses import replace
+    from providers.base import Provider
+    from providers.command_effects import shell as hooked
+    from providers.payload import Hook
+    from engine.command_runs import waiting_run
+    call = lambda event, name, text, at: replace(Hook.read({"hook_event_name": event, "session_id": "x", "tool_name": "Bash", "tool_use_id": name, "tool_input": {"command": text}}, Provider.tool_kinds), at=at)
+    parallel, now = SimpleNamespace(running={}, commands=[]), time.time()
+    for event, name, text, at in (("PreToolUse", "t1", "journal message read 5", now - 150), ("PreToolUse", "t2", "npm run slow", now - 149), ("PostToolUse", "t1", "journal message read 5", now - 148)):
+        changed = hooked(parallel, call(event, name, text, at))
+        parallel = SimpleNamespace(running=changed["running"], commands=changed["commands"])
+    assert waiting_run(parallel).command == "npm run slow", "the call that ended is the one marked ended, though a newer call started after it, so a long wait is measured from the command still running"
+
 
 def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):
     from types import SimpleNamespace

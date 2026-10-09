@@ -306,6 +306,13 @@ def test_a_provider_that_knows_nothing_extra_answers_neutrally(tmp_path):
         def present(self, project): return True
         def wiring(self, *a, **k): return None
 
+    import json
+    sent = tmp_path / "rollout-sent.jsonl"
+    sent.write_text(json.dumps({"type": "response_item", "timestamp": "2026-10-10T10:00:00Z", "payload": {"type": "function_call", "name": "exec", "call_id": "c1",
+                                                                                              "arguments": 'await tools.send_input({id: "agent-7", message: "go on with the next step"})'}}) + "\n")
+    follow = Codex().turns(sent)[0]
+    assert (follow.kind, follow.peer.address, follow.text) == ("peer", "agent-7", "go on with the next step"), \
+        "work a Codex agent sends on to a subagent is read as a message sent, as a Claude agent's SendMessage is"
     bare, path = Bare(), tmp_path / "none.jsonl"
     assert (bare.shell_wrapper(Path("x.sh")), bare.unwrapped_command("ls -la"), bare.shell_runs(path), bare.typed_runs(path), bare.work_links(path)) == ({}, "ls -la", [], [], []), \
         "a provider that wraps no shell and reads no commands, runs or links answers with nothing"

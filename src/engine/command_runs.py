@@ -52,9 +52,10 @@ class CommandRun(Loaded):
     result: Outcome | None = None
     before: "CommandRun | None" = None
     background: bool = False
+    id: str = ""
 
     def to_json(self) -> dict:
-        kept = {"command": self.command, "tool": self.tool, "at": self.at, "done": self.done, "effect": self.effect, "subject": self.subject,
+        kept = {"id": self.id, "command": self.command, "tool": self.tool, "at": self.at, "done": self.done, "effect": self.effect, "subject": self.subject,
                 "files": list(self.files), "made": list(self.made), "changed": self.changed.to_json() if self.changed else None,
                 "result": self.result.to_json() if self.result else None, "before": self.before.to_json() if self.before else None, "background": self.background}
         return {key: value for key, value in kept.items() if value}
@@ -93,3 +94,8 @@ def counted_runs(row, ran: float, delta: Delta, touched: list, made: list) -> di
     edited = edited.counted(delta, touched, made)
     runs = [replace(one, files=edited.files, made=edited.made, changed=edited.changed) if one.at == ran and one.could_write else one for one in command_runs(row)]
     return {AgentRow.running: (replace(running, before=edited) if late else edited).to_json(), AgentRow.commands: [one.to_json() for one in runs]}
+
+
+def waiting_run(row) -> CommandRun | None:
+    """The shell command the agent has waited on longest and that has not ended: the one a long wait is measured from."""
+    return next((one for one in command_runs(row) if one.tool == "Bash" and not one.done), None)

@@ -6,7 +6,7 @@ import shutil
 import tomllib
 from pathlib import Path
 
-from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, Turn
+from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, TOOL, PeerNote, Turn
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow, bare
 from providers.base import REFUSED, BackgroundTasks, Provider, SubagentRow, running_and_latest
 from providers.jsonl import head_lines, parsed, rows, tail_lines
@@ -26,6 +26,7 @@ META_BYTES = 4_000_000
 READ_ONLY_SANDBOX = 'sandbox_mode = "read-only"'
 WINDOW_LABELS = {300: "5h", 1440: "1d", 10080: "7d"}
 SPAWN_IN_SCRIPT = re.compile(r"tools\.\w*spawn_agent\(")
+SEND_IN_SCRIPT = re.compile(r"tools\.\w*send_input\(")
 SCRIPT_FIELD = r"\b{}:\s*\"([^\"]*)\""
 PARENT_THREADS: dict[str, str] = {}
 SPAWNED = re.compile(r'"agent_id"\s*:\s*"([^"]+)"(?:\s*,\s*"nickname"\s*:\s*"([^"]*)")?')
@@ -59,6 +60,13 @@ class CodexShell(BashCall):
 def script_field(text: str, key: str, index: int) -> str:
     values = re.findall(SCRIPT_FIELD.format(key), text)
     return values[index] if index < len(values) else ""
+
+
+@dataclass(frozen=True)
+class FollowUp(Loaded):
+    id: str = ""
+    target: str = ""
+    message: str = ""
 
 
 @dataclass(frozen=True)
@@ -410,6 +418,9 @@ class Codex(Provider):
             turn_kind = message_kind(payload)
             return Turn(line, "agent" if payload.role == "assistant" else "user", payload.text, turn_kind, row.at)
         if payload.type in ("function_call", "custom_tool_call"):
+            sent = self.follow_up(payload)
+            if sent:
+                return Turn(line, "agent", sent[1], PEER, row.at, peer=PeerNote(SENT, sent[0]))
             return Turn(line, "agent", kind=AGENT, at=row.at, tools=[TOOLS.get(payload.name, payload.name)] if payload.name else [])
         if payload.type in ("function_call_output", "custom_tool_call_output"):
             return Turn(line, TOOL, payload.output_text, TOOL, row.at)
@@ -423,6 +434,19 @@ class Codex(Provider):
             if row.type == "response_item" and payload.type == "message" and payload.role == "assistant" and payload.text.strip():
                 return payload.text
         return ""
+
+    @staticmethod
+    def follow_up(payload) -> tuple[str, str] | None:
+        """Who the agent sent new work to and what it said, when the call continues a subagent."""
+        text = payload.argument_text
+        if payload.name and payload.name.endswith("send_input"):
+            given = FollowUp.from_json(payload.arguments if isinstance(payload.arguments, dict) else {})
+            target, message = given.id or given.target, given.message
+        elif SEND_IN_SCRIPT.search(text):
+            target, message = script_field(text, "id", 0), script_field(text, "message", 0)
+        else:
+            return None
+        return (target, message) if target and message else None
 
     def context(self, hook: Hook) -> float | None:
         return next((round(100 * p.used_tokens / p.window, 1) for p in self.token_counts(hook.transcript) if p.used_tokens and p.window), None)
