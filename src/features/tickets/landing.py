@@ -44,6 +44,11 @@ class TicketLanding:
         return {name: tip(place, self._into_at(ticket, name, place)) if not base or not present(place, f"refs/heads/{branch}") else base
                 for name, place, base in self._repositories(ticket)}
 
+    def _landed_at(self, ticket) -> dict:
+        """Where its branch stands in each repository, so work is counted from here on."""
+        ref = f"refs/heads/{self._branch(ticket)}"
+        return {name: tip(place, ref) if present(place, ref) else base for name, place, base in self._repositories(ticket)}
+
     def _based(self, ticket, tips: dict[str, str]):
         bases = Bases.of(tips)
         return self.update(ticket.n, base=bases.root, bases=bases.nested)
