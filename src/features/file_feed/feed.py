@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 from enum import StrEnum
 
 from engine.events.engine import FileEdited
-from engine.files import KIND, blob_texts
+from engine.files import KIND, blob_bytes, blob_texts, is_image
 from features.file_feed.diff import DIFFS, DiffRow, diffed
 
 KEPT = 500
@@ -30,6 +30,7 @@ class Card:
     first_line: int
     last_line: int
     rows: tuple[DiffRow, ...]
+    image: bool = False
 
 
 @dataclass(frozen=True)
@@ -51,6 +52,12 @@ class FileText:
     text: str
 
 
+@dataclass(frozen=True)
+class FileImage:
+    path: str
+    data: bytes
+
+
 class Side(StrEnum):
     BEFORE = "before"
     AFTER = "after"
@@ -63,7 +70,8 @@ class NoSuchEdit(LookupError):
 def noted(record, edit: FileEdited) -> None:
     with record.state(NOTES).changing() as held:
         held["notes"] = [*held.get("notes", []), asdict(edit)][-KEPT:]
-    diffed(record.root.parent, [(edit.before, edit.after)])
+    if not is_image(edit.path):
+        diffed(record.root.parent, [(edit.before, edit.after)])
 
 
 def notes(record) -> list[FileEdited]:
@@ -101,9 +109,19 @@ def edited_file(record, agent: int, card: str, side: Side) -> FileText:
     return FileText(note.path, texts[sha])
 
 
+def edited_image(record, agent: int, card: str) -> FileImage:
+    note = next((note for note in agent_notes(record, agent) if card_id(note) == card and is_image(note.path)), None)
+    if note is None:
+        raise NoSuchEdit(f"no picture {card}")
+    data = blob_bytes(record.root.parent, note.after)
+    if data is None:
+        raise NoSuchEdit(f"the picture of {card} is no longer kept")
+    return FileImage(note.path, data)
+
+
 def cards(record, shown: list[FileEdited]) -> tuple[Card, ...]:
-    diffed(record.root.parent, [(note.before, note.after) for note in shown])
-    return tuple(_card(note) for note in shown if (note.before, note.after) in DIFFS)
+    diffed(record.root.parent, [(note.before, note.after) for note in shown if not is_image(note.path)])
+    return tuple(_card(note) for note in shown if is_image(note.path) or (note.before, note.after) in DIFFS)
 
 
 def card_id(note: FileEdited) -> str:
@@ -111,6 +129,8 @@ def card_id(note: FileEdited) -> str:
 
 
 def _card(note: FileEdited) -> Card:
+    if is_image(note.path):
+        return Card(card_id(note), note.path, KINDS[note.kind], note.at, 0, 0, 0, 0, (), image=True)
     diff, kind = DIFFS[(note.before, note.after)], KINDS[note.kind]
     rows = () if kind == EditKind.DELETED else diff.rows
     return Card(card_id(note), note.path, kind, note.at, diff.added, diff.removed, diff.first_line, diff.last_line, rows)

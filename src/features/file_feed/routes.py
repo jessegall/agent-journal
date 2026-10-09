@@ -1,3 +1,4 @@
+import mimetypes
 from dataclasses import dataclass
 from controllers.invoke import invoked
 from controllers.types import Agents
@@ -24,6 +25,11 @@ class EditedFileQuery(Loaded):
     side: str = Side.AFTER
 
 
+@dataclass(frozen=True)
+class EditedImageQuery(Loaded):
+    id: str
+
+
 @handles("GET", "/api/{env}/changes")
 def get_changes(req: Request) -> Reply:
     return Reply(200, invoked(req.as_user(Agents), "changes"))
@@ -45,3 +51,10 @@ def get_older_edits(req: Request) -> Reply:
 def get_edited_file(req: Request) -> Reply:
     asked = req.query_as(EditedFileQuery)
     return Reply(200, invoked(req.as_user(Agents), "edited_file", (int(req.params["n"]),), {"id": asked.id, "side": asked.side}))
+
+
+@handles("GET", "/api/{env}/agent/{n}/edits/image")
+def get_edited_image(req: Request) -> Reply:
+    asked = req.query_as(EditedImageQuery)
+    shown = invoked(req.as_user(Agents), "edited_image", (int(req.params["n"]),), {"id": asked.id})
+    return Reply(200, shown.data, mimetypes.guess_type(shown.path)[0] or "application/octet-stream")

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine import bus
-from engine.proc import git, git_objects
+from engine.proc import git, git_blob, git_objects
 from engine.project_files import readable_path
 from resources.base import SYSTEM, names
 
@@ -80,6 +80,17 @@ RESCAN_SECONDS = 300
 REPOSITORY_DEPTH = 2
 SKIPPED = {"node_modules", "vendor", "dist", "build"}
 LINKED_REPOSITORY = "160000"
+IMAGE_SUFFIXES = (".png", ".gif", ".jpg", ".jpeg", ".webp", ".svg", ".ico", ".bmp")
+
+
+def is_image(path: str) -> bool:
+    return path.lower().endswith(IMAGE_SUFFIXES)
+
+
+def ignored_images(project: Path) -> list[str]:
+    """The pictures git ignores, such as a project that ignores *.png: an agent still makes them, so its feed shows them."""
+    wanted = [*(f"*{suffix}" for suffix in IMAGE_SUFFIXES), *(f":(exclude,glob)**/{name}/**" for name in SKIPPED)]
+    return [path for path in git(["ls-files", "-o", "-i", "--exclude-standard", "-z", "--", *wanted], project).split("\0") if path]
 
 
 def project_repositories(project: Path) -> tuple[Path, ...]:
@@ -152,13 +163,17 @@ def blobs(record, project: Path, homes: tuple[str, ...]) -> dict:
 
 def blobs_in(project: Path) -> dict:
     tree = dict(tracked_in(project))
-    dirty = list(dict.fromkeys(p for p in git(["ls-files", "-m", "-o", "-d", "--exclude-standard", "-z"], project).split("\0") if p))
+    dirty = list(dict.fromkeys(p for p in [*git(["ls-files", "-m", "-o", "-d", "--exclude-standard", "-z"], project).split("\0"), *ignored_images(project)] if p))
     present = [p for p in dirty if readable_path(project, project / p) and (project / p).is_file()]
     UNTRACKED[project] = tuple(p for p in present if p not in tree)
     for path in set(dirty) - set(present):
         tree.pop(path, None)
     tree.update(hashed(project, present))
     return tree
+
+
+def blob_bytes(project: Path, sha: str) -> bytes | None:
+    return next((found for repository in project_repositories(project) if (found := git_blob(repository, sha)) is not None), None)
 
 
 def blob_texts(project: Path, shas: list[str]) -> dict[str, str]:
@@ -257,8 +272,8 @@ def announce(record, agent: int, homes: tuple[str, ...], folder: Path) -> None:
     last = {path: sha for path, sha in last.items() if readable_path(project, project / path)}
     at = time.time()
     changed = {path: (last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB)) for path in sorted(set(last) | set(now)) if last.get(path) != now.get(path)}
-    counts = line_counts(project, list(changed.values()))
+    counts = line_counts(project, [pair for path, pair in changed.items() if not is_image(path)])
     for path, (before, after) in changed.items():
-        count = counts[(before, after)]
+        count = counts.get((before, after), LineCount(0, 0))
         bus.announce(record, "file", agent, EDITED, SYSTEM, {"at": at, "path": path, "kind": change_kind(path, last, now), "before": before,
                                                             "after": after, "added": count.added, "removed": count.removed}, at=at)

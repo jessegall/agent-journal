@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from features.file_feed.feed import NoSuchEdit, PAGE, Side, edited_file, edits_before, edits_since, notes
+from features.file_feed.feed import NoSuchEdit, PAGE, Side, edited_file, edited_image, edits_before, edits_since, notes
 from features.parts import Command, Context
 from resources.base import Missing, Refused
 
@@ -34,5 +34,15 @@ class ShowEditedFile(Command):
             raise Refused(f"side is {Side.BEFORE} or {Side.AFTER}")
         try:
             return asdict(edited_file(agents.record, n, id, Side(side)))
+        except NoSuchEdit as error:
+            raise Missing(str(error)) from error
+
+
+class ShowEditedImage(Command):
+    name = "edited_image"
+
+    def run(self, context: Context, agents, n: int, id: str):
+        try:
+            return edited_image(agents.record, n, id)
         except NoSuchEdit as error:
             raise Missing(str(error)) from error

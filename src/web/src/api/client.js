@@ -880,6 +880,10 @@ export class ApiClient {
         return this.get(this.here(`/agent/${agent}/edits/file${query({id, side})}`));
     }
 
+    editedImageUrl(agent, id) {
+        return this.url(this.here(`/agent/${agent}/edits/image${query({id})}`));
+    }
+
     terminal(agent, level, after = 0) {
         return this.get(this.here(`/agent/${agent}/terminal${query({level, after: after || undefined})}`));
     }
