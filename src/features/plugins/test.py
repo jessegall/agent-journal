@@ -98,6 +98,22 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
     assert writing(record) == CLAUDE.blocking("guardian: src/Generated is generated; edit the stub instead"), \
         "the plugin's reason is given to the agent, under its name"
     assert reading(record) == {}, "a read is not asked about unless the plugin says it reads too"
+    from controllers.types import Nudges
+    from features.plugins.declared import declared
+    from features.plugins.manifest import hooks as declared_hooks
+    from features.plugins.preview import preview_rows
+    quiet = alone("quiet")
+    watcher = installed(quiet, "watcher", "read x; echo '{\"refuse\": \"too slow a line\"}'\n", hooks={"PreToolUse": "async"})
+    assert writing(quiet) == {}, "a plugin that declared its hook async never holds the tool call, whatever it answers"
+    until = time.time() + 10
+    while time.time() < until and not any("too slow a line" in nudge.brief for nudge in Nudges(quiet, actor=SYSTEM).all()):
+        time.sleep(0.05)
+    assert any("too slow a line" in nudge.brief for nudge in Nudges(quiet, actor=SYSTEM).all()), "and its answer reaches the agent later, as a message"
+    assert "sync (the tool call waits" in refused(lambda: declared_hooks({"PreToolUse": "later"})) and "not a hook event" in refused(lambda: declared_hooks({"Nowhere": "sync"})), \
+        "a manifest names real hook events and says sync or async for each"
+    rows = lambda row: {(line.kind, line.label, line.command) for line in preview_rows(declared(row))}
+    assert (("hook", "PreToolUse", "The agent waits for it") in rows(Plugins(record, actor=SYSTEM).rows.by_title("guardian")),
+            ("hook", "PreToolUse", "Runs beside the agent") in rows(watcher)) == (True, True), "the install dialog says whether the agent waits for each hook"
     guardian = Plugins(record, actor=SYSTEM).rows.by_title("guardian")
     assert "src/Generated is generated" in log(record.root, "guardian").read_text(), "every answer the plugin gives is written to its log"
     with pytest.raises(Refused):

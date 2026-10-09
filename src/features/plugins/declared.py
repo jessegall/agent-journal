@@ -173,6 +173,10 @@ class Fits(Loaded):
         return [*sorted(languages.intersection(self.languages)), *sorted(name for name in files if any(fnmatch(name, pattern) for pattern in self.files))]
 
 
+SYNC, ASYNC = "sync", "async"
+GUARDED = "PreToolUse"
+
+
 @dataclass(frozen=True)
 class Manifest(Loaded):
     aliases = {"handlers": ("on",)}
@@ -187,6 +191,7 @@ class Manifest(Loaded):
     services: tuple[Service, ...] = ()
     handlers: tuple[Handler, ...] = ()
     refuse: object = None
+    hooks: dict = field(default_factory=dict)
     reads: bool = False
     refuse_seconds: float = 0.0
     refuse_socket: str = ""
@@ -209,6 +214,11 @@ class Manifest(Loaded):
     @property
     def heading(self) -> str:
         return self.title if self.title else self.name
+
+    def waits(self, event: str) -> bool:
+        """Whether the agent's tool call waits for the plugin's answer to this hook: only a hook declared sync, or the refusal a plugin gives before a tool call unless it says async."""
+        how = self.hooks.get(event)
+        return how == SYNC if how else event == GUARDED and bool(self.refuse)
 
     @property
     def refuse_budget(self) -> float:

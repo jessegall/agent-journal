@@ -1,5 +1,6 @@
 import json
 import re
+import threading
 import time
 from dataclasses import asdict, dataclass
 from typing import ClassVar
@@ -11,6 +12,7 @@ from engine.services import DOWN, want
 from features.parts import ActionInterceptor, Canceler, Context, Handler, TextFormatter, ToolInterceptor
 from engine.gates import Runs
 from engine.wording import fill
+from features.plugins.answer import apply
 from features.plugins.lifecycle import changed_on_disk, clear, reread
 from features.plugins.declared import called, declared, named
 from features.plugins.environment import placed
@@ -74,19 +76,35 @@ class AskPluginsToRefuse(ToolInterceptor):
                 continue
             if not writes and not manifest.reads:
                 continue
-            name = called(row)
-            seconds = min(manifest.refuse_budget, left)
+            payload = refusal(record, hook, called(row), folder(record.root, called(row)), writes)
+            if not manifest.waits(hook.event):
+                self._beside(context, row, payload)
+                continue
             started = time.monotonic()
-            payload = refusal(record, hook, name, folder(record.root, name), writes)
-            served = manifest.refuse_socket and asked(plugin_socket(record.root, name), payload, seconds)
-            ok, reply = served if served and served[0] else self._spawned(record, row, payload, seconds)
+            refused = self._answer(record, row, hook.tool.name, payload, min(manifest.refuse_budget, left))
             left -= time.monotonic() - started
-            if ok and reply:
-                logged(record.root, name, f"refuse? {hook.tool.name} {json.dumps(reply, ensure_ascii=False)}")
-            refused = PluginReply.from_json(reply).refuse if ok else ""
             if refused:
-                return f"{name}: {refused}"
+                return f"{called(row)}: {refused}"
         return ""
+
+    def _beside(self, context: Context, row, payload: dict) -> None:
+        """A plugin that declared its hook async never holds the tool call: it is asked on a thread of its own, and what it answers reaches the agent as a message, never as a refusal."""
+        record, journal, session, tool = context.record, context.feature.journal, context.hook.session, context.hook.tool.name
+        name, seconds = called(row), declared(row).refuse_budget
+
+        def ask() -> None:
+            refused = self._answer(record, row, tool, payload, seconds)
+            if refused:
+                apply(record, journal, name, session, {"say": refused})
+        threading.Thread(target=ask, name=f"plugin-{name}", daemon=True).start()
+
+    def _answer(self, record, row, tool: str, payload: dict, seconds: float) -> str:
+        name = called(row)
+        served = declared(row).refuse_socket and asked(plugin_socket(record.root, name), payload, seconds)
+        ok, reply = served if served and served[0] else self._spawned(record, row, payload, seconds)
+        if ok and reply:
+            logged(record.root, name, f"refuse? {tool} {json.dumps(reply, ensure_ascii=False)}")
+        return PluginReply.from_json(reply).refuse if ok else ""
 
     @staticmethod
     def _spawned(record, row, payload: dict, seconds: float) -> tuple:
