@@ -20,6 +20,7 @@ export const STATE_WORDS = {
 
 export const COUNTS = [
     {key: "prompts", page: "", icon: "lock", one: "permission waits on you", many: "permissions wait on you", hot: true},
+    {key: "routed", page: "", icon: "lock", one: "permission waits on the orchestrator", many: "permissions wait on the orchestrator", hot: false},
     {key: "questions", page: "question", icon: "help", one: "question waiting", many: "questions waiting", hot: true},
     {key: "messages", page: "message", icon: "mail", one: "unread message", many: "unread messages", hot: true},
     {key: "suggestions", page: "suggestion", icon: "bulb", one: "suggestion to review", many: "suggestions to review", hot: true},

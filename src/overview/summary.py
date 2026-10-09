@@ -68,7 +68,8 @@ def environment(record: Record) -> dict:
     work = lambda w: {"n": w.n, "title": w.title, "todo": w.todo, "parked": bool(w.parked), "awaiting": w.awaiting,
                       "completed": w.completed, "created": w.created} if w else None
     questions = Questions(record, actor=SYSTEM).rows.standing()
-    prompts = [n for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("action") == "permission"]
+    permissions = [n for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("action") == "permission"]
+    prompts = [n for n in permissions if not n.data.get("to")]
     attention = attention_of(questions, prompts)
     return {
         "name": record.env,
@@ -85,6 +86,7 @@ def environment(record: Record) -> dict:
             "questions": len(questions),
             "todos": len([n for n, done in todos.items() if not done]),
             "prompts": len(prompts),
+            "routed": len(permissions) - len(prompts),
             **{name: count(record) for name, count in SUMMARY_COUNTS.keyed().items()},
         },
         **{name: part(record) for name, part in SUMMARY_PARTS.keyed().items()},
