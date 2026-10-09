@@ -193,7 +193,7 @@ def test_a_failing_check_reaches_a_waiting_agent_and_is_told_again_only_when_it_
     claude, folder = PROVIDERS["claude"](), record.root.parent
     suite = f"cd {folder} && .venv/bin/python -m pytest -q src/features/plans/test.py > suite.txt 2>&1"
     (folder / "suite.txt").write_text("4 passed, 2 failed in 1.0s\n")
-    transcript = folder / "s.jsonl"
+    transcript = folder / "claude-1.jsonl"
     asked = {"type": "assistant", "timestamp": "2026-09-23T00:01:00Z", "message": {"content": [{"type": "tool_use", "id": "tt", "name": "Bash", "input": {"command": suite, "run_in_background": True}}]}}
     started = {"type": "user", "timestamp": "2026-09-23T00:01:01Z", "message": {"content": [{"type": "tool_result", "tool_use_id": "tt", "content": "Command running in background with ID: tb1"}]}}
     transcript.write_text("".join(json.dumps(row) + "\n" for row in (asked, started)))
