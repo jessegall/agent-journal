@@ -112,6 +112,20 @@ def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_
     answered, = [n for n in Nudges(record, actor=SYSTEM).all() if n.title == f"question {asked.n} is answered - act on the answer"]
     assert ("this one" in answered.brief, "work.created" in answered.until) == (True, True), \
         "the agent is told to act on the answer, and told again until it starts, logs or ends work"
+    from types import SimpleNamespace
+    from features.ask_questions import handlers
+    pressed = []
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(handlers, "driver_in", lambda *given: SimpleNamespace(answer_prompt=lambda option, text, options: pressed.append((option, text, options))))
+        second = Questions(record, actor=AGENT).create("which now?", options=[{"title": "A"}, {"title": "B"}], pick=1)
+        Questions(record, actor=USER).complete(second.n, how="B")
+        third = Questions(record, actor=AGENT).create("what name?", free="name")
+        Questions(record, actor=USER).complete(third.n, how="Rhea")
+    assert pressed == [(2, "B", 2), (0, "Rhea", 0)], \
+        "an answer is pressed into the question the agent stands at on its screen: the option's number, or the words in the free choice"
+    from providers import DRIVERS
+    assert (b"Entertoselect" in DRIVERS["claude"].ASKING, hasattr(DRIVERS["claude"], "answer_prompt")), \
+        "Claude's own question prompt is seen on its screen, and every driver can answer one"
 
 
 def test_a_question_keeps_who_answered_and_the_agent_must_say_why():
