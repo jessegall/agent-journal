@@ -44,7 +44,9 @@ def answers(kind: str, message) -> bool:
 
 
 def read_and_open(journal) -> list:
-    return [m for m in journal.get(Messages).rows.standing() if AGENT in m.seen and theirs(m)]
+    """The open messages the agent has read that are not its own: only the rows its summary says it has seen are read from disk, not every open message."""
+    messages = journal.get(Messages)
+    return [m for m in (messages.load(row["n"]) for row in messages.rows.standing_summaries() if AGENT in row["seen"]) if theirs(m)]
 
 
 def unanswered(journal) -> list:
