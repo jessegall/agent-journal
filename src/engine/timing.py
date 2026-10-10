@@ -103,6 +103,20 @@ class Sampler:
                               for ident, frame in pictured.items()})
 
 
+ARRIVED = threading.local()
+
+
+def arrived(waited: float) -> None:
+    """How long, in milliseconds, the request on this thread waited between being accepted and its handler starting."""
+    ARRIVED.waited = waited
+
+
+def waited_to_start() -> float:
+    waited = getattr(ARRIVED, "waited", 0.0)
+    ARRIVED.waited = 0.0
+    return waited
+
+
 @dataclass(frozen=True)
 class Lap:
     took: float

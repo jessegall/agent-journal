@@ -28,6 +28,7 @@ from features.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Re
 from controllers.base import SENDER, Sender  # noqa: E402
 from resources.base import OWNER_ID  # noqa: E402
 from engine import bus, runtime, waits  # noqa: E402
+from engine.timing import arrived  # noqa: E402
 from engine.after_answer import AfterAnswer  # noqa: E402
 from engine.quiet_collector import QuietCollector  # noqa: E402
 from supervisor import QUICK  # noqa: E402
@@ -81,8 +82,14 @@ class Handler(BaseHTTPRequestHandler):
             return False
         return True
 
+    def setup(self) -> None:
+        super().setup()
+        self.accepted = self.server.accepted.pop(id(self.request), None)
+
     def handle_one(self, method: str) -> None:
         pulse(self.root, self.server.server_port)
+        if self.accepted is not None:
+            arrived((time.perf_counter() - self.accepted) * 1000)
         if not self.allowed_request():
             return
         url = urlparse(self.path)
@@ -118,12 +125,14 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", reply.kind)
         if reply.chunks is None:
             data = reply.bytes()
-            self.send_header("Content-Length", str(len(data)))
-            self.end_headers()
-            self.wfile.write(data)
-            self.wfile.flush()
-            if reply.after:
-                self.server.after_answer.add(reply.after, reply.after_lane)
+            try:
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+                self.wfile.flush()
+            finally:
+                if reply.after:
+                    self.server.after_answer.add(reply.after, reply.after_lane)
             return
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
@@ -194,8 +203,13 @@ def environmental(path: str) -> bool:
 class JournalServer(ThreadingHTTPServer):
     request_queue_size = REQUEST_BACKLOG
 
+    def process_request(self, request, client_address) -> None:
+        self.accepted[id(request)] = time.perf_counter()
+        super().process_request(request, client_address)
+
     def __init__(self, address, handler):
         super().__init__(address, handler)
+        self.accepted: dict[int, float] = {}
         self.warm = threading.Event()
         self.warm.set()
         self.after_answer = AfterAnswer.started()
