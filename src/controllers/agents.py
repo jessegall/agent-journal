@@ -162,9 +162,12 @@ class Agents(Controller):
         return row
 
     def _flush(self, n: int) -> None:
+        """Writes the held row; one whose environment was removed is dropped, since it has no record to be written into."""
         if not PENDING.holds(self.record, n):
             return
         pending = PENDING.pop(self.record, n)
+        if not self.record.home.is_dir():
+            return
         with self.record.locked(self.resource.scope):
             r = super().load(n)
             r.data.update(pending.delta)
