@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.4 — One live session per environment, and the resume line said once
+
+- A session that starts on an environment where another session is already live waits in an environment of its own, and the user is asked whether to take the busy one over. Taking over unbinds the session that was there, so an environment has one live session and a message, a nudge and a resume have one place to go.
+- The line 'The journal has updated and resumed you now' is typed once. A resume asked for an agent that is not paused is taken and not said, and a pause left on a row for longer than any update takes is treated as the leftover it is, so the agents are no longer asked to resume every second.
+
 ## 2.269.3 — A session start no longer scans every attached file
 
 - A session start asks for the files still without tags in one line when there are many, instead of writing a row for each, and looks for them again only when the rows of a type changed. The work a hook leaves behind after it has answered is a fifth of what it was.
