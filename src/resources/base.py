@@ -1,6 +1,6 @@
 import json
 import re
-from dataclasses import dataclass, field, asdict, replace
+from dataclasses import dataclass, field, asdict, fields, is_dataclass, replace
 from enum import Enum
 from types import SimpleNamespace
 from typing import Callable, ClassVar
@@ -179,6 +179,13 @@ def listable_weight(hidden_listed: bool) -> Callable[[dict], tuple[int, int]]:
     return weigh
 
 
+def plain(value):
+    """What json writes for a value it has no word for: a dataclass becomes its fields, as it did when every row was copied whole before it was written."""
+    if is_dataclass(value) and not isinstance(value, type):
+        return asdict(value)
+    raise TypeError(f"{type(value).__name__} is not JSON serializable")
+
+
 @dataclass
 class Resource:
     details: ClassVar[ResourceDetails] = ResourceDetails()
@@ -295,9 +302,9 @@ class Resource:
         return replace(self, sections=[dict(s) for s in self.sections], refs=list(self.refs), seen=list(self.seen), data=copied(self.data))
 
     def dump(self) -> str:
-        head = {k: v for k, v in asdict(self).items() if k not in ("sections", "brief")}
+        head = {f.name: getattr(self, f.name) for f in fields(self) if f.name not in ("sections", "brief")}
         head["type"] = self.type
-        out = ["---", json.dumps(head, indent=2), "---", self.brief.strip(), ""]
+        out = ["---", json.dumps(head, indent=2, default=plain), "---", self.brief.strip(), ""]
         for s in self.sections:
             out += [f"## {s[SECTION.title]}", s[SECTION.body].strip(), ""]
         return "\n".join(out)

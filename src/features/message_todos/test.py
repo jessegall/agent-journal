@@ -193,6 +193,16 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
         assert faces.react(liked.n, "👍") is None, "a face given again after a while takes the reaction back"
     finally:
         discussion.TWICE_WITHIN = window
+    from dataclasses import dataclass
+
+    @dataclass
+    class Probe:
+        a: int
+    kept = Messages(record, actor=USER).create("probe words", brief="a body that stays out of the head")
+    kept.data["probe"] = Probe(1)
+    written = kept.dump()
+    assert ('"a": 1' in written, "a body that stays out of the head" in written.split("---\n", 2)[2], '"brief"' in written) == (True, True, False), \
+        "a row is written from its own fields, a dataclass inside it as its fields, its brief and sections after the head and not in it"
     import controllers.base as base
     said = Messages(record, actor=USER)
     first, second = said.create("same words", brief="again"), said.create("other words", brief="other")
