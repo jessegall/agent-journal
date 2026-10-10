@@ -76,6 +76,11 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
         ([second.n, first.n], [], []), "a search is one scan over every row's text, newest first, and never finds a phrase made of the end of one row and the start of the next"
     rows.delete(second.n, "put away")
     assert [row.n for row in rows.search("corpus")] == [first.n], "and a row put away is left out"
+    from tests.kit import counted
+    rows.search("corpus")
+    with counted() as search_work:
+        rows.search("corpus")
+    assert search_work.parsed == [], "a warm search reads every row through the store's memory and parses none"
     from controllers import stored
     from controllers.types import Todos, warm_record
     Todos(record, actor=SYSTEM).create("one to warm")
