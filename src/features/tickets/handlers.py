@@ -20,6 +20,7 @@ PLAN_WAITS_ONCE = "plan_waits"
 ATTENTION_EVERY = "ticket_attention"
 LOOK_AGAIN = 15
 SWEEPING, SWEEP_EVERY = "tickets-sweeping.lock", 5.0
+LANDING, LAND_EVERY = "tickets-landing.lock", 60.0
 
 
 def all_parked(record) -> bool:
@@ -37,11 +38,13 @@ class LookAfterTickets(Handler):
 
     def sweep(self, context: AgentContext, tickets: Tickets) -> None:
         tickets.mark_seen()
-        tickets.keep_branches()
-        tickets.close_merged()
+        with project_sweep(runtime.folder(context.record.root) / LANDING, LAND_EVERY) as landing:
+            if landing:
+                tickets.keep_branches()
+                tickets.close_merged()
+                tickets.clear_worktrees()
         tickets.start_queued()
         tickets._stop_orphaned()
-        tickets.clear_worktrees()
         tickets._build_approved_plans()
         raise_waiting_plans(context, tickets)
         pass_on_calls(context, tickets)

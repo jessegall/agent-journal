@@ -115,8 +115,8 @@ def test_it_runs_on_its_own_on_the_engines_clock():
     capture.write_bytes(b"y" * 200_000)
     tick(record)
     assert capture.stat().st_size == 200_000, "a second tick within the hour finds it tidied and leaves it"
-    (runtime.folder(record.root) / "tidied").unlink()
-    from features.runtime_cleanup.handlers import claim
+    (runtime.folder(record.root) / "tidying.swept").unlink()
+    from engine.locks import claim
     held = claim(runtime.folder(record.root) / "tidying.lock")
     tick(record)
     held.close()
@@ -132,6 +132,12 @@ def test_it_runs_on_its_own_on_the_engines_clock():
     os.utime(shared.with_suffix(".swept"), (long_ago, long_ago))
     with project_sweep(shared, 5.0, "ticket-1") as mine:
         assert mine, "once the last sweep is older than the wait, another environment's engine takes it over"
+    once = runtime.folder(record.root) / "once-a-minute.lock"
+    swept = []
+    for _ in range(2):
+        with project_sweep(once, 60.0) as mine:
+            swept.append(mine)
+    assert swept == [True, False], "a sweep with no owner named is made once in the wait, whoever asks again"
 
 
 def test_the_event_log_keeps_the_last_hundred_and_whatever_a_live_reader_has_not_reached():
