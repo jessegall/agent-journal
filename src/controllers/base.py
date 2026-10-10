@@ -535,7 +535,6 @@ class Controller(Files, Links, Discussed):
 
     def _warm(self) -> None:
         self.rows.warm()
-        self._texts()
 
     def _texts(self, archived: bool = False, rows: list[dict] | None = None) -> dict[int, tuple[str, str]]:
         """Each row's searchable text beside the stamp it was read at, kept between searches and read again only for a changed row; the summaries a search already holds are passed in."""
