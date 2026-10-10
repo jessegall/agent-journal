@@ -1,7 +1,7 @@
 import time
 from typing import TypedDict
 
-from features.format import formatted
+from features.format import formatted_item
 from features.kanban.lanes import DONE, LANES, Sources, lane_of, reason_of
 from features.kanban.shifts import targets
 from features.plans.resource import ACTIVE
@@ -31,7 +31,7 @@ def card_of(sources: Sources, todo, main: str = "") -> Card:
     placement = sources.placement(todo)
     work = sources.works.get(todo.n)
     record = sources.todos.record
-    return Card(todo.n, formatted(todo.title, record), int(todo.priority or 100), lane_of(sources, todo), formatted(reason_of(sources, todo), record),
+    return Card(todo.n, formatted_item(todo.title, record, ""), int(todo.priority or 100), lane_of(sources, todo), formatted_item(reason_of(sources, todo), record, ""),
                 {"n": placement.n, "title": placement.title, "phase": placement.phase} if placement else None,
                 todo.assigned, worker_of(work, main) if work else None, sources.questions.get(todo.n, 0),
                 bool(todo.reported) and not todo.completed, targets(sources, todo), todo.updated, todo.completed)
