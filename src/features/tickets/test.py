@@ -270,6 +270,12 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert (bool(Docs(record).load(written.n).completed), Docs(record).load(written.n).data.get("proposed_for")) == (True, ticket.ref), \
         "a doc written from the ticket's environment waits as a proposal for that ticket"
     assert "is not merged" in refused(lambda: tickets.complete(ticket.n)), "a started ticket is not closed while its branch is unmerged"
+    looked = []
+    with monkeypatch.context() as counting:
+        was = Tickets._merged
+        counting.setattr(Tickets, "_merged", lambda self, found: looked.append(found.n) or was(self, found))
+        refused(lambda: tickets.complete(ticket.n))
+    assert looked == [ticket.n], "closing a ticket asks the repositories whether its branch landed once, not once to check and again to record"
     assert tickets.close_merged() == [], "nothing unmerged is closed"
     tickets.keep_branches()
     assert git("rev-parse", f"refs/journal/worktrees/{ticket.work_environment}").stdout == git("rev-parse", f"worktree-{ticket.work_environment}").stdout, \

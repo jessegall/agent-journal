@@ -288,9 +288,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     @action
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
         ticket = self.load(n)
-        if ticket.work_environment and not yes and not self._merged(ticket):
-            raise Refused(f"{self.type} {ticket.n}'s branch {self._branch(ticket)} is not merged: merge its pull request first, or --yes closes it anyway")
         landed = bool(ticket.work_environment) and self._merged(ticket)
+        if ticket.work_environment and not yes and not landed:
+            raise Refused(f"{self.type} {ticket.n}'s branch {self._branch(ticket)} is not merged: merge its pull request first, or --yes closes it anyway")
         closed = super().complete(ticket.n, how, **data)
         for rows, proposal in self._proposals(closed):
             if landed:
