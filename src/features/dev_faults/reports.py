@@ -180,9 +180,9 @@ class FaultReports:
             return
 
     def starved(self, root, record, kind: str, name: str, took: float, working: float | None) -> None:
-        """A request whose working time is within its budget but which spent more than its budget off the processor, with no lock or check to account for it, was kept waiting by a machine with no time to give: that is said once a minute, with the load, and never as a slow request."""
+        """A request whose working time is within its budget but which spent more than its budget off the processor, with no lock or check to account for it, on a machine busier than it has cores, was kept waiting by a machine with no time to give: that is said once a minute, with the load, and never as a slow request."""
         now = time.monotonic()
-        if now - self.starved_at.get(Path(root), -STARVED_EVERY) < STARVED_EVERY:
+        if load() < (os.cpu_count() or 1) or now - self.starved_at.get(Path(root), -STARVED_EVERY) < STARVED_EVERY:
             return
         self.starved_at[Path(root)] = now
         worked = f", {working:.0f}ms of it working" if working is not None else ""
