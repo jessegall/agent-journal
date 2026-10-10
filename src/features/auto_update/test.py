@@ -95,16 +95,16 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     page = dispatch("GET", "/api/changelog", record.root, {}, {}).body
     assert (page["changelog"], page["updating"], page["repository"]) == ("# 99.0.0\n", False, False), "the viewer reads the changelog with whether an update is running"
     import install
-    installer = record.root / "src" / "install.py"
+    installer = record.root.parent / ".claude" / "skills" / "journal" / "SKILL.md"
     installer.parent.mkdir(parents=True, exist_ok=True)
     installer.write_text("generated\n")
     managed.remember_managed(record.root.parent, record.root)
     installer.write_text("changed by hand\n")
-    assert dispatch("POST", "/api/update", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], \
+    assert dispatch("POST", "/api/update", record.root, {}, {}).body["changed"] == [".claude/skills/journal/SKILL.md"], \
         "the Update button refuses files changed by hand"
     assert "--yes" in install.upgrade(record.root.parent, record.root)[0] and installer.read_text() == "changed by hand\n", \
         "journal upgrade refuses the same changed file before touching it"
-    assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], "the updates page is told which files changed"
+    assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changed"] == [".claude/skills/journal/SKILL.md"], "the updates page is told which files changed"
     announced = dispatch("GET", "/api/new-feature", record.root, {}, {})
     assert (announced.code, isinstance(announced.body, list)) == (200, True), "the viewer asks the server which new features are not yet seen, and an empty list means none"
     from features.auto_update import new_feature
