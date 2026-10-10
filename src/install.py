@@ -10,12 +10,14 @@ import stat
 import tarfile
 import subprocess
 import hashlib
+import json
 import marshal
 import tempfile
 import time
 import zipfile
 from importlib.util import MAGIC_NUMBER
 from pathlib import Path
+from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cache
 from types import ModuleType
@@ -429,19 +431,44 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False, version:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError:
             return ["another upgrade of this journal is running; this one stepped aside"]
-        prepared = prepare_managed(project, root, yes)
+        with timed(root, "check the managed files"):
+            prepared = prepare_managed(project, root, yes)
         if prepared.held is not None:
             return [prepared.held]
         mark.write_text("Preparing the update")
         loaded().restarting(root).write_text(str(time.time()))
         try:
-            paused = loaded().pause_agents(root)
-            waited = loaded().wait_for_commands(root, lambda text: stepping(root, text))
+            with timed(root, "pause the agents"):
+                paused = loaded().pause_agents(root)
+            with timed(root, "wait for running commands"):
+                waited = loaded().wait_for_commands(root, lambda text: stepping(root, text))
             lines = paused + waited + prepared.copied + upgrading(project, root, version)
             stepping(root, "Restarting the journal")
             return lines
         finally:
             mark.unlink(missing_ok=True)
+
+
+STEP_TIMES = "upgrade-steps.jsonl"
+STEP_TIMES_KEPT = 400
+
+
+@contextmanager
+def timed(root: Path, step: str):
+    """Writes how long a step of an upgrade took beside the others, and how much of it was the processor's own work, children included, so what dominates an update is read off the file, not guessed, and a busy machine is told from a slow step."""
+    began, worked = time.perf_counter(), sum(os.times()[:4])
+    try:
+        yield
+    finally:
+        file = root / "runtime" / STEP_TIMES
+        try:
+            file.parent.mkdir(parents=True, exist_ok=True)
+            kept = file.read_text().splitlines()[-STEP_TIMES_KEPT:] if file.is_file() else []
+            kept.append(json.dumps({"at": round(time.time()), "version": version_in(code(root)), "step": step, "seconds": round(time.perf_counter() - began, 2),
+                                "cpu": round(sum(os.times()[:4]) - worked, 2)}))
+            file.write_text("\n".join(kept) + "\n")
+        except OSError:
+            pass
 
 
 def stepping(root: Path, text: str) -> None:
@@ -467,16 +494,19 @@ def upgrading(project: Path, root: Path, version: str = "") -> list[str]:
             return done + [f"package already at {newest}"] + finish(project, root)
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
-        _, failed = fetch(source, ref=f"refs/tags/v{newest}" if newest else "")
+        with timed(root, "fetch the new version"):
+            _, failed = fetch(source, ref=f"refs/tags/v{newest}" if newest else "")
         if failed:
             shutil.rmtree(temporary, ignore_errors=True)
             return [f"package not refreshed: {failed}"]
     elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
-        pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120, env=git_env())
+        with timed(root, "pull the package"):
+            pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120, env=git_env())
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
     stepping(root, "Installing the new files")
     try:
-        changed, gone = refresh(source, code(root))
+        with timed(root, "copy the new files"):
+            changed, gone = refresh(source, code(root))
     except OSError as error:
         return done + [f"package not refreshed: {error}"]
     finally:
@@ -487,7 +517,8 @@ def upgrading(project: Path, root: Path, version: str = "") -> list[str]:
     if newest and installed != newest:
         return done + [f"package refreshed but failed to reach the release: installed {installed or 'nothing'}, not {newest}"]
     if reloaded:
-        return done + handed_over(project, root)
+        with timed(root, "hand over to the new installer"):
+            return done + handed_over(project, root)
     done += finish(project, root)
     return done
 
@@ -528,23 +559,30 @@ def finish(project: Path, root: Path) -> list[str]:
         if not failed:
             return done + handed_over(project, root, (REPAIRED,))
     stepping(root, "Setting up hooks and skills")
-    done += configure(project, root)
+    with timed(root, "set up hooks, skills and briefings"):
+        done += configure(project, root)
     stepping(root, "Migrating the record")
     fresh = not (root / "migrations.json").is_file()
     if loaded().migrations_pending(root):
-        done += [line for line in [keep_copy(root)] if line]
-    ran = loaded().migrate(root)
+        with timed(root, "copy the record before migrating"):
+            done += [line for line in [keep_copy(root)] if line]
+    with timed(root, "run the migrations"):
+        ran = loaded().migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
     if fresh:
         done.append(loaded().mark_all_seen(root, (code(root) / "CHANGELOG.md").read_text() if (code(root) / "CHANGELOG.md").is_file() else ""))
-    done.append(loaded().ship_sequences(root))
-    done.append(loaded().ship_profiles(root))
-    done.append(loaded().stop_ended(root))
+    with timed(root, "ship the sequences and profiles"):
+        done.append(loaded().ship_sequences(root))
+        done.append(loaded().ship_profiles(root))
+    with timed(root, "stop the sessions that ended"):
+        done.append(loaded().stop_ended(root))
     moved = retire(root)
     if moved:
         done.append(f"package moved into {SRC}/: {moved} files out of the record")
-    done.append(pack(root))
-    loaded().managed.remember_managed(project, root)
+    with timed(root, "pack the Python"):
+        done.append(pack(root))
+    with timed(root, "remember the managed files"):
+        loaded().managed.remember_managed(project, root)
     return done
 
 
@@ -579,8 +617,12 @@ def previous_entries(root: Path) -> dict[str, Entry]:
         return {}
 
 
+LOADS = "import sys; sys.path.insert(0, sys.argv[1]); import features; features.load(); import commands.cli, serve"
+
+
 def start_refused(built: Path, root: Path) -> str:
-    started = subprocess.run([sys.executable, str(built), "--root", str(root), "version"], cwd=root.parent, capture_output=True, text=True, timeout=120)
+    """Whether the new archive loads: its features and its command line and server import from it, in a process of its own that asks no server, so a slow or absent server never sets how long the check takes."""
+    started = subprocess.run([sys.executable, "-c", LOADS, str(built)], cwd=root.parent, capture_output=True, text=True, timeout=120)
     if started.returncode == 0:
         return ""
     return started.stderr.strip()[-300:] or f"it exited with {started.returncode} and printed nothing"
@@ -592,15 +634,17 @@ def pack(root: Path) -> str:
     files = python_files(src, dirs)
     if not (src / "__main__.py").is_file():
         return f"the Python is already in {ARCHIVE}"
-    digest = hashlib.sha256(b"".join(f.relative_to(src).as_posix().encode() + f.read_bytes() for f in files)).hexdigest()[:10]
+    with timed(root, "pack: hash the files"):
+        digest = hashlib.sha256(b"".join(f.relative_to(src).as_posix().encode() + f.read_bytes() for f in files)).hexdigest()[:10]
     version = version_in(src, "0")
     target = root / f"journal-{version}-{digest}.pyz"
     if not target.is_file():
         built = target.with_suffix(".new")
         stamp = int(time.time()) // 2 * 2
         moment = time.localtime(stamp)[:6]
-        kept = previous_entries(root)
-        with zipfile.ZipFile(built, "w", zipfile.ZIP_DEFLATED) as archive:
+        with timed(root, "pack: read the build it replaces"):
+            kept = previous_entries(root)
+        with timed(root, "pack: write the archive"), zipfile.ZipFile(built, "w", zipfile.ZIP_DEFLATED) as archive:
             for f in files:
                 name = f.relative_to(src).as_posix()
                 source = f.read_bytes()
@@ -609,16 +653,28 @@ def pack(root: Path) -> str:
                 archive.writestr(zipfile.ZipInfo(name, held.moment if unchanged else moment), source)
                 archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", held.moment if unchanged else moment),
                                  held.compiled if unchanged else compiled(source, str(root / ARCHIVE / name), stamp))
-        refused = start_refused(built, root)
+        with timed(root, "pack: start the archive once"):
+            refused = start_refused(built, root)
         if refused:
             built.unlink(missing_ok=True)
             return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {refused}"
         built.replace(target)
-    loaded().point(root, target)
+    with timed(root, "pack: point at the build"):
+        loaded().point(root, target)
     held = loaded().held_builds(root)
     for old in sorted(root.glob("journal-*.pyz"), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_BUILDS:]:
         if old != target and old.name not in held:
             old.unlink(missing_ok=True)
+    with timed(root, "pack: clear the unpacked files"):
+        clear_unpacked(src, files, dirs)
+    for name, module in STUBS.items():
+        stub = src / name
+        stub.parent.mkdir(parents=True, exist_ok=True)
+        stub.write_text(STUB.format(up=len(Path(name).parts), archive=ARCHIVE, module=module))
+    return f"the Python is packed into {ARCHIVE}: {len(files)} files in one"
+
+
+def clear_unpacked(src: Path, files: list[Path], dirs: list[str]) -> None:
     for f in files:
         f.unlink()
     for name in dirs:
@@ -629,11 +685,6 @@ def pack(root: Path) -> str:
                 folder.rmdir()
         if (src / name).is_dir() and not any((src / name).iterdir()):
             (src / name).rmdir()
-    for name, module in STUBS.items():
-        stub = src / name
-        stub.parent.mkdir(parents=True, exist_ok=True)
-        stub.write_text(STUB.format(up=len(Path(name).parts), archive=ARCHIVE, module=module))
-    return f"the Python is packed into {ARCHIVE}: {len(files)} files in one"
 
 
 def main(argv: list[str]) -> list[str]:
