@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.79 — A kept helper keeps its worktree, and a first start announces nothing
+- A helper's worktree stays while the helper is kept: new work sent to it rebases the worktree onto the working branch first, and the worktree goes, with the agent's temporary folder, only when the helper is finished or retired.
+- A journal's first start counts every new-feature announcement as seen, so only later updates show one.
+
 ## 2.267.78 — The journal cleans up after itself
 - Once an update has started, the journal removes the builds it left behind; it keeps only the one running and any a live process still runs from. An older version comes from git.
 - A closed ticket's worktree is removed by the minute sweep once no agent runs in it and nothing in it is unsaved, together with the agent's temporary folder; its branch stays, and starting the ticket again cuts it from there.
