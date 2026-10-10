@@ -4,6 +4,7 @@ from typing import ClassVar
 from engine.events.agents import AgentReported
 from controllers.types import Agents, Questions
 from engine.events.resources import AnyEvent, MessageCreated, QuestionAnswered, ResourceEvent
+from features.agent_sessions.launch import driver_in
 from features.sending import Sent
 from features.triggers import watched
 from features.trigger import DAY, MINUTE
@@ -52,6 +53,16 @@ class MarkTheAnswer(Handler):
         agents.card(row.n, label=f"You answered question {question.n}", icon="question",
                     color="var(--blocking)", side=USER, row=question.ref)
         context.feature.to_primary(context.record, "answered", n=question.n, answer=question.outcome, rows=[question.ref])
+
+
+class AnswerOnTheScreen(Handler):
+    def handle(self, context: Context, event: QuestionAnswered) -> None:
+        """An answer reaches the question the agent stands at on its own screen, which no typed line can: the option is pressed, or the words are typed into the free choice."""
+        question = Questions(context.record, actor=SYSTEM).load(event.n)
+        row = Agents(context.record, actor=SYSTEM).primary()
+        driver = driver_in(context.record, context.record.env, row.provider) if row else None
+        if driver is not None and question.completed:
+            driver.answer_prompt(int(question.chosen), question.outcome, len(question.options))
 
 
 class DismissSettledQuestions(Handler):

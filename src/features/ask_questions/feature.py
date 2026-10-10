@@ -1,7 +1,7 @@
 from features.base import Feature
 from features.journal import Journal
 from features.ask_questions.details import AskQuestionsDetails
-from features.ask_questions.handlers import AskInsteadOfProse, DismissSettledQuestions, MarkTheAnswer, ReleaseOnceAnswered, ReleaseOnceAsked, open_a_day
+from features.ask_questions.handlers import AnswerOnTheScreen, AskInsteadOfProse, DismissSettledQuestions, MarkTheAnswer, ReleaseOnceAnswered, ReleaseOnceAsked, open_a_day
 from features.sending import Nudge
 from features.ask_questions.interceptors import AskedOnce, AskInTheJournal, AskOnItsOwn, NamesItsPick, OneAskPerRow, OptionsOnlyInTheirButtons, OptionsWhenEnumerable
 
@@ -15,6 +15,7 @@ class AskQuestions(Feature):
         journal.events.handler(ReleaseOnceAsked())
         journal.events.handler(ReleaseOnceAnswered())
         journal.events.handler(MarkTheAnswer())
+        journal.events.handler(AnswerOnTheScreen())
         journal.events.handler(DismissSettledQuestions())
         journal.agent.interceptor(AskInTheJournal())
         journal.agent.interceptor(AskOnItsOwn())

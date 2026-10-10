@@ -225,6 +225,14 @@ class Driver(ABC):
     def permit(self, allow: bool) -> None:
         self._wrote(self.ALLOW if allow else self.DENY)
 
+    def answer_prompt(self, option: int, text: str, options: int) -> bool:
+        """Answers the question the agent shows on its screen: the option's number, or for a free answer the last choice, the one that takes the agent's own words, then the words; false when no question is on the screen."""
+        if not self.asking():
+            return False
+        if option:
+            return self._wrote(str(option).encode()) and self._wrote(b"\r")
+        return self._wrote(str(options + 1).encode()) and self._wrote(b"\r") and self._wrote(text.encode() + b"\r")
+
     def asked(self) -> Asking | None:
         if not self.asking():
             return None
