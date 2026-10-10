@@ -18,16 +18,18 @@ function keyAt(track, ms) {
     return {rotate: start.rotate + (end.rotate - start.rotate) * t, x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t};
 }
 
-function stateAt(track, ms) {
-    const passed = track.filter(([at, key]) => at <= ms && key.state);
-    return passed.length ? passed[passed.length - 1][1].state : null;
+function heldAt(track, ms, field) {
+    const passed = track.filter(([at, key]) => at <= ms && key[field] !== undefined);
+    return passed.length ? passed[passed.length - 1][1][field] : null;
 }
 
 export function poseAt(animation, ms) {
     return Object.fromEntries(
-        Object.entries(animation.tracks).map(([part, track]) => [part, {...keyAt(track, ms), state: stateAt(track, ms)}])
+        Object.entries(animation.tracks).map(([part, track]) => [part, {...keyAt(track, ms), state: heldAt(track, ms, "state"), order: heldAt(track, ms, "order")}])
     );
 }
+
+export const orderOf = (layer, pose) => pose[layer.name]?.order ?? layer.order;
 
 function own(layer, move) {
     const [px, py] = layer.pivot;

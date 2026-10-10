@@ -1,7 +1,9 @@
 import {computed, ref} from "vue";
+import {saveSettings} from "../actions/settings.js";
 import {api} from "../api/client.js";
 import {report} from "../platform/faults.js";
 import {remember, remembered} from "../platform/storage.js";
+import {store} from "../state/store.js";
 import {loadProfiles, profiles, profilesLoaded, useProfile} from "./profiles.js";
 
 export const UNSENT_KEY = "journal.new-feature.unsent";
@@ -43,5 +45,13 @@ export async function useNewFeature() {
         const row = profiles.value.find((one) => one.title === found.profile);
         if (row) await useProfile(row);
     }
+    await noted;
+}
+
+export async function turnOffNewFeature() {
+    const found = newFeature.value;
+    const noted = dismissNewFeature();
+    const [group, key] = found.setting.split(".");
+    await saveSettings({[group]: {...(store.settings?.[group] || {}), [key]: false}});
     await noted;
 }
