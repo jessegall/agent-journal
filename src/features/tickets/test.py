@@ -420,6 +420,25 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     monkeypatch.setattr(environments.rows, "summaries", lambda: stale)
     assert 999 not in [env.n for env in environments.rows.every()], "an environment removed between the listing and the read is left out of the list, never raised as Missing"
 
+    from types import SimpleNamespace
+    typed = []
+    with monkeypatch.context() as quiet:
+        quiet.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by: typed.append(text) or True))
+        quiet.setattr(Tickets, "_working", lambda self, found: False)
+        said = tickets.tell(ticket.n, "carry on with the tests")
+    assert (said, typed) == (f"told ticket {ticket.n}'s agent: carry on with the tests", ["carry on with the tests"]), \
+        "a note to a ticket's agent is delivered and answered with the note, never with the ticket's whole brief"
+    tickets.update(ticket.n, launched=time.time(), halted=False)
+    tickets.stop(ticket.n)
+    assert (tickets.load(ticket.n).halted, tickets.load(ticket.n).launched) == (True, 0.0), "a stopped ticket forgets the launch it had under way, so a start that follows launches again"
+    from engine import bus
+    began = []
+    with monkeypatch.context() as behind:
+        behind.setattr(bus, "BACKGROUND", True)
+        behind.setattr(bus, "background", lambda key, job: began.append(key))
+        started = tickets.start(ticket.n)
+    assert (len(began), bool(started.launched)) == (1, True), "a start answers at once with the launch under way, and the branches are cut and the agent started behind the answer"
+
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
     from resources.base import AGENT
