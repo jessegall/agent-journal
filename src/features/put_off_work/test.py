@@ -46,6 +46,7 @@ def test_a_type_keeps_only_as_many_parsed_rows_as_it_declares_and_parses_the_old
     record = fresh()
     docs = Docs(record, actor=SYSTEM)
     first, second, third = (docs.create(title).n for title in ("one", "two", "three"))
+    docs.rows.rolling().clear()
     parsed = []
     original = RowStore._parsed
     monkeypatch.setattr(RowStore, "_parsed", lambda self, n: parsed.append(n) or original(self, n))
