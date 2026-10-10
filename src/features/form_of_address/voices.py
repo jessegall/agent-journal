@@ -63,6 +63,15 @@ class Voice:
     agent_name: str = "Sam"
     address: str = ""
     art: str = ""
+    emoji: str = ""
+
+    def faces(self) -> tuple[str, ...]:
+        return tuple(self.emoji.split())
+
+    def reacts(self) -> str:
+        if not self.emoji:
+            return ""
+        return f"Your own emoji are {self.emoji}: react with them, and now and then use one in what you write."
 
 
 BUTLER = Voice(
@@ -78,6 +87,7 @@ BUTLER = Voice(
     naming=HISTORICAL.text,
     agent_name="Alfred",
     art="butler.webp",
+    emoji="🎩 🧐 🥂",
 )
 
 HOMIE = Voice(
@@ -92,6 +102,7 @@ HOMIE = Voice(
     naming=STREET.text,
     agent_name="Lil Agent",
     art="homie.webp",
+    emoji="🤙 😎 🔥",
 )
 
 COLLEAGUE = Voice(
@@ -106,6 +117,7 @@ COLLEAGUE = Voice(
     naming=PLAIN.text,
     agent_name="Sam",
     art="colleague.webp",
+    emoji="👍 👀 🙏",
 )
 
 COACH = Voice(
@@ -121,6 +133,7 @@ COACH = Voice(
     naming=SPORTING.text,
     agent_name="Coach",
     art="coach.webp",
+    emoji="🎉 💪 🏆",
 )
 
 SQUIRE = Voice(
@@ -138,6 +151,7 @@ SQUIRE = Voice(
     naming=KNIGHTLY.text,
     agent_name="Squire",
     art="squire.webp",
+    emoji="⚔️ 🛡️ 🏰",
 )
 
 SHIPPED = (BUTLER, HOMIE, COLLEAGUE, COACH, SQUIRE)

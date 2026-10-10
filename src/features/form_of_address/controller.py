@@ -15,7 +15,7 @@ from resources.base import SYSTEM, Refused
 from resources.pictures import dimensions
 
 COPY = " (my copy)"
-SHAPE = ("brief", "calling", "sample", "introduction", "humour", "naming", "address", "art")
+SHAPE = ("brief", "calling", "sample", "introduction", "humour", "naming", "address", "art", "emoji")
 
 
 class Profiles(Controller):
@@ -24,7 +24,7 @@ class Profiles(Controller):
     def voice(self, n: int) -> Voice:
         r = self.rows.peek(n)
         return Voice(title=r.title, text=r.brief, calling=Calling(r.calling), sample=r.sample, introduction=r.introduction, humour=r.humour, naming=r.naming,
-                     agent_name=r.agent_name, address=r.address, art=r.art)
+                     agent_name=r.agent_name, address=r.address, art=r.art, emoji=r.emoji)
 
     def standing(self) -> Voice:
         try:
@@ -58,7 +58,7 @@ class Profiles(Controller):
     def duplicate(self, n: int):
         row = self.load(n)
         return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=self._sample(row), introduction=row.introduction, humour=row.humour, naming=row.naming,
-                           agent_name=row.agent_name, address=row.address, art=row.art)
+                           agent_name=row.agent_name, address=row.address, art=row.art, emoji=row.emoji)
 
     @action
     def animations(self) -> dict:
@@ -178,7 +178,7 @@ def ship(record) -> list[str]:
     held = {r.title: r for r in (profiles.load(row["n"]) for row in profiles.rows.summaries() if not row["deleted"]) if r.system}
     made = []
     for voice in SHIPPED:
-        shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample, "introduction": voice.introduction, "humour": voice.humour, "naming": voice.naming, "address": voice.address, "art": voice.art}
+        shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample, "introduction": voice.introduction, "humour": voice.humour, "naming": voice.naming, "address": voice.address, "art": voice.art, "emoji": voice.emoji}
         if voice.title not in held:
             profiles.create(voice.title, **shape, agent_name=voice.agent_name, system=True)
         elif {name: getattr(held[voice.title], name) for name in SHAPE} != shape:

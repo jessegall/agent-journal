@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import features
-from controllers.types import Nudges
+from controllers.types import Messages, Nudges
 from features.form_of_address.controller import Profiles, ship
 from features.form_of_address.voices import PLAIN_WORDS, SHIPPED
 from features.session_briefing.start import start_block
@@ -55,6 +55,13 @@ def test_the_five_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrad
     held = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).introduction for row in profiles.rows.summaries()}
     assert held == {voice.title: voice.introduction for voice in SHIPPED} and all(held.values()), "each shipped profile introduces itself in its own voice, kept on its row"
     assert profiles.load(profiles.duplicate(n).n).introduction == held["Homie"], "a copy keeps the introduction, which its owner can then rewrite"
+    assert all(len(voice.faces()) == 3 for voice in SHIPPED) and Profiles(record, actor=SYSTEM).load(n).emoji == "🤙 😎 🔥", "each voice carries a few emoji of its own on its row"
+    asked = Messages(record, actor=SYSTEM).create("a question")
+    assert refused(lambda: Messages(record, actor=SYSTEM).react(asked.n, "🤙")), "the Butler in use has no 🤙 to react with"
+    choose(record, n)
+    assert "Your own emoji are 🤙 😎 🔥" in start_block(record), "the voice in use tells the agent its emoji"
+    Messages(record, actor=SYSTEM).react(asked.n, "🤙")
+    assert refused(lambda: Messages(record, actor=SYSTEM).react(asked.n, "⚔️")), "and the reaction set follows the voice in use"
 
 
 def test_each_chosen_profile_speaks_in_its_own_voice_and_calls_you_as_it_says():

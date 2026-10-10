@@ -1,8 +1,10 @@
 import time
+from engine.extension import Extension
 from resources.base import Refused, Resource, titled
 from controllers.marks import action
 
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩")
+VOICE_FACES = Extension()
 TWICE_WITHIN = 10.0
 
 
@@ -30,8 +32,9 @@ class Discussed:
 
     @action
     def react(self, n: int, face: str) -> Resource | None:
-        if face not in FACES:
-            raise Refused(f"a reaction is one of {' '.join(FACES)}")
+        faces = (*FACES, *(own for faces_of in VOICE_FACES.each(self.record) for own in faces_of(self.record) if own not in FACES))
+        if face not in faces:
+            raise Refused(f"a reaction is one of {' '.join(faces)}")
         from controllers.types import Reactions
         r = self.peek(n)
         reactions = Reactions(self.record, actor=self.actor)
