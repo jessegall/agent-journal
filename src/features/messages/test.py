@@ -243,7 +243,7 @@ def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():
     answered = Messages(record, actor="agent").reply(f"{asked.n},{fresh_one.n}", "Both.")
     assert (answered.refs, "agent" in Messages(record, actor="agent").load(fresh_one.n).seen) == ([f"message:{fresh_one.n}"], True), \
         "a reply naming several messages reads the ones not yet read and answers every one it can, leaving out the one already answered"
-    assert any("not answered" in n.title and "already answered" in n.brief for n in Nudges(record, actor="system").all()), "and tells the agent which it could not answer and why"
+    assert any("not answered" in n.title and "already answered" in n.brief for n in Nudges(record, actor="system").rows.every()), "and tells the agent which it could not answer and why"
 
 
 def test_a_reaction_from_the_user_reaches_the_agent_as_what_it_is():
