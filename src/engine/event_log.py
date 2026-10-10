@@ -1,13 +1,13 @@
 import json
 import time
 from contextlib import AbstractContextManager
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
 from engine import runtime
 from engine.stored import append_text, write_text
-from resources.base import Event
+from resources.base import Event, plain
 
 KEPT_EVENTS = 2000
 
@@ -48,7 +48,7 @@ class EventLog:
         self.readers = readers
 
     def append(self, event: Event) -> None:
-        append_text(self.file, json.dumps(asdict(event)) + "\n")
+        append_text(self.file, json.dumps(event.to_json(), default=plain) + "\n")
 
     def events(self, since: int = 0, last: int = 0, where: Callable[[Event], bool] = everything) -> list[Event]:
         recent = self.recent()
