@@ -302,6 +302,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         landed = bool(ticket.work_environment) and self._merged(ticket)
         if ticket.work_environment and not yes and not landed:
             raise Refused(f"{self.type} {ticket.n}'s branch {self._branch(ticket)} is not merged: merge its pull request first, or --yes closes it anyway")
+        return self._finished(ticket, how, landed, **data)
+
+    def _finished(self, ticket, how: str, landed: bool, **data):
         closed = super().complete(ticket.n, how, **data)
         for rows, proposal in self._proposals(closed):
             if landed:
@@ -367,12 +370,13 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def _working(self, ticket) -> bool:
         return Agents(self.record.sibling(ticket.work_environment), actor=SYSTEM).state(ticket.work_environment) == WORKING_STATE
 
-    def _closed(self, merged: list) -> list:
+    def _closed(self, merged: list, landed: bool = False) -> list:
         for ticket in merged:
             board = self._board(ticket)
             finished = board.stage_for(DONE) if board else ""
+            how = f"its branch {self._branch(ticket)} was merged"
             try:
-                self.complete(ticket.n, how=f"its branch {self._branch(ticket)} was merged")
+                self._finished(ticket, how, True) if landed else self.complete(ticket.n, how=how)
             except Refused:
                 continue
             if finished:
@@ -399,11 +403,12 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 where = "" if name == "." else f" in {name}"
                 self._refuse(f"{self.type} {ticket.n}'s branch {branch}{where} was not merged into {into}: {failed}")
         ticket = self.load(ticket.n)
-        landed = self._merged(ticket)
-        self._closed([ticket] if landed else [])
-        if landed:
-            self._released(ticket)
-        return self.load(ticket.n)
+        self._closed([ticket], landed=True)
+        closed = self.load(ticket.n)
+        if not closed.completed:
+            self._refuse(f"{self.type} {ticket.n}'s branch {branch} was merged, but the ticket could not be closed: journal {self.type} complete {ticket.n} --yes closes it")
+        self._released(closed)
+        return closed
 
     def _released(self, ticket) -> None:
         board = self._board(ticket)

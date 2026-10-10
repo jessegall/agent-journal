@@ -67,7 +67,7 @@ class FaultReports:
 
     def slow(self, record, kind: str, name: str, took: float, working: float | None = None, garbage: float = 0.0, waiting: float = 0.0,
              after: float = 0.0, whole_reads: tuple[str, ...] = (), by: str = "") -> None:
-        if working is not None and working <= self.milliseconds(record, kind):
+        if working is not None and working <= self.milliseconds(record, kind) and waiting <= self.milliseconds(record, kind):
             return
         parts = [f"{working:.0f}ms of it working" if working is not None else "", f"{garbage:.0f}ms collecting garbage" if garbage >= 1 else "",
                  f"{waiting:.0f}ms waiting on locks" if waiting >= 1 else "", f"then {after:.0f}ms more after it answered" if after >= 1 else "",
@@ -159,6 +159,8 @@ class FaultReports:
                     self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "")
                     if profile or stacks:
                         self.kept(root, name, took, profile, stacks)
+                elif kind != "command" and working is not None and waiting > self.milliseconds(record, kind):
+                    self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "")
                 elif working is not None and took - working - waiting > self.milliseconds(record, kind):
                     self.starved(root, record, kind, name, took, working)
         except (OSError, ValueError, KeyError):

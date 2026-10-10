@@ -295,7 +295,10 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     with monkeypatch.context() as busy:
         busy.setattr(Tickets, "_working", lambda self, row: True)
         assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "a ticket whose agent is working is left alone by the sweep, even when its branch landed"
-    tickets.merge(ticket.n)
+    with monkeypatch.context() as unsure:
+        unsure.setattr(Tickets, "_merged", lambda self, row: False)
+        answered = tickets.merge(ticket.n)
+    assert answered.completed, "merge answers only once the ticket is closed, whatever the landing check says a minute later: the branch was merged just now"
     closed = tickets.load(ticket.n)
     assert (bool(closed.completed), closed.stage) == (True, "Shipped"), "once merged it closes by itself, in its board's done stage"
     shipped = [card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n]

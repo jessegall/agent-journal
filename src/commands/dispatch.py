@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 from engine import bus, runtime
 from engine.record import Record
-from engine.timing import EVENT, Sampler, Stopwatch, profiler
+from engine.timing import EVENT, Sampler, Stopwatch, profiler, waited_to_start
 from controllers.faults import threw
 from engine.disk import DiskFull
 from resources.base import Missing, Refused
@@ -68,7 +68,7 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     if method == "GET" and "env" in params and not known_environment(root, params["env"]):
         return Reply(404, {"error": f"no environment {params['env']}"})
     profile = profiler(root)
-    began = Stopwatch()
+    began = Stopwatch(wall=time.perf_counter() - waited_to_start() / 1000)
     sampler = Sampler()
     if bus.heard(EVENT):
         sampler.start()

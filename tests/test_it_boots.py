@@ -1691,6 +1691,32 @@ def test_a_board_of_two_hundred_tickets_answers_fifty_a_lane_and_its_cursor_hold
         TicketCards._card = original
 
 
+def test_a_request_whose_client_gave_up_is_still_measured_and_the_wait_before_its_handler_counts():
+    import serve
+    from engine import timing
+    from features.routing import Reply
+    stopped = []
+
+    class Gone:
+        def write(self, data):
+            raise BrokenPipeError("the client left")
+
+        def flush(self):
+            pass
+
+    handler = object.__new__(serve.Handler)
+    handler.wfile = Gone()
+    handler.server = types.SimpleNamespace(after_answer=types.SimpleNamespace(add=lambda job, lane: stopped.append(job)))
+    for name in ("send_response", "sibling", "send_header", "end_headers"):
+        setattr(handler, name, lambda *given: None)
+    reply = Reply(200, {"ok": True}, after=lambda: None)
+    with pytest.raises(BrokenPipeError):
+        handler.reply_to(reply)
+    assert stopped == [reply.after], "a client that broke the pipe before the answer was written still has its request measured, so a read that took ten seconds is noticed"
+    timing.arrived(1500.0)
+    assert (timing.waited_to_start(), timing.waited_to_start()) == (1500.0, 0.0), "the time a request waited between being accepted and its handler starting is taken once, to count in its time"
+
+
 def test_the_server_ends_when_interrupted_or_told_to_stop_restarts_on_new_code_and_answers_hook_failures(tmp_path, monkeypatch):
     import serve
     root = fresh().root
