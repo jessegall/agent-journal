@@ -90,7 +90,7 @@ def close(context: Context, closed: list[Standing], how: str) -> None:
     nudges = context.journal.get(Nudges)
     standing_rows = still_open(nudges)
     for s in [s for s in closed if s.n in standing_rows]:
-        nudges.complete(s.n, how=how)
+        nudges.settle(s.n, how=how)
 
 
 class StandUntilAnswered(Handler):
