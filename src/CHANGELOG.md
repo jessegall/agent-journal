@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.18 — Questions asked under an environment show with its own
+- The Questions tab, window and count carry the open questions of this environment and of every environment launched from it, helpers and tickets included, each named for its environment and answered in that environment's inspector.
+- Under reduced motion the mascot stays visible in its rest pose, with no blinks, moves, entrance or exit, instead of being hidden.
+
 ## 2.268.17 — A removed environment stays removed
 - Once an environment is removed, a late read or a plugin keeping its place in the event log no longer creates its folder again, so a second removal never finds a half-written folder and fails to pack it.
 
