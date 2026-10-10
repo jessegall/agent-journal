@@ -351,7 +351,7 @@ class Engine:
             if asked.value == UPDATE:
                 self.agent.driver.send(PAUSED_FOR_UPDATE, now=True)
             return self.held("Paused")
-        if asked := take(self.record.root, self.names(), RESUME):
+        if (asked := take(self.record.root, self.names(), RESUME)) and self.paused:
             return self.released(RESUMED_AFTER_UPDATE if asked.value == UPDATE else RESUMED)
         if self.paused and self.stale_update_pause():
             return self.released(RESUMED_AFTER_UPDATE)
