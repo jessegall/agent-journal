@@ -1,4 +1,5 @@
 import json
+import pytest
 import threading
 import time
 from pathlib import Path
@@ -397,6 +398,17 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
     serve.allow_open_files()
     assert resource.getrlimit(resource.RLIMIT_NOFILE)[0] >= soft, "raising the open-file limit never lowers one the process already has"
     assert KEEP_OPEN <= 16 and len(OPEN) <= KEEP_OPEN, "the packed archives kept open stay few"
+    from engine.package import ARCHIVE
+    builds = record.root
+    (builds / "journal-9.0.0-aaa.pyz").write_text("a")
+    (builds / ARCHIVE).unlink(missing_ok=True)
+    (builds / ARCHIVE).symlink_to("journal-9.0.0-aaa.pyz")
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(serve, "ZIPPED", True)
+        patch.setattr(serve, "CODE", Path("/anywhere/journal-8.0.0-bbb.pyz"))
+        assert serve.drifted(builds), "a server that runs another build than the installed one is told apart"
+        patch.setattr(serve, "CODE", Path("/anywhere/journal-9.0.0-aaa.pyz"))
+        assert not serve.drifted(builds), "a server on the installed build has not drifted"
     from commands import parser as parsing
     from features.format import formatted
     parsing.PARSERS.clear()

@@ -217,20 +217,28 @@ def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
 
 WATCH_SECONDS = 1.0
 SETTLE_SECONDS = 1.5
+DRIFT_SECONDS = 10.0
 STOP_SECONDS = 0.2
 LATE_STOP = 5.0
+
+
+def drifted(root: Path) -> bool:
+    """Whether the installed build is not the one this server runs, with no upgrade under way."""
+    return ZIPPED and (Path(root) / ARCHIVE).resolve().name != CODE.name and not runtime.upgrading(root)
 
 
 def watch_code(root: Path, package: Path, server: ThreadingHTTPServer, changed: threading.Event) -> None:
     before = code_stamp(package)
     last_change = 0.0
+    drifting = 0.0
     while not changed.is_set():
         time.sleep(WATCH_SECONDS)
         now = code_stamp(package)
+        drifting = (drifting or time.monotonic()) if drifted(root) else 0.0
         if now != before:
             before = now
             last_change = time.monotonic()
-        elif last_change and time.monotonic() - last_change >= SETTLE_SECONDS:
+        elif last_change and time.monotonic() - last_change >= SETTLE_SECONDS or drifting and time.monotonic() - drifting >= DRIFT_SECONDS:
             runtime.restarting(root).write_text(str(time.time()))
             changed.set()
             server.shutdown()

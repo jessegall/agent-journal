@@ -228,6 +228,16 @@ def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
     sequences.next(made.n)
     assert "handed you step 2" in held(record, session), "each next step is taken up the same way, so none is skipped unseen"
     CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(made.n, why="it no longer applies")
+    again = CONTROLLERS["sequence"](record, actor=AGENT).create("A run the journal forgot")
+    CONTROLLERS["sequence"](record, actor=AGENT).section(again.n, "Only", "do it")
+    CONTROLLERS["sequence"](record, actor=AGENT).run(again.n)
+    assert "handed you step 1" in held(record, session), "a new run is handed at once"
+    import pytest
+    from tests.kit import tick
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr("features.sequences.controller.Sequences.in_hand", lambda self: None)
+        tick(record)
+    assert "handed you step" not in held(record, session), "a hold on a step that is no longer in hand is released by the clock, never left to refuse every write"
     assert "handed you step" not in held(record, session), "an abandoned run holds nothing"
 
 
@@ -286,6 +296,7 @@ def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer
     first, again = failing(), failing()
     assert "do not run them again: journal message reply 99999" not in first + again and "did not run either" in first + again, \
         "a command of a refused line that failed is never listed as run, and a second try does not say it ran"
+    assert not any("take it up" in refused(line) for line in ("journal upgrade", "journal heal", "journal verify")), "the commands that recover the journal are never held by a step"
     sequences.follow(made.n)
     assert "take it up" not in refused("journal work start 'other work'"), "once taken up, journal commands go through"
 
