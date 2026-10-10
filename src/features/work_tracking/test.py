@@ -354,10 +354,8 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     assert works.load(build.n).awaiting == "the CI run on main", "the call that declared the wait does not end it"
     report(record, "working", "PostToolUse", tool="Bash", wrote=True, commands=[{"command": "journal work await", "tool": "Bash", "at": since}])
     assert works.load(build.n).awaiting == "the CI run on main", "nor does a call started the same instant"
-    report(record, "working", "PostToolUse", tool="Read", wrote=False, commands=[{"command": "tail test.log", "tool": "Bash", "at": time.time()}])
-    assert works.load(build.n).awaiting == "the CI run on main", "reading, checking and answering messages leave the wait standing"
-    report(record, "working", "PostToolUse", tool="Edit", wrote=True, commands=[{"command": "Edit a.py", "tool": "Edit", "at": time.time()}])
-    assert works.load(build.n).awaiting == "", "writing again clears it"
+    report(record, "working", "PostToolUse", tool="Bash", wrote=False, commands=[{"command": "tail test.log", "tool": "Bash", "at": time.time()}])
+    assert works.load(build.n).awaiting == "", "the next command the agent runs clears it, a read as much as a write"
     assert [n for n in nudges(record) if "your wait for the CI run on main is over" in n], "and the agent is told why"
     from controllers.types import Facts
     Facts(record, actor=AGENT).create("the port is 8423", keywords=["port"])
