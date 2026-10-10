@@ -233,10 +233,6 @@ class Codex(Provider):
     shared_if_ignored = (".codex/hooks.json",)
     retired_skill_homes = (f"{home}/skills",)
 
-    @classmethod
-    def ask_argv(cls, prompt: str) -> tuple[str, ...]:
-        return ("codex", "exec", "-m", cls.dispatch_default, prompt)
-
     def skill_load(self, name: str) -> str:
         return f"read {self.skill_home}/{name}/SKILL.md"
 

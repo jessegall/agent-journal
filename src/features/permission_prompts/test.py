@@ -145,25 +145,6 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
     mine = Dialogs(opened)
     mine.tick()
     assert pressed == [], "a menu that came up just after a key you pressed is left to you, however quiet the terminal is"
-    colour = "Pick a colour\r\n❯ 1. Red\r\n  2. Blue\r\nEnter to select"
-    asked = []
-    unknown = SimpleNamespace(**{**vars(stub), "screen": lambda size: colour, "press_raw": pressed.append,
-                                 "ask_argv": lambda prompt: asked.append(prompt) or ("echo", "2")})
-    pressed.clear()
-    curious = Dialogs(unknown)
-    curious.tick()
-    assert pressed == [] and len(asked) == 1, "an unknown menu is not answered while the dispatched agent is still answering"
-    for _ in range(50):
-        if curious.asking.answers:
-            break
-        time.sleep(0.1)
-    curious.at = 0.0
-    curious.tick()
-    assert pressed == [b"\x1b[B\r"], "the agent's pick, option 2, is pressed once it has answered"
-    again = Dialogs(unknown)
-    pressed.clear()
-    again.tick()
-    assert (pressed, len(asked)) == ([b"\x1b[B\r"], 1), "the second sighting of the same menu is answered from memory with no agent"
     update = b"\x1b[2m> Ask Codex to do anything\x1b[0m\r\nUpdate available 0.159.3 \xe2\x86\x92 0.160.0\r\n\xe2\x80\xba 1. Update now\r\n  2. Skip\r\n  3. Skip until next version"
     assert (codex.consent(update), codex.opening(update)) == (b"2\r", ""), "Codex's update question is skipped, and the opening waits until it is gone"
     assert (codex.carried_on(["continue"]), codex.carried_on(["--resume", "abc"]), codex.carried_on(["-c", "k=v"])) == \
