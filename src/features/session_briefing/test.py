@@ -1,3 +1,4 @@
+import pytest
 
 from controllers.types import Docs, Facts, Rules, Todos, Works
 from features.session_briefing.start import QUIET, carry, start_block, status
@@ -23,6 +24,22 @@ def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
     f.write_text("as it was")
     Works(record, actor=AGENT).section(Works(record, actor=AGENT).rows.standing()[0].n, "Log", "a long entry the block never shows")
     assert f.read_text() == "as it was", "a work log entry leaves the start block alone: a section never shows in it"
+    from engine import bus
+    import threading
+    import time
+    ran = []
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(bus, "BACKGROUND", True)
+        gate = threading.Event()
+        bus.background("held", lambda: (gate.wait(2), ran.append("first")))
+        bus.background("held", lambda: ran.append("second"))
+        asked_at = time.monotonic()
+        assert ran == [] and time.monotonic() - asked_at < 0.5, "work nobody waits for is handed to a thread of its own, and the request that asked for it goes on"
+        gate.set()
+        until = time.monotonic() + 3
+        while len(ran) < 2 and time.monotonic() < until:
+            time.sleep(0.02)
+    assert ran == ["first", "second"] or ran == ["second"] or ran[-1] == "second", "and a job asked for again under the same key is run once, the newest"
     f.write_text(block)
     assert [line for line in block.splitlines() if line and not line.startswith("  ")] == \
         ["THE JOURNAL IS IN FORCE HERE — this session is bound to environment `t`.", QUIET,

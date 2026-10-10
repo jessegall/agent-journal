@@ -1,5 +1,6 @@
 import threading
 import time
+import traceback
 from functools import wraps
 from collections import defaultdict
 from contextlib import contextmanager
@@ -135,6 +136,39 @@ def defer_once(key: str, job: Callable[[], None]) -> None:
         after.setdefault(key, job)
         return
     job()
+
+
+BACKGROUND = True
+_waiting: dict[str, Callable[[], None]] = {}
+_worker: threading.Thread | None = None
+_worker_lock = threading.Lock()
+
+
+def background(key: str, job: Callable[[], None]) -> None:
+    """Runs work nobody waits for on a thread of its own, once per key if it is asked for again before it started, so the request that asked for it is not held up by it; with the thread switched off it runs at once."""
+    global _worker
+    if not BACKGROUND:
+        job()
+        return
+    with _worker_lock:
+        _waiting[key] = job
+        if _worker is not None and _worker.is_alive():
+            return
+        _worker = threading.Thread(target=_work_through, daemon=True)
+        _worker.start()
+
+
+def _work_through() -> None:
+    while True:
+        with _worker_lock:
+            if not _waiting:
+                return
+            key = next(iter(_waiting))
+            job = _waiting.pop(key)
+        try:
+            job()
+        except Exception:
+            traceback.print_exc()
 
 
 def release(queue: list) -> None:
