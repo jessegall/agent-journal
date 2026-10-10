@@ -3,6 +3,8 @@ import importlib
 import json
 import os
 import pkgutil
+import shutil
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -81,12 +83,36 @@ def entry(module: str) -> list[str]:
 
 
 SERVER_PYTHON = "JOURNAL_SERVER_PYTHON"
+PLAIN = "gil"
+FREE_THREADED = ("python3.14t", "python3.15t", "python3.13t")
 
 
-def server_entry(module: str) -> list[str]:
-    """The command that starts the server: on the free-threaded interpreter named in JOURNAL_SERVER_PYTHON when there is one, so requests of different environments run on different cores, else on the interpreter that asks."""
+def free_threaded() -> str:
+    """The free-threaded interpreter this machine has, which answers the environments of a journal on different cores: the one JOURNAL_SERVER_PYTHON names (the word gil asks for none), else one on the PATH or one uv installed; empty when there is none."""
     named = os.environ.get(SERVER_PYTHON, "")
-    return [named if named and Path(named).is_file() else sys.executable, *entry(module)[1:]]
+    if named == PLAIN:
+        return ""
+    if named:
+        return named if Path(named).is_file() else ""
+    found = next((path for name in FREE_THREADED if (path := shutil.which(name))), "")
+    kept = sorted((Path.home() / ".local" / "share" / "uv" / "python").glob("*freethreaded*/bin/python3*t"), reverse=True)
+    return found or (str(kept[0]) if kept else "")
+
+
+def fetch_free_threaded() -> str:
+    """Asks uv, when the machine has it, for a free-threaded Python; the server then answers on every core. Never fails an install: the plain Python stays the fallback."""
+    if free_threaded() or not shutil.which("uv"):
+        return ""
+    try:
+        done = subprocess.run(["uv", "python", "install", "3.14t"], capture_output=True, text=True, timeout=180)
+    except (OSError, subprocess.SubprocessError):
+        return "a free-threaded Python could not be fetched, so the server runs on the plain one"
+    return "fetched a free-threaded Python for the server" if done.returncode == 0 else "a free-threaded Python could not be fetched, so the server runs on the plain one"
+
+
+def server_entry(module: str, python: str = "") -> list[str]:
+    """The command that starts the server, on the free-threaded interpreter when the machine has one and the plain interpreter that asks otherwise."""
+    return [python or free_threaded() or sys.executable, *entry(module)[1:]]
 
 
 def own_build(root: Path) -> bool:
