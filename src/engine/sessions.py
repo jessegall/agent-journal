@@ -301,13 +301,14 @@ class Sessions:
         return {name for name, s in self.all().items() if pid and s.pid == pid} | {session}
 
     def rivals(self, env: str, session: str, pid: int = 0) -> list[str]:
-        """The live sessions of other agents on an environment: an environment has one live session."""
+        """The sessions of other agents on an environment whose process is alive: an environment has one live session, and one with no process behind it, as in a record only read, is no rival."""
         mine = self.agent(session, pid)
-        return [holder for holder in self.holders(env) if holder not in mine]
+        return [holder for holder in self.holders(env) if holder not in mine and self.read(holder).pid]
 
     def take(self, env: str, session: str, why: str, pid: int = 0) -> list[str]:
         """Unbinds every other agent from an environment, each told it was taken over, so the session that asked for it is the one that holds it."""
-        ended = self.rivals(env, session, pid)
+        mine = self.agent(session, pid)
+        ended = [holder for holder in self.holders(env) if holder not in mine]
         for holder in ended:
             for each in self.agent(holder):
                 self.evict(each, session, env, why)

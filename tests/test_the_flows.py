@@ -120,15 +120,6 @@ def titled(rows: list[dict]) -> list[str]:
     return [row["title"] for row in rows]
 
 
-def agents_anywhere(scratch) -> list[str]:
-    """The sessions the journal knows, in the environment and in the ones a session that started beside another waits in."""
-    found = []
-    for place in (ENV, f"{ENV}-2"):
-        code, body = scratch.ask("GET", f"/api/{place}/agent")
-        found += titled(body["rows"]) if code == 200 and isinstance(body, dict) else []
-    return sorted(found)
-
-
 def test_a_user_writes_and_the_agent_replies_to_one_message_and_to_several_at_once(scratch):
     first = scratch.user("POST", "/message", {"title": "Is the build green?", "brief": "Is the build green?"})[1]
     second = scratch.user("POST", "/message", {"title": "And the deploy?", "brief": "And the deploy?"})[1]
@@ -305,7 +296,7 @@ def test_an_upgrade_covers_the_viewer_from_its_first_byte_and_a_hook_sent_while_
     assert (sent.returncode, sent.stdout, len(spooled)) == (0, "", 1), "a hook that finds no server never holds the agent and keeps its event"
     scratch.start()
     scratch.hook("PreToolUse", tool_name="Bash", tool_use_id="u3", tool_input={"command": "ls"})
-    replayed = eventually(lambda: agents_anywhere(scratch), ["claude-1", "claude-2"])
+    replayed = eventually(lambda: [row["title"] for row in scratch.rows("agent")], ["claude-1", "claude-2"])
     assert replayed and not list((scratch.record.root / "runtime" / "unsent").glob("*.json")), "the restarted server replays what was kept, so the agent that spoke while it was down is known"
 
 
