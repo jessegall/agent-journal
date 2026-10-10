@@ -94,28 +94,91 @@ def agent_pid(pid: int) -> int:
     return pid
 
 
+class SessionFiles:
+    """Every session.json of one root, read once and kept while the sessions folder's stamp stands.
+
+    A write stamps the folder (its modification time, raised past the last one) so every process
+    sees the change with one stat; the file is read only by the funnel."""
+
+    NONE = SessionRecord()
+
+    def __init__(self, root: Path):
+        self.folder = runtime.sessions(root)
+        self.stamp = -1
+        self.records: dict[str, SessionRecord] = {}
+
+    def current(self) -> int:
+        try:
+            return self.folder.stat().st_mtime_ns
+        except OSError:
+            return 0
+
+    def all(self) -> dict[str, SessionRecord]:
+        stamp = self.current()
+        if stamp != self.stamp:
+            self.records = self.scanned()
+            self.stamp = stamp
+        return self.records
+
+    def scanned(self) -> dict[str, SessionRecord]:
+        try:
+            names = sorted(entry.name for entry in os.scandir(self.folder) if entry.is_dir())
+        except OSError:
+            return {}
+        found = {}
+        for name in names:
+            path = self.folder / name / SESSION
+            if path.is_file():
+                found[name] = read_json(path, SessionRecord.from_json, self.NONE)
+        return found
+
+    def stamped(self, session: str, written: SessionRecord, before: int) -> None:
+        """Raise the folder's stamp past the last one and keep the record, when nobody else wrote in between."""
+        after = max(time.time_ns(), self.current() + 1)
+        os.utime(self.folder, ns=(after, after))
+        if self.stamp == before and self.current() == after:
+            self.records = {**self.records, session: written}
+            self.stamp = after
+
+
+class SessionFilesSet:
+    def __init__(self):
+        self.by_root: dict[Path, SessionFiles] = {}
+
+    def of(self, root: Path) -> SessionFiles:
+        return self.by_root.setdefault(Path(root), SessionFiles(root))
+
+
+SESSION_FILES = SessionFilesSet()
+SESSION = "session.json"
+
+
 class Sessions:
     def __init__(self, root: Path):
         self.root = Path(root)
+        self.files = SESSION_FILES.of(self.root)
 
     def path(self, session: str) -> Path:
-        return runtime.session_file(self.root, session, "session.json")
+        return runtime.session_file(self.root, session, SESSION)
 
     def read(self, session: str) -> SessionRecord:
-        return read_json(self.path(session), SessionRecord.from_json, SessionRecord.from_json({}))
+        return self.files.all().get(session, SessionFiles.NONE)
 
     def known(self, session: str) -> bool:
-        return self.path(session).is_file()
+        return session in self.files.all()
 
     def write(self, session: str, **fields) -> SessionRecord:
         self.path(session).parent.mkdir(parents=True, exist_ok=True)
+        before = self.files.stamp if self.files.current() == self.files.stamp else -1
         with (self.path(session).parent / "session.lock").open("w") as lock:
             with waits.waited("sessions"):
                 fcntl.flock(lock, fcntl.LOCK_EX)
             raw = read_json(self.path(session), dict, {})
             got = {**(raw if isinstance(raw, dict) else {}), **fields}
             write_json(self.path(session), got)
-        return SessionRecord.from_json(got)
+        written = SessionRecord.from_json(got)
+        self.files.stamped(session, written, before)
+        return written
 
     def bind(self, session: str, env: str, pid: int = 0, provider: str = "") -> dict:
         given = {"pid": pid, "provider": provider}
@@ -160,7 +223,7 @@ class Sessions:
         return self.read(session).environment
 
     def all(self) -> dict[str, SessionRecord]:
-        return {p.parent.name: read_json(p, SessionRecord.from_json, SessionRecord.from_json({})) for p in sorted(runtime.sessions(self.root).glob("*/session.json"))}
+        return self.files.all()
 
     def running(self) -> list[str]:
         return [name for name, s in self.all().items() if s.pid and alive(s.pid)]
@@ -188,21 +251,6 @@ class Sessions:
 
     def granted(self, session: str, env: str) -> bool:
         return env in self.read(session).grants
-
-
-class SessionsSnapshot(Sessions):
-    def __init__(self, root: Path):
-        super().__init__(root)
-        self.held: dict[str, SessionRecord] | None = None
-
-    def all(self) -> dict[str, SessionRecord]:
-        if self.held is None:
-            self.held = super().all()
-        return self.held
-
-    def write(self, session: str, **fields) -> SessionRecord:
-        self.held = None
-        return super().write(session, **fields)
 
 
 def allowed(sessions: Sessions, session: str, env: str, actor_id: str, type_: str) -> str:

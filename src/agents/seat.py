@@ -8,10 +8,10 @@ from providers.payload import HookEvent
 from agents.terminal import seat_session
 from engine import runtime
 from engine.record import Record
-from engine.sessions import SessionRecord, SessionsSnapshot, agent_pid, alive
-from engine.stored import Growth, write_json
+from engine.sessions import SessionRecord, Sessions, agent_pid, alive
+from engine.stored import Growth
 from engine.proc import git
-from engine.seats import remember_terminal, seat_file
+from engine.seats import remember_terminal, write_seat
 from engine.worktree import checkout, environment
 from controllers.types import Agents, Environments
 from resources.base import SYSTEM
@@ -135,7 +135,7 @@ class SeatReport:
         self.branch()
         self.crew()
         last = self.agent.driver.last_report()
-        write_json(seat_file(self.record.root, self.agent.driver.session), {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
+        write_seat(self.record.root, self.agent.driver.session, {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
                                  "why": why, "printed": self.agent.driver.last_printed(),
                                  "report": {"title": last.title, **last.data} if last else {}})
         if last and last.title:
@@ -154,7 +154,7 @@ class HookBinding:
         self.root = root
         self.provider = provider
         self.caller = pid
-        self.sessions = SessionsSnapshot(root)
+        self.sessions = Sessions(root)
 
     @cached_property
     def pid(self) -> int:

@@ -352,6 +352,24 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
             call()
         assert (len(work.opened) <= opened, len(work.scanned) <= scanned) == (True, True), \
             f"{name} opens at most {opened} files and scans at most {scanned} folders once warm; it opened {work.opened} and scanned {work.scanned}"
+    from controllers.types import Environments
+    from engine.seats import write_seat
+    from engine.sessions import Sessions
+    from overview.summary import summarize
+    for i in range(40):
+        Environments(record, actor=SYSTEM).create(f"place-{i}")
+    sessions = Sessions(record.root)
+    sessions.write("claude-1", environment=record.env, provider="claude", pid=os.getpid(), seen=time.time())
+    for i in range(90):
+        sessions.write(f"claude-{i + 2}", environment=f"place-{i % 40}", provider="claude", pid=0, seen=time.time())
+        write_seat(record.root, f"claude-{i + 2}", {"at": time.time() - 3600, "agent": "claude", "env": f"place-{i % 40}", "report": {"title": f"claude-{i + 2}", "provider": "claude"}})
+    for name, call in {"a PreToolUse hook": lambda: answer(PROVIDERS["claude"](), record.root, hooks["claude"], os.getpid()), "the summary rebuild": lambda: summarize(record.root),
+                       "the agents list": lambda: dispatch("GET", "/api/agents", record.root, {}, {})}.items():
+        call()
+        with counted() as work:
+            call()
+        touched = [path for path in work.opened if "/sessions/" in path]
+        assert not touched, f"{name} reads no session or seat file once warm, on a record of 40 environments and 90 sessions; it opened {touched}"
     from commands.cli import run
     out = record.root.parent / "speed.json"
     capsys.readouterr()

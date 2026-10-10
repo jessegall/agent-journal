@@ -1,3 +1,4 @@
+import os
 import time
 from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
@@ -123,19 +124,69 @@ def seat_file(root: Path, session: str) -> Path:
     return runtime.session_file(root, session, SEAT)
 
 
+def write_seat(root: Path, session: str, seat: dict) -> None:
+    write_json(seat_file(root, session), seat)
+
+
+class SeatFiles:
+    """Every seat.json of one root, read again only when its own file changed.
+
+    A terminal rewrites its seat every second, so the folder's stamp says nothing here: each seat is
+    one stat, and a seat that is not beating costs no read."""
+
+    def __init__(self, root: Path):
+        self.folder = runtime.sessions(root)
+        self.kept: dict[str, tuple[tuple[int, int], Seat]] = {}
+
+    def stamped(self, name: str) -> tuple[tuple[int, int], Seat | None]:
+        try:
+            found = os.stat(self.folder / name / SEAT)
+        except OSError:
+            self.kept.pop(name, None)
+            return (0, 0), None
+        stamp = (found.st_mtime_ns, found.st_size)
+        held = self.kept.get(name)
+        if held and held[0] == stamp:
+            return stamp, held[1]
+        raw = read_json(self.folder / name / SEAT, dict, None)
+        if raw is None:
+            return stamp, None
+        seat = Seat.of(raw, name)
+        self.kept[name] = (stamp, seat)
+        return stamp, seat
+
+    def of(self, name: str) -> Seat:
+        seat = self.stamped(name)[1]
+        return seat if seat else Seat.of({}, name)
+
+    def all(self, within: float | None = None) -> list[Seat]:
+        try:
+            names = sorted(entry.name for entry in os.scandir(self.folder) if entry.is_dir())
+        except OSError:
+            return []
+        now = time.time()
+        found = []
+        for name in names:
+            stamp, seat = self.stamped(name)
+            if seat and (within is None or now - stamp[0] / 1e9 <= within):
+                found.append(seat)
+        return found
+
+
+class SeatFilesSet:
+    def __init__(self):
+        self.by_root: dict[Path, SeatFiles] = {}
+
+    def of(self, root: Path) -> SeatFiles:
+        return self.by_root.setdefault(Path(root), SeatFiles(root))
+
+
+SEAT_FILES = SeatFilesSet()
+
+
 def read_seat(root: Path, session: str) -> Seat:
-    return Seat.of(read_json(seat_file(root, session), dict, {}), session)
+    return SEAT_FILES.of(root).of(session)
 
 
 def seats(root: Path, within: float | None = None) -> list[Seat]:
-    found, now = [], time.time()
-    for path in runtime.sessions(root).glob(f"*/{SEAT}"):
-        try:
-            if within is not None and now - path.stat().st_mtime > within:
-                continue
-        except OSError:
-            continue
-        seat = read_json(path, dict, None)
-        if seat is not None:
-            found.append(Seat.of(seat, path.parent.name))
-    return found
+    return SEAT_FILES.of(root).all(within)
