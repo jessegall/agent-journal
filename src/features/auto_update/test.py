@@ -87,8 +87,12 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(routes, "upstream", lambda root: "99.0.0")
     release = dispatch("GET", "/api/upstream", record.root, {}, {}).body
     assert (release["latest"], release["newer"], release["changed"]) == ("99.0.0", True, []), "the viewer is told the newest release, that it is newer, and which managed files were changed"
-    assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changelog"] == routes.data("CHANGELOG.md").read_text(), \
-        "the changelog is the running code's own, whatever journal it serves"
+    whole = routes.data("CHANGELOG.md").read_text()
+    first = dispatch("GET", "/api/changelog", record.root, {}, {}).body
+    second = dispatch("GET", "/api/changelog", record.root, {"skip": str(first["shown"])}, {}).body
+    pages = routes.RELEASES_PER_PAGE
+    assert (first["changelog"].count("\n## "), first["shown"], first["more"], second["shown"], first["changelog"] + second["changelog"] == whole[:len(first["changelog"] + second["changelog"])]) == (pages, pages, True, 2 * pages, True), \
+        "the changelog is the running code's own, served a page of releases at a time, newest first, each page following the one before"
     monkeypatch.setattr(routes, "CHANGELOG", record.root / "CHANGELOG.md")
     assert dispatch("GET", "/api/changelog", record.root, {}, {}).code == 404, "running code without a changelog says so"
     (record.root / "CHANGELOG.md").write_text("# 99.0.0\n")
