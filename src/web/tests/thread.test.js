@@ -142,6 +142,14 @@ describe("older turns", () => {
     });
 });
 
+describe("older turns beside an old open message", () => {
+    test("the window starts at the oldest closed message loaded, so an old open message never pulls weeks of the agent's marks in before the messages around them", () => {
+        const stray = message(3, 5, {seen: ["agent"]});
+        const got = turns({message: [stray, message(40, 500, {completed: 1}), message(41, 510, {completed: 1, seen: ["agent"]})], agent: [agent({thoughts: [{at: 100, text: "weeks ago"}, {at: 505, text: "inside"}]})]}, [], true);
+        expect(got.map((t) => t.title || t.ref)).toEqual(["message:3", "message:40", "inside", "message:41"]);
+    });
+});
+
 describe("an agent's reply to a comment", () => {
     test("shows on the agent's side with the row, quoting what the comment quoted", () => {
         const asked = comment(1, 10, "> the passage\n\nwhy?", "user", {refs: ["todo:86"]});
