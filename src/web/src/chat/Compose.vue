@@ -27,6 +27,7 @@ const props = defineProps({
     many: {type: Object, default: null},
     idle: {type: Object, default: null},
     waiting: {type: Object, default: null},
+    mascot: {type: Boolean, default: false},
 });
 const emit = defineEmits(["unquote", "typing", "waiting-list"]);
 const draft = reactive({text: "", files: [], error: "", over: false});
@@ -212,7 +213,7 @@ async function use(tool) {
             </div>
         </Transition>
         <WaitEdge :waiting="waiting" @list="emit('waiting-list', $event)">
-            <VoiceMascot :present="!agentWorking" />
+            <VoiceMascot v-if="mascot" :present="!agentWorking" />
             <div class="compose-box floating">
                 <template v-if="draft.files.length">
                     <div class="compose-files">
