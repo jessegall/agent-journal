@@ -8,8 +8,12 @@
 # ~/.local/bin, and runs the migrations. Running it again upgrades.
 set -e
 command -v git >/dev/null 2>&1 || { echo "git is required"; exit 1; }
-command -v python3 >/dev/null 2>&1 || { echo "python3 is required"; exit 1; }
-python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))' || { echo "Python 3.10 or newer is needed, and python3 here is $(python3 -V 2>&1)"; exit 1; }
+PY=""
+for candidate in python3.14 python3.13 python3.12 python3.11 python3; do
+  command -v "$candidate" >/dev/null 2>&1 || continue
+  "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null && { PY="$candidate"; break; }
+done
+[ -n "$PY" ] || { echo "Python 3.11 or newer is needed, and python3 here is $(python3 -V 2>&1). Install one, such as: brew install python@3.13"; exit 1; }
 REPO="${AGENT_JOURNAL_REPO:-https://github.com/jessegall/agent-journal}"
 TMP="$(mktemp -d)"
 git clone --quiet --depth 1 "$REPO" "$TMP/pkg"
@@ -25,4 +29,4 @@ for f in "$PKG"/* "$TMP"/pkg/.gitignore; do
   esac
 done
 rm -rf "$TMP"
-AGENT_JOURNAL_BOOTSTRAPPED=1 python3 .journal/src/install.py upgrade .
+AGENT_JOURNAL_BOOTSTRAPPED=1 "$PY" .journal/src/install.py upgrade .
