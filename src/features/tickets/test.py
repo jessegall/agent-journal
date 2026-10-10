@@ -66,6 +66,11 @@ def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():
     bound = tickets.bind(ticket.n)
     assert (bound.work_environment, Environments(record).rows.by_title(bound.work_environment) is not None, tickets.bind(ticket.n).work_environment) == \
         (f"ticket-{ticket.n}", True, f"ticket-{ticket.n}"), "binding makes the ticket's environment once, named for the ticket, which its worktree takes too"
+    other = tickets.create("Light mode")
+    Environments(record, actor=SYSTEM).create(f"ticket-{other.n}")
+    claimed = Environments(record).rows.by_title(tickets.bind(other.n).work_environment)
+    assert (claimed.kind, claimed.owner, claimed.launched_from) == ("ticket", other.ref, record.env), \
+        "an environment that was made for a ticket's name by another path is claimed by the ticket, so it never stays one the Settings list offers for removal"
     assert tickets.agent_session(ticket.n) == "", "no session holds it until its agent starts"
     from features.dev_faults.feature import DevFaults
     assert DevFaults.on_for(Record(record.root, bound.work_environment)) is False, "a ticket's agent is not told the journal's own developer faults"
