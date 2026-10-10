@@ -7,7 +7,7 @@ import CellGroup from "../kit/CellGroup.vue";
 import Spinner from "../../kit/Spinner.vue";
 import {locked} from "../../state/updating.js";
 
-const {about, error, status, update, start} = useUpdates();
+const {about, error, status, loadMore, update, start} = useUpdates();
 
 onMounted(start);
 </script>
@@ -29,6 +29,11 @@ onMounted(start);
         </CellGroup>
         <h2 class="about-head">What changed</h2>
         <TextDisplay class="about-log" :text="about.changelog" />
+        <template v-if="about.more">
+            <CellGroup>
+                <Cell label="Show older releases" :chevron="false" @pick="loadMore" />
+            </CellGroup>
+        </template>
     </template>
 </template>
 

@@ -39,7 +39,14 @@ export function useUpdates() {
     });
 
     async function load() {
-        about.value = await api.changelog();
+        const now = await api.changelog();
+        const kept = about.value;
+        about.value = kept && kept.shown > now.shown ? {...now, changelog: kept.changelog, shown: kept.shown, more: kept.more} : now;
+    }
+
+    async function loadMore() {
+        const next = await api.changelog(about.value.shown);
+        about.value = {...about.value, changelog: about.value.changelog + next.changelog, shown: next.shown, more: next.more};
     }
 
     async function loadReleases() {
@@ -72,5 +79,5 @@ export function useUpdates() {
 
     const changed = computed(() => about.value?.changed || []);
 
-    return {about, changed, releases, error, status, load, update, start};
+    return {about, changed, releases, error, status, load, loadMore, update, start};
 }
