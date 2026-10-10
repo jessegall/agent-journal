@@ -504,8 +504,12 @@ class Driver(ABC):
             return 0.0
 
     def printed_tail(self, size: int) -> bytes:
+        """The last bytes of the agent's capture, read from its end, never the whole file."""
         try:
-            return self.printed.read_bytes()[-size:]
+            with self.printed.open("rb") as printed:
+                end = printed.seek(0, os.SEEK_END)
+                printed.seek(max(0, end - size))
+                return printed.read()
         except OSError:
             return b""
 

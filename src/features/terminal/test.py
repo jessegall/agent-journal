@@ -319,6 +319,9 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     sent = os.read(read, 4096)
     assert sent == b"\x1b[B\r\r\x1b" + claude.ALLOW + claude.DENY, "stop and the answer to a permission are written to the terminal as keys"
     assert claude.move_to_background() is bool(claude.MOVE_TO_BACKGROUND), "a driver moves a run to the background only when its agent has a key for it"
+    claude.printed.parent.mkdir(parents=True, exist_ok=True)
+    claude.printed.write_bytes(b"x" * 100000 + b"the end")
+    assert claude.printed_tail(7) == b"the end" and claude.printed_tail(10**7).endswith(b"the end"), "the end of the capture is read from its end, whatever its size"
     os.close(read)
     assert claude._wrote(b"x") is False and claude.fd == -1, "a terminal that is closed stops being written to"
     sent_lines = []
