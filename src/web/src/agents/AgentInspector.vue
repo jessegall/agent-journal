@@ -1,5 +1,5 @@
 <script setup>
-import {computed, provide, ref} from "vue";
+import {computed, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -74,6 +74,10 @@ if (scope) provide("scope", scope);
 const there = scope ? scope.api : api;
 const rowsHere = scope ? scope.rows : rows;
 
+const panes = ref(null);
+const shown = (...views) => views.some((view) => (panes.value ? panes.value.shown : []).includes(view));
+const refreshers = [];
+
 const found = ref(null);
 const looked = ref(false);
 usePoll(
@@ -90,46 +94,65 @@ const agent = computed(() => props.agent || found.value);
 const works = ref([]);
 const worksLoaded = ref(false);
 const worked = (w) => (subagent ? w.data.agent === props.session : !w.data.agent);
-usePoll(
-    pollKey(),
-    () => there.list("work", {last: HISTORY, completed: true}),
-    EVERY,
-    (got) => {
-        if (!got) return;
-        works.value = [...got.rows].filter((w) => !w.deleted && worked(w)).sort((a, b) => b.created - a.created);
-        worksLoaded.value = true;
-    }
-);
+refreshers.push([
+    () => shown("history"),
+    usePoll(
+        pollKey(),
+        () => there.list("work", {last: HISTORY, completed: true}),
+        EVERY,
+        (got) => {
+            if (!got) return;
+            works.value = [...got.rows].filter((w) => !w.deleted && worked(w)).sort((a, b) => b.created - a.created);
+            worksLoaded.value = true;
+        },
+        () => shown("history")
+    ),
+]);
 
 const tasks = ref([]);
 const tasksLoaded = ref(false);
-usePoll(
-    pollKey(),
-    () => (subagent ? there.tasks(props.session) : Promise.resolve(null)),
-    EVERY,
-    (got) => {
-        if (!got) return;
-        tasks.value = got;
-        tasksLoaded.value = true;
-    }
-);
+refreshers.push([
+    () => shown("tasks"),
+    usePoll(
+        pollKey(),
+        () => (subagent ? there.tasks(props.session) : Promise.resolve(null)),
+        EVERY,
+        (got) => {
+            if (!got) return;
+            tasks.value = got;
+            tasksLoaded.value = true;
+        },
+        () => shown("tasks")
+    ),
+]);
 
 const planRow = computed(() => (scope && props.plan ? scope.rows("plan").find((p) => p.n === props.plan) : null));
-usePoll(
-    pollKey(),
-    async () => {
-        if (!scope) return null;
-        if (props.plan) await scope.holding("plan", [props.plan]);
-        return scope.recentAll(CHAT_TYPES, PAGE);
-    },
-    EVERY,
-    () => {}
-);
+const rowViews = () => shown("chat", "todos", "plan");
+refreshers.push([
+    rowViews,
+    usePoll(
+        pollKey(),
+        async () => {
+            if (!scope) return null;
+            if (props.plan) await scope.holding("plan", [props.plan]);
+            return scope.recentAll(CHAT_TYPES, PAGE);
+        },
+        EVERY,
+        () => {},
+        rowViews
+    ),
+]);
 
 const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
 const recordedReader = {env: () => api.env(), transcript: (_agent, _session, fields) => api.helperTranscript(props.recorded, fields)};
-const transcript = useTranscript(() => props.recorded || (agent.value ? agent.value.n : 0), props.session, scroller, props.recorded ? recordedReader : there);
+const transcriptViews = () => shown("transcript") || (subagent && shown("chat"));
+const transcript = useTranscript(() => props.recorded || (agent.value ? agent.value.n : 0), props.session, scroller, props.recorded ? recordedReader : there, transcriptViews);
+refreshers.push([transcriptViews, transcript.refresh]);
+watch(
+    () => (panes.value ? panes.value.shown.join() : ""),
+    () => refreshers.forEach(([wanted, fetch]) => wanted() && fetch())
+);
 const {turns, total, loading: transcriptLoading, atStart, earlier} = transcript;
 
 const AVAILABLE = {
@@ -141,7 +164,6 @@ const AVAILABLE = {
 };
 const available = computed(() => [...(AVAILABLE[props.kind] || AVAILABLE.helper), ...(props.plan ? ["plan"] : [])]);
 
-const panes = ref(null);
 const todoN = ref(0);
 const todo = computed(() => rowsHere("todo").find((row) => row.n === todoN.value) || null);
 async function loadTodo(n) {

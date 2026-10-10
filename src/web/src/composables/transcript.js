@@ -6,7 +6,7 @@ import {PAGE} from "../sync/rows.js";
 const EVERY = 3000;
 const NEAR_BOTTOM = 60;
 
-export function useTranscript(agent, session, scroller, client = api) {
+export function useTranscript(agent, session, scroller, client = api, active = () => true) {
     const turns = ref([]);
     const total = ref(0);
     const first = ref(0);
@@ -87,7 +87,7 @@ export function useTranscript(agent, session, scroller, client = api) {
         fetchTurns();
     });
 
-    usePoll(pollKey(), fetchTurns, EVERY);
+    const refresh = usePoll(pollKey(), fetchTurns, EVERY, undefined, active);
 
-    return {turns, total, first, folded, error, loading, paging, atStart, toggle, earlier, retry};
+    return {turns, total, first, folded, error, loading, paging, atStart, toggle, earlier, retry, refresh};
 }
