@@ -13,7 +13,7 @@ from agents.actors import Actor, Agent, System, User, event_data
 from resources.types import BUSY, FAILED, IDLE, STOPPED, WORKING
 from providers.base import asking_row
 from providers.drivers import AGENT_COMMAND
-from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, UPDATE, take, waiting_commands
+from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, UPDATE, filed, take, waiting_commands
 from engine.record import Record
 from controllers.faults import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
@@ -360,11 +360,13 @@ class Engine:
                 self.agent.driver.send(PAUSED_FOR_UPDATE, now=True)
             return self.held("Paused")
         if asked := take(self.record.root, self.names(), RESUME):
+            if not self.agent.driver.send(RESUMED_AFTER_UPDATE if asked.value == UPDATE else RESUMED, now=True):
+                filed(self.record.root, asked)
+                return "paused"
             self.paused = False
             self.resumed_at = time.time()
             self.agent.mark("", "", paused=0, paused_for="")
             self.noted("Continued")
-            self.agent.driver.send(RESUMED_AFTER_UPDATE if asked.value == UPDATE else RESUMED, now=True)
             return "resumed"
         if not self.paused:
             return ""

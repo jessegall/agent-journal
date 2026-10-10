@@ -259,6 +259,15 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     assert (engine.pausing(), engine.paused, f"send {engine_module.PAUSED_FOR_UPDATE}" in calls) == ("Paused", True, True), "an agent paused for the update is told so"
     inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
     assert (engine.pausing(), engine.paused, calls[-1]) == ("resumed", False, f"send {engine_module.RESUMED_AFTER_UPDATE}"), "and is told when it may go on"
+    inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
+    engine.pausing()
+    from engine import runtime
+    delivered = engine.agent.driver.send
+    engine.agent.driver.send = lambda *a, **k: False
+    inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
+    assert (engine.pausing(), engine.paused, len(list(runtime.inputs(root).glob("*.json")))) == ("paused", True, 1), "a resume whose line was not submitted keeps the agent paused and is asked again"
+    engine.agent.driver.send = delivered
+    assert (engine.pausing(), engine.paused) == ("resumed", False), "and goes through once the line is submitted"
 
     calls.clear()
     inputs.queue(root, "claude-1", (), "Force through", action=inputs.FORCE)
