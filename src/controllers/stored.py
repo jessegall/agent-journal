@@ -591,9 +591,16 @@ class RowStore:
         return [*own, *self.also()]
 
     def kept(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
+        """The rows still open, and the ones closed lately when asked for; inside one event they are listed once, every later ask is answered from that listing."""
+        memo, key = self.record.memo, (self.type, "kept", closed_since, closed_last)
+        if memo is not None and key in memo:
+            return list(memo[key])
         standing = self._peeked(self.standing_summaries())
-        if not closed_since:
-            return self.order(standing)
-        closed = [row for row in self.summaries() if row["completed"] and not row["deleted"] and row["completed"] >= closed_since]
-        kept = sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed
-        return self.order(standing + self._peeked(kept))
+        if closed_since:
+            closed = [row for row in self.summaries() if row["completed"] and not row["deleted"] and row["completed"] >= closed_since]
+            kept = sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed
+            standing = standing + self._peeked(kept)
+        listed = self.order(standing)
+        if memo is not None:
+            memo[key] = listed
+        return list(listed)
