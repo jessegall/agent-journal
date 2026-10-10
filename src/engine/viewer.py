@@ -29,6 +29,7 @@ RUNNING_FOR = 5.0
 RUNNING: dict[str, tuple[float, str]] = {}
 SERVING: dict[str, str] = {}
 HEARTBEAT = 2.0
+PULSE_EVERY = 1.0
 LAUNCHING = "viewer.launching"
 COMING_UP = 20.0
 STOPPED_BY_US = 0
@@ -107,6 +108,18 @@ def beat(root: Path, port: int) -> str:
     for target, text in ((marker(root), json.dumps({"url": url, "at": time.time(), "port": port, "pid": os.getpid()})), (runtime.folder(root) / "heartbeat", f"{int(time.time())} {url}\n")):
         write_text(target, text)
     return url
+
+
+PULSED: dict[str, float] = {}
+
+
+def pulse(root: Path, port: int) -> None:
+    """Writes the heartbeat from a request the server is answering, at most once a second, so a busy server with a starved timer thread still shows it is alive."""
+    now = time.time()
+    if now - PULSED.get(str(root), 0.0) < PULSE_EVERY:
+        return
+    PULSED[str(root)] = now
+    write_text(runtime.folder(root) / "heartbeat", f"{int(now)} {url_of(port)}\n")
 
 
 def heartbeat(root: Path, port: int, every: float = HEARTBEAT) -> None:

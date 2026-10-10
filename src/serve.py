@@ -32,7 +32,7 @@ from engine.after_answer import AfterAnswer  # noqa: E402
 from engine.quiet_collector import QuietCollector  # noqa: E402
 from features.switches import WARMERS  # noqa: E402
 from engine.stop import asked  # noqa: E402
-from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
+from engine.viewer import elsewhere, heartbeat, known, pulse, remember  # noqa: E402
 from controllers.types import warm  # noqa: E402
 from providers.turns import read_transcripts  # noqa: E402
 from runner.spool import drain, replay, spooled  # noqa: E402
@@ -81,6 +81,7 @@ class Handler(BaseHTTPRequestHandler):
         return True
 
     def handle_one(self, method: str) -> None:
+        pulse(self.root, self.server.server_port)
         if not self.allowed_request():
             return
         url = urlparse(self.path)
