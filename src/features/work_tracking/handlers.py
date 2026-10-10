@@ -186,8 +186,6 @@ class NameRepeatedChecks(Handler):
 
 class ClearWaitOnActivity(Handler):
     def handle(self, context: AgentContext, event: ToolFinished) -> None:
-        if not context.agent.row.wrote:
-            return
         runs = command_runs(context.agent.row)
         started = runs[-1].at if runs else 0.0
         for w in working(context)[:1]:
