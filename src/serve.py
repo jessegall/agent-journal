@@ -395,6 +395,31 @@ def warmed(root: Path, warm: threading.Event) -> None:
     gc.freeze()
 
 
+def kept_rows_on(root: Path) -> bool:
+    from engine.record import Record
+    from features import FEATURES
+    return "kept_rows" in FEATURES and FEATURES["kept_rows"].enabled(Record(root, default_env(root)))
+
+
+def restore_rows(root: Path) -> None:
+    try:
+        if kept_rows_on(root):
+            from features.auto_update.routes import CHANGELOG
+            from features.kept_rows.snapshot import read
+            read(root, CHANGELOG.read_text() if CHANGELOG.is_file() else "")
+    except Exception:
+        traceback.print_exc()
+
+
+def save_rows(root: Path) -> None:
+    try:
+        if kept_rows_on(root):
+            from features.kept_rows.snapshot import write
+            write(root)
+    except Exception:
+        traceback.print_exc()
+
+
 def mark_first_start(root: Path) -> None:
     try:
         from features.auto_update.new_feature import mark_first_start_seen
@@ -448,6 +473,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     tell_threads_on_signal(root)
     allow_open_files()
     server = serve(root, port)
+    restore_rows(root)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
     changed = threading.Event()
     halting = threading.Event()
@@ -467,6 +493,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
         pass
     finally:
         server.server_close()
+        save_rows(root)
     if halting.is_set():
         print("journal: stopped", flush=True)
         return
