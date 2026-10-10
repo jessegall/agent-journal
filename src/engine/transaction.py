@@ -1,4 +1,5 @@
 import threading
+from collections.abc import Callable
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -14,6 +15,7 @@ class Work(threading.local):
 
 
 WORK = Work()
+UNDONE: list[Callable[[Path], None]] = []
 
 
 @contextmanager
@@ -30,6 +32,8 @@ def undoable():
                 Path(path).unlink(missing_ok=True)
             else:
                 restore(Path(path), before)
+            for forget in UNDONE:
+                forget(Path(path))
         WORK.undo_snapshots, WORK.undo_releases = None, None
         raise
     events, WORK.undo_snapshots, WORK.undo_releases = WORK.undo_releases, None, None

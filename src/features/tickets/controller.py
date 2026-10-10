@@ -12,7 +12,7 @@ from engine.worktree import branched, changed, current_branch, keep_own_packages
 from engine.sessions import Sessions
 from features.permission_prompts.skipping import prompted
 import resources.types as resources_module
-from controllers.base import CONTROLLERS, Controller
+from controllers.base import CONTROLLERS, Controller, discarding
 from controllers.prioritised import Prioritised
 from controllers.requests import request
 from engine.outbox import Request
@@ -72,12 +72,13 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _kept_from_outside(self, r: Resource) -> None:
         """An agent can neither mark a ticket from an integration as started by you nor change where it came from."""
-        stored = self.rows.peek(r.n) if self.rows.exists(r.n) else None
+        stored = self._stored(r) if self.rows.exists(r.n) else None
         if self.actor != AGENT or stored is None or not self._from_outside(stored):
             return
         if r.source != stored.source or (r.data.get("user_started") and not stored.data.get("user_started")):
             self._refuse(f"only you start or change the source of a ticket from {stored.source}, in the viewer")
 
+    @discarding
     def save(self, r: Resource, action: str, **event) -> Resource:
         from providers import DRIVERS
         self._kept_from_outside(r)

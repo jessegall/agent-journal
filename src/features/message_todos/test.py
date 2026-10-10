@@ -1,6 +1,7 @@
+import pytest
 import features
 from controllers.types import Agents, Messages, Nudges, Todos
-from resources.base import AGENT, SYSTEM, USER
+from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh, refused
 
 
@@ -202,6 +203,29 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
         assert said.create("same words", brief="again").n > second.n, "a create looks for its twin among the newest rows only, never through every row of the store"
     finally:
         base.TWIN_WINDOW = window
+    from controllers.types import Docs
+    from engine import transaction
+    todos = Todos(record, actor=SYSTEM)
+    kept = todos.create("kept as it was")
+    todos.rows.summaries()
+    with pytest.raises(RuntimeError):
+        with transaction.undoable():
+            todos.update(kept.n, title="rolled back")
+            assert todos.load(kept.n).title == "rolled back", "inside the transaction the change is read"
+            raise RuntimeError("the transaction fails")
+    assert (todos.load(kept.n).title, [row["title"] for row in todos.rows.summaries() if row["n"] == kept.n]) == ("kept as it was", ["kept as it was"]), \
+        "a transaction that is rolled back leaves nothing of what it wrote in memory, neither the row nor the list of rows"
+    mine = Messages(record, actor=USER).create("written by the user", brief="their words")
+    agent_messages = Messages(record, actor=AGENT)
+    held = agent_messages.rows.peek(mine.n)
+    held.brief = "changed in place"
+    with pytest.raises(Refused):
+        agent_messages.save(held, "updated")
+    assert agent_messages.rows.peek(mine.n).brief == "their words", "a save that is refused leaves the held row as the disk has it, also when the row was changed in place"
+    docs = Docs(record, actor=SYSTEM)
+    docs.create("a doc in a folder of its own")
+    folder = docs.rows.folder()
+    assert docs.rows._stamps(folder) is docs.rows._stamps(folder), "the stamps of a type with a folder per row are kept while its folder has not changed, not read from every row folder again"
     warm(record.root)
 
 

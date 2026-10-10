@@ -2,7 +2,7 @@ import time
 
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import Controller
+from controllers.base import Controller, discarding
 from controllers.marks import action
 from engine.extension import Extension
 from features.triggers import watched
@@ -21,6 +21,7 @@ STARTED_BY = Extension()
 class Triggers(Controller):
     resource = Trigger
 
+    @discarding
     def save(self, r: Resource, action: str, **event) -> Resource:
         if str(r.does) not in DOES:
             raise Refused(f"a trigger does one of {', '.join(DOES)}, not {r.does!r}")

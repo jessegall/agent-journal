@@ -1,3 +1,4 @@
+import functools
 import inspect
 from bisect import bisect_right
 from itertools import accumulate
@@ -52,6 +53,18 @@ class Arguments(Loaded):
     def writes(self) -> dict:
         """The fields the call writes, with their new values: every argument it names, and the key it sets."""
         return {**self.values, self.key: self.value} if self.key else dict(self.values)
+
+
+def discarding(save):
+    """A save that is refused leaves nothing of the change in memory: the row it was asked for is dropped from what is held, and read from the disk again."""
+    @functools.wraps(save)
+    def refusing(self, r, action, **event):
+        try:
+            return save(self, r, action, **event)
+        except Refused:
+            self.rows.discard(r.n)
+            raise
+    return refusing
 
 
 def searchable(r: Resource) -> str:
@@ -169,11 +182,16 @@ class Controller(Files, Links, Discussed):
                             {"why": self.force, "past": list(self.forced), "who": self.actor, "at": time.time()}]
         self.forced = []
 
+    def _stored(self, r: Resource) -> Resource:
+        """The row as the disk holds it, to compare a row about to be saved with: the held row, or a fresh read when the row being saved is the held one itself, changed in place."""
+        held = self.rows.peek(r.n)
+        return self.rows.reparsed(r.n) if held is r else held
+
     def _guarded(self, r: Resource, action: str) -> None:
         allowed = self.resource.editors.get(r.author)
         if allowed is None or self.actor in allowed or not self.rows.exists(r.n):
             return
-        stored = self.load(r.n)
+        stored = self._stored(r)
         parts = [section[SECTION.title] for section in stored.sections]
         rewritten = any(getattr(stored, f) != getattr(r, f) for f in WORDS) or [section[SECTION.title] for section in r.sections][:len(parts)] != parts
         if action == "deleted" or rewritten:
@@ -182,7 +200,7 @@ class Controller(Files, Links, Discussed):
     def _shipped(self, r: Resource, action: str) -> None:
         if self.actor == SYSTEM or not self.rows.exists(r.n):
             return
-        stored = self.load(r.n)
+        stored = self._stored(r)
         if not stored.data.get("system"):
             return
         free = ("kept", *self.resource.progress)
@@ -191,6 +209,7 @@ class Controller(Files, Links, Discussed):
                 stored.sections != r.sections or kept(stored) != kept(r):
             self._refuse(f"{self.type} {r.n} ships with the journal and cannot be changed or removed")
 
+    @discarding
     def save(self, r: Resource, action: str, **event) -> Resource:
         self._shipped(r, action)
         self._guarded(r, action)
