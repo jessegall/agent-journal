@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Callable
 
 from engine import bus, runtime, waits
+from engine.locks import lock_file
 from engine.event_log import EventLog, RecordEvents
 from engine.machines import Lease, NotTheOwner, Pushing, ThisMachine
 from engine.numbers import EVENTS, Numbers
@@ -152,8 +153,11 @@ class Record:
             finally:
                 self._held[path] -= 1
             return
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open("a+") as fh:
+        kept = lock_file(path)
+        with waits.waited("record"):
+            kept.threads.acquire()
+        try:
+            fh = kept.current()
             with waits.waited("record"):
                 fcntl.flock(fh, fcntl.LOCK_EX)
             self._held[path] = 1
@@ -163,6 +167,8 @@ class Record:
             finally:
                 self._held[path] = 0
                 fcntl.flock(fh, fcntl.LOCK_UN)
+        finally:
+            kept.threads.release()
 
     def emit(self, type: str, n: int, action: str, actor: str, quiet: bool = False, scope: str = "", **data) -> Event:
         if action not in ACTIONS or actor not in ACTORS:
