@@ -1,4 +1,5 @@
 from controllers.types import CONTROLLERS, Works
+from features.work_tracking.next import ready
 from resources.base import SYSTEM, WHOM
 from resources.types import TYPES, priority
 from engine.extension import Extension
@@ -33,7 +34,14 @@ def waiting(type_: str, status: str | None, whom: str | None) -> bool:
     return (type_ == "doc" or status in WAITING) and not whom
 
 
+COUNTERS = {"todo": lambda record: len(ready(record))}
+
+
 def counted(record, type_: str) -> int:
+    """How many rows of a type wait for the agent: a to-do counts only what it could take now, so a blocked row, one waiting on another, one that asks the user and one already in hand are left out."""
+    own = COUNTERS.get(type_)
+    if own:
+        return own(record)
     return sum(1 for row in CONTROLLERS[type_](record, actor=SYSTEM).rows.standing_summaries() if not row["hidden"] and waiting(type_, row.get("status"), row.get(WHOM)))
 
 

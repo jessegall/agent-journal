@@ -46,7 +46,7 @@ def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
          start_block(record).splitlines()[4], "LAWS THE JOURNAL SHIPS, always in force:",
          "STILL OPEN, from this or an earlier session (1):", "RULES, in force on every environment (1):", "FACTS about this environment (1):",
          "1 docs in the project; none is listed here, so look one up when a question needs it: journal doc search <term>, journal doc all.",
-         "1 TO-DOS waiting — delayed work, not an instruction to start any of it."], \
+         "1 TO-DOS ready to take — delayed work, not an instruction to start any of it."], \
         "it says the environment, the rules, the pins, the open work, how to find the docs and the count of to-dos"
     assert "The engine" not in block, "no doc is listed, so an old one cannot put the agent on the wrong track"
     record.set_setting("form_of_address", {"title": "Madam", "first_name": "Ada"})
@@ -66,7 +66,12 @@ def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
     todos.update(todos.create("in hand").n, status="started")
     todos.create("handed over", whom="s-9")
     todos.task("helper:1", "a helper's own step")
-    assert "1 TO-DOS waiting" in start_block(record), "a to-do in hand, one handed to someone and a helper's own step are not counted as waiting"
+    blocked = todos.create("blocked on something outside")
+    todos.block(blocked.n, "the thing it waits for")
+    waiting_on_another = todos.create("waits on another row")
+    todos.after(waiting_on_another.n, blocked.n)
+    assert "1 TO-DOS ready to take" in start_block(record), \
+        "a to-do in hand, one handed to someone, a helper's own step, a blocked one and one waiting on another row are none of them ready to take"
 
 
 def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():

@@ -1,5 +1,5 @@
 from controllers.types import Questions, Todos, Works
-from resources.base import SYSTEM
+from resources.base import SYSTEM, WHOM
 from resources.shapes import LEVELS
 from engine.extension import Extension
 
@@ -50,7 +50,15 @@ def worked(record) -> set:
     return {int(w.todo) for w in Works(record, actor=SYSTEM).rows.standing() if w.todo}
 
 
+STARTED = ("started",)
+
+
+def takeable(todo) -> bool:
+    """Whether a row is the agent's own to take: not handed to someone else and not already under way."""
+    return not todo.data.get(WHOM) and todo.data.get("status") not in STARTED
+
+
 def ready(record) -> list:
     todos, taken, asked = Todos(record, actor=SYSTEM), worked(record), questioned(record)
-    fit = [t for t in open_rows(record) if not t.blocked and not t.assigned and t.n not in taken and not todos.waits(t) and t.ref not in asked and not held(record, t)]
+    fit = [t for t in open_rows(record) if takeable(t) and not t.blocked and not t.assigned and t.n not in taken and not todos.waits(t) and t.ref not in asked and not held(record, t)]
     return sorted(fit, key=lambda t: (-int(t.priority or LEVELS["default"]), t.creation_order()))
