@@ -469,6 +469,15 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     tickets.update(ticket.n, launched=time.time(), halted=False)
     tickets.stop(ticket.n)
     assert (tickets.load(ticket.n).halted, tickets.load(ticket.n).launched) == (True, 0.0), "a stopped ticket forgets the launch it had under way, so a start that follows launches again"
+    looks = []
+    with monkeypatch.context() as leaving:
+        leaving.setattr(Tickets, "_alive_agents", lambda self, found: ["claude-3"] if len(looks.append(1) or looks) < 3 else [])
+        leaving.setattr(time, "sleep", lambda seconds: None)
+        tickets.stop(ticket.n)
+        assert len(looks) == 3, "a stop waits until the agent's process is gone, not only until it is asked to leave"
+        tickets.update(ticket.n, launched=0.0)
+        leaving.setattr(Tickets, "_alive_agents", lambda self, found: ["claude-3"])
+        assert tickets._live(tickets.load(ticket.n)), "an agent still shutting down, which has let go of the worktree, still counts as the ticket's agent, so a start does not launch a second beside it"
     from engine import bus
     from agents import terminal as terminals
     launched_with = []

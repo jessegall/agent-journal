@@ -9,7 +9,7 @@ from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
 from engine.worktree import branched, changed, current_branch, keep_own_packages, merged_into, present, tip
-from engine.sessions import Sessions
+from engine.sessions import Sessions, live
 from features.permission_prompts.skipping import prompted
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller, discarding
@@ -34,6 +34,7 @@ from controllers.marks import action
 from resources.types import EnvironmentKind
 
 LAUNCHING_FOR = 60.0
+STOP_WAIT, STOP_POLL = 20.0, 0.25
 RETURNS_BEFORE_ESCALATING = 2
 RELEASE_TIMEOUT = 600
 HELD = ("rule", "doc", "tool")
@@ -411,7 +412,21 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def stop(self, n: int):
         ticket = self.load(n)
         self._stop(ticket)
+        self._gone(ticket)
         return self.update(ticket.n, halted=True, launched=0.0)
+
+    def _alive_agents(self, ticket) -> list[str]:
+        """The sessions of the ticket's worktree whose process still runs, also one that has let go of the worktree while it shuts down."""
+        place = ticket.work_environment
+        return [name for name, held in Sessions(self.record.root).all().items() if place and held.environment == place and live(held)]
+
+    def _gone(self, ticket) -> None:
+        """Waits until the agent's process has left, as long as an agent takes to, so a start that follows never finds two agents in one worktree."""
+        if self._in_plan_worktree(ticket):
+            return
+        until = time.monotonic() + STOP_WAIT
+        while self._alive_agents(ticket) and time.monotonic() < until:
+            time.sleep(STOP_POLL)
 
     def _stop(self, ticket) -> None:
         session = self.agent_session(ticket.n)
@@ -653,7 +668,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return self.record.remembered("running tickets", lambda: [r for r in self.rows.standing() if r.work_environment and not r.halted and self._live(r) and not self._waiting_on(r)])
 
     def _live(self, ticket) -> bool:
-        return bool(self.agent_session(ticket.n)) or time.time() - ticket.launched < LAUNCHING_FOR
+        return bool(self.agent_session(ticket.n)) or bool(self._alive_agents(ticket)) or time.time() - ticket.launched < LAUNCHING_FOR
 
     def mark_seen(self) -> None:
         for ticket in self.rows.standing():
