@@ -10,7 +10,7 @@ from engine.transcript import IDLE
 from features.journal import waiting
 from features.sending import Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
-from engine.gates import Runs
+from engine.gates import Runs, STILL_HELD
 from features.work_tracking.details import WorkDetails
 from features.sequences.details import IN_CHAT, STEP, STEP_HELD, UNFINISHED
 from features.sequences.dispatch import board_of, dispatched_by_line, working_agent
@@ -152,6 +152,15 @@ def then_next(n: int, key: str, body: str) -> str:
 
 def chat_rule(sequence) -> str:
     return f" Write nothing in the chat while this runs: the user is in {sequence.talks_in}." if sequence.talks_in else ""
+
+
+def step_in_hand(record, session: str) -> bool:
+    """Whether a step of a sequence is still handed to the agent and not taken up, which is all that holds its writes for a sequence."""
+    found = Sequences(record, actor=SYSTEM).in_hand()
+    return bool(found) and found[2].get("followed") != found[2]["step"]
+
+
+STILL_HELD["sequences.step"] = step_in_hand
 
 
 class ReleaseStaleStep(Handler):

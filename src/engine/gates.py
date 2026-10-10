@@ -8,6 +8,7 @@ from engine.reach import Reach
 from engine.extension import Extension
 
 POLICIES = Extension()
+STILL_HELD: dict = {}
 AFTERWARDS = Extension()
 CANCELERS = Extension()
 RESPONDERS = Extension()
@@ -78,5 +79,14 @@ def hold(record, session: str, key: str, given: Hold) -> None:
 
 
 def held(record, session: str, subagent: bool = False) -> str:
-    holds = (Hold.from_json(raw) for raw in record.state_at(gate_file(record.root, record.env, session)).all().values())
-    return "; ".join(one.why for one in holds if one.why and one.reach.reaches(subagent))
+    """What holds the session's writes: each hold in its gate file whose feature still stands by it, since a hold the feature has not released is no reason to refuse a write."""
+    gate = record.state_at(gate_file(record.root, record.env, session))
+    standing = []
+    for key, raw in gate.all().items():
+        one = Hold.from_json(raw)
+        if one.why and key in STILL_HELD and not STILL_HELD[key](record, session):
+            with gate.changing() as holds:
+                holds.pop(key, None)
+            continue
+        standing.append(one)
+    return "; ".join(one.why for one in standing if one.why and one.reach.reaches(subagent))
