@@ -18,6 +18,7 @@ from resources.text import paragraphs
 from engine.record import Record
 from engine.memo import Memo
 from engine.settings_file import PROJECT_PARTS
+from resources.types import STOPPED
 from resources.base import ENVIRONMENT, PROJECT, Refused, SYSTEM
 from features.sending import SendOnTheClock, SendOnToolUse
 
@@ -219,7 +220,7 @@ class Feature(ABC):
         return self.details.values(record)
 
     def reached(self, record, reach: Reach) -> list:
-        return [agent for agent in Agents(record, actor=SYSTEM).rows.standing() if reach.reaches(agent.subagent)]
+        return [agent for agent in Agents(record, actor=SYSTEM).rows.standing() if agent.status != STOPPED and reach.reaches(agent.subagent)]
 
     def declared_line(self, name: str) -> Line:
         if name not in self.lines:
