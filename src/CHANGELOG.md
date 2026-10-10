@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.6 — The start block says how many to-dos you could actually take
+
+- The start block counts the to-dos ready to take, not every open row. A blocked row, one waiting on another, one asking the user, one in a helper's hands and one already under way are left out of the number.
+- The funnel that picks the next row now leaves out a to-do handed to someone else or already under way, so auto mode cannot offer a row somebody is holding.
+- The hook answers a set of warm-up calls in a folder of its own after a restart, so the first hook of a real session does not pay for the code and caches it meets first.
+- The spool is found from the stamp of its folder, through the listing the replay already takes.
+
 ## 2.269.5 — A migration and a writer no longer wait for each other
 
 - A write takes the shared hold of the record before any lock of its own, and a migration takes no record lock, so a migration and a writer never wait for each other. This is what made requests stall for seconds at a time under load.
