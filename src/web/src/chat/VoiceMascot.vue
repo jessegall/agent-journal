@@ -157,22 +157,29 @@ function nextMove() {
     const moves = movesOf(rigged.value);
     const others = moves.filter((each) => each !== lastMove);
     lastMove = others[Math.floor(Math.random() * others.length)] || moves[0] || null;
-    clearTimeout(rigBlinkTimer);
     move.value = lastMove;
 }
 
-function rigBlink() {
-    if (!move.value) move.value = rigged.value?.blink || null;
+// The eyes are a layer of their own: the lids shut for a moment whatever the rest of the rig is doing, and open again.
+const lids = ref("");
+
+function shut(blink) {
+    lids.value = "closed";
+    rigBlinkTimer = setTimeout(() => {
+        lids.value = "";
+        if (blink.twice) return (rigBlinkTimer = setTimeout(() => shut({...blink, twice: false}), BLINK.doubleAfter));
+        waitForRigBlink();
+    }, blink.shut);
 }
 
 const waitForMove = () => !still && (moveTimer = setTimeout(nextMove, afterSeconds(mascot.value.schedule.idle)));
-const waitForRigBlink = () =>
-    !still && rigged.value?.blink && (rigBlinkTimer = setTimeout(rigBlink, afterSeconds(mascot.value.schedule.blink)));
+const waitForRigBlink = () => !still && (rigBlinkTimer = setTimeout(() => shut(blinkOf()), afterSeconds(mascot.value.schedule.blink)));
 
 function rest() {
     clearTimeout(moveTimer);
     clearTimeout(rigBlinkTimer);
     clearTimeout(hopTimer);
+    lids.value = "";
 }
 
 function showNextMove() {
@@ -197,6 +204,7 @@ function enter() {
     rest();
     leaving.value = false;
     here.value = true;
+    waitForRigBlink();
     if (hop.value && !still) return hopThen("enter", settle);
     move.value = still ? null : passageOf("enter");
     if (!move.value) settle();
@@ -217,10 +225,8 @@ function gone() {
 }
 
 function settle() {
-    const blinked = move.value && move.value === rigged.value?.blink;
     move.value = null;
-    waitForRigBlink();
-    if (!blinked) waitForMove();
+    waitForMove();
 }
 
 function moveEnded() {
@@ -298,7 +304,7 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
             :style="passed"
             aria-hidden="true"
         >
-            <RigPlayer :voice="rigShown.voice" :rig="rigShown.rig" :move="rigShown.move" @ended="moveEnded" />
+            <RigPlayer :voice="rigShown.voice" :rig="rigShown.rig" :move="rigShown.move" :lids="lids" @ended="moveEnded" />
         </span>
         <template v-if="showcase">
             <span class="voice-mascot-label" :style="placed" aria-hidden="true">{{ rigShown.label }}</span>

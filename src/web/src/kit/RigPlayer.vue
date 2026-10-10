@@ -11,6 +11,7 @@ const props = defineProps({
     loop: Boolean,
     paused: Boolean,
     at: {type: Number, default: -1},
+    lids: {type: String, default: ""},
 });
 const emit = defineEmits(["ended", "time"]);
 const ms = ref(0);
@@ -66,7 +67,7 @@ const scale = computed(() => ({transform: `scale(${props.size / 256})`}));
                 <template v-for="file in layer.states ? Object.values(layer.states) : [layer.file]" :key="file">
                     <img
                         class="rig-layer"
-                        :class="{unseen: file !== fileOf(layer, pose)}"
+                        :class="{unseen: file !== fileOf(layer, pose, lids)}"
                         :src="api.publicUrl(rigUrl(voice, file))"
                         alt=""
                         draggable="false"

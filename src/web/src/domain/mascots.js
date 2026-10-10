@@ -57,7 +57,15 @@ export const frameMs = (edit, index) => edit?.frames?.[index]?.ms || edit?.ms ||
 export const frameShift = (edit, index) => ({x: edit?.frames?.[index]?.x || 0, y: edit?.frames?.[index]?.y || 0});
 
 // When a voice's mascot plays what, until the voice saves a schedule of its own: seconds between blinks, seconds between its other idle animations.
-export const DEFAULT_SCHEDULE = {blink: {min: 5, max: 10}, idle: {min: 20, max: 30}, weights: {}, place: {x: 0, y: 0}};
+export const DEFAULT_SCHEDULE = {blink: {min: 2, max: 6}, idle: {min: 20, max: 30}, weights: {}, place: {x: 0, y: 0}};
+
+// A blink as people blink: every few seconds at an irregular gap, the lids shut for a varied moment, and now and then twice in quick succession.
+export const BLINK = {shut: {min: 90, max: 160}, doubleOneIn: 6, doubleAfter: 130};
+
+export const blinkOf = (random = Math.random) => ({
+    shut: BLINK.shut.min + random() * (BLINK.shut.max - BLINK.shut.min),
+    twice: random() < 1 / BLINK.doubleOneIn,
+});
 
 export const weightOf = (schedule, path) => schedule.weights?.[path] ?? 1;
 
