@@ -97,8 +97,10 @@ class TranscriptCache:
         size = size_of(path)
         if size is None:
             return []
-        held = self.recents.get(str(path))
+        key = ("recent", str(path), shape_mark())
+        held = self.recents.get(str(path)) or self.stored(key)
         if held and held[0] == size:
+            self.recents[str(path)] = held
             return held[1]
         if held and 0 < held[0] < size <= held[0] + RECENT_BYTES:
             read = lines_after(path, held[0])
@@ -107,6 +109,7 @@ class TranscriptCache:
             read = tail_lines(path, RECENT_BYTES)
             found = list(rows(read.lines, row_of))
         self.recents[str(path)] = (read.end, found[-RECENT_ROWS:])
+        self.keep(key, read.end, self.recents[str(path)][1], KEEP_TRANSCRIPT_EVERY, behind=True)
         return self.recents[str(path)][1]
 
     def transcript(self, path: Path, extend: Callable[[list, list[bytes], int], list]) -> list:

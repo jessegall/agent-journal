@@ -165,8 +165,14 @@ def last_text(agent) -> str:
     return written.text if written else ""
 
 
+AHEAD_WITHIN = 6 * 3600.0
+AHEAD_PAUSE = 0.05
+
+
 def read_transcripts(root: Path) -> None:
+    """Reads ahead the conversations of the agents that were heard from lately, one at a time with a pause between, so a start does not parse every conversation at once."""
     for record in environment_records(root):
         for agent in Agents(record, actor=SYSTEM).rows.standing():
-            if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS:
+            if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS and time.time() - float(agent.at) < AHEAD_WITHIN:
                 PROVIDERS[agent.provider]().read_ahead(Path(agent.transcript))
+                time.sleep(AHEAD_PAUSE)
