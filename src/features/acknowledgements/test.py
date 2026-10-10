@@ -156,4 +156,4 @@ def test_a_held_agent_row_of_a_removed_environment_is_dropped_and_never_written(
     shutil.rmtree(record.root)
     PENDING.of(record, n).written -= 7200
     write_pending_rows()
-    assert (PENDING.holds(record, n), record.root.exists()), "the row is dropped, and nothing writes the folders of the environment back"
+    assert (PENDING.holds(record, n), record.root.exists()) == (False, False), "the row is dropped, and nothing writes the folders of the environment back"
