@@ -42,6 +42,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     for i in range(30):
         report(record, "working", "PreToolUse")
     assert len(text()) == 3, "said three times in all and then it lets the agent be"
+    assert "tool calls are held" in holds(record).get("messages.answering", ""), "after twenty tool uses with the message still unanswered, the agent's tool calls are held until it is handled"
     from controllers.types import Todos
     filed = Todos(record, actor=AGENT).create("wire the last route")
     Messages(record, actor=AGENT).process(m.n, "how is it going?", f"todo {filed.n}")
@@ -49,7 +50,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     assert not Messages(record).load(m.n).completed, "a question filed as a to-do is not answered: it stays open until a written reply"
     Messages(record, actor=AGENT).reply(m.n, "halfway: the build is green, wiring the last route")
     report(record, "working", "PreToolUse")
-    assert not holds(record).get("status"), "a reply settles it and lifts the hold"
+    assert (holds(record).get("status"), holds(record).get("messages.answering")) == (None, None), "a reply settles it and lifts the hold"
     assert settled(record, queued) is True, "a line still queued about a message now answered is dropped, not sent late"
     assert f"todo:{filed.n}" in Messages(record).load(m.n).refs, "the to-do the agent processed the message into is linked to it"
     asked = Messages(record, actor=USER).create("one more ask")
