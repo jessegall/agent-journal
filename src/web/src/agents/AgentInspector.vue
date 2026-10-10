@@ -130,7 +130,7 @@ const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
 const recordedReader = {env: () => api.env(), transcript: (_agent, _session, fields) => api.helperTranscript(props.recorded, fields)};
 const transcript = useTranscript(() => props.recorded || (agent.value ? agent.value.n : 0), props.session, scroller, props.recorded ? recordedReader : there);
-const {turns, total, loading: transcriptLoading} = transcript;
+const {turns, total, loading: transcriptLoading, atStart, earlier} = transcript;
 
 const AVAILABLE = {
     main: ["chat", "transcript", "terminal", "feed", "todos", "history", "subagents", "skills", "hooks"],
@@ -243,7 +243,7 @@ const openSkills = () => go(route.value.env, "skills");
                 <SwitchCase :value="view">
                     <template #chat>
                         <template v-if="subagent">
-                            <SubagentChat :turns="turns" :loading="transcriptLoading" :session="chatSession || session" read-only />
+                            <SubagentChat :turns="turns" :loading="transcriptLoading" :session="chatSession || session" :earlier="earlier" :at-start="atStart" read-only />
                         </template>
                         <template v-else>
                             <Thread view="chat" />
