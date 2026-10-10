@@ -20,6 +20,7 @@ import features
 from commands.dispatch import dispatch
 from features.routing import ranked, resolve
 from controllers.invoke import invoked, spread
+from commands import cli
 from commands.parser import parser
 from controllers.base import Controller, actions
 from controllers.environments import KEPT, SWEPT
@@ -378,7 +379,7 @@ def test_the_command_line_refuses_in_words_and_exits_nonzero(monkeypatch):
     assert (code, "usage:" in helped) == (0, True), "help asked of the server's command line is printed and exits cleanly, never raising"
 
 
-def test_no_command_argument_shares_a_name_with_a_global_option():
+def test_a_commands_own_argument_never_shadows_a_global_option_or_the_dispatch():
     features.load()
     top = parser()
     globals_ = {action.dest for action in top._actions if action.dest not in ("help", "_command")}
@@ -387,6 +388,15 @@ def test_no_command_argument_shares_a_name_with_a_global_option():
                for verb, command in nouns._subparsers._group_actions[0].choices.items()
                for action in command._actions if action.dest in globals_]
     assert clashes == [], "a command's own argument never shares its name with a global option, which would swallow it"
+    commands = [f"{group} {verb}"
+                for group, nouns in top._subparsers._group_actions[0].choices.items() if nouns._subparsers
+                for verb, command in nouns._subparsers._group_actions[0].choices.items()
+                for action in command._actions if action.dest == "query"]
+    assert commands, "a command with an argument of its own named query is what this guards: todo board has one"
+    out = io.StringIO()
+    code = cli.run(["--root", str(fresh("qr").root), "todo", "board"], out=out, err=io.StringIO())
+    assert (code, "To do" in out.getvalue()) == (0, True), \
+        "a command is dispatched by its own name, so one that happens to take an argument called query still runs as a command and is not called as one"
 
 
 BUDGET, PAGE, MANY = 50, 25, 150
