@@ -34,6 +34,7 @@ from controllers.marks import action
 from resources.types import EnvironmentKind
 
 LAUNCHING_FOR = 60.0
+TELL_GRACE = 60.0
 RETURNS_BEFORE_ESCALATING = 2
 RELEASE_TIMEOUT = 600
 HELD = ("rule", "doc", "tool")
@@ -350,7 +351,12 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return stopped
 
     def close_merged(self) -> list:
-        return self._closed([r for r in self.rows.standing() if r.work_environment and self._ran(r) and not self._working(r) and self._merged(r)])
+        return self._closed([r for r in self.rows.standing() if r.work_environment and self._ran(r) and self._settled(r) and self._merged(r)])
+
+    def _settled(self, ticket) -> bool:
+        """Whether its agent has ended its turn and nothing waits for it, so stopping it cuts nothing short: not a turn under way, no message it has not read, and no note typed to it a moment ago."""
+        there = Record(self.record.root, ticket.work_environment)
+        return not self._working(ticket) and not Messages(there, actor=AGENT).unread() and time.time() - ticket.told > TELL_GRACE
 
     def _working(self, ticket) -> bool:
         return Agents(Record(self.record.root, ticket.work_environment), actor=SYSTEM).state(ticket.work_environment) == WORKING_STATE
