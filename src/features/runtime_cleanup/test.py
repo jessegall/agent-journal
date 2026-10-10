@@ -51,6 +51,13 @@ def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole(mon
     with big.open("ab") as out:
         out.write(b"+more")
     assert big.read_bytes().endswith(b"THE END+more") is True, "an append after the trim continues the tail"
+    import serve
+    quiet = runtime.sessions(record.root) / "quiet-at-start"
+    quiet.mkdir()
+    (quiet / "session.json").write_text("{}")
+    aged(quiet, 8)
+    serve.pruned_at_start(record.root)
+    assert (quiet.exists(), small.exists()) == (False, True), "a start removes the folders of sessions quiet past the days, so the first hooks look at fewer"
 
 
 def test_a_quiet_launch_log_goes_and_a_running_one_keeps_its_last_megabyte(monkeypatch):
