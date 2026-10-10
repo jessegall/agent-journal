@@ -178,7 +178,7 @@ def test_a_helper_is_dispatched_told_and_finished_with_the_same_marks_whichever_
     assert code == 200, text
     helper = eventually(lambda: scratch.rows("helper")[0]["data"].get("report"))
     assert helper == "The stop hook is the slow one.", "the helper's report is on its row"
-    assert any(row["data"].get("peer") == "Rhea" and "stop hook" in row["brief"] for row in scratch.rows("message")), "and reaches the dispatcher's chat as a message from the helper"
+    assert eventually(lambda: any(row["data"].get("peer") == "Rhea" and "stop hook" in row["brief"] for row in scratch.rows("message"))), "and reaches the dispatcher's chat as a message from the helper"
 
 
 def git_in(project, *args: str) -> str:
