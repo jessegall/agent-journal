@@ -14,6 +14,7 @@ class Profile(Shape, Resource):
         Field(default="", name="agent_name"),
         Field(default="", name="address"),
         Field(default="", name="art"),
+        Field(default="", name="emoji"),
         Field(FLAG, False, name="system"),
         Field(default=dict, name="animation_schedule"),
     ]
@@ -24,6 +25,7 @@ class Profile(Shape, Resource):
               "--set calling=\"title and name\", name, none or \"its own words\" says what it calls you, and --set address=\"<words>\" holds those own words; --set humour=\"<how>\" is how it answers a "
               "meme, a joke, criticism or anger; --set naming=\"<how>\" is how it names the helpers and subagents it starts; "
               "--set agent_name=\"<name>\" is the name they address it by, and can be changed on every profile; "
+              "--set emoji=\"<faces>\" are the few emoji it reacts with and now and then uses in what it writes, separated by spaces; "
               "--set sample=\"<line>\" is how it answers the sample question, shown in the profile's preview; --set introduction=\"<words>\" is a short 'who am I' in its own voice, shown on its card. The five that ship with the journal "
               "cannot be changed or removed: "
               "journal profile duplicate <n> makes one you can."),
