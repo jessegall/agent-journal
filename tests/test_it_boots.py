@@ -345,14 +345,14 @@ def test_the_steps_of_a_restart_are_recorded_from_the_moment_the_old_server_stop
 def test_the_archive_is_built_and_tried_before_the_journal_is_pointed_at_it(tmp_path):
     root = tmp_path / ".journal"
     shutil.copytree(CODE, root / "src")
-    (root / "src" / "a_new_module.py").write_text("VALUE = 1\n")
+    (root / "src" / "features" / "a_new_module.py").write_text("VALUE = 1\n")
     from install import build_archive
     built, refused = build_archive(root)
     assert built is not None and not refused and built.is_file()
     assert not (root / "journal.pyz").exists(), "building does not point the journal at the new archive"
     with zipfile.ZipFile(built) as archive:
         names = archive.namelist()
-    assert "a_new_module.py" in names and "a_new_module.pyc" in names, "the archive carries the bytecode already compiled"
+    assert "features/a_new_module.py" in names and "features/a_new_module.pyc" in names, "the archive carries the bytecode already compiled"
     assert build_archive(root) == (built, ""), "the same code builds the same archive once"
 
 
