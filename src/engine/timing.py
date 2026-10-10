@@ -60,6 +60,12 @@ class Sampling:
             time.sleep(TICK)
 
 
+
+def unread_lines(summary: traceback.StackSummary) -> str:
+    """A stack as its files, lines and functions only: formatting it with the source would open every file on it, inside the request being measured."""
+    return "".join(f'  File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' for frame in summary)
+
+
 SAMPLING = Sampling()
 
 
@@ -84,7 +90,7 @@ class Sampler:
         if not self.last:
             return ""
         number, threads = self.last
-        shown = [f"thread {name}{' (this request)' if ident == self.mine else ''}:\n{''.join(summary.format())}" for ident, (name, summary) in threads.items()]
+        shown = [f"thread {name}{' (this request)' if ident == self.mine else ''}:\n{unread_lines(summary)}" for ident, (name, summary) in threads.items()]
         return (f"--- {number} x {SAMPLES_AT[number - 1] * 1000:.0f}ms into the request ---\n" + "\n".join(shown))[:STACKS_KEPT]
 
     def due(self, now: float) -> bool:

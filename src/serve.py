@@ -20,7 +20,7 @@ from features.auto_update.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
-from controllers.stored import DEFER, flush_indexes, renew_stamps  # noqa: E402
+from controllers.stored import DEFER, flush_indexes, renew_stamps, watch_marks  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone  # noqa: E402
 from features.routing import resolve  # noqa: E402
 from features.phone.allow_list import PhoneVisit, Reach  # noqa: E402
@@ -256,6 +256,7 @@ def watch_runtime(root: Path, halting: threading.Event) -> None:
     from features.auto_update.pausing import resume_when_done
     while not halting.wait(WATCH_SECONDS):
         runtime.refresh_flags(root)
+        watch_marks()
         renew_stamps()
         flush_indexes()
         waits.write_holds()
