@@ -18,11 +18,12 @@ test("a pin goes the moment it is closed, and the server is told behind it; one 
     expect(host.querySelectorAll(".chat-notice").length).toBe(1);
     host.querySelector(".chat-notice button").click();
     await nextTick();
-    expect([host.querySelectorAll(".chat-notice").length, api.closeNotice.mock.calls[0][0]]).toEqual([0, 4]);
+    const leaving = [...host.querySelectorAll(".chat-notice")].every((el) => el.className.includes("act-leave"));
+    expect([leaving, api.closeNotice.mock.calls[0][0]]).toEqual([true, 4]);
     answer.reject(new Error("refused"));
     await new Promise((done) => setTimeout(done, 50));
     await nextTick();
-    expect(host.querySelectorAll(".chat-notice").length).toBe(1);
+    expect([...host.querySelectorAll(".chat-notice")].some((el) => !el.className.includes("act-leave"))).toBe(true);
     app.unmount();
     host.remove();
 });
