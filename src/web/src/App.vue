@@ -26,7 +26,6 @@ import PluginUpdateBand from "./layout/PluginUpdateBand.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import BlockedNotice from "./layout/BlockedNotice.vue";
 import HostedBand from "./layout/HostedBand.vue";
-import Skeleton from "./kit/Skeleton.vue";
 import {desktopActs} from "./chat/suggestionActs.js";
 import {useTurnLinks} from "./chat/turnLinks.js";
 import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
@@ -169,9 +168,7 @@ watch(
         </main>
     </template>
     <template v-else-if="!store.spec && !route.page">
-        <main class="home-loading">
-            <Skeleton shape="messages" label="Loading messages" />
-        </main>
+        <main class="home-loading" />
     </template>
     <template v-else-if="store.spec && chatOnly">
         <ChatWindow />
