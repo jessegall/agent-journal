@@ -2,7 +2,7 @@ import threading
 import time
 from pathlib import Path
 
-from controllers.types import Agents, Environments, Messages, Notices, Questions, Todos, Works
+from controllers.types import CONTROLLERS, Agents, Environments, Messages, Notices, Questions, Todos, Works
 from engine import runtime
 from engine.version import version
 from overview.counts import counts
@@ -40,7 +40,9 @@ def subagents(agent) -> list[dict]:
                           "report": agent.subagent_reports.get(sub.get("id"), 0)})
     return shown
 
-KEPT_FOR = 1.0
+KEPT_FOR = 4.0
+PART_FOR = 30.0
+PARTS: dict[tuple[Path, str], tuple[tuple, float, dict]] = {}
 KEPT: dict[Path, tuple[float, dict]] = {}
 BUILDING = threading.Lock()
 REBUILDING: set[Path] = set()
@@ -93,6 +95,18 @@ def environment(record: Record) -> dict:
     }
 
 
+def held_environment(root: Path, name: str) -> dict:
+    """One environment's part of the summary, kept while none of its rows changed: the lists of its rows are the same lists, and the part is not older than PART_FOR."""
+    record = Record(root, name)
+    marks = tuple(CONTROLLERS[kind](record, actor=SYSTEM).rows.summaries() for kind in sorted(CONTROLLERS))
+    held = PARTS.get((root, name))
+    if held and time.monotonic() - held[1] < PART_FOR and len(held[0]) == len(marks) and all(kept is now for kept, now in zip(held[0], marks)):
+        return held[2]
+    made = environment(record)
+    PARTS[root, name] = (marks, time.monotonic(), made)
+    return made
+
+
 def lately_summarized(root: Path) -> "JournalSummary":
     with BUILDING:
         if root not in KEPT:
@@ -133,6 +147,6 @@ def summarize(root: Path) -> JournalSummary:
     owners = {e.title: e.owner for e in standing}
     names = dict.fromkeys([start, *(e.title for e in standing)])
     return {"project": root.resolve().parent.name, "root": str(root), "version": version(), "start": start, "started": runtime.STARTED[0], "color": identity(root)["color"],
-            "environments": [{**environment(Record(root, name)), "owner": owners.get(name, "")} for name in names],
-            "helpers": [{**environment(Record(root, e.title)), "owner": e.owner} for e in every if e.helping],
-            "tickets": [{**environment(Record(root, e.title)), "owner": e.owner} for e in every if e.is_ticket()]}
+            "environments": [{**held_environment(root, name), "owner": owners.get(name, "")} for name in names],
+            "helpers": [{**held_environment(root, e.title), "owner": e.owner} for e in every if e.helping],
+            "tickets": [{**held_environment(root, e.title), "owner": e.owner} for e in every if e.is_ticket()]}
