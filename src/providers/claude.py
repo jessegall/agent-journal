@@ -28,6 +28,7 @@ AGENT_TOOLS = re.compile(r"^tools:\s*(.+)$", re.M)
 SESSIONS = "uds:"
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 STATUS_SCRIPT = "claude-status.sh"
+INTERRUPTED = "[Request interrupted by user"
 CHANNEL_MARK = '<channel source="journal"'
 CROSS_SESSION = re.compile(r"^<cross-session-message\s+([^>]*)>(.*?)</cross-session-message>$", re.S)
 FROM_NAME, FROM_ADDRESS = re.compile(r'\bfrom-name="([^"]*)"'), re.compile(r'\bfrom="([^"]*)"')
@@ -290,6 +291,15 @@ class Claude(Provider):
         if run([python, "-c", "import sys; print(sys.version_info >= (3, 10))"], timeout=10).strip() != "True":
             return f"its channel runs {python or 'no Python'}, which is not Python 3.10 or newer"
         return ""
+
+    def interrupted_by_user(self, transcript: Path) -> bool:
+        for line in reversed(tail_lines(transcript, 16000).lines):
+            found = parsed_row(line, self.row_of)
+            if found is None or found.type != "user":
+                continue
+            words = [found.text or "", *(block.text for block in found.blocks if block.type == "text")]
+            return any(word.startswith(INTERRUPTED) for word in words)
+        return False
 
     def journal_typed(self, prompt: str) -> bool:
         return CHANNEL_MARK in prompt or super().journal_typed(prompt)

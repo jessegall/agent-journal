@@ -78,6 +78,12 @@ class WorkDetails(FeatureDetails):
 
     settings = [
         Setting(
+            name="carry_on_after",
+            default=15,
+            title="With auto mode on, tell a stopped agent to carry on once the user has been quiet this long",
+            unit="minutes",
+        ),
+        Setting(
             name="log_after",
             default=20,
             title="Block edits after this many with nothing logged",
@@ -189,6 +195,16 @@ class WorkDetails(FeatureDetails):
                 carry on with it now. If it waits on something outside your hands, say journal work await
                 "<what you wait for>"; if it waits on the user, put the question on its row with journal todo ask
                 and take the next ready row; if something else goes first, journal work park {{n}} "<why>".
+            """,
+        ),
+        Line(
+            name="auto carry on",
+            reply_kept=True,
+            title="auto mode is on and you stopped - the user last wrote more than {{minutes}} minutes ago",
+            brief="""
+                carry on with what you were doing, or take the next ready row. Only the user stopping you
+                keeps you stopped. If you wait on the user, put it as a question on its row with journal todo ask
+                and take the next ready row.
             """,
         ),
         Line(

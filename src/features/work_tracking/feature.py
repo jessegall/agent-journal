@@ -6,7 +6,7 @@ from features.work_tracking.auto import steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
 from features.sending import Nudge
-from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_ready, stopped_with_work, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
+from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_ready, stopped_in_auto, stopped_with_work, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import RefuseHeldWrites, RefuseWaitingInTheShell
 
@@ -16,6 +16,7 @@ class WorkFeature(Feature):
     nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, most=1),
               Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, most=1),
               Nudge("carry on", behaviour="carry on", about=stopped_with_work, once=True),
+              Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, most=CARRY_ON_TIMES),
               Nudge("nothing ready", behaviour="carry on", about=nothing_ready, most=CARRY_ON_TIMES))
 
     def chosen(self, record, key: str) -> bool:

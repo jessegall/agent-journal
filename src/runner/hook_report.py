@@ -4,6 +4,7 @@ from providers import command_effects
 from providers.base import JOURNAL
 from engine.record import Record
 from providers import skill_folders
+from providers.base import PERSON
 from providers.payload import Hook, HookEvent, HookFacts, LoopCall, LoopEndCall
 from resources.base import AGENT, SYSTEM
 from resources.types import IDLE
@@ -36,7 +37,8 @@ def merged(provider, row, hook: Hook, facts: HookFacts) -> dict:
             "provider": provider.name, "uses": int(row.uses) + (hook.event == HookEvent.PRE_TOOL_USE), "transcript": facts.transcript or row.transcript,
             "inbox": facts.inbox or row.inbox or "", "model": facts.model or row.model or "", "effort": facts.effort, "started": row.started or hook.at,
             "context": row.context or 0 if facts.context is None else facts.context, "asking": facts.asking,
-            "last_message": facts.last_message or row.last_message or "", "loops": loops_after(row, hook), "prompted": facts.prompted or row.prompted}
+            "last_message": facts.last_message or row.last_message or "", "loops": loops_after(row, hook), "prompted": facts.prompted or row.prompted,
+            "person_at": hook.at if facts.prompted == PERSON else row.person_at}
 
 
 def loops_after(row, hook: Hook) -> dict:

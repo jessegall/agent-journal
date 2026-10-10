@@ -1,5 +1,6 @@
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import ClassVar
 
 from engine import bus
@@ -17,7 +18,9 @@ from features.work_tracking.next import carried_on, named_rows, questioned, read
 from providers import PROVIDERS
 from resources.types import Work
 from engine.command_runs import command_runs
-from controllers.types import Agents, Todos, Works
+from controllers.types import Agents, Messages, Todos, Works
+from features.work_tracking.auto import automatic
+from resources.base import SYSTEM, USER
 
 ASKED_AGAIN_AFTER = 60
 NAMED_PARKED = "named_parked"
@@ -254,6 +257,23 @@ def stopped_with_work(context, agent) -> list[Sent]:
     if agent.idle_for < FIRST_AFTER * MINUTE:
         return []
     return [Sent(f"{work.n}:{work.updated}", {"n": work.n, "title": work.title, "rows": [work.ref]}) for work in carried_on(context.record)[:1]]
+
+
+def last_heard_from_the_user(context, agent) -> float:
+    """When the person last spoke to this agent: a message they wrote in the viewer or a prompt they typed themselves, never a line the journal typed."""
+    written = [row["created"] for row in Messages(context.record, actor=SYSTEM).rows.summaries() if row["seen"][:1] == [USER] and not row["deleted"]]
+    return max([float(agent.person_at), *written])
+
+
+def stopped_in_auto(context, agent) -> list[Sent]:
+    """With auto mode on, an agent that stopped long after the person last spoke is told to carry on, unless the person stopped it themselves."""
+    after = context.settings.carry_on_after * MINUTE
+    if not automatic(context.record) or agent.subagent or agent.paused or agent.idle_for < FIRST_AFTER * MINUTE or time.time() - last_heard_from_the_user(context, agent) < after:
+        return []
+    provider = PROVIDERS.get(agent.provider)
+    if provider is not None and agent.transcript and provider().interrupted_by_user(Path(agent.transcript)):
+        return []
+    return [Sent(f"{agent.at}", {"minutes": int(after // MINUTE)})]
 
 
 def nothing_ready(context, agent) -> list[Sent]:

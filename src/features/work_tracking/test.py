@@ -145,6 +145,24 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     Todos(asking, actor=AGENT).ask(row.n, "Files or SQLite?", options=[{"title": "Files"}, {"title": "SQLite"}], pick=1)
     assert len(idle_for(16)) == 1, "work whose row waits on a question is left to the question"
 
+    import json
+    from controllers.types import Messages
+    from providers.claude import Claude
+    said = lambda: [n for n in nudges(asking) if n.startswith("auto mode is on and you stopped")]
+    count = len(said())
+    assert set(said()) == {"auto mode is on and you stopped - the user last wrote more than 15 minutes ago"}, "with auto mode on, an agent that stopped long after the user last spoke is told to carry on"
+    Messages(asking, actor=USER).create("carry on please")
+    idle_for(8)
+    assert len(said()) == count, "the user wrote a moment ago: nothing new is said"
+    row = agents.by_session("claude-1")
+    agents.update(row.n, person_at=time.time())
+    assert len(said()) == count, "a prompt the user typed themselves counts the same"
+    transcript = asking.root / "transcript.jsonl"
+    transcript.write_text(json.dumps({"type": "user", "message": {"content": [{"type": "text", "text": "[Request interrupted by user]"}]}}) + "\n")
+    assert Claude().interrupted_by_user(transcript), "a turn the user stopped is read from the transcript"
+    transcript.write_text(json.dumps({"type": "user", "message": {"content": [{"type": "text", "text": "go on"}]}}) + "\n")
+    assert not Claude().interrupted_by_user(transcript), "any other last word is not a stop"
+
 
 def test_ready_rows_are_ordered_by_priority_then_by_number_skipping_what_is_not_ready():
     record = fresh()
