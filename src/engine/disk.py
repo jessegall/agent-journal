@@ -4,6 +4,7 @@ import os
 import shutil
 import threading
 import time
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Callable, TypeVar
 
@@ -74,8 +75,42 @@ def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
         return default
 
 
+class OutsideRepository(RuntimeError):
+    """A row file was written by something other than the repository that owns the rows."""
+
+    @classmethod
+    def writing(cls, path: Path) -> "OutsideRepository":
+        return cls(f"{path} is a row file and only its repository writes one: go through the controller or its rows (RowStore)")
+
+
+ROW_FILES: list[Callable[[Path], bool]] = []   # what a repository registers to say which paths are its rows
+AT_WORK = threading.local()
+
+
+@contextmanager
+def by_repository():
+    """Marks the code inside as a repository's own, the only code that may write or read a row file."""
+    AT_WORK.depth = getattr(AT_WORK, "depth", 0) + 1
+    try:
+        yield
+    finally:
+        AT_WORK.depth -= 1
+
+
+def in_repository() -> bool:
+    """Whether a repository, or an upgrade rewriting the record, is at work on this thread."""
+    from engine.locks import MIGRATIONS
+    return bool(getattr(AT_WORK, "depth", 0)) or bool(MIGRATIONS.get())
+
+
+def refuse_outside(path: Path) -> None:
+    if not in_repository() and any(is_row(path) for is_row in ROW_FILES):
+        raise OutsideRepository.writing(path)
+
+
 def replace(path: Path, raw: bytes, mode: int = 0o666) -> None:
     """Writes the whole file or nothing, and refuses with DiskFull once the disk is down to its kept free space."""
+    refuse_outside(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     free = free_bytes(path.parent)
     if free - len(raw) < KEPT_FREE_BYTES:
