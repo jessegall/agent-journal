@@ -246,6 +246,20 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header(tmp_path,
         sent = json.loads(fetch(f"{key}/data.json")[1])
         assert (sorted(sent["rows"]), "the outside doc" in json.dumps(sent), "[[chip" in json.dumps(sent)) == ([f"collection:{group.n}", inside.ref], True, False), \
             "the page data holds only the rows in scope, and a chip pointing outside the scope is plain text"
+        from engine import bus
+        from features.sharing import page_data
+        built = []
+        with monkeypatch.context() as kept:
+            kept.setattr(bus, "BACKGROUND", True)
+            was = Shares._shared_data
+            kept.setattr(Shares, "_shared_data", lambda self, found: built.append(found.token) or was(self, found))
+            page_data.forget(fenced.token)
+            assert (fetch(f"{key}/data.json")[1] == fetch(f"{key}/data.json")[1], len(built)) == (True, 1), \
+                "the page data is built once for the requests that come in the next seconds, not again for each"
+            page_data.forget(fenced.token)
+            fetch(f"{key}/data.json")
+            assert len(built) == 2, "and again once a comment has made it out of date"
+            page_data.forget(fenced.token)
         assert [fetch(f"/s/{'a' * len(fenced.token)}/")[0], fetch(f"/s/{asked.token}/")[0], fetch(f"/s/{stopped.token}/")[0]] == [404, 404, 410], \
             "an unknown link and one the user has not approved open nothing, and one that ended says so"
         assert [fetch(f"{key}/", method)[0] for method in ("PUT", "DELETE", "PATCH")] == [405, 405, 405], "a share link answers only reads and comments"
