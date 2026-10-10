@@ -32,10 +32,10 @@ describe("what the viewer keeps asking for", () => {
         expect(store.bar).toEqual({queue: []});
     });
 
-    test("events are polled only while the stream is down", () => {
-        expect(polled.events.active()).toBe(true);
+    test("events are polled every second, also while the stream is open", () => {
         store.streamOpen = true;
-        expect(polled.events.active()).toBe(false);
+        expect(polled.events.active).toBeUndefined();
+        expect(polled.events.every).toBe(1000);
     });
 
     test("events are asked for after the newest one held, and each answer moves the mark on", async () => {
