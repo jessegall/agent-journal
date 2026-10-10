@@ -10,43 +10,49 @@ const open = (url) => window.open(url, "_blank", "noopener");
 
 <template>
     <main class="lessons">
-        <header class="lessons-head">
-            <h1>Learn the journal by using it</h1>
-            <p>
-                Each lesson is a real session recorded through the journal, with every feature on. You play the user: send each message,
-                answer each question, approve each plan, and the journal does what it really does.
-            </p>
-        </header>
-        <div class="lessons-grid">
-            <template v-for="lesson in LESSONS" :key="lesson.key">
-                <button type="button" class="lesson" @click="play(lesson.key)">
-                    <span class="lesson-title">{{ lesson.title }}</span>
-                    <span class="lesson-teaches">{{ lesson.teaches }}</span>
-                    <span class="lesson-length">{{ lengthLine(facts[lesson.key]) }}</span>
-                    <span class="lesson-start">Start this lesson</span>
-                </button>
-            </template>
+        <div class="lessons-page">
+            <header class="lessons-head">
+                <h1>Learn the journal by using it</h1>
+                <p>
+                    Each lesson is a real session recorded through the journal, with every feature on. You play the user: send each message,
+                    answer each question, approve each plan, and the journal does what it really does.
+                </p>
+            </header>
+            <div class="lessons-grid">
+                <template v-for="lesson in LESSONS" :key="lesson.key">
+                    <button type="button" class="lesson" @click="play(lesson.key)">
+                        <span class="lesson-title">{{ lesson.title }}</span>
+                        <span class="lesson-teaches">{{ lesson.teaches }}</span>
+                        <span class="lesson-length">{{ lengthLine(facts[lesson.key]) }}</span>
+                        <span class="lesson-start">Start this lesson</span>
+                    </button>
+                </template>
+            </div>
+            <footer class="lessons-foot">
+                <span>Nothing leaves your browser.</span>
+                <Btn small @click="open(`${REPOSITORY}#install`)">Install</Btn>
+                <Btn small @click="open(REPOSITORY)">View on GitHub</Btn>
+            </footer>
         </div>
-        <footer class="lessons-foot">
-            <span>Nothing leaves your browser.</span>
-            <Btn small @click="open(`${REPOSITORY}#install`)">Install</Btn>
-            <Btn small @click="open(REPOSITORY)">View on GitHub</Btn>
-        </footer>
     </main>
 </template>
 
 <style scoped>
 .lessons {
+    height: 100%;
+    overflow-y: auto;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.lessons-page {
     display: flex;
     flex-direction: column;
     gap: 28px;
     box-sizing: border-box;
     max-width: 880px;
-    min-height: 100vh;
     margin: 0 auto;
     padding: 56px 24px 32px;
-    background: var(--bg);
-    color: var(--text);
 }
 
 .lessons-head h1 {

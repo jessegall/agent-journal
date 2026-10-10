@@ -1,13 +1,12 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed} from "vue";
 import Btn from "../src/kit/Btn.vue";
 import {following, lessons, play, scenario} from "./scenarios.js";
 import {restart} from "./storage.js";
 
 const props = defineProps({player: {type: Object, required: true}});
 
-const looking = ref(false);
-const shown = computed(() => props.player.view.ended && !looking.value);
+const shown = computed(() => props.player.view.ended && !props.player.view.looking);
 </script>
 
 <template>
@@ -17,7 +16,7 @@ const shown = computed(() => props.player.view.ended && !looking.value);
                 <h2>Lesson done</h2>
                 <p>{{ scenario.done }}</p>
                 <div class="lesson-end-acts">
-                    <Btn small @click="looking = true">Look around</Btn>
+                    <Btn small @click="player.view.looking = true">Look around</Btn>
                     <Btn small @click="restart">Watch again</Btn>
                     <template v-if="following">
                         <Btn small class="primary" @click="play(following.key)">Next lesson</Btn>
