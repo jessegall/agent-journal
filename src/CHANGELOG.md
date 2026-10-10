@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.8 — The board answers, the blink stops throwing, and a plan counts what waits for a merge
+
+- journal todo board answers instead of throwing. A command is now dispatched by its own name, so a command whose argument happens to be called query is no longer mistaken for a query.
+- The mascot's double blink no longer throws 'BLINK is not defined' in the viewer: a blink carries how long to wait before its second one, so the player needs none of the blink's constants.
+- A plan counts the rows a helper has finished on its branch apart from the closed and the open ones, on its phases, in its bar and in a ticket's progress, so a finished-but-unmerged phase does not read as untouched.
+- The boot guard proves the journal boots on any machine but judges its speed only on a quiet one, instead of stretching its limit by a load reading that cannot be trusted.
+- A chained command's part that reports its end twice is taken quietly, instead of throwing in the background after the answer has gone out.
+
 ## 2.269.7 — Answering the user comes before anything else
 
 - A message you wrote that the agent has read holds its very next tool use, reading as much as writing, until it replies, reacts or processes it. Only the journal commands that answer the message go through. It used to hold writes alone, and only after twenty tool uses.
