@@ -74,15 +74,16 @@ class Messages(Controller):
         if only_emoji(text):
             self._refuse(f"a reply that is only {text.strip()} is a reaction: journal message react {numbers[0]} \"{text.strip()}\"")
         unread = [number for number in numbers if self.actor == AGENT and AGENT not in self.load(number).seen]
-        if unread:
+        if unread and len(numbers) == 1:
             self._refuse(f"read message {unread[0]} before you answer it: journal message read {unread[0]}")
-        windowed = next((m for m in map(self.load, numbers) if hasattr(CONTROLLERS.get(m.data.get("window", "").partition(":")[0]), "say")), None)
-        if windowed:
-            kind, _, place = windowed.data["window"].partition(":")
-            self._refuse(f"message {windowed.n} was written in {kind} {place}: answer it there, with journal {kind} say {place}")
-        earlier = next((reply for number in numbers for reply in self.comments(number) if self.actor == AGENT and reply.author == AGENT), None)
-        if earlier:
-            self._refuse(f"you already answered this in comment {earlier.n}: add to that answer with journal comment update {earlier.n} rather than a second reply")
+        for number in unread:
+            self.read(number)
+        skipped, numbers = self._unanswerable(numbers)
+        if not numbers:
+            self._refuse("; ".join(why for _, why in skipped))
+        if skipped:
+            from controllers.types import Nudges
+            Nudges(self.record, actor=SYSTEM).to_primary("some messages in your reply were not answered", brief="; ".join(why for _, why in skipped))
         quotes = [self._quoted(number) for number in numbers]
         quoted = "\n>\n".join(quote for quote in quotes if quote)
         made = self.comment(numbers[0], f"{quoted}\n\n{text}" if quoted and not text.startswith(">") else text)
@@ -92,6 +93,21 @@ class Messages(Controller):
         if file:
             Comments(self.record, actor=self.actor).attach(made.n, file)
         return made
+
+    def _unanswerable(self, numbers: list[int]) -> tuple[list[tuple[int, str]], list[int]]:
+        """Splits the messages a reply names into those it cannot answer, each with the reason, and those it can: a message written in a window is answered there, and one the agent answered already is added to by comment."""
+        skipped, answerable = [], []
+        for number in numbers:
+            message = self.load(number)
+            kind, _, place = message.data.get("window", "").partition(":")
+            earlier = next((reply for reply in self.comments(number) if self.actor == AGENT and reply.author == AGENT), None)
+            if hasattr(CONTROLLERS.get(kind), "say"):
+                skipped.append((number, f"message {number} was written in {kind} {place}: answer it there, with journal {kind} say {place}"))
+            elif earlier:
+                skipped.append((number, f"you already answered this in comment {earlier.n}: add to that answer with journal comment update {earlier.n} rather than a second reply"))
+            else:
+                answerable.append(number)
+        return skipped, answerable
 
     def _quoted(self, n: int) -> str:
         lines = (self.load(n).brief or self.load(n).title).strip().split("\n")
