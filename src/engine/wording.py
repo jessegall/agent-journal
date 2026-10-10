@@ -34,10 +34,18 @@ def appended(on: str, values: dict, line: str) -> str:
     return " - ".join([line, *(added for added in (append(**values) for append in APPENDS.each(key=on)) if added)])
 
 
+def still_open(numbers: dict, record) -> dict:
+    """The new messages that are not closed: a message closed or deleted is no longer announced as new."""
+    from controllers.types import Messages
+    rows = Messages(record)
+    return {n: given for n, given in numbers.items() if not rows.rows.exists(n) or not (rows.load(n).completed or rows.load(n).deleted)}
+
+
 def counted(groups: dict[tuple, dict], record) -> list[str]:
+    announced = {kind: still_open(ns, record) if kind == ("message", "created") and record is not None else ns for kind, ns in groups.items()}
     return [appended(f"{type_}.{action}", {"numbers": list(ns), "record": record}, f"{plural(len(ns), f'new {type_}')} {', '.join(map(str, ns))}" if action == "created"
                     else f"{noun(len(ns), type_)} {', '.join(map(str, ns))} {action}")
-            for (type_, action), ns in groups.items()]
+            for (type_, action), ns in announced.items() if ns]
 
 
 def fill(value, values: dict):
