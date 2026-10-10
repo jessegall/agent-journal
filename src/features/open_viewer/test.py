@@ -425,7 +425,7 @@ def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_a
     watch = viewer.StuckServer(kept, "main")
     watch.missed = 2
     assert (watch.restarted(), watch.missed) == ("", 0), "a server that answers again starts its count of missed checks over"
-    (kept / "runtime").mkdir()
+    (kept / "runtime").mkdir(exist_ok=True)
     (kept / "runtime" / viewer.STUCK_THREADS).write_text("Thread 0x1: waiting on the record lock")
     signals = []
     monkeypatch.setattr(viewer, "os", SimpleNamespace(kill=lambda pid, number: signals.append(number)))
@@ -536,9 +536,9 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     http.unanswered(record.root)
     assert told, "after a crash, with no marker, the failures from before the new server's grace are reported"
     told.clear()
-    runtime.hook_failures(record.root).write_text(f"{started + http.RESTART_GRACE + 5} 000 claude {record.env}\n")
+    runtime.hook_failures(record.root).write_text("".join(f"{started + http.RESTART_GRACE + 5 + i} 000 claude {record.env}\n" for i in range(http.MISSES_TO_REPORT)))
     http.unanswered(record.root)
-    assert told, "a hook with no answer long after the server was up is reported"
+    assert told, "hooks with no answer long after the server was up are reported"
     assert ask("GET", "/api/agent-hooks/nobody").code == 404, "hooks of a provider that does not exist are not found"
     wired = ask("GET", "/api/agent-hooks/claude").body
     assert {"path", "hooks", "elsewhere"} <= set(wired), "a provider's hooks come with the file that holds them"
