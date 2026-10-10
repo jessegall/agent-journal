@@ -103,6 +103,7 @@ class SessionFiles:
         self.folder = runtime.sessions(root)
         self.stamp = -1
         self.records: dict[str, SessionRecord] = {}
+        self.kept: dict[str, tuple[tuple[int, int], SessionRecord]] = {}
 
     def current(self) -> int:
         try:
@@ -122,20 +123,27 @@ class SessionFiles:
             names = sorted(entry.name for entry in os.scandir(self.folder) if entry.is_dir())
         except OSError:
             return {}
-        found = {}
-        for name in names:
-            path = self.folder / name / SESSION
-            if path.is_file():
-                found[name] = read_json(path, SessionRecord.from_json, self.NONE)
+        found = {name: record for name in names if (record := self.record_of(name)) is not None}
+        self.kept = {name: self.kept[name] for name in found}
         return found
 
-    def stamped(self, session: str, written: SessionRecord, before: int) -> None:
-        """Raise the folder's stamp past the last one and keep the record, when nobody else wrote in between."""
+    def record_of(self, name: str) -> SessionRecord | None:
+        """One session's record, read again only when its own file changed."""
+        path = self.folder / name / SESSION
+        try:
+            found = os.stat(path)
+        except OSError:
+            return None
+        stamp = (found.st_mtime_ns, found.st_size)
+        held = self.kept.get(name)
+        if not held or held[0] != stamp:
+            held = self.kept[name] = (stamp, read_json(path, SessionRecord.from_json, self.NONE))
+        return held[1]
+
+    def bump(self) -> None:
+        """Raise the folder's stamp past the last one, so every process reads the sessions again."""
         after = max(time.time_ns(), self.current() + 1)
         os.utime(self.folder, ns=(after, after))
-        if self.stamp == before and self.current() == after:
-            self.records = {**self.records, session: written}
-            self.stamp = after
 
 
 class SessionFilesSet:
@@ -166,16 +174,14 @@ class Sessions:
 
     def write(self, session: str, **fields) -> SessionRecord:
         self.path(session).parent.mkdir(parents=True, exist_ok=True)
-        before = self.files.stamp if self.files.current() == self.files.stamp else -1
         with (self.path(session).parent / "session.lock").open("w") as lock:
             with waits.waited("sessions"):
                 fcntl.flock(lock, fcntl.LOCK_EX)
             raw = read_json(self.path(session), dict, {})
             got = {**(raw if isinstance(raw, dict) else {}), **fields}
             write_json(self.path(session), got)
-        written = SessionRecord.from_json(got)
-        self.files.stamped(session, written, before)
-        return written
+        self.files.bump()
+        return SessionRecord.from_json(got)
 
     def bind(self, session: str, env: str, pid: int = 0, provider: str = "") -> dict:
         given = {"pid": pid, "provider": provider}
