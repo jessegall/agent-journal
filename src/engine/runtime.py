@@ -1,3 +1,4 @@
+import json
 import time
 from pathlib import Path
 
@@ -68,6 +69,31 @@ def hook_failures(root: Path) -> Path:
 
 def restarting(root: Path) -> Path:
     return folder(root) / "restarting"
+
+
+RESTART_FRESH = 300.0
+STEP_TIMES = "upgrade-steps.jsonl"
+STEP_TIMES_KEPT = 400
+
+
+def restart_began(root: Path) -> float:
+    """When the restart that is under way began, from the marker the stopping server or the upgrade left; none when there is no recent one."""
+    try:
+        began = float(restarting(root).read_text())
+    except (OSError, ValueError):
+        return 0.0
+    return began if time.time() - began < RESTART_FRESH else 0.0
+
+
+def record_step(root: Path, step: str, seconds: float, cpu: float = 0.0, version: str = "") -> None:
+    """One line of the file that keeps how long each step of an update took, wall and processor seconds, the newest few hundred."""
+    file = folder(root) / STEP_TIMES
+    try:
+        kept = file.read_text().splitlines()[-STEP_TIMES_KEPT:] if file.is_file() else []
+        kept.append(json.dumps({"at": round(time.time()), "version": version, "step": step, "seconds": round(seconds, 2), "cpu": round(cpu, 2)}))
+        file.write_text("\n".join(kept) + "\n")
+    except OSError:
+        return
 
 
 def channel_queue(root: Path, pid: int) -> Path:

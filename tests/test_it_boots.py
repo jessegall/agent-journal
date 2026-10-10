@@ -326,6 +326,36 @@ def test_an_upgrade_keeps_a_build_a_live_session_runs_from(tmp_path):
     assert code_stamp(watched) != before, "the server watches journal.pyz itself, so a new build it points at restarts the server"
 
 
+def test_the_steps_of_a_restart_are_recorded_from_the_moment_the_old_server_stopped(tmp_path):
+    root = tmp_path / ".journal"
+    root.mkdir()
+    assert runtime.restart_began(root) == 0.0, "no marker, no restart under way"
+    runtime.restarting(root).parent.mkdir(parents=True, exist_ok=True)
+    runtime.restarting(root).write_text(str(time.time() - 4))
+    began = runtime.restart_began(root)
+    assert 3 < time.time() - began < 30
+    runtime.restarting(root).write_text(str(time.time() - 3600))
+    assert runtime.restart_began(root) == 0.0, "a marker an hour old is no restart"
+    for i in range(runtime.STEP_TIMES_KEPT + 5):
+        runtime.record_step(root, f"step {i}", 1.5, 0.5, "9.9.9")
+    lines = (runtime.folder(root) / runtime.STEP_TIMES).read_text().splitlines()
+    assert len(lines) == runtime.STEP_TIMES_KEPT and json.loads(lines[-1])["step"] == f"step {runtime.STEP_TIMES_KEPT + 4}"
+
+
+def test_the_archive_is_built_and_tried_before_the_journal_is_pointed_at_it(tmp_path):
+    root = tmp_path / ".journal"
+    shutil.copytree(CODE, root / "src")
+    (root / "src" / "a_new_module.py").write_text("VALUE = 1\n")
+    from install import build_archive
+    built, refused = build_archive(root)
+    assert built is not None and not refused and built.is_file()
+    assert not (root / "journal.pyz").exists(), "building does not point the journal at the new archive"
+    with zipfile.ZipFile(built) as archive:
+        names = archive.namelist()
+    assert "a_new_module.py" in names and "a_new_module.pyc" in names, "the archive carries the bytecode already compiled"
+    assert build_archive(root) == (built, ""), "the same code builds the same archive once"
+
+
 def test_an_upgrade_to_the_version_already_installed_fetches_nothing_and_keeps_the_build(tmp_path):
     root = installed(tmp_path, CODE)
     repository = released(tmp_path)

@@ -38,6 +38,7 @@ LOOKUP_SECONDS = 10
 BOOTSTRAPPED = "AGENT_JOURNAL_BOOTSTRAPPED"
 HEALED = "AGENT_JOURNAL_HEALED"
 REPAIRED = "AGENT_JOURNAL_REPAIRED"
+ARCHIVED = "AGENT_JOURNAL_ARCHIVED"
 SRC = "src"
 ARCHIVE = "journal.pyz"
 UPGRADE_MARK = "upgrading"
@@ -449,10 +450,6 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False, version:
             mark.unlink(missing_ok=True)
 
 
-STEP_TIMES = "upgrade-steps.jsonl"
-STEP_TIMES_KEPT = 400
-
-
 @contextmanager
 def timed(root: Path, step: str):
     """Writes how long a step of an upgrade took beside the others, and how much of it was the processor's own work, children included, so what dominates an update is read off the file, not guessed, and a busy machine is told from a slow step."""
@@ -460,20 +457,18 @@ def timed(root: Path, step: str):
     try:
         yield
     finally:
-        file = root / "runtime" / STEP_TIMES
-        try:
-            file.parent.mkdir(parents=True, exist_ok=True)
-            kept = file.read_text().splitlines()[-STEP_TIMES_KEPT:] if file.is_file() else []
-            kept.append(json.dumps({"at": round(time.time()), "version": version_in(code(root)), "step": step, "seconds": round(time.perf_counter() - began, 2),
-                                "cpu": round(sum(os.times()[:4]) - worked, 2)}))
-            file.write_text("\n".join(kept) + "\n")
-        except OSError:
-            pass
+        if str(PACKAGE) not in sys.path:
+            sys.path.insert(0, str(PACKAGE))
+        from engine.runtime import record_step
+        record_step(root, step, time.perf_counter() - began, sum(os.times()[:4]) - worked, version_in(code(root)))
 
 
 def stepping(root: Path, text: str) -> None:
     """Says which step the running upgrade is on, in the mark it holds, for the viewer and the status line to read."""
-    mark = loaded().upgrade_mark(root)
+    if str(PACKAGE) not in sys.path:
+        sys.path.insert(0, str(PACKAGE))
+    from engine.runtime import upgrade_mark
+    mark = upgrade_mark(root)
     if mark.exists():
         mark.write_text(text)
 
@@ -537,6 +532,13 @@ def handed_over(project: Path, root: Path, marks: tuple = ()) -> list[str]:
     return finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"]
 
 
+def from_archive(project: Path, root: Path, built: Path) -> list[str]:
+    """The rest of an install, run from the archive that was just built and is not yet the one the journal starts from: its code is compiled already, where the plain source would be compiled again by the process that packed it, and the server keeps its old build until the last step points at the new."""
+    finished = subprocess.run([sys.executable, str(built), "-m", "install", "finish", str(project)], capture_output=True, text=True, timeout=300,
+                              env={**os.environ, BOOTSTRAPPED: "1", ARCHIVED: "1"})
+    return finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"the Python is built but configuration failed: {finished.stderr.strip()}"]
+
+
 def release_of(folder: Path) -> str:
     installed = version_in(folder)
     return f"refs/tags/v{installed}" if installed and "unreleased" not in installed else ""
@@ -558,6 +560,13 @@ def finish(project: Path, root: Path) -> list[str]:
         done.append(f"package files an older installer did not know: {failed or 'fetched'}")
         if not failed:
             return done + handed_over(project, root, (REPAIRED,))
+    if not packed(root) and not os.environ.get(ARCHIVED):
+        with timed(root, "build the archive"):
+            built, refused = build_archive(root)
+        if built is not None:
+            stepping(root, "Setting up hooks and skills")
+            return done + from_archive(project, root, built)
+        done.append(refused)
     stepping(root, "Setting up hooks and skills")
     with timed(root, "set up hooks, skills and briefings"):
         done += configure(project, root)
@@ -628,40 +637,52 @@ def start_refused(built: Path, root: Path) -> str:
     return started.stderr.strip()[-300:] or f"it exited with {started.returncode} and printed nothing"
 
 
-def pack(root: Path) -> str:
+def build_archive(root: Path) -> tuple[Path | None, str]:
+    """The archive of the Python in src/, built with its bytecode compiled and tried once, and not yet pointed at: the build, or why there is none."""
     src = code(root)
     dirs = packed_dirs(src)
     files = python_files(src, dirs)
-    if not (src / "__main__.py").is_file():
-        return f"the Python is already in {ARCHIVE}"
     with timed(root, "pack: hash the files"):
         digest = hashlib.sha256(b"".join(f.relative_to(src).as_posix().encode() + f.read_bytes() for f in files)).hexdigest()[:10]
-    version = version_in(src, "0")
-    target = root / f"journal-{version}-{digest}.pyz"
-    if not target.is_file():
-        built = target.with_suffix(".new")
-        stamp = int(time.time()) // 2 * 2
-        moment = time.localtime(stamp)[:6]
-        with timed(root, "pack: read the build it replaces"):
-            kept = previous_entries(root)
-        with timed(root, "pack: write the archive"), zipfile.ZipFile(built, "w", zipfile.ZIP_DEFLATED) as archive:
-            for f in files:
-                name = f.relative_to(src).as_posix()
-                source = f.read_bytes()
-                held = kept.get(name)
-                unchanged = held is not None and held.source == source and held.compiled[:4] == MAGIC_NUMBER
-                archive.writestr(zipfile.ZipInfo(name, held.moment if unchanged else moment), source)
-                archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", held.moment if unchanged else moment),
-                                 held.compiled if unchanged else compiled(source, str(root / ARCHIVE / name), stamp))
-        with timed(root, "pack: start the archive once"):
-            refused = start_refused(built, root)
-        if refused:
-            built.unlink(missing_ok=True)
-            return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {refused}"
-        built.replace(target)
+    target = root / f"journal-{version_in(src, '0')}-{digest}.pyz"
+    if target.is_file():
+        return target, ""
+    built = target.with_suffix(".new")
+    stamp = int(time.time()) // 2 * 2
+    moment = time.localtime(stamp)[:6]
+    with timed(root, "pack: read the build it replaces"):
+        kept = previous_entries(root)
+    with timed(root, "pack: write the archive"), zipfile.ZipFile(built, "w", zipfile.ZIP_DEFLATED) as archive:
+        for f in files:
+            name = f.relative_to(src).as_posix()
+            source = f.read_bytes()
+            held = kept.get(name)
+            unchanged = held is not None and held.source == source and held.compiled[:4] == MAGIC_NUMBER
+            archive.writestr(zipfile.ZipInfo(name, held.moment if unchanged else moment), source)
+            archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", held.moment if unchanged else moment),
+                             held.compiled if unchanged else compiled(source, str(root / ARCHIVE / name), stamp))
+    with timed(root, "pack: start the archive once"):
+        refused = start_refused(built, root)
+    if refused:
+        built.unlink(missing_ok=True)
+        return None, f"{ARCHIVE} not built, the journal still runs from {SRC}/: {refused}"
+    built.replace(target)
+    return target, ""
+
+
+def pack(root: Path) -> str:
+    src = code(root)
+    if not (src / "__main__.py").is_file():
+        return f"the Python is already in {ARCHIVE}"
+    target, refused = build_archive(root)
+    if target is None:
+        return refused
+    dirs = packed_dirs(src)
+    files = python_files(src, dirs)
+    point, held_builds = light()
     with timed(root, "pack: point at the build"):
-        loaded().point(root, target)
-    held = loaded().held_builds(root)
+        point(root, target)
+    held = held_builds(root)
     for old in sorted(root.glob("journal-*.pyz"), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_BUILDS:]:
         if old != target and old.name not in held:
             old.unlink(missing_ok=True)
@@ -740,6 +761,15 @@ class Package:
     managed: ModuleType
 
 
+def light() -> tuple:
+    """What building the archive needs of the package, imported alone, so the new code is not compiled from source just to be packed: the pointer to a build and the builds in use."""
+    if str(PACKAGE) not in sys.path:
+        sys.path.insert(0, str(PACKAGE))
+    from engine.package import point
+    from engine.sessions import held_builds
+    return point, held_builds
+
+
 @cache
 def loaded() -> Package:
     sys.path.insert(0, str(PACKAGE))
@@ -773,7 +803,7 @@ def loaded() -> Package:
 
 if __name__ == "__main__":
     try:
-        loaded()
+        light() if sys.argv[1:2] == ["finish"] and not os.environ.get(ARCHIVED) and not packed(Path(sys.argv[2] if len(sys.argv) > 2 else ".").resolve() / ".journal") else loaded()
     except ImportError:
         if os.environ.get(HEALED):
             raise
