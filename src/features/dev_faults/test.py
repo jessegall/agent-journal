@@ -472,6 +472,14 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
         spool.WAITING.clear()
         spool.replay(record.root, 25)
         assert handled == ["1.json", "2.json", "3.json"], "and the rest is replayed once it has answered"
+        assert not spool.spooled(record.root), "an empty spool is found without listing it"
+        for name in ("4", "5", "6"):
+            (kept / f"{name}.json").write_text("{}")
+        spool.WAITING.clear()
+        assert spool.spooled(record.root), "and a kept event is found the same way"
+        spool.drain(record.root)
+        assert (handled[3:], spool.spooled(record.root)) == (["4.json", "5.json", "6.json"], False), \
+            "the spool is drained in short slices, in order, until nothing is kept, by the server when it is idle and after a hook has been answered"
     from commands.cli import run
     out = record.root.parent / "speed.json"
     capsys.readouterr()
