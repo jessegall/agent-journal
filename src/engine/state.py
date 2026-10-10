@@ -1,21 +1,29 @@
 import fcntl
+import os
 from contextlib import contextmanager
 from pathlib import Path
 
+from engine.memo import Memo
 from engine.stored import read_json, write_json
+
+FILES = Memo()
 
 
 class State:
-    """A small JSON file of state; it is read once, and a change reads it fresh under its lock."""
+    """A small JSON file of state; every State of one path shares its contents, read again only when the file's stamp changes, and a change reads it fresh under its lock."""
 
     def __init__(self, path: Path):
         self.path = Path(path)
-        self.held: dict | None = None
+
+    def stamp(self) -> tuple[int, int]:
+        try:
+            found = os.stat(self.path)
+        except OSError:
+            return (0, 0)
+        return (found.st_mtime_ns, found.st_size)
 
     def all(self) -> dict:
-        if self.held is None:
-            self.held = self.fresh()
-        return self.held
+        return FILES.get(str(self.path), self.stamp(), self.fresh)
 
     def fresh(self) -> dict:
         found = read_json(self.path, dict, {})
@@ -49,7 +57,7 @@ class State:
 
     def clear(self) -> None:
         self.path.unlink(missing_ok=True)
-        self.held = None
+        FILES.forget(str(self.path))
 
     @contextmanager
     def changing(self):
@@ -61,4 +69,4 @@ class State:
             yield held
             if held != before:
                 write_json(self.path, held)
-            self.held = held
+            FILES.put(str(self.path), self.stamp(), held)

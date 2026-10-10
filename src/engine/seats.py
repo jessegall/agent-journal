@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 
 from engine.sessions import Sessions
+from engine.state import State
 from engine.stored import read_json, write_json
 from engine import runtime
 from resources.fields import Loaded
@@ -86,7 +87,7 @@ def live_session(root: Path, session: str, within: float = ONLINE_FOR) -> tuple[
 
 
 def seated_terminal(root: Path, session: str) -> str:
-    return read_json(runtime.session_file(root, session, SEATED), SessionSeat.from_json, SessionSeat(terminal=session)).terminal
+    return SessionSeat.from_json({"terminal": session, **State(runtime.session_file(root, session, SEATED)).all()}).terminal
 
 
 def remember_terminal(root: Path, session: str, terminal: str) -> None:
