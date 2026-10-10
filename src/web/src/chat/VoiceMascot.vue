@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
-import {afterSeconds, animationLabel, fallOf, pickWeighted, placeOf, placedAt, showcaseOn} from "../domain/mascots.js";
+import {PRESENCE_GRACE_MS, afterSeconds, animationLabel, fallOf, pickWeighted, placeOf, placedAt, showcaseOn} from "../domain/mascots.js";
 import {animations, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import {loadProfiles, mascotOf, profiles, profilesLoaded} from "../composables/profiles.js";
 import {loadRig, rigs, voiceOfArt} from "../composables/voiceRigs.js";
@@ -14,6 +14,16 @@ const PASSAGES = ["enter", "exit"];
 const props = defineProps({present: Boolean, perch: {type: Number, default: 0}});
 
 const mascot = computed(() => mascotOf.value);
+const steady = ref(props.present);
+let presenceTimer = 0;
+watch(
+    () => props.present,
+    (now) => {
+        clearTimeout(presenceTimer);
+        presenceTimer = setTimeout(() => (steady.value = now), PRESENCE_GRACE_MS);
+    }
+);
+onUnmounted(() => clearTimeout(presenceTimer));
 const anchor = ref(null);
 const roomy = ref(true);
 let watching = null;
@@ -198,7 +208,7 @@ watch(
     {immediate: true}
 );
 watch(
-    [() => props.present, rigged],
+    [steady, rigged],
     ([present, found]) => {
         if (showcase || !found) return;
         if (present && (!here.value || leaving.value)) return enter();
@@ -256,7 +266,7 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
             <span class="voice-mascot-label" :style="placed" aria-hidden="true">{{ rigShown.label }}</span>
         </template>
     </template>
-    <template v-else-if="shown && roomy && (present || showcase)">
+    <template v-else-if="shown && roomy && (steady || showcase)">
         <span :class="['voice-mascot', {dropping}]" :style="placed" aria-hidden="true">
             <SpritePlayer :key="turn" :url="shown.url" :edit="shown.edit" :playing="Boolean(playing)" @ended="ended" />
         </span>
