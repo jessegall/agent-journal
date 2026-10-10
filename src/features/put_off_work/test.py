@@ -128,3 +128,54 @@ def test_a_rollback_to_the_previous_build_reads_the_index_this_build_wrote_and_t
         "this build, back after the rollback, reads the row the previous build changed and the one it added, whatever index it left"
     fresh_sum = tuple(stored.summed(returned.rows.counter("overview").weigh, 3, returned.rows.summaries()))
     assert returned.rows.counts("overview") == fresh_sum, "and its totals equal a sum made from the rows, not the ones saved before the rollback"
+
+
+def test_a_write_locks_its_repository_for_a_moment_a_read_waits_for_it_without_locking_and_a_lock_held_too_long_is_given_up(monkeypatch):
+    import threading
+    import time
+    from engine import locks
+    from engine.record import Record
+    from controllers.types import Todos
+    from resources.base import SYSTEM
+    record = fresh()
+    n = Todos(record, actor=SYSTEM).create("row").n
+    inside, ended = threading.Event(), []
+
+    def write(seconds, where=record):
+        with Record(where.root, where.env).locked():
+            inside.set()
+            time.sleep(seconds)
+            ended.append(time.monotonic())
+
+    writer = threading.Thread(target=write, args=(0.4,))
+    writer.start()
+    inside.wait()
+    Todos(record, actor=SYSTEM).rows.peek(n)
+    read_at = time.monotonic()
+    writer.join()
+    assert read_at >= ended[0], "a read that comes during a write to its repository waits for that write to finish"
+    inside.clear()
+    other = Record(record.root, "other")
+    writer = threading.Thread(target=write, args=(0.4,))
+    writer.start()
+    inside.wait()
+    began = time.monotonic()
+    Todos(other, actor=SYSTEM).rows.summaries()
+    quick = time.monotonic() - began
+    writer.join()
+    assert quick < 0.2, "a read of another environment's repository is not held back by it"
+    monkeypatch.setattr(locks, "LOCK_WAIT", 0.3)
+    inside.clear()
+    holder = threading.Thread(target=write, args=(1.0,))
+    holder.start()
+    inside.wait()
+    refused = None
+    began = time.monotonic()
+    try:
+        with Record(record.root, record.env).locked():
+            pass
+    except locks.RepositoryBusy as error:
+        refused = error
+    waited = time.monotonic() - began
+    holder.join()
+    assert refused is not None and waited < 0.9, "a write that cannot get the lock of its repository in time gives up with a word of its own, and does not wait for ever"

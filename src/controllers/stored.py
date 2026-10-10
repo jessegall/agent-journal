@@ -13,6 +13,7 @@ from resources.base import OWNER, PART_OF, Counter, Missing, Refused, Resource
 from resources.types import TYPES
 from engine.stored import append_text, read_json, write_json, write_text
 from engine import transaction
+from engine.locks import WRITING, after_writes
 from engine.disk import ROW_FILES, by_repository
 from engine.memo import MEMOS, Memo
 from engine.numbers import rows
@@ -413,7 +414,13 @@ class RowStore:
 
     @final
     def summaries(self) -> list[dict]:
+        self._after_writes()
         return self._scanned(self._summaries)
+
+    def _after_writes(self) -> None:
+        """A read that comes while another thread writes this repository waits for that write to end; the lock it takes is the write's, never a read's."""
+        if WRITING:
+            after_writes(str(self.record.scope_home(self.resource.scope) / ".lock"))
 
     def _scanned(self, scan: Callable[[Path], T]) -> T:
         try:
@@ -755,6 +762,7 @@ class RowStore:
 
     @final
     def peek(self, n: int) -> Resource:
+        self._after_writes()
         p = self.path(n)
         try:
             stamps = self._stamps(p.parent) if WATCHED.on and not self.resource.own_folder else {}
