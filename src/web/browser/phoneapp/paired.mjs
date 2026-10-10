@@ -1,3 +1,5 @@
+import {tmpdir} from "node:os";
+import {join} from "node:path";
 import {openBrowser} from "../harness.mjs";
 
 export const PAIR = process.argv[2];
@@ -39,7 +41,12 @@ export async function allowOnComputer(page) {
         await computer
             .locator(".chat-notice", {hasText: "Set up Face ID for phone"})
             .getByRole("button", {name: "Allow", exact: true})
-            .click({timeout: SHOWN});
+            .click({timeout: SHOWN})
+            .catch(async (error) => {
+                const picture = join(tmpdir(), `computer-${Date.now()}.png`);
+                await computer.screenshot({path: picture}).catch(() => {});
+                throw new Error(`${error.message} (the computer's page at that moment: ${picture})`);
+            });
     } finally {
         await computer.close();
     }
