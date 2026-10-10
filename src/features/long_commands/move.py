@@ -16,6 +16,15 @@ from controllers.types import Agents
 SETTLE = 30.0
 
 
+def has_come_back(context: AgentContext, row) -> bool:
+    """An open call the transcript shows as answered did end, though its end was lost on the way (a hook that got no answer from a busy server is dropped), so it is closed and never moved."""
+    reader = transcript_reader(row)
+    if reader is None or reader.command_is_open(Path(row.transcript)):
+        return False
+    Agents(context.record, actor=SYSTEM).update(row.n, **settled(row, time.time()))
+    return True
+
+
 class MoveLongCommands(Handler):
     """Moves a command that holds the terminal too long, on the engine's own beat, so no slow upkeep of the clock can delay it."""
 
@@ -30,9 +39,9 @@ class MoveLongCommands(Handler):
         seconds = int(time.time() - float(started))
         provider = row.provider
         driver = DRIVERS.get(provider)
-        if not driver or not driver.MOVE_TO_BACKGROUND or seconds < context.settings.after_seconds or self.has_come_back(context, row):
+        if not driver or not driver.MOVE_TO_BACKGROUND or seconds < context.settings.after_seconds or not context.once("asked", started):
             return
-        if not context.once("asked", started):
+        if has_come_back(context, row):
             return
         reason = cancelled(LONG_COMMAND, HookCall(PROVIDERS[provider]() if provider in PROVIDERS else None, context.record, None, row),
                            {"command": last.command, "seconds": seconds})
@@ -88,11 +97,3 @@ class FollowMovedCommands(Handler):
         if part and context.state.get("part") != part:
             context.state.set("part", part)
             context.journal.get(Agents).card(row.n, key=f"command:{started}", command=part)
-
-    def has_come_back(self, context: AgentContext, row) -> bool:
-        """An open call the transcript shows as answered did end, though its end was lost on the way (a hook that got no answer from a busy server is dropped), so it is closed and never moved."""
-        reader = transcript_reader(row)
-        if reader is None or reader.command_is_open(Path(row.transcript)):
-            return False
-        Agents(context.record, actor=SYSTEM).update(row.n, **settled(row, time.time()))
-        return True
