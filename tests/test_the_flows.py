@@ -5,6 +5,7 @@ through /api/run as the CLI sends them), and asserts what the viewer reads back.
 """
 import http.client
 import json
+import sys
 import threading
 import time
 from contextlib import contextmanager
@@ -343,3 +344,31 @@ def test_a_refused_chained_line_names_only_the_commands_that_ran_and_the_ones_th
     code, failed = call("journal message reply 99999 'on it'; journal work start 'other work'", "chain-2")
     reason = failed.get("reason", "")
     assert "do not run them again: journal message reply 99999" not in reason and "did not run either" in reason, "a command that failed is never named among those that ran"
+
+
+OPENED: list[str] | None = None
+
+
+def listening(event: str, args: tuple) -> None:
+    if OPENED is not None and event == "open" and str(args[0]).endswith("session.json"):
+        OPENED.append(str(args[0]))
+
+
+sys.addaudithook(listening)
+
+
+@pytest.mark.xfail(reason="the cached session read is built by another helper; this holds it to what it promises once it lands", strict=False)
+def test_a_session_read_stays_cached_two_hooks_and_a_summary_in_a_row_open_no_session_file_the_second_time(scratch):
+    global OPENED
+    round_of = lambda: (scratch.hook("PreToolUse", tool_name="Bash", tool_input={"command": "ls"}), scratch.hook("PostToolUse", tool_name="Bash", tool_input={"command": "ls"}),
+                        scratch.ask("GET", "/api/summary"))
+    round_of()
+    time.sleep(1.5)
+    OPENED = []
+    try:
+        round_of()
+        time.sleep(1.5)
+        opened = list(OPENED)
+    finally:
+        OPENED = None
+    assert opened == [], f"the second round of hooks and a summary reads its sessions from memory: {opened}"
