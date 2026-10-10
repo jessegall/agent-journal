@@ -80,7 +80,7 @@ class Driver(ABC):
     SEND_NOW = b""
     QUIET = 3.0
     PROMPT = re.compile(r"[›>$❯]\s*$")
-    SUGGESTED = re.compile(rb"(?!)")
+    SUGGESTED = re.compile(rb"(?!)()()")
     ELSEWHERE = ""
     ALLOW = b"1"
     name = ""
