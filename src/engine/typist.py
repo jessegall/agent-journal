@@ -1,4 +1,5 @@
 import errno
+import json
 import os
 import socket
 import time
@@ -68,6 +69,29 @@ def sent(mouth: socket.socket, packet: bytes, where: str) -> bool:
 
 def live(root: Path) -> list[str]:
     return sorted(p.name.removeprefix("typist-").removesuffix(".sock") for p in folder(root).glob("typist-*.sock") if reachable(p))
+
+
+LIVE_FILE = "live-sockets.json"
+LISTED_FRESH = 6.0
+
+
+def publish_live(root: Path) -> list[str]:
+    """Found by the supervising process, once a few seconds for the whole journal, and written for every environment's process to read."""
+    from engine.stored import write_text
+    found = live(root)
+    write_text(folder(root) / LIVE_FILE, json.dumps({"at": time.time(), "sessions": found}))
+    return found
+
+
+def listed(root: Path) -> list[str]:
+    """The live sessions as the supervising process last wrote them; found here, socket by socket, only when it has not written lately."""
+    try:
+        written = json.loads((folder(root) / LIVE_FILE).read_text())
+        if time.time() - float(written["at"]) < LISTED_FRESH:
+            return [str(session) for session in written["sessions"]]
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return live(root)
 
 
 def reachable(where: Path) -> bool:

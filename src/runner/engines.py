@@ -21,6 +21,7 @@ from engine.locks import claim
 ENDING = 5.0
 UNHEARD_AFTER = 120.0
 LOOKED_EVERY = 30.0
+LIVE_EVERY = 2.0
 CHILD = "import commands.cli; from runner.engines import child"
 
 SUPERVISING = "engines-supervisor.lock"
@@ -58,7 +59,7 @@ class Engines:
 
     def mine(self) -> list[str]:
         sessions = Sessions(self.root)
-        return [session for session in typist.live(self.root) if sessions.environment(session) == self.env]
+        return [session for session in typist.listed(self.root) if sessions.environment(session) == self.env]
 
     def tick(self) -> None:
         mine = self.mine()
@@ -111,6 +112,8 @@ class Children:
         self.running: dict[str, subprocess.Popen] = {}
         self.alarmed: set[str] = set()
         self.looked = 0.0
+        self.found: list[str] = []
+        self.found_at = 0.0
         for pid in leftovers(self.root):
             try:
                 os.kill(pid, signal.SIGTERM)
@@ -119,7 +122,9 @@ class Children:
 
     def wanted(self) -> set[str]:
         sessions = Sessions(self.root)
-        return {env for session in typist.live(self.root) if (env := sessions.environment(session) or self.healed(sessions, session))}
+        if time.time() - self.found_at >= LIVE_EVERY:
+            self.found, self.found_at = typist.publish_live(self.root), time.time()
+        return {env for session in self.found if (env := sessions.environment(session) or self.healed(sessions, session))}
 
     def healed(self, sessions: Sessions, session: str) -> str | None:
         seat = read_seat(self.root, session)

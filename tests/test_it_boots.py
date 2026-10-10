@@ -1588,6 +1588,24 @@ def test_a_server_that_stops_answering_is_stopped_with_its_threads_kept(tmp_path
     assert "waiting on the record lock" in Path(kept).read_text(), "what each thread was doing is kept beside the runtime"
 
 
+def test_the_live_sockets_are_found_once_for_the_journal_and_every_environment_reads_the_list(tmp_path, monkeypatch):
+    from engine import typist
+    from runner import engines
+    root = tmp_path / ".journal"
+    root.mkdir()
+    asked = []
+    monkeypatch.setattr(typist, "live", lambda found: asked.append(1) or ["claude-1", "claude-2"])
+    assert (typist.publish_live(root), len(asked)) == (["claude-1", "claude-2"], 1), "the supervising process finds them and writes the list"
+    assert (typist.listed(root), typist.listed(root), len(asked)) == (["claude-1", "claude-2"], ["claude-1", "claude-2"], 1), "every environment's process reads the list and connects to no socket"
+    written = json.loads((typist.folder(root) / typist.LIVE_FILE).read_text())
+    (typist.folder(root) / typist.LIVE_FILE).write_text(json.dumps({**written, "at": time.time() - typist.LISTED_FRESH - 1}))
+    assert (typist.listed(root), len(asked)) == (["claude-1", "claude-2"], 2), "when the supervising process has not written lately they are found here after all"
+    children = engines.Children(root)
+    children.wanted()
+    children.wanted()
+    assert len(asked) == 3, "and the supervising process looks only every few seconds, not at every tick"
+
+
 def test_one_watcher_writes_the_installed_build_and_every_other_process_reads_it(tmp_path, monkeypatch):
     from engine import package
     root = tmp_path / ".journal"
