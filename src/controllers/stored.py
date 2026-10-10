@@ -42,7 +42,7 @@ STAMPED_OWN: dict[str, "Stamped"] = {}
 PARSED = "journal.parsed"
 STAMPS_FRESH = 60.0
 STAMPS_RENEW = STAMPS_FRESH / 2
-STAMPS_KEPT = STAMPS_FRESH * 10
+KEPT_TIMES = 10   # a request serves stamps this many times older than they should be renewed, since only the renewal walks a folder
 WRITTEN: dict[str, float] = {}
 FLUSH_ROWS, FLUSH_SECONDS = 200, 300.0
 UNSAVED: dict[str, tuple["RowStore", Path, dict]] = {}
@@ -562,7 +562,7 @@ class RowStore:
         if not self.resource.own_folder:
             mark, now = mark_of(folder), time.monotonic()
             held = STAMPED.get(str(folder))
-            kept = held and now - held.checked < STAMPS_KEPT
+            kept = held and now - held.checked < STAMPS_FRESH * KEPT_TIMES
             if kept and held.mark == mark:
                 return held.stamps
             if kept:
