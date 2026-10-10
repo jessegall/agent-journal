@@ -1,7 +1,8 @@
+import html
 import mimetypes
 import time
 from pathlib import Path
-from engine import bus
+from engine import bus, runtime
 from engine.record import Record
 from engine.timing import EVENT, Sampler, Stopwatch, profiler
 from controllers.faults import threw
@@ -60,7 +61,7 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
         if method != "GET":
             return Reply(404, {"error": "no such route"})
         try:
-            return static(path)
+            return static(path, root)
         except Refused as error:
             return Reply(400, {"error": str(error)})
     r, params = found
@@ -116,10 +117,13 @@ def represented(got, record):
     return {"ok": True} if got is None else rendered(got, record)
 
 
-def static(path: str) -> Reply:
+def static(path: str, root: Path | None = None) -> Reply:
     f = contained(WEB, path.lstrip("/") or "index.html", nested=True)
     if not f.is_file():
         f = WEB / "index.html"
     if not f.is_file():
         return Reply(404, {"error": "no web build; run npm run build in web"})
-    return Reply(200, f.read_bytes(), mimetypes.guess_type(str(f))[0] or "application/octet-stream")
+    page = f.read_bytes()
+    if f.name == "index.html" and root is not None and runtime.upgrading(root):
+        page = page.replace(b"<head>", f'<head><meta name="journal-updating" content="{html.escape(runtime.upgrade_step(root) or "updating")}">'.encode(), 1)
+    return Reply(200, page, mimetypes.guess_type(str(f))[0] or "application/octet-stream")

@@ -53,3 +53,9 @@ export function follow(running, step = "") {
 
 export const updatedTo = () => remembered(UPDATED_KEY, "");
 export const forgetUpdate = () => remember(UPDATED_KEY, "");
+
+// A page loaded while the server upgrades is told so in its own head, so the cover is up before anything is asked of a half-restarted server.
+export function followPage(page) {
+    const marked = page.querySelector('meta[name="journal-updating"]');
+    if (marked) follow(true, marked.getAttribute("content") || "");
+}

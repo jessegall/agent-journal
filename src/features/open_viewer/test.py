@@ -281,6 +281,14 @@ def test_every_request_stays_inside_its_journal(tmp_path, monkeypatch):
     with pytest.raises(Refused):
         static("/../outside")
     record = fresh()
+    from engine import runtime
+    plain = static("/", record.root).body
+    runtime.upgrade_mark(record.root).parent.mkdir(parents=True, exist_ok=True)
+    runtime.upgrade_mark(record.root).write_text("Restarting the journal")
+    marked = static("/", record.root).body
+    assert (b"journal-updating" in plain, b'<meta name="journal-updating" content="Restarting the journal">' in marked) == (False, True), \
+        "a page loaded while the server upgrades carries the upgrade in its head, so the viewer covers itself before asking anything"
+    runtime.upgrade_mark(record.root).unlink()
     environments = Environments(record, actor=USER)
     with pytest.raises(Refused):
         environments.update(environments.create("Safe name").n, title="../outside")

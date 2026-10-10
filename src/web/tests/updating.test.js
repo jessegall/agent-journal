@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, test} from "vitest";
-import {STEPS, begin, clear, counting, fail, follow, locked, runLate, stepAt, updatedTo, updating} from "../src/state/updating.js";
+import {STEPS, begin, clear, counting, fail, follow, followPage, locked, runLate, stepAt, updatedTo, updating} from "../src/state/updating.js";
 
 beforeEach(() => {
     localStorage.clear();
@@ -51,5 +51,14 @@ describe("while the journal updates", () => {
         expect([updating.countdown, updating.target]).toEqual([null, "2.268.0"]);
         begin("2.268.0");
         expect([updating.countdown, locked()]).toEqual([null, true]);
+    });
+});
+
+describe("a page loaded while the server upgrades", () => {
+    test("covers itself from the marker in its head, and carries on when there is none", () => {
+        followPage(new DOMParser().parseFromString("<head></head>", "text/html"));
+        expect(locked()).toBe(false);
+        followPage(new DOMParser().parseFromString('<head><meta name="journal-updating" content="Restarting the journal"></head>', "text/html"));
+        expect([locked(), updating.step]).toEqual([true, "Restarting the journal"]);
     });
 });
