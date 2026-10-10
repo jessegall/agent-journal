@@ -168,7 +168,7 @@ class Agents(Controller):
         with self.record.locked(self.resource.scope):
             r = super().load(n)
             r.data.update(pending.delta)
-            self._stored(r, pending.action)
+            self._checked_and_written(r, pending.action)
 
     def subagent(self, n: int, action: str, **data):
         return self._emit(int(n), action, **data)

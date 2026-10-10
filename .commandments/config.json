@@ -24,7 +24,9 @@
         "PlainViewerPageTextDetector",
         "SentenceLabelDetector",
         "SentenceLabelScriptDetector",
-        "SearchMarkLabelDetector"
+        "SearchMarkLabelDetector",
+        "RowOutsideRepositoryDetector",
+        "ResourceParsedOutsideRepositoryDetector"
     ],
     "parallel": 2,
     "configure": {

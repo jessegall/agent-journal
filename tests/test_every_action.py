@@ -31,9 +31,8 @@ from engine.record import Record
 from engine.stored import read_json, write_text
 from engine.transaction import snapshot, undoable
 from engine.wording import noun
-from overview.counts import weigh
 from overview.summary import environment, summarize
-from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, SYSTEM, USER
+from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, SYSTEM, USER, overview_weight as weigh
 from resources.pictures import dimensions
 from resources.shapes import normalize_options
 from resources.types import TYPES, EnvironmentKind
@@ -1192,3 +1191,51 @@ def test_no_chip_marker_is_kept_in_a_row_of_any_type_or_reaches_a_command_or_a_n
         if any("[[" in text for text in shown):
             leaked[type_] = True
     assert leaked == {}, "a marker the viewer made is stripped where a row is saved, in every text field it has, so no agent ever reads one"
+
+
+def test_every_type_runs_through_its_repository_as_its_contract_says():
+    from engine.disk import OutsideRepository
+    from engine.stored import write_text
+    from tests.kit import counted, guarded_rows
+    wrong = {}
+    for type_, resource, record, controller in each_type():
+        row = acting(type_, record, SYSTEM).create("a row to run through its repository", **needed(type_))
+        rows = controller.rows
+        facts = {}
+        parsed = []
+        original = stored.RowStore._parsed
+        rows.rolling().clear()
+        stored.RowStore._parsed = lambda self, n, parsed=parsed, original=original: parsed.append(n) or original(self, n)
+        try:
+            with guarded_rows():
+                controller.load(row.n)
+                controller.load(row.n)
+                facts["a row is parsed once for as many reads as are asked"] = parsed == [row.n]
+                rows.summaries()
+                rows.counts("overview")
+                rows.unread("agent")
+                with counted() as work:
+                    rows.peek(row.n)
+                    rows.summaries()
+                    rows.counts("overview")
+                    rows.counts("listable")
+                    rows.unread("agent")
+                    rows.by("title", row.title)
+                    rows.linked_to("todo:1")
+                facts["a warm read opens no file"] = work.opened == []
+                facts["a warm read of a type that keeps its rows in one folder scans nothing"] = resource.own_folder or work.scanned == []
+                edited = controller.load(row.n)
+                edited.title = "a title the next read sees"
+                controller.save(edited, "updated")
+                facts["a write is seen by the next read of the row"] = rows.peek(row.n).title == "a title the next read sees"
+                facts["a write is seen by the next read of the summaries"] = [one["title"] for one in rows.summaries() if one["n"] == row.n] == ["a title the next read sees"]
+                facts["the totals kept equal a sum made from the rows"] = all(rows.counts(counter.name) == stored.summed(counter.weigh, counter.width, rows.summaries()) for counter in resource.counters())
+        finally:
+            stored.RowStore._parsed = original
+        try:
+            write_text(controller.path(row.n), "written behind the repository")
+            facts["a row file written outside its repository is refused"] = False
+        except OutsideRepository:
+            facts["a row file written outside its repository is refused"] = True
+        reckon(wrong, type_, facts)
+    assert wrong == {}, "every type runs through its repository: a row is parsed once, a warm read opens no file, a write is seen at once, the totals match a fresh count, and a row written past it is refused"

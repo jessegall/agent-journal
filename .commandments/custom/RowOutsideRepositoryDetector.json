@@ -1,0 +1,48 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "read_text",
+                    "read_bytes",
+                    "write_text",
+                    "write_bytes",
+                    "open",
+                    "unlink"
+                ]
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "name": "path"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "file": "controllers/stored.py"
+            },
+            {
+                "file": "migrations/**"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "row-outside-repository",
+        "description": "A row file is read, written or removed through the path of a controller, past the repository that owns the rows.",
+        "rule": "Read and write a row through its controller or its rows (RowStore): peek, load, summaries, persist, remove. Only the repository touches a row file.",
+        "skill": "rows-through-their-repository"
+    }
+}
