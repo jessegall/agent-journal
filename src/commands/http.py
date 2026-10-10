@@ -23,7 +23,8 @@ from features.permission_prompts.skipping import Relaunch
 from engine.files import found_files
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Features
-from engine import attic, bus, runtime, viewer
+from engine.runtime import default_env
+from engine import attic, bus, runtime, timing, viewer
 from engine.package import CODE
 from engine.version import version
 from controllers.faults import broke, log_file
@@ -182,6 +183,13 @@ class ServiceWant(Loaded):
 
 
 @dataclass(frozen=True)
+class SlowQuery(Loaded):
+    env: str = ""
+    took: float = 0.0
+    command: str = ""
+
+
+@dataclass(frozen=True)
 class FileQuery(Loaded):
     path: str = ""
 
@@ -190,6 +198,13 @@ class FileQuery(Loaded):
 class DashboardQuery(Loaded):
     types: str = ""
     events: int = 0
+
+@route("POST", "/api/slow-command")
+def post_slow_command(req: Request) -> Reply:
+    asked = req.query_as(SlowQuery)
+    timing.reported(req.root, asked.env or default_env(req.root), asked.command[:80], asked.took)
+    return Reply(200, {})
+
 
 @route("POST", "/api/hook/{provider}")
 def post_hook(req: Request) -> Reply:

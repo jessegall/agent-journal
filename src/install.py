@@ -174,12 +174,22 @@ def retire(root: Path) -> int:
 
 ASKS = """if { read -r at url < "$root/runtime/heartbeat"; } 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
 session="$JOURNAL_SESSION"; [ -z "$session" ] && [ -n "$JOURNAL_SESSION_VARIABLE" ] && eval "session=\\${$JOURNAL_SESSION_VARIABLE:-}"
-reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --url-query "actor=$JOURNAL_ACTOR" --url-query "env=$JOURNAL_ENV" --url-query "cwd=$PWD" --url-query "plugin=$JOURNAL_PLUGIN" --url-query "session=$session" --data-binary @- "${url}api/run")
-[ $? -ne 2 ] || reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --data-binary @- "$(curl -Gso /dev/null -w '%{url_effective}' --data-urlencode "actor=$JOURNAL_ACTOR" --data-urlencode "env=$JOURNAL_ENV" --data-urlencode "cwd=$PWD" --data-urlencode "plugin=$JOURNAL_PLUGIN" --data-urlencode "session=$session" "${url}api/run")")
-said=${reply##*
+reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code} %{time_total}' -H 'Content-Type: text/plain' --url-query "actor=$JOURNAL_ACTOR" --url-query "env=$JOURNAL_ENV" --url-query "cwd=$PWD" --url-query "plugin=$JOURNAL_PLUGIN" --url-query "session=$session" --data-binary @- "${url}api/run")
+[ $? -ne 2 ] || reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code} %{time_total}' -H 'Content-Type: text/plain' --data-binary @- "$(curl -Gso /dev/null -w '%{url_effective}' --data-urlencode "actor=$JOURNAL_ACTOR" --data-urlencode "env=$JOURNAL_ENV" --data-urlencode "cwd=$PWD" --data-urlencode "plugin=$JOURNAL_PLUGIN" --data-urlencode "session=$session" "${url}api/run")")
+last=${reply##*
 }
+said=${last%% *}
+spent=${last#* }
 body=${reply%
 *}
+case "$spent" in
+[0-9]*.[0-9][0-9][0-9]*)
+frac=${spent#*.}
+ms=$(( ${spent%%.*} * 1000 + 1${frac%${frac#???}} - 1000 ))
+if [ "$ms" -gt 50 ]; then
+( curl -sG -X POST -m 2 --connect-timeout 1 -o /dev/null --data-urlencode "env=$JOURNAL_ENV" --data-urlencode "took=$ms" --data-urlencode "command=$1 $2" "${url}api/slow-command" >/dev/null 2>&1 & )
+fi ;;
+esac
 case "$said" in
 200) printf '%s' "$body"; exit 0 ;;
 404|409|000|"") ;;
