@@ -1,0 +1,44 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "load"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "identifier"
+                        },
+                        {
+                            "name": "resource"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "file": "controllers/stored.py"
+            },
+            {
+                "file": "migrations/**"
+            },
+            {
+                "file": "features/revisions/history.py"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "resource-parsed-outside-repository",
+        "description": "A row is parsed from text with the resource's own load, past the repository that owns the rows.",
+        "rule": "Ask the controller for a row (load, find, all); its rows parse a row once and keep it.",
+        "skill": "rows-through-their-repository"
+    }
+}

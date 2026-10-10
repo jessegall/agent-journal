@@ -211,11 +211,11 @@ class Controller(Files, Links, Discussed):
 
     @discarding
     def save(self, r: Resource, action: str, **event) -> Resource:
-        self._stored(r, action)
+        self._checked_and_written(r, action)
         self._emit(r.n, action, **event)
         return r
 
-    def _stored(self, r: Resource, action: str) -> Resource:
+    def _checked_and_written(self, r: Resource, action: str) -> Resource:
         """Checks the row, marks it and writes it, without announcing the change."""
         self._shipped(r, action)
         self._guarded(r, action)

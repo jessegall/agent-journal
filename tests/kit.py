@@ -165,3 +165,29 @@ def counted():
         yield ACTIVE.work
     finally:
         ACTIVE.work = None
+
+
+GUARDING: list[bool] = []
+GUARDED: list = []
+
+
+def guarding_opens(event: str, args: tuple) -> None:
+    if event != "open" or not GUARDING or not GUARDING[-1] or not isinstance(args[0], (str, os.PathLike)):
+        return
+    from controllers.stored import is_row_file
+    from engine.disk import OutsideRepository, in_repository
+    if not in_repository() and is_row_file(Path(args[0])):
+        raise OutsideRepository(f"{args[0]} is a row file that something other than its repository opened")
+
+
+@contextmanager
+def guarded_rows():
+    """Refuses, for as long as it lasts, any open of a row file by code that is not a repository's own."""
+    if not GUARDED:
+        sys.addaudithook(guarding_opens)
+        GUARDED.append(guarding_opens)
+    GUARDING.append(True)
+    try:
+        yield
+    finally:
+        GUARDING.pop()

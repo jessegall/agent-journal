@@ -732,7 +732,8 @@ class RowStore:
     @final
     def text(self, n: int) -> str:
         try:
-            return self.path(n).read_text()
+            with by_repository():
+                return self.path(n).read_text()
         except (FileNotFoundError, NotADirectoryError):
             pass
         entry = self.packed().get(n)

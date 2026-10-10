@@ -254,7 +254,8 @@ def test_a_row_another_process_changed_or_removed_is_patched_into_the_held_list_
 
 
 def test_a_type_keeps_its_counts_in_step_with_every_row_a_change_touches():
-    from overview.counts import counts, weigh
+    from overview.counts import counts
+    from resources.base import overview_weight as weigh
     features.load()
     record = fresh()
     written = Messages(record, actor=AGENT)
