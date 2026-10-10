@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.5 — Agents paused for an update are always resumed
+- A pause for an update that outlived it clears itself: an agent still marked paused after the update has finished is resumed, a ticket agent is found by its own session, and a resume that did not reach the agent is asked again.
+
 ## 2.268.4 — The journal never interrupts a working agent, and messages, waits and tickets behave
 - The journal no longer presses Ctrl-C to see whether a silent agent is still there, which cancelled a long think or command as if the user had interrupted it. It reads the screen instead: an agent back at its prompt is idle, and anything else is left working.
 - A line the journal holds back no longer makes every later line repeat after an update, so stale notices about settled rows stop.
