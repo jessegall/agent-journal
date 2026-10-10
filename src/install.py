@@ -38,6 +38,7 @@ HEALED = "AGENT_JOURNAL_HEALED"
 REPAIRED = "AGENT_JOURNAL_REPAIRED"
 SRC = "src"
 ARCHIVE = "journal.pyz"
+UPGRADE_MARK = "upgrading"
 KEPT_BUILDS = 2
 KEPT_COPIES = 1
 FRESH_FOR = 3600
@@ -147,9 +148,11 @@ def refresh(source: Path, target: Path) -> tuple[set, set]:
     return changed, gone
 
 
-FORWARD = ('#!/usr/bin/env python3\nimport runpy\nimport sys\nfrom pathlib import Path\n\nhere = Path(__file__).resolve().parent\n'
-           f'packed = (here / "{ARCHIVE}").resolve()\nsys.argv[0] = str(packed if packed.is_file() else here / "src" / "__main__.py")\n'
-           'runpy.run_path(sys.argv[0], run_name="__main__")\n')
+FORWARD = ('#!/usr/bin/env python3\nimport runpy\nimport sys\nimport time\nfrom pathlib import Path\n\nhere = Path(__file__).resolve().parent\n'
+           f'packed = (here / "{ARCHIVE}").resolve()\nupdating = here / "runtime" / "{UPGRADE_MARK}"\nbegan = time.time()\n'
+           'while not packed.is_file() and updating.exists() and time.time() - began < 120:\n    time.sleep(0.2)\n'
+           f'    packed = (here / "{ARCHIVE}").resolve()\n'
+           'sys.argv[0] = str(packed if packed.is_file() else here / "src" / "__main__.py")\nrunpy.run_path(sys.argv[0], run_name="__main__")\n')
 HOOK = ('#!/usr/bin/env python3\nimport os\nimport sys\nfrom pathlib import Path\n\nroot = Path(__file__).resolve().parent\n'
         'os.execvp("sh", ["sh", str(root / "src" / "hook.sh"), *(sys.argv[1:2] or ["claude"]), str(root)])\n')
 ENTRYPOINTS = {"journal.py": FORWARD, "hook.py": HOOK}
