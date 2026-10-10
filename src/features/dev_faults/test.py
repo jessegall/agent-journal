@@ -153,6 +153,13 @@ def test_going_over_again_counts_but_tells_the_agent_once():
         time.sleep(0.01)
     stacks = sampler.stop()
     assert "(this request)" in stacks and "test_" in stacks, "a request that runs past the sample time records where its thread and every other thread were"
+    first, second = Sampler(), Sampler()
+    first.start()
+    second.start()
+    time.sleep(0.5)
+    kept, other = first.stop(), second.stop()
+    assert (sum(thread.name == "sampler" for thread in __import__("threading").enumerate()), "200ms into" in kept, "50ms into" in kept, "200ms into" in other) == (1, True, False, True), \
+        "one sampler thread serves every running request, and each keeps only the latest picture of the threads"
     reports.kept(record.root, "stack sample", 500.0, None, stacks)
     asked = list(runtime.profiles(record.root).glob("*-stack-sample-500ms.txt"))
     assert len(asked) == 1 and "Where every thread was while this ran" in asked[0].read_text(), "the stack samples are kept beside the profile, or alone when no profile was taken"
