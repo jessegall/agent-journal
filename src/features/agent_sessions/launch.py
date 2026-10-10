@@ -45,8 +45,8 @@ def running(launched: Launched) -> bool:
 
 def running_in(record, environment: str) -> str:
     session = Sessions(record.root).holder(environment)
-    if session:
-        return session if running(Launched.read(record.root, terminal_of(record.root, session))) else ""
+    if session and running(Launched.read(record.root, terminal_of(record.root, session))):
+        return session
     return launched_in(record.root, environment)
 
 
