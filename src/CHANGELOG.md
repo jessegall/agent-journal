@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.82 — Commands stop waiting on screens, git and stale timers
+- journal helper say returns at once: the words are typed to the helper's agent behind the answer, so the dispatcher never waits on its screen.
+- journal ticket board answers from what each card already holds and refreshes the git look behind the answer: on transportklok's board of 37 tickets it went from over 40 s to under a second.
+- A long command is moved by the call that is actually running, with a press sent at once and dropped when that call has ended; its card names that call and its real time, and one place makes the card.
+- A conversation started again in a new process is no longer marked stopped before its first report, so its environment no longer shows Idle.
+- The status line says Working while a command runs, even under a standing wait, and opens with its chevron again.
+- A Home cell whose plan is approved but waits on an open ticket says so instead of asking for approval.
+- A start restores each conversation from its kept fold and reads ahead only agents heard from lately.
+- A command started while an upgrade writes the new build waits for it instead of running a half-written tree.
+- A standing nudge closed by another thread first is left as it is instead of raising.
+- Test runs use at most 3 workers.
+
 ## 2.267.81 — The engine never waits on its own upkeep
 - The engine beats every second on its own, and the clock's upkeep (the ticket upkeep's git work among it) runs on a thread of its own: on a loaded machine with many tickets a round could take minutes and hold back state updates, message delivery and moving a long command to the background. A long command now moves within seconds of its limit.
 - An answered question reaches the agent's own question prompt on screen, for every provider, and Claude's question screen is recognised as a question.
