@@ -128,6 +128,11 @@ class Ranked(Shape):
     labels = {"priority": "Priority"}
 
 
+def position_of(rank: float, n: int) -> float:
+    """Where a row stands in its column: the rank it was given, else its number, so a row never placed comes in order of creation."""
+    return float(rank) if rank else float(n)
+
+
 class Placed(Shape):
     data_fields: ClassVar[list[Field]] = [
         Field(NUMBER, 0.0, name="rank"),
@@ -135,7 +140,7 @@ class Placed(Shape):
 
     @property
     def position(self) -> float:
-        return float(self.rank or self.n)
+        return position_of(self.rank, self.n)
 
 
 def rank_before(rows: list, before: int) -> float:
