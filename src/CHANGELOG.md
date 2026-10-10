@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.85 — Session files are read through one cached funnel
+- Every session file, seat file and per-session state file is read through one funnel that keeps a copy and reads the file again only when its stamp changes: a warm hook, summary or agents list opens none of them, where the summary alone read every session file per environment every few seconds.
+- A check refuses any other read of those files, and any folder scan, process spawn, git call or path resolve on hook, route and engine paths outside a short allow-list.
+- A skill on writing lean, reused code (journal-lean, after law L7) is loaded at every session start in every project.
+
+## 2.267.84 — Tickets start at once and the queue starts what others wait on
+- journal ticket start answers at once: the branches of every nested repository and the agent's launch run behind the answer, and a launch that cannot start says why in a comment on the ticket.
+- Stopping a ticket and starting it again launches its agent; journal ticket tell answers with the note it delivered.
+- A stopped ticket frees its running slot at once, a ticket waiting on an open ticket holds none, and the queue starts first the tickets others wait on.
+- The file search no longer follows a link out of the project into another repository.
+
 ## 2.267.83 — Every slow command is caught, and replies to many messages land
 - The journal shim times every command with curl's clock and reports any over 50 ms behind the answer, so commands the server never timed (such as helper say) file their budget notices too.
 - A reply naming several messages reads the ones not yet read, answers each it can, and names any it could not; it is refused only when none can be answered.
