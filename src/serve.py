@@ -27,7 +27,7 @@ from features.phone.allow_list import PhoneVisit, Reach  # noqa: E402
 from features.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
 from controllers.base import SENDER, Sender  # noqa: E402
 from resources.base import OWNER_ID  # noqa: E402
-from engine import runtime, waits  # noqa: E402
+from engine import bus, runtime, waits  # noqa: E402
 from engine.after_answer import AfterAnswer  # noqa: E402
 from engine.quiet_collector import QuietCollector  # noqa: E402
 from features.switches import WARMERS  # noqa: E402
@@ -35,7 +35,7 @@ from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, remember  # noqa: E402
 from controllers.types import warm  # noqa: E402
 from providers.turns import read_transcripts  # noqa: E402
-from runner.spool import replay  # noqa: E402
+from runner.spool import drain, replay, spooled  # noqa: E402
 from engine.runtime import default_env
 from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, entry
 
@@ -264,6 +264,8 @@ def watch_runtime(root: Path, halting: threading.Event) -> None:
         write_pending_rows()
         if runtime.hook_failures(root).is_file():
             unanswered(root)
+        if spooled(root):
+            bus.background("spool", lambda: drain(root))
         runtime.restarting(root).unlink(missing_ok=True)
         resume_when_done(root)
 

@@ -13,6 +13,7 @@ from runner import chat_mirror
 from runner.hooks import answer
 
 REPLAYING = threading.Lock()
+SLICE, SLICE_WITHIN, SLICE_PAUSE = 25, 0.05, 0.02
 WAITING = Memo()
 
 
@@ -33,19 +34,36 @@ def kept_stamp(root: Path) -> int:
         return 0
 
 
-def replay(root: Path, most: int = 0, within: float = 0.0) -> None:
+def replay(root: Path, most: int = 0, within: float = 0.0) -> int:
     """Takes every event kept while the server could not answer (the oldest `most` of them, when given, for as long as `within` seconds allow, the first always), oldest first: a shown message goes to the chat, any other event is handled as if it had just arrived, at the time the hook kept it."""
     if not REPLAYING.acquire(blocking=False):
-        return
+        return 0
+    handled = 0
     try:
         waiting = WAITING.get(str(root), kept_stamp(root), lambda: sorted(chat_mirror.unsent(root).glob("*.json"), key=lambda f: (f.stat().st_mtime_ns, f.name)))
         until = time.monotonic() + within
         for kept in waiting[:most] if most else waiting:
             handle(root, kept)
+            handled += 1
             if within and time.monotonic() >= until:
                 break
     finally:
         REPLAYING.release()
+    return handled
+
+
+def spooled(root: Path) -> bool:
+    """Whether an event waits in the spool, found without listing it."""
+    try:
+        return any(entry.name.endswith(".json") for entry in os.scandir(chat_mirror.unsent(root)))
+    except OSError:
+        return False
+
+
+def drain(root: Path) -> None:
+    """Replays what is kept in short slices with a pause between them, so the server stays free for the hooks and commands that arrive meanwhile."""
+    while replay(root, SLICE, SLICE_WITHIN):
+        time.sleep(SLICE_PAUSE)
 
 
 def handle(root: Path, kept: Path) -> None:
