@@ -154,6 +154,31 @@ class Pruned(Enum):
         return {Pruned.ANY: True, Pruned.SEEN: USER in r.seen, Pruned.CLOSED: bool(r.completed)}[self]
 
 
+@dataclass(frozen=True)
+class Counter:
+    """A total a type keeps over its rows: what one row adds to it, in as many columns as the total has, adjusted by the change of one row and saved with the index."""
+
+    name: str
+    weigh: Callable[[dict], tuple[int, ...]]
+    width: int
+
+
+def overview_weight(row: dict) -> tuple[int, int, int]:
+    """What one row adds to a type's overview: itself, whether it is open, and whether it is open and unread by the user."""
+    if row["deleted"] or row.get("hidden"):
+        return (0, 0, 0)
+    opened = not row["completed"]
+    return (1, int(opened), int(opened and USER not in (row.get("seen") or [])))
+
+
+def listable_weight(hidden_listed: bool) -> Callable[[dict], tuple[int, int]]:
+    """What one row adds to the rows a listing can show: itself, and whether it is open."""
+    def weigh(row: dict) -> tuple[int, int]:
+        listable = not row["deleted"] and (hidden_listed or not row.get("hidden")) and row["updated"] > 0
+        return int(listable), int(listable and not row["completed"])
+    return weigh
+
+
 @dataclass
 class Resource:
     details: ClassVar[ResourceDetails] = ResourceDetails()
@@ -226,6 +251,11 @@ class Resource:
     deleted: float = 0.0
     completed: float = 0.0
     outcome: str = ""      # what completing it said: how a to-do was done, a question's answer, why a pin was struck
+
+    @classmethod
+    def counters(cls) -> tuple[Counter, ...]:
+        """The totals a type keeps over its rows: its overview, and the rows a listing can show."""
+        return (Counter("overview", overview_weight, 3), Counter("listable", listable_weight(cls.hidden_listed), 2))
 
     def texts(self) -> set[str]:
         """Every text a person wrote into the row: its fields and its sections' titles and bodies."""

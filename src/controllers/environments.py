@@ -5,6 +5,7 @@ import time
 from collections import Counter
 from functools import cached_property
 from controllers.base import CONTROLLERS, Controller
+from controllers.stored import forget_folder
 from engine import attic
 from engine.record import Record
 from engine.seats import terminal_of
@@ -159,6 +160,7 @@ class Environments(Controller):
             self._refuse(f"environment {env.title!r} holds {kept}; --yes removes it anyway (its record goes to the attic)")
         if record.home.is_dir():
             attic.pack(record.home, f"{env.title}-{int(time.time())}")
+        forget_folder(record.home)
         record.numbers.forget(env.title)
         self.force_delete(n)
         return f"environment {env.title!r} removed; its record is packed in attic/ — journal environment unarchive {env.title} brings it back"
@@ -204,6 +206,7 @@ class Environments(Controller):
             raise Refused(f"no archived environment {name!r} in attic/")
         self.unused(name, ": rename it before bringing the archived one back")
         attic.unpack(archive, home)
+        forget_folder(home)
         return self.create(name, **fields)
 
     @action
@@ -220,6 +223,8 @@ class Environments(Controller):
             attic.pack(taken, f"{new}-seed-{int(time.time())}")
         if old.is_dir():
             old.rename(taken)
+        forget_folder(old)
+        forget_folder(taken)
         for scope in (env.title, new):
             self.record.numbers.forget(scope)
         self._sessions.rebind(env.title, new)

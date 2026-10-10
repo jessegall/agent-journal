@@ -7,10 +7,10 @@ from bisect import bisect_left, insort
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Callable, TypeVar
-from resources.base import OWNER, PART_OF, Missing, Refused, Resource
+from resources.base import OWNER, PART_OF, Counter, Missing, Refused, Resource
 from engine.stored import append_text, read_json, write_json, write_text
 from engine import transaction
-from engine.memo import Memo
+from engine.memo import MEMOS, Memo
 from engine.numbers import rows
 
 T = TypeVar("T")
@@ -29,9 +29,10 @@ def wholes(rows: list, part_of) -> list:
     return [row for row in rows if not part_of(row)]
 SUMMARIES: dict[str, tuple] = {}
 STANDING: dict[str, tuple] = {}
-REFERRED: dict[str, tuple] = {}
+DERIVED: dict[tuple[str, str], tuple] = {}
 COUNTED: dict[tuple[str, str], tuple] = {}
 HELD: dict[str, Memo] = {}
+ALL = 0   # a memo with no limit keeps every row
 PACKS = Memo()
 INDEXED: dict[str, dict] = {}
 PENDING: dict[str, set[int]] = {}
@@ -44,7 +45,10 @@ STAMPS_RENEW = STAMPS_FRESH / 2
 STAMPS_KEPT = STAMPS_FRESH * 10
 WRITTEN: dict[str, float] = {}
 FLUSH_ROWS, FLUSH_SECONDS = 200, 300.0
-UNSAVED: dict[str, tuple[Path, dict]] = {}
+UNSAVED: dict[str, tuple["RowStore", Path, dict]] = {}
+UNCOUNTED: dict[str, "RowStore"] = {}
+SEEDS: dict[str, dict[str, tuple[int, ...]]] = {}
+COUNTERS = "counters.json"
 DEFER = threading.Event()
 OPEN: dict[str, tuple] = {}
 KEEP_OPEN = 16
@@ -53,8 +57,41 @@ KEEP_OPEN = 16
 def rolling(folder: str, limit: int | None) -> Memo:
     """The parsed rows a folder keeps in memory: at most `limit` of them, the one used longest ago going first, or all of them when a type holds all."""
     if folder not in HELD:
-        HELD[folder] = Memo(limit or 0)
+        HELD[folder] = Memo(ALL if limit is None else limit)
     return HELD[folder]
+
+
+def forget_folder(home: Path) -> None:
+    """Lets go of everything held for a folder and the folders under it (summaries, stamps, indexes, totals, parsed rows and open archives), as when an environment is removed or renamed."""
+    prefix = str(home)
+
+    def under(key: str) -> bool:
+        return key == prefix or key.startswith(prefix + os.sep)
+    for table in (SUMMARIES, STANDING, INDEXED, PENDING, INDEXED_AT, STAMPED, WRITTEN, UNSAVED, UNCOUNTED, SEEDS, OPEN):
+        for key in [key for key in table if under(key)]:
+            opened_archive = table.pop(key)
+            if table is OPEN:
+                opened_archive[1].close()
+    for table in (COUNTED, DERIVED):
+        for key in [key for key in table if under(key[0])]:
+            del table[key]
+    for key in [key for key in HELD if under(key)]:
+        memo = HELD.pop(key)
+        if memo in MEMOS:
+            MEMOS.remove(memo)
+    PACKS.held = {key: held for key, held in PACKS.held.items() if not under(key)}
+
+
+def file_stamp(path: Path) -> list[int] | None:
+    try:
+        found = path.stat()
+    except OSError:
+        return None
+    return [found.st_mtime_ns, found.st_size]
+
+
+def summed(weigh: Callable[[dict], tuple[int, ...]], width: int, rows: list[dict]) -> tuple[int, ...]:
+    return tuple(sum(column) for column in zip(*map(weigh, rows))) or (0,) * width
 
 
 def mtime(path: Path) -> int:
@@ -201,11 +238,17 @@ def saved(folder: Path, rows: dict) -> None:
 
 
 def flush_indexes() -> None:
-    """Writes the row indexes that a read left to be saved later, so no request waits on a write of its own."""
+    """Writes the row indexes that a read left to be saved later, and the index of a folder whose totals were counted from its rows, so no request waits on a write of its own."""
     for key in list(UNSAVED):
-        folder, rows = UNSAVED.pop(key)
-        saved(folder, dict(rows))
+        store, folder, rows = UNSAVED.pop(key)
+        store.save_index(folder, dict(rows))
         WRITTEN[key] = time.time()
+        UNCOUNTED.pop(key, None)
+    for key in list(UNCOUNTED):
+        store = UNCOUNTED.pop(key)
+        if key in INDEXED:
+            store.save_index(Path(key), dict(INDEXED[key]))
+            WRITTEN[key] = time.time()
 
 
 def renew_stamps() -> None:
@@ -318,22 +361,39 @@ class RowStore:
                 return self._patched(folder, moved, held[1], loose, touched)
         return self._summarised(folder, moved, [loose[n] for n in sorted(loose) if not loose[n].get(DAMAGED)])
 
-    def linking(self) -> dict[str, dict[int, dict]]:
-        """The rows that name each ref, kept in step with the summaries so asking who links a row never scans them all."""
+    def derived(self, name: str, keys_of: Callable[[dict], list]) -> dict:
+        """The summaries grouped by the keys `keys_of` names for each, kept in step with them: a change takes a row out of its groups and puts it in its new ones, so asking never walks the rows."""
         rows = self.summaries()
-        held = REFERRED.get(str(self.folder()))
+        key = (str(self.folder()), name)
+        held = DERIVED.get(key)
         if held and held[0] is rows:
             return held[1]
-        index: dict[str, dict[int, dict]] = {}
+        groups: dict = {}
         for row in rows:
-            self._referred(index, row)
-        REFERRED[str(self.folder())] = (rows, index)
-        return index
+            self._grouped(groups, keys_of, row)
+        DERIVED[key] = (rows, groups, keys_of)
+        return groups
 
     @staticmethod
-    def _referred(index: dict[str, dict[int, dict]], row: dict) -> None:
-        for ref in row["refs"]:
-            index.setdefault(ref, {})[row["n"]] = row
+    def _grouped(groups: dict, keys_of: Callable[[dict], list], row: dict) -> None:
+        for group in keys_of(row):
+            groups.setdefault(group, {})[row["n"]] = row
+
+    def linking(self) -> dict[str, dict[int, dict]]:
+        """The rows that name each ref."""
+        return self.derived("refs", lambda row: row["refs"])
+
+    def linked_to(self, ref: str) -> list[dict]:
+        return sorted(self.linking().get(ref, {}).values(), key=listed_order)
+
+    def by(self, field: str, value) -> list[dict]:
+        """The summaries whose field is the value, oldest first; the field is one the summaries carry."""
+        return sorted(self.derived(f"by:{field}", lambda row: [row.get(field)]).get(value, {}).values(), key=listed_order)
+
+    def unread(self, actor: str) -> list[dict]:
+        """The open summaries the actor has not seen, oldest first, from the index of what each row has been seen by."""
+        group = self.derived(f"unread:{actor}", lambda row: [True] if not row["completed"] and not row["deleted"] and actor not in row["seen"] else [])
+        return sorted(group.get(True, {}).values(), key=listed_order)
 
     def counted(self, name: str, weigh: Callable[[dict], tuple[int, ...]], width: int, rows: list[dict] | None = None) -> tuple[int, ...]:
         """Sums weigh over the summaries, kept in step with them: a change adds and takes away only the rows it touched."""
@@ -342,9 +402,56 @@ class RowStore:
         held = COUNTED.get(key)
         if held and held[0] is rows:
             return held[1]
-        totals = tuple(sum(column) for column in zip(*map(weigh, rows))) or (0,) * width
+        totals = summed(weigh, width, rows)
         COUNTED[key] = (rows, totals, weigh)
         return totals
+
+    def counter(self, name: str) -> Counter:
+        return next(counter for counter in self.resource.counters() if counter.name == name)
+
+    def counts(self, name: str, rows: list[dict] | None = None) -> tuple[int, ...]:
+        """A total the type declares, read from the totals kept with the rows: made from the rows once when none were saved, and saved with the index from then on."""
+        counter, folder = self.counter(name), self.folder()
+        rows = rows if rows is not None else self.summaries()
+        counted = (str(folder), name) in COUNTED
+        totals = self.counted(name, counter.weigh, counter.width, rows)
+        if not counted:
+            UNCOUNTED[str(folder)] = self
+        return totals
+
+    def save_index(self, folder: Path, rows: dict) -> None:
+        """Writes the index with the totals of its rows beside it, bound to this very file, so a total is only believed while the index it was made with stands."""
+        saved(folder, rows)
+        stamp = file_stamp(index_file(folder))
+        listed = self._listed(rows)
+        totals = {counter.name: list(summed(counter.weigh, counter.width, listed)) for counter in self.resource.counters()}
+        write_json(folder / CACHE / COUNTERS, {"index": stamp, "totals": totals})
+
+    def _listed(self, rows: dict) -> list[dict]:
+        """The summaries an index makes: its rows that are whole, with the packed rows it does not hold."""
+        loose = [row for n, row in sorted(rows.items()) if not row.get(DAMAGED)]
+        seen = {row["n"] for row in loose}
+        return wholes(sorted(loose + [row for n, row in self.packed().items() if n not in seen], key=listed_order), is_part)
+
+    def _seed(self, folder: Path, index_stamp: list[int]) -> None:
+        """Takes the saved totals as the totals of a folder just loaded, when they were saved with the very index that was read and no row differs from it."""
+        found = read_json(folder / CACHE / COUNTERS, dict, {})
+        if found.get("index") != index_stamp:
+            return
+        saved_totals = found.get("totals") or {}
+        seeds = {counter.name: tuple(saved_totals[counter.name]) for counter in self.resource.counters()
+                 if len(saved_totals.get(counter.name) or ()) == counter.width}
+        if len(seeds) == len(self.resource.counters()):
+            SEEDS[str(folder)] = seeds
+
+    def recount(self) -> None:
+        """Forgets the totals of this folder, so they are made from the rows again and saved: for totals that drifted from their rows."""
+        folder = str(self.folder())
+        for key in [key for key in COUNTED if key[0] == folder]:
+            del COUNTED[key]
+        SEEDS.pop(folder, None)
+        (self.folder() / CACHE / COUNTERS).unlink(missing_ok=True)
+        UNCOUNTED[folder] = self
 
     def _carried(self, folder: Path, before: list[dict], rows: list[dict], changes: list[tuple[dict | None, dict | None]]) -> None:
         self._carried_index(folder, before, rows, changes)
@@ -355,16 +462,15 @@ class RowStore:
             COUNTED[key] = (rows, totals, weigh)
 
     def _carried_index(self, folder: Path, before: list[dict], rows: list[dict], changes: list[tuple[dict | None, dict | None]]) -> None:
-        held = REFERRED.get(str(folder))
-        if not held or held[0] is not before:
-            return
-        index = held[1]
-        for gone, added in changes:
-            for ref in (gone or {}).get("refs", ()):
-                index.get(ref, {}).pop(gone["n"], None)
-            if added:
-                self._referred(index, added)
-        REFERRED[str(folder)] = (rows, index)
+        for key, (held, groups, keys_of) in [(key, held) for key, held in DERIVED.items() if key[0] == str(folder)]:
+            if held is not before:
+                continue
+            for gone, added in changes:
+                for group in keys_of(gone) if gone else ():
+                    groups.get(group, {}).pop(gone["n"], None)
+                if added:
+                    self._grouped(groups, keys_of, added)
+            DERIVED[key] = (rows, groups, keys_of)
 
     def standing_summaries(self) -> list[dict]:
         rows = self.summaries()
@@ -401,6 +507,8 @@ class RowStore:
         rows = wholes(sorted(loose + packed, key=listed_order), is_part)
         SUMMARIES[str(folder)] = (moved, rows)
         PENDING.pop(str(folder), None)
+        for name, totals in SEEDS.pop(str(folder), {}).items():
+            COUNTED[str(folder), name] = (rows, totals, self.counter(name).weigh)
         return rows
 
     def reindexed(self, n: int, before: Moved | None, r: Resource | None = None) -> None:
@@ -506,6 +614,7 @@ class RowStore:
     def _loose(self, folder: Path) -> dict[int, dict]:
         stamps = self._stamps(folder)
         held = INDEXED.get(str(folder))
+        index_stamp = None if held else file_stamp(index_file(folder))
         known = held or {int(n): row for n, row in read_json(index_file(folder), dict, read_json(folder / INDEX, dict, {})).items()}
         needed = {"created", IDEMPOTENCY, "files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
         stale = self._stale(stamps, known, INDEXED_AT.get(str(folder)) if held else None, needed)
@@ -522,11 +631,13 @@ class RowStore:
                 continue
             rows[n] = self._row(r, stamps[n])
         changed = len(stale) + len(gone)
+        if not held and not changed and index_stamp:
+            self._seed(folder, index_stamp)
         due = changed >= FLUSH_ROWS or time.time() - WRITTEN.get(str(folder), 0.0) >= FLUSH_SECONDS or not index_file(folder).is_file()
         if changed and due and DEFER.is_set():
-            UNSAVED[str(folder)] = (folder, rows)
+            UNSAVED[str(folder)] = (self, folder, rows)
         elif changed and due:
-            saved(folder, rows)
+            self.save_index(folder, rows)
             WRITTEN[str(folder)] = time.time()
         if changed:
             PENDING.setdefault(str(folder), set()).update(gone, stale)
