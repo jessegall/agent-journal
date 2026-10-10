@@ -335,6 +335,15 @@ def warmed(root: Path, warm: threading.Event) -> None:
     gc.freeze()
 
 
+def mark_first_start(root: Path) -> None:
+    try:
+        from features.auto_update.new_feature import mark_first_start_seen
+        from features.auto_update.routes import CHANGELOG
+        mark_first_start_seen(root, CHANGELOG.read_text() if CHANGELOG.is_file() else "")
+    except Exception:
+        traceback.print_exc()
+
+
 def prune_builds(root: Path) -> None:
     try:
         from engine.heal import pruned
@@ -371,6 +380,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     sys.setswitchinterval(SWITCH_INTERVAL)
     DEFER.set()
     runtime.mark_started(root)
+    mark_first_start(root)
     runtime.remember_git_user(root)
     tell_threads_on_signal(root)
     allow_open_files()

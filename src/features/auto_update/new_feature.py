@@ -3,6 +3,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from engine.ledger import ledger
 from engine.stored import read_json, write_json
 
 DECLARATION = re.compile(r"<!-- new-feature (\{.*?\}) -->", re.DOTALL)
@@ -64,3 +65,11 @@ def mark_all_seen(root: Path, changelog: str) -> str:
     for one in new_features(changelog):
         mark_seen(root, one.id)
     return "new features seen"
+
+
+def mark_first_start_seen(root: Path, changelog: str) -> bool:
+    """A journal that starts with no record of ever being installed or updated, as a fresh one does, has nothing new to announce: every feature its changelog announces counts as seen, and only later updates announce one."""
+    if ledger(root).is_file() or (Path(root) / SEEN).is_file():
+        return False
+    mark_all_seen(root, changelog)
+    return True
