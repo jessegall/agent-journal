@@ -76,8 +76,9 @@ def resume(root: Path, env: str, session: str) -> dict:
     return pressed(root, env, session, "Resume", RESUME)
 
 
-def move_to_background(root: Path, env: str, session: str) -> dict:
-    return pressed(root, env, session, "Move to the background", BACKGROUND)
+def move_to_background(root: Path, env: str, session: str, running: str = "") -> dict:
+    """Presses Ctrl-B for the agent; naming the call that runs keeps the press from landing on whatever runs later."""
+    return pressed(root, env, session, "Move to the background", BACKGROUND, value=running)
 
 
 def shell(root: Path, env: str, session: str, command: str, now: bool = False) -> dict:

@@ -374,12 +374,16 @@ def test_the_engine_nudges_only_when_idle_and_passes_over_events_from_before_it_
     assert engine.idle_without_report() is False
 
     engine.moved_on()
-    assert Agents(engine.record).by_session("claude-1").data.get("cards"), "a message typed while a command runs leaves a card"
+    assert not Agents(engine.record).by_session("claude-1").data.get("cards"), "a message typed while a command runs makes no card of its own: only a command that was moved has one"
+    from engine.command_runs import CommandRun
     running = Agents(engine.record, actor=SYSTEM).by_session("codex-9")
     Agents(engine.record, actor=SYSTEM).update(running.n, provider="codex", commands=[{"command": "npm run build", "tool": "Bash", "at": 5.0}])
-    Agents(engine.record, actor=SYSTEM)._moved_to_background(Agents(engine.record, actor=SYSTEM).load(running.n), detail="a message went in")
-    card = Agents(engine.record, actor=SYSTEM).load(running.n).data["cards"][-1]
-    assert (card["label"], card["command"]) == ("Moved a long command to the background", "npm run build"), "the card for a command moved to the background names the command, whichever provider runs the agent"
+    moved = Agents(engine.record, actor=SYSTEM).load(running.n)
+    Agents(engine.record, actor=SYSTEM)._moved_to_background(CommandRun(command="npm run build", tool="Bash", at=5.0), moved, state="running")
+    Agents(engine.record, actor=SYSTEM)._noted_on_move(Agents(engine.record, actor=SYSTEM).load(running.n), "a message went in")
+    cards = Agents(engine.record, actor=SYSTEM).load(running.n).data["cards"]
+    assert [(card["label"], card["command"], card["detail"]) for card in cards] == [("Moved a long command to the background", "npm run build", "a message went in")], \
+        "the one card for a command moved to the background names the call, whichever provider runs the agent, and what happened beside it is put on that card"
     import features
     from types import SimpleNamespace
     from agents.actors import Agent

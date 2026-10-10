@@ -44,6 +44,16 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
     tick(record, "ended-1")
     assert (moved, [n for n in nudges(record) if "1099816" in n]) == (["claude-1"], []), "a session that has ended is never told of, or moved for, the command it left running"
 
+    from features.long_commands.move import matching_task
+    own = BackgroundTasks(started={"old": 100.0, "mine": 205.0, "later": 210.0}, commands={"mine": "npm  test", "later": "ls"})
+    assert (matching_task(own, "npm test", 200.0), matching_task(BackgroundTasks(started={"a": 100.0, "b": 205.0}), "x", 200.0)) == ("mine", "b"), \
+        "a moved command is matched to the background task of its own words that started after the press, never to an older one"
+    from engine.stepped import SteppedCall
+    from runner.stepping import report_step
+    stepped = SteppedCall("claude-1", record.env, "a; b", ["a", "b"])
+    report_step(record.root, stepped, 1, "end", 0, "tk")
+    report_step(record.root, stepped, 1, "start", 0, "tk")
+    assert not Agents(record, actor="system").by_session("claude-1").step, "a part whose end arrived before its start is never shown as running"
     from dataclasses import replace
     from providers.base import Provider
     from providers.command_effects import shell as hooked

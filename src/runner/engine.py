@@ -7,6 +7,7 @@ from pathlib import Path
 from controllers.requests import deliver
 from controllers.types import CONTROLLERS, Agents, Messages, Notices, Notifications
 import features
+from engine.command_runs import command_runs
 from engine import bus, clock, ran, runtime
 from agents.actors import Actor, Agent, System, User, event_data
 from resources.types import BUSY, FAILED, IDLE, STOPPED, WORKING
@@ -372,9 +373,16 @@ class Engine:
         return "paused"
 
     def backgrounded(self) -> str:
-        if not take(self.record.root, self.names(), BACKGROUND):
+        asked = take(self.record.root, self.names(), BACKGROUND)
+        if not asked:
             return ""
+        if asked.value and not self.still_running(asked.value):
+            return "dropped the move to the background: that command has ended"
         return "moved the running command to the background" if self.agent.driver.move_to_background() else ""
+
+    def still_running(self, started: str) -> bool:
+        row = self.agent.driver.last_report()
+        return bool(row) and any(str(one.at) == started and not one.done for one in command_runs(row))
 
     def forced(self) -> str:
         if not take(self.record.root, self.names(), FORCE) or self.agent.state() == IDLE:
@@ -448,7 +456,7 @@ class Engine:
     def moved_on(self) -> None:
         row = self.agent.driver.last_report()
         if row is not None:
-            Agents(self.record, actor=SYSTEM)._moved_to_background(row, detail="Your message went in while the command runs on")
+            Agents(self.record, actor=SYSTEM)._noted_on_move(row, "Your message went in while the command runs on")
 
     def idle_without_report(self) -> bool:
         driver = self.agent.driver

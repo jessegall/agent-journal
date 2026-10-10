@@ -7,6 +7,7 @@ from engine.stored import read_json, write_json
 from resources.fields import Loaded
 
 STALE = 600.0
+STALE_FOR = {"background": 15.0}
 FORCE = "force"
 PERMIT = "permit"
 BACKGROUND = "background"
@@ -68,7 +69,7 @@ def take(root: Path, sessions: set[str], action: str = "", among: tuple = ()) ->
         if queued is None:
             path.unlink(missing_ok=True)
             continue
-        if not queued.lasting and time.time() - queued.at > STALE:
+        if not queued.lasting and time.time() - queued.at > STALE_FOR.get(queued.action, STALE):
             path.unlink(missing_ok=True)
             continue
         if queued.session not in sessions or not wanted(queued, action, among):
