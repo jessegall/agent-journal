@@ -437,7 +437,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     with monkeypatch.context() as exited:
         exited.setattr(terminals, "launch_output", lambda root, env: "Resume this session with: claude --resume 7d698bae-1111-2222-3333-444455556666")
         exited.setattr(terminals, "detached", lambda root, cwd, env, agent, args: launched_with.append(args) or 1)
-        exited.setattr("providers.claude.Claude.conversation_file", lambda self, conversation: Path("/tmp") if conversation.startswith("7d698bae") else None)
+        exited.setattr("providers.claude.Claude.conversation_file", lambda self, conversation: __import__("pathlib").Path("/tmp") if conversation.startswith("7d698bae") else None)
         tickets._launch(tickets.load(ticket.n), tickets._into(tickets.load(ticket.n)))
     assert launched_with and "7d698bae-1111-2222-3333-444455556666" in str(launched_with[0]), \
         "a start relaunches an exited agent by resuming its own conversation, named on its screen when the journal had lost track of the session, never a fresh one"
