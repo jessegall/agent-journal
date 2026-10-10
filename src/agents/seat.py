@@ -162,7 +162,7 @@ class HookBinding:
 
     @cached_property
     def owned(self) -> set[str]:
-        return {r.title for r in Environments(Record(self.root, runtime.env(self.root)), actor=SYSTEM).all() if r.owner}
+        return {row["title"] for row in Environments(Record(self.root, runtime.env(self.root)), actor=SYSTEM).rows.standing_summaries() if row.get("owner")}
 
     def worked_in(self, hook) -> str:
         if self.provider.is_subagent(hook):

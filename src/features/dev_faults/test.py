@@ -370,6 +370,14 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
             call()
         touched = [path for path in work.opened if "/sessions/" in path]
         assert not touched, f"{name} reads no session or seat file once warm, on a record of 40 environments and 90 sessions; it opened {touched}"
+    from agents.seat import HookBinding
+    from runner.spool import replay
+    Environments(record, actor=SYSTEM).create("place-owned", owner="helper:1")
+    assert HookBinding(record.root, PROVIDERS["claude"](), os.getpid()).owned == {"place-owned"}, "an environment's owner is read from the row summaries, among all 41 and not only the last 25"
+    replay(record.root)
+    with counted() as work:
+        replay(record.root)
+    assert not work.scanned, f"a hook that finds nothing spooled scans no folder once warm; it scanned {work.scanned}"
     from commands.cli import run
     out = record.root.parent / "speed.json"
     capsys.readouterr()
