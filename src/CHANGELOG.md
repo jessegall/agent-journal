@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.6 — A finished sequence never holds writes
+- A sequence step that is no longer in hand, because the sequence finished, was abandoned or never ran, no longer holds the agent's writes: the write gate asks whether the run still stands before it refuses an Edit or a command.
+
 ## 2.268.5 — Agents paused for an update are always resumed
 - A pause for an update that outlived it clears itself: an agent still marked paused after the update has finished is resumed, a ticket agent is found by its own session, and a resume that did not reach the agent is asked again.
 
