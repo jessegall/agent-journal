@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.25 — A calmer mascot and plainer notices
+- The mascot enters only after the agent has stayed idle for three seconds, and leaves only after it has stayed busy for three seconds, so a quick command no longer makes it pop in and out.
+- The line that tells an agent of a new message names who wrote it and their words once, with the tag that answers it; the journal's tag is not doubled and the message's row is no longer dumped into the chat.
+- A report's bar above the message box says when the report has questions for you.
+
 ## 2.268.24 — Busy agents say so, and paused ones stay put
 - An agent whose turn is running reads as working, between commands too, whatever wait it has stated. The header and the message box show the live activity strip, and Waiting shows only for an idle agent.
 - While an agent is paused, for an update or by you, the lines the journal holds for it are kept until it continues, instead of each starting a turn that the pause then stops.
