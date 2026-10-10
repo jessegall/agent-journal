@@ -1093,6 +1093,8 @@ def listed(controller) -> dict:
 def test_a_row_of_every_type_written_behind_the_stores_back_shows_up_in_lists_fresh_stale_or_in_bulk(monkeypatch):
     wrong = {}
     for type_, resource, record, controller in each_type():
+        monkeypatch.setattr(stored, "WATCHED", stored.Watched())
+        monkeypatch.setattr(stored, "DEFER", threading.Event())
         first = acting(type_, record, SYSTEM).create("the first row", **needed(type_))
         base = max(controller.rows.numbers()) + 1
         facts = {"the list is warm before another process writes": first.n in listed(controller)}

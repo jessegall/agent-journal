@@ -1,6 +1,7 @@
 import time
 
 
+from controllers import stored
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from engine.disk import by_repository
 from engine.stored import write_text
@@ -11,6 +12,7 @@ from tests.conftest import fresh
 
 
 def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none(tmp_path, monkeypatch):
+    monkeypatch.setattr(stored, "WATCHED", stored.Watched())
     monkeypatch.setenv("HOME", str(tmp_path))
     (tmp_path / ".codex").mkdir()
     (tmp_path / ".codex" / "config.toml").write_text('model = "gpt-6-sol"')
