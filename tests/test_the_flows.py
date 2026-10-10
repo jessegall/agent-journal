@@ -25,6 +25,17 @@ class Journal:
     def __init__(self, record: Record, port: int):
         self.record, self.port = record, port
 
+    def start(self) -> None:
+        """The server starts, as it does when the journal is started or restarted."""
+        Handler.root = self.record.root
+        self.server = JournalServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.port = self.server.server_port
+
+    def stop(self) -> None:
+        self.server.shutdown()
+        self.server.server_close()
+
     def ask(self, method: str, path: str, body=None, raw: bytes | None = None, kind: str = "application/json"):
         data = raw if raw is not None else (json.dumps(body).encode() if body is not None else None)
         connection = http.client.HTTPConnection("127.0.0.1", self.port, timeout=WAIT)
@@ -90,14 +101,12 @@ def eventually(read, expected=True, within: float = WAIT):
 @contextmanager
 def journal():
     record = fresh(ENV)
-    Handler.root = record.root
-    server = JournalServer(("127.0.0.1", 0), Handler)
-    threading.Thread(target=server.serve_forever, daemon=True).start()
+    running = Journal(record, 0)
+    running.start()
     try:
-        yield Journal(record, server.server_port)
+        yield running
     finally:
-        server.shutdown()
-        server.server_close()
+        running.stop()
 
 
 @pytest.fixture
@@ -234,3 +243,103 @@ def test_a_long_command_among_parallel_calls_is_moved_by_name_once_and_its_card_
     monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks(started={"b1": time.time() + 1}, ended={"b1": time.time() + 2}))
     emit_ticked(scratch.record, "claude-1")
     eventually(lambda: [card["state"] for card in cards()], ["done"])
+
+
+def test_a_question_the_agent_asks_is_answered_in_the_viewer_and_reaches_the_option_on_its_screen(scratch, monkeypatch):
+    from features.ask_questions import handlers
+    from providers import DRIVERS
+
+    keys = []
+    screen = DRIVERS["claude"](scratch.record, "claude-1")
+    screen._wrote = lambda raw: keys.append(raw) or True
+    screen.printed.parent.mkdir(parents=True, exist_ok=True)
+    screen.printed.write_bytes("Which store?\r\n ❯ 1. Files\r\n   2. SQLite\r\nEnter to select · ↑/↓ to navigate".encode())
+    monkeypatch.setattr(handlers, "driver_in", lambda *given: screen)
+    code, answer = scratch.hook("PreToolUse", tool_name="AskUserQuestion", tool_use_id="q1",
+                                tool_input={"questions": [{"question": "Which store - files or SQLite?", "options": [{"label": "Files (Recommended)"}, {"label": "SQLite"}]}]})
+    asked = eventually(lambda: [(row["title"], [option["title"] for option in row["data"]["options"]]) for row in scratch.rows("question")],
+                       [("Which store - files or SQLite?", ["Files", "SQLite"])])
+    assert asked and code == 403 and "question 1" in answer.get("reason", ""), "the agent's own question tool is turned into a question the viewer shows, and the agent is told where its answer will come"
+    scratch.hook("PreToolUse", tool_name="Bash", tool_input={"command": "ls"})
+    eventually(lambda: titled(scratch.rows("agent")), ["claude-1"])
+    scratch.user("POST", "/question/1/answer", {"how": "SQLite"})
+    eventually(lambda: keys, [b"2", b"\r"])
+    assert scratch.user("GET", "/question/1")[1]["completed"], "the answer closes the question and presses the option's number, then Enter, on the agent's screen"
+
+
+def test_an_upgrade_covers_the_viewer_from_its_first_byte_and_a_hook_sent_while_the_server_restarts_is_kept_and_replayed(scratch):
+    import os
+    import subprocess
+    from pathlib import Path
+
+    from engine import runtime
+
+    scratch.hook("PreToolUse", tool_name="Bash", tool_use_id="u1", tool_input={"command": "ls"})
+    eventually(lambda: titled(scratch.rows("agent")), ["claude-1"])
+    assert b"journal-updating" not in scratch.ask("GET", "/")[1].encode(), "a page loaded while nothing updates carries no cover"
+    runtime.upgrade_mark(scratch.record.root).parent.mkdir(parents=True, exist_ok=True)
+    runtime.upgrade_mark(scratch.record.root).write_text("Restarting the journal")
+    page = scratch.ask("GET", "/")[1]
+    summary = scratch.ask("GET", "/api/summary")[1]
+    assert 'content="Restarting the journal"' in page and (summary["updating"], summary["step"]) == (True, "Restarting the journal"), \
+        "a page loaded mid-update names the update in its head, and the summary says which step it is on, so the cover is up before anything is asked"
+    scratch.stop()
+    runtime.upgrade_mark(scratch.record.root).unlink()
+    (scratch.record.root / "runtime").mkdir(exist_ok=True)
+    (scratch.record.root / "runtime" / "heartbeat").write_text(f"{int(time.time())} http://127.0.0.1:{scratch.port}/\n")
+    hook = Path(__file__).resolve().parents[1] / "src" / "hook.sh"
+    env = {"PATH": os.environ["PATH"], "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": ENV}
+    payload = json.dumps({"hook_event_name": "PostToolUse", "session_id": "claude-2", "tool_name": "Bash", "tool_use_id": "u2", "tool_input": {"command": "pwd"}})
+    sent = subprocess.run(["sh", str(hook), "claude", str(scratch.record.root)], input=payload, capture_output=True, text=True, env=env, timeout=30)
+    spooled = list((scratch.record.root / "runtime" / "unsent").glob("*.json"))
+    assert (sent.returncode, sent.stdout, len(spooled)) == (0, "", 1), "a hook that finds no server never holds the agent and keeps its event"
+    scratch.start()
+    scratch.hook("PreToolUse", tool_name="Bash", tool_use_id="u3", tool_input={"command": "ls"})
+    replayed = eventually(lambda: [row["title"] for row in scratch.rows("agent")], ["claude-1", "claude-2"])
+    assert replayed and not list((scratch.record.root / "runtime" / "unsent").glob("*.json")), "the restarted server replays what was kept, so the agent that spoke while it was down is known"
+
+
+def a_sequence_of_three_steps(scratch) -> str:
+    scratch.hook("PreToolUse", tool_name="Bash", tool_input={"command": "ls"})
+    eventually(lambda: titled(scratch.rows("agent")), ["claude-1"])
+    made = scratch.user("POST", "/sequence", {"title": "Landing a ticket"})[1]
+    for title in ("Review", "Test", "Approve the plan"):
+        scratch.agent("sequence", "section", str(made["n"]), title, f"do {title}")
+    return str(made["n"])
+
+
+def test_a_run_another_run_interrupted_cannot_be_closed_by_hand_and_is_handed_back_at_its_step(scratch):
+    n = a_sequence_of_three_steps(scratch)
+    scratch.agent("sequence", "run", n, "--about", "ticket:20")
+    scratch.agent("sequence", "follow", n, "--about", "ticket:20")
+    scratch.agent("sequence", "next", n, "--about", "ticket:20")
+    scratch.agent("sequence", "follow", n, "--about", "ticket:20")
+    scratch.agent("sequence", "next", n, "--about", "ticket:20")
+    scratch.agent("sequence", "follow", n, "--about", "ticket:20")
+    scratch.agent("sequence", "run", n, "--about", "ticket:26")
+    code, refusal = scratch.agent("sequence", "next", n, "--about", "ticket:20")
+    assert code == 400 and "was handed to you first" in refusal and "ticket:26" in refusal, "the run that came later is in hand: the earlier one cannot be moved on past it"
+    steps = lambda: {key.split("|", 1)[1]: run["step"] for key, run in scratch.user("GET", f"/sequence/{n}")[1]["data"]["runs"].items()}
+    assert steps() == {"ticket:20": 3, "ticket:26": 1}, "and it stays at its step"
+    for _ in range(3):
+        scratch.agent("sequence", "follow", n, "--about", "ticket:26")
+        scratch.agent("sequence", "next", n, "--about", "ticket:26")
+    assert steps() == {"ticket:20": 3}, "when the later run is done the earlier one is the one left, still at its third step"
+    assert scratch.agent("sequence", "follow", n, "--about", "ticket:20")[0] == 200, "and it is handed back to be taken up there"
+
+
+def test_a_refused_chained_line_names_only_the_commands_that_ran_and_the_ones_that_did_not(scratch):
+    n = a_sequence_of_three_steps(scratch)
+    scratch.agent("sequence", "run", n, "--about", "ticket:5")
+    call = lambda command, use: scratch.hook("PreToolUse", tool_name="Bash", tool_use_id=use, tool_input={"command": command})
+    code, refused = call("journal todo create filed; journal work start 'other work'", "chain-1")
+    reason = refused.get("reason", "")
+    assert code == 403 and "take it up" in reason and "ran, so do not run them again: journal todo create filed" in reason and "did not run either: journal work start 'other work'" in reason, \
+        "the step is not taken up: the filing ran, the write that waits did not, and the refusal says which is which"
+    assert [row["title"] for row in scratch.rows("todo")] == ["filed"], "the filing ran once"
+    code, again = call("journal todo create filed; journal work start 'other work'", "chain-1")
+    assert [row["title"] for row in scratch.rows("todo")] == ["filed"] and "do not run them again: journal todo create filed" in again.get("reason", ""), \
+        "the same call tried again does not file it twice"
+    code, failed = call("journal message reply 99999 'on it'; journal work start 'other work'", "chain-2")
+    reason = failed.get("reason", "")
+    assert "do not run them again: journal message reply 99999" not in reason and "did not run either" in reason, "a command that failed is never named among those that ran"
