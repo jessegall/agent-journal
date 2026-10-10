@@ -478,8 +478,8 @@ class Provider(ABC):
     def browser_logins(self, project: Path, storage: Path) -> bool:
         return False
 
-    def serve_mcp(self, project: Path, name: str, url: str) -> bool:
-        """Adds a hosted MCP server, named for the journal's own entry, to this agent's project config; answers whether the file changed. The agent signs in through its own MCP login, so no key is written."""
+    def serve_mcp(self, project: Path, name: str, url: str, headers_helper: str = "") -> bool:
+        """Adds a hosted MCP server, named for the journal's own entry, to this agent's project config; answers whether the file changed. The entry holds no key: the agent signs in through its own MCP login, or, given a headers helper command, asks that command for the sign-in headers each time it connects."""
         return False
 
     def drop_mcp(self, project: Path, name: str) -> bool:

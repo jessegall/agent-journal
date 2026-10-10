@@ -343,7 +343,7 @@ class Codex(Provider):
     def mcp_block(self, name: str) -> re.Pattern:
         return re.compile(rf"\n?# journal-mcp {re.escape(name)} begin\n.*?# journal-mcp {re.escape(name)} end\n", re.S)
 
-    def serve_mcp(self, project: Path, name: str, url: str) -> bool:
+    def serve_mcp(self, project: Path, name: str, url: str, headers_helper: str = "") -> bool:
         f = project / self.home / "config.toml"
         text = f.read_text() if f.is_file() else ""
         block = f'\n# journal-mcp {name} begin\n[mcp_servers.{json.dumps(name)}]\nurl = {json.dumps(url)}\n# journal-mcp {name} end\n'

@@ -1,3 +1,5 @@
+import shlex
+import sys
 import threading
 import time
 from dataclasses import asdict, replace
@@ -21,6 +23,9 @@ from features.secrets.values import ValuesFile
 from features.tickets.controller import Tickets
 from providers import PROVIDERS
 from resources.base import Refused, SYSTEM, USER
+
+
+NEEDS_LOGIN = "Your agents cannot use {title}'s tools yet: press Log in on this card and approve in your browser."
 
 
 class IntegrationFeature(Feature):
@@ -62,21 +67,36 @@ class IntegrationFeature(Feature):
     def mcp_name(self) -> str:
         return f"journal-{self.name}"
 
+    def login_variable(self, record) -> str:
+        """The name of the variable the sign-in token is kept under, or nothing before the first sign-in."""
+        secrets = Secrets(record, actor=SYSTEM)
+        row = self.login_secret(secrets)
+        return next((field["variable"] for field in secrets.load(row.n).secret_fields), "") if row else ""
+
+    def headers_helper(self, record) -> str:
+        """The command an agent runs on each connect to get the sign-in header, once there is a sign-in; the config holds the command, never the token."""
+        variable = self.login_variable(record)
+        return shlex.join([sys.executable, str(record.root / "journal.py"), "-m", "mcp_headers", str(record.root), variable]) if variable else ""
+
     def wire_mcp(self, record) -> None:
-        """Adds the service's own MCP server to each agent's project config while it is on, and takes the journal's entry out when it is off; the entry holds the address only, never a key."""
+        """Adds the service's own MCP server to each agent's project config while it is on, and takes the journal's entry out when it is off; the entry holds the address and the command that fetches the sign-in, never a key. Without a sign-in yet, the page says plainly that your browser still has to approve one."""
         url = self.details.mcp_server
         if not url:
             return
         project = record.root.parent
         wanted = self.enabled(record) and bool(self.values(record).use_mcp)
+        helper = self.headers_helper(record) if wanted else ""
         for provider in PROVIDERS.values():
             agent = provider()
             if not agent.present(project):
                 continue
             if wanted:
-                agent.serve_mcp(project, self.mcp_name, url)
+                agent.serve_mcp(project, self.mcp_name, url, helper)
                 continue
             agent.drop_mcp(project, self.mcp_name)
+        if wanted and not helper:
+            state = read_state(record.root, self.name)
+            write_state(record.root, self.name, replace(state, last_error=NEEDS_LOGIN.format(title=self.details.title)))
 
     def service(self, record):
         """What this integration talks to the service through; sending and checking use it."""
@@ -127,6 +147,7 @@ class IntegrationFeature(Feature):
         secrets.fill(row.n, "key", value)
         variable = next(field["variable"] for field in secrets.load(row.n).secret_fields)
         write_state(record.root, self.name, replace(read_state(record.root, self.name), logged_in_at=time.time(), last_error=""))
+        self.wire_mcp(record)
         self.mark_user_action(record, "Logged in to")
         return variable
 

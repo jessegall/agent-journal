@@ -1,7 +1,11 @@
+import contextlib
+import io
+import json
 from dataclasses import dataclass
 from types import SimpleNamespace
 
 import features
+import mcp_headers
 from controllers.features import Features, SettingsWrite
 from features.integrations.client import IntegrationClient
 from features.integrations.state import IntegrationState, read_state, state_file, write_state
@@ -204,7 +208,15 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
         apply(record, {"features": {"linear": True}}, USER)
         apply(record, {"features": {"linear": False}}, USER)
         apply(record, {"features": {"linear": True}}, USER)
+        apply(record, {"linear": {**dict(linear.values(record)), "use_mcp": True}}, USER)
+        assert "approve in your browser" in read_state(record.root, "linear").last_error, "with the MCP server on and no sign-in yet, the card says a browser approval is still needed"
         variable = linear.log_in(record, browser(), origin)
+        entry = json.loads((record.root.parent / ".mcp.json").read_text())["mcpServers"]["journal-linear"]
+        assert variable in entry["headersHelper"] and "tok-xyz" not in json.dumps(entry), "once signed in the agent's entry carries the command that fetches the token, never the token"
+        shown = io.StringIO()
+        with contextlib.redirect_stdout(shown):
+            assert mcp_headers.main([str(record.root), variable]) == 0
+        assert json.loads(shown.getvalue()) == {"Authorization": "Bearer tok-xyz"}, "and that command answers the sign-in header"
         key_before = linear.values(record).key
         assert ValuesFile(record.root).values()[variable] == "Bearer tok-xyz", "logging in keeps the token as a secret"
         assert linear.values(record).key == key_before, "the token is made for the MCP server, so it never becomes the key the journal reads with"
