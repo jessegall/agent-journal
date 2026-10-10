@@ -419,3 +419,12 @@ def test_searches_made_at_the_same_time_each_keep_what_they_found():
         "every search mark gets its own result, so every one opens what it found"
     ran.announce(record, agent.n, "Bash", 'journal search "late"', "todo 1 late")
     assert agents.load(agent.n).data["cards"][-1]["found"] == "todo 1 late", "a search whose mark is not there yet gets its mark and its result together"
+    transcript_cache.CACHE.kept.clear()
+    first_rows = claude.recent_rows(transcript)
+    held = transcript_cache.CACHE.file(("recent", str(transcript), transcript_cache.shape_mark()))
+    waited = time.monotonic() + 5
+    while not held.is_file() and time.monotonic() < waited:
+        time.sleep(0.02)
+    transcript_cache.CACHE.recents.clear()
+    monkeypatch.setattr(transcript_cache, "tail_lines", lambda *given: (_ for _ in ()).throw(AssertionError("the tail was read again")))
+    assert claude.recent_rows(transcript) == first_rows, "a start finds the recent rows of a conversation in the folds kept on disk and reads nothing"
