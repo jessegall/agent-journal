@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.83 — Every slow command is caught, and replies to many messages land
+- The journal shim times every command with curl's clock and reports any over 50 ms behind the answer, so commands the server never timed (such as helper say) file their budget notices too.
+- A reply naming several messages reads the ones not yet read, answers each it can, and names any it could not; it is refused only when none can be answered.
+- Hooks answer in a few milliseconds warm, and the work after their answer lists rows once per event instead of reloading every open row and message.
+- Closing a pin hides it at once; the server is told behind it, and a refused close brings it back.
+- The journal's law L7: write the least code that solves the whole problem, reuse what already does the job, one funnel per kind of thing, never the same logic twice.
+
 ## 2.267.82 — Commands stop waiting on screens, git and stale timers
 - journal helper say returns at once: the words are typed to the helper's agent behind the answer, so the dispatcher never waits on its screen.
 - journal ticket board answers from what each card already holds and refreshes the git look behind the answer: on transportklok's board of 37 tickets it went from over 40 s to under a second.
