@@ -141,3 +141,19 @@ def test_a_hook_that_finds_the_status_as_it_was_leaves_the_agent_row_unwritten_f
     PENDING.of(record, n).written -= 7200
     write_pending_rows()
     assert (PENDING.holds(record, n), agents.rows.peek(n).data["event"]) == (False, "Notification"), "the server's loop writes what a second held back"
+
+
+def test_a_held_agent_row_of_a_removed_environment_is_dropped_and_never_written(monkeypatch):
+    import shutil
+    from controllers import agents as held
+    from controllers.agents import PENDING, write_pending_rows
+    monkeypatch.setattr(held, "KEEP_FOR", 3600.0)
+    record = fresh()
+    agents = Agents(record, actor=SYSTEM)
+    report(record, "working", "PreToolUse")
+    n = agents.by_session("claude-1").n
+    report(record, "working", "PostToolUse")
+    shutil.rmtree(record.root)
+    PENDING.of(record, n).written -= 7200
+    write_pending_rows()
+    assert (PENDING.holds(record, n), record.root.exists()), "the row is dropped, and nothing writes the folders of the environment back"
