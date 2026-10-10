@@ -41,6 +41,11 @@ def test_the_organization_is_read_from_domain_and_role_files_and_refuses_what_do
     with pytest.raises(Refused, match="cannot be read"):
         organization(tmp_path)
     write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\n')
+    write(home / "domain.toml", 'title = "Engineering"\nlead = "lead"\n')
+    first = organization(tmp_path)
+    assert organization(tmp_path) is first, "the organization is read once and handed back while none of its files has changed"
+    write(home / "roles" / "developer" / "role.toml", 'title = "Developer, changed"\n')
+    assert organization(tmp_path).domain("engineering").role("developer").title == "Developer, changed", "and read again as soon as one has"
     write(home / "domain.toml", 'title = "Engineering"\nlead = "architect"\n')
     with pytest.raises(Refused, match="its lead 'architect' is not one of its roles"):
         organization(tmp_path)

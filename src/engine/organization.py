@@ -1,3 +1,4 @@
+import os
 import tomllib
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -72,7 +73,7 @@ class Organization:
         return found
 
     def shaped(self) -> dict:
-        return {"domains": [{**{k: v for k, v in vars(d).items() if k != "roles"}, "roles": [vars(r) for r in d.roles]} for d in self.domains],
+        return {"domains": [{**{k: v for k, v in vars(d).items() if k != "roles"}, "roles": [dict(vars(r)) for r in d.roles]} for d in self.domains],
                 "out": self.text()}
 
     def text(self) -> str:
@@ -116,5 +117,47 @@ def domain_of(path: Path) -> Domain:
     return domain
 
 
+KEPT: dict[str, tuple[tuple, Organization]] = {}
+
+
+def touched(path: Path) -> tuple:
+    try:
+        found = os.stat(path)
+    except OSError:
+        return ()
+    return found.st_mtime_ns, found.st_size
+
+
+def folder_stamp(folder: Path) -> tuple:
+    """When the files of a domain or a role last changed, and which skills it holds: the only things reading it looks at."""
+    try:
+        skills = tuple((entry.name, touched(Path(entry.path) / SKILL_FILE)) for entry in sorted(os.scandir(folder / "skills"), key=lambda entry: entry.name))
+    except OSError:
+        skills = ()
+    return touched(folder / "domain.toml"), touched(folder / "role.toml"), touched(folder / GUIDE), skills
+
+
+def stamp_of(project: Path) -> tuple:
+    stamps = []
+    try:
+        domains = sorted(os.scandir(project / FOLDER / "domains"), key=lambda entry: entry.name)
+    except OSError:
+        return ()
+    for domain in domains:
+        stamps.append((domain.name, folder_stamp(Path(domain.path))))
+        try:
+            roles = sorted(os.scandir(Path(domain.path) / "roles"), key=lambda entry: entry.name)
+        except OSError:
+            continue
+        stamps.extend((domain.name, role.name, folder_stamp(Path(role.path))) for role in roles)
+    return tuple(stamps)
+
+
 def organization(project: Path) -> Organization:
-    return Organization(tuple(domain_of(found) for found in sorted((project / FOLDER).glob("domains/*/domain.toml"))))
+    """The domains and roles in the project's files, read again only when one of those files changed, since the viewer asks for them every few seconds."""
+    seen, held = stamp_of(project), KEPT.get(str(project))
+    if held and held[0] == seen:
+        return held[1]
+    built = Organization(tuple(domain_of(found) for found in sorted((project / FOLDER).glob("domains/*/domain.toml"))))
+    KEPT[str(project)] = (seen, built)
+    return built
