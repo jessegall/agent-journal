@@ -240,8 +240,11 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             return ticket
         name = f"{self.type}-{ticket.n}"
         environments = Environments(self.record, actor=self.actor)
-        if not environments.rows.by_title(name):
+        held = environments.rows.by_title(name)
+        if held is None:
             environments.create(name, abstract=f"Where {self.type} {ticket.n} runs", owner=ticket.ref, launched_from=self.record.env, kind=EnvironmentKind.TICKET)
+        elif not held.owner:
+            environments.update(held.n, owner=ticket.ref, launched_from=self.record.env, kind=EnvironmentKind.TICKET)
         place = Record(self.record.root, name)
         prompted(place)
         for feature in QUIET_IN_TICKETS:
