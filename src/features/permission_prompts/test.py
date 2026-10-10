@@ -31,7 +31,7 @@ def test_a_permission_the_agent_waits_on_is_shown_in_the_chat_until_it_is_answer
     assert waiting() == [], "the call ran: the notice goes"
 
 
-def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
+def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeypatch):
     claude = DRIVERS["claude"]
     assert claude.resumed(claude.skipping(["-c", "--model", "opus"], True), "abc") == \
         ["--dangerously-skip-permissions", "--model", "opus", "--resume", "abc"], "skip on, resumed in place of continue"
@@ -103,17 +103,13 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
         "Claude's own safety question, which sends no permission request, is read off its screen with the command it names"
     asker.printed.write_bytes(f"{danger}\r\nesc to interrupt".encode())
     assert asker.asked() is None, "once the command runs again, nothing is asked"
-    rewind = "esc to interrupt\r\nConfirm you want to restore the conversation to the point before you sent this message\r\n 1. Restore conversation\r\n 2. Summarize from here\r\n ❯ 3. Summarize up to here\r\n 4. Never mind\r\n"
-    asker.printed.write_bytes(rewind.encode())
-    pressed = []
-    asker.press_raw = pressed.append
-    rewinder = Engine(asker.record, asker)
-    rewinder.dialog_settled()
-    rewinder.dialog_settled()
-    assert (asker.dialog(), pressed) == (3, [b"3\r"]), \
-        "Claude's rewind dialog near the context limit is answered once with Summarize up to here, never Restore conversation"
-    asker.printed.write_bytes(f"{rewind}\r\n? for shortcuts".encode())
-    assert asker.dialog() == 0, "and once the prompt is back there is nothing to answer"
+    pressed, slept = [], []
+    asker.press_raw = asker._wrote = pressed.append
+    monkeypatch.setattr(time, "sleep", slept.append)
+    asker.stop_turn()
+    asker.permit(False)
+    assert (pressed, len(slept), slept[-1] > 0.5) == ([b"\x1b", b"\x1b"], 2, True), \
+        "the journal spaces its Escape presses so two never open Claude Code's Rewind menu"
     asker._screen_file().parent.mkdir(parents=True, exist_ok=True)
     asker._screen_file().write_bytes("Conversation compacted\r\n❯\xa0\r\nChecking for updates\r\n❯ [journal] ticket 5: build the plan\r\n".encode())
     typed_note = "[journal] ticket 5: build the plan"

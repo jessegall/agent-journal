@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.16 — The journal never opens or answers Claude Code's Rewind menu
+- The journal's Escape presses, to stop a turn or decline a permission, come at least a second apart, so two never land as the double Escape that opens Claude Code's Rewind menu.
+- The journal no longer presses an option when it reads the rewind dialog's words on an agent's screen; those words in any output, such as a search printing them, made it type 3 into the session.
+
 ## 2.268.15 — The Log in button opens its browser on a machine new to it
 - Log in on a browser-login card downloads Playwright's Chromium first when that build is missing, as it is on a machine whose Playwright only drives Chrome, so the browser opens instead of the card saying no login was saved.
 - When the browser still does not open, the card says Playwright's own reason.
