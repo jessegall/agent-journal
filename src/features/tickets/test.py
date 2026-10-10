@@ -439,6 +439,9 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
         exited.setattr(terminals, "detached", lambda root, cwd, env, agent, args: launched_with.append(args) or 1)
         exited.setattr("providers.claude.Claude.conversation_file", lambda self, conversation: __import__("pathlib").Path("/tmp") if conversation.startswith("7d698bae") else None)
         tickets._launch(tickets.load(ticket.n), tickets._into(tickets.load(ticket.n)))
+    from agents.terminal import launch_brief
+    sent = launch_brief(tickets.record.root, ticket.work_environment).read_text()
+    assert ("Carry on with" in sent, tickets.load(ticket.n).brief.strip()[:20] in sent) == (True, True), "the resumed agent's first prompt carries the ticket's brief and plan again, not only 'carry on'"
     assert launched_with and "7d698bae-1111-2222-3333-444455556666" in str(launched_with[0]), \
         "a start relaunches an exited agent by resuming its own conversation, named on its screen when the journal had lost track of the session, never a fresh one"
     began = []
