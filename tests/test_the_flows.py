@@ -169,3 +169,68 @@ def test_a_helper_is_dispatched_told_and_finished_with_the_same_marks_whichever_
     helper = eventually(lambda: scratch.rows("helper")[0]["data"].get("report"))
     assert helper == "The stop hook is the slow one.", "the helper's report is on its row"
     assert any(row["data"].get("peer") == "Rhea" and "stop hook" in row["brief"] for row in scratch.rows("message")), "and reaches the dispatcher's chat as a message from the helper"
+
+
+def git_in(project, *args: str) -> str:
+    import subprocess
+
+    return subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=project, check=True, capture_output=True, text=True, timeout=30).stdout
+
+
+def test_a_ticket_is_started_merged_reopened_and_started_again_and_the_board_says_so_at_each_step(scratch, monkeypatch):
+    import agents.terminal
+
+    launched = []
+    monkeypatch.setattr(agents.terminal, "detached", lambda root, cwd, env, agent, args: launched.append((env, agent)) or 1)
+    project = scratch.record.root.parent
+    git_in(project, "init", "-q", "-b", "main")
+    (project / ".gitignore").write_text("/.journal\n/.claude/worktrees/\n")
+    git_in(project, "add", ".gitignore")
+    git_in(project, "commit", "-q", "-m", "start")
+    board = scratch.user("POST", "/board", {"title": "Features", "stages": ["Ideas", "Building", "Shipped"], "meanings": {"Building": "start", "Shipped": "done"}})[1]
+    ticket = scratch.user("POST", "/ticket", {"title": "Dark mode", "board": board["n"]})[1]
+    at = lambda: scratch.user("GET", f"/ticket/{ticket['n']}")[1]
+    scratch.user("POST", f"/ticket/{ticket['n']}/move", {"stage": "Building"})
+    assert (launched, at()["data"]["stage"], at()["data"]["work_environment"]) == ([("ticket-1", "claude")], "Building", "ticket-1"), "moving a ticket to its start stage starts its agent once, in its own environment"
+    git_in(project, "branch", "worktree-ticket-1")
+    git_in(project, "switch", "-q", "worktree-ticket-1")
+    (project / "dark.txt").write_text("dark")
+    git_in(project, "add", "dark.txt")
+    git_in(project, "commit", "-q", "-m", "dark mode")
+    git_in(project, "switch", "-q", "main")
+    assert not at()["completed"], "a ticket with work on its branch is not done until it is merged"
+    scratch.user("POST", f"/ticket/{ticket['n']}/merge", {})
+    assert (bool(at()["completed"]), at()["data"]["stage"], "dark mode" in git_in(project, "log", "--format=%s")) == (True, "Shipped", True), "merging lands its work on the board's branch and closes it in the done stage"
+    scratch.user("POST", f"/ticket/{ticket['n']}/reopen", {"why": "closed by mistake"})
+    owners = {row["title"]: row["data"].get("owner") for row in scratch.rows("environment")}
+    assert (bool(at()["completed"]), at()["data"]["stage"], owners.get("ticket-1")) == (False, "Building", f"ticket:{ticket['n']}"), "reopening it gives its environment back and puts it where work starts"
+    assert scratch.user("POST", f"/ticket/{ticket['n']}/start", {})[0] == 200 and launched == [("ticket-1", "claude")], "starting it again does not start a second agent while its first one is held"
+
+
+def test_a_long_command_among_parallel_calls_is_moved_by_name_once_and_its_card_closes_when_its_task_ends(scratch, monkeypatch):
+    import agents.control
+    from features.long_commands import move
+    from providers.base import BackgroundTasks
+    from runner.engine import emit_ticked
+
+    pressed = []
+    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session, running="": pressed.append((session, running)) or {"queued": True})
+    scratch.record.set_setting("long_commands", {"after_seconds": 1})
+    engine = scratch.seated()
+    call = lambda event, use, command, **more: scratch.hook(event, tool_name="Bash", tool_use_id=use, tool_input={"command": command}, **more)
+    call("PreToolUse", "t1", "journal message read 5")
+    call("PreToolUse", "t2", "npm run slow")
+    call("PostToolUse", "t1", "journal message read 5", tool_response={"stdout": "ok"})
+    commands = eventually(lambda: [(row["command"], bool(row.get("done"))) for agent in scratch.rows("agent") for row in agent["data"].get("commands") or []],
+                          [("journal message read 5", True), ("npm run slow", False)])
+    started = next(row["at"] for agent in scratch.rows("agent") for row in agent["data"]["commands"] if row["command"] == "npm run slow")
+    time.sleep(1.2)
+    engine.beat()
+    engine.beat()
+    assert pressed == [("claude-1", str(started))], "the call that runs is the one moved, the press names it, and it is sent once"
+    cards = lambda: [card for agent in scratch.rows("agent") for card in agent["data"].get("cards") or []]
+    moved = eventually(lambda: [(card["label"], card["command"], card["state"]) for card in cards()], [("Moved a long command to the background", "npm run slow", "running")])
+    assert moved, "the chat shows one card, with the command that was moved"
+    monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks(started={"b1": time.time() + 1}, ended={"b1": time.time() + 2}))
+    emit_ticked(scratch.record, "claude-1")
+    eventually(lambda: [card["state"] for card in cards()], ["done"])
