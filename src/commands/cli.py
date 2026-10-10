@@ -143,7 +143,7 @@ def run(argv: list[str], out=None, err=None) -> int:
     if command in DRIVERS:
         args["args"] = passed
     try:
-        if "query" in args:
+        if command in QUERIES:
             query = args.pop("query")
             print(query({**ctx, **args}), file=out)
             return 0
