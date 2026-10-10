@@ -211,6 +211,12 @@ class Controller(Files, Links, Discussed):
 
     @discarding
     def save(self, r: Resource, action: str, **event) -> Resource:
+        self._stored(r, action)
+        self._emit(r.n, action, **event)
+        return r
+
+    def _stored(self, r: Resource, action: str) -> Resource:
+        """Checks the row, marks it and writes it, without announcing the change."""
         self._shipped(r, action)
         self._guarded(r, action)
         for check in SAVE_CHECKS.each(self.record):
@@ -225,7 +231,6 @@ class Controller(Files, Links, Discussed):
             r.seen.append(self.actor)
         r.updated = time.time()
         self.rows.persist(r)
-        self._emit(r.n, action, **event)
         return r
 
     def _emit(self, n: int, action: str, **event):

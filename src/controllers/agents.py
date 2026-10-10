@@ -1,6 +1,14 @@
+import atexit
+import copy
+import threading
 import time
+from dataclasses import dataclass, field
+
+from pathlib import Path
 
 from controllers.base import Controller
+from engine.record import Record
+from resources.base import SYSTEM
 from engine.sessions import Sessions
 from resources import types
 from controllers.marks import action
@@ -15,12 +23,96 @@ OFFLINE, IDLE_STATE, WORKING_STATE, SILENT = "offline", "idle", "working", "sile
 REPORT_WITHIN = 30.0
 
 
+KEEP_FOR = 1.0
+
+
+@dataclass
+class Pending:
+    """What hooks reported about an agent's row since it was last written: the facts, and what the written row says that decides when to write again."""
+
+    delta: dict = field(default_factory=dict)
+    status: str = ""
+    asking: dict = field(default_factory=dict)
+    compacting: bool = False
+    written: float = 0.0
+    action: str = "reported"
+
+
+class PendingRows:
+    """The agent rows hooks have changed and not yet written, so a hook that finds the status as it was costs no write."""
+
+    def __init__(self):
+        self.guard = threading.Lock()
+        self.rows: dict[tuple, Pending] = {}
+
+    def key(self, record, n: int) -> tuple:
+        return (str(record.root), record.env, int(n))
+
+    def of(self, record, n: int) -> Pending | None:
+        with self.guard:
+            return self.rows.get(self.key(record, n))
+
+    def opened(self, record, row) -> Pending:
+        with self.guard:
+            key = self.key(record, row.n)
+            if key not in self.rows:
+                data = row.data
+                self.rows[key] = Pending(status=data.get("status") or "", asking=data.get("asking") or {}, compacting=bool(data.get("compacting")), written=float(row.updated or 0))
+            return self.rows[key]
+
+    def dropped(self, record, n: int) -> Pending | None:
+        with self.guard:
+            return self.rows.pop(self.key(record, n), None)
+
+    def due(self, now: float) -> list[tuple]:
+        with self.guard:
+            return [key for key, pending in self.rows.items() if now - pending.written >= KEEP_FOR]
+
+
+PENDING = PendingRows()
+
+
+def write_pending_rows() -> None:
+    """Writes the agent rows whose second is up; the server's loop calls it, so a row is never more than a second behind."""
+    for root, env, n in PENDING.due(time.time()):
+        flushed(root, env, n)
+
+
+def flushed(root: str, env: str, n: int) -> None:
+    from controllers.faults import threw
+    try:
+        Agents(Record(Path(root), env), actor=SYSTEM)._flush(n)
+    except Exception:
+        threw(Path(root), env, "writing an agent row")
+
+
+def write_all_pending_rows() -> None:
+    for root, env, n in PENDING.due(float("inf")):
+        flushed(root, env, n)
+
+
+atexit.register(write_all_pending_rows)
+
+
 class Agents(Controller):
     resource = types.AgentRow
 
     @action
     def by_session(self, session: str):
-        return self.rows.by_title(session) or self.create(session, status="stopped")
+        found = self.rows.by_title(session)
+        return self.load(found.n) if found else self.create(session, status="stopped")
+
+    def load(self, n: int | str):
+        row = super().load(n)
+        pending = PENDING.of(self.record, int(n))
+        if pending:
+            row.data.update(copy.deepcopy(pending.delta))
+        return row
+
+    def save(self, r, action: str, **event):
+        saved = super().save(r, action, **event)
+        PENDING.dropped(self.record, r.n)
+        return saved
 
     def _shared(self, session: str):
         memo = self.record.memo
@@ -38,10 +130,33 @@ class Agents(Controller):
         return self._seen(n, "heard", fact, data)
 
     def _seen(self, n: int, action: str, fact: dict, data: dict):
-        row = self._changed(n, action, data, **fact)
+        shaped = self._shaped(data)
+        with self.record.locked(self.resource.scope):
+            pending = PENDING.opened(self.record, self.rows.peek(int(n)))
+            pending.delta.update(shaped)
+            pending.action = action
+            due = self._due(pending, shaped)
+            if due:
+                self._flush(int(n))
+            self._emit(int(n), action, **fact)
+            row = self.load(n)
         if self.record.memo is not None:
             self.record.memo[self.type, row.title] = row
         return row
+
+    @staticmethod
+    def _due(pending: Pending, shaped: dict) -> bool:
+        return (shaped.get("status", pending.status) != pending.status or shaped.get("asking", pending.asking) != pending.asking
+                or bool(shaped.get("compacting", pending.compacting)) != pending.compacting or time.time() - pending.written >= KEEP_FOR)
+
+    def _flush(self, n: int) -> None:
+        pending = PENDING.dropped(self.record, n)
+        if not pending or not pending.delta:
+            return
+        with self.record.locked(self.resource.scope):
+            r = super().load(n)
+            r.data.update(pending.delta)
+            self._stored(r, pending.action)
 
     def subagent(self, n: int, action: str, **data):
         return self._emit(int(n), action, **data)

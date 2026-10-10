@@ -120,3 +120,22 @@ def test_a_line_delivered_mid_turn_keeps_the_message_the_turn_answers():
         record.emit("ticket", 1, "updated", SYSTEM, scope=PROJECT)
         writer.join(5)
     assert appended == sorted(appended), "an event written in the project's log never lands before one with a smaller number written in an environment's, so no reader's cursor passes a message still on its way"
+
+
+def test_a_hook_that_finds_the_status_as_it_was_leaves_the_agent_row_unwritten_for_a_second():
+    from controllers.agents import PENDING, write_pending_rows
+    record = fresh()
+    agents = Agents(record, actor=SYSTEM)
+    report(record, "working", "PreToolUse")
+    n = agents.by_session("claude-1").n
+    path = agents.rows.path(n)
+    written = path.stat().st_mtime_ns
+    report(record, "working", "PostToolUse")
+    assert path.stat().st_mtime_ns == written, "a second hook with the same status writes nothing"
+    assert agents.load(n).data["event"] == "PostToolUse", "and what it reported is read at once"
+    report(record, "idle", "Stop")
+    assert (path.stat().st_mtime_ns > written, agents.rows.peek(n).data["status"]) == (True, "idle"), "a status change is written at once"
+    report(record, "idle", "Notification")
+    PENDING.of(record, n).written -= 5
+    write_pending_rows()
+    assert (PENDING.of(record, n), agents.rows.peek(n).data["event"]) == (None, "Notification"), "the server's loop writes what a second held back"
