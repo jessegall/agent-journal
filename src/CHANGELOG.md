@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.2 — The mascots' pictures ship, ticket agents can write, and paused agents resume
+- The voices' pictures and the mascots' rig parts ship with the viewer: the release before left them out, so the mascots and the editor's moves showed empty frames. The old sprite sheets are gone.
+- The mascot shows on the chat box whenever the agent is not working, and a voice with a rig shows only its moves in the animations editor.
+- A ticket's environment is at home in its own worktree, so the write gate lets its agent write there.
+- Every agent an update paused is resumed after it, in every environment, and a resume that was not submitted is asked again.
+
 ## 2.268.1 — The Kanban board and the polled routes answer at once
 - The Kanban board works out each card's waits and lane once and formats its texts through the cached formatter: on transportklok's board of 49 cards it answers in a third of a second after a start and in 8 ms after that, where it took up to 3 s.
 - Formatting a text that names a command builds only the list of query names, never the parser of every command.
