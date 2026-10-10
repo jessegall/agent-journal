@@ -3,7 +3,7 @@ import {nextButtons} from "./next.js";
 const CONTROLS =
     "button, [role=button], [role=switch], [role=checkbox], [role=menuitem], [role=option], input, select, textarea, summary, label, [contenteditable=true]";
 const NAVIGATION =
-    ".demo-band, .side, [role=tablist], a[href], [aria-expanded], [title^=Close], [aria-label^=Close], .page-jump, .quick-row";
+    ".demo-band, .lesson-end, .side, [role=tablist], a[href], [aria-expanded], [title^=Close], [aria-label^=Close], .page-jump, .quick-row";
 const PRESSES = ["pointerdown", "mousedown", "click", "dblclick", "dragstart"];
 const HINTED = new Set(["click", "keydown", "dragstart"]);
 const MOVING = new Set(["Tab", "Escape", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End", "Shift"]);
