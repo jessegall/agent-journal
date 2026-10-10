@@ -13,6 +13,7 @@ ROW = re.compile(r"^[^/]+/([a-z_]+)/(\d+)(?:\.md|/\1\.md)$")
 FRONT = re.compile(r"\A---\n(.*?)\n---\n", re.S)
 STAMPED = re.compile(r"-\d+$")
 REMOVE_TRIES, REMOVE_AGAIN = 10, 0.2
+PACK_LEVEL = 1
 
 
 def folder(root: Path) -> Path:
@@ -24,7 +25,7 @@ def pack(source: Path, name: str) -> Path:
     attic.mkdir(exist_ok=True)
     target = attic / f"{name}{SUFFIX}"
     partial = target.with_name(f".{target.name}.partial")
-    with tarfile.open(partial, "w:gz") as tar:
+    with tarfile.open(partial, "w:gz", compresslevel=PACK_LEVEL) as tar:
         tar.add(source, arcname=name)
     with tarfile.open(partial, "r:gz") as tar:
         packed = {m.name for m in tar.getmembers()}
