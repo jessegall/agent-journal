@@ -94,3 +94,11 @@ def measured(record: Record, kind: str, name: str):
         yield
     finally:
         began.announce(record, kind, name)
+
+
+def reported(root, env: str, name: str, took: float) -> None:
+    """A command the shim timed from its own start, which the server cannot: a curl that timed out, a cold rerun, a command that never reached the server's clock."""
+    if bus.heard(EVENT):
+        bus.announce(None, TIMING, 0, MEASURED, SYSTEM, {
+            "root": str(root), "env": env, "kind": "command", "target": name, "profile": None, "stacks": "", "took": took, "working": 0.0, "after": 0.0,
+            "garbage": 0.0, "waiting": 0.0, "whole_reads": []})

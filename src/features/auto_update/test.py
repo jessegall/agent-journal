@@ -299,8 +299,25 @@ def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_pa
     (tmp_path / "hook.py").write_text(HOOK)
     ran = subprocess.run([sys.executable, str(tmp_path / "hook.py")], capture_output=True, text=True, timeout=20)
     assert ran.stdout.strip() == f"claude {tmp_path.resolve()}", "no provider given: Claude, on the journal hook.py sits in"
+    import stat
     import sys
     import threading
+    from install import ASKS, ENTRYPOINTS
+    shimmed = tmp_path / "shimmed"
+    (shimmed / "runtime").mkdir(parents=True)
+    (shimmed / "runtime" / "heartbeat").write_text(f"{int(time.time())} http://127.0.0.1:1/\n")
+    (shimmed / "bin").mkdir()
+    curl = shimmed / "bin" / "curl"
+    curl.write_text('#!/bin/sh\necho "$@" >> "$ROOT/curl.log"\ncase "$*" in *slow-command*) exit 0 ;; esac\nprintf "done\\n200 0.4321"\n')
+    curl.chmod(curl.stat().st_mode | stat.S_IEXEC)
+    script = shimmed / "ask.sh"
+    script.write_text("root=" + str(shimmed) + "\n" + ASKS + "\n")
+    ran = subprocess.run(["sh", str(script), "ticket", "board", "2"], env={**os.environ, "PATH": f"{shimmed / 'bin'}:{os.environ['PATH']}", "ROOT": str(shimmed), "JOURNAL_ENV": "main"},
+                         capture_output=True, text=True, timeout=30)
+    time.sleep(0.5)
+    calls = (shimmed / "curl.log").read_text()
+    assert (ran.stdout, "api/slow-command" in calls, "took=432" in calls, "command=ticket board" in calls) == ("done", True, True, True), \
+        "a command the shim found slower than 50 milliseconds, from its own start to the answer, is reported to the journal behind the answer"
     from install import ENTRYPOINTS
     waiting = tmp_path / "waiting"
     (waiting / "runtime").mkdir(parents=True)
