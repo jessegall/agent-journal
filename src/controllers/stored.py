@@ -718,6 +718,7 @@ class RowStore:
     def rolling(self) -> Memo:
         return rolling(str(self.folder()), self.resource.held)
 
+    @final
     def discard(self, n: int) -> None:
         """Drops the row held in memory, so what the disk holds is the only truth of it again, as after a save that was refused."""
         self.rolling().forget(str(self.path(n)))
@@ -725,6 +726,7 @@ class RowStore:
         if entry:
             self.rolling().forget(f"{self.folder() / PACKED / entry[ARCHIVE]}:{n}")
 
+    @final
     def reparsed(self, n: int) -> Resource:
         """The row as the disk holds it now, read again and not kept, so it pushes out none of the rows the type keeps; a search of every row's text and a rollback read it so."""
         return self._parsed(n)
