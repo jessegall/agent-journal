@@ -40,3 +40,13 @@ test("a cell shows what the agent said and the plain line of what it does, never
     const [cell] = orchestraOf([working], [], 1000);
     expect([cell.says, cell.doing, JSON.stringify(cell)]).toEqual(["The cover now keeps its version.", "Reading orchestra.js", expect.not.stringContaining("Bash")]);
 });
+
+test("a cell whose plan is ready but waits on an open ticket says the plan is approved and waits on that ticket", async () => {
+    const {store} = await import("../src/state/store.js");
+    store.rows = {...store.rows, ticket: [{n: 20, completed: 0, deleted: 0, data: {dependencies: {"ticket:26": "confirmed"}}}, {n: 26, completed: 0, deleted: 0, data: {}}]};
+    const environment = {name: "ticket-20", owner: "ticket:20", agent: {}, counts: {}, plans: [{status: "ready"}], subagents: []};
+    const [waiting] = orchestraOf([environment], [], 1000);
+    expect(waiting.card.reason).toBe("its plan is approved, waiting on ticket 26");
+    store.rows = {...store.rows, ticket: [{n: 20, completed: 0, deleted: 0, data: {dependencies: {"ticket:26": "confirmed"}}}, {n: 26, completed: 5, deleted: 0, data: {}}]};
+    expect(orchestraOf([environment], [], 1000)[0].card.reason).toBe("its plan waits for your approval");
+});

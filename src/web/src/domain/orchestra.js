@@ -24,13 +24,26 @@ function nameOf(kind, n, row) {
     return kind ? `Ticket ${n}` : MAIN_AGENT;
 }
 
-function standing(e, plan, now) {
+const waitsOn = (row) => {
+    const confirmed = Object.entries((row && row.data && row.data.dependencies) || {}).filter(([, stance]) => stance === "confirmed");
+    return confirmed
+        .map(([ref]) => ref)
+        .filter((ref) => {
+            const [kind, n] = ref.split(":");
+            const other = rows(kind).find((r) => r.n === Number(n));
+            return other && !other.completed && !other.deleted;
+        });
+};
+
+function standing(e, plan, now, row = null) {
     const state = envState(e);
     const counts = e.counts || {};
     if (state === "stopped") return {state: "stopped", reason: "its agent is not running"};
     if (counts.prompts) return {state: "you", reason: "a permission waits for you"};
     if (counts.routed) return {state: "running", reason: "a permission waits on the orchestrator"};
     if (e.agent.asking || counts.questions) return {state: "you", reason: "a question waits for you"};
+    const waiting = plan && plan.status === "ready" ? waitsOn(row) : [];
+    if (waiting.length) return {state: "idle", reason: `its plan is approved, waiting on ${waiting.map((ref) => ref.replace(":", " ")).join(", ")}`};
     if (plan && PLAN_WAITS[plan.status]) return {state: "you", reason: PLAN_WAITS[plan.status]};
     if (!isActive(state)) return {state: "idle", reason: "idle"};
     if (state === "waiting")
@@ -45,7 +58,7 @@ function entryOf(e, now) {
     const plan = (e.plans || []).find((p) => p.status !== "done") || (e.plans || [])[0] || null;
     const focus = focusOf(e);
     const doing = (e.agent && e.agent.doing) || "";
-    const {state, reason} = standing(e, plan, now);
+    const {state, reason} = standing(e, plan, now, row);
     const title = (row && ((row.data && row.data.latest) || row.title)) || focus.title;
     return {
         key: e.name,
