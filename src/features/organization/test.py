@@ -259,6 +259,20 @@ def test_every_environment_is_made_with_its_kind_and_only_main_ones_are_listed_t
     summary = summarize(record.root)
     assert ([e["owner"] for e in summary["tickets"]], [e["owner"] for e in summary["helpers"]]) == (["ticket:3"], ["helper:1"]), \
         "a ticket's environment is listed with the ticket agents, so the home screen shows its cell"
+    from controllers.types import Todos
+    from overview import summary as summing
+    rebuilt = []
+    original = summing.environment
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(summing, "environment", lambda found: rebuilt.append(found.env) or original(found))
+        summing.PARTS.clear()
+        summarize(record.root)
+        first = len(rebuilt)
+        summarize(record.root)
+        assert len(rebuilt) == first, "an environment none of whose rows changed keeps its part of the summary, not rebuilt for every poll"
+        Todos(record, actor=SYSTEM).create("something new")
+        summarize(record.root)
+    assert record.env in rebuilt[first:] and "ticket-3" not in rebuilt[first:], "and only the environment that changed is rebuilt"
 
 
 def test_the_upgrade_tags_every_environment_from_its_owner_and_a_helpers_folder_named_one_as_a_helper():
