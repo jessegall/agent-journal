@@ -350,7 +350,7 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
     quiet = SimpleNamespace(name="claude", session="claude-9", last_printed=lambda size=400: "a screen", last_report=lambda: None)
     keeper = SeatReport(record, agent=SimpleNamespace(driver=quiet, state=lambda: "idle"))
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(seats, "write_json", lambda path, content: written.append(content["at"]))
+        patch.setattr(seats, "write_seat", lambda root, session, content: written.append(content["at"]))
         keeper.write("tick")
         keeper.write("tick")
         assert len(written) == 1, "a seat that has not changed is not written again every tick: the engine's writes under the lock stop"
