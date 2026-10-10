@@ -71,6 +71,7 @@ class Ticket(Placed, Resource):
     ]
     type = "ticket"
     held, eager = None, True
+    indexed = ("board", "stage", "draft", "rank")
     moments = ("created", "completed", PLAN_WAITS, CHECKPOINT, FINISHED, STUCK, ESCALATED)
     icon = "ticket"
     scope = PROJECT

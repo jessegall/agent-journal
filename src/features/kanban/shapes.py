@@ -5,6 +5,8 @@ from dataclasses import asdict, dataclass, field
 class Lane:
     key: str
     title: str
+    total: int = 0
+    next: str = ""
 
 
 @dataclass
@@ -57,5 +59,6 @@ class BoardLanes:
         blocks = [] if self.plan_hold is None else [self.plan_hold]
         for lane, cards in self.lanes:
             lines = [f"  {card.n:>4}  {card.title}" + (f"  [{card.reason}]" if card.reason else "") for card in cards]
-            blocks.append("\n".join([f"{lane.title} ({len(cards)})", *(lines or ["  none"])]))
+            more = [f"  … {lane.total - len(cards)} more: pass --lane {lane.key} --after '{lane.next}'"] if lane.next else []
+            blocks.append("\n".join([f"{lane.title} ({lane.total or len(cards)})", *(lines or ["  none"]), *more]))
         return "\n\n".join(blocks)

@@ -1,5 +1,7 @@
 from dataclasses import asdict
 
+from controllers.stored import PAGE
+
 from features.kanban.board import build, card_of, main_agent, sources_of
 from features.kanban.shifts import shift
 from features.parts import Command, Context
@@ -8,8 +10,8 @@ from features.parts import Command, Context
 class ShowBoard(Command):
     name = "board"
 
-    def run(self, context: Context, todos, plan: int = 0, agent: str = ""):
-        return build(context.journal, context.settings.done_days, plan, agent).shaped()
+    def run(self, context: Context, todos, plan: int = 0, agent: str = "", lane: str = "", after: str = "", size: int = PAGE, query: str = "", only: int = 0):
+        return build(context.journal, context.settings.done_days, plan, agent, lane, after, size, query, only).shaped()
 
 
 class ShiftCard(Command):
