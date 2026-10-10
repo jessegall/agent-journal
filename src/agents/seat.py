@@ -22,6 +22,7 @@ from dataclasses import dataclass
 DISPATCHED, RETURNED = "dispatched", "returned"
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
 LOOK_EVERY = 10.0
+SEAT_AGAIN = 2.0
 HEARD_EVERY = 5.0
 
 
@@ -76,6 +77,8 @@ class SeatReport:
         self.crew_growth = Growth()
         self.subagents_ended: dict | None = None
         self.pointed: tuple[str, str] = ("", "")
+        self.seated: dict = {}
+        self.seated_at = 0.0
 
     def branch(self) -> str:
         last = self.agent.driver.last_report()
@@ -135,9 +138,17 @@ class SeatReport:
         self.branch()
         self.crew()
         last = self.agent.driver.last_report()
+<<<<<<< HEAD
         write_seat(self.record.root, self.agent.driver.session, {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
                                  "why": why, "printed": self.agent.driver.last_printed(),
                                  "report": {"title": last.title, **last.data} if last else {}})
+=======
+        content = {"agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env, "why": why, "printed": self.agent.driver.last_printed(),
+                   "report": {"title": last.title, **last.data} if last else {}}
+        if content != self.seated or time.time() - self.seated_at >= SEAT_AGAIN:
+            write_json(seat_file(self.record.root, self.agent.driver.session), {"at": time.time(), **content})
+            self.seated, self.seated_at = content, time.time()
+>>>>>>> 330ef01b7 (A seat that has not changed is written again only often enough to show the agent is there, not on every tick)
         if last and last.title:
             self.point(last.title)
 
