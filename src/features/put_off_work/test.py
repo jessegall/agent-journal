@@ -217,3 +217,20 @@ def test_a_write_locks_its_repository_for_a_moment_a_read_waits_for_it_without_l
         each.join(8)
     assert (failures, time.monotonic() - began < 4, (record.root / "migrated.txt").exists(), (record.root / "written.txt").exists()) == ([], True, True, True), \
         "a write that reaches the repository during a migration waits for it before it takes any lock, so the migration, which writes under the same locks, never waits for a writer that waits for it"
+
+
+def test_an_engine_asked_with_a_signal_looks_at_its_threads_and_names_the_functions_the_time_goes_to():
+    import threading
+    import time
+    from engine.sampling import Sampler
+
+    def spin_for_the_profile(seconds):
+        ends = time.monotonic() + seconds
+        while time.monotonic() < ends:
+            sum(range(1000))
+
+    worker = threading.Thread(target=spin_for_the_profile, args=(0.5,), name="spinner")
+    worker.start()
+    found = Sampler().run(0.4, every=0.005)
+    worker.join()
+    assert "== thread spinner" in found and "spin_for_the_profile" in found, "the report names the thread that was busy and the function it was busy in, at the top of its stack and inside it"
