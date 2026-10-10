@@ -5,10 +5,12 @@ from features.work_modes.details import WorkModesDetails
 from features.work_modes.interceptors import RefuseDispatchInSolo, RefuseHelperInSolo, RemindOrchestrator
 from features.work_modes.modes import carried
 from features.work_modes.routes import post_board, post_mode
+from features.work_modes.shipped import SEQUENCES
 
 
 class WorkModes(Feature):
     details = WorkModesDetails
+    sequences = SEQUENCES
 
     def register(self, journal: Journal) -> None:
         journal.routes.add(post_mode)
