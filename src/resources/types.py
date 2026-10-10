@@ -540,6 +540,7 @@ class Environment(Shape, Resource):
         Field(TEXT, "", name="owner", journal_only=True), Field(TEXT, "", name="launched_from", journal_only=True), Field(NUMBER, 0, name="launched"),
         Field(TEXT, "", name="folder", journal_only=True), Field(TEXT, "", name="kind", journal_only=True),
     ]
+    indexed = ("owner",)
     listed_open = True
     type = "environment"
     event_labels = {"created": "Environment prepared", "completed": "Environment closed"}

@@ -1,7 +1,9 @@
+import os
 import threading
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
+from engine.memo import Memo
 from engine.stored import read_json
 from providers import PROVIDERS
 from providers.payload import Hook
@@ -10,6 +12,7 @@ from runner import chat_mirror
 from runner.hooks import answer
 
 REPLAYING = threading.Lock()
+WAITING = Memo()
 
 
 @dataclass(frozen=True)
@@ -22,12 +25,19 @@ class Spooled(Loaded):
     body: dict = field(default_factory=dict)
 
 
+def kept_stamp(root: Path) -> int:
+    try:
+        return os.stat(chat_mirror.unsent(root)).st_mtime_ns
+    except OSError:
+        return 0
+
+
 def replay(root: Path, most: int = 0) -> None:
     """Takes every event kept while the server could not answer (the oldest `most` of them, when given), oldest first: a shown message goes to the chat, any other event is handled as if it had just arrived, at the time the hook kept it."""
     if not REPLAYING.acquire(blocking=False):
         return
     try:
-        waiting = sorted(chat_mirror.unsent(root).glob("*.json"), key=lambda f: (f.stat().st_mtime_ns, f.name))
+        waiting = WAITING.get(str(root), kept_stamp(root), lambda: sorted(chat_mirror.unsent(root).glob("*.json"), key=lambda f: (f.stat().st_mtime_ns, f.name)))
         for kept in waiting[:most] if most else waiting:
             handle(root, kept)
     finally:
