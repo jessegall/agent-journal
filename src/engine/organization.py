@@ -120,12 +120,20 @@ def domain_of(path: Path) -> Domain:
 KEPT: dict[str, tuple[tuple, Organization]] = {}
 
 
-def touched(path: Path) -> tuple:
+@dataclass(frozen=True)
+class FileStamp:
+    """When a file last changed and how large it was, or nothing at all for a file that is not there."""
+
+    mtime_ns: int = 0
+    size: int = 0
+
+
+def touched(path: Path) -> FileStamp:
     try:
         found = os.stat(path)
     except OSError:
-        return ()
-    return found.st_mtime_ns, found.st_size
+        return FileStamp()
+    return FileStamp(found.st_mtime_ns, found.st_size)
 
 
 def folder_stamp(folder: Path) -> tuple:
