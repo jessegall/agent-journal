@@ -380,6 +380,20 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
             f"{name} opens at most {opened} files and scans at most {scanned} folders once warm; it opened {work.opened} and scanned {work.scanned}"
         twice = [row for row, times in Counter(work.parsed).items() if times > 1]
         assert not twice, f"{name} parses no row twice in one call; it parsed {twice} more than once"
+    from controllers import stored
+    from controllers.types import Todos
+    with pytest.MonkeyPatch.context() as watched:
+        watched.setattr(stored, "WATCHED", stored.Watched())
+        dashboard = calls["the dashboard"][0]
+        dashboard()
+        stored.watch_marks()
+        dashboard()
+        with counted() as work:
+            dashboard()
+        rows_looked_at = [path for path in work.stats if str(record.root) in path and path.endswith((".md", "environments", "index.json"))]
+        assert not rows_looked_at, f"a warm dashboard in a watched server reads its folders' and rows' marks from memory; it looked at {rows_looked_at}"
+        written = Todos(record, actor=SYSTEM).create("written while watched")
+        assert written.n in [row["n"] for row in Todos(record, actor=SYSTEM).rows.summaries()], "a write of the server's own is read at once, before the next look of the watch loop"
     from controllers.types import Environments
     from engine.seats import write_seat
     from engine.sessions import Sessions

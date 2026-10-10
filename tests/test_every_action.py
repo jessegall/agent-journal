@@ -53,6 +53,7 @@ REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin"
 LOGIN_PAGE = {"hosting", "hostingUpgrade", "hostingTakeDown", "hostingMe", "members", "inviteMember", "assignRole", "removeMember", "shareEnvironments", "endLogins",
               "leaveJournal"}
 SESSION, AGENT_N, WALK = "claude-1", 1, "walk-1"
+ATTACHED_NAMES = {"profile": "idle_wave.png"}
 CALLS = {
     "changelog": [], "cancelUpdate": [], "connection": [], "connectTo": ["127.0.0.1:9"], "disconnectFromServer": [], "releases": [], "restore": ["todo", 1], "press": [{"label": "Read it", "type": "todo", "n": 1, "action": "read"}], "checkForUpdate": [], "update": [], "manifest": [], "identity": [], "saveIdentity": [{"name": "Walker"}],
     "pages": [], "journals": [], "forgetJournal": ["/nowhere/.journal"], "startJournal": ["/nowhere/.journal", "codex"], "summary": [], "upstream": [], "upgrade": [], "stop": [],
@@ -75,7 +76,7 @@ CALLS = {
     "runCheck": [1], "setCheck": [1, "every", 5], "closeNotice": [1], "pinNotice": ["Pinned from a message", "message:1"], "editMessage": [1, "reworded"],
     "deleteTurn": ["message", 1], "touched": [1],
     "stopTask": [AGENT_N, "task-1", "a background run"], "updateComment": [1, "reworded"], "deleteComment": [1], "addToCollection": [1, ["todo:1"]],
-    "setStartsOn": [1, "todo.created"], "setSteps": [1, ["one step"]], "pinRule": [1], "profiles": [], "profileCallings": [], "profileSamples": [], "profileNamings": [], "createProfile": [{"title": "walked", "brief": "x"}], "updateProfile": [1, {"brief": "y"}],
+    "setStartsOn": [1, "todo.created"], "setSteps": [1, ["one step"]], "pinRule": [1], "profiles": [], "profileCallings": [], "profileSamples": [], "profileNamings": [], "profileAnimations": [], "profileSchedules": [], "scheduleVoice": [1, {}], "anchorAnimation": [1, "idle_wave.png", {"line": 0}], "tuneAnimation": [1, "idle_wave.png", {}], "createProfile": [{"title": "walked", "brief": "x"}], "updateProfile": [1, {"brief": "y"}],
     "duplicateProfile": [1], "deleteProfile": [1], "configurePlugin": [1, "key", "value"],
     "clearPluginLog": [1], "removeEnvironment": [1, False], "sweepEnvironment": [1, False], "readAll": ["todo", [1]],
     "upload": ["todo", 1, {"file": "walked.txt"}], "events": [], "recentEvents": [10], "settings": [], "saveSettings": [{}],
@@ -741,9 +742,9 @@ def test_an_action_that_raises_restores_every_file_it_wrote_and_removes_every_fi
 
 
 def test_a_failed_attach_leaves_the_attached_file_and_its_description_as_they_were_for_every_type(tmp_path, monkeypatch):
-    source = tmp_path / "note.txt"
     wrong = {}
     for type_, resource, record, controller in each_type():
+        source = tmp_path / ATTACHED_NAMES.get(type_, "note.txt")
         row = acting(type_, record, SYSTEM).create(f"a {type_} with a file", **needed(type_))
         write_text(source, "first")
         invoked(controller, "attach", (row.n, str(source), "the first"))
@@ -760,7 +761,7 @@ def test_a_failed_attach_leaves_the_attached_file_and_its_description_as_they_we
         failure = refused(partial(controller.attach, row.n, str(source), "the second"))
         monkeypatch.undo()
         reckon(wrong, type_, {"the move fails": "the disk refused the move" in failure,
-                              "the attached file and its description are as they were": ((controller.folder(row.n) / "note.txt").read_text(), controller.load(row.n).files) == ("first", {"note.txt": "the first"})})
+                              "the attached file and its description are as they were": ((controller.folder(row.n) / source.name).read_text(), controller.load(row.n).files) == ("first", {source.name: "the first"})})
     assert wrong == {}, "a failed move leaves the attached file and its description as they were"
 
 

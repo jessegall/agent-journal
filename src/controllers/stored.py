@@ -4,7 +4,7 @@ import threading
 import time
 import zipfile
 from bisect import bisect_left, insort
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Callable, TypeVar
 from resources.base import MEMORY, OWNER, PART_OF, Missing, Refused, Resource
@@ -53,6 +53,62 @@ def mtime(path: Path) -> int:
         return path.stat().st_mtime_ns
     except OSError:
         return 0
+
+
+@dataclass
+class Watched:
+    """The marks of the folders and pack indexes a server holds, renewed by its watch loop once a tick, so a request reads them from memory; a process with no watch loop asks the disk."""
+    marks: dict[str, int] = field(default_factory=dict)
+    on: bool = False
+
+
+WATCHED = Watched()
+
+
+def mark_of(path: Path) -> int:
+    """The modification time of a folder or pack index: from the watch loop's last look in a server, from the disk anywhere else."""
+    key = str(path)
+    if WATCHED.on and key in WATCHED.marks:
+        return WATCHED.marks[key]
+    found = path.stat().st_mtime_ns if path.name != INDEX else mtime(path)
+    if WATCHED.on:
+        WATCHED.marks[key] = found
+    return found
+
+
+def remark(path: Path) -> None:
+    """A write of this process changed the folder or index: its mark is looked at again at once, so the write is never read as stale."""
+    if WATCHED.on:
+        WATCHED.marks[str(path)] = mtime(path)
+
+
+def watch_marks() -> None:
+    """The watch loop's one look a tick at every mark this server holds, which is all the disk a warm read needs; a folder whose mark moved has its row stamps looked at again here, off every request."""
+    WATCHED.on = True
+    now = time.monotonic()
+    for key in list(WATCHED.marks):
+        WATCHED.marks[key] = mtime(Path(key))
+        held = STAMPED.get(key)
+        if held is not None and held.mark != WATCHED.marks[key]:
+            try:
+                RowStore.restat(Path(key), WATCHED.marks[key], held, now)
+            except OSError:
+                STAMPED.pop(key, None)
+
+
+def restamp(path: Path, n: int) -> None:
+    """A write of this process changed one row: its stamp is taken at once, so a read in a watched server never serves the row as it was."""
+    held = STAMPED.get(str(path.parent))
+    if not (WATCHED.on and held):
+        return
+    stamps, inodes = dict(held.stamps), dict(held.inodes)
+    try:
+        found = path.stat()
+        stamps[n], inodes[n] = stamp_of(found), found.st_ino
+    except OSError:
+        stamps.pop(n, None)
+        inodes.pop(n, None)
+    STAMPED[str(path.parent)] = replace(held, stamps=stamps, inodes=inodes)
 
 
 def index_file(folder: Path) -> Path:
@@ -190,6 +246,8 @@ class RowStore:
         folder = self.folder()
         before = self._moved(folder) if folder.is_dir() else None
         self.write_file(r)
+        remark(folder)
+        restamp(self.path(r.n), r.n)
         self.reindexed(r.n, before, r)
 
     def _note(self, n: int) -> None:
@@ -315,7 +373,7 @@ class RowStore:
 
     def _moved(self, folder: Path) -> Moved:
         rows = tuple(sorted(self._stamps(folder).items())) if self.resource.own_folder else ()
-        return Moved(folder.stat().st_mtime_ns, mtime(folder / PACKED / INDEX), rows)
+        return Moved(mark_of(folder), mark_of(folder / PACKED / INDEX), rows)
 
     def _summarised(self, folder: Path, moved: Moved, loose: list[dict]) -> list[dict]:
         seen = {row["n"] for row in loose}
@@ -365,7 +423,7 @@ class RowStore:
 
     def _stamps(self, folder: Path) -> dict[int, str]:
         if not self.resource.own_folder:
-            mark, now = os.stat(folder).st_mtime_ns, time.monotonic()
+            mark, now = mark_of(folder), time.monotonic()
             held = STAMPED.get(str(folder))
             kept = held and now - held.checked < STAMPS_KEPT
             if kept and held.mark == mark:
@@ -473,8 +531,12 @@ class RowStore:
     def peek(self, n: int) -> Resource:
         p = self.path(n)
         try:
-            found = p.stat()
-            stamp, where = (found.st_mtime_ns, found.st_size), str(p)
+            stamps = self._stamps(p.parent) if WATCHED.on and not self.resource.own_folder else {}
+            if n in stamps:
+                stamp, where = stamps[n], str(p)
+            else:
+                found = p.stat()
+                stamp, where = (found.st_mtime_ns, found.st_size), str(p)
         except OSError as error:
             entry = self.packed().get(n)
             if not entry:
@@ -486,9 +548,10 @@ class RowStore:
         return HELD.get(where, stamp, lambda: self._parsed(n))
 
     def text(self, n: int) -> str:
-        p = self.path(n)
-        if p.is_file():
-            return p.read_text()
+        try:
+            return self.path(n).read_text()
+        except (FileNotFoundError, NotADirectoryError):
+            pass
         entry = self.packed().get(n)
         if not entry:
             raise Refused(f"no {self.type} {n}")
@@ -514,6 +577,7 @@ class RowStore:
         before = self._moved(folder) if folder.is_dir() else None
         HELD.forget(str(self.path(n)))
         self.path(n).unlink(missing_ok=True)
+        restamp(self.path(n), n)
         if self.resource.own_folder and folder.is_dir():
             os.utime(folder)
         elif folder.is_dir():
@@ -521,6 +585,8 @@ class RowStore:
         packed = self.packed()
         if n in packed:
             write_json(folder / PACKED / INDEX, {k: row for k, row in packed.items() if k != n})
+            remark(folder / PACKED / INDEX)
+        remark(folder)
         self.reindexed(n, before)
 
     def pack(self, before: float) -> int:
@@ -552,6 +618,7 @@ class RowStore:
                 raise OSError(f"{building} did not read back as written")
         building.replace(archive)
         write_json(folder / PACKED / INDEX, {**index, **{row["n"]: {**{k: v for k, v in row.items() if k != "stamp"}, ARCHIVE: name} for row in rows}})
+        remark(folder / PACKED / INDEX)
         for row in rows:
             p = folder / member(row["n"])
             if p.is_file() and p.read_bytes() == texts[row["n"]]:
