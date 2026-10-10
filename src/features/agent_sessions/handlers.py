@@ -77,6 +77,18 @@ class MarkSilentStopped(Handler):
             stop(agents, row)
 
 
+class StopEndedAtSessionStart(Handler):
+    """A conversation that starts ends the rows of earlier ones whose process is gone, at once, so a row left working by an agent that died does not outlive it until the quiet minutes pass."""
+
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
+        if event.hook != HookEvent.SESSION_START:
+            return
+        agents, sessions = context.journal.get(Agents), Sessions(context.record.root)
+        for row in agents.rows.every():
+            if row.title != event.session and has_ended(row, sessions, agents):
+                stop(agents, row)
+
+
 def has_ended(row, sessions: Sessions, agents: Agents) -> bool:
     """Whether a row still counted as running belongs to a session that is gone, and is not being taken over by a newer process of the same conversation."""
     return row.live and not live(sessions.read(row.title)) and not relaunching(row, sessions, agents)

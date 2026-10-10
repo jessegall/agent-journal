@@ -331,6 +331,22 @@ def test_a_compaction_is_recorded_once_on_the_agent():
     Sessions(record.root).write("claude-new", environment=record.env, provider="claude", pid=os.getppid(), since=time.time() - 5)
     assert ("claude-4" in stop_ended(record.root), agents.load(again.n).status) == (True, STOPPED), \
         "and once the new process has a row of its own, the old row of a session that is gone is stopped as before"
+    left = agents.by_session("claude-6")
+    agents.stamp(left.n, status="working", event="PreToolUse", at=time.time())
+    Sessions(record.root).write("claude-6", environment=record.env, provider="claude", pid=2 ** 22, since=time.time() - 60)
+    report(record, "idle", "SessionStart", session="claude-7")
+    Sessions(record.root).write("claude-7", environment=record.env, provider="claude", pid=os.getpid(), since=time.time())
+    report(record, "idle", "SessionStart", session="claude-7")
+    assert agents.load(left.n).status == STOPPED, "an agent that died while working is stopped as soon as a later conversation starts, not after the quiet minutes"
+    working = agents.by_session("claude-8")
+    agents.stamp(working.n, status="working", event="PreToolUse", at=time.time())
+    from agents.actors import Agent
+    from types import SimpleNamespace
+    sitting = object.__new__(Agent)
+    sitting.record, sitting.driver = record, SimpleNamespace(session="claude-8", last_report=lambda: agents.load(working.n))
+    agents.stamp(working.n, status="idle", event="Stop")
+    sitting.note(branch="main")
+    assert (agents.load(working.n).status, agents.load(working.n).data["branch"]) == ("idle", "main"), "a fact written about the agent never carries a status read earlier over the one the hooks have since reported"
 
 
 def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once():

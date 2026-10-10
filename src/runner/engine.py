@@ -433,7 +433,7 @@ class Engine:
         row = Agents(self.record, actor=SYSTEM).by_session(last.title if last else self.agent.driver.session)
         self.typed(row, [key for key in queued.keys if key.strip() and key.isprintable()])
         if queued.action in row.pending:
-            self.agent.mark(row.status, row.event, pending={k: v for k, v in row.pending.items() if k != queued.action})
+            self.agent.note(pending={k: v for k, v in row.pending.items() if k != queued.action})
         return f"controlled: {queued.label}"
 
     def deliver(self) -> str:

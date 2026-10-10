@@ -97,7 +97,7 @@ class SeatReport:
         remote = git(["remote", "get-url", "origin"], cwd, timeout=2).strip()
         url = f"{web}/tree/{self.branch_name}" if self.branch_name and (web := web_remote(remote)) else ""
         if last and last.title and self.branch_name and (last.branch, last.branch_url) != (self.branch_name, url):
-            self.agent.mark(last.status, last.event, branch=self.branch_name, branch_url=url, at=last.at)
+            self.agent.note(branch=self.branch_name, branch_url=url)
         return self.branch_name
 
     def crew(self) -> None:
@@ -112,9 +112,8 @@ class SeatReport:
         facts = provider.crew(Path(path)) if provider else {}
         self.subagents_moved(last, facts.get(AgentRow.subagent_rows))
         if facts and any(last.data.get(k) != v for k, v in facts.items()):
-            compacting = facts.get(AgentRow.compacting)
-            status = status_after(compacting, last.status)
-            self.agent.mark(status, last.event, at=last.at, **facts)
+            status = status_after(facts.get(AgentRow.compacting), self.agent.current().status)
+            self.agent.note(**facts, **({AgentRow.status: status} if status != self.agent.current().status else {}))
 
     def subagents_moved(self, last, subagents: list | None) -> None:
         if subagents is None:

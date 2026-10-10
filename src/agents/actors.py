@@ -162,10 +162,18 @@ class Agent(Actor):
     def active(self) -> str:
         return WORKING if Works(self.record, actor=SYSTEM).rows.standing() else BUSY
 
+    def current(self):
+        """The agent's row as it stands now, not as the report cached a moment ago read it."""
+        last = self.driver.last_report()
+        return Agents(self.record, actor=SYSTEM).by_session((last and last.title) or self.driver.session)
+
+    def note(self, **facts) -> None:
+        """Writes facts onto the agent's row and leaves its status, event and time to the hooks that report them, so a report read earlier never writes an older state over a newer one."""
+        Agents(self.record, actor=SYSTEM).update(self.current().n, **facts)
+
     def mark(self, status: str, event: str, **more) -> None:
         agents = Agents(self.record, actor=SYSTEM)
-        last = self.driver.last_report()
-        row = agents.by_session((last and last.title) or self.driver.session)
+        row = self.current()
         agents.update(row.n, **{**row.data, **more, AgentRow.at: more.get(AgentRow.at) or time.time(), AgentRow.status: status or row.status or "", AgentRow.event: event or row.event or ""})
 
     def is_idle(self) -> bool:
