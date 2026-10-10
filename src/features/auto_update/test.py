@@ -117,6 +117,16 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         "a new feature seen on the server is not announced again, wherever the viewer is opened next"
     assert dispatch("POST", "/api/new-feature", record.root, {}, {"id": "owl"}).code == 200 and new_feature.unseen(record.root, notes) == [], \
         "the viewer tells the server which new feature it has shown"
+    from engine.ledger import ledger
+    young = record.root.parent / "young" / ".journal"
+    young.mkdir(parents=True)
+    assert (new_feature.mark_first_start_seen(young, notes), new_feature.unseen(young, notes), new_feature.mark_first_start_seen(young, notes)) == (True, [], False), \
+        "a journal that starts with no record of an install or an update announces nothing: only later updates do"
+    older = record.root.parent / "older" / ".journal"
+    older.mkdir(parents=True)
+    ledger(older).write_text("{}")
+    assert (new_feature.mark_first_start_seen(older, notes), [one.id for one in new_feature.unseen(older, notes)]) == (False, ["squire", "owl"]), \
+        "one that was installed before still announces what an update brought"
     from controllers.types import Agents
     from engine import runtime
     from features.auto_update.waiting import running, wait_for_commands
