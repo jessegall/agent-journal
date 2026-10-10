@@ -95,10 +95,7 @@ def agent_pid(pid: int) -> int:
 
 
 class SessionFiles:
-    """Every session.json of one root, read once and kept while the sessions folder's stamp stands.
-
-    A write stamps the folder (its modification time, raised past the last one) so every process
-    sees the change with one stat; the file is read only by the funnel."""
+    """Every session.json of one root, kept while the sessions folder's stamp stands."""
 
     NONE = SessionRecord()
 

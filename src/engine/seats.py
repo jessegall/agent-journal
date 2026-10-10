@@ -129,10 +129,7 @@ def write_seat(root: Path, session: str, seat: dict) -> None:
 
 
 class SeatFiles:
-    """Every seat.json of one root, read again only when its own file changed.
-
-    A terminal rewrites its seat every second, so the folder's stamp says nothing here: each seat is
-    one stat, and a seat that is not beating costs no read."""
+    """Every seat.json of one root, read again only when its own file changed."""
 
     def __init__(self, root: Path):
         self.folder = runtime.sessions(root)
