@@ -18,7 +18,7 @@ from engine.focus import existing_tab
 from engine.stored import append_text, read_json, write_json, write_text
 from engine.sessions import alive
 from engine.version import version
-from engine.package import entry, server_entry
+from engine.package import entry, free_threaded, server_entry
 from engine.ports import free, url_of
 from resources.fields import Loaded
 from engine.machines import journal_home
@@ -248,12 +248,16 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
         if already:
             return already, None
         port = available(root, configured(root) or last(root).port)
-        command = [*server_entry("journal"), "--root", str(root), "serve", "--port", str(port)]
-        with log.open("a") as output:
-            server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
-        url, code = answered(root, server)
-        if not url and code is None:
-            code = stopped(server, log)
+        for python in dict.fromkeys(path for path in (free_threaded(), sys.executable) if path):
+            command = [*server_entry("journal", python), "--root", str(root), "serve", "--port", str(port)]
+            with log.open("a") as output:
+                server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
+            url, code = answered(root, server)
+            if not url and code is None:
+                code = stopped(server, log)
+            if url or python == sys.executable:
+                break
+            append_text(log, f"journal: the server did not come up on {python}, so it is started on {sys.executable}\n")
         if code is None:
             threading.Thread(target=server.wait, daemon=True).start()
         return url, code

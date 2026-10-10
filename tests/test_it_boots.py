@@ -1619,16 +1619,30 @@ def test_one_watcher_writes_the_installed_build_and_every_other_process_reads_it
     assert (package.noticed_digest(root) != published, len(walked)) == (True, 2), "when the watcher has not written for a while, as when no server runs, the tree is walked after all"
 
 
-def test_the_server_starts_on_the_free_threaded_interpreter_when_one_is_named(tmp_path, monkeypatch):
+def test_the_server_starts_on_a_free_threaded_interpreter_when_the_machine_has_one_and_falls_back_to_the_plain_one(tmp_path, monkeypatch):
     from engine import package
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setattr(package.shutil, "which", lambda name: None)
+    monkeypatch.delenv(package.SERVER_PYTHON, raising=False)
     plain = package.server_entry("journal")
-    assert plain[0] == sys.executable and plain[1:] == package.entry("journal")[1:], "with nothing named the server starts on the interpreter that asks"
-    free = tmp_path / "python3.14t"
-    free.write_text("")
-    monkeypatch.setenv(package.SERVER_PYTHON, str(free))
-    assert package.server_entry("journal")[0] == str(free), "a free-threaded interpreter named in JOURNAL_SERVER_PYTHON runs the server, so environments are answered on different cores"
+    assert plain[0] == sys.executable and plain[1:] == package.entry("journal")[1:], "a machine with no free-threaded Python starts the server on the interpreter that asks"
+    kept = tmp_path / ".local" / "share" / "uv" / "python" / "cpython-3.14+freethreaded-macos-aarch64-none" / "bin"
+    kept.mkdir(parents=True)
+    (kept / "python3.14t").write_text("")
+    assert package.server_entry("journal")[0] == str(kept / "python3.14t"), "one that uv installed runs the server, so environments are answered on different cores"
+    monkeypatch.setattr(package.shutil, "which", lambda name: "/usr/bin/python3.14t" if name == "python3.14t" else None)
+    assert package.free_threaded() == "/usr/bin/python3.14t", "one on the PATH is preferred"
+    monkeypatch.setenv(package.SERVER_PYTHON, "gil")
+    assert package.server_entry("journal")[0] == sys.executable, "the word gil asks for the plain interpreter"
     monkeypatch.setenv(package.SERVER_PYTHON, str(tmp_path / "gone"))
-    assert package.server_entry("journal")[0] == sys.executable, "one that is not there is ignored"
+    assert package.free_threaded() == "", "a named interpreter that is not there is ignored"
+    monkeypatch.delenv(package.SERVER_PYTHON)
+    monkeypatch.setattr(package.shutil, "which", lambda name: "/usr/bin/uv" if name == "uv" else None)
+    (kept / "python3.14t").unlink()
+    asked = []
+    monkeypatch.setattr(package.subprocess, "run", lambda args, **more: asked.append(args) or types.SimpleNamespace(returncode=0))
+    assert (package.fetch_free_threaded(), asked) == ("fetched a free-threaded Python for the server", [["uv", "python", "install", "3.14t"]]), \
+        "an install asks uv for a free-threaded Python when the machine has uv and no such Python"
 
 
 def test_the_server_ends_when_interrupted_or_told_to_stop_restarts_on_new_code_and_answers_hook_failures(tmp_path, monkeypatch):

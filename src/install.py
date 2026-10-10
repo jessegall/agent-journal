@@ -533,6 +533,9 @@ def finish(project: Path, root: Path) -> list[str]:
             return done + handed_over(project, root, (REPAIRED,))
     stepping(root, "Setting up hooks and skills")
     done += configure(project, root)
+    loaded()
+    from engine.package import fetch_free_threaded
+    done += [line for line in [fetch_free_threaded()] if line]
     stepping(root, "Migrating the record")
     fresh = not (root / "migrations.json").is_file()
     if loaded().migrations_pending(root):
