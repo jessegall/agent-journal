@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 import pytest
 import threading
 import time
@@ -377,6 +378,8 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
             call()
         assert (len(work.opened) <= opened, len(work.scanned) <= scanned) == (True, True), \
             f"{name} opens at most {opened} files and scans at most {scanned} folders once warm; it opened {work.opened} and scanned {work.scanned}"
+        twice = [row for row, times in Counter(work.parsed).items() if times > 1]
+        assert not twice, f"{name} parses no row twice in one call; it parsed {twice} more than once"
     from controllers.types import Environments
     from engine.seats import write_seat
     from engine.sessions import Sessions

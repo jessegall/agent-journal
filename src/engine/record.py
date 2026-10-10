@@ -41,6 +41,8 @@ class Setting:
     def __set__(self, obj, value) -> None:
         obj.set_setting(self.name, value)
 
+BUILT = "journal.record"
+
 
 class Record:
     SETTINGS = ("features", "triggers", "keep", "messages", "tags", "agents", "skills", "questions", "delivery", "viewer")
@@ -56,6 +58,7 @@ class Record:
     viewer = Setting(dict, project=("color_scheme", "chat_hidden", "away", "tour_seen", "open_with", "port"))
 
     def __init__(self, root: Path, env: str, memo: bool = False, writer: ThisMachine | Pushing | Lease = ThisMachine()):
+        sys.audit(BUILT, env)
         self.root = Path(root)
         self.env = env
         self.writer = writer

@@ -2,7 +2,6 @@ import json
 import os
 import subprocess
 import sys
-import threading
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -119,27 +118,47 @@ def project_on(branch: str) -> Repo:
     return Repo(record, project)
 
 
-AUDITED = {"open": "opened", "os.scandir": "scanned", "os.listdir": "scanned"}
-ACTIVE = threading.local()
+AUDITED = {"open": "opened", "os.scandir": "scanned", "os.listdir": "scanned", "journal.parsed": "parsed", "journal.record": "records"}
 INSTALLED = []
+REAL_STAT = os.stat
 
 
 @dataclass
 class Work:
+    """What one counted stretch did, on every thread of the process: files opened, folders scanned, paths whose status was read, rows parsed and Records built."""
     opened: list = field(default_factory=list)
     scanned: list = field(default_factory=list)
+    stats: list = field(default_factory=list)
+    parsed: list = field(default_factory=list)
+    records: list = field(default_factory=list)
+
+
+@dataclass
+class Active:
+    work: Work | None = None
+
+
+ACTIVE = Active()
 
 
 def recorded(event: str, args: tuple) -> None:
-    work = getattr(ACTIVE, "work", None)
+    work = ACTIVE.work
     if work is not None and event in AUDITED:
-        getattr(work, AUDITED[event]).append(str(args[0]))
+        getattr(work, AUDITED[event]).append(args if event.startswith("journal.") else str(args[0]))
+
+
+def stat_counted(path, *args, **kwargs):
+    work = ACTIVE.work
+    if work is not None:
+        work.stats.append(str(path))
+    return REAL_STAT(path, *args, **kwargs)
 
 
 @contextmanager
 def counted():
     if not INSTALLED:
         sys.addaudithook(recorded)
+        os.stat = stat_counted
         INSTALLED.append(recorded)
     ACTIVE.work = Work()
     try:

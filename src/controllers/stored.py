@@ -1,4 +1,5 @@
 import os
+import sys
 import threading
 import time
 import zipfile
@@ -35,6 +36,7 @@ INDEXED: dict[str, dict] = {}
 PENDING: dict[str, set[int]] = {}
 INDEXED_AT: dict[str, dict[int, str]] = {}
 STAMPED: dict[str, "Stamped"] = {}
+PARSED = "journal.parsed"
 STAMPS_FRESH = 60.0
 STAMPS_RENEW = STAMPS_FRESH / 2
 STAMPS_KEPT = STAMPS_FRESH * 10
@@ -497,6 +499,7 @@ class RowStore:
             raise Refused(f"{self.type} {n} is missing from {archive}") from error
 
     def _parsed(self, n: int) -> Resource:
+        sys.audit(PARSED, self.type, n)
         try:
             return self.resource.load(self.text(n))
         except (ValueError, TypeError) as error:
