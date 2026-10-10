@@ -6,6 +6,7 @@ FOOTER = re.compile(r"Enter to (?:select|confirm|continue)|Esc to (?:cancel|exit
 TRUSTED = re.compile(r"trust|development channels", re.I)
 CONSENT = re.compile(r"consent|data.?shar|privacy|telemetry|analytics|improve (?:the|our)|collect|terms", re.I)
 OWN = re.compile(r"do you want to (?:proceed|make|create)|would you like to run|allow command|approve", re.I)
+PAST = re.compile(r"\(current\)|rewind|restore|resume|checkpoint", re.I)
 ACCEPT = re.compile(r"^(?:yes|trust|i am using|continue|ok)\b", re.I)
 DECLINE = re.compile(r"^(?:no\b|don't|do not|decline|deny|skip|not now|later|cancel|never|reject|disable)", re.I)
 UP, DOWN, ENTER = b"\x1b[A", b"\x1b[B", b"\r"
@@ -55,8 +56,8 @@ class Menu:
         return cls(asked, tuple(Option(int(m["number"]), m["label"], bool(m["cursor"])) for m in block))
 
     def foreign(self) -> bool:
-        """Whether the menu is the program's own and not a question the agent asks or a permission the journal's asks already carry."""
-        return not OWN.search(self.question)
+        """Whether the menu is the program's own: not a question the agent asks, a permission the journal's asks already carry, or a list of past messages, sessions or checkpoints that you opened to read."""
+        return not (OWN.search(self.question) or PAST.search(" ".join((self.question, *(option.label for option in self.options)))))
 
     def signature(self) -> tuple:
         return tuple(option.label for option in self.options)

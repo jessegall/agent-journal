@@ -13,7 +13,7 @@ from resources.base import SYSTEM, Refused
 from engine.wording import counted
 from engine import runtime
 from engine.sessions import Sessions
-from supervisor import PRINTED, SCREEN, TYPED
+from supervisor import KEYED, PRINTED, SCREEN, TYPED
 from engine.worktree import BRANCHED, environment, linked, main_checkout, opened, spread, unused_name, workspace
 from providers.catalogue import workspace_folders
 
@@ -100,6 +100,7 @@ class Driver(ABC):
         self.reported = (float("-inf"), None)
         self.printed = runtime.session_file(record.root, session, PRINTED)
         self.typed = runtime.session_file(record.root, session, TYPED)
+        self.keyed = runtime.session_file(record.root, session, KEYED)
 
     @classmethod
     @abstractmethod
@@ -447,6 +448,13 @@ class Driver(ABC):
 
     def clear_input(self) -> None:
         self._wrote(self.CLEAR_LINE + (b"\x7f" + self.CLEAR_LINE) * DRAFT_LINES)
+
+    def keyed_at(self) -> float:
+        """When the terminal last took any key, whoever sent it: the user at the terminal or in the viewer, or the journal."""
+        try:
+            return self.keyed.stat().st_mtime
+        except OSError:
+            return 0.0
 
     def user_typing(self, within: float) -> bool:
         try:

@@ -128,6 +128,22 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
     assert (sharing.choice().keys, trusting.choice().keys, unknown.choice().keys, permission.foreign(), Menu.on("no menu here\r\n❯ ")) == \
         (b"\x1b[B\r", b"\r", b"\x1b", False, None), \
         "a menu is recognised by its shape and chosen by its words: data sharing is declined by moving to the label, a folder the journal launched the agent into is trusted, anything unknown is closed, and the agent's own permission question is left to its asks"
+    rewind = Menu.on("Rewind\r\n❯ 1. fix the login\r\n  2. add the page\r\n  3. (current)\r\nEnter to continue · Esc to cancel")
+    assert rewind.foreign() is False, "Claude's Rewind list, which has no decline label, is a list of past messages you opened to read, so the journal never closes it"
+    from types import SimpleNamespace
+    from runner.worker import Dialogs
+    shown = "Blender MCP wants to share data. Allow?\r\n❯ 1. Yes, allow\r\n  2. No, do not share\r\nEnter to select · Esc to cancel"
+    pressed = []
+    stub = SimpleNamespace(PROMPT_TAIL=1, name="claude", record=fresh(), screen=lambda size: shown, last_report=lambda: None,
+                           quiet_for=lambda: 9.0, press_raw=pressed.append, keyed_at=lambda: 0.0)
+    own = Dialogs(stub)
+    own.tick()
+    assert pressed == [b"\x1b[B\r"], "a menu that came up with no key pressed is answered"
+    opened = SimpleNamespace(**{**vars(stub), "press_raw": pressed.append, "keyed_at": lambda: time.time()})
+    pressed.clear()
+    mine = Dialogs(opened)
+    mine.tick()
+    assert pressed == [], "a menu that came up just after a key you pressed is left to you, however quiet the terminal is"
     update = b"\x1b[2m> Ask Codex to do anything\x1b[0m\r\nUpdate available 0.159.3 \xe2\x86\x92 0.160.0\r\n\xe2\x80\xba 1. Update now\r\n  2. Skip\r\n  3. Skip until next version"
     assert (codex.consent(update), codex.opening(update)) == (b"2\r", ""), "Codex's update question is skipped, and the opening waits until it is gone"
     assert (codex.carried_on(["continue"]), codex.carried_on(["--resume", "abc"]), codex.carried_on(["-c", "k=v"])) == \

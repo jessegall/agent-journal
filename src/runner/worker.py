@@ -38,6 +38,7 @@ RETRY_AFTER = 1.0
 STARTUP, EARLY = 30.0, 16384
 CONSENT_EVERY = 3.0
 DIALOG_EVERY, DIALOG_QUIET = 1.0, 1.5
+KEY_BEFORE, KEY_ECHO = 3.0, 2.0
 TERMINATED = threading.Event()
 
 
@@ -121,24 +122,35 @@ class Confirm:
 
 
 class Dialogs:
-    """Answers any menu the program itself puts on an agent's terminal, a consent, a folder to trust, a data-sharing question, so the agent is never held by one; it says once what it chose."""
+    """Answers any menu the program itself puts on an agent's terminal, a consent, a folder to trust, a data-sharing question, so the agent is never held by one; it says once what it chose, and leaves a menu alone that a key opened or that a key was pressed in."""
 
     def __init__(self, driver):
         self.driver = driver
         self.said: tuple = ()
+        self.seen: tuple = ()
+        self.seen_at = self.pressed_at = 0.0
+        self.yours = False
         self.at = 0.0
 
     def tick(self) -> None:
-        if time.time() - self.at < DIALOG_EVERY or self.driver.quiet_for() < DIALOG_QUIET:
+        if time.time() - self.at < DIALOG_EVERY:
             return
         self.at = time.time()
         menu = Menu.on(self.driver.screen(self.driver.PROMPT_TAIL))
         report = self.driver.last_report()
         if menu is None or not menu.foreign() or (report and report.asking):
-            self.said = ()
+            self.said = self.seen = ()
+            return
+        if menu.signature() != self.seen:
+            self.seen, self.seen_at = menu.signature(), time.time()
+            self.yours = self.driver.keyed_at() > self.seen_at - KEY_BEFORE
+        keyed = self.driver.keyed_at()
+        self.yours = self.yours or keyed > max(self.seen_at, self.pressed_at + KEY_ECHO)
+        if self.yours or self.driver.quiet_for() < DIALOG_QUIET:
             return
         choice = menu.choice()
         self.driver.press_raw(choice.keys)
+        self.pressed_at = time.time()
         if menu.signature() != self.said:
             self.said = menu.signature()
             Notices(self.driver.record, actor=SYSTEM).create(f"A menu in {self.driver.name}'s terminal was answered", tone="note", brief=f'"{menu.question[-200:]}" The journal {choice.said}.')
