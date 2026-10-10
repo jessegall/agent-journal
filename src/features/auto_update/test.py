@@ -513,6 +513,14 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
         "once the new build has started every older one is removed, except a build a live process still runs from"
     (kept / "journal.pyz").unlink()
     assert pruned(kept) == [], "with no build in use, nothing is removed"
+    from engine import heal as healing
+    (kept / "journal.pyz").symlink_to("journal-2.3.0-ccc.pyz")
+    monkeypatch.setattr(healing, "answering", lambda root, build: True)
+    assert "nothing was rolled back" in healing.heal(kept) and (kept / "journal.pyz").resolve().name == "journal-2.3.0-ccc.pyz" and not healing.broken(kept), \
+        "a build whose server answers is never rolled back or marked broken, whoever asks"
+    monkeypatch.setattr(healing, "answering", lambda root, build: False)
+    assert "went back to journal-2.1.0-aaa.pyz" in healing.heal(kept) and healing.broken(kept) == ["journal-2.3.0-ccc.pyz"], "a build whose server does not answer is rolled back"
+    (kept / "journal.pyz").unlink()
     journal = tmp_path / "project" / ".journal"
     (journal / "environments" / "main").mkdir(parents=True)
     (journal / "environments" / "main" / "todo.json").write_text("{}")
