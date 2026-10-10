@@ -112,6 +112,8 @@ def test_a_lock_held_longer_than_a_quarter_second_is_noted_with_the_stack_that_h
     monkeypatch.setattr(waits, "HELD_LONG", 0.0)
     with waits.holding("the record lock of main", tmp_path):
         pass
+    assert not (tmp_path / waits.HELD_LOG).exists(), "the request itself writes no file for the note"
+    waits.write_holds()
     note = (tmp_path / waits.HELD_LOG).read_text()
     assert "the record lock of main held" in note and "test_a_lock_held_longer" in note, "the note names the lock and the code that held it"
 
