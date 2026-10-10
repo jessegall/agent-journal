@@ -375,6 +375,13 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
         with counted() as work:
             dispatch("GET", route, record.root, {}, {})
         assert not work.scanned, f"GET {route} scans no folder once warm; it scanned {work.scanned}"
+    import resource
+    import serve
+    from controllers.stored import KEEP_OPEN, OPEN
+    soft = resource.getrlimit(resource.RLIMIT_NOFILE)[0]
+    serve.allow_open_files()
+    assert resource.getrlimit(resource.RLIMIT_NOFILE)[0] >= soft, "raising the open-file limit never lowers one the process already has"
+    assert KEEP_OPEN <= 16 and len(OPEN) <= KEEP_OPEN, "the packed archives kept open stay few"
     from agents.seat import HookBinding
     from runner.spool import replay
     Environments(record, actor=SYSTEM).create("place-owned", owner="helper:1")

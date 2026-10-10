@@ -42,7 +42,7 @@ FLUSH_ROWS, FLUSH_SECONDS = 200, 300.0
 UNSAVED: dict[str, tuple[Path, dict]] = {}
 DEFER = threading.Event()
 OPEN: dict[str, tuple] = {}
-KEEP_OPEN = 64
+KEEP_OPEN = 16
 
 
 def mtime(path: Path) -> int:
