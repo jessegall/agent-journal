@@ -14,7 +14,14 @@ for candidate in python3.14 python3.13 python3.12 python3.11 python3; do
   "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null && { PY="$candidate"; break; }
 done
 if [ -z "$PY" ]; then
-  echo "No Python 3.11 or newer here (a Mac's own python3 is 3.9); fetching Python 3.13 with uv."
+  echo "agent-journal needs Python 3.11 or newer, and this machine has none (a Mac's own python3 is 3.9)."
+  printf "Install Python 3.13 for your user now, with uv (no admin rights needed)? [Y/n] "
+  answer=""
+  [ -r /dev/tty ] && read -r answer < /dev/tty
+  case "$answer" in
+    n|N|no|No) echo "Not installing. Install Python 3.11 or newer, such as: brew install python@3.13, then run this again."; exit 1 ;;
+  esac
+  [ -r /dev/tty ] || { echo "No terminal to ask in. Install Python 3.11 or newer, such as: brew install python@3.13, then run this again."; exit 1; }
   command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null
   UV="$(command -v uv 2>/dev/null || echo "$HOME/.local/bin/uv")"
   "$UV" python install 3.13 >/dev/null && PY="$("$UV" python find 3.13)"
