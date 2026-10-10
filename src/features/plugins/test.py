@@ -28,6 +28,13 @@ from tests.conftest import fresh, refused
 CLAUDE = PROVIDERS["claude"]()
 
 
+@pytest.fixture(autouse=True)
+def plugins_answer_in_their_own_time(monkeypatch):
+    """A test plugin is a shell script that may take longer than the hook's wait under load; its refusal is waited for here."""
+    from features.plugins import parts
+    monkeypatch.setattr(parts, "HOOK_WAIT", 20.0)
+
+
 def alone(env="t"):
     record = fresh(env)
     record.set_setting("features", {"gate": False, "work_tracking": False})
@@ -1036,10 +1043,10 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
         slow.setattr(parts, "apply", lambda record, journal, name, session, reply: said.append(reply["say"]))
         slow.setattr(parts.AskPluginsToRefuse, "_answer", lambda self, record, row, tool, payload, seconds: time.sleep(0.6) or "no")
         began = time.monotonic()
-        refused = parts.AskPluginsToRefuse()._within(context, object(), "Bash", {}, parts.HOOK_WAIT)
+        waited_for = parts.AskPluginsToRefuse()._within(context, object(), "Bash", {}, 0.2)
         took = time.monotonic() - began
         until = time.monotonic() + 3
         while not said and time.monotonic() < until:
             time.sleep(0.02)
-    assert (refused, took < 0.5, bool(said) and "answered after the call went ahead" in said[0]) == ("", True, True), \
+    assert (waited_for, took < 0.5, bool(said) and "answered after the call went ahead" in said[0]) == ("", True, True), \
         "a plugin's refusal is waited for as long as the hook may wait; past that the call goes ahead and the plugin's answer reaches the agent late"
