@@ -46,6 +46,7 @@ class Lock:
 
 HELD_LONG = 0.25
 HELD_LOG = "lock-holds.log"
+NOTES: list[tuple[Path, str]] = []
 
 
 @contextmanager
@@ -57,9 +58,17 @@ def holding(name: str, folder: Path):
     finally:
         took = time.monotonic() - began
         if took >= HELD_LONG:
-            note = f"{time.strftime('%H:%M:%S')} {name} held {took * 1000:.0f}ms by\n{''.join(traceback.format_stack(limit=14)[:-1])}\n"
-            try:
-                with (folder / HELD_LOG).open("a") as log:
-                    log.write(note)
-            except OSError:
-                pass
+            frames = traceback.extract_stack(limit=14, lookup_lines=False)[:-1]
+            where = "".join(f"  {frame.filename}:{frame.lineno} in {frame.name}\n" for frame in frames)
+            NOTES.append((folder, f"{time.strftime('%H:%M:%S')} {name} held {took * 1000:.0f}ms by\n{where}\n"))
+
+
+def write_holds() -> None:
+    """Writes the notes of long lock holds to their log; the server's background loop calls it, so no request opens a file for it."""
+    while NOTES:
+        folder, note = NOTES.pop(0)
+        try:
+            with (folder / HELD_LOG).open("a") as log:
+                log.write(note)
+        except OSError:
+            continue

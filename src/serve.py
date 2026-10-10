@@ -27,7 +27,7 @@ from features.phone.allow_list import PhoneVisit, Reach  # noqa: E402
 from features.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
 from controllers.base import SENDER, Sender  # noqa: E402
 from resources.base import OWNER_ID  # noqa: E402
-from engine import runtime  # noqa: E402
+from engine import runtime, waits  # noqa: E402
 from engine.after_answer import AfterAnswer  # noqa: E402
 from engine.quiet_collector import QuietCollector  # noqa: E402
 from features.switches import WARMERS  # noqa: E402
@@ -258,6 +258,7 @@ def watch_runtime(root: Path, halting: threading.Event) -> None:
         runtime.refresh_flags(root)
         renew_stamps()
         flush_indexes()
+        waits.write_holds()
         if runtime.hook_failures(root).is_file():
             unanswered(root)
         runtime.restarting(root).unlink(missing_ok=True)
