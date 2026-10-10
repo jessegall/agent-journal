@@ -1,6 +1,17 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
-import {, afterSeconds, animationLabel, blinkOf, fallOf, hopOf, pickWeighted, placedAt, placeOf, PRESENCE_GRACE_MS, showcaseOn} from "../domain/mascots.js";
+import {
+    PRESENCE_GRACE_MS,
+    afterSeconds,
+    animationLabel,
+    blinkOf,
+    fallOf,
+    hopOf,
+    pickWeighted,
+    placeOf,
+    placedAt,
+    showcaseOn,
+} from "../domain/mascots.js";
 import {animations, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import {loadProfiles, mascotOf, profiles, profilesLoaded} from "../composables/profiles.js";
 import {loadPictures, loadRig, rigs, voiceOfArt} from "../composables/voiceRigs.js";
