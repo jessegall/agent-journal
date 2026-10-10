@@ -1034,10 +1034,12 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     (repo.record.root / "runtime" / fitting.KEPT).unlink()
     assert sorted(started()) == ["Install the Broken plugin", "Install the Snake plugin"], "a list that cannot be reached adds nothing and breaks nothing"
     from types import SimpleNamespace
+    from engine import bus
     from features.plugins import parts
     context = SimpleNamespace(record=None, feature=SimpleNamespace(journal=None), hook=SimpleNamespace(session="s-1"))
     said = []
     with monkeypatch.context() as slow:
+        slow.setattr(bus, "BACKGROUND", True)
         slow.setattr(parts, "called", lambda row: "slowpoke")
         slow.setattr(parts, "declared", lambda row: SimpleNamespace(refuse_budget=2.0))
         slow.setattr(parts, "apply", lambda record, journal, name, session, reply: said.append(reply["say"]))
