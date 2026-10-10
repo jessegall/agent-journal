@@ -261,16 +261,16 @@ const shown = computed(() => playing.value ?? (showcase ? staged.value : rested.
 const place = computed(() => rigShown.value?.place ?? (showcase ? staged.value?.place : mascot.value.place));
 const fall = computed(() => fallOf(mascot.value?.voice));
 const moved = ref("");
-let moveTimer = 0;
+let perchTimer = 0;
 watch(
     () => props.perch,
     (now, was) => {
-        clearTimeout(moveTimer);
+        clearTimeout(perchTimer);
         moved.value = now < was ? "dropping" : "launched";
-        moveTimer = setTimeout(() => (moved.value = ""), fall.value.ms * 2);
+        perchTimer = setTimeout(() => (moved.value = ""), fall.value.ms * 2);
     }
 );
-onUnmounted(() => clearTimeout(moveTimer));
+onUnmounted(() => clearTimeout(perchTimer));
 const placed = computed(() => ({
     "--edge": place.value.edge,
     "--line": place.value.line,
