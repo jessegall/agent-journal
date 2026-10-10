@@ -3,13 +3,13 @@ from dataclasses import asdict, dataclass
 from typing import ClassVar
 
 from controllers.types import Questions
-from engine.events.engine import AgentMessageSending
+from engine.events.engine import AgentMessageSending, ClockTicked
 from engine.events.resources import AnyEvent, QuestionAnswered, ResourceEvent
 from engine.journal_calls import JournalCall, calls
 from engine.transcript import IDLE
 from features.journal import waiting
 from features.sending import Sent
-from features.parts import AgentContext, Context, Handler, ToolInterceptor
+from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
 from engine.gates import Runs
 from features.work_tracking.details import WorkDetails
 from features.sequences.details import IN_CHAT, STEP, STEP_HELD, UNFINISHED
@@ -24,7 +24,7 @@ from engine.reach import Reach
 from features.trigger import MINUTE
 from features.sequences.controller import Sequences
 
-FREE_NOUNS = ("search", "carry", "status", "user", "conversation")
+FREE_NOUNS = ("search", "carry", "status", "user", "conversation", "upgrade", "heal", "verify", "version", "help", "stop")
 FREE_VERBS = ("show", "read", "comments", "all", "progress", "search", "unread", "board", "screen", "paths", "find", "linked_to", "members",
               "tasks", "revisions", "revision", "changes", "files", "--help")
 
@@ -152,6 +152,14 @@ def then_next(n: int, key: str, body: str) -> str:
 
 def chat_rule(sequence) -> str:
     return f" Write nothing in the chat while this runs: the user is in {sequence.talks_in}." if sequence.talks_in else ""
+
+
+class ReleaseStaleStep(Handler):
+    behaviour = WHOLE_FEATURE
+
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+        if not context.journal.get(Sequences).in_hand():
+            context.release(STEP)
 
 
 class KeepOutOfTheChat(Handler):

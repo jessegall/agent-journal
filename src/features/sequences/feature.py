@@ -6,7 +6,7 @@ from features.sequences.details import SequencesDetails
 from features.triggers.controller import STARTED_BY
 from features.sequences.details import UNFINISHED
 from features.sequences.shipped import SEQUENCES
-from features.sequences.handlers import (DispatchAgainOnAnswer, EndWithItsRow, HandStepToAgent, HoldJournalWritesForTheStep, KeepOutOfTheChat,
+from features.sequences.handlers import (DispatchAgainOnAnswer, EndWithItsRow, HandStepToAgent, HoldJournalWritesForTheStep, KeepOutOfTheChat, ReleaseStaleStep,
                                          StartOnMoment, StartOnTrigger, standing_steps, step_pace)
 
 __all__ = ["Sequences"]
@@ -25,4 +25,5 @@ class SequencesFeature(Feature):
         journal.agent.interceptor(HoldJournalWritesForTheStep())
         journal.events.handler(EndWithItsRow())
         journal.events.handler(HandStepToAgent())
+        journal.events.handler(ReleaseStaleStep())
         journal.events.handler(KeepOutOfTheChat())
