@@ -344,7 +344,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                                                                       proposed_for=owner.owner)
 
     def _proposals(self, ticket) -> list:
-        return [(rows, r) for rows in (CONTROLLERS[t](self.record, actor=self.actor) for t in HELD) for r in rows.rows.every() if r.data.get("proposed_for") == ticket.ref]
+        return [(rows, rows.load(row["n"])) for rows in (CONTROLLERS[t](self.record, actor=self.actor) for t in HELD)
+                for row in rows.rows.by("proposed_for", ticket.ref) if not row["deleted"]]
 
     def _stop_orphaned(self) -> list[str]:
         kept = {row.ref for row in self.rows.every() if not row.deleted}

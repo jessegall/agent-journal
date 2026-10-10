@@ -144,7 +144,7 @@ class Doc(Shape, Resource):
     command_names = {"complete": "final"}
     scope = PROJECT
     view = DOCUMENT
-    indexed = ("hidden",)
+    indexed = ("hidden", "proposed_for")
     filters = ()
 
 
@@ -206,6 +206,7 @@ class Rule(Reasoned, Resource):
         help="A rule is decided by the user, cited where it applies, and struck only by them.",
     )
     type = "rule"
+    indexed = ("proposed_for",)
     event_labels = {"created": "Rule made", "completed": "Rule closed"}
     status_labels = {"complete": "striking"}
     start_heading = "RULES, in force on every environment"
@@ -481,6 +482,7 @@ class Tool(Shape, Resource):
         Field(TEXT, name="usage"),
     ]
     type = "tool"
+    indexed = ("proposed_for",)
     listed_as_cards = True
     subagent_writable = False
     icon = "wrench"

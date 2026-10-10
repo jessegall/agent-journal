@@ -611,7 +611,7 @@ class Controller(Files, Links, Discussed):
             version = row["stamp"]
             if row["deleted"] and not archived or kept.get(row["n"], (None,))[0] == version:
                 continue
-            kept[row["n"]] = (version, searchable(self.rows.peek(row["n"])))
+            kept[row["n"]] = (version, searchable(self.rows.reparsed(row["n"])))
             REREAD[folder] = REREAD.get(folder, 0) + 1
         SEARCHED[folder] = (rows, archived or bool(seen and seen[0] is rows and seen[1]))
         return kept

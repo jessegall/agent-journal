@@ -9,6 +9,7 @@ from providers.transcript_cache import FOLD_CACHE, STATES
 from engine.record import Record
 from engine.wording import plural
 from controllers.stored import mtime
+from resources.base import Refused
 from features.trigger import DAY
 
 TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "launches/*.log": 1024 * 1024,
@@ -47,7 +48,21 @@ def tidy(root: Path, days: float) -> Tidied:
     records = Record.every(Path(root))
     logs = [record.event_log for record in records] + [record.event_log.project for record in records[:1]]
     events = sum(log.trim(EVENTS_KEPT, time.time() - READERS_WITHIN) for log in logs)
-    return replace(tidy_files(Path(root), days), events=events)
+    tidied = tidy_files(Path(root), days)
+    return replace(tidied, events=events, leftovers=tidied.leftovers + sum(drifted_totals(record) for record in records))
+
+
+def drifted_totals(record: Record) -> int:
+    """The totals of every type in a record that had drifted from their rows, set right."""
+    from controllers.base import CONTROLLERS
+    from resources.base import SYSTEM
+    found = 0
+    for controller in CONTROLLERS.values():
+        try:
+            found += controller(record, actor=SYSTEM).rows.drifted()
+        except (OSError, Refused):
+            continue
+    return found
 
 
 def tidy_files(root: Path, days: float) -> Tidied:
