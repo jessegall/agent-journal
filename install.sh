@@ -13,7 +13,13 @@ for candidate in python3.14 python3.13 python3.12 python3.11 python3; do
   command -v "$candidate" >/dev/null 2>&1 || continue
   "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null && { PY="$candidate"; break; }
 done
-[ -n "$PY" ] || { echo "Python 3.11 or newer is needed, and python3 here is $(python3 -V 2>&1). Install one, such as: brew install python@3.13"; exit 1; }
+if [ -z "$PY" ]; then
+  echo "No Python 3.11 or newer here (a Mac's own python3 is 3.9); fetching Python 3.13 with uv."
+  command -v uv >/dev/null 2>&1 || curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null
+  UV="$(command -v uv 2>/dev/null || echo "$HOME/.local/bin/uv")"
+  "$UV" python install 3.13 >/dev/null && PY="$("$UV" python find 3.13)"
+fi
+[ -n "$PY" ] || { echo "Python 3.11 or newer is needed and could not be fetched. Install one, such as: brew install python@3.13"; exit 1; }
 REPO="${AGENT_JOURNAL_REPO:-https://github.com/jessegall/agent-journal}"
 TMP="$(mktemp -d)"
 git clone --quiet --depth 1 "$REPO" "$TMP/pkg"
