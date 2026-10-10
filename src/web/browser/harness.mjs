@@ -40,7 +40,7 @@ export async function runScenarios(url, scenarios, {voice = true, device = {}} =
             } catch (error) {
                 const picture = join(tmpdir(), `scenario-${Date.now()}.png`);
                 await page.screenshot({path: picture}).catch(() => {});
-                failures[name] = `${String(error.message).split("\n").slice(0, 4).join(" ")} (the page at that moment: ${picture})`;
+                failures[name] = `${String(error.message).split("\n").slice(0, 12).join(" ")} (the page at that moment: ${picture})`;
             }
             await page.unrouteAll({behavior: "ignoreErrors"});
             await context.close();

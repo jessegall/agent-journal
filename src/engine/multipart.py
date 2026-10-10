@@ -65,7 +65,7 @@ def uploads(content_type: str, raw: "bytes | mmap.mmap") -> list[Upload]:
 
 
 @contextmanager
-def spooled(stream: BinaryIO, length: int) -> Iterator["mmap.mmap | bytes"]:
+def spooled_body(stream: BinaryIO, length: int) -> Iterator["mmap.mmap | bytes"]:
     """The body of a request as a view of a temporary file filled a chunk at a time, so a large upload is never held in memory whole."""
     if length == 0:
         yield b""
