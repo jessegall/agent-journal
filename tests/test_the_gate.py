@@ -74,7 +74,7 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
         Works(record, actor=AGENT).complete(work.n, "done")
         assert hook("PreToolUse", "Write", file_path="y.py") == provider.blocking(REFUSED), \
             f"{name}: work ended, nothing open: refused again"
-        assert json.loads(gate_file(root, env, session).read_text())["work_tracking"] == {"why": REFUSED, "reach": "main"}, \
+        assert json.loads(gate_file(root, env, session).read_text())["work_tracking"] == {"why": REFUSED, "reach": "main", "scope": "writes"}, \
             f"{name}: the flag is a file per environment and session, with the why"
 
 

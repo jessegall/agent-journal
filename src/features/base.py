@@ -9,7 +9,7 @@ from controllers.types import Agents
 from features import trigger
 from features.switches import switches
 from features.trigger import MINUTE, NEVER, Trigger
-from engine.gates import Hold, hold
+from engine.gates import Hold, Stops, hold
 from engine.reach import Reach, Unreached
 from features.groups import Group
 from features.journal import Journal
@@ -46,9 +46,9 @@ def always_owed(journal, rows: tuple[str, ...]) -> bool:
 
 class Line:
     def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = "", while_waiting: bool | None = None, label: str = "",
-                 reach: Reach = Reach.MAIN, reply_kept: bool = False, until: tuple[str, ...] = (), owed: Callable = always_owed):
+                 reach: Reach = Reach.MAIN, reply_kept: bool = False, until: tuple[str, ...] = (), owed: Callable = always_owed, scope: Stops = Stops.WRITES):
         self.name, self.title, self.brief, self.lead, self.label, self.reach = name, paragraphs(title), paragraphs(brief), lead, label, reach
-        self.reply_kept, self.until, self.owed = reply_kept, until, owed
+        self.reply_kept, self.until, self.owed, self.scope = reply_kept, until, owed, scope
         self.while_waiting = while_waiting
 
     def placeholders(self) -> list[str]:
@@ -245,7 +245,7 @@ class Feature(ABC):
             self.journal.say(record, agent, line, actor=actor, **values)
 
     def hold(self, record, line: str, key: str = "", agent=None, **values) -> None:
-        self._gate(record, Hold(self.line(line, values)[0], self.lines[line].reach), key, agent)
+        self._gate(record, Hold(self.line(line, values)[0], self.lines[line].reach, self.lines[line].scope), key, agent)
 
     def _gate(self, record, given: Hold, key: str, agent) -> None:
         for row in [agent] if agent else Agents(record, actor=SYSTEM).rows.standing():

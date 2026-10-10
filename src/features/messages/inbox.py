@@ -49,7 +49,7 @@ class NameUnread(Handler):
 
 
 def hold_unanswered(context: AgentContext, held: list) -> None:
-    """After answering.hold tool uses with a message still unanswered, the agent's tool calls wait until it is handled."""
+    """Every tool use waits while a message the user wrote is read and unanswered, from the answering.hold tool use onwards."""
     key, row = context.feature.keyed("answer hold"), context.agent.row
     began = trigger.last(context.record, row.title, key).uses
     if not began:
