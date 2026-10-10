@@ -212,3 +212,15 @@ def test_a_subagents_task_list_stays_off_the_main_list_and_each_agent_holds_its_
     assert [(chip["title"], chip["status"], chip["todo"] > 0) for chip in board(record)["agents"]] == [("Main agent", "working", True)], \
         "the board names the main agent that is working and what it holds"
 
+
+
+def test_a_listing_says_whether_older_rows_are_left_out_from_a_count_kept_as_rows_change():
+    from surfaces.listing import Listing, listing
+    features.load()
+    record = fresh()
+    todos = Todos(record, actor=SYSTEM)
+    made = [todos.create(f"to-do {i}").n for i in range(3)]
+    more = lambda **query: listing(todos, record, Listing.from_query({k: str(v) for k, v in query.items()}))["more"]
+    assert (more(last=2), more(last=3)) == (True, False), "a page shorter than the open rows says there are more"
+    todos.complete(made[0], how="done")
+    assert (more(last=2), more(last=2, completed=1), more(last=3, completed=1)) == (False, True, False), "a closed row counts only when closed rows are asked for"
