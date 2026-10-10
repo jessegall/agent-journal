@@ -1,4 +1,5 @@
 import importlib
+from engine.disk import by_repository
 import json
 import re
 import time
@@ -212,7 +213,8 @@ def test_rows_name_who_made_them_older_rows_name_the_owner_and_everyone_sees_who
     older.data.pop(WRITER)
     rows.persist(older)
     migration = importlib.import_module("migrations.m0070_rows_name_their_writer")
-    migration.run(hosted.record.root)
+    with by_repository():
+        migration.run(hosted.record.root)
     assert rows.peek(older.n).data[WRITER] == "owner" and WRITER not in rows.peek(by_agent.n).data, "a row a person wrote before names the owner"
     assert rows.peek(theirs["n"]).data[WRITER] == bea and migration.run(hosted.record.root).startswith("0 rows"), "the migration keeps every writer and runs once"
 

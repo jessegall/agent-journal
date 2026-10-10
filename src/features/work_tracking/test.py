@@ -245,13 +245,12 @@ def test_an_idle_agent_under_auto_is_offered_the_next_row_even_when_its_idle_rep
     record = fresh()
     record.features = {**record.features, "work_tracking.auto": True}
     from controllers.types import Agents
-    from engine.stored import write_text
     row = Todos(record, actor=USER).create("waiting")
     report(record, "working", "PreToolUse")
     agents = Agents(record, actor=USER)
     agent = agents.by_session("claude-1")
     agent.data["status"] = "idle"
-    write_text(agents.path(agent.n), agent.dump())
+    agents.path(agent.n).write_text(agent.dump())
     assert nudges(record) == [], "the turn ended without its report, so nothing was offered"
     tick(record)
     tick(record)

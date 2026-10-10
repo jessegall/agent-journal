@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import threading
 import time
@@ -6,10 +7,12 @@ import zipfile
 from bisect import bisect_left, insort
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Callable, TypeVar
+from typing import Callable, TypeVar, final
 from resources.base import OWNER, PART_OF, Counter, Missing, Refused, Resource
+from resources.types import TYPES
 from engine.stored import append_text, read_json, write_json, write_text
 from engine import transaction
+from engine.disk import ROW_FILES, by_repository
 from engine.memo import MEMOS, Memo
 from engine.numbers import rows
 
@@ -52,6 +55,18 @@ COUNTERS = "counters.json"
 DEFER = threading.Event()
 OPEN: dict[str, tuple] = {}
 KEEP_OPEN = 16
+
+
+ROW_FILE = re.compile(r"(?:/environments/[^/]+|/project)/(?P<type>[a-z_]+)/(?:\d+\.md|\d+/(?P=type)\.md)$")
+
+
+def is_row_file(path: Path) -> bool:
+    """Whether a path is the file of a row of one of the types: the number of a row in its type's folder, or the type's own file in the row's folder."""
+    found = ROW_FILE.search(str(path))
+    return bool(found) and found.group("type") in TYPES
+
+
+ROW_FILES.append(is_row_file)
 
 
 def rolling(folder: str, limit: int | None) -> Memo:
@@ -279,6 +294,7 @@ class RowStore:
     def row_folder(self, n: int) -> Path:
         return self.folder() / numbered(n)
 
+    @final
     def write_file(self, r: Resource) -> None:
         self.record.fence(self.resource.scope)
         p = self.path(r.n)
@@ -286,7 +302,8 @@ class RowStore:
             p.parent.mkdir(parents=True, exist_ok=True)
         else:
             self._note(r.n)
-        write_text(p, r.dump())
+        with by_repository():
+            write_text(p, r.dump())
         if self.resource.own_folder:
             os.utime(self.folder())
 
@@ -302,6 +319,7 @@ class RowStore:
     def _floor(self) -> int:
         return (self.numbers() or [0])[-1] + 1
 
+    @final
     def persist(self, r: Resource) -> None:
         folder = self.folder()
         before = self._moved(folder) if folder.is_dir() else None
@@ -337,6 +355,7 @@ class RowStore:
     def numbers(self) -> list[int]:
         return self._scanned(lambda folder: sorted(set(self._stamps(folder)) | set(self.packed())))
 
+    @final
     def summaries(self) -> list[dict]:
         return self._scanned(self._summaries)
 
@@ -380,13 +399,16 @@ class RowStore:
         """The rows that name each ref."""
         return self.derived("refs", lambda row: row["refs"])
 
+    @final
     def linked_to(self, ref: str) -> list[dict]:
         return sorted(self.linking().get(ref, {}).values(), key=listed_order)
 
+    @final
     def by(self, field: str, value) -> list[dict]:
         """The summaries whose field is the value, oldest first; the field is one the summaries carry."""
         return sorted(self.derived(f"by:{field}", lambda row: [row.get(field)]).get(value, {}).values(), key=listed_order)
 
+    @final
     def unread(self, actor: str) -> list[dict]:
         """The open summaries the actor has not seen, oldest first, from the index of what each row has been seen by."""
         group = self.derived(f"unread:{actor}", lambda row: [True] if not row["completed"] and not row["deleted"] and actor not in row["seen"] else [])
@@ -406,6 +428,7 @@ class RowStore:
     def counter(self, name: str) -> Counter:
         return next(counter for counter in self.resource.counters() if counter.name == name)
 
+    @final
     def counts(self, name: str, rows: list[dict] | None = None) -> tuple[int, ...]:
         """A total the type declares, read from the totals kept with the rows: made from the rows once when none were saved, and saved with the index from then on."""
         counter, folder = self.counter(name), self.folder()
@@ -520,6 +543,7 @@ class RowStore:
             COUNTED[str(folder), name] = (rows, totals, self.counter(name).weigh)
         return rows
 
+    @final
     def reindexed(self, n: int, before: Moved | None, r: Resource | None = None) -> None:
         folder = self.folder()
         held, known = SUMMARIES.get(str(folder)), INDEXED.get(str(folder))
@@ -669,9 +693,11 @@ class RowStore:
         found = next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None)
         return self.load(found) if found else None
 
+    @final
     def load(self, n: int | str) -> Resource:
         return self.peek(int(n)).fork()
 
+    @final
     def peek(self, n: int) -> Resource:
         p = self.path(n)
         try:
@@ -703,6 +729,7 @@ class RowStore:
         """The row as the disk holds it now, read again and not kept, so it pushes out none of the rows the type keeps; a search of every row's text and a rollback read it so."""
         return self._parsed(n)
 
+    @final
     def text(self, n: int) -> str:
         try:
             return self.path(n).read_text()
@@ -727,6 +754,7 @@ class RowStore:
     def exists(self, n: int) -> bool:
         return self.path(n).is_file() or n in self.packed()
 
+    @final
     def remove(self, n: int) -> None:
         self.record.fence(self.resource.scope)
         folder = self.folder()

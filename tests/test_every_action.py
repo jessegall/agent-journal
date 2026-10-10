@@ -1084,7 +1084,7 @@ def test_sweeping_an_environment_packs_every_swept_row_of_every_type_into_the_at
 def written_elsewhere(controller, n: int, title: str) -> None:
     row = controller.load(controller.rows.numbers()[0])
     row.n, row.title = n, title
-    write_text(controller.path(n), row.dump())
+    controller.path(n).write_text(row.dump())
 
 
 def listed(controller) -> dict:
@@ -1127,7 +1127,7 @@ def test_search_finds_a_row_of_every_type_by_its_words_and_sees_an_edit_that_kep
         found = [t.n for t in controller.search(row.title)]
         edited = controller.load(row.n)
         edited.title = "omega"
-        write_text(controller.path(row.n), edited.dump())
+        controller.path(row.n).write_text(edited.dump())
         facts = {"search finds a row by its words": row.n in found,
                  "search finds the new words after an edit that kept the same updated stamp": row.n in [t.n for t in controller.search("omega")],
                  "and not the old": row.n not in [t.n for t in controller.search(row.title)]}

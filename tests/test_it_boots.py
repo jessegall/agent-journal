@@ -643,7 +643,7 @@ def test_a_held_record_lock_lets_the_runtime_folder_write_and_times_out_every_ot
 
     def engine_pass() -> None:
         try:
-            write_text(root / "environments" / "main" / "todo" / "002.md", "held back")
+            write_text(root / "environments" / "main" / "todo" / "held-back.txt", "held back")
         except TimeoutError as error:
             caught.append(error)
             threw(root, "main", "the engine")

@@ -1,4 +1,5 @@
 import importlib
+from engine.disk import by_repository
 import re
 from pathlib import Path
 import shutil
@@ -56,7 +57,8 @@ def test_an_existing_record_upgrades_with_its_numbers_continuing():
     last_event = record.event_log.last_id()
     shutil.rmtree(record.root / "project" / "numbers")
     shutil.rmtree(record.root / "runtime" / "numbers")
-    importlib.import_module("migrations.m0069_numbers_leased_per_writer").run(record.root)
+    with by_repository():
+        importlib.import_module("migrations.m0069_numbers_leased_per_writer").run(record.root)
 
     again = Record(record.root, record.env)
     assert Todos(again, actor=AGENT).create("new").n == 6, "the next row follows the highest number already in use"
