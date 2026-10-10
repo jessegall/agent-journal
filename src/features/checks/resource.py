@@ -48,10 +48,12 @@ class Check(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Check",
         abstract="A script that says pass or fail about the project, run by hand, by its button, or every so many minutes",
-        help="A check names the command it runs from the project root and how often; exit 0 passes, anything else fails and its output says why. journal check run <n> runs one, journal check sweep runs every check.",
+        help="A check names the command it runs from the project root, or an instruction the agent carries out itself, and how often; exit 0 passes, anything else fails and its output says why. journal check run <n> runs one, journal check sweep runs every check.",
     )
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="command", runs_commands=True),
+        Field(TEXT, name="instruction"),
+        Field(NUMBER, default=0, name="asked_at"),
         Field(TEXT, name="touched"),
         Field(TEXT, name="then"),
         Field(NUMBER, default=0, name="every"),
@@ -65,7 +67,7 @@ class Check(Shape, Resource):
     icon = "checkbox"
     listed_under = SIDEBAR
     scope = PROJECT
-    command_names = {"complete": "retire"}
+    command_names = {"complete": "retire", "passes": "pass", "fails": "fail"}
     notified = (USER,)
     view = "check"
 

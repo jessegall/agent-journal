@@ -33,7 +33,7 @@ class RunDueChecks(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         checks = context.journal.get(Checks)
         for check in checks.due(time.time()):
-            checks.in_background(check.n)
+            checks.begin(check.n)
 
 
 class ReportCheckResult(Handler):
