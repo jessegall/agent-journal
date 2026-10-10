@@ -159,7 +159,7 @@ class FaultReports:
                     self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "")
                     if profile or stacks:
                         self.kept(root, name, took, profile, stacks)
-                else:
+                elif working is not None and took - working - waiting > self.milliseconds(record, kind):
                     self.starved(root, record, kind, name, took, working)
         except (OSError, ValueError, KeyError):
             return
@@ -180,7 +180,7 @@ class FaultReports:
             return
 
     def starved(self, root, record, kind: str, name: str, took: float, working: float | None) -> None:
-        """A request whose working time is within its budget but whose wall time is over it was kept waiting by a machine with no time to give: that is said once a minute, with the load, and never as a slow request."""
+        """A request whose working time is within its budget but which spent more than its budget off the processor, with no lock or check to account for it, was kept waiting by a machine with no time to give: that is said once a minute, with the load, and never as a slow request."""
         now = time.monotonic()
         if now - self.starved_at.get(Path(root), -STARVED_EVERY) < STARVED_EVERY:
             return
