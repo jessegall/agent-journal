@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.22 — A program's own menu never holds an agent up
+- A menu that a program puts on an agent's terminal is recognised by its shape, numbered options above a selection footer, and answered by its words, never by a number. A folder the journal launched the agent into is trusted; consent and data sharing are declined; anything else is closed. A note says what was chosen.
+- A menu you opened yourself, or one listing past messages, sessions or checkpoints such as Claude Code's Rewind list, is never touched, and neither is the agent's own permission question.
+
 ## 2.268.21 — Linear works once connected, and restarts are quicker
 - After the journal's own Linear sign-in, the agent's Linear tools work at once: its MCP entry fetches the token when it connects, and the token is never written into the config. Before the sign-in, the card says a browser approval is still needed.
 - An upgrade builds the new archive with its bytecode already compiled and runs the rest of the install from it, so the new code is not compiled cold. The restart's steps, to the first answer and until warm, are timed in runtime/upgrade-steps.jsonl.
