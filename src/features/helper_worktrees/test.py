@@ -107,8 +107,12 @@ def test_take_refuses_a_dirty_main_checkout_only_for_the_files_it_touches():
     assert PROVIDERS["claude"]().scratch_of(Path("/a/b c")).name == "-a-b-c", "the temporary folder an agent keeps for a working folder is found by the folder's name"
     commit(Path(reused.path), "again.txt", "more\n")
     worktrees.take(reused.n)
-    assert (worktrees.clear_taken(), Path(reused.path).exists()) == (["rhea"], False), \
-        "a worktree whose work was taken is removed by itself, with its branch kept at the ref, so finished ones do not fill the disk"
+    git(project, "commit", "-q", "--allow-empty", "-m", "the board moved on again")
+    assert "is on phone-connection" in worktrees.renew(reused.n) and Path(reused.path).is_dir(), \
+        "a kept helper's worktree stays when its work was taken, and is rebased onto the working branch for its next job"
+    assert git(project, "rev-list", f"{reused.branch}..phone-connection") == "", "and holds everything the working branch gained"
+    worktrees.complete(reused.n)
+    assert not Path(reused.path).exists(), "it is removed with its scratch folder only when the helper is finished or retired, which drops it"
     worktrees.cut("gus")
     other = next(found for found in worktrees.all() if found.title == "gus")
     assert "nothing to take" in refused(lambda: worktrees.take(other.n)), "a worktree with no commits of its own has nothing to take"

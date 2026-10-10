@@ -186,16 +186,18 @@ class Worktrees(Controller):
         return super().complete(n, how or f"dropped; its last commit is kept at {KEPT}/{row.title}", **data)
 
     @action(network=True)
-    def clear_taken(self) -> list[str]:
-        """Drops every worktree whose work was taken and that no agent runs in, keeping its last commit, so finished worktrees do not pile up on the disk."""
-        cleared = []
-        for row in (r for r in self.rows.standing() if r.taken and not r.adopted and r.path and Path(r.path).is_dir()):
-            try:
-                self.complete(row.n, "its work was taken, so its worktree was cleared")
-            except Refused:
-                continue
-            cleared.append(row.title)
-        return cleared
+    def renew(self, n: int) -> str:
+        """Moves a kept helper's worktree onto the working branch for its next job: its commits are rebased onto the branch's tip, and a rebase that stops is undone and left to the helper."""
+        row = self._unfinished(n, "dropped")
+        folder = Path(row.path) if row.path else None
+        if row.adopted or not folder or not folder.is_dir() or running_at(self.record.root, folder) or lines(folder, "status", "--porcelain"):
+            return f"worktree {row.n} stays as it is"
+        moved = git(folder, "rebase", "-q", row.working)
+        if moved.returncode:
+            git(folder, "rebase", "--abort")
+            return f"worktree {row.n} did not rebase onto {row.working}: {(moved.stderr or moved.stdout).strip()}; rebase it in {folder}"
+        self.update(row.n, base=tip(self._project(), row.working), taken="")
+        return f"worktree {row.n} is on {row.working} at {tip(self._project(), row.working)[:10]}"
 
     def _committed(self, folder: Path, row) -> None:
         """Keeps the output a helper left uncommitted as one commit on its branch, so freeing the worktree loses nothing."""

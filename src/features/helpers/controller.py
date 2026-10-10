@@ -256,6 +256,8 @@ class Helpers(Controller):
         words = f"{handed_over(handed)}\n{text}" if handed else text
         running = tell_in(self.record, row.environment, row.provider, words)
         if not running:
+            if row.worktree:
+                Worktrees(self.record, actor=SYSTEM).renew(int(row.worktree))
             self._revive(row, words)
         home = Record(self.record.root, row.environment)
         Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
