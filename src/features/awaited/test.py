@@ -86,7 +86,7 @@ def test_a_session_another_process_wrote_while_this_one_wrote_is_read_at_once(mo
         other = sessions.path("claude-2")
         other.parent.mkdir(parents=True, exist_ok=True)
         other.write_text(json.dumps({"environment": "ticket-25"}))
-        sessions.files.noted("claude-2")
+        sessions.files.append_change("claude-2")
     monkeypatch.setattr(files, "write_json", raced)
     sessions.write("claude-3", environment="main")
     monkeypatch.setattr(files, "write_json", written)
