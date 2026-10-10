@@ -4,7 +4,9 @@ import features
 from controllers.types import Notifications
 from features.checks.controller import Checks
 from resources.base import SYSTEM, USER
+from controllers.types import Nudges
 from tests.conftest import fresh, refused
+from tests.kit import report
 
 
 def open_notices(record):
@@ -30,12 +32,25 @@ def test_a_check_runs_its_command_and_a_failure_is_filed_until_it_passes():
     assert filed.data["label"] == "Check failed", "and the activity list heads it as a failed check, not as a notification"
 
 
-def test_a_check_without_a_command_refuses_in_words():
+def test_a_check_without_a_command_refuses_in_words_unless_it_carries_an_instruction_the_agent_answers():
     features.load()
     record = fresh()
     checks = Checks(record, actor=USER)
     check = checks.create("Nothing to run")
     assert "has no command" in refused(lambda: checks.run(check.n, wait=True))
+    report(record, "idle", "Stop", provider="claude")
+    asked = checks.create("No open Linear issue is stuck", instruction="Look in Linear for issues stuck in review", every=30)
+    assert "is with the agent" in checks.run(asked.n), "a check with an instruction and no command is handed to the agent, not run as a process"
+    handed = [row for row in Nudges(record, actor=SYSTEM).rows.every() if f"check {asked.n}" in row.title]
+    assert handed and "Look in Linear for issues stuck in review" in handed[0].brief and f"journal check pass {asked.n}" in handed[0].brief, \
+        "the instruction reaches the agent as a turn, with the words that answer it"
+    assert checks.load(asked.n).last == {}, "and the check has no result until the agent answers"
+    assert "carries no instruction" in refused(lambda: checks.passes(check.n)), "a check with no instruction is not answered by hand"
+    assert checks.fails(asked.n, "two issues are stuck").last["ok"] is False and open_notices(record) == [f"check {asked.n} failed - two issues are stuck"], \
+        "a failure the agent reports is filed like any other"
+    assert checks.passes(asked.n, "none stuck").last["ok"] is True and open_notices(record) == [], "and the pass that follows clears it"
+    assert checks.due(checks.load(asked.n).last["at"] + 60) == [] and [c.n for c in checks.due(checks.load(asked.n).last["at"] + 3600)] == [asked.n], \
+        "an instruction check comes due on its interval like a command"
 
 
 def test_only_the_checks_that_are_due_come_up_on_the_timer():

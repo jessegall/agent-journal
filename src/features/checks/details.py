@@ -23,7 +23,13 @@ class ChecksDetails(FeatureDetails):
     help = """
         A check is a row of its own: journal check create "<what it guards>" --set
         command="<command>" --set every=<minutes>. It runs as its own process from the project
-        root, never inside the server; exit 0 passes.
+        root, never inside the server; exit 0 passes. A command cannot use an MCP server (Linear, for
+        one): it is a process of its own, and the agent's authorized integrations are not its to
+        reach. For that, give the check an instruction instead of a command: journal check create
+        "<what it guards>" --set instruction="<what to check, and with what>" --set every=<minutes>.
+        At its interval the journal hands the instruction to you as a turn; do it with whatever you
+        can reach, then answer with journal check pass <n> (--note "<what you saw>") or journal check
+        fail <n> "<why>". A failure is filed and told like any other.
 
         A failing run files a notification and tells you; the next pass clears it.
 
