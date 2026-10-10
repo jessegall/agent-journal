@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.12 — A start installs a new version once, never in a loop
+- When `journal claude` installs a newer version before it starts and the restarted start still runs the old one, it starts on the old one and says so, instead of installing the same version again and again.
+
 ## 2.268.11 — An update's pause never outlives it
 - The server clears an update's pause on the agent rows of every environment as soon as no upgrade runs, so an environment with no engine to take the resume is let go too; a sweep clears any update pause older than ten minutes, and a call that meets such a pause goes through at once.
 
