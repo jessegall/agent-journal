@@ -24,6 +24,9 @@ export const FALLS = {
 
 export const fallOf = (voice) => FALLS[voice] ?? FALLS.butler;
 
+// How long the agent must stay idle before the mascot enters, or busy before it leaves.
+export const PRESENCE_GRACE_MS = 3000;
+
 export const placeOf = (art) => PLACES[art.replace(/\.\w+$/, "")] ?? STILL;
 
 // A place moved right and down by the spot a voice saved, in pixels of its 256 px cell.
