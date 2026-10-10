@@ -752,7 +752,7 @@ def test_a_failed_attach_leaves_the_attached_file_and_its_description_as_they_we
         real = os.replace
 
         def failing(src, dst):
-            if Path(dst).name == source.name:
+            if Path(src).name == Path(dst).name == source.name:
                 raise OSError("the disk refused the move")
             real(src, dst)
         monkeypatch.setattr(files.os, "replace", failing)

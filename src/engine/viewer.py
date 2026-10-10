@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from urllib.request import urlopen
 
 from engine import runtime
+from engine.disk import DiskFull
 from engine.focus import existing_tab
 from engine.stored import append_text, read_json, write_json, write_text
 from engine.sessions import alive
@@ -114,12 +115,15 @@ PULSED: dict[str, float] = {}
 
 
 def pulse(root: Path, port: int) -> None:
-    """Writes the heartbeat from a request the server is answering, at most once a second, so a busy server with a starved timer thread still shows it is alive."""
+    """Writes the heartbeat from a request the server is answering, at most once a second, so a busy server with a starved timer thread still shows it is alive; a full disk skips the beat and never fails the request."""
     now = time.time()
     if now - PULSED.get(str(root), 0.0) < PULSE_EVERY:
         return
     PULSED[str(root)] = now
-    write_text(runtime.folder(root) / "heartbeat", f"{int(now)} {url_of(port)}\n")
+    try:
+        write_text(runtime.folder(root) / "heartbeat", f"{int(now)} {url_of(port)}\n")
+    except DiskFull:
+        return
 
 
 def heartbeat(root: Path, port: int, every: float = HEARTBEAT) -> None:

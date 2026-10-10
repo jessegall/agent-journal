@@ -61,13 +61,15 @@ def test_a_release_asks_for_a_full_restart_in_its_changelog_entry():
     todo, reminder = held(record)
     asks = "## 99.0.0 — Everything reads again\n- It does.\n<!-- full-restart -->\n\n## 98.0.0 — Before\n- Nothing.\n"
     quiet = "## 99.0.0 — Nothing special\n- It runs.\n\n## 98.0.0 — Before\n- Nothing.\n"
-    older = "## 0.0.1 — Long ago\n- It asked once.\n<!-- full-restart -->\n"
+    below = f"{int(version().split('.')[0]) - 1}.0.0"
+    older = f"## {below} — Long ago\n- It asked once.\n<!-- full-restart -->\n"
     outcomes = []
     for changes in (asks, quiet, older):
+        Todos(record, actor=SYSTEM).rows.peek(todo)
+        Reminders(record, actor=SYSTEM).rows.peek(reminder)
         write(record.root)
         stored.forget_held()
         outcomes.append((read(record.root, changes) > 0, parsed_after_restart(record, todo, reminder)))
-        stored.forget_held()
     assert outcomes == [(False, ["reminder", "todo"]), (True, []), (True, [])], \
         f"a newer release that asks drops every kept row; one that does not ask, or one older than the build that wrote the snapshot ({version()}), drops none"
 

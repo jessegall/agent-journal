@@ -130,7 +130,7 @@ def chosen(record: Record) -> list[str]:
 def skills(record: Record, n: int = 0) -> list[dict]:
     always = set(chosen(record))
     agents = Agents(record, actor=SYSTEM)
-    agent = agents.rows.peek(n) if n else agents.primary_to_read()
+    agent = agents.peek(n) if n else agents.primary_to_read()
     when = loaded_at(agent) if agent else {}
     out = []
     for s in catalogue(record.root.parent):
