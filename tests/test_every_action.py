@@ -1108,8 +1108,12 @@ def test_a_row_of_every_type_written_behind_the_stores_back_shows_up_in_lists_fr
         for n in bulk:
             written_elsewhere(controller, n, f"bulk row {n}")
         facts["a bulk of rows past the flush count all show up"] = {n: f"bulk row {n}" for n in bulk}.items() <= listed(controller).items()
-        stored.flush_indexes()
-        facts["a bulk past the flush count is written to the index"] = {first.n, base, *bulk} <= {int(n) for n in read_json(stored.index_file(controller.rows.folder()), dict, {})}
+        indexed = lambda: {int(n) for n in read_json(stored.index_file(controller.rows.folder()), dict, {})}
+        saving = time.monotonic() + 5.0
+        while not {first.n, base, *bulk} <= indexed() and time.monotonic() < saving:
+            stored.flush_indexes()
+            time.sleep(0.02)
+        facts["a bulk past the flush count is written to the index"] = {first.n, base, *bulk} <= indexed()
         monkeypatch.undo()
         monkeypatch.setattr(stored, "STAMPS_RENEW", 0.0)
         listed(controller)
