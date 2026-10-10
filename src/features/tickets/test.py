@@ -429,6 +429,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert (said, typed) == (f"told ticket {ticket.n}'s agent: carry on with the tests", ["carry on with the tests"]), \
         "a note to a ticket's agent is delivered and answered with the note, never with the ticket's whole brief"
     from controllers.agents import IDLE_STATE
+    from controllers.types import Agents
     from features.plans.controller import ACTIVE
     told_to = []
     tickets.update(ticket.n, plan=7, told=0.0)
@@ -786,10 +787,10 @@ def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
     from types import SimpleNamespace
     typed = []
     with monkeypatch.context() as scoped:
-        scoped.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by: typed.append(text) or bool(text)))
+        scoped.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by=None: typed.append(text) or bool(text)))
         tickets.tell(second.n, "  hello  ")
         assert (typed, "told" in tickets.load(second.n).data) == (["hello"], True), "a note to a ticket's agent is typed into its terminal and remembered"
-        scoped.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by: False))
+        scoped.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by=None: False))
         assert "stayed in its input box" in refused(lambda: tickets.tell(second.n, "again")), "a note the terminal would not take says its agent may be stuck"
         scoped.setattr(Tickets, "_working", lambda self, found: True)
         from controllers.types import Messages
