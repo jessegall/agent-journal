@@ -258,6 +258,7 @@ class Question(Options, Resource):
     labels = {"outcome": "Answer", "abstract": "Context"}
     indexed = ("hidden",)
     hidden_listed = False
+    listed_beneath = True
 
 
 class Suggestion(Options, Resource):

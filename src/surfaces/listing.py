@@ -3,10 +3,11 @@ from dataclasses import asdict, dataclass
 from typing import TypedDict
 
 from controllers.base import LAST
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Environments
+from engine.record import Record
 from resources.fields import Loaded
 from features.format import KEEP_SHAPED, VIEWER, settled, shaped, worded
-from resources.base import USER, Refused
+from resources.base import SYSTEM, USER, Refused
 from overview.counts import counts
 
 LISTED = worded(KEEP_SHAPED)
@@ -90,7 +91,7 @@ ENCODED_KEPT = 20000
 
 def encoded(controller, record, view: dict) -> bytes:
     """One row as the JSON it is sent as, made again only when the row's view is a new one, so a type whose rows change one at a time encodes only that row."""
-    key = (str(record.home), controller.type, view["n"])
+    key = (str(record.home), controller.type, view.get("env", ""), view["n"])
     held = ENCODED.get(key)
     if held and held[0] is view:
         return held[1]
@@ -101,14 +102,45 @@ def encoded(controller, record, view: dict) -> bytes:
     return body
 
 
-def listing(controller, record, wanted: Listing, summaries: list | None = None) -> ListedRows:
+@dataclass(frozen=True)
+class Beneath:
+    """One environment working under the listed one, and the summaries of the same type's rows in it."""
+    name: str
+    record: Record
+    controller: object
+    summaries: list
+
+
+def beneath(controller, record) -> list[Beneath]:
+    if not controller.resource.listed_beneath:
+        return []
+    found = []
+    for name in Environments(record, actor=SYSTEM).working_under():
+        place = Record(record.root, name)
+        there = CONTROLLERS[controller.type](place, actor=USER)
+        found.append(Beneath(name, place, there, there.rows.summaries()))
+    return found
+
+
+def beneath_views(below: list[Beneath]) -> list[dict]:
+    """The open rows of the environments working under, each carrying its environment and its reference there, so it is answered where it was asked."""
+    views = []
+    for one in below:
+        for row in one.controller.rows.standing_summaries():
+            view = None if row.get("hidden") else readable(one.controller, one.record, row["n"], row.get("stamp"), settled(one.record))
+            if view:
+                views.append({**view, "env": one.name, "ref": f"{one.name}/{view['ref']}"})
+    return views
+
+
+def listing(controller, record, wanted: Listing, summaries: list | None = None, below: list[Beneath] | None = None) -> ListedRows:
     summaries, stamp = summaries if summaries is not None else controller.rows.summaries(), settled(record)
+    below = beneath(controller, record) if below is None else below
 
     def listed() -> ListedRows:
         return _listed(controller, record, wanted, summaries, stamp)
-    if wanted.since:
-        return listed()
-    return LISTED.get((str(record.home), controller.type, wanted), (summaries, stamp), listed)
+    own = listed() if wanted.since else LISTED.get((str(record.home), controller.type, wanted), (summaries, stamp), listed)
+    return {**own, "rows": [*own["rows"], *beneath_views(below)]} if below else own
 
 
 def newest_among(summaries: list, last: int, wanted_row) -> list[dict]:
@@ -174,9 +206,10 @@ def held_rows(record, type_: str, query: dict, controller=None, summaries: list 
     """One type's rows of the dashboard as the JSON they are sent as, made again only when that type's rows or the settings changed, so a type that changes every few seconds rebuilds only itself."""
     controller = controller or CONTROLLERS[type_](record, actor=USER)
     summaries = summaries if summaries is not None else controller.rows.summaries()
-    stamp = Unchanged((summaries,), settled(record))
+    below = beneath(controller, record)
+    stamp = Unchanged((summaries, *(one.summaries for one in below)), settled(record))
     return DASHBOARDS.get((str(record.home), type_, tuple(sorted(query.items()))), stamp,
-                          lambda: listed_json(controller, record, listing(controller, record, Listing.from_query(query), summaries)))
+                          lambda: listed_json(controller, record, listing(controller, record, Listing.from_query(query), summaries, below)))
 
 
 def dashboard(record, wanted: list[str], tallied: list[str], query: dict) -> tuple[bytes, bytes]:

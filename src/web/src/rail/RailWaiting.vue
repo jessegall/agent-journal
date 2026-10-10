@@ -6,7 +6,7 @@ import Icon from "../kit/Icon.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import {store} from "../state/store.js";
 import {api} from "../api/client.js";
-import {peek, route} from "../route.js";
+import {peek, peekThere, route} from "../route.js";
 import {finishedUnread, happened, open as openRows, unreadByUser} from "../domain/records.js";
 import {hasLoaded, patched, rows} from "../sync/rows.js";
 import {age} from "../format/time.js";
@@ -39,6 +39,7 @@ const cards = computed(() => (props.type ? waiting.value : notifications.value))
 const loaded = computed(() => (props.type ? hasLoaded(props.type) : store.booted));
 
 async function open(r) {
+    if (r.env) return peekThere(r.env, r.type, r.n);
     if (props.type) {
         if (r.type === "question" || !focusTurn(r.ref, {instant: true})) peek(r.type, r.n);
         return;
@@ -89,7 +90,7 @@ async function dismiss(r) {
                         <TextDisplay class="needs-card-text" :text="r.abstract" />
                     </template>
                     <p class="needs-card-foot">
-                        <span class="needs-card-meta">{{ r.type }} {{ r.n }}</span>
+                        <span class="needs-card-meta">{{ r.env ? `${r.env} \u00b7 ` : "" }}{{ r.type }} {{ r.n }}</span>
                         <span class="needs-card-when">{{ age(r.created) || "just now" }}</span>
                     </p>
                 </div>

@@ -191,7 +191,7 @@ const thread = computed(() => {
         {
             message: rows("message").filter((m) => !boardRequests.value.has(m.ref)),
             comment: rows("comment").filter((c) => !c.refs.some((ref) => boardRequests.value.has(ref))),
-            question: rows("question"),
+            question: rows("question").filter((q) => !q.env),
             suggestion: rows("suggestion"),
             reaction: rows("reaction"),
             doc: rows("doc"),

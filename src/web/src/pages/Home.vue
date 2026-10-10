@@ -375,7 +375,7 @@ const pageOpened = Date.now() / 1000;
 watch(
     () =>
         open("question")
-            .filter((q) => q.created > pageOpened)
+            .filter((q) => !q.env && q.created > pageOpened)
             .map((q) => q.n),
     (now, before) => {
         if (!now.some((n) => !(before || []).includes(n))) return;
