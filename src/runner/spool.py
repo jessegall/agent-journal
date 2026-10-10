@@ -1,5 +1,6 @@
 import os
 import threading
+import time
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
@@ -32,14 +33,17 @@ def kept_stamp(root: Path) -> int:
         return 0
 
 
-def replay(root: Path, most: int = 0) -> None:
-    """Takes every event kept while the server could not answer (the oldest `most` of them, when given), oldest first: a shown message goes to the chat, any other event is handled as if it had just arrived, at the time the hook kept it."""
+def replay(root: Path, most: int = 0, within: float = 0.0) -> None:
+    """Takes every event kept while the server could not answer (the oldest `most` of them, when given, for as long as `within` seconds allow, the first always), oldest first: a shown message goes to the chat, any other event is handled as if it had just arrived, at the time the hook kept it."""
     if not REPLAYING.acquire(blocking=False):
         return
     try:
         waiting = WAITING.get(str(root), kept_stamp(root), lambda: sorted(chat_mirror.unsent(root).glob("*.json"), key=lambda f: (f.stat().st_mtime_ns, f.name)))
+        until = time.monotonic() + within
         for kept in waiting[:most] if most else waiting:
             handle(root, kept)
+            if within and time.monotonic() >= until:
+                break
     finally:
         REPLAYING.release()
 
