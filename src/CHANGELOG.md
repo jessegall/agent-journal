@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.8 — A plain Mac installs without a Python of its own
+- When the machine has no Python 3.11 or newer, as a Mac with only its own Python 3.9 does, the installer fetches Python 3.13 with uv (installing uv first when it is missing), with no Homebrew and no admin rights, and installs with it.
+
 ## 2.268.7 — The installer finds a Python the journal runs on
 - The installer picks the newest Python 3.11 or later on the machine (python3.14 down to python3.11, then python3) and stops with a plain message naming what to install when there is none. It used to accept Python 3.10, on which the journal fails at its first import.
 
