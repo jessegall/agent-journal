@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from engine.record import RESOURCES, Record
+from engine.record import RESOURCES
 from engine.stored import write_text
 
 EVENT_KEY = ('"heard": ', '"handled": ')
@@ -43,8 +43,7 @@ def run(root: Path) -> str:
     for home in sorted(p for p in (root / "environments").glob("*") if p.is_dir()):
         events = home / "events.jsonl"
         if events.is_file():
-            with Record(root, home.name).locked():
-                logs += rewrite(events, *EVENT_KEY)
+            logs += rewrite(events, *EVENT_KEY)
         rows += rows_in(home / "agent", *AGENT_KEY)
         if (home / "settings.json").is_file():
             kept += settings(home / "settings.json")

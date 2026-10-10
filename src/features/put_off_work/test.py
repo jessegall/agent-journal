@@ -189,3 +189,31 @@ def test_a_write_locks_its_repository_for_a_moment_a_read_waits_for_it_without_l
     waited = time.monotonic() - began
     holder.join()
     assert refused is not None and waited < 0.9, "a write that cannot get the lock of its repository in time gives up with a word of its own, and does not wait for ever"
+    monkeypatch.setattr(locks, "LOCK_WAIT", 5.0)
+    migrating, writing_now, failures = threading.Event(), threading.Event(), []
+
+    def migrate():
+        with locks.hold_record_writes(record.root):
+            migrating.set()
+            writing_now.wait(5)
+            time.sleep(0.2)
+            with Record(record.root, record.env).locked():
+                (record.root / "migrated.txt").write_text("done")
+
+    def write_during():
+        migrating.wait(5)
+        writing_now.set()
+        try:
+            with Record(record.root, record.env).locked():
+                from engine.stored import write_text
+                write_text(record.root / "written.txt", "late")
+        except Exception as error:
+            failures.append(error)
+    threads = [threading.Thread(target=migrate), threading.Thread(target=write_during)]
+    began = time.monotonic()
+    for each in threads:
+        each.start()
+    for each in threads:
+        each.join(8)
+    assert (failures, time.monotonic() - began < 4, (record.root / "migrated.txt").exists(), (record.root / "written.txt").exists()) == ([], True, True, True), \
+        "a write that reaches the repository during a migration waits for it before it takes any lock, so the migration, which writes under the same locks, never waits for a writer that waits for it"
