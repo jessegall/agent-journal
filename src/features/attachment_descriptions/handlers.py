@@ -6,12 +6,15 @@ from typing import ClassVar
 
 from controllers.types import CONTROLLERS, Agents, Messages
 from engine.events.agents import SessionStarted
+from engine.memo import Memo
 from engine.events.resources import MessageUpdated, ResourceEvent
 from features.attachment_descriptions.video import TAGGED, VIDEO, frames_of, probe, sampled, spacing
 from features.parts import AgentContext, Context, Handler
 from controllers.types import CONTROLLERS
 
 MEDIA = ("image/", VIDEO)
+FEW, LISTED = 3, 10
+UNTAGGED = Memo()
 
 
 @dataclass(frozen=True)
@@ -24,8 +27,15 @@ def media(name: str, kinds: tuple[str, ...] | str = MEDIA) -> bool:
     return (mimetypes.guess_type(name)[0] or "").startswith(kinds)
 
 
-def tell(context: Context, type_: str, row, name: str) -> None:
-    context.agent.say("untagged", type=type_, n=row.n, name=name, quoted=json.dumps(name))
+def tell(context: Context, type_: str, n: int, name: str) -> None:
+    context.agent.say("untagged", type=type_, n=n, name=name, quoted=json.dumps(name))
+
+
+def untagged_in(context: Context, type_: str) -> list[tuple[str, int, str]]:
+    """The media files of a type that still need tags, found again only when the type's rows have changed."""
+    rows = context.journal.get(CONTROLLERS[type_]).rows
+    return UNTAGGED.get(str(rows.folder()), rows.summaries(),
+                        lambda: [(type_, row.n, name) for row in rows.attached() for name, tags in row.files.items() if (not tags or str(tags).startswith(TAGGED)) and media(name)])
 
 
 class TagNewMedia(Handler):
@@ -39,17 +49,20 @@ class TagNewMedia(Handler):
             return
         for agent in context.journal.get(Agents).rows.every():
             if agent.live:
-                tell(context.speaking_to(agent), event.type, row, event.file)
+                tell(context.speaking_to(agent), event.type, row.n, event.file)
 
 
 class TagMissingAtStart(Handler):
     behaviour = "tagging"
 
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
-        untagged = ((type_, row, name) for type_ in CONTROLLERS for row in context.journal.get(CONTROLLERS[type_]).rows.attached()
-                    for name, tags in row.files.items() if (not tags or str(tags).startswith(TAGGED)) and media(name))
-        for type_, row, name in untagged:
-            tell(context, type_, row, name)
+        untagged = [found for type_ in CONTROLLERS for found in untagged_in(context, type_)]
+        if len(untagged) <= FEW:
+            for type_, n, name in untagged:
+                tell(context, type_, n, name)
+            return
+        listed = "; ".join(f"{type_} {n} {json.dumps(name)}" for type_, n, name in untagged[:LISTED])
+        context.agent.say("many untagged", count=len(untagged), listed=listed, shown=min(len(untagged), LISTED))
 
 
 class SampleVideoFrames(Handler):

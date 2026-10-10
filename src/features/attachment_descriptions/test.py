@@ -176,3 +176,21 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     text.write_text("newer notes")
     assert refused(lambda: messages.attach(message.n, str(text))) == "disk full", "a file that cannot be put in place is refused with the reason"
     assert (messages.folder(message.n) / "notes.txt").read_text() == "notes", "and the file that was there is put back as it was"
+
+
+def test_a_session_start_asks_for_a_few_untagged_files_one_by_one_and_for_many_in_one_line(tmp_path):
+    from features import FEATURES
+    from features.parts import AgentContext
+    asked = {}
+    for count in (2, 12):
+        record = fresh()
+        messages = Messages(record, actor=USER)
+        for number in range(count):
+            image = tmp_path / f"shot{count}-{number}.png"
+            image.write_bytes(b"png")
+            messages.attach(messages.create(f"look {number}").n, str(image))
+        row = Agents(record, actor=SYSTEM).create("session", status="working")
+        feature.TagMissingAtStart().handle(AgentContext.of(FEATURES["attachment_descriptions"], record, row), None)
+        asked[count] = sorted(n.title for n in Nudges(record, actor=SYSTEM).all())
+    assert asked[2] == ["message 1 file shot2-0.png needs tags", "message 2 file shot2-1.png needs tags"], "a few files are asked for one by one"
+    assert asked[12] == ["12 attached files need tags"], "many files are asked for in one line that names the first ones, so a session start writes one row and not one for each"

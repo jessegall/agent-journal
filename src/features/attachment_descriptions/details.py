@@ -44,4 +44,9 @@ class AttachmentDescriptionsDetails(FeatureDetails):
             title="{{type}} {{n}} file {{name}} needs tags",
             brief='inspect the attachment, then journal {{type}} tag {{n}} {{quoted}} "<a few words describing what it shows>"',
         ),
+        Line(
+            name="many untagged",
+            title="{{count}} attached files need tags",
+            brief='the first {{shown}}, as type, number and name: {{listed}}. Inspect each, then journal <type> tag <n> "<name>" "<a few words describing what it shows>"',
+        ),
     ]
