@@ -55,6 +55,17 @@ def test_a_board_holds_its_tickets_in_its_own_stages_and_marks_what_they_mean():
     assert [(lane["title"], [(card["n"], card["type"], card["targets"]) for card in lane["cards"]]) for lane in lanes] == \
         [("Ideas", []), ("Building", []), ("Shipped", [(ticket.n, "ticket", ["Ideas", "Building"])])], "the board shows its stages as lanes, each ticket movable to the others"
     assert tickets.create("Search", board=board.n, stage="Building").stage == "Building", "a ticket can start in a stage it names"
+    from collections import Counter
+    from engine.record import Record
+    from tests.kit import counted
+    for n in range(3):
+        tickets.update(tickets.create(f"Started {n}", board=board.n).n, work_environment=f"ticket-env-{n}", plan=1)
+    served = Tickets(Record(record.root, record.env, memo=True), actor=tickets.actor)
+    with counted() as work:
+        served.board(board.n)
+    built = Counter(env for (env,) in work.records)
+    assert max(built.values(), default=0) <= 1 and not [row for row, times in Counter(work.parsed).items() if times > 1], \
+        f"a board builds each environment's Record once and parses each row once; it built {dict(built)} and parsed {work.parsed}"
 
 
 def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():

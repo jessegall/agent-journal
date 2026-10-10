@@ -196,9 +196,19 @@ class Record:
         return self.state_at(folder / f"{owner}.json")
 
     def state_at(self, path: Path) -> State:
+        return self.remembered(("state", str(path)), lambda: State(path))
+
+    def remembered(self, key, make):
+        """What make returns, made once for the request this record serves and kept until its next write; made every time when the record keeps no memo."""
         if self.memo is None:
-            return State(path)
-        return self.memo.setdefault(("state", str(path)), State(path))
+            return make()
+        if key not in self.memo:
+            self.memo[key] = make()
+        return self.memo[key]
+
+    def sibling(self, env: str) -> "Record":
+        """The record of another environment for the same request, built once and keeping its own memo."""
+        return self.remembered(("record", env), lambda: Record(self.root, env, memo=self.memo is not None))
 
     def setting(self, key: str, default=None):
         return self.settings().get(key, default)

@@ -280,6 +280,13 @@ class Sessions:
         held = [(s.last_heard, session) for session, s in self.all().items() if s.environment == env and live(s)]
         return [session for _, session in sorted(held, reverse=True)]
 
+    def holding(self) -> dict[str, str]:
+        """Each environment's holder, the session heard from last, from one pass over the sessions with one liveness check each."""
+        held: dict[str, str] = {}
+        for _, session, env in sorted(((s.last_heard, session, s.environment) for session, s in self.all().items() if s.environment and live(s)), reverse=True):
+            held.setdefault(env, session)
+        return held
+
     def evict(self, session: str, by: str, env: str, why: str) -> None:
         self.write(session, environment="", evicted={"by": by, "environment": env, "why": why, "at": time.time()})
 

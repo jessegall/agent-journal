@@ -148,7 +148,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return plans.load(ticket.plan) if plans.rows.exists(ticket.plan) else None
 
     def _plans(self, ticket) -> Plans:
-        return Plans(Record(self.record.root, ticket.work_environment), actor=self.actor)
+        return Plans(self.record.sibling(ticket.work_environment), actor=self.actor)
 
     @action
     def approve_plan(self, n: int):
@@ -195,13 +195,16 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return ticket
 
     def _plan_status(self, ticket) -> str:
+        return self.record.remembered(("plan status", ticket.n, ticket.updated), lambda: self._plan_status_now(ticket))
+
+    def _plan_status_now(self, ticket) -> str:
         from features.plans.progress import first_open_phase
         if not ticket.plan:
             return ""
         plan = self._plan_of(ticket)
         if plan is None:
             return ""
-        if plan.status == PLAN_DONE and first_open_phase(Record(self.record.root, ticket.work_environment), plan):
+        if plan.status == PLAN_DONE and first_open_phase(self.record.sibling(ticket.work_environment), plan):
             return ACTIVE
         return plan.status
 
@@ -216,7 +219,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         """Whether every row of the ticket's plan is closed, though the plan has not yet been marked done: its agent has finished and waits on the merge."""
         from features.plans.progress import first_open_phase
         plan = self._plan_of(ticket)
-        return plan is not None and plan.status == ACTIVE and bool(plan.phases) and not first_open_phase(Record(self.record.root, ticket.work_environment), plan)
+        return plan is not None and plan.status == ACTIVE and bool(plan.phases) and not first_open_phase(self.record.sibling(ticket.work_environment), plan)
 
     def _needing_a_look(self, boards: list[int]) -> list[tuple]:
         sessions, running = Sessions(self.record.root).all(), len(self._running())
@@ -283,7 +286,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     @action
     def agent_session(self, n: int) -> str:
         ticket = self.load(n)
-        return Sessions(self.record.root).holder(ticket.work_environment) if ticket.work_environment else ""
+        holding = self.record.remembered("environment holders", lambda: Sessions(self.record.root).holding())
+        return holding.get(ticket.work_environment, "") if ticket.work_environment else ""
 
     @action
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
@@ -353,7 +357,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return self._closed([r for r in self.rows.standing() if r.work_environment and self._ran(r) and not self._working(r) and self._merged(r)])
 
     def _working(self, ticket) -> bool:
-        return Agents(Record(self.record.root, ticket.work_environment), actor=SYSTEM).state(ticket.work_environment) == WORKING_STATE
+        return Agents(self.record.sibling(ticket.work_environment), actor=SYSTEM).state(ticket.work_environment) == WORKING_STATE
 
     def _closed(self, merged: list) -> list:
         for ticket in merged:
@@ -417,7 +421,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         here = super().comments(n)
         if not ticket.work_environment or ticket.work_environment == self.record.env:
             return here
-        there = Comments(Record(self.record.root, ticket.work_environment), actor=self.actor).linked_to(ticket.ref)
+        there = Comments(self.record.sibling(ticket.work_environment), actor=self.actor).linked_to(ticket.ref)
         return sorted([*here, *there], key=lambda comment: comment.created)
 
     @action
@@ -643,7 +647,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _running(self) -> list:
         """The tickets holding a running slot: an agent that works, not one that was stopped, nor one whose ticket waits on another, which holds none."""
-        return [r for r in self.rows.standing() if r.work_environment and not r.halted and self._live(r) and not self._waiting_on(r)]
+        return self.record.remembered("running tickets", lambda: [r for r in self.rows.standing() if r.work_environment and not r.halted and self._live(r) and not self._waiting_on(r)])
 
     def _live(self, ticket) -> bool:
         return bool(self.agent_session(ticket.n)) or time.time() - ticket.launched < LAUNCHING_FOR
