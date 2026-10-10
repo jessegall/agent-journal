@@ -87,6 +87,11 @@ def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read
     def use(n):
         report(record, "working", "PreToolUse", uses=n)
 
+    from engine.reach import Reach
+    from features import FEATURES
+    Agents(record, actor=AGENT).create("s-gone", status="stopped")
+    titles = [agent.title for agent in FEATURES["messages"].reached(record, Reach.BOTH)]
+    assert "s-gone" not in titles, "a stopped agent hears nothing, so a message that arrives does not rewrite its counters: every old session made the first message after a start slow"
     use(1)
     assert inbox() == [], "nothing unread: nothing said"
     Messages(record, actor=USER).create("look at the header")
