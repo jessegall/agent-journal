@@ -233,7 +233,7 @@ class Resource:
     own_folder: ClassVar[bool] = False  # each row lives in a folder of its own, beside its files
     read_whole: ClassVar[bool] = False  # its files are read whole by the agent, however long
     progress: ClassVar[tuple] = ()   # data a system row may still change as it runs
-    held: ClassVar[int | None] = 500    # parsed rows kept in memory for each folder, the least recently used going first; None keeps them all
+    held: ClassVar[int | None] = 10000    # parsed rows kept in memory for each folder, the least recently used going first; None keeps them all; a listing of every row that outgrows it reads all of them again
     eager: ClassVar[bool] = False       # its open rows are parsed when the server starts
     data_fields: ClassVar[list[Field]] = [
         Field(default=dict, name="files"),
