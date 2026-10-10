@@ -15,40 +15,86 @@ TIMING = "timing"
 MEASURED = "measured"
 EVENT = f"{TIMING}.{MEASURED}"
 PROFILING = runtime.flag("profile-requests")
-SAMPLE_AFTER = 0.05
-MOST_SAMPLES = 3
+SAMPLES_AT = (0.05, 0.2, 0.8)
+TICK = 0.025
 STACK_DEPTH = 14
 STACKS_KEPT = 16000
 
 
-class Sampler:
-    """While a request runs past SAMPLE_AFTER, records where every thread is, so a slow request shows what else held the Python lock."""
+class Sampling:
+    """The one thread of a server that looks at every thread for the requests running slowly: it wakes every few milliseconds while one runs, takes one picture of all the threads for every request that has reached its next sample time, and sleeps while none runs."""
 
     def __init__(self):
-        self.taken: list[str] = []
-        self.timer: threading.Timer | None = None
+        self.active: set["Sampler"] = set()
+        self.guard = threading.Lock()
+        self.awake = threading.Event()
+        self.thread: threading.Thread | None = None
+
+    def watch(self, sampler: "Sampler") -> None:
+        with self.guard:
+            self.active.add(sampler)
+            if self.thread is None:
+                self.thread = threading.Thread(target=self.run, name="sampler", daemon=True)
+                self.thread.start()
+        self.awake.set()
+
+    def forget(self, sampler: "Sampler") -> None:
+        with self.guard:
+            self.active.discard(sampler)
+
+    def run(self) -> None:
+        while True:
+            self.awake.wait()
+            with self.guard:
+                waiting = list(self.active)
+            if not waiting:
+                self.awake.clear()
+                continue
+            now = time.perf_counter()
+            due = [one for one in waiting if one.due(now)]
+            if due:
+                pictured = {ident: frame for ident, frame in sys._current_frames().items() if ident != threading.get_ident()}
+                names = {thread.ident: thread.name for thread in threading.enumerate()}
+                for one in due:
+                    one.take(pictured, names)
+            time.sleep(TICK)
+
+
+SAMPLING = Sampling()
+
+
+class Sampler:
+    """While a request runs past the first sample time, keeps where every thread was at the latest of its sample times, so a slow request shows what else held the Python lock."""
+
+    def __init__(self):
+        self.last: tuple[int, dict] | None = None
+        self.began = 0.0
         self.mine = threading.get_ident()
 
+    @property
+    def taken(self) -> list:
+        return [self.last] if self.last else []
+
     def start(self) -> None:
-        self._arm()
+        self.began = time.perf_counter()
+        SAMPLING.watch(self)
 
     def stop(self) -> str:
-        if self.timer:
-            self.timer.cancel()
-        return "\n".join(self.taken)[:STACKS_KEPT]
+        SAMPLING.forget(self)
+        if not self.last:
+            return ""
+        number, threads = self.last
+        shown = [f"thread {name}{' (this request)' if ident == self.mine else ''}:\n{''.join(summary.format())}" for ident, (name, summary) in threads.items()]
+        return (f"--- {number} x {SAMPLES_AT[number - 1] * 1000:.0f}ms into the request ---\n" + "\n".join(shown))[:STACKS_KEPT]
 
-    def _arm(self) -> None:
-        self.timer = threading.Timer(SAMPLE_AFTER, self._sample)
-        self.timer.daemon = True
-        self.timer.start()
+    def due(self, now: float) -> bool:
+        number = self.last[0] if self.last else 0
+        return number < len(SAMPLES_AT) and now - self.began >= SAMPLES_AT[number]
 
-    def _sample(self) -> None:
-        names = {thread.ident: thread.name for thread in threading.enumerate()}
-        threads = [f"thread {names.get(ident, ident)}{' (this request)' if ident == self.mine else ''}:\n{''.join(traceback.format_stack(frame, STACK_DEPTH))}"
-                   for ident, frame in sys._current_frames().items() if ident != threading.get_ident()]
-        self.taken.append(f"--- {len(self.taken) + 1} x {SAMPLE_AFTER * 1000:.0f}ms into the request ---\n" + "\n".join(threads))
-        if len(self.taken) < MOST_SAMPLES:
-            self._arm()
+    def take(self, pictured: dict, names: dict) -> None:
+        number = (self.last[0] if self.last else 0) + 1
+        self.last = (number, {ident: (names.get(ident, ident), traceback.StackSummary.extract(traceback.walk_stack(frame), limit=STACK_DEPTH, lookup_lines=False))
+                              for ident, frame in pictured.items()})
 
 
 @dataclass(frozen=True)
