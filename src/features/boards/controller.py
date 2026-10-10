@@ -67,7 +67,7 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
 
     @action
     def added(self, n: int, tickets: str):
-        board = self.load(n)
+        board = self.peek(n)
         numbers = numbers_in(tickets)
         if not numbers:
             raise Refused("name the tickets that were added, like \"12, 13\"")

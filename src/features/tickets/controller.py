@@ -287,7 +287,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     @action
     def agent_session(self, n: int) -> str:
-        ticket = self.load(n)
+        ticket = self.peek(n)
         if not ticket.work_environment:
             return ""
         sessions = Sessions(self.record.root)

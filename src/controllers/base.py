@@ -585,6 +585,10 @@ class Controller(Files, Links, Discussed):
     def load(self, n: int | str) -> Resource:
         return self.rows.load(n)
 
+    def peek(self, n: int | str) -> Resource:
+        """The held row itself, for a caller that only reads it; a caller that changes it takes `load`, a copy."""
+        return self.rows.peek(int(n))
+
     def path(self, n: int):
         return self.rows.path(n)
 

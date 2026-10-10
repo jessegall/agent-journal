@@ -80,13 +80,13 @@ class Todos(Prioritised, Controller):
 
     @action
     def ask(self, n: int, question: str, **data):
-        row = self.load(n)
+        row = self.peek(n)
         return Questions(self.record, actor=self.actor).create(question, about=row.ref, **data)
 
     @action
     def answer(self, n: int, text: str):
         questions = Questions(self.record, actor=self.actor)
-        row = self.load(n)
+        row = self.peek(n)
         for q in questions.linked_to(row.ref):
             if not q.completed:
                 return questions.complete(q.n, text)
@@ -159,7 +159,7 @@ class Todos(Prioritised, Controller):
     @action
     def start(self, n: int):
         self._handled("start", n=n)
-        row = self.load(n)
+        row = self.peek(n)
         from controllers.works import Works
         return Works(self.record, actor=self.actor, session=self.session, agent=self.agent, force=self.force).create(row.title, brief=row.brief, todo=row.n)
 

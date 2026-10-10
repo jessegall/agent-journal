@@ -17,7 +17,7 @@ class Rules(Controller):
 
     @action
     def pin(self, n: int):
-        rule = self.load(n)
+        rule = self.peek(n)
         notices = Notices(self.record, actor=self.actor)
         standing = [notice for notice in notices.linked_to(rule.ref) if not notice.completed]
         return standing[0] if standing else notices.create(rule.title, about=rule.ref, link=f"#/{self.record.env}/rule/{n}", label="Open rule")
