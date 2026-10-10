@@ -343,7 +343,9 @@ def beat_late(root: Path) -> bool:
 
 def take_prober(root: Path):
     """The lock that makes one worker of the journal the one that judges the server, kept for as long as that worker lives; None while another holds it."""
-    held = (runtime.folder(root) / PROBER_LOCK).open("a")
+    folder = runtime.folder(root)
+    folder.mkdir(parents=True, exist_ok=True)
+    held = (folder / PROBER_LOCK).open("a")
     try:
         fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError:

@@ -532,9 +532,9 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     serve.watch_runtime(record.root, SimpleNamespace(wait=lambda _: next(waits)))
     assert not runtime.restarting(record.root).exists(), "once the new server answers, the restart marker is taken away, so a later crash is told"
     started = runtime.STARTED[0]
-    runtime.hook_failures(record.root).write_text(f"{started - http.RESTART_GRACE - 5} 000 claude {record.env}\n")
+    runtime.hook_failures(record.root).write_text("".join(f"{started - http.RESTART_GRACE - 5 - i} 000 claude {record.env}\n" for i in range(http.MISSES_TO_REPORT)))
     http.unanswered(record.root)
-    assert told, "after a crash, with no marker, a failure from before the new server's grace is reported"
+    assert told, "after a crash, with no marker, the failures from before the new server's grace are reported"
     told.clear()
     runtime.hook_failures(record.root).write_text(f"{started + http.RESTART_GRACE + 5} 000 claude {record.env}\n")
     http.unanswered(record.root)
