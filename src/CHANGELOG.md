@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.13 — An upgrade is not held by the journal's own code folder
+- An upgrade no longer stops because a file in the journal's own code folder changed: an upgrade replaces that folder whole. A start that finds an upgrade held by changed project files says so instead of counting it as installed.
+
 ## 2.268.12 — A start installs a new version once, never in a loop
 - When `journal claude` installs a newer version before it starts and the restarted start still runs the old one, it starts on the old one and says so, instead of installing the same version again and again.
 
