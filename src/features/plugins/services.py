@@ -7,7 +7,7 @@ from controllers.types import Notices, Plugins
 from engine.runtime import default_env
 from engine.keeper import ServiceSpec
 from engine.record import Record
-from engine.services import BLOCKED, FAILED, claimed, local_url, log_file, service_spec, states
+from engine.services import BLOCKED, FAILED, Declared, claimed, local_url, log_file, service_spec, states
 from engine.wording import fill
 from features.plugins.declared import declared, settings_of
 from features.plugins.environment import environment, port_values
@@ -55,6 +55,17 @@ def planned(root: Path, name: str, service, port: int, blocked: str, env: dict, 
     return service_spec(root, f"{name}.{service.name}", plugin=name, service=service.name, port=port, blocked=blocked, run=service.run,
                         cwd=str(where / service.cwd), env={**env, **service.env}, path=service.ready.path, restart=service.restart,
                         grace=service.grace, show=service.show, when=service.when)
+
+
+def declared_services(root: Path) -> list[Declared]:
+    found = []
+    for row in plugins(root):
+        manifest = declared(row)
+        kept = settings_of(row).ports
+        for service in manifest.services:
+            asked = kept[service.name] if kept.get(service.name) else service.port
+            found.append(Declared(f"{manifest.name}.{service.name}", manifest.name, service.name, asked if isinstance(asked, int) and not isinstance(asked, bool) else 0))
+    return found
 
 
 def plugin_services(root: Path, taken: set[int]) -> list[ServiceSpec]:

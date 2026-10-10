@@ -370,6 +370,11 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
             call()
         touched = [path for path in work.opened if "/sessions/" in path]
         assert not touched, f"{name} reads no session or seat file once warm, on a record of 40 environments and 90 sessions; it opened {touched}"
+    for route in ("/api/identity", "/api/services", "/api/agents"):
+        dispatch("GET", route, record.root, {}, {})
+        with counted() as work:
+            dispatch("GET", route, record.root, {}, {})
+        assert not work.scanned, f"GET {route} scans no folder once warm; it scanned {work.scanned}"
     from agents.seat import HookBinding
     from runner.spool import replay
     Environments(record, actor=SYSTEM).create("place-owned", owner="helper:1")
