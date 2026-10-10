@@ -7,6 +7,7 @@ import pytest
 from pathlib import Path
 from types import SimpleNamespace
 from engine.focus import SCRIPT, existing_tab
+from controllers import stored
 from controllers.types import Agents
 from engine import runtime, viewer
 from resources.base import SYSTEM
@@ -528,6 +529,7 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     serve.warm_viewer(record.root, record.env, threading.Event())
     assert not [key for key in PARSERS if key[0] == ""], "the warm-up leaves the parser of every command to the first help that asks for it"
     runtime.restarting(record.root).write_text(str(started - 60))
+    monkeypatch.setattr(stored, "WATCHED", stored.Watched())
     waits = iter([False, True])
     serve.watch_runtime(record.root, SimpleNamespace(wait=lambda _: next(waits)))
     assert not runtime.restarting(record.root).exists(), "once the new server answers, the restart marker is taken away, so a later crash is told"
