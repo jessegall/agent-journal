@@ -254,12 +254,22 @@ def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event
             server.shutdown()
 
 
+def watched_reads(root: Path) -> bool:
+    """Whether the server reads its folders' marks from memory, the setting that switches the watch loop's reads off without a rollback; a record that cannot be read leaves them on."""
+    from engine.record import Record
+    from features.open_viewer.details import OpenViewerDetails
+    try:
+        return bool(OpenViewerDetails.values(Record(root, runtime.default_env(root))).watched_reads)
+    except Exception:
+        return True
+
+
 def watch_runtime(root: Path, halting: threading.Event) -> None:
     from controllers.agents import write_pending_rows
     from features.auto_update.pausing import resume_when_done
     while not halting.wait(WATCH_SECONDS):
         runtime.refresh_flags(root)
-        watch_marks()
+        watch_marks(watched_reads(root))
         renew_stamps()
         flush_indexes()
         waits.write_holds()
