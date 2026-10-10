@@ -280,6 +280,10 @@ class Sessions:
         held = [(s.last_heard, session) for session, s in self.all().items() if s.environment == env and live(s)]
         return [session for _, session in sorted(held, reverse=True)]
 
+    def version(self) -> tuple[int, int]:
+        """Where the sessions stand on disk, the folder's stamp and the changes file's length, which moves whenever any session is written."""
+        return self.files.current(), self.files.size()
+
     def holding(self) -> dict[str, str]:
         """Each environment's holder, the session heard from last, from one pass over the sessions with one liveness check each."""
         held: dict[str, str] = {}
