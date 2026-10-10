@@ -7,6 +7,7 @@ from pathlib import Path
 
 from engine import runtime
 from resources.fields import Loaded
+from engine.state import State
 from engine.stored import read_json, write_json
 from providers.claude import CHANNEL_MARK, SERVER, Claude
 from providers.claude_rows import Row
@@ -178,7 +179,7 @@ class ClaudeDriver(Driver):
         return runtime.session_file(self.record.root, self.session, HANDED)
 
     def _held(self) -> Handed:
-        return read_json(self._handed_file(), Handed.from_json, Handed.from_json({}))
+        return Handed.from_json(State(self._handed_file()).all())
 
     def _delivering(self) -> bool:
         held = self._held()

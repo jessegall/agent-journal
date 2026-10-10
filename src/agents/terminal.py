@@ -7,7 +7,8 @@ from pathlib import Path
 
 from engine.sessions import ACTIVE_ENV, Sessions, hold_build
 from engine import runtime
-from engine.stored import read_json, write_json, write_text
+from engine.state import State
+from engine.stored import write_json, write_text
 from engine.package import CODE, code, entry_in
 from engine.extension import Extension
 from resources.fields import Loaded
@@ -39,7 +40,7 @@ class Launched(Loaded):
 
     @classmethod
     def read(cls, root: Path, session: str) -> "Launched":
-        return read_json(runtime.session_file(root, session, LAUNCHED), cls.from_json, cls.from_json({}))
+        return cls.from_json(State(runtime.session_file(root, session, LAUNCHED)).all())
 
 
 def agent_environment(base: dict | None = None, env: str | None = None, capped: dict | None = None) -> dict:

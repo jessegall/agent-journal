@@ -6,7 +6,7 @@ description: Write the least code that solves the whole problem: search for what
 
 # Lean code, reused
 
-The least code that solves the whole problem is the best code. A second copy of anything is a decision made twice, and the two drift apart.
+Law L7: write the least code that solves the whole problem, find what already does it and reuse it, and never write the same logic twice. The least code is the best code. A second copy of anything is a decision made twice, and the two drift apart.
 
 Before the first line of a change:
 

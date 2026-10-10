@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine import runtime, typist
-from engine.stored import read_json
+from engine.state import State
 from supervisor import SCREEN, SCREEN_SHAPE
 
 
@@ -30,7 +30,7 @@ class ScreenPart:
 
 def screen_since(root: Path, terminal: str, since: int) -> ScreenPart:
     screen = runtime.session_file(root, terminal, SCREEN)
-    shape = read_json(runtime.session_file(root, terminal, SCREEN_SHAPE), dict, {"rows": 40, "cols": 120})
+    shape = {"rows": 40, "cols": 120, **State(runtime.session_file(root, terminal, SCREEN_SHAPE)).all()}
     if not screen.is_file():
         return ScreenPart.blank(int(shape["rows"]), int(shape["cols"]))
     size = screen.stat().st_size

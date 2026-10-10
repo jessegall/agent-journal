@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 HERE = ROOT / "src"
 FUNNELS = {"engine/sessions.py", "engine/seats.py"}
-FILES = re.compile(r"""["']s(?:ession|eat)\.json["']|\bseat_file\(""")
+FILES = re.compile(r"""["']s(?:ession|eat)\.json["']|\bseat_file\(|\bread_json\(.*session_file\(""")
 HOT = ("runner", "agents", "commands/dispatch.py", "commands/http.py")
 HOT_PATTERNS = ("features/*/handlers.py", "features/*/routes.py")
 SLOW = {
@@ -48,7 +48,7 @@ def problems() -> list[str]:
             continue
         for n, line in enumerate(path.read_text().splitlines(), 1):
             if FILES.search(line):
-                text.append(f"{name}:{n} reads a session or seat file outside engine/sessions.py and engine/seats.py; go through Sessions or the seat funnel")
+                text.append(f"{name}:{n} reads a session or seat file outside engine/sessions.py and engine/seats.py; go through Sessions, the seat funnel or State")
     for path in hot_files():
         name = str(path.relative_to(HERE))
         for n, line in enumerate(path.read_text().splitlines(), 1):
