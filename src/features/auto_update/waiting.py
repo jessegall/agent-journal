@@ -11,10 +11,11 @@ from engine.wording import clipped
 from providers.command_effects import settled
 from resources.base import SYSTEM
 
-WAIT_SECONDS = 60.0
-CHECK_EVERY = 2.0
+WAIT_SECONDS = 20.0
+CHECK_EVERY = 0.5
 SHOWN = 60
 UPGRADE = re.compile(r"\b(?:journal(?:\.py)?|install\.py)\b.*\bupgrade\b")
+JOURNAL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s")
 
 
 def parent_of(pid: int) -> int:
@@ -35,7 +36,7 @@ def running(root) -> list[tuple[Record, object]]:
     """Every live agent whose shell command is still running, in every environment, leaving out the command that runs the upgrade itself."""
     mine, sessions = ancestors(), Sessions(root)
     return [(record, row) for record in Record.every(root) for row in Agents(record, actor=SYSTEM).rows.standing()
-            if row.live and row.command_running and not UPGRADE.search(row.running["command"]) and pid_of(sessions, row) not in mine]
+            if row.live and row.command_running and JOURNAL.search(row.running["command"]) and not UPGRADE.search(row.running["command"]) and pid_of(sessions, row) not in mine]
 
 
 def pid_of(sessions: Sessions, row) -> int:

@@ -139,10 +139,14 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     report(record, "working", "PreToolUse", session="claude-9", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}],
            running={"command": "npm test", "tool": "Bash", "at": started})
     steps = []
+    assert (running(record.root), wait_for_commands(record.root, steps.append, wait=0.05, every=0.01)) == ([], []), \
+        "a command of the agent's own, such as a test run, is not waited for: the swap of the build does not touch it"
+    report(record, "working", "PreToolUse", session="claude-9", provider="claude", commands=[{"command": "journal todo all", "tool": "Bash", "at": started}],
+           running={"command": "journal todo all", "tool": "Bash", "at": started})
     gave_up = wait_for_commands(record.root, steps.append, wait=0.05, every=0.01)
     closed = Agents(record, actor=SYSTEM).by_session("claude-9")
-    assert (len(running(record.root)), bool(closed.running.get("done")), steps[:1], gave_up[0].startswith("gave up waiting for `npm test`")) == \
-        (0, True, ["Waiting for 1 running command to finish"], True), "an update waits a bounded time for the commands in flight, then names the one it gave up on and marks it ended"
+    assert (len(running(record.root)), bool(closed.running.get("done")), steps[:1], gave_up[0].startswith("gave up waiting for `journal todo all`")) == \
+        (0, True, ["Waiting for 1 running command to finish"], True), "an update waits a bounded time for the journal commands in flight, then names the one it gave up on and marks it ended"
     assert wait_for_commands(record.root, steps.append, wait=0.05, every=0.01) == [], "with nothing running the update does not wait"
     import threading
     from features.auto_update import countdown
@@ -160,7 +164,12 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         "the viewer is told which update is counting down"
     assert dispatch("POST", "/api/update/cancel", record.root, {}, {}).code == 200
     runner.join(2)
-    assert (counted, countdown.remaining(record.root)) == ([False], {}), "cancelling the countdown skips that update"
+    assert (counted, countdown.remaining(record.root)) == ([False], {}), "Not now puts that update off"
+    from features.auto_update.check import claimed, ledger
+    ledger(record.root).set("2.9.1", {"at": time.time(), "tries": 1, "ok": False})
+    assert claimed(record.root, "2.9.1", "ask") is False, "a put off update is not offered again at once"
+    ledger(record.root).set("2.9.1", {"at": time.time() - 3600, "tries": 1, "ok": False})
+    assert claimed(record.root, "2.9.1", "ask") is True, "but it is offered again later, as a failed one is"
     from engine import inputs
     from engine.sessions import Sessions
     from features.auto_update import pausing
