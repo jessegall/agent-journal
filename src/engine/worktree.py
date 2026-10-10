@@ -348,6 +348,9 @@ def packages_linked(repository: Path, folder: Path) -> list[Path]:
         if installed.is_dir() and not installed.is_symlink() and not link.exists() and not link.is_symlink() and folder.is_dir():
             link.symlink_to(installed.resolve())
             made.append(link)
+    if made:
+        common = git(folder, "rev-parse", "--git-common-dir").stdout.strip()
+        ignore((folder / common).resolve() / "info" / "exclude", [f"/{link.name}" for link in made])
     return made
 
 
