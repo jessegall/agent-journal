@@ -299,6 +299,26 @@ def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_pa
     (tmp_path / "hook.py").write_text(HOOK)
     ran = subprocess.run([sys.executable, str(tmp_path / "hook.py")], capture_output=True, text=True, timeout=20)
     assert ran.stdout.strip() == f"claude {tmp_path.resolve()}", "no provider given: Claude, on the journal hook.py sits in"
+    import subprocess
+    import sys
+    import threading
+    from install import ENTRYPOINTS
+    waiting = tmp_path / "waiting"
+    (waiting / "runtime").mkdir(parents=True)
+    (waiting / "journal.py").write_text(ENTRYPOINTS["journal.py"])
+    (waiting / "runtime" / "upgrading").write_text("Preparing the update")
+    (waiting / "src").mkdir()
+    (waiting / "src" / "__main__.py").write_text("print('half written')\nraise SystemExit('the source tree was run while an update wrote it')\n")
+
+    def swap():
+        time.sleep(1.0)
+        (waiting / "journal-1.0.0-x.pyz").write_bytes(b"")
+        (waiting / "runtime" / "upgrading").unlink()
+    threading.Thread(target=swap).start()
+    began = time.time()
+    ran = subprocess.run([sys.executable, str(waiting / "journal.py")], capture_output=True, text=True, timeout=60)
+    assert time.time() - began >= 0.9 and "half written" in ran.stdout, \
+        "a command started while an update writes the source waits for the update to finish before it falls back to the source, never running it half written"
     from install import ENTRYPOINTS
     assert all(text.startswith("#!/usr/bin/env python3") for text in ENTRYPOINTS.values()), "an entry made executable runs with Python, never the shell"
 
