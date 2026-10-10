@@ -463,6 +463,21 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     kept = user.load(ui.n)
     assert (kept.dependencies, kept.declined) == ({api.ref: "confirmed"}, [docs.ref]), "only the links the user kept hold"
     assert f"declined its proposed wait on {docs.ref}" in user._kickoff(kept), "the ticket's agent hears which wait was declined"
+    assert user._depended_on(user.load(api.n)) == 1, "a ticket others wait on is counted"
+    user.update(api.n, queued=True, queued_at=20.0)
+    user.update(docs.n, queued=True, queued_at=10.0)
+    assert user._queue() == [api.n, docs.n], "the ticket others wait on starts first, though it queued later"
+    user.update(api.n, queued=False, queued_at=0.0)
+    user.update(docs.n, queued=False, queued_at=0.0)
+    user.update(api.n, work_environment="ticket-api")
+    user.update(ui.n, work_environment="ticket-ui")
+    with monkeypatch.context() as working:
+        working.setattr(Tickets, "_live", lambda self, found: True)
+        assert [r.n for r in user._running()] == [api.n], "a ticket that waits on another holds no running slot, though its agent works"
+        user.update(api.n, halted=True)
+        assert user._running() == [], "a stopped agent frees its slot at once"
+    user.update(api.n, halted=False, work_environment="")
+    user.update(ui.n, work_environment="")
     assert "would wait on itself" in refused(lambda: user.depend(api.n, ui.n)), "a cycle is refused"
     agent.depend(docs.n, api.n)
     assert "does not let its orchestrator accept or decline" in refused(lambda: agent.accept_dependencies(docs.n, why="docs follow the API")), "an agent decides a proposal only where its board lets its orchestrator"
