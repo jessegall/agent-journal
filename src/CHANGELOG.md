@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.30 — Codex sessions no longer crash on the menu funnel
+- Since 2.268.22 a Codex agent's session could crash: the menu funnel reads the screen through a pattern that Codex's driver lacked, and the screen read raised an error. Every driver now reads its screen.
+- The upgrade tests hold an upgrade back on a skill file changed by hand, since the journal's own code folder no longer holds one, and the crash-grace test writes the failed hooks that are reported.
+
 ## 2.268.29 — An agent is told once that the journal resumed it
 - After an update, an agent was told 'The journal has updated and resumed you' again and again, about once a second: a paused agent's lines wait until it continues, so the line sent while it was still paused counted as unsent and was sent again on every tick. The pause now ends first and the agent is told once.
 

@@ -64,6 +64,7 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
     driver.printed.write_bytes(f"\x1b[2m> Ask Codex to do anything\x1b[0m\r\nesc to interrupt\r\n{screen}".encode())
     assert (driver.asked().tool, driver.asked().call, codex.ALLOW) == ("exec_command", "printf 'hi' > hello.txt", b"y"), \
         "Codex's approval prompt is read off its screen with its command, and Allow presses y"
+    assert "Would you like to run" in driver.screen(driver.PROMPT_TAIL), "a driver with no suggestion pattern of its own still reads its screen, so the menu funnel never crashes a Codex session"
     driver.last_report = lambda: None
     driver.send("todo 5 next")
     assert driver.held == ["todo 5 next"], "nothing is typed into Codex while its approval prompt waits on the user; the line waits too"
