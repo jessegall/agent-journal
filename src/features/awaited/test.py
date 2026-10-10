@@ -116,6 +116,23 @@ def test_a_lock_held_longer_than_a_quarter_second_is_noted_with_the_stack_that_h
     waits.write_holds()
     note = (tmp_path / waits.HELD_LOG).read_text()
     assert "the record lock of main held" in note and "test_a_lock_held_longer" in note, "the note names the lock and the code that held it"
+    import threading
+    from engine.locks import held_file
+    lock = tmp_path / "a" / ".lock"
+    turns = []
+
+    def take(n):
+        with held_file(lock):
+            turns.append(("in", n))
+            threading.Event().wait(0.03)
+            turns.append(("out", n))
+    threads = [threading.Thread(target=take, args=(n,)) for n in range(4)]
+    [thread.start() for thread in threads]
+    [thread.join() for thread in threads]
+    assert all(turns[at][0] == "in" and turns[at + 1] == ("out", turns[at][1]) for at in range(0, 8, 2)), "a lock file kept open still lets one thread in at a time"
+    lock.unlink()
+    with held_file(lock):
+        assert lock.is_file(), "a lock file that was removed is opened again, never held through a file that is gone"
 
 
 def test_a_request_never_walks_a_row_folder_the_background_renewal_has_not_reached_yet(tmp_path):

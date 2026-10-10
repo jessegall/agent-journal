@@ -1,4 +1,5 @@
 import fcntl
+import os
 import threading
 import time
 from contextlib import contextmanager
@@ -58,6 +59,10 @@ def close_all() -> None:
         for writes in SHARED.values():
             writes.held.close()
         SHARED.clear()
+    with LOCKING:
+        for kept in LOCK_FILES.values():
+            kept.file.close()
+        LOCK_FILES.clear()
 
 
 def shared_writes(root: Path) -> SharedWrites:
@@ -132,10 +137,46 @@ def writing(path: Path):
         yield
 
 
+class LockFile:
+    """A lock file kept open between uses, with a lock of its own for the threads of this process: two threads share one open file, so the file lock alone would let both in."""
+
+    def __init__(self, path: Path):
+        self.path = path
+        self.threads = threading.Lock()
+        self.file = self.opened()
+
+    def opened(self) -> IO:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        return self.path.open("a+")
+
+    def current(self) -> IO:
+        """The open file, opened again when the file at the path is no longer the one held, as after it was removed and made anew."""
+        try:
+            same = os.stat(self.path).st_ino == os.fstat(self.file.fileno()).st_ino
+        except OSError:
+            same = False
+        if not same:
+            self.file.close()
+            self.file = self.opened()
+        return self.file
+
+
+LOCK_FILES: dict[Path, LockFile] = {}
+LOCKING = threading.Lock()
+
+
+def lock_file(path: Path) -> LockFile:
+    with LOCKING:
+        if path not in LOCK_FILES:
+            LOCK_FILES[path] = LockFile(path)
+        return LOCK_FILES[path]
+
+
 @contextmanager
 def held_file(path: Path):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a+") as held:
+    kept = lock_file(path)
+    with kept.threads:
+        held = kept.current()
         acquire(held, fcntl.LOCK_EX)
         try:
             yield held
