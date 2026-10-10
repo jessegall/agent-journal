@@ -13,7 +13,7 @@ import {
 } from "../domain/mascots.js";
 import {animations, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import {loadProfiles, mascotOf, profiles, profilesLoaded} from "../composables/profiles.js";
-import {loadRig, rigs, voiceOfArt} from "../composables/voiceRigs.js";
+import {loadPictures, loadRig, rigs, voiceOfArt} from "../composables/voiceRigs.js";
 import RigPlayer from "../kit/RigPlayer.vue";
 import SpritePlayer from "../kit/SpritePlayer.vue";
 
@@ -106,9 +106,13 @@ watch(
         if (showcase) return;
         stop();
         if (!now || !(now.acts.length || now.blink)) return;
-        rested.value = now.acts[0] ?? now.blink;
-        waitForBlink();
-        if (now.acts.length) waitForAct();
+        const sheet = now.acts[0] ?? now.blink;
+        loadPictures([sheet.url]).then(() => {
+            if (mascot.value !== now) return;
+            rested.value = sheet;
+            waitForBlink();
+            if (now.acts.length) waitForAct();
+        });
     },
     {immediate: true}
 );
