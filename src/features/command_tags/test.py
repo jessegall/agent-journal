@@ -89,11 +89,12 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     from controllers.types import Agents, Messages
     from resources.base import AGENT, USER
     thanks, asked = asked_and_read(record, "Thank you, sir."), asked_and_read(record, "Thanks, but which branch?")
-    assert counted({("message", "created"): {thanks.n: None}}, record) == \
-        [f'1 new message {thanks.n} - message {thanks.n} says: "Thank you, sir."; message {thanks.n} only acknowledges: react to it with journal message react {thanks.n} "👍", no words needed'], \
-        "a message that only acknowledges is answered with a reaction, and the line carries what it says"
+    line = counted({("message", "created"): {thanks.n: None}}, record)[0]
+    assert (line.startswith(f"1 new message {thanks.n} - [journal][message:{thanks.n}]\n---"), "Thank you, sir." in line,
+            f'message {thanks.n} only acknowledges: react to it with journal message react {thanks.n} "👍"' in line) == (True, True, True), \
+        "a message that only acknowledges is answered with a reaction, and the line carries a header and what journal message read prints"
     line = counted({("message", "created"): {asked.n: None}}, record)[0]
-    assert ("[!reply:" in line, f'message {asked.n} says: "Thanks, but which branch?"' in line, AGENT in Messages(record, actor=AGENT).load(asked.n).seen) == (True, True, True), \
+    assert ("[!reply:" in line, f"[journal][message:{asked.n}]" in line, "Thanks, but which branch?" in line, AGENT in Messages(record, actor=AGENT).load(asked.n).seen) == (True,) * 4, \
         "one that asks something still gets a reply, its whole text is in the line, and the agent need not read it first"
     assert counted({("message", "created"): {4465: None, 4466: None}}, record)[0].endswith("answer each by opening a turn with [!reply:<n>]")
     assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"

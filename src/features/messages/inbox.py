@@ -48,12 +48,26 @@ class NameUnread(Handler):
             context.hold("inbox held", "unread")
 
 
+def hold_unanswered(context: AgentContext, held: list) -> None:
+    """After answering.hold tool uses with a message still unanswered, the agent's tool calls wait until it is handled."""
+    key, row = context.feature.keyed("answer hold"), context.agent.row
+    began = trigger.last(context.record, row.title, key).uses
+    if not began:
+        began = int(row.uses) or 1
+        trigger.write(context.record, row, key, uses=began)
+    if int(row.uses) - began >= int(context.settings["answering.hold"]):
+        context.hold("answer held", "answering", messages=", ".join(f"message {m.n}" for m in held[-3:]))
+
+
 class NameUnanswered(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         held = unanswered(context.journal)
         if not held:
             reset(context, "answering")
+            trigger.write(context.record, context.agent.row, context.feature.keyed("answer hold"), uses=0)
+            context.release("answering")
             return
+        hold_unanswered(context, held)
         if (context.agent.row.status == IDLE or context.due("answering")) and counted(context, "answering") <= patient(context, "answering"):
             context.agent.whisper("answer", messages=", ".join(f"message {m.n}" for m in held[-3:]), numbers=[m.n for m in held[-3:]],
                                   rows=[m.ref for m in held[-3:]])

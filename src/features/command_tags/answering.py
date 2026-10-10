@@ -4,15 +4,10 @@ from features.messages.answering import acknowledges
 from resources.base import AGENT, SYSTEM
 
 
-SHOWN_WHOLE = 2000
-
-
 def said(row) -> str:
-    """The message as the line names it: its whole text and the names of its attachments, so the agent has no need to read it first."""
-    text = (row.brief or row.title).strip()
-    clipped = text if len(text) <= SHOWN_WHOLE else f"{text[:SHOWN_WHOLE].rstrip()}... (clipped: journal message read {row.n} for the rest)"
-    attached = f" [attached: {', '.join(row.files)}]" if row.files else ""
-    return f'message {row.n} says: "{clipped}"{attached}'
+    """The message as the line names it: a header with its number and the message it answers, then what journal message read prints, whole, so no context is lost and the agent need not read it first."""
+    answers = "".join(f",reply:{ref.partition(':')[2]}" for ref in row.refs if ref.startswith("message:"))
+    return f"[journal][message:{row.n}{answers}]\n{row.dump().strip()}"
 
 
 def answered(numbers: list, record, **_) -> str:

@@ -69,6 +69,13 @@ class MessagesDetails(FeatureDetails):
             under="unread",
         ),
         Setting(
+            name="answering.hold",
+            default=20,
+            title="Hold the agent's tool calls after this many tool uses with a message unanswered",
+            unit="uses",
+            under="answering",
+        ),
+        Setting(
             name="answering.patience",
             default=3,
             title="Stop reminding after",
@@ -100,6 +107,11 @@ class MessagesDetails(FeatureDetails):
             title="answer {{messages}} before you write anything",
             until=("message.completed",),
             owed=still_unanswered,
+            brief="a reply, a reaction, or journal message processed <n>",
+        ),
+        Line(
+            name="answer held",
+            title="your tool calls are held: answer {{messages}} first",
             brief="a reply, a reaction, or journal message processed <n>",
         ),
         Line(
