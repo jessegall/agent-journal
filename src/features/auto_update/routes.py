@@ -1,7 +1,9 @@
 import features
 import threading
+import time
 from dataclasses import asdict
 from engine import runtime
+from engine.memo import Memo
 from engine.package import data
 from engine.record import Record
 from engine.upgrades import FETCHING, newer, upstream
@@ -14,6 +16,8 @@ from features.journal_laws.managed import changed_managed, changed_message
 from install import release_versions
 
 CHANGELOG = data("CHANGELOG.md")
+CHANGED = Memo()
+CHANGED_FOR = 15
 
 
 @handles("GET", "/api/changelog")
@@ -74,6 +78,6 @@ def get_upstream(req: Request) -> Reply:
     installed = version()
     latest = upstream(req.root)
     installs = features.FEATURES["auto_update"].on(Record(req.root, runtime.env(req.root))) if "auto_update" in features.FEATURES else False
-    changed = changed_managed(req.root.parent, req.root)
+    changed = CHANGED.get(str(req.root), int(time.time() // CHANGED_FOR), lambda: changed_managed(req.root.parent, req.root))
     return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed), "installs": installs,
                        "changed": [path.relative_to(req.root.parent).as_posix() for path in changed]})

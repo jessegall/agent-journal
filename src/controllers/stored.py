@@ -37,6 +37,7 @@ INDEXED_AT: dict[str, dict[int, str]] = {}
 STAMPED: dict[str, "Stamped"] = {}
 STAMPS_FRESH = 60.0
 STAMPS_RENEW = STAMPS_FRESH / 2
+STAMPS_KEPT = STAMPS_FRESH * 10
 WRITTEN: dict[str, float] = {}
 FLUSH_ROWS, FLUSH_SECONDS = 200, 300.0
 UNSAVED: dict[str, tuple[Path, dict]] = {}
@@ -364,14 +365,14 @@ class RowStore:
         if not self.resource.own_folder:
             mark, now = os.stat(folder).st_mtime_ns, time.monotonic()
             held = STAMPED.get(str(folder))
-            fresh = held and now - held.checked < STAMPS_FRESH
-            if fresh and held.mark == mark:
+            kept = held and now - held.checked < STAMPS_KEPT
+            if kept and held.mark == mark:
                 return held.stamps
-            if fresh:
+            if kept:
                 changed, noted = self._noted(folder, held.noted)
                 if changed:
                     return self._restamped(folder, mark, held, changed, noted)
-            return self.restat(folder, mark, held if fresh else None, now)
+            return self.restat(folder, mark, held if kept else None, now)
         stamps = {}
         for e in os.scandir(folder):
             if not e.is_dir() or not e.name.isdigit():
