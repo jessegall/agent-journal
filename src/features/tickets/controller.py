@@ -563,7 +563,11 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 continue
 
     def _queue(self) -> list:
-        return [r.n for r in sorted((r for r in self.rows.standing() if r.queued), key=lambda r: r.queued_at)]
+        """The queued tickets in the order they start: those other tickets wait on first, then by when they queued."""
+        return [r.n for r in sorted((r for r in self.rows.standing() if r.queued), key=lambda r: (-self._depended_on(r), r.queued_at))]
+
+    def _depended_on(self, ticket) -> int:
+        return sum(1 for other in self.rows.standing() if ticket.ref in self._confirmed_refs(other))
 
     @action
     def queue_before(self, n: int, other: int):
@@ -593,7 +597,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return self.update(ticket.n, queued_at=first - 1)
 
     def _running(self) -> list:
-        return [r for r in self.rows.standing() if r.work_environment and self._live(r)]
+        """The tickets holding a running slot: an agent that works, not one that was stopped, nor one whose ticket waits on another, which holds none."""
+        return [r for r in self.rows.standing() if r.work_environment and not r.halted and self._live(r) and not self._waiting_on(r)]
 
     def _live(self, ticket) -> bool:
         return bool(self.agent_session(ticket.n)) or time.time() - ticket.launched < LAUNCHING_FOR
