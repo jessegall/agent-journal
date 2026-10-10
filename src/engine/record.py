@@ -155,7 +155,8 @@ class Record:
                 fcntl.flock(fh, fcntl.LOCK_EX)
             self._held[path] = 1
             try:
-                yield
+                with waits.holding(f"the record lock of {path.parent.name}", runtime.folder(self.root)):
+                    yield
             finally:
                 self._held[path] = 0
                 fcntl.flock(fh, fcntl.LOCK_UN)
