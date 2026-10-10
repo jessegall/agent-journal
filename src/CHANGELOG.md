@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.11 — An update's pause never outlives it
+- The server clears an update's pause on the agent rows of every environment as soon as no upgrade runs, so an environment with no engine to take the resume is let go too; a sweep clears any update pause older than ten minutes, and a call that meets such a pause goes through at once.
+
 ## 2.268.10 — The mascot sits only on the main chat
 - The mascot no longer shows in a subagent's or worker's inspector, which reuse the chat's composer; only the main chat shows it.
 
