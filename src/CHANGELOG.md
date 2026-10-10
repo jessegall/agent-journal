@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.27 — The Squire serves his sovereign
+- The Squire calls you my liege or sire, as a squire speaks to his sovereign, never knight, king, or your title or name.
+- When a new bar pushes the mascot up, it is flung a little past the bar and drops back onto it, landing in its own way.
+- An inspector loads only the view that is open (transcript, terminal, files changed or to-dos), and another loads when you open it.
+
 ## 2.268.26 — Scrolling back finds your own messages
 - Scrolling up the chat loads the messages before the oldest one shown, yours and the agent's alike. The window used to start at a weeks-old open message, so only the agent's notes of that stretch came back and your own messages never did.
 - The main chat, a subagent's chat and a helper's chat page back through one funnel, a page at a time, with skeleton rows while a page loads.
