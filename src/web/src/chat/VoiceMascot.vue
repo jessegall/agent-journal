@@ -8,6 +8,7 @@ import RigPlayer from "../kit/RigPlayer.vue";
 import SpritePlayer from "../kit/SpritePlayer.vue";
 
 const NARROWEST_BOX = 320;
+const still = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const PASSAGES = ["enter", "exit"];
 
 const props = defineProps({present: Boolean});
@@ -43,8 +44,8 @@ function act() {
     play(last);
 }
 
-const waitForBlink = () => mascot.value.blink && (blinkTimer = setTimeout(blink, afterSeconds(mascot.value.schedule.blink)));
-const waitForAct = () => (actTimer = setTimeout(act, afterSeconds(mascot.value.schedule.idle)));
+const waitForBlink = () => !still && mascot.value.blink && (blinkTimer = setTimeout(blink, afterSeconds(mascot.value.schedule.blink)));
+const waitForAct = () => !still && (actTimer = setTimeout(act, afterSeconds(mascot.value.schedule.idle)));
 
 const steps = computed(() =>
     profiles.value.flatMap((row) =>
@@ -144,8 +145,8 @@ function rigBlink() {
     if (!move.value) move.value = rigged.value?.blink || null;
 }
 
-const waitForMove = () => (moveTimer = setTimeout(nextMove, afterSeconds(mascot.value.schedule.idle)));
-const waitForRigBlink = () => rigged.value?.blink && (rigBlinkTimer = setTimeout(rigBlink, afterSeconds(mascot.value.schedule.blink)));
+const waitForMove = () => !still && (moveTimer = setTimeout(nextMove, afterSeconds(mascot.value.schedule.idle)));
+const waitForRigBlink = () => !still && rigged.value?.blink && (rigBlinkTimer = setTimeout(rigBlink, afterSeconds(mascot.value.schedule.blink)));
 
 function rest() {
     clearTimeout(moveTimer);
@@ -161,14 +162,14 @@ function enter() {
     rest();
     leaving.value = false;
     here.value = true;
-    move.value = passageOf("enter");
+    move.value = still ? null : passageOf("enter");
     if (!move.value) settle();
 }
 
 function leave() {
     rest();
     leaving.value = true;
-    move.value = passageOf("exit");
+    move.value = still ? null : passageOf("exit");
     if (!move.value) gone();
 }
 
@@ -302,7 +303,7 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
     pointer-events: none;
 }
 
-@media (max-width: 560px), (prefers-reduced-motion: reduce) {
+@media (max-width: 560px) {
     .voice-mascot,
     .voice-mascot-label {
         display: none;
