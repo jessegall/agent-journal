@@ -487,6 +487,14 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
     table = capsys.readouterr().out
     rows = {line.rsplit(None, 1)[0].strip() for line in table.splitlines()}
     assert {"engine tick", "journal status", "server start to its first answer", "runtime/ MB"} <= rows, "the speed table times the engine, a command, the server and the runtime folder"
+    from commands import speed_board
+    monkeypatch.setattr(speed_board, "TICKETS", 3)
+    monkeypatch.setattr(speed_board, "SESSIONS", 5)
+    monkeypatch.setattr(speed_board, "MESSAGES", 20)
+    board_table = speed_board.measure_board(1, out)
+    board_rows = {line.rsplit(None, 1)[0].strip(): float(line.rsplit(None, 1)[1]) for line in board_table.splitlines()}
+    assert ("ticket board (3 tickets): records" in board_rows, board_rows["ticket board (3 tickets): records"] > 0, "memory after timing MB" in board_rows, out.is_file()) == (True, True, True, True), \
+        "journal speed --board builds a board of tickets with plans, waits, sessions and messages, and tells for each call the parsers built, the records opened, the pid probes and the memory"
     assert any(row.startswith("list message (40)") for row in rows) and any(row.endswith("through the server") for row in rows), \
         "it counts the rows it lists and times commands through the server as well"
     assert json.loads(out.read_text())["runs"] == 1, "the numbers are also saved to the file asked for"

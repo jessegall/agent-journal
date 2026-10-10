@@ -152,6 +152,9 @@ def help_text(word: str) -> str:
 
 def speed(ctx) -> str:
     from commands.speed import measure
+    if ctx["board"]:
+        from commands.speed_board import measure_board
+        return measure_board(ctx["runs"], Path(ctx["out"]) if ctx["out"] else None)
     return measure(ctx["record"].root, ctx["record"].env, ctx["runs"], ctx["url"], ctx["out"])
 
 def demo(ctx) -> str:
