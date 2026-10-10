@@ -237,6 +237,8 @@ def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():
     assert first, "once read, it is answered"
     assert "already answered this" in refused(lambda: Messages(record, actor="agent").reply(asked.n, "And one more thing.")), \
         "a message gets one answer from the agent; more goes into that answer"
+    from tests.kit import report
+    report(record, "working", "PreToolUse")
     fresh_one = Messages(record, actor="user").create("and this one")
     answered = Messages(record, actor="agent").reply(f"{asked.n},{fresh_one.n}", "Both.")
     assert (answered.refs, "agent" in Messages(record, actor="agent").load(fresh_one.n).seen) == ([f"message:{fresh_one.n}"], True), \
