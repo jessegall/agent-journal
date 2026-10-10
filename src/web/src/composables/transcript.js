@@ -2,7 +2,6 @@ import {computed, ref, unref, watch} from "vue";
 import {api} from "../api/client.js";
 import {pollKey, usePoll} from "./poll.js";
 import {PAGE} from "../sync/rows.js";
-import {keepingPlace} from "./scrollback.js";
 
 const EVERY = 3000;
 const NEAR_BOTTOM = 60;
@@ -60,17 +59,16 @@ export function useTranscript(agent, session, scroller, client = api) {
     }
 
     async function earlier() {
-        if (paging.value || atStart.value || !turns.value.length) return;
+        if (paging.value || atStart.value || !turns.value.length) return false;
         paging.value = true;
         try {
-            await keepingPlace(scroller, async () => {
-                const asked = key();
-                const got = await client.transcript(agent(), unref(session), {before: earliest.value, last: PAGE});
-                if (asked !== key()) return false;
-                error.value = "";
-                foldTools(got.turns);
-                turns.value = [...got.turns, ...turns.value];
-            });
+            const asked = key();
+            const got = await client.transcript(agent(), unref(session), {before: earliest.value, last: PAGE});
+            if (asked !== key()) return false;
+            error.value = "";
+            foldTools(got.turns);
+            turns.value = [...got.turns, ...turns.value];
+            return true;
         } catch (reason) {
             error.value = reason.message;
         } finally {

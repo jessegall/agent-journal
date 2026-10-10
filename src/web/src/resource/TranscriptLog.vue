@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {useSighted} from "../composables/scrollback.js";
+import {useScrollback} from "../composables/scrollback.js";
 import {stamp} from "../format/time.js";
 import {route} from "../route.js";
 import {render} from "../text/index.js";
@@ -26,7 +26,7 @@ const WHO = {
     superseded: "You, edited",
     whisper: "Journal said",
 };
-useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
+useScrollback(scroller, topMark, earlier, {margin: "400px 0px"});
 defineExpose({scroller});
 </script>
 
@@ -43,6 +43,9 @@ defineExpose({scroller});
                         : ""
             }}
         </div>
+        <template v-if="paging">
+            <Skeleton shape="older" label="Loading earlier entries" />
+        </template>
         <template v-if="error">
             <p class="read-error">
                 {{ error }}

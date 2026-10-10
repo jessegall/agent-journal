@@ -9,7 +9,8 @@ import WaitingPanel from "./WaitingPanel.vue";
 import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import Dot from "../kit/Dot.vue";
 import RunningCommand from "./RunningCommand.vue";
-import {keepingPlace, useSighted} from "../composables/scrollback.js";
+import {useScrollback} from "../composables/scrollback.js";
+import Skeleton from "../kit/Skeleton.vue";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {markSeen} from "../sync/seen.js";
 import {sendMessage, token} from "./outbox.js";
@@ -179,18 +180,6 @@ const AHEAD = "200px 0px 0px 0px";
 const scrolledUp = ref(false);
 const NEAR_TOP = 200;
 const GLIDE = 450;
-let prepending = false;
-
-async function older() {
-    const s = scroller.value;
-    if (!ready.value || !settledOnce.value || !scrolledUp.value || prepending || !s) return;
-    prepending = true;
-    try {
-        await keepingPlace(scroller, () => scope.earlier("message", "comment"));
-    } finally {
-        prepending = false;
-    }
-}
 let frame = 0;
 
 const revoke = (p) => Object.values(p.data.previews || {}).forEach(URL.revokeObjectURL);
@@ -273,7 +262,10 @@ onMounted(() => {
     });
 });
 
-useSighted(topMark, older, {root: scroller, margin: AHEAD});
+const {loading: loadingOlder, older} = useScrollback(scroller, topMark, () => scope.earlier("message", "comment"), {
+    ready: () => ready.value && settledOnce.value && scrolledUp.value && Boolean(scroller.value),
+    margin: AHEAD,
+});
 
 onUnmounted(() => {
     grew?.disconnect();
@@ -513,6 +505,9 @@ watch(
                 >
                     <template v-if="rendering">
                         <div ref="topMark" class="thread-top" />
+                        <template v-if="loadingOlder">
+                            <Skeleton shape="older" label="Loading older messages" />
+                        </template>
                         <template v-if="!turns.length">
                             <template v-if="turnsLoaded">
                                 <p class="thread-empty">Nothing has been said here yet.</p>
