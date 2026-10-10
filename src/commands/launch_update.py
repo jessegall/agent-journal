@@ -14,6 +14,7 @@ from engine.upgrades import fetched, newer
 from migrations import ran
 
 LOST = "Project records were lost in the 2.84.0 upgrade - restore them from a backup"
+TRIED = "AGENT_JOURNAL_INSTALLED_BEFORE_START"
 RESTORE = ("Docs, rules, templates, checks and tools were deleted by the 2.84.0 upgrade. Restore the folder "
            ".journal/resources from a backup such as Time Machine; the next launch moves it into .journal/project.")
 
@@ -57,11 +58,14 @@ def latest_first(record) -> str:
         latest = cache.read_text().strip() if cache.is_file() else ""
         if not newer(latest, version()) or refused(root, latest):
             return notice
+        if os.environ.get(TRIED) == latest:
+            return f"{latest} was installed but this start still runs {version()}, so it starts on {version()} and does not try again"
         from install import upgrade
         print(f"journal: installing {latest} before it starts", flush=True)
         failed = failure_in(upgrade(root.parent, root))
         if failed:
             return failed
+        os.environ[TRIED] = latest
         restart(root)
     except Exception as error:
         return f"the update check did not finish: {error}"
