@@ -95,13 +95,16 @@ def agent_pid(pid: int) -> int:
 
 
 class SessionFiles:
-    """Every session.json of one root, kept while the sessions folder's stamp stands."""
+    """Every session.json of one root, kept in memory: the sessions folder's stamp says when one was added or removed, and the names a writer appends to the changes file say which one changed."""
 
     NONE = SessionRecord()
+    CHANGES = ".changes"
+    MOST = 256 * 1024
 
     def __init__(self, root: Path):
         self.folder = runtime.sessions(root)
         self.stamp = -1
+        self.read_to = 0
         self.records: dict[str, SessionRecord] = {}
         self.kept: dict[str, tuple[tuple[int, int], SessionRecord]] = {}
 
@@ -111,12 +114,34 @@ class SessionFiles:
         except OSError:
             return 0
 
+    def size(self) -> int:
+        try:
+            return (self.folder / self.CHANGES).stat().st_size
+        except OSError:
+            return 0
+
     def all(self) -> dict[str, SessionRecord]:
-        stamp = self.current()
-        if stamp != self.stamp:
-            self.records = self.scanned()
-            self.stamp = stamp
+        stamp, size = self.current(), self.size()
+        if stamp != self.stamp or size < self.read_to:
+            self.records, self.stamp, self.read_to = self.scanned(), stamp, size
+        elif size > self.read_to:
+            self.take_changes(size)
         return self.records
+
+    def take_changes(self, size: int) -> None:
+        with (self.folder / self.CHANGES).open("rb") as changes:
+            changes.seek(self.read_to)
+            written = changes.read(size - self.read_to)
+        whole = written[: written.rfind(b"\n") + 1]
+        self.read_to += len(whole)
+        records = dict(self.records)
+        for name in {line.decode() for line in whole.splitlines() if line}:
+            record = self.record_of(name)
+            if record is None:
+                records.pop(name, None)
+            else:
+                records[name] = record
+        self.records = records
 
     def scanned(self) -> dict[str, SessionRecord]:
         try:
@@ -140,10 +165,12 @@ class SessionFiles:
             held = self.kept[name] = (stamp, read_json(path, SessionRecord.from_json, self.NONE))
         return held[1]
 
-    def bump(self) -> None:
-        """Raise the folder's stamp past the last one, so every process reads the sessions again."""
-        after = max(time.time_ns(), self.current() + 1)
-        os.utime(self.folder, ns=(after, after))
+    def noted(self, name: str) -> None:
+        """Tells every process which session changed, after its file is written."""
+        if self.size() > self.MOST:
+            (self.folder / self.CHANGES).write_bytes(b"")
+        with (self.folder / self.CHANGES).open("ab") as changes:
+            changes.write(f"{name}\n".encode())
 
 
 class SessionFilesSet:
@@ -180,7 +207,7 @@ class Sessions:
             raw = read_json(self.path(session), dict, {})
             got = {**(raw if isinstance(raw, dict) else {}), **fields}
             write_json(self.path(session), got)
-        self.files.bump()
+        self.files.noted(session)
         return SessionRecord.from_json(got)
 
     def bind(self, session: str, env: str, pid: int = 0, provider: str = "") -> dict:
