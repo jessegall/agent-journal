@@ -65,6 +65,7 @@ def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
         text(f"[!reply:{asked.n}] this one cannot be written")
     assert chat()[-1] == "this one cannot be written", "a reply whose command failed, as on a full disk, is not swallowed: its words stay in the chat"
     assert visible("[!reply:n] plus the command tags") == "[!reply:n] plus the command tags", "only a real number or name makes a tag"
+    assert visible("[!reply:24398,24399,24400] words").strip() == "words", "a tag naming several messages is taken out of the turn like any other, whether it ran or was refused"
 
 
 def test_the_same_tag_in_two_turns_runs_twice():
