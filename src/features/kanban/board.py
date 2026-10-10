@@ -1,13 +1,14 @@
 import time
 from typing import TypedDict
 
+from controllers.stored import PAGE, cursor_of, cursor_text, paged
 from features.format import formatted_item
 from features.kanban.lanes import DONE, LANES, Sources, lane_of, reason_of
 from features.kanban.shifts import targets
 from features.plans.resource import ACTIVE
 from features.trigger import DAY
 from resources.base import Ref
-from features.kanban.shapes import AgentChip, BoardLanes, Card
+from features.kanban.shapes import AgentChip, BoardLanes, Card, Lane
 from features.plans.controller import Plans
 from controllers.types import Agents, Questions, Todos, Works
 
@@ -43,7 +44,18 @@ def sources_of(journal) -> Sources:
     return Sources(journal.get(Todos), works, questions, journal.get(Plans).rows.every())
 
 
-def build(journal, done_days: float, plan: int, agent: str) -> BoardLanes:
+def held_by(sources: Sources, todo, main: str, agent: str) -> bool:
+    work = sources.works.get(todo.n)
+    return todo.assigned == agent or bool(work and worker_of(work, main)["agent"] == agent)
+
+
+def placed_order(lane: str):
+    """Where a card stands in its lane: the done lane newest first, the others by priority then number, a key that holds still while rows are written between two pages."""
+    return (lambda t: (-t.completed, t.n)) if lane == DONE else (lambda t: (-int(t.priority or 100), t.n))
+
+
+def build(journal, done_days: float, plan: int, agent: str, lane: str = "", after: str = "", size: int = PAGE, query: str = "", only: int = 0) -> BoardLanes:
+    """The board's lanes, each its first `size` cards and how many it holds; with `lane` and `after` the cards after the cursor that lane's last page ended at, with `only` the one card of that number; cards are made for the page alone."""
     sources = sources_of(journal)
     works, plans = sources.works, sources.plans
     since = time.time() - float(done_days) * DAY
@@ -52,14 +64,24 @@ def build(journal, done_days: float, plan: int, agent: str) -> BoardLanes:
         placed = next((p for p in plans if p.n == int(plan)), None)
         rows = [t for t in rows if placed and t.ref in placed.refs]
     main = main_agent(journal)
-    cards = [card_of(sources, t, main) for t in rows]
     if agent:
-        cards = [c for c in cards if c.assigned == agent or (c.worker and c.worker["agent"] == agent)]
-    lanes = [(lane, [c for c in cards if c.lane == lane.key]) for lane in LANES]
-    lanes = [(lane, sorted(found, key=lambda c: -c.completed) if lane.key == DONE else found) for lane, found in lanes]
+        rows = [t for t in rows if held_by(sources, t, main, agent)]
+    words = query.strip().lower()
+    if words:
+        rows = [t for t in rows if words in f"#{t.n} {t.title}".lower()]
+    if only:
+        rows = [t for t in rows if t.n == int(only)]
+    lanes, shown = [], []
+    for each in LANES:
+        if lane and each.key != lane:
+            continue
+        page = paged([t for t in rows if lane_of(sources, t) == each.key], placed_order(each.key), cursor_of(after) if each.key == lane else None, int(size))
+        cards = [card_of(sources, t, main) for t in page.rows]
+        shown += cards
+        lanes.append((Lane(each.key, each.title, page.total, cursor_text(page.next)), cards))
     active = next((p for p in plans if p.status == ACTIVE), None)
     hold = f"Plan {active.n} is active: rows outside it wait unless they are critical" if active else None
-    return BoardLanes(lanes, agents_of(journal, works, main, {c.assigned for c in cards if c.assigned}), hold)
+    return BoardLanes(lanes, agents_of(journal, works, main, {c.assigned for c in shown if c.assigned}), hold)
 
 
 def main_agent(journal) -> str:

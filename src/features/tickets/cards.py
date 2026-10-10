@@ -2,6 +2,7 @@ import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from controllers.stored import PAGE, cursor_of, cursor_text
 from controllers.types import Agents, Questions, Todos, Works
 from engine import bus
 from engine.record import Record
@@ -71,13 +72,18 @@ RUN_TEXT = 60
 
 class TicketCards:
     @action
-    def board(self, n: int) -> dict:
+    def board(self, n: int, lane: str = "", after: str = "", size: int = PAGE, query: str = "") -> dict:
+        """A board's lanes, each its first `size` cards and how many it holds, or with `lane` and `after` the cards after the cursor a lane's last page ended at; `query` keeps the cards whose number or title holds those words."""
         stages = self._stages(n)
-        tickets = sorted((r for r in self.rows.standing(closed_since=1) if int(r.board) == int(n) and not r.draft), key=lambda r: r.position)
         sessions = Sessions(self.record.root).all()
         running = self._running()
-        lanes = BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, len(running)) for r in tickets if r.stage == stage])
-                            for stage in stages], [])
+        words = query.strip().lower()
+        wanted = lambda stage: lambda r: int(r["board"] or 0) == int(n) and not r["draft"] and r["stage"] == stage and (not words or words in f"#{r['n']} {r['title']}".lower())
+        order = lambda r: (float(r["rank"] or r["n"]), r["n"])
+        pages = {stage: self.rows.page(wanted(stage), order, cursor_of(after) if stage == lane else None, int(size))
+                 for stage in stages if not lane or stage == lane}
+        lanes = BoardLanes([(Lane(stage, stage, page.total, cursor_text(page.next)), [self._card(self.rows.peek(r["n"]), stage, stages, sessions, len(running)) for r in page.rows])
+                            for stage, page in pages.items()], [])
         board = Boards(self.record, actor=self.actor).load(n)
         asked = Questions(self.record, actor=self.actor).about(board.ref)
         return {**lanes.shaped(), "slots": asdict(self._slots(running, sessions)), "roles": self._roles(), "questions": asked,

@@ -4,7 +4,8 @@ import sys
 import threading
 import time
 import zipfile
-from bisect import bisect_left, insort
+import json
+from bisect import bisect_left, bisect_right, insort
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Callable, TypeVar, final
@@ -26,6 +27,43 @@ CACHE = ".index"
 CHANGES = "changes.log"
 PACKED = "packed"
 ARCHIVE = "zip"
+
+
+PAGE = 50
+
+
+@dataclass(frozen=True)
+class Page:
+    """One page of rows in an order, with where the next one starts and how many rows there are in all."""
+    rows: list
+    next: tuple | None
+    total: int
+
+
+def cursor_text(key: tuple | None) -> str:
+    return json.dumps(list(key)) if key is not None else ""
+
+
+def cursor_of(text: str) -> tuple | None:
+    """The key a page ends at, as a client sent it back; none for no cursor, and a Refused for words that are no cursor."""
+    if not text:
+        return None
+    try:
+        found = json.loads(text)
+    except ValueError:
+        found = None
+    if not isinstance(found, list) or not found:
+        raise Refused(f"{text!r} is not a page cursor: ask for the first page without one, then pass back the cursor it gave")
+    return tuple(found)
+
+
+def paged(found: list, order: Callable, after: tuple | None = None, size: int = PAGE) -> Page:
+    """The `size` items that follow the key a page before ended at, in `order`."""
+    found = sorted(found, key=order)
+    keys = [order(item) for item in found]
+    start = bisect_right(keys, after) if after is not None else 0
+    shown = found[start:start + size]
+    return Page(shown, keys[start + len(shown) - 1] if shown and start + len(shown) < len(found) else None, len(found))
 
 
 def wholes(rows: list, part_of) -> list:
@@ -357,6 +395,11 @@ class RowStore:
 
     def numbers(self) -> list[int]:
         return self._scanned(lambda folder: sorted(set(self._stamps(folder)) | set(self.packed())))
+
+    @final
+    def page(self, where: Callable[[dict], bool], order: Callable[[dict], tuple], after: tuple | None = None, size: int = PAGE) -> Page:
+        """The next `size` rows that pass `where` in `order`, after the key a page before it ended at; the cursor is a key, not a position, so rows written, moved or deleted between two pages shift nothing that was already shown."""
+        return paged([row for row in self.summaries() if not row["deleted"] and where(row)], order, after, size)
 
     @final
     def summaries(self) -> list[dict]:
