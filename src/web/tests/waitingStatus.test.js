@@ -13,6 +13,13 @@ const agent = (status = "idle") => ({data: {status}});
 const helper = (n, state) => ({n, state, data: {name: `Helper ${n}`}});
 
 describe("the waiting word and its line", () => {
+    test("an agent that runs a command is working, whatever wait it has said it stands in", () => {
+        const works = [work()];
+        const running = {data: {status: "working", running: {command: "make test", tool: "Bash", at: NOW - 5}}};
+        const between = {data: {status: "working", running: {command: "make test", tool: "Bash", at: NOW - 400, done: NOW - 399}}};
+        expect([wordOf(stateOf(running, works)), wordOf(stateOf(between, works))]).toEqual(["Working", "Waiting"]);
+    });
+
     test("an idle agent that waits on helpers says Waiting, how many helpers and how long", () => {
         const works = [work({awaiting: "3 helpers", awaiting_on: "helper:1,helper:2,helper:3"})];
         const helpers = [helper(1, "running"), helper(2, "running"), helper(3, "running")];
