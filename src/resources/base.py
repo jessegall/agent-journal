@@ -235,6 +235,7 @@ class Resource:
     progress: ClassVar[tuple] = ()   # data a system row may still change as it runs
     held: ClassVar[int | None] = 10000    # parsed rows kept in memory for each folder, the least recently used going first; None keeps them all; a listing of every row that outgrows it reads all of them again
     eager: ClassVar[bool] = False       # its open rows are parsed when the server starts
+    version: ClassVar[int] = 1     # changes when the way its rows are read changes; a server started after an update keeps the rows it read before only of a type whose version is the same
     data_fields: ClassVar[list[Field]] = [
         Field(default=dict, name="files"),
         Field(default=dict, name="pictures"),
