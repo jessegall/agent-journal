@@ -131,6 +131,7 @@ class Engine:
         self.paused = row is not None and bool(row.paused)
 
     def tick(self) -> str:
+        self.beat()
         self.agent.driver.pump()
         self.agent.driver.recheck_channel()
         deliver(self.record.root)
@@ -145,7 +146,6 @@ class Engine:
         self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.failed() or self.probe() or self.forced() or self.typing() or self.shelled()
                     or self.control() or self.deliver() or self.nudge())
         self.report.write(self.why)
-        self.beat()
         self.clock()
         return self.why
 
@@ -500,7 +500,9 @@ class Engine:
         return self.agent.driver.last_title() or self.agent.driver.session
 
     def beat(self) -> None:
+        """The pulse, then at once any move to the background it asked for, so the press goes out in the same second its threshold passes and not a whole tick later."""
         emit_beat(self.record, self.session_ticked())
+        self.backgrounded()
 
     def clock(self) -> None:
         """The slow upkeep runs on its own thread, one at a time, so a long run of it never keeps the engine from its next tick."""
