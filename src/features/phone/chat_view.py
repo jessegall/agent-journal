@@ -3,7 +3,7 @@ from engine.record import Record
 RECALLED = {"rule": "rules", "fact": "facts", "reminder": "reminders"}
 MARKED = {"terminal": "commands", "branch": "commits", "list": "sequences", "bolt": "triggers"}
 SETTING = "chat_hidden"
-DEFAULT_HIDDEN = ["acknowledgements"]
+DEFAULT_HIDDEN = ["acknowledgements", "sequences"]
 
 
 def hidden(home: Record) -> list[str]:
