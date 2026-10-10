@@ -35,6 +35,7 @@ class WriteInProgress:
 
 
 WRITING: dict[str, WriteInProgress] = {}
+HOLDING = threading.local()
 READ_WAIT = 2.0
 
 
@@ -43,17 +44,19 @@ def writing_to(key: str):
     """Marks the repository whose lock is held as being written, until the write ends."""
     gate = WriteInProgress()
     WRITING[key] = gate
+    HOLDING.depth = getattr(HOLDING, "depth", 0) + 1
     try:
         yield
     finally:
+        HOLDING.depth -= 1
         WRITING.pop(key, None)
         gate.done.set()
 
 
 def after_writes(key: str) -> None:
-    """Lets a read that comes during another thread's write to the repository wait until that write has finished; a read takes no lock and waits for no other read, and with no write under way it costs one look at an empty table."""
+    """Lets a read that comes during another thread's write to the repository wait until that write has finished; a read takes no lock and waits for no other read, and with no write under way it costs one look at an empty table. A thread that holds a repository lock of its own does not wait: the write it would wait for may be waiting for that very lock."""
     gate = WRITING.get(key)
-    if gate is not None and gate.thread != threading.get_ident():
+    if gate is not None and gate.thread != threading.get_ident() and not getattr(HOLDING, "depth", 0):
         gate.done.wait(READ_WAIT)
 
 
