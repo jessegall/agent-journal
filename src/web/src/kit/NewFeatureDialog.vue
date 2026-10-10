@@ -10,9 +10,10 @@ defineProps({
     button: {type: String, required: true},
     note: {type: String, default: ""},
     art: {type: String, default: ""},
+    off: {type: String, default: ""},
     busy: Boolean,
 });
-const emit = defineEmits(["use", "dismiss"]);
+const emit = defineEmits(["use", "dismiss", "off"]);
 const artMissing = ref(false);
 </script>
 
@@ -40,7 +41,12 @@ const artMissing = ref(false);
             <p class="new-feature-text">{{ text }}</p>
             <div class="new-feature-actions">
                 <Btn kind="primary" fill :busy="busy" @click="emit('use')">{{ button }}</Btn>
-                <Btn fill :disabled="busy" @click="emit('dismiss')">Not now</Btn>
+                <template v-if="off">
+                    <Btn fill :disabled="busy" @click="emit('off')">{{ off }}</Btn>
+                </template>
+                <template v-else>
+                    <Btn fill :disabled="busy" @click="emit('dismiss')">Not now</Btn>
+                </template>
             </div>
             <template v-if="note">
                 <p class="new-feature-note">{{ note }}</p>

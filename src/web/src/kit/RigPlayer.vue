@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {fileOf, poseAt, rigUrl, transforms} from "../domain/rig.js";
+import {fileOf, orderOf, poseAt, rigUrl, transforms} from "../domain/rig.js";
 
 const props = defineProps({
     voice: {type: String, required: true},
@@ -70,7 +70,7 @@ const scale = computed(() => ({transform: `scale(${props.size / 256})`}));
                         :src="api.publicUrl(rigUrl(voice, file))"
                         alt=""
                         draggable="false"
-                        :style="{transform: matrices[layer.name]}"
+                        :style="{transform: matrices[layer.name], zIndex: Math.round(orderOf(layer, pose) * 10)}"
                     />
                 </template>
             </template>

@@ -10,7 +10,7 @@ import ProjectFlash from "./layout/ProjectFlash.vue";
 import SkillPanel from "./layout/SkillPanel.vue";
 import NewFeatureDialog from "./kit/NewFeatureDialog.vue";
 import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
-import {dismissNewFeature, loadNewFeatures, newFeature, useNewFeature} from "./composables/newFeature.js";
+import {dismissNewFeature, loadNewFeatures, newFeature, turnOffNewFeature, useNewFeature} from "./composables/newFeature.js";
 import {firstChoice} from "./composables/profiles.js";
 import {store} from "./state/store.js";
 import {ui} from "./state/ui.js";
@@ -43,7 +43,9 @@ onMounted(loadNewFeatures);
             :button="newFeature.button"
             :note="newFeature.note"
             :art="newFeature.art"
+            :off="newFeature.off"
             @use="useNewFeature"
+            @off="turnOffNewFeature"
             @dismiss="dismissNewFeature"
         />
     </template>

@@ -23,6 +23,8 @@ class NewFeature:
     art: str = ""
     note: str = ""
     eyebrow: str = "Hey, new feature"
+    off: str = ""
+    setting: str = ""
 
     @classmethod
     def declared(cls, version: str, raw: str) -> list["NewFeature"]:

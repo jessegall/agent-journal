@@ -2,6 +2,8 @@
 import {computed, ref, watch} from "vue";
 import {groupedByKind, isAct, placeOf, placedAt} from "../domain/mascots.js";
 import {anchorOf, animations, dropAnimations, saveEdit, saveSchedule, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
+import {loadRig, rigs, voiceOfArt} from "../composables/voiceRigs.js";
+import RigPlayer from "../kit/RigPlayer.vue";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -18,6 +20,12 @@ defineEmits(["close"]);
 const EMPTY = {ms: 0, frames: []};
 const copy = (value) => JSON.parse(JSON.stringify(value));
 
+const voice = voiceOfArt(props.row.data.art);
+const rigged = computed(() => rigs.value[voice] || null);
+const rigMoves = computed(() => (rigged.value ? [...rigged.value.moves, ...(rigged.value.blink ? [rigged.value.blink] : [])] : []));
+const moveName = ref("");
+const move = computed(() => rigMoves.value.find((each) => each.name === moveName.value) || null);
+loadRig(voice);
 const groups = computed(() => groupedByKind(animations.value[props.row.n] || []));
 const flat = computed(() => groups.value.flatMap((group) => group.items));
 const idle = computed(() => flat.value.filter(isAct));
@@ -100,13 +108,29 @@ function picked(event) {
     <Dialog :title="`${row.title} animations`" large @close="$emit('close')">
         <div :class="['editor', {over}]" @dragover.prevent="over = true" @dragleave="over = false" @drop.prevent="dropped">
             <aside class="editor-list">
-                <AnimationList :groups="groups" :chosen="path" :schedule="plan" @pick="pick" />
+                <template v-if="rigMoves.length">
+                    <h3 class="editor-heading">Moves</h3>
+                    <template v-for="each in rigMoves" :key="each.name">
+                        <button type="button" :class="['editor-move', {chosen: each.name === moveName}]" @click="(moveName = each.name), (path = '')">
+                            {{ each.name }}
+                        </button>
+                    </template>
+                </template>
+                <AnimationList :groups="groups" :chosen="path" :schedule="plan" @pick="(moveName = ''), pick($event)" />
                 <template v-if="!groups.length">
                     <EmptyState>This voice has no animations yet. Drop sheets or a ZIP here.</EmptyState>
                 </template>
             </aside>
             <section class="editor-middle">
-                <template v-if="chosen">
+                <template v-if="move">
+                    <div class="editor-rig">
+                        <RigPlayer :voice="voice" :rig="rigged.rig" :move="move" :size="256" loop :paused="!playing" />
+                    </div>
+                    <div class="editor-controls">
+                        <Btn small kind="primary" @click="playing = !playing">{{ playing ? "Pause" : "Play" }}</Btn>
+                    </div>
+                </template>
+                <template v-else-if="chosen">
                     <AnimationStage
                         :url="urlOf(row.n, chosen)"
                         :place="place"
@@ -212,5 +236,42 @@ function picked(event) {
     flex: 1;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.editor-heading {
+    margin: 0 0 6px;
+    color: var(--text-3);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.editor-move {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.editor-move:hover,
+.editor-move.chosen {
+    background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.editor-move.chosen {
+    box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.editor-rig {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--text) 4%, transparent);
 }
 </style>
