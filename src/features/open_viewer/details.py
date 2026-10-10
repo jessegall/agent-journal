@@ -1,5 +1,6 @@
 from features.base import FeatureDetails
 from features.groups import Group
+from features.settings import Setting
 
 
 class OpenViewerDetails(FeatureDetails):
@@ -23,3 +24,12 @@ class OpenViewerDetails(FeatureDetails):
     """
 
     fixed = True
+
+    settings = [
+        Setting(
+            name="watched_reads",
+            default=True,
+            title="The server reads its folders' marks from memory",
+            abstract="Off, every read asks the disk for them as before: a switch for a server that serves a stale row, without a rollback.",
+        ),
+    ]

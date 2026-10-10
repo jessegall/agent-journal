@@ -403,6 +403,35 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
         stored.watch_marks()
         assert todos.load(written.n).title == "changed by another process", \
             f"a row another process rewrote is read anew after one look of the watch loop, not kept as it was ({elsewhere.title})"
+        from engine import runtime
+        import serve
+        from features.open_viewer.details import OpenViewerDetails
+        watched.setattr(runtime, "default_env", lambda root, prefer="": record.env)
+        assert (OpenViewerDetails.values(record).watched_reads, serve.watched_reads(record.root)) == (True, True), "the server reads its marks from memory unless the setting says otherwise"
+        record.change_setting("open_viewer", {"watched_reads": False})
+        assert serve.watched_reads(record.root) is False, "the setting is read from the record"
+        stored.watch_marks(serve.watched_reads(record.root))
+        assert (stored.WATCHED.on, stored.WATCHED.marks) == (False, {}), "switched off, the watch loop drops its marks and keeps none"
+        row_file.with_suffix(".tmp").write_text(before.replace("written while watched", "changed once more"))
+        os.replace(row_file.with_suffix(".tmp"), row_file)
+        assert todos.load(written.n).title == "changed once more", "and a row another process rewrote is read at once, as before the watch loop, with no look of the loop between"
+        record.change_setting("open_viewer", {"watched_reads": True})
+    from features.boards.controller import Boards
+    from features.tickets.controller import Tickets
+    from features.tickets.resource import Ticket
+    new_build = Tickets(record, actor=SYSTEM)
+    placed = Boards(record, actor=SYSTEM).create("Rollback", stages=["Ideas"])
+    for title in ("One", "Two", "Three"):
+        new_build.create(title, board=placed.n)
+    new_build.rows.summaries()
+    stored.flush_indexes()
+    for kept in (stored.SUMMARIES, stored.INDEXED, stored.INDEXED_AT, stored.PENDING, stored.STAMPED, stored.STAMPED_OWN):
+        kept.clear()
+    with pytest.MonkeyPatch.context() as previous:
+        previous.setattr(Ticket, "indexed", ())
+        with counted() as work:
+            rolled_back = Tickets(record, actor=SYSTEM).rows.summaries()
+        assert (len(rolled_back), work.parsed) == (3, []), "a build rolled back to an older one reads the index the newer build saved, whose rows carry fields it does not know, and parses no row for it"
     from controllers.types import Environments
     from engine.seats import write_seat
     from engine.sessions import Sessions

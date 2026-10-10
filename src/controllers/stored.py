@@ -143,9 +143,12 @@ def remark(path: Path) -> None:
         WATCHED.marks[str(path)] = mtime(path)
 
 
-def watch_marks() -> None:
-    """The watch loop's one look a tick at every mark this server holds, which is all the disk a warm read needs; a folder whose mark moved has its row stamps looked at again here, off every request."""
-    WATCHED.on = True
+def watch_marks(enabled: bool = True) -> None:
+    """The watch loop's one look a tick at every mark this server holds, which is all the disk a warm read needs; a folder whose mark moved has its row stamps looked at again here, off every request. Switched off, the marks are dropped and every read asks the disk, as before the watch loop."""
+    WATCHED.on = enabled
+    if not enabled:
+        WATCHED.marks.clear()
+        return
     now = time.monotonic()
     for key in list(WATCHED.marks):
         WATCHED.marks[key] = mtime(Path(key))
