@@ -1,3 +1,4 @@
+import threading
 import time
 from dataclasses import asdict, dataclass, field, replace
 
@@ -30,9 +31,19 @@ from resources.fields import Loaded
 CLOCK_EVERY = 5.0
 
 
-def emit_clock(record: Record, session: str) -> None:
+def emit_beat(record: Record, session: str) -> None:
+    row = Agents(record, actor=SYSTEM).by_session(session)
+    clock.beat(record, row.n)
+
+
+def emit_ticked(record: Record, session: str) -> None:
     row = Agents(record, actor=SYSTEM).by_session(session)
     clock.tick(record, row.n)
+
+
+def emit_clock(record: Record, session: str) -> None:
+    emit_beat(record, session)
+    emit_ticked(record, session)
 
 TICK = 1.0
 STAMPED = "stamped"
@@ -99,6 +110,7 @@ class Engine:
         self.screen_call = ""
         self.typed_at = 0.0
         self.ticked_at = 0.0
+        self.upkeep: threading.Thread | None = None
         self.probed_at = 0.0
         self.controlled_at = 0.0
         self.carry_on = False
@@ -128,6 +140,7 @@ class Engine:
         self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.failed() or self.probe() or self.forced() or self.typing() or self.shelled()
                     or self.control() or self.deliver() or self.nudge())
         self.report.write(self.why)
+        self.beat()
         self.clock()
         return self.why
 
@@ -460,11 +473,25 @@ class Engine:
         last = self.agent.driver.last_report()
         return bool(last) and waiting(self.record, last)
 
+    def session_ticked(self) -> str:
+        return self.agent.driver.last_title() or self.agent.driver.session
+
+    def beat(self) -> None:
+        emit_beat(self.record, self.session_ticked())
+
     def clock(self) -> None:
-        if time.time() - self.ticked_at < CLOCK_EVERY:
+        """The slow upkeep runs on its own thread, one at a time, so a long run of it never keeps the engine from its next tick."""
+        if time.time() - self.ticked_at < CLOCK_EVERY or (self.upkeep and self.upkeep.is_alive()):
             return
         self.ticked_at = time.time()
-        emit_clock(self.record, self.agent.driver.last_title() or self.agent.driver.session)
+        self.upkeep = threading.Thread(target=self.kept_up, args=(self.session_ticked(),), daemon=True)
+        self.upkeep.start()
+
+    def kept_up(self, session: str) -> None:
+        try:
+            emit_ticked(self.record, session)
+        except Exception:
+            threw(self.record.root, self.record.env, "the engine's upkeep", self.agent.driver)
 
     def owed(self) -> str:
         waiting = []

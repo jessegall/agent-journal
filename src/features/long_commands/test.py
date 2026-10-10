@@ -67,8 +67,18 @@ def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):
     report(record, "working", "PreToolUse", session="conversation-1", provider="claude", commands=[{"command": "sleep 40", "tool": "Bash", "at": time.time() - 31}])
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="conversation-1", asking={})
+    engine.beat()
+    assert moved, "the launcher's seat is claude-99, the hooks report on conversation-1: the engine's beat reaches the one with the command"
+    import threading
+    release, running = threading.Event(), []
+    monkeypatch.setattr("runner.engine.emit_ticked", lambda record, session: running.append(1) or release.wait(5))
+    engine.ticked_at = 0.0
     engine.clock()
-    assert moved, "the launcher's seat is claude-99, the hooks report on conversation-1: the clock ticks for the one with the command"
+    engine.ticked_at = 0.0
+    engine.clock()
+    assert len(running) == 1, "the slow upkeep runs on its own thread, one at a time, so the engine goes on to its next tick while it runs"
+    release.set()
+    engine.upkeep.join(5)
 
 
 def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_path):
