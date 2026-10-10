@@ -90,10 +90,15 @@ def current(root: Path) -> bool:
     return not ZIPPED or build_file(root) == CODE
 
 
+def installed(root: Path) -> Path:
+    """The build an engine is started from: the installed one, so an engine never starts on a build that would make it stop at once."""
+    return build_file(root) if ZIPPED else CODE
+
+
 def leftovers(root: Path) -> list[int]:
     listed = subprocess.run(["ps", "-eo", "pid=,command="], capture_output=True, text=True, timeout=5).stdout
     return [int(line.split(None, 1)[0]) for line in listed.splitlines()
-            if CHILD in line and str(root) in line and repr(str(CODE)) not in line]
+            if CHILD in line and str(root) in line and repr(str(installed(root))) not in line]
 
 
 def child(root: str, env: str) -> None:
@@ -153,7 +158,7 @@ class Children:
         log = runtime.folder(self.root) / f"engine-{env}.log"
         log.parent.mkdir(parents=True, exist_ok=True)
         with log.open("a") as output:
-            return subprocess.Popen([sys.executable, "-c", f"import sys; sys.path.insert(0, {str(CODE)!r}); {CHILD}; child(sys.argv[1], sys.argv[2])",
+            return subprocess.Popen([sys.executable, "-c", f"import sys; sys.path.insert(0, {str(installed(self.root))!r}); {CHILD}; child(sys.argv[1], sys.argv[2])",
                                      str(self.root), env], cwd=self.root.parent, stdin=subprocess.DEVNULL, stdout=output, stderr=output)
 
     def end(self, env: str) -> None:
@@ -173,12 +178,12 @@ class Children:
             self.end(env)
 
     def run(self, stopping) -> None:
-        keep_ticking(stopping, self.tick, lambda: threw(self.root, runtime.env(self.root), "starting the engines"))
+        keep_ticking(stopping, self.tick, lambda: threw(self.root, runtime.env(self.root), "starting the engines"), lambda: current(self.root))
 
 
 def supervise(root: Path, stopping) -> None:
     while not stopping.is_set():
-        held = claim(runtime.folder(root) / SUPERVISING)
+        held = claim(runtime.folder(root) / SUPERVISING) if current(root) else None
         if held is None:
             stopping.wait(TICK)
             continue
