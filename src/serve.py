@@ -42,7 +42,7 @@ from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, entry
 DEFAULT_PORT = 8430
 REQUEST_BACKLOG = 128
 THREADS = "threads.txt"
-OPEN_FILES = 4096
+OPEN_FILES = 65536
 WARM_WAIT = 30.0
 SWITCH_INTERVAL = 0.001
 LOOPBACK = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::(\d+))?$")
@@ -179,8 +179,9 @@ def tell_threads_on_signal(root: Path) -> None:
 
 
 def allow_open_files() -> None:
-    _, most = resource.getrlimit(resource.RLIMIT_NOFILE)
-    resource.setrlimit(resource.RLIMIT_NOFILE, (OPEN_FILES if most == resource.RLIM_INFINITY else min(OPEN_FILES, most), most))
+    soft, most = resource.getrlimit(resource.RLIMIT_NOFILE)
+    wanted = OPEN_FILES if most == resource.RLIM_INFINITY else min(OPEN_FILES, most)
+    resource.setrlimit(resource.RLIMIT_NOFILE, (max(soft, wanted), most))
 
 
 def environmental(path: str) -> bool:
