@@ -13,7 +13,7 @@ from resources.fields import Loaded
 SEAT = "seat.json"
 SEATED = "seated.json"
 
-ONLINE_FOR = 5.0
+ONLINE_FOR = 25.0
 
 
 @dataclass(frozen=True)

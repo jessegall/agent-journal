@@ -427,6 +427,7 @@ def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, mo
     rows = lambda: Todos(hosted.record, actor=SYSTEM).rows.summaries()
     kept = len(rows())
     monkeypatch.setattr(disk.shutil, "disk_usage", lambda _: shutil._ntuple_diskusage(100, 99, 1024))
+    disk.FREE.clear()
     created = hosted.call("POST", "/api/main/todo/create", body=json.dumps({"title": "no room"}), Cookie=f"{COOKIE}={token}", Origin=origin, Content_Type="application/json")
     assert created.status == 507 and "nearly full" in created.text
     assert len(rows()) == kept and not [path for path in hosted.record.root.rglob(".*") if path.name.endswith(f".{os.getpid()}.{threading.get_ident()}")]
@@ -434,6 +435,7 @@ def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, mo
     assert low.status == 503 and "nearly full" in low.text
     titles = lambda: [row["title"] for row in Messages(hosted.record, actor=SYSTEM).rows.summaries()]
     monkeypatch.setattr(disk.shutil, "disk_usage", lambda _: shutil._ntuple_diskusage(10**9, 10**9 - 100 * 1024 * 1024, 100 * 1024 * 1024))
+    disk.FREE.clear()
     for _ in range(2):
         DiskWatch()(Shares(hosted.record, actor=SYSTEM))
     assert titles().count("The server's disk is nearly full") == 1, "a low disk is told once, while a message can still be saved"

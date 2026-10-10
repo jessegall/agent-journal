@@ -284,6 +284,21 @@ def keep_services(root: Path, halting: threading.Event) -> None:
             threw(root, default_env(root), "the server's services")
 
 
+def pruned_at_start(root: Path) -> None:
+    """Removes the folders of sessions that have been quiet for long, so the first hooks after a start look at fewer of them."""
+    from controllers.faults import threw
+    from engine.record import Record
+    from features import FEATURES
+    from features.runtime_cleanup.details import RuntimeCleanupDetails
+    from features.runtime_cleanup.tidy import tidy_files
+    record = Record(root, default_env(root))
+    try:
+        if "runtime_cleanup" in FEATURES and FEATURES["runtime_cleanup"].enabled(record):
+            tidy_files(root, RuntimeCleanupDetails.values(record).days)
+    except Exception:
+        threw(root, record.env, "pruning the quiet sessions at the start")
+
+
 def warm_commands() -> None:
     from commands.cli import served
     from commands.parser import parser
@@ -407,6 +422,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     threading.Thread(target=server.collector.run, args=(halting,), daemon=True).start()
     threading.Thread(target=replay, args=(root,), daemon=True).start()
     threading.Thread(target=warm, args=(root,), daemon=True).start()
+    threading.Thread(target=pruned_at_start, args=(root,), daemon=True).start()
     threading.Thread(target=keep_services, args=(root, halting), daemon=True).start()
     try:
         server.serve_forever()

@@ -22,8 +22,8 @@ from dataclasses import dataclass
 DISPATCHED, RETURNED = "dispatched", "returned"
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
 LOOK_EVERY = 10.0
-SEAT_AGAIN = 2.0
-HEARD_EVERY = 5.0
+SEAT_AGAIN = 10.0
+HEARD_EVERY = 30.0
 
 
 def web_remote(url: str) -> str:

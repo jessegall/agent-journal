@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import threading
+import time
 from pathlib import Path
 from typing import Any, Callable, TypeVar
 
@@ -28,8 +29,13 @@ def nearly_full(free: int) -> str:
     return f"the server's disk is nearly full ({free // (1024 * 1024)} MB free)"
 
 
+FREE = Memo()
+FREE_FOR = 1.0
+
+
 def free_bytes(folder: Path) -> int:
-    return shutil.disk_usage(folder).free
+    """The free space of the disk a folder is on, asked of the system once a second rather than before every write."""
+    return FREE.get(os.stat(folder).st_dev, int(time.monotonic() // FREE_FOR), lambda: shutil.disk_usage(folder).free)
 
 
 class Growth:
