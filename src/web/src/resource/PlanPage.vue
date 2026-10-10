@@ -16,6 +16,8 @@ import TicketAgent from "../agents/TicketAgent.vue";
 import {useHelpersHolding} from "../composables/helpers.js";
 import {helperCard, helperEnvironment, helperName} from "../domain/helpers.js";
 import ProgressBar from "../kit/ProgressBar.vue";
+import {reviewersAtWork, reviewersLine} from "../domain/plans.js";
+import {rows} from "../sync/rows.js";
 
 const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean, holding: Boolean, closable: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
@@ -25,6 +27,7 @@ const fetching = ref(false);
 const scope = useScope();
 const here = (type) => scope.rows(type).filter((r) => (r.env || "") === (props.resource.env || ""));
 const status = computed(() => props.resource.data.status);
+const reviewers = computed(() => (status.value === "reviewing" ? reviewersLine(reviewersAtWork(rows("agent"))) : ""));
 const current = computed(() => props.resource.data.current || 1);
 const phases = computed(() =>
     props.resource.data.phases.map((p, i) => {
@@ -88,6 +91,9 @@ async function run(action, body = {}) {
                 {{ status }}
                 <template v-if="['active', 'waiting', 'parked'].includes(status)">· phase {{ current }} of {{ phases.length }}</template>
             </span>
+            <template v-if="reviewers">
+                <span class="reviewers">{{ reviewers }}</span>
+            </template>
             <span class="grow" />
             <template v-if="!readOnly">
                 <DownloadLink :resource="resource" />
@@ -172,6 +178,11 @@ async function run(action, body = {}) {
 }
 
 .kind,
+.reviewers {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
 .status {
     text-transform: uppercase;
     letter-spacing: 0.04em;
