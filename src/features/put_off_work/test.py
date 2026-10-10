@@ -92,3 +92,39 @@ def test_the_totals_of_a_type_are_saved_with_its_index_and_equal_a_fresh_sum_aft
     assert ([row["n"] for row in foreign.rows.unread("agent")], [row["n"] for row in foreign.rows.by("title", "row 4")]) == ([made[4], made[5]], [made[4]]), "unread and by answer from the indexes"
     stored.forget_folder(folder.parent)
     assert not [key for key in stored.COUNTED if key[0].startswith(str(folder.parent))] and str(folder) not in stored.SUMMARIES, "a folder that is removed lets go of what was held for it"
+
+
+def test_a_rollback_to_the_previous_build_reads_the_index_this_build_wrote_and_this_build_takes_back_what_it_left(tmp_path):
+    import os
+    from controllers import stored
+    from controllers.types import Todos
+    from resources.base import SYSTEM
+    from resources.types import Todo
+    record = fresh()
+    todos = Todos(record, actor=SYSTEM)
+    made = [todos.create(f"row {i}").n for i in range(3)]
+    todos.rows.counts("overview")
+    stored.flush_indexes()
+    folder = todos.rows.folder()
+    index = json.loads((folder / ".index" / "index.json").read_text())
+    needed = {"created", stored.IDEMPOTENCY, "files", stored.PART_OF, stored.DRAFT_OF, stored.OWNER, *Todo.indexed, "stamp"}
+    old_stamp = lambda n: (lambda found: f"{found.st_mtime_ns}-{found.st_size}")(todos.rows.path(n).stat())
+    assert all(key.isdigit() for key in index) and all(needed <= row.keys() for row in index.values()), \
+        "the previous build reads the index as numbered rows that carry every field it asks for, and the totals live in a file of their own beside it"
+    assert {int(n): row["stamp"] for n, row in index.items()} == {n: old_stamp(n) for n in made}, \
+        "and the stamp each row carries is the one the previous build makes of the file, so it keeps what is unchanged and reads only what is not"
+    row_file = todos.rows.path(made[0])
+    row_file.with_suffix(".tmp").write_text(row_file.read_text().replace("row 0", "row 0 by the previous build"))
+    os.replace(row_file.with_suffix(".tmp"), row_file)
+    extra = todos.rows.peek(made[1]).fork()
+    extra.n, extra.title = 9, "row 9 by the previous build"
+    todos.rows.path(9).with_suffix(".tmp").write_text(extra.dump())
+    os.replace(todos.rows.path(9).with_suffix(".tmp"), todos.rows.path(9))
+    (folder / ".index" / "index.json").write_text(json.dumps({n: {**row, "stamp": old_stamp(int(n))} for n, row in index.items()}))
+    stored.forget_held()
+    returned = Todos(record, actor=SYSTEM)
+    titles = {row["n"]: row["title"] for row in returned.rows.summaries()}
+    assert (titles[made[0]], titles[9]) == ("row 0 by the previous build", "row 9 by the previous build"), \
+        "this build, back after the rollback, reads the row the previous build changed and the one it added, whatever index it left"
+    fresh_sum = tuple(stored.summed(returned.rows.counter("overview").weigh, 3, returned.rows.summaries()))
+    assert returned.rows.counts("overview") == fresh_sum, "and its totals equal a sum made from the rows, not the ones saved before the rollback"
