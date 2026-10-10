@@ -121,6 +121,17 @@ def test_it_runs_on_its_own_on_the_engines_clock():
     tick(record)
     held.close()
     assert capture.stat().st_size == 200_000, "a sweep another process is already making is not made twice"
+    from engine.locks import project_sweep
+    shared = runtime.folder(record.root) / "shared-sweep.lock"
+    swept = []
+    for owner in ("main", "ticket-1", "main"):
+        with project_sweep(shared, 5.0, owner) as mine:
+            swept.append(mine)
+    assert swept == [True, False, True], "an environment's engine sweeps whenever it asks, and the engine of another one finds the project looked after a moment ago"
+    long_ago = time.time() - 60
+    os.utime(shared.with_suffix(".swept"), (long_ago, long_ago))
+    with project_sweep(shared, 5.0, "ticket-1") as mine:
+        assert mine, "once the last sweep is older than the wait, another environment's engine takes it over"
 
 
 def test_the_event_log_keeps_the_last_hundred_and_whatever_a_live_reader_has_not_reached():

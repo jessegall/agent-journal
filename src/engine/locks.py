@@ -100,6 +100,24 @@ def claim(path: Path):
 
 
 @contextmanager
+def project_sweep(path: Path, every: float, owner: str):
+    """Says True to whoever runs a sweep the whole project shares and False to the others: an owner sweeps whenever it asks, but another owner's sweep within `every` seconds already looked after the project, so each environment's engine ticks and the project is looked after once."""
+    held = claim(path)
+    if held is None:
+        yield False
+        return
+    try:
+        stamp = path.with_suffix(".swept")
+        if stamp.is_file() and time.time() - stamp.stat().st_mtime < every and stamp.read_text() != owner:
+            yield False
+            return
+        yield True
+        stamp.write_text(owner)
+    finally:
+        held.close()
+
+
+@contextmanager
 def hold_record_writes(root: Path, waiting: bool = True):
     """Holds every record write back while it runs and says whether it got the hold: a caller that must not wait gets False at once when another process holds it."""
     root = Path(root)
