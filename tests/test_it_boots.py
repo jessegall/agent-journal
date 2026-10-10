@@ -1031,9 +1031,9 @@ def test_an_installer_run_by_a_python_older_than_3_10_says_what_is_needed(tmp_pa
     stub.mkdir()
     (stub / "python3").symlink_to(old)
     direct = subprocess.run([old, str(CODE / "install.py"), "upgrade", str(tmp_path)], capture_output=True, text=True, timeout=60)
-    assert direct.returncode and "Python 3.10" in direct.stderr and "Traceback" not in direct.stderr, direct.stderr
+    assert direct.returncode and "Python 3.11" in direct.stderr and "Traceback" not in direct.stderr, direct.stderr
     scripted = subprocess.run(["sh", str(HERE / "install.sh")], cwd=tmp_path, env={**os.environ, "PATH": f"{stub}:/usr/bin:/bin"}, capture_output=True, text=True, timeout=60)
-    assert scripted.returncode and "Python 3.10" in scripted.stdout + scripted.stderr and not (tmp_path / ".journal").exists(), scripted.stdout + scripted.stderr
+    assert scripted.returncode and "Python 3.11" in scripted.stdout + scripted.stderr and not (tmp_path / ".journal").exists(), scripted.stdout + scripted.stderr
 
 
 def test_install_sh_as_a_first_time_user_runs_it_installs_the_release_and_leaves_the_tests_behind(tmp_path):
