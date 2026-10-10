@@ -9,7 +9,6 @@ from engine.sessions import Sessions
 from features.long_commands.watch import background_tasks_of, running_part
 from features.parts import AgentContext, Handler
 from providers import DRIVERS, PROVIDERS, transcript_reader
-from providers.command_effects import settled
 from resources.base import SYSTEM
 from controllers.types import Agents
 
@@ -36,7 +35,10 @@ def running_call(context: AgentContext, row):
     if stale:
         now = time.time()
         gone = {(one.at, one.id) for one in stale}
-        Agents(context.record, actor=SYSTEM).update(row.n, commands=[{**kept, "done": now} if (kept.get("at"), kept.get("id", "")) in gone and not kept.get("done") else kept for kept in row.commands])
+        closed = {"commands": [{**kept, "done": now} if (kept.get("at"), kept.get("id", "")) in gone and not kept.get("done") else kept for kept in row.commands]}
+        if row.running and not row.running.get("done") and (row.running.get("at"), row.running.get("id", "")) in gone:
+            closed["running"] = {**row.running, "done": now}
+        Agents(context.record, actor=SYSTEM).update(row.n, **closed)
     return still[0] if still else None
 
 
