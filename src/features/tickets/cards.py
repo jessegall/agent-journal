@@ -15,7 +15,7 @@ from features.kanban.shapes import BoardLanes, Card, Lane
 from features.tickets.landing import Landing
 from features.tickets.resource import PROPOSED
 from resources.base import SYSTEM, Refused
-from resources.shapes import LEVELS
+from resources.shapes import LEVELS, position_of
 from resources.types import IDLE
 from controllers.marks import action
 from engine.extension import Extension
@@ -72,14 +72,14 @@ RUN_TEXT = 60
 
 class TicketCards:
     @action
-    def board(self, n: int, lane: str = "", after: str = "", size: int = PAGE, query: str = "") -> dict:
+    def board(self, n: int, lane: str | None = None, after: str | None = None, size: int = PAGE, query: str | None = None) -> dict:
         """A board's lanes, each its first `size` cards and how many it holds, or with `lane` and `after` the cards after the cursor a lane's last page ended at; `query` keeps the cards whose number or title holds those words."""
         stages = self._stages(n)
         sessions = Sessions(self.record.root).all()
         running = self._running()
-        words = query.strip().lower()
+        words = (query or "").strip().lower()
         wanted = lambda stage: lambda r: int(r["board"] or 0) == int(n) and not r["draft"] and r["stage"] == stage and (not words or words in f"#{r['n']} {r['title']}".lower())
-        order = lambda r: (float(r["rank"] or r["n"]), r["n"])
+        order = lambda r: (position_of(r["rank"], r["n"]), r["n"])
         pages = {stage: self.rows.page(wanted(stage), order, cursor_of(after) if stage == lane else None, int(size))
                  for stage in stages if not lane or stage == lane}
         lanes = BoardLanes([(Lane(stage, stage, page.total, cursor_text(page.next)), [self._card(self.rows.peek(r["n"]), stage, stages, sessions, len(running)) for r in page.rows])

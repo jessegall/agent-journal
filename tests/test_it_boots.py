@@ -1645,6 +1645,51 @@ def test_the_server_starts_on_a_free_threaded_interpreter_when_the_machine_has_o
         "an install asks uv for a free-threaded Python when the machine has uv and no such Python"
 
 
+def test_a_board_of_two_hundred_tickets_answers_fifty_a_lane_and_its_cursor_holds_across_writes_deletes_and_moves():
+    from controllers.types import Boards, Tickets
+    from features.tickets.cards import TicketCards
+    from resources.base import AGENT, USER
+    import features
+    features.load()
+    record = fresh()
+    board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Parked"])
+    tickets = Tickets(record, actor=USER)
+    made = [tickets.create(f"Ticket {i}", board=board.n).n for i in range(200)]
+    built = []
+    original = TicketCards._card
+    TicketCards._card = lambda self, *given: built.append(given[0].n) or original(self, *given)
+    try:
+        asking = Tickets(record, actor=AGENT)
+        first = asking.board(board.n)
+        ideas = next(lane for lane in first["lanes"] if lane["key"] == "Ideas")
+        assert (len(ideas["cards"]), ideas["total"], bool(ideas["next"]), len(built)) == (50, 200, True, 50), \
+            "a board of two hundred answers fifty cards a lane with the lane's total, and makes the state of those fifty alone"
+        parked = next(lane for lane in first["lanes"] if lane["key"] == "Parked")
+        assert (parked["cards"], parked["total"], parked["next"]) == ([], 0, ""), "an empty lane has no cards, no total and no next page"
+        second = asking.board(board.n, lane="Ideas", after=ideas["next"])
+        page = second["lanes"][0]
+        assert [lane["key"] for lane in second["lanes"]] == ["Ideas"] and len(page["cards"]) == 50 and page["cards"][0]["n"] == made[50], \
+            "the next page of one lane starts where the first ended"
+        tickets.delete(made[3], "gone")
+        tickets.move(made[60], "Parked")
+        tickets.create("Late", board=board.n)
+        again = asking.board(board.n, lane="Ideas", after=ideas["next"])["lanes"][0]
+        assert [card["n"] for card in again["cards"]][:9] == [n for n in made[50:61] if n != made[60]][:9] and made[60] not in [card["n"] for card in again["cards"]], \
+            "a ticket written, deleted or moved between two pages shifts nothing that was to come: the page starts where the cursor says and the moved ticket has left"
+        assert (again["total"], asking.board(board.n)["lanes"][1]["total"]) == (199 - 1 + 1, 1), "the lane counts come from the counters, so they follow the delete, the move and the new ticket"
+        found = asking.board(board.n, query="ticket 17")["lanes"][0]
+        assert {card["n"] for card in found["cards"]} == {n for n, i in zip(made, range(200)) if "ticket 17" in f"#{n} ticket {i}"} - {made[3]} and found["total"] == len(found["cards"]), \
+            "the card filter reaches cards beyond the loaded page: the server keeps the cards whose words match"
+        old = asking.board(board.n, lane="", after="")
+        assert len(next(lane for lane in old["lanes"] if lane["key"] == "Ideas")["cards"]) == 50, "an old tab that sends no cursor still gets the first page of every lane"
+        import pytest
+        from resources.base import Refused
+        with pytest.raises(Refused, match="not a page cursor"):
+            asking.board(board.n, lane="Ideas", after="oops")
+    finally:
+        TicketCards._card = original
+
+
 def test_the_server_ends_when_interrupted_or_told_to_stop_restarts_on_new_code_and_answers_hook_failures(tmp_path, monkeypatch):
     import serve
     root = fresh().root

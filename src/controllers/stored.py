@@ -44,7 +44,7 @@ def cursor_text(key: tuple | None) -> str:
     return json.dumps(list(key)) if key is not None else ""
 
 
-def cursor_of(text: str) -> tuple | None:
+def cursor_of(text: str | None) -> tuple | None:
     """The key a page ends at, as a client sent it back; none for no cursor, and a Refused for words that are no cursor."""
     if not text:
         return None

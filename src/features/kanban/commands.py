@@ -10,7 +10,7 @@ from features.parts import Command, Context
 class ShowBoard(Command):
     name = "board"
 
-    def run(self, context: Context, todos, plan: int = 0, agent: str = "", lane: str = "", after: str = "", size: int = PAGE, query: str = "", only: int = 0):
+    def run(self, context: Context, todos, plan: int = 0, agent: str = "", lane: str | None = None, after: str | None = None, size: int = PAGE, query: str | None = None, only: int = 0):
         return build(context.journal, context.settings.done_days, plan, agent, lane, after, size, query, only).shaped()
 
 

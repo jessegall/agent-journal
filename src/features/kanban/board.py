@@ -54,7 +54,7 @@ def placed_order(lane: str):
     return (lambda t: (-t.completed, t.n)) if lane == DONE else (lambda t: (-int(t.priority or 100), t.n))
 
 
-def build(journal, done_days: float, plan: int, agent: str, lane: str = "", after: str = "", size: int = PAGE, query: str = "", only: int = 0) -> BoardLanes:
+def build(journal, done_days: float, plan: int, agent: str, lane: str | None = None, after: str | None = None, size: int = PAGE, query: str | None = None, only: int = 0) -> BoardLanes:
     """The board's lanes, each its first `size` cards and how many it holds; with `lane` and `after` the cards after the cursor that lane's last page ended at, with `only` the one card of that number; cards are made for the page alone."""
     sources = sources_of(journal)
     works, plans = sources.works, sources.plans
@@ -66,7 +66,7 @@ def build(journal, done_days: float, plan: int, agent: str, lane: str = "", afte
     main = main_agent(journal)
     if agent:
         rows = [t for t in rows if held_by(sources, t, main, agent)]
-    words = query.strip().lower()
+    words = (query or "").strip().lower()
     if words:
         rows = [t for t in rows if words in f"#{t.n} {t.title}".lower()]
     if only:
