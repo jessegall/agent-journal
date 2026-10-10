@@ -1,7 +1,6 @@
 from engine.reach import Reach
 from features.base import FeatureDetails, Line
 from features.groups import Group
-from features.trigger import MINUTES, Trigger
 
 
 class HelperWorktreesDetails(FeatureDetails):
@@ -13,7 +12,6 @@ class HelperWorktreesDetails(FeatureDetails):
     when = "a helper is given a worktree of its own, or its work is taken back"
 
     title = "Helper worktrees"
-    trigger = Trigger(every=5, unit=MINUTES)
 
     abstract = """
         Each helper works in its own git worktree, made from the latest commit of the working
