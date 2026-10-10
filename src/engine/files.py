@@ -107,7 +107,7 @@ def nested_repositories(folder: Path, depth: int) -> list[Path]:
     if depth == 0:
         return []
     try:
-        children = [child for child in folder.iterdir() if child.is_dir() and not child.name.startswith(".") and child.name not in SKIPPED]
+        children = [child for child in folder.iterdir() if child.is_dir() and not child.is_symlink() and not child.name.startswith(".") and child.name not in SKIPPED]
     except OSError:
         return []
     return [found for child in children for found in ([child] if (child / ".git").exists() else nested_repositories(child, depth - 1))]

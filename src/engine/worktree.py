@@ -110,7 +110,7 @@ def opened(project: Path, folder: Path, branch: str, name: str = "") -> Path:
 
 
 def repositories(folder: Path) -> list[Path]:
-    inner = [child for child in sorted(folder.iterdir()) if child.is_dir() and not child.name.startswith(".") and (child / ".git").exists()]
+    inner = [child for child in sorted(folder.iterdir()) if child.is_dir() and not child.is_symlink() and not child.name.startswith(".") and (child / ".git").exists()]
     return ([folder] if (folder / ".git").exists() else []) + inner
 
 
