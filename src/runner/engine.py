@@ -53,7 +53,6 @@ OUTPUT_WAIT = 5.0
 TYPING_HOLD = 10.0
 RESUME_PATIENCE = 30.0
 STALE_PAUSE = 600.0
-DIALOG_AGAIN = 10.0
 
 SILENT_AFTER = 120.0
 LONG_COMMAND_AFTER = 1800.0
@@ -111,7 +110,6 @@ class Engine:
         self.peer_growth = Growth()
         self.failure_growth = Growth()
         self.screen_call = ""
-        self.dialog_at = 0.0
         self.typed_at = 0.0
         self.ticked_at = 0.0
         self.upkeep: threading.Thread | None = None
@@ -141,7 +139,6 @@ class Engine:
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
         self.screen_asks()
-        self.dialog_settled()
         self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.failed() or self.probe() or self.forced() or self.typing() or self.shelled()
                     or self.control() or self.deliver() or self.nudge())
         self.report.write(self.why)
@@ -267,14 +264,6 @@ class Engine:
             return
         self.screen_call = asked.get("call", "")
         Agents(self.record, actor=SYSTEM).update(row.n, asking=asked)
-
-    def dialog_settled(self) -> None:
-        """Answers a dialog of the agent's own tool that only needs the safe choice, such as Claude Code's rewind dialog near its context limit: Summarize up to here, never Restore conversation."""
-        driver = self.agent.driver
-        option = driver.dialog() if driver.DIALOGS else 0
-        if option and time.time() - self.dialog_at >= DIALOG_AGAIN:
-            self.dialog_at = time.time()
-            driver.press_raw(f"{option}\r".encode())
 
     def permitted(self) -> str:
         queued = take(self.record.root, self.names(), PERMIT)

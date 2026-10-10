@@ -72,7 +72,6 @@ class ClaudeDriver(Driver):
     ELSEWHERE = "Message @"
     ASKS_ON_SCREEN = True
     ASKING = (b"Doyouwanttoproceed?", b"Doyouwanttomake", b"Doyouwanttocreate", b"Entertoselect")
-    DIALOGS = ((b"Confirmyouwanttorestoretheconversation", 3),)
     ASKED_COMMAND = re.compile(r"(?:Bash command|Run shell command)\s+(.+?)\s+Do you want to proceed", re.S)
     READY = b"?forshortcuts"
     BUSY = b"esctointerrupt"
