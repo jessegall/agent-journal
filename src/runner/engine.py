@@ -56,11 +56,9 @@ DIALOG_AGAIN = 10.0
 SILENT_AFTER = 120.0
 LONG_COMMAND_AFTER = 1800.0
 FORCE_AFTER = 30.0
-PROBE_WAIT = 5.0
 
 
 CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
-CARRY_ON_AFTER_PROBE = "The journal interrupted you to see whether you were still there, after two minutes without a sign: carry on with exactly what you were doing."
 RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
 PAUSED_FOR_UPDATE = "The journal is updating, so you are paused: start no new command and wait; you will be told when to continue."
 RESUMED_AFTER_UPDATE = "The journal has updated and resumed you now: carry on with exactly what you were doing; your open work stays open and is not to be parked."
@@ -115,7 +113,6 @@ class Engine:
         self.typed_at = 0.0
         self.ticked_at = 0.0
         self.upkeep: threading.Thread | None = None
-        self.probed_at = 0.0
         self.controlled_at = 0.0
         self.carry_on = False
         self.paused = False
@@ -233,23 +230,10 @@ class Engine:
             return ""
         reported = float(last.at)
         silent = time.time() - max(reported, self.typed_at, self.resumed_at, self.born) >= SILENT_AFTER and driver.quiet_for() >= SILENT_AFTER and (not last.command_running or last.command_running_for >= LONG_COMMAND_AFTER)
-        if self.probed_at > reported:
-            if time.time() - self.probed_at < PROBE_WAIT:
-                return "probed, waiting"
-            if driver.at_prompt():
-                self.agent.mark(IDLE, "probe")
-                driver.send(CARRY_ON_AFTER_PROBE, now=True)
-                return "probe: at the prompt, told to carry on"
-            if driver.quiet_for() >= PROBE_WAIT:
-                self.agent.mark(STOPPED, "probe")
-                return "probe: nothing came back, stopped"
-            self.probed_at = 0.0
-            return "probe: working"
-        if silent and self.agent.state() in (BUSY, WORKING) and not driver.asking():
-            driver.interrupt()
-            self.probed_at = time.time()
-            return "silent for two minutes: probing with Ctrl-C"
-        return ""
+        if not silent or self.agent.state() not in (BUSY, WORKING) or driver.asking() or not driver.at_prompt():
+            return ""
+        self.agent.mark(IDLE, "probe")
+        return "silent for two minutes and back at the prompt: idle"
 
     def passed_over(self, actor, e) -> None:
         if actor is self.agent and TYPES[e.type].typed_as_title:

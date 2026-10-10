@@ -208,7 +208,7 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     report(record, "working", "PreToolUse")
     engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
     driver, pressed = engine.agent.driver, []
-    senses = {"alive": lambda: True, "quiet_for": lambda: SILENT_AFTER + 1, "asking": lambda: False, "interrupt": lambda: pressed.append("ctrl-c")}
+    senses = {"alive": lambda: True, "quiet_for": lambda: SILENT_AFTER + 1, "asking": lambda: False, "at_prompt": lambda: True, "_wrote": lambda keys: pressed.append(keys)}
     for name, sense in senses.items():
         monkeypatch.setattr(driver, name, sense)
     monkeypatch.setattr(driver, "last_report", lambda: Agents(record, actor="system").by_session("claude-1"))
@@ -228,8 +228,8 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     engine.resumed_at = later + SILENT_AFTER
     assert engine.probe() == "" and pressed == [], "an agent the journal just resumed after an update has the silence of the pause forgiven, so it is not interrupted and marked stopped"
     engine.resumed_at = 0.0
-    assert engine.probe().startswith("silent for two minutes") and pressed == ["ctrl-c"], \
-        "a working agent silent for two minutes is probed with Ctrl-C, also while a command has run for over thirty minutes"
+    assert engine.probe().startswith("silent for two minutes") and pressed == [], \
+        "a working agent silent for two minutes at its prompt is idle, also while a command has run for over thirty minutes, and no key is pressed"
     import json
     from datetime import datetime, timedelta, timezone
     transcript = record.root / "rollout.jsonl"
