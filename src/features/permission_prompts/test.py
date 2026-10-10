@@ -103,6 +103,17 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
         "Claude's own safety question, which sends no permission request, is read off its screen with the command it names"
     asker.printed.write_bytes(f"{danger}\r\nesc to interrupt".encode())
     assert asker.asked() is None, "once the command runs again, nothing is asked"
+    rewind = "esc to interrupt\r\nConfirm you want to restore the conversation to the point before you sent this message\r\n 1. Restore conversation\r\n 2. Summarize from here\r\n ❯ 3. Summarize up to here\r\n 4. Never mind\r\n"
+    asker.printed.write_bytes(rewind.encode())
+    pressed = []
+    asker.press_raw = pressed.append
+    rewinder = Engine(asker.record, asker)
+    rewinder.dialog_settled()
+    rewinder.dialog_settled()
+    assert (asker.dialog(), pressed) == (3, [b"3\r"]), \
+        "Claude's rewind dialog near the context limit is answered once with Summarize up to here, never Restore conversation"
+    asker.printed.write_bytes(f"{rewind}\r\n? for shortcuts".encode())
+    assert asker.dialog() == 0, "and once the prompt is back there is nothing to answer"
     warning = "WARNING: Loading development channels\r\n--dangerously-load-development-channels is for local channel development only.\r\n" \
               "❯ 1. I am using this for local development\r\n  2. Exit\r\nEnter to confirm".encode()
     assert (claude.consent(warning), claude.consent(warning + "\r\n❯ ".encode())) == (b"\r", b""), \

@@ -59,6 +59,7 @@ class Driver(ABC):
     TAKES_CHANNEL = False
     ASKS_ON_SCREEN = False
     ASKING: tuple = ()
+    DIALOGS: tuple = ()
     ASKED_COMMAND: re.Pattern | None = None
     ASKED_TOOL = "Bash"
     READY = b""
@@ -454,6 +455,12 @@ class Driver(ABC):
             return False
         screen = self._screen()
         return max(screen.rfind(phrase) for phrase in self.ASKING) > max(screen.rfind(self.READY), screen.rfind(self.BUSY))
+
+    def dialog(self) -> int:
+        """The option that settles a dialog the journal answers by itself, one of DIALOGS printed after the last ready or busy mark; 0 when none shows."""
+        screen = self._screen()
+        marked = max(screen.rfind(self.READY), screen.rfind(self.BUSY))
+        return next((option for phrase, option in self.DIALOGS if screen.rfind(phrase) > marked), 0)
 
     def _screen_text(self) -> str:
         return self._printed_tail().decode(errors="replace")
