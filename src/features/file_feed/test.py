@@ -260,6 +260,10 @@ def test_edits_in_an_agents_own_worktree_reach_its_feed_and_a_shell_command_coun
         timers[0].job()
         announce_writes(project.record, project.agent, skill_folders(), str(tree))
         assert len(timers) == 2, "a write after the look asks for the next one"
+        timers[1].job()
+        files.LOOKED.update({key: 3.0 for key in files.LOOKED})
+        announce_writes(project.record, project.agent, skill_folders(), str(tree))
+        assert timers[-1].seconds == files.LOOK_SPACING * 3.0, "after a look that took long the next one waits five times as long, so a big project is not scanned all the time"
     shell = lambda command: Hook.read({"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "cwd": str(tree)}, Provider.tool_kinds)
     assert [may_change_files(shell(command)) for command in ("cat a.py", "grep -rn one .", "python3 build.py", "git apply fix.patch", "journal todo all")] == \
         [False, False, True, True, False], "any shell command that is not only a read, a search or a journal command is checked for changes"
