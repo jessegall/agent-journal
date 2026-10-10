@@ -42,7 +42,16 @@ export const sampleOf = (row) => samples.value[row.n] ?? row.data.sample;
 
 export const introductionOf = (row) => row.data.introduction || sampleOf(row);
 
-export async function loadProfiles() {
+let loading = null;
+
+export function loadProfiles() {
+    loading ||= fetchProfiles().finally(() => {
+        loading = null;
+    });
+    return loading;
+}
+
+async function fetchProfiles() {
     const [rows, names, lines, styles] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples(), api.profileNamings(), loadAnimations()]);
     profiles.value = rows.filter((row) => !row.deleted);
     profilesLoaded.value = true;
