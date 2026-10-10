@@ -281,6 +281,10 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     inputs.queue(root, "claude-1", (), "Move to the background", action=inputs.BACKGROUND)
     assert (engine.backgrounded(), calls) == ("moved the running command to the background", ["background"])
     assert engine.backgrounded() == ""
+    calls.clear()
+    inputs.queue(root, "claude-1", (), "Move to the background", action=inputs.BACKGROUND)
+    engine.beat()
+    assert calls == ["background"], "a move to the background that a beat asked for goes out with that beat, not on the next tick"
 
     calls.clear()
     typed = engine.agent.driver.typed
