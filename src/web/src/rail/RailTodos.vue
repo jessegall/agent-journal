@@ -8,12 +8,14 @@ import {peek, peekThere, route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import {groupOf, GROUPS, planOf} from "../domain/records.js";
 import {store} from "../state/store.js";
+import {useWanted} from "../sync/wanted.js";
 
 const FINISHED_SHOWN = 20;
 
 const props = defineProps({finished: Boolean});
 const emit = defineEmits(["open"]);
 const scope = useScope();
+useWanted("ticketTodos");
 const show = (type, n) => (scope.env ? peekThere(scope.env, type, n) : peek(type, n));
 
 const groups = computed(() => {

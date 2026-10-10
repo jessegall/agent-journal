@@ -7,6 +7,7 @@ import {usePoll} from "../composables/poll.js";
 import {takeEvents} from "./rows.js";
 import {floatWindow} from "../platform/view.js";
 import {barOn} from "../composables/settings.js";
+import {wanted} from "./wanted.js";
 
 const LIVE = 5;
 const BUSY_EVERY = 500;
@@ -48,6 +49,7 @@ export const polled = {
         ask: () => api.ticketTodos(),
         every: 10000,
         take: (got) => Array.isArray(got) && (store.ticketTodos = got),
+        active: () => (wanted.ticketTodos || 0) > 0,
     },
     online: {key: "online", ask: () => api.onlineAgents(), every: 5000, take: (got) => (store.online = got)},
     summary: {
