@@ -53,3 +53,41 @@ def test_a_wait_on_a_run_that_finished_without_an_end_time_still_ends():
     works.action("await")("the suite", on="bq9")
     tick(record)
     assert works.load(work.n).awaiting == "", "a run that is no longer running ends the wait, whether or not it recorded when it ended"
+
+
+def test_a_state_file_changed_by_another_writer_right_after_this_one_is_read_back_from_the_file(monkeypatch, tmp_path):
+    import json
+    from engine import state as states
+    from engine.state import State
+    path = tmp_path / "gate.json"
+    written = states.write_json
+
+    def raced(where, data, indent=None):
+        written(where, data)
+        where.write_text(json.dumps({"released": True}))
+    monkeypatch.setattr(states, "write_json", raced)
+    State(path).update({"hold": {"why": "nothing is open"}})
+    monkeypatch.setattr(states, "write_json", written)
+    assert State(path).all() == {"released": True}, "what another writer left on the file is what the next read sees, never the copy this one made"
+
+
+def test_a_session_another_process_wrote_while_this_one_wrote_is_read_at_once(monkeypatch):
+    import json
+    from engine import sessions as files
+    from engine.sessions import Sessions
+    record = fresh()
+    sessions = Sessions(record.root)
+    sessions.write("claude-1", environment="main")
+    assert sessions.read("claude-1").environment == "main"
+    written = files.write_json
+
+    def raced(path, data, indent=None):
+        written(path, data)
+        other = sessions.path("claude-2")
+        other.parent.mkdir(parents=True, exist_ok=True)
+        other.write_text(json.dumps({"environment": "ticket-25"}))
+        sessions.files.bump()
+    monkeypatch.setattr(files, "write_json", raced)
+    sessions.write("claude-3", environment="main")
+    monkeypatch.setattr(files, "write_json", written)
+    assert sessions.read("claude-2").environment == "ticket-25", "a session another process wrote at the same moment is read, never left out of a copy kept beside it"
