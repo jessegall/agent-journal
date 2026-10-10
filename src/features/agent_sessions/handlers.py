@@ -72,14 +72,22 @@ class MarkSilentStopped(Handler):
         silent = time.time() - context.settings.quiet * MINUTE
         sessions = Sessions(context.record.root)
         for row in agents.rows.every():
-            if float(row.at) >= silent or not has_ended(row, sessions):
+            if float(row.at) >= silent or not has_ended(row, sessions, agents):
                 continue
             stop(agents, row)
 
 
-def has_ended(row, sessions: Sessions) -> bool:
-    """Whether a row still counted as running belongs to a session that is gone."""
-    return row.live and not live(sessions.read(row.title))
+def has_ended(row, sessions: Sessions, agents: Agents) -> bool:
+    """Whether a row still counted as running belongs to a session that is gone, and is not being taken over by a newer process of the same conversation."""
+    return row.live and not live(sessions.read(row.title)) and not relaunching(row, sessions, agents)
+
+
+def relaunching(row, sessions: Sessions, agents: Agents) -> bool:
+    """A conversation started again in a new process keeps its old session record, with the dead process in it, until the first hook of the new process takes it over; until then the newer live process of the same provider in its environment, which has no row of its own yet, is its successor, and the row is not ended."""
+    held = sessions.read(row.title)
+    reported = {sessions.read(other.title).pid for other in agents.rows.every() if other.event and other.n != row.n}
+    return any(name != row.title and other.environment == held.environment and other.provider == held.provider and other.since > float(row.at) and live(other)
+               and other.pid not in reported for name, other in sessions.all().items())
 
 
 def stop(agents: Agents, row) -> None:
@@ -93,7 +101,7 @@ def stop_ended(root: Path) -> str:
     for record in environment_records(Path(root)):
         agents, sessions = Agents(record, actor=SYSTEM), Sessions(record.root)
         for row in agents.rows.every():
-            if not has_ended(row, sessions):
+            if not has_ended(row, sessions, agents):
                 continue
             stop(agents, row)
             ended.append(row.title)

@@ -321,6 +321,16 @@ def test_a_compaction_is_recorded_once_on_the_agent():
     stopped = agents.load(gone.n)
     assert (stopped.status, stopped.data.get("running"), stopped.data.get("stopping")) == (STOPPED, {}, {}), \
         "and drops the command and the stop request they left, so no later session is told of them"
+    again = agents.by_session("claude-4")
+    agents.stamp(again.n, status="working", event="PreToolUse", at=time.time() - 3600)
+    Sessions(record.root).write("claude-4", environment=record.env, provider="claude", pid=2 ** 22, since=time.time() - 7200)
+    Sessions(record.root).write("claude-launch", environment=record.env, provider="claude", pid=os.getppid(), since=time.time() - 10)
+    assert ("claude-4" in stop_ended(record.root), agents.load(again.n).status) == (False, "working"), \
+        "a conversation started again in a new process is not stopped before that process has reported: its first hook takes the row over"
+    report(record, "working", "PreToolUse", session="claude-new")
+    Sessions(record.root).write("claude-new", environment=record.env, provider="claude", pid=os.getppid(), since=time.time() - 5)
+    assert ("claude-4" in stop_ended(record.root), agents.load(again.n).status) == (True, STOPPED), \
+        "and once the new process has a row of its own, the old row of a session that is gone is stopped as before"
 
 
 def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once():
