@@ -27,7 +27,7 @@ export class Player {
         this.stepped = () => {};
         this.show = () => {};
         this.close = () => {};
-        this.view = reactive({paused: false, slower: false, ended: false, finishing: false, move: null});
+        this.view = reactive({paused: false, slower: false, ended: false, finishing: false, looking: false, move: null});
         this.ending = null;
         this.moves = movesOf(this.standIn.moments).filter(Boolean);
         const first = this.waiting;

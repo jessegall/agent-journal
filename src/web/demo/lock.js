@@ -28,8 +28,9 @@ function held(event) {
 }
 
 export function lockReplay(standIn) {
-    const pressed = (event) => event.target instanceof Element && !pressable(standIn, event.target) && held(event);
-    const typed = (event) => typeable(standIn, event) || held(event);
+    const looking = () => standIn.player.view.looking;
+    const pressed = (event) => !looking() && event.target instanceof Element && !pressable(standIn, event.target) && held(event);
+    const typed = (event) => looking() || typeable(standIn, event) || held(event);
     PRESSES.forEach((kind) => window.addEventListener(kind, pressed, true));
     window.addEventListener("keydown", typed, true);
     return () => {
