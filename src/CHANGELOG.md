@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.1 — The mascot blinks without an error
+- The mascot's blink no longer throws 'blinkOf is not defined' in the viewer; the blink it uses is imported.
+- A plugin service whose check cannot run, such as a missing program that answers 127, is listed as failing with the command's error and told once, instead of being shown as not needed.
+- A plan under review says on its card and in its inspector how many reviewers are still reviewing.
+
 ## 2.269.0 — One repository for rows, kept in memory
 - Every row is read and written through one repository per type. The repository keeps parsed rows in a rolling memory sized per type, parses the eager types at start, and answers unread, by type and by relation from indexes it keeps in step. Its funnel methods are final, and a row file written past it is refused.
 - In a server, the marks of folders and rows come from memory, renewed once a second by the watch loop. A warm read stats no file and parses no row twice, a row another process rewrote is read again within a second, and a board load makes each thing once per request.
