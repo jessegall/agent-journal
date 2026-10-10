@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.5 — A migration and a writer no longer wait for each other
+
+- A write takes the shared hold of the record before any lock of its own, and a migration takes no record lock, so a migration and a writer never wait for each other. This is what made requests stall for seconds at a time under load.
+- The look at what an agent's writes changed waits five times as long as the last look took, and the place git keeps a repository's index is asked once, so a large project is no longer scanned all the time.
+
 ## 2.269.4 — One live session per environment, and the resume line said once
 
 - A session that starts on an environment where another session is already live waits in an environment of its own, and the user is asked whether to take the busy one over. Taking over unbinds the session that was there, so an environment has one live session and a message, a nudge and a resume have one place to go.
