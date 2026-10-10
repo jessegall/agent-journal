@@ -24,8 +24,8 @@ UP, DOWN = "up", "down"
 BLOCKED, FAILED, NOT_NEEDED = "blocked", "failed", "not needed"
 RESTING = (BLOCKED, FAILED, NOT_NEEDED, "stopped", "exited")
 NEEDED_FOR = 600.0
-NOT_READY_FOR = 15.0
-NOT_READY = (126, 127)
+BROKEN_FOR = 15.0
+BROKEN = (126, 127)
 ASKED_WITHIN = 10.0
 BACKOFF = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
 KEEPER_EXIT = 3.0
@@ -201,6 +201,14 @@ def spawn(spec: ServiceSpec, lifeline: int) -> int:
     return kept.pid
 
 
+@dataclass(frozen=True)
+class Verdict:
+    """What a service's own check says: nothing against starting it, that it is not needed here, or that the check itself cannot run."""
+
+    state: str = ""
+    why: str = ""
+
+
 def excerpt(output: str) -> str:
     words = output.strip()[:160]
     return f": {words}" if words else ""
@@ -299,10 +307,10 @@ class Manager:
             self.needed.pop(sid, None)
             current = ServiceState(nonce=asked.nonce)
             current.write(spec.status)
-        unneeded = spec.idle or self.unneeded(spec, now)
-        if unneeded:
+        verdict = Verdict(NOT_NEEDED, spec.idle) if spec.idle else self.checked(spec, now)
+        if verdict.state:
             self.stop(sid, current)
-            replace(current, state=NOT_NEEDED, why=unneeded, at=now).write(spec.status)
+            replace(current, state=verdict.state, why=verdict.why, at=now).write(spec.status)
             return False
         if self.living(current.keeper) and current.state not in RESTING:
             return False
@@ -337,23 +345,26 @@ class Manager:
             return True
         return current.state == "starting" and not self.living(current.keeper or self.spawned.get(sid, 0))
 
-    def unneeded(self, spec: ServiceSpec, now: float) -> str:
+    def checked(self, spec: ServiceSpec, now: float) -> Verdict:
+        """The answer of the service's own check, kept for a while; a check that cannot run, or cannot answer in time, fails the service with what it said, and is asked again within seconds."""
         if not spec.when:
-            return ""
-        asked, why, kept = self.needed.get(spec.id, (0.0, "", NEEDED_FOR))
+            return Verdict()
+        asked, verdict, kept = self.needed.get(spec.id, (0.0, Verdict(), NEEDED_FOR))
         if now - asked < kept:
-            return why
+            return verdict
         kept = NEEDED_FOR
         try:
             ran = subprocess.run(spec.when, shell=True, cwd=self.root.parent, env={**os.environ, **spec.env}, capture_output=True, text=True, timeout=ASKED_WITHIN)
-            if ran.returncode in NOT_READY:
-                why, kept = f"not ready yet: {spec.when} answered {ran.returncode}{excerpt(ran.stdout)}", NOT_READY_FOR
+            if ran.returncode in BROKEN:
+                verdict, kept = Verdict(FAILED, f"its check cannot run: {spec.when} answered {ran.returncode}{excerpt(ran.stderr or ran.stdout)}"), BROKEN_FOR
+            elif ran.returncode:
+                verdict = Verdict(NOT_NEEDED, f"not needed here: {spec.when} answered {ran.returncode}{excerpt(ran.stdout)}")
             else:
-                why = "" if ran.returncode == 0 else f"not needed here: {spec.when} answered {ran.returncode}{excerpt(ran.stdout)}"
+                verdict = Verdict()
         except (OSError, subprocess.SubprocessError) as e:
-            why = f"not needed here: {spec.when} could not be asked ({e})"
-        self.needed[spec.id] = (now, why, kept)
-        return why
+            verdict, kept = Verdict(FAILED, f"its check cannot run: {spec.when} could not be asked ({e})"), BROKEN_FOR
+        self.needed[spec.id] = (now, verdict, kept)
+        return verdict
 
     def crashed(self, sid: str, now: float) -> None:
         seen = [at for at in self.crashes.get(sid, []) if now - at < WITHIN] + [now]

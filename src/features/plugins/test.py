@@ -566,16 +566,22 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten(monkeypatch):
     assert status(record.root, "flaky.web").state == "failed" and keeper.waiting["flaky.web"] > now[0], "a service that keeps dying is marked failed and tried again after a wait"
     assert keeper.one(spec("flaky.web")) is False, "and is left alone until the wait is over"
     asked = spec("asked.web", when="exit 3")
-    assert "answered 3" in keeper.unneeded(asked, now[0]) and "answered 3" in keeper.unneeded(asked, now[0] + 1.0), "a service that is not needed here says what the check answered, and the answer is kept for a while"
+    assert [keeper.checked(asked, now[0]).state, "answered 3" in keeper.checked(asked, now[0] + 1.0).why] == ["not needed", True], \
+        "a service that is not needed here says what the check answered, and the answer is kept for a while"
     marker = record.root / "release-binary"
-    unready = spec("unready.web", when=f"test -e {marker} || exit 127")
-    assert "not ready yet" in keeper.unneeded(unready, now[0]), "a check whose command is not there yet says the service is not ready, not that it is not needed"
+    unready = spec("unready.web", when=f"test -e {marker} || {{ echo 'no such binary' >&2; exit 127; }}")
+    broken = keeper.checked(unready, now[0])
+    assert (broken.state, "answered 127" in broken.why, "no such binary" in broken.why) == ("failed", True, True), \
+        "a check that exits 126 or 127 is a check that cannot run: the service fails with the command's own words, it is not shown as not needed"
+    keeper.one(unready)
+    assert (status(record.root, "unready.web").state, "cannot run" in status(record.root, "unready.web").why) == ("failed", True), "and is listed as failing, which the watcher tells once"
     marker.write_text("")
-    assert keeper.unneeded(unready, now[0] + 16.0) == "", "and is asked again within seconds, so the service starts once the plugin's setup has written the command"
+    assert keeper.checked(unready, now[0] + 16.0).state == "", "the check is asked again within seconds, so the service starts once the command is there"
     from engine import services
     monkeypatch.setattr(services, "ASKED_WITHIN", 0.2)
     unaskable = spec("unaskable.web", when="sleep 5")
-    assert "could not be asked" in keeper.unneeded(unaskable, now[0]), "a check that cannot answer in time is not a reason to start the service"
+    assert (keeper.checked(unaskable, now[0]).state, "could not be asked" in keeper.checked(unaskable, now[0]).why) == ("failed", True), \
+        "a check that cannot answer in time fails the service with that, and does not start it"
     stray = subprocess.Popen(["sleep", "30"], start_new_session=True)
     status_file(record.root, "stray.web").write_text(json.dumps({"state": "running", "keeper": 0, "pgid": stray.pid}))
     assert keeper.sweep() == [stray.pid] and stray.wait(timeout=5) is not None and status(record.root, "stray.web").why == "its keeper is gone", \
