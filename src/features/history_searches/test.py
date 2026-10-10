@@ -68,6 +68,14 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     serve.warm_texts(record.root)
     assert any(folder.endswith("todo") for folder in SEARCHABLE) and any(folder.endswith("message") for folder in SEARCHABLE), \
         "a start reads the text of every to-do and message once, in the warm-up, so the first search after it reads nothing"
+    from controllers.types import Messages
+    rows = Messages(record, actor=SYSTEM)
+    first, second = rows.create("alpha corpus"), rows.create("beta corpus")
+    rows.create("tail")
+    assert ([row.n for row in rows.search("corpus")], [row.n for row in rows.search("corpus beta")], [row.n for row in rows.search("alpha corpusbeta")]) == \
+        ([second.n, first.n], [], []), "a search is one scan over every row's text, newest first, and never finds a phrase made of the end of one row and the start of the next"
+    rows.delete(second.n, "put away")
+    assert [row.n for row in rows.search("corpus")] == [first.n], "and a row put away is left out"
     from controllers import stored
     from controllers.types import Todos, warm_record
     Todos(record, actor=SYSTEM).create("one to warm")
