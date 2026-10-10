@@ -223,10 +223,6 @@ class Codex(Provider):
     refusals = ("out of credits", "usage limit", "quota exceeded")
     name = "codex"
     dispatch_default = "gpt-6-sol"
-
-    @classmethod
-    def ask_argv(cls, prompt: str) -> tuple[str, ...]:
-        return ("codex", "exec", "-m", cls.dispatch_default, prompt)
     follow_up = 'send_input({{id: "{id}", message: "<the new work>"}})'
     question_tools = frozenset({"request_user_input", "request_user_input_async"})
     tool_kinds = {**Provider.tool_kinds, **dict.fromkeys((*SHELL_TOOLS, "apply_patch"), CodexShell), "spawn_agent": AgentCall,
@@ -236,6 +232,10 @@ class Codex(Provider):
     skill_home = ".agents/skills"
     shared_if_ignored = (".codex/hooks.json",)
     retired_skill_homes = (f"{home}/skills",)
+
+    @classmethod
+    def ask_argv(cls, prompt: str) -> tuple[str, ...]:
+        return ("codex", "exec", "-m", cls.dispatch_default, prompt)
 
     def skill_load(self, name: str) -> str:
         return f"read {self.skill_home}/{name}/SKILL.md"

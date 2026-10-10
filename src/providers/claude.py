@@ -168,10 +168,6 @@ class Claude(Provider):
     link_skills = True
     applies_at_once = ("effort",)
     dispatch_default = "sonnet"
-
-    @classmethod
-    def ask_argv(cls, prompt: str) -> tuple[str, ...]:
-        return ("claude", "-p", "--model", cls.dispatch_default, prompt)
     controls = {
         "groups": [
             {
@@ -202,6 +198,10 @@ class Claude(Provider):
         ],
         "note": "Changes apply immediately to this Claude Code session.",
     }
+
+    @classmethod
+    def ask_argv(cls, prompt: str) -> tuple[str, ...]:
+        return ("claude", "-p", "--model", cls.dispatch_default, prompt)
 
     def inbox(self, hook: Hook) -> str:
         return hook.inbox if hook.inbox and Path(hook.inbox).is_socket() else ""
