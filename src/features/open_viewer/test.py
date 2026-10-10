@@ -491,7 +491,7 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     assert ask("POST", "/api/identity", body={"color": "not-a-colour"}).code == 400, "an identity colour that is no colour is refused"
     named = ask("POST", "/api/identity", body={"color": "#aa3355"}).body
     assert named["root"] == str(record.root) and ask("GET", "/api/identity").body["root"] == str(record.root), "the identity names the root it serves"
-    assert ask("GET", f"/api/{record.env}/health").body == {"locks": "taken"}, "the health check answers once it could take the record's locks"
+    assert ask("GET", f"/api/{record.env}/health").body == {"answering": True}, "the health check answers from memory, taking no lock"
     from controllers.types import Messages
     pictures = [tmp_path / "pixel.png", tmp_path / "other.png"]
     notes = tmp_path / "notes.txt"

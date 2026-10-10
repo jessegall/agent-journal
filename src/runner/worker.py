@@ -19,7 +19,7 @@ from agents.actors import Agent  # noqa: E402
 from engine.record import Record  # noqa: E402
 from controllers.types import Notifications  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
-from engine.package import CODE, installed_stamp, own_build  # noqa: E402
+from engine.package import CODE, installed_digest, noticed_digest, own_build  # noqa: E402
 from engine.sessions import Sessions, hold_build  # noqa: E402
 import features  # noqa: E402
 from features.switches import watch_change_log  # noqa: E402
@@ -124,7 +124,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     seat = seated(TerminalSession(root, env, agent, session))
     relaunching = runtime.relaunch_file(root, session)
     stopping = session_flag(root, session)
-    stamps = installed_stamp(root)
+    stamps = installed_digest(root)
     began = time.time()
     driver = DRIVERS[agent](Record(root, env), session)
     confirm = Confirm(driver)
@@ -166,7 +166,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
                 run_checks(seat, driver, kept)
             if now - last_check >= RELOAD_EVERY:
                 last_check = now
-                if installed_stamp(root) != stamps and not runtime.upgrading(root):
+                if noticed_digest(root) != stamps and not runtime.upgrading(root):
                     return RELOAD
     finally:
         engines.set()

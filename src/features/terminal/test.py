@@ -197,7 +197,8 @@ def test_the_worker_stops_on_request_or_signal_reloads_when_its_session_moves_an
     monkeypatch.setattr(worker, "keep_viewer", lambda root, cwd, watching, exits: None)
     built, stamps = [], iter(["a", "a", "a", "b", "b", "b", "b", "b"])
     monkeypatch.setattr(worker, "checks", lambda seat, driver: built.append(1) or [])
-    monkeypatch.setattr(worker, "installed_stamp", lambda root: next(stamps))
+    monkeypatch.setattr(worker, "installed_digest", lambda root: next(stamps))
+    monkeypatch.setattr(worker, "noticed_digest", lambda root: next(stamps))
     assert start() == RELOAD and len(built) >= 2, "checks that could not start are tried again, and a newly installed build reloads the worker"
 
 

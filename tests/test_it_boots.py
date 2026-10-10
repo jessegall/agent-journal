@@ -1578,10 +1578,27 @@ def test_a_server_that_stops_answering_is_stopped_with_its_threads_kept(tmp_path
     monkeypatch.setattr(viewer, "healthy", lambda url, env, timeout=0: False)
     monkeypatch.setattr(viewer, "last", lambda found: viewer.ViewerMark.from_json({"pid": stuck.pid}))
     watch = viewer.StuckServer(root, "main")
-    assert (watch.restarted(), watch.restarted()) == ("", ""), "a server that misses two probes is not yet stuck"
+    other = viewer.StuckServer(root, "other")
+    assert (watch.judging(), other.judging(), [other.restarted() for _ in range(viewer.MISSES_BEFORE_RESTART)]) == (True, False, [""] * viewer.MISSES_BEFORE_RESTART), \
+        "one worker of the journal judges the server: the first holds the probing lock and the others never count a miss"
+    quiet = [watch.restarted() for _ in range(viewer.MISSES_BEFORE_RESTART - 1)]
+    assert quiet == [""] * (viewer.MISSES_BEFORE_RESTART - 1) and stuck.poll() is None, "a server that misses a few probes is not yet stuck"
     kept = watch.restarted()
-    assert stuck.wait(timeout=10) is not None, "the third missed probe stops the server, so the worker starts a fresh one"
+    assert stuck.wait(timeout=10) is not None, "the last missed probe stops the server, so the worker starts a fresh one"
     assert "waiting on the record lock" in Path(kept).read_text(), "what each thread was doing is kept beside the runtime"
+
+
+def test_one_watcher_writes_the_installed_build_and_every_other_process_reads_it(tmp_path, monkeypatch):
+    from engine import package
+    root = tmp_path / ".journal"
+    (root / "runtime").mkdir(parents=True)
+    walked = []
+    monkeypatch.setattr(package, "installed_stamp", lambda found: walked.append(1) or (("src/a.py", len(walked)),))
+    published = package.publish_stamp(root)
+    assert (package.noticed_digest(root), len(walked)) == (published, 1), "what the watcher wrote is read from one small file, without walking the source tree again"
+    marker = root / "runtime" / package.STAMP_FILE
+    marker.write_text(json.dumps({"digest": published, "at": time.time() - package.STAMP_FRESH - 1}))
+    assert (package.noticed_digest(root) != published, len(walked)) == (True, 2), "when the watcher has not written for a while, as when no server runs, the tree is walked after all"
 
 
 def test_the_server_ends_when_interrupted_or_told_to_stop_restarts_on_new_code_and_answers_hook_failures(tmp_path, monkeypatch):
