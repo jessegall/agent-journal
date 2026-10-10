@@ -46,6 +46,7 @@ def render(events: list[Event], record: Record) -> tuple[str, dict]:
 
 class Actor(ABC):
     name = ""
+    sent: frozenset[int] = frozenset()
 
     def __init__(self, record: Record):
         self.record = record
@@ -88,6 +89,7 @@ class Agent(Actor):
         self.driver = driver
         self.pending: list[Event] = []
         self.scanned = self.cursor()
+        self.sent = {int(n) for n in self.record.event_log.cursor_text(self.sent_name).split(",") if n}
 
     def notify(self, event: Event) -> None:
         self.pending.append(event)
@@ -96,10 +98,18 @@ class Agent(Actor):
     def delivered_until(self) -> int:
         return self.scanned
 
+    @property
+    def sent_name(self) -> str:
+        return f"{self.name}-sent"
+
     def notified(self, event: Event) -> None:
+        """Keeps the cursor at the last event before the oldest one still held, and the ids handled beyond it in a file of their own: a worker that reloads reads on from there and takes none of them twice."""
         self.scanned = max(self.scanned, event.id)
-        if not self.pending:
-            self.record.event_log.set_cursor(self.name, self.scanned)
+        self.sent.add(event.id)
+        held = min((e.id for e in self.pending), default=self.scanned + 1) - 1
+        self.sent = {n for n in self.sent if n > held}
+        self.record.event_log.set_cursor(self.name, held)
+        self.record.event_log.set_cursor_text(self.sent_name, ",".join(map(str, sorted(self.sent))))
 
     def delivered(self, done: list[Event]) -> None:
         reported, agents = self.driver.last_report(), Agents(self.record, actor=SYSTEM)

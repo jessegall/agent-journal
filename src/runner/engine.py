@@ -441,7 +441,7 @@ class Engine:
         for actor in self.actors:
             fresh = actor.cursor() == 0
             for e in self.record.event_log.events(actor.delivered_until()):
-                if e.type not in TYPES:
+                if e.type not in TYPES or e.id in actor.sent:
                     actor.notified(e)
                     continue
                 if fresh and e.at < self.born and not self.addressed(e):
