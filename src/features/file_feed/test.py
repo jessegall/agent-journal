@@ -1,3 +1,4 @@
+import pytest
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -234,6 +235,31 @@ def test_edits_in_an_agents_own_worktree_reach_its_feed_and_a_shell_command_coun
     announce_writes(project.record, project.agent, skill_folders(), str(tree))
     cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(project.record, project.agent, 0, PAGE).edits}
     assert cards == {"a.py": ("edit", 1, 0)}, "a file changed in the agent's own worktree is in its file changes"
+    from engine import bus, files
+    from engine.project_files import readable_in
+    (project.root / "src").mkdir(exist_ok=True)
+    (project.root / "src" / "app.py").write_text("x\n")
+    (project.root / "out").symlink_to(tmp_path)
+    assert [readable_in(project.root, rel) for rel in ("src/app.py", ".env", "src/.hidden/x.py", "out")] == [True, False, False, False], \
+        "a listed path is checked by the names in it, and only a link is followed to see where it leads"
+    timers = []
+
+    class Waiting:
+        def __init__(self, seconds, job):
+            self.seconds, self.job, self.daemon = seconds, job, False
+
+        def start(self):
+            timers.append(self)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(bus, "BACKGROUND", True)
+        patch.setattr(files.threading, "Timer", Waiting)
+        files.PENDING.clear()
+        announce_writes(project.record, project.agent, skill_folders(), str(tree))
+        announce_writes(project.record, project.agent, skill_folders(), str(tree))
+        assert [timer.seconds for timer in timers] == [files.ANNOUNCE_AFTER], "a burst of writes asks for one look, a moment after the first, and the hook is not held up"
+        timers[0].job()
+        announce_writes(project.record, project.agent, skill_folders(), str(tree))
+        assert len(timers) == 2, "a write after the look asks for the next one"
     shell = lambda command: Hook.read({"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command}, "cwd": str(tree)}, Provider.tool_kinds)
     assert [may_change_files(shell(command)) for command in ("cat a.py", "grep -rn one .", "python3 build.py", "git apply fix.patch", "journal todo all")] == \
         [False, False, True, True, False], "any shell command that is not only a read, a search or a journal command is checked for changes"
