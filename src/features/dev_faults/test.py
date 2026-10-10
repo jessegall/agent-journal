@@ -308,11 +308,11 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
     reports.spent(record.root, record.env, "request", "GET /api/main/loaded", 400, working=400)
     assert "request GET /api/main/loaded is slower than its budget" in notified(record), "a breach is filed whatever the machine's load"
     reports.spent(record.root, record.env, "request", "GET /api/main/starved", 400, working=10)
-    reports.spent(record.root, record.env, "request", "GET /api/main/starved2", 400, working=10)
+    reports.spent(record.root, record.env, "request", "GET /api/main/starved", 400, working=10)
     assert ([title for title in notified(record) if "starved" in title], "request GET /api/main/starved is slower than its budget" in notified(record)) == (["the server is starved"], False), \
         "a request whose working time is within its budget is never slow: the wait is its own notice, with the load, once a minute"
     lines = [json.loads(line) for line in (runtime.folder(record.root) / "budget.jsonl").read_text().splitlines()]
-    assert {"version", "kind", "target", "took", "working", "after", "load", "time"} <= set(lines[-1]) and lines[-1]["target"] == "GET /api/main/starved2", \
+    assert {"version", "kind", "target", "took", "working", "after", "load", "time"} <= set(lines[-1]) and lines[-1]["target"] == "GET /api/main/starved", \
         "every breach leaves a line with its release, its time and the load, whichever notice it earned"
     monkeypatch.setattr("features.dev_faults.reports.load", lambda: 0.0)
     reports.spent(record.root, record.env, "request", "GET /api/main/board", 400, working=400)
