@@ -19,6 +19,7 @@ from surfaces.package import archive as extension_archive, info as extension_inf
 from engine.color import identity, set_color
 from commands.lanes import LANES, agent_of
 from contextlib import nullcontext
+from engine.after_answer import answering_for
 from engine.memo import Memo
 from engine.upgrades import check_now
 from agents.control import permit
@@ -221,6 +222,7 @@ def post_hook(req: Request) -> Reply:
         return Reply(200, {}, after=lambda: (replay(req.root), displayed(req.root, chunk)), after_lane=chunk.session)
     replay(req.root, SPOOLED_AT_ONCE, REPLAYED_BEFORE_ANSWERING)
     hook = Hook.read({**req.body, "inbox": asked.inbox}, provider.tool_kinds)
+    answering_for(hook.session)
     out = answer(provider, req.root, hook, asked.pid, asked.env)
     return Reply(403 if provider.refused(out) else 200, out, after=lambda: replay(req.root, SPOOLED_AT_ONCE), after_lane=hook.session)
 

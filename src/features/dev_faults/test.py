@@ -67,6 +67,15 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
     while not ran and time.monotonic() < waited:
         time.sleep(0.01)
     assert ran == ["after-answer-0"], "then it runs on a worker thread, never on the thread that answers"
+    from engine.after_answer import answering_for
+    workers, ran = AfterAnswer.started(1), []
+    with workers.answering_hook():
+        answering_for("claude-2")
+        workers.add(lambda: ran.append("other"), "claude-1")
+        waited = time.monotonic() + 2
+        while not ran and time.monotonic() < waited:
+            time.sleep(0.01)
+        assert ran == ["other"], "a hook answered for one session never holds back another session's work"
     workers, ran = AfterAnswer.started(2), []
     workers.add(lambda: (time.sleep(0.05), ran.append("first")), "claude-1")
     workers.add(lambda: ran.append("second"), "claude-1")
