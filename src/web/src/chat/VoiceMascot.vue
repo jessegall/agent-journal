@@ -1,6 +1,16 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
-import {PRESENCE_GRACE_MS, afterSeconds, animationLabel, fallOf, pickWeighted, placeOf, placedAt, showcaseOn} from "../domain/mascots.js";
+import {
+    PRESENCE_GRACE_MS,
+    afterSeconds,
+    animationLabel,
+    fallOf,
+    hopOf,
+    pickWeighted,
+    placeOf,
+    placedAt,
+    showcaseOn,
+} from "../domain/mascots.js";
 import {animations, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import {loadProfiles, mascotOf, profiles, profilesLoaded} from "../composables/profiles.js";
 import {loadRig, rigs, voiceOfArt} from "../composables/voiceRigs.js";
@@ -162,6 +172,7 @@ const waitForRigBlink = () =>
 function rest() {
     clearTimeout(moveTimer);
     clearTimeout(rigBlinkTimer);
+    clearTimeout(hopTimer);
 }
 
 function showNextMove() {
@@ -169,10 +180,24 @@ function showNextMove() {
     rigStaged.value = rigSteps.value[rigStage++ % rigSteps.value.length];
 }
 
+// A sitting voice hops onto its seat and off it instead of walking in behind the box's edge, so its hanging legs never vanish.
+const hop = computed(() => hopOf(mascot.value?.voice));
+const hopping = ref("");
+let hopTimer = 0;
+
+function hopThen(way, then) {
+    hopping.value = way;
+    hopTimer = setTimeout(() => {
+        hopping.value = "";
+        then();
+    }, hop.value.ms);
+}
+
 function enter() {
     rest();
     leaving.value = false;
     here.value = true;
+    if (hop.value && !still) return hopThen("enter", settle);
     move.value = still ? null : passageOf("enter");
     if (!move.value) settle();
 }
@@ -180,6 +205,7 @@ function enter() {
 function leave() {
     rest();
     leaving.value = true;
+    if (hop.value && !still) return hopThen("exit", gone);
     move.value = still ? null : passageOf("exit");
     if (!move.value) gone();
 }
@@ -252,6 +278,12 @@ const placed = computed(() => ({
     "--fall-ms": `${fall.value.ms}ms`,
     "--squash": fall.value.squash,
     "--bounce": `${fall.value.bounce}px`,
+    ...(hop.value && {
+        "--hop-ms": `${hop.value.ms}ms`,
+        "--rise": `${hop.value.rise}px`,
+        "--drop": `${hop.value.drop}px`,
+        "--hop-squash": hop.value.squash,
+    }),
 }));
 const passage = computed(() => (PASSAGES.includes(rigShown.value?.move?.name) ? rigShown.value.move : null));
 const passed = computed(() => (passage.value ? {...placed.value, "--length": `${passage.value.duration}ms`} : placed.value));
@@ -260,7 +292,12 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
 <template>
     <span ref="anchor" class="voice-mascot-anchor" hidden></span>
     <template v-if="rigShown && roomy">
-        <span class="voice-mascot" :class="[passage && `passing ${passage.name}`, {dropping}]" :style="passed" aria-hidden="true">
+        <span
+            class="voice-mascot"
+            :class="[passage && `passing ${passage.name}`, hopping && `hopping ${hopping}`, {dropping}]"
+            :style="passed"
+            aria-hidden="true"
+        >
             <RigPlayer :voice="rigShown.voice" :rig="rigShown.rig" :move="rigShown.move" @ended="moveEnded" />
         </span>
         <template v-if="showcase">
@@ -320,6 +357,54 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
 
 .voice-mascot.exit {
     animation: mascot-out 320ms ease-in calc(var(--length) - 320ms) both;
+}
+
+.voice-mascot.hopping.enter {
+    animation: mascot-hop-on var(--hop-ms) ease-out both;
+}
+
+.voice-mascot.hopping.exit {
+    animation: mascot-hop-off var(--hop-ms) ease-in both;
+}
+
+@keyframes mascot-hop-on {
+    0% {
+        opacity: 0;
+        transform: translateY(var(--drop));
+    }
+
+    20% {
+        opacity: 1;
+        transform: translateY(var(--drop)) scale(calc(1 + var(--hop-squash)), calc(1 - var(--hop-squash)));
+    }
+
+    60% {
+        transform: translateY(calc(-1 * var(--rise)));
+    }
+
+    82% {
+        transform: scale(calc(1 + var(--hop-squash)), calc(1 - var(--hop-squash)));
+    }
+
+    100% {
+        transform: none;
+    }
+}
+
+@keyframes mascot-hop-off {
+    0% {
+        opacity: 1;
+        transform: none;
+    }
+
+    35% {
+        transform: translateY(calc(-1 * var(--rise)));
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(var(--drop));
+    }
 }
 
 @keyframes mascot-in {
