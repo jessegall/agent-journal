@@ -42,10 +42,21 @@ class HookCall:
         return self.row.subagent if self.hook is None else self.provider.is_subagent(self.hook)
 
 
+class Stops(StrEnum):
+    """How far a hold reaches into the agent's work: one on writes lets it read and search while it decides, one on everything stops the next tool call of any kind."""
+
+    WRITES = "writes"
+    EVERYTHING = "everything"
+
+    def stops(self, writing: bool) -> bool:
+        return self is Stops.EVERYTHING or writing
+
+
 @dataclass(frozen=True)
 class Hold(Loaded):
     why: str = ""
     reach: Reach = Reach.MAIN
+    scope: Stops = Stops.WRITES
 
 
 def cancelled(name: str, call: HookCall, data: dict) -> str:
@@ -78,15 +89,20 @@ def hold(record, session: str, key: str, given: Hold) -> None:
             holds[key] = asdict(given)
 
 
-def held(record, session: str, subagent: bool = False) -> str:
-    """What holds the session's writes: each hold in its gate file whose feature still stands by it, since a hold the feature has not released is no reason to refuse a write."""
+def holds(record, session: str, subagent: bool = False) -> list[Hold]:
+    """Every hold standing against the session: each one in its gate file whose feature still stands by it, since a hold the feature has not released is no reason to refuse anything."""
     gate = record.state_at(gate_file(record.root, record.env, session))
     standing = []
     for key, raw in gate.all().items():
         one = Hold.from_json(raw)
         if one.why and key in STILL_HELD and not STILL_HELD[key](record, session):
-            with gate.changing() as holds:
-                holds.pop(key, None)
+            with gate.changing() as kept:
+                kept.pop(key, None)
             continue
         standing.append(one)
-    return "; ".join(one.why for one in standing if one.why and one.reach.reaches(subagent))
+    return [one for one in standing if one.why and one.reach.reaches(subagent)]
+
+
+def held(record, session: str, subagent: bool = False, writing: bool = True) -> str:
+    """Why the session's next tool call is refused: every standing hold that reaches this agent and stops a call of this kind."""
+    return "; ".join(one.why for one in holds(record, session, subagent) if one.scope.stops(writing))

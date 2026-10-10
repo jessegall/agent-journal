@@ -22,19 +22,21 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     Messages(record, actor=AGENT).read(m.n)
 
     def text():
-        return [n for n in nudges(record) if "before you write" in n]
+        return [n for n in nudges(record) if "before you do anything else" in n]
 
-    for i in range(9):
+    report(record, "working", "PreToolUse")
+    from engine.gates import held
+    assert held(record, "claude-1", writing=False), "a message read and not answered holds the very next tool use, reading as much as writing"
+    for i in range(8):
         report(record, "working", "PreToolUse")
     assert text() == [], "nothing is said while the message has waited fewer than ten tool uses"
     report(record, "working", "PreToolUse")
-    assert text() == ["answer message 1 before you write anything"], \
+    assert text() == ["answer message 1 before you do anything else"], \
         "the tenth tool use names the message and says to answer it"
-    assert not holds(record).get("status"), "nothing is refused over it: it tells, it does not hold"
     from controllers.types import Nudges
     from agents.actors import settled
     from resources.base import Event
-    line = [n for n in Nudges(record).all() if "before you write" in n.title][-1]
+    line = [n for n in Nudges(record).all() if "before you do anything else" in n.title][-1]
     queued = Event(id=0, type="nudge", n=line.n, action="created", actor="system", at=0.0, data={})
     assert settled(record, queued) is False, "while the message is open, the line still goes out"
     report(record, "idle", "Stop")
@@ -42,7 +44,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     for i in range(30):
         report(record, "working", "PreToolUse")
     assert len(text()) == 3, "said three times in all and then it lets the agent be"
-    assert "tool calls are held" in holds(record).get("messages.answering", ""), "after twenty tool uses with the message still unanswered, the agent's tool calls are held until it is handled"
+    assert "tool calls are held" in holds(record).get("messages.answering", ""), "the hold stands while the message is unanswered, however long it waits"
     from controllers.types import Todos
     filed = Todos(record, actor=AGENT).create("wire the last route")
     Messages(record, actor=AGENT).process(m.n, "how is it going?", f"todo {filed.n}")
@@ -276,7 +278,7 @@ def test_a_line_about_a_message_waits_for_the_driver_and_is_dropped_once_the_mes
     driver.sent_at = 0
     driver.pump()
     engine.deliver()
-    assert not any("before you write" in line for line in delivered), "answered in the meantime: the waiting line is dropped, not sent late"
+    assert not any("before you do anything else" in line for line in delivered), "answered in the meantime: the waiting line is dropped, not sent late"
     later = Messages(record, actor=USER).create("and the docs?")
     engine.agent.pending = [e for e in record.event_log.events() if (e.type, e.n, e.action) == ("message", later.n, "created")]
     monkeypatch.setattr(driver, "ready", lambda: True)

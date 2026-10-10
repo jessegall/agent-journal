@@ -8,7 +8,7 @@ from features.work_tracking.details import WorkDetails
 from features.sending import Nudge
 from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_ready, stopped_in_auto, stopped_with_work, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
-from features.work_tracking.interceptors import RefuseHeldWrites, RefuseWaitingInTheShell
+from features.work_tracking.interceptors import RefuseHeldCalls, RefuseWaitingInTheShell
 
 
 class WorkFeature(Feature):
@@ -46,5 +46,5 @@ class WorkFeature(Feature):
         journal.events.handler(RemindOpenWork())
         journal.events.handler(CountEdits())
         journal.events.handler(ResetEditsOnLog())
-        journal.agent.interceptor(RefuseHeldWrites())
+        journal.agent.interceptor(RefuseHeldCalls())
         journal.agent.interceptor(RefuseWaitingInTheShell())

@@ -1,3 +1,4 @@
+from engine.gates import Stops
 from features.base import Behaviour, FeatureDetails, Line
 from features.messages.answering import still_unanswered
 from features.settings import Setting
@@ -25,8 +26,9 @@ class MessagesDetails(FeatureDetails):
         card they can open.
 
         Each new message is named to you as it arrives. The inbox reminder follows only while more than five wait unread, or once
-        you are idle: at your next tool use and at every third one after; after five reminders your writes are held. A message you have not answered is mentioned again once it has waited ten tool uses, or
-        once you are idle, a few times, without holding your writes.
+        you are idle: at your next tool use and at every third one after; after five reminders your writes are held. A message you have read and not
+        answered holds every tool use at once, reading as much as writing, until you reply, react or process it; only a journal command that answers it goes through.
+        It is also named back to you once it has waited ten tool uses, or once you are idle, a few times.
         A reply, a reaction, or processing every part closes it; a message you wrote closes as soon as the user has seen it.
         A row you file from a message is linked to it by journal message process, or by naming it in your reply while it is new.
     """
@@ -70,7 +72,7 @@ class MessagesDetails(FeatureDetails):
         ),
         Setting(
             name="answering.hold",
-            default=20,
+            default=0,
             title="Hold the agent's tool calls after this many tool uses with a message unanswered",
             unit="uses",
             under="answering",
@@ -104,7 +106,7 @@ class MessagesDetails(FeatureDetails):
         ),
         Line(
             name="answer",
-            title="answer {{messages}} before you write anything",
+            title="answer {{messages}} before you do anything else",
             until=("message.completed",),
             owed=still_unanswered,
             brief="a reply, a reaction, or journal message processed <n>",
@@ -113,6 +115,7 @@ class MessagesDetails(FeatureDetails):
             name="answer held",
             title="your tool calls are held: answer {{messages}} first",
             brief="a reply, a reaction, or journal message processed <n>",
+            scope=Stops.EVERYTHING,
         ),
         Line(
             name="paragraphs",

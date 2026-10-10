@@ -6,12 +6,12 @@ from features.parts import AgentContext, ToolInterceptor
 from providers import command_effects
 
 
-class RefuseHeldWrites(ToolInterceptor):
+class RefuseHeldCalls(ToolInterceptor):
     reach = Reach.BOTH
     runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
-        return held(context.record, context.agent.session, context.provider.is_subagent(context.hook)) if command_effects.writes(context.hook) else ""
+        return held(context.record, context.agent.session, context.provider.is_subagent(context.hook), command_effects.writes(context.hook))
 
 
 WAIT_LOOP = re.compile(r"\b(?:until|while)\b[^;\n]*;?\s*do\b")
