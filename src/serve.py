@@ -40,6 +40,7 @@ from providers.turns import read_transcripts  # noqa: E402
 from runner.spool import drain, replay, spooled  # noqa: E402
 from engine.runtime import default_env
 from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, entry, publish_stamp
+from engine.version import version
 
 DEFAULT_PORT = 8430
 REQUEST_BACKLOG = 128
@@ -375,16 +376,41 @@ def warm_changed(root: Path) -> None:
     warm_dashboard(root, default_env(root))
 
 
-def warmed(root: Path, warm: threading.Event) -> None:
+def together(*tracks) -> None:
+    """Runs the tracks side by side and returns when all are done; the first failure of a track is raised here."""
+    failures = []
+
+    def track(work) -> None:
+        try:
+            work()
+        except Exception as error:
+            failures.append(error)
+
+    threads = [threading.Thread(target=track, args=(work,), daemon=True) for work in tracks]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    if failures:
+        raise failures[0]
+
+
+def warm_rows(root: Path) -> None:
+    warm_work(root)
+    warm_replies(root)
+    warm_texts(root)
+
+
+def warmed(root: Path, warm: threading.Event, restarted: float = 0.0) -> None:
     try:
         warm_viewer(root, default_env(root), warm)
         runtime.mark_booted(root)
-        warm_commands()
-        warm_work(root)
-        warm_replies(root)
-        warm_texts(root)
+        if restarted:
+            runtime.record_step(root, "restart: until the viewer is warm", time.time() - restarted, time.process_time(), version())
         WARMERS.append(lambda: warm_changed(root))
-        read_transcripts(root)
+        together(warm_commands, lambda: warm_rows(root), lambda: read_transcripts(root))
+        if restarted:
+            runtime.record_step(root, "restart: until everything is warm", time.time() - restarted, time.process_time(), version())
     except Exception:
         traceback.print_exc()
         os._exit(1)
@@ -472,13 +498,16 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     runtime.remember_git_user(root)
     tell_threads_on_signal(root)
     allow_open_files()
+    restarted = runtime.restart_began(root)
     server = serve(root, port)
     restore_rows(root)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
+    if restarted:
+        runtime.record_step(root, "restart: until the new server listens", time.time() - restarted, time.process_time(), version())
     changed = threading.Event()
     halting = threading.Event()
     server.warm.clear()
-    threading.Thread(target=warmed, args=(root, server.warm), daemon=True).start()
+    threading.Thread(target=warmed, args=(root, server.warm, restarted), daemon=True).start()
     threading.Thread(target=watch_code, args=(root, Path(root) / ARCHIVE if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=watch_runtime, args=(root, halting), daemon=True).start()

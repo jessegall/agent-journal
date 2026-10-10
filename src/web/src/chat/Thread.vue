@@ -4,7 +4,6 @@ import {agent} from "../composables/leadAgent.js";
 import {feedOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import {cardPlan} from "../domain/plans.js";
-import {waitsFor} from "../domain/agentState.js";
 import {useWaiting} from "../composables/waiting.js";
 import WaitingPanel from "./WaitingPanel.vue";
 import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
@@ -117,7 +116,6 @@ function unedit() {
     editing.value = null;
 }
 const busy = computed(() => !!owner.value && ["working", "compacting"].includes(owner.value.data.status));
-const waiting = computed(() => waitsFor(rows("work")));
 const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(undefined, owner, () => rows("work"));
 const planCard = computed(() => cardPlan(rows("plan")));
 const reportDock = computed(() => dockedReport(rows("report")));
@@ -158,6 +156,25 @@ const unseen = computed(() =>
 watch([unseen, ready], ([numbers, isReady]) => here && isReady && markSeen("message", numbers), {immediate: true});
 const rendering = ref(false);
 const topMark = ref(null);
+const docks = ref(null);
+const write = ref(null);
+const perch = ref(0);
+let docksSeen = null;
+
+function measurePerch() {
+    const stack = docks.value;
+    const box = write.value;
+    if (!stack?.offsetHeight || !box) return (perch.value = 0);
+    perch.value = box.getBoundingClientRect().top + parseFloat(getComputedStyle(box).paddingTop) - stack.getBoundingClientRect().top;
+}
+
+watch(docks, (stack) => {
+    docksSeen?.disconnect();
+    if (!stack) return (perch.value = 0);
+    docksSeen = new ResizeObserver(measurePerch);
+    docksSeen.observe(stack);
+});
+onUnmounted(() => docksSeen?.disconnect());
 const AHEAD = "200px 0px 0px 0px";
 const scrolledUp = ref(false);
 const NEAR_TOP = 200;
@@ -191,7 +208,7 @@ const thread = computed(() => {
         {
             message: rows("message").filter((m) => !boardRequests.value.has(m.ref)),
             comment: rows("comment").filter((c) => !c.refs.some((ref) => boardRequests.value.has(ref))),
-            question: rows("question"),
+            question: rows("question").filter((q) => !q.env),
             suggestion: rows("suggestion"),
             reaction: rows("reaction"),
             doc: rows("doc"),
@@ -442,7 +459,7 @@ watch(
             <UpdateOverlay :key="updateView.n" />
         </template>
         <template v-if="chatOpen">
-            <div :class="['thread-write', {hidden: feeding}]">
+            <div ref="write" :class="['thread-write', {hidden: feeding}]">
                 <Transition name="rise">
                     <button
                         v-if="away && newestVisible"
@@ -478,6 +495,7 @@ watch(
                     :many="here ? dumpOffer : null"
                     :idle="here ? dumpIdle : null"
                     :mascot="here"
+                    :perch="perch"
                 />
                 <template v-if="waitingOpen && waitingNow">
                     <WaitingPanel :waiting="waitingNow" :anchor="waitingAnchor" @close="waitingOpen = false" />
@@ -511,7 +529,7 @@ watch(
                                 @grew="settled"
                             />
                         </TransitionGroup>
-                        <div :class="['chat-docks', {docked: dockCount}]">
+                        <div ref="docks" :class="['chat-docks', {docked: dockCount}]">
                             <Transition name="dock">
                                 <DumpDock v-if="dumpDock" :key="dumpDock.n" :dump="dumpDock" :folded="short || !planOpen" />
                             </Transition>
@@ -524,7 +542,7 @@ watch(
                         </div>
                         <Transition name="status">
                             <div
-                                v-if="busy && !waiting"
+                                v-if="busy && !waitingNow"
                                 class="thread-turn busy"
                                 :aria-label="`The agent is ${activity}`"
                             >

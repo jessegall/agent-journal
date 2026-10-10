@@ -9,6 +9,7 @@ import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {peek} from "../route.js";
 import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
+import {open as openRows} from "../domain/records.js";
 
 const props = defineProps({report: Object, folded: Boolean});
 const dock = ref(null);
@@ -19,6 +20,7 @@ const facts = computed(() =>
         .map((c) => `${c.n} ${c.label}`)
         .join(" · ")
 );
+const asking = computed(() => openRows("question").some((q) => q.refs.includes(props.report.ref)));
 const lead = computed(() => withoutChips(props.report.abstract || String(props.report.brief || "").split("\n")[0]));
 
 function open() {
@@ -39,6 +41,9 @@ function open() {
             </template>
             <template v-else>
                 <span class="report-dock-title">· {{ withoutChips(report.title) }}</span>
+            </template>
+            <template v-if="asking">
+                <span class="report-dock-asks">Has questions for you</span>
             </template>
             <span class="report-dock-acts chat-dock-acts">
                 <Btn small @click="open">{{ update ? "Open update" : "Open report" }}</Btn>
@@ -93,6 +98,14 @@ function open() {
 .report-dock-title {
     color: var(--text-2);
     font-size: 12.5px;
+}
+
+.report-dock-asks {
+    flex: none;
+    color: var(--blocking);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .report-dock-acts {

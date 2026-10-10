@@ -1,9 +1,8 @@
-import time
 from dataclasses import dataclass
 from typing import ClassVar
 
 from engine import runtime
-from engine.locks import claim
+from engine.locks import project_sweep
 
 from engine.events.engine import ClockTicked
 from engine.events.resources import ResourceEvent
@@ -12,7 +11,7 @@ from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.auto_update.announcing import KIND
 from controllers.types import Notifications
 
-TIDYING, TIDIED = "tidying.lock", "tidied"
+TIDYING = "tidying.lock"
 ONCE_EVERY = 50 * 60
 
 
@@ -21,17 +20,9 @@ class TidyRuntime(Handler):
 
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         root = context.record.root
-        held = claim(runtime.folder(root) / TIDYING)
-        if held is None:
-            return
-        try:
-            stamp = runtime.folder(root) / TIDIED
-            if stamp.is_file() and time.time() - stamp.stat().st_mtime < ONCE_EVERY:
-                return
-            tidy(root, context.settings.days)
-            stamp.touch()
-        finally:
-            held.close()
+        with project_sweep(runtime.folder(root) / TIDYING, ONCE_EVERY) as mine:
+            if mine:
+                tidy(root, context.settings.days)
 
 
 @dataclass(frozen=True)

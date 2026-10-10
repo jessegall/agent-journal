@@ -91,12 +91,15 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     from resources.base import AGENT, USER
     thanks, asked = asked_and_read(record, "Thank you, sir."), asked_and_read(record, "Thanks, but which branch?")
     line = counted({("message", "created"): {thanks.n: None}}, record)[0]
-    assert (line.startswith(f"1 new message {thanks.n} - message {thanks.n}: Thank you, sir."), "[journal]" in line, '"n":' in line, "---" in line,
-            f'message {thanks.n} only acknowledges: react to it with journal message react {thanks.n} "👍"' in line) == (True, False, False, False, True), \
-        "a message that only acknowledges is answered with a reaction, and the line carries its words, with no record and no second journal mark"
+    assert (line.startswith(f"1 new message {thanks.n} - the user wrote: Thank you, sir."), "[journal]" in line, '"title"' in line,
+            f'message {thanks.n} only acknowledges: react to it with journal message react {thanks.n} "👍"' in line) == (True, False, False, True), \
+        "a message that only acknowledges is answered with a reaction, and the line names who wrote it and their words once, with no tag of the journal's and none of the row's fields"
     line = counted({("message", "created"): {asked.n: None}}, record)[0]
-    assert ("[!reply:" in line, "[journal]" not in line, "Thanks, but which branch?" in line, AGENT in Messages(record, actor=AGENT).load(asked.n).seen) == (True,) * 4, \
+    assert ("[!reply:" in line, "[journal]" in line, "Thanks, but which branch?" in line, AGENT in Messages(record, actor=AGENT).load(asked.n).seen) == (True, False, True, True), \
         "one that asks something still gets a reply, its whole text is in the line, and the agent need not read it first"
+    both = counted({("message", "created"): {thanks.n: None, asked.n: None}}, record)[0]
+    assert f"the user wrote {thanks.n}: Thank you, sir." in both and f"the user wrote {asked.n}: Thanks, but which branch?" in both, \
+        "when several come in one line each is named by its number"
     assert counted({("message", "created"): {4465: None, 4466: None}}, record)[0].endswith("answer each by opening a turn with [!reply:<n>]")
     assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"
     Messages(record, actor=AGENT).complete(asked.n, how="answered")

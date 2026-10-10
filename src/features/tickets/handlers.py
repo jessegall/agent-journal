@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
+from engine import runtime
 from engine.events.engine import ClockTicked
+from engine.locks import project_sweep
 from engine.events.resources import QuestionAnswered, ResourceCreated, ResourceEvent
 from features.sending import Sent
 from features.trigger import MINUTE, MINUTES, Trigger
@@ -17,6 +19,8 @@ NUDGED = ("ticket_asks", "ticket_awaits")
 PLAN_WAITS_ONCE = "plan_waits"
 ATTENTION_EVERY = "ticket_attention"
 LOOK_AGAIN = 15
+SWEEPING, SWEEP_EVERY = "tickets-sweeping.lock", 5.0
+LANDING, LAND_EVERY = "tickets-landing.lock", 60.0
 
 
 def all_parked(record) -> bool:
@@ -28,13 +32,19 @@ class LookAfterTickets(Handler):
     behaviour = WHOLE_FEATURE
 
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        tickets = Tickets(context.record, actor=SYSTEM)
+        with project_sweep(runtime.folder(context.record.root) / SWEEPING, SWEEP_EVERY, context.record.env) as mine:
+            if mine:
+                self.sweep(context, Tickets(context.record, actor=SYSTEM))
+
+    def sweep(self, context: AgentContext, tickets: Tickets) -> None:
         tickets.mark_seen()
-        tickets.keep_branches()
-        tickets.close_merged()
+        with project_sweep(runtime.folder(context.record.root) / LANDING, LAND_EVERY) as landing:
+            if landing:
+                tickets.keep_branches()
+                tickets.close_merged()
+                tickets.clear_worktrees()
         tickets.start_queued()
         tickets._stop_orphaned()
-        tickets.clear_worktrees()
         tickets._build_approved_plans()
         raise_waiting_plans(context, tickets)
         pass_on_calls(context, tickets)

@@ -87,24 +87,28 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(routes, "upstream", lambda root: "99.0.0")
     release = dispatch("GET", "/api/upstream", record.root, {}, {}).body
     assert (release["latest"], release["newer"], release["changed"]) == ("99.0.0", True, []), "the viewer is told the newest release, that it is newer, and which managed files were changed"
-    assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changelog"] == routes.data("CHANGELOG.md").read_text(), \
-        "the changelog is the running code's own, whatever journal it serves"
+    whole = routes.data("CHANGELOG.md").read_text()
+    first = dispatch("GET", "/api/changelog", record.root, {}, {}).body
+    second = dispatch("GET", "/api/changelog", record.root, {"skip": str(first["shown"])}, {}).body
+    pages = routes.RELEASES_PER_PAGE
+    assert (first["changelog"].count("\n## "), first["shown"], first["more"], second["shown"], first["changelog"] + second["changelog"] == whole[:len(first["changelog"] + second["changelog"])]) == (pages, pages, True, 2 * pages, True), \
+        "the changelog is the running code's own, served a page of releases at a time, newest first, each page following the one before"
     monkeypatch.setattr(routes, "CHANGELOG", record.root / "CHANGELOG.md")
     assert dispatch("GET", "/api/changelog", record.root, {}, {}).code == 404, "running code without a changelog says so"
     (record.root / "CHANGELOG.md").write_text("# 99.0.0\n")
     page = dispatch("GET", "/api/changelog", record.root, {}, {}).body
     assert (page["changelog"], page["updating"], page["repository"]) == ("# 99.0.0\n", False, False), "the viewer reads the changelog with whether an update is running"
     import install
-    installer = record.root / "src" / "install.py"
+    installer = record.root.parent / ".claude" / "skills" / "journal" / "SKILL.md"
     installer.parent.mkdir(parents=True, exist_ok=True)
     installer.write_text("generated\n")
     managed.remember_managed(record.root.parent, record.root)
     installer.write_text("changed by hand\n")
-    assert dispatch("POST", "/api/update", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], \
+    assert dispatch("POST", "/api/update", record.root, {}, {}).body["changed"] == [".claude/skills/journal/SKILL.md"], \
         "the Update button refuses files changed by hand"
     assert "--yes" in install.upgrade(record.root.parent, record.root)[0] and installer.read_text() == "changed by hand\n", \
         "journal upgrade refuses the same changed file before touching it"
-    assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changed"] == [".journal/src/install.py"], "the updates page is told which files changed"
+    assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changed"] == [".claude/skills/journal/SKILL.md"], "the updates page is told which files changed"
     announced = dispatch("GET", "/api/new-feature", record.root, {}, {})
     assert (announced.code, isinstance(announced.body, list)) == (200, True), "the viewer asks the server which new features are not yet seen, and an empty list means none"
     from features.auto_update import new_feature
@@ -135,10 +139,14 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     report(record, "working", "PreToolUse", session="claude-9", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}],
            running={"command": "npm test", "tool": "Bash", "at": started})
     steps = []
+    assert (running(record.root), wait_for_commands(record.root, steps.append, wait=0.05, every=0.01)) == ([], []), \
+        "a command of the agent's own, such as a test run, is not waited for: the swap of the build does not touch it"
+    report(record, "working", "PreToolUse", session="claude-9", provider="claude", commands=[{"command": "journal todo all", "tool": "Bash", "at": started}],
+           running={"command": "journal todo all", "tool": "Bash", "at": started})
     gave_up = wait_for_commands(record.root, steps.append, wait=0.05, every=0.01)
     closed = Agents(record, actor=SYSTEM).by_session("claude-9")
-    assert (len(running(record.root)), bool(closed.running.get("done")), steps[:1], gave_up[0].startswith("gave up waiting for `npm test`")) == \
-        (0, True, ["Waiting for 1 running command to finish"], True), "an update waits a bounded time for the commands in flight, then names the one it gave up on and marks it ended"
+    assert (len(running(record.root)), bool(closed.running.get("done")), steps[:1], gave_up[0].startswith("gave up waiting for `journal todo all`")) == \
+        (0, True, ["Waiting for 1 running command to finish"], True), "an update waits a bounded time for the journal commands in flight, then names the one it gave up on and marks it ended"
     assert wait_for_commands(record.root, steps.append, wait=0.05, every=0.01) == [], "with nothing running the update does not wait"
     import threading
     from features.auto_update import countdown
@@ -161,7 +169,12 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert (starting_up, ready()) == (False, True), "the server says it is not ready from the moment it starts to boot until what the viewer first asks for is warm, and ready after"
     assert dispatch("POST", "/api/update/cancel", record.root, {}, {}).code == 200
     runner.join(2)
-    assert (counted, countdown.remaining(record.root)) == ([False], {}), "cancelling the countdown skips that update"
+    assert (counted, countdown.remaining(record.root)) == ([False], {}), "Not now puts that update off"
+    from features.auto_update.check import claimed, ledger as tries
+    tries(record.root).set("2.9.1", {"at": time.time(), "tries": 1, "ok": False})
+    assert claimed(record.root, "2.9.1", "ask") is False, "a put off update is not offered again at once"
+    tries(record.root).set("2.9.1", {"at": time.time() - 3600, "tries": 1, "ok": False})
+    assert claimed(record.root, "2.9.1", "ask") is True, "but it is offered again later, as a failed one is"
     from engine import inputs
     from engine.sessions import Sessions
     from features.auto_update import pausing
@@ -193,16 +206,16 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     from features.auto_update import waiting
     report(record, "working", "PreToolUse", session="claude-8", provider="claude", commands=[{"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()}],
            running={"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()})
-    began = time.time()
-    assert (wait_for_commands(record.root, steps.append, wait=5, every=0.01), time.time() - began < 1) == ([], True), \
+    asked = len(steps)
+    assert (wait_for_commands(record.root, steps.append, wait=5, every=0.01), len(steps) == asked) == ([], True), \
         "the command that runs the upgrade is never waited for, nor marked ended"
     report(record, "working", "PreToolUse", session="claude-8", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": time.time()}],
            running={"command": "npm test", "tool": "Bash", "at": time.time()})
     kept = waiting.ancestors, waiting.pid_of
     waiting.ancestors, waiting.pid_of = lambda: {4242}, lambda sessions, row: 4242
     try:
-        began = time.time()
-        assert (wait_for_commands(record.root, steps.append, wait=5, every=0.01), time.time() - began < 1) == ([], True), \
+        asked = len(steps)
+        assert (wait_for_commands(record.root, steps.append, wait=5, every=0.01), len(steps) == asked) == ([], True), \
             "a command run by an agent that is a parent of the upgrade is the upgrade's own, and is never waited for"
     finally:
         waiting.ancestors, waiting.pid_of = kept
@@ -412,8 +425,10 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     features.load()
     record = fresh()
     ran = []
+    monkeypatch.delenv(launch.TRIED, raising=False)
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.parent.mkdir(parents=True, exist_ok=True) or cache.write_text("99.0.0"))
     monkeypatch.setattr("install.upgrade", lambda project, root: ran.append("upgrade") or ["package refreshed"])
+    monkeypatch.setattr(launch, "took", lambda root, latest: True)
     monkeypatch.setattr(launch.os, "execv", lambda python, argv: ran.append("started again"))
     Features(record, actor=SYSTEM).switch("auto_update", False)
     launch.latest_first(record)
@@ -425,9 +440,22 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("0.0.1"))
     assert (launch.latest_first(record), ran) == ("", []), "already current: the launch goes straight on"
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("99.0.0"))
+    monkeypatch.delenv(launch.TRIED, raising=False)
     monkeypatch.setattr("install.upgrade", lambda project, root: ["! the package could not be fetched"])
     monkeypatch.setattr(launch, "failure_in", lambda lines: lines[0])
     assert (launch.latest_first(record), ran) == ("! the package could not be fetched", []), "a failed install is said and the launch goes on, never started again"
+    held = "Files changed since the journal wrote them: CLAUDE.md. Run journal upgrade --yes to copy them into .journal/attic and update anyway."
+    monkeypatch.setattr("install.upgrade", lambda project, root: ran.append("upgrade") or [held])
+    monkeypatch.setattr(launch, "failure_in", lambda lines: "")
+    monkeypatch.setattr(launch, "took", lambda root, latest: False)
+    ran.clear()
+    assert (launch.latest_first(record), ran) == (f"99.0.0 was not installed: {held}", ["upgrade"]), \
+        "an upgrade that held back, or did not put the version in place, is said plainly and the launch goes on, never started again to loop on it"
+    from features.journal_laws import managed
+    (record.root / "src").mkdir(exist_ok=True)
+    (record.root / "src" / "CHANGELOG.md").write_text("rewritten")
+    (record.root / managed.MANAGED).write_text(json.dumps({".journal/src/CHANGELOG.md": "an older hash"}))
+    assert managed.changed_managed(record.root.parent, record.root) == [], "a file of the journal's own code folder that differs from what was written is no edit to hold an upgrade for"
     monkeypatch.setattr(launch, "fetched", lambda cache: 1 / 0)
     assert "the update check did not finish" in launch.latest_first(record), "an update check that breaks is said, and the launch goes on"
     monkeypatch.setattr(launch, "journal_repository", lambda project: True)
@@ -749,8 +777,9 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     with monkeypatch.context() as patch:
         patch.setattr(install, "listed_variables", lambda: (_ for _ in ()).throw(OSError("no git")))
         assert install.repository_variables() == frozenset(), "without git no variable is dropped"
-    silent = tmp_path / "silent.py"
-    silent.write_text("import sys\nsys.exit(3)\n")
+    silent = tmp_path / "silent"
+    (silent / "features").mkdir(parents=True)
+    (silent / "features" / "__init__.py").write_text("import sys\nsys.exit(3)\n")
     assert install.start_refused(silent, legacy) == "it exited with 3 and printed nothing", "a build that will not start and says nothing is named by its exit"
     assert install.pack(legacy) == f"the Python is already in {install.ARCHIVE}", "a journal whose Python is already packed is not packed again"
     with monkeypatch.context() as patch:

@@ -13,6 +13,7 @@ from engine.wording import plural
 from features.auto_update.waiting import ancestors
 
 KEPT = "paused-for-update.json"
+STALE_PAUSE = 600.0
 
 
 @dataclass(frozen=True)

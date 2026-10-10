@@ -17,7 +17,8 @@ from supervisor import HEAL, RELAUNCH, RELOAD, STOP  # noqa: E402
 from agents.terminal import TerminalSession, seated  # noqa: E402
 from agents.actors import Agent  # noqa: E402
 from engine.record import Record  # noqa: E402
-from controllers.types import Notifications  # noqa: E402
+from controllers.types import Notices, Notifications  # noqa: E402
+from providers.dialogs import Menu  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
 from engine.package import CODE, installed_digest, noticed_digest, own_build  # noqa: E402
 from engine.sessions import Sessions, hold_build  # noqa: E402
@@ -36,6 +37,8 @@ SERVER_CRASHES = 3
 RETRY_AFTER = 1.0
 STARTUP, EARLY = 30.0, 16384
 CONSENT_EVERY = 3.0
+DIALOG_EVERY, DIALOG_QUIET = 1.0, 1.5
+KEY_BEFORE, KEY_ECHO = 3.0, 2.0
 TERMINATED = threading.Event()
 
 
@@ -118,6 +121,41 @@ class Confirm:
         self.driver.press_raw(self.driver.consent(early))
 
 
+class Dialogs:
+    """Answers any menu the program itself puts on an agent's terminal, a consent, a folder to trust, a data-sharing question, so the agent is never held by one; it says once what it chose, and leaves a menu alone that a key opened or that a key was pressed in."""
+
+    def __init__(self, driver):
+        self.driver = driver
+        self.said: tuple = ()
+        self.seen: tuple = ()
+        self.seen_at = self.pressed_at = 0.0
+        self.yours = False
+        self.at = 0.0
+
+    def tick(self) -> None:
+        if time.time() - self.at < DIALOG_EVERY:
+            return
+        self.at = time.time()
+        menu = Menu.on(self.driver.screen(self.driver.PROMPT_TAIL))
+        report = self.driver.last_report()
+        if menu is None or not menu.foreign() or (report and report.asking):
+            self.said = self.seen = ()
+            return
+        if menu.signature() != self.seen:
+            self.seen, self.seen_at = menu.signature(), time.time()
+            self.yours = self.driver.keyed_at() > self.seen_at - KEY_BEFORE
+        keyed = self.driver.keyed_at()
+        self.yours = self.yours or keyed > max(self.seen_at, self.pressed_at + KEY_ECHO)
+        if self.yours or self.driver.quiet_for() < DIALOG_QUIET:
+            return
+        choice = menu.choice()
+        self.driver.press_raw(choice.keys)
+        self.pressed_at = time.time()
+        if menu.signature() != self.said:
+            self.said = menu.signature()
+            Notices(self.driver.record, actor=SYSTEM).create(f"A menu in {self.driver.name}'s terminal was answered", tone="note", brief=f'"{menu.question[-200:]}" The journal {choice.said}.')
+
+
 def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int = -1) -> int:
     hold_build(root, CODE)
     watch_change_log()
@@ -128,6 +166,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     began = time.time()
     driver = DRIVERS[agent](Record(root, env), session)
     confirm = Confirm(driver)
+    dialogs = Dialogs(driver)
     kept = checks(seat, driver)
     services = Manager(root, lifeline, sources=(plugin_services,), faulted=lambda where: threw(root, env, where))
     last_check = last_viewer = last_services = last_checks = 0.0
@@ -143,6 +182,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
         while True:
             time.sleep(TICK)
             confirm.tick()
+            dialogs.tick()
             if asked(root, began) or stopping.is_file() or TERMINATED.is_set():
                 stopping.unlink(missing_ok=True)
                 return STOP

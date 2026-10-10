@@ -48,7 +48,7 @@ watch(() => store.summary?.version, showArrival);
                 </template>
                 <template v-else>
                     <p class="step">Starts in {{ left === 1 ? "1 second" : `${left} seconds` }}</p>
-                    <Btn small class="cancel" @click="cancel">Cancel</Btn>
+                    <Btn small class="cancel" @click="cancel">Not now</Btn>
                 </template>
             </div>
         </div>
