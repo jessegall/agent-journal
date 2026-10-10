@@ -35,6 +35,14 @@ export const PLAN_STATES = {
 
 const openPlans = (plans) => plans.filter((p) => !p.completed && !p.deleted && p.data.status in PLAN_STATES).sort((a, b) => a.n - b.n);
 
+const REVIEWER = /review/i;
+
+export function reviewersAtWork(agents) {
+    return agents.flatMap((agent) => agent.data.subagent_rows || []).filter((sub) => sub.running && REVIEWER.test(`${sub.type || ""} ${sub.task || ""}`)).length;
+}
+
+export const reviewersLine = (n) => (n ? `${n} ${n === 1 ? "reviewer" : "reviewers"} still reviewing` : "");
+
 export function leadingPlan(plans) {
     const open = openPlans(plans);
     const first = (...statuses) => open.find((p) => statuses.includes(p.data.status));

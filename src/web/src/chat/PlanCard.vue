@@ -1,5 +1,5 @@
 <script setup>
-import {otherPlans, othersLine, PLAN_STATES, sizeOf, stoppedOf} from "../domain/plans.js";
+import {otherPlans, othersLine, PLAN_STATES, reviewersAtWork, reviewersLine, sizeOf, stoppedOf} from "../domain/plans.js";
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
@@ -23,6 +23,7 @@ const error = ref("");
 const status = computed(() => props.plan.data.status);
 const parked = computed(() => status.value === "parked");
 const reviewing = computed(() => status.value === "reviewing");
+const reviewers = computed(() => (reviewing.value ? reviewersLine(reviewersAtWork(rows("agent"))) : ""));
 const building = computed(() => status.value === "building" || status.value === "draft");
 const others = computed(() => otherPlans(rows("plan")));
 const phases = computed(() => props.plan.data.phases.map((ph, i) => ({n: i + 1, title: ph.title, rows: ph.todos.length})));
@@ -50,6 +51,9 @@ async function start() {
                 {{ plan.title }}
             </button>
             <Chip class="plan-card-chip" :tone="status === 'ready' ? 'accent' : ''">{{ PLAN_STATES[status] }}</Chip>
+            <template v-if="reviewers">
+                <span class="plan-card-reviewers">{{ reviewers }}</span>
+            </template>
             <span class="plan-card-size" data-fades>
                 {{ parked ? stoppedOf(plan, rows("todo")) : sizeOf(plan) }}
             </span>
@@ -143,6 +147,13 @@ async function start() {
 .plan-card-chip {
     flex: none;
     align-self: center;
+}
+
+.plan-card-reviewers {
+    flex: none;
+    color: var(--text-3);
+    font-size: 12px;
+    white-space: nowrap;
 }
 
 .plan-card-size {
