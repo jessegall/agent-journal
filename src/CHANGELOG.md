@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.3 — Sessions written at the same moment are seen, and healing keeps a running build
+- A session or state file another process wrote at the same moment is read at once, so the write gate no longer says nothing is open while a ticket's agent has work open.
+- `journal heal` never rolls back a build whose server is running and answering, or one an upgrade is still installing; it rolls back only a build that does not answer. Repeated heals had put a journal's server back on an older build while its viewer was new, so pages such as the voice settings never loaded.
+- The viewer shares one profile load instead of starting the same requests again.
+
 ## 2.268.2 — The mascots' pictures ship, ticket agents can write, and paused agents resume
 - The voices' pictures and the mascots' rig parts ship with the viewer: the release before left them out, so the mascots and the editor's moves showed empty frames. The old sprite sheets are gone.
 - The mascot shows on the chat box whenever the agent is not working, and a voice with a rig shows only its moves in the animations editor.
