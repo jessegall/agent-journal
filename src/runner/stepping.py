@@ -30,24 +30,23 @@ def rewrite(provider, root: Path, env: str, hook: Hook, answered: dict) -> dict:
     return rewritten
 
 
-def report_step(root: Path, call: SteppedCall, part: int, phase: str, status: int, token: str = "") -> None:
+def report_step(root: Path, call: SteppedCall, part: int, phase: str, status: int, token: str) -> None:
     """A part of a stepped call started or ended: the agent's row names the part now running, and a part that ended well is a command that ran.
     The parts report in the background, so an end can arrive before its start: a start that comes after its end is never shown, and an end clears only the part it names."""
     record = Record(root, call.env)
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(call.session)
     command = call.parts[part - 1]
-    key = f"{token}:{part}" if token else ""
+    key = f"{token}:{part}"
     if phase == START:
         if key in ENDED:
             return
         agents.update(row.n, step={"command": command, "at": time.time(), "key": key})
         return
-    if key:
-        ENDED[key] = None
-        for old in list(ENDED)[:max(0, len(ENDED) - ENDED_KEPT)]:
-            del ENDED[old]
-    if not key or not row.step or row.step.get("key", key) == key:
+    ENDED[key] = None
+    for old in list(ENDED)[:max(0, len(ENDED) - ENDED_KEPT)]:
+        del ENDED[old]
+    if not row.step or row.step.get("key") == key:
         agents.update(row.n, step={})
     if status == 0:
         ran.announce(record, row.n, ran.STEP, command)
