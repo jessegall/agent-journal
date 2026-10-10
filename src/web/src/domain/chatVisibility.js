@@ -37,7 +37,7 @@ export const VISIBILITY_GROUPS = [
 
 const chatKinds = () => store.spec.chat_kinds;
 export const HIDDEN_KEY = "chat_hidden";
-export const DEFAULT_HIDDEN = ["acknowledgements"];
+export const DEFAULT_HIDDEN = ["acknowledgements", "sequences"];
 
 const KINDS = {
     message: (t) => (t.data.acknowledgement ? "acknowledgements" : ""),
