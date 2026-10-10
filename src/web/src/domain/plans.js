@@ -119,7 +119,7 @@ export function sizeOf(p) {
 }
 
 export function stoppedOf(p, todos) {
-    return `Stopped at phase ${p.data.current || 1} · ${doneOf(p, todos)} of ${rowsOf(p).length} to-dos done`;
+    return `Stopped at phase ${p.data.current || 1} · ${standingOf(p, todos)}`;
 }
 
 export function phaseOf(p) {
@@ -133,6 +133,21 @@ export function rowsOf(p) {
 
 export function doneOf(p, todos) {
     return rowsOf(p).filter((n) => (todos.find((t) => t.n === n) || {}).completed).length;
+}
+
+// A row a helper has finished on its branch, closed only once that branch is merged.
+export function awaitingMergeOf(p, todos) {
+    return rowsOf(p).filter((n) => {
+        const row = todos.find((t) => t.n === n);
+        return row && !row.completed && Boolean(row.data?.pending?.worktree);
+    }).length;
+}
+
+export function standingOf(p, todos) {
+    const done = doneOf(p, todos);
+    const waiting = awaitingMergeOf(p, todos);
+    const rows = rowsOf(p).length;
+    return waiting ? `${done} of ${rows} to-dos done · ${waiting} built, waiting for the merge` : `${done} of ${rows} to-dos done`;
 }
 
 export function planButton(p) {

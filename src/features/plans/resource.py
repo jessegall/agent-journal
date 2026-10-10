@@ -88,3 +88,33 @@ class Plan(Shape, Resource):
 
     def member_refs(self) -> list[str]:
         return [f"todo:{n}" for phase in self.phases for n in phase.get(PHASE.todos, [])]
+
+
+@dataclass(frozen=True)
+class Tally:
+    """How a set of a plan's rows stands: closed, built and waiting for a merge, and how many there are."""
+
+    closed: int = 0
+    waiting: int = 0
+    total: int = 0
+
+    @property
+    def settled(self) -> int:
+        """Closed and waiting together: the rows whose work is done."""
+        return self.closed + self.waiting
+
+    def said(self) -> str:
+        return f"{self.closed} of {self.total} done" + (f", {self.waiting} built, waiting for the merge" if self.waiting else "")
+
+
+def tallied(rows) -> Tally:
+    return Tally(sum(1 for row in rows if row.completed), sum(1 for row in rows if row.awaits_merge()), len(rows))
+
+
+def stood(row) -> str:
+    """How one row of a plan stands, in a word or two."""
+    if row.completed:
+        return "done"
+    if row.awaits_merge():
+        return "built, waiting for the merge"
+    return row.data.get("stage") or row.data.get("status") or "open"

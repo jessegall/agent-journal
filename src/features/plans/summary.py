@@ -24,6 +24,7 @@ class PlanSummary(TypedDict):
     phases: int
     rows: int
     done: int
+    waiting: int
     delegated: bool
     helpers: list[Helping]
     tickets: list[int]
@@ -48,11 +49,16 @@ def open_tickets(record, p) -> list[int]:
     return [row.n for row in Plans(record, actor=SYSTEM)._members(p.current_phase) if row.type == "ticket" and not row.completed]
 
 
+def waiting(record, p) -> int:
+    """How many of a plan's rows are built on a helper's branch and wait only for their merge."""
+    return sum(1 for phase in p.phases for row in Plans(record, actor=SYSTEM)._members(phase) if row.awaits_merge())
+
+
 def plan(record, p, todos: dict) -> PlanSummary:
     current = p.phases[p.current - 1] if p.phases and 0 < p.current <= len(p.phases) else None
     rows = rows_of(p)
     return {"n": p.n, "title": p.title, "status": p.status, "current": p.current, "phase": current["title"] if current else "",
-            "phases": len(p.phases), "rows": len(rows), "done": sum(bool(todos.get(n)) for n in rows),
+            "phases": len(p.phases), "rows": len(rows), "done": sum(bool(todos.get(n)) for n in rows), "waiting": waiting(record, p),
             "delegated": p.delegated, "helpers": helping(record, p), "tickets": open_tickets(record, p)}
 
 

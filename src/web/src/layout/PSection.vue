@@ -1,5 +1,5 @@
 <script setup>
-import {delegationOf, doneOf, NOT_STARTED, phaseOf, planButton, rowsOf} from "../domain/plans.js";
+import {awaitingMergeOf, delegationOf, doneOf, NOT_STARTED, phaseOf, planButton, rowsOf, standingOf} from "../domain/plans.js";
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
@@ -99,11 +99,12 @@ async function park() {
             <span class="planbar-step">{{ NOT_STARTED[data.status] }}</span>
         </template>
         <template v-else>
-            <span class="planbar-step" :title="`Phase ${data.current || 1} of ${count}`">
-                {{ doneOf(p, rows("todo")) }}/{{ rowsOf(p).length }}
+            <span class="planbar-step" :title="standingOf(p, rows('todo'))">
+                {{ doneOf(p, rows("todo")) }}<template v-if="awaitingMergeOf(p, rows('todo'))">+{{ awaitingMergeOf(p, rows("todo")) }}</template>/{{ rowsOf(p).length }}
             </span>
             <span class="planbar-track" role="progressbar">
                 <span :style="{width: `${(100 * doneOf(p, rows('todo'))) / Math.max(1, rowsOf(p).length)}%`}" />
+                <span class="planbar-waiting" :style="{width: `${(100 * awaitingMergeOf(p, rows('todo'))) / Math.max(1, rowsOf(p).length)}%`}" />
             </span>
         </template>
         <template v-if="planButton(p)">
@@ -286,6 +287,7 @@ async function park() {
 }
 
 .planbar-track {
+    display: flex;
     flex: none;
     width: 96px;
     height: 3px;
@@ -296,10 +298,15 @@ async function park() {
 
 .planbar-track > span {
     display: block;
+    flex: none;
     height: 100%;
-    border-radius: 3px;
     background: var(--text-2);
     transition: width 0.4s var(--ease);
+}
+
+.planbar-track > .planbar-waiting {
+    background: var(--text-2);
+    opacity: 0.4;
 }
 
 .planbar-act {

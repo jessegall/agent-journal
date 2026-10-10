@@ -282,6 +282,10 @@ class Resource:
     def creation_order(self) -> tuple[float, int]:
         return self.created, self.n
 
+    def awaits_merge(self) -> bool:
+        """Whether this row's work is finished on a helper's branch and only its merge is owed; only a to-do is ever held that way."""
+        return False
+
     @property
     def author(self) -> str:
         return self.seen[0] if self.seen else ""
