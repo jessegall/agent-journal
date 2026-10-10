@@ -192,6 +192,16 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
         assert faces.react(liked.n, "👍") is None, "a face given again after a while takes the reaction back"
     finally:
         discussion.TWICE_WITHIN = window
+    import controllers.base as base
+    said = Messages(record, actor=USER)
+    first, second = said.create("same words", brief="again"), said.create("other words", brief="other")
+    assert said.create("same words", brief="again").n == first.n, "the same words said twice at once are one message"
+    window = base.TWIN_WINDOW
+    base.TWIN_WINDOW = 1
+    try:
+        assert said.create("same words", brief="again").n > second.n, "a create looks for its twin among the newest rows only, never through every row of the store"
+    finally:
+        base.TWIN_WINDOW = window
     warm(record.root)
 
 
