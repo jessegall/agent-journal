@@ -210,7 +210,13 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _idle_by_design(self, ticket) -> bool:
         """A ticket that waits on open tickets, on its plan's approval, on its approved plan's turn or on its merge has an agent with nothing to do on purpose."""
-        return bool(self._waiting_on(ticket)) or ticket.approved_early or self._plan_status(ticket) in (READY, WAITING, PLAN_DONE)
+        return bool(self._waiting_on(ticket)) or ticket.approved_early or self._plan_status(ticket) in (READY, WAITING, PLAN_DONE) or self._rows_done(ticket)
+
+    def _rows_done(self, ticket) -> bool:
+        """Whether every row of the ticket's plan is closed, though the plan has not yet been marked done: its agent has finished and waits on the merge."""
+        from features.plans.progress import first_open_phase
+        plan = self._plan_of(ticket)
+        return plan is not None and plan.status == ACTIVE and bool(plan.phases) and not first_open_phase(Record(self.record.root, ticket.work_environment), plan)
 
     def _needing_a_look(self, boards: list[int]) -> list[tuple]:
         sessions, running = Sessions(self.record.root).all(), len(self._running())

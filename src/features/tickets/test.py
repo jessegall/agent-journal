@@ -555,6 +555,15 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
         user.complete(api.n, how="shipped")
         assert (decided, user.load(ui.n).approved_early) == ([(ui.n, READY)], False), "the plan is approved the moment the ticket it waited on closes"
     assert "has no plan waiting" in refused(lambda: user.approve_plan(ui.n)), "once its dependency closes, the wait no longer holds the plan"
+    from types import SimpleNamespace
+    from features.plans import progress
+    from features.plans.controller import ACTIVE
+    with monkeypatch.context() as finished:
+        finished.setattr(Tickets, "_plan_of", lambda self, found: SimpleNamespace(status=ACTIVE, phases=[{}]))
+        finished.setattr(progress, "first_open_phase", lambda *given: 0)
+        assert Tickets(record, actor=SYSTEM)._idle_by_design(user.load(ui.n)), "an agent whose plan has every row closed, though the plan is not yet marked done, waits on its merge and is not stuck"
+        finished.setattr(progress, "first_open_phase", lambda *given: 2)
+        assert not Tickets(record, actor=SYSTEM)._rows_done(user.load(ui.n)), "one with a phase still open is not finished"
     first, left, right, last = (user.create(title, board=board.n) for title in ("First", "Left", "Right", "Last"))
     for waiting, on in ((left, first), (right, first), (last, left), (last, right)):
         user.update(waiting.n, dependencies={**user.load(waiting.n).dependencies, on.ref: "confirmed"})
