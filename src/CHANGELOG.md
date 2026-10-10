@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.81 — The engine never waits on its own upkeep
+- The engine beats every second on its own, and the clock's upkeep (the ticket upkeep's git work among it) runs on a thread of its own: on a loaded machine with many tickets a round could take minutes and hold back state updates, message delivery and moving a long command to the background. A long command now moves within seconds of its limit.
+- An answered question reaches the agent's own question prompt on screen, for every provider, and Claude's question screen is recognised as a question.
+- A reply or wait that fails keeps its words in the chat and says why, instead of vanishing.
+- The update cover shows at once on a page loaded while an update runs.
+- A request no longer rewrites the trigger counters of stopped sessions, and the start block is rebuilt behind the answer, not in it.
+
 ## 2.267.80 — The viewer answers in seconds after a start, and worktrees share the project's packages
 - A start warms the first dashboard first and opens the viewer on it; command parsers, open work, messages and search texts warm behind it. The first answer after a start came at about 35 s under load, now about 9 s.
 - A worktree cut for a helper, a ticket or by hand links the project's installed vendor and node_modules, nested repositories' too, instead of installing them again; a job that changes dependencies asks for its own install with --packages (or the ticket's own_packages field).
