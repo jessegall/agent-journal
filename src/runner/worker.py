@@ -18,7 +18,7 @@ from agents.terminal import TerminalSession, seated  # noqa: E402
 from agents.actors import Agent  # noqa: E402
 from engine.record import Record  # noqa: E402
 from controllers.types import Notices, Notifications  # noqa: E402
-from providers.dialogs import Asking, Choice, Menu  # noqa: E402
+from providers.dialogs import Menu  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
 from engine.package import CODE, installed_digest, noticed_digest, own_build  # noqa: E402
 from engine.sessions import Sessions, hold_build  # noqa: E402
@@ -131,7 +131,6 @@ class Dialogs:
         self.seen_at = self.pressed_at = 0.0
         self.yours = False
         self.at = 0.0
-        self.asking = Asking(driver)
 
     def tick(self) -> None:
         if time.time() - self.at < DIALOG_EVERY:
@@ -149,32 +148,12 @@ class Dialogs:
         self.yours = self.yours or keyed > max(self.seen_at, self.pressed_at + KEY_ECHO)
         if self.yours or self.driver.quiet_for() < DIALOG_QUIET:
             return
-        decided = self.decide(menu)
-        if decided is None:
-            return
-        choice, source = decided
+        choice = menu.choice()
         self.driver.press_raw(choice.keys)
         self.pressed_at = time.time()
         if menu.signature() != self.said:
             self.said = menu.signature()
-            Notices(self.driver.record, actor=SYSTEM).create(f"A menu in {self.driver.name}'s terminal was answered", tone="note", brief=f'"{menu.question[-200:]}" The journal {choice.said}, {source}.')
-
-    def decide(self, menu: Menu) -> tuple[Choice, str] | None:
-        """What to press and where the choice came from: memory, the word rules, then a dispatched agent whose pick is stored; none while that agent is still answering."""
-        taken = menu.remembered(self.driver.record)
-        if taken:
-            return menu.choice(taken), "from memory"
-        taken = menu.wanted()
-        if taken:
-            return menu.choice(taken), "by the word rules"
-        self.asking.start(menu)
-        if self.asking.pending(menu):
-            return None
-        if self.asking.answered(menu):
-            taken = self.asking.answer(menu)
-            menu.remember(self.driver.record, taken)
-            return menu.choice(taken), "as an asked agent said"
-        return menu.choice(), "because even the asked agent could not say"
+            Notices(self.driver.record, actor=SYSTEM).create(f"A menu in {self.driver.name}'s terminal was answered", tone="note", brief=f'"{menu.question[-200:]}" The journal {choice.said}.')
 
 
 def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int = -1) -> int:
