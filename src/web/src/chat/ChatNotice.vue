@@ -8,6 +8,7 @@ import {api} from "../api/client.js";
 import {route} from "../route.js";
 
 const props = defineProps({notice: Object, fixed: Boolean});
+const emit = defineEmits(["closing", "failed"]);
 
 const working = ref(false);
 const failure = ref("");
@@ -35,8 +36,10 @@ const ARMED_AFTER = 1500;
 const armed = ref(false);
 onMounted(() => setTimeout(() => (armed.value = true), ARMED_AFTER));
 
-async function close() {
-    if (armed.value) await run(() => api.closeNotice(props.notice.n));
+function close() {
+    if (!armed.value) return;
+    emit("closing", props.notice.n);
+    api.closeNotice(props.notice.n).catch(() => emit("failed", props.notice.n));
 }
 </script>
 
@@ -66,7 +69,7 @@ async function close() {
             </template>
         </SwitchCase>
         <template v-if="!fixed">
-            <CloseButton :class="{unarmed: !armed}" :disabled="working" title="Close this" @click="close" />
+            <CloseButton :class="{unarmed: !armed}" title="Close this" @click="close" />
         </template>
         <template v-if="failure">
             <Notice role="alert" class="chat-notice-error">{{ failure }}</Notice>
