@@ -27,6 +27,7 @@ from engine.wording import noun
 WORDS = ("title", "abstract", "brief")
 FIELD_WRITES = ("create", "update", "set")
 LAST = 25
+TWIN_WINDOW = 100
 SEARCHABLE: dict[str, dict[int, tuple[float, str]]] = {}
 SEARCHED: dict[str, tuple[list, bool]] = {}
 CORPUS: dict[str, tuple] = {}
@@ -247,7 +248,7 @@ class Controller(Files, Links, Discussed):
         if not self.resource.deduplicates:
             return None
         since = time.time() - TWICE_WITHIN
-        lately = [row["n"] for row in self.rows.summaries() if not row["deleted"] and row["updated"] >= since]
+        lately = [row["n"] for row in self.rows.summaries()[-TWIN_WINDOW:] if not row["deleted"] and row["updated"] >= since]
         recent = (self.load(n) for n in reversed(lately[-20:]))
         return next((r for r in recent if r.created >= since and r.title == title and r.brief == brief
                      and r.author == self.actor and (not about or about in r.refs)
