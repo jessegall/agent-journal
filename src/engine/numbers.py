@@ -1,4 +1,5 @@
 import shutil
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, Callable
@@ -12,6 +13,7 @@ LOCK = ".lock"
 ROWS = "rows"
 EVENTS = "events"
 BLOCK = 64
+ORDER = ".order"
 
 
 def rows(scope: str, type: str) -> str:
@@ -93,6 +95,12 @@ class Numbers:
             block = self._block(held, sequence, floor)
             block.drawn().write(held)
         return block.next
+
+    @contextmanager
+    def ordered(self):
+        """Holds every writer of an event to one turn from the drawing of its number to its place in the log, whichever log it is, so a later number never lands first and passes a reader's cursor."""
+        with held_file(self.held / ORDER):
+            yield
 
     def peek(self, sequence: str, floor: Callable[[], int]) -> int:
         with held_file(self.held / sequence) as held:

@@ -1,3 +1,6 @@
+import time
+
+import pytest
 from controllers.types import Agents, Messages, Nudges
 from engine import chat
 from resources.base import AGENT, SYSTEM
@@ -94,3 +97,26 @@ def test_a_line_delivered_mid_turn_keeps_the_message_the_turn_answers():
     reading.pending = []
     reading.notified(held)
     assert (Agent(record, SimpleNamespace()).delivered_until(), Agent(record, SimpleNamespace()).sent) == (last.id, set()), "once nothing is held the cursor moves on and nothing is remembered"
+    import threading
+    from resources.base import PROJECT
+    appended, begun = [], threading.Event()
+    env_append, project_append = record.event_log.append, record.event_log.project.append
+
+    def slowly(event):
+        begun.set()
+        time.sleep(0.3)
+        appended.append(event.id)
+        env_append(event)
+
+    def promptly(event):
+        appended.append(event.id)
+        project_append(event)
+    with pytest.MonkeyPatch.context() as slow:
+        slow.setattr(record.event_log, "append", slowly)
+        slow.setattr(record.event_log.project, "append", promptly)
+        writer = threading.Thread(target=lambda: record.emit("todo", 1, "created", SYSTEM))
+        writer.start()
+        begun.wait(5)
+        record.emit("ticket", 1, "updated", SYSTEM, scope=PROJECT)
+        writer.join(5)
+    assert appended == sorted(appended), "an event written in the project's log never lands before one with a smaller number written in an environment's, so no reader's cursor passes a message still on its way"
