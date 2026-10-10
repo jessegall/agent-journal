@@ -291,6 +291,7 @@ def bound_handler(shares) -> type[ShareHandler]:
 def run(shares, server: ThreadingHTTPServer) -> None:
     stopped = threading.Event()
     threading.Thread(target=ticking, args=(shares, stopped), daemon=True).start()
+    threading.Thread(target=shares.warm_pages, daemon=True).start()
     try:
         with server:
             server.serve_forever()

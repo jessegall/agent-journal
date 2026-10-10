@@ -259,6 +259,11 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header(tmp_path,
             page_data.forget(fenced.token)
             fetch(f"{key}/data.json")
             assert len(built) == 2, "and again once a comment has made it out of date"
+            queued = []
+            kept.setattr(bus, "background", lambda key, job: queued.append(key))
+            page_data.BUILT[fenced.token] = (time.monotonic() - 1000, b"built a while ago")
+            assert (fetch(f"{key}/data.json")[1], len(queued)) == (b"built a while ago", 1), \
+                "a page built a while ago is sent at once and a newer one is built behind it, so a visitor never waits on a build once there has been one"
             page_data.forget(fenced.token)
         assert [fetch(f"/s/{'a' * len(fenced.token)}/")[0], fetch(f"/s/{asked.token}/")[0], fetch(f"/s/{stopped.token}/")[0]] == [404, 404, 410], \
             "an unknown link and one the user has not approved open nothing, and one that ended says so"

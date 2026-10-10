@@ -17,7 +17,7 @@ from features.tickets.controller import Tickets
 from features.tickets.resource import CONFIRMED
 from resources.base import SYSTEM, Ref, Refused
 
-KEPT_FOR = 10.0
+KEPT_FOR = 30.0
 REACHED: dict[str, tuple[float, tuple]] = {}
 BUILT: dict[str, tuple[float, bytes]] = {}
 BUILDING = threading.Lock()
@@ -159,10 +159,15 @@ class SharePages:
                 "types": {kind: described[kind] for kind in kinds if kind in described}}
 
     def _shared_body(self, share) -> bytes:
-        """The page's data as it is sent, built once for every request that comes while it is being built or in the next few seconds."""
+        """The page's data as it is sent: what was built last is sent at once, also when it is a little old, and a newer one is built behind it; only the first request after a start, or after a comment, waits for a build."""
         kept = BUILT.get(share.token)
-        if fresh(kept):
+        if kept and bus.BACKGROUND:
+            if not fresh(kept):
+                bus.background(f"share {share.token}", lambda: self._built(share))
             return kept[1]
+        return self._built(share)
+
+    def _built(self, share) -> bytes:
         with BUILDING:
             kept = BUILT.get(share.token)
             if fresh(kept):
@@ -170,6 +175,15 @@ class SharePages:
             body = json.dumps(self._shared_data(share)).encode()
             BUILT[share.token] = (time.monotonic(), body)
         return body
+
+    def warm_pages(self) -> None:
+        """Builds the data of every page that is open to visitors, so the first visitor after a start finds it built."""
+        for share in self.rows.standing():
+            if share.data.get("token") and share.approved and not share.layout and (not share.expires or share.expires > time.time()):
+                try:
+                    self._shared_body(share)
+                except Exception:
+                    continue
 
     def _timelines(self, share, scope: set[str]) -> dict[str, list[dict]]:
         """Each shared plan's timeline, keyed by the plan's ref, holding the moments of its to-dos the share shows."""
