@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.29 — An agent is told once that the journal resumed it
+- After an update, an agent was told 'The journal has updated and resumed you' again and again, about once a second: a paused agent's lines wait until it continues, so the line sent while it was still paused counted as unsent and was sent again on every tick. The pause now ends first and the agent is told once.
+
 ## 2.268.28 — Mascots that blink, and steadier chats
 - The mascots blink as people do: every two to six seconds at an irregular gap, now and then twice, on an eye layer of their own, so a blink also happens during a move.
 - A mascot enters only once every image of it has loaded, so no piece pops in late. It checks several times a second where the top bar is, so it follows the bars down when something under them goes.

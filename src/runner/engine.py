@@ -13,7 +13,7 @@ from agents.actors import Actor, Agent, System, User, event_data
 from resources.types import BUSY, FAILED, IDLE, STOPPED, WORKING
 from providers.base import asking_row
 from providers.drivers import AGENT_COMMAND
-from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, UPDATE, filed, take, waiting_commands
+from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, UPDATE, take, waiting_commands
 from engine.record import Record
 from controllers.faults import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
@@ -51,7 +51,6 @@ STAMPED = "stamped"
 SETTLE, STEP = 3.0, 0.1
 OUTPUT_WAIT = 5.0
 TYPING_HOLD = 10.0
-RESUME_PATIENCE = 30.0
 STALE_PAUSE = 600.0
 
 SILENT_AFTER = 120.0
@@ -353,13 +352,9 @@ class Engine:
                 self.agent.driver.send(PAUSED_FOR_UPDATE, now=True)
             return self.held("Paused")
         if asked := take(self.record.root, self.names(), RESUME):
-            if not self.agent.driver.send(RESUMED_AFTER_UPDATE if asked.value == UPDATE else RESUMED, now=True) and self.paused_age() < RESUME_PATIENCE:
-                filed(self.record.root, asked)
-                return "paused"
-            return self.released()
+            return self.released(RESUMED_AFTER_UPDATE if asked.value == UPDATE else RESUMED)
         if self.paused and self.stale_update_pause():
-            self.agent.driver.send(RESUMED_AFTER_UPDATE, now=True)
-            return self.released()
+            return self.released(RESUMED_AFTER_UPDATE)
         if not self.paused:
             return ""
         if self.agent.state() in (BUSY, WORKING) and time.time() - self.held_at > SETTLE:
@@ -375,12 +370,13 @@ class Engine:
         row = self.agent.current()
         return row.paused_for == UPDATE and not runtime.upgrading(self.record.root) and not kept(self.record.root).is_file() and self.paused_age() >= STALE_PAUSE
 
-    def released(self) -> str:
-        """The pause ends: the mark that holds the agent's calls is cleared whether or not the line telling it could be typed, so a screen that takes no input cannot keep an agent held."""
+    def released(self, told: str) -> str:
+        """The pause ends first, then the agent is told once: the line goes out with the lines held during the pause, so a screen that takes no input cannot keep an agent held and nothing is said twice."""
         self.paused = False
         self.resumed_at = time.time()
         self.agent.mark("", "", paused=0, paused_for="")
         self.noted("Continued")
+        self.agent.driver.send(told)
         return "resumed"
 
     def backgrounded(self) -> str:
