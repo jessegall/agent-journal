@@ -120,6 +120,14 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
               "❯ 1. I am using this for local development\r\n  2. Exit\r\nEnter to confirm".encode()
     assert (claude.consent(warning), claude.consent(warning + "\r\n❯ ".encode())) == (b"\r", b""), \
         "Claude's development channels warning is answered with Enter while its menu is the last thing on screen, never once the prompt is back"
+    from providers.dialogs import Menu
+    sharing = Menu.on("Blender MCP wants to share data to improve the product. Allow?\r\n❯ 1. Yes, allow\r\n  2. No, do not share\r\nEnter to select · Esc to cancel")
+    trusting = Menu.on("Do you trust the files in this folder?\r\n❯ 1. Yes, I trust this folder\r\n  2. No, exit\r\nEnter to confirm · Esc to cancel")
+    unknown = Menu.on("Pick a colour\r\n❯ 1. Red\r\n  2. Blue\r\nEnter to select")
+    permission = Menu.on("Do you want to proceed?\r\n❯ 1. Yes\r\n  2. No\r\nEnter to select")
+    assert (sharing.choice().keys, trusting.choice().keys, unknown.choice().keys, permission.foreign(), Menu.on("no menu here\r\n❯ ")) == \
+        (b"\x1b[B\r", b"\r", b"\x1b", False, None), \
+        "a menu is recognised by its shape and chosen by its words: data sharing is declined by moving to the label, a folder the journal launched the agent into is trusted, anything unknown is closed, and the agent's own permission question is left to its asks"
     update = b"\x1b[2m> Ask Codex to do anything\x1b[0m\r\nUpdate available 0.159.3 \xe2\x86\x92 0.160.0\r\n\xe2\x80\xba 1. Update now\r\n  2. Skip\r\n  3. Skip until next version"
     assert (codex.consent(update), codex.opening(update)) == (b"2\r", ""), "Codex's update question is skipped, and the opening waits until it is gone"
     assert (codex.carried_on(["continue"]), codex.carried_on(["--resume", "abc"]), codex.carried_on(["-c", "k=v"])) == \
