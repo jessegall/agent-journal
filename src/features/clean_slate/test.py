@@ -124,6 +124,7 @@ def test_an_agent_ending_waits_for_nothing_slow_and_a_slow_end_leaves_its_stack(
     from features.clean_slate import slate
     record = fresh()
     monkeypatch.setattr(queries, "SLOW_AFTER", 0.3)
+    monkeypatch.setattr(queries, "kept_work", lambda cwd: None)
     monkeypatch.setattr(slate, "put_back", lambda record: time.sleep(1))
     ended({"record": record})
     assert "most recent call first" in (record.root / "runtime" / queries.SLOW_LOG).read_text(), \

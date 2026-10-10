@@ -164,6 +164,16 @@ def test_a_write_locks_its_repository_for_a_moment_a_read_waits_for_it_without_l
     quick = time.monotonic() - began
     writer.join()
     assert quick < 0.2, "a read of another environment's repository is not held back by it"
+    inside.clear()
+    writer = threading.Thread(target=write, args=(0.4,))
+    writer.start()
+    inside.wait()
+    began = time.monotonic()
+    with Record(record.root, "other").locked():
+        Todos(record, actor=SYSTEM).rows.peek(n)
+    holding = time.monotonic() - began
+    writer.join()
+    assert holding < 0.2, "a read made by a thread that holds a lock of its own does not wait for another write, which may be waiting for that lock"
     monkeypatch.setattr(locks, "LOCK_WAIT", 0.3)
     inside.clear()
     holder = threading.Thread(target=write, args=(1.0,))
