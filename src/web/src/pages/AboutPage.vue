@@ -7,7 +7,7 @@ import StateDot from "../kit/StateDot.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {locked} from "../state/updating.js";
 
-const {about, changed, releases, error, status, update, start} = useUpdates();
+const {about, changed, releases, error, status, loadMore, update, start} = useUpdates();
 
 onMounted(start);
 </script>
@@ -51,6 +51,9 @@ onMounted(start);
                 </details>
             </template>
             <TextDisplay class="changelog" :text="about.changelog" />
+            <template v-if="about.more">
+                <Btn class="more-releases" @click="loadMore()">Show older releases</Btn>
+            </template>
         </template>
     </section>
 </template>
@@ -90,6 +93,10 @@ onMounted(start);
     justify-content: space-between;
     gap: 12px;
     padding: 4px 0;
+}
+
+.more-releases {
+    align-self: flex-start;
 }
 
 .hint {

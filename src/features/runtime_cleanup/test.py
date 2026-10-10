@@ -122,12 +122,29 @@ def test_it_runs_on_its_own_on_the_engines_clock():
     capture.write_bytes(b"y" * 200_000)
     tick(record)
     assert capture.stat().st_size == 200_000, "a second tick within the hour finds it tidied and leaves it"
-    (runtime.folder(record.root) / "tidied").unlink()
-    from features.runtime_cleanup.handlers import claim
+    (runtime.folder(record.root) / "tidying.swept").unlink()
+    from engine.locks import claim
     held = claim(runtime.folder(record.root) / "tidying.lock")
     tick(record)
     held.close()
     assert capture.stat().st_size == 200_000, "a sweep another process is already making is not made twice"
+    from engine.locks import project_sweep
+    shared = runtime.folder(record.root) / "shared-sweep.lock"
+    swept = []
+    for owner in ("main", "ticket-1", "main"):
+        with project_sweep(shared, 5.0, owner) as mine:
+            swept.append(mine)
+    assert swept == [True, False, True], "an environment's engine sweeps whenever it asks, and the engine of another one finds the project looked after a moment ago"
+    long_ago = time.time() - 60
+    os.utime(shared.with_suffix(".swept"), (long_ago, long_ago))
+    with project_sweep(shared, 5.0, "ticket-1") as mine:
+        assert mine, "once the last sweep is older than the wait, another environment's engine takes it over"
+    once = runtime.folder(record.root) / "once-a-minute.lock"
+    swept = []
+    for _ in range(2):
+        with project_sweep(once, 60.0) as mine:
+            swept.append(mine)
+    assert swept == [True, False], "a sweep with no owner named is made once in the wait, whoever asks again"
 
 
 def test_the_event_log_keeps_the_last_hundred_and_whatever_a_live_reader_has_not_reached():
@@ -199,6 +216,12 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
     assert not packed.exists() and len(tries) == 2, "a folder a late write kept busy is removed on the next try, so packing never fails over it"
     assert {Path(folder).name for folder in tries} == {".late-writer.removing"}, \
         "the folder leaves its place in one rename before it is deleted, so nothing reads it half removed"
+    from controllers.stored import saved
+    from engine.event_log import EventLog, RecordEvents
+    from contextlib import nullcontext
+    saved(packed / "todo", {})
+    RecordEvents("late-writer", packed, nullcontext, EventLog(root, nullcontext, lambda: [])).set_cursor_text("plugin", "7")
+    assert not packed.exists(), "a late index save or a reader's place never brings back the folder of a removed environment"
 
 
 def test_an_installed_update_tidies_at_once():

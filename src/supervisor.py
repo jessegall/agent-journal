@@ -28,7 +28,7 @@ LONGEST = 65536
 INBOX = 1 << 20
 TYPED_EVERY = 1.0
 HEADLESS_SIZE = (40, 120)
-PRINTED, SCREEN, SCREEN_SHAPE, TYPED, LAUNCHED = "printed", "screen", "screen.json", "typed", "launched.json"
+PRINTED, SCREEN, SCREEN_SHAPE, TYPED, LAUNCHED, KEYED = "printed", "screen", "screen.json", "typed", "launched.json", "keyed"
 ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[P_^X][^\x1b]*\x1b\\|O[\x40-\x7e]|[@-_])")
 
 
@@ -242,6 +242,7 @@ class Supervisor:
             self.feed()
         if self.inbox in ready:
             self.pending.extend(self.received())
+            (self.folder / KEYED).touch()
         if self.fd in ready:
             try:
                 data = os.read(self.fd, LONGEST)
@@ -255,6 +256,7 @@ class Supervisor:
             if not data:
                 return self.stop_agent()
             self.pending.append(data)
+            (self.folder / KEYED).touch()
             self.typing(data)
         return None
 

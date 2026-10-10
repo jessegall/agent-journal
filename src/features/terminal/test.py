@@ -251,6 +251,15 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     calls.clear()
     inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE)
     assert (engine.pausing(), engine.paused, calls) == ("Paused", True, ["stop_turn"]), "pausing stops the turn once"
+    lines = []
+    engine.agent.driver._deliver = lambda line, by: lines.append(line) or True
+    engine.agent.driver.held, engine.agent.driver.sent_at = ["waiting: 1 unread message"], 0.0
+    engine.pump()
+    assert lines == [], "nothing the journal holds for a paused agent is delivered, since it would start the turn the engine stops again"
+    engine.paused = False
+    engine.pump()
+    assert lines == ["waiting: 1 unread message"], "and the line goes out once it continues"
+    engine.paused = True
     engine.held_at = time.time() - 10
     assert engine.pausing() == "Interrupted: the agent is paused" and calls.count("stop_turn") == 2, "a paused agent that starts working is stopped again"
     inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME)
@@ -310,6 +319,7 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     import providers.drivers as drivers
     from providers import DRIVERS
     monkeypatch.setattr(drivers, "ENTER_AFTER", 0)
+    monkeypatch.setattr(drivers, "ESCAPE_GAP", 0)
     record = fresh()
     read, write = os.pipe()
     claude = DRIVERS["claude"](record, "claude-5", fd=write)
@@ -318,7 +328,7 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     claude.permit(True)
     claude.permit(False)
     sent = os.read(read, 4096)
-    assert sent == b"\x1b[B\r\r\x1b" + claude.ALLOW + claude.DENY, "stop and the answer to a permission are written to the terminal as keys"
+    assert sent == b"\x1b[B\r\r\x1b" + claude.ALLOW + claude.STOP, "stop and the answer to a permission are written to the terminal as keys"
     assert claude.move_to_background() is bool(claude.MOVE_TO_BACKGROUND), "a driver moves a run to the background only when its agent has a key for it"
     claude.printed.parent.mkdir(parents=True, exist_ok=True)
     claude.printed.write_bytes(b"x" * 100000 + b"the end")

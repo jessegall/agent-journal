@@ -4,6 +4,65 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.25 — A calmer mascot and plainer notices
+- The mascot enters only after the agent has stayed idle for three seconds, and leaves only after it has stayed busy for three seconds, so a quick command no longer makes it pop in and out.
+- The line that tells an agent of a new message names who wrote it and their words once, with the tag that answers it; the journal's tag is not doubled and the message's row is no longer dumped into the chat.
+- A report's bar above the message box says when the report has questions for you.
+
+## 2.268.24 — Busy agents say so, and paused ones stay put
+- An agent whose turn is running reads as working, between commands too, whatever wait it has stated. The header and the message box show the live activity strip, and Waiting shows only for an idle agent.
+- While an agent is paused, for an update or by you, the lines the journal holds for it are kept until it continues, instead of each starting a turn that the pause then stops.
+- In the demo, the buttons on the lesson-done card always work; the replay lock no longer holds them behind its hint.
+
+## 2.268.23 — A restart warms up faster, and Linear stays signed in
+- Once the viewer is warm after a start, the command parsers, the rows and the transcripts warm side by side instead of one after another; a failure in any of them still ends the start, so a broken build rolls back.
+- An expired Linear sign-in renews itself with its refresh token when the agent connects, so you do not sign in again.
+
+## 2.268.22 — A program's own menu never holds an agent up
+- A menu that a program puts on an agent's terminal is recognised by its shape, numbered options above a selection footer, and answered by its words, never by a number. A folder the journal launched the agent into is trusted; consent and data sharing are declined; anything else is closed. A note says what was chosen.
+- A menu you opened yourself, or one listing past messages, sessions or checkpoints such as Claude Code's Rewind list, is never touched, and neither is the agent's own permission question.
+
+## 2.268.21 — Linear works once connected, and restarts are quicker
+- After the journal's own Linear sign-in, the agent's Linear tools work at once: its MCP entry fetches the token when it connects, and the token is never written into the config. Before the sign-in, the card says a browser approval is still needed.
+- An upgrade builds the new archive with its bytecode already compiled and runs the rest of the install from it, so the new code is not compiled cold. The restart's steps, to the first answer and until warm, are timed in runtime/upgrade-steps.jsonl.
+- In the demo, Look around after a lesson leaves every control usable, chat included, and the lessons page scrolls to its last cards.
+- A ticket claims an environment that already carries its name, so a ticket's environment is never listed as a main one.
+
+## 2.268.20 — The mascot perches on the bars, and idle agents rest
+- The mascot sits on top of the highest bar above the chat (a plan, report or dump bar) instead of behind it. When that bar goes, it falls to the next one, or back onto the chat box, and each voice lands in a way of its own.
+- The sweep of a project's tickets runs once for the project instead of in every environment's engine, and its git work runs once a minute, so idle agents no longer keep the machine busy.
+- A merged ticket's agent is stopped only once its turn has ended and nothing waits for it, so follow-up work sent to it is not cut off.
+
+## 2.268.19 — Updates take seconds, and can be put off
+- When the journal updates by itself, the blurred cover counts down ten seconds with a Not now button; Not now puts the update off, and it is offered again later.
+- An update waits only for running journal commands, never a test run or a dev server, and for twenty seconds at most; the new build is checked in a process of its own without asking a server; every step's time is written to runtime/upgrade-steps.jsonl.
+- The changelog loads ten releases at a time, newest first, with a button for older ones.
+- The agent bar's second share arrow was Import a layout; it has an upload arrow of its own, and Share names the layout it shares.
+
+## 2.268.18 — Questions asked under an environment show with its own
+- The Questions tab, window and count carry the open questions of this environment and of every environment launched from it, helpers and tickets included, each named for its environment and answered in that environment's inspector.
+- Under reduced motion the mascot stays visible in its rest pose, with no blinks, moves, entrance or exit, instead of being hidden.
+
+## 2.268.17 — A removed environment stays removed
+- Once an environment is removed, a late read or a plugin keeping its place in the event log no longer creates its folder again, so a second removal never finds a half-written folder and fails to pack it.
+
+## 2.268.16 — The journal never opens or answers Claude Code's Rewind menu
+- The journal's Escape presses, to stop a turn or decline a permission, come at least a second apart, so two never land as the double Escape that opens Claude Code's Rewind menu.
+- The journal no longer presses an option when it reads the rewind dialog's words on an agent's screen; those words in any output, such as a search printing them, made it type 3 into the session.
+
+## 2.268.15 — The Log in button opens its browser on a machine new to it
+- Log in on a browser-login card downloads Playwright's Chromium first when that build is missing, as it is on a machine whose Playwright only drives Chrome, so the browser opens instead of the card saying no login was saved.
+- When the browser still does not open, the card says Playwright's own reason.
+
+## 2.268.14 — A hook never fails on a stale pause
+- A hook that met an agent paused for an update raised an error instead of clearing the pause, because the age a pause counts as stale after was missing; it is ten minutes, and the pause clears there as intended.
+
+## 2.268.13 — An upgrade is not held by the journal's own code folder
+- An upgrade no longer stops because a file in the journal's own code folder changed: an upgrade replaces that folder whole. A start that finds an upgrade held by changed project files says so instead of counting it as installed.
+
+## 2.268.12 — A start installs a new version once, never in a loop
+- When `journal claude` installs a newer version before it starts and the restarted start still runs the old one, it starts on the old one and says so, instead of installing the same version again and again.
+
 ## 2.268.11 — An update's pause never outlives it
 - The server clears an update's pause on the agent rows of every environment as soon as no upgrade runs, so an environment with no engine to take the resume is let go too; a sweep clears any update pause older than ten minutes, and a call that meets such a pause goes through at once.
 

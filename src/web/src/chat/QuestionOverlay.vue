@@ -15,7 +15,7 @@ const veil = ref(null);
 const card = ref(null);
 const inner = ref(null);
 const n = questionView.n;
-const question = computed(() => answered(rows("question").find((q) => q.n === n) || null));
+const question = computed(() => answered(rows("question").find((q) => !q.env && q.n === n) || null));
 const leaving = ref(false);
 const kept = ref(null);
 const current = computed(() => (leaving.value ? kept.value : question.value || kept.value));

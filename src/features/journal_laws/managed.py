@@ -101,10 +101,15 @@ def changed_managed(project: Path, root: Path) -> list[Path]:
         return []
     remembered = json.loads(target.read_text())
     changed = {project / name for name, digest in remembered.items()
-               if not is_bytecode(Path(name)) and (not (project / name).is_file() or managed_hash(project / name) != digest)}
+               if not is_bytecode(Path(name)) and not own_code(root, project / name) and (not (project / name).is_file() or managed_hash(project / name) != digest)}
     changed.update(path for path in managed_paths(project, root)
-                   if path.relative_to(project).as_posix() not in remembered and managed_bytes(path))
+                   if path.relative_to(project).as_posix() not in remembered and not own_code(root, path) and managed_bytes(path))
     return sorted(changed)
+
+
+def own_code(root: Path, path: Path) -> bool:
+    """A file of the journal's own code folder: an upgrade replaces it whole, so a difference there is no edit of the user's to hold the upgrade for."""
+    return (root / SRC) in path.parents
 
 
 def changed_message(project: Path, changed: list[Path]) -> str:

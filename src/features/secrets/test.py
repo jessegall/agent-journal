@@ -145,10 +145,13 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
     record = fresh()
     opened = []
 
-    def browser(command, check):
+    def browser(command, **options):
+        if "open" not in command:
+            return subprocess.CompletedProcess(command, 0, "", "")
         opened.append(command)
         cookie = {"name": "session", "domain": "staging.example.com", "path": "/", "expires": 2_000_000_000.0}
         Path(command[-2].removeprefix("--save-storage=")).write_text(json.dumps({"cookies": [cookie], "origins": [{"origin": command[-1], "localStorage": []}]}))
+        return subprocess.CompletedProcess(command, 0, "", "")
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
     monkeypatch.setattr(subprocess, "run", browser)
     project = record.root.parent
@@ -164,6 +167,11 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
         "the agent's request puts a Log in button in the chat"
     assert "only you log in" in refused(lambda: agent.login(row.n)) and opened == [], "the agent never opens the login itself"
     from features.message_buttons.pressing import press
+    missing = lambda command, **options: subprocess.CompletedProcess(command, 1, "", "\nbrowserType.launch: Executable doesn't exist\n")
+    monkeypatch.setattr(subprocess, "run", missing)
+    assert "no login was saved: browserType.launch: Executable doesn't exist" in refused(lambda: secrets.login(row.n)), \
+        "a browser that fails to open says why, rather than only that nothing was saved"
+    monkeypatch.setattr(subprocess, "run", browser)
     said = secrets.login(row.n)
     press(record, asked, "Log in", secrets.actor, "viewer")
     logins = BrowserLogins(record.root)
@@ -193,9 +201,12 @@ def test_a_site_the_user_lets_the_agent_log_in_to_needs_no_button(tmp_path, monk
     record = fresh()
     opened = []
 
-    def browser(command, check):
+    def browser(command, **options):
+        if "open" not in command:
+            return subprocess.CompletedProcess(command, 0, "", "")
         opened.append(command[-1])
         Path(command[-2].removeprefix("--save-storage=")).write_text(json.dumps({"cookies": [], "origins": []}))
+        return subprocess.CompletedProcess(command, 0, "", "")
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
     monkeypatch.setattr(subprocess, "run", browser)
     user, agent = Secrets(record, USER), Secrets(record, actor=AGENT)

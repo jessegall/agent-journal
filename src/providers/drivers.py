@@ -13,7 +13,7 @@ from resources.base import SYSTEM, Refused
 from engine.wording import counted
 from engine import runtime
 from engine.sessions import Sessions
-from supervisor import PRINTED, SCREEN, TYPED
+from supervisor import KEYED, PRINTED, SCREEN, TYPED
 from engine.worktree import BRANCHED, environment, linked, main_checkout, opened, spread, unused_name, workspace
 from providers.catalogue import workspace_folders
 
@@ -26,6 +26,7 @@ SCREEN_TAIL, LINE_START = 16384, 40
 PASTE_OVER, TYPED_PER_SECOND = 200, 4000
 PASTE_START, PASTE_END = b"\x1b[200~", b"\x1b[201~"
 DRAFT_LINES = 8
+ESCAPE_GAP = 1.0
 CHOICE = re.compile(rb"1\..+?2\.", re.S)
 SUGGESTION = rb"\1[a suggestion, not sent: \2]"
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
@@ -60,7 +61,6 @@ class Driver(ABC):
     TAKES_CHANNEL = False
     ASKS_ON_SCREEN = False
     ASKING: tuple = ()
-    DIALOGS: tuple = ()
     ASKED_COMMAND: re.Pattern | None = None
     ASKED_TOOL = "Bash"
     READY = b""
@@ -82,7 +82,7 @@ class Driver(ABC):
     PROMPT = re.compile(r"[›>$❯]\s*$")
     SUGGESTED = re.compile(rb"(?!)")
     ELSEWHERE = ""
-    ALLOW, DENY = b"1", b"\x1b"
+    ALLOW = b"1"
     name = ""
 
     def __init__(self, record, session: str, fd: int = -1):
@@ -99,9 +99,11 @@ class Driver(ABC):
         self.sent_at = 0.0
         self.reached: dict[str, float] = {}
         self.entered_at = 0.0
+        self.escaped_at = 0.0
         self.reported = (float("-inf"), None)
         self.printed = runtime.session_file(record.root, session, PRINTED)
         self.typed = runtime.session_file(record.root, session, TYPED)
+        self.keyed = runtime.session_file(record.root, session, KEYED)
 
     @classmethod
     @abstractmethod
@@ -227,7 +229,7 @@ class Driver(ABC):
         return [*cls.unresumed(args), next(iter(cls.RESUMING)), conversation]
 
     def permit(self, allow: bool) -> None:
-        self._wrote(self.ALLOW if allow else self.DENY)
+        self._wrote(self.ALLOW) if allow else self._escape()
 
     def answer_prompt(self, option: int, text: str, options: int) -> bool:
         """Answers the question the agent shows on its screen: the option's number, or for a free answer the last choice, the one that takes the agent's own words, then the words; false when no question is on the screen."""
@@ -448,10 +450,23 @@ class Driver(ABC):
         return bool(self.MOVE_TO_BACKGROUND) and self._wrote(self.MOVE_TO_BACKGROUND)
 
     def stop_turn(self) -> None:
+        self._escape()
+
+    def _escape(self) -> None:
+        """Presses Escape at least ESCAPE_GAP after the last one, since two in quick succession open Claude Code's Rewind menu."""
+        time.sleep(max(0.0, self.escaped_at + ESCAPE_GAP - time.time()))
+        self.escaped_at = time.time()
         self._wrote(self.STOP)
 
     def clear_input(self) -> None:
         self._wrote(self.CLEAR_LINE + (b"\x7f" + self.CLEAR_LINE) * DRAFT_LINES)
+
+    def keyed_at(self) -> float:
+        """When the terminal last took any key, whoever sent it: the user at the terminal or in the viewer, or the journal."""
+        try:
+            return self.keyed.stat().st_mtime
+        except OSError:
+            return 0.0
 
     def user_typing(self, within: float) -> bool:
         try:
@@ -468,12 +483,6 @@ class Driver(ABC):
             return False
         screen = self._screen()
         return max(screen.rfind(phrase) for phrase in self.ASKING) > max(screen.rfind(self.READY), screen.rfind(self.BUSY))
-
-    def dialog(self) -> int:
-        """The option that settles a dialog the journal answers by itself, one of DIALOGS printed after the last ready or busy mark; 0 when none shows."""
-        screen = self._screen()
-        marked = max(screen.rfind(self.READY), screen.rfind(self.BUSY))
-        return next((option for phrase, option in self.DIALOGS if screen.rfind(phrase) > marked), 0)
 
     def _screen_text(self) -> str:
         return self._printed_tail().decode(errors="replace")

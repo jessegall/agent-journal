@@ -90,7 +90,7 @@ async function pauseOrResume() {
         toast.value = {text: e.message};
     }
 }
-const waiting = computed(() => queued(rows("todo"), autoOn.value, rows("question")));
+const waiting = computed(() => queued(rows("todo"), autoOn.value, rows("question").filter((q) => !q.env)));
 const line = computed(() => {
     if (paused.value) return "held until you resume it";
     if (silent.value) return "started, but it never reported in";

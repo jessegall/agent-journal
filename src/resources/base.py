@@ -214,6 +214,7 @@ class Resource:
     closed_first: ClassVar[bool] = False
     listed_open: ClassVar[bool] = False    # its open rows are a working list: a listing carries every one of them
     hidden_listed: ClassVar[bool] = True
+    listed_beneath: ClassVar[bool] = False   # the open rows of the environments working under this one are listed with its own, each named for its environment
     moments: ClassVar[tuple] = ("created", "completed")   # what a sequence can start on
     scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
     notified: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor

@@ -31,7 +31,7 @@ def test_a_permission_the_agent_waits_on_is_shown_in_the_chat_until_it_is_answer
     assert waiting() == [], "the call ran: the notice goes"
 
 
-def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
+def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeypatch):
     claude = DRIVERS["claude"]
     assert claude.resumed(claude.skipping(["-c", "--model", "opus"], True), "abc") == \
         ["--dangerously-skip-permissions", "--model", "opus", "--resume", "abc"], "skip on, resumed in place of continue"
@@ -103,17 +103,13 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
         "Claude's own safety question, which sends no permission request, is read off its screen with the command it names"
     asker.printed.write_bytes(f"{danger}\r\nesc to interrupt".encode())
     assert asker.asked() is None, "once the command runs again, nothing is asked"
-    rewind = "esc to interrupt\r\nConfirm you want to restore the conversation to the point before you sent this message\r\n 1. Restore conversation\r\n 2. Summarize from here\r\n ❯ 3. Summarize up to here\r\n 4. Never mind\r\n"
-    asker.printed.write_bytes(rewind.encode())
-    pressed = []
-    asker.press_raw = pressed.append
-    rewinder = Engine(asker.record, asker)
-    rewinder.dialog_settled()
-    rewinder.dialog_settled()
-    assert (asker.dialog(), pressed) == (3, [b"3\r"]), \
-        "Claude's rewind dialog near the context limit is answered once with Summarize up to here, never Restore conversation"
-    asker.printed.write_bytes(f"{rewind}\r\n? for shortcuts".encode())
-    assert asker.dialog() == 0, "and once the prompt is back there is nothing to answer"
+    pressed, slept = [], []
+    asker.press_raw = asker._wrote = pressed.append
+    monkeypatch.setattr(time, "sleep", slept.append)
+    asker.stop_turn()
+    asker.permit(False)
+    assert (pressed, len(slept), slept[-1] > 0.5) == ([b"\x1b", b"\x1b"], 2, True), \
+        "the journal spaces its Escape presses so two never open Claude Code's Rewind menu"
     asker._screen_file().parent.mkdir(parents=True, exist_ok=True)
     asker._screen_file().write_bytes("Conversation compacted\r\n❯\xa0\r\nChecking for updates\r\n❯ [journal] ticket 5: build the plan\r\n".encode())
     typed_note = "[journal] ticket 5: build the plan"
@@ -124,6 +120,30 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
               "❯ 1. I am using this for local development\r\n  2. Exit\r\nEnter to confirm".encode()
     assert (claude.consent(warning), claude.consent(warning + "\r\n❯ ".encode())) == (b"\r", b""), \
         "Claude's development channels warning is answered with Enter while its menu is the last thing on screen, never once the prompt is back"
+    from providers.dialogs import Menu
+    sharing = Menu.on("Blender MCP wants to share data to improve the product. Allow?\r\n❯ 1. Yes, allow\r\n  2. No, do not share\r\nEnter to select · Esc to cancel")
+    trusting = Menu.on("Do you trust the files in this folder?\r\n❯ 1. Yes, I trust this folder\r\n  2. No, exit\r\nEnter to confirm · Esc to cancel")
+    unknown = Menu.on("Pick a colour\r\n❯ 1. Red\r\n  2. Blue\r\nEnter to select")
+    permission = Menu.on("Do you want to proceed?\r\n❯ 1. Yes\r\n  2. No\r\nEnter to select")
+    assert (sharing.choice().keys, trusting.choice().keys, unknown.choice().keys, permission.foreign(), Menu.on("no menu here\r\n❯ ")) == \
+        (b"\x1b[B\r", b"\r", b"\x1b", False, None), \
+        "a menu is recognised by its shape and chosen by its words: data sharing is declined by moving to the label, a folder the journal launched the agent into is trusted, anything unknown is closed, and the agent's own permission question is left to its asks"
+    rewind = Menu.on("Rewind\r\n❯ 1. fix the login\r\n  2. add the page\r\n  3. (current)\r\nEnter to continue · Esc to cancel")
+    assert rewind.foreign() is False, "Claude's Rewind list, which has no decline label, is a list of past messages you opened to read, so the journal never closes it"
+    from types import SimpleNamespace
+    from runner.worker import Dialogs
+    shown = "Blender MCP wants to share data. Allow?\r\n❯ 1. Yes, allow\r\n  2. No, do not share\r\nEnter to select · Esc to cancel"
+    pressed = []
+    stub = SimpleNamespace(PROMPT_TAIL=1, name="claude", record=fresh(), screen=lambda size: shown, last_report=lambda: None,
+                           quiet_for=lambda: 9.0, press_raw=pressed.append, keyed_at=lambda: 0.0)
+    own = Dialogs(stub)
+    own.tick()
+    assert pressed == [b"\x1b[B\r"], "a menu that came up with no key pressed is answered"
+    opened = SimpleNamespace(**{**vars(stub), "press_raw": pressed.append, "keyed_at": lambda: time.time()})
+    pressed.clear()
+    mine = Dialogs(opened)
+    mine.tick()
+    assert pressed == [], "a menu that came up just after a key you pressed is left to you, however quiet the terminal is"
     update = b"\x1b[2m> Ask Codex to do anything\x1b[0m\r\nUpdate available 0.159.3 \xe2\x86\x92 0.160.0\r\n\xe2\x80\xba 1. Update now\r\n  2. Skip\r\n  3. Skip until next version"
     assert (codex.consent(update), codex.opening(update)) == (b"2\r", ""), "Codex's update question is skipped, and the opening waits until it is gone"
     assert (codex.carried_on(["continue"]), codex.carried_on(["--resume", "abc"]), codex.carried_on(["-c", "k=v"])) == \

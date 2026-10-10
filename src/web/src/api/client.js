@@ -77,8 +77,8 @@ export class ApiClient {
         return this.post("/new-feature", {id});
     }
 
-    changelog() {
-        return this.get("/changelog");
+    changelog(skip = 0) {
+        return this.get(`/changelog?skip=${skip}`);
     }
 
     cancelUpdate() {

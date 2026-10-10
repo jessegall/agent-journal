@@ -161,7 +161,7 @@ function saved(name) {
                         <button
                             type="button"
                             :class="['preset-tool', {done: flashed === `share:${p.key}`, on: sharing === p.key}]"
-                            :title="linkFor ? 'Share it as a file or a link' : 'Download it as a file to share'"
+                            :title="linkFor ? `Share ${p.name} as a file or a link` : `Download ${p.name} as a file to share`"
                             @click.stop="openShare(p.key)"
                         >
                             <Icon :name="flashed === `share:${p.key}` ? 'tick' : linkFor ? 'share' : 'download'" :size="12" />
@@ -215,7 +215,7 @@ function saved(name) {
         </template>
         <input ref="picker" class="preset-picker" type="file" accept=".json,application/json" @change="imported" />
         <MenuItem :class="{done: flashed === 'import'}" @click="picker.click()">
-            <Icon :name="flashed === 'import' ? 'tick' : 'share'" :size="14" />
+            <Icon :name="flashed === 'import' ? 'tick' : 'upload'" :size="14" />
             {{ flashed === "import" ? "Imported" : "Import a layout" }}
         </MenuItem>
         <template v-if="readLink">

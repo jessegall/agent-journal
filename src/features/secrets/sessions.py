@@ -9,6 +9,8 @@ from features.secrets.values import project_id, secrets_folder
 from resources.base import Refused
 
 OPEN_BROWSER = ("npx", "-y", "playwright@latest", "open")
+INSTALL_BROWSER = ("npx", "-y", "playwright@latest", "install", "chromium")
+UNSAVED = "log in in the browser that opens, then close its window"
 
 
 class BrowserLogins:
@@ -24,9 +26,11 @@ class BrowserLogins:
             raise Refused("logging in needs npx (Node.js) on this machine")
         self.folder.mkdir(mode=0o700, parents=True, exist_ok=True)
         saved = self.saved_for(title)
-        subprocess.run([*OPEN_BROWSER, f"--save-storage={saved}", url], check=False)
+        subprocess.run(INSTALL_BROWSER, check=False, capture_output=True)
+        opened = subprocess.run([*OPEN_BROWSER, f"--save-storage={saved}", url], check=False, capture_output=True, text=True)
         if not saved.is_file():
-            raise Refused("no login was saved: log in in the browser that opens, then close its window")
+            said = [line for line in opened.stderr.splitlines() if line.strip()]
+            raise Refused(f"no login was saved: {said[0].strip() if said else UNSAVED}")
         saved.chmod(0o600)
         return saved
 

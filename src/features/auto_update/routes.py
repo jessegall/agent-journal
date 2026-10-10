@@ -1,4 +1,5 @@
 import features
+import re
 import threading
 import time
 from dataclasses import asdict
@@ -16,8 +17,19 @@ from features.journal_laws.managed import changed_managed, changed_message
 from install import release_versions
 
 CHANGELOG = data("CHANGELOG.md")
+ENTRY = re.compile(r"^## ", re.M)
+RELEASES_PER_PAGE = 10
 CHANGED = Memo()
 CHANGED_FOR = 15
+
+
+def changelog_page(text: str, skip: int) -> tuple[str, int, bool]:
+    """The releases from number skip, RELEASES_PER_PAGE of them with the heading above them on the first page, how many have been shown by then and whether more follow."""
+    starts = [found.start() for found in ENTRY.finditer(text)]
+    stop = min(skip + RELEASES_PER_PAGE, len(starts))
+    ends = [*starts[1:], len(text)]
+    heading = text[:starts[0] if starts else len(text)] if not skip else ""
+    return heading + (text[starts[skip]:ends[stop - 1]] if skip < stop else ""), stop, stop < len(starts)
 
 
 @handles("GET", "/api/changelog")
@@ -27,7 +39,8 @@ def get_changelog(req: Request) -> Reply:
         return Reply(404, {"error": "this install carries no changelog"})
     cache = runtime.upstream_cache(req.root)
     latest = cache.read_text().strip() if cache.is_file() else ""
-    return Reply(200, {"version": version(), "changelog": CHANGELOG.read_text(), "latest": latest, "newer": newer(latest, version()),
+    changelog, shown, more = changelog_page(CHANGELOG.read_text(), int(req.query.get("skip") or 0))
+    return Reply(200, {"version": version(), "changelog": changelog, "shown": shown, "more": more, "latest": latest, "newer": newer(latest, version()),
                        "checking": FETCHING.locked(), "updating": runtime.upgrade_mark(req.root).exists(),
                        "repository": journal_repository(req.root.parent),
                        "changed": [path.relative_to(req.root.parent).as_posix() for path in changed_managed(req.root.parent, req.root)]})

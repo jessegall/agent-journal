@@ -77,6 +77,11 @@ def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():
     bound = tickets.bind(ticket.n)
     assert (bound.work_environment, Environments(record).rows.by_title(bound.work_environment) is not None, tickets.bind(ticket.n).work_environment) == \
         (f"ticket-{ticket.n}", True, f"ticket-{ticket.n}"), "binding makes the ticket's environment once, named for the ticket, which its worktree takes too"
+    other = tickets.create("Light mode")
+    Environments(record, actor=SYSTEM).create(f"ticket-{other.n}")
+    claimed = Environments(record).rows.by_title(tickets.bind(other.n).work_environment)
+    assert (claimed.kind, claimed.owner, claimed.launched_from) == ("ticket", other.ref, record.env), \
+        "an environment that was made for a ticket's name by another path is claimed by the ticket, so it never stays one the Settings list offers for removal"
     assert tickets.agent_session(ticket.n) == "", "no session holds it until its agent starts"
     from features.dev_faults.feature import DevFaults
     assert DevFaults.on_for(Record(record.root, bound.work_environment)) is False, "a ticket's agent is not told the journal's own developer faults"
@@ -295,6 +300,13 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     with monkeypatch.context() as busy:
         busy.setattr(Tickets, "_working", lambda self, row: True)
         assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "a ticket whose agent is working is left alone by the sweep, even when its branch landed"
+    from controllers.types import Messages
+    waiting = Messages(Record(record.root, ticket.work_environment), actor=SYSTEM).create("one more thing to do")
+    assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "a merged ticket whose agent has a message it has not read yet is not closed, so the follow-up is not cut off"
+    Messages(Record(record.root, ticket.work_environment), actor=AGENT).read(waiting.n)
+    tickets.update(ticket.n, told=time.time())
+    assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "nor is one that was told something a moment ago"
+    tickets.update(ticket.n, told=0.0)
     with monkeypatch.context() as unsure:
         unsure.setattr(Tickets, "_merged", lambda self, row: False)
         answered = tickets.merge(ticket.n)
