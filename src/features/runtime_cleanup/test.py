@@ -192,6 +192,12 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
     assert not packed.exists() and len(tries) == 2, "a folder a late write kept busy is removed on the next try, so packing never fails over it"
     assert {Path(folder).name for folder in tries} == {".late-writer.removing"}, \
         "the folder leaves its place in one rename before it is deleted, so nothing reads it half removed"
+    from controllers.stored import saved
+    from engine.event_log import EventLog, RecordEvents
+    from contextlib import nullcontext
+    saved(packed / "todo", {})
+    RecordEvents("late-writer", packed, nullcontext, EventLog(root, nullcontext, lambda: [])).set_cursor_text("plugin", "7")
+    assert not packed.exists(), "a late index save or a reader's place never brings back the folder of a removed environment"
 
 
 def test_an_installed_update_tidies_at_once():

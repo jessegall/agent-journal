@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.17 — A removed environment stays removed
+- Once an environment is removed, a late read or a plugin keeping its place in the event log no longer creates its folder again, so a second removal never finds a half-written folder and fails to pack it.
+
 ## 2.268.16 — The journal never opens or answers Claude Code's Rewind menu
 - The journal's Escape presses, to stop a turn or decline a permission, come at least a second apart, so two never land as the double Escape that opens Claude Code's Rewind menu.
 - The journal no longer presses an option when it reads the rewind dialog's words on an agent's screen; those words in any output, such as a search printing them, made it type 3 into the session.

@@ -159,8 +159,11 @@ class RecordEvents(EventLog):
         return read_cursor(self.cursor_file(name))
 
     def set_cursor_text(self, name: str, text: str) -> None:
+        """Keeps a reader's place in this environment's runtime folder, and none once the environment is removed, so a late reader never brings it back."""
+        if not self.file.parent.is_dir():
+            return
         f = self.cursor_file(name)
-        f.parent.mkdir(parents=True, exist_ok=True)
+        f.parent.mkdir(exist_ok=True)
         write_text(f, text)
 
     def cursor(self, name: str) -> int:
