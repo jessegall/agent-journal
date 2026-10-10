@@ -129,7 +129,7 @@ class Engine:
 
     def tick(self) -> str:
         self.beat()
-        self.agent.driver.pump()
+        self.pump()
         self.agent.driver.recheck_channel()
         deliver(self.record.root)
         self.relay()
@@ -144,6 +144,11 @@ class Engine:
         self.report.write(self.why)
         self.clock()
         return self.why
+
+    def pump(self) -> None:
+        """The lines the journal holds for the agent go out on each tick but not while it is paused: a line delivered then starts a turn the engine would only stop again, and they go out once it continues."""
+        if not self.paused:
+            self.agent.driver.pump()
 
     def reading(self) -> Reading | None:
         row = self.agent.driver.last_report()

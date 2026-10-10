@@ -250,6 +250,15 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     calls.clear()
     inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE)
     assert (engine.pausing(), engine.paused, calls) == ("Paused", True, ["stop_turn"]), "pausing stops the turn once"
+    lines = []
+    engine.agent.driver._deliver = lambda line, by: lines.append(line) or True
+    engine.agent.driver.held, engine.agent.driver.sent_at = ["waiting: 1 unread message"], 0.0
+    engine.pump()
+    assert lines == [], "nothing the journal holds for a paused agent is delivered, since it would start the turn the engine stops again"
+    engine.paused = False
+    engine.pump()
+    assert lines == ["waiting: 1 unread message"], "and the line goes out once it continues"
+    engine.paused = True
     engine.held_at = time.time() - 10
     assert engine.pausing() == "Interrupted: the agent is paused" and calls.count("stop_turn") == 2, "a paused agent that starts working is stopped again"
     inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME)
