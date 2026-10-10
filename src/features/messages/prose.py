@@ -24,7 +24,7 @@ STANDALONE = re.compile(r"(?<![\w.,:/–—-])#?(\d+)(?![\w%:/–—-]|[.,]\d)")
 QUOTED = re.compile(r"`[^`]*`|\"[^\"]*\"|“[^”]*”")
 LISTED = re.compile(r"^\s*\d+[.)]\s", re.MULTILINE)
 NAMING = {"all", "to-do", "to-dos", "version", "v", "line", "lines", "phase", "step", "port", "revision", "revisions", "number", "page", "row", "rows",
-          "commit", "id", "of", "and", "or", "under", "over", "than", "above", "below", "about", "around", "least", "most", "nearly",
+          "commit", "id", "pr", "request", "issue", "build", "of", "and", "or", "under", "over", "than", "above", "below", "about", "around", "least", "most", "nearly",
           "only", "every", "first", "last", "top", "within", "past", "after", "http", "status", "code", "exit", "average", "averages"}
 VERBS = {"waits", "needs", "holds", "runs", "goes", "shows", "stays", "keeps", "closes", "opens", "starts", "ends", "lands", "takes",
          "gets", "makes", "sits", "asks", "says", "works", "fails", "passes", "comes", "becomes", "belongs", "covers", "lists", "reads"}

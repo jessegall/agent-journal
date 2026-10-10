@@ -427,7 +427,7 @@ watch(
             await nextTick();
             laidOut.value += 1;
         }
-        if (prepending) return;
+        if (loadingOlder.value) return;
         if (away.value) missed.value += Math.max(0, n - (before || 0));
         else toBottom(settledOnce.value);
         if (n && !settledOnce.value) setTimeout(() => (settledOnce.value = true), 300);

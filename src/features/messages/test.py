@@ -212,6 +212,7 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
     assert f"names {asked.n}, {filed.n} " in lines[-1], "any bare reference is named back, whatever word comes before it"
     from features.messages.prose import bare
     assert bare(f"Two steps:\n{asked.n}. first\n{filed.n}) second") == [], "the numbers of a numbered list are not row numbers"
+    assert bare("Opened PR 161, then pull request 162 and issue 40 on GitHub") == [], "a pull request or an issue named by its number is no row of the journal"
     assert bare("The suite took 109 s, then 194 s and 23.8 s; the push got HTTP 408, a load average of 123 and the copy is 118 MB of 2 GB") == [], \
         "a measurement with its unit, an HTTP code and a load average are not row numbers"
     assert bare("the server crashed: it answered 500, the route returned 404 and the call came back with status 502 or an error 503") == [], \
