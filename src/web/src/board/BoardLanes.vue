@@ -17,6 +17,7 @@ const props = defineProps({
     watchAgent: {type: Function, default: () => {}},
     adds: Boolean,
 });
+const laneCount = (lane) => lane.total || lane.cards.length;
 const picked = ref("");
 const noting = ref(null);
 const loading = computed(() => !store.board.loaded);
@@ -24,7 +25,7 @@ const pickedLane = computed(
     () =>
         (props.lanes.find((lane) => lane.key === picked.value) || props.lanes.find((lane) => lane.cards.length) || props.lanes[0] || {}).key
 );
-const lanePicks = computed(() => props.lanes.map((lane) => ({key: lane.key, label: `${lane.title} ${lane.cards.length}`})));
+const lanePicks = computed(() => props.lanes.map((lane) => ({key: lane.key, label: `${lane.title} ${laneCount(lane)}`})));
 
 async function sendNote(note) {
     const {card, action} = noting.value;

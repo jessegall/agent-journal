@@ -9,6 +9,7 @@ import {store} from "../state/store.js";
 import Card from "./Card.vue";
 import {moveEffect, refused} from "./moves.js";
 import Skeleton from "../kit/Skeleton.vue";
+import {moreOfLane} from "./lanePages.js";
 
 const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}, adds: Boolean});
 const MEANING_LABELS = {start: "A card dropped here starts its agent", review: "A card here waits for review"};
@@ -29,6 +30,13 @@ async function acceptAll() {
     for (const card of proposing.value) await api.acceptDependencies(card.n);
     accepting.value = false;
     board.refresh();
+}
+
+const NEAR_END = 240;
+
+function scrolled(event) {
+    const cards = event.target;
+    if (props.lane.next && cards.scrollHeight - cards.scrollTop - cards.clientHeight < NEAR_END) moreOfLane(props.lane);
 }
 
 function drop() {
@@ -56,15 +64,18 @@ function drop() {
                     Accept all suggestions in this column
                 </Btn>
             </template>
-            <span class="count">{{ loading ? "" : lane.cards.length }}</span>
+            <span class="count">{{ loading ? "" : lane.total || lane.cards.length }}</span>
         </header>
-        <div class="cards">
+        <div class="cards" @scroll.passive="scrolled">
             <template v-if="loading">
                 <Skeleton shape="cards" :count="3" label="Loading the board" />
             </template>
             <template v-else>
                 <template v-for="card in lane.cards" :key="card.n">
                     <Card :card="card" />
+                </template>
+                <template v-if="lane.next">
+                    <Btn small class="more" @click="moreOfLane(lane)">Show more ({{ lane.total - lane.cards.length }} left)</Btn>
                 </template>
                 <template v-if="adds">
                     <PlaceholderCard :title="`New work in ${lane.title}`" @click="board.newWork(lane.key)">+ New work</PlaceholderCard>

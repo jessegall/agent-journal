@@ -1,6 +1,7 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
+import {loadLanes} from "../board/lanePages.js";
 import {named} from "../board/lanes.js";
 import {shiftQuestion} from "../board/moves.js";
 import {usePoll} from "../composables/poll.js";
@@ -52,9 +53,10 @@ const asking = ref(null);
 const acts = ref(null);
 const {under, scrolled} = useScrolled();
 
+const query = () => words.value.trim();
 const refresh = usePoll(
     "phone-todos",
-    () => api.board(),
+    () => loadLanes((page) => api.board(page), lanes.value, query()),
     BOARD_EVERY,
     (got) => {
         lanes.value = got.lanes;
@@ -62,19 +64,39 @@ const refresh = usePoll(
         failed.value = "";
     }
 );
+watch(query, () => refresh());
+
+async function showMore(key) {
+    const lane = lanes.value.find((one) => one.key === key);
+    if (!lane || !lane.next) return;
+    try {
+        const page = (await api.board({lane: key, after: lane.next, query: query()})).lanes.find((one) => one.key === key);
+        const seen = new Set(lane.cards.map((card) => card.n));
+        lane.cards = [...lane.cards, ...page.cards.filter((card) => !seen.has(card.n))];
+        Object.assign(lane, {next: page.next, total: page.total});
+    } catch (error) {
+        toast(error.message);
+    }
+}
+
+const hasMore = (key) => Boolean(lanes.value.find((one) => one.key === key)?.next);
+const totalOf = (key) => {
+    const lane = lanes.value.find((one) => one.key === key);
+    return lane ? lane.total || lane.cards.length : 0;
+};
 const sorter = computed(() => ORDERS.find((one) => one.key === order.value));
 const titleOf = (key) => lanes.value.find((one) => one.key === key)?.title || key;
 const cardsOf = (key) => (lanes.value.find((one) => one.key === key)?.cards || []).map((card) => ({...card, lane: key}));
 const sorted = (cards) => cards.filter(named(words.value)).sort(sorter.value.sort);
 const groups = computed(() =>
-    LISTED.map((key) => ({key, title: titleOf(key), cards: sorted(cardsOf(key))})).filter((one) => one.cards.length)
+    LISTED.map((key) => ({key, title: titleOf(key), cards: sorted(cardsOf(key)), total: totalOf(key)})).filter((one) => one.cards.length)
 );
 const done = computed(() => sorted(cardsOf("done")));
-const open = computed(() => LISTED.reduce((sum, key) => sum + cardsOf(key).length, 0));
+const open = computed(() => LISTED.reduce((sum, key) => sum + totalOf(key), 0));
 const chips = computed(() =>
     lanes.value
         .filter((one) => doneLane.value || one.key !== "done")
-        .map((one) => ({key: one.key, label: one.title, count: one.cards.length}))
+        .map((one) => ({key: one.key, label: one.title, count: one.total || one.cards.length}))
 );
 const shown = computed(() => sorted(cardsOf(lane.value)));
 const environment = computed(() => place.value.split("/")[1] || "");
@@ -184,7 +206,7 @@ const made = (row) => (refresh(), emit("open", `todo:${row.n}`));
             </template>
             <template v-else-if="view === 'list'">
                 <template v-for="group in groups" :key="group.key">
-                    <CellGroup :head="`${group.title} · ${group.cards.length}`">
+                    <CellGroup :head="`${group.title} · ${group.total}`">
                         <template v-for="card in group.cards" :key="card.n">
                             <PhoneTodoRow
                                 :card="card"
@@ -195,6 +217,9 @@ const made = (row) => (refresh(), emit("open", `todo:${row.n}`));
                             />
                         </template>
                     </CellGroup>
+                    <template v-if="hasMore(group.key)">
+                        <button type="button" class="todos-link" @click="showMore(group.key)">Show more in {{ group.title }}</button>
+                    </template>
                 </template>
                 <template v-if="words && !groups.length">
                     <p class="todos-none">No open to-do matches “{{ words }}”.</p>
@@ -220,6 +245,9 @@ const made = (row) => (refresh(), emit("open", `todo:${row.n}`));
                             <PhoneTodoRow :card="card" still @open="emit('open', `todo:${card.n}`)" @more="more(card)" />
                         </template>
                     </CellGroup>
+                    <template v-if="hasMore(lane)">
+                        <button type="button" class="todos-link" @click="showMore(lane)">Show more in {{ titleOf(lane) }}</button>
+                    </template>
                 </template>
                 <template v-else>
                     <EmptyList

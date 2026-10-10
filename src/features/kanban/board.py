@@ -2,6 +2,7 @@ import time
 from typing import TypedDict
 
 from controllers.stored import PAGE, cursor_of, cursor_text, paged
+from controllers.todos import column_order
 from features.format import formatted_item
 from features.kanban.lanes import DONE, LANES, Sources, lane_of, reason_of
 from features.kanban.shifts import targets
@@ -51,7 +52,7 @@ def held_by(sources: Sources, todo, main: str, agent: str) -> bool:
 
 def placed_order(lane: str):
     """Where a card stands in its lane: the done lane newest first, the others by priority then number, a key that holds still while rows are written between two pages."""
-    return (lambda t: (-t.completed, t.n)) if lane == DONE else (lambda t: (-int(t.priority or 100), t.n))
+    return (lambda t: (-t.completed, t.n)) if lane == DONE else column_order
 
 
 def build(journal, done_days: float, plan: int, agent: str, lane: str | None = None, after: str | None = None, size: int = PAGE, query: str | None = None, only: int = 0) -> BoardLanes:

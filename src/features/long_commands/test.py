@@ -17,9 +17,9 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
     report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}])
     tick(record)
     tick(record)
-    assert (moved, [n for n in nudges(record) if "moved to the background" in n]) == \
-        (["claude-1"], ["your command ran 45s in the foreground and was moved to the background"]), \
-        "moved once, and the agent is told"
+    assert (moved, [n for n in nudges(record) if "moved to the background" in n], Agents(record, actor="system").by_session("claude-1").data["cards"][-1]["label"]) == \
+        (["claude-1"], [], "Moved a long command to the background"), \
+        "moved once, and the chat shows the mark; Claude's own tool result tells the agent, so the journal sends no line"
     from features.long_commands import move
     from providers.base import BackgroundTasks
     monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks(started={"b1": started + 50}))

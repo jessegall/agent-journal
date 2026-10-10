@@ -13,6 +13,15 @@ function query(fields) {
 
 const NO_ENV = "the page does not know its environment yet";
 
+// What a board asks for beyond its first page: one lane, the cursor its last page ended at, how many, the words to match, one card by number.
+const pagedBody = ({lane, after, size, query, only} = {}) => ({
+    ...(lane ? {lane} : {}),
+    ...(after ? {after} : {}),
+    ...(size ? {size} : {}),
+    ...(query ? {query} : {}),
+    ...(only ? {only} : {}),
+});
+
 export class ApiClient {
     constructor({env = () => route.value.env, base = ""} = {}) {
         this.env = env;
@@ -441,8 +450,8 @@ export class ApiClient {
         return this.command("todo", "touched", {n});
     }
 
-    board({plan, agent} = {}) {
-        return this.command("todo", "board", {plan: plan || 0, agent: agent || ""});
+    board({plan, agent, ...page} = {}) {
+        return this.command("todo", "board", {plan: plan || 0, agent: agent || "", ...pagedBody(page)});
     }
 
     shift(n, lane, {why, how} = {}) {
@@ -469,8 +478,8 @@ export class ApiClient {
         return this.act("board", board, "hand", {document, text, idempotency});
     }
 
-    ticketBoard(n) {
-        return this.act("ticket", n, "board");
+    ticketBoard(n, page = {}) {
+        return this.act("ticket", n, "board", pagedBody(page));
     }
 
     dismissQuestion(n, why) {
