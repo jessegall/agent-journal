@@ -367,6 +367,20 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
         "a ticket across repositories keeps a base for each, and stays open while the one it changed is unmerged"
     assert [(repo["name"], repo["state"]) for repo in across._repository_states(across.load(spanning.n))] == [("chronos", "untouched"), ("site", "changed")], \
         "its card names each repository and where its branch stands"
+    from features.tickets import cards as card_module
+    from features.tickets.landing import Landing
+    asked = []
+    with monkeypatch.context() as quiet:
+        quiet.setattr(Landing, "state", lambda self: asked.append(self.branch) or "untouched")
+        across._repository_states(across.load(spanning.n))
+        across._repository_states(across.load(spanning.n))
+    assert asked == [], "a card answers from the look it already holds, and runs no git of its own while that look is fresh"
+    card_module.REPOSITORY_STATES.clear()
+    with monkeypatch.context() as slow:
+        slow.setattr(card_module.bus, "BACKGROUND", True)
+        slow.setattr(card_module.bus, "background", lambda key, job: asked.append("later"))
+        assert across._repository_states(across.load(spanning.n)) == [] and asked == ["later"], \
+            "with nothing held yet the board answers at once with no repositories and the look is made behind the answer, never in the board's own call"
     assert across.merge(spanning.n).completed and "site work" in site("log", "-1", "--format=%s").stdout, \
         "journal ticket merge merges each repository it changed, skips the untouched one, and closes it"
 

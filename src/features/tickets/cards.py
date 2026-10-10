@@ -3,6 +3,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from controllers.types import Agents, Questions, Todos, Works
+from engine import bus
 from engine.record import Record
 from engine.sessions import Sessions, live
 from engine.wording import clipped
@@ -134,16 +135,28 @@ class TicketCards:
                     repositories=self._repository_states(ticket))
 
     def _repository_states(self, ticket) -> list:
+        """Where the ticket's branch stands in each repository, as the last look found it: a board answers from what is held and never runs git for its cards; a look that is due is made behind the answer."""
         if not ticket.work_environment or ticket.completed or not spread(self.record.root.parent):
             return []
-        key = (str(self.record.root), ticket.n, ticket.updated, int(time.time() // LOOK_AGAIN_AFTER))
-        if key not in REPOSITORY_STATES:
-            if len(REPOSITORY_STATES) > STATES_KEPT:
-                REPOSITORY_STATES.clear()
+        held = REPOSITORY_STATES.get((str(self.record.root), ticket.n))
+        if held is None or held[0] != ticket.updated or time.time() - held[1] >= LOOK_AGAIN_AFTER:
+            key = f"repository states {self.record.root}"
+            bus.background(key, self._look_at_repositories)
+            held = REPOSITORY_STATES.get((str(self.record.root), ticket.n))
+        return held[2] if held else []
+
+    def _look_at_repositories(self) -> None:
+        """Looks at every open ticket's branch in each repository and keeps what it finds for the boards."""
+        for ticket in self.rows.standing():
+            if not ticket.work_environment or ticket.completed:
+                continue
+            held = REPOSITORY_STATES.get((str(self.record.root), ticket.n))
+            if held and held[0] == ticket.updated and time.time() - held[1] < LOOK_AGAIN_AFTER:
+                continue
             branch = self._branch(ticket)
-            REPOSITORY_STATES[key] = [{"name": name, "branch": branch, "state": Landing(place, branch, base, self._into_at(ticket, name, place)).state()}
-                                      for name, place, base in self._repositories(ticket)]
-        return REPOSITORY_STATES[key]
+            states = [{"name": name, "branch": branch, "state": Landing(place, branch, base, self._into_at(ticket, name, place)).state()}
+                      for name, place, base in self._repositories(ticket)]
+            REPOSITORY_STATES[str(self.record.root), ticket.n] = (ticket.updated, time.time(), states)
 
     def _actions(self, ticket, session: str) -> list:
         proposed = any(stance == PROPOSED for stance in ticket.dependencies.values())
