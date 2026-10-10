@@ -88,8 +88,7 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     stored.flush_indexes()
     for folder, indexed in list(stored.INDEXED.items()):
         stored.saved(stored.Path(folder), indexed)
-    for kept in (stored.SUMMARIES, stored.STANDING, stored.REFERRED, stored.COUNTED, stored.INDEXED, stored.PENDING, stored.INDEXED_AT, stored.STAMPED):
-        kept.clear()
+    stored.forget_held()
     loaded = []
     with pytest.MonkeyPatch.context() as patch:
         original = stored.RowStore.load

@@ -140,7 +140,7 @@ def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], ta
             share_journal(top, root, workspace_folders())
     journal = [*entry_in(root, "journal"), "--root", str(root)]
     return {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
-            "worker": entry_in(root, "worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],
+            "worker": entry_in(root, "worker"), "heal": [*journal, "heal", "--died"], "ended": [*journal, "--env", env, "ended"],
             **({"adopt": {"pid": taken["pid"], "fd": taken["fd"], "session": taken["session"], "saved": taken["saved"]}, "args": args}
                if taken else launching(root, cwd, env, agent, args, conversation))}
 

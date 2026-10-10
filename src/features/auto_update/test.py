@@ -526,7 +526,12 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     (kept / "journal.pyz").symlink_to("journal-2.3.0-ccc.pyz")
     monkeypatch.setattr(healing, "answering", lambda root, build: True)
     assert "nothing was rolled back" in healing.heal(kept) and (kept / "journal.pyz").resolve().name == "journal-2.3.0-ccc.pyz" and not healing.broken(kept), \
-        "a build whose server answers is never rolled back or marked broken, whoever asks"
+        "a build whose server answers is never rolled back or marked broken when an agent asks"
+    assert "went back to journal-2.1.0-aaa.pyz" in healing.healed_after_death(kept) and healing.broken(kept) == ["journal-2.3.0-ccc.pyz"], \
+        "but a supervisor whose worker died on start rolls the build back though its server answers"
+    (kept / "journal.pyz").unlink()
+    (kept / "journal.pyz").symlink_to("journal-2.3.0-ccc.pyz")
+    healing.ledger(kept).unlink()
     monkeypatch.setattr(healing, "answering", lambda root, build: False)
     assert "went back to journal-2.1.0-aaa.pyz" in healing.heal(kept) and healing.broken(kept) == ["journal-2.3.0-ccc.pyz"], "a build whose server does not answer is rolled back"
     (kept / "journal.pyz").unlink()

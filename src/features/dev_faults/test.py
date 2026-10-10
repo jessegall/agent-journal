@@ -352,7 +352,7 @@ def test_a_slow_request_waits_while_the_agent_waits():
     assert [n for n in nudges(record) if "GET /api/agents" in n], "once the wait is over it is told again"
 
 
-def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(capsys):
+def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(capsys, monkeypatch):
     import os
     from commands.http import dispatch
     from controllers.types import Messages

@@ -233,8 +233,8 @@ def kept_work(cwd: Path) -> None:
 
 
 def healed(ctx) -> str:
-    from engine.heal import heal
-    return heal(ctx["record"].root)
+    from engine.heal import heal, healed_after_death
+    return (healed_after_death if ctx["died"] else heal)(ctx["record"].root)
 
 def services(ctx) -> str:
     from engine.services import DOWN, UP, Declared, listed, log_file, specs, want

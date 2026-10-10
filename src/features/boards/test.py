@@ -49,7 +49,7 @@ def test_a_request_opens_a_session_that_cancel_closes():
         "the request is a message about the board, and the board remembers the session so the panel can resume it"
     assert any("waits for the board-filler" in n for n in nudges(record)) and not any(n.startswith("sequence ") for n in nudges(record)), \
         "the request is handed to the board-filler: the main agent is told to dispatch it, never handed the steps itself"
-    exploring = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Exploring a request")
+    exploring = next(s for s in Sequences(record, actor=SYSTEM).all(last=0) if s.title == "Exploring a request")
     filler = Sequences(record, actor=AGENT, agent="board-filler")
     filler.follow(exploring.n, about=made.ref)
     assert list(filler.load(exploring.n).runs.values())[0]["agent"] == "board-filler" and Sequences(record, actor=AGENT).in_hand() is None, \
@@ -290,7 +290,7 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
                             "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
     said = lambda command: str(handle(PROVIDERS["claude"](), record.root, record.env, call(command)).get("reason", ""))
     assert said("git status") == "", "a subagent gets no journal guard, the board-filler included"
-    exploring = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Exploring a request")
+    exploring = next(s for s in Sequences(record, actor=SYSTEM).all(last=0) if s.title == "Exploring a request")
     assert [run["step"] for run in exploring.runs.values()] == [4] and exploring.sections[3]["title"] == "Say what done means (score 3)", \
         "the score moves the filler's run to the step for it"
     agent.score(board.n, "4")
