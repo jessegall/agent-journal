@@ -15,6 +15,7 @@ from typing import NamedTuple
 
 import pytest
 
+from controllers import stored
 from controllers.base import Controller
 from controllers.features import Features
 from controllers.types import CONTROLLERS, Agents, Comments, Docs, Environments, Messages, Notices, Questions, Todos
@@ -144,7 +145,8 @@ def test_a_code_connects_once_and_a_look_at_it_does_not_use_it(served):
         Phones(record, actor=USER).connect(7)
 
 
-def test_a_message_from_the_phone_is_the_users_own(served):
+def test_a_message_from_the_phone_is_the_users_own(served, monkeypatch):
+    monkeypatch.setattr(stored, "WATCHED", stored.Watched())
     record, base = served
     n, key = paired(record, base)
     status, made, _ = call(base, "/p/message", {"brief": "Carry on with the tests", "idempotency": "a1"}, key)
@@ -155,6 +157,7 @@ def test_a_message_from_the_phone_is_the_users_own(served):
     script = Path(__file__).resolve().parents[2] / "journal.py"
     subprocess.run([sys.executable, str(script), "--root", str(record.root), "--env", record.env, "--as", AGENT, "message", "read", str(made["n"])],
                    capture_output=True, timeout=60, check=True)
+    stored.watch_marks()   # the server's loop takes its look at the folders before the phone polls again
     ticked = [item for item in call(base, "/p/feed", key=key).body["items"] if item["ref"] == f"message:{made['n']}"]
     assert ticked and "agent" in ticked[0]["seen"], "a read made in another process shows on the phone's next poll, so its ticks change"
     assert len([m for m in Messages(record, actor=SYSTEM).rows.summaries() if m.get("idempotency") == "a1"]) == 1, "a resend is one message"
