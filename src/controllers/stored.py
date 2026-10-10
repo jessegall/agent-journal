@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Callable, TypeVar
 from resources.base import MEMORY, OWNER, PART_OF, Missing, Refused, Resource
 from engine.stored import append_text, read_json, write_json, write_text
+from engine import transaction
 from engine.memo import Memo
 from engine.numbers import rows
 
@@ -36,6 +37,7 @@ INDEXED: dict[str, dict] = {}
 PENDING: dict[str, set[int]] = {}
 INDEXED_AT: dict[str, dict[int, str]] = {}
 STAMPED: dict[str, "Stamped"] = {}
+STAMPED_OWN: dict[str, "Stamped"] = {}
 PARSED = "journal.parsed"
 STAMPS_FRESH = 60.0
 STAMPS_RENEW = STAMPS_FRESH / 2
@@ -109,6 +111,16 @@ def restamp(path: Path, n: int) -> None:
         stamps.pop(n, None)
         inodes.pop(n, None)
     STAMPED[str(path.parent)] = replace(held, stamps=stamps, inodes=inodes)
+
+def forgotten(path: Path) -> None:
+    """A rolled-back write put this file back: what is kept in memory of the row, and of the folder it lies in, is dropped, so the next read starts from the disk."""
+    HELD.forget(str(path))
+    for folder in (str(path.parent), str(path.parent.parent)):
+        for kept in (SUMMARIES, INDEXED, INDEXED_AT, PENDING, STAMPED, STAMPED_OWN):
+            kept.pop(folder, None)
+
+
+transaction.UNDONE.append(forgotten)
 
 
 def index_file(folder: Path) -> Path:
@@ -433,6 +445,10 @@ class RowStore:
                 if changed:
                     return self._restamped(folder, mark, held, changed, noted)
             return self.restat(folder, mark, held if kept else None, now)
+        mark, now = os.stat(folder).st_mtime_ns, time.monotonic()
+        held = STAMPED_OWN.get(str(folder))
+        if held and held.mark == mark and now - held.checked < STAMPS_FRESH:
+            return held.stamps
         stamps = {}
         for e in os.scandir(folder):
             if not e.is_dir() or not e.name.isdigit():
@@ -442,6 +458,7 @@ class RowStore:
             except OSError:
                 continue
             stamps[int(e.name)] = stamp_of(found)
+        STAMPED_OWN[str(folder)] = Stamped(mark, now, stamps, {}, 0)
         return stamps
 
     @staticmethod
@@ -546,6 +563,17 @@ class RowStore:
         if self.resource.loading != MEMORY:
             return self._parsed(n)
         return HELD.get(where, stamp, lambda: self._parsed(n))
+
+    def discard(self, n: int) -> None:
+        """Drops the row held in memory, so what the disk holds is the only truth of it again, as after a save that was refused."""
+        HELD.forget(str(self.path(n)))
+        entry = self.packed().get(n)
+        if entry:
+            HELD.forget(f"{self.folder() / PACKED / entry[ARCHIVE]}:{n}")
+
+    def reparsed(self, n: int) -> Resource:
+        """The row as the disk holds it now, read again."""
+        return self._parsed(n)
 
     def text(self, n: int) -> str:
         try:

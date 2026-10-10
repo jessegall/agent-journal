@@ -2,7 +2,7 @@ import time
 
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import Controller
+from controllers.base import Controller, discarding
 from features.boards.building import BuildingBoards
 from features.boards.requests import DraftingBoards, numbers_in
 from features.boards.resource import DONE, MEANINGS, Board
@@ -31,6 +31,7 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
         opening = {} if "stages" in data else {"stages": list(STAGES), "meanings": {STAGES[-1]: DONE}}
         return super().create(title, abstract, brief, **{**opening, **data})
 
+    @discarding
     def save(self, r: Resource, action: str, **event) -> Resource:
         stages = [str(stage) for stage in r.stages]
         if len(set(stages)) != len(stages):
