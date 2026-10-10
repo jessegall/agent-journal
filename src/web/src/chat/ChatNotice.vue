@@ -8,7 +8,7 @@ import {api} from "../api/client.js";
 import {route} from "../route.js";
 
 const props = defineProps({notice: Object, fixed: Boolean});
-const emit = defineEmits(["closing", "failed"]);
+const emit = defineEmits(["closing"]);
 
 const working = ref(false);
 const failure = ref("");
@@ -38,8 +38,9 @@ onMounted(() => setTimeout(() => (armed.value = true), ARMED_AFTER));
 
 function close() {
     if (!armed.value) return;
-    emit("closing", props.notice.n);
-    api.closeNotice(props.notice.n).catch(() => emit("failed", props.notice.n));
+    const request = api.closeNotice(props.notice.n);
+    request.catch(() => {});
+    emit("closing", props.notice.n, request);
 }
 </script>
 

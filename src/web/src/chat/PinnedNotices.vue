@@ -8,7 +8,10 @@ const props = defineProps({notices: {type: Array, required: true}, withoutToggle
 const {visible} = usePins(() => props.notices);
 const closing = ref(new Set());
 const shown = computed(() => visible.value.filter((x) => !closing.value.has(x.n)));
-const hide = (n) => (closing.value = new Set([...closing.value, n]));
+const hide = (n, request) => {
+    closing.value = new Set([...closing.value, n]);
+    request.catch(() => show(n));
+};
 const show = (n) => (closing.value = new Set([...closing.value].filter((one) => one !== n)));
 </script>
 
@@ -16,7 +19,7 @@ const show = (n) => (closing.value = new Set([...closing.value].filter((one) => 
     <div class="pinned">
         <TransitionGroup name="act">
             <template v-for="x in shown" :key="x.n">
-                <ChatNotice :notice="x" @closing="hide" @failed="show" />
+                <ChatNotice :notice="x" @closing="hide" />
             </template>
         </TransitionGroup>
         <template v-if="!withoutToggle">
