@@ -364,12 +364,12 @@ class Driver(ABC):
             return True
         for _ in range(RESUBMITS):
             time.sleep(RECHECK)
-            if self._landed(line, started, confirmed):
+            if self._landed(line, started, confirmed) or self._taken(line, shown):
                 return True
             if self._queued(shown):
                 return self._send_now(shown)
             self._wrote(b"\r")
-        return self._landed(line, started, confirmed)
+        return self._landed(line, started, confirmed) or self._taken(line, shown)
 
     def _echoed(self, line: str, since: int) -> None:
         start = b"".join(line.encode().split())[:LINE_START]
@@ -403,6 +403,10 @@ class Driver(ABC):
 
     def _landed(self, line: str, since: float, confirmed: bool) -> bool:
         return not self._still_in_input(line) and (not confirmed or self._submitted(since))
+
+    def _taken(self, line: str, since: int) -> bool:
+        """Whether the screen itself shows a line was taken: the agent printed its busy mark after the line was typed and the line is out of the input box. A hook that reports the prompt late, as one kept while the server was loaded does, is not needed to know."""
+        return bool(self.BUSY) and self.BUSY in self._shown_since(since) and not self._still_in_input(line)
 
     def _still_in_input(self, line: str) -> bool:
         if not self.INPUT_MARK:
