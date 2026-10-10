@@ -6,10 +6,11 @@ heartbeat_age=5
 # a heartbeat that is late but not old is a server too busy to beat on time, as on a machine under load: the hook asks it once,
 # long enough to answer, and spools the event when it does not
 late_age=60
-late_wait=3
+late_wait=2
 # a server that is not beating for longer is down, restarting or hung: the hook gives it this long, once, and never waits for it
 unhealthy_wait=0.05
-healthy_wait=10
+healthy_wait=2
+wait_for=$healthy_wait
 body=$(mktemp) || exit 0
 cat > "$body"
 # an event that decides nothing is kept in the spool, with who sent it, and the server replays it in order when it next reads;
@@ -19,10 +20,14 @@ spool() {
   name="$root/runtime/unsent/$(date +%s)-$$"
   { printf '{"agent":"%s","env":"%s","pid":%s,"body":' "$agent" "$JOURNAL_ENV" "${PPID:-0}"; cat "$body"; printf '}'; } > "$name.tmp" && mv "$name.tmp" "$name.json"
 }
+# an event that decides something and could not be delivered in time is spooled like the others: the call goes ahead unchecked,
+# the server reads the event late, and the agent is told so
 keep() {
-  case $(grep -o '"hook_event_name" *: *"[A-Za-z]*"' "$body" | head -1) in
-    *PreToolUse*|*PermissionRequest*|*UserPromptSubmit*|*Stop\"|*SessionStart*) ;;
-    *) spool ;;
+  event=$(grep -o '"hook_event_name" *: *"[A-Za-z]*"' "$body" | head -1)
+  spool
+  case $event in
+    *PreToolUse*|*PermissionRequest*|*UserPromptSubmit*|*Stop\"|*SessionStart*)
+      printf '{"systemMessage": "The journal did not answer within %s seconds, so this call went ahead unchecked and the journal reads it late."}\n' "$wait_for" ;;
   esac
   rm -f "$body"
   exit 0
