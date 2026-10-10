@@ -25,7 +25,7 @@ const older = computed(() => neighbour(props.resource, reports.value, -1));
 const carried = computed(() => carriedOver(props.resource, reports.value));
 const counts = computed(() => updateCounts(props.resource, !!newer.value));
 const sections = computed(() => updateSections(props.resource, !!newer.value));
-const held = computed(() => ({question: rows("question"), plan: rows("plan"), suggestion: rows("suggestion")}));
+const held = computed(() => ({question: rows("question").filter((q) => !q.env), plan: rows("plan"), suggestion: rows("suggestion")}));
 const also = computed(() => updateAlso(props.resource));
 
 function open(item) {

@@ -46,6 +46,19 @@ class Environments(Controller):
     PICKED_UP = (Works, Todos, Questions, Messages)
     resource = types.Environment
 
+    def working_under(self) -> list[str]:
+        """The environments launched from this one, and those launched from them in turn: where its helpers, tickets and their helpers work."""
+        launched: dict[str, list[str]] = {}
+        for row in self.rows.every():
+            launched.setdefault(row.launched_from, []).append(row.title)
+        found, waiting = [], [self.record.env]
+        while waiting:
+            for name in launched.get(waiting.pop(0), []):
+                if name not in found and name != self.record.env:
+                    found.append(name)
+                    waiting.append(name)
+        return found
+
     @action
     def update(self, n: int, title: str | None = None, **data):
         if title is not None:
