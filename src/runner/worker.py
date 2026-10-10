@@ -170,8 +170,8 @@ class Dialogs:
         self.asking.start(menu)
         if self.asking.pending(menu):
             return None
-        taken = self.asking.answer(menu)
-        if taken:
+        if self.asking.answered(menu):
+            taken = self.asking.answer(menu)
             menu.remember(self.driver.record, taken)
             return menu.choice(taken), "as an asked agent said"
         return menu.choice(), "because even the asked agent could not say"

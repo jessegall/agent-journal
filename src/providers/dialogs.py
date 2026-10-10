@@ -118,7 +118,8 @@ class Asking:
 
     def __init__(self, driver):
         self.driver = driver
-        self.answers: dict[str, Option | None] = {}
+        self.answers: dict[str, Option] = {}
+        self.failed: set[str] = set()
         self.running: set[str] = set()
 
     def start(self, menu: Menu) -> None:
@@ -133,12 +134,19 @@ class Asking:
     def ask(self, menu: Menu, argv) -> None:
         try:
             done = subprocess.run(argv, capture_output=True, text=True, timeout=ASK_TIMEOUT, stdin=subprocess.DEVNULL)
-            self.answers[menu.key()] = menu.numbered(done.stdout)
+            taken = menu.numbered(done.stdout)
         except (OSError, subprocess.SubprocessError):
-            self.answers[menu.key()] = None
+            taken = None
+        if taken:
+            self.answers[menu.key()] = taken
+            return
+        self.failed.add(menu.key())
 
     def pending(self, menu: Menu) -> bool:
-        return menu.key() in self.running and menu.key() not in self.answers
+        return menu.key() in self.running and menu.key() not in self.answers and menu.key() not in self.failed
 
-    def answer(self, menu: Menu) -> Option | None:
-        return self.answers.get(menu.key())
+    def answered(self, menu: Menu) -> bool:
+        return menu.key() in self.answers
+
+    def answer(self, menu: Menu) -> Option:
+        return self.answers[menu.key()]
