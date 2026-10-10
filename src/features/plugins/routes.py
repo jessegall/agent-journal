@@ -52,8 +52,8 @@ def get_pages(req: Request) -> Reply:
 @handles("GET", "/api/services")
 def get_services(req: Request) -> Reply:
     from engine.services import listed
-    from features.plugins.services import plugin_services
-    return Reply(200, listed(req.root, (plugin_services,)))
+    from features.plugins.services import declared_services
+    return Reply(200, listed(req.root, declared_services(req.root)))
 
 
 @handles("POST", "/api/{env}/plugins/preview")

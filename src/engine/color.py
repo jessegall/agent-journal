@@ -1,11 +1,14 @@
+import os
 import re
 from pathlib import Path
+from engine.memo import Memo
 from engine.stored import read_json, write_json
 from typing import TypedDict
 
 
 PALETTE = ("#e5484d", "#f76b15", "#ffc53d", "#30a46c", "#12a594", "#0090ff", "#3e63dd", "#8e4ec6", "#d6409f", "#a18072")
 COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
+IDENTITIES = Memo()
 
 
 def default(name: str) -> str:
@@ -47,6 +50,15 @@ class Identity(TypedDict):
 
 
 def identity(root: Path) -> Identity:
+    """The project's name and colours, made again only when the settings file changes."""
+    try:
+        stamp = os.stat(file(root)).st_mtime_ns
+    except OSError:
+        stamp = 0
+    return IDENTITIES.get(str(root), stamp, lambda: made(root))
+
+
+def made(root: Path) -> Identity:
     project = root.resolve().parent.name
     fallback = default(project)
     chosen = custom(root)

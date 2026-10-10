@@ -17,6 +17,7 @@ from features.auto_update.countdown import remaining
 from controllers.shared import row_shared
 from surfaces.package import archive as extension_archive, info as extension_info
 from engine.color import identity, set_color
+from engine.memo import Memo
 from engine.upgrades import check_now
 from agents.control import permit
 from features.permission_prompts.skipping import Relaunch
@@ -89,6 +90,7 @@ def unanswered(root: Path) -> None:
 
 SHOWN_HITS = 30
 STREAM_BEAT = 15.0
+NAMED = Memo()
 SPOOLED_AT_ONCE = 25
 
 @dataclass(frozen=True)
@@ -252,7 +254,8 @@ def post_update_check(req: Request) -> Reply:
 
 @route("GET", "/api/identity")
 def get_identity(req: Request) -> Reply:
-    names = [row["title"] for row in Environments(Record(req.root, runtime.env(req.root)), actor=USER).rows.summaries() if not row["deleted"]]
+    summaries = Environments(Record(req.root, runtime.env(req.root)), actor=USER).rows.summaries()
+    names = NAMED.get(str(req.root), summaries, lambda: [row["title"] for row in summaries if not row["deleted"]])
     return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "build": CODE.name, "pid": os.getpid(), "environments": names})
 
 

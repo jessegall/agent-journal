@@ -122,12 +122,6 @@ def newest_among(summaries: list, last: int, wanted_row) -> list[dict]:
     return found
 
 
-def weighed(row: dict, hidden_listed: bool) -> tuple[int, int]:
-    """Whether a row is listable among all rows and among the open ones, counted by the summaries as they change."""
-    listable = not row["deleted"] and (hidden_listed or not row.get("hidden")) and row["updated"] > 0
-    return int(listable), int(listable and not row["completed"])
-
-
 def newest_listed(controller, wanted: Listing, summaries: list) -> tuple[list[dict], bool]:
     """The rows of the usual listing, the newest page and the open rows with it, and whether older rows are left out."""
     last, hidden_listed = wanted.last, controller.resource.hidden_listed
@@ -139,7 +133,7 @@ def newest_listed(controller, wanted: Listing, summaries: list) -> tuple[list[di
     if wanted.completed:
         open_rows = [row for row in standing if listable(row)] if controller.resource.listed_open else open_newest
         kept = sorted({row["n"]: row for row in (*open_rows, *newest_among(summaries, last, shown))}.values(), key=lambda row: row["n"])
-    every, open_only = controller.rows.counted("listable", lambda row: weighed(row, hidden_listed), 2, summaries)
+    every, open_only = controller.rows.counted("listable", lambda row: (int(not row["deleted"] and listable(row)), int(not row["deleted"] and not row["completed"] and listable(row))), 2, summaries)
     return kept, (every if wanted.completed else open_only) > len(kept)
 
 

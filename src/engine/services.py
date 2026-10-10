@@ -16,6 +16,7 @@ from engine.runtime import env, folder
 from engine.sessions import alive
 from typing import TypedDict
 from engine.extension import Extension
+from engine.memo import Memo
 from engine.record import Record
 
 PORTS = range(8440, 8500)
@@ -98,10 +99,17 @@ def status(root: Path, sid: str) -> ServiceState:
     return ServiceState.read(status_file(root, sid))
 
 
+STATES = Memo()
+
+
 def states(root: Path) -> dict[str, ServiceState]:
+    """The state of every service, read again only when the runtime folder changed, since every write replaces a file."""
     home = folder(root)
-    found = sorted(home.glob("service-*.json")) if home.is_dir() else []
-    return {p.stem.removeprefix("service-"): ServiceState.read(p) for p in found}
+    try:
+        stamp = os.stat(home).st_mtime_ns
+    except OSError:
+        return {}
+    return STATES.get(str(home), stamp, lambda: {p.stem.removeprefix("service-"): ServiceState.read(p) for p in sorted(home.glob("service-*.json"))})
 
 
 def wanted(root: Path, sid: str) -> str:
@@ -374,14 +382,24 @@ class Manager:
         return killed
 
 
-def listed(root: Path, sources) -> list[dict]:
-    known = {spec.id: spec for spec in specs(root, sources)}
+@dataclass(frozen=True)
+class Declared:
+    id: str
+    plugin: str
+    service: str
+    port: int = 0
+
+
+def listed(root: Path, declared: list[Declared]) -> list[dict]:
+    """The services as their keeper recorded them, with what plugins declare; it claims and probes no port."""
+    known = {one.id: one for one in declared}
     current = states(root)
     out = []
     for sid in sorted({*known, *current}):
-        spec, state = known.get(sid), current.get(sid, ServiceState())
+        one, state = known.get(sid), current.get(sid, ServiceState())
         plugin, _, service = sid.partition(".")
-        out.append({"id": sid, "plugin": spec.plugin if spec else plugin, "service": spec.service if spec else service,
-                    "state": state.state if state.state else "not running", "why": state.why, "url": spec.url if spec and spec.url else state.url,
-                    "port": spec.port if spec and spec.port else state.port, "since": state.started, "declared": spec is not None})
+        port = state.port or (one.port if one else 0)
+        out.append({"id": sid, "plugin": one.plugin if one else plugin, "service": one.service if one else service,
+                    "state": state.state if state.state else "not running", "why": state.why, "url": state.url or local_url(port),
+                    "port": port, "since": state.started, "declared": one is not None})
     return out
