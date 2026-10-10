@@ -43,7 +43,7 @@ class LookAfterTickets(Handler):
 
 def raise_waiting_plans(context: AgentContext, tickets: Tickets) -> None:
     paused = Boards(context.record, actor=SYSTEM).paused()
-    for ticket in [t for t in tickets._awaiting_orchestrator() if not (t.board and int(t.board) in paused)]:
+    for ticket in [t for t in tickets._awaiting_orchestrator() if not (t.board and int(t.board) in paused) and not tickets._reviewing(t)]:
         plan = tickets._plans(ticket).load(ticket.plan)
         if context.once(PLAN_WAITS_ONCE, f"{ticket.ref}|{ticket.plan}|{plan.updated}"):
             tickets.raise_moment(ticket.n, CHECKPOINT if plan.status == WAITING else PLAN_WAITS)

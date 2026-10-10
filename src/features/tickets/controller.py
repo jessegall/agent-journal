@@ -209,8 +209,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return self._plan_status(ticket) in (READY, WAITING)
 
     def _idle_by_design(self, ticket) -> bool:
-        """A ticket that waits on open tickets, on its plan's approval or on its merge has an agent with nothing to do on purpose."""
-        return bool(self._waiting_on(ticket)) or self._plan_status(ticket) in (READY, WAITING, PLAN_DONE)
+        """A ticket that waits on open tickets, on its plan's approval, on its approved plan's turn or on its merge has an agent with nothing to do on purpose."""
+        return bool(self._waiting_on(ticket)) or ticket.approved_early or self._plan_status(ticket) in (READY, WAITING, PLAN_DONE)
 
     def _needing_a_look(self, boards: list[int]) -> list[tuple]:
         sessions, running = Sessions(self.record.root).all(), len(self._running())
