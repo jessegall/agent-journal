@@ -129,6 +129,12 @@ def free_port():
 
 
 @pytest.fixture(autouse=True)
+def work_in_the_test_thread(monkeypatch):
+    import engine.bus as bus
+    monkeypatch.setattr(bus, "BACKGROUND", False)
+
+
+@pytest.fixture(autouse=True)
 def closed_handles():
     yield
     locks.close_all()
