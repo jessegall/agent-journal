@@ -1,6 +1,9 @@
+import hashlib
 import importlib
+import json
 import pkgutil
 import sys
+import time
 from pathlib import Path
 
 CODE = Path(__file__).resolve().parents[1]
@@ -38,6 +41,34 @@ def code_stamp(place: Path) -> tuple[tuple[str, int], ...]:
 
 def installed_stamp(root: Path) -> tuple[tuple[str, int], ...]:
     return (*code_stamp(build_file(root)), *code_stamp(code(root)))
+
+
+STAMP_FILE = "installed-stamp"
+STAMP_FRESH = 5.0
+
+
+def installed_digest(root: Path) -> str:
+    """What the installed build and source tree look like now, as one short text: the whole tree is walked to find out."""
+    return hashlib.sha1(repr(installed_stamp(root)).encode()).hexdigest()[:16]
+
+
+def publish_stamp(root: Path) -> str:
+    """Written by the one watcher of a journal, its server, so that nothing else has to walk the source tree to notice an upgrade."""
+    from engine.stored import write_text
+    digest = installed_digest(root)
+    write_text(Path(root) / "runtime" / STAMP_FILE, json.dumps({"digest": digest, "at": time.time()}))
+    return digest
+
+
+def noticed_digest(root: Path) -> str:
+    """The installed build as the watcher last wrote it, one small file to read; the tree is walked here only when the watcher has not written for a while, as when no server runs."""
+    try:
+        written = json.loads((Path(root) / "runtime" / STAMP_FILE).read_text())
+        if time.time() - float(written["at"]) < STAMP_FRESH:
+            return str(written["digest"])
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return installed_digest(root)
 
 
 def data(*parts: str) -> Path:

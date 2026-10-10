@@ -312,8 +312,10 @@ def running_journals() -> list:
     return PROBED[1]
 
 
-HEALTH_WAIT = 8.0
-MISSES_BEFORE_RESTART = 3
+HEALTH_WAIT = 10.0
+MISSES_BEFORE_RESTART = 6
+LATE_BEAT = 20.0
+PROBER_LOCK = "prober.lock"
 STUCK_THREADS = "threads.txt"
 STOP_WAIT = 5.0
 
@@ -326,13 +328,41 @@ def healthy(url: str, env: str, timeout: float = HEALTH_WAIT) -> bool:
         return False
 
 
+def beat_late(root: Path) -> bool:
+    """Whether the server's own heartbeat, written every couple of seconds from a thread of its own, has stopped for long: a server that does not beat is not worth waiting eight seconds on."""
+    try:
+        written = int((runtime.folder(root) / "heartbeat").read_text().split()[0])
+    except (OSError, ValueError, IndexError):
+        return False
+    return time.time() - written > LATE_BEAT
+
+
+def take_prober(root: Path):
+    """The lock that makes one worker of the journal the one that judges the server, kept for as long as that worker lives; None while another holds it."""
+    held = (runtime.folder(root) / PROBER_LOCK).open("a")
+    try:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        held.close()
+        return None
+    return held
+
+
 class StuckServer:
     def __init__(self, root: Path, env: str):
-        self.root, self.env, self.missed = Path(root), env, 0
+        self.root, self.env, self.missed, self.prober = Path(root), env, 0, None
+
+    def judging(self) -> bool:
+        """Only one worker of a journal probes its server, so its answer is asked for once and not once for every environment."""
+        if self.prober is None:
+            self.prober = take_prober(self.root)
+        return self.prober is not None
 
     def restarted(self) -> str:
+        if not self.judging():
+            return ""
         url = running(self.root)
-        if not url or healthy(url, self.env):
+        if not url or (not beat_late(self.root) and healthy(url, self.env)):
             self.missed = 0
             return ""
         self.missed += 1

@@ -262,9 +262,7 @@ def get_identity(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/health")
 def get_health(req: Request) -> Reply:
-    record = req.record()
-    with record.locked(), record.locked(PROJECT):
-        return Reply(200, {"locks": "taken"})
+    return Reply(200, {"answering": True})
 
 
 @route("POST", "/api/identity")

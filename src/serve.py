@@ -37,7 +37,7 @@ from controllers.types import warm  # noqa: E402
 from providers.turns import read_transcripts  # noqa: E402
 from runner.spool import drain, replay, spooled  # noqa: E402
 from engine.runtime import default_env
-from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, entry
+from engine.package import ARCHIVE, CODE, ZIPPED, code_stamp, entry, publish_stamp
 
 DEFAULT_PORT = 8430
 REQUEST_BACKLOG = 128
@@ -235,6 +235,7 @@ def watch_code(root: Path, package: Path, server: ThreadingHTTPServer, changed: 
     while not changed.is_set():
         time.sleep(WATCH_SECONDS)
         now = code_stamp(package)
+        publish_stamp(root)
         drifting = (drifting or time.monotonic()) if drifted(root) else 0.0
         if now != before:
             before = now
