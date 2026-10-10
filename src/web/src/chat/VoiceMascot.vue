@@ -156,7 +156,8 @@ function rigBlink() {
 }
 
 const waitForMove = () => !still && (moveTimer = setTimeout(nextMove, afterSeconds(mascot.value.schedule.idle)));
-const waitForRigBlink = () => !still && rigged.value?.blink && (rigBlinkTimer = setTimeout(rigBlink, afterSeconds(mascot.value.schedule.blink)));
+const waitForRigBlink = () =>
+    !still && rigged.value?.blink && (rigBlinkTimer = setTimeout(rigBlink, afterSeconds(mascot.value.schedule.blink)));
 
 function rest() {
     clearTimeout(moveTimer);
