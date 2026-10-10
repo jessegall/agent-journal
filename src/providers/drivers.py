@@ -21,6 +21,7 @@ ENTER_AFTER = 0.3
 AGENT_COMMAND = "/"
 RECHECK, RESUBMITS = 1.0, 3
 ECHO_WAIT, ECHO_STEP = 2.0, 0.1
+DELIVERED_FOR = 30.0
 SCREEN_TAIL, LINE_START = 16384, 40
 PASTE_OVER, TYPED_PER_SECOND = 200, 4000
 PASTE_START, PASTE_END = b"\x1b[200~", b"\x1b[201~"
@@ -96,6 +97,8 @@ class Driver(ABC):
         self.waiting = lambda: False
         self.groups: dict[tuple, dict] = {}
         self.sent_at = 0.0
+        self.reached: dict[str, float] = {}
+        self.entered_at = 0.0
         self.reported = (float("-inf"), None)
         self.printed = runtime.session_file(record.root, session, PRINTED)
         self.typed = runtime.session_file(record.root, session, TYPED)
@@ -283,11 +286,19 @@ class Driver(ABC):
         return "" if self.failed else line
 
     def _deliver(self, line: str, by: str) -> bool:
+        """Hands a line to the agent by the channel when it takes it, and types it when it does not; a line that may have reached the agent by one is never handed over by the other, since an unconfirmed typed line is as likely taken as not."""
+        if time.time() - self.reached.get(line, 0.0) < DELIVERED_FOR:
+            return True
         if self.TAKES_CHANNEL and by == JOURNAL and self._post(line, by):
+            self.reached[line] = time.time()
             return True
         if self.awaits_answer():
             return False
-        return self._typed(f"{MARK} {line}", confirmed=True) if by == JOURNAL else self._typed(line, confirmed=self.ENTER_CAN_MISS)
+        self.entered_at = 0.0
+        typed = self._typed(f"{MARK} {line}", confirmed=True) if by == JOURNAL else self._typed(line, confirmed=self.ENTER_CAN_MISS)
+        if typed or self.entered_at:
+            self.reached[line] = time.time()
+        return typed
 
     def whisper(self, text: str) -> None:
         """A whisper goes through the channel once; a provider with no channel takes it as a line, and a lost one is dropped, never typed."""
@@ -360,6 +371,7 @@ class Driver(ABC):
             self._echoed(line, shown)
         if not self._entered():
             return False
+        self.entered_at = time.time()
         if not confirmed and not self.INPUT_MARK:
             return True
         for _ in range(RESUBMITS):
