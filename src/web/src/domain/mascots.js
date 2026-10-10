@@ -65,6 +65,7 @@ export const BLINK = {shut: {min: 90, max: 160}, doubleOneIn: 6, doubleAfter: 13
 export const blinkOf = (random = Math.random) => ({
     shut: BLINK.shut.min + random() * (BLINK.shut.max - BLINK.shut.min),
     twice: random() < 1 / BLINK.doubleOneIn,
+    again: BLINK.doubleAfter,
 });
 
 export const weightOf = (schedule, path) => schedule.weights?.[path] ?? 1;
