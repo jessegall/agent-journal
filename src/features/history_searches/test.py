@@ -70,7 +70,6 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
         "a start reads the text of every to-do and message once, in the warm-up, so the first search after it reads nothing"
     from controllers import stored
     from controllers.types import Todos, warm_record
-    from resources.base import SYSTEM
     Todos(record, actor=SYSTEM).create("one to warm")
     loaded = []
     with pytest.MonkeyPatch.context() as patch:

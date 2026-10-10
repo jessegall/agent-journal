@@ -468,8 +468,8 @@ def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_ba
     hook(after)
     hook({**after, "hook_event_name": "PreToolUse"})
     spooled = unsent()[kept_before:]
-    assert len(spooled) == 1 and json.loads(spooled[0].read_text())["body"]["hook_event_name"] == "PostToolUse", \
-        "an event that decides nothing is kept in the spool whole, and one that decides something is not"
+    assert sorted(json.loads(kept.read_text())["body"]["hook_event_name"] for kept in spooled) == ["PostToolUse", "PreToolUse"], \
+        "an event that decides nothing is kept in the spool whole, and so is one that decides something, which is read late"
     server = serving()
     try:
         began, listed = time.time(), ""
