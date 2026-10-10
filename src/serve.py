@@ -253,6 +253,7 @@ def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event
 
 
 def watch_runtime(root: Path, halting: threading.Event) -> None:
+    from controllers.agents import write_pending_rows
     from features.auto_update.pausing import resume_when_done
     while not halting.wait(WATCH_SECONDS):
         runtime.refresh_flags(root)
@@ -260,6 +261,7 @@ def watch_runtime(root: Path, halting: threading.Event) -> None:
         renew_stamps()
         flush_indexes()
         waits.write_holds()
+        write_pending_rows()
         if runtime.hook_failures(root).is_file():
             unanswered(root)
         runtime.restarting(root).unlink(missing_ok=True)
