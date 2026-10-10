@@ -11,25 +11,24 @@ late_wait=2
 unhealthy_wait=0.05
 healthy_wait=2
 wait_for=$healthy_wait
-body=$(mktemp) || exit 0
-cat > "$body"
+# the event is read once into a variable and written from there, so the hook starts no process to keep it in a file
+body=$(cat)
 # an event that decides nothing is kept in the spool, with who sent it, and the server replays it in order when it next reads;
 # one that decides something (a refusal, a context, a nudge at the stop) is answered now or not at all
 spool() {
   mkdir -p "$root/runtime/unsent" || return
   name="$root/runtime/unsent/$(date +%s)-$$"
-  { printf '{"agent":"%s","env":"%s","pid":%s,"body":' "$agent" "$JOURNAL_ENV" "${PPID:-0}"; cat "$body"; printf '}'; } > "$name.tmp" && mv "$name.tmp" "$name.json"
+  { printf '{"agent":"%s","env":"%s","pid":%s,"body":' "$agent" "$JOURNAL_ENV" "${PPID:-0}"; printf '%s' "$body"; printf '}'; } > "$name.tmp" && mv "$name.tmp" "$name.json"
 }
 # an event that decides something and could not be delivered in time is spooled like the others: the call goes ahead unchecked,
 # the server reads the event late, and the agent is told so
 keep() {
-  event=$(grep -o '"hook_event_name" *: *"[A-Za-z]*"' "$body" | head -1)
+  event=$(printf '%s' "$body" | grep -o '"hook_event_name" *: *"[A-Za-z]*"' | head -1)
   spool
   case $event in
     *PreToolUse*|*PermissionRequest*|*UserPromptSubmit*|*Stop\"|*SessionStart*)
       printf '{"systemMessage": "The journal did not answer within %s seconds, so this call went ahead unchecked and the journal reads it late."}\n' "$wait_for" ;;
   esac
-  rm -f "$body"
   exit 0
 }
 load() { uptime | sed 's/.*averages*: *//; s/,/ /g' | cut -d' ' -f1; }
@@ -48,10 +47,10 @@ fi
 sent_to=
 while :; do
   if [ -n "$sent_to" ]; then
-    reply=$(curl -s -m $wait_for --connect-timeout $unhealthy_wait -w '\n%{http_code}' -H 'Content-Type: application/json' --data-binary @"$body" "$sent_to")
+    reply=$(printf '%s' "$body" | curl -s -m $wait_for --connect-timeout $unhealthy_wait -w '\n%{http_code}' -H 'Content-Type: application/json' --data-binary @- "$sent_to")
   else
-    reply=$(curl -s -m $wait_for --connect-timeout $unhealthy_wait -w '\n%{http_code}' -H 'Content-Type: application/json' \
-      --url-query "root=$root" --url-query "pid=$PPID" --url-query "env=$JOURNAL_ENV" --url-query "inbox=$CLAUDE_CODE_MESSAGING_SOCKET" --data-binary @"$body" "${url}api/hook/$1")
+    reply=$(printf '%s' "$body" | curl -s -m $wait_for --connect-timeout $unhealthy_wait -w '\n%{http_code}' -H 'Content-Type: application/json' \
+      --url-query "root=$root" --url-query "pid=$PPID" --url-query "env=$JOURNAL_ENV" --url-query "inbox=$CLAUDE_CODE_MESSAGING_SOCKET" --data-binary @- "${url}api/hook/$1")
     # curl before 7.87 has no --url-query and exits 2: build the address with --data-urlencode instead
     [ $? -ne 2 ] || { sent_to=$(curl -Gso /dev/null -w '%{url_effective}' --data-urlencode "root=$root" --data-urlencode "pid=$PPID" --data-urlencode "env=$JOURNAL_ENV" --data-urlencode "inbox=$CLAUDE_CODE_MESSAGING_SOCKET" "${url}api/hook/$1"); continue; }
   fi
@@ -66,5 +65,4 @@ case "$code" in
   *) { [ -z "$stale" ] || [ "${code:-000}" != 000 ]; } || down
      printf '%s %s %s %s %s\n' "$(date +%s)" "${code:-000}" "$agent" "$JOURNAL_ENV" "$(load)" >> "$root/runtime/hook-failures.log"; keep ;;
 esac
-rm -f "$body"
 exit 0

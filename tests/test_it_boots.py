@@ -1037,6 +1037,9 @@ def test_a_hook_reaches_a_busy_server_whose_heartbeat_is_late_and_no_second_serv
         hook = subprocess.run(["sh", str(CODE / "hook.sh"), "claude", str(root)], input='{"hook_event_name": "Stop"}', env=env, capture_output=True, text=True, timeout=60)
         assert (hook.returncode, any(path.startswith("/api/hook/claude") for path in seen), (root / "runtime" / "hook-failures.log").exists()) == (0, True, False), \
             f"a heartbeat six seconds late is a busy server, not a dead one: {seen}"
+        script = (CODE / "hook.sh").read_text()
+        assert ("mktemp" in script, "rm -f" in script, "--data-binary @-" in script) == (False, False, True), \
+            "a hook keeps the event in a variable and pipes it to curl, starting no process to hold it in a file"
         dead = tmp_path / "dead" / ".journal"
         (dead / "runtime").mkdir(parents=True)
         (dead / "runtime" / "heartbeat").write_text(f"{int(time.time()) - 6} http://127.0.0.1:1/\n")
