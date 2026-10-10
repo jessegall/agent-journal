@@ -1619,6 +1619,18 @@ def test_one_watcher_writes_the_installed_build_and_every_other_process_reads_it
     assert (package.noticed_digest(root) != published, len(walked)) == (True, 2), "when the watcher has not written for a while, as when no server runs, the tree is walked after all"
 
 
+def test_the_server_starts_on_the_free_threaded_interpreter_when_one_is_named(tmp_path, monkeypatch):
+    from engine import package
+    plain = package.server_entry("journal")
+    assert plain[0] == sys.executable and plain[1:] == package.entry("journal")[1:], "with nothing named the server starts on the interpreter that asks"
+    free = tmp_path / "python3.14t"
+    free.write_text("")
+    monkeypatch.setenv(package.SERVER_PYTHON, str(free))
+    assert package.server_entry("journal")[0] == str(free), "a free-threaded interpreter named in JOURNAL_SERVER_PYTHON runs the server, so environments are answered on different cores"
+    monkeypatch.setenv(package.SERVER_PYTHON, str(tmp_path / "gone"))
+    assert package.server_entry("journal")[0] == sys.executable, "one that is not there is ignored"
+
+
 def test_the_server_ends_when_interrupted_or_told_to_stop_restarts_on_new_code_and_answers_hook_failures(tmp_path, monkeypatch):
     import serve
     root = fresh().root

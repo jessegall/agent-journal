@@ -18,7 +18,7 @@ from engine.focus import existing_tab
 from engine.stored import append_text, read_json, write_json, write_text
 from engine.sessions import alive
 from engine.version import version
-from engine.package import entry
+from engine.package import entry, server_entry
 from engine.ports import free, url_of
 from resources.fields import Loaded
 from engine.machines import journal_home
@@ -248,7 +248,7 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
         if already:
             return already, None
         port = available(root, configured(root) or last(root).port)
-        command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]
+        command = [*server_entry("journal"), "--root", str(root), "serve", "--port", str(port)]
         with log.open("a") as output:
             server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
         url, code = answered(root, server)

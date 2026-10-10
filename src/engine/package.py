@@ -1,6 +1,7 @@
 import hashlib
 import importlib
 import json
+import os
 import pkgutil
 import sys
 import time
@@ -77,6 +78,15 @@ def data(*parts: str) -> Path:
 
 def entry(module: str) -> list[str]:
     return [sys.executable, str(CODE.with_name(ARCHIVE) if ZIPPED else CODE), "-m", module]
+
+
+SERVER_PYTHON = "JOURNAL_SERVER_PYTHON"
+
+
+def server_entry(module: str) -> list[str]:
+    """The command that starts the server: on the free-threaded interpreter named in JOURNAL_SERVER_PYTHON when there is one, so requests of different environments run on different cores, else on the interpreter that asks."""
+    named = os.environ.get(SERVER_PYTHON, "")
+    return [named if named and Path(named).is_file() else sys.executable, *entry(module)[1:]]
 
 
 def own_build(root: Path) -> bool:

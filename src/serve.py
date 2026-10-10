@@ -409,7 +409,8 @@ def warm_viewer(root: Path, env: str, warm: threading.Event) -> None:
 
 
 def run(root: Path, port: int = DEFAULT_PORT) -> None:
-    sys.setswitchinterval(SWITCH_INTERVAL)
+    if getattr(sys, "_is_gil_enabled", lambda: True)():
+        sys.setswitchinterval(SWITCH_INTERVAL)
     DEFER.set()
     runtime.mark_started(root)
     mark_first_start(root)
