@@ -435,6 +435,8 @@ def test_the_command_line_runs_a_forced_command_prints_rows_and_refuses_what_the
     from install import ASKS
     assert 'case "$1"' not in ASKS and "404|409) ;;" in ASKS and '000|"") [ "${ms:-0}" -lt 5000 ]' in ASKS, \
         "the journal command on the path sends every command and runs it here when the server does not answer at once, so a copy from another version never refuses one, and it is never run twice after a long wait"
+    assert ("-le 60 ]; then" in ASKS, "for __try in 1 2" in ASKS, "-le 5 ]" in ASKS) == (True, True, False), \
+        "a heartbeat up to a minute old still means a busy server, not a dead one, and a command that got no answer at once is sent once more before it runs here"
     import shutil
     shutil.rmtree(record.folder("todo"))
     code, text = read("todo", "create", "after the folder went")
