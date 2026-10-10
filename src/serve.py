@@ -6,6 +6,7 @@ import re
 import resource
 import signal
 import sys
+import tempfile
 import threading
 import time
 import traceback
@@ -395,6 +396,29 @@ def together(*tracks) -> None:
         raise failures[0]
 
 
+HOOK_WARMING = (("SessionStart", "Read", {"file_path": "warm.txt"}), ("PreToolUse", "Read", {"file_path": "warm.txt"}), ("PostToolUse", "Read", {"file_path": "warm.txt"}),
+                ("PreToolUse", "Edit", {"file_path": "warm.txt", "old_string": "a", "new_string": "b"}), ("UserPromptSubmit", "", {}), ("Stop", "", {}))
+
+
+def warm_hooks() -> None:
+    """Answers the hooks of a session in a folder of its own, which is thrown away, so the first hook of a real session does not pay for the code and the caches it meets first; a failure here only leaves the first hook slower."""
+    from controllers.agents import PENDING
+    from controllers.stored import forget_folder
+    try:
+        with tempfile.TemporaryDirectory() as folder:
+            scratch = Path(folder).resolve() / ".journal"
+            scratch.mkdir()
+            for event, tool, given in HOOK_WARMING:
+                body = {"hook_event_name": event, "session_id": "claude-warm", "tool_name": tool, "tool_input": given, "cwd": str(scratch.parent), "transcript_path": ""}
+                reply = dispatch("POST", "/api/hook/claude", scratch, {"root": str(scratch), "env": "main", "pid": "0", "inbox": ""}, body)
+                if reply.after:
+                    reply.after()
+            PENDING.rows = {key: held for key, held in PENDING.rows.items() if key.root != str(scratch)}
+            forget_folder(scratch)
+    except Exception:
+        traceback.print_exc()
+
+
 def warm_rows(root: Path) -> None:
     warm_work(root)
     warm_replies(root)
@@ -408,7 +432,7 @@ def warmed(root: Path, warm: threading.Event, restarted: float = 0.0) -> None:
         if restarted:
             runtime.record_step(root, "restart: until the viewer is warm", time.time() - restarted, time.process_time(), version())
         WARMERS.append(lambda: warm_changed(root))
-        together(warm_commands, lambda: warm_rows(root), lambda: read_transcripts(root))
+        together(warm_commands, lambda: warm_rows(root), lambda: read_transcripts(root), warm_hooks)
         if restarted:
             runtime.record_step(root, "restart: until everything is warm", time.time() - restarted, time.process_time(), version())
     except Exception:

@@ -534,6 +534,12 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
     assert any(row.startswith("list message (40)") for row in rows) and any(row.endswith("through the server") for row in rows), \
         "it counts the rows it lists and times commands through the server as well"
     assert json.loads(out.read_text())["runs"] == 1, "the numbers are also saved to the file asked for"
+    import serve
+    from controllers.agents import PENDING, Agents
+    kept, waiting = len(Agents(record, actor=SYSTEM).rows.summaries()), len(PENDING.rows)
+    serve.warm_hooks()
+    assert (len(Agents(record, actor=SYSTEM).rows.summaries()), len(PENDING.rows)) == (kept, waiting), \
+        "the server answers hooks in a folder of its own before the first real one, and that leaves nothing behind in the record or in the agent rows waiting to be written"
 
 
 def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_its_event(monkeypatch):
