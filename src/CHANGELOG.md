@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.3 — A session start no longer scans every attached file
+
+- A session start asks for the files still without tags in one line when there are many, instead of writing a row for each, and looks for them again only when the rows of a type changed. The work a hook leaves behind after it has answered is a fifth of what it was.
+
 ## 2.269.2 — The hook keeps quiet when it cannot reach the server
 
 - A hook that cannot reach the server no longer writes 'The journal did not answer within 2 seconds' into the agent's transcript. It keeps the event as it already did, and the server reads it when it next can.
