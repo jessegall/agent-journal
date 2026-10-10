@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.2 — The hook keeps quiet when it cannot reach the server
+
+- A hook that cannot reach the server no longer writes 'The journal did not answer within 2 seconds' into the agent's transcript. It keeps the event as it already did, and the server reads it when it next can.
+
 ## 2.269.1 — The mascot blinks without an error
 - The mascot's blink no longer throws 'blinkOf is not defined' in the viewer; the blink it uses is imported.
 - A plugin service whose check cannot run, such as a missing program that answers 127, is listed as failing with the command's error and told once, instead of being shown as not needed.
