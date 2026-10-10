@@ -555,11 +555,8 @@ class RowStore:
                 p.unlink()
 
     def warm(self) -> None:
-        rows = self.summaries()
-        if self.resource.loading != MEMORY:
-            return
-        for row in rows:
-            self.load(row["n"])
+        """Reads the index of the rows, not the rows: a row is loaded when it is first asked for."""
+        self.summaries()
 
     def _peeked(self, rows) -> list[Resource]:
         found = []

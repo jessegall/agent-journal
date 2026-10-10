@@ -68,6 +68,16 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     serve.warm_texts(record.root)
     assert any(folder.endswith("todo") for folder in SEARCHABLE) and any(folder.endswith("message") for folder in SEARCHABLE), \
         "a start reads the text of every to-do and message once, in the warm-up, so the first search after it reads nothing"
+    from controllers import stored
+    from controllers.types import Todos, warm_record
+    from resources.base import SYSTEM
+    Todos(record, actor=SYSTEM).create("one to warm")
+    loaded = []
+    with pytest.MonkeyPatch.context() as patch:
+        original = stored.RowStore.load
+        patch.setattr(stored.RowStore, "load", lambda self, n: loaded.append((self.type, n)) or original(self, n))
+        warm_record(record)
+    assert loaded == [], "the warm-up after a start reads the indexes of the rows, never every row: a row is loaded when it is first asked for"
     from commands.queries import environment_transcript
     assert environment_transcript(record) is environment_transcript(record), "the merged turns of the conversations are kept while none of them has changed, not sorted again for every search"
     with transcript.open("a") as out:
