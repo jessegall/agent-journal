@@ -527,7 +527,7 @@ class Controller(Files, Links, Discussed):
     @marks.action
     def unread(self, actor: str | None = None) -> list[Resource]:
         who = actor or self.actor
-        return [self.load(row["n"]) for row in self.rows.standing_summaries() if who not in row["seen"]]
+        return [self.load(row["n"]) for row in self.rows.unread(who)]
 
     @marks.action
     def all(self, deleted: bool = False, completed: bool = False, last: int = LAST) -> list[Resource]:

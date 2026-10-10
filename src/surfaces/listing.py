@@ -133,7 +133,7 @@ def newest_listed(controller, wanted: Listing, summaries: list) -> tuple[list[di
     if wanted.completed:
         open_rows = [row for row in standing if listable(row)] if controller.resource.listed_open else open_newest
         kept = sorted({row["n"]: row for row in (*open_rows, *newest_among(summaries, last, shown))}.values(), key=lambda row: row["n"])
-    every, open_only = controller.rows.counted("listable", lambda row: (int(not row["deleted"] and listable(row)), int(not row["deleted"] and not row["completed"] and listable(row))), 2, summaries)
+    every, open_only = controller.rows.counts("listable", summaries)
     return kept, (every if wanted.completed else open_only) > len(kept)
 
 
