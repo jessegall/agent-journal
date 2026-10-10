@@ -67,7 +67,7 @@ def forget_folder(home: Path) -> None:
 
     def under(key: str) -> bool:
         return key == prefix or key.startswith(prefix + os.sep)
-    for table in (SUMMARIES, STANDING, INDEXED, PENDING, INDEXED_AT, STAMPED, WRITTEN, UNSAVED, UNCOUNTED, SEEDS, OPEN):
+    for table in (SUMMARIES, STANDING, INDEXED, PENDING, INDEXED_AT, STAMPED, STAMPED_OWN, WATCHED.marks, WRITTEN, UNSAVED, UNCOUNTED, SEEDS, OPEN):
         for key in [key for key in table if under(key)]:
             opened_archive = table.pop(key)
             if table is OPEN:
@@ -159,10 +159,7 @@ def restamp(path: Path, n: int) -> None:
 
 def forgotten(path: Path) -> None:
     """A rolled-back write put this file back: what is kept in memory of the row, and of the folder it lies in, is dropped, so the next read starts from the disk."""
-    HELD.forget(str(path))
-    for folder in (str(path.parent), str(path.parent.parent)):
-        for kept in (SUMMARIES, INDEXED, INDEXED_AT, PENDING, STAMPED, STAMPED_OWN):
-            kept.pop(folder, None)
+    forget_folder(path.parent.parent if path.name == f"{path.parent.parent.name}.md" else path.parent)
 
 
 transaction.UNDONE.append(forgotten)
@@ -444,6 +441,18 @@ class RowStore:
         if len(seeds) == len(self.resource.counters()):
             SEEDS[str(folder)] = seeds
 
+    def drifted(self) -> int:
+        """Sets right every total that no longer equals a sum made from the rows, and says how many it set right: for rows changed without a word, as by a pull, a hand edit or an older build."""
+        rows, found = self.summaries(), 0
+        for counter in self.resource.counters():
+            key = (str(self.folder()), counter.name)
+            fresh = summed(counter.weigh, counter.width, rows)
+            if key in COUNTED and COUNTED[key][1] != fresh:
+                COUNTED[key] = (rows, fresh, counter.weigh)
+                UNCOUNTED[str(self.folder())] = self
+                found += 1
+        return found
+
     def recount(self) -> None:
         """Forgets the totals of this folder, so they are made from the rows again and saved: for totals that drifted from their rows."""
         folder = str(self.folder())
@@ -685,13 +694,13 @@ class RowStore:
 
     def discard(self, n: int) -> None:
         """Drops the row held in memory, so what the disk holds is the only truth of it again, as after a save that was refused."""
-        HELD.forget(str(self.path(n)))
+        self.rolling().forget(str(self.path(n)))
         entry = self.packed().get(n)
         if entry:
-            HELD.forget(f"{self.folder() / PACKED / entry[ARCHIVE]}:{n}")
+            self.rolling().forget(f"{self.folder() / PACKED / entry[ARCHIVE]}:{n}")
 
     def reparsed(self, n: int) -> Resource:
-        """The row as the disk holds it now, read again."""
+        """The row as the disk holds it now, read again and not kept, so it pushes out none of the rows the type keeps; a search of every row's text and a rollback read it so."""
         return self._parsed(n)
 
     def text(self, n: int) -> str:
