@@ -3,8 +3,13 @@ const REST = {rotate: 0, x: 0, y: 0};
 
 export const rigUrl = (voice, file) => `voices/rigs/${voice}/${file}`;
 
-export const fileOf = (layer, pose) =>
-    (layer.states && pose[layer.name]?.state ? layer.states[pose[layer.name].state] : layer.file) || layer.file;
+export const EYES = "eyes";
+
+// The image a layer shows in a pose; the eyes are a layer of their own, so shut lids override whatever the pose shows there.
+export const fileOf = (layer, pose, lids = "") =>
+    (layer.name === EYES && lids && layer.states?.[lids]) ||
+    (layer.states && pose[layer.name]?.state ? layer.states[pose[layer.name].state] : layer.file) ||
+    layer.file;
 
 function keyAt(track, ms) {
     const after = track.findIndex(([at]) => at > ms);

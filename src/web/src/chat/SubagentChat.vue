@@ -9,6 +9,7 @@ import Turn from "./Turn.vue";
 import JumpPill from "../kit/JumpPill.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import {useFollow} from "../composables/follow.js";
+import {useScrollback} from "../composables/scrollback.js";
 
 const props = defineProps({
     turns: {type: Array, required: true},
@@ -16,6 +17,8 @@ const props = defineProps({
     session: {type: String, required: true},
     task: {type: String, default: ""},
     readOnly: Boolean,
+    earlier: {type: Function, default: async () => false},
+    atStart: {type: Boolean, default: true},
 });
 const log = ref(null);
 const {api, rows} = useScope();
@@ -27,6 +30,8 @@ const pins = computed(() =>
     rows("notice").filter((notice) => notice.data.agent === props.session && !notice.completed && !standingLink(notice))
 );
 const {following, unseen, snap, landed, jump, scrolled, wheeled} = useFollow(log);
+const top = ref(null);
+const {loading: loadingOlder} = useScrollback(log, top, () => props.earlier(), {ready: () => !props.atStart && !props.loading && lines.value.length > 0});
 const send = (text) => {
     jump();
     return api.create("message", {brief: text, sent_to: props.session});
@@ -49,6 +54,10 @@ watch(
         </template>
         <div class="frame">
             <div ref="log" class="log" @scroll.passive="scrolled" @wheel.passive="wheeled">
+                <div ref="top" />
+                <template v-if="loadingOlder">
+                    <Skeleton shape="older" label="Loading older messages" />
+                </template>
                 <template v-for="turn in lines" :key="turn.ref">
                     <Turn :turn="turn" />
                 </template>

@@ -272,12 +272,12 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
     engine.pausing()
     from engine import runtime
-    delivered = engine.agent.driver.send
-    engine.agent.driver.send = lambda *a, **k: False
+    delivered, told = engine.agent.driver.send, []
+    engine.agent.driver.send = lambda line, **k: told.append(line) or False
     inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
-    assert (engine.pausing(), engine.paused, len(list(runtime.inputs(root).glob("*.json")))) == ("paused", True, 1), "a resume whose line was not submitted keeps the agent paused and is asked again"
+    assert (engine.pausing(), engine.paused, len(list(runtime.inputs(root).glob("*.json"))), engine.pausing(), told) == \
+        ("resumed", False, 0, "", [engine_module.RESUMED_AFTER_UPDATE]), "a resume ends the pause at once and tells the agent once, even when its line waits to be typed"
     engine.agent.driver.send = delivered
-    assert (engine.pausing(), engine.paused) == ("resumed", False), "and goes through once the line is submitted"
     inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
     engine.pausing()
     engine.agent.mark("", "", paused=time.time() - 40)

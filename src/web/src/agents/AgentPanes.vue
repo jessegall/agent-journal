@@ -135,7 +135,9 @@ function show(view) {
     if (id !== undefined) pick(id, view);
 }
 
-defineExpose({shape, layout, show});
+const shown = computed(() => (narrow.value ? [phoneActive.value] : leaves(layout.value.tree).map((id) => activeOf(layout.value.panes[id])).filter(Boolean)));
+
+defineExpose({shape, layout, show, shown});
 </script>
 
 <template>

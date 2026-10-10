@@ -58,6 +58,13 @@ const HEADING = [
                 </template>
             </div>
         </template>
+        <template #older>
+            <div class="skeleton-messages skeleton-older" aria-busy="true" :aria-label="label">
+                <template v-for="message in MESSAGES.slice(0, 3)" :key="message.id">
+                    <div :class="['skeleton-message', {mine: message.mine}]" :style="{width: `${message.width}%`, height: `${message.height}px`}" />
+                </template>
+            </div>
+        </template>
         <template #cards>
             <div class="skeleton-cards" aria-busy="true" :aria-label="label">
                 <template v-for="index in count" :key="index">

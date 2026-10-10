@@ -143,22 +143,22 @@ def test_an_installed_journal_keeps_its_records_and_upgrades_itself_from_a_relea
 def test_an_upgrade_copies_a_changed_file_into_the_attic_before_replacing_it(tmp_path):
     import tarfile
     root = installed(tmp_path, CODE)
-    changed = root / "src" / "journal.py"
+    changed = root.parent / ".agents" / "skills" / "journal" / "SKILL.md"
     original = changed.read_bytes()
     changed.write_bytes(original + b"\n# changed by hand\n")
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
     command = [sys.executable, str(CODE / "install.py"), "upgrade", str(root.parent)]
     held = subprocess.run(command, env=env, capture_output=True, text=True, timeout=120)
-    assert "src/journal.py" in held.stdout and changed.read_bytes().endswith(b"# changed by hand\n")
+    assert ".agents/skills/journal/SKILL.md" in held.stdout and changed.read_bytes().endswith(b"# changed by hand\n")
     by_hand = subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "upgrade"], env=env,
                              capture_output=True, text=True, timeout=120)
-    assert "src/journal.py" in by_hand.stdout and changed.read_bytes().endswith(b"# changed by hand\n")
+    assert ".agents/skills/journal/SKILL.md" in by_hand.stdout and changed.read_bytes().endswith(b"# changed by hand\n")
     updated = subprocess.run([*command, "--yes"], env=env, capture_output=True, text=True, timeout=120)
     assert updated.returncode == 0 and changed.read_bytes() == original, updated.stdout + updated.stderr
     copies = list((root / "attic").glob("changed-files-*.tar.gz"))
     assert len(copies) == 1
     with tarfile.open(copies[0]) as archive:
-        assert archive.extractfile(".journal/src/journal.py").read().endswith(b"# changed by hand\n")
+        assert archive.extractfile(".agents/skills/journal/SKILL.md").read().endswith(b"# changed by hand\n")
 
 
 def test_a_fetch_from_inside_a_git_hook_leaves_the_pushing_repository_alone(tmp_path, monkeypatch):
@@ -182,7 +182,7 @@ def test_a_fetch_from_inside_a_git_hook_leaves_the_pushing_repository_alone(tmp_
 def test_a_legacy_install_copies_managed_files_and_updates_without_holding(tmp_path):
     root = installed(tmp_path, CODE)
     (root / "managed-files.json").unlink()
-    changed = root / "src" / "journal.py"
+    changed = root.parent / ".agents" / "skills" / "journal" / "SKILL.md"
     original = changed.read_bytes()
     changed.write_bytes(original + b"\n# changed by hand\n")
     env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
@@ -190,12 +190,11 @@ def test_a_legacy_install_copies_managed_files_and_updates_without_holding(tmp_p
     updated = subprocess.run(command, env=env, capture_output=True, text=True, timeout=120)
     assert updated.returncode == 0 and changed.read_bytes() == original, updated.stdout + updated.stderr
     copies = list((root / "attic").glob("before-update-*/"))
-    assert len(copies) == 1 and (copies[0] / ".journal" / "src" / "journal.py").read_bytes().endswith(b"# changed by hand\n")
-    assert (copies[0] / ".agents" / "skills" / "journal" / "SKILL.md").is_file(), "the legacy copy includes generated skills"
+    assert len(copies) == 1 and (copies[0] / ".agents" / "skills" / "journal" / "SKILL.md").read_bytes().endswith(b"# changed by hand\n")
     assert f"copied to {copies[0].relative_to(root.parent)}" in updated.stdout and (root / "managed-files.json").is_file()
     changed.write_bytes(original + b"\n# another hand edit\n")
     held = subprocess.run(command, env=env, capture_output=True, text=True, timeout=120)
-    assert "src/journal.py" in held.stdout and changed.read_bytes().endswith(b"# another hand edit\n"), \
+    assert ".agents/skills/journal/SKILL.md" in held.stdout and changed.read_bytes().endswith(b"# another hand edit\n"), \
         "after the first update, the checksum guard holds changed files"
 
 

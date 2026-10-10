@@ -1,6 +1,7 @@
 <script setup>
 import {meta, word} from "../domain/spec.js";
 import {store} from "../state/store.js";
+import {useWanted} from "../sync/wanted.js";
 import EmptyState from "../kit/EmptyState.vue";
 import TabBar from "../kit/TabBar.vue";
 import PagedList from "../kit/PagedList.vue";
@@ -112,6 +113,7 @@ async function select(n) {
 }
 
 const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0, "new") : (adding.value = true));
+useWanted("ticketTodos", () => props.type === "todo" && filter.value === "open");
 </script>
 
 <template>

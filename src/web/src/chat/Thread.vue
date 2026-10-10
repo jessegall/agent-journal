@@ -9,7 +9,8 @@ import WaitingPanel from "./WaitingPanel.vue";
 import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import Dot from "../kit/Dot.vue";
 import RunningCommand from "./RunningCommand.vue";
-import {keepingPlace, useSighted} from "../composables/scrollback.js";
+import {useScrollback} from "../composables/scrollback.js";
+import Skeleton from "../kit/Skeleton.vue";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {markSeen} from "../sync/seen.js";
 import {sendMessage, token} from "./outbox.js";
@@ -156,6 +157,7 @@ const unseen = computed(() =>
 watch([unseen, ready], ([numbers, isReady]) => here && isReady && markSeen("message", numbers), {immediate: true});
 const rendering = ref(false);
 const topMark = ref(null);
+const PERCH_CHECK_MS = 250;
 const docks = ref(null);
 const write = ref(null);
 const perch = ref(0);
@@ -174,23 +176,15 @@ watch(docks, (stack) => {
     docksSeen = new ResizeObserver(measurePerch);
     docksSeen.observe(stack);
 });
-onUnmounted(() => docksSeen?.disconnect());
+const perchCheck = setInterval(measurePerch, PERCH_CHECK_MS);
+onUnmounted(() => {
+    docksSeen?.disconnect();
+    clearInterval(perchCheck);
+});
 const AHEAD = "200px 0px 0px 0px";
 const scrolledUp = ref(false);
 const NEAR_TOP = 200;
 const GLIDE = 450;
-let prepending = false;
-
-async function older() {
-    const s = scroller.value;
-    if (!ready.value || !settledOnce.value || !scrolledUp.value || prepending || !s) return;
-    prepending = true;
-    try {
-        await keepingPlace(scroller, () => scope.earlier("message", "comment"));
-    } finally {
-        prepending = false;
-    }
-}
 let frame = 0;
 
 const revoke = (p) => Object.values(p.data.previews || {}).forEach(URL.revokeObjectURL);
@@ -273,7 +267,10 @@ onMounted(() => {
     });
 });
 
-useSighted(topMark, older, {root: scroller, margin: AHEAD});
+const {loading: loadingOlder, older} = useScrollback(scroller, topMark, () => scope.earlier("message", "comment"), {
+    ready: () => ready.value && settledOnce.value && scrolledUp.value && Boolean(scroller.value),
+    margin: AHEAD,
+});
 
 onUnmounted(() => {
     grew?.disconnect();
@@ -435,7 +432,7 @@ watch(
             await nextTick();
             laidOut.value += 1;
         }
-        if (prepending) return;
+        if (loadingOlder.value) return;
         if (away.value) missed.value += Math.max(0, n - (before || 0));
         else toBottom(settledOnce.value);
         if (n && !settledOnce.value) setTimeout(() => (settledOnce.value = true), 300);
@@ -513,6 +510,9 @@ watch(
                 >
                     <template v-if="rendering">
                         <div ref="topMark" class="thread-top" />
+                        <template v-if="loadingOlder">
+                            <Skeleton shape="older" label="Loading older messages" />
+                        </template>
                         <template v-if="!turns.length">
                             <template v-if="turnsLoaded">
                                 <p class="thread-empty">Nothing has been said here yet.</p>

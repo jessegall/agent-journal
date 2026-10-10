@@ -4,6 +4,30 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.30 — Codex sessions no longer crash on the menu funnel
+- Since 2.268.22 a Codex agent's session could crash: the menu funnel reads the screen through a pattern that Codex's driver lacked, and the screen read raised an error. Every driver now reads its screen.
+- The upgrade tests hold an upgrade back on a skill file changed by hand, since the journal's own code folder no longer holds one, and the crash-grace test writes the failed hooks that are reported.
+
+## 2.268.29 — An agent is told once that the journal resumed it
+- After an update, an agent was told 'The journal has updated and resumed you' again and again, about once a second: a paused agent's lines wait until it continues, so the line sent while it was still paused counted as unsent and was sent again on every tick. The pause now ends first and the agent is told once.
+
+## 2.268.28 — Mascots that blink, and steadier chats
+- The mascots blink as people do: every two to six seconds at an irregular gap, now and then twice, on an eye layer of their own, so a blink also happens during a move.
+- A mascot enters only once every image of it has loaded, so no piece pops in late. It checks several times a second where the top bar is, so it follows the bars down when something under them goes.
+- The chat no longer throws 'prepending is not defined' after paging back.
+- A pull request or an issue named by its number, such as PR 161, is no longer asked to say what it is.
+- Counting a folder's rows no longer fails when another thread updates the counts at the same moment.
+
+## 2.268.27 — The Squire serves his sovereign
+- The Squire calls you my liege or sire, as a squire speaks to his sovereign, never knight, king, or your title or name.
+- When a new bar pushes the mascot up, it is flung a little past the bar and drops back onto it, landing in its own way.
+- An inspector loads only the view that is open (transcript, terminal, files changed or to-dos), and another loads when you open it.
+
+## 2.268.26 — Scrolling back finds your own messages
+- Scrolling up the chat loads the messages before the oldest one shown, yours and the agent's alike. The window used to start at a weeks-old open message, so only the agent's notes of that stretch came back and your own messages never did.
+- The main chat, a subagent's chat and a helper's chat page back through one funnel, a page at a time, with skeleton rows while a page loads.
+- A sitting voice hops up onto its seat on entry and hops off on exit, its legs showing all the while and each in its own manner, instead of its legs vanishing and popping back.
+
 ## 2.268.25 — A calmer mascot and plainer notices
 - The mascot enters only after the agent has stayed idle for three seconds, and leaves only after it has stayed busy for three seconds, so a quick command no longer makes it pop in and out.
 - The line that tells an agent of a new message names who wrote it and their words once, with the tag that answers it; the journal's tag is not doubled and the message's row is no longer dumped into the chat.

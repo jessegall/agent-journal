@@ -157,7 +157,8 @@ const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.key
 export function threadTurns(rows, pending, env, older = false, hidden = []) {
     const keys = new Map();
     const live = rows.message.filter((m) => !m.deleted && !m.data.window);
-    const floor = older && live.length ? Math.min(...live.map((m) => m.created)) : 0;
+    const paged = live.filter((m) => m.completed);
+    const floor = older && live.length ? Math.min(...(paged.length ? paged : live).map((m) => m.created)) : 0;
     live.forEach((m) => pending.filter((p) => promisedFor(p, m)).forEach((p) => keys.set(m.ref, p.ref)));
     const turns = [
         ...live.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map((m) => ({...m, who: m.seen[0]})),
@@ -179,7 +180,7 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
         ...madeByAgent(rows.doc || [], env),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ]
-        .filter((t) => t.created >= floor)
+        .filter((t) => t.type === "message" || t.created >= floor)
         .filter(visibleIn(hidden))
         .sort((a, b) => a.created - b.created);
     return {turns: grouped(mergedReplies(turns)), keys};

@@ -550,7 +550,7 @@ class RowStore:
 
     def _carried(self, folder: Path, before: list[dict], rows: list[dict], changes: list[tuple[dict | None, dict | None]]) -> None:
         self._carried_index(folder, before, rows, changes)
-        for key, held in [(key, held) for key, held in COUNTED.items() if key[0] == str(folder) and held[0] is before]:
+        for key, held in [(key, held) for key, held in COUNTED.copy().items() if key[0] == str(folder) and held[0] is before]:
             _, totals, weigh = held
             for gone, added in changes:
                 totals = tuple(total - was + now for total, was, now in zip(totals, weigh(gone) if gone else (0,) * len(totals), weigh(added) if added else (0,) * len(totals)))
