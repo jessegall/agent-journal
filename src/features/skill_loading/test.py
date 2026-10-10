@@ -294,6 +294,7 @@ def test_the_todos_skill_is_loaded_at_every_start_and_cannot_be_switched_off():
     from features.skill_loading.catalogue import primary
     load()
     assert "journal-todos" in primary(), "marked primary in its own front matter, like a feature's skill"
+    assert "journal-lean" in primary(), "the lean, reused code skill is loaded at every start by default, in every project"
 
 
 def test_housekeeping_that_asks_nothing_of_the_agent_ships_no_skill():
