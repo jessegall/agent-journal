@@ -5,7 +5,6 @@ from contextlib import contextmanager
 from typing import Callable
 
 YOUNG_AFTER = 20_000
-LONGEST_BUSY = 2.0
 WHOLE_EVERY = 60.0
 TICK = 0.2
 
@@ -17,7 +16,6 @@ class QuietCollector:
         self.clock = clock
         self.guard = threading.Lock()
         self.serving_now = 0
-        self.waiting_since = 0.0
         self.whole_at = clock()
 
     @contextmanager
@@ -31,14 +29,7 @@ class QuietCollector:
                 self.serving_now -= 1
 
     def due(self, now: float, young: int) -> tuple[int, ...]:
-        wanted = self.wanted(now, young)
-        if not wanted:
-            self.waiting_since = 0.0
-            return ()
-        if not self.serving_now:
-            return wanted
-        self.waiting_since = self.waiting_since or now
-        return wanted if now - self.waiting_since >= LONGEST_BUSY else ()
+        return () if self.serving_now else self.wanted(now, young)
 
     def wanted(self, now: float, young: int) -> tuple[int, ...]:
         if now - self.whole_at >= WHOLE_EVERY:
@@ -49,7 +40,6 @@ class QuietCollector:
 
     def collect(self, generation: int) -> None:
         gc.collect(generation)
-        self.waiting_since = 0.0
         if generation == 2:
             self.whole_at = self.clock()
             gc.freeze()
