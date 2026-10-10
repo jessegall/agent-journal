@@ -53,6 +53,7 @@ await runScenarios(
             await sheet(page).getByLabel("Command").fill("npm test");
             const unlocked = page.waitForResponse((got) => /\/shell$/.test(got.url()) && Boolean(got.request().headers()["x-phone-unlock"]));
             const held = page.waitForResponse((got) => /\/p\/passkey$/.test(got.url()));
+            for (const waiting of [unlocked, held]) waiting.catch(() => {});
             await sheet(page).getByRole("button", {name: "Run", exact: true}).click();
             await held;
             await page.getByRole("dialog", {name: "Allow Face ID on your computer"}).waitFor({timeout: SHOWN});

@@ -23,8 +23,8 @@ await runScenarios(process.argv[2], {
         await page.addInitScript((kept) => sessionStorage.setItem("journal.layout.main", kept), JSON.stringify(layout));
         await page.goto(`${url}#/main`);
         await page.locator(".agent-window").nth(2).waitFor();
-        const labels = await page.locator(".agent-window .aw-label").allInnerTexts();
-        if (labels.join() !== "#2,#5,#9") throw new Error(`the cells are ${labels.join()}, not in number order`);
+        const names = await page.locator(".agent-window .aw-name").allInnerTexts();
+        if (names.join() !== "Ticket 2,Ticket 5,Ticket 9") throw new Error(`the cells are ${names.join()}, not in number order`);
         const timers = await page.locator(".agent-window .job-timer").allInnerTexts();
         if (timers.length !== 3 || !timers.every((time) => /^1h 02m \d\ds$/.test(time))) throw new Error(`the timers read ${timers.join()}`);
         const starts = await page.locator(".agent-window").first().locator(".aw-line > :nth-child(2)").evaluateAll((values) => values.map((value) => Math.round(value.getBoundingClientRect().x)));

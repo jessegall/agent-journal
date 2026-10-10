@@ -79,11 +79,13 @@ await runScenarios(process.argv[2], {
                 await page.setViewportSize(size);
                 await page.goto(`${url}#/main/plan/${plan}`);
                 await page.locator(".held-tag .holder").nth(1).waitFor();
-                const outside = await page.evaluate(() => {
+                const outside = `(() => {
                     const card = document.querySelector(".phase").getBoundingClientRect();
                     return [...document.querySelectorAll(".phase .holder")].filter((pill) => pill.getBoundingClientRect().right > card.right).length;
+                })()`;
+                await page.waitForFunction(`${outside} === 0`, null, {timeout: 5000}).catch(async () => {
+                    throw new Error(`${await page.evaluate(outside)} helper pills stick out of the phase card at ${size.width}px`);
                 });
-                if (outside) throw new Error(`${outside} helper pills stick out of the phase card at ${size.width}px`);
                 await shot(page, `plan-pills-${size.width}`);
             }
         } finally {
