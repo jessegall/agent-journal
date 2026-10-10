@@ -80,3 +80,17 @@ def test_a_line_delivered_mid_turn_keeps_the_message_the_turn_answers():
     assert agents.load(row.n).delivered == ["nudge:4"], "a new turn starts with only what it was handed"
     Agent(record, SimpleNamespace(last_report=lambda: None)).delivered([Event(5, 0.0, "nudge", 6, "created", SYSTEM)])
     assert agents.load(row.n).delivered == ["nudge:4"], "with no agent reporting, nothing is put on any agent"
+    from controllers.types import Todos
+    todos = Todos(record, actor=SYSTEM)
+    [todos.create(title) for title in ("one", "two", "three")]
+    held, later, last = [e for e in record.event_log.events() if e.type == "todo" and e.action == "created"][-3:]
+    reading = Agent(record, SimpleNamespace())
+    reading.pending = [held]
+    reading.notified(later)
+    reading.notified(last)
+    reloaded = Agent(record, SimpleNamespace())
+    assert (reloaded.delivered_until(), reloaded.sent) == (held.id - 1, {later.id, last.id}), \
+        "a worker that reloads while one line is still held reads on from before that line and takes none of the lines already delivered after it"
+    reading.pending = []
+    reading.notified(held)
+    assert (Agent(record, SimpleNamespace()).delivered_until(), Agent(record, SimpleNamespace()).sent) == (last.id, set()), "once nothing is held the cursor moves on and nothing is remembered"
