@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.10 — The mascot sits only on the main chat
+- The mascot no longer shows in a subagent's or worker's inspector, which reuse the chat's composer; only the main chat shows it.
+
 ## 2.268.9 — The installer asks before it installs Python
 - When the machine has no Python 3.11 or newer, the installer asks whether to install Python 3.13 with uv before it does; no means it stops and says what to install, and with no terminal to ask in it never installs on its own.
 
