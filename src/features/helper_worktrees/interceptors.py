@@ -8,6 +8,7 @@ from features.helper_worktrees.controller import Worktrees
 from features.parts import AgentContext, ToolInterceptor
 from engine.gates import Runs
 from providers.catalogue import workspace_folders
+from engine.runtime import DEFAULT_ENV
 from resources.base import SYSTEM
 
 
@@ -35,10 +36,16 @@ class StayInYourCheckout(ToolInterceptor):
     def intercept(self, context: AgentContext, call) -> str:
         hook = context.hook
         place = Environments(context.record, actor=SYSTEM).rows.by_title(context.record.env)
-        home = Path(place.folder if place and place.folder else context.record.root.parent)
+        home = Path(place.folder) if place and place.folder else self.own_worktree(context.record) or context.record.root.parent
         if not hook.cwd or self.checkout_of(Path(hook.cwd)) == self.checkout_of(home) or self.goes_home(call.shell_command, home):
             return ""
         return context.feature.line("strayed", {"folder": hook.cwd, "home": home})[0]
+
+    @staticmethod
+    def own_worktree(record) -> Path | None:
+        """The worktree an environment is named for, when its row does not say where it works, as a ticket's does not: the agent in it is at home there."""
+        folder = record.root.parent.joinpath(*workspace_folders().worktree_home, record.env)
+        return folder if record.env != DEFAULT_ENV and folder.is_dir() else None
 
     def checkout_of(self, folder: Path) -> Path | None:
         return checkout(folder.resolve(), workspace_folders())

@@ -178,6 +178,9 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
     inside = {**strayed, "agent_id": "rhea"}
     assert "another checkout" not in handle(provider, record.root, "helper-env", inside).get("reason", ""), "a helper environment whose folder is a worktree works inside it"
     assert "another checkout" in handle(provider, record.root, record.env, strayed).get("reason", ""), "the main agent in that same folder is still refused"
+    Environments(record, actor=SYSTEM).create(folder.name, owner="ticket:5", kind="ticket")
+    assert "another checkout" not in handle(provider, record.root, folder.name, strayed).get("reason", ""), \
+        "a ticket's environment, whose row names no folder, is at home in the worktree it is named for, so its agent can write there"
     from engine.worktree import git
     by_hand = project.parent / "by-hand"
     git(project, "worktree", "add", "-q", "-b", "by-hand", str(by_hand), "HEAD")
