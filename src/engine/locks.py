@@ -100,15 +100,15 @@ def claim(path: Path):
 
 
 @contextmanager
-def project_sweep(path: Path, every: float, owner: str):
-    """Says True to whoever runs a sweep the whole project shares and False to the others: an owner sweeps whenever it asks, but another owner's sweep within `every` seconds already looked after the project, so each environment's engine ticks and the project is looked after once."""
+def project_sweep(path: Path, every: float, owner: str = ""):
+    """Says True to whoever runs a sweep the whole project shares and False to the others, so each environment's engine ticks and the project is looked after once: with an owner named, that owner sweeps whenever it asks and only another's sweep within `every` seconds holds it back; with none, any sweep within `every` seconds does."""
     held = claim(path)
     if held is None:
         yield False
         return
     try:
         stamp = path.with_suffix(".swept")
-        if stamp.is_file() and time.time() - stamp.stat().st_mtime < every and stamp.read_text() != owner:
+        if stamp.is_file() and time.time() - stamp.stat().st_mtime < every and (not owner or stamp.read_text() != owner):
             yield False
             return
         yield True
