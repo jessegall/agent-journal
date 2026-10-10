@@ -212,7 +212,7 @@ def post_step(req: Request) -> Reply:
     call = call_of(req.root, asked.token)
     if call is None or not 1 <= asked.part <= len(call.parts):
         return Reply(404, {})
-    return Reply(200, {}, after=lambda: report_step(req.root, call, asked.part, asked.phase, asked.status))
+    return Reply(200, {}, after=lambda: report_step(req.root, call, asked.part, asked.phase, asked.status, asked.token))
 
 
 @route("POST", "/api/{env}/console")

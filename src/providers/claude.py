@@ -396,8 +396,10 @@ class Claude(Provider):
             found.links = [*(link for link in found.links if link not in fresh), *dict.fromkeys(fresh)][-KEPT_LINKS:]
         return found
 
-    def command_is_open(self, path: Path) -> bool:
+    def command_is_open(self, path: Path, tool_use: str = "") -> bool:
         opened = self.folded(path, self.open_command_rows, OpenCommands)
+        if tool_use in opened.asked:
+            return tool_use not in opened.answered
         return not opened.asked or any(use not in opened.answered for use in opened.asked)
 
     def open_command_rows(self, opened: OpenCommands, row: Row) -> OpenCommands:

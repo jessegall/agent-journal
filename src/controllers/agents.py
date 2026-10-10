@@ -4,7 +4,6 @@ from controllers.base import Controller
 from engine.sessions import Sessions
 from resources import types
 from controllers.marks import action
-from engine.command_runs import waiting_run
 
 KEPT_CARDS = 50
 MOVED_TO_BACKGROUND = "Moved a long command to the background"
@@ -50,11 +49,14 @@ class Agents(Controller):
             return row
         return self.appended(row, "cards", {"at": time.time(), **card}, KEPT_CARDS)
 
-    def _moved_to_background(self, row, **card):
-        """The one card for a long command that carries on in the background, whichever provider's agent runs it: it names the command still running, and a second call for the same command adds to the same card."""
-        last = waiting_run(row)
-        command = {"key": f"command:{last.at}", "command": last.command} if last else {}
-        return self.card(row.n, label=MOVED_TO_BACKGROUND, icon="terminal", **command, **card)
+    def _moved_to_background(self, run, row, **card):
+        """The one card for a long command that carries on in the background, whichever provider's agent runs it: it names the call that runs, and a second call for the same call adds to the same card."""
+        return self.card(row.n, key=f"command:{run.at}", label=MOVED_TO_BACKGROUND, icon="terminal", command=run.command, **card)
+
+    def _noted_on_move(self, row, detail: str):
+        """What happened beside a command that was moved, put on its card; no card is made for a command nothing moved."""
+        moved = [kept for kept in row.data.get("cards") or [] if kept.get("label") == MOVED_TO_BACKGROUND and kept.get("state") == "running"]
+        return self.card(row.n, key=moved[-1]["key"], detail=detail) if moved else row
 
     def _mark_primary(self, label: str, **card):
         primary = self.primary_to_read()

@@ -437,8 +437,8 @@ class Provider(ABC):
         names.update(self.skills_in(self.tool_uses(row)))
         return names
 
-    def command_is_open(self, path: Path) -> bool:
-        """Whether a shell command the agent asked for has not come back yet, by the agent's own transcript; a provider that cannot tell says yes."""
+    def command_is_open(self, path: Path, tool_use: str = "") -> bool:
+        """Whether a shell command the agent asked for has not come back yet, by the agent's own transcript: the call of that tool-use id when one is named; a provider that cannot tell says yes."""
         return True
 
     def folded(self, path: Path, fold, start):

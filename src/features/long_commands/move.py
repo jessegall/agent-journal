@@ -14,15 +14,30 @@ from resources.base import SYSTEM
 from controllers.types import Agents
 
 SETTLE = 30.0
+TOOK_WITHIN = 20.0
 
 
-def has_come_back(context: AgentContext, row) -> bool:
-    """An open call the transcript shows as answered did end, though its end was lost on the way (a hook that got no answer from a busy server is dropped), so it is closed and never moved."""
+def matching_task(tasks, command: str, pressed: float) -> str:
+    """The background task this command became: one started after the press, and of the command's own words when the transcript names them, else the first to start."""
+    started = sorted(((at, name) for name, at in tasks.started.items() if at >= pressed - 2), key=lambda found: found[0])
+    wanted = " ".join(command.split())
+    own = next((name for _, name in started if wanted and " ".join(tasks.commands.get(name, "").split()) == wanted), "")
+    return own or next((name for _, name in started), "")
+
+
+def running_call(context: AgentContext, row):
+    """The shell call the agent is actually waiting on: of the calls that have not ended, those its transcript shows answered did end, though their end was lost on the way (a hook that got no answer from a busy server is dropped), so they are closed and never moved."""
+    opened = [one for one in command_runs(row) if one.tool == "Bash" and not one.done]
     reader = transcript_reader(row)
-    if reader is None or reader.command_is_open(Path(row.transcript)):
-        return False
-    Agents(context.record, actor=SYSTEM).update(row.n, **settled(row, time.time()))
-    return True
+    if reader is None:
+        return opened[0] if opened else None
+    still = [one for one in opened if reader.command_is_open(Path(row.transcript), one.id)]
+    stale = [one for one in opened if one not in still]
+    if stale:
+        now = time.time()
+        gone = {(one.at, one.id) for one in stale}
+        Agents(context.record, actor=SYSTEM).update(row.n, commands=[{**kept, "done": now} if (kept.get("at"), kept.get("id", "")) in gone and not kept.get("done") else kept for kept in row.commands])
+    return still[0] if still else None
 
 
 class MoveLongCommands(Handler):
@@ -32,16 +47,19 @@ class MoveLongCommands(Handler):
         row = context.agent.row
         if not row.live:
             return
-        last = waiting_run(row)
+        oldest = waiting_run(row)
+        provider = row.provider
+        driver = DRIVERS.get(provider)
+        if oldest is None or not driver or not driver.MOVE_TO_BACKGROUND or time.time() - oldest.at < context.settings.after_seconds:
+            return
+        if context.state.get("moved") == str(oldest.at):
+            return
+        last = running_call(context, row)
         if last is None:
             return
         started = str(last.at)
         seconds = int(time.time() - float(started))
-        provider = row.provider
-        driver = DRIVERS.get(provider)
-        if not driver or not driver.MOVE_TO_BACKGROUND or seconds < context.settings.after_seconds or not context.once("asked", started):
-            return
-        if has_come_back(context, row):
+        if seconds < context.settings.after_seconds or not context.once("asked", started):
             return
         reason = cancelled(LONG_COMMAND, HookCall(PROVIDERS[provider]() if provider in PROVIDERS else None, context.record, None, row),
                            {"command": last.command, "seconds": seconds})
@@ -50,9 +68,10 @@ class MoveLongCommands(Handler):
             return
         context.state.set("moved", started)
         context.state.set("task", "")
-        context.agent.move_to_background()
-        context.agent.say(MOVED, seconds=seconds)
-        context.journal.get(Agents)._moved_to_background(row, state="running", started=float(started))
+        context.state.set("pressed", time.time())
+        context.agent.move_to_background(started)
+        context.agent.say(MOVED, seconds=int(time.time() - float(started)))
+        context.journal.get(Agents)._moved_to_background(last, row, state="running", started=float(started))
 
 
 class FollowMovedCommands(Handler):
@@ -66,9 +85,15 @@ class FollowMovedCommands(Handler):
 
     def follow(self, context: AgentContext, row, started: str) -> None:
         tasks = background_tasks_of(row)
-        task = context.state.get("task") or next((name for name, at in sorted(tasks.started.items(), key=lambda kv: kv[1])
-                                                  if at >= float(started)), "")
+        run = next((one for one in command_runs(row) if str(one.at) == started), None)
+        pressed = float(context.state.get("pressed") or started)
+        task = context.state.get("task") or matching_task(tasks, run.command if run else "", pressed)
         if not task:
+            if run is not None and not run.done and time.time() - pressed > TOOK_WITHIN and not context.state.get("retried"):
+                context.state.set("retried", started)
+                context.state.set("pressed", time.time())
+                context.agent.move_to_background(started)
+                return
             return self.close_unmoved(context, row, started)
         context.state.set("task", task)
         if task not in tasks.ended:
@@ -87,13 +112,11 @@ class FollowMovedCommands(Handler):
         context.journal.get(Agents).card(row.n, key=f"command:{started}", state="done", ended=run.done)
 
     def show_running(self, context: AgentContext, row, started: str) -> None:
-        """A chained command's card names only the part still running, as its process shows."""
+        """A chained command's card names only the part still running, as its process shows; the part its row last named counts only when it began with this command and has not been answered since."""
         run = next((one for one in command_runs(row) if str(one.at) == started), None)
-        part = ""
-        if row.step:
-            part = row.step.get("command")
-        elif run:
-            part = running_part(Sessions(context.record.root).read(row.title).pid, run.command)
+        part = running_part(Sessions(context.record.root).read(row.title).pid, run.command) if run else ""
+        step = row.step if row.step and float(row.step.get("at", 0)) >= float(started) else {}
+        part = part or step.get("command", "")
         if part and context.state.get("part") != part:
             context.state.set("part", part)
             context.journal.get(Agents).card(row.n, key=f"command:{started}", command=part)
