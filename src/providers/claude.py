@@ -168,6 +168,10 @@ class Claude(Provider):
     link_skills = True
     applies_at_once = ("effort",)
     dispatch_default = "sonnet"
+
+    @classmethod
+    def ask_argv(cls, prompt: str) -> tuple[str, ...]:
+        return ("claude", "-p", "--model", cls.dispatch_default, prompt)
     controls = {
         "groups": [
             {
