@@ -6,7 +6,7 @@ from typing import ClassVar
 
 from resources.fields import Loaded
 
-from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, WHOM, Pruned, Ref, Refused, Resource, ResourceDetails
+from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, WHOM, Pruned, Ref, Refused, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows
 
 
@@ -69,6 +69,7 @@ class Todo(Ranked, Placed, Resource):
     hidden_listed = False
     listed_open = True
     type = "todo"
+    held, eager = None, True
     event_labels = {"created": "To-do created", "completed": "To-do closed", "updated.read": "To-do read", "updated.assign": "To-do assigned",
                     "updated.report": "To-do reported", "updated.block": "To-do blocked", "updated.unblock": "To-do unblocked",
                     "updated.after": "To-do waits on another", "updated.priority": "To-do priority set", "updated.start": "To-do started"}
@@ -100,6 +101,7 @@ class Work(Traced, Resource):
         help="Work is opened by the agent, updated as it moves and ended when done; the agent that opened it has seen it.",
     )
     type = "work"
+    held, eager = None, True
     indexed = ("todo",)
     event_labels = {"created": "Work started", "sectioned": "Work logged", "completed": "Work closed"}
     status_labels = {"create": "starting", "complete": "ending"}
@@ -127,7 +129,7 @@ class Doc(Shape, Resource):
         abstract="What stays true about the project, catalogued for every session",
         help="A doc is written once, cited by facts and rules, and read before anything it settles is re-investigated.",
     )
-    loading = LAZY
+    held = 32
     own_folder = True
     type = "doc"
     summary_in_dashboard = True
@@ -160,7 +162,7 @@ class Report(Shape, Resource):
         abstract="What was checked and what was found, written for the user, read once",
         help="A report answers something the user asked to have checked; it ages out or becomes a doc.",
     )
-    loading = LAZY
+    held = 32
     type = "report"
     summary_in_dashboard = True
     event_labels = {"created": "Report written", "completed": "Report closed"}
@@ -370,6 +372,7 @@ class AgentRow(Shape, Resource):
         help="The journal watches what the agent reports and tells whether it is idle, busy, working, or has shortened its conversation.",
     )
     type = "agent"
+    held, eager = None, True
     indexed = ("parent", "at")
     takes_comments = False
     formatted_data = {"cards": ("label", "detail"), "subagent_rows": ("task",), "thoughts": ("text",)}
@@ -544,6 +547,7 @@ class Environment(Shape, Resource):
     indexed = ("owner",)
     listed_open = True
     type = "environment"
+    held, eager = None, True
     event_labels = {"created": "Environment prepared", "completed": "Environment closed"}
     status_labels = {"create": "preparing", "complete": "removing"}
     subagent_writable = False
@@ -581,7 +585,7 @@ class Ask(Shape, Resource):
         abstract="What the agent asks of the tab the user is driving — a picture, its text, a click — answered by the extension",
         help="Asks the browser tab for a screenshot, its text or a click. Turn on control in the chat window's bar.",
     )
-    loading = LAZY
+    held = 32
     type = "browser"
     takes_comments = False
     kept = 50
@@ -621,7 +625,7 @@ class Nudge(Shape, Resource):
         abstract="A short instruction the journal sends the agent by itself; you never see it in the chat.",
         help="A nudge is written by a feature and spoken to the agent as it is; the user never hears it.",
     )
-    loading = LAZY
+    held = 32
     type = "nudge"
     takes_comments = False
     kept = 100

@@ -40,6 +40,7 @@ class Board(Shape, Resource):
         Field(TEXT, "", name="environment"),
     ]
     type = "board"
+    held, eager = None, True
     icon = "board"
     scope = PROJECT
     view = WIDE

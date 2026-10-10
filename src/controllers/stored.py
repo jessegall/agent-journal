@@ -7,7 +7,7 @@ from bisect import bisect_left, insort
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Callable, TypeVar
-from resources.base import MEMORY, OWNER, PART_OF, Missing, Refused, Resource
+from resources.base import OWNER, PART_OF, Missing, Refused, Resource
 from engine.stored import append_text, read_json, write_json, write_text
 from engine import transaction
 from engine.memo import Memo
@@ -31,7 +31,7 @@ SUMMARIES: dict[str, tuple] = {}
 STANDING: dict[str, tuple] = {}
 REFERRED: dict[str, tuple] = {}
 COUNTED: dict[tuple[str, str], tuple] = {}
-HELD = Memo()
+HELD: dict[str, Memo] = {}
 PACKS = Memo()
 INDEXED: dict[str, dict] = {}
 PENDING: dict[str, set[int]] = {}
@@ -48,6 +48,13 @@ UNSAVED: dict[str, tuple[Path, dict]] = {}
 DEFER = threading.Event()
 OPEN: dict[str, tuple] = {}
 KEEP_OPEN = 16
+
+
+def rolling(folder: str, limit: int | None) -> Memo:
+    """The parsed rows a folder keeps in memory: at most `limit` of them, the one used longest ago going first, or all of them when a type holds all."""
+    if folder not in HELD:
+        HELD[folder] = Memo(limit or 0)
+    return HELD[folder]
 
 
 def mtime(path: Path) -> int:
@@ -543,8 +550,7 @@ class RowStore:
         return self.load(found) if found else None
 
     def load(self, n: int | str) -> Resource:
-        r = self.peek(int(n))
-        return r.fork() if self.resource.loading == MEMORY else r
+        return self.peek(int(n)).fork()
 
     def peek(self, n: int) -> Resource:
         p = self.path(n)
@@ -561,9 +567,10 @@ class RowStore:
                 raise Missing(f"no {self.type} {n}") from error
             archive = self.folder() / PACKED / entry[ARCHIVE]
             stamp, where = (mtime(archive), 0), f"{archive}:{n}"
-        if self.resource.loading != MEMORY:
-            return self._parsed(n)
-        return HELD.get(where, stamp, lambda: self._parsed(n))
+        return self.rolling().get(where, stamp, lambda: self._parsed(n))
+
+    def rolling(self) -> Memo:
+        return rolling(str(self.folder()), self.resource.held)
 
     def discard(self, n: int) -> None:
         """Drops the row held in memory, so what the disk holds is the only truth of it again, as after a save that was refused."""
@@ -604,7 +611,7 @@ class RowStore:
         self.record.fence(self.resource.scope)
         folder = self.folder()
         before = self._moved(folder) if folder.is_dir() else None
-        HELD.forget(str(self.path(n)))
+        self.rolling().forget(str(self.path(n)))
         self.path(n).unlink(missing_ok=True)
         restamp(self.path(n), n)
         if self.resource.own_folder and folder.is_dir():
@@ -651,12 +658,21 @@ class RowStore:
         for row in rows:
             p = folder / member(row["n"])
             if p.is_file() and p.read_bytes() == texts[row["n"]]:
-                HELD.forget(str(p))
+                self.rolling().forget(str(p))
                 p.unlink()
 
     def warm(self) -> None:
-        """Reads the index of the rows, not the rows: a row is loaded when it is first asked for."""
+        """Reads the index of the rows; a type that is eager also parses its open rows, a few at a time so the others go on, and any other row is parsed when it is first asked for."""
         self.summaries()
+        if not self.resource.eager:
+            return
+        for at, row in enumerate(self.standing_summaries()):
+            try:
+                self.peek(row["n"])
+            except Missing:
+                continue
+            if at % 25 == 24:
+                time.sleep(0.001)
 
     def _peeked(self, rows) -> list[Resource]:
         found = []
