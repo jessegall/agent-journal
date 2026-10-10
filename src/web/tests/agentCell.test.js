@@ -7,9 +7,9 @@ describe("the name an agent's cell is titled with", () => {
         expect(splitTask("profile the slow hooks")).toEqual({name: "Subagent", job: "profile the slow hooks"});
     });
 
-    test("a subagent of the main agent is titled with its name and says whose it is in its Kind line", () => {
+    test("a subagent is titled with its name and its Kind line says only subagent", () => {
         const environment = {name: "main", owner: "", subagents: [{session: "s1", parent: "p", task: "Coco Rams: draw the plan card", type: "designer", running: true, started: 1}]};
         const [cell] = orchestraOf([environment], [], 1000);
-        expect(cell).toMatchObject({name: "Coco Rams", title: "draw the plan card", label: "Subagent", of: "of the main agent", sub: true});
+        expect(cell).toMatchObject({name: "Coco Rams", title: "draw the plan card", label: "Subagent", of: "", sub: true});
     });
 });

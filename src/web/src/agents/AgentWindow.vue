@@ -94,15 +94,6 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
     background: var(--bg-2);
 }
 
-.agent-window.sub :deep(.tile-head) {
-    box-shadow: inset 3px 0 0 var(--tone-commit);
-}
-
-.agent-window.sub .aw-label {
-    color: var(--tone-commit);
-    font-weight: 600;
-}
-
 .aw-head {
     display: flex;
     align-items: center;
