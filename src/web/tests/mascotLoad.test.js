@@ -1,4 +1,3 @@
-// @vitest-environment node
 import {describe, expect, it} from "vitest";
 import {picturesOf} from "../src/composables/voiceRigs.js";
 
