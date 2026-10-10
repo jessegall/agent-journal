@@ -260,17 +260,17 @@ const rigShown = computed(() =>
 const shown = computed(() => playing.value ?? (showcase ? staged.value : rested.value));
 const place = computed(() => rigShown.value?.place ?? (showcase ? staged.value?.place : mascot.value.place));
 const fall = computed(() => fallOf(mascot.value?.voice));
-const dropping = ref(false);
-let dropTimer = 0;
+const moved = ref("");
+let moveTimer = 0;
 watch(
     () => props.perch,
     (now, was) => {
-        clearTimeout(dropTimer);
-        dropping.value = now < was;
-        if (dropping.value) dropTimer = setTimeout(() => (dropping.value = false), fall.value.ms * 2);
+        clearTimeout(moveTimer);
+        moved.value = now < was ? "dropping" : "launched";
+        moveTimer = setTimeout(() => (moved.value = ""), fall.value.ms * 2);
     }
 );
-onUnmounted(() => clearTimeout(dropTimer));
+onUnmounted(() => clearTimeout(moveTimer));
 const placed = computed(() => ({
     "--edge": place.value.edge,
     "--line": place.value.line,
@@ -294,7 +294,7 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
     <template v-if="rigShown && roomy">
         <span
             class="voice-mascot"
-            :class="[passage && `passing ${passage.name}`, hopping && `hopping ${hopping}`, {dropping}]"
+            :class="[passage && `passing ${passage.name}`, hopping && `hopping ${hopping}`, moved]"
             :style="passed"
             aria-hidden="true"
         >
@@ -305,7 +305,7 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
         </template>
     </template>
     <template v-else-if="shown && roomy && (steady || showcase)">
-        <span :class="['voice-mascot', {dropping}]" :style="placed" aria-hidden="true">
+        <span :class="['voice-mascot', moved]" :style="placed" aria-hidden="true">
             <SpritePlayer :key="turn" :url="shown.url" :edit="shown.edit" :playing="Boolean(playing)" @ended="ended" />
         </span>
         <template v-if="showcase">
@@ -331,6 +331,35 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
 .voice-mascot.dropping {
     transition: top var(--fall-ms) cubic-bezier(0.55, 0, 1, 0.45);
     animation: mascot-land calc(var(--fall-ms) * 0.9) ease-out var(--fall-ms) both;
+}
+
+.voice-mascot.launched {
+    animation: mascot-launch calc(var(--fall-ms) * 2) both;
+}
+
+@keyframes mascot-launch {
+    0% {
+        transform: none;
+        animation-timing-function: ease-out;
+    }
+
+    35% {
+        transform: translateY(calc(-1 * var(--size) / 5));
+        animation-timing-function: ease-in;
+    }
+
+    70% {
+        transform: scale(calc(1 + var(--squash)), calc(1 - var(--squash)));
+        animation-timing-function: ease-out;
+    }
+
+    85% {
+        transform: translateY(calc(-1 * var(--bounce)));
+    }
+
+    100% {
+        transform: none;
+    }
 }
 
 @keyframes mascot-land {
@@ -441,7 +470,8 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
 
 @media (prefers-reduced-motion: reduce) {
     .voice-mascot,
-    .voice-mascot.dropping {
+    .voice-mascot.dropping,
+    .voice-mascot.launched {
         transition: none;
         animation: none;
     }
