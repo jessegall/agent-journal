@@ -31,7 +31,14 @@ class Agents(Controller):
         return memo[self.type, session]
 
     def saw(self, n: int, fact: dict, **data):
-        row = self._changed(n, "reported", data, **fact)
+        return self._seen(n, "reported", fact, data)
+
+    def heard(self, n: int, fact: dict, **data):
+        """What a hook saw when the prompt was the journal's own line: the row is kept, and the one event says so, which the handlers of a report do not take."""
+        return self._seen(n, "heard", fact, data)
+
+    def _seen(self, n: int, action: str, fact: dict, data: dict):
+        row = self._changed(n, action, data, **fact)
         if self.record.memo is not None:
             self.record.memo[self.type, row.title] = row
         return row

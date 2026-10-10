@@ -74,7 +74,8 @@ def ended(call: HookCall) -> dict:
 
 
 def prompted(call: HookCall) -> dict:
-    bus.defer(lambda: chat_mirror.turn_began(call.record.root, call.session, call.row))
+    if not call.provider.journal_typed(call.hook.prompt):
+        bus.defer(lambda: chat_mirror.turn_began(call.record.root, call.session, call.row))
     return {}
 
 

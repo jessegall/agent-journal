@@ -50,6 +50,14 @@ def test_a_turn_that_only_answers_a_journal_line_is_kept_out_of_the_chat_unless_
     for _ in range(2):
         chat.send(record, agents.load(row.n), "Carrying on with the same turn.", turn="t1")
     assert len([m for m in Messages(record).all() if m.brief == "Carrying on with the same turn."]) == 1, "a turn sent twice by two paths reaches the chat once"
+    last = record.event_log.last_id()
+    hook("UserPromptSubmit", prompt="[journal] todo 5 next")
+    journal_line = [e.action for e in record.event_log.events(last) if e.type == "agent"]
+    last = record.event_log.last_id()
+    hook("UserPromptSubmit", prompt="carry on")
+    person_line = [e.action for e in record.event_log.events(last) if e.type == "agent"]
+    assert (journal_line, person_line) == (["heard"], ["reported"]), \
+        "a prompt that is the journal's own line raises one event of its own, which no handler of an agent report takes"
 
 
 def test_a_line_delivered_mid_turn_keeps_the_message_the_turn_answers():
