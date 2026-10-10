@@ -114,3 +114,32 @@ def test_a_lock_held_longer_than_a_quarter_second_is_noted_with_the_stack_that_h
         pass
     note = (tmp_path / waits.HELD_LOG).read_text()
     assert "the record lock of main held" in note and "test_a_lock_held_longer" in note, "the note names the lock and the code that held it"
+
+
+def test_a_request_never_walks_a_row_folder_the_background_renewal_has_not_reached_yet(tmp_path):
+    from dataclasses import replace
+    from controllers import stored
+    from controllers.types import Todos
+    from tests.kit import counted
+    record = fresh()
+    todos = Todos(record, actor=SYSTEM)
+    todos.create("a row")
+    todos.rows.numbers()
+    key = str(todos.rows.folder())
+    held = stored.STAMPED[key]
+    stored.STAMPED[key] = replace(held, checked=held.checked - stored.STAMPS_FRESH * 2)
+    with counted() as work:
+        todos.rows.numbers()
+    assert not work.scanned, f"stamps older than their renewal but kept are served without walking the folder; it scanned {work.scanned}"
+
+
+def test_the_hash_of_a_managed_file_is_made_again_only_when_the_file_changes(tmp_path, monkeypatch):
+    from features.journal_laws import managed
+    made = []
+    monkeypatch.setattr(managed, "managed_bytes", lambda path: made.append(path) or path.read_bytes())
+    file = tmp_path / "skill.md"
+    file.write_text("one")
+    first = managed.managed_hash(file)
+    assert (managed.managed_hash(file), len(made)) == (first, 1), "an unchanged file is not read and hashed again"
+    file.write_text("two words")
+    assert managed.managed_hash(file) != first and len(made) == 2, "a file whose size changed is hashed again"

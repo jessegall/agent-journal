@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 
 from engine import runtime
+from engine.memo import Memo
 from engine.package import SRC
 from providers.base import journal_hook
 
@@ -62,8 +63,17 @@ def managed_bytes(path: Path) -> bytes:
     return "\n".join(match.group() for match in CURRENT.finditer(text)).encode()
 
 
+HASHES = Memo()
+
+
 def managed_hash(path: Path) -> str:
-    return hashlib.sha256(managed_bytes(path)).hexdigest()
+    """The hash of what the journal manages in a file, made again only when the file's time or size changed."""
+    try:
+        found = path.stat()
+        stamp = (found.st_mtime_ns, found.st_size)
+    except OSError:
+        return hashlib.sha256(managed_bytes(path)).hexdigest()
+    return HASHES.get(str(path), stamp, lambda: hashlib.sha256(managed_bytes(path)).hexdigest())
 
 
 def remember_managed(project: Path, root: Path) -> None:
