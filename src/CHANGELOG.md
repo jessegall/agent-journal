@@ -4,6 +4,23 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.0 — One repository for rows, kept in memory
+- Every row is read and written through one repository per type. The repository keeps parsed rows in a rolling memory sized per type, parses the eager types at start, and answers unread, by type and by relation from indexes it keeps in step. Its funnel methods are final, and a row file written past it is refused.
+- In a server, the marks of folders and rows come from memory, renewed once a second by the watch loop. A warm read stats no file and parses no row twice, a row another process rewrote is read again within a second, and a board load makes each thing once per request.
+- Totals per type are saved beside the index and corrected by the housekeeping. A removed or renamed folder lets go of all it held, and a cached row that will not read back is dropped and read again from its file.
+- Loaded rows survive an update's restart: each type has a version, the rows are kept across the restart, and only a type whose version changed is read again. A release can ask for a full restart in its changelog entry.
+- The server stops slowing itself under load:
+  - One prober per journal judges its health.
+  - A late heartbeat means busy, not dead.
+  - A hook answers first and replays spooled hooks after.
+  - Work after an answer runs on a pool sized to the machine.
+  - An agent's row is written at most once a second.
+  - Lock files stay open between uses.
+  - The seat file is written only when it changed.
+- A check can carry an instruction that the agent answers with pass or fail, so it can use an MCP server the agent already reaches.
+- A rollback to the previous build reads the index this build wrote, and writes give up on a busy repository lock instead of waiting on it.
+- Uploads through the server work again; two functions of one name had shadowed each other.
+
 ## 2.268.30 — Codex sessions no longer crash on the menu funnel
 - Since 2.268.22 a Codex agent's session could crash: the menu funnel reads the screen through a pattern that Codex's driver lacked, and the screen read raised an error. Every driver now reads its screen.
 - The upgrade tests hold an upgrade back on a skill file changed by hand, since the journal's own code folder no longer holds one, and the crash-grace test writes the failed hooks that are reported.
