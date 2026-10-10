@@ -407,8 +407,10 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     features.load()
     record = fresh()
     ran = []
+    monkeypatch.delenv(launch.TRIED, raising=False)
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.parent.mkdir(parents=True, exist_ok=True) or cache.write_text("99.0.0"))
     monkeypatch.setattr("install.upgrade", lambda project, root: ran.append("upgrade") or ["package refreshed"])
+    monkeypatch.setattr(launch, "took", lambda root, latest: True)
     monkeypatch.setattr(launch.os, "execv", lambda python, argv: ran.append("started again"))
     Features(record, actor=SYSTEM).switch("auto_update", False)
     launch.latest_first(record)
@@ -420,9 +422,22 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("0.0.1"))
     assert (launch.latest_first(record), ran) == ("", []), "already current: the launch goes straight on"
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("99.0.0"))
+    monkeypatch.delenv(launch.TRIED, raising=False)
     monkeypatch.setattr("install.upgrade", lambda project, root: ["! the package could not be fetched"])
     monkeypatch.setattr(launch, "failure_in", lambda lines: lines[0])
     assert (launch.latest_first(record), ran) == ("! the package could not be fetched", []), "a failed install is said and the launch goes on, never started again"
+    held = "Files changed since the journal wrote them: CLAUDE.md. Run journal upgrade --yes to copy them into .journal/attic and update anyway."
+    monkeypatch.setattr("install.upgrade", lambda project, root: ran.append("upgrade") or [held])
+    monkeypatch.setattr(launch, "failure_in", lambda lines: "")
+    monkeypatch.setattr(launch, "took", lambda root, latest: False)
+    ran.clear()
+    assert (launch.latest_first(record), ran) == (f"99.0.0 was not installed: {held}", ["upgrade"]), \
+        "an upgrade that held back, or did not put the version in place, is said plainly and the launch goes on, never started again to loop on it"
+    from features.journal_laws import managed
+    (record.root / "src").mkdir(exist_ok=True)
+    (record.root / "src" / "CHANGELOG.md").write_text("rewritten")
+    (record.root / managed.MANAGED).write_text(json.dumps({".journal/src/CHANGELOG.md": "an older hash"}))
+    assert managed.changed_managed(record.root.parent, record.root) == [], "a file of the journal's own code folder that differs from what was written is no edit to hold an upgrade for"
     monkeypatch.setattr(launch, "fetched", lambda cache: 1 / 0)
     assert "the update check did not finish" in launch.latest_first(record), "an update check that breaks is said, and the launch goes on"
     monkeypatch.setattr(launch, "journal_repository", lambda project: True)

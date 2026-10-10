@@ -23,6 +23,13 @@ def restart(root: Path) -> None:
     os.execv(sys.executable, [sys.executable, str(root / "journal.py"), *sys.argv[1:]])
 
 
+def took(root: Path, latest: str) -> bool:
+    """Whether an install left the journal on the version it was asked for: the code folder says so, or the build the journal starts from is named for it."""
+    from engine.package import ARCHIVE, code
+    from install import version_in
+    return version_in(code(root)) == latest or (root / ARCHIVE).resolve().name.startswith(f"journal-{latest}-")
+
+
 def lost(record) -> bool:
     root = Path(record.root)
     runs = ran(root)
@@ -62,9 +69,12 @@ def latest_first(record) -> str:
             return f"{latest} was installed but this start still runs {version()}, so it starts on {version()} and does not try again"
         from install import upgrade
         print(f"journal: installing {latest} before it starts", flush=True)
-        failed = failure_in(upgrade(root.parent, root))
+        lines = upgrade(root.parent, root)
+        failed = failure_in(lines)
         if failed:
             return failed
+        if not took(root, latest):
+            return f"{latest} was not installed: {next((line for line in lines if line), 'the upgrade said nothing')}"
         os.environ[TRIED] = latest
         restart(root)
     except Exception as error:
