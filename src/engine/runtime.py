@@ -1,3 +1,4 @@
+import os
 import time
 from pathlib import Path
 
@@ -155,6 +156,23 @@ def off(root: Path) -> bool:
 
 def started_file(root: Path) -> Path:
     return folder(root) / "started"
+
+
+def booting_mark(root: Path) -> Path:
+    return folder(root) / "booting"
+
+
+def mark_booting(root: Path) -> None:
+    """The server has begun to start: until it has warmed what the viewer first asks for, it says it is not ready."""
+    write_text(booting_mark(root), str(os.getpid()))
+
+
+def mark_booted(root: Path) -> None:
+    booting_mark(root).unlink(missing_ok=True)
+
+
+def booting(root: Path) -> bool:
+    return booting_mark(root).is_file()
 
 
 def mark_started(root: Path) -> None:

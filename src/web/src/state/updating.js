@@ -6,13 +6,16 @@ export const STEPS = ["Installing the new version", "Restarting the journal", "L
 const SECOND_STEP_AT = 8;
 const THIRD_STEP_AT = 25;
 
-export const updating = reactive({version: "", failure: "", late: false, since: 0, external: false, step: "", countdown: null, target: ""});
+export const updating = reactive({version: "", failure: "", late: false, since: 0, external: false, step: "", countdown: null, target: "", starting: false});
 
 export const stepAt = (seconds) => (seconds < SECOND_STEP_AT ? STEPS[0] : seconds < THIRD_STEP_AT ? STEPS[1] : STEPS[2]);
 export const locked = () => Boolean(updating.version || updating.external) && !updating.failure && !updating.late;
 
 // Whether the update cover is up: counting down to an update, or one under way.
-export const covered = () => Boolean(updating.countdown) || locked();
+export const covered = () => Boolean(updating.countdown) || locked() || updating.starting;
+
+// The server says whether it has booted and is ready; an older server says nothing, which leaves the page as it is.
+export const starting = (ready) => (updating.starting = ready === false);
 
 // The automatic update the server is counting down to, with the second it starts at; none clears it.
 export function counting(countdown) {

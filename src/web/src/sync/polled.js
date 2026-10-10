@@ -1,6 +1,6 @@
 import {agent} from "../composables/leadAgent.js";
 import {store} from "../state/store.js";
-import {counting, follow, updating} from "../state/updating.js";
+import {counting, follow, starting, updating} from "../state/updating.js";
 import {isActive} from "../domain/journals.js";
 import {api} from "../api/client.js";
 import {usePoll} from "../composables/poll.js";
@@ -57,6 +57,7 @@ export const polled = {
         take: (got) => {
             store.summary = got;
             counting(got.countdown);
+            starting(got.ready);
             if (follow(Boolean(got.updating), got.step)) window.location.reload();
         },
     },
