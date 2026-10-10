@@ -477,6 +477,7 @@ watch(
                     :tools="composeTools"
                     :many="here ? dumpOffer : null"
                     :idle="here ? dumpIdle : null"
+                    :mascot="here"
                 />
                 <template v-if="waitingOpen && waitingNow">
                     <WaitingPanel :waiting="waitingNow" :anchor="waitingAnchor" @close="waitingOpen = false" />
