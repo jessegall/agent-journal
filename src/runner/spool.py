@@ -34,13 +34,18 @@ def kept_stamp(root: Path) -> int:
         return 0
 
 
+def waiting_events(root: Path) -> list[Path]:
+    """The events kept while the server could not answer, oldest first, listed again only when the folder that holds them changed."""
+    return WAITING.get(str(root), kept_stamp(root), lambda: sorted(chat_mirror.unsent(root).glob("*.json"), key=lambda f: (f.stat().st_mtime_ns, f.name)))
+
+
 def replay(root: Path, most: int = 0, within: float = 0.0) -> int:
     """Takes every event kept while the server could not answer (the oldest `most` of them, when given, for as long as `within` seconds allow, the first always), oldest first: a shown message goes to the chat, any other event is handled as if it had just arrived, at the time the hook kept it."""
     if not REPLAYING.acquire(blocking=False):
         return 0
     handled = 0
     try:
-        waiting = WAITING.get(str(root), kept_stamp(root), lambda: sorted(chat_mirror.unsent(root).glob("*.json"), key=lambda f: (f.stat().st_mtime_ns, f.name)))
+        waiting = waiting_events(root)
         until = time.monotonic() + within
         for kept in waiting[:most] if most else waiting:
             handle(root, kept)
@@ -53,11 +58,8 @@ def replay(root: Path, most: int = 0, within: float = 0.0) -> int:
 
 
 def spooled(root: Path) -> bool:
-    """Whether an event waits in the spool, found without listing it."""
-    try:
-        return any(entry.name.endswith(".json") for entry in os.scandir(chat_mirror.unsent(root)))
-    except OSError:
-        return False
+    """Whether an event waits in the spool, from the same listing replay takes, so the server's loop looks at the folder's stamp and not at its files."""
+    return bool(waiting_events(root))
 
 
 def drain(root: Path) -> None:
