@@ -4,9 +4,11 @@ import {watchConsole} from "./platform/faults.js";
 import {tip} from "./kit/tip.js";
 import "./tokens.css";
 import {watchPresses} from "./platform/pressed.js";
+import {followPage} from "./state/updating.js";
 
 watchConsole();
 watchPresses();
+followPage(document);
 
 function start({root = App, given = new Map()} = {}) {
     const app = createApp(root);
