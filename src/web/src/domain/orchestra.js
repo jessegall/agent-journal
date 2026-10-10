@@ -80,8 +80,6 @@ function entryOf(e, now) {
 }
 
 function subagentsOf(e) {
-    const [, kind = "", n = "0"] = OWNED.exec(e.owner) || [];
-    const parent = kind ? nameOf(kind, n, ownerRow(kind, n)) : "the main agent";
     return (e.subagents || []).map((sub) => ({
         key: `${e.name}:${sub.session}`,
         env: e.name,
@@ -91,7 +89,7 @@ function subagentsOf(e) {
         parent: sub.parent,
         session: sub.session,
         label: "Subagent",
-        of: `of ${parent}`,
+        of: "",
         name: splitTask(sub.task).name,
         title: splitTask(sub.task).job || sub.session,
         says: "",
