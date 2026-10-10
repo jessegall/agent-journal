@@ -13,7 +13,7 @@ from engine.stored import Growth
 from engine.proc import git
 from engine.seats import remember_terminal, write_seat
 from engine.worktree import checkout, environment
-from controllers.types import Agents, Environments
+from controllers.types import Agents, Environments, Questions
 from resources.base import SYSTEM
 from resources.types import AgentRow
 from resources.fields import Loaded
@@ -195,11 +195,27 @@ class HookBinding:
 
     def bound(self, session: str, worked: str, prefer: str) -> str:
         env = worked or prefer or self.sessions.choose(session, self.provider.name, runtime.default_env(self.root), self.owned)
+        rivals = self.sessions.rivals(env, session, self.pid)
+        if rivals:
+            return self.asked_to_take_over(session, env, rivals[0])
         seat_session(self.sessions, env, session, pid=self.pid, provider=self.provider.name)
         terminal = self.sessions.terminal(self.provider.name, self.pid)
         if worked and terminal:
             seat_session(self.sessions, env, terminal)
         return env
+
+    def asked_to_take_over(self, session: str, env: str, holder: str) -> str:
+        """An environment has one live session: the one that starts beside another waits in an environment of its own, and the user is asked whether it takes the busy one over."""
+        side = self.sessions.free(env)
+        for each in self.sessions.agent(session, self.pid):
+            seat_session(self.sessions, side, each, pid=self.pid, provider=self.provider.name)
+        question = Questions(Record(self.root, env), actor=SYSTEM).create(
+            f"A second session started in {env}", brief=f"Session {session} started in {env}, where session {holder} is already working. It waits in {side} until you answer. "
+            f"Taking {env} over unbinds {holder} from it, and {session} holds it.",
+            options=[{"title": f"Take over {env}", "description": f"{holder} is unbound from {env}, and {session} works there"},
+                     {"title": f"Stay in {side}", "description": f"{holder} keeps {env}"}])
+        self.sessions.write(session, takeover={"environment": env, "question": question.n, "holder": holder})
+        return side
 
     def relaunched(self, session: str, old: int) -> None:
         terminal = self.sessions.terminal(self.provider.name, old)

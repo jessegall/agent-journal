@@ -4,6 +4,7 @@ from typing import ClassVar
 from engine.events.agents import AgentReported
 from controllers.types import Agents, Questions
 from engine.events.resources import AnyEvent, MessageCreated, QuestionAnswered, ResourceEvent
+from engine.sessions import Sessions
 from features.agent_sessions.launch import driver_in
 from features.sending import Sent
 from features.triggers import watched
@@ -48,7 +49,7 @@ class MarkTheAnswer(Handler):
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         agents = Agents(context.record, actor=SYSTEM)
         row = agents.primary()
-        if event.actor != USER or question.hidden or not row:
+        if event.actor != USER or question.hidden or not row or Sessions(context.record.root).asking(question.n):
             return
         agents.card(row.n, label=f"You answered question {question.n}", icon="question",
                     color="var(--blocking)", side=USER, row=question.ref)
@@ -61,7 +62,7 @@ class AnswerOnTheScreen(Handler):
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         row = Agents(context.record, actor=SYSTEM).primary()
         driver = driver_in(context.record, context.record.env, row.provider) if row else None
-        if driver is not None and question.completed:
+        if driver is not None and question.completed and not Sessions(context.record.root).asking(question.n):
             driver.answer_prompt(int(question.chosen), question.outcome, len(question.options))
 
 
