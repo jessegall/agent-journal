@@ -239,6 +239,15 @@ def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits_and_a_foll
     assert (posted, typed) == ([], ["do the next step"]), "a follow-up is typed as an instruction, without the journal mark, and never posted on the channel"
     assert follow.send("todo 5 next", now=True)
     assert (posted, typed) == ([("todo 5 next", "journal")], ["do the next step"]), "the journal's own line still goes over the channel"
+    import time
+    twice = DRIVERS["claude"](fresh(), "claude-8")
+    channel, typing = [], []
+    monkeypatch.setattr(twice, "_post", lambda line, by: channel.append(line) or bool(len(channel) > 1))
+    monkeypatch.setattr(twice, "_typed", lambda line, confirmed: typing.append(line) or setattr(twice, "entered_at", time.time()) or False)
+    monkeypatch.setattr(twice, "awaits_answer", lambda: False)
+    assert [twice.send("1 new message 7", now=True), twice.send("1 new message 7", now=True)] == [False, True]
+    assert (channel, typing) == (["1 new message 7"], ["[journal] 1 new message 7"]), \
+        "a line typed whose landing was not confirmed is not handed over again by the channel a moment later: the agent has it once"
 
 
 def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
