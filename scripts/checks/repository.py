@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 HERE = ROOT / "src"
 STORE = HERE / "controllers" / "stored.py"
-FUNNEL = ("peek", "load", "summaries", "persist", "remove", "counts", "unread", "linked_to", "by", "reindexed", "text", "write_file", "reparsed", "discard")
+FUNNEL = ("peek", "load", "summaries", "persist", "remove", "counts", "unread", "linked_to", "by", "reindexed", "text", "write_file", "reparsed", "discard", "page")
 ROW_IO = re.compile(r"\.path\([^()]*\)\.(read_text|read_bytes|open|write_text|write_bytes|unlink|replace|rename|stat)")
 PARSE = re.compile(r"\.resource\.load\(")
 BUILD = re.compile(r"\bRowStore\(")
