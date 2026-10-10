@@ -15,6 +15,7 @@ from engine.package import data  # noqa: E402
 from features import running  # noqa: E402
 from features.sharing.controller import HEALTH, HEALTH_MARKER, LAYOUT_FILE  # noqa: E402
 from features.sharing.origins import origins_of  # noqa: E402
+from features.sharing.page_data import forget  # noqa: E402
 from features.sharing.passwords import WrongPasswords, unlocked  # noqa: E402
 from features.sharing.services import LOOPBACK  # noqa: E402
 from features.sharing.visiting import SharedComment  # noqa: E402
@@ -158,8 +159,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         if rest == [PREVIEW]:
             return self.send(200, card(identity(self.shares.record.root)["color"]), {"Content-Type": "image/png", "Cache-Control": "max-age=3600"})
         if rest == ["data.json"]:
-            body = json.dumps(self.shares._shared_data(share)).encode()
-            return self.send(200, body, {"Content-Type": "application/json", **APP_HEADERS})
+            return self.send(200, self.shares._shared_body(share), {"Content-Type": "application/json", **APP_HEADERS})
         if rest[:1] == ["assets"] and len(rest) == 2:
             return self.asset(rest[1])
         if not rest:
@@ -197,6 +197,7 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.answer(400, "a comment needs about, name and text; an answer needs comment, name and choice")
         except Refused as refused:
             return self.answer(422, str(refused))
+        forget(share.token)
         self.send(201, json.dumps(body).encode(), {"Content-Type": "application/json", **APP_HEADERS})
 
     def answer(self, code: int, text: str) -> None:

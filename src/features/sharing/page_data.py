@@ -1,7 +1,11 @@
+import json
+import threading
+import time
 from dataclasses import asdict
 from pathlib import Path
 
 from controllers.base import row_of
+from engine import bus
 from controllers.described import described_types
 from engine.markers import MARKER
 from engine.record import Record
@@ -13,6 +17,24 @@ from features.tickets.controller import Tickets
 from features.tickets.resource import CONFIRMED
 from resources.base import SYSTEM, Ref, Refused
 
+KEPT_FOR = 10.0
+REACHED: dict[str, tuple[float, tuple]] = {}
+BUILT: dict[str, tuple[float, bytes]] = {}
+BUILDING = threading.Lock()
+ORIGINS: dict[str, tuple[float, dict]] = {}
+
+
+def forget(token: str) -> None:
+    """Drops what was kept of a share, as a comment on it makes what a visitor sees out of date."""
+    REACHED.pop(token, None)
+    BUILT.pop(token, None)
+
+
+def fresh(kept) -> bool:
+    """Whether what was kept is recent enough to send again; where work runs in the caller's thread, as in a test, nothing is kept."""
+    return bool(kept) and bus.BACKGROUND and time.monotonic() - kept[0] < KEPT_FOR
+
+
 SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status"),
                  "ticket": ("stage", "dependencies", "board"),
                  "board": ("stages", "goal", "done_when", "meanings")}
@@ -20,7 +42,13 @@ SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo
 
 def origin_of(record: Record, environment: str) -> str:
     """Where a member from another environment comes from: the ticket whose work environment it is, by number and title, or the environment's own name."""
-    ticket = next((t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.work_environment == environment), None)
+    kept = ORIGINS.get(str(record.root))
+    if not fresh(kept):
+        owners: dict[str, object] = {}
+        for ticket in Tickets(record, actor=SYSTEM).rows.standing():
+            owners.setdefault(ticket.work_environment, ticket)
+        kept = ORIGINS[str(record.root)] = (time.monotonic(), owners)
+    ticket = kept[1].get(environment)
     return f"Ticket {ticket.n} · {ticket.title}" if ticket else environment
 
 
@@ -72,18 +100,28 @@ class SharePages:
     def _members(self, share, collection) -> list:
         return self._loaded_members(self._home(share), collection)
 
-    def _scope(self, share) -> set[str]:
-        """The shared row and every row it holds, and what those rows hold in turn, such as the to-dos of a plan in a shared collection."""
+    def _reach(self, share) -> tuple[set[str], dict, dict]:
+        """The refs a share shows, each row it reaches loaded once, and what each holds: the shared row, every row it holds, and what those hold in turn, such as the to-dos of a plan in a shared collection. Kept for a few seconds, since a visitor's page asks for it again for each file."""
+        kept = REACHED.get(share.token)
+        if fresh(kept):
+            return kept[1]
         target = self._shared_row(share, share.target)
         if target.deleted:
-            return set()
-        scope, waiting = {share.target}, [target]
+            return set(), {}, {}
+        rows, members, waiting = {share.target: target}, {}, [target]
         while waiting:
-            for member in self._members(share, waiting.pop()):
-                if member.ref not in scope:
-                    scope.add(member.ref)
-                    waiting.append(member)
-        return scope
+            row = waiting.pop()
+            members[row.ref] = self._members(share, row)
+            for member in members[row.ref]:
+                if member.ref in rows:
+                    continue
+                rows[member.ref] = member
+                waiting.append(member)
+        REACHED[share.token] = (time.monotonic(), (set(rows), rows, members))
+        return REACHED[share.token][1]
+
+    def _scope(self, share) -> set[str]:
+        return self._reach(share)[0]
 
     def _shared_file(self, share, ref: str, name: str) -> Path | None:
         row = self._shared_row(share, ref)
@@ -97,28 +135,41 @@ class SharePages:
         if share.view:
             return {"share": {"target": f"view:{share.view}", "expires": share.expires, "comments": False}, "rows": {}, "comments": [], "timelines": {}, "types": {},
                     "view": shared_view(self._home(share), share.view)}
-        scope = self._scope(share)
+        scope, loaded, held = self._reach(share)
         record = self._home(share)
         rows = {}
         for ref in scope:
-            row = self._shared_row(share, ref)
+            row = loaded[ref]
             shaped = shape(row, record, SHARED)
             rows[ref] = {
                 "type": row.type, "n": row.n, "created": row.created, "updated": row.updated,
                 "title": scoped(shaped.get("title", ""), scope), "abstract": scoped(shaped.get("abstract", ""), scope), "brief": scoped(shaped.get("brief", ""), scope),
                 "sections": [{"title": scoped(s.get("title", ""), scope), "body": scoped(s.get("body", ""), scope)} for s in shaped.get("sections") or []],
                 "files": sorted(row.files), "pictures": dict(getattr(row, "pictures", {}) or {}),
-                "members": [m.ref for m in self._members(share, row) if m.ref in scope],
+                "members": [m.ref for m in held[ref] if m.ref in scope],
                 "completed": row.completed, "data": shared_fields(row, record),
             }
             if row.type == "collection":
-                rows[ref]["held_files"] = collected_files(record, [row, *(m for m in self._members(share, row) if m.ref in scope)])
+                rows[ref]["held_files"] = collected_files(record, [row, *(m for m in held[ref] if m.ref in scope)])
         described = described_types()
         kinds = {Ref.parse(ref).type for ref in rows}
         return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,
                 "comments": [asdict(c) for c in self._shared_comments(share, scope)] if share.comments else [],
                 "timelines": self._timelines(share, scope),
                 "types": {kind: described[kind] for kind in kinds if kind in described}}
+
+    def _shared_body(self, share) -> bytes:
+        """The page's data as it is sent, built once for every request that comes while it is being built or in the next few seconds."""
+        kept = BUILT.get(share.token)
+        if fresh(kept):
+            return kept[1]
+        with BUILDING:
+            kept = BUILT.get(share.token)
+            if fresh(kept):
+                return kept[1]
+            body = json.dumps(self._shared_data(share)).encode()
+            BUILT[share.token] = (time.monotonic(), body)
+        return body
 
     def _timelines(self, share, scope: set[str]) -> dict[str, list[dict]]:
         """Each shared plan's timeline, keyed by the plan's ref, holding the moments of its to-dos the share shows."""
