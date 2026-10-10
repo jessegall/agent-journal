@@ -4,7 +4,6 @@ import {agent} from "../composables/leadAgent.js";
 import {feedOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
 import {cardPlan} from "../domain/plans.js";
-import {waitsFor} from "../domain/agentState.js";
 import {useWaiting} from "../composables/waiting.js";
 import WaitingPanel from "./WaitingPanel.vue";
 import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
@@ -117,7 +116,6 @@ function unedit() {
     editing.value = null;
 }
 const busy = computed(() => !!owner.value && ["working", "compacting"].includes(owner.value.data.status));
-const waiting = computed(() => waitsFor(rows("work")));
 const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(undefined, owner, () => rows("work"));
 const planCard = computed(() => cardPlan(rows("plan")));
 const reportDock = computed(() => dockedReport(rows("report")));
@@ -544,7 +542,7 @@ watch(
                         </div>
                         <Transition name="status">
                             <div
-                                v-if="busy && !waiting"
+                                v-if="busy && !waitingNow"
                                 class="thread-turn busy"
                                 :aria-label="`The agent is ${activity}`"
                             >

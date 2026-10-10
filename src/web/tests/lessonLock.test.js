@@ -24,6 +24,16 @@ describe("the lesson lock", () => {
         expect(pressed).toEqual([]);
     });
 
+    it("leaves the buttons of the lesson-done card usable, so the lesson always has a way out", () => {
+        const {button, pressed} = locked();
+        const card = document.createElement("section");
+        card.className = "lesson-end";
+        card.append(button);
+        document.body.append(card);
+        button.click();
+        expect(pressed).toEqual(["click"]);
+    });
+
     it("leaves every control usable once the user looks around after the lesson", () => {
         const {standIn, button, pressed} = locked();
         standIn.player.view.looking = true;
