@@ -1,4 +1,6 @@
 import inspect
+from bisect import bisect_right
+from itertools import accumulate
 from contextvars import ContextVar
 import shutil
 import time
@@ -27,6 +29,9 @@ FIELD_WRITES = ("create", "update", "set")
 LAST = 25
 SEARCHABLE: dict[str, dict[int, tuple[float, str]]] = {}
 SEARCHED: dict[str, tuple[list, bool]] = {}
+CORPUS: dict[str, tuple] = {}
+REREAD: dict[str, int] = {}
+PUT_AWAY: dict[str, tuple] = {}
 
 
 @dataclass(frozen=True)
@@ -515,8 +520,42 @@ class Controller(Files, Links, Discussed):
     def search(self, term: str, archived: bool = False) -> list[Resource]:
         want, rows = term.lower(), self.rows.summaries()
         texts = self._texts(archived, rows)
-        hits = (row["n"] for row in reversed(rows) if (archived or not row["deleted"]) and row["n"] in texts and want in texts[row["n"]][1])
-        return [self.rows.peek(n) for n, _ in zip(hits, range(LAST))]
+        if not want:
+            hits = (row["n"] for row in reversed(rows) if (archived or not row["deleted"]) and row["n"] in texts)
+            return [self.rows.peek(n) for n, _ in zip(hits, range(LAST))]
+        corpus, starts, numbers = self._corpus(texts)
+        gone = self._put_away(rows)
+        hits, before = [], len(corpus)
+        while len(hits) < LAST:
+            at = corpus.rfind(want, 0, before)
+            if at < 0:
+                break
+            found = bisect_right(starts, at) - 1
+            before = starts[found]
+            if archived or not gone.get(numbers[found], True):
+                hits.append(numbers[found])
+        return [self.rows.peek(n) for n in hits]
+
+    def _corpus(self, texts: dict[int, tuple[float, str]]) -> tuple[str, list[int], list[int]]:
+        """Every row's text in one string, a null between rows, with where each starts, so one scan in C answers a search instead of a loop over the rows; made again only when a row's text was read again."""
+        folder = str(self.rows.folder())
+        held = CORPUS.get(folder)
+        if held and held[0] == REREAD.get(folder, 0):
+            return held[1:]
+        numbers = sorted(texts)
+        bodies = [texts[n][1] for n in numbers]
+        starts = list(accumulate((len(body) + 1 for body in bodies), initial=0))[:-1]
+        CORPUS[folder] = (REREAD.get(folder, 0), "\x00".join(bodies), starts, numbers)
+        return CORPUS[folder][1:]
+
+    def _put_away(self, rows: list[dict]) -> dict[int, bool]:
+        """Which rows are put away, kept for the list of summaries it was made from."""
+        folder = str(self.rows.folder())
+        held = PUT_AWAY.get(folder)
+        if held and held[0] is rows:
+            return held[1]
+        PUT_AWAY[folder] = (rows, {row["n"]: row["deleted"] for row in rows})
+        return PUT_AWAY[folder][1]
 
     def load(self, n: int | str) -> Resource:
         return self.rows.load(n)
@@ -548,6 +587,7 @@ class Controller(Files, Links, Discussed):
             if row["deleted"] and not archived or kept.get(row["n"], (None,))[0] == version:
                 continue
             kept[row["n"]] = (version, searchable(self.rows.peek(row["n"])))
+            REREAD[folder] = REREAD.get(folder, 0) + 1
         SEARCHED[folder] = (rows, archived or bool(seen and seen[0] is rows and seen[1]))
         return kept
 
