@@ -842,6 +842,20 @@ def test_a_warm_up_that_fails_ends_the_server_so_a_broken_build_still_rolls_back
     assert exits == [1], "warming runs beside the server, so a failure in it must end the process for the supervisor to roll back"
 
 
+def test_the_warm_up_runs_its_tracks_side_by_side_and_a_failure_in_one_reaches_the_caller(monkeypatch):
+    began = time.time()
+    serve.together(lambda: time.sleep(0.5), lambda: time.sleep(0.5), lambda: time.sleep(0.5))
+    assert time.time() - began < 1.2, "three tracks of half a second take about half a second together, not one and a half"
+    done = []
+
+    def failing():
+        raise RuntimeError("a broken warm-up")
+
+    with pytest.raises(RuntimeError, match="a broken warm-up"):
+        serve.together(failing, lambda: done.append(1))
+    assert done == [1], "the other tracks still finish, and the failure is raised once they have"
+
+
 def test_one_engine_runs_per_environment_and_an_orphan_or_a_stale_build_ends(tmp_path, monkeypatch):
     from runner import engines
     root = tmp_path / ".journal"

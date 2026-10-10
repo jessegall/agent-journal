@@ -329,17 +329,38 @@ def warm_changed(root: Path) -> None:
     warm_dashboard(root, default_env(root))
 
 
+def together(*tracks) -> None:
+    """Runs the tracks side by side and returns when all are done; the first failure of a track is raised here."""
+    failures = []
+
+    def track(work) -> None:
+        try:
+            work()
+        except Exception as error:
+            failures.append(error)
+
+    threads = [threading.Thread(target=track, args=(work,), daemon=True) for work in tracks]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    if failures:
+        raise failures[0]
+
+
+def warm_rows(root: Path) -> None:
+    warm_work(root)
+    warm_replies(root)
+    warm_texts(root)
+
+
 def warmed(root: Path, warm: threading.Event, restarted: float = 0.0) -> None:
     try:
         warm_viewer(root, default_env(root), warm)
         if restarted:
             runtime.record_step(root, "restart: until the viewer is warm", time.time() - restarted, time.process_time(), version())
-        warm_commands()
-        warm_work(root)
-        warm_replies(root)
-        warm_texts(root)
         WARMERS.append(lambda: warm_changed(root))
-        read_transcripts(root)
+        together(warm_commands, lambda: warm_rows(root), lambda: read_transcripts(root))
         if restarted:
             runtime.record_step(root, "restart: until everything is warm", time.time() - restarted, time.process_time(), version())
     except Exception:
