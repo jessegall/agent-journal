@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.20 — The mascot perches on the bars, and idle agents rest
+- The mascot sits on top of the highest bar above the chat (a plan, report or dump bar) instead of behind it. When that bar goes, it falls to the next one, or back onto the chat box, and each voice lands in a way of its own.
+- The sweep of a project's tickets runs once for the project instead of in every environment's engine, and its git work runs once a minute, so idle agents no longer keep the machine busy.
+- A merged ticket's agent is stopped only once its turn has ended and nothing waits for it, so follow-up work sent to it is not cut off.
+
 ## 2.268.19 — Updates take seconds, and can be put off
 - When the journal updates by itself, the blurred cover counts down ten seconds with a Not now button; Not now puts the update off, and it is offered again later.
 - An update waits only for running journal commands, never a test run or a dev server, and for twenty seconds at most; the new build is checked in a process of its own without asking a server; every step's time is written to runtime/upgrade-steps.jsonl.
