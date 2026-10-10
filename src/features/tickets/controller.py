@@ -139,10 +139,26 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     @action
     def approve_plan(self, n: int):
-        waits = self._waiting_on(self.load(n))
+        ticket = self.load(n)
+        waits = self._waiting_on(ticket)
+        if waits and self._plan_status(ticket) == READY and self._may_decide(ticket):
+            return self.update(ticket.n, approved_early=True)
         if waits:
             self._refuse(f"{self.type} {n} waits on {', '.join(ref.replace(':', ' ') for ref in waits)}: its plan is approved once they are merged")
         return self._decide_plan(n, READY, "approve", "approve", "")
+
+    def _may_decide(self, ticket) -> bool:
+        """Whether whoever acts may approve this ticket's plan: the user always, an agent only as the orchestrator of a board that lets it."""
+        return self.actor != AGENT or (self._orchestrator_may(ticket, PLANS) and int(ticket.board) in self._orchestrating())
+
+    def _apply_early_approvals(self) -> None:
+        """A plan approved while its ticket waited is approved the moment the wait ends."""
+        for ticket in [r for r in self.rows.standing() if r.approved_early and r.work_environment and not self._waiting_on(r)]:
+            self.update(ticket.n, approved_early=False)
+            try:
+                Tickets(self.record, actor=SYSTEM)._decide_plan(ticket.n, READY, "approve", "approve", "")
+            except Refused:
+                continue
 
     @action
     def continue_plan(self, n: int):
@@ -270,6 +286,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 environments.complete(place.n, how=f"{self.type} {closed.n} closed", yes=True)
             except Refused:
                 pass
+        self._apply_early_approvals()
         return closed
 
     @action
@@ -505,10 +522,10 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             raise
 
     def _launch(self, ticket, into: str) -> None:
-        from agents.terminal import detached, prompted
+        from agents.terminal import detached, launch_output, prompted
         from providers import DRIVERS, PROVIDERS
         driver, place = DRIVERS[ticket.provider], ticket.work_environment
-        earlier = Sessions(self.record.root).last(place, ticket.provider)
+        earlier = Sessions(self.record.root).last(place, ticket.provider) or driver.printed_session(launch_output(self.record.root, place))
         if earlier and not PROVIDERS[ticket.provider]().conversation_file(earlier):
             earlier = ""
         args = driver.within(["--model", ticket.model] if ticket.model else [], place)
