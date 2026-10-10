@@ -74,7 +74,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _kept_from_outside(self, r: Resource) -> None:
         """An agent can neither mark a ticket from an integration as started by you nor change where it came from."""
-        stored = self._stored(r) if self.rows.exists(r.n) else None
+        stored = self._row_on_disk(r) if self.rows.exists(r.n) else None
         if self.actor != AGENT or stored is None or not self._from_outside(stored):
             return
         if r.source != stored.source or (r.data.get("user_started") and not stored.data.get("user_started")):
