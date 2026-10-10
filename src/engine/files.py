@@ -118,15 +118,24 @@ def prefixed(project: Path, repository: Path, paths: dict) -> dict:
     return {f"{prefix}{path}": value for path, value in paths.items()}
 
 
-def index_file(project: Path) -> Path:
-    return project / git(["rev-parse", "--git-path", "index"], project).strip()
+INDEX_FILES: dict[Path, Path] = {}
+
+
+def index_stamp(project: Path) -> int:
+    """When the repository's index last changed; where git keeps it is asked once, and again only when the index is not where it was."""
+    where = INDEX_FILES.get(project)
+    for asking in (where is None, True):
+        if asking:
+            where = INDEX_FILES[project] = project / git(["rev-parse", "--git-path", "index"], project).strip()
+        try:
+            return where.stat().st_mtime_ns
+        except OSError:
+            continue
+    return 0
 
 
 def tracked_in(project: Path) -> dict:
-    try:
-        stamp = index_file(project).stat().st_mtime_ns
-    except OSError:
-        stamp = 0
+    stamp = index_stamp(project)
     held = INDEXES.get(project)
     if held is not None and held.stamp == stamp:
         return held.tree
@@ -257,18 +266,22 @@ def snapshot_name(record, folder: Path) -> str:
 
 
 ANNOUNCE_AFTER = 2.0
+LOOK_SPACING = 5.0
+LOOKED: dict[tuple, float] = {}
 PENDING: set[tuple] = set()
 
 
 def announce_writes(record, agent: int, homes: tuple[str, ...], cwd: str = "") -> None:
-    """Looks at what the writes changed once, a moment after the last of them: a burst of writes asks for one look, and the hook that asked is not held up by it."""
+    """Looks at what the writes changed once, a moment after the last of them: a burst of writes asks for one look, and the hook that asked is not held up by it; a look that took long is followed by one only after five times as long, so a big project is never looked at more than a sixth of the time."""
     folder = checkout_of(record, cwd)
     key = (str(record.root), record.env, str(folder))
 
     def look() -> None:
         with ANNOUNCING.guard:
             PENDING.discard(key)
+        began = time.monotonic()
         ANNOUNCING.run(key, lambda: announce(record, agent, homes, folder))
+        LOOKED[key] = time.monotonic() - began
     if not bus.BACKGROUND:
         look()
         return
@@ -276,7 +289,7 @@ def announce_writes(record, agent: int, homes: tuple[str, ...], cwd: str = "") -
         if key in PENDING:
             return
         PENDING.add(key)
-    timer = threading.Timer(ANNOUNCE_AFTER, look)
+    timer = threading.Timer(max(ANNOUNCE_AFTER, LOOK_SPACING * LOOKED.get(key, 0.0)), look)
     timer.daemon = True
     timer.start()
 
