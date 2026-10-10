@@ -60,6 +60,15 @@ def readable_path(project: Path, target: Path) -> bool:
     return bool(parts) and all(readable_part(part, index == len(parts) - 1) for index, part in enumerate(parts))
 
 
+def readable_in(project: Path, relative: str) -> bool:
+    """Whether a path the repository lists, relative to the project, may be read: its parts are checked by name alone, and only a link is followed to see where it leads."""
+    parts = [part for part in relative.split("/") if part]
+    if not parts or not all(readable_part(part, index == len(parts) - 1) for index, part in enumerate(parts)):
+        return False
+    target = project / relative
+    return readable_path(project, target) if target.is_symlink() else True
+
+
 def readable_part(part: str, last: bool) -> bool:
     return not part.startswith(".") and (not SECRET.search(part) or last and bool(VIEW.search(part)))
 

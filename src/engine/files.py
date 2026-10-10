@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine import bus
 from engine.proc import git, git_blob, git_objects
-from engine.project_files import readable_path
+from engine.project_files import readable_in
 from resources.base import SYSTEM, names
 
 KIND = names("edited", "created", "deleted")
@@ -158,13 +158,13 @@ def blobs(record, project: Path, homes: tuple[str, ...]) -> dict:
     with ThreadPoolExecutor(max_workers=len(found) or 1) as pool:
         trees = list(pool.map(blobs_in, found))
     tree = {path: sha for repository, held in zip(found, trees) for path, sha in prefixed(project, repository, held).items()}
-    return {path: sha for path, sha in tree.items() if not journals_own(path, marks) and readable_path(project, project / path)}
+    return {path: sha for path, sha in tree.items() if not journals_own(path, marks) and readable_in(project, path)}
 
 
 def blobs_in(project: Path) -> dict:
     tree = dict(tracked_in(project))
     dirty = list(dict.fromkeys(p for p in [*git(["ls-files", "-m", "-o", "-d", "--exclude-standard", "-z"], project).split("\0"), *ignored_images(project)] if p))
-    present = [p for p in dirty if readable_path(project, project / p) and (project / p).is_file()]
+    present = [p for p in dirty if readable_in(project, p) and (project / p).is_file()]
     UNTRACKED[project] = tuple(p for p in present if p not in tree)
     for path in set(dirty) - set(present):
         tree.pop(path, None)
@@ -187,7 +187,7 @@ def blob_texts(project: Path, shas: list[str]) -> dict[str, str]:
 
 
 def project_paths(project: Path) -> set[str]:
-    return {path for repository in project_repositories(project) for path in prefixed(project, repository, dict.fromkeys(paths_in(repository))) if readable_path(project, project / path)}
+    return {path for repository in project_repositories(project) for path in prefixed(project, repository, dict.fromkeys(paths_in(repository))) if readable_in(project, path)}
 
 
 def paths_in(project: Path) -> set[str]:
@@ -256,9 +256,29 @@ def snapshot_name(record, folder: Path) -> str:
     return SNAPSHOT if folder in (project, project.resolve()) else f"{SNAPSHOT}-{folder.name}"
 
 
+ANNOUNCE_AFTER = 2.0
+PENDING: set[tuple] = set()
+
+
 def announce_writes(record, agent: int, homes: tuple[str, ...], cwd: str = "") -> None:
+    """Looks at what the writes changed once, a moment after the last of them: a burst of writes asks for one look, and the hook that asked is not held up by it."""
     folder = checkout_of(record, cwd)
-    ANNOUNCING.run((str(record.root), record.env, str(folder)), lambda: announce(record, agent, homes, folder))
+    key = (str(record.root), record.env, str(folder))
+
+    def look() -> None:
+        with ANNOUNCING.guard:
+            PENDING.discard(key)
+        ANNOUNCING.run(key, lambda: announce(record, agent, homes, folder))
+    if not bus.BACKGROUND:
+        look()
+        return
+    with ANNOUNCING.guard:
+        if key in PENDING:
+            return
+        PENDING.add(key)
+    timer = threading.Timer(ANNOUNCE_AFTER, look)
+    timer.daemon = True
+    timer.start()
 
 
 def announce(record, agent: int, homes: tuple[str, ...], folder: Path) -> None:
@@ -269,7 +289,7 @@ def announce(record, agent: int, homes: tuple[str, ...], folder: Path) -> None:
         held["tree"] = now
     if last is None:
         return
-    last = {path: sha for path, sha in last.items() if readable_path(project, project / path)}
+    last = {path: sha for path, sha in last.items() if readable_in(project, path)}
     at = time.time()
     changed = {path: (last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB)) for path in sorted(set(last) | set(now)) if last.get(path) != now.get(path)}
     counts = line_counts(project, [pair for path, pair in changed.items() if not is_image(path)])
