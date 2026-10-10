@@ -803,7 +803,7 @@ def test_a_hook_never_waits_more_than_a_moment_for_a_server_that_is_down_and_a_f
     beat(0)
     (tmp_path / "runtime" / "upgrading").write_text("")
     refused, took = run()
-    assert (refused.stdout, took < 1.0) == ("", True), "a server that refuses while it upgrades does not hold the agent: the hook goes on at once"
+    assert ("went ahead unchecked" in refused.stdout, took < 1.0) == (True, True), "a server that refuses while it upgrades does not hold the agent: the hook goes on at once, and says so"
     (tmp_path / "runtime" / "upgrading").unlink()
     (tmp_path / "runtime" / "hook-failures.log").unlink()
     Answer.pause = 3.0
@@ -811,13 +811,17 @@ def test_a_hook_never_waits_more_than_a_moment_for_a_server_that_is_down_and_a_f
     threading.Thread(target=server.serve_forever, daemon=True).start()
     beat(120)
     slow, took = run()
-    assert (slow.stdout, took < 1.0) == ("", True), "a server that has not beaten for minutes is asked once, briefly, and the hook goes on"
+    assert ("went ahead unchecked" in slow.stdout, took < 1.0) == (True, True), "a server that has not beaten for minutes is asked once, briefly, and the hook goes on, telling the agent"
     logged = (tmp_path / "runtime" / "hook-failures.log").read_text().split()
     assert (logged[1:4], float(logged[4]) >= 0) == (["down", "claude", "main"], True), "and says so in the log, with the machine's load at that moment"
     Answer.pause = 1.0
     beat(20)
     late, took = run()
     assert (late.stdout.strip(), 1.0 <= took < 3.0) == ('{"reason": "served"}', True), "a server whose beat is late, as under load, is given a few seconds to answer before the hook goes on"
+    Answer.pause = 5.0
+    beat(0)
+    healthy, took = run()
+    assert ("went ahead unchecked" in healthy.stdout, 1.5 <= took < 3.5) == (True, True), "a healthy server that does not answer in two seconds is not waited for any longer: the call goes ahead and the journal reads it late"
     Answer.pause = 0.0
     beat(0)
     served, _ = run()
@@ -825,7 +829,8 @@ def test_a_hook_never_waits_more_than_a_moment_for_a_server_that_is_down_and_a_f
     assert served.stdout.strip() == '{"reason": "served"}', "a server that is beating and answers is waited for as before"
     (tmp_path / "runtime" / "heartbeat").unlink()
     gone, took = run()
-    assert (gone.stdout, took < 1.0) == ("", True), "with no heartbeat at all the hook goes on at once"
+    assert ("went ahead unchecked" in gone.stdout, took < 1.0) == (True, True), "with no heartbeat at all the hook goes on at once"
+    assert list((tmp_path / "runtime" / "unsent").glob("*.json")), "and an event that decides something, which could not be delivered, is kept and read late like the others"
 
 
 def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_tag(tmp_path):
