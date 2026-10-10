@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 OPTION = re.compile(r"^[ \t]*(?P<cursor>[❯›>])?[ \t]*(?P<number>\d{1,2})[.)][ \t]+(?P<label>\S.*?)[ \t]*$", re.M)
 FOOTER = re.compile(r"Enter to (?:select|confirm|continue)|Esc to (?:cancel|exit|go back)|↑/↓|to navigate|press enter", re.I)
-TRUSTED = re.compile(r"trust|development channels", re.I)
+TRUSTED = re.compile(r"\btrust\b|development channels", re.I)
 CONSENT = re.compile(r"consent|data.?shar|privacy|telemetry|analytics|improve (?:the|our)|collect|terms", re.I)
 OWN = re.compile(r"do you want to (?:proceed|make|create)|would you like to run|allow command|approve", re.I)
 PAST = re.compile(r"\(current\)|rewind|restore|resume|checkpoint", re.I)

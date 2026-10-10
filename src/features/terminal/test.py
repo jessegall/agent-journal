@@ -309,6 +309,7 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     import providers.drivers as drivers
     from providers import DRIVERS
     monkeypatch.setattr(drivers, "ENTER_AFTER", 0)
+    monkeypatch.setattr(drivers, "ESCAPE_GAP", 0)
     record = fresh()
     read, write = os.pipe()
     claude = DRIVERS["claude"](record, "claude-5", fd=write)
@@ -317,7 +318,7 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     claude.permit(True)
     claude.permit(False)
     sent = os.read(read, 4096)
-    assert sent == b"\x1b[B\r\r\x1b" + claude.ALLOW + claude.DENY, "stop and the answer to a permission are written to the terminal as keys"
+    assert sent == b"\x1b[B\r\r\x1b" + claude.ALLOW + claude.STOP, "stop and the answer to a permission are written to the terminal as keys"
     assert claude.move_to_background() is bool(claude.MOVE_TO_BACKGROUND), "a driver moves a run to the background only when its agent has a key for it"
     os.close(read)
     assert claude._wrote(b"x") is False and claude.fd == -1, "a terminal that is closed stops being written to"
