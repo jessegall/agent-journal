@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from typing import ClassVar
 
 from controllers.types import CONTROLLERS, Plugins
+from engine import bus
 from engine.events.engine import ClockTicked
 from engine.events.resources import ResourceEvent
 from engine.services import DOWN, want
@@ -100,7 +101,7 @@ class AskPluginsToRefuse(ToolInterceptor):
             answered.set()
             if late.is_set() and refused:
                 apply(record, journal, name, session, {"say": f"{refused} (it answered after the call went ahead)"})
-        threading.Thread(target=ask, name=f"plugin-{name}", daemon=True).start()
+        self._apart(name, ask)
         if answered.wait(max(wait, 0.0)):
             return found[0]
         late.set()
@@ -115,7 +116,15 @@ class AskPluginsToRefuse(ToolInterceptor):
             refused = self._answer(record, row, tool, payload, seconds)
             if refused:
                 apply(record, journal, name, session, {"say": refused})
-        threading.Thread(target=ask, name=f"plugin-{name}", daemon=True).start()
+        self._apart(name, ask)
+
+    @staticmethod
+    def _apart(name: str, job) -> None:
+        """Asks a plugin on a thread of its own, or at once when the threads are switched off, as in a test, so none outlives the call that asked it and loads rows in the work of another."""
+        if not bus.BACKGROUND:
+            job()
+            return
+        threading.Thread(target=job, name=f"plugin-{name}", daemon=True).start()
 
     def _answer(self, record, row, tool: str, payload: dict, seconds: float) -> str:
         name = called(row)
