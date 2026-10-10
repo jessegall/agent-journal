@@ -69,4 +69,4 @@ class State:
             yield held
             if held != before:
                 write_json(self.path, held)
-            FILES.put(str(self.path), self.stamp(), held)
+            FILES.forget(str(self.path))
