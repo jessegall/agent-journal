@@ -120,7 +120,7 @@ def test_a_rollback_to_the_previous_build_reads_the_index_this_build_wrote_and_t
     extra.n, extra.title = 9, "row 9 by the previous build"
     todos.rows.path(9).with_suffix(".tmp").write_text(extra.dump())
     os.replace(todos.rows.path(9).with_suffix(".tmp"), todos.rows.path(9))
-    (folder / ".index" / "index.json").write_text(json.dumps({n: {**row, "stamp": old_stamp(int(n))} for n, row in index.items()}))
+    (folder / ".index" / "index.json").write_text(json.dumps(index))
     stored.forget_held()
     returned = Todos(record, actor=SYSTEM)
     titles = {row["n"]: row["title"] for row in returned.rows.summaries()}
