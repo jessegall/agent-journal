@@ -72,12 +72,12 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
     while len(ran) < 2 and time.monotonic() < waited:
         time.sleep(0.01)
     assert ran == ["first", "second"], "one agent's hooks are recorded in the order they came, even with a worker free"
-    from engine.quiet_collector import LONGEST_BUSY, WHOLE_EVERY, YOUNG_AFTER, QuietCollector
+    from engine.quiet_collector import WHOLE_EVERY, YOUNG_AFTER, QuietCollector
     quiet = QuietCollector(clock=lambda: 0.0)
     assert (quiet.due(1.0, YOUNG_AFTER), quiet.due(1.0, 10)) == ((1,), ()), "young garbage is collected once enough has piled up"
     with quiet.serving():
         assert quiet.due(1.0, YOUNG_AFTER) == (), "never while a request is being answered"
-        assert quiet.due(1.0 + LONGEST_BUSY, YOUNG_AFTER) == (1,), "unless it has waited too long for a quiet moment"
+        assert quiet.due(3600.0, YOUNG_AFTER) == (), "however long it has waited, a request is never interrupted"
     assert quiet.due(WHOLE_EVERY, 0) == (2,), "and everything is collected once a minute"
     import gc
 
@@ -92,7 +92,7 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
     collecting = QuietCollector(clock=lambda: next(times))
     try:
         collecting.run(OneTick())
-        assert (gc.isenabled(), collecting.whole_at, collecting.waiting_since) == (False, WHOLE_EVERY, 0.0), \
+        assert (gc.isenabled(), collecting.whole_at) == (False, WHOLE_EVERY), \
             "the collector turns automatic collection off and, once a minute has gone by, collects everything and notes when"
     finally:
         gc.unfreeze()
