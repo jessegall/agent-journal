@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import ClassVar
 
 from engine.chat import SENDING, SENT
-from engine.clock import TICKED
+from engine.clock import BEAT, TICKED
 from engine.events.base import AgentEvent, TypedEvent
 from engine.files import EDITED
 from engine.ran import COMMAND_RAN
@@ -15,6 +15,15 @@ class ClockTicked(AgentEvent):
 
     @classmethod
     def read(cls, event) -> "ClockTicked":
+        return cls(agent=event.n)
+
+
+@dataclass(frozen=True)
+class AgentBeat(AgentEvent):
+    on: ClassVar[str] = f"agent.{BEAT}"
+
+    @classmethod
+    def read(cls, event) -> "AgentBeat":
         return cls(agent=event.n)
 
 

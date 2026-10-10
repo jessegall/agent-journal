@@ -1,7 +1,7 @@
 from features.base import Feature
 from features.journal import Journal
 from features.long_commands.details import RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED, LongCommandsDetails
-from features.long_commands.move import MoveLongCommands
+from features.long_commands.move import FollowMovedCommands, MoveLongCommands
 from features.long_commands.watch import ended_runs, open_runs, stalled_runs
 from features.sending import Nudge
 
@@ -14,3 +14,4 @@ class LongCommands(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(MoveLongCommands())
+        journal.events.handler(FollowMovedCommands())

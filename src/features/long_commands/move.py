@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 from engine.command_runs import command_runs, waiting_run
-from engine.events.engine import ClockTicked
+from engine.events.engine import AgentBeat, ClockTicked
 from engine.gates import LONG_COMMAND, HookCall, cancelled
 from features.long_commands.details import KEPT, MOVED
 from engine.sessions import Sessions
@@ -17,23 +17,22 @@ SETTLE = 30.0
 
 
 class MoveLongCommands(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+    """Moves a command that holds the terminal too long, on the engine's own beat, so no slow upkeep of the clock can delay it."""
+
+    def handle(self, context: AgentContext, event: AgentBeat) -> None:
         row = context.agent.row
         if not row.live:
             return
-        moved = context.state.get("moved")
-        if moved and context.state.get("ended") != moved:
-            self.follow(context, row, moved)
         last = waiting_run(row)
         if last is None:
             return
         started = str(last.at)
-        if self.has_come_back(context, row):
-            return
+        seconds = int(time.time() - float(started))
         provider = row.provider
         driver = DRIVERS.get(provider)
-        seconds = int(time.time() - float(started))
-        if not driver or not driver.MOVE_TO_BACKGROUND or seconds < context.settings.after_seconds or not context.once("asked", started):
+        if not driver or not driver.MOVE_TO_BACKGROUND or seconds < context.settings.after_seconds or self.has_come_back(context, row):
+            return
+        if not context.once("asked", started):
             return
         reason = cancelled(LONG_COMMAND, HookCall(PROVIDERS[provider]() if provider in PROVIDERS else None, context.record, None, row),
                            {"command": last.command, "seconds": seconds})
@@ -45,6 +44,16 @@ class MoveLongCommands(Handler):
         context.agent.move_to_background()
         context.agent.say(MOVED, seconds=seconds)
         context.journal.get(Agents)._moved_to_background(row, state="running", started=float(started))
+
+
+class FollowMovedCommands(Handler):
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+        row = context.agent.row
+        if not row.live:
+            return
+        moved = context.state.get("moved")
+        if moved and context.state.get("ended") != moved:
+            self.follow(context, row, moved)
 
     def follow(self, context: AgentContext, row, started: str) -> None:
         tasks = background_tasks_of(row)
