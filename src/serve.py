@@ -320,10 +320,10 @@ def warm_changed(root: Path) -> None:
 
 def warmed(root: Path, warm: threading.Event) -> None:
     try:
+        warm_viewer(root, default_env(root), warm)
         warm_commands()
         warm_work(root)
         warm_replies(root)
-        warm_viewer(root, default_env(root), warm)
         warm_texts(root)
         WARMERS.append(lambda: warm_changed(root))
         read_transcripts(root)
