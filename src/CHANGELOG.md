@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.78 — The journal cleans up after itself
+- Once an update has started, the journal removes the builds it left behind; it keeps only the one running and any a live process still runs from. An older version comes from git.
+- A closed ticket's worktree is removed by the minute sweep once no agent runs in it and nothing in it is unsaved, together with the agent's temporary folder; its branch stays, and starting the ticket again cuts it from there.
+- A helper worktree whose work was taken is removed by itself, temporary folder included, and the same name is cut again instead of a second folder.
+- A start reads the text of every to-do and message in its warm-up, so the first search after a start is as fast as the rest.
+
 ## 2.267.77 — A sequence interrupted by another waits at its step
 - A sequence run cannot be moved on while another run of the same agent is in hand: next names the run in hand and says the interrupted one waits at its step, and it is handed back there when the newer run ends, so a refused action is never skipped.
 
