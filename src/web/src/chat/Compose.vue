@@ -213,7 +213,9 @@ async function use(tool) {
             </div>
         </Transition>
         <WaitEdge :waiting="waiting" @list="emit('waiting-list', $event)">
-            <VoiceMascot v-if="mascot" :present="!agentWorking" />
+            <template v-if="mascot">
+                <VoiceMascot :present="!agentWorking" />
+            </template>
             <div class="compose-box floating">
                 <template v-if="draft.files.length">
                     <div class="compose-files">
