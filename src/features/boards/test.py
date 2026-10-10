@@ -339,7 +339,7 @@ def test_starting_a_board_starts_its_orchestration(monkeypatch):
     monkeypatch.setattr(CARD_STORE, "each", lambda: iter(()))
     assert "tickets feature is not loaded" in refused(lambda: Boards(record, actor=USER)._cards(USER)), "boards keep their cards as tickets, so without that feature there is nowhere to keep them"
     monkeypatch.undo()
-    monkeypatch.setattr(Tickets, "tell", lambda self, n, note: self.load(n))
+    monkeypatch.setattr(Tickets, "_told", lambda self, n, note: self.load(n))
     tickets = Tickets(record, actor=AGENT)
     first, second = tickets.create("Port the core", board=board.n), tickets.create("Port the CLI", board=board.n)
     tickets.send_back(first.n, "the tests fail")
