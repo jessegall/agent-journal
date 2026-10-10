@@ -8,6 +8,7 @@ from engine.stored import read_json, write_json
 
 
 REFUSED_FOR = 12 * 3600
+ANSWER_WITHIN = 2.0
 
 
 def ledger(root: Path) -> Path:
@@ -23,9 +24,21 @@ def refused(root: Path, version: str) -> bool:
     return any(name.startswith(f"journal-{version}-") and time.time() - since.get(name, 0) < REFUSED_FOR for name in broken(root))
 
 
+def answering(root: Path, build: str) -> bool:
+    """Whether the server of this journal answers and runs this build."""
+    from engine.viewer import identity, running
+    url = running(root)
+    reply = identity(url, ANSWER_WITHIN) if url else None
+    return reply is not None and reply.build == build
+
+
 def heal(root: Path) -> str:
     root = Path(root)
     current = (root / ARCHIVE).resolve()
+    if runtime.upgrading(root):
+        return f"journal: {current.name} is still being installed, so nothing was rolled back"
+    if answering(root, current.name):
+        return f"journal: {current.name} is running and answering, so nothing was rolled back"
     bad = sorted({*broken(root), current.name})
     kept = [build for build in root.glob("journal-*.pyz") if build.name not in bad]
     if not kept:
