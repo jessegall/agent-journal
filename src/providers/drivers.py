@@ -434,9 +434,6 @@ class Driver(ABC):
     def stop_turn(self) -> None:
         self._wrote(self.STOP)
 
-    def interrupt(self) -> None:
-        self._wrote(b"\x03")
-
     def clear_input(self) -> None:
         self._wrote(self.CLEAR_LINE + (b"\x7f" + self.CLEAR_LINE) * DRAFT_LINES)
 

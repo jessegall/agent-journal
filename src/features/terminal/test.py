@@ -301,11 +301,10 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     claude = DRIVERS["claude"](record, "claude-5", fd=write)
     assert claude.press_raw(b"\x1b[B\r") is None and claude.press_raw(b"\r") is None, "raw keys are written, the enter after them in a write of its own"
     claude.stop_turn()
-    claude.interrupt()
     claude.permit(True)
     claude.permit(False)
     sent = os.read(read, 4096)
-    assert sent == b"\x1b[B\r\r\x1b\x03" + claude.ALLOW + claude.DENY, "stop, interrupt and the answer to a permission are written to the terminal as keys"
+    assert sent == b"\x1b[B\r\r\x1b" + claude.ALLOW + claude.DENY, "stop and the answer to a permission are written to the terminal as keys"
     assert claude.move_to_background() is bool(claude.MOVE_TO_BACKGROUND), "a driver moves a run to the background only when its agent has a key for it"
     os.close(read)
     assert claude._wrote(b"x") is False and claude.fd == -1, "a terminal that is closed stops being written to"
@@ -516,7 +515,7 @@ def test_long_typed_text_arrives_whole_a_full_queue_is_reported_and_another_user
     stalled.close()
 
 
-def test_an_agent_silent_for_two_minutes_is_probed_and_then_marked_idle_or_stopped_by_what_comes_back(monkeypatch):
+def test_an_agent_silent_for_two_minutes_is_read_from_its_screen_and_never_sent_a_key(monkeypatch):
     from runner import engine as engine_module
     engine, calls = fake_engine(monkeypatch, "working")
     driver = engine.agent.driver
@@ -532,16 +531,11 @@ def test_an_agent_silent_for_two_minutes_is_probed_and_then_marked_idle_or_stopp
     engine.typed_at = 0.0
     silent_at = driver.last_report().at + engine_module.SILENT_AFTER + 1
     monkeypatch.setattr(engine_module.time, "time", lambda: silent_at)
-    assert engine.probe() == "silent for two minutes: probing with Ctrl-C" and "interrupt" in calls, "a silent working agent is interrupted once to see whether it answers"
-    assert engine.probe() == "probed, waiting", "the probe waits for an answer"
-    now = engine_module.time.time()
-    monkeypatch.setattr(engine_module.time, "time", lambda: now + engine_module.PROBE_WAIT + 1)
-    assert engine.probe() == "probe: at the prompt, told to carry on" and marks[-1][0] == engine_module.IDLE and calls[-1] == f"send {engine_module.CARRY_ON_AFTER_PROBE}", \
-        "an agent back at its prompt is idle, and told to carry on with what the journal interrupted"
     monkeypatch.setattr(driver, "at_prompt", lambda: False)
-    assert engine.probe() == "probe: nothing came back, stopped" and marks[-1][0] == engine_module.STOPPED, "an agent that stays silent and away from its prompt is stopped"
-    monkeypatch.setattr(driver, "quiet_for", lambda: 0)
-    assert engine.probe() == "probe: working" and engine.probed_at == 0.0, "an agent that printed something in the meantime is working"
+    assert engine.probe() == "" and not marks, "a silent agent away from its prompt is thinking or running something, and is left working"
+    monkeypatch.setattr(driver, "at_prompt", lambda: True)
+    assert engine.probe() == "silent for two minutes and back at the prompt: idle" and marks[-1][0] == engine_module.IDLE, "a silent agent at its prompt is idle"
+    assert "interrupt" not in calls and not [c for c in calls if c.startswith("send")], "the probe never presses a key or types into the agent's terminal"
 
 
 def test_the_supervisor_stops_a_stubborn_agent_relays_what_the_user_types_and_reports_a_failed_command(tmp_path, monkeypatch):
