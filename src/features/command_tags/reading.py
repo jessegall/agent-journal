@@ -35,7 +35,7 @@ OPTIONS = {tag.name: tag.options for tag in TAGS}
 RETIRED = ("discovery", "correction", "blocked", "info", "internal")
 VALUE = r'(?:"[^"]*"|\([^)]*\)|[^,\]\s]+)'
 EXTRA = r'(?:\s*,\s*|\s+)[a-z_]+=' + VALUE
-ARGUMENT = r'(?::[0-9]+|="[^"]*")?(?:' + EXTRA + r')*'
+ARGUMENT = r'(?::[0-9]+(?:,[0-9]+)*|="[^"]*")?(?:' + EXTRA + r')*'
 CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+(?:,[0-9]+)*)|="([^"]*)")?((?:' + EXTRA + r')*)\]', re.M)
 NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')
 SETTING = re.compile(r"--set ([a-z_]+)=")
