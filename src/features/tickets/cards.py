@@ -91,7 +91,7 @@ class TicketCards:
         state = self._runtime(ticket, Sessions(self.record.root).all(), len(self._running()))
         if not ticket.work_environment:
             return asdict(TicketStatus(state.kind, state.text))
-        place = Record(self.record.root, ticket.work_environment)
+        place = self.record.sibling(ticket.work_environment)
         plan = self._plan_of(ticket)
         done, total = counts(place, plan) if plan else (0, 0)
         doing = next((w.title for w in Works(place, actor=SYSTEM).rows.standing() if not w.parked), "")
@@ -112,7 +112,7 @@ class TicketCards:
         for place, ticket in {ticket.work_environment: ticket for ticket in self._running()}.items():
             plan = self._plan_owner(place)
             shown = {"plan": plan, "title": self._plans_here().load(plan).title} if plan else {"plan": 0, "title": ticket.title}
-            todos = Todos(Record(self.record.root, place), actor=SYSTEM)
+            todos = Todos(self.record.sibling(place), actor=SYSTEM)
             for todo in todos.rows.standing():
                 if todo.data.get("role") and todo.data.get("status") == "started":
                     working.setdefault((todo.data["domain"], todo.data["role"]), []).append(
@@ -177,6 +177,9 @@ class TicketCards:
         return board.meanings.get(ticket.stage, "") if board else ""
 
     def _runtime(self, ticket, sessions: dict, running: int) -> CardState:
+        return self.record.remembered(("card state", ticket.n, ticket.updated), lambda: self._runtime_now(ticket, sessions, running))
+
+    def _runtime_now(self, ticket, sessions: dict, running: int) -> CardState:
         if ticket.completed:
             return CardState("done", ticket.outcome or "done")
         place = ticket.work_environment
@@ -196,12 +199,12 @@ class TicketCards:
         return CardState(state.kind, f"{state.text} in {place}" + (f" · {state.age}" if state.age else ""), session)
 
     def _waited_run(self, row, place: str) -> str:
-        awaited = next((w.awaiting for w in Works(Record(self.record.root, place), actor=SYSTEM).rows.standing() if w.awaiting), "")
+        awaited = next((w.awaiting for w in Works(self.record.sibling(place), actor=SYSTEM).rows.standing() if w.awaiting), "")
         text = awaited or row.background_run
         return clipped(text, RUN_TEXT)
 
     def _reporting(self, place: str, sessions: dict):
-        agents = Agents(Record(self.record.root, place), actor=SYSTEM)
+        agents = Agents(self.record.sibling(place), actor=SYSTEM)
         rows = [row for name, held in sessions.items() if held.environment == place and live(held) and (row := agents.rows.by_title(name))]
         return max(rows, key=lambda row: float(row.at), default=None)
 
