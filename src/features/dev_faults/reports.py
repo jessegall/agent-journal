@@ -11,9 +11,12 @@ from engine import runtime
 from engine.record import Record
 from engine.version import version
 from engine.wording import digest, plural
+from features.dev_faults.developing import developing
 from features.dev_faults.diagnostics import logged
 from resources.base import SYSTEM
 
+SEND = (" This project is not agent-journal: send this notice's title and numbers to the agent-journal session (message that peer), with the journal "
+        "version {version}, so whoever builds the journal sees them.")
 OVER = "is slower than its budget"
 THREW = "the viewer threw"
 SAID = 300
@@ -56,9 +59,14 @@ class FaultReports:
         if standing:
             rows.update(standing.n, brief=summary, times=times, **told, **data)
         else:
-            self.feature.journal.log(record, "fault", title=title, summary=summary, times=times, **told, **data)
+            self.feature.journal.log(record, "fault", title=title, summary=summary, times=times, send=self.send(record), **told, **data)
         if agent:
-            self.feature.journal.say(record, agent, "fault", title=title, summary=summary)
+            self.feature.journal.say(record, agent, "fault", title=title, summary=summary, send=self.send(record))
+
+    @staticmethod
+    def send(record) -> str:
+        """What the agent is told to do with a notice: nothing more in the journal's own development project, and send its numbers to the agent-journal session in any other."""
+        return "" if developing(record.root.parent) else SEND.format(version=version())
 
     @staticmethod
     def _due(standing, agent) -> bool:

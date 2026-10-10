@@ -1,5 +1,4 @@
 from functools import cached_property
-from pathlib import Path
 
 from features.base import Feature
 from features.journal import Journal
@@ -14,10 +13,6 @@ __all__ = ["developing"]
 
 class DevFaults(Feature):
     details = DevFaultsDetails
-
-    @classmethod
-    def default_for(cls, root) -> bool:
-        return developing(Path(root).parent) if root else cls.default
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(ReportSlow())

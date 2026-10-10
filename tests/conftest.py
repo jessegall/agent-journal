@@ -155,6 +155,13 @@ def outside_the_callers_session(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def quiet_budgets(monkeypatch):
+    """Not the real default, which is on (see the feature's details): the tests keep it off, because on a loaded machine a slow call would file a budget notice and nudge an agent in a test about something else."""
+    from features.dev_faults.feature import DevFaults
+    monkeypatch.setattr(DevFaults, "default", False)
+
+
+@pytest.fixture(autouse=True)
 def forgotten_memos():
     from engine.memo import forget_all
     forget_all()
