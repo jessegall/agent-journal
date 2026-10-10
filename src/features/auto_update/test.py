@@ -154,6 +154,11 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     time.sleep(0.1)
     assert countdown.remaining(record.root)["version"] == "2.9.1" and dispatch("GET", "/api/summary", record.root, {}, {}).body["countdown"]["version"] == "2.9.1", \
         "the viewer is told which update is counting down"
+    ready = lambda: dispatch("GET", "/api/summary", record.root, {}, {}).body["ready"]
+    runtime.mark_booting(record.root)
+    starting_up = ready()
+    runtime.mark_booted(record.root)
+    assert (starting_up, ready()) == (False, True), "the server says it is not ready from the moment it starts to boot until what the viewer first asks for is warm, and ready after"
     assert dispatch("POST", "/api/update/cancel", record.root, {}, {}).code == 200
     runner.join(2)
     assert (counted, countdown.remaining(record.root)) == ([False], {}), "cancelling the countdown skips that update"

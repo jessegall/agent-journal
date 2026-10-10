@@ -276,7 +276,7 @@ def post_identity(req: Request) -> Reply:
 
 @route("GET", "/api/summary")
 def get_summary(req: Request) -> Reply:
-    return Reply(200, {**invoked(req.as_user(Environments), "summary"), "updating": runtime.upgrading(req.root), "step": runtime.upgrade_step(req.root), "countdown": remaining(req.root)})
+    return Reply(200, {**invoked(req.as_user(Environments), "summary"), "updating": runtime.upgrading(req.root), "ready": not runtime.booting(req.root), "step": runtime.upgrade_step(req.root), "countdown": remaining(req.root)})
 
 
 @route("GET", "/api/agents")

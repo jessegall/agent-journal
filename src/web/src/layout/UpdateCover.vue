@@ -66,6 +66,15 @@ watch(() => store.summary?.version, showArrival);
             </div>
         </div>
     </template>
+    <template v-else-if="updating.starting">
+        <div class="cover" role="alertdialog" aria-live="polite" aria-label="The journal is starting" aria-busy="true">
+            <div class="panel">
+                <Spinner :size="22" class="spin" />
+                <p class="title">The journal is starting</p>
+                <p class="step">It answers in a moment</p>
+            </div>
+        </div>
+    </template>
     <template v-else-if="updating.late">
         <div class="late" role="status">
             <span>The update is taking longer than expected. It carries on in the background.</span>

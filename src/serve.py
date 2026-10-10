@@ -364,6 +364,7 @@ def warm_changed(root: Path) -> None:
 def warmed(root: Path, warm: threading.Event) -> None:
     try:
         warm_viewer(root, default_env(root), warm)
+        runtime.mark_booted(root)
         warm_commands()
         warm_work(root)
         warm_replies(root)
@@ -427,6 +428,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
         sys.setswitchinterval(SWITCH_INTERVAL)
     DEFER.set()
     runtime.mark_started(root)
+    runtime.mark_booting(root)
     mark_first_start(root)
     runtime.remember_git_user(root)
     tell_threads_on_signal(root)

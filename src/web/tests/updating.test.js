@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, test} from "vitest";
-import {STEPS, begin, clear, counting, fail, follow, followPage, locked, runLate, stepAt, updatedTo, updating} from "../src/state/updating.js";
+import {STEPS, begin, clear, counting, covered, fail, follow, followPage, locked, runLate, starting, stepAt, updatedTo, updating} from "../src/state/updating.js";
 
 beforeEach(() => {
     localStorage.clear();
@@ -60,5 +60,18 @@ describe("a page loaded while the server upgrades", () => {
         expect(locked()).toBe(false);
         followPage(new DOMParser().parseFromString('<head><meta name="journal-updating" content="Restarting the journal"></head>', "text/html"));
         expect([locked(), updating.step]).toEqual([true, "Restarting the journal"]);
+    });
+});
+
+describe("a journal that is booting", () => {
+    beforeEach(() => clear());
+
+    test("covers the page until the server says it is ready, and an older server that says nothing leaves the page alone", () => {
+        starting(false);
+        expect([updating.starting, covered(), locked()]).toEqual([true, true, false]);
+        starting(true);
+        expect([updating.starting, covered()]).toEqual([false, false]);
+        starting(undefined);
+        expect(covered()).toBe(false);
     });
 });
