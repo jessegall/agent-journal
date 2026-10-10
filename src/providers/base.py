@@ -168,6 +168,11 @@ class Provider(ABC):
     dispatch_default = ""
 
     @classmethod
+    def ask_argv(cls, prompt: str) -> tuple[str, ...]:
+        """The command that puts one question to a standalone agent on this provider and prints its answer, or none when the CLI has no such mode."""
+        return ()
+
+    @classmethod
     def refusal_in(cls, output: str) -> str | None:
         """The line of an agent's launch output where this provider refused to work for it, such as for want of credits."""
         return next((line.strip() for line in output.splitlines() if any(phrase in line.lower() for phrase in cls.refusals)), None)
