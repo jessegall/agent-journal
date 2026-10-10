@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.0 — Your voice's mascot lives on the chat box
+<!-- new-feature {"id": "voice-mascots", "title": "Your voice now lives on your chat box", "text": "While the agent waits for you, your voice's mascot sits on the edge of the chat box: it climbs, jumps or strolls in, blinks, plays a move of its own now and then, and leaves when the agent gets back to work. The Butler, the Homie, the Colleague, the Coach and the Squire each have their own.", "button": "Keep them", "off": "Turn them off", "setting": "form_of_address.mascot", "note": "You can switch them on or off any time under Settings.", "art": "mascots.webp"} -->
+- Each voice has a mascot drawn as a cut-out rig of parts, played from keyframed moves that turn, shift and restack its parts: it enters and leaves in its own way (climbing up from behind the chat box, jumping, fading, marching), blinks, and plays one of its moves at the idle interval while the agent waits.
+- Settings shows a voice's animations: its moves play from the rig in the editor, beside its sprite sheets.
+- A new-feature announcement can offer a button that turns its feature off.
+- The core flows of the journal (messages and replies, to-dos from messages, helpers, tickets, long commands, questions on the agent's screen, an upgrade and restart, nested sequences) run end to end against a real scratch journal before every push.
+
 ## 2.267.85 — Session files are read through one cached funnel
 - Every session file, seat file and per-session state file is read through one funnel that keeps a copy and reads the file again only when its stamp changes: a warm hook, summary or agents list opens none of them, where the summary alone read every session file per environment every few seconds.
 - A check refuses any other read of those files, and any folder scan, process spawn, git call or path resolve on hook, route and engine paths outside a short allow-list.
