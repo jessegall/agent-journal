@@ -1,3 +1,4 @@
+import pytest
 import json
 from datetime import datetime, timezone
 
@@ -56,6 +57,13 @@ def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
     assert chat()[-1] == "checking the build next", "a reply is shown as the reply, not copied into the chat"
     assert [c.title for c in Comments(record, actor="system").linked_to(asked.ref)] == ["yes, here"], "the reply is posted"
     assert not [n for n in nudges(record) if "has no tag" in n], "nothing asks for a tag"
+    import io
+    from features.command_tags import handlers
+    broken = type("Broken", (), {"run": lambda self, *given, **named: 1})()
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(handlers, "command_line", lambda: broken)
+        text(f"[!reply:{asked.n}] this one cannot be written")
+    assert chat()[-1] == "this one cannot be written", "a reply whose command failed, as on a full disk, is not swallowed: its words stay in the chat"
     assert visible("[!reply:n] plus the command tags") == "[!reply:n] plus the command tags", "only a real number or name makes a tag"
 
 

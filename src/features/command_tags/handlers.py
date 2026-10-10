@@ -10,15 +10,16 @@ from engine.command_line import command_line
 class RunTagCommands(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
         message = event.text
-        if CARRIED.search(message) and context.once("tagged", event.turn):
-            self.run(context, message)
-        if replies(message) or waits(message):
+        failed = CARRIED.search(message) and context.once("tagged", event.turn) and self.run(context, message)
+        if (replies(message) or waits(message)) and not failed:
             event.stop()
         else:
             event.change(visible(message, reader(context.settings)).strip())
 
-    def run(self, context: Context, message: str) -> None:
+    def run(self, context: Context, message: str) -> bool:
+        """Runs the commands the tags stand for; true when one failed, so the words are not lost with it: they stay in the chat."""
         commands, text = runs(context.settings), removed(message, reader(context.settings)).strip()
+        failed = False
         for name, n, argument, extras in CARRIED.findall(message):
             if name not in commands:
                 continue
@@ -26,7 +27,9 @@ class RunTagCommands(Handler):
             code = command_line().run(["--root", str(context.record.root), "--env", context.record.env, "--session", context.agent.session, "--as", AGENT,
                         *self.argv(commands[name], n, argument, text), *self.settings(name, extras)], out=out, err=err)
             if code:
+                failed = True
                 context.agent.whisper("refused", tag=name, on=n or argument, error=tag_spelling((err.getvalue() or out.getvalue()).strip()))
+        return failed
 
     def settings(self, name: str, extras: str) -> list[str]:
         return [word for key, value in named(extras).items()
