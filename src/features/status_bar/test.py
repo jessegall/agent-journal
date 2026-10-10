@@ -180,6 +180,7 @@ def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
 def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
     from controllers.types import Agents
     from tests.kit import PAUSED, handle
+    from runner.gate import PAUSED_FOR_UPDATE as PAUSED_FOR_UPDATE_TEXT
     from providers import PROVIDERS
     record, claude = fresh(), PROVIDERS["claude"]()
     call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "ls"}, "hook_event_name": "PreToolUse"}
@@ -190,6 +191,11 @@ def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
     assert (refused(call), refused({**call, "agent_id": "sub-1"})) == (PAUSED, PAUSED), "the agent and its subagents stand still while paused"
     agents.update(agents.by_session("claude-1").n, paused=0)
     assert refused(call) != PAUSED, "resuming lets tool calls through again"
+    agents.update(agents.by_session("claude-1").n, paused=time.time() - 60, paused_for="the update")
+    assert refused(call) == PAUSED_FOR_UPDATE_TEXT, "a pause for an update just given is kept while the update may still run"
+    agents.update(agents.by_session("claude-1").n, paused=time.time() - 3600, paused_for="the update")
+    assert (refused(call) != PAUSED_FOR_UPDATE_TEXT, agents.by_session("claude-1").paused) == (True, 0), \
+        "a pause for an update that is an hour old, with no upgrade under way, is cleared by the call that reads it, so a refusal never outlasts the update"
     import features
     features.load()
     loop = {"session_id": "claude-1", "hook_event_name": "PostToolUse", "tool_name": "CronCreate",

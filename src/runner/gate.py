@@ -43,7 +43,21 @@ def serving(policy, call: HookCall) -> bool:
 
 
 def paused(call: HookCall) -> bool:
-    return bool(call.row.paused) and PAUSE.reaches(call.subagent)
+    if not (call.row.paused and PAUSE.reaches(call.subagent)):
+        return False
+    return not outlived(call)
+
+
+def outlived(call: HookCall) -> bool:
+    """A pause for an update that no update is under way for any more and that is older than any update takes: it is cleared here, where the call reads it, so a refusal never outlasts the update that gave it."""
+    from controllers.types import Agents
+    from engine import runtime
+    from features.auto_update.pausing import STALE_PAUSE
+    from resources.base import SYSTEM
+    if call.row.paused_for != UPDATE or runtime.upgrading(call.record.root) or time.time() - float(call.row.paused) < STALE_PAUSE:
+        return False
+    Agents(call.record, actor=SYSTEM).update(call.row.n, paused=0, paused_for="")
+    return True
 
 
 def gated(call: HookCall) -> str | None:
