@@ -129,8 +129,8 @@ def built(only: str) -> argparse.ArgumentParser:
     add_query(cmds, "stop", "stop this journal: its viewer, its engine and every service a plugin runs", lambda ctx: halt(ctx))
     add_query(cmds, "ended", "a session's agent has exited: put back what was set aside, and stop the journal when no session is left", lambda ctx: ended(ctx))
     add_query(cmds, "heal", "go back to the last build that started, when the one installed will not", lambda ctx: healed(ctx))
-    add_query(cmds, "speed", "median milliseconds for lists, commands, a hook call and the viewer API, and the runtime folder's size", lambda ctx: speed(ctx),
-              ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}))
+    add_query(cmds, "speed", "median milliseconds for lists, commands, a hook call and the viewer API, and the runtime folder's size; --board times a built journal of forty tickets instead", lambda ctx: speed(ctx),
+              ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}), ("--board", {"action": "store_true"}))
     add_query(cmds, "demo", "build a demo's data from a scrubbed recording, every moment answered by the real server",
               lambda ctx: demo(ctx), ("folder", {}), ("into", {}), ("--environment", {"default": ""}), ("--name", {"default": ""}))
     add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: tidy(ctx["record"].root, RuntimeCleanupDetails.values(ctx["record"]).days).summary)
