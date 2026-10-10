@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.21 — Linear works once connected, and restarts are quicker
+- After the journal's own Linear sign-in, the agent's Linear tools work at once: its MCP entry fetches the token when it connects, and the token is never written into the config. Before the sign-in, the card says a browser approval is still needed.
+- An upgrade builds the new archive with its bytecode already compiled and runs the rest of the install from it, so the new code is not compiled cold. The restart's steps, to the first answer and until warm, are timed in runtime/upgrade-steps.jsonl.
+- In the demo, Look around after a lesson leaves every control usable, chat included, and the lessons page scrolls to its last cards.
+- A ticket claims an environment that already carries its name, so a ticket's environment is never listed as a main one.
+
 ## 2.268.20 — The mascot perches on the bars, and idle agents rest
 - The mascot sits on top of the highest bar above the chat (a plan, report or dump bar) instead of behind it. When that bar goes, it falls to the next one, or back onto the chat box, and each voice lands in a way of its own.
 - The sweep of a project's tickets runs once for the project instead of in every environment's engine, and its git work runs once a minute, so idle agents no longer keep the machine busy.
