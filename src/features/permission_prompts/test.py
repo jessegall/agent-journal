@@ -114,6 +114,12 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
         "Claude's rewind dialog near the context limit is answered once with Summarize up to here, never Restore conversation"
     asker.printed.write_bytes(f"{rewind}\r\n? for shortcuts".encode())
     assert asker.dialog() == 0, "and once the prompt is back there is nothing to answer"
+    asker._screen_file().parent.mkdir(parents=True, exist_ok=True)
+    asker._screen_file().write_bytes("Conversation compacted\r\n❯\xa0\r\nChecking for updates\r\n❯ [journal] ticket 5: build the plan\r\n".encode())
+    typed_note = "[journal] ticket 5: build the plan"
+    assert asker._taken(typed_note, 0) is False, "a note still sitting in the input box has not been taken, whatever status line is on screen"
+    asker._screen_file().write_bytes("❯ [journal] ticket 5: build the plan\r\n✻ Thinking… (esc to interrupt)\r\n❯ \r\n".encode())
+    assert asker._taken(typed_note, 0) is True, "a note after which the agent shows it is at work and the box is empty was taken, though its hook has not reported yet"
     warning = "WARNING: Loading development channels\r\n--dangerously-load-development-channels is for local channel development only.\r\n" \
               "❯ 1. I am using this for local development\r\n  2. Exit\r\nEnter to confirm".encode()
     assert (claude.consent(warning), claude.consent(warning + "\r\n❯ ".encode())) == (b"\r", b""), \
