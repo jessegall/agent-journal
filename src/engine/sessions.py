@@ -165,7 +165,7 @@ class SessionFiles:
             held = self.kept[name] = (stamp, read_json(path, SessionRecord.from_json, self.NONE))
         return held[1]
 
-    def noted(self, name: str) -> None:
+    def append_change(self, name: str) -> None:
         """Tells every process which session changed, after its file is written."""
         if self.size() > self.MOST:
             (self.folder / self.CHANGES).write_bytes(b"")
@@ -207,7 +207,7 @@ class Sessions:
             raw = read_json(self.path(session), dict, {})
             got = {**(raw if isinstance(raw, dict) else {}), **fields}
             write_json(self.path(session), got)
-        self.files.noted(session)
+        self.files.append_change(session)
         return SessionRecord.from_json(got)
 
     def bind(self, session: str, env: str, pid: int = 0, provider: str = "") -> dict:
