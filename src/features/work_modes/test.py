@@ -32,6 +32,12 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
         "the viewer's mode switch picks the mode"
     assert mode_of(record) == "orchestrator" and "WORK MODE: orchestrator" in start_block(record), "the mode is kept and carried after a restart or compaction"
     assert len(told(record, "work mode to orchestrator")) == 1, "the agent is told once when it changes"
+    from features.sequences.shipped import shipped_sequences
+    routines = {shipped.title: shipped for shipped in shipped_sequences()}
+    assert [title in routines for title in ("Taking a helper's report", "Routing a user's report", "Cutting a patch release")] == [True] * 3, \
+        "the orchestrator's routines ship with the journal, whether or not a board is in play"
+    assert "Search it yourself first" in [step for step, _ in routines["Routing a user's report"].steps], \
+        "routing a report starts by searching in a few commands, before a subagent is sent for a quick question"
     assert NAME in [e.data.get("setting") for e in record.event_log.events()], "the viewer hears the change and follows it"
     pick(record, "orchestrator", USER)
     assert len(told(record, "work mode to orchestrator")) == 1, "picking the same mode again tells nothing"

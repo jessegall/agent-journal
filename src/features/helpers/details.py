@@ -147,7 +147,7 @@ class HelpersDetails(FeatureDetails):
         Line(
             name="reported",
             title="helper {{n}}, {{name}}, reported in message {{message}}",
-            brief="read it, then journal helper finish {{n}} once its work is taken or dropped{{branch}}",
+            brief="read it, then take it with the sequence journal sequence run <Taking a helper's report> --about helper:{{n}}; journal helper finish {{n}} once its work is taken or dropped{{branch}}",
             until=("helper.completed", "helper.deleted"),
             owed=report_waits,
             while_waiting=True,

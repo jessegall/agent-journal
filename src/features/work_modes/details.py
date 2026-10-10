@@ -35,7 +35,8 @@ class WorkModesDetails(FeatureDetails):
         the default: the agent does the work and sends helpers when a job is better done beside it.
         Orchestrator: the agent plans, sends helpers and subagents, reviews and merges, and writes
         code itself only for reviews and small fixes; it is reminded when it drifts into writing a
-        lot of code itself. Solo: the agent does everything itself, and a subagent or helper it
+        lot of code itself. Its routines ship as sequences, run with journal sequence run <title>: Taking a
+        helper's report, Routing a user's report and Cutting a patch release. Solo: the agent does everything itself, and a subagent or helper it
         tries to send is refused. The agent is told when the mode changes, and again at every start.
     """
 
