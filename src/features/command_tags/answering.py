@@ -1,13 +1,17 @@
 from controllers.types import Messages
 from features.command_tags.reading import REPLY_WITH
 from features.messages.answering import acknowledges
-from resources.base import AGENT, SYSTEM
+from engine.wording import plural
+from resources.base import AGENT, SYSTEM, USER
 
 
-def said(row) -> str:
-    """The message as the line names it: a header with its number and the message it answers, then what journal message read prints, whole, so no context is lost and the agent need not read it first."""
-    answers = "".join(f",reply:{ref.partition(':')[2]}" for ref in row.refs if ref.startswith("message:"))
-    return f"[journal][message:{row.n}{answers}]\n{row.dump().strip()}"
+def said(row, several: bool = False) -> str:
+    """The message as the line names it: who wrote it, the message it answers, and their words, the number only where several come in one line; a long message or one with files says where the rest is."""
+    who = row.data.get("peer") or ("the user" if row.author == USER else row.author)
+    answers = "".join(f", answering message {ref.partition(':')[2]}" for ref in row.refs if ref.startswith("message:"))
+    more = [part for part in (plural(len(row.files), "file") if row.files else "", plural(len(row.sections), "section") if row.sections else "") if part]
+    rest = f" (and {' and '.join(more)}: journal message read {row.n})" if more else ""
+    return f"{who} wrote{f' {row.n}' if several else ''}{answers}: {(row.brief or row.title).strip()}{rest}"
 
 
 def answered(numbers: list, record, **_) -> str:
@@ -17,7 +21,7 @@ def answered(numbers: list, record, **_) -> str:
         if AGENT not in row.seen:
             Messages(record, actor=AGENT).read(row.n)
     panel = {row.n: row.data[REPLY_WITH] for row in rows if REPLY_WITH in row.data}
-    told = [said(row) for row in rows]
+    told = [said(row, several=len(rows) > 1) for row in rows]
     told += [f"answer message {n} with {how}, never in the chat" for n, how in panel.items()]
     acknowledging = [row.n for row in rows if row.n not in panel and acknowledges(row)]
     told += [f'message {n} only acknowledges: react to it with journal message react {n} "👍", no words needed' for n in acknowledging]
