@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
-import {afterSeconds, animationLabel, pickWeighted, placeOf, placedAt, showcaseOn} from "../domain/mascots.js";
+import {afterSeconds, animationLabel, fallOf, pickWeighted, placeOf, placedAt, showcaseOn} from "../domain/mascots.js";
 import {animations, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import {loadProfiles, mascotOf, profiles, profilesLoaded} from "../composables/profiles.js";
 import {loadRig, rigs, voiceOfArt} from "../composables/voiceRigs.js";
@@ -11,7 +11,7 @@ const NARROWEST_BOX = 320;
 const still = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const PASSAGES = ["enter", "exit"];
 
-const props = defineProps({present: Boolean});
+const props = defineProps({present: Boolean, perch: {type: Number, default: 0}});
 
 const mascot = computed(() => mascotOf.value);
 const anchor = ref(null);
@@ -222,7 +222,26 @@ const rigShown = computed(() =>
 
 const shown = computed(() => playing.value ?? (showcase ? staged.value : rested.value));
 const place = computed(() => rigShown.value?.place ?? (showcase ? staged.value?.place : mascot.value.place));
-const placed = computed(() => ({"--edge": place.value.edge, "--line": place.value.line}));
+const fall = computed(() => fallOf(mascot.value?.voice));
+const dropping = ref(false);
+let dropTimer = 0;
+watch(
+    () => props.perch,
+    (now, was) => {
+        clearTimeout(dropTimer);
+        dropping.value = now < was;
+        if (dropping.value) dropTimer = setTimeout(() => (dropping.value = false), fall.value.ms * 2);
+    }
+);
+onUnmounted(() => clearTimeout(dropTimer));
+const placed = computed(() => ({
+    "--edge": place.value.edge,
+    "--line": place.value.line,
+    "--perch": `${props.perch}px`,
+    "--fall-ms": `${fall.value.ms}ms`,
+    "--squash": fall.value.squash,
+    "--bounce": `${fall.value.bounce}px`,
+}));
 const passage = computed(() => (PASSAGES.includes(rigShown.value?.move?.name) ? rigShown.value.move : null));
 const passed = computed(() => (passage.value ? {...placed.value, "--length": `${passage.value.duration}ms`} : placed.value));
 </script>
@@ -230,7 +249,7 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
 <template>
     <span ref="anchor" class="voice-mascot-anchor" hidden></span>
     <template v-if="rigShown && roomy">
-        <span class="voice-mascot" :class="passage && `passing ${passage.name}`" :style="passed" aria-hidden="true">
+        <span class="voice-mascot" :class="[passage && `passing ${passage.name}`, {dropping}]" :style="passed" aria-hidden="true">
             <RigPlayer :voice="rigShown.voice" :rig="rigShown.rig" :move="rigShown.move" @ended="moveEnded" />
         </span>
         <template v-if="showcase">
@@ -238,7 +257,7 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
         </template>
     </template>
     <template v-else-if="shown && roomy && (present || showcase)">
-        <span class="voice-mascot" :style="placed" aria-hidden="true">
+        <span :class="['voice-mascot', {dropping}]" :style="placed" aria-hidden="true">
             <SpritePlayer :key="turn" :url="shown.url" :edit="shown.edit" :playing="Boolean(playing)" @ended="ended" />
         </span>
         <template v-if="showcase">
@@ -251,12 +270,33 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
 .voice-mascot {
     --size: 128px;
     position: absolute;
-    top: calc(var(--size) * var(--line) / -256);
+    top: calc(var(--size) * var(--line) / -256 - var(--perch));
     right: calc(12px + var(--size) * (var(--edge) - 256) / 256);
-    z-index: 1;
+    z-index: 3;
     width: var(--size);
+    transform-origin: 50% 100%;
+    transition: top 260ms cubic-bezier(0.2, 0.8, 0.3, 1);
     height: var(--size);
     pointer-events: none;
+}
+
+.voice-mascot.dropping {
+    transition: top var(--fall-ms) cubic-bezier(0.55, 0, 1, 0.45);
+    animation: mascot-land calc(var(--fall-ms) * 0.9) ease-out var(--fall-ms) both;
+}
+
+@keyframes mascot-land {
+    0% {
+        transform: scale(calc(1 + var(--squash)), calc(1 - var(--squash)));
+    }
+
+    45% {
+        transform: translateY(calc(-1 * var(--bounce)));
+    }
+
+    100% {
+        transform: none;
+    }
 }
 
 .voice-mascot.passing {
@@ -294,13 +334,21 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
 .voice-mascot-label {
     --size: 128px;
     position: absolute;
-    top: calc(var(--size) * var(--line) / -256 + 8px);
+    top: calc(var(--size) * var(--line) / -256 - var(--perch) + 8px);
     right: calc(12px + var(--size) * (1 + (var(--edge) - 256) / 256) + 8px);
     z-index: 1;
     color: var(--muted, #8a8f98);
     font-size: 11px;
     white-space: nowrap;
     pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .voice-mascot,
+    .voice-mascot.dropping {
+        transition: none;
+        animation: none;
+    }
 }
 
 @media (max-width: 560px) {
