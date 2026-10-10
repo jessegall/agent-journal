@@ -1,9 +1,20 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
 from features.groups import Group
+from features.work_modes.details import MODES, ORCHESTRATOR
 
 MOVED, KEPT = "moved", "kept"
+QUICKLY = 5
+
 RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED = "run ended", "run open", "run stalled", "watch runs"
+
+
+def background_switch(mode: str) -> str:
+    return f"{mode}_background"
+
+
+def background_after(mode: str) -> str:
+    return f"{mode}_background_after"
 
 
 class LongCommandsDetails(FeatureDetails):
@@ -22,6 +33,10 @@ class LongCommandsDetails(FeatureDetails):
         When you run a command in the foreground and it is still running after
         long_commands.after_seconds (30), the journal moves it to the background the way your
         own terminal does (Claude's Ctrl+B) and tells you, and tells you again when it ends. A provider without a way to do that is left alone.
+
+        Each work mode has its own switch and its own number of seconds in the settings: while the mode of the
+        environment has its switch on, a command goes to the background after that mode's seconds instead (the
+        orchestrator, which never waits on a command, after five). A journal command always keeps the longer wait.
 
         Before moving it, the journal raises agent.command.long, which any feature or plugin can cancel with a reason; a
         cancelled move leaves the command in the foreground and tells you why. The chat shows a mark when a command is moved
@@ -47,6 +62,10 @@ class LongCommandsDetails(FeatureDetails):
             title="Move it to the background after",
             unit="seconds",
         ),
+        *[Setting(name=name, default=default, title=title, unit=unit)
+          for mode in MODES
+          for name, default, title, unit in ((background_switch(mode), mode == ORCHESTRATOR, f"In {mode} mode, send a command to the background after its own wait", ""),
+                                             (background_after(mode), QUICKLY if mode == ORCHESTRATOR else 30, f"In {mode} mode, send it to the background after", "seconds"))],
     ]
 
     lines = [

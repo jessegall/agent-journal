@@ -79,6 +79,21 @@ def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="conversation-1", asking={})
     engine.beat()
     assert moved, "the launcher's seat is claude-99, the hooks report on conversation-1: the engine's beat reaches the one with the command"
+
+    def moves_after(mode, command, age):
+        other = fresh()
+        other.change_setting("work_modes", {"mode": mode})
+        moved.clear()
+        report(other, "working", "PreToolUse", session="conversation-1", provider="claude", commands=[{"command": command, "tool": "Bash", "at": time.time() - age}])
+        beating = Engine(other, DRIVERS["claude"](other, "claude-99"))
+        beating.agent.driver.last_report = lambda: SimpleNamespace(title="conversation-1", asking={})
+        beating.beat()
+        return bool(moved)
+
+    assert (moves_after("orchestrator", "npm run slow", 6), moves_after("orchestrator", "npm run slow", 3)) == (True, False), \
+        "in orchestrator mode a command goes to the background after five seconds, not before"
+    assert (moves_after("orchestrator", "journal ticket start 3", 6), moves_after("builder", "npm run slow", 6), moves_after("builder", "npm run slow", 31)) == (False, False, True), \
+        "a journal command stays in the foreground, and a mode whose switch is off keeps the thirty seconds"
     import threading
     release, running = threading.Event(), []
     monkeypatch.setattr("runner.engine.emit_ticked", lambda record, session: running.append(1) or release.wait(5))
