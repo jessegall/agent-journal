@@ -143,3 +143,16 @@ def test_the_hash_of_a_managed_file_is_made_again_only_when_the_file_changes(tmp
     assert (managed.managed_hash(file), len(made)) == (first, 1), "an unchanged file is not read and hashed again"
     file.write_text("two words")
     assert managed.managed_hash(file) != first and len(made) == 2, "a file whose size changed is hashed again"
+
+
+def test_a_session_file_an_older_build_wrote_without_telling_anyone_is_read_within_a_few_seconds(monkeypatch):
+    import json
+    from engine import sessions as files
+    from engine.sessions import Sessions
+    record = fresh()
+    sessions = Sessions(record.root)
+    sessions.write("claude-1", environment="")
+    assert sessions.read("claude-1").environment == "", "the session is read before the restart"
+    sessions.path("claude-1").write_text(json.dumps({"environment": "main", "pid": 7, "launch": 2}))
+    monkeypatch.setattr(files, "VERIFY_EVERY", 0.0)
+    assert sessions.read("claude-1").environment == "main", "a file rewritten with no changes entry and no new folder is still found by the check of every known file"

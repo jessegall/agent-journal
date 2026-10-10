@@ -13,6 +13,7 @@ from engine import runtime, waits
 
 
 RECENT = 600.0
+VERIFY_EVERY = 5.0
 ACTIVE_ENV = "AGENT_JOURNAL_ACTIVE"
 SHELLS = {"sh", "bash", "zsh", "dash", "fish"}
 
@@ -105,6 +106,7 @@ class SessionFiles:
         self.folder = runtime.sessions(root)
         self.stamp = -1
         self.read_to = 0
+        self.verified = 0.0
         self.records: dict[str, SessionRecord] = {}
         self.kept: dict[str, tuple[tuple[int, int], SessionRecord]] = {}
 
@@ -124,9 +126,19 @@ class SessionFiles:
         stamp, size = self.current(), self.size()
         if stamp != self.stamp or size < self.read_to:
             self.records, self.stamp, self.read_to = self.scanned(), stamp, size
+            self.verified = time.monotonic()
         elif size > self.read_to:
             self.take_changes(size)
+        if time.monotonic() - self.verified >= VERIFY_EVERY:
+            self.verify()
         return self.records
+
+    def verify(self) -> None:
+        """Looks at every known session file's time and size, since a process on an older build writes one without telling anyone; only a file that changed is read."""
+        self.verified = time.monotonic()
+        found = {name: record for name in self.records if (record := self.record_of(name)) is not None}
+        if found != self.records:
+            self.records = found
 
     def take_changes(self, size: int) -> None:
         with (self.folder / self.CHANGES).open("rb") as changes:
