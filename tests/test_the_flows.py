@@ -357,7 +357,6 @@ def listening(event: str, args: tuple) -> None:
 sys.addaudithook(listening)
 
 
-@pytest.mark.xfail(reason="the cached session read is built by another helper; this holds it to what it promises once it lands", strict=False)
 def test_a_session_read_stays_cached_two_hooks_and_a_summary_in_a_row_open_no_session_file_the_second_time(scratch):
     global OPENED
     round_of = lambda: (scratch.hook("PreToolUse", tool_name="Bash", tool_input={"command": "ls"}), scratch.hook("PostToolUse", tool_name="Bash", tool_input={"command": "ls"}),
