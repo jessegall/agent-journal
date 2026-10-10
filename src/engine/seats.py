@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 
 from engine.sessions import Sessions
+from engine.memo import Memo
 from engine.state import State
 from engine.stored import read_json, write_json
 from engine import runtime
@@ -135,6 +136,7 @@ class SeatFiles:
     def __init__(self, root: Path):
         self.folder = runtime.sessions(root)
         self.kept: dict[str, tuple[tuple[int, int], Seat]] = {}
+        self.listed = Memo()
 
     def stamped(self, name: str) -> tuple[tuple[int, int], Seat | None]:
         try:
@@ -157,14 +159,18 @@ class SeatFiles:
         seat = self.stamped(name)[1]
         return seat if seat else Seat.of({}, name)
 
-    def all(self, within: float | None = None) -> list[Seat]:
+    def sessions(self) -> list[str]:
+        """The session folders, listed again only when one is added or removed."""
         try:
-            names = sorted(entry.name for entry in os.scandir(self.folder) if entry.is_dir())
+            stamp = os.stat(self.folder).st_mtime_ns
         except OSError:
             return []
+        return self.listed.get("sessions", stamp, lambda: sorted(entry.name for entry in os.scandir(self.folder) if entry.is_dir()))
+
+    def all(self, within: float | None = None) -> list[Seat]:
         now = time.time()
         found = []
-        for name in names:
+        for name in self.sessions():
             stamp, seat = self.stamped(name)
             if seat and (within is None or now - stamp[0] / 1e9 <= within):
                 found.append(seat)
