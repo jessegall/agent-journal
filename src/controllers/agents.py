@@ -126,6 +126,15 @@ class Agents(Controller):
             row.data.update(copy.deepcopy(PENDING.of(self.record, int(n)).delta))
         return row
 
+    def peek(self, n: int | str):
+        """The held row with what a hook changed and the store has not written yet, so a reader sees the status and provider the hook reported."""
+        held = super().peek(n)
+        if not PENDING.holds(self.record, int(n)):
+            return held
+        row = held.fork()
+        row.data.update(copy.deepcopy(PENDING.of(self.record, int(n)).delta))
+        return row
+
     def save(self, r, action: str, **event):
         saved = super().save(r, action, **event)
         if PENDING.holds(self.record, r.n):
@@ -230,7 +239,7 @@ class Agents(Controller):
 
     def primary_to_read(self):
         n = self._primary_n()
-        return self.rows.peek(n) if n is not None else None
+        return self.peek(n) if n is not None else None
 
     def _primary_n(self) -> int | None:
         standing = [row for row in self.rows.standing_summaries() if not row.get("parent")]
