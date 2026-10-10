@@ -37,8 +37,10 @@ await runScenarios(process.argv[2], {
         await error(page, /\S/);
     },
     async "a server that never answers says it is taking too long"(page, url) {
+        await page.clock.install();
         await page.route(API, () => {});
         await page.goto(url);
+        await page.clock.runFor(60000);
         await error(page, /taking too long/);
     },
 });
