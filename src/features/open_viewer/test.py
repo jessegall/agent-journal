@@ -563,9 +563,11 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     uploaded = ask("POST", f"/api/{record.env}/todo/{row.n}/upload", body={"_type": "multipart/form-data; boundary=b", "_raw": sent})
     assert uploaded.body == {"files": ["notes.txt"]}, "a file sent from the viewer is attached to the row, and a field with no file is left out"
     from io import BytesIO
-    from engine.multipart import spooled, uploads
-    with spooled(BytesIO(sent), len(sent)) as spool:
+    from engine.multipart import spooled_body, uploads
+    with spooled_body(BytesIO(sent), len(sent)) as spool:
         assert [(u.name, bytes(u.data)) for u in uploads("multipart/form-data; boundary=b", spool)] == [("notes.txt", b"hello")], "a body spooled to disk and read from there carries the same file"
+    import serve
+    assert serve.spooled_body is spooled_body and serve.spooled is not spooled_body, "the server reads an upload through the body spool, and the hook spool it also imports keeps a name of its own"
     fetched = ask("GET", f"/api/{record.env}/todo/{row.n}/files/notes.txt")
     assert (fetched.code, fetched.body) == (200, b"hello"), "an attached file comes back as it was sent"
     assert ask("GET", f"/api/{record.env}/todo/{row.n}/files/missing.txt").code == 404, "a file that is not attached is not found"

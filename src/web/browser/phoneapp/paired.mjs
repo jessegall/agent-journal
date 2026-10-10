@@ -24,6 +24,8 @@ export async function allowRuns(page) {
     await cdp.send("WebAuthn.addVirtualAuthenticator", {options: {...options, automaticPresenceSimulation: true}});
 }
 
+const VOICE_WAIT = 3000;
+
 export async function allowOnComputer(page) {
     const computer = await page
         .context()
@@ -31,6 +33,9 @@ export async function allowOnComputer(page) {
         .newPage({viewport: {width: 1280, height: 900}});
     try {
         await computer.goto(DESK);
+        const keep = computer.getByRole("button", {name: "Keep Butler"});
+        if (await keep.waitFor({timeout: VOICE_WAIT}).then(() => true, () => false)) await keep.click();
+        await computer.getByRole("dialog", {name: "How should the agent talk to you?"}).waitFor({state: "detached", timeout: VOICE_WAIT}).catch(() => {});
         await computer
             .locator(".chat-notice", {hasText: "Set up Face ID for phone"})
             .getByRole("button", {name: "Allow", exact: true})

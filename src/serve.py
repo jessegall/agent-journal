@@ -15,7 +15,7 @@ from urllib.parse import parse_qsl, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features
-from engine.multipart import UPLOAD_LIMIT, UPLOAD_LIMIT_MB, spooled
+from engine.multipart import UPLOAD_LIMIT, UPLOAD_LIMIT_MB, spooled_body
 from features.auto_update.announcing import announce  # noqa: E402
 from commands.boot import boot  # noqa: E402
 import commands.cli  # noqa: E402,F401
@@ -117,7 +117,7 @@ class Handler(BaseHTTPRequestHandler):
         if length > UPLOAD_LIMIT:
             self.close_connection = True
             return Reply(413, {"error": f"that upload is {length // (1024 * 1024)} MB, over the {UPLOAD_LIMIT_MB} MB limit for one upload"})
-        with spooled(self.rfile, length) as raw:
+        with spooled_body(self.rfile, length) as raw:
             return self.answered_as(sender_of(self.headers), method, url, {"_raw": raw, "_type": kind})
 
     def reply_to(self, reply: Reply) -> None:

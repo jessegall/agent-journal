@@ -37,12 +37,13 @@ const DemoBand = __DEMO__ ? defineAsyncComponent(() => import("../demo/DemoBand.
 windowPolls().forEach(usePolled);
 const bootError = ref("");
 let bootTimer = 0;
+const TOO_LONG = "The journal is taking too long to respond.";
 function startBoot() {
     bootError.value = "";
-    bootTimer = setTimeout(() => (bootError.value = "The journal is taking too long to respond."), 60000);
+    bootTimer = setTimeout(() => (bootError.value = TOO_LONG), 60000);
     boot()
         .then(() => (bootError.value = ""))
-        .catch((error) => (bootError.value = error.message || "The journal could not be reached."))
+        .catch((error) => (bootError.value = error.name === "TimeoutError" ? TOO_LONG : error.message || "The journal could not be reached."))
         .finally(() => clearTimeout(bootTimer));
 }
 const retryBoot = () => location.reload();
