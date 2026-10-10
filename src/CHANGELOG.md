@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.7 — Answering the user comes before anything else
+
+- A message you wrote that the agent has read holds its very next tool use, reading as much as writing, until it replies, reacts or processes it. Only the journal commands that answer the message go through. It used to hold writes alone, and only after twenty tool uses.
+- A hold now says what it stops, writes or everything, so every other hold keeps to writes as before.
+
 ## 2.269.6 — The start block says how many to-dos you could actually take
 
 - The start block counts the to-dos ready to take, not every open row. A blocked row, one waiting on another, one asking the user, one in a helper's hands and one already under way are left out of the number.
