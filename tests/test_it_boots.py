@@ -843,6 +843,7 @@ def test_a_warm_up_that_fails_ends_the_server_so_a_broken_build_still_rolls_back
 
 
 def test_the_warm_up_runs_its_tracks_side_by_side_and_a_failure_in_one_reaches_the_caller(monkeypatch):
+    import serve
     began = time.time()
     serve.together(lambda: time.sleep(0.5), lambda: time.sleep(0.5), lambda: time.sleep(0.5))
     assert time.time() - began < 1.2, "three tracks of half a second take about half a second together, not one and a half"

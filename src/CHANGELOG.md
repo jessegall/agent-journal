@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.23 — A restart warms up faster, and Linear stays signed in
+- Once the viewer is warm after a start, the command parsers, the rows and the transcripts warm side by side instead of one after another; a failure in any of them still ends the start, so a broken build rolls back.
+- An expired Linear sign-in renews itself with its refresh token when the agent connects, so you do not sign in again.
+
 ## 2.268.22 — A program's own menu never holds an agent up
 - A menu that a program puts on an agent's terminal is recognised by its shape, numbered options above a selection footer, and answered by its words, never by a number. A folder the journal launched the agent into is trusted; consent and data sharing are declined; anything else is closed. A note says what was chosen.
 - A menu you opened yourself, or one listing past messages, sessions or checkpoints such as Claude Code's Rewind list, is never touched, and neither is the agent's own permission question.
