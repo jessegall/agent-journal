@@ -113,8 +113,16 @@ def test_take_refuses_a_dirty_main_checkout_only_for_the_files_it_touches():
     assert git(project, "rev-list", f"{reused.branch}..phone-connection") == "", "and holds everything the working branch gained"
     worktrees.complete(reused.n)
     assert not Path(reused.path).exists(), "it is removed with its scratch folder only when the helper is finished or retired, which drops it"
+    (project / "vendor").mkdir()
+    (project / "vendor" / "autoload.php").write_text("installed\n")
+    (project / "node_modules").mkdir()
     worktrees.cut("gus")
     other = next(found for found in worktrees.all() if found.title == "gus")
+    assert ((Path(other.path) / "vendor").is_symlink(), (Path(other.path) / "vendor" / "autoload.php").read_text(), (Path(other.path) / "node_modules").is_symlink()) == (True, "installed\n", True), \
+        "a worktree links the project's installed packages instead of installing them again"
+    worktrees.cut("ned", packages=True)
+    own = next(found for found in worktrees.all() if found.title == "ned")
+    assert not (Path(own.path) / "vendor").exists(), "a job that changes the dependencies gets none linked, and installs its own"
     assert "nothing to take" in refused(lambda: worktrees.take(other.n)), "a worktree with no commits of its own has nothing to take"
     side = Path(other.path)
     git(side, "checkout", "-q", "-b", "side")

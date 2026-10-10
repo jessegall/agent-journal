@@ -103,6 +103,8 @@ def opened(project: Path, folder: Path, branch: str, name: str = "") -> Path:
         if made.returncode:
             raise SystemExit(f"journal: the worktree {folder.name} could not be made: {made.stderr.strip()}")
         included(project, folder)
+        if not own_packages(project, name):
+            packages_linked(project, folder)
     keep(project, name, branch)
     return folder
 
@@ -319,6 +321,34 @@ def link_folders(project: Path, folder: Path) -> None:
         if not link.exists():
             link.parent.mkdir(parents=True, exist_ok=True)
             link.symlink_to(path)
+
+
+PACKAGES = ("vendor", "node_modules")
+OWN_PACKAGES = "journal.own-packages"
+
+
+def own_packages(project: Path, name: str) -> bool:
+    """Whether the job in a worktree changes the project's dependencies, and so installs its own instead of using the project's."""
+    return git(project, "config", "--get", f"{OWN_PACKAGES}.{name}").stdout.strip() == "true"
+
+
+def keep_own_packages(project: Path, name: str, on: bool) -> None:
+    key = f"{OWN_PACKAGES}.{name}"
+    if on:
+        git(project, "config", key, "true")
+    elif own_packages(project, name):
+        git(project, "config", "--unset", key)
+
+
+def packages_linked(repository: Path, folder: Path) -> list[Path]:
+    """Links the installed packages of a repository (vendor and node_modules) into its worktree, so the worktree does not install them again."""
+    made = []
+    for name in PACKAGES:
+        installed, link = repository / name, folder / name
+        if installed.is_dir() and not installed.is_symlink() and not link.exists() and not link.is_symlink() and folder.is_dir():
+            link.symlink_to(installed.resolve())
+            made.append(link)
+    return made
 
 
 def git(project: Path, *args: str, stdin: str | None = None) -> subprocess.CompletedProcess:
