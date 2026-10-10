@@ -9,7 +9,7 @@ from engine import runtime
 from engine.state import State
 from engine.wording import plural
 from features.agent_sessions.launch import running_at
-from engine.worktree import contains, current_branch, freed, git, included, lines, link_folders, present, scratch_cleared, share_journal, tip
+from engine.worktree import contains, current_branch, freed, git, included, keep_own_packages, lines, link_folders, packages_linked, present, roots, scratch_cleared, share_journal, tip
 from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
 from controllers.types import Agents, Todos
@@ -48,13 +48,14 @@ class Worktrees(Controller):
     resource = Worktree
 
     @action(network=True)
-    def cut(self, name: str, helper: str = "") -> str:
-        row = self._cut(name, helper)
+    def cut(self, name: str, helper: str = "", packages: bool = False) -> str:
+        """packages: the job changes the project's dependencies, so the worktree installs its own; otherwise it links the project's installed ones."""
+        row = self._cut(name, helper, packages)
         self._marked("Cut worktree", row)
         return (f"worktree {row.n}: {row.path} on branch {row.branch}, cut from {row.working} at {row.base[:10]}. "
                 f"Tell the helper to work and commit only there, and to rebase onto {row.working} before it reports.")
 
-    def _cut(self, name: str, helper: str = ""):
+    def _cut(self, name: str, helper: str = "", packages: bool = False):
         if not NAMED.match(name):
             raise Refused(f"a worktree name is lowercase letters, digits and dashes, not {name!r}")
         project = self._project()
@@ -73,6 +74,10 @@ class Worktrees(Controller):
             raise Refused(f"the worktree {name} could not be made: {made.stderr.strip()}")
         included(project, folder)
         link_folders(project, folder)
+        keep_own_packages(project, name, packages)
+        if not packages:
+            for place, repository in roots(project).items():
+                packages_linked(repository, folder / place)
         share_journal(folder, self.record.root, workspace_folders())
         return self.create(name, path=str(folder), branch=branch, working=working, base=base, helper=helper)
 

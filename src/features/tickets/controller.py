@@ -7,7 +7,7 @@ from engine.record import Record
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
-from engine.worktree import branched, changed, current_branch, merged_into, present, tip
+from engine.worktree import branched, changed, current_branch, keep_own_packages, merged_into, present, tip
 from engine.sessions import Sessions
 from features.permission_prompts.skipping import prompted
 import resources.types as resources_module
@@ -498,6 +498,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 ticket = self.update(ticket.n, base="", bases={})
             fresh = not ticket.base
             ticket = self._based(ticket, self._started_at(ticket))
+            for _, repo, _ in self._repositories(ticket):
+                keep_own_packages(repo, ticket.work_environment, bool(ticket.own_packages))
             for _, repo, base in self._repositories(ticket) if into != "HEAD" else ():
                 stuck = branched(repo, self._branch(ticket), base, fresh)
                 if stuck:

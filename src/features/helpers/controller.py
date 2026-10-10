@@ -103,7 +103,7 @@ class Helpers(Controller):
 
     @action(network=True)
     def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False, checkout: str = "",
-                 todos: str = "") -> str:
+                 todos: str = "", packages: bool = False) -> str:
         census, paths = kept(self.record, self.rows.standing()), named_paths(f"{job}\n{brief}")
         limits = features.FEATURES["helpers"].values(self.record)
         held_back = refusal(census, limits, HELPER_KIND, paths)
@@ -113,7 +113,7 @@ class Helpers(Controller):
         if reusable:
             raise Refused(f"""A helper on {provider} that touched the files this job names is idle or closed; send the job to it, it goes on with what it knows:
 {reusable}""")
-        row = self._dispatched(name, job, provider, model, brief, worktree, checkout, numbers_in(todos))
+        row = self._dispatched(name, job, provider, model, brief, worktree, checkout, numbers_in(todos), packages)
         return f"helper {row.n}, {name}, started on {provider} {model}; you are told when it reports{knowing(census, paths)}"
 
     def _reusable(self, provider: str, paths: tuple[str, ...]) -> str:
@@ -122,7 +122,7 @@ class Helpers(Controller):
                          for row, one in found if one.idle and one.overlaps(paths))
 
     def _dispatched(self, name: str, job: str, provider: str, model: str, brief: str = "", worktree: bool = False, checkout: str = "",
-                    todos: tuple[int, ...] = ()):
+                    todos: tuple[int, ...] = (), packages: bool = False):
         from providers import DRIVERS, PROVIDERS
         if provider not in DRIVERS:
             raise Refused(f"a helper runs on one of {', '.join(DRIVERS)}, not {provider!r}")
@@ -149,7 +149,7 @@ class Helpers(Controller):
             if earlier.n != row.n and earlier.environment == place:
                 Controller.complete(self, earlier.n, how=f"carried on by helper {row.n} in the same environment")
         if worktree:
-            given = Worktrees(self.record, actor=SYSTEM)._cut(place, helper=name)
+            given = Worktrees(self.record, actor=SYSTEM)._cut(place, helper=name, packages=packages)
             folder = Path(given.path)
             row = self.update(row.n, worktree=str(given.n))
         home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER)
