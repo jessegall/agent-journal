@@ -131,11 +131,11 @@ def test_a_chained_command_runs_part_by_part_and_each_part_marks_the_chat_once_i
     call = SteppedCall("claude-1", "t", "git tag v9; git push origin main", ("git tag v9", "git push origin main"))
     write_json(file_of(root, "toolu_x1"), call.to_json())
     marks = lambda: [card["label"] for card in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("cards") or []]
-    report_step(root, call, 1, "start", 0)
-    report_step(root, call, 1, "end", 0)
-    report_step(root, call, 2, "start", 0)
+    report_step(root, call, 1, "start", 0, "tk")
+    report_step(root, call, 1, "end", 0, "tk")
+    report_step(root, call, 2, "start", 0, "tk")
     assert (marks(), Agents(record, actor=SYSTEM).by_session("claude-1").step["command"]) == (["Tagged `v9`"], "git push origin main"), \
         "a part marks the chat when it has run, while the part after it still runs and is the one the card names"
     ran.announce(record, agent.n, "Bash", call.command, "", stepped=True)
-    report_step(root, call, 2, "end", 1)
+    report_step(root, call, 2, "end", 1, "tk")
     assert marks() == ["Tagged `v9`"] and not Agents(record, actor=SYSTEM).by_session("claude-1").step, "the whole call marks nothing again, and a part that failed marks nothing"
