@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.267.80 — The viewer answers in seconds after a start, and worktrees share the project's packages
+- A start warms the first dashboard first and opens the viewer on it; command parsers, open work, messages and search texts warm behind it. The first answer after a start came at about 35 s under load, now about 9 s.
+- A worktree cut for a helper, a ticket or by hand links the project's installed vendor and node_modules, nested repositories' too, instead of installing them again; a job that changes dependencies asks for its own install with --packages (or the ticket's own_packages field).
+
 ## 2.267.79 — A kept helper keeps its worktree, and a first start announces nothing
 - A helper's worktree stays while the helper is kept: new work sent to it rebases the worktree onto the working branch first, and the worktree goes, with the agent's temporary folder, only when the helper is finished or retired.
 - A journal's first start counts every new-feature announcement as seen, so only later updates show one.
