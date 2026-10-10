@@ -122,14 +122,17 @@ class Asking:
         self.running: set[str] = set()
 
     def start(self, menu: Menu) -> None:
-        if menu.key() in self.running or not self.driver.ask_argv(menu.asking()):
+        if menu.key() in self.running:
+            return
+        argv = self.driver.ask_argv(menu.asking())
+        if not argv:
             return
         self.running.add(menu.key())
-        threading.Thread(target=self.ask, args=(menu,), daemon=True).start()
+        threading.Thread(target=self.ask, args=(menu, argv), daemon=True).start()
 
-    def ask(self, menu: Menu) -> None:
+    def ask(self, menu: Menu, argv) -> None:
         try:
-            done = subprocess.run(self.driver.ask_argv(menu.asking()), capture_output=True, text=True, timeout=ASK_TIMEOUT, stdin=subprocess.DEVNULL)
+            done = subprocess.run(argv, capture_output=True, text=True, timeout=ASK_TIMEOUT, stdin=subprocess.DEVNULL)
             self.answers[menu.key()] = menu.numbered(done.stdout)
         except (OSError, subprocess.SubprocessError):
             self.answers[menu.key()] = None
