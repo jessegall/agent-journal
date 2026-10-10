@@ -162,6 +162,7 @@ class Provider(ABC):
     sleeping_tools = ()
     echoes_typed = False
     background_wakes = False
+    result_names_move = False
     applies_at_once = ()
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
     dispatch_default = ""

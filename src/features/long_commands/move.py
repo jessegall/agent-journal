@@ -82,7 +82,8 @@ class MoveLongCommands(Handler):
         context.state.set("task", "")
         context.state.set("pressed", time.time())
         context.agent.move_to_background(started)
-        context.agent.say(MOVED, seconds=int(time.time() - float(started)))
+        if not PROVIDERS[provider].result_names_move:
+            context.agent.say(MOVED, seconds=int(time.time() - float(started)))
         context.journal.get(Agents)._moved_to_background(last, row, state="running", started=float(started))
 
 

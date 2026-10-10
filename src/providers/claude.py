@@ -157,6 +157,7 @@ class Claude(Provider):
     sleeping_tools = ("ScheduleWakeup",)
     echoes_typed = True
     background_wakes = True
+    result_names_move = True
     tool_kinds = {**Provider.tool_kinds, "AskUserQuestion": AskCall, "CronCreate": LoopCall, "CronDelete": LoopEndCall}
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"

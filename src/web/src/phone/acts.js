@@ -175,7 +175,7 @@ async function environments(row) {
 }
 
 async function lanes(row) {
-    const board = await api.board();
+    const board = await api.board({only: row.n});
     const card = board.lanes.flatMap((lane) => lane.cards.map((one) => ({...one, lane: lane.key}))).find((one) => one.n === row.n);
     const current = card?.lane || todoLane(row);
     return board.lanes

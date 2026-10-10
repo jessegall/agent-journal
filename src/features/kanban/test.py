@@ -188,6 +188,20 @@ def test_a_card_dropped_before_another_takes_that_place_and_its_priority():
     assert [t.n for t in todos.rows.standing()][:2] == [third, first], "and the order the board shows is the order the journal hands out"
     todos.complete(second, how="done")
     assert "same column" in refused(lambda: todos.place(first, before=second)), "a card is only placed among the open cards of its column"
+    more = [todos.create(f"More {i}").n for i in range(120)]
+    page = next(one for one in board(record)["lanes"] if one["key"] == "todo")
+    assert (len(page["cards"]), page["total"], bool(page["next"])) == (50, 122, True), "a lane answers its first fifty cards and how many it holds"
+    todos.complete(more[60], how="done")
+    todos.place(more[119], before=more[100])
+    second_page = board(record, lane="todo", after=page["next"])["lanes"]
+    assert [one["key"] for one in second_page] == ["todo"] and len(second_page[0]["cards"]) == 50 and second_page[0]["total"] == 121 and not {c["n"] for c in page["cards"]} & {c["n"] for c in second_page[0]["cards"]}, \
+        "the next page of one lane follows the cursor and shares no card with the first, though a card was completed and another dropped in between"
+    last = board(record, lane="todo", after=second_page[0]["next"])["lanes"][0]
+    assert (len(last["cards"]), last["next"]) == (21, ""), "the last page has what is left and no next page"
+    found = board(record, query="More 11")["lanes"]
+    assert {c["title"] for one in found for c in one["cards"]} == {"More 11", *(f"More 11{i}" for i in range(10))}, "the filter reaches cards beyond the first page"
+    only = board(record, only=more[0])["lanes"]
+    assert [(one["key"], [c["n"] for c in one["cards"]]) for one in only if one["cards"]] == [("todo", [more[0]])], "one card can be asked for by number whatever page it is on"
 
 
 def test_a_subagents_task_list_stays_off_the_main_list_and_each_agent_holds_its_own_work():

@@ -18,6 +18,7 @@ import BoardMenu from "../board/BoardMenu.vue";
 import TodoBoard from "../board/TodoBoard.vue";
 import TicketBoard from "../board/TicketBoard.vue";
 import {lens} from "../board/lanes.js";
+import {loadLanes, pagesFrom} from "../board/lanePages.js";
 import {load as loadRows, patched, rows} from "../sync/rows.js";
 import {poke, usePoll} from "../composables/poll.js";
 import {href, route} from "../route.js";
@@ -125,7 +126,10 @@ function take(got) {
     });
 }
 
-const load = () => (tickets.value ? api.ticketBoard(store.board.lens.board) : api.board(store.board.lens));
+const page = (more) => (tickets.value ? api.ticketBoard(store.board.lens.board, more) : api.board({...store.board.lens, ...more}));
+const query = () => text.value.trim();
+pagesFrom(page, query);
+const load = () => loadLanes(page, store.board.lanes, query());
 const ask = usePoll(
     "board",
     () => (boardOn.value ? load() : Promise.resolve(null)),
@@ -134,7 +138,7 @@ const ask = usePoll(
 );
 const refresh = () => ask();
 
-watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
+watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board, text.value.trim()], refresh);
 
 let seen = 0;
 watch(
