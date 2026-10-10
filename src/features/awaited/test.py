@@ -158,3 +158,24 @@ def test_a_session_file_an_older_build_wrote_without_telling_anyone_is_read_with
     sessions.path("claude-1").write_text(json.dumps({"environment": "main", "pid": 7, "launch": 2}))
     monkeypatch.setattr(files, "VERIFY_EVERY", 0.0)
     assert sessions.read("claude-1").environment == "main", "a file rewritten with no changes entry and no new folder is still found by the check of every known file"
+
+
+def test_an_engine_supervisor_on_another_build_than_the_installed_one_does_not_supervise(tmp_path, monkeypatch):
+    import threading
+    from runner import engines
+    root = tmp_path / ".journal"
+    root.mkdir()
+    (root / "journal-2.0.0-aaa.pyz").write_text("a")
+    (root / "journal.pyz").symlink_to("journal-2.0.0-aaa.pyz")
+    monkeypatch.setattr(engines, "ZIPPED", True)
+    monkeypatch.setattr(engines, "CODE", root / "journal-1.0.0-old.pyz")
+    assert (engines.current(root), engines.installed(root).name) == (False, "journal-2.0.0-aaa.pyz"), "an engine is started from the installed build, not from the build of whoever starts it"
+    started = []
+    monkeypatch.setattr(engines, "Children", lambda given: started.append(given))
+    stopping = threading.Event()
+    thread = threading.Thread(target=engines.supervise, args=(root, stopping))
+    thread.start()
+    stopping.wait(0.3)
+    stopping.set()
+    thread.join(5)
+    assert not started, "a supervisor on an older build starts no engines, so none is started that would stop at once and be started again"
