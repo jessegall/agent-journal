@@ -173,7 +173,7 @@ class Record:
         log = self.event_log.project if scope == PROJECT else self.event_log
 
         def release() -> Event:
-            with self.locked(scope):
+            with self.locked(scope), self.numbers.ordered():
                 self.fence(scope)
                 e = stamped(self.numbers.draw(EVENTS, lambda: log.last_id() + 1), quiet or bus.listening())
                 log.append(e)
