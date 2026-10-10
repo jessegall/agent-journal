@@ -26,7 +26,7 @@ class Block(Shift):
 
 class Unblock(Shift):
     def refusal(self, sources: Sources, todo) -> str:
-        waits = sources.todos.waits(todo)
+        waits = sources.waits(todo)
         if waits:
             other = Ref.parse(waits[0])
             return f"todo {todo.n} waits on {other.spoken}: journal todo after {todo.n} {other.n} --off drops the wait"
@@ -41,7 +41,7 @@ class Unblock(Shift):
 
 class Close(Shift):
     def refusal(self, sources: Sources, todo) -> str:
-        waits = sources.todos.waits(todo)
+        waits = sources.waits(todo)
         return f"todo {todo.n} waits on {', '.join(Ref.parse(w).spoken for w in waits)}: close that first" if waits else ""
 
     def run(self, todos, todo, why: str, how: str):
