@@ -423,7 +423,6 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
     with counted() as work:
         replay(record.root)
     assert not work.scanned, f"a hook that finds nothing spooled scans no folder once warm; it scanned {work.scanned}"
-    import pytest
     from runner import chat_mirror, spool
     kept = chat_mirror.unsent(record.root)
     kept.mkdir(parents=True, exist_ok=True)
