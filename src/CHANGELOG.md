@@ -4,6 +4,9 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.14 — A hook never fails on a stale pause
+- A hook that met an agent paused for an update raised an error instead of clearing the pause, because the age a pause counts as stale after was missing; it is ten minutes, and the pause clears there as intended.
+
 ## 2.268.13 — An upgrade is not held by the journal's own code folder
 - An upgrade no longer stops because a file in the journal's own code folder changed: an upgrade replaces that folder whole. A start that finds an upgrade held by changed project files says so instead of counting it as installed.
 
