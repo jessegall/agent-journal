@@ -1,0 +1,274 @@
+{
+  "voice": "squire",
+  "canvas": [
+    256,
+    256
+  ],
+  "layers": [
+    {
+      "name": "thigh_right",
+      "file": "squire_thigh_right_rest.png",
+      "order": 0,
+      "parent": "torso",
+      "pivot": [
+        111,
+        154
+      ],
+      "states": {
+        "rest": "squire_thigh_right_rest.png",
+        "complete": "squire_thigh_right.png"
+      }
+    },
+    {
+      "name": "shin_right",
+      "file": "squire_shin_right_rest.png",
+      "order": 1,
+      "parent": "thigh_right",
+      "pivot": [
+        113,
+        173
+      ],
+      "states": {
+        "rest": "squire_shin_right_rest.png",
+        "complete": "squire_shin_right.png"
+      }
+    },
+    {
+      "name": "foot_right",
+      "file": "squire_foot_right_rest.png",
+      "order": 2,
+      "parent": "shin_right",
+      "pivot": [
+        116,
+        182
+      ],
+      "states": {
+        "rest": "squire_foot_right_rest.png",
+        "complete": "squire_foot_right.png"
+      }
+    },
+    {
+      "name": "thigh_left",
+      "file": "squire_thigh_left_rest.png",
+      "order": 3,
+      "parent": "torso",
+      "pivot": [
+        141,
+        150
+      ],
+      "states": {
+        "rest": "squire_thigh_left_rest.png",
+        "complete": "squire_thigh_left.png"
+      }
+    },
+    {
+      "name": "shin_left",
+      "file": "squire_shin_left_rest.png",
+      "order": 4,
+      "parent": "thigh_left",
+      "pivot": [
+        161,
+        177
+      ],
+      "states": {
+        "rest": "squire_shin_left_rest.png",
+        "complete": "squire_shin_left.png"
+      }
+    },
+    {
+      "name": "foot_left",
+      "file": "squire_foot_left_rest.png",
+      "order": 5,
+      "parent": "shin_left",
+      "pivot": [
+        174,
+        183
+      ],
+      "states": {
+        "rest": "squire_foot_left_rest.png",
+        "complete": "squire_foot_left.png"
+      }
+    },
+    {
+      "name": "upper_arm_right",
+      "file": "squire_upper_arm_right_rest.png",
+      "order": 7,
+      "parent": "torso",
+      "pivot": [
+        79,
+        114
+      ],
+      "states": {
+        "rest": "squire_upper_arm_right_rest.png",
+        "complete": "squire_upper_arm_right.png"
+      }
+    },
+    {
+      "name": "forearm_right",
+      "file": "squire_forearm_right_rest.png",
+      "order": 8,
+      "parent": "upper_arm_right",
+      "pivot": [
+        61,
+        106
+      ],
+      "states": {
+        "rest": "squire_forearm_right_rest.png",
+        "complete": "squire_forearm_right.png"
+      }
+    },
+    {
+      "name": "hand_right",
+      "file": "squire_hand_right_rest.png",
+      "order": 9,
+      "parent": "forearm_right",
+      "pivot": [
+        62,
+        112
+      ],
+      "states": {
+        "rest": "squire_hand_right_rest.png",
+        "complete": "squire_hand_right.png"
+      }
+    },
+    {
+      "name": "upper_arm_left",
+      "file": "squire_upper_arm_left_rest.png",
+      "order": 11,
+      "parent": "torso",
+      "pivot": [
+        140,
+        123
+      ],
+      "states": {
+        "rest": "squire_upper_arm_left_rest.png",
+        "complete": "squire_upper_arm_left.png"
+      }
+    },
+    {
+      "name": "forearm_left",
+      "file": "squire_forearm_left_rest.png",
+      "order": 12,
+      "parent": "upper_arm_left",
+      "pivot": [
+        161,
+        122
+      ],
+      "states": {
+        "rest": "squire_forearm_left_rest.png",
+        "complete": "squire_forearm_left.png"
+      }
+    },
+    {
+      "name": "hand_left",
+      "file": "squire_hand_left_rest.png",
+      "order": 13,
+      "parent": "forearm_left",
+      "pivot": [
+        173,
+        112
+      ],
+      "states": {
+        "rest": "squire_hand_left_rest.png",
+        "salute": "squire_hand_left_salute.png",
+        "complete": "squire_hand_left.png"
+      }
+    },
+    {
+      "name": "torso",
+      "file": "squire_torso_rest.png",
+      "order": -1,
+      "parent": null,
+      "pivot": [
+        116,
+        145
+      ],
+      "states": {
+        "rest": "squire_torso_rest.png",
+        "complete": "squire_torso.png"
+      }
+    },
+    {
+      "name": "head",
+      "file": "squire_head_rest.png",
+      "order": 20,
+      "parent": "torso",
+      "pivot": [
+        112,
+        107
+      ],
+      "states": {
+        "rest": "squire_head_rest.png",
+        "complete": "squire_head.png"
+      }
+    },
+    {
+      "name": "eyes",
+      "file": "squire_eyes_happy.png",
+      "order": 20.5,
+      "parent": "head",
+      "pivot": [
+        112,
+        107
+      ],
+      "states": {
+        "happy": "squire_eyes_happy.png",
+        "open": "squire_eyes_open.png",
+        "half": "squire_eyes_half.png",
+        "closed": "squire_eyes_closed.png",
+        "surprised": "squire_eyes_surprised.png",
+        "look_left": "squire_eyes_look_left.png",
+        "look_right": "squire_eyes_look_right.png",
+        "look_up": "squire_eyes_look_up.png",
+        "look_down": "squire_eyes_look_down.png",
+        "rest": "squire_eyes_happy.png"
+      }
+    },
+    {
+      "name": "mouth",
+      "file": "squire_mouth_closed.png",
+      "order": 20.6,
+      "parent": "head",
+      "pivot": [
+        112,
+        107
+      ],
+      "states": {
+        "closed": "squire_mouth_closed.png",
+        "open": "squire_mouth_open.png",
+        "smile": "squire_mouth_smile.png",
+        "rest": "squire_mouth_closed.png"
+      }
+    },
+    {
+      "name": "helmet_plume",
+      "file": "squire_helmet_plume.png",
+      "order": 30,
+      "parent": "head",
+      "pivot": [
+        107,
+        51
+      ]
+    },
+    {
+      "name": "shield",
+      "file": "squire_shield.png",
+      "order": 39,
+      "parent": "hand_right",
+      "pivot": [
+        62,
+        115
+      ]
+    },
+    {
+      "name": "quill",
+      "file": "squire_quill.png",
+      "order": 40,
+      "parent": "hand_left",
+      "pivot": [
+        175,
+        110
+      ]
+    }
+  ]
+}
