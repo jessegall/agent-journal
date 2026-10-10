@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.1 — The Kanban board and the polled routes answer at once
+- The Kanban board works out each card's waits and lane once and formats its texts through the cached formatter: on transportklok's board of 49 cards it answers in a third of a second after a start and in 8 ms after that, where it took up to 3 s.
+- Formatting a text that names a command builds only the list of query names, never the parser of every command.
+- The services, identity and agents routes answer from state kept in memory, and a GET never claims or probes a port; the seat listing reads the session folders only when one is added or removed.
+- The server raises its open-file limit to 65,536, never lowers the one it started with, and keeps 16 packed archives open instead of 64.
+
 ## 2.268.0 — Your voice's mascot lives on the chat box
 <!-- new-feature {"id": "voice-mascots", "title": "Your voice now lives on your chat box", "text": "While the agent waits for you, your voice's mascot sits on the edge of the chat box: it climbs, jumps or strolls in, blinks, plays a move of its own now and then, and leaves when the agent gets back to work. The Butler, the Homie, the Colleague, the Coach and the Squire each have their own.", "button": "Keep them", "off": "Turn them off", "setting": "form_of_address.mascot", "note": "You can switch them on or off any time under Settings.", "art": "mascots.webp"} -->
 - Each voice has a mascot drawn as a cut-out rig of parts, played from keyframed moves that turn, shift and restack its parts: it enters and leaves in its own way (climbing up from behind the chat box, jumping, fading, marching), blinks, and plays one of its moves at the idle interval while the agent waits.
