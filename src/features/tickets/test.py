@@ -365,6 +365,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     site("switch", "-q", trunk)
     assert (sorted(spanning.bases), across.close_merged()) == (["chronos", "site"], []), \
         "a ticket across repositories keeps a base for each, and stays open while the one it changed is unmerged"
+    from engine import bus
+    monkeypatch.setattr(bus, "BACKGROUND", False)
     assert [(repo["name"], repo["state"]) for repo in across._repository_states(across.load(spanning.n))] == [("chronos", "untouched"), ("site", "changed")], \
         "its card names each repository and where its branch stands"
     from features.tickets import cards as card_module
