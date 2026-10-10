@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import time
 from dataclasses import dataclass
 from types import SimpleNamespace
 
@@ -169,8 +170,10 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
             if self.path == "/register":
                 return self.reply({"client_id": "client-1"})
             form = urllib.parse.parse_qs(body)
+            if form["grant_type"] == ["refresh_token"]:
+                return self.reply({"access_token": "tok-renewed", "refresh_token": "ref-2", "expires_in": 3600} if form["refresh_token"] == ["ref-1"] else {})
             proven = encoded(hashlib.sha256(form["code_verifier"][0].encode()).digest()) == Oauth.challenge
-            self.reply({"access_token": "tok-xyz"} if form["code"] == ["abc"] and proven else {})
+            self.reply({"access_token": "tok-xyz", "refresh_token": "ref-1", "expires_in": 3600} if form["code"] == ["abc"] and proven else {})
 
         def log_message(self, *_):
             pass
@@ -189,7 +192,9 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
         return opened
 
     try:
-        assert signed_in(origin, "test", browser()) == "Bearer tok-xyz", "the service's own sign-in gives a token as a bearer value, proven with the verifier the journal made"
+        signin = signed_in(origin, "test", browser())
+        assert (signin.bearer, signin.renewal.refresh_token, signin.renewal.client_id) == ("Bearer tok-xyz", "ref-1", "client-1"), \
+            "the service's own sign-in gives a token as a bearer value, proven with the verifier the journal made, and what renews it"
         assert "did not finish" in refused(lambda: signed_in(origin, "test", browser("another"))), "a sign-in that comes back with a state the journal did not make is refused"
         assert "did not finish: access_denied" in refused(lambda: signed_in(origin, "test", browser(failure="access_denied"))), "a sign-in you decline is refused with the service's reason"
         assert "gave no token" in refused(lambda: signed_in(origin, "test", browser(code="wrong"))), "a code the service grants no token for is refused"
@@ -217,6 +222,19 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
         with contextlib.redirect_stdout(shown):
             assert mcp_headers.main([str(record.root), variable]) == 0
         assert json.loads(shown.getvalue()) == {"Authorization": "Bearer tok-xyz"}, "and that command answers the sign-in header"
+        from features.integrations.login import RENEWAL_SUFFIX, Renewal
+        running_out = Renewal.read(ValuesFile(record.root).values()[variable + RENEWAL_SUFFIX])
+        ValuesFile(record.root).put(variable + RENEWAL_SUFFIX, Renewal(running_out.refresh_token, running_out.client_id, running_out.token_url, time.time() + 10).text())
+        renewed_shown = io.StringIO()
+        with contextlib.redirect_stdout(renewed_shown):
+            assert mcp_headers.main([str(record.root), variable]) == 0
+        assert json.loads(renewed_shown.getvalue()) == {"Authorization": "Bearer tok-renewed"}, "a token about to run out is renewed with its refresh token before the header is answered"
+        assert (ValuesFile(record.root).values()[variable], Renewal.read(ValuesFile(record.root).values()[variable + RENEWAL_SUFFIX]).refresh_token) == ("Bearer tok-renewed", "ref-2"), \
+            "and the new token and the new refresh token are kept"
+        ValuesFile(record.root).put(variable + RENEWAL_SUFFIX, Renewal("gone", "client-1", running_out.token_url, time.time() - 5).text())
+        with contextlib.redirect_stdout(io.StringIO()):
+            assert mcp_headers.main([str(record.root), variable]) == 1, "a sign-in that ran out and cannot be renewed answers nothing, so the agent is told to log in again"
+        ValuesFile(record.root).put(variable, "Bearer tok-xyz")
         key_before = linear.values(record).key
         assert ValuesFile(record.root).values()[variable] == "Bearer tok-xyz", "logging in keeps the token as a secret"
         assert linear.values(record).key == key_before, "the token is made for the MCP server, so it never becomes the key the journal reads with"
