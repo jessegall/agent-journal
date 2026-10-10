@@ -27,6 +27,17 @@ export const fallOf = (voice) => FALLS[voice] ?? FALLS.butler;
 // How long the agent must stay idle before the mascot enters, or busy before it leaves.
 export const PRESENCE_GRACE_MS = 3000;
 
+// How a sitting voice comes and goes: it hops up onto its seat and hops off it, legs showing all the while, each in its own manner:
+// the hop's length, how high it rises in pixels of the 128 px mascot, how far below the seat it starts and ends, and how deep it squashes on landing.
+// A standing voice walks in along the box's edge instead and has no hop.
+export const HOPS = {
+    colleague: {ms: 620, rise: 16, drop: 44, squash: 0.06},
+    homie: {ms: 520, rise: 30, drop: 48, squash: 0.16},
+    squire: {ms: 560, rise: 12, drop: 40, squash: 0.1},
+};
+
+export const hopOf = (voice) => (PLACES[voice]?.sits ? HOPS[voice] : null);
+
 export const placeOf = (art) => PLACES[art.replace(/\.\w+$/, "")] ?? STILL;
 
 // A place moved right and down by the spot a voice saved, in pixels of its 256 px cell.
@@ -74,9 +85,9 @@ export const withFrame = (edit, count, at, patch) => {
 
 export const afterSeconds = ({min, max}, random = Math.random()) => (min + random * (max - min)) * 1000;
 
-
 // ?mascot=showcase plays every animation of every voice back to back, naming each beside the mascot.
-export const showcaseOn = (url = window.location) => new URLSearchParams(url.search).get("mascot") === "showcase" || /[?&]mascot=showcase/.test(url.hash);
+export const showcaseOn = (url = window.location) =>
+    new URLSearchParams(url.search).get("mascot") === "showcase" || /[?&]mascot=showcase/.test(url.hash);
 
 // The animations as the dialog lists them: grouped by kind, the moments' kinds first, then the rest by name.
 export const KIND_ORDER = ["idle", "blink"];
@@ -86,7 +97,9 @@ export const groupedByKind = (list) => {
     kinds.sort((a, b) => (KIND_ORDER.indexOf(a) + 1 || 99) - (KIND_ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b));
     return kinds.map((kind) => ({
         kind,
-        items: list.filter((animation) => animation.kind === kind).sort((a, b) => isBlink(b) - isBlink(a) || a.name.localeCompare(b.name, undefined, {numeric: true})),
+        items: list
+            .filter((animation) => animation.kind === kind)
+            .sort((a, b) => isBlink(b) - isBlink(a) || a.name.localeCompare(b.name, undefined, {numeric: true})),
     }));
 };
 
