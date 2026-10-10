@@ -112,6 +112,7 @@ def restamp(path: Path, n: int) -> None:
         inodes.pop(n, None)
     STAMPED[str(path.parent)] = replace(held, stamps=stamps, inodes=inodes)
 
+
 def forgotten(path: Path) -> None:
     """A rolled-back write put this file back: what is kept in memory of the row, and of the folder it lies in, is dropped, so the next read starts from the disk."""
     HELD.forget(str(path))

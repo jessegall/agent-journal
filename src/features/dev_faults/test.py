@@ -394,6 +394,15 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
         assert not rows_looked_at, f"a warm dashboard in a watched server reads its folders' and rows' marks from memory; it looked at {rows_looked_at}"
         written = Todos(record, actor=SYSTEM).create("written while watched")
         assert written.n in [row["n"] for row in Todos(record, actor=SYSTEM).rows.summaries()], "a write of the server's own is read at once, before the next look of the watch loop"
+        todos = Todos(record, actor=SYSTEM)
+        elsewhere = todos.load(written.n)
+        before = todos.rows.path(written.n).read_text()
+        row_file = todos.rows.path(written.n)
+        row_file.with_suffix(".tmp").write_text(before.replace("written while watched", "changed by another process"))
+        os.replace(row_file.with_suffix(".tmp"), row_file)
+        stored.watch_marks()
+        assert todos.load(written.n).title == "changed by another process", \
+            f"a row another process rewrote is read anew after one look of the watch loop, not kept as it was ({elsewhere.title})"
     from controllers.types import Environments
     from engine.seats import write_seat
     from engine.sessions import Sessions
