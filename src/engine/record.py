@@ -129,7 +129,7 @@ class Record:
             with self._threads:
                 self._depth += 1
                 try:
-                    with self._flocked(path):
+                    with locks.writing(path), self._flocked(path):
                         yield
                 finally:
                     self._depth -= 1

@@ -263,6 +263,25 @@ def test_upgrades_rename_old_stored_keys_in_events_agents_checks_and_settings(tm
     assert json.loads((home / "settings.json").read_text()) == {"work_tracking": {"name_work_every": 5}}, "the setting is renamed"
     (other / "settings.json").write_text("{")
     assert run(tmp_path) == "0 event logs, 0 rows and 0 settings files use the plain key names", "a second run finds nothing, and an unreadable settings file is skipped"
+    import threading
+    from engine.record import Record
+    (home / "events.jsonl").write_text('{"heard": 1}\n')
+    holding, release, finished = threading.Event(), threading.Event(), []
+
+    def write_event():
+        with Record(tmp_path, "main").locked():
+            holding.set()
+            release.wait(10)
+    writer = threading.Thread(target=write_event)
+    writer.start()
+    holding.wait(5)
+    migrating = threading.Thread(target=lambda: finished.append(run(tmp_path)))
+    migrating.start()
+    migrating.join(5)
+    release.set()
+    writer.join()
+    assert finished == ["1 event logs, 0 rows and 0 settings files use the plain key names"], \
+        "a migration never waits for the record lock of a writer, which may itself wait for the migration to end"
     from scripts.checks.pulls import answered as pull_answered, line as pull_line
     own = {"number": 7, "title": "Fix", "author": {"login": "jessegall"}, "url": "https://example/7", "comments": []}
     stranger = {**own, "number": 8, "author": {"login": "stranger"}, "comments": [{"author": {"login": "stranger"}}]}
