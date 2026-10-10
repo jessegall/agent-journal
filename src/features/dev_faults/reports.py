@@ -1,5 +1,6 @@
 import cProfile
 import io
+import json
 import os
 import pstats
 import time
@@ -8,6 +9,7 @@ from pathlib import Path
 from controllers.types import Agents, Environments, Notifications, Todos
 from engine import runtime
 from engine.record import Record
+from engine.version import version
 from engine.wording import digest, plural
 from features.dev_faults.diagnostics import logged
 from resources.base import SYSTEM
@@ -24,6 +26,10 @@ WARMED = (*FIRST_RUN_COLD, "command")
 SERVED: set[str] = set()
 VIEWER = {"overlap": "the viewer sent {where} twice at once", "page": "the viewer asked {where} for more than a page",
           "refetch": "the viewer refetched {where} with nothing changed"}
+STARVED = "the server is starved"
+STARVED_EVERY = 60.0
+BUDGET_LOG = "budget.jsonl"
+BUDGET_LOG_KEPT = 200_000
 ALL_THREADS = "cProfile records every thread, so cumulative times include work other threads did while this ran.\n\n"
 
 
@@ -32,6 +38,7 @@ ALL_THREADS = "cProfile records every thread, so cumulative times include work o
 class FaultReports:
     def __init__(self, feature):
         self.feature = feature
+        self.starved_at: dict[Path, float] = {}
 
     def milliseconds(self, record, kind: str) -> int:
         return int(self.feature.values(record).get(f"budget.{kind}", BUDGET[kind]))
@@ -147,11 +154,41 @@ class FaultReports:
                 logged(root, f"slow {kind} {name} {took:.0f}ms" + (f", {working:.0f}ms working" if working is not None else "")
                        + (f", {waiting:.0f}ms waiting on locks" if waiting >= 1 else "") + f", machine load {load():.1f} on {os.cpu_count()} cores")
             if self.feature.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
-                self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "")
-                if profile or stacks:
-                    self.kept(root, name, took, profile, stacks)
+                self.breached(root, kind, name, took, working, after)
+                if working is not None and working > self.milliseconds(record, kind):
+                    self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "")
+                    if profile or stacks:
+                        self.kept(root, name, took, profile, stacks)
+                else:
+                    self.starved(root, record, kind, name, took, working)
         except (OSError, ValueError, KeyError):
             return
+
+    @staticmethod
+    def breached(root, kind: str, name: str, took: float, working: float | None, after: float) -> None:
+        """One line for every breach of a budget, with the release and the moment, so a release's effect can be read off the file; it keeps its newest half when it grows too large."""
+        line = json.dumps({"version": version(), "kind": kind, "target": name, "took": round(took), "working": None if working is None else round(working), "after": round(after),
+                           "load": round(load(), 2), "time": round(time.time())})
+        try:
+            file = runtime.folder(Path(root)) / BUDGET_LOG
+            if file.is_file() and file.stat().st_size > BUDGET_LOG_KEPT:
+                kept = file.read_text().splitlines()
+                file.write_text("\n".join(kept[len(kept) // 2:]) + "\n")
+            with file.open("a") as out:
+                out.write(line + "\n")
+        except OSError:
+            return
+
+    def starved(self, root, record, kind: str, name: str, took: float, working: float | None) -> None:
+        """A request whose working time is within its budget but whose wall time is over it was kept waiting by a machine with no time to give: that is said once a minute, with the load, and never as a slow request."""
+        now = time.monotonic()
+        if now - self.starved_at.get(Path(root), -STARVED_EVERY) < STARVED_EVERY:
+            return
+        self.starved_at[Path(root)] = now
+        worked = f", {working:.0f}ms of it working" if working is not None else ""
+        brief = (f"{kind} {name} took {took:.0f}ms{worked}, against a budget of {self.milliseconds(record, kind)}ms of working time. "
+                 f"The machine's load was {load():.1f} on {os.cpu_count()} cores: the time went on waiting for the machine, not on the journal's code.")
+        self.file(record, STARVED, brief, kind="starved", target=name, worst=took)
 
     def report_console(self, root, env: str, message: str, where: str, stack: str, kind: str = "threw") -> bool:
         if kind == RETIRED:

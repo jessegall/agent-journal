@@ -28,7 +28,7 @@ from engine.runtime import default_env
 from engine import attic, bus, runtime, timing, viewer
 from engine.package import CODE
 from engine.version import version
-from controllers.faults import broke, log_file
+from controllers.faults import broke, logged as entered
 from runner.chat_mirror import displayed
 from runner.hooks import answer
 from engine.stepped import call_of
@@ -83,8 +83,7 @@ def unanswered(root: Path) -> None:
         load = logged[-1].split()[4:5]
         beside = f", machine load {load[0]} on {os.cpu_count()} cores" if load else ""
         trouble = "\n".join([*logged[-5:], f"the hook got no answer from the server {len(logged)} times (codes {', '.join(codes)}{beside})"])
-        with log_file(root).open("a") as log:
-            log.write(f"the hook\n{trouble}\n")
+        entered(root, "the hook", f"{trouble}\n")
         broke(Record(root, env), trouble, where="the hook")
 
 

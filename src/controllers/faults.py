@@ -26,6 +26,12 @@ def log_file(root: Path) -> Path:
     return runtime.folder(root) / "engine.log"
 
 
+def logged(root: Path, where: str, text: str) -> None:
+    """One entry of the engine's log, headed by the moment it happened, so what a release changed can be seen in it."""
+    with log_file(root).open("a") as log:
+        log.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {where}\n{text}")
+
+
 def why(root: Path, lines: int = SHOWN) -> str:
     try:
         return "\n".join(log_file(root).read_text(errors="replace").splitlines()[-lines:]).strip()
@@ -69,8 +75,7 @@ def threw(root: Path, env: str, where: str, driver=None) -> None:
         return
     trouble = traceback.format_exc()
     try:
-        with log_file(root).open("a") as log:
-            log.write(f"{where}\n{trouble}")
+        logged(root, where, trouble)
         broke(Record(Path(root), env), trouble, driver, where)
     except Exception:
         traceback.print_exc()

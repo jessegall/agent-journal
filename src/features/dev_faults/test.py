@@ -142,7 +142,7 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     profile.runcall(busy, 0.01)
     reports = FEATURES["dev_faults"].reports
     earlier = set(runtime.profiles(record.root).glob("*.txt"))
-    reports.spent(record.root, record.env, "command", "message all", 500.0, profile=profile)
+    reports.spent(record.root, record.env, "command", "message all", 500.0, working=500.0, profile=profile)
     kept = [f for f in runtime.profiles(record.root).glob("*-message-all-500ms.txt") if f not in earlier]
     assert len(kept) == 1 and "function calls" in kept[0].read_text(), "a slow call over the budget keeps its profile in a file named for what was slow"
     from engine.timing import Sampler
@@ -163,9 +163,9 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     reports.kept(record.root, "stack sample", 500.0, None, stacks)
     asked = list(runtime.profiles(record.root).glob("*-stack-sample-500ms.txt"))
     assert len(asked) == 1 and "Where every thread was while this ran" in asked[0].read_text(), "the stack samples are kept beside the profile, or alone when no profile was taken"
-    reports.spent(record.root, record.env, "command", "message all", 500.0, profile=profile)
+    reports.spent(record.root, record.env, "command", "message all", 500.0, working=500.0, profile=profile)
     earlier = set(runtime.profiles(record.root).glob("*.txt"))
-    reports.spent(Path("/nonexistent/journal"), "main", "command", "message all", 500.0, profile=profile)
+    reports.spent(Path("/nonexistent/journal"), "main", "command", "message all", 500.0, working=500.0, profile=profile)
     assert set(runtime.profiles(record.root).glob("*.txt")) == earlier, "a slow call that cannot be filed because its journal is gone is dropped, not raised"
     from controllers.types import Todos
     from engine.gates import held
@@ -279,19 +279,19 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
     turned(record, True)
     runtime.STARTED[0] = time.time()
     try:
-        reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
-        reports.spent(record.root, record.env, "command", "work end", 400)
+        reports.spent(record.root, record.env, "request", "GET /api/pages", 400, working=400)
+        reports.spent(record.root, record.env, "command", "work end", 400, working=400)
         assert notified(record) == [], "a request or a command that met a server still warming is let be"
         runtime.git_user_file(record.root).write_text("Remembered Name")
         assert runtime.git_user(record.root) == "Remembered Name", "a command reads the git user name the server wrote at start, with no process started for it"
         runtime.STARTED[0] = 0.0
         runtime.started_file(record.root).write_text(str(time.time()))
-        reports.spent(record.root, record.env, "command", "work end", 400)
+        reports.spent(record.root, record.env, "command", "work end", 400, working=400)
         assert notified(record) == [], "a command run by its own process meets the warm-up through the server's start mark"
         runtime.started_file(record.root).unlink()
-        reports.spent(record.root, record.env, "command", "todo all", 400)
+        reports.spent(record.root, record.env, "command", "todo all", 400, working=400)
         assert notified(record) == ["command todo all is slower than its budget"], "a command is held to the budget once the server is warm, even on its first run"
-        reports.spent(record.root, record.env, "command", "search hooks", 400, whole_reads=("a search through every conversation",))
+        reports.spent(record.root, record.env, "command", "search hooks", 400, working=400, whole_reads=("a search through every conversation",))
         briefs = [r.brief for r in Notifications(record, actor=SYSTEM).rows.every() if "search hooks" in r.title]
         assert any("it read a whole transcript for a search through every conversation" in brief for brief in briefs), \
             "a slow command that read a whole transcript names that read, with its reason, as part of its time"
@@ -299,16 +299,23 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
         runtime.STARTED[0] = 0.0
         runtime.started_file(record.root).unlink(missing_ok=True)
         runtime.git_user_file(record.root).unlink(missing_ok=True)
-    reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
+    reports.spent(record.root, record.env, "request", "GET /api/pages", 400, working=400)
     assert "request GET /api/pages is slower than its budget" in notified(record), "once warm, the budget holds again"
-    reports.spent(record.root, record.env, "request", "GET /api/main/board", 400)
+    reports.spent(record.root, record.env, "request", "GET /api/main/board", 400, working=400)
     assert "request GET /api/main/board is slower than its budget" not in notified(record), "a request's first, cold run after a start is let be"
     monkeypatch.setattr("features.dev_faults.reports.load", lambda: 500.0)
-    reports.spent(record.root, record.env, "request", "GET /api/main/loaded", 400)
-    reports.spent(record.root, record.env, "request", "GET /api/main/loaded", 400)
+    reports.spent(record.root, record.env, "request", "GET /api/main/loaded", 400, working=400)
+    reports.spent(record.root, record.env, "request", "GET /api/main/loaded", 400, working=400)
     assert "request GET /api/main/loaded is slower than its budget" in notified(record), "a breach is filed whatever the machine's load"
+    reports.spent(record.root, record.env, "request", "GET /api/main/starved", 400, working=10)
+    reports.spent(record.root, record.env, "request", "GET /api/main/starved2", 400, working=10)
+    assert ([title for title in notified(record) if "starved" in title], "request GET /api/main/starved is slower than its budget" in notified(record)) == (["the server is starved"], False), \
+        "a request whose working time is within its budget is never slow: the wait is its own notice, with the load, once a minute"
+    lines = [json.loads(line) for line in (runtime.folder(record.root) / "budget.jsonl").read_text().splitlines()]
+    assert {"version", "kind", "target", "took", "working", "after", "load", "time"} <= set(lines[-1]) and lines[-1]["target"] == "GET /api/main/starved2", \
+        "every breach leaves a line with its release, its time and the load, whichever notice it earned"
     monkeypatch.setattr("features.dev_faults.reports.load", lambda: 0.0)
-    reports.spent(record.root, record.env, "request", "GET /api/main/board", 400)
+    reports.spent(record.root, record.env, "request", "GET /api/main/board", 400, working=400)
     assert "request GET /api/main/board is slower than its budget" in notified(record), "its next run is held to the budget"
     from serve import environmental
     assert (environmental("/api/main/dashboard"), environmental("/api/identity")) == (True, False), \
@@ -325,11 +332,11 @@ def test_a_slow_request_waits_while_the_agent_waits():
     report(record, "working", "PreToolUse")
     work = Works(record, actor=AGENT).create("the release")
     Works(record, actor=AGENT).action("await")("the CI run")
-    reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
+    reports.spent(record.root, record.env, "request", "GET /api/pages", 400, working=400)
     assert not [n for n in nudges(record) if "slower than its budget" in n], "a wait hears only what needs the agent to act"
     Works(record, actor=AGENT).update(work.n, awaiting="")
     for _ in range(2):
-        reports.spent(record.root, record.env, "request", "GET /api/agents", 400)
+        reports.spent(record.root, record.env, "request", "GET /api/agents", 400, working=400)
     assert [n for n in nudges(record) if "GET /api/agents" in n], "once the wait is over it is told again"
 
 
