@@ -56,6 +56,7 @@ class Ticket(Placed, Resource):
         Field(FLAG, False, name="queued"),
         Field(FLAG, False, name="draft"),
         Field(FLAG, False, name="own_packages"),
+        Field(FLAG, False, name="approved_early"),
         Field(NUMBER, 100, name="priority"),
         Field(default=dict, name="dependencies"),
         Field(default=list, name="declined"),

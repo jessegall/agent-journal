@@ -432,6 +432,15 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     tickets.stop(ticket.n)
     assert (tickets.load(ticket.n).halted, tickets.load(ticket.n).launched) == (True, 0.0), "a stopped ticket forgets the launch it had under way, so a start that follows launches again"
     from engine import bus
+    from agents import terminal as terminals
+    launched_with = []
+    with monkeypatch.context() as exited:
+        exited.setattr(terminals, "launch_output", lambda root, env: "Resume this session with: claude --resume 7d698bae-1111-2222-3333-444455556666")
+        exited.setattr(terminals, "detached", lambda root, cwd, env, agent, args: launched_with.append(args) or 1)
+        exited.setattr("providers.claude.Claude.conversation_file", lambda self, conversation: Path("/tmp") if conversation.startswith("7d698bae") else None)
+        tickets._launch(tickets.load(ticket.n), tickets._into(tickets.load(ticket.n)))
+    assert launched_with and "7d698bae-1111-2222-3333-444455556666" in str(launched_with[0]), \
+        "a start relaunches an exited agent by resuming its own conversation, named on its screen when the journal had lost track of the session, never a fresh one"
     began = []
     with monkeypatch.context() as behind:
         behind.setattr(bus, "BACKGROUND", True)
@@ -510,7 +519,15 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     user.move(ui.n, "Building")
     assert (launched, user.load(ui.n).queued) == ([f"ticket-{ui.n}"], False), "a ticket waiting on an open one still starts its agent, to write its plan ahead"
     assert f"waits on ticket {api.n}" in refused(lambda: user.approve_plan(ui.n)), "its plan is not approved while the ticket it waits on is open"
-    user.complete(api.n, how="shipped")
+    from features.plans.controller import READY
+    decided = []
+    with monkeypatch.context() as planned:
+        planned.setattr(Tickets, "_plan_status", lambda self, found: READY)
+        planned.setattr(Tickets, "_decide_plan", lambda self, n, status, word, method, told: decided.append((n, status)))
+        assert user.approve_plan(ui.n).approved_early is True, "an approval given while the ticket still waits is kept, not refused"
+        assert decided == [], "and nothing is approved yet"
+        user.complete(api.n, how="shipped")
+        assert (decided, user.load(ui.n).approved_early) == ([(ui.n, READY)], False), "the plan is approved the moment the ticket it waited on closes"
     assert "has no plan waiting" in refused(lambda: user.approve_plan(ui.n)), "once its dependency closes, the wait no longer holds the plan"
     first, left, right, last = (user.create(title, board=board.n) for title in ("First", "Left", "Right", "Last"))
     for waiting, on in ((left, first), (right, first), (last, left), (last, right)):
