@@ -114,6 +114,14 @@ def rolling(folder: str, limit: int | None) -> Memo:
     return HELD[folder]
 
 
+def forget_held() -> None:
+    """Lets go of everything every folder holds in memory, as a process that has only just started holds nothing."""
+    for table in (SUMMARIES, STANDING, INDEXED, PENDING, INDEXED_AT, STAMPED, STAMPED_OWN, WRITTEN, UNSAVED, UNCOUNTED, SEEDS, COUNTED, DERIVED, WATCHED.marks):
+        table.clear()
+    for memo in HELD.values():
+        memo.clear()
+
+
 def forget_folder(home: Path) -> None:
     """Lets go of everything held for a folder and the folders under it (summaries, stamps, indexes, totals, parsed rows and open archives), as when an environment is removed or renamed."""
     prefix = str(home)

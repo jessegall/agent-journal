@@ -33,12 +33,26 @@ def answering(root: Path, build: str) -> bool:
 
 
 def heal(root: Path) -> str:
+    """What an agent asks for when it believes the installed build is broken: refused while the build is being installed or its server answers."""
     root = Path(root)
     current = (root / ARCHIVE).resolve()
     if runtime.upgrading(root):
         return f"journal: {current.name} is still being installed, so nothing was rolled back"
     if answering(root, current.name):
         return f"journal: {current.name} is running and answering, so nothing was rolled back"
+    return rolled_back(root, current)
+
+
+def healed_after_death(root: Path) -> str:
+    """What a supervisor asks for when the worker of the installed build died on start: the build's server may answer and the build is still broken."""
+    root = Path(root)
+    current = (root / ARCHIVE).resolve()
+    if runtime.upgrading(root):
+        return f"journal: {current.name} is still being installed, so nothing was rolled back"
+    return rolled_back(root, current)
+
+
+def rolled_back(root: Path, current: Path) -> str:
     bad = sorted({*broken(root), current.name})
     kept = [build for build in root.glob("journal-*.pyz") if build.name not in bad]
     if not kept:

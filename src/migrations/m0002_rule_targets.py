@@ -3,7 +3,6 @@ from pathlib import Path
 from controllers.types import Rules
 from engine.record import Record
 from resources.base import SYSTEM
-from engine.stored import write_text
 
 
 def run(root: Path) -> list[str]:
@@ -17,6 +16,6 @@ def run(root: Path) -> list[str]:
                 targets.add(provider)
         if legacy:
             rule.data["targets"] = sorted(targets)
-            write_text(rules.path(rule.n), rule.dump())
+            rules.rows.write_file(rule)
             changed.append(rule.ref)
     return changed

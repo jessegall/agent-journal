@@ -79,15 +79,13 @@ def test_the_totals_of_a_type_are_saved_with_its_index_and_equal_a_fresh_sum_aft
     folder = todos.rows.folder()
     saved = json.loads((folder / ".index" / "counters.json").read_text())
     assert saved["totals"]["overview"] == list(fresh_sum(todos)[0]), "the totals are saved beside the index"
-    for table in (stored.SUMMARIES, stored.STANDING, stored.INDEXED, stored.PENDING, stored.INDEXED_AT, stored.STAMPED, stored.COUNTED, stored.DERIVED, stored.SEEDS, stored.UNCOUNTED):
-        table.clear()
+    stored.forget_held()
     restarted = Todos(record, actor=SYSTEM)
     restarted.rows.summaries()
     assert (str(folder), "overview") in stored.COUNTED and kept(restarted) == fresh_sum(restarted), "after a restart the saved totals are taken, and equal a fresh sum"
     stored.flush_indexes()
     (folder / ".index" / "index.json").write_text((folder / ".index" / "index.json").read_text() + " ")
-    for table in (stored.SUMMARIES, stored.STANDING, stored.INDEXED, stored.PENDING, stored.INDEXED_AT, stored.STAMPED, stored.COUNTED, stored.DERIVED, stored.SEEDS, stored.UNCOUNTED):
-        table.clear()
+    stored.forget_held()
     foreign = Todos(record, actor=SYSTEM)
     foreign.rows.summaries()
     assert (str(folder), "overview") not in stored.COUNTED and kept(foreign) == fresh_sum(foreign), "totals saved with another index than the one standing are not believed, and are made from the rows"

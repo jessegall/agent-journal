@@ -492,7 +492,7 @@ def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatc
     root = tmp_path / ".journal"
     (root / "environments" / "main" / "todo").mkdir(parents=True)
     kept = root / "environments" / "main" / "todo" / "001.md"
-    added = root / "environments" / "main" / "todo" / "002.md"
+    added = root / "environments" / "main" / "todo" / "added.txt"
     events = root / "environments" / "main" / "events.jsonl"
     started = threading.Event()
     writers = []
@@ -534,7 +534,7 @@ def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatc
     began = time.time()
     kept.write_text("changed after the copy began")
     synced_row.write_text("added after the copy began")
-    (root / "environments" / "main" / "todo" / "002.md").unlink()
+    added.unlink()
     migrations.synced(root, backup, began)
     held = backup / "environments" / "main" / "todo"
     assert (sorted(path.name for path in held.iterdir()), (held / "001.md").read_text()) == (["001.md", "003.md"], "changed after the copy began"), \
@@ -621,13 +621,13 @@ def test_a_held_record_lock_lets_the_runtime_folder_write_and_times_out_every_ot
             outcomes[name] = "timed out"
 
     with locks.hold_record_writes(root):
-        for name, path in (("runtime", root / "runtime" / "flag"), ("record", root / "environments" / "main" / "todo" / "001.md")):
+        for name, path in (("runtime", root / "runtime" / "flag"), ("record", root / "environments" / "main" / "todo" / "001.txt")):
             worker = threading.Thread(target=writing, args=(name, path))
             worker.start()
             worker.join(WAIT)
     assert outcomes == {"runtime": "written", "record": "timed out"}, "a migration holds record writes back until they time out, and never the runtime folder"
     with locks.hold_record_writes(root):
-        writers = [threading.Thread(target=writing, args=(f"together {n}", root / "environments" / "main" / "todo" / f"00{n}.md")) for n in range(4)]
+        writers = [threading.Thread(target=writing, args=(f"together {n}", root / "environments" / "main" / "todo" / f"00{n}.txt")) for n in range(4)]
         began = time.monotonic()
         for worker in writers:
             worker.start()
@@ -636,7 +636,7 @@ def test_a_held_record_lock_lets_the_runtime_folder_write_and_times_out_every_ot
         waited = time.monotonic() - began
     assert ([outcomes[f"together {n}"] for n in range(4)], waited < 1.0) == (["timed out"] * 4, True), \
         "writers held back together time out together, not one wait after another"
-    writing("after", root / "environments" / "main" / "todo" / "001.md")
+    writing("after", root / "environments" / "main" / "todo" / "001.txt")
     assert outcomes["after"] == "written", "once the migration lets go the same write goes through"
     from controllers.faults import log_file, threw
     caught = []
@@ -887,9 +887,9 @@ def test_a_branch_links_to_its_web_page_only_on_a_known_host_and_a_compaction_en
     marks = []
     last = types.SimpleNamespace(cwd=str(project), title="claude-1", status="idle", event="Stop", at=1.0, branch="", branch_url="")
     driver = types.SimpleNamespace(last_report=lambda: last)
-    agent = types.SimpleNamespace(driver=driver, mark=lambda status, event, **given: marks.append(given))
+    agent = types.SimpleNamespace(driver=driver, note=lambda **given: marks.append(given))
     seat = SeatReport(types.SimpleNamespace(root=project / ".journal"), agent)
-    assert seat.branch() == "feature" and marks == [{"branch": "feature", "branch_url": "https://github.com/owner/repo/tree/feature", "at": 1.0}], \
+    assert seat.branch() == "feature" and marks == [{"branch": "feature", "branch_url": "https://github.com/owner/repo/tree/feature"}], \
         "the branch the agent works on and its web page are put on the agent"
     assert seat.branch() == "feature" and len(marks) == 1, "looking again within moments reads nothing and says nothing more"
     seat.branched_at = 0.0

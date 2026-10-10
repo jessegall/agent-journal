@@ -30,6 +30,7 @@ from resources.base import OWNER_ID  # noqa: E402
 from engine import bus, runtime, waits  # noqa: E402
 from engine.after_answer import AfterAnswer  # noqa: E402
 from engine.quiet_collector import QuietCollector  # noqa: E402
+from supervisor import QUICK  # noqa: E402
 from features.switches import WARMERS  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, pulse, remember  # noqa: E402
@@ -373,7 +374,9 @@ def warmed(root: Path, warm: threading.Event) -> None:
         traceback.print_exc()
         os._exit(1)
     settle_agents(root)
-    prune_builds(root)
+    pruning = threading.Timer(QUICK, prune_builds, (root,))
+    pruning.daemon = True
+    pruning.start()
     gc.freeze()
 
 
@@ -387,6 +390,7 @@ def mark_first_start(root: Path) -> None:
 
 
 def prune_builds(root: Path) -> None:
+    """Runs once the build has stayed up for the time a supervisor takes a broken one to die, so the build to go back to is still there."""
     try:
         from engine.heal import pruned
         pruned(root)

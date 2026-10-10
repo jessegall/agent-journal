@@ -9,7 +9,6 @@ from pathlib import Path
 from controllers.types import CONTROLLERS, Docs, Messages, Notifications, Rules, Todos
 from engine.record import Record
 from resources.base import AGENT, Refused, SYSTEM, USER, TITLE_MAX, titled
-from engine.stored import write_text
 from resources.fields import Loaded
 
 
@@ -66,7 +65,7 @@ class Migration:
         r = c.resource(n=n, title=titled(title.strip().split('\n')[0]), abstract=abstract[:200], brief=brief, sections=list(sections), refs=list(refs),
                        seen=[actor], data={k: v for k, v in data.items() if v not in (None, "", [])},
                        created=created or time.time(), updated=created or time.time(), completed=completed, outcome=outcome)
-        write_text(c.path(n), r.dump())
+        c.rows.write_file(r)
         record.emit(type_, n, "created", SYSTEM, migrated=True)
         self.done.append(f"{record.env}/{type_}:{n}")
 
