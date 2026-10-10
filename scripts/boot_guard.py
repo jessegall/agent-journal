@@ -13,7 +13,7 @@ HERE = Path(__file__).resolve().parents[1] / "src"
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-from engine.load import scaled
+from engine.load import factor, quiet, scaled
 from engine.viewer import busy
 from install import git_env
 from providers import DRIVERS
@@ -138,13 +138,16 @@ def guard() -> float:
 
 
 if __name__ == "__main__":
+    calm = quiet()
     try:
         took = guard()
     except AssertionError as failed:
         print(f"boot guard: the journal does not boot, push refused\n{failed}", file=sys.stderr)
         sys.exit(1)
     print(f"boot guard: installs, serves and launches {', '.join(DRIVERS)} in {took:.1f}s")
-    limit = scaled(LIMIT)
-    if took > limit:
-        print(f"boot guard: slower than {limit:.0f}s (15s on a quiet machine, scaled by its load)", file=sys.stderr)
+    if not calm or not quiet():
+        print(f"boot guard: boot speed not judged, the machine ran at {factor():.1f} times its cores; it boots, which is what a busy machine can prove")
+        sys.exit(0)
+    if took > LIMIT:
+        print(f"boot guard: slower than {LIMIT:.0f}s on a quiet machine", file=sys.stderr)
         sys.exit(1)
