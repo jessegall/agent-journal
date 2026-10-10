@@ -332,6 +332,7 @@ class AgentRow(Shape, Resource):
         Field(default="", name="last_message"),
         Field(default="", name="doing"),
         Field(default="", name="prompted"),
+        Field(default=0, name="person_at"),
         Field(default=list, name="delivered"),
         Field(default="", name="failure"),
         Field(default=0, name="started"),

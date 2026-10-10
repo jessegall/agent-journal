@@ -532,7 +532,8 @@ def test_an_agent_silent_for_two_minutes_is_probed_and_then_marked_idle_or_stopp
     assert engine.probe() == "probed, waiting", "the probe waits for an answer"
     now = engine_module.time.time()
     monkeypatch.setattr(engine_module.time, "time", lambda: now + engine_module.PROBE_WAIT + 1)
-    assert engine.probe() == "probe: at the prompt, idle" and marks[-1][0] == engine_module.IDLE, "an agent back at its prompt is idle"
+    assert engine.probe() == "probe: at the prompt, told to carry on" and marks[-1][0] == engine_module.IDLE and calls[-1] == f"send {engine_module.CARRY_ON_AFTER_PROBE}", \
+        "an agent back at its prompt is idle, and told to carry on with what the journal interrupted"
     monkeypatch.setattr(driver, "at_prompt", lambda: False)
     assert engine.probe() == "probe: nothing came back, stopped" and marks[-1][0] == engine_module.STOPPED, "an agent that stays silent and away from its prompt is stopped"
     monkeypatch.setattr(driver, "quiet_for", lambda: 0)

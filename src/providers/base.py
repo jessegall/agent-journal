@@ -370,6 +370,10 @@ class Provider(ABC):
     def journal_typed(self, prompt: str) -> bool:
         return prompt.lstrip().startswith(MARK)
 
+    def interrupted_by_user(self, transcript: Path) -> bool:
+        """Whether the person stopped the agent's turn themselves, the last thing its transcript records; a provider whose transcript does not say has none."""
+        return False
+
     def dispatch_model(self, chosen: str) -> str:
         return chosen
 

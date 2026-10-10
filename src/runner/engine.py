@@ -60,6 +60,7 @@ PROBE_WAIT = 5.0
 
 
 CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
+CARRY_ON_AFTER_PROBE = "The journal interrupted you to see whether you were still there, after two minutes without a sign: carry on with exactly what you were doing."
 RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
 PAUSED_FOR_UPDATE = "The journal is updating, so you are paused: start no new command and wait; you will be told when to continue."
 RESUMED_AFTER_UPDATE = "The journal has updated and resumed you now: carry on with exactly what you were doing; your open work stays open and is not to be parked."
@@ -237,7 +238,8 @@ class Engine:
                 return "probed, waiting"
             if driver.at_prompt():
                 self.agent.mark(IDLE, "probe")
-                return "probe: at the prompt, idle"
+                driver.send(CARRY_ON_AFTER_PROBE, now=True)
+                return "probe: at the prompt, told to carry on"
             if driver.quiet_for() >= PROBE_WAIT:
                 self.agent.mark(STOPPED, "probe")
                 return "probe: nothing came back, stopped"
