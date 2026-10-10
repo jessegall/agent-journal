@@ -1,9 +1,10 @@
+import time
 from pathlib import Path
 
 from agents.terminal import Launched, prompted as prompted_by_file
 from supervisor import LAUNCHED
 from controllers.types import Environments, Features
-from engine import runtime
+from engine import bus, runtime
 from engine.record import Record
 from engine.seats import terminal_of
 from engine.sessions import Sessions, alive
@@ -76,6 +77,14 @@ def driver_in(record, environment: str, provider: str):
 def tell_in(record, environment: str, provider: str, text: str) -> bool:
     driver = driver_in(record, environment, provider)
     return bool(driver) and driver.send(text, now=True, by=record.env)
+
+
+def tell_soon(record, environment: str, provider: str, text: str) -> bool:
+    """Whether an agent runs in the environment; if so the words are typed to it behind the answer, so the sender never waits on its screen."""
+    driver = driver_in(record, environment, provider)
+    if driver:
+        bus.background(f"tell:{environment}:{time.monotonic()}", lambda: driver.send(text, now=True, by=record.env))
+    return bool(driver)
 
 
 def stop_in(record, environment: str) -> None:

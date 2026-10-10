@@ -13,7 +13,7 @@ from engine import attic, bus
 from engine.outbox import Request
 from engine.record import Record
 from engine.sessions import Sessions
-from features.agent_sessions.launch import launched, prepared, tell_in
+from features.agent_sessions.launch import launched, prepared, tell_in, tell_soon
 from features.helper_worktrees.controller import Worktrees
 from features.open_viewer.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged
 from providers import PROVIDERS
@@ -254,7 +254,7 @@ class Helpers(Controller):
         row = self._unfinished(n, "finished")
         handed = self._handable(numbers_in(todos))
         words = f"{handed_over(handed)}\n{text}" if handed else text
-        running = tell_in(self.record, row.environment, row.provider, words)
+        running = tell_soon(self.record, row.environment, row.provider, words)
         if not running:
             if row.worktree:
                 Worktrees(self.record, actor=SYSTEM).renew(int(row.worktree))
