@@ -35,6 +35,9 @@ LAWS = (
     Law("L6", "A journal line is an instruction, never a message: act on it and write nothing in the chat, unless the user needs to know (a failure, finished work, a decision that waits on them).",
         "A line that starts with [journal], a reminder, a notice or an old helper report is the journal telling the agent what to do, not the user speaking. Answering it fills the user's chat with noise. Act on it, or note it and carry on; write in the chat only what the user needs to know, such as a failure, a finished piece of work or a decision that waits on them.",
         ("[journal]", "reminder", "notice", "nudge"), "everything"),
+    Law("L7", "Write the least code that solves the whole problem: find what already does it and reuse it, and never write the same logic twice.",
+        "Before writing, search the code for what already does the job or most of it, and extend that instead of adding a second way. Every read or write of one kind of thing (a file, a record, a setting, a provider) goes through the one funnel that owns it, which is where caching and checks live. A fix lands where the fault is born, not where it shows. When you finish, say in a line what you skipped or did not check.",
+        ("def", "class", "function", "refactor", "duplicate", "Edit", "Write"), "everything"),
 )
 
 GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
