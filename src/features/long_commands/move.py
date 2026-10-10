@@ -4,7 +4,9 @@ from pathlib import Path
 from engine.command_runs import command_runs, waiting_run
 from engine.events.engine import AgentBeat, ClockTicked
 from engine.gates import LONG_COMMAND, HookCall, cancelled
-from features.long_commands.details import KEPT, MOVED
+from features.long_commands.details import KEPT, MOVED, background_after, background_switch
+from features.work_modes.modes import mode_of
+from providers.command_effects import JOURNAL_CALL
 from engine.sessions import Sessions
 from features.long_commands.watch import background_tasks_of, running_part
 from features.parts import AgentContext, Handler
@@ -42,6 +44,14 @@ def running_call(context: AgentContext, row):
     return still[0] if still else None
 
 
+def wait_for(context: AgentContext, command: str) -> float:
+    """How long this command may hold the terminal: the wait of the environment's work mode while that mode's switch is on, but a journal command always keeps the longer one."""
+    mode, settings = mode_of(context.record), context.settings
+    if settings[background_switch(mode)] and not JOURNAL_CALL.match(command.strip()):
+        return settings[background_after(mode)]
+    return settings.after_seconds
+
+
 class MoveLongCommands(Handler):
     """Moves a command that holds the terminal too long, on the engine's own beat, so no slow upkeep of the clock can delay it."""
 
@@ -52,7 +62,7 @@ class MoveLongCommands(Handler):
         oldest = waiting_run(row)
         provider = row.provider
         driver = DRIVERS.get(provider)
-        if oldest is None or not driver or not driver.MOVE_TO_BACKGROUND or time.time() - oldest.at < context.settings.after_seconds:
+        if oldest is None or not driver or not driver.MOVE_TO_BACKGROUND or time.time() - oldest.at < wait_for(context, oldest.command):
             return
         if context.state.get("moved") == str(oldest.at):
             return
@@ -61,7 +71,7 @@ class MoveLongCommands(Handler):
             return
         started = str(last.at)
         seconds = int(time.time() - float(started))
-        if seconds < context.settings.after_seconds or not context.once("asked", started):
+        if seconds < wait_for(context, last.command) or not context.once("asked", started):
             return
         reason = cancelled(LONG_COMMAND, HookCall(PROVIDERS[provider]() if provider in PROVIDERS else None, context.record, None, row),
                            {"command": last.command, "seconds": seconds})
