@@ -1,6 +1,8 @@
 import threading
 import time
+import traceback
 from contextlib import contextmanager
+from pathlib import Path
 
 class Spent(threading.local):
     def __init__(self):
@@ -40,3 +42,24 @@ class Lock:
 
     def __exit__(self, *raised) -> None:
         self.lock.release()
+
+
+HELD_LONG = 0.25
+HELD_LOG = "lock-holds.log"
+
+
+@contextmanager
+def holding(name: str, folder: Path):
+    """Notes in the runtime folder where a lock was held longer than a quarter second, with the stack that held it, so the work that makes others wait is found."""
+    began = time.monotonic()
+    try:
+        yield
+    finally:
+        took = time.monotonic() - began
+        if took >= HELD_LONG:
+            note = f"{time.strftime('%H:%M:%S')} {name} held {took * 1000:.0f}ms by\n{''.join(traceback.format_stack(limit=14)[:-1])}\n"
+            try:
+                with (folder / HELD_LOG).open("a") as log:
+                    log.write(note)
+            except OSError:
+                pass

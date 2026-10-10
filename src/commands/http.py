@@ -17,6 +17,8 @@ from features.auto_update.countdown import remaining
 from controllers.shared import row_shared
 from surfaces.package import archive as extension_archive, info as extension_info
 from engine.color import identity, set_color
+from commands.lanes import LANES, agent_of
+from contextlib import nullcontext
 from engine.memo import Memo
 from engine.upgrades import check_now
 from agents.control import permit
@@ -393,7 +395,8 @@ def post_run(req: Request) -> Reply:
     for flag, given in (("--as", req.query.get("actor")), ("--default-env", req.query.get("env")), ("--cwd", req.query.get("cwd")), ("--plugin", req.query.get("plugin")), ("--session", req.query.get("session"))):
         if given and flag not in args:
             args = [flag, given, *args]
-    output, code = captured(args, req.root)
+    with LANES.of(agent_of(args)) if agent_of(args) else nullcontext():
+        output, code = captured(args, req.root)
     timed = not any(networked(a, b) for a, b in zip(args, args[1:]))
     if code is None:
         return Reply(409, output, kind=PLAIN, timed=timed, named=command_of(args))

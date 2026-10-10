@@ -91,3 +91,26 @@ def test_a_session_another_process_wrote_while_this_one_wrote_is_read_at_once(mo
     sessions.write("claude-3", environment="main")
     monkeypatch.setattr(files, "write_json", written)
     assert sessions.read("claude-2").environment == "ticket-25", "a session another process wrote at the same moment is read, never left out of a copy kept beside it"
+
+
+def test_an_agent_has_one_command_in_flight_and_never_waits_on_another_agents():
+    from commands.lanes import AgentLanes, agent_of
+    lanes = AgentLanes()
+    assert agent_of(["--root", "r", "--session", "claude-1", "todo", "all"]) == "claude-1" and agent_of(["todo", "all"]) == "", "a command names its agent with --session"
+    first = lanes.of("claude-1")
+    first.acquire()
+    assert lanes.of("claude-1") is first and not first.acquire(blocking=False), "an agent's second command waits for its first"
+    other = lanes.of("claude-2")
+    assert other.acquire(blocking=False), "another agent's command does not wait on it"
+    other.release()
+    first.release()
+    assert lanes.of("claude-1").acquire(blocking=False), "and the lane is free again once the command is answered"
+
+
+def test_a_lock_held_longer_than_a_quarter_second_is_noted_with_the_stack_that_held_it(tmp_path, monkeypatch):
+    from engine import waits
+    monkeypatch.setattr(waits, "HELD_LONG", 0.0)
+    with waits.holding("the record lock of main", tmp_path):
+        pass
+    note = (tmp_path / waits.HELD_LOG).read_text()
+    assert "the record lock of main held" in note and "test_a_lock_held_longer" in note, "the note names the lock and the code that held it"
