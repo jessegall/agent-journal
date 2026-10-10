@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.24 — Busy agents say so, and paused ones stay put
+- An agent whose turn is running reads as working, between commands too, whatever wait it has stated. The header and the message box show the live activity strip, and Waiting shows only for an idle agent.
+- While an agent is paused, for an update or by you, the lines the journal holds for it are kept until it continues, instead of each starting a turn that the pause then stops.
+- In the demo, the buttons on the lesson-done card always work; the replay lock no longer holds them behind its hint.
+
 ## 2.268.23 — A restart warms up faster, and Linear stays signed in
 - Once the viewer is warm after a start, the command parsers, the rows and the transcripts warm side by side instead of one after another; a failure in any of them still ends the start, so a broken build rolls back.
 - An expired Linear sign-in renews itself with its refresh token when the agent connects, so you do not sign in again.
