@@ -1,4 +1,4 @@
-import {agent} from "./leadAgent.js";
+import {agentWorking} from "./leadAgent.js";
 import {store} from "../state/store.js";
 import {computed, watch} from "vue";
 import {useNow} from "./now.js";
@@ -22,7 +22,6 @@ export function useWriting(key) {
     const now = useNow(TICK);
     return computed(() => {
         const write = store.agentWrites[key()];
-        const working = agent.value && ["busy", "working"].includes(agent.value.data.status);
-        return write && working && now.value - write.at < WRITING_FOR ? write : null;
+        return write && agentWorking.value && now.value - write.at < WRITING_FOR ? write : null;
     });
 }

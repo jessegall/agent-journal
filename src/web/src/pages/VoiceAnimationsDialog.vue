@@ -116,7 +116,9 @@ function picked(event) {
                         </button>
                     </template>
                 </template>
-                <AnimationList :groups="groups" :chosen="path" :schedule="plan" @pick="(moveName = ''), pick($event)" />
+                <template v-if="!rigMoves.length">
+                    <AnimationList :groups="groups" :chosen="path" :schedule="plan" @pick="pick" />
+                </template>
                 <template v-if="!groups.length">
                     <EmptyState>This voice has no animations yet. Drop sheets or a ZIP here.</EmptyState>
                 </template>
