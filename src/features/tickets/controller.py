@@ -1,7 +1,7 @@
 import time
 
 import controllers.types as types_module
-from controllers.agents import WORKING_STATE
+from controllers.agents import IDLE_STATE, WORKING_STATE
 from controllers.types import Agents, Environments, Features, Messages
 from engine import bus
 from engine.record import Record
@@ -42,6 +42,7 @@ CARRY_ON = "Carry on with {ref} where you left off."
 HANDED = ("{ref}, {title}, is yours to do in this worktree, after the tickets you already have: {brief} Read it with journal "
           "ticket show {n}, commit it on this branch, and say when it is done.")
 MOST_RESTARTS = 1
+BUILD_AGAIN = 600.0
 SCREEN_LINES, SCREEN_BYTES = 40, 32768
 NEEDS_A_LOOK = ("you", "stopped")
 
@@ -99,7 +100,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         driver = self._driver(ticket, "tell")
         if self._working(ticket):
             Messages(Record(self.record.root, ticket.work_environment), actor=AGENT).create(titled(note), brief=note.strip(), from_main=True)
-        elif not driver.send(note.strip(), now=True, by=self.record.env):
+        elif not (driver.send(note.strip(), now=True) or driver.send(note.strip(), now=True, by=self.record.env)):
             self._refuse(f"the note to {self.type} {ticket.n}'s agent stayed in its input box; its agent may be stuck")
         return self.update(ticket.n, told=time.time())
 
@@ -115,6 +116,18 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         if not session:
             self._refuse(f"{self.type} {ticket.n} has no agent running to {doing}")
         return DRIVERS[ticket.provider](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
+
+    def _build_approved_plans(self) -> None:
+        """A ticket agent that stands idle with a plan approved is told to build it: through the journal's channel first, which a prompt that does not take typed text still hears; once in ten minutes."""
+        for ticket in self.rows.standing():
+            if not ticket.work_environment or not ticket.plan or time.time() - ticket.told < BUILD_AGAIN:
+                continue
+            if not self.agent_session(ticket.n) or self._plan_status(ticket) != ACTIVE or Agents(self.record, actor=SYSTEM).state(ticket.work_environment) != IDLE_STATE:
+                continue
+            try:
+                self._told(ticket.n, f"Build your approved plan: journal plan progress {ticket.plan} says where it stands. {ticket.brief.strip()[:600]}")
+            except Refused:
+                continue
 
     def _ask_to_stop(self, session: str) -> None:
         ask_session(self.record.root, terminal_of(self.record.root, session))

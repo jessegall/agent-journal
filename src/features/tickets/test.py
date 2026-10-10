@@ -423,11 +423,31 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     from types import SimpleNamespace
     typed = []
     with monkeypatch.context() as quiet:
-        quiet.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by: typed.append(text) or True))
+        quiet.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by=None: typed.append(text) or True))
         quiet.setattr(Tickets, "_working", lambda self, found: False)
         said = tickets.tell(ticket.n, "carry on with the tests")
     assert (said, typed) == (f"told ticket {ticket.n}'s agent: carry on with the tests", ["carry on with the tests"]), \
         "a note to a ticket's agent is delivered and answered with the note, never with the ticket's whole brief"
+    from controllers.agents import IDLE_STATE
+    from features.plans.controller import ACTIVE
+    told_to = []
+    tickets.update(ticket.n, plan=7, told=0.0)
+    with monkeypatch.context() as idle:
+        idle.setattr(Tickets, "agent_session", lambda self, n: "claude-9")
+        idle.setattr(Tickets, "_plan_status", lambda self, found: ACTIVE)
+        idle.setattr(Agents, "state", lambda self, env: IDLE_STATE)
+        idle.setattr(Tickets, "_told", lambda self, n, note: told_to.append(note) or self.update(n, told=time.time()))
+        tickets._build_approved_plans()
+        tickets._build_approved_plans()
+    tickets.update(ticket.n, plan=0)
+    assert len(told_to) == 1 and told_to[0].startswith("Build your approved plan"), \
+        "a ticket agent idle at its prompt with an approved plan is told by the journal to build it, once in ten minutes, not left waiting for typed text"
+    sent_by = []
+    with monkeypatch.context() as typing:
+        typing.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by=None: sent_by.append(by) or by is None))
+        typing.setattr(Tickets, "_working", lambda self, found: False)
+        tickets.tell(ticket.n, "go on")
+    assert sent_by == [None], "a note to an idle agent goes through the journal's channel first, and is typed only when the channel does not take it"
     tickets.update(ticket.n, launched=time.time(), halted=False)
     tickets.stop(ticket.n)
     assert (tickets.load(ticket.n).halted, tickets.load(ticket.n).launched) == (True, 0.0), "a stopped ticket forgets the launch it had under way, so a start that follows launches again"
