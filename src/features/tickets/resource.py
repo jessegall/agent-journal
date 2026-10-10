@@ -70,6 +70,7 @@ class Ticket(Placed, Resource):
         Field(NUMBER, 0, name="sent_back"),
     ]
     type = "ticket"
+    held, eager = None, True
     moments = ("created", "completed", PLAN_WAITS, CHECKPOINT, FINISHED, STUCK, ESCALATED)
     icon = "ticket"
     scope = PROJECT

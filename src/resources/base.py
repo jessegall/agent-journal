@@ -35,7 +35,6 @@ OWNER_ID = "owner"   # the id of the journal's owner wherever a person is named:
 WRITER = "member"   # the data key naming the person who made a row: the owner, or a member of a journal on a server
 SIDEBAR, RESULTS, WORKINGS, UNLISTED = "sidebar", "results", "workings", ""
 SCOPES = (ENVIRONMENT, PROJECT)
-LAZY, MEMORY = "lazy", "memory"
 ACTORS = (USER, AGENT, SYSTEM, PLUGIN)
 
 
@@ -202,7 +201,8 @@ class Resource:
     own_folder: ClassVar[bool] = False  # each row lives in a folder of its own, beside its files
     read_whole: ClassVar[bool] = False  # its files are read whole by the agent, however long
     progress: ClassVar[tuple] = ()   # data a system row may still change as it runs
-    loading: ClassVar[str] = MEMORY
+    held: ClassVar[int | None] = 500    # parsed rows kept in memory for each folder, the least recently used going first; None keeps them all
+    eager: ClassVar[bool] = False       # its open rows are parsed when the server starts
     data_fields: ClassVar[list[Field]] = [
         Field(default=dict, name="files"),
         Field(default=dict, name="pictures"),

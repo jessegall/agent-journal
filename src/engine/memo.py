@@ -12,6 +12,8 @@ class Memo:
     def get(self, key, stamp, make: Callable):
         held = self.held.get(key)
         if held is not None and (held[0] is stamp or held[0] == stamp):
+            if self.limit:
+                self.held[key] = self.held.pop(key)
             return held[1]
         return self.put(key, stamp, make())
 

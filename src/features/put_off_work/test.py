@@ -35,3 +35,21 @@ def test_putting_work_off_is_heard_in_dutch_as_well_as_english():
     from features.put_off_work.handlers import DEFERS
     assert [bool(DEFERS.search(text)) for text in ("I'll do that after this.", "Dat doe ik straks.", "Daar kom ik later op terug.", "Ik heb het gedaan.")] == \
         [True, True, True, False], "both languages put work off in words, and saying it is done does not"
+
+
+def test_a_type_keeps_only_as_many_parsed_rows_as_it_declares_and_parses_the_oldest_used_again(monkeypatch):
+    from controllers.stored import RowStore
+    from controllers.types import Docs
+    from resources.base import SYSTEM
+    from resources.types import Doc, Todo
+    monkeypatch.setattr(Doc, "held", 2)
+    record = fresh()
+    docs = Docs(record, actor=SYSTEM)
+    first, second, third = (docs.create(title).n for title in ("one", "two", "three"))
+    parsed = []
+    original = RowStore._parsed
+    monkeypatch.setattr(RowStore, "_parsed", lambda self, n: parsed.append(n) or original(self, n))
+    for n in (first, second, third, third, second, first):
+        docs.rows.peek(n)
+    assert parsed == [first, second, third, first], "a type that holds two parses its first row again once a third has pushed it out, and the one used last stays"
+    assert (Todo.held, Todo.eager) == (None, True), "a type that is eager and holds every row says so on its resource"
