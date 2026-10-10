@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.4 — The journal never interrupts a working agent, and messages, waits and tickets behave
+- The journal no longer presses Ctrl-C to see whether a silent agent is still there, which cancelled a long think or command as if the user had interrupted it. It reads the screen instead: an agent back at its prompt is idle, and anything else is left working.
+- A line the journal holds back no longer makes every later line repeat after an update, so stale notices about settled rows stop.
+- A message typed to an agent counts as taken once the screen shows the agent at work, so a note to an idle ticket agent no longer reports that it stayed in the input box. A chat message whose event was numbered under one lock and logged under another is no longer lost.
+- A long command moves to the background in the second its threshold passes. In orchestrator mode a command goes to the background after 5 seconds. Each work mode has its own switch and number of seconds in Settings.
+- A wait the agent declared clears at the next command it runs. With auto mode on, an agent that has stopped is told to carry on once the user's own last word is over 15 minutes old.
+- Plan review and unsticking no longer fire for tickets that are finished, or whose plans were approved and wait on their dependencies. Closing a ticket checks its repositories once.
+- A server on a build other than the installed one restarts itself. A hold on a sequence step no longer in hand releases itself. Upgrade, heal and the other recovery commands are never held by a step.
+- An agent's status is never overwritten by an older one, so the mascot shows whenever the agent is idle. A conversation that starts stops the rows of earlier ones whose process is gone.
+- The sequence marks are hidden in the chat by default. A subagent's cell says only Subagent, with no colour.
+- The chat shows its last messages without waiting for pictures or the rest of the start, with no loading skeletons.
+- The chat asks for new events every second, also while its live stream is open, so a message the stream missed appears within a second instead of after a reload.
+- An upgrade restarts every environment's engine on the installed build, and no supervisor on an older build starts old engines again.
+- Speed: an agent has one command in flight and never waits on another agent's. Message search is one scan. Hooks answer before replaying kept events. Rows and sessions are read from their change files instead of whole folders. Budget notices count working time only, with a starved machine noticed separately. The shim never reruns a command cold after a timeout.
+- Claude Code's rewind dialog near the context limit is answered with Summarize up to here. A [journal] line raises one event and never starts a chat turn. journal services list works again.
+
 ## 2.268.3 — Sessions written at the same moment are seen, and healing keeps a running build
 - A session or state file another process wrote at the same moment is read at once, so the write gate no longer says nothing is open while a ticket's agent has work open.
 - `journal heal` never rolls back a build whose server is running and answering, or one an upgrade is still installing; it rolls back only a build that does not answer. Repeated heals had put a journal's server back on an older build while its viewer was new, so pages such as the voice settings never loaded.

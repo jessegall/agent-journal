@@ -62,7 +62,7 @@ export const polled = {
     },
     manifest: {key: "manifest", ask: () => api.manifest(), every: 30000, take: (got) => (store.spec = got)},
     journals: {key: "journals", ask: () => api.journals(), every: 10000, take: (got) => (store.journals = got)},
-    events: {key: "events", ask: pollEvents, every: 5000, take: takePolled, active: () => !store.streamOpen},
+    events: {key: "events", ask: pollEvents, every: 1000, take: takePolled},
 };
 
 export const windowPolls = () => Object.values(polled).filter((poll) => !(floatWindow && poll.mainWindowOnly));
