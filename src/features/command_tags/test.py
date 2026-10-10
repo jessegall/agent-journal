@@ -98,11 +98,13 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
         "one that asks something still gets a reply, its whole text is in the line, and the agent need not read it first"
     assert counted({("message", "created"): {4465: None, 4466: None}}, record)[0].endswith("answer each by opening a turn with [!reply:<n>]")
     assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"
+    Messages(record, actor=AGENT).complete(asked.n, how="answered")
+    assert counted({("message", "created"): {asked.n: None}}, record) == [], "a closed message is no longer announced as new"
     record = fresh()
     Agents(record, actor=AGENT).by_session("claude-1")
     Messages(record, actor=AGENT).read(asked_and_read(record, "how is it going?").n)
     report(record, "idle", "Stop")
-    assert any(n.brief.startswith("answer by opening your turn with [!reply:1]") for n in Nudges(record).all() if "before you write" in n.title), \
+    assert any("answer by opening your turn with [!reply:1]" in n.brief for n in Nudges(record).all() if "before you write" in n.title), \
         "the line naming a read message still to answer says how to answer it, in its brief"
     from engine.wording import APPENDS, appended
     addition = lambda n, **_: f"work {n} can be ended from the board"
