@@ -284,6 +284,13 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     with monkeypatch.context() as busy:
         busy.setattr(Tickets, "_working", lambda self, row: True)
         assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "a ticket whose agent is working is left alone by the sweep, even when its branch landed"
+    from controllers.types import Messages
+    waiting = Messages(Record(record.root, ticket.work_environment), actor=SYSTEM).create("one more thing to do")
+    assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "a merged ticket whose agent has a message it has not read yet is not closed, so the follow-up is not cut off"
+    Messages(Record(record.root, ticket.work_environment), actor=AGENT).read(waiting.n)
+    tickets.update(ticket.n, told=time.time())
+    assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "nor is one that was told something a moment ago"
+    tickets.update(ticket.n, told=0.0)
     tickets.merge(ticket.n)
     closed = tickets.load(ticket.n)
     assert (bool(closed.completed), closed.stage) == (True, "Shipped"), "once merged it closes by itself, in its board's done stage"
