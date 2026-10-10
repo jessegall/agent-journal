@@ -20,15 +20,10 @@ spool() {
   name="$root/runtime/unsent/$(date +%s)-$$"
   { printf '{"agent":"%s","env":"%s","pid":%s,"body":' "$agent" "$JOURNAL_ENV" "${PPID:-0}"; printf '%s' "$body"; printf '}'; } > "$name.tmp" && mv "$name.tmp" "$name.json"
 }
-# an event that decides something and could not be delivered in time is spooled like the others: the call goes ahead unchecked,
-# the server reads the event late, and the agent is told so
+# an event that decides something and could not be delivered in time is spooled like the others: the call goes ahead and the
+# server reads the event late, without a word to the agent, whose transcript the journal never writes in
 keep() {
-  event=$(printf '%s' "$body" | grep -o '"hook_event_name" *: *"[A-Za-z]*"' | head -1)
   spool
-  case $event in
-    *PreToolUse*|*PermissionRequest*|*UserPromptSubmit*|*Stop\"|*SessionStart*)
-      printf '{"systemMessage": "The journal did not answer within %s seconds, so this call went ahead unchecked and the journal reads it late."}\n' "$wait_for" ;;
-  esac
   exit 0
 }
 load() { uptime | sed 's/.*averages*: *//; s/,/ /g' | cut -d' ' -f1; }
