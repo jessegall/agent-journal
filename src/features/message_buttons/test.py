@@ -70,6 +70,12 @@ def test_a_document_carries_buttons_that_say_something_for_the_user():
     assert len(unspent(Reports(record, actor=AGENT).load(report.n))) == 2, "an open choice offers both of its buttons"
     Reports(record, actor=AGENT).action("set")(report.n, key="answered_own", value="Yep, and in Docker")
     assert unspent(Reports(record, actor=AGENT).load(report.n)) == [], "an answer in your own words settles the choice like a pressed button"
+    from controllers.types import Comments
+    from resources.base import USER
+    waiting = Reports(record, actor=AGENT).create("A third choice", buttons=choice)
+    Comments(record, actor=USER).create("Keep it, and tidy it up", brief="Keep it, and tidy it up", about=waiting.ref)
+    assert (unspent(Reports(record, actor=AGENT).load(waiting.n)), Reports(record, actor=AGENT).load(waiting.n).data.get("answered_own")) == ([], "Keep it, and tidy it up"), \
+        "a comment you write on a row that waits on its buttons answers it in your own words, so it stops asking"
     from controllers.types import Questions
     from tests.conftest import refused
     asking = Reports(record, actor=AGENT).create("Another choice", buttons=choice)
