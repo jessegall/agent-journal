@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.28 — Mascots that blink, and steadier chats
+- The mascots blink as people do: every two to six seconds at an irregular gap, now and then twice, on an eye layer of their own, so a blink also happens during a move.
+- A mascot enters only once every image of it has loaded, so no piece pops in late. It checks several times a second where the top bar is, so it follows the bars down when something under them goes.
+- The chat no longer throws 'prepending is not defined' after paging back.
+- A pull request or an issue named by its number, such as PR 161, is no longer asked to say what it is.
+- Counting a folder's rows no longer fails when another thread updates the counts at the same moment.
+
 ## 2.268.27 — The Squire serves his sovereign
 - The Squire calls you my liege or sire, as a squire speaks to his sovereign, never knight, king, or your title or name.
 - When a new bar pushes the mascot up, it is flung a little past the bar and drops back onto it, landing in its own way.

@@ -157,6 +157,7 @@ const unseen = computed(() =>
 watch([unseen, ready], ([numbers, isReady]) => here && isReady && markSeen("message", numbers), {immediate: true});
 const rendering = ref(false);
 const topMark = ref(null);
+const PERCH_CHECK_MS = 250;
 const docks = ref(null);
 const write = ref(null);
 const perch = ref(0);
@@ -175,7 +176,11 @@ watch(docks, (stack) => {
     docksSeen = new ResizeObserver(measurePerch);
     docksSeen.observe(stack);
 });
-onUnmounted(() => docksSeen?.disconnect());
+const perchCheck = setInterval(measurePerch, PERCH_CHECK_MS);
+onUnmounted(() => {
+    docksSeen?.disconnect();
+    clearInterval(perchCheck);
+});
 const AHEAD = "200px 0px 0px 0px";
 const scrolledUp = ref(false);
 const NEAR_TOP = 200;
