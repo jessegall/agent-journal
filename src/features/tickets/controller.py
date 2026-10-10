@@ -288,9 +288,13 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     @action
     def agent_session(self, n: int) -> str:
         ticket = self.load(n)
+        if not ticket.work_environment:
+            return ""
         sessions = Sessions(self.record.root)
+        if self.record.memo is None:
+            return sessions.holder(ticket.work_environment)
         holding = self.record.remembered(("environment holders", sessions.version()), sessions.holding)
-        return holding.get(ticket.work_environment, "") if ticket.work_environment else ""
+        return holding.get(ticket.work_environment, "")
 
     @action
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
