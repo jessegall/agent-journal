@@ -4,6 +4,7 @@ from features.parts import Context, TextFormatter
 from resources.types import TYPES
 from engine.command_line import command_line
 
+NO_NOUN = "queries"
 CODE = re.compile(r"(?<![`\w./-])(?:journal\s+([a-z_]+)(?:\s+([a-z_]+))?|--[a-z][a-z-]*)(?![`\w])")
 
 
@@ -23,7 +24,7 @@ class CommandsAsCode(TextFormatter):
     def command(self, found) -> str:
         line = command_line()
         if not line.queries:
-            line.parser()
+            line.parser(NO_NOUN)
         noun, word = found.group(1), found.group(2)
         if noun is None:
             return found.group(0) if after_path(found.string, found.start()) else f"`{found.group(0)}`"

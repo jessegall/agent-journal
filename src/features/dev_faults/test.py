@@ -382,6 +382,12 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
     serve.allow_open_files()
     assert resource.getrlimit(resource.RLIMIT_NOFILE)[0] >= soft, "raising the open-file limit never lowers one the process already has"
     assert KEEP_OPEN <= 16 and len(OPEN) <= KEEP_OPEN, "the packed archives kept open stay few"
+    from commands import parser as parsing
+    from features.format import formatted
+    parsing.PARSERS.clear()
+    parsing.QUERIES.clear()
+    assert formatted("run journal todo done and --how", record) == "run `journal todo done` and `--how`", "a command in a text is marked as code"
+    assert parsing.PARSERS and all(key[0] for key in parsing.PARSERS), "formatting a text builds no parser of every command, only the list of queries"
     from agents.seat import HookBinding
     from runner.spool import replay
     Environments(record, actor=SYSTEM).create("place-owned", owner="helper:1")
