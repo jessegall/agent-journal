@@ -5,6 +5,7 @@ from pathlib import Path
 
 from controllers.types import Agents
 from engine import ran, runtime
+from engine.memo import Memo
 from engine.record import Record
 from engine.stepped import SteppedCall, file_of
 from engine.stored import write_json
@@ -13,8 +14,8 @@ from providers.steps import chain_of
 from resources.base import SYSTEM
 
 START = "start"
-ENDED: dict[str, None] = {}
 ENDED_KEPT = 500
+ENDED = Memo(ENDED_KEPT)
 
 
 def rewrite(provider, root: Path, env: str, hook: Hook, answered: dict) -> dict:
@@ -39,13 +40,11 @@ def report_step(root: Path, call: SteppedCall, part: int, phase: str, status: in
     command = call.parts[part - 1]
     key = f"{token}:{part}"
     if phase == START:
-        if key in ENDED:
+        if ENDED.contains(key):
             return
         agents.update(row.n, step={"command": command, "at": time.time(), "key": key})
         return
-    ENDED[key] = None
-    for old in list(ENDED)[:max(0, len(ENDED) - ENDED_KEPT)]:
-        del ENDED[old]
+    ENDED.put(key, None, True)
     if not row.step or row.step.get("key") == key:
         agents.update(row.n, step={})
     if status == 0:

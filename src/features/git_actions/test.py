@@ -139,3 +139,5 @@ def test_a_chained_command_runs_part_by_part_and_each_part_marks_the_chat_once_i
     ran.announce(record, agent.n, "Bash", call.command, "", stepped=True)
     report_step(root, call, 2, "end", 1, "tk")
     assert marks() == ["Tagged `v9`"] and not Agents(record, actor=SYSTEM).by_session("claude-1").step, "the whole call marks nothing again, and a part that failed marks nothing"
+    report_step(root, call, 2, "end", 1, "tk")
+    assert marks() == ["Tagged `v9`"], "an end that arrives twice is taken quietly: the parts report in the background, so one can be delivered again"
