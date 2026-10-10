@@ -20,6 +20,43 @@ class MigrationsRunning(TimeoutError):
     """An upgrade is migrating the record, so a write waited for its lock and gave up; the write is tried again once the upgrade ends."""
 
 
+class RepositoryBusy(TimeoutError):
+    """A write waited for the lock of its repository and gave up: another write has held it too long."""
+
+    @classmethod
+    def of(cls, path: Path) -> "RepositoryBusy":
+        return cls(f"the repository {path.parent.name} stayed locked by another write for {LOCK_WAIT:g} seconds; this write gave up and can be tried again")
+
+
+class WriteInProgress:
+    def __init__(self) -> None:
+        self.thread = threading.get_ident()
+        self.done = threading.Event()
+
+
+WRITING: dict[str, WriteInProgress] = {}
+READ_WAIT = 2.0
+
+
+@contextmanager
+def writing_to(key: str):
+    """Marks the repository whose lock is held as being written, until the write ends."""
+    gate = WriteInProgress()
+    WRITING[key] = gate
+    try:
+        yield
+    finally:
+        WRITING.pop(key, None)
+        gate.done.set()
+
+
+def after_writes(key: str) -> None:
+    """Lets a read that comes during another thread's write to the repository wait until that write has finished; a read takes no lock and waits for no other read, and with no write under way it costs one look at an empty table."""
+    gate = WRITING.get(key)
+    if gate is not None and gate.thread != threading.get_ident():
+        gate.done.wait(READ_WAIT)
+
+
 def journal_roots(path: Path) -> tuple[Path, ...]:
     return tuple(parent for parent in path.parents if parent.name == ".journal")
 
@@ -85,11 +122,11 @@ def acquire(held, operation: int) -> None:
     wait_for(lambda: taken(held, operation), held.name)
 
 
-def wait_for(taking: Callable[[], bool], name: str) -> None:
+def wait_for(taking: Callable[[], bool], name: str, giving_up: Callable[[str], Exception] = MigrationsRunning) -> None:
     deadline = time.monotonic() + LOCK_WAIT
     while not taking():
         if time.monotonic() >= deadline:
-            raise MigrationsRunning(name)
+            raise giving_up(name)
         time.sleep(RETRY)
 
 

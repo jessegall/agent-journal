@@ -9,7 +9,8 @@ from pathlib import Path
 from typing import Callable
 
 from engine import bus, runtime, waits
-from engine.locks import lock_file
+from engine import locks
+from engine.locks import RepositoryBusy, lock_file, taken, wait_for, writing_to
 from engine.event_log import EventLog, RecordEvents
 from engine.machines import Lease, NotTheOwner, Pushing, ThisMachine
 from engine.numbers import EVENTS, Numbers
@@ -155,14 +156,15 @@ class Record:
             return
         kept = lock_file(path)
         with waits.waited("record"):
-            kept.threads.acquire()
+            if not kept.threads.acquire(timeout=locks.LOCK_WAIT):
+                raise RepositoryBusy.of(path)
         try:
             fh = kept.current()
             with waits.waited("record"):
-                fcntl.flock(fh, fcntl.LOCK_EX)
+                wait_for(lambda: taken(fh, fcntl.LOCK_EX), str(path), lambda _: RepositoryBusy.of(path))
             self._held[path] = 1
             try:
-                with waits.holding(f"the record lock of {path.parent.name}", runtime.folder(self.root)):
+                with waits.holding(f"the record lock of {path.parent.name}", runtime.folder(self.root)), writing_to(str(path)):
                     yield
             finally:
                 self._held[path] = 0
