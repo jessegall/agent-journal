@@ -265,6 +265,41 @@ def test_the_start_question_never_offers_a_busy_environment_on_enter():
     assert asked_for(record, ask=closed, answering=True) == record.env, "input that ends before an answer keeps the environment it started in"
 
 
+def test_a_session_that_starts_beside_another_waits_in_an_environment_of_its_own_until_the_user_decides(monkeypatch):
+    import subprocess
+    import features
+    from agents.seat import HookBinding
+    from controllers.types import Questions
+    from providers import PROVIDERS
+    features.load()
+    record = fresh()
+    sessions = Sessions(record.root)
+    running = [subprocess.Popen(["sleep", "60"]) for _ in range(3)]
+    monkeypatch.setattr("agents.seat.agent_pid", lambda pid: pid)
+    try:
+        provider = PROVIDERS["claude"]()
+        start = lambda name, process: HookBinding(record.root, provider, process.pid).bound(name, "", record.env)
+        assert start("first", running[0]) == record.env, "the first session holds the environment"
+        side = start("second", running[1])
+        assert (side, sessions.holders(record.env), sessions.holders(side)) == (f"{record.env}-2", ["first"], ["second"]), \
+            "a session that starts beside a live one does not take the environment: it waits in one of its own"
+        users = Questions(record, actor=USER)
+        asked = users.rows.standing()
+        assert ([q.title for q in asked], [option["title"] for option in asked[0].options], "first" in asked[0].brief) == \
+            ([f"A second session started in {record.env}"], [f"Take over {record.env}", f"Stay in {side}"], True), "the user is asked, naming the session already there"
+        users.complete(asked[0].n, how=f"Stay in {side}")
+        assert (sessions.holders(record.env), sessions.holders(side)) == (["first"], ["second"]), "staying out leaves the sitting session where it is"
+        later = start("third", running[2])
+        users.complete(users.rows.standing()[0].n, how=f"Take over {record.env}")
+        evicted = sessions.read("first")
+        assert (sessions.holders(record.env), sessions.holders(side), evicted.environment, evicted.evicted["by"]) == (["third"], ["second"], "", "third"), \
+            "taking over unbinds the session that was there and the new one holds the environment, so one environment has one live session"
+        assert later == f"{record.env}-3", "the waiting session had an environment of its own meanwhile"
+    finally:
+        for process in running:
+            process.kill()
+
+
 def test_stop_in_the_viewer_tells_the_agent_to_stop_that_task_in_its_providers_words():
     from controllers.types import Agents, Nudges
     record = fresh()

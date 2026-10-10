@@ -5,7 +5,7 @@ from typing import ClassVar
 
 from engine.events.engine import ClockTicked
 from engine.events.agents import AgentReported
-from engine.events.resources import AgentChanged, ResourceCreated, ResourceEvent
+from engine.events.resources import AgentChanged, QuestionAnswered, ResourceCreated, ResourceEvent
 from engine.sessions import Sessions, live
 from providers.payload import HookEvent
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
@@ -13,10 +13,12 @@ from providers import PROVIDERS
 from resources.base import SYSTEM
 from resources.types import COMPACTING, STOPPED, SUBAGENT
 from features.trigger import MINUTE
-from controllers.types import CONTROLLERS, Agents, Todos, environment_records
+from controllers.types import CONTROLLERS, Agents, Environments, Questions, Todos, environment_records
+from engine.record import Record
 
 
 STOP = "stop"
+TAKE_OVER = 1
 
 REPORT_WITHIN = 1800
 
@@ -40,6 +42,19 @@ class HoldEvicted(Handler):
             context.hold("evicted", "eviction", environment=repr(gone["environment"]), by=gone["by"], why=gone["why"])
         else:
             context.release("eviction")
+
+
+class TakeOverOnAnswer(Handler):
+    """A session that started beside another waits for the user's answer: taking the environment over unbinds the session that was there."""
+
+    def handle(self, context: Context, event: QuestionAnswered) -> None:
+        sessions = Sessions(context.record.root)
+        session = sessions.asking(event.n)
+        if not session or Questions(context.record, actor=SYSTEM).load(event.n).chosen != TAKE_OVER:
+            return
+        name = sessions.read(session).takeover["environment"]
+        places = Environments(Record(context.record.root, name), actor=SYSTEM, session=session)
+        places.claim(places.rows.by_title(name).n, "the user chose to take it over")
 
 
 class RecordCompactions(Handler):

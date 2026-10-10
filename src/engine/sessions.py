@@ -67,6 +67,7 @@ class SessionRecord(Loaded):
     evicted: dict = field(default_factory=dict)
     grants: tuple = ()
     worked_in: str = ""
+    takeover: dict = field(default_factory=dict)
 
     @property
     def evicted_since_start(self) -> bool:
@@ -293,6 +294,28 @@ class Sessions:
 
     def evict(self, session: str, by: str, env: str, why: str) -> None:
         self.write(session, environment="", evicted={"by": by, "environment": env, "why": why, "at": time.time()})
+
+    def agent(self, session: str, pid: int = 0) -> set[str]:
+        """The names one agent goes by: its conversation and its terminal share a process."""
+        pid = pid or self.read(session).pid
+        return {name for name, s in self.all().items() if pid and s.pid == pid} | {session}
+
+    def rivals(self, env: str, session: str, pid: int = 0) -> list[str]:
+        """The live sessions of other agents on an environment: an environment has one live session."""
+        mine = self.agent(session, pid)
+        return [holder for holder in self.holders(env) if holder not in mine]
+
+    def take(self, env: str, session: str, why: str, pid: int = 0) -> list[str]:
+        """Unbinds every other agent from an environment, each told it was taken over, so the session that asked for it is the one that holds it."""
+        ended = self.rivals(env, session, pid)
+        for holder in ended:
+            for each in self.agent(holder):
+                self.evict(each, session, env, why)
+        return ended
+
+    def asking(self, question: int) -> str:
+        """The session that waits for the user to answer this question about taking an environment over."""
+        return next((name for name, s in self.all().items() if s.takeover.get("question") == question), "")
 
     def grant(self, session: str, env: str, on: bool = True) -> list[str]:
         lent = set(self.read(session).grants)
