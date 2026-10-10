@@ -18,7 +18,7 @@ from controllers.requests import request
 from engine.outbox import Request
 from engine.given import given
 from features.boards.controller import Boards
-from features.boards.resource import DONE, START
+from features.boards.resource import DONE, REVIEW, START
 from features.checks.output import tail
 from engine.proc import streamed
 from features.tickets.cards import CardState, TicketCards
@@ -508,8 +508,17 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             if 0 < self._limit() <= len({r.work_environment for r in self._running()}):
                 return self.update(ticket.n, queued=True, queued_at=ticket.queued_at or time.time())
             ticket = self.update(ticket.n, queued=False, queued_at=0.0, launched=time.time())
+            ticket = self._doing(ticket)
         bus.background(f"launch {self.record.root} {ticket.n}", lambda: self._launched(ticket.n))
         return self.load(ticket.n)
+
+    def _doing(self, ticket):
+        """A ticket that is started stands in its board's start stage, unless it is already past it."""
+        board = self._board(ticket)
+        began = board.stage_for(START) if board else ""
+        if began and ticket.stage != began and self._meaning(ticket) not in (START, REVIEW, DONE):
+            return self.update(ticket.n, stage=began)
+        return ticket
 
     def _launched(self, n: int) -> None:
         """Cuts the branch in each repository and starts the agent: the slow part of a start, made behind its answer; when it cannot, the ticket is left without a launch under way and says why."""
@@ -544,7 +553,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         if fresh and into != "HEAD":
             ticket = self._based(ticket, {name: tip(repo, f"refs/heads/{self._branch(ticket)}") for name, repo, _ in self._repositories(ticket)})
         detached(self.record.root, project, place, ticket.provider,
-                 prompted(self.record.root, place, driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
+                 prompted(self.record.root, place, driver.resumed(args, earlier), f"{CARRY_ON.format(ref=ticket.ref)} {self._kickoff(ticket)}") if earlier
                  else prompted(self.record.root, place, args, self._kickoff(ticket)))
 
     def _kickoff(self, ticket) -> str:
