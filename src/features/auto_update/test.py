@@ -162,7 +162,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     from features.auto_update import pausing
     for session, pid in (("claude-1", 1111), ("claude-2", 4242)):
         Sessions(record.root).write(session, pid=pid)
-    monkeypatch.setattr(pausing, "live", lambda root: [(None, SimpleNamespace(session=name, provider="claude")) for name in ("claude-1", "claude-2")])
+    monkeypatch.setattr(pausing, "live", lambda root: [(None, SimpleNamespace(session=name, provider="claude", environment=record.env)) for name in ("claude-1", "claude-2")])
     monkeypatch.setattr(pausing, "ancestors", lambda: {4242})
 
     def queued() -> list:
@@ -176,6 +176,15 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert (pausing.resume_when_done(record.root), pausing.paused(record.root), ("claude-1", inputs.RESUME, inputs.UPDATE) in queued()) == (1, [], True), \
         "once the update is over they are resumed, each told so, once"
     assert pausing.resume_when_done(record.root) == 0
+    from controllers.agents import Agents
+    from engine.record import Record
+    monkeypatch.setattr(pausing, "live", lambda root: [(None, SimpleNamespace(session="claude-3", provider="claude", environment="ticket-1"))])
+    ticket_row = Agents(Record(record.root, "ticket-1"), actor=SYSTEM).by_session("claude-3")
+    Agents(Record(record.root, "ticket-1"), actor=SYSTEM).update(ticket_row.n, paused=1.0, paused_for=inputs.UPDATE)
+    inputs.queue(record.root, "claude-3", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
+    pausing.write_json(pausing.kept(record.root), [])
+    assert (pausing.resume_when_done(record.root), ("claude-3", inputs.RESUME, inputs.UPDATE) in queued(), ("claude-3", inputs.PAUSE, inputs.UPDATE) in queued(), pausing.kept(record.root).is_file()) == (1, True, False, True), \
+        "an agent of another environment that the update holds is resumed though no list names it, a pause still waiting for it is taken back, and it is asked again until its row is free"
     from features.auto_update import waiting
     report(record, "working", "PreToolUse", session="claude-8", provider="claude", commands=[{"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()}],
            running={"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()})

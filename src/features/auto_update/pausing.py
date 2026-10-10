@@ -1,8 +1,11 @@
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from controllers.agents import Agents
 from engine import runtime
-from engine.inputs import PAUSE, RESUME, UPDATE, queue
+from engine.inputs import PAUSE, RESUME, UPDATE, queue, withdraw
+from engine.record import Record
+from resources.base import SYSTEM
 from engine.seats import live
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
@@ -38,12 +41,25 @@ def pause_all(root: Path) -> list[str]:
     return [f"paused {plural(len(stopped), 'agent')} for the update"]
 
 
+def still_paused(root: Path) -> list[Paused]:
+    """The live agents of every environment whose own row says the update holds them."""
+    held = []
+    for _, agent in live(root):
+        row = Agents(Record(root, agent.environment), actor=SYSTEM).rows.by_title(agent.session)
+        if row is not None and row.data.get("paused_for") == UPDATE:
+            held.append(Paused(agent.session, agent.provider))
+    return held
+
+
 def resume_all(root: Path) -> int:
-    """Resumes the agents paused for an update, each told so, once."""
-    waiting = paused(root)
-    kept(root).unlink(missing_ok=True)
-    for one in waiting:
+    """Resumes every agent the update paused, tickets and helpers of every environment among them, each told so; the ones whose row still says paused are asked again until the line is submitted."""
+    waiting = {one.session: one for one in [*paused(root), *still_paused(root)]}
+    for one in waiting.values():
+        withdraw(root, one.session, PAUSE, UPDATE)
+        withdraw(root, one.session, RESUME, UPDATE)
         queue(root, one.session, (), "Resume", provider=one.provider, action=RESUME, value=UPDATE)
+    stayed = still_paused(root)
+    write_json(kept(root), [asdict(one) for one in stayed]) if stayed else kept(root).unlink(missing_ok=True)
     return len(waiting)
 
 
