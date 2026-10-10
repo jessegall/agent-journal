@@ -18,8 +18,11 @@ class DevFaultsDetails(FeatureDetails):
     """
 
     help = """
-        Starts on only while developing: DEVELOPMENT_MODE=true in the project's .env or the
-        environment; everywhere else it starts off, and either way it can be switched.
+        On in every project the journal is installed in, and it can be switched off. In the
+        journal's own development project (DEVELOPMENT_MODE=true in its .env or the environment)
+        a notice stays with the agent there; in any other project the agent that meets one also
+        sends its title and numbers to the agent-journal session, which is where the journal is
+        built.
 
         budget: everything here runs on one machine against files, so anything over the budget
         is a bug — faults.budget.request, .hook and .command are milliseconds per environment,
@@ -27,8 +30,6 @@ class DevFaultsDetails(FeatureDetails):
         is filed the same way. One notification per target, carrying the worst time or the last
         words and how many times it happened.
     """
-
-    default = False
 
     aliases = (("budget", "budget"), "faults")
 
@@ -53,7 +54,7 @@ class DevFaultsDetails(FeatureDetails):
         Line(
             name="fault",
             title="{{title}}",
-            brief="{{summary}}",
+            brief="{{summary}}{{send}}",
         ),
         Line(
             name="overdue",

@@ -221,9 +221,21 @@ def test_going_over_again_counts_but_tells_the_agent_once():
 
 
 
-def test_the_budget_is_tunable_per_environment():
+def test_the_budget_is_tunable_per_environment(monkeypatch):
     features.load()
     record = fresh()
+    monkeypatch.delenv("DEVELOPMENT_MODE", raising=False)
+    from features.dev_faults.details import DevFaultsDetails
+    assert DevFaultsDetails.default is True, "developer error reports and budget notices are on in every project, not only while developing"
+    assert "send this notice's title and numbers to the agent-journal session" in DevFaults().reports.send(record), \
+        "in any other project than the journal's own the agent is told to send the numbers of a notice to the agent-journal session"
+    monkeypatch.setenv("DEVELOPMENT_MODE", "true")
+    assert DevFaults().reports.send(record) == "", "in the journal's own development project a notice stays with the agent there"
+    monkeypatch.delenv("DEVELOPMENT_MODE")
+    turned(record, False)
+    from migrations.m0080_developer_error_reports_on import run
+    assert (run(record.root), DevFaults.on_for(record)) == ("developer error reports and budget notices switched on in 1 environments", True), \
+        "an upgrade switches them on in the projects where they were left off by the old default"
     turned(record, True)
     record.set_setting("dev_faults", {"budget.request": 0})
     with measured(record, "request", "GET /api/main/message"):
