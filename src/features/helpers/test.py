@@ -111,6 +111,11 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     Sessions(record.root).bind("claude-8", "helper-env", provider="claude")
     assert (running_in(record, "helper-env"), running_in(record, "elsewhere"), tell_in(record, "elsewhere", "claude", "hi")) == ("claude-8", "", False), \
         "an environment with an agent seated in it is running, and nothing can be typed into one without"
+    from features.agent_sessions import launch
+    with monkeypatch.context() as relaunched:
+        relaunched.setattr(launch, "running", lambda found: False)
+        relaunched.setattr(launch, "launched_in", lambda root, environment: "claude-9")
+        assert running_in(record, "helper-env") == "claude-9", "a seated session whose terminal ended gives way to the agent launched in its place, so a resumed helper is never reported gone"
     stop_in(record, "helper-env")
     stop_in(record, "elsewhere")
     mine = todos.create("hand this on").n
