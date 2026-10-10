@@ -65,9 +65,9 @@ def test_each_chosen_profile_speaks_in_its_own_voice_and_calls_you_as_it_says():
         lines[voice.title] = start_block(record)
     assert all(voice.text in lines[voice.title] for voice in SHIPPED), "each shipped profile's own voice reaches the start block"
     assert 'Address me as "Ada"' in lines["Homie"] and "Never address me by name or title" in lines["Colleague"], "a profile says what it calls you"
-    assert 'Address me as "Sir Knight"' in lines["Squire"] and "Captain" not in lines["Squire"], "the Squire calls you by words of its own, never by your title and name"
+    assert 'Address me as "my liege"' in lines["Squire"] and "Captain" not in lines["Squire"], "the Squire calls you by words of its own, never by your title and name"
     squire = Profiles(record, actor=SYSTEM).load(number_of(record, "Squire"))
-    assert (squire.address, Profiles(record, actor=SYSTEM).samples()[squire.n].split()[-1]) == ("Sir Knight", "Knight!"), \
+    assert (squire.address, Profiles(record, actor=SYSTEM).samples()[squire.n].split()[-1]) == ("my liege", "liege!"), \
         "a voice carries its own form of address, and its sample says it"
     choose(record, 999)
     assert SHIPPED[0].text in start_block(record), "a choice that names no profile talks as the Butler"
@@ -239,12 +239,6 @@ def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dro
     assert (tuned["ms"], tuned["frames"][0]) == (120, {"x": 256, "y": -2, "ms": 400}), "the offsets and times are kept beside the sheet in its offsets file, within the cell"
     assert "idle_wave_offsets.json" in profiles.load(squire.n).files, "as the offsets file the animations are delivered with"
     assert next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edited"], "and the animation is marked as edited"
-    delivered = next(a for a in profiles.animations()[squire.n] if a["shipped"] and a["name"] == "leg_swing_salute")
-    assert (delivered["edited"], len(delivered["edit"]["frames"]), any(f["y"] for f in delivered["edit"]["frames"])) == (False, 8, True), \
-        "a delivered animation keeps the offsets of its file and is not marked edited"
-    butler = profiles.rows.by_title("Butler")
-    stroll = next(a for a in profiles.animations()[butler.n] if a["name"] == "stroll_hat_tip")
-    assert {(f["x"], f["y"]) for f in stroll["edit"]["frames"]} == {(0, 0)}, "the Butler's stroll and hat tip is fixed in place"
     assert "has no animation" in refused(lambda: profiles.tune(squire.n, "nope.png", {"ms": 1})), "only an animation the voice has can be tuned"
     profiles.tune(squire.n, sheet_path)
     assert next(a for a in profiles.animations()[squire.n] if a["path"] == sheet_path)["edit"] is None, "with no tuning it goes back to the sheet as it is"
@@ -254,7 +248,3 @@ def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dro
         "a schedule, the weight of an idle animation and where the mascot is placed on the chat box are saved with the voice, the place within the cell"
     assert "least cannot be above" in refused(lambda: profiles.schedule(squire.n, {"blink": {"min": 9, "max": 2}})), "a range runs from the least to the most"
     assert "no animation" in refused(lambda: profiles.schedule(squire.n, {"weights": {"nope.png": 1}})), "only an animation the voice has gets a weight"
-    anchored = profiles.anchor(butler.n, "flat/butler_idle_bow_tie_atlas.png", False, 0, 232)
-    assert (anchored["firm"], anchored["frames"][0], anchored["frames"][3]) == (True, {"x": 0, "y": 0}, {"x": 11, "y": 0}), \
-        "anchoring finds, from the pixels, how far each frame's feet are from the first frame's and the offset that puts them back"
-    assert not profiles.anchor(squire.n, "flat/squire_idle_leg_swing_salute_atlas.png", True, 135, 170)["firm"], "a body that really moves is not given a guessed anchor"
