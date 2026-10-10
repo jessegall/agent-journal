@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.26 — Scrolling back finds your own messages
+- Scrolling up the chat loads the messages before the oldest one shown, yours and the agent's alike. The window used to start at a weeks-old open message, so only the agent's notes of that stretch came back and your own messages never did.
+- The main chat, a subagent's chat and a helper's chat page back through one funnel, a page at a time, with skeleton rows while a page loads.
+- A sitting voice hops up onto its seat on entry and hops off on exit, its legs showing all the while and each in its own manner, instead of its legs vanishing and popping back.
+
 ## 2.268.25 — A calmer mascot and plainer notices
 - The mascot enters only after the agent has stayed idle for three seconds, and leaves only after it has stayed busy for three seconds, so a quick command no longer makes it pop in and out.
 - The line that tells an agent of a new message names who wrote it and their words once, with the tag that answers it; the journal's tag is not doubled and the message's row is no longer dumped into the chat.
