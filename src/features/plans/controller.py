@@ -8,7 +8,7 @@ import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Docs, Environments, Todos, Works
 from features.plans.resource import (
-    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, READY, REVIEWING, RUNNING, WAITING, Plan,
+    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, READY, REVIEWING, RUNNING, WAITING, Plan, stood, tallied,
 )
 from features.work_tracking.auto import passes_checkpoints
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
@@ -230,11 +230,9 @@ class Plans(Controller):
         lines = [f"plan {r.n}, {r.title}: {r.status}, phase {r.current} of {len(r.phases)}"]
         for i, phase in enumerate(r.phases, 1):
             rows = self._members(phase)
-            closed = sum(1 for row in rows if row.completed)
-            lines.append(f"{'now ' if i == r.current else ''}phase {i}, {phase[PHASE.title]}: {closed} of {len(rows)} done")
+            lines.append(f"{'now ' if i == r.current else ''}phase {i}, {phase[PHASE.title]}: {tallied(rows).said()}")
             if i == r.current:
-                lines += [f"  {row.type} {row.n} {row.title}: {'done' if row.completed else row.data.get('stage') or row.data.get('status') or 'open'}"
-                          for row in rows]
+                lines += [f"  {row.type} {row.n} {row.title}: {stood(row)}" for row in rows]
         lines += [f"lately: {moment['kind']} to-do {moment['todo']}, {moment['title']}" for moment in self.timeline(r.n)[-3:]]
         return "\n".join(lines)
 

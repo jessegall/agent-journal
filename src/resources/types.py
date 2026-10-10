@@ -84,6 +84,9 @@ class Todo(Ranked, Placed, Resource):
     def merge_wait(self) -> MergeWait:
         return MergeWait.from_json(self.pending)
 
+    def awaits_merge(self) -> bool:
+        return not self.completed and bool(self.merge_wait.worktree)
+
 
 class Work(Traced, Resource):
     data_fields: ClassVar[list[Field]] = [

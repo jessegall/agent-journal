@@ -92,16 +92,16 @@ class TicketCards:
     @action
     def status(self, n: int) -> dict:
         """Where a ticket stands: its plan with the progress of its rows, what its agent does now, and whether it works or awaits."""
-        from features.plans.progress import counts
+        from features.plans.progress import Tally, counts
         ticket = self.load(n)
         state = self._runtime(ticket, Sessions(self.record.root).all(), len(self._running()))
         if not ticket.work_environment:
             return asdict(TicketStatus(state.kind, state.text))
         place = self.record.sibling(ticket.work_environment)
         plan = self._plan_of(ticket)
-        done, total = counts(place, plan) if plan else (0, 0)
+        stands = counts(place, plan) if plan else Tally()
         doing = next((w.title for w in Works(place, actor=SYSTEM).rows.standing() if not w.parked), "")
-        return asdict(TicketStatus(state.kind, state.text, plan.title if plan else "", done, total, doing))
+        return asdict(TicketStatus(state.kind, state.text, plan.title if plan else "", stands.settled, stands.total, doing))
 
     def _roles(self) -> list:
         from engine.organization import organization

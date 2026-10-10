@@ -65,6 +65,13 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     by_agent.place(plan.n, 2, [rows[0]], move=True)
     by_agent.place(plan.n, 1, [rows[0]], move=True)
     assert [p["todos"] for p in by_agent.phases(plan.n)] == [[2, 1], [3], [4, 5]], "--move carries it"
+    held = todos.load(rows[1])
+    held.pending = {"how": "done on the branch", "worktree": "7"}
+    todos.save(held, "updated")
+    assert "phase 1, First: 0 of 2 done, 1 built, waiting for the merge" in by_agent.progress(plan.n), \
+        "a row a helper finished on its branch is counted as built and waiting, not as untouched"
+    held.pending = {}
+    todos.save(held, "updated")
     by_agent.ready(plan.n)
     assert by_agent.load(plan.n).data["status"] == "ready", "every phase filled: ready"
 
