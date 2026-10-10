@@ -147,6 +147,9 @@ async function runBar(p) {
                         <span :key="sentence.tail" class="statusbar-line">{{ sentence.tail }}</span>
                     </Transition>
                 </span>
+                <template v-if="current || waitingNow">
+                    <Icon name="caret" :size="12" :class="['statusbar-chevron', {open: waitingOpen}]" />
+                </template>
             </component>
         </span>
         <template v-if="state !== 'stopped' && agentOnline">
@@ -337,6 +340,22 @@ async function runBar(p) {
     background: var(--hover);
     color: var(--text);
     text-decoration-color: var(--text-2);
+}
+
+.statusbar-chevron {
+    flex: none;
+    align-self: center;
+    margin-left: 4px;
+    color: var(--text-3);
+    transition: transform 0.15s;
+}
+
+.statusbar-chevron.open {
+    transform: rotate(180deg);
+}
+
+.statusbar-roll.link:hover .statusbar-chevron {
+    color: var(--text-2);
 }
 
 .statusbar-head {

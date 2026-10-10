@@ -69,9 +69,12 @@ export function waitingOn(agent, works, helpers = [], now = Date.now() / 1000) {
     return waitingFor({text, on: work?.data.awaiting_on, since: Number(work?.data.awaiting_since || 0)}, {runs, helpers, now});
 }
 
+const running = (agent) => Boolean(agent && agent.data.running && agent.data.running.command && !agent.data.running.done);
+
 export function stateOf(agent, works) {
     if (agent && agent.data.paused) return "paused";
     const reported = agent ? agent.data.status : "stopped";
+    if (reported === "working" && running(agent)) return "working";
     if (reported === "idle" && (backgroundRun(agent) || waitsFor(works))) return "waiting";
     return REPORTED.includes(reported) ? reported : waitsFor(works) ? "waiting" : currentWork(works) ? "working" : "busy";
 }
