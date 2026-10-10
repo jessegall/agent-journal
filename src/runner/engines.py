@@ -17,6 +17,7 @@ from resources.base import AGENT, SYSTEM, USER
 from runner.engine import TICK, Engine
 from engine.package import CODE, ZIPPED, build_file
 from engine.locks import claim
+from engine.sampling import profile_when_asked
 
 ENDING = 5.0
 UNHEARD_AFTER = 120.0
@@ -103,6 +104,7 @@ def leftovers(root: Path) -> list[int]:
 
 
 def child(root: str, env: str) -> None:
+    profile_when_asked(Path(root), env)
     Engines(Path(root), env).run(threading.Event())
 
 
