@@ -550,6 +550,8 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
         planned.setattr(Tickets, "_decide_plan", lambda self, n, status, word, method, told: decided.append((n, status)))
         assert user.approve_plan(ui.n).approved_early is True, "an approval given while the ticket still waits is kept, not refused"
         assert decided == [], "and nothing is approved yet"
+        assert ui.n not in [waiting.n for waiting in Tickets(record, actor=SYSTEM)._awaiting_orchestrator()] and Tickets(record, actor=SYSTEM)._idle_by_design(user.load(ui.n)), \
+            "a plan approved while its ticket waits is neither handed to the orchestrator to review again nor taken for a stuck agent"
         user.complete(api.n, how="shipped")
         assert (decided, user.load(ui.n).approved_early) == ([(ui.n, READY)], False), "the plan is approved the moment the ticket it waited on closes"
     assert "has no plan waiting" in refused(lambda: user.approve_plan(ui.n)), "once its dependency closes, the wait no longer holds the plan"

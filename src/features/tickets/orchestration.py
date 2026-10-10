@@ -26,7 +26,7 @@ class TicketOrchestration:
         if not boards:
             return []
         return [ticket for ticket in self.rows.standing() if ticket.work_environment and ticket.board and int(ticket.board) in boards
-                and self._orchestrator_may(ticket, PLANS) and self._plan_status(ticket) in (READY, WAITING)]
+                and not ticket.approved_early and self._orchestrator_may(ticket, PLANS) and self._plan_status(ticket) in (READY, WAITING)]
 
     def _orchestrator_may(self, ticket, permission: str) -> bool:
         board = self._board(ticket)
