@@ -90,7 +90,7 @@ class Dumps(Controller):
 
     @action
     def offer(self, n: int, options: str, summary: str = ""):
-        r = self.load(n)
+        r = self.peek(n)
         try:
             offered = json.loads(options or "[]")
         except ValueError as error:
@@ -242,7 +242,7 @@ class Dumps(Controller):
 
     @action
     def ask(self, n: int, question: str, guesses: str = ""):
-        r = self.load(n)
+        r = self.peek(n)
         if not question.strip():
             raise Refused("say what you need to know")
         if r.completed:
@@ -254,7 +254,7 @@ class Dumps(Controller):
     def answer(self, n: int, text: str):
         if self.actor == AGENT:
             self._refuse("only the user answers a question on a dump")
-        r = self.load(n)
+        r = self.peek(n)
         asked = r.data.get("question") or {}
         if not asked:
             raise Refused(f"dump {r.n} has no question waiting")

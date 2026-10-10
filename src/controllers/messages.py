@@ -53,7 +53,7 @@ class Messages(Controller):
 
     @action
     def process(self, n: int, part: str, result: str):
-        r = self.load(n)
+        r = self.peek(n)
         if part not in r.title and part not in r.brief:
             raise Refused(f"that part is not in message {n}; quote the words it is about")
         for kind, _, num in (w.strip().replace(" ", ":").partition(":") for w in result.split(",")):
@@ -98,7 +98,7 @@ class Messages(Controller):
         """Splits the messages a reply names into those it cannot answer, each with the reason, and those it can: a message written in a window is answered there, and one the agent answered already is added to by comment."""
         skipped, answerable = [], []
         for number in numbers:
-            message = self.load(number)
+            message = self.peek(number)
             kind, _, place = message.data.get("window", "").partition(":")
             earlier = next((reply for reply in self.comments(number) if self.actor == AGENT and reply.author == AGENT), None)
             if hasattr(CONTROLLERS.get(kind), "say"):

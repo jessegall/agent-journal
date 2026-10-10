@@ -288,3 +288,12 @@ def test_a_type_keeps_its_counts_in_step_with_every_row_a_change_touches():
     assert kept() == walked() == (3, 1, 1), "a row closed another way leaves them too"
     Messages(record, actor=SYSTEM).delete(third, "mistake")
     assert kept() == walked() == (2, 0, 0), "a deleted row leaves every count"
+
+
+def test_a_read_takes_the_held_row_and_a_load_takes_a_copy():
+    features.load()
+    record = fresh()
+    messages = Messages(record, actor=SYSTEM)
+    made = messages.create("a question")
+    assert messages.peek(made.n) is messages.peek(made.n), "a read gets the row the store holds, parsed once"
+    assert messages.load(made.n) is not messages.peek(made.n), "a writer gets a copy it may change"

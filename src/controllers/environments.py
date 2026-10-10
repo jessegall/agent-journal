@@ -77,7 +77,7 @@ class Environments(Controller):
 
     @action
     def stop(self, n: int):
-        env = self.load(n)
+        env = self.peek(n)
         holder = self._sessions.holder(env.title)
         if not holder:
             self._refuse(f"no agent holds environment {env.title!r}")
@@ -137,7 +137,7 @@ class Environments(Controller):
             if not was:
                 raise Refused("this session came from nowhere: no environment to go back to")
             return self.switch(self.find(was).n, move=who)
-        env = self.load(n)
+        env = self.peek(n)
         holder = self._sessions.holder(env.title)
         if holder and holder not in self._agent(who):
             self._refuse(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
@@ -247,7 +247,7 @@ class Environments(Controller):
 
     @action
     def claim(self, n: int, why: str):
-        env = self.load(n)
+        env = self.peek(n)
         session = self._bound_session()
         holder = self._sessions.holder(env.title)
         if holder and holder not in self._agent(session):
@@ -258,7 +258,7 @@ class Environments(Controller):
 
     @action
     def leave(self, n: int):
-        env = self.load(n)
+        env = self.peek(n)
         session = self._bound_session()
         if self._sessions.environment(session) != env.title:
             self._refuse(f"session {session} does not hold environment {env.title!r}")
@@ -267,5 +267,5 @@ class Environments(Controller):
 
     @action
     def grant(self, n: int, off: bool = False):
-        env = self.load(n)
+        env = self.peek(n)
         return self._sessions.grant(self._bound_session(), env.title, on=not off)

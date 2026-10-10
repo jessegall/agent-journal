@@ -10,7 +10,7 @@ class Discussed:
     @action
     def comment(self, n: int, text: str) -> Resource:
         from controllers.types import Comments
-        parent = self.load(n)
+        parent = self.peek(n)
         made = Comments(self.record, actor=self.actor).create(titled(text), brief=text.strip(), about=parent.ref)
         self._mark_commented(n, made)
         return made
@@ -33,7 +33,7 @@ class Discussed:
         if face not in FACES:
             raise Refused(f"a reaction is one of {' '.join(FACES)}")
         from controllers.types import Reactions
-        r = self.load(n)
+        r = self.peek(n)
         reactions = Reactions(self.record, actor=self.actor)
         for made in reactions.linked_to(r.ref):
             if made.face == face and made.author == self.actor:
