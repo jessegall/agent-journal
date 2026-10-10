@@ -182,7 +182,7 @@ class Controller(Files, Links, Discussed):
                             {"why": self.force, "past": list(self.forced), "who": self.actor, "at": time.time()}]
         self.forced = []
 
-    def _stored(self, r: Resource) -> Resource:
+    def _row_on_disk(self, r: Resource) -> Resource:
         """The row as the disk holds it, to compare a row about to be saved with: the held row, or a fresh read when the row being saved is the held one itself, changed in place."""
         held = self.rows.peek(r.n)
         return self.rows.reparsed(r.n) if held is r else held
@@ -191,7 +191,7 @@ class Controller(Files, Links, Discussed):
         allowed = self.resource.editors.get(r.author)
         if allowed is None or self.actor in allowed or not self.rows.exists(r.n):
             return
-        stored = self._stored(r)
+        stored = self._row_on_disk(r)
         parts = [section[SECTION.title] for section in stored.sections]
         rewritten = any(getattr(stored, f) != getattr(r, f) for f in WORDS) or [section[SECTION.title] for section in r.sections][:len(parts)] != parts
         if action == "deleted" or rewritten:
@@ -200,7 +200,7 @@ class Controller(Files, Links, Discussed):
     def _shipped(self, r: Resource, action: str) -> None:
         if self.actor == SYSTEM or not self.rows.exists(r.n):
             return
-        stored = self._stored(r)
+        stored = self._row_on_disk(r)
         if not stored.data.get("system"):
             return
         free = ("kept", *self.resource.progress)

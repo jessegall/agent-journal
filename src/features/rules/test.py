@@ -38,8 +38,8 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
     use("Write", {"file_path": "notes.md", "content": "then npm run build"})
     assert text().startswith(f"fact {pin.n} —") is True, "a fact whose word is in what is being written is whispered"
 
-    Rules(record, actor=USER).create("Write clean code", keywords="word")
-    use("Bash", {"command": "write clean code"})
+    Rules(record, actor=USER).create("Keep the tree clean", keywords="word")
+    use("Bash", {"command": "keep the tree clean"})
     assert text() == "", "a row with no keywords is never whispered"
 
     assert ("keywords" in type(rule).fields) is True, "keywords are a field of the type, not loose data"

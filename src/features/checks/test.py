@@ -238,7 +238,8 @@ def test_a_failing_check_reaches_a_waiting_agent_and_is_told_again_only_when_it_
 
 def test_upgrades_rename_old_stored_keys_in_events_agents_checks_and_settings(tmp_path):
     import json
-    from migrations.m0008_plain_stored_keys import run
+    from engine.locks import hold_record_writes
+    from migrations.m0008_plain_stored_keys import run as migrate
 
     home = tmp_path / "environments" / "main"
     (home / "agent").mkdir(parents=True)
@@ -253,6 +254,9 @@ def test_upgrades_rename_old_stored_keys_in_events_agents_checks_and_settings(tm
     other = tmp_path / "environments" / "other"
     other.mkdir()
     (other / "settings.json").write_text(json.dumps({"work_tracking": {"name_work_every": 5}, "x": 1}))
+    def run(root):
+        with hold_record_writes(root):
+            return migrate(root)
     assert run(tmp_path) == "1 event logs, 3 rows and 1 settings files use the plain key names", "every old key is renamed where it is stored"
     assert '"handled"' in (home / "events.jsonl").read_text() and '"last_message"' in (home / "agent" / "001.md").read_text(), "events and agents use the plain keys"
     assert '"output"' in (tmp_path / "project" / "check" / "001.md").read_text(), "a check row uses the plain key"

@@ -231,13 +231,13 @@ def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
     (code(record.root) / "CHANGELOG.md").write_text("# changes\n")
     keys = {
         "/api/manifest": {"actions", "actors", "build", "chat_kinds", "environment", "features", "fields", "groups", "methods", "models", "priority", "project", "scopes", "searchable", "types", "version", "views"},
-        "/api/summary": {"color", "countdown", "environments", "helpers", "project", "root", "start", "started", "step", "tickets", "updating", "version"},
+        "/api/summary": {"color", "countdown", "environments", "helpers", "project", "ready", "root", "start", "started", "step", "tickets", "updating", "version"},
         "/api/{env}/bar": {"queue"},
         "/api/{env}/family": {"links", "members"},
         "/api/agent-controls/claude": {"groups", "note", "provider"},
         "/api/{env}/agent": {"more", "rows"},
         "/api/{env}/agent/1/transcript": {"first", "total", "turns"},
-        "/api/changelog": {"changed", "changelog", "checking", "latest", "newer", "repository", "updating", "version"},
+        "/api/changelog": {"changed", "changelog", "checking", "latest", "more", "newer", "repository", "shown", "updating", "version"},
         "/api/{env}/search": {"hits", "more"},
     }
     wrong = {path: sorted(keys[path] ^ set(reply.body)) for path in keys if (reply := get(record, path)).code != 200 or set(reply.body) != keys[path]}
