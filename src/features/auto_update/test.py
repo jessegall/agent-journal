@@ -327,6 +327,15 @@ def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_pa
     calls = (shimmed / "curl.log").read_text()
     assert (ran.stdout, "api/slow-command" in calls, "took=432" in calls, "command=ticket board" in calls) == ("done", True, True, True), \
         "a command the shim found slower than 50 milliseconds, from its own start to the answer, is reported to the journal behind the answer"
+    curl.write_text('#!/bin/sh\nprintf "\\n000 20.001234"\n')
+    timed_out = subprocess.run(["sh", str(script), "todo", "create", "x"], env={**os.environ, "PATH": f"{shimmed / 'bin'}:{os.environ['PATH']}", "ROOT": str(shimmed), "JOURNAL_ENV": "main"},
+                               capture_output=True, text=True, timeout=30)
+    assert (timed_out.returncode, "did not answer in 20 seconds" in timed_out.stderr) == (1, True), \
+        "a command that got no answer after twenty seconds is not run again cold, since it may still be running: the shim says so and stops"
+    curl.write_text('#!/bin/sh\nprintf "\\n000 0.002345"\n')
+    refused_at_once = subprocess.run(["sh", str(script), "todo", "create", "x"], env={**os.environ, "PATH": f"{shimmed / 'bin'}:{os.environ['PATH']}", "ROOT": str(shimmed), "JOURNAL_ENV": "main"},
+                                     capture_output=True, text=True, timeout=30)
+    assert (refused_at_once.returncode, refused_at_once.stderr) == (0, ""), "a server that refused the connection at once never saw the command, so the shim goes on to run it itself"
     from install import ENTRYPOINTS
     waiting = tmp_path / "waiting"
     (waiting / "runtime").mkdir(parents=True)

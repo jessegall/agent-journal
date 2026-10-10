@@ -192,7 +192,8 @@ fi ;;
 esac
 case "$said" in
 200) printf '%s' "$body"; exit 0 ;;
-404|409|000|"") ;;
+404|409) ;;
+000|"") [ "${ms:-0}" -lt 5000 ] || { echo "! the journal did not answer in $((ms / 1000)) seconds; the command may still be running, so it was not run again: look before you send it again" >&2; exit 1; } ;;
 *) [ -n "$body" ] && printf '%s' "$body" >&2 || echo "! the journal server answered $said and said nothing" >&2; exit 1 ;;
 esac
 fi
