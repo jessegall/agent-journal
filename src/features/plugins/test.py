@@ -1026,3 +1026,20 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     monkeypatch.setattr(fitting, "official", official)
     (repo.record.root / "runtime" / fitting.KEPT).unlink()
     assert sorted(started()) == ["Install the Broken plugin", "Install the Snake plugin"], "a list that cannot be reached adds nothing and breaks nothing"
+    from types import SimpleNamespace
+    from features.plugins import parts
+    context = SimpleNamespace(record=None, feature=SimpleNamespace(journal=None), hook=SimpleNamespace(session="s-1"))
+    said = []
+    with monkeypatch.context() as slow:
+        slow.setattr(parts, "called", lambda row: "slowpoke")
+        slow.setattr(parts, "declared", lambda row: SimpleNamespace(refuse_budget=2.0))
+        slow.setattr(parts, "apply", lambda record, journal, name, session, reply: said.append(reply["say"]))
+        slow.setattr(parts.AskPluginsToRefuse, "_answer", lambda self, record, row, tool, payload, seconds: time.sleep(0.6) or "no")
+        began = time.monotonic()
+        refused = parts.AskPluginsToRefuse()._within(context, object(), "Bash", {}, parts.HOOK_WAIT)
+        took = time.monotonic() - began
+        until = time.monotonic() + 3
+        while not said and time.monotonic() < until:
+            time.sleep(0.02)
+    assert (refused, took < 0.5, bool(said) and "answered after the call went ahead" in said[0]) == ("", True, True), \
+        "a plugin's refusal is waited for as long as the hook may wait; past that the call goes ahead and the plugin's answer reaches the agent late"
