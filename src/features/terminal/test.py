@@ -331,7 +331,7 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     relaunched = []
     monkeypatch.setattr(control, "online", lambda root, env, session: SimpleNamespace(provider="codex", terminal="term-1"))
     monkeypatch.setattr(control, "relaunch_session", lambda root, env, terminal, session: relaunched.append(terminal))
-    monkeypatch.setattr(control, "pressed", lambda root, env, session, label, *more: {"pressed": label})
+    monkeypatch.setattr(control, "pressed", lambda root, env, session, label, *more, **named: {"pressed": label})
     assert "has no shell command" in refused(lambda: control.shell(record.root, record.env, "codex-1", "ls")), "a command is not typed into an agent that has no shell line"
     assert "does not support" in refused(lambda: control.choice("nobody", "effort", "high", "m")), "a choice for an agent the journal does not know is refused in words"
     assert (control.relaunch(record.root, record.env, "codex-1"), relaunched, control.move_to_background(record.root, record.env, "codex-1")) == \

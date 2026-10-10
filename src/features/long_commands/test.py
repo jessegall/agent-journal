@@ -12,7 +12,7 @@ from tests.kit import nudges, report, tick
 def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monkeypatch):
     record = fresh()
     moved = []
-    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
+    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session, running="": moved.append(session) or {"queued": True})
     started = time.time() - 45
     report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}])
     tick(record)
@@ -73,7 +73,7 @@ def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):
     from providers import DRIVERS
     record = fresh()
     moved = []
-    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
+    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session, running="": moved.append(session) or {"queued": True})
     report(record, "working", "PreToolUse", session="conversation-1", provider="claude", commands=[{"command": "sleep 40", "tool": "Bash", "at": time.time() - 31}])
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="conversation-1", asking={})
@@ -148,7 +148,7 @@ def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the
     from resources.base import SYSTEM
     record = fresh()
     moved = []
-    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
+    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session, running="": moved.append(session) or {"queued": True})
     report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm run build", "tool": "Bash", "at": time.time() - 45}])
     keep = lambda call, data: "the build must stay in view"
     keep.guard = Guard("Keep the build in view", Reach.MAIN)
@@ -327,7 +327,7 @@ def test_a_call_that_never_reported_back_is_closed_and_a_command_that_ended_befo
     from tests.kit import handle
     record = fresh()
     moved = []
-    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
+    monkeypatch.setattr(agents.control, "move_to_background", lambda root, env, session, running="": moved.append(session) or {"queued": True})
     started = time.time() - 45
     report(record, "working", "PreToolUse", provider="claude", commands=[{"command": "npm test", "tool": "Bash", "at": started}])
     tick(record)
