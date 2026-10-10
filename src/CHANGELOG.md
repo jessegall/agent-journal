@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.268.19 — Updates take seconds, and can be put off
+- When the journal updates by itself, the blurred cover counts down ten seconds with a Not now button; Not now puts the update off, and it is offered again later.
+- An update waits only for running journal commands, never a test run or a dev server, and for twenty seconds at most; the new build is checked in a process of its own without asking a server; every step's time is written to runtime/upgrade-steps.jsonl.
+- The changelog loads ten releases at a time, newest first, with a button for older ones.
+- The agent bar's second share arrow was Import a layout; it has an upload arrow of its own, and Share names the layout it shares.
+
 ## 2.268.18 — Questions asked under an environment show with its own
 - The Questions tab, window and count carry the open questions of this environment and of every environment launched from it, helpers and tickets included, each named for its environment and answered in that environment's inspector.
 - Under reduced motion the mascot stays visible in its rest pose, with no blinks, moves, entrance or exit, instead of being hidden.

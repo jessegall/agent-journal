@@ -165,10 +165,10 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert dispatch("POST", "/api/update/cancel", record.root, {}, {}).code == 200
     runner.join(2)
     assert (counted, countdown.remaining(record.root)) == ([False], {}), "Not now puts that update off"
-    from features.auto_update.check import claimed, ledger
-    ledger(record.root).set("2.9.1", {"at": time.time(), "tries": 1, "ok": False})
+    from features.auto_update.check import claimed, ledger as tries
+    tries(record.root).set("2.9.1", {"at": time.time(), "tries": 1, "ok": False})
     assert claimed(record.root, "2.9.1", "ask") is False, "a put off update is not offered again at once"
-    ledger(record.root).set("2.9.1", {"at": time.time() - 3600, "tries": 1, "ok": False})
+    tries(record.root).set("2.9.1", {"at": time.time() - 3600, "tries": 1, "ok": False})
     assert claimed(record.root, "2.9.1", "ask") is True, "but it is offered again later, as a failed one is"
     from engine import inputs
     from engine.sessions import Sessions
@@ -767,8 +767,9 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     with monkeypatch.context() as patch:
         patch.setattr(install, "listed_variables", lambda: (_ for _ in ()).throw(OSError("no git")))
         assert install.repository_variables() == frozenset(), "without git no variable is dropped"
-    silent = tmp_path / "silent.py"
-    silent.write_text("import sys\nsys.exit(3)\n")
+    silent = tmp_path / "silent"
+    (silent / "features").mkdir(parents=True)
+    (silent / "features" / "__init__.py").write_text("import sys\nsys.exit(3)\n")
     assert install.start_refused(silent, legacy) == "it exited with 3 and printed nothing", "a build that will not start and says nothing is named by its exit"
     assert install.pack(legacy) == f"the Python is already in {install.ARCHIVE}", "a journal whose Python is already packed is not packed again"
     with monkeypatch.context() as patch:
