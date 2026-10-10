@@ -234,7 +234,7 @@ def healed(ctx) -> str:
     return heal(ctx["record"].root)
 
 def services(ctx) -> str:
-    from engine.services import DOWN, UP, listed, log_file, want
+    from engine.services import DOWN, UP, Declared, listed, log_file, specs, want
     from features.plugins.services import plugin_services
     root = ctx["record"].root
     action, which = ctx["action"], ctx["which"]
@@ -249,7 +249,7 @@ def services(ctx) -> str:
         return f"{which} is asked to {'stop' if action == 'stop' else 'run'}"
     if action != "list":
         raise Refused(f"services knows list, up, start, stop, restart and log, not {action!r}")
-    lines = [f"{s['id']:<28} {s['state']:<10} {s['url']}{'  ' + s['why'] if s['why'] else ''}" for s in listed(root, (plugin_services,))]
+    lines = [f"{s['id']:<28} {s['state']:<10} {s['url']}{'  ' + s['why'] if s['why'] else ''}" for s in listed(root, [Declared(one.id, one.plugin, one.service, one.port) for one in specs(root, (plugin_services,))])]
     return "\n".join(lines) or "no plugin declares a service"
 
 def services_up(root: Path) -> str:
