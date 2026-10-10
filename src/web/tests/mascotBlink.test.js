@@ -14,6 +14,7 @@ describe("the mascot's blink", () => {
         expect(slow.shut).toBeCloseTo(BLINK.shut.max, 0);
         expect(quick.twice).toBe(true);
         expect(slow.twice).toBe(false);
+        expect(quick.again).toBe(BLINK.doubleAfter);
     });
 
     it("shuts the eyes over whatever the pose shows, and nothing else", () => {

@@ -172,7 +172,7 @@ function shut(blink) {
     lids.value = "closed";
     rigBlinkTimer = setTimeout(() => {
         lids.value = "";
-        if (blink.twice) return (rigBlinkTimer = setTimeout(() => shut({...blink, twice: false}), BLINK.doubleAfter));
+        if (blink.twice) return (rigBlinkTimer = setTimeout(() => shut({...blink, twice: false}), blink.again));
         waitForRigBlink();
     }, blink.shut);
 }
