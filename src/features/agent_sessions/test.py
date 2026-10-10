@@ -245,7 +245,7 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     assert (row.status, row.data["failure"]) == ("idle", "out of credits"), "the agent goes idle with the failure set"
 
 
-def test_the_start_question_never_offers_a_busy_environment_on_enter():
+def test_a_session_that_starts_beside_a_live_one_is_never_offered_its_environment_and_waits_in_one_of_its_own_until_the_user_decides(monkeypatch):
     import os
     from tests.kit import asked_for
     from controllers.types import Environments
@@ -263,9 +263,6 @@ def test_the_start_question_never_offers_a_busy_environment_on_enter():
     def closed(_=""):
         raise EOFError
     assert asked_for(record, ask=closed, answering=True) == record.env, "input that ends before an answer keeps the environment it started in"
-
-
-def test_a_session_that_starts_beside_another_waits_in_an_environment_of_its_own_until_the_user_decides(monkeypatch):
     import subprocess
     import features
     from agents.seat import HookBinding
