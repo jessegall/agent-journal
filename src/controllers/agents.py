@@ -26,16 +26,34 @@ REPORT_WITHIN = 30.0
 KEEP_FOR = 1.0
 
 
+@dataclass(frozen=True)
+class RowKey:
+    root: str
+    env: str
+    n: int
+
+
 @dataclass
 class Pending:
-    """What hooks reported about an agent's row since it was last written: the facts, and what the written row says that decides when to write again."""
+    """What hooks reported about an agent's row since it was last written, and the state the written row has, which decides when to write again."""
 
+    written_status: str
+    written_asking: dict
+    written_compacting: bool
+    written: float
     delta: dict = field(default_factory=dict)
-    status: str = ""
-    asking: dict = field(default_factory=dict)
-    compacting: bool = False
-    written: float = 0.0
     action: str = "reported"
+
+    @classmethod
+    def of(cls, row) -> "Pending":
+        return cls(row.status, row.asking, bool(row.compacting), float(row.updated))
+
+    def changed_state(self) -> bool:
+        return (self.delta.get("status", self.written_status), self.delta.get("asking", self.written_asking),
+                bool(self.delta.get("compacting", self.written_compacting))) != (self.written_status, self.written_asking, self.written_compacting)
+
+    def is_due(self, now: float) -> bool:
+        return self.changed_state() or now - self.written >= KEEP_FOR
 
 
 class PendingRows:
@@ -43,28 +61,28 @@ class PendingRows:
 
     def __init__(self):
         self.guard = threading.Lock()
-        self.rows: dict[tuple, Pending] = {}
+        self.rows: dict[RowKey, Pending] = {}
 
-    def key(self, record, n: int) -> tuple:
-        return (str(record.root), record.env, int(n))
+    def key(self, record, n: int) -> RowKey:
+        return RowKey(str(record.root), record.env, int(n))
 
-    def of(self, record, n: int) -> Pending | None:
+    def holds(self, record, n: int) -> bool:
         with self.guard:
-            return self.rows.get(self.key(record, n))
+            return self.key(record, n) in self.rows
+
+    def of(self, record, n: int) -> Pending:
+        with self.guard:
+            return self.rows[self.key(record, n)]
 
     def opened(self, record, row) -> Pending:
         with self.guard:
-            key = self.key(record, row.n)
-            if key not in self.rows:
-                data = row.data
-                self.rows[key] = Pending(status=data.get("status") or "", asking=data.get("asking") or {}, compacting=bool(data.get("compacting")), written=float(row.updated or 0))
-            return self.rows[key]
+            return self.rows.setdefault(self.key(record, row.n), Pending.of(row))
 
-    def dropped(self, record, n: int) -> Pending | None:
+    def pop(self, record, n: int) -> Pending:
         with self.guard:
-            return self.rows.pop(self.key(record, n), None)
+            return self.rows.pop(self.key(record, n))
 
-    def due(self, now: float) -> list[tuple]:
+    def due(self, now: float) -> list[RowKey]:
         with self.guard:
             return [key for key, pending in self.rows.items() if now - pending.written >= KEEP_FOR]
 
@@ -74,21 +92,21 @@ PENDING = PendingRows()
 
 def write_pending_rows() -> None:
     """Writes the agent rows whose second is up; the server's loop calls it, so a row is never more than a second behind."""
-    for root, env, n in PENDING.due(time.time()):
-        flushed(root, env, n)
+    for key in PENDING.due(time.time()):
+        flushed(key)
 
 
-def flushed(root: str, env: str, n: int) -> None:
+def flushed(key: RowKey) -> None:
     from controllers.faults import threw
     try:
-        Agents(Record(Path(root), env), actor=SYSTEM)._flush(n)
+        Agents(Record(Path(key.root), key.env), actor=SYSTEM)._flush(key.n)
     except Exception:
-        threw(Path(root), env, "writing an agent row")
+        threw(Path(key.root), key.env, "writing an agent row")
 
 
 def write_all_pending_rows() -> None:
-    for root, env, n in PENDING.due(float("inf")):
-        flushed(root, env, n)
+    for key in PENDING.due(float("inf")):
+        flushed(key)
 
 
 atexit.register(write_all_pending_rows)
@@ -104,14 +122,14 @@ class Agents(Controller):
 
     def load(self, n: int | str):
         row = super().load(n)
-        pending = PENDING.of(self.record, int(n))
-        if pending:
-            row.data.update(copy.deepcopy(pending.delta))
+        if PENDING.holds(self.record, int(n)):
+            row.data.update(copy.deepcopy(PENDING.of(self.record, int(n)).delta))
         return row
 
     def save(self, r, action: str, **event):
         saved = super().save(r, action, **event)
-        PENDING.dropped(self.record, r.n)
+        if PENDING.holds(self.record, r.n):
+            PENDING.pop(self.record, r.n)
         return saved
 
     def _shared(self, session: str):
@@ -135,8 +153,7 @@ class Agents(Controller):
             pending = PENDING.opened(self.record, self.rows.peek(int(n)))
             pending.delta.update(shaped)
             pending.action = action
-            due = self._due(pending, shaped)
-            if due:
+            if pending.is_due(time.time()):
                 self._flush(int(n))
             self._emit(int(n), action, **fact)
             row = self.load(n)
@@ -144,15 +161,10 @@ class Agents(Controller):
             self.record.memo[self.type, row.title] = row
         return row
 
-    @staticmethod
-    def _due(pending: Pending, shaped: dict) -> bool:
-        return (shaped.get("status", pending.status) != pending.status or shaped.get("asking", pending.asking) != pending.asking
-                or bool(shaped.get("compacting", pending.compacting)) != pending.compacting or time.time() - pending.written >= KEEP_FOR)
-
     def _flush(self, n: int) -> None:
-        pending = PENDING.dropped(self.record, n)
-        if not pending or not pending.delta:
+        if not PENDING.holds(self.record, n):
             return
+        pending = PENDING.pop(self.record, n)
         with self.record.locked(self.resource.scope):
             r = super().load(n)
             r.data.update(pending.delta)

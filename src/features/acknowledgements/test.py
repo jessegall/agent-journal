@@ -140,4 +140,4 @@ def test_a_hook_that_finds_the_status_as_it_was_leaves_the_agent_row_unwritten_f
     report(record, "idle", "Notification")
     PENDING.of(record, n).written -= 7200
     write_pending_rows()
-    assert (PENDING.of(record, n), agents.rows.peek(n).data["event"]) == (None, "Notification"), "the server's loop writes what a second held back"
+    assert (PENDING.holds(record, n), agents.rows.peek(n).data["event"]) == (False, "Notification"), "the server's loop writes what a second held back"
