@@ -117,7 +117,9 @@ class Stamped:
     noted: int
 
 def saved(folder: Path, rows: dict) -> None:
-    """Writes a folder's row index to its place, and takes away the index an older version left beside the rows."""
+    """Writes a folder's row index to its place, and takes away the index an older version left beside the rows; a folder that is gone gets none, so a late read never brings back a removed environment."""
+    if not folder.is_dir():
+        return
     write_json(index_file(folder), rows)
     (folder / INDEX).unlink(missing_ok=True)
 
