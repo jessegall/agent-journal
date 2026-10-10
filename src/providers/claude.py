@@ -256,11 +256,11 @@ class Claude(Provider):
         write_text(f, json.dumps({**known, "env": wanted}, indent=2) + "\n")
         return True
 
-    def serve_mcp(self, project: Path, name: str, url: str) -> bool:
+    def serve_mcp(self, project: Path, name: str, url: str, headers_helper: str = "") -> bool:
         f = project / ".mcp.json"
         known = read_json(f, dict, {})
         servers = known.get("mcpServers") or {}
-        wanted = {"type": "http", "url": url}
+        wanted = {key: value for key, value in {"type": "http", "url": url, "headersHelper": headers_helper}.items() if value}
         if servers.get(name) == wanted:
             return False
         write_text(f, json.dumps({**known, "mcpServers": {**servers, name: wanted}}, indent=2) + "\n")
