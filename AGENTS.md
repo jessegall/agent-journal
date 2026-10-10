@@ -22,21 +22,26 @@ Use the most specific available agent type whose declared purpose matches the as
 
 Everything a tool returns stays in the context for good and is paid for on every turn after it. Search before you read, read the range you need, and cap output with grep, head or tail. Read a whole file only when you need all of it.
 
-**L4 — Follow-up work goes back to the subagent that did the first part; never start a fresh one on work another already holds.**
+**L4 — Related work goes back to the helper or subagent that already worked on it, in its own session; never start a fresh one on work another already knows.**
 
-A subagent that drew a design, wrote the code or ran the research keeps what it learned. When the user asks for a change to its work, continue that subagent with a message rather than dispatching a new one that has to rediscover everything; start fresh only when the earlier one is gone or the new work is unrelated.
+A helper or subagent that drew a design, wrote the code or ran the research keeps what it learned. When new work changes its work, is related to it or touches the same code, send it there with a message (SendMessage, journal helper say) rather than dispatching a new one that has to rediscover everything; start fresh only when the earlier one is gone or the new work is unrelated. Reuse means its whole session, not its name: a helper whose agent ended is resumed in the session it ran, with its context, never started again under the same name.
 
-**L5 — Every subagent dispatch names the agent: a human name, a little quirky, that fits its role.**
+**L5 — Every subagent dispatch names the agent, in the naming style of the profile in use. Name it after a distinguished historical figure with a gentle twist on their trade, such as Dr. Einstein for a profiler or Lady Lovelace for a programmer. Every helper and subagent addresses you as Alfred and never the user: their reports are written to you.**
 
-A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task, such as "Dr. Einstein: profile the slow hooks" or "Coco Rams: draw the plan card". A designer can borrow from famous designers, a researcher from famous scientists, mixed up for fun.
+A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task. The profile in use says how its agents are named.
 
 **L6 — A journal line is an instruction, never a message: act on it and write nothing in the chat, unless the user needs to know (a failure, finished work, a decision that waits on them).**
 
 A line that starts with [journal], a reminder, a notice or an old helper report is the journal telling the agent what to do, not the user speaking. Answering it fills the user's chat with noise. Act on it, or note it and carry on; write in the chat only what the user needs to know, such as a failure, a finished piece of work or a decision that waits on them.
 
+**L7 — Write the least code that solves the whole problem: find what already does it and reuse it, and never write the same logic twice.**
+
+Before writing, search the code for what already does the job or most of it, and extend that instead of adding a second way. Every read or write of one kind of thing (a file, a record, a setting, a provider) goes through the one funnel that owns it, which is where caching and checks live. A fix lands where the fault is born, not where it shows. When you finish, say in a line what you skipped or did not check.
+
 ## Rules
 
 - Every viewer heading and label says plainly what it is about
+- The voice profile shapes only the agent's chat speech, never code or text
 
 <!-- END: agent-journal, form 2 -->
 
