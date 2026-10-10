@@ -58,7 +58,7 @@ def holding(name: str, folder: Path):
     finally:
         took = time.monotonic() - began
         if took >= HELD_LONG:
-            frames = traceback.extract_stack(limit=14, lookup_lines=False)[:-1]
+            frames = traceback.StackSummary.extract(traceback.walk_stack(None), limit=14, lookup_lines=False)
             where = "".join(f"  {frame.filename}:{frame.lineno} in {frame.name}\n" for frame in frames)
             NOTES.append((folder, f"{time.strftime('%H:%M:%S')} {name} held {took * 1000:.0f}ms by\n{where}\n"))
 
