@@ -93,7 +93,7 @@ def built(root: Path) -> tuple[Record, int]:
     first = messages.create("message 1", brief="a message of the benchmark journal")
     for n in range(first.n + 1, first.n + MESSAGES):
         made = messages.resource(n=n, title=f"message {n}", brief="a message of the benchmark journal", data=dict(first.data), created=time.time(), seen=[SYSTEM], refs=[])
-        write_text(messages.path(n), made.dump())
+        messages.rows.write_file(made)
     return record, board.n
 
 
