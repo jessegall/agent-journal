@@ -1,3 +1,4 @@
+import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -43,11 +44,11 @@ def pause_all(root: Path) -> list[str]:
 
 
 def still_paused(root: Path) -> list[Paused]:
-    """The live agents of every environment whose own row says the update holds them."""
+    """The live agents of every environment whose own row says the update holds them; a row paused for longer than any update takes is a leftover, and the engine ends its pause on its own."""
     held = []
     for _, agent in live(root):
         rows = Agents(Record(root, agent.environment), actor=SYSTEM).rows.standing()
-        if any(row.paused and row.paused_for == UPDATE for row in rows):
+        if any(row.paused and row.paused_for == UPDATE and time.time() - float(row.paused) < STALE_PAUSE for row in rows):
             held.append(Paused(agent.session, agent.provider))
     return held
 

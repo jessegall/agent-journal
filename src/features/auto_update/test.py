@@ -198,11 +198,13 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     from engine.record import Record
     monkeypatch.setattr(pausing, "live", lambda root: [(None, SimpleNamespace(session="claude-3", provider="claude", environment="ticket-1"))])
     ticket_row = Agents(Record(record.root, "ticket-1"), actor=SYSTEM).by_session("conversation-3")
-    Agents(Record(record.root, "ticket-1"), actor=SYSTEM).update(ticket_row.n, paused=1.0, paused_for=inputs.UPDATE)
+    Agents(Record(record.root, "ticket-1"), actor=SYSTEM).update(ticket_row.n, paused=time.time(), paused_for=inputs.UPDATE)
     inputs.queue(record.root, "claude-3", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
     pausing.write_json(pausing.kept(record.root), [])
     assert (pausing.resume_when_done(record.root), ("claude-3", inputs.RESUME, inputs.UPDATE) in queued(), ("claude-3", inputs.PAUSE, inputs.UPDATE) in queued(), pausing.kept(record.root).is_file()) == (1, True, False, True), \
         "an agent of another environment that the update holds, its row named for its conversation and not for its seat, is resumed though no list names it, a pause still waiting for it is taken back, and it is asked again until its row is free"
+    Agents(Record(record.root, "ticket-1"), actor=SYSTEM).update(ticket_row.n, paused=time.time() - pausing.STALE_PAUSE - 1)
+    assert pausing.still_paused(record.root) == [], "a pause left on a row for longer than any update takes does not keep the agents being asked to resume every second"
     from features.auto_update import waiting
     report(record, "working", "PreToolUse", session="claude-8", provider="claude", commands=[{"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()}],
            running={"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()})

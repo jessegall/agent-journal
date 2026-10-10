@@ -269,6 +269,10 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     assert (engine.pausing(), engine.paused, f"send {engine_module.PAUSED_FOR_UPDATE}" in calls) == ("Paused", True, True), "an agent paused for the update is told so"
     inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
     assert (engine.pausing(), engine.paused, calls[-1]) == ("resumed", False, f"send {engine_module.RESUMED_AFTER_UPDATE}"), "and is told when it may go on"
+    inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
+    sent = len(calls)
+    assert (engine.pausing(), engine.paused, len(calls) == sent, len(list(inputs.runtime.inputs(root).glob("*.json")))) == ("", False, True, 0), \
+        "a resume asked again for an agent that is not paused is taken and not said, so the update's line is not typed again every second"
     inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
     engine.pausing()
     from engine import runtime
