@@ -3,6 +3,7 @@ import time
 import controllers.types as types_module
 from controllers.agents import WORKING_STATE
 from controllers.types import Agents, Environments, Features, Messages
+from engine import bus
 from engine.record import Record
 from engine.seats import terminal_of
 from engine.state import State
@@ -89,7 +90,11 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return max(0, int(TicketsDetails.values(self.record).running))
 
     @action
-    def tell(self, n: int, note: str):
+    def tell(self, n: int, note: str) -> str:
+        ticket = self._told(n, note)
+        return f"told {self.type} {ticket.n}'s agent: {note.strip()[:200]}"
+
+    def _told(self, n: int, note: str):
         ticket = self.load(n)
         driver = self._driver(ticket, "tell")
         if self._working(ticket):
@@ -116,7 +121,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     @action
     def send_back(self, n: int, note: str):
-        ticket = self.tell(n, note)
+        ticket = self._told(n, note)
         ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, **given(stage=self._board(ticket).stage_for(START)))
         if ticket.sent_back >= RETURNS_BEFORE_ESCALATING:
             self._emit(ticket.n, ESCALATED)
@@ -363,7 +368,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     def stop(self, n: int):
         ticket = self.load(n)
         self._stop(ticket)
-        return self.update(ticket.n, halted=True)
+        return self.update(ticket.n, halted=True, launched=0.0)
 
     def _stop(self, ticket) -> None:
         session = self.agent_session(ticket.n)
@@ -465,8 +470,6 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     @action
     def start(self, n: int, provider: str | None = None, model: str | None = None):
-        from agents.terminal import detached, prompted
-        from providers import DRIVERS, PROVIDERS
         self._only_you(self.load(n), "start", once_asked=True)
         self._confirmed(self.load(n))
         self.mark_seen()
@@ -487,29 +490,45 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 return ticket
             if 0 < self._limit() <= len({r.work_environment for r in self._running()}):
                 return self.update(ticket.n, queued=True, queued_at=ticket.queued_at or time.time())
-            driver, place = DRIVERS[ticket.provider], ticket.work_environment
-            earlier = Sessions(self.record.root).last(place, ticket.provider)
-            if earlier and not PROVIDERS[ticket.provider]().conversation_file(earlier):
-                earlier = ""
-            args = driver.within(["--model", ticket.model] if ticket.model else [], place)
-            project = self.record.root.parent
-            if ticket.base and not ticket.agent_seen:
-                self._discard_failed_start(ticket)
-                ticket = self.update(ticket.n, base="", bases={})
-            fresh = not ticket.base
-            ticket = self._based(ticket, self._started_at(ticket))
-            for _, repo, _ in self._repositories(ticket):
-                keep_own_packages(repo, ticket.work_environment, bool(ticket.own_packages))
-            for _, repo, base in self._repositories(ticket) if into != "HEAD" else ():
-                stuck = branched(repo, self._branch(ticket), base, fresh)
-                if stuck:
-                    self._refuse(stuck)
-            if fresh and into != "HEAD":
-                ticket = self._based(ticket, {name: tip(repo, f"refs/heads/{self._branch(ticket)}") for name, repo, _ in self._repositories(ticket)})
-            detached(self.record.root, project, place, ticket.provider,
-                     prompted(self.record.root, place, driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
-                     else prompted(self.record.root, place, args, self._kickoff(ticket)))
-            return self.update(ticket.n, queued=False, queued_at=0.0, launched=time.time())
+            ticket = self.update(ticket.n, queued=False, queued_at=0.0, launched=time.time())
+        bus.background(f"launch {self.record.root} {ticket.n}", lambda: self._launched(ticket.n))
+        return self.load(ticket.n)
+
+    def _launched(self, n: int) -> None:
+        """Cuts the branch in each repository and starts the agent: the slow part of a start, made behind its answer; when it cannot, the ticket is left without a launch under way and says why."""
+        ticket = self.load(n)
+        try:
+            self._launch(ticket, self._into(ticket))
+        except (Refused, SystemExit) as why:
+            self.update(ticket.n, launched=0.0)
+            self.comment(ticket.n, f"it did not start: {why}")
+            raise
+
+    def _launch(self, ticket, into: str) -> None:
+        from agents.terminal import detached, prompted
+        from providers import DRIVERS, PROVIDERS
+        driver, place = DRIVERS[ticket.provider], ticket.work_environment
+        earlier = Sessions(self.record.root).last(place, ticket.provider)
+        if earlier and not PROVIDERS[ticket.provider]().conversation_file(earlier):
+            earlier = ""
+        args = driver.within(["--model", ticket.model] if ticket.model else [], place)
+        project = self.record.root.parent
+        if ticket.base and not ticket.agent_seen:
+            self._discard_failed_start(ticket)
+            ticket = self.update(ticket.n, base="", bases={})
+        fresh = not ticket.base
+        ticket = self._based(ticket, self._started_at(ticket))
+        for _, repo, _ in self._repositories(ticket):
+            keep_own_packages(repo, ticket.work_environment, bool(ticket.own_packages))
+        for _, repo, base in self._repositories(ticket) if into != "HEAD" else ():
+            stuck = branched(repo, self._branch(ticket), base, fresh)
+            if stuck:
+                self._refuse(stuck)
+        if fresh and into != "HEAD":
+            ticket = self._based(ticket, {name: tip(repo, f"refs/heads/{self._branch(ticket)}") for name, repo, _ in self._repositories(ticket)})
+        detached(self.record.root, project, place, ticket.provider,
+                 prompted(self.record.root, place, driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
+                 else prompted(self.record.root, place, args, self._kickoff(ticket)))
 
     def _kickoff(self, ticket) -> str:
         into = self._into(ticket)
