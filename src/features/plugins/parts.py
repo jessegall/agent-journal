@@ -25,6 +25,7 @@ from resources.base import OWNER, PLUGIN, SYSTEM
 from engine.reach import Reach
 
 ALTOGETHER = 5.0
+HOOK_WAIT = 0.2
 
 
 @dataclass(frozen=True)
@@ -81,11 +82,29 @@ class AskPluginsToRefuse(ToolInterceptor):
                 self._beside(context, row, payload)
                 continue
             started = time.monotonic()
-            refused = self._answer(record, row, hook.tool.name, payload, min(manifest.refuse_budget, left))
+            refused = self._within(context, row, hook.tool.name, payload, min(HOOK_WAIT, left))
             left -= time.monotonic() - started
             if refused:
                 return f"{called(row)}: {refused}"
         return ""
+
+    def _within(self, context: Context, row, tool: str, payload: dict, wait: float) -> str:
+        """A plugin's refusal is waited for as long as the hook may wait; past that the call goes ahead, and what the plugin answers then reaches the agent as a message."""
+        record, journal, session = context.record, context.feature.journal, context.hook.session
+        name, seconds = called(row), declared(row).refuse_budget
+        answered, late, found = threading.Event(), threading.Event(), []
+
+        def ask() -> None:
+            refused = self._answer(record, row, tool, payload, seconds)
+            found.append(refused)
+            answered.set()
+            if late.is_set() and refused:
+                apply(record, journal, name, session, {"say": f"{refused} (it answered after the call went ahead)"})
+        threading.Thread(target=ask, name=f"plugin-{name}", daemon=True).start()
+        if answered.wait(max(wait, 0.0)):
+            return found[0]
+        late.set()
+        return found[0] if answered.is_set() else ""
 
     def _beside(self, context: Context, row, payload: dict) -> None:
         """A plugin that declared its hook async never holds the tool call: it is asked on a thread of its own, and what it answers reaches the agent as a message, never as a refusal."""
