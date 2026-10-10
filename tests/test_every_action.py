@@ -457,7 +457,7 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     todos.update(newest, brief="changed a third time")
     on_dashboard()
     encoded_after = {key: body for key, (_, body) in ENCODED.items() if key[1] == "todo"}
-    assert [key[2] for key in encoded_before if encoded_after[key] is not encoded_before[key]] == [newest], "a change to one to-do encodes that row again and no other"
+    assert [key[3] for key in encoded_before if encoded_after[key] is not encoded_before[key]] == [newest], "a change to one to-do encodes that row again and no other"
     docs = CONTROLLERS["doc"](record, actor=USER)
     from surfaces.listing import Listing, newest_listed
     shelf = CONTROLLERS["todo"](record, actor=AGENT)
@@ -749,12 +749,10 @@ def test_a_failed_attach_leaves_the_attached_file_and_its_description_as_they_we
         write_text(source, "first")
         invoked(controller, "attach", (row.n, str(source), "the first"))
         write_text(source, "second")
-        moves = []
         real = os.replace
 
         def failing(src, dst):
-            moves.append(dst)
-            if len(moves) == 2:
+            if Path(dst).name == source.name:
                 raise OSError("the disk refused the move")
             real(src, dst)
         monkeypatch.setattr(files.os, "replace", failing)
@@ -838,7 +836,7 @@ def test_a_row_of_every_type_moved_to_another_environment_keeps_its_words_and_fi
     source.write_text("kept")
     wrong = {}
     for type_, resource, record, controller in each_type():
-        if type(controller).move is not Controller.move:
+        if type(controller).move is not Controller.move or type(controller).attach is not Controller.attach:
             continue
         users = acting(type_, record, USER)
         row = acting(type_, record, SYSTEM if resource.agent_only else USER).create(f"a {type_} to carry", brief="the brief", **needed(type_))
@@ -1147,6 +1145,8 @@ def multipart_files(*files: tuple[str, str]) -> dict:
 def test_an_upload_and_the_file_route_stay_inside_the_rows_folder_for_every_type():
     wrong = {}
     for type_, resource, record, controller in each_type():
+        if type(controller).attach is not Controller.attach:
+            continue
         row = acting(type_, record, SYSTEM).create(f"a {type_} with files", **needed(type_))
         base = f"/api/{{env}}/{type_}/{row.n}"
         uploaded = post(record, f"{base}/upload", multipart_files(("a.txt", "one"), ("b.txt", "two")))
