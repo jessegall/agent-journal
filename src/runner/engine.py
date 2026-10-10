@@ -51,6 +51,8 @@ STAMPED = "stamped"
 SETTLE, STEP = 3.0, 0.1
 OUTPUT_WAIT = 5.0
 TYPING_HOLD = 10.0
+RESUME_PATIENCE = 30.0
+STALE_PAUSE = 600.0
 DIALOG_AGAIN = 10.0
 
 SILENT_AFTER = 120.0
@@ -357,19 +359,35 @@ class Engine:
                 self.agent.driver.send(PAUSED_FOR_UPDATE, now=True)
             return self.held("Paused")
         if asked := take(self.record.root, self.names(), RESUME):
-            if not self.agent.driver.send(RESUMED_AFTER_UPDATE if asked.value == UPDATE else RESUMED, now=True):
+            if not self.agent.driver.send(RESUMED_AFTER_UPDATE if asked.value == UPDATE else RESUMED, now=True) and self.paused_age() < RESUME_PATIENCE:
                 filed(self.record.root, asked)
                 return "paused"
-            self.paused = False
-            self.resumed_at = time.time()
-            self.agent.mark("", "", paused=0, paused_for="")
-            self.noted("Continued")
-            return "resumed"
+            return self.released()
+        if self.paused and self.stale_update_pause():
+            self.agent.driver.send(RESUMED_AFTER_UPDATE, now=True)
+            return self.released()
         if not self.paused:
             return ""
         if self.agent.state() in (BUSY, WORKING) and time.time() - self.held_at > SETTLE:
             return self.held("Interrupted: the agent is paused")
         return "paused"
+
+    def paused_age(self) -> float:
+        return time.time() - float(self.agent.current().paused)
+
+    def stale_update_pause(self) -> bool:
+        """A pause for an update that outlived it: no upgrade runs, no resume is kept for it, and it is older than any update takes."""
+        from features.auto_update.pausing import kept
+        row = self.agent.current()
+        return row.paused_for == UPDATE and not runtime.upgrading(self.record.root) and not kept(self.record.root).is_file() and self.paused_age() >= STALE_PAUSE
+
+    def released(self) -> str:
+        """The pause ends: the mark that holds the agent's calls is cleared whether or not the line telling it could be typed, so a screen that takes no input cannot keep an agent held."""
+        self.paused = False
+        self.resumed_at = time.time()
+        self.agent.mark("", "", paused=0, paused_for="")
+        self.noted("Continued")
+        return "resumed"
 
     def backgrounded(self) -> str:
         asked = take(self.record.root, self.names(), BACKGROUND)

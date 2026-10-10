@@ -45,8 +45,8 @@ def still_paused(root: Path) -> list[Paused]:
     """The live agents of every environment whose own row says the update holds them."""
     held = []
     for _, agent in live(root):
-        row = Agents(Record(root, agent.environment), actor=SYSTEM).rows.by_title(agent.session)
-        if row is not None and row.data.get("paused_for") == UPDATE:
+        rows = Agents(Record(root, agent.environment), actor=SYSTEM).rows.standing()
+        if any(row.paused and row.paused_for == UPDATE for row in rows):
             held.append(Paused(agent.session, agent.provider))
     return held
 

@@ -268,6 +268,19 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     assert (engine.pausing(), engine.paused, len(list(runtime.inputs(root).glob("*.json")))) == ("paused", True, 1), "a resume whose line was not submitted keeps the agent paused and is asked again"
     engine.agent.driver.send = delivered
     assert (engine.pausing(), engine.paused) == ("resumed", False), "and goes through once the line is submitted"
+    inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
+    engine.pausing()
+    engine.agent.mark("", "", paused=time.time() - 40)
+    engine.agent.driver.send = lambda *a, **k: False
+    inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
+    assert (engine.pausing(), engine.paused, engine.agent.current().paused) == ("resumed", False, 0), \
+        "a pause that has waited for its resume line past the patience is cleared whether or not the line could be typed, so a screen that takes no input cannot keep an agent held"
+    engine.agent.driver.send = delivered
+    inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
+    engine.pausing()
+    assert engine.pausing() == "paused", "a fresh pause for the update stays while its update may still run"
+    engine.agent.mark("", "", paused=time.time() - engine_module.STALE_PAUSE - 1)
+    assert (engine.pausing(), engine.paused) == ("resumed", False), "a pause for an update that is long over, with no upgrade running and no resume kept, clears itself"
 
     calls.clear()
     inputs.queue(root, "claude-1", (), "Force through", action=inputs.FORCE)
