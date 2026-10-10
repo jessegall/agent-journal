@@ -73,7 +73,7 @@ class Todo(Ranked, Placed, Resource):
     event_labels = {"created": "To-do created", "completed": "To-do closed", "updated.read": "To-do read", "updated.assign": "To-do assigned",
                     "updated.report": "To-do reported", "updated.block": "To-do blocked", "updated.unblock": "To-do unblocked",
                     "updated.after": "To-do waits on another", "updated.priority": "To-do priority set", "updated.start": "To-do started"}
-    start_heading = "TO-DOS waiting — delayed work, not an instruction to start any of it"
+    start_heading = "TO-DOS ready to take — delayed work, not an instruction to start any of it"
     start_as_count = True
     icon = "ring"
     listed_under = SIDEBAR
