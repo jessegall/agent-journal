@@ -33,7 +33,6 @@ import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import PlanCard from "./PlanCard.vue";
-import Skeleton from "../kit/Skeleton.vue";
 import {tellExtension} from "../platform/extension.js";
 import {ui} from "../state/ui.js";
 
@@ -177,25 +176,6 @@ async function older() {
 }
 let frame = 0;
 
-function pictured() {
-    return [...(scroller.value ? scroller.value.querySelectorAll("img") : [])].filter((img) => !img.complete);
-}
-
-async function loaded() {
-    const pending = pictured();
-    if (!pending.length) return;
-    await Promise.race([
-        Promise.all(
-            pending.map(
-                (img) =>
-                    new Promise(
-                        (done) => img.addEventListener("load", done, {once: true}) || img.addEventListener("error", done, {once: true})
-                    )
-            )
-        ),
-        new Promise((done) => setTimeout(done, 4000)),
-    ]);
-}
 const revoke = (p) => Object.values(p.data.previews || {}).forEach(URL.revokeObjectURL);
 const {pending, promise, drop, change, keep, link, keyOf} = usePromised(revoke);
 const boardRequests = computed(
@@ -429,12 +409,11 @@ watch(busy, async () => {
 });
 
 watch(
-    () => (store.booted && rendering.value ? turns.value.length : -1),
+    () => (rendering.value ? turns.value.length : -1),
     async (n, before) => {
         await nextTick();
         if (!ready.value) {
             if (n < 0) return;
-            await loaded();
             ready.value = true;
             await nextTick();
             laidOut.value += 1;
@@ -503,9 +482,6 @@ watch(
                     <WaitingPanel :waiting="waitingNow" :anchor="waitingAnchor" @close="waitingOpen = false" />
                 </template>
             </div>
-            <template v-if="!ready">
-                <Skeleton shape="messages" label="Loading messages" />
-            </template>
             <div class="thread-views">
                 <div
                     ref="scroller"
@@ -521,9 +497,6 @@ watch(
                         <template v-if="!turns.length">
                             <template v-if="turnsLoaded">
                                 <p class="thread-empty">Nothing has been said here yet.</p>
-                            </template>
-                            <template v-else>
-                                <Skeleton shape="messages" label="Loading messages" />
                             </template>
                         </template>
                         <TransitionGroup :name="settledOnce ? 'turn' : ''">
