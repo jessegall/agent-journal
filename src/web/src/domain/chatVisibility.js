@@ -40,19 +40,12 @@ const chatKinds = () => store.spec.chat_kinds;
 export const HIDDEN_KEY = "chat_hidden";
 export const DEFAULT_HIDDEN = ["acknowledgements", "sequence_steps"];
 
-const KINDS = {
-    message: (t) => (t.data.acknowledgement ? "acknowledgements" : ""),
-    thought: () => "thoughts",
-    skill: () => "skills",
-    subagent: () => "subagents",
-    compacted: () => "compactions",
-    made: () => "made",
-    receipt: () => "filed",
-    whisper: (t) => chatKinds().recalled[(t.data.row || "").split(":")[0]] || "rules",
-    card: (t) => (t.data.kind ? t.data.kind : t.data.visitor ? "visitors" : t.data.name && t.data.side !== "user" ? "plugins" : chatKinds().marked[t.data.icon] || "notes"),
-};
+export const turnKind = (type) => chatKinds().turns[type];
 
-export const kindOf = (turn) => (KINDS[turn.type] ? KINDS[turn.type](turn) : "");
+export const kindOf = (turn) => {
+    if (turn.type === "message") return turn.data.acknowledgement ? "acknowledgements" : "";
+    return turn.data.shows || turnKind(turn.type) || "";
+};
 
 export const visibleIn = (hidden) => (turn) => !hidden.includes(kindOf(turn));
 

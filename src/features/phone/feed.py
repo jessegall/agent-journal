@@ -17,7 +17,7 @@ from features.ask_questions.details import AskQuestionsDetails
 from features.format import VIEWER, formatted, shaped
 from features.helpers.controller import Helpers
 from features.helpers.state import HelperSnapshot, asked_permission, helper_reason, helper_state
-from features.phone.chat_view import card_shows, hidden, whisper_shows
+from features.phone.chat_view import TURNS, hidden
 from features.phone.members import rights_of
 from features.phone.places import WAITED, owed
 from features.suggestions.controller import Suggestions
@@ -83,17 +83,17 @@ class Session:
 
     def marks(self) -> list[Mark]:
         return [
-            *(self.mark(t["at"], t["text"], "thoughts", kind="thought") for t in self.thoughts),
-            *(self.mark(c["at"], c["label"], card_shows(c.get("icon"), c.get("name", c.get("plugin")), c.get("kind")), icon=c.get("icon"), name=c.get("name", c.get("plugin")), detail=c.get("detail"), tone=c.get("tone"),
+            *(self.mark(t["at"], t["text"], TURNS["thought"], kind="thought") for t in self.thoughts),
+            *(self.mark(c["at"], c["label"], c["shows"], icon=c.get("icon"), name=c.get("name", c.get("plugin")), detail=c.get("detail"), tone=c.get("tone"),
                         color=c.get("color"), state=c.get("state"), command=c.get("command")) for c in self.cards),
-            *(self.mark(sub["at"], "Refused a subagent" if sub.get("refusal") else "Dispatched a subagent", "subagents", icon="agents", name=sub["task"],
+            *(self.mark(sub["at"], "Refused a subagent" if sub.get("refusal") else "Dispatched a subagent", TURNS["subagent"], icon="agents", name=sub["task"],
                         detail=sub["refusal"] if sub.get("refusal") else sub.get("model"), tone="danger" if sub.get("refusal") else None)
               for sub in self.subagents if "at" in sub),
-            *(self.mark(sub["ended"], f"Subagent {sub.get('status', 'finished')}", "subagents", icon="agents", name=sub["task"], tone="good")
+            *(self.mark(sub["ended"], f"Subagent {sub.get('status', 'finished')}", TURNS["subagent"], icon="agents", name=sub["task"], tone="good")
               for sub in self.subagents if sub.get("ended") and not sub.get("refusal")),
-            *(self.mark(load["at"], "Loaded skill", "skills", icon="book", name=load["skill"], tone="good") for load in self.skill_loads),
-            *(self.mark(done["at"], "The agent compacted its context", "compactions", icon="activity", tone="warn") for done in self.compactions),
-            *(self.mark(w["at"], w.get("words", w["title"]), whisper_shows(w["ref"]), icon="reminders") for w in self.whispers),
+            *(self.mark(load["at"], "Loaded skill", TURNS["skill"], icon="book", name=load["skill"], tone="good") for load in self.skill_loads),
+            *(self.mark(done["at"], "The agent compacted its context", TURNS["compacted"], icon="activity", tone="warn") for done in self.compactions),
+            *(self.mark(w["at"], w.get("words", w["title"]), w["shows"], icon="reminders") for w in self.whispers),
         ]
 
 

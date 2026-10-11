@@ -4,7 +4,7 @@ from pathlib import Path
 
 import features
 from engine.record import Record
-from features.phone.chat_view import MARKED, RECALLED
+from features.phone.chat_view import TURNS
 from features.format import catalogue
 from features import groups
 from controllers.base import actions
@@ -52,7 +52,7 @@ def default_models() -> list[dict]:
 
 
 def built_in() -> dict:
-    return {"types": described_types(), "chat_kinds": {"recalled": RECALLED, "marked": MARKED}}
+    return {"types": described_types(), "chat_kinds": {"turns": TURNS}}
 
 
 def manifest(root: Path) -> Manifest:

@@ -1,6 +1,6 @@
 import {meta} from "./spec.js";
 import {withoutChips} from "../text/words.js";
-import {visibleIn} from "./chatVisibility.js";
+import {turnKind, visibleIn} from "./chatVisibility.js";
 
 const PROMISED_WITHIN = 5;
 
@@ -74,7 +74,7 @@ const visitorComments = (comments) =>
                 icon: "bubble",
                 label: `${c.data.visitor} commented on ${c.refs[0].replace(":", " ")}`,
                 row: c.refs[0],
-                visitor: true,
+                shows: turnKind("visitor"),
             })
         );
 
@@ -88,7 +88,7 @@ const compactions = (agents) =>
 const thoughts = (agents) => sessions(agents).flatMap((a) => (a.data.thoughts || []).map((t) => mark("thought", a, t.at, t.text)));
 
 const whispers = (agents) =>
-    sessions(agents).flatMap((a) => (a.data.whispers || []).map((w) => mark("whisper", a, w.at, w.title, {row: w.ref, words: w.words})));
+    sessions(agents).flatMap((a) => (a.data.whispers || []).map((w) => mark("whisper", a, w.at, w.title, {row: w.ref, words: w.words, shows: w.shows})));
 
 const cards = (agents) =>
     sessions(agents).flatMap((a) =>
@@ -108,6 +108,7 @@ const cards = (agents) =>
                 settled: c.settled,
                 settledAt: c.settled_at,
                 side: c.side,
+                shows: c.shows,
                 state: c.state === "running" && !c.started ? "" : c.state,
                 started: c.started,
                 depth: c.depth || 0,
