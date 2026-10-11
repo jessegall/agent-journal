@@ -26,9 +26,19 @@ def journal_hook(text: str) -> bool:
     return LEGACY in text or ("/hook.sh" in text and "/.journal" in text)
 
 
+VIEWED_FOR = 120.0
+VIEWED: dict[str, float] = {}
+
+
+def viewed(session: str) -> None:
+    """A subagent's conversation was asked for: its row is kept in the agent's list for a while, whatever came after it, so a screen showing it never finds it gone."""
+    VIEWED[session] = time.monotonic()
+
+
 def running_and_latest(rows: list[dict]) -> list[dict]:
     late = {id(row) for row in [row for row in rows if not row.get("running")][-KEPT_ENDED:]}
-    return [row for row in rows if row.get("running") or id(row) in late]
+    now = time.monotonic()
+    return [row for row in rows if row.get("running") or id(row) in late or now - VIEWED.get(row.get("session", ""), -VIEWED_FOR) < VIEWED_FOR]
 
 
 @dataclass(frozen=True)

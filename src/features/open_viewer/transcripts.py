@@ -4,7 +4,7 @@ from pathlib import Path
 from engine.transcript import page
 from features.format import VIEWER, formatted
 from providers import PROVIDERS
-from providers.base import Provider
+from providers.base import Provider, viewed
 from resources.base import Missing
 
 TRANSCRIPT_PAGE = 300
@@ -42,6 +42,7 @@ def transcript_at(row, subagent: str) -> Transcript | NoTranscript:
     kept = row.provider in PROVIDERS and row.transcript
     if not subagent:
         return Transcript(PROVIDERS[row.provider](), Path(row.transcript)) if kept else NoTranscript()
+    viewed(subagent)
     known = kept and any(r.get("session") == subagent for r in row.subagent_rows)
     path = PROVIDERS[row.provider]().subagent_transcript(Path(row.transcript), subagent) if known else None
     if not path:

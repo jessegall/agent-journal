@@ -439,6 +439,16 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
     assert crew == {"Ada: review": False, "Rex: research": True}, "a subagent that returned its answer is done; one sent to the background works on until it goes quiet"
     latest = {sub["task"]: sub["latest"] for sub in Claude().crew(transcript)["subagent_rows"]}
     assert latest == {"Ada: review": "", "Rex: research": "Also check the phone"}, "a subagent's row carries the last message the main agent sent it, and nothing before one is sent"
+    from types import SimpleNamespace
+    from features.open_viewer.transcripts import transcript_at
+    from providers.base import KEPT_ENDED, running_and_latest
+    from resources.base import Missing
+    ended = [{"session": f"s{i}", "running": False} for i in range(KEPT_ENDED + 3)]
+    kept = lambda: {row["session"] for row in running_and_latest(ended)}
+    before = "s0" in kept()
+    with pytest.raises(Missing):
+        transcript_at(SimpleNamespace(provider="claude", transcript=str(transcript), subagent_rows=[]), "s0")
+    assert (before, "s0" in kept()) == (False, True), "a subagent that fell out of the list stays in it once its conversation is asked for, so a screen showing it never finds it gone"
 
     from providers.codex import Codex
     parent, child = "01a0fe58-a59b-7910-b452-68b6adf88ce9", "01a0fe67-b6bf-7260-8a22-b2b6bf0f549f"
