@@ -39,11 +39,11 @@ def discover() -> None:
 
 def rename_aliases(root: Path) -> None:
     from features.base import REGISTRY
-    from features.renames import rename
+    from features.renames import sweep
     if str(root) in RENAMED:
         return
     RENAMED.add(str(root))
-    rename(root, {was: now for cls in REGISTRY.values() for was, now in cls.renamed_from().items()})
+    sweep(root, {was: now for cls in REGISTRY.values() for was, now in cls.renamed_from().items()})
 
 
 def wire() -> None:

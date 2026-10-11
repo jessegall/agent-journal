@@ -1,3 +1,5 @@
+import hashlib
+import json
 from pathlib import Path
 
 from engine.stored import read_json, write_json
@@ -5,6 +7,7 @@ from typing import TypedDict
 
 KEYED = ("features", "triggers")
 SKILLS = "skills"
+SWEPT = "renamed.json"
 
 
 def under(key: str, was: str, now: str) -> str:
@@ -106,3 +109,21 @@ def rename(root: Path, aliases: dict) -> Renamed:
             "gates": in_gates(root / "runtime", aliases),
             "triggers": in_triggers(root / "runtime", aliases),
             "cursors": sum(in_cursors(home, aliases) for home in homes)}
+
+
+def swept_file(root: Path) -> Path:
+    return Path(root) / "runtime" / SWEPT
+
+
+def named(aliases: dict) -> str:
+    return hashlib.sha256(json.dumps(aliases, sort_keys=True).encode()).hexdigest()[:16]
+
+
+def sweep(root: Path, aliases: dict) -> Renamed | None:
+    """Renames what a feature's old name left behind, once for each set of aliases: the sweep walks every environment's settings and every session's triggers, so it runs when the names change and not on every command."""
+    done = read_json(swept_file(root), dict, {})
+    if done.get("aliases") == named(aliases):
+        return None
+    renamed = rename(root, aliases)
+    write_json(swept_file(root), {"aliases": named(aliases)})
+    return renamed
