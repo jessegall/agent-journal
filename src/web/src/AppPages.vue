@@ -2,6 +2,7 @@
 import SwitchCase from "./kit/SwitchCase.vue";
 import AboutPage from "./pages/AboutPage.vue";
 import BoardPage from "./pages/BoardPage.vue";
+import CodePage from "./pages/CodePage.vue";
 import CommitPage from "./pages/CommitPage.vue";
 import FilePage from "./pages/FilePage.vue";
 import FilesPage from "./pages/FilesPage.vue";
@@ -28,6 +29,7 @@ defineProps({page: {type: String, required: true}});
         <template #settings><SettingsPage /></template>
         <template #search><SearchPage /></template>
         <template #files><FilesPage /></template>
+        <template #code><CodePage /></template>
         <template #commit><CommitPage /></template>
         <template #skills><SkillsPage /></template>
         <template #about><AboutPage /></template>

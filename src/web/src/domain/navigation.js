@@ -5,6 +5,7 @@ export const PAGES = {
     kanban: {title: "Board", icon: "board", text: ""},
     resources: {title: "Resources", icon: "tiles", text: "Every type of item the journal keeps"},
     skills: {title: "Skills", icon: "book", text: "The instructions the agent loads for each kind of work"},
+    code: {title: "Code", icon: "file", text: "The project's files, as they are on disk"},
     organization: {title: "Organization", icon: "agents", text: "The project's domains and the roles under them"},
     secrets: {title: "Secrets", icon: "key", text: "Keys and logins the agent may use without ever seeing them"},
     integrations: {title: "Integrations", icon: "share", text: "Outside services the journal can reach for you"},
