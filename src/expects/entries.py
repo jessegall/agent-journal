@@ -103,9 +103,10 @@ def cancelled(promise, given: Given, record: Record, world: World) -> None:
 
 
 def refused_before_the_write(promise, given: Given, record: Record, world: World) -> None:
-    """An interceptor on a controller action, which refuses by raising before the write reaches the funnel."""
+    """An interceptor on a controller action, which refuses by raising before the write reaches the funnel. The Given names the controller class, how it is acted through, and the arguments the action got."""
+    controller, acting, arguments = given.on
     try:
-        promise.part.intercept(Context.of(promise.feature, record), *given.on)
+        promise.part.intercept(Context.of(promise.feature, record), controller(record, **acting), **arguments)
     except Refused as refusal:
         world.seen.refused = str(refusal)
 
