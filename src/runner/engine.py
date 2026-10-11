@@ -22,7 +22,7 @@ from providers.payload import HookEvent
 from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, titled
 from resources.types import TYPES, priority
 from agents.seat import SeatReport
-from engine.wording import plural
+from engine.wording import digest, plural
 from engine.transcript import PEER
 from providers.turns import turns
 from runner.chat_mirror import send_row_to_chat
@@ -80,6 +80,15 @@ def asking(row) -> bool:
 class PeerLog(Loaded):
     at: float = 0.0
     names: dict = field(default_factory=dict)
+    filed: list = field(default_factory=list)
+
+
+KEPT_PEERS = 200
+
+
+def peer_mark(turn) -> str:
+    """What names a peer's message whatever the provider does with it - who sent it, which way it went and what it says - so the same message delivered twice is filed once."""
+    return digest(f"{turn.peer.direction}\0{turn.peer.address}\0{' '.join(turn.text.split())}")
 
 
 @dataclass(frozen=True)
@@ -175,8 +184,14 @@ class Engine:
         log = PeerLog.from_json(seen)
         recent = sorted((t for t in reading.provider.last_turns(reading.transcript) if t.peer is not None), key=lambda t: t.at)
         newest = max([t.at for t in recent] + [log.at])
-        names = dict(log.names)
+        names, filed = dict(log.names), list(log.filed)
+        known = set(filed)
         for t in recent if seen is not None else []:
+            mark = peer_mark(t)
+            if mark in known:
+                continue
+            known.add(mark)
+            filed.append(mark)
             if t.at <= log.at:
                 continue
             if t.peer.direction == PEER:
@@ -186,7 +201,7 @@ class Engine:
                 agents.update(row.n, delivered=[*agents.load(row.n).delivered, made.ref])
             else:
                 Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, sent_to=names.get(t.peer.address, t.peer.address))
-        write_json(f, asdict(PeerLog(newest, names)))
+        write_json(f, asdict(PeerLog(newest, names, filed[-KEPT_PEERS:])))
 
     def announce_written(self) -> None:
         row = self.agent.driver.last_report()

@@ -312,6 +312,11 @@ def test_messages_between_agent_sessions_reach_the_chat_marked_with_the_other_se
     rows = [(m.brief, m.data.get("peer"), m.data.get("sent_to")) for m in Messages(record, actor="system").all()]
     assert rows == [("the loop is fixed", "other-project", None), ("thanks, adopted", None, "other-project")], \
         "a message from another session is filed from it, and one sent to it is filed as sent to it, by name"
+    later = {**peer, "timestamp": "2026-09-23T10:05:00Z"}
+    transcript.write_text(transcript.read_text() + json.dumps(later) + "\n")
+    engine.relay_peers()
+    assert [m.brief for m in Messages(record, actor="system").all()].count("the loop is fixed") == 1, \
+        "the same message delivered a second time is filed once: a peer's message is known by who sent it and what it says, never by when it arrived"
     from_session = next(m for m in Messages(record, actor="system").all() if m.data.get("peer"))
     assert (from_session.data.get("from_session"), from_session.ref in Agents(record).by_session("claude-1").delivered) == ("uds:/tmp/a.sock", True), \
         "it names the session it came from and counts as handed to the agent in its turn, so an answer to it is never held back"
