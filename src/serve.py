@@ -10,6 +10,7 @@ import tempfile
 import threading
 import time
 import traceback
+import weakref
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qsl, urlparse
@@ -204,10 +205,7 @@ def environmental(path: str) -> bool:
 
 class JournalServer(ThreadingHTTPServer):
     request_queue_size = REQUEST_BACKLOG
-
-    def process_request(self, request, client_address) -> None:
-        self.accepted[id(request)] = time.perf_counter()
-        super().process_request(request, client_address)
+    SERVING: "weakref.WeakSet[JournalServer]" = weakref.WeakSet()
 
     def __init__(self, address, handler):
         super().__init__(address, handler)
@@ -216,6 +214,16 @@ class JournalServer(ThreadingHTTPServer):
         self.warm.set()
         self.after_answer = AfterAnswer.started()
         self.collector = QuietCollector()
+        JournalServer.SERVING.add(self)
+
+    def process_request(self, request, client_address) -> None:
+        self.accepted[id(request)] = time.perf_counter()
+        super().process_request(request, client_address)
+
+    def server_close(self) -> None:
+        super().server_close()
+        self.after_answer.stop()
+        JournalServer.SERVING.discard(self)
 
 
 def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:

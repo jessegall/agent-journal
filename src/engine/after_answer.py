@@ -60,9 +60,17 @@ class AfterAnswer:
     def held(self, lane: str) -> bool:
         return self.answering[UNNAMED] > 0 or self.answering[lane] > 0
 
+    def stop(self) -> None:
+        """Lets each worker go once the jobs already queued are done."""
+        for _ in range(self.workers):
+            self.jobs.put(None)
+
     def work(self) -> None:
         while True:
-            job, lane = self.jobs.get()
+            queued = self.jobs.get()
+            if queued is None:
+                return
+            job, lane = queued
             with self.quiet:
                 self.quiet.wait_for(lambda: not self.held(lane), LONGEST_HOLD)
             try:
