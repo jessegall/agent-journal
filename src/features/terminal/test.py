@@ -267,9 +267,14 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     assert engine.pausing() == ""
     from engine import runtime
     runtime.upgrade_mark(root).write_text("Installing the new files")
+    stopped = calls.count("stop_turn")
     assert (engine.pausing(), engine.paused, f"send {engine_module.PAUSED_FOR_UPDATE}" in calls, engine.agent.current().paused) == ("Paused", False, True, 0), \
         "an agent is told once that the journal updates and waits, with nothing written to its row"
     assert (engine.pausing(), calls.count(f"send {engine_module.PAUSED_FOR_UPDATE}")) == ("paused", 1), "and it is not told again while the update goes on"
+    from resources.types import BUSY
+    engine.agent.state = lambda: BUSY
+    engine.held_at = time.time() - 10
+    assert (engine.pausing(), calls.count("stop_turn")) == ("paused", stopped), "and the command it is running is never cut off: the update holds the next command, not this one"
     engine.agent.driver.held, engine.agent.driver.sent_at = ["waiting: 2 unread messages"], 0.0
     engine.pump()
     assert lines == ["waiting: 1 unread message"], "and nothing the journal holds for it is delivered meanwhile"

@@ -374,14 +374,15 @@ class Engine:
         return "paused"
 
     def updating(self) -> str:
-        """The agent waits exactly while the journal updates: that is read from the update's own mark and written to no agent, so it ends the moment the update does and cannot be forgotten; it is told once when the update begins and once when it ends."""
+        """The agent waits exactly while the journal updates: that is read from the update's own mark and written to no agent, so it ends the moment the update does and cannot be forgotten; it is told once when the update begins and once when it ends. The turn it is in runs to its end - the command that starts the update is usually its own - and the gate refuses the next command it tries."""
         told = self.record.state(UPDATE_TOLD, self.agent.driver.session)
         if runtime.upgrading(self.record.root):
             if told.get(UPDATE_TOLD):
-                return self.interrupted()
+                return "paused"
             told.set(UPDATE_TOLD, True)
             self.agent.driver.send(PAUSED_FOR_UPDATE, now=True)
-            return self.held("Paused")
+            self.noted("Paused")
+            return "Paused"
         if not told.get(UPDATE_TOLD):
             return ""
         told.set(UPDATE_TOLD, False)
