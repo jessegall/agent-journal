@@ -217,6 +217,11 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     tickets.update(ticket.n, launched=time.time() - 120)
     assert [(t.n, state.kind) for t, state in tickets._needing_a_look([board.n])] == [(ticket.n, "stopped")], \
         "a started ticket whose agent is gone needs a look; one launched a moment ago does not yet"
+    never = tickets.create("Never ran", board=board.n)
+    tickets.update(never.n, work_environment=f"ticket-{never.n}", launched=time.time() - 120, agent_seen=0.0)
+    tickets.mark_seen()
+    assert (tickets.load(never.n).launched, any("it did not start: no agent was running" in c.brief for c in Comments(record, actor=SYSTEM).all())) == (0.0, True), \
+        "a start whose agent never appeared is not left stamped as launched: the ticket says it did not start"
     tickets.update(ticket.n, dependencies={third.ref: "confirmed"})
     assert tickets._needing_a_look([board.n]) == [], "an agent idle because its ticket waits on an open ticket is not stuck"
     tickets.update(ticket.n, dependencies={})

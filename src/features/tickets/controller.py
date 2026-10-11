@@ -2,7 +2,7 @@ import time
 
 import controllers.types as types_module
 from controllers.agents import IDLE_STATE, WORKING_STATE
-from controllers.types import Agents, Environments, Features, Messages
+from controllers.types import Agents, Environments, Features, Messages, Notices
 from engine import bus
 from engine.record import Record
 from engine.seats import terminal_of
@@ -586,9 +586,14 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         try:
             self._launch(ticket, self._into(ticket))
         except (Refused, SystemExit) as why:
-            self.update(ticket.n, launched=0.0)
-            self.comment(ticket.n, f"it did not start: {why}")
+            self._failed_to_start(ticket.n, str(why))
             raise
+
+    def _failed_to_start(self, n: int, why: str) -> None:
+        """The ticket is left without a launch under way, says why on its row, and tells you."""
+        self.update(n, launched=0.0)
+        self.comment(n, f"it did not start: {why}")
+        Notices(self.record, actor=SYSTEM).create(f"{self.type} {n} did not start", brief=why, tone="warn")
 
     def _launch(self, ticket, into: str) -> None:
         from agents.terminal import detached, launch_output, prompted
@@ -690,9 +695,17 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return bool(self.agent_session(ticket.n)) or bool(self._alive_agents(ticket)) or time.time() - ticket.launched < LAUNCHING_FOR
 
     def mark_seen(self) -> None:
+        """A start counts as launched once its agent is seen; a launch whose agent is still not there after the launching time failed, and the ticket says so with the last words of the launch."""
+        from agents.terminal import launch_failure
         for ticket in self.rows.standing():
-            if ticket.work_environment and (ticket.launched or not ticket.agent_seen) and self.agent_session(ticket.n):
+            if not ticket.work_environment:
+                continue
+            if (ticket.launched or not ticket.agent_seen) and self.agent_session(ticket.n):
                 self.update(ticket.n, launched=0.0, agent_seen=time.time())
+                continue
+            if ticket.launched and not ticket.agent_seen and time.time() - ticket.launched > LAUNCHING_FOR:
+                said = launch_failure(self.record.root, ticket.work_environment)
+                self._failed_to_start(ticket.n, f"no agent was running {LAUNCHING_FOR:g} seconds after its launch{': ' + said if said else ''}")
 
     def _confirmed(self, ticket) -> None:
         if ticket.draft:
