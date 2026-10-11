@@ -1,6 +1,6 @@
 import os
 
-QUIET = 1.5
+QUIET = 0.5
 
 
 def factor() -> float:
@@ -14,5 +14,5 @@ def scaled(seconds: float) -> float:
 
 
 def quiet() -> bool:
-    """Whether the machine is calm enough for a time it measures to mean anything."""
-    return factor() <= QUIET
+    """Whether the machine is calm enough for a time it measures to mean anything: its load at most half its cores, since a machine with work queued on every other core is not one a boot can be timed on."""
+    return os.getloadavg()[0] / (os.cpu_count() or 1) <= QUIET
