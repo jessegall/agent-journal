@@ -44,11 +44,13 @@ def rename_aliases(root: Path) -> None:
 
 def wire() -> None:
     from features.base import REGISTRY
+    from features.promises import PROMISED
     for name, cls in REGISTRY.items():
         if name in FEATURES:
             continue
         FEATURES[name] = cls()
         FEATURES[name].wire()
+        PROMISED.refuse_owing(name)
 
 
 def subscribe() -> None:

@@ -542,3 +542,25 @@ def test_every_registration_gathers_what_it_promises_and_each_outcome_word_reads
         "and one that does not holds says what the play did instead, word by word"
     assert wrong(Given("x") >> Unchanged(), Seen()) == [] and wrong(Given("x") >> Unchanged(), seen) == [], \
         "Unchanged is about the world, not about what was said: saying something changes nothing"
+
+
+def test_a_feature_that_registers_an_owing_kind_without_expects_refuses_the_boot_only_when_the_walk_is_on():
+    from types import SimpleNamespace
+    from expects import Given, Unchanged
+    from features.promises import Owing, Promise, Promises
+
+    def promised(*registrations):
+        promises = Promises()
+        for kind, name, expects in registrations:
+            promises.add(Promise(SimpleNamespace(name="demo"), kind, name, None, object, expects))
+        return promises
+
+    quiet = promised(("handler", "Quiet", ()))
+    quiet.refuse_owing("demo")
+    quiet.required = True
+    with pytest.raises(Owing, match="feature demo registers handler Quiet without expects"):
+        quiet.refuse_owing("demo")
+    quiet.refuse_owing("other")  # a feature is refused for its own registrations only
+    ready = promised(("handler", "Quiet", (Given("x") >> Unchanged(),)), ("handler", "SendOnTheClock", ()), ("append_to_line", "answered", ()), ("route", "get_page", ()))
+    ready.required = True
+    ready.refuse_owing("demo")  # a registration with expects, the engine's own two, a line appender and a route owe nothing

@@ -38,8 +38,19 @@ class Promise:
         return f"{self.feature.name}/{self.name}/{n}"
 
 
+class Owing(LookupError):
+    """A feature registered something that owes expectations and carries none."""
+
+    @classmethod
+    def of(cls, feature: str, owed: list[Promise]) -> "Owing":
+        return cls(f"feature {feature} registers {', '.join(f'{one.kind} {one.name}' for one in owed)} without expects; every registration of these kinds says what it expects")
+
+
 class Promises:
     """Every registration the features made, in the order they made it."""
+
+    required = False
+    """Whether a registration without expects refuses the boot. Off until the sweep of phase 2 is through; the row that ends the sweep removes it, and a missing expects then always fails."""
 
     def __init__(self):
         self.each: list[Promise] = []
@@ -55,6 +66,12 @@ class Promises:
     def owed(self) -> list[Promise]:
         """The registrations that owe expectations and carry none, which is what the boot walk refuses once phase 2 is through."""
         return [one for one in self.each if one.owes and not one.expects]
+
+    def refuse_owing(self, feature: str) -> None:
+        """Called as a feature is wired: refuses the boot, naming the feature and its registrations, when it registered an owing kind with no expects."""
+        owed = [one for one in self.owed() if one.feature.name == feature]
+        if self.required and owed:
+            raise Owing.of(feature, owed)
 
     def played(self) -> list[tuple[Promise, int, object]]:
         """Every expectation of every registration, each with the name a failure is reported under."""
