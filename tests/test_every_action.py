@@ -233,7 +233,7 @@ def test_every_read_the_viewer_polls_answers_with_the_keys_it_reads():
     code(record.root).mkdir(parents=True, exist_ok=True)
     (code(record.root) / "CHANGELOG.md").write_text("# changes\n")
     keys = {
-        "/api/manifest": {"actions", "actors", "build", "chat_kinds", "environment", "features", "fields", "groups", "methods", "models", "priority", "project", "scopes", "searchable", "types", "version", "views"},
+        "/api/manifest": {"actions", "actors", "build", "chat_kinds", "environment", "facts", "features", "fields", "groups", "methods", "models", "priority", "project", "scopes", "searchable", "types", "version", "views"},
         "/api/summary": {"color", "countdown", "environments", "helpers", "project", "ready", "root", "start", "started", "step", "tickets", "updating", "version"},
         "/api/{env}/bar": {"queue"},
         "/api/{env}/family": {"links", "members"},
