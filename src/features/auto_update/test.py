@@ -205,8 +205,13 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
             "a command run by an agent that is a parent of the upgrade is the upgrade's own, and is never waited for"
     finally:
         waiting.ancestors, waiting.pid_of = kept
-    runtime.upgrade_mark(record.root).write_text("Migrating the record")
+    runtime.mark_upgrade(record.root, "Migrating the record")
     assert runtime.upgrade_step(record.root) == "Migrating the record", "the running upgrade says which step it is on, in the mark it holds"
+    runtime.upgrade_mark(record.root).write_text("4194303\nInstalling the new files")
+    assert (runtime.upgrading(record.root), runtime.upgrade_step(record.root)) == (False, ""), \
+        "a mark an upgrade was killed before clearing holds nobody back: the process it names is gone, so no upgrade is running"
+    runtime.upgrade_mark(record.root).write_text("Migrating the record")
+    assert runtime.upgrade_step(record.root) == "Migrating the record", "a mark from before the process was named is read as it was, and judged on its age alone"
     runtime.upgrade_mark(record.root).unlink()
     monkeypatch.setattr(routes, "release_versions", lambda: ["2.263.0", "2.262.0", "2.250.0"])
     monkeypatch.setattr(routes, "version", lambda: "2.263.0")

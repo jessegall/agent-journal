@@ -272,19 +272,33 @@ def upgrade_mark(root: Path) -> Path:
     return folder(root) / UPGRADE_MARK
 
 
+def mark_upgrade(root: Path, step: str) -> None:
+    """Says which step an upgrade is on, with the process running it, so a mark an upgrade was killed before clearing stops holding every agent back."""
+    write_text(upgrade_mark(root), f"{os.getpid()}\n{step}")
+
+
+def upgrade_held(root: Path) -> tuple[int, str]:
+    """The process a mark names and the step it says it is on; a mark from before the process was named reads as nobody, and is judged on its age alone."""
+    try:
+        named, _, step = upgrade_mark(root).read_text().partition("\n")
+    except OSError:
+        return 0, ""
+    return (int(named) if named.strip().isdigit() else 0), (step or named).strip()
+
+
 def upgrade_step(root: Path) -> str:
     """The step the running upgrade says it is on."""
-    try:
-        return upgrade_mark(root).read_text().strip() if upgrading(root) else ""
-    except OSError:
-        return ""
+    return upgrade_held(root)[1] if upgrading(root) else ""
 
 
 def upgrading(root: Path) -> bool:
+    from engine.sessions import alive
     try:
-        return time.time() - upgrade_mark(root).stat().st_mtime < UPGRADE_LONGEST
+        fresh = time.time() - upgrade_mark(root).stat().st_mtime < UPGRADE_LONGEST
     except OSError:
         return False
+    held = upgrade_held(root)[0]
+    return fresh and (held == 0 or alive(held))
 
 
 TESTS_RUNNING = "tests-running"

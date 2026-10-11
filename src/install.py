@@ -440,7 +440,7 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False, version:
             prepared = prepare_managed(project, root, yes)
         if prepared.held is not None:
             return [prepared.held]
-        mark.write_text("Preparing the update")
+        loaded().mark_upgrade(root, "Preparing the update")
         loaded().restarting(root).write_text(str(time.time()))
         try:
             with timed(root, "wait for running commands"):
@@ -469,10 +469,9 @@ def stepping(root: Path, text: str) -> None:
     """Says which step the running upgrade is on, in the mark it holds, for the viewer and the status line to read."""
     if str(PACKAGE) not in sys.path:
         sys.path.append(str(PACKAGE))
-    from engine.runtime import upgrade_mark
-    mark = upgrade_mark(root)
-    if mark.exists():
-        mark.write_text(text)
+    from engine.runtime import mark_upgrade, upgrade_mark
+    if upgrade_mark(root).exists():
+        mark_upgrade(root, text)
 
 
 def installed_here(root: Path, package: Path = PACKAGE) -> bool:
@@ -759,6 +758,7 @@ class Package:
     stop_ended: Callable
     publish: Callable
     upgrade_mark: Callable
+    mark_upgrade: Callable
     wait_for_commands: Callable
     mark_all_seen: Callable
     migrations_pending: Callable
@@ -795,14 +795,14 @@ def loaded() -> Package:
     from skills import LINKED, publish
     from features.boards.agent_types import written as agent_types
     from engine.record import Record
-    from engine.runtime import default_env, restarting, upgrade_mark
+    from engine.runtime import default_env, mark_upgrade, restarting, upgrade_mark
     from features.journal_laws import managed
     from features.auto_update.new_feature import mark_all_seen
     from features.auto_update.waiting import wait_for_commands
     return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
                    served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
                    ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"), stop_ended=stop_ended,
-                   publish=publish, upgrade_mark=upgrade_mark, wait_for_commands=wait_for_commands, mark_all_seen=mark_all_seen,
+                   publish=publish, upgrade_mark=upgrade_mark, mark_upgrade=mark_upgrade, wait_for_commands=wait_for_commands, mark_all_seen=mark_all_seen,
                    migrations_pending=lambda root: bool(pending(applied(root))), restarting=restarting, managed=managed)
 
 
