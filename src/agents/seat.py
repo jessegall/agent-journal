@@ -209,16 +209,27 @@ class HookBinding:
 
     def asked_to_take_over(self, session: str, env: str, holder: str) -> str:
         """An environment has one live session: the one that starts beside another waits in an environment of its own, and the user is asked whether it takes the busy one over."""
-        side = self.sessions.free(env)
+        waiting = self.waiting_beside(env, holder)
+        side = waiting[0] if waiting else self.sessions.free(env)
         for each in self.sessions.agent(session, self.pid):
             seat_session(self.sessions, Seat(side, each, self.pid), provider=self.provider.name)
+        if waiting:
+            self.sessions.write(session, takeover={"environment": env, "question": waiting[1], "holder": holder})
+            return side
         question = Questions(Record(self.root, env), actor=SYSTEM).create(
             f"A second session started in {env}", brief=f"Session {session} started in {env}, where session {holder} is already working. It waits in {side} until you answer. "
             f"Taking {env} over unbinds {holder} from it, and {session} holds it.",
             options=[{"title": f"Take over {env}", "description": f"{holder} is unbound from {env}, and {session} works there"},
-                     {"title": f"Stay in {side}", "description": f"{holder} keeps {env}"}])
+                     {"title": f"Stay in {side}", "description": f"{holder} keeps {env}"}], user_only=True)
         self.sessions.write(session, takeover={"environment": env, "question": question.n, "holder": holder})
         return side
+
+    def waiting_beside(self, env: str, holder: str) -> list[tuple[str, int]]:
+        """The environment of its own and the question the user has not answered yet about this pair, the busy environment and the session holding it: another session that starts beside the same holder waits there and asks nothing more, so one pair is asked once however many sessions start."""
+        questions = Questions(Record(self.root, env), actor=SYSTEM)
+        return [(held.environment, held.takeover["question"]) for held in self.sessions.all().values()
+                if held.takeover.get("environment") == env and held.takeover.get("holder") == holder and held.environment
+                and questions.rows.exists(held.takeover["question"]) and not questions.rows.peek(held.takeover["question"]).completed][:1]
 
     def relaunched(self, session: str, old: int) -> None:
         terminal = self.sessions.terminal(self.provider.name, old)

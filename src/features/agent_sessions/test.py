@@ -271,7 +271,7 @@ def test_a_session_that_starts_beside_a_live_one_is_never_offered_its_environmen
     features.load()
     record = fresh()
     sessions = Sessions(record.root)
-    running = [subprocess.Popen(["sleep", "60"]) for _ in range(3)]
+    running = [subprocess.Popen(["sleep", "60"]) for _ in range(4)]
     monkeypatch.setattr("agents.seat.agent_pid", lambda pid: pid)
     try:
         provider = PROVIDERS["claude"]()
@@ -284,6 +284,14 @@ def test_a_session_that_starts_beside_a_live_one_is_never_offered_its_environmen
         asked = users.rows.standing()
         assert ([q.title for q in asked], [option["title"] for option in asked[0].options], "first" in asked[0].brief) == \
             ([f"A second session started in {record.env}"], [f"Take over {record.env}", f"Stay in {side}"], True), "the user is asked, naming the session already there"
+        answered = refused(lambda: Questions(record, actor=AGENT).complete(asked[0].n, how=f"Take over {record.env}", reason="its own environment"))
+        assert ("the user's alone" in answered, sessions.holders(record.env)) == (True, ["first"]), \
+            "an agent cannot answer the question, so taking an environment over is only ever the user's choice and the session there keeps it"
+        again = start("again", running[3])
+        assert (again, len(users.rows.standing()), sessions.read("again").takeover["question"] == asked[0].n) == (side, 1, True), \
+            "another session that starts beside the same one waits in the same place and asks nothing more, so the user is asked once for the pair"
+        running[3].kill()
+        running[3].wait()
         users.complete(asked[0].n, how=f"Stay in {side}")
         assert (sessions.holders(record.env), sessions.holders(side)) == (["first"], ["second"]), "staying out leaves the sitting session where it is"
         later = start("third", running[2])
