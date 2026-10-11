@@ -3,6 +3,7 @@ import {transport} from "../api/transport.js";
 import {covered, STATUS_POLL} from "../state/updating.js";
 
 const BACKOFF_CAP_MS = 60000;
+const STATUS_CAP_MS = 3000;
 const SLOW_FACTOR = 4;
 const WAKE_SPREAD_MS = 300;
 const POKE_GAP_MS = 1000;
@@ -33,7 +34,7 @@ export const unseen = () => document.hidden || !document.hasFocus();
 
 function pause(held) {
     const every = fastest(held) * (unseen() ? UNSEEN_FACTOR : 1);
-    if (held.failures) return jittered(Math.min(BACKOFF_CAP_MS, every * 2 ** held.failures));
+    if (held.failures) return jittered(Math.min(held.key === STATUS_POLL ? STATUS_CAP_MS : BACKOFF_CAP_MS, every * 2 ** held.failures));
     return Math.max(every, SLOW_FACTOR * held.took);
 }
 

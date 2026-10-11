@@ -101,7 +101,7 @@ usePoll(
     () => phone.update(),
     UPDATE_EVERY,
     followServer,
-    () => state.value === "connected"
+    () => state.value === "connected" || state.value === "unreachable"
 );
 
 usePoll("phone-retry", load, RETRY_EVERY, undefined, () => state.value === "unreachable");
