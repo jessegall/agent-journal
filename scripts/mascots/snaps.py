@@ -10,7 +10,6 @@ import toon
 BACKDROP = (0.82, 0.83, 0.86)
 LOOK_AT_HEIGHT = 2.15
 DISTANCE = 8
-WEBP_QUALITY = 82
 ANTIALIAS_SAMPLES = 16
 
 
@@ -44,7 +43,7 @@ def render_cell(camera, azimuth, path):
 
 
 def sheet(cells, columns, size, path):
-    """Lays the pictures out in a grid, in order, and saves it as one picture: webp when the path says so."""
+    """Lays the pictures out in a grid, in order, and saves it as one png."""
     width, height = size
     columns = min(columns, len(cells))
     rows = -(-len(cells) // columns)
@@ -59,9 +58,5 @@ def sheet(cells, columns, size, path):
         bpy.data.images.remove(image)
     out = bpy.data.images.new("sheet", columns * width, rows * height, alpha=True)
     out.pixels.foreach_set(canvas.ravel())
-    settings = bpy.context.scene.render.image_settings
-    settings.file_format = "WEBP" if str(path).endswith(".webp") else "PNG"
-    settings.color_mode, settings.quality = "RGBA", WEBP_QUALITY
     out.save_render(str(path))
     bpy.data.images.remove(out)
-    settings.file_format = "PNG"

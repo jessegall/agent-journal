@@ -9,7 +9,6 @@ from typing import Callable
 
 from rig import SIDES
 
-FPS = 12
 HANG = 82
 HOLD_LIFT = 12
 HOLD_SWING = 55
@@ -38,13 +37,10 @@ class Stance:
 @dataclass(frozen=True)
 class Clip:
     name: str
-    seconds: float
+    frames: int
+    fps: int
     loops: bool
     pose: Callable
-
-    @property
-    def frames(self):
-        return round(self.seconds * FPS)
 
 
 def wave_of(t, turns=1):
@@ -93,21 +89,21 @@ def arms_at_rest(pose, stance, apart=(), swing=None):
         hang(pose, side, swing=(swing or {}).get(side, 0.0))
 
 
-def blink_at(t, start, seconds):
-    """How open the eyes are at t in a clip of this many seconds, when a blink starts at `start` (a share of the run); 1 outside it."""
-    index = int((t - start) * seconds * FPS) if t >= start else -1
+def blink_at(t, start, frames):
+    """How open the eyes are at t in a clip of this many frames, when a blink starts at `start` (a share of the run); 1 outside it."""
+    index = int((t - start) * frames) if t >= start else -1
     return BLINK_OPENNESS[index] if 0 <= index < len(BLINK_OPENNESS) else 1.0
 
 
 def idle(pose, stance, figure, t):
     breathe(pose, t)
     arms_at_rest(pose, stance)
-    figure.shut_eyes(blink_at(t, 0.70, 4.0))
+    figure.shut_eyes(blink_at(t, 0.62, 24))
 
 
 def blink(pose, stance, figure, t):
     arms_at_rest(pose, stance)
-    figure.shut_eyes(blink_at(t, 0.20, 0.8))
+    figure.shut_eyes(blink_at(t, 0.15, 6))
 
 
 def nod(pose, stance, figure, t):
@@ -127,7 +123,7 @@ def wave(pose, stance, figure, t):
     trunk(pose, twist=-sign * 4, turn=-sign * 8, tilt=-sign * 6)
     arms_at_rest(pose, stance, apart=(side,))
     pose.turn(f"upper_arm_{side}", y=-sign * 10)
-    pose.turn(f"forearm_{side}", y=-sign * (45 + 22 * wave_of(t, 2)))
+    pose.turn(f"forearm_{side}", y=-sign * (45 + 22 * wave_of(t)))
 
 
 def think(pose, stance, figure, t):
@@ -180,13 +176,13 @@ def walk(pose, stance, figure, t):
 
 
 CLIPS = {clip.name: clip for clip in (
-    Clip("idle", 4.0, True, idle),
-    Clip("blink", 0.8, False, blink),
-    Clip("nod", 1.2, False, nod),
-    Clip("shake", 1.4, False, shake),
-    Clip("wave", 2.0, True, wave),
-    Clip("think", 2.0, True, think),
-    Clip("celebrate", 1.5, True, celebrate),
-    Clip("sleep", 3.0, True, sleep),
-    Clip("walk", 1.0, True, walk),
+    Clip("idle", 24, 8, True, idle),
+    Clip("blink", 6, 12, False, blink),
+    Clip("nod", 10, 12, False, nod),
+    Clip("shake", 12, 12, False, shake),
+    Clip("wave", 12, 12, True, wave),
+    Clip("think", 12, 6, True, think),
+    Clip("celebrate", 12, 10, True, celebrate),
+    Clip("sleep", 18, 6, True, sleep),
+    Clip("walk", 12, 12, True, walk),
 )}

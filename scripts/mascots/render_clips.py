@@ -1,8 +1,8 @@
-"""Renders every clip of every voice as a sprite sheet the viewer's mascot page plays.
+"""Renders every clip of every voice as a lossless sprite sheet; pack_sheets.py turns them into what the viewer ships.
 
     blender -b -P render_clips.py -- --out DIR [--voices butler,squire] [--clips idle,wave] [--stills]
 
-Writes DIR/manifest.json and DIR/<voice>/<clip>.webp; --stills writes one picture per clip, its middle frame, instead.
+Writes DIR/manifest.json and DIR/<voice>/<clip>.png; --stills writes one picture per clip, its middle frame, instead.
 """
 import json
 import sys
@@ -12,11 +12,11 @@ import bpy
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from clips import CLIPS, FPS, Stance  # noqa: E402
+from clips import CLIPS, Stance  # noqa: E402
 from rig import VOICES, Posing, assemble  # noqa: E402
 from snaps import render_cell, set_up_render, sheet  # noqa: E402
 
-CELL = (256, 256)
+CELL = (224, 224)
 COLUMNS = 8
 FRAMED_HEIGHT = 5.4
 FRAMED_MIDDLE = 2.4
@@ -42,7 +42,7 @@ def manifest_of():
         "cell": list(CELL),
         "columns": COLUMNS,
         "voices": list(VOICE_NAMES),
-        "clips": {clip.name: {"frames": clip.frames, "fps": FPS, "loops": clip.loops} for clip in CLIPS.values()},
+        "clips": {clip.name: {"frames": clip.frames, "fps": clip.fps, "loops": clip.loops} for clip in CLIPS.values()},
     }
 
 
@@ -62,7 +62,7 @@ def main():
             cells = render_frames(figure, stance, clip, out, only=clip.frames // 2 if stills else None)
             folder = out / voice
             folder.mkdir(exist_ok=True)
-            sheet(cells, COLUMNS, CELL, folder / (f"{name}_still.png" if stills else f"{name}.webp"))
+            sheet(cells, COLUMNS, CELL, folder / (f"{name}_still.png" if stills else f"{name}.png"))
             for cell in cells:
                 cell.unlink()
     if not stills:
