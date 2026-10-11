@@ -1,7 +1,7 @@
 from features.base import Feature
 from features.journal import Journal
 from features.message_todos.details import MessageTodosDetails
-from features.message_todos.handlers import LinkTodosToTheirMessage
+from features.message_todos.handlers import AskWhetherATodoCameFromAMessage, LinkTodosToTheirMessage
 
 
 class MessageTodos(Feature):
@@ -9,3 +9,4 @@ class MessageTodos(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(LinkTodosToTheirMessage())
+        journal.events.handler(AskWhetherATodoCameFromAMessage())

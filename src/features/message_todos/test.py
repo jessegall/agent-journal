@@ -30,6 +30,25 @@ def test_a_reply_links_the_new_to_dos_it_names_and_points_out_the_one_it_leaves_
     assert [n.title for n in Nudges(record, actor=SYSTEM).rows.every()].count(f"to-do {forgotten} came from message {asked.n}?") == 1, "once"
 
 
+def test_a_to_do_filed_while_a_message_waits_is_asked_about_at_once():
+    features.load()
+    record = fresh()
+    Agents(record, actor=SYSTEM).create("claude-1")
+    writing, todos = Messages(record, actor=USER), Todos(record, actor=AGENT)
+    nudged = lambda: [n.title for n in Nudges(record, actor=SYSTEM).rows.every()]
+    own = todos.create("something I thought of myself")
+    assert not [line for line in nudged() if line.startswith(f"to-do {own.n} came from")], \
+        "with nothing of the user's waiting, a to-do the agent filed is its own and nothing is said"
+    asked = writing.create("the tunnel should restart itself")
+    filed = todos.create("restart the tunnel")
+    assert f"to-do {filed.n} came from message {asked.n}?" in nudged(), \
+        "a to-do filed while a message of the user's waits is asked about the moment it is filed, not when a reply is written"
+    assert nudged().count(f"to-do {filed.n} came from message {asked.n}?") == 1, "and asked once"
+    theirs = Todos(record, actor=USER).create("something the user filed in the viewer")
+    assert not [line for line in nudged() if line.startswith(f"to-do {theirs.n} came from")], \
+        "a row the user filed themselves is never asked about: the question is only ever whether the agent forgot to link one"
+
+
 def test_a_message_is_filed_replied_edited_and_processed_by_the_agent_that_reads_it(tmp_path):
     import features
     from controllers.types import Comments, Docs, Messages, Todos

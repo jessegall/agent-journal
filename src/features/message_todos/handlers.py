@@ -1,7 +1,10 @@
 import time
 
 from controllers.types import Comments, Messages, Todos
-from engine.events.resources import ResourceCreated
+from dataclasses import dataclass
+from typing import ClassVar
+
+from engine.events.resources import ResourceCreated, ResourceEvent
 from features.message_todos.details import UNLINKED
 from features.parts import Context, Handler
 from features.row_links.formatters import Mention, named
@@ -12,6 +15,27 @@ def todos_named(text: str) -> set[int]:
     names, found = named()
     mentions = (Mention.of(m, names) for m in found.finditer(text))
     return {int(n) for mention in mentions if mention.name == "todo" and mention.env is None for n in mention.numbers}
+
+
+@dataclass(frozen=True)
+class TodoCreated(ResourceEvent):
+    on: ClassVar[str] = "todo.created"
+
+
+class AskWhetherATodoCameFromAMessage(Handler):
+    """A to-do filed while a message of the user's is waiting is almost certainly from it, so the journal asks at once rather than waiting for a reply that may never be written."""
+
+    def handle(self, context: Context, event: TodoCreated) -> None:
+        if event.actor != AGENT:
+            return
+        todo = context.journal.get(Todos).load(event.n)
+        messages = context.journal.get(Messages)
+        if messages.is_linked(todo.ref):
+            return
+        open_message = next((m for m in reversed(messages.waiting()) if m.created <= todo.created), None)
+        speaking = context.to_primary()
+        if open_message is not None and speaking and speaking.once(UNLINKED, todo.ref):
+            speaking.agent.say(UNLINKED, todo=todo.n, message=open_message.n)
 
 
 class LinkTodosToTheirMessage(Handler):

@@ -3,7 +3,7 @@ import re
 from controllers.types import Agents, Comments
 from engine.events.engine import CommandRan
 from engine.events.resources import CommentCreated
-from engine.journal_calls import parsed
+from engine.journal_calls import parsed, tokens
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from engine.gates import Runs
 from features.sharing.visitors import AGREEMENT, UNAGREED, hold, read_now
@@ -13,6 +13,15 @@ from engine.reach import Reach
 PLAIN = re.compile(r"[\w .:@/+-]+")
 AGREE_OPTIONS = {"--env", "--agent", "--root"}
 USER_ACTOR = re.compile(r"(?:^|[\s?&])(?:--as(?:=|\s+)|JOURNAL_ACTOR\s*=|actor\s*=)\s*['\"]?user\b", re.I)
+ASSIGNED = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+
+
+def tells_the_journal(command: str) -> bool:
+    """Whether the command tells the journal anything - as a journal call, behind any leading environment assignments, or as a request to its API - since only then is a claim of the user's name one the journal would act on, rather than a word in a file the agent is writing."""
+    words = list(tokens(command))
+    while words and ASSIGNED.match(words[0]):
+        words.pop(0)
+    return (bool(words) and words[0] == "journal") or "/api/" in command
 
 
 class RefuseClaimedUser(ToolInterceptor):
@@ -20,7 +29,7 @@ class RefuseClaimedUser(ToolInterceptor):
     runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
-        if any(USER_ACTOR.search(command) for command in call.commands):
+        if any(tells_the_journal(command) and USER_ACTOR.search(command) for command in call.commands):
             return "An agent cannot claim to be the user. Ask the user to make this change in the viewer."
         return ""
 

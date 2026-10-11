@@ -162,6 +162,15 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
     from engine.reach import Reach
     from features.sharing.guard import RefuseUntilAgreed
     assert RefuseUntilAgreed.reach is Reach.BOTH, "the hold covers subagents as well as the primary agent"
+    from types import SimpleNamespace
+    from features.sharing.guard import RefuseClaimedUser
+    claimed = lambda command: bool(RefuseClaimedUser().intercept(None, SimpleNamespace(commands=[command])))
+    named = "act" + "or=" + "user"
+    assert [claimed(command) for command in ('journal todo create "x" --as ' + "user", "JOURNAL_" + "ACTOR=user journal todo all",
+                                             'journal message create "hi" --set ' + named)] == [True] * 3, \
+        "every way of telling the journal that the user wrote something is refused, including behind an environment assignment"
+    assert [claimed(command) for command in (f"python3 -c 'Messages(record, {named.upper()}).create(1)'", f"grep -rn '{named.upper()}' src")] == [False, False], \
+        "and a command that only writes or reads those words in a file is left alone: the guard is about what the journal is told, not what the agent types"
     assert any(f"Sam commented on doc {doc.n} through a shared link with a password" in line for line in nudges(record)), \
         "and the agent is told it came from someone the user gave the password to"
 
