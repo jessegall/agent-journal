@@ -202,6 +202,15 @@ def test_a_card_dropped_before_another_takes_that_place_and_its_priority():
     assert {c["title"] for one in found for c in one["cards"]} == {"More 11", *(f"More 11{i}" for i in range(10))}, "the filter reaches cards beyond the first page"
     only = board(record, only=more[0])["lanes"]
     assert [(one["key"], [c["n"] for c in one["cards"]]) for one in only if one["cards"]] == [("todo", [more[0]])], "one card can be asked for by number whatever page it is on"
+    from controllers import stored
+    from tests.kit import counted
+    stored.forget_held()
+    board(record)
+    stored.forget_held()
+    with counted() as work:
+        shown = board(record)
+    assert ([kind for kind, _ in work.parsed if kind == "todo"], sum(len(one["cards"]) for one in shown["lanes"]) > 10) == ([], True), \
+        "the board of a server that holds nothing yet is built from the summaries of the to-dos, and parses none of them"
 
 
 def test_a_subagents_task_list_stays_off_the_main_list_and_each_agent_holds_its_own_work():

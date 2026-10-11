@@ -419,6 +419,18 @@ def warm_hooks() -> None:
         traceback.print_exc()
 
 
+def warm_board(root: Path) -> None:
+    """Builds the to-do board of the default environment once, so the first board asked for does not read the indexes and load the formatters it needs; a failure leaves the first board slower."""
+    from engine.record import Record
+    from features.kanban.board import build
+    from features.parts import Context
+    try:
+        journal = Context.of(features.FEATURES["kanban"], Record(root, default_env(root))).journal
+        build(journal, 0, 0, "")
+    except Exception:
+        traceback.print_exc()
+
+
 def warm_rows(root: Path) -> None:
     warm_work(root)
     warm_replies(root)
@@ -432,7 +444,7 @@ def warmed(root: Path, warm: threading.Event, restarted: float = 0.0) -> None:
         if restarted:
             runtime.record_step(root, "restart: until the viewer is warm", time.time() - restarted, time.process_time(), version())
         WARMERS.append(lambda: warm_changed(root))
-        together(warm_commands, lambda: warm_rows(root), lambda: read_transcripts(root), warm_hooks)
+        together(warm_commands, lambda: warm_rows(root), lambda: read_transcripts(root), warm_hooks, lambda: warm_board(root))
         if restarted:
             runtime.record_step(root, "restart: until everything is warm", time.time() - restarted, time.process_time(), version())
     except Exception:

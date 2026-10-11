@@ -636,7 +636,7 @@ class RowStore:
     def _row(self, r: Resource, stamp: str) -> dict:
         return {"n": r.n, "created": r.created, IDEMPOTENCY: r.data.get(IDEMPOTENCY, ""), "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
                 "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), DRAFT_OF: r.data.get(DRAFT_OF, ""), OWNER: r.data.get(OWNER, ""),
-                **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
+                **{k: getattr(r, k, r.data.get(k)) for k in self.resource.indexed}, "stamp": stamp}
 
     def packed(self) -> dict[int, dict]:
         index = self.folder() / PACKED / INDEX
@@ -918,17 +918,20 @@ class RowStore:
         own = [r for r in self.kept(closed_since, closed_last) if (self.resource.hidden_listed or not r.hidden) and self.visible(r)]
         return [*own, *self.also()]
 
+    def kept_summaries(self, closed_since: float = 0, closed_last: int = 0) -> list[dict]:
+        """The summaries of the rows still open, and of the ones closed lately when asked for: what a listing that shows a few fields reads, with no row parsed."""
+        standing = self.standing_summaries()
+        if not closed_since:
+            return standing
+        closed = [row for row in self.summaries() if row["completed"] and not row["deleted"] and row["completed"] >= closed_since]
+        return standing + (sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed)
+
     def kept(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
         """The rows still open, and the ones closed lately when asked for; inside one event they are listed once, every later ask is answered from that listing."""
         memo, key = self.record.memo, (self.type, "kept", closed_since, closed_last)
         if memo is not None and key in memo:
             return list(memo[key])
-        standing = self._peeked(self.standing_summaries())
-        if closed_since:
-            closed = [row for row in self.summaries() if row["completed"] and not row["deleted"] and row["completed"] >= closed_since]
-            kept = sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed
-            standing = standing + self._peeked(kept)
-        listed = self.order(standing)
+        listed = self.order(self._peeked(self.kept_summaries(closed_since, closed_last)))
         if memo is not None:
             memo[key] = listed
         return list(listed)
