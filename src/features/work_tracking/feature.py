@@ -1,4 +1,6 @@
 from controllers.types import Works
+from engine.events.agents import AgentReported, ToolFinished
+from engine.events.engine import ClockTicked
 from engine.events.resources import TodoCompleted
 from features.plans.resource import Plan
 from expects import Given, Kept, Nudged, Refused, Unchanged
@@ -25,6 +27,11 @@ from features.work_tracking.interceptors import WAIT_WAY, RefuseHeldCalls, Refus
 AGENT_ROW = AgentRow(n=1, title="claude-1")
 WAITING = Work(n=3, title="Wait on the build", data={"awaiting": "the build"})
 PARKED = Work(n=3, title="Write the report", data={"parked": "the user asked for something first"})
+
+WORKING = Work(n=3, title="Write the report")
+typing = AgentRow(n=1, title="claude-1", data={"wrote": True})
+polling = AgentRow(n=1, title="claude-1", data={"commands": [{"tool": "Bash", "command": "git status"}] * 3})
+varying = AgentRow(n=1, title="claude-1", data={"commands": [{"tool": "Bash", "command": c} for c in ("git status", "git log", "git status")]})
 
 
 def closed(n: int) -> TodoCompleted:
@@ -76,9 +83,22 @@ class WorkFeature(Feature):
         journal.commands.add("work", ParkWork())
         journal.commands.add("work", ResumeWork())
         journal.commands.add("work", AwaitWork())
-        journal.events.handler(AskStillAwaiting())
+        journal.events.handler(AskStillAwaiting(), expects=[
+            Given(ClockTicked(agent=1), rows=[Work(n=3, title="Wait on the build", data={"awaiting": "the build", "awaiting_since": 1.0}), AGENT_ROW],
+                  settings={"work_tracking.ask_awaiting_every": 5}) >> Nudged("still awaiting"),
+            Given(ClockTicked(agent=1), rows=[Work(n=3, title="Wait on the helper", data={"awaiting": "the helper", "awaiting_since": 1.0, "awaiting_on": "helper:2"}), AGENT_ROW],
+                  settings={"work_tracking.ask_awaiting_every": 5}) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[WAITING, AGENT_ROW], settings={"work_tracking.ask_awaiting_every": 5}) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[Work(n=3, title="Wait on the build", data={"awaiting": "the build", "awaiting_since": 1.0}), AGENT_ROW],
+                  settings={"work_tracking.ask_awaiting_every": 0}) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[AGENT_ROW], settings={"work_tracking.ask_awaiting_every": 5}) >> Unchanged(),
+        ])
         journal.events.handler(ClearWaitOnActivity())
-        journal.events.handler(NameRepeatedChecks())
+        journal.events.handler(NameRepeatedChecks(), expects=[
+            Given(ToolFinished(agent=1), rows=[polling]) >> Nudged("polling, no wake"),
+            Given(ToolFinished(agent=1), rows=[varying]) >> Unchanged(),
+            Given(ToolFinished(agent=1), rows=[polling, WAITING]) >> Unchanged(),
+        ])
         journal.events.handler(HoldUntilDeclared())
         journal.events.handler(OpenWork())
         journal.events.handler(CloseWork())
@@ -106,8 +126,18 @@ class WorkFeature(Feature):
             Given(closed(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"})], settings={"work_tracking.ask_blocked_every": 1}) >> Unchanged(),
         ])
         journal.events.handler(TrackFiles())
-        journal.events.handler(RemindOpenWork())
-        journal.events.handler(CountEdits())
+        journal.events.handler(RemindOpenWork(), expects=[
+            Given(AgentReported(agent=1), rows=[WORKING, AGENT_ROW]) >> Nudged("unlogged"),
+            Given(AgentReported(agent=1), rows=[Work(n=3, title="Write the report", sections=[{"title": "1", "body": "started"}]), AGENT_ROW]) >> Nudged("open"),
+            Given(AgentReported(agent=1), rows=[AGENT_ROW]) >> Unchanged(),
+            Given(AgentReported(agent=1), rows=[PARKED, AGENT_ROW]) >> Unchanged(),
+        ])
+        journal.events.handler(CountEdits(), expects=[
+            Given(AgentReported(agent=1), rows=[WORKING, typing], settings={"work_tracking.name_work_every": 1}) >> Nudged("in hand"),
+            Given(AgentReported(agent=1), rows=[WORKING, typing], settings={"work_tracking.name_work_every": 5}) >> Unchanged(),
+            Given(AgentReported(agent=1), rows=[WORKING, AGENT_ROW], settings={"work_tracking.name_work_every": 1}) >> Unchanged(),
+            Given(AgentReported(agent=1), rows=[typing], settings={"work_tracking.name_work_every": 1}) >> Unchanged(),
+        ])
         journal.events.handler(ResetEditsOnLog())
         journal.agent.interceptor(RefuseHeldCalls())
         journal.agent.interceptor(RefuseWaitingInTheShell(), expects=[
