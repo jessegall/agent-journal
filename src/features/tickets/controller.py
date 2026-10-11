@@ -85,10 +85,20 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         from providers import DRIVERS
         self._kept_from_outside(r)
         if r.board and r.stage not in self._stages(r.board):
-            raise Refused(f"board {r.board} has no stage {r.stage!r}")
+            self._stage_lost(r)
         if r.provider not in DRIVERS:
             raise Refused(f"no provider {r.provider!r}; one of {', '.join(DRIVERS)}")
         return super().save(r, action, **event)
+
+    def _stage_lost(self, r: Resource) -> None:
+        """A stage being chosen must exist; a ticket left on a stage its board lost still saves, and the board is told once."""
+        stored = self._row_on_disk(r) if self.rows.exists(r.n) else None
+        if stored is None or (stored.board, stored.stage) != (r.board, r.stage):
+            raise Refused(f"board {r.board} has no stage {r.stage!r}")
+        notices = Notices(self.record, actor=SYSTEM)
+        if not any(n.data.get("stage_lost_board") == r.board for n in notices.rows.standing()):
+            notices.create(f"Board {r.board} has lost the stage {r.stage!r} of {self.type} {r.n}", tone="warn",
+                           brief="Move its tickets to a stage the board has; until then they still save.", stage_lost_board=r.board)
 
     def _limit(self) -> int:
         return max(0, int(TicketsDetails.values(self.record).running))

@@ -51,6 +51,14 @@ def test_a_board_holds_its_tickets_in_its_own_stages_and_marks_what_they_mean():
     ticket = tickets.create("Dark mode", board=board.n)
     assert (ticket.stage, tickets.move(ticket.n, "Shipped").stage) == ("Ideas", "Shipped"), "a ticket starts in its board's first stage and moves between them"
     assert "has no stage" in refused(lambda: tickets.move(ticket.n, "Nowhere")), "a stage the board does not have is refused"
+    boards.update(board.n, stages=["Ideas", "Building"])
+    tickets.update(ticket.n, told=1.0)
+    from controllers.types import Notices
+    lost = [n for n in Notices(tickets.record, actor=SYSTEM).rows.standing() if n.data.get("stage_lost_board") == board.n]
+    assert (tickets.load(ticket.n).told, len(lost)) == (1.0, 1), "a ticket on a stage its board lost still saves, and the board is told once"
+    tickets.update(ticket.n, told=2.0)
+    assert len([n for n in Notices(tickets.record, actor=SYSTEM).rows.standing() if n.data.get("stage_lost_board") == board.n]) == 1, "the drift is not told again"
+    boards.update(board.n, stages=["Ideas", "Building", "Shipped"])
     lanes = tickets.board(board.n)["lanes"]
     assert [(lane["title"], [(card["n"], card["type"], card["targets"]) for card in lane["cards"]]) for lane in lanes] == \
         [("Ideas", []), ("Building", []), ("Shipped", [(ticket.n, "ticket", ["Ideas", "Building"])])], "the board shows its stages as lanes, each ticket movable to the others"
