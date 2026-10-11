@@ -205,6 +205,15 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         "an agent of another environment that the update holds, its row named for its conversation and not for its seat, is resumed though no list names it, a pause still waiting for it is taken back, and it is asked again until its row is free"
     Agents(Record(record.root, "ticket-1"), actor=SYSTEM).update(ticket_row.n, paused=time.time() - pausing.STALE_PAUSE - 1)
     assert pausing.still_paused(record.root) == [], "a pause left on a row for longer than any update takes does not keep the agents being asked to resume every second"
+    import install
+    Sessions(record.root).write("claude-4", pid=9999)
+    monkeypatch.setattr(pausing, "live", lambda root: [(None, SimpleNamespace(session="claude-4", provider="claude", environment=record.env))])
+    monkeypatch.setattr(install, "prepare_managed", lambda project, root, yes: SimpleNamespace(held=None, copied=[]))
+    monkeypatch.setattr(install, "upgrading", lambda project, root, version: (_ for _ in ()).throw(OSError("no such tag")))
+    with pytest.raises(OSError):
+        install.upgrade(record.root.parent, record.root, yes=True)
+    assert ("claude-4", inputs.RESUME, inputs.UPDATE) in queued(), \
+        "an upgrade that fails resumes the agents it paused, rather than leaving them to wait the pause out"
     from features.auto_update import waiting
     report(record, "working", "PreToolUse", session="claude-8", provider="claude", commands=[{"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()}],
            running={"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()})

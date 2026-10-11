@@ -450,6 +450,9 @@ def upgrade(project: Path, root: Path | None = None, yes: bool = False, version:
             lines = paused + waited + prepared.copied + upgrading(project, root, version)
             stepping(root, "Restarting the journal")
             return lines
+        except BaseException:
+            loaded().resume_agents(root)
+            raise
         finally:
             mark.unlink(missing_ok=True)
 
@@ -762,6 +765,7 @@ class Package:
     publish: Callable
     upgrade_mark: Callable
     pause_agents: Callable
+    resume_agents: Callable
     wait_for_commands: Callable
     mark_all_seen: Callable
     migrations_pending: Callable
@@ -801,11 +805,12 @@ def loaded() -> Package:
     from features.journal_laws import managed
     from features.auto_update.new_feature import mark_all_seen
     from features.auto_update.pausing import pause_all as pause_agents
+    from features.auto_update.pausing import resume_all as resume_agents
     from features.auto_update.waiting import wait_for_commands
     return Package(providers=PROVIDERS, hook_command=HookCommand, library=LIBRARY, linked=LINKED, agent_types=agent_types, record=Record, default_env=default_env,
                    served=served, point=point, held_builds=held_builds, brief=brief, migrate=migrate, ship_sequences=lambda root: shipped(root, ship, "system sequences"),
                    ship_profiles=lambda root: shipped(root, ship_profiles, "profiles"), stop_ended=stop_ended,
-                   publish=publish, upgrade_mark=upgrade_mark, pause_agents=pause_agents, wait_for_commands=wait_for_commands, mark_all_seen=mark_all_seen,
+                   publish=publish, upgrade_mark=upgrade_mark, pause_agents=pause_agents, resume_agents=resume_agents, wait_for_commands=wait_for_commands, mark_all_seen=mark_all_seen,
                    migrations_pending=lambda root: bool(pending(applied(root))), restarting=restarting, managed=managed)
 
 
