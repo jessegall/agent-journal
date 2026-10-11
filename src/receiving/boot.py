@@ -5,12 +5,21 @@ order the handlers of one fact run in. At run time a tick only looks things up. 
 raised on start, by name, rather than on the first event three weeks later.
 """
 
+from typing import get_args
+
 from receiving import ANSWER, HANDLE, KINDS, LISTEN, REFUSE, Registrations
 from receiving.ordering import ordered
 from serving import Service, writing
 
 READ_ONLY = (LISTEN, ANSWER, REFUSE)
 """The kinds that run synchronously, before or instead of a tick. None of them may write."""
+
+
+class AsksForWhatMightBeMissing(TypeError):
+    @classmethod
+    def of(cls, receiver: str, name: str) -> "AsksForWhatMightBeMissing":
+        return cls(f"{receiver} asks for {name} as something that might be missing. A service is resolved at boot and handed over whole, "
+                   f"so no receiver has to ask whether it is there: drop the None from its type.")
 
 
 class AsksForNothingKnown(LookupError):
@@ -40,6 +49,8 @@ def walked(registered: Registrations, served: set[type]) -> None:
             continue
         wants = type(one.receiver).wants()
         for name, asked in wants.items():
+            if type(None) in get_args(asked):
+                raise AsksForWhatMightBeMissing.of(one.name, name)
             service = getattr(asked, "__origin__", asked)
             if not (isinstance(service, type) and issubclass(service, Service)):
                 raise AsksForNothingKnown.of(one.name, name, asked)

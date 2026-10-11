@@ -269,7 +269,8 @@ def test_the_boot_walk_resolves_every_service_and_refuses_a_synchronous_receiver
 
     from events import Fact, Request
     from receiving import Answerer, Handler, Registration, Registrations
-    from receiving.boot import AsksForNothingKnown, AsksForWhatIsNotServed, WritesSynchronously, walked
+    from receiving.boot import (AsksForNothingKnown, AsksForWhatIsNotServed, AsksForWhatMightBeMissing,
+                                WritesSynchronously, walked)
     from serving import Chat, Clock, Rows
 
     @dataclass(frozen=True, kw_only=True)
@@ -307,7 +308,12 @@ def test_the_boot_walk_resolves_every_service_and_refuses_a_synchronous_receiver
 
     walked(registered(("answer", ToolCallAsked, ReadsTheClock()), ("handle", ToolCallAnswered, CountTheRefusal())), {Chat, Clock, Rows})
 
+    class MightNotHaveRows(Handler[ToolCallAnswered]):
+        def handle(self, event: ToolCallAnswered, todos: Rows[Todo] | None) -> list[Fact]:
+            return []
+
     for broken, served, raises, why in (
+        (registered(("handle", ToolCallAnswered, MightNotHaveRows())), {Chat, Clock, Rows}, AsksForWhatMightBeMissing, "might be missing"),
         (registered(("answer", ToolCallAsked, HeldByGate())), {Chat, Clock}, WritesSynchronously, "is an answerer and writes Chat"),
         (registered(("handle", ToolCallAnswered, CountTheRefusal())), {Chat, Clock}, AsksForWhatIsNotServed, "serves to nobody"),
         (registered(("handle", ToolCallAnswered, AsksForAString())), {Chat, Clock}, AsksForNothingKnown, "is not a service"),
@@ -509,9 +515,12 @@ def test_every_registration_gathers_what_it_promises_and_each_outcome_word_reads
     features.load()
     assert len(PROMISED.each) > 200 and {one.kind for one in PROMISED.each} >= {"handler", "formatter", "interceptor"}, \
         "every registration of an owing kind is gathered as the features are wired, with the part itself and its event"
-    owed, carried = PROMISED.owed(), [one for one in PROMISED.each if one.expects]
-    assert len(owed) + len(carried) == len(PROMISED.each) and not {one.called(0) for one in owed} & {one.called(0) for one in carried}, \
+    owes = [one for one in PROMISED.each if one.owes]
+    owed, carried = PROMISED.owed(), [one for one in owes if one.expects]
+    assert len(owed) + len(carried) == len(owes) and not {one.named_as for one in owed} & {one.named_as for one in carried}, \
         "every owing registration either carries its expectations or is counted as owing them; the count is how phase 2 measures its progress"
+    assert len({one.named_as for one in PROMISED.each}) == len(PROMISED.each), \
+        "and the registry holds one entry per registration however often the features are loaded"
     assert carried, "and at least one carries some, so the gathering is really reading what the features declare"
     assert PROMISED.each[0].called(0).count("/") == 2, "a failure is named feature/registration/index, so it names the promise and not a line"
 

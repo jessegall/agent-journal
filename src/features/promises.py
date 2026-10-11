@@ -28,6 +28,11 @@ class Promise:
         """Every registration owes its expectations but two kinds: a line appender, where the engine does all the work and the feature only supplies a value, and the engine's own, which no feature wrote."""
         return self.kind not in ("append_to_line", "route") and self.name not in THE_ENGINES_OWN
 
+    @property
+    def named_as(self) -> tuple[str, str, str]:
+        """What makes this registration itself: its feature, its kind and its own name."""
+        return (self.feature.name, self.kind, self.name)
+
     def called(self, n: int) -> str:
         """What a failure is named after, so it names the promise and not a line number."""
         return f"{self.feature.name}/{self.name}/{n}"
@@ -40,6 +45,8 @@ class Promises:
         self.each: list[Promise] = []
 
     def add(self, promise: Promise) -> None:
+        """Keeps one entry per registration. Loading the features again re-registers them, and a registry that appended would double every promise it holds."""
+        self.each = [one for one in self.each if one.named_as != promise.named_as]
         self.each.append(promise)
 
     def of(self, kind: str) -> list[Promise]:
