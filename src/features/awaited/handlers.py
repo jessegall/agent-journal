@@ -3,6 +3,7 @@ from features.helpers.controller import Helpers
 from features.parts import AgentContext, Handler
 from resources.base import SYSTEM
 from controllers.types import Works
+from providers.claude import CommandRow
 
 HELPER = "helper:"
 KEPT = 300
@@ -14,8 +15,9 @@ def back(context: AgentContext, ref: str) -> str | None:
         if not row.report and not row.completed:
             return None
         return f"{row.name}: {row.report[:KEPT]}" if row.report else f"{row.name} finished"
-    run = next((run for run in context.agent.row.runs if ref in (run.get("task_id"), run.get("id")) and not run.get("running")), None)
-    return f"{run.get('task') or run.get('command') or ref} {run.get('status') or 'ended'}" if run else None
+    runs = (CommandRow.from_json(row) for row in context.agent.row.runs)
+    run = next((one for one in runs if one.answers(ref) and not one.running), None)
+    return f"{run.named() or ref} {run.came_to()}" if run else None
 
 
 class ReturnWhenAwaitedReport(Handler):

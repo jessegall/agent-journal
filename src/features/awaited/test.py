@@ -23,16 +23,22 @@ def test_a_wait_on_a_run_and_a_helper_stands_until_both_are_back_and_then_hands_
     report(record, "working", "PostToolUse", tool="Bash", wrote=True, commands=[{"command": "ls", "tool": "Bash", "at": 9e9}])
     assert works.load(work.n).awaiting == "the suite and Rhea", "working on meanwhile leaves a named wait standing"
     assert not [n for n in nudges(record) if "check the suite" in n], "a named wait is never asked about"
-    report(record, "idle", "Stop", shell_rows=[{**run, "running": False, "ended": 5.0, "status": "completed"}])
+    report(record, "idle", "Stop", shell_rows=[{**run, "running": False, "ended": 5.0, "status": "completed", "code": 0}])
     tick(record)
     assert works.load(work.n).awaiting_on == "b2gb9ud45,helper:1", "one back is not all back"
     Helpers(record, actor=AGENT).update(1, report="hooks spend 40ms in imports")
     tick(record)
     done = works.load(work.n)
     assert (done.awaiting, done.awaiting_on) == ("", ""), "the wait ends once every one is back"
-    assert "the suite completed" in done.sections[-1]["body"] and "Rhea: hooks spend 40ms in imports" in done.sections[-1]["body"], "their results go into the work's log"
+    assert "the suite completed, passed" in done.sections[-1]["body"] and "Rhea: hooks spend 40ms in imports" in done.sections[-1]["body"], \
+        "their results go into the work's log, and a run says whether it passed, which is what decides what the agent does next"
+    from providers.claude import CommandRow, Finish
+    failed = CommandRow.from_json({**run, "running": False, "status": "completed", "code": 1})
+    assert (failed.came_to(), CommandRow.from_json(run).came_to()) == ("completed, failed with exit code 1", "ended"), \
+        "a run that failed names its exit code, and one that finished saying nothing is only said to have ended"
+    assert Finish("completed").said() == "completed", "a run whose notification carried no exit code is only said to have ended as it did"
     told = [(n, b) for n, b in nudges_with_briefs(record) if n.startswith(f"What work {work.n} waited on came back")]
-    assert len(told) == 1 and "the suite completed" in told[0][1] and "Rhea: hooks spend 40ms in imports" in told[0][1], \
+    assert len(told) == 1 and "the suite completed, passed" in told[0][1] and "Rhea: hooks spend 40ms in imports" in told[0][1], \
         "the agent is told once to carry on, and what came back is in the line's brief, which is never cut to fit a title"
     from features.boards.controller import Boards
     from resources.base import Refused

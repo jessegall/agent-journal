@@ -16,6 +16,7 @@ from providers.base import REFUSED, BackgroundTasks, HookCommand, OpenCommands, 
 from providers.jsonl import lines_from, parsed_row, rows, tail_lines
 from providers.payload import Dispatch, Hook, HookEvent, InputRewrite, RewrittenAnswer, ToolCall
 from providers.claude_rows import Block, Row
+from resources.fields import Loaded
 from resources.types import AgentRow
 from engine.proc import run
 from engine.stored import JsonFiles, read_json, write_text
@@ -51,6 +52,7 @@ STATUS_HOME = (".journal", "claude-status")
 SETTINGS_FILES = JsonFiles()
 PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
 NOTIFIED = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>.*?<status>([^<]+)</status>", re.S)
+EXIT_CODE = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>(?:(?!</task-notification>).)*?exit code (\d+)", re.S)
 TASK_ID = re.compile(r"\b(?:ID:|task|agentId:) (\w+)")
 MONITOR_LONGEST = 1800
 MONITOR_DEFAULT = 300000
@@ -59,6 +61,21 @@ QUIET_SUBAGENT = 600
 SETTLE_BYTES = 65536
 SERVER = "journal"
 BROWSER = "playwright"
+
+
+@dataclass(frozen=True)
+class Finish:
+    """How a background run ended: the word its notification used, when it ended, and the exit code it reported, which is the part that says whether the run passed."""
+
+    status: str = ""
+    at: float = 0.0
+    code: int | None = None
+
+    def said(self) -> str:
+        """What the run came to, for the agent to read: the exit code decides, and a run that reported none is only said to have ended."""
+        if self.code is None:
+            return self.status or "ended"
+        return f"{self.status}, passed" if self.code == 0 else f"{self.status}, failed with exit code {self.code}"
 
 
 @dataclass
@@ -102,18 +119,31 @@ class ClaudeSubagentRow(SubagentRow):
 
 
 @dataclass(frozen=True)
-class CommandRow:
-    id: str
-    task_id: str
-    command: str
-    task: str
-    running: bool
-    at: float
-    ended: float
-    status: str
+class CommandRow(Loaded):
+    id: str = ""
+    task_id: str = ""
+    command: str = ""
+    task: str = ""
+    running: bool = False
+    at: float = 0.0
+    ended: float = 0.0
+    status: str = ""
+    code: int | None = None
 
     def to_json(self) -> dict:
         return asdict(self)
+
+    def answers(self, ref: str) -> bool:
+        """Whether this is the run someone waits on, named either by the id its launch answered with or by the tool use's own."""
+        return ref in (self.task_id, self.id)
+
+    def named(self) -> str:
+        """What to call it: what it was asked to do, or the command itself."""
+        return self.task or self.command
+
+    def came_to(self) -> str:
+        """What it came to, for the agent to read."""
+        return Finish(self.status, self.at, self.code).said()
 
 
 SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}
@@ -592,12 +622,12 @@ class Claude(Provider):
     def results(self, row: Row) -> list[Block]:
         return row.of_type("tool_result") if row.type == "user" and row.main else []
 
-    def stopped(self, ended: dict, uses: list[ToolCall], ids: dict[str, str]) -> dict[str, tuple[str, float]]:
+    def stopped(self, ended: dict, uses: list[ToolCall], ids: dict[str, str]) -> dict[str, Finish]:
         tasks = {task: used for used, task in ids.items()}
         for use in (u for u in uses if u.name == "TaskStop"):
             stopped = tasks.get(use.task)
-            if stopped and ended.get(stopped, ("returned",))[0] == "returned":
-                ended[stopped] = ("stopped", use.at)
+            if stopped and ended.get(stopped, Finish("returned")).status == "returned":
+                ended[stopped] = Finish("stopped", use.at)
         return ended
 
     def refused_by_hook(self, block: Block) -> bool:
@@ -613,7 +643,8 @@ class Claude(Provider):
             if use.name in (*DISPATCHES, "Monitor", "TaskStop") or use.name == "Bash" and use.background:
                 crew.uses.append(use)
         if row.type == "queue-operation" and row.operation == "enqueue":
-            crew.ended.update({used: (status, row.at) for used, status in NOTIFIED.findall(row.content)})
+            codes = dict(EXIT_CODE.findall(row.content))
+            crew.ended.update({used: Finish(status, row.at, int(codes[used]) if used in codes else None) for used, status in NOTIFIED.findall(row.content)})
         for block in self.results(row):
             task = TASK_ID.search(block.result)
             if task:
@@ -621,7 +652,7 @@ class Claude(Provider):
             if BACKGROUNDED.search(block.result) and block.tool_use_id not in crew.moved_to_background:
                 crew.moved_to_background.add(block.tool_use_id)
                 crew.uses.extend(use for use in crew.window if use.id == block.tool_use_id and not use.background)
-            crew.ended.setdefault(block.tool_use_id, (REFUSED if self.refused_by_hook(block) else "returned", row.at))
+            crew.ended.setdefault(block.tool_use_id, Finish(REFUSED if self.refused_by_hook(block) else "returned", row.at))
             if block.is_error:
                 crew.errors.setdefault(block.tool_use_id, block.result.rpartition("hook error:")[2].strip())
         return crew
@@ -643,7 +674,8 @@ class Claude(Provider):
         subagents = []
         for use in (u for u in uses if u.name in DISPATCHES):
             session = sessions.get(use.id) or self.session_of_task(path, ids.get(use.id, ""))
-            status, done = (REFUSED, ended[use.id][1]) if use.id in held.errors else ended.get(use.id, ("", 0.0))
+            over = Finish(REFUSED, ended[use.id].at) if use.id in held.errors else ended.get(use.id, Finish())
+            status, done = over.status, over.at
             written = session.stat().st_mtime if session is not None and session.is_file() else 0.0
             writing = now - written <= QUIET_SUBAGENT
             behind = use.background or use.id in held.moved_to_background
@@ -655,13 +687,14 @@ class Claude(Provider):
                                                facts=subagent_facts(self.recent_rows(session)) if session else None).to_json())
         shells = []
         for use in (u for u in uses if u.name == "Bash" and (u.background or u.id in held.moved_to_background)):
-            status, done = ended.get(use.id, ("", 0.0))
-            finished = status not in ("", "returned")
+            over = ended.get(use.id, Finish())
+            finished = over.status not in ("", "returned")
             shells.append(CommandRow(use.id, ids.get(use.id, ""), use.command[:160], use.description, not finished, use.at,
-                                     done if finished else 0.0, status if finished else "").to_json())
+                                     over.at if finished else 0.0, over.status if finished else "", over.code if finished else None).to_json())
         monitors = []
         for use in (u for u in uses if u.name == "Monitor"):
-            status, done = ended.get(use.id, ("", 0.0))
+            over = ended.get(use.id, Finish())
+            status, done = over.status, over.at
             notified = status not in ("", "returned")
             deadline = use.at + min((use.timeout_ms if use.timeout_ms else MONITOR_DEFAULT) / 1000, MONITOR_LONGEST)
             finished = notified or now > deadline
