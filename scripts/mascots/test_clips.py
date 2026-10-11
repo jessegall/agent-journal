@@ -2,14 +2,18 @@
 
 The sheets are checked as shipped. One Blender run renders a still of every clip for one voice, so a clip that no longer poses fails here.
 """
-import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+
+from manifest import Manifest  # noqa: E402
+
 WEB = HERE.parents[1] / "src" / "web"
 BLENDER_SECONDS = 600
 CLIPS = {"idle", "blink", "nod", "shake", "wave", "think", "celebrate", "sleep", "walk"}
@@ -33,29 +37,26 @@ def webp_size(path):
 
 @pytest.fixture(scope="module")
 def manifest():
-    return json.loads((WEB / "public" / "mascots" / "manifest.json").read_text())
+    return Manifest.load(WEB / "public" / "mascots" / "manifest.json")
 
 
 def test_the_manifest_names_every_voice_and_every_clip(manifest):
-    assert (set(manifest["voices"]), set(manifest["clips"])) == (VOICES, CLIPS)
-    assert all(clip["frames"] > 1 and clip["fps"] > 0 for clip in manifest["clips"].values())
-    assert manifest["clips"]["idle"]["loops"] and not manifest["clips"]["nod"]["loops"]
+    assert (set(manifest.voices), set(manifest.clips)) == (VOICES, CLIPS)
+    assert all(clip.frames > 1 and clip.fps > 0 for clip in manifest.clips.values())
+    assert manifest.clips["idle"].loops and not manifest.clips["nod"].loops
 
 
 def test_every_voice_has_a_sheet_of_the_right_size_for_every_clip(manifest):
-    width, height = manifest["cell"]
     wrong = {}
-    for voice in manifest["voices"]:
-        for name, clip in manifest["clips"].items():
-            columns = min(manifest["columns"], clip["frames"])
-            rows = -(-clip["frames"] // columns)
+    for voice in manifest.voices:
+        for name in manifest.clips:
             size = webp_size(WEB / "public" / "mascots" / voice / f"{name}.webp")
-            if size != (columns * width, rows * height):
+            if size != manifest.sheet_size(name):
                 wrong[f"{voice}/{name}"] = size
     assert wrong == {}
 
 
-def test_the_viewer_serves_the_page_and_its_sheets_from_its_own_build(manifest):
+def test_the_viewer_serves_the_page_and_its_sheets_from_its_own_build():
     page = (WEB / "public" / "mascots.html").read_text()
     assert "mascots/manifest.json" in page and "mascots/${voice}/${clip}.webp" in page
     built = WEB / "dist"

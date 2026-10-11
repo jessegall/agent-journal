@@ -1,7 +1,7 @@
 {
  "cell": [
-  256,
-  256
+  224,
+  224
  ],
  "columns": 8,
  "voices": [
@@ -14,43 +14,43 @@
  ],
  "clips": {
   "idle": {
-   "frames": 48,
-   "fps": 12,
+   "frames": 24,
+   "fps": 8,
    "loops": true
   },
   "blink": {
-   "frames": 10,
+   "frames": 6,
    "fps": 12,
    "loops": false
   },
   "nod": {
-   "frames": 14,
+   "frames": 10,
    "fps": 12,
    "loops": false
   },
   "shake": {
-   "frames": 17,
+   "frames": 12,
    "fps": 12,
    "loops": false
   },
   "wave": {
-   "frames": 24,
+   "frames": 12,
    "fps": 12,
    "loops": true
   },
   "think": {
-   "frames": 24,
-   "fps": 12,
+   "frames": 12,
+   "fps": 6,
    "loops": true
   },
   "celebrate": {
-   "frames": 18,
-   "fps": 12,
+   "frames": 12,
+   "fps": 10,
    "loops": true
   },
   "sleep": {
-   "frames": 36,
-   "fps": 12,
+   "frames": 18,
+   "fps": 6,
    "loops": true
   },
   "walk": {

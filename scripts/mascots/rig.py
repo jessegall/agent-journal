@@ -276,6 +276,21 @@ def hand_under(mesh):
     return "hand_l" if centre(mesh).x >= 0 else "hand_r"
 
 
+def rigid(bone):
+    return lambda co: {bone: 1.0}
+
+
+def garment_skin(slot, mesh, body):
+    """How a garment's vertices are weighted: stiff on one bone, along the trunk, or like the body beneath it."""
+    if slot in HELD_SLOTS:
+        return rigid(hand_under(mesh))
+    if slot in STIFF_SLOTS:
+        return rigid(body.bone_under(centre(mesh)))
+    if slot in TRUNK_SLOTS:
+        return trunk_weights
+    return body.weights_under
+
+
 def dress(voice, body, arm):
     """Wardrobe meshes of one voice, bound to the same armature."""
     items = MANIFEST["outfits"][voice]
@@ -286,9 +301,7 @@ def dress(voice, body, arm):
             if mesh.name in covered_asset_parts(items):
                 bpy.data.objects.remove(mesh)
                 continue
-            bone = hand_under(mesh) if slot in HELD_SLOTS else body.bone_under(centre(mesh)) if slot in STIFF_SLOTS else ""
-            weights = (lambda co, bone=bone: {bone: 1.0}) if bone else trunk_weights if slot in TRUNK_SLOTS else body.weights_under
-            assign(mesh, weights)
+            assign(mesh, garment_skin(slot, mesh, body))
             bind(mesh, arm)
             mesh["slot"] = slot
             mesh["item"] = item
@@ -316,6 +329,16 @@ class Figure:
         return {hand_under(mesh) for mesh in self.worn if mesh.get("item") in items}
 
 
+BARE = "bare"
+FIGURES = (BARE, *VOICES)
+
+
+def figures(names):
+    """Each named figure, built in a clean scene when the loop reaches it: the bare robot or a voice."""
+    for name in names:
+        yield name, assemble(None if name == BARE else name)
+
+
 def assemble(voice=None):
     """The scene for one voice, or for the bare robot: its armature, the base body, and its wardrobe.
 
@@ -338,11 +361,7 @@ def assemble(voice=None):
 
 
 class Posing:
-    """Poses bones from the rest pose, parent first, without evaluating the scene between turns.
-
-    Every turn is by degrees about the world's axes, about the bone's own head, on top of where its parent now stands and
-    of any turn the bone already had, so a bone can be turned in steps.
-    """
+    """Poses bones parent first without evaluating the scene; turns are degrees about the world's axes, about the bone's head, and add up."""
 
     def __init__(self, arm):
         self.arm = arm

@@ -4,9 +4,7 @@
 
 Writes DIR/report.json and, unless --no-render, one sheet per voice: every pose from the front and from the side.
 """
-import json
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 
 import bpy
@@ -15,8 +13,10 @@ from mathutils.kdtree import KDTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from rig import VOICES, Posing, assemble, rest  # noqa: E402
-from snaps import render_cell, set_up_render, sheet  # noqa: E402
+import proof  # noqa: E402
+from proof import FigureReport, PoseReport, Stretch  # noqa: E402
+from rig import Posing, rest  # noqa: E402
+from snaps import figures_asked_for, has_flag, output_folder, render_cell, set_up_render, sheet  # noqa: E402
 
 CELL = 360
 SAMPLE_LIMIT = 2500
@@ -63,18 +63,6 @@ def evaluated_points(obj):
     return points
 
 
-@dataclass
-class Stretch:
-    worst_part: str
-    longest: float
-    shortest: float
-    stretched: int
-    squashed: int
-
-    def as_dict(self):
-        return {"worst_part": self.worst_part, "longest": round(self.longest, 3), "shortest": round(self.shortest, 3), "stretched": self.stretched, "squashed": self.squashed}
-
-
 def edge_ratios(obj, before, after):
     edges = numpy.array([tuple(e.vertices) for e in obj.data.edges])
     first = numpy.linalg.norm(before[edges[:, 0]] - before[edges[:, 1]], axis=1)
@@ -93,7 +81,7 @@ def stretch_of(parts, rest_points, posed_points):
         longest, shortest = max(longest, float(ratios.max())), min(shortest, float(ratios.min()))
         stretched += int((ratios > STRETCHED).sum())
         squashed += int((ratios < SQUASHED).sum())
-    return Stretch(worst[0], longest, shortest, stretched, squashed)
+    return Stretch(worst[0], round(longest, 3), round(shortest, 3), stretched, squashed)
 
 
 def tree_of(points):
@@ -154,13 +142,13 @@ def measure(figure):
     arm = figure.armature
     rest(arm)
     rest_points = snapshot(figure)
-    report = {"bones": [b.name for b in arm.data.bones], **weight_facts(figure), "legwear_on_thighs": legwear_on_thighs(figure), "poses": {}}
+    poses = {}
     for name in POSES:
         apply(arm, name)
         posed = snapshot(figure)
-        report["poses"][name] = {"body": stretch_of(figure.body, rest_points, posed).as_dict(), "garment_drift": drift_of(figure, rest_points, posed)}
+        poses[name] = PoseReport(stretch_of(figure.body, rest_points, posed), drift_of(figure, rest_points, posed))
     rest(arm)
-    return report
+    return FigureReport([b.name for b in arm.data.bones], **weight_facts(figure), legwear_on_thighs=legwear_on_thighs(figure), poses=poses)
 
 
 def render_poses(figure, folder):
@@ -177,21 +165,17 @@ def render_poses(figure, folder):
 
 
 def main():
-    given = sys.argv[sys.argv.index("--") + 1:]
-    out = Path(given[given.index("--out") + 1])
-    voices = given[given.index("--voices") + 1].split(",") if "--voices" in given else ["bare", *VOICES]
-    out.mkdir(parents=True, exist_ok=True)
-    report = {}
-    for voice in voices:
-        figure = assemble(None if voice == "bare" else voice)
-        report[voice] = measure(figure)
-        if "--no-render" in given:
+    out = output_folder()
+    reports = {}
+    for voice, figure in figures_asked_for():
+        reports[voice] = measure(figure)
+        if has_flag("no-render"):
             continue
         cells = render_poses(figure, out)
         sheet(cells, SHEET_COLUMNS, (CELL, CELL), out / f"{voice}.png")
         for cell in cells:
             cell.unlink()
-    (out / "report.json").write_text(json.dumps(report, indent=1))
+    proof.dump(reports, out / "report.json")
 
 
 main()

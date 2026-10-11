@@ -4,7 +4,6 @@
 
 Writes DIR/manifest.json and DIR/<voice>/<clip>.png; --stills writes one picture per clip, its middle frame, instead.
 """
-import json
 import sys
 from pathlib import Path
 
@@ -13,14 +12,14 @@ import bpy
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from clips import CLIPS, Stance  # noqa: E402
-from rig import VOICES, Posing, assemble  # noqa: E402
-from snaps import render_cell, set_up_render, sheet  # noqa: E402
+from rig import FIGURES, Posing  # noqa: E402
+from manifest import ClipInfo, Manifest  # noqa: E402
+from snaps import argument, figures_asked_for, has_flag, output_folder, render_cell, set_up_render, sheet  # noqa: E402
 
 CELL = (224, 224)
 COLUMNS = 8
 FRAMED_HEIGHT = 5.4
 FRAMED_MIDDLE = 2.4
-VOICE_NAMES = ("bare", *VOICES)
 
 
 def render_frames(figure, stance, clip, folder, only=None):
@@ -38,23 +37,14 @@ def render_frames(figure, stance, clip, folder, only=None):
 
 
 def manifest_of():
-    return {
-        "cell": list(CELL),
-        "columns": COLUMNS,
-        "voices": list(VOICE_NAMES),
-        "clips": {clip.name: {"frames": clip.frames, "fps": clip.fps, "loops": clip.loops} for clip in CLIPS.values()},
-    }
+    return Manifest(CELL, COLUMNS, FIGURES, {clip.name: ClipInfo(clip.frames, clip.fps, clip.loops) for clip in CLIPS.values()})
 
 
 def main():
-    given = sys.argv[sys.argv.index("--") + 1:]
-    out = Path(given[given.index("--out") + 1])
-    voices = given[given.index("--voices") + 1].split(",") if "--voices" in given else VOICE_NAMES
-    names = given[given.index("--clips") + 1].split(",") if "--clips" in given else list(CLIPS)
-    stills = "--stills" in given
-    out.mkdir(parents=True, exist_ok=True)
-    for voice in voices:
-        figure = assemble(None if voice == "bare" else voice)
+    out = output_folder()
+    names = argument("clips", ",".join(CLIPS)).split(",")
+    stills = has_flag("stills")
+    for voice, figure in figures_asked_for():
         set_up_render(CELL, height=FRAMED_HEIGHT, centre=FRAMED_MIDDLE, transparent=True)
         stance = Stance.of(figure)
         for name in names:
@@ -66,7 +56,7 @@ def main():
             for cell in cells:
                 cell.unlink()
     if not stills:
-        (out / "manifest.json").write_text(json.dumps(manifest_of(), indent=1))
+        manifest_of().dump(out / "manifest.json")
 
 
 main()

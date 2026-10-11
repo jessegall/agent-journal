@@ -1,11 +1,14 @@
 """Pictures of the posed robot from Blender: a camera, one render per call, and a sheet that lays pictures in a grid."""
+import sys
 from math import cos, radians, sin
+from pathlib import Path
 
 import bpy
 import numpy
 from mathutils import Vector
 
 import toon
+from rig import FIGURES, figures
 
 BACKDROP = (0.82, 0.83, 0.86)
 LOOK_AT_HEIGHT = 2.15
@@ -60,3 +63,25 @@ def sheet(cells, columns, size, path):
     out.pixels.foreach_set(canvas.ravel())
     out.save_render(str(path))
     bpy.data.images.remove(out)
+
+
+def argument(name, default=None):
+    """The value after --name on Blender's command line, past the "--"; the default when it is not given."""
+    given = sys.argv[sys.argv.index("--") + 1:]
+    return given[given.index(f"--{name}") + 1] if f"--{name}" in given else default
+
+
+def has_flag(name):
+    return f"--{name}" in sys.argv[sys.argv.index("--") + 1:]
+
+
+def output_folder():
+    """The folder named by --out, made if it is not there."""
+    out = Path(argument("out"))
+    out.mkdir(parents=True, exist_ok=True)
+    return out
+
+
+def figures_asked_for():
+    """The figures named by --voices, all of them by default, each built when the loop reaches it."""
+    return figures(argument("voices", ",".join(FIGURES)).split(","))
