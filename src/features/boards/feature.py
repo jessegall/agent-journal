@@ -1,5 +1,5 @@
 from engine.events.engine import ClockTicked
-from expects import Given, Unchanged, Nudged
+from expects import Given, Nudged, Unchanged, Updated
 from features.base import Feature
 from features.boards.handlers import BoardChanged
 from features.boards.resource import Board
@@ -22,6 +22,11 @@ __all__ = ["Boards"]
 
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
+
+
+class StalledWhileDrafting:
+    def __eq__(self, drafting: dict) -> bool:
+        return drafting["phase"] == "stalled" and drafting["stalled_from"] == "drafting"
 
 
 def added(fields=("added",), action="updated") -> BoardChanged:
@@ -59,5 +64,6 @@ class BoardsFeature(Feature):
             Given(added(action="created"), rows=[board(4, 5), AGENT_ROW]) >> Unchanged(),
         ])
         journal.events.handler(MarkQuietFillingStalled(), expects=[
+            Given(ClockTicked(agent=1), rows=[Board(n=1, title="Launch", data={"drafting": {"phase": "drafting"}}), AGENT_ROW]) >> Updated(Board(n=1), drafting=StalledWhileDrafting()),
             Given(ClockTicked(agent=1), rows=[Board(n=1, title="Launch", data={"drafting": {"phase": "waiting"}}), AGENT_ROW]) >> Unchanged(),
         ])
