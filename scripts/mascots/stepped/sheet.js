@@ -1,7 +1,7 @@
-// Every clip on one page, the five voices side by side on live canvases that share the clip's turn and frame.
+// Every clip of the butler on one page, each on its own live canvas with a turn of its own.
 import {CLIPS, Stage, loadFigure, supportsClip} from "./figure.js";
 
-const VOICES = ["butler", "homie", "colleague", "coach", "squire"];
+const VOICE = "butler";
 const DEGREES_PER_PIXEL = 1;
 
 function timing(clip) {
@@ -16,14 +16,9 @@ function isEmpty(canvas) {
 function card(clip, sheet) {
     const element = document.createElement("article");
     element.className = "card";
-    const stages = VOICES.map((voice) => `
-            <figure class="stage" data-voice="${voice}">
-                <canvas tabindex="0" aria-label="${voice}, ${clip.name}, drag to turn"></canvas>
-                <figcaption>${voice}</figcaption>
-            </figure>`).join("");
     element.innerHTML = `
+        <div class="stage"><canvas tabindex="0" aria-label="${clip.name}, drag to turn"></canvas></div>
         <div class="name"><h2>${clip.name}</h2><span class="timing">${timing(clip)}</span></div>
-        <div class="voices">${stages}</div>
         <label class="turn" for="turn-${clip.name}">
             Turn
             <input type="range" id="turn-${clip.name}" min="0" max="359" step="1" value="0" />
@@ -37,8 +32,7 @@ function card(clip, sheet) {
         </div>
         <p class="note"></p>`;
     sheet.append(element);
-    const canvases = new Map([...element.querySelectorAll(".stage")].map((stage) => [stage.dataset.voice, stage.querySelector("canvas")]));
-    const entry = {clip, element, canvases, slider: element.querySelector(".turn input"), shown: new Map(), empty: new Map()};
+    const entry = {clip, element, canvas: element.querySelector("canvas"), slider: element.querySelector("input"), shown: ""};
     entry.manual = null;
     entry.current = 0;
     entry.frameRange = element.querySelector(".frame-range");
@@ -46,6 +40,7 @@ function card(clip, sheet) {
     entry.note = element.querySelector(".note");
     entry.selectFrame = (frame) => {
         entry.manual = Math.max(0, Math.min(clip.frames - 1, frame));
+        entry.shown = "";
     };
     entry.frameRange.addEventListener("input", () => entry.selectFrame(Number(entry.frameRange.value)));
     element.querySelector(".previous").addEventListener("click", () => entry.selectFrame(entry.current - 1));
@@ -58,60 +53,69 @@ function card(clip, sheet) {
     };
     entry.slider.addEventListener("input", () => entry.turn(Number(entry.slider.value)));
     let dragFrom = null;
-    for (const canvas of canvases.values()) {
-        canvas.addEventListener("pointerdown", (event) => {
-            dragFrom = {x: event.clientX, facing: Number(entry.slider.value)};
-            canvas.setPointerCapture(event.pointerId);
-        });
-        canvas.addEventListener("pointermove", (event) => {
-            if (dragFrom) {
-                entry.turn(dragFrom.facing + (event.clientX - dragFrom.x) * DEGREES_PER_PIXEL);
-            }
-        });
-        canvas.addEventListener("pointerup", () => (dragFrom = null));
-        canvas.addEventListener("keydown", (event) => {
-            const step = {ArrowLeft: -15, ArrowRight: 15}[event.key];
-            if (step) {
-                entry.turn(Number(entry.slider.value) + step);
-            }
-        });
-    }
+    entry.canvas.addEventListener("pointerdown", (event) => {
+        dragFrom = {x: event.clientX, facing: Number(entry.slider.value)};
+        entry.canvas.setPointerCapture(event.pointerId);
+    });
+    entry.canvas.addEventListener("pointermove", (event) => {
+        if (dragFrom) {
+            entry.turn(dragFrom.facing + (event.clientX - dragFrom.x) * DEGREES_PER_PIXEL);
+        }
+    });
+    entry.canvas.addEventListener("pointerup", () => (dragFrom = null));
+    entry.canvas.addEventListener("keydown", (event) => {
+        const step = {ArrowLeft: -15, ArrowRight: 15}[event.key];
+        if (step) {
+            entry.turn(Number(entry.slider.value) + step);
+        }
+    });
     return entry;
 }
 
 function resize(entries, size) {
     const pixels = Math.round(size * (window.devicePixelRatio || 1));
     for (const entry of entries) {
-        for (const canvas of entry.canvases.values()) {
-            canvas.width = canvas.height = pixels;
-            Object.assign(canvas.style, {width: `${size}px`, height: `${size}px`});
-        }
-        entry.shown.clear();
+        entry.canvas.width = entry.canvas.height = pixels;
+        Object.assign(entry.canvas.style, {width: `${size}px`, height: `${size}px`});
+        entry.shown = "";
     }
-    document.getElementById("sheet").style.setProperty("--cell", `${size + 26}px`);
+    document.getElementById("sheet").style.setProperty("--cell", `${Math.max(size + 26, 200)}px`);
 }
 
 async function main() {
     const status = document.getElementById("status");
-    const loaded = await Promise.allSettled(VOICES.map((voice) => loadFigure(`${voice}.glb`, "wardrobe_manifest.json", voice)));
-    const figures = new Map(VOICES.flatMap((voice, index) => loaded[index].status === "fulfilled" ? [[voice, loaded[index].value]] : []));
-    const failed = VOICES.filter((voice) => !figures.has(voice));
-    status.textContent = failed.length ? `These voices did not load: ${failed.join(", ")}` : "";
-    status.hidden = !failed.length;
+    let figure = await loadFigure(`${VOICE}.glb`, "wardrobe_manifest.json", VOICE).catch((error) => {
+        status.textContent = `The butler did not load: ${error.message}`;
+        throw error;
+    });
+    status.hidden = true;
     const stage = new Stage();
     const sheet = document.getElementById("sheet");
     const entries = CLIPS.map((clip) => card(clip, sheet));
-    for (const entry of entries) {
-        for (const [voice, canvas] of entry.canvases) {
-            const figure = figures.get(voice);
-            const shows = figure && supportsClip(entry.clip.name, figure.stance);
-            canvas.hidden = !shows;
-            canvas.nextElementSibling.textContent = shows ? voice : `${voice} · ${figure ? "hands full" : "did not load"}`;
-        }
+    const notes = () => entries.forEach((entry) => {
+        entry.element.hidden = !supportsClip(entry.clip.name, figure.stance);
         entry.note.textContent = entry.clip.name === "pull_ups" ? "Short lift on two fixed side handles, not a full overhead pull-up."
             : entry.clip.name === "sit_on_edge" ? "Seated loop; host scene supplies the ledge."
             : entry.clip.name.endsWith("_in") ? "Arrives from the left, brakes, turns, then holds." : "";
-    }
+    });
+    notes();
+    const cache = new Map([[VOICE, Promise.resolve(figure)]]);
+    let request = 0;
+    document.getElementById("figure-choice").addEventListener("change", async (event) => {
+        const voice = event.target.value, token = ++request;
+        if (!cache.has(voice)) cache.set(voice, loadFigure(`${VOICE}.glb`, "wardrobe_manifest.json", voice));
+        try {
+            const loaded = await cache.get(voice);
+            if (token !== request) return;
+            figure = loaded;
+            entries.forEach((entry) => entry.shown = "");
+            notes();
+        } catch (error) {
+            cache.delete(voice);
+            status.hidden = false;
+            status.textContent = `The figure did not load: ${error.message}`;
+        }
+    });
     resize(entries, 96);
 
     for (const button of document.querySelectorAll(".sizes button")) {
@@ -148,7 +152,7 @@ async function main() {
     document.getElementById("restart").addEventListener("click", () => {
         started = performance.now();
         pausedAt = started;
-        entries.forEach((entry) => { entry.manual = null; });
+        entries.forEach((entry) => { entry.manual = null; entry.shown = ""; });
     });
 
     const tick = (now) => {
@@ -161,16 +165,13 @@ async function main() {
             entry.frameRange.value = frame;
             entry.frameCount.textContent = `${frame + 1} / ${entry.clip.frames}${entry.entering ? " · entering the frame" : ""}`;
             const facing = Number(entry.slider.value);
-            for (const [voice, canvas] of entry.canvases) {
-                const key = `${frame}/${facing}/${canvas.width}`;
-                if (canvas.hidden || key === entry.shown.get(voice)) {
-                    continue;
-                }
-                stage.draw(figures.get(voice), entry.clip, frame, facing, canvas);
-                entry.shown.set(voice, key);
-                entry.empty.set(voice, isEmpty(canvas));
+            const key = `${frame}/${facing}/${entry.canvas.width}`;
+            if (key === entry.shown) {
+                continue;
             }
-            entry.entering = [...entry.canvases].every(([voice, canvas]) => canvas.hidden || entry.empty.get(voice));
+            stage.draw(figure, entry.clip, frame, facing, entry.canvas);
+            entry.entering = isEmpty(entry.canvas);
+            entry.shown = key;
         }
         requestAnimationFrame(tick);
     };
