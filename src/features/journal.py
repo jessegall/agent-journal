@@ -117,7 +117,7 @@ class Journal:
         abstract = str(kept.pop("abstract", ""))
         if spec.label:
             kept["label"] = spec.label
-        return Message(kind, title, abstract, brief, self.feature.name, actor, data={**kept, **data})
+        return Message(kind, title, abstract, brief, self.feature.name, actor, data={**kept, **data, "line": line})
 
     def send(self, record, message: Message):
         return message.kind(record, actor=message.actor).create(titled(message.title), abstract=message.abstract, brief=message.brief,
