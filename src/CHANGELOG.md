@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.271.2 — A Codex session no longer asks to take the environment from itself
+
+- A conversation and the terminal whose process started it are one agent. Codex runs its conversation in a child of the process the journal launched and names that session after its rollout file, while the journal said two names are one agent only when they share a process. They do not, so the conversation read as a second session arriving in an occupied environment: a numbered environment of its own, a question only a person can answer, and on taking over, the agent unbound itself from the environment it was launched for - after which whatever launched it started it again. That is the agent that kept spawning new sessions and took the screen every few seconds.
+- The question about taking an environment over is the user's alone. An agent could answer it, and one did: it chose to take over and unbound a working helper from its own environment. A question can now be marked as the user's, and an agent's answer to one is refused.
+- A pair - the busy environment and the session holding it - is asked about once, however many sessions start beside it. Each waits in an environment of its own, since an environment has one live session, and they all wait on the one question.
+- A browser login opens in a process of its own, so the call that asks for it answers at once. Pressing Log in ran the browser inside the request, holding the server for as long as the window stood open, so every command behind it timed out and the button looked dead; and once a site was allowed, asking for it opened a browser and waited. The Secrets page says while a browser is open, a login that fails to save says why in the chat, and the agent is told the saved login reaches its browser tools only when they start again.
+
 ## 2.271.1 — The chat no longer blames the display hook for words still on their way
 
 - The turn's last words are waited for before the catch-up judges them. The provider sends a turn's final text and the hook that ends the turn at the same moment, each as its own process, so on a loaded machine the end arrived first: the catch-up found nothing held, called the words undelivered, filed a fault and filled the chat from the transcript. Nothing was lost, but the report named the wrong cause and sent agents looking for a broken hook.
