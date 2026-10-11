@@ -22,6 +22,7 @@ from features.plugins.routes import get_pages, get_plugin_dashboard, get_plugin_
 OFF = Plugin(n=1, title="Pulse", data={"enabled": False})
 ON = Plugin(n=1, title="Pulse", data={"enabled": True})
 NAMED = Plugin(n=7, title="Pulse beat", data={"enabled": True, "manifest": {"name": "pulse", "version": "1.0.0"}})
+NOT_A_SOURCE = "'nonsense' is neither a repository URL, an owner/repo, nor a folder on this machine"
 OWNED = Todo(n=5, title="Check the pulse", data={"plugin": "pulse", "locked": True})
 
 
@@ -30,8 +31,15 @@ class Plugins(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.routes.add(get_plugin_dashboard, get_pages, get_services, post_plugins_preview, post_plugin_upgrade_preview, get_plugin_log)
-        for command in (Preview(), Install(), Upgrade()):
-            journal.commands.add("plugin", command)
+        journal.commands.add("plugin", Preview(), expects=[
+            Given((PluginRows, "nonsense")) >> Refused(NOT_A_SOURCE),
+        ])
+        journal.commands.add("plugin", Install(), expects=[
+            Given((PluginRows, "nonsense")) >> Refused(NOT_A_SOURCE),
+        ])
+        journal.commands.add("plugin", Upgrade(), expects=[
+            Given((PluginRows, 99)) >> Refused("no plugin 99"),
+        ])
         journal.commands.add("plugin", ClearLog(), expects=[
             Given((PluginRows, 7), rows=[NAMED]) >> Answered("pulse's log is empty"),
         ])
