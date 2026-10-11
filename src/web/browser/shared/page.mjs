@@ -21,6 +21,16 @@ await runScenarios(OPEN, {
         await page.getByText("Proposal for visitors").first().waitFor();
         await page.getByText("Every detail of the plan").first().waitFor();
     },
+    async "a visitor sees the revisions of a shared document and opens an earlier one"(page) {
+        await page.goto(OPEN);
+        const strip = page.getByRole("navigation", {name: "Revisions"});
+        await strip.getByText("Revision 2 of 2").waitFor();
+        await page.getByText("It starts in spring").first().waitFor();
+        await strip.getByRole("button", {name: "Revision 1", exact: true}).click();
+        await strip.getByText("Revision 1 of 2").waitFor();
+        await page.getByText("Every detail of the plan").first().waitFor();
+        if (await page.getByText("It starts in spring").count()) throw new Error("the earlier revision showed a part written after it");
+    },
     async "a visitor's comment shows at once, and is still there after a reload"(page) {
         const words = `Looks right ${Date.now()}`;
         await page.goto(OPEN);

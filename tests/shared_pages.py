@@ -30,11 +30,13 @@ class SharedPages(NamedTuple):
 
 @contextmanager
 def served() -> Iterator[SharedPages]:
-    """The share server a visitor reaches: a doc that takes comments and holds a question, a link that ended, a link that never was."""
+    """The share server a visitor reaches: a doc with two revisions that takes comments and holds a question, a link that ended, a link that never was."""
     record = fresh()
     docs, shares = Docs(record, actor=USER), Shares(record, actor=USER)
     doc = docs.create("Proposal for visitors", brief="The plan the visitor reads")
     docs.section(doc.n, "Details", "Every detail of the plan")
+    docs.action("keep")(doc.n)
+    docs.section(doc.n, "Timing", "It starts in spring")
     share = shares.create(f"doc:{doc.n}", comments=True)
     ended = shares.create(f"doc:{doc.n}")
     shares.complete(ended.n, "done")
