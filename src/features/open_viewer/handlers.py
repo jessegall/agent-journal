@@ -9,7 +9,7 @@ class ShowViewerTab(Handler):
         row = context.agent.row
         if not (event.written or event.action == "reported") or row.event != HookEvent.SESSION_START or row.parent or in_background(context.record):
             return
-        url = viewer.running(context.record.root)
+        url = viewer.lately_running(context.record.root)
         if not url or not context.once("viewer opened", row.title):
             return
         viewer.show(url, context.record.env)

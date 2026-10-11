@@ -23,7 +23,7 @@ class RuntimeCleanupDetails(FeatureDetails):
     help = """
         Once an hour: each session keeps its files in runtime/sessions/<session>; its printed
         capture keeps its last 64 KB and every log its last 1 MB, and a session's folder untouched
-        for runtime_cleanup.days (2) is removed whole.
+        for runtime_cleanup.days (2) is removed whole, and so is the folder of a session whose agent has ended and that has been quiet for six hours.
     """
 
     fixed = True
