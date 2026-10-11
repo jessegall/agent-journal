@@ -7,6 +7,8 @@ from features import trigger
 from features.trigger import Trigger
 from features.base import Behaviour, Line
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
+from expects import Given, Nudged, Unchanged
+from resources.types import AgentRow
 from engine.gates import Runs
 from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
 from engine.reach import Reach
@@ -110,7 +112,19 @@ class RepeatStanding(Handler):
                               rows="; ".join(f"{r.n}. {r.title}" for r in rows))
 
 
+WORKING = AgentRow(n=1, title="claude-1", data={"status": "working"})
+
+
+def standing_row(controller: type):
+    """One standing row of whichever kind this recital is for, so the same expectations are played for a fact, a rule and a reminder alike."""
+    return controller.resource(n=4, title="The browser scenarios run the built viewer")
+
+
 def register_recital(journal, controller: type) -> None:
     journal.agent.interceptor(WhisperOnKeyword(controller))
     journal.events.handler(WhisperOnKeywordInChat(controller))
-    journal.events.handler(RepeatStanding(controller))
+    journal.events.handler(RepeatStanding(controller), expects=[
+        Given(AgentReported(agent=1), rows=(WORKING, standing_row(controller)))
+            >> Nudged("standing", rows="4. The browser scenarios run the built viewer"),
+        Given(AgentReported(agent=1), rows=(WORKING,)) >> Unchanged(),
+    ])
