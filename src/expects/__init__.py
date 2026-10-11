@@ -31,6 +31,27 @@ SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "cloc
 """Every service a registration may reach. A Given names the ones it answers for; anything else is unreachable."""
 
 
+def stated(row) -> dict:
+    """What an expectation says about a row: the fields it set, and not the ones it left alone. A row's number, its timestamps and its empty fields are the play's business, not the promise's."""
+    blank = type(row)()
+    return {name: value for name, value in held(row).items() if value != held(blank).get(name)}
+
+
+def held(row) -> dict:
+    """Everything a row holds, its own fields and the ones it keeps in data, flattened so an expectation names either kind the same way."""
+    fields = {name: getattr(row, name) for name in dir(row) if not name.startswith("_") and not callable(getattr(row, name, None))}
+    return {**fields, **(fields.get("data") or {})}
+
+
+def matches(row, wanted: dict) -> bool:
+    found = held(row)
+    return all(found.get(name) == value for name, value in wanted.items())
+
+
+def named(row) -> str:
+    return f"{type(row).__name__}({stated(row)})"
+
+
 class Outcome:
     """One thing a registration must produce. Outcomes join with & and all of them must hold."""
 
@@ -90,7 +111,7 @@ class Wrote(Outcome):
 
 @dataclass(frozen=True, init=False)
 class Updated(Outcome):
-    """An existing row was changed, and only in the fields named."""
+    """An existing row was changed and now holds what this says. It is read back from the record, so it asserts what the row IS, not what the write was called."""
 
     row: Any
     changed: tuple[tuple[str, Any], ...]
@@ -98,8 +119,13 @@ class Updated(Outcome):
     def __init__(self, row, **changed) -> None:
         object.__setattr__(self, "row", row)
         object.__setattr__(self, "changed", tuple(sorted(changed.items())))
+
     def holds(self, seen) -> str:
-        return "" if (self.row, self.changed) in seen.updated else f"it did not change {self.row!r} in {dict(self.changed)}; it changed {seen.updated!r}"
+        wanted = {**stated(self.row), **dict(self.changed)}
+        for row in seen.updated:
+            if isinstance(row, type(self.row)) and matches(row, wanted):
+                return ""
+        return f"it changed no {type(self.row).__name__} to hold {wanted}; it changed {[named(one) for one in seen.updated]}"
 
 
 @dataclass(frozen=True)
