@@ -31,6 +31,15 @@ def shape_mark() -> str:
     return digest(inspect.getsource(transcript) + inspect.getsource(wording.digest), 12)
 
 
+@cache
+def fold_mark(fold) -> str:
+    """A digest of a fold's own code, so a release that changes what the fold keeps reads its transcript again instead of reading back a value of the shape the old code stored. It takes the plain function, since a bound method is a new object on every look-up and would be read again each time."""
+    try:
+        return digest(inspect.getsource(fold), 12)
+    except (OSError, TypeError):
+        return ""
+
+
 def size_of(path: Path | None) -> int | None:
     try:
         return Path(path).stat().st_size
@@ -192,7 +201,7 @@ class TranscriptCache:
 
     @staticmethod
     def fold_key(path: Path, fold, start) -> tuple:
-        return str(path), fold.__name__, shape_mark(), *getattr(start, "__dataclass_fields__", ())
+        return str(path), fold.__name__, shape_mark(), fold_mark(getattr(fold, "__func__", fold)), *getattr(start, "__dataclass_fields__", ())
 
     def caught_up(self, path: Path, fold, start) -> bool:
         size = size_of(path)
