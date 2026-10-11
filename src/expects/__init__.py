@@ -1,0 +1,225 @@
+"""The words an expectation is written in: a Given, the arrow, and the outcomes it must produce.
+
+The grammar is doc 80's chapter 'The expects grammar'; this module is the vocabulary it names.
+The Fakes that answer each service, and the run that plays an expectation, arrive with phase 2.
+"""
+
+from dataclasses import dataclass, field
+from typing import Any, Mapping
+
+
+class NotAnOutcome(TypeError):
+    @classmethod
+    def joined(cls, value) -> "NotAnOutcome":
+        return cls(f"an expectation is joined with outcomes, not with {type(value).__name__}")
+
+
+class NoSuchService(LookupError):
+    @classmethod
+    def named(cls, name: str) -> "NoSuchService":
+        return cls(f"{name!r} is not a service an expectation can answer for; it is one of {', '.join(SERVICES)}")
+
+
+__all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
+           "Dispatches", "Wrote", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
+           "Formats", "Nudged", "Held", "Answered",
+           "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
+           "NotAnOutcome", "NoSuchService")
+"""The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
+
+SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands")
+"""Every service a registration may reach. A Given names the ones it answers for; anything else is unreachable."""
+
+
+class Outcome:
+    """One thing a registration must produce. Outcomes join with & and all of them must hold."""
+
+    def __and__(self, other) -> "Outcomes":
+        return Outcomes((self,)) & other
+
+
+@dataclass(frozen=True)
+class Outcomes:
+    each: tuple[Outcome, ...] = ()
+
+    @classmethod
+    def of(cls, outcomes) -> "Outcomes":
+        if isinstance(outcomes, Outcomes):
+            return outcomes
+        if isinstance(outcomes, Outcome):
+            return cls((outcomes,))
+        raise NotAnOutcome.joined(outcomes)
+
+    def __and__(self, other) -> "Outcomes":
+        return Outcomes(self.each + Outcomes.of(other).each)
+
+
+@dataclass(frozen=True)
+class Nothing:
+    """What Dispatches(nothing) names: the registration dispatched no fact at all."""
+
+
+nothing = Nothing()
+
+
+@dataclass(frozen=True)
+class Dispatches(Outcome):
+    """A fact was dispatched, with those field values; claimed names the key the engine claimed for it."""
+
+    fact: Any
+    claimed: str = ""
+
+
+@dataclass(frozen=True)
+class Wrote(Outcome):
+    row: Any
+
+
+@dataclass(frozen=True, init=False)
+class Updated(Outcome):
+    """An existing row was changed, and only in the fields named."""
+
+    row: Any
+    changed: tuple[tuple[str, Any], ...]
+
+    def __init__(self, row, **changed) -> None:
+        object.__setattr__(self, "row", row)
+        object.__setattr__(self, "changed", tuple(sorted(changed.items())))
+
+
+@dataclass(frozen=True)
+class Printed(Outcome):
+    text: str
+
+
+@dataclass(frozen=True)
+class Ran(Outcome):
+    argv: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class Refused(Outcome):
+    why: str
+
+
+@dataclass(frozen=True)
+class Changed(Outcome):
+    """What a handler on a mutable answer turned its text into."""
+
+    text: str
+
+
+@dataclass(frozen=True)
+class Kept(Outcome):
+    """It refused, changed and stopped nothing: what it was handed goes on unchanged."""
+
+
+@dataclass(frozen=True)
+class Unchanged(Outcome):
+    """Nothing in the world changed: no row, no file, no setting. What a read-only listener owes."""
+
+
+@dataclass(frozen=True)
+class Formats(Outcome):
+    """A formatter is a pure function, so its Given and its outcome are one word."""
+
+    text: str
+    to: str = ""
+
+
+@dataclass(frozen=True, init=False)
+class Nudged(Outcome):
+    """That nudge line was sent, with those values filled in. The line is named by its key, never by its wording."""
+
+    line: str
+    values: tuple[tuple[str, Any], ...]
+
+    def __init__(self, line: str, **values) -> None:
+        object.__setattr__(self, "line", line)
+        object.__setattr__(self, "values", tuple(sorted(values.items())))
+
+
+@dataclass(frozen=True)
+class Held(Outcome):
+    why: str
+
+
+@dataclass(frozen=True)
+class Answered(Outcome):
+    """The reduced answer to a request, not one answerer's part."""
+
+    answer: Any
+
+
+@dataclass(frozen=True)
+class At:
+    """The time the Clock service answers, fixed."""
+
+    seconds: float
+
+
+@dataclass(frozen=True)
+class Counting:
+    """The Ids service answers from this number upwards."""
+
+    first: int = 1
+
+
+@dataclass(frozen=True)
+class Answering:
+    """What a service gives back: a mapping from what the code asks to its answer. An ask it does not name is a failure naming the ask."""
+
+    answers: Mapping[Any, Any]
+
+
+@dataclass(frozen=True)
+class Exited:
+    """How a command the registration ran came back."""
+
+    code: int
+    output: str = ""
+
+
+def at(seconds: float) -> At:
+    return At(float(seconds))
+
+
+def counting(first: int = 1) -> Counting:
+    return Counting(first)
+
+
+def answering(answers: Mapping[Any, Any]) -> Answering:
+    return Answering(answers)
+
+
+def exited(code: int, output: str = "") -> Exited:
+    return Exited(code, output)
+
+
+@dataclass(frozen=True)
+class Given:
+    """Everything the registration may read. What a Given does not state is unreachable, so an expectation is exact."""
+
+    on: Any
+    rows: tuple = ()
+    settings: Mapping[str, Any] = field(default_factory=dict)
+    clock: At = At(0.0)
+    ids: Counting = Counting()
+    chat: Answering = Answering({})
+    commands: Answering = Answering({})
+    files: Answering = Answering({})
+    processes: Answering = Answering({})
+    providers: Answering = Answering({})
+
+    def __rshift__(self, outcomes) -> "Expectation":
+        return Expectation(self, Outcomes.of(outcomes))
+
+
+@dataclass(frozen=True)
+class Expectation:
+    given: Given
+    outcomes: Outcomes
+
+    def __and__(self, other) -> "Expectation":
+        """`>>` binds tighter than `&`, so the outcomes after the first one are joined onto the expectation itself."""
+        return Expectation(self.given, self.outcomes & other)
