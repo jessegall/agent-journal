@@ -1162,9 +1162,9 @@ def test_a_machine_with_only_one_agent_warms_up_without_ending_the_server(tmp_pa
     from engine import runtime
     serve.recorded(root, "until the server listens", time.time() - 1)
     runtime.mark_booting(root)
-    runtime.mark_boot_step(root, "Warming the viewer")
+    runtime.mark_boot_step(root, "Loading the viewer")
     from features.auto_update.countdown import update_state
-    assert update_state(root)["step"] == "Warming the viewer" and update_state(root)["ready"] is False, "a server that is starting says which step it is on"
+    assert update_state(root)["step"] == "Loading the viewer" and update_state(root)["ready"] is False, "a server that is starting says which step it is on"
     runtime.mark_booted(root)
     assert update_state(root)["step"] == "" and "until everything is warm" in last_start(root), "once warm it names no step, and journal speed --start reports where the start went"
 

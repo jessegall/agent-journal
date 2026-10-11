@@ -461,7 +461,7 @@ def timed(root: Path, step: str, began: float, work):
 
 def warmed(root: Path, warm: threading.Event, began: float = BEGAN) -> None:
     try:
-        runtime.mark_boot_step(root, "Warming the viewer")
+        runtime.mark_boot_step(root, "Loading the viewer")
         warm_viewer(root, default_env(root), warm)
         runtime.mark_booted(root)
         recorded(root, "until the viewer is warm", began)
