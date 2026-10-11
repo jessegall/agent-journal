@@ -1,12 +1,12 @@
 from controllers.types import Works
 from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked
-from engine.events.resources import TodoCompleted
+from engine.events.resources import TodoCompleted, WorkCreated
 from features.plans.resource import Plan
-from expects import Given, Kept, Nudged, Refused, Unchanged
+from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
 from features.work_tracking.handlers import PlanCompleted, WorkCompleted
 from providers.payload import BashCall
-from resources.base import USER
+from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
 from features.base import Feature
 from features.triggers.watched import COUNT, FACTS, Fact, state_facts
@@ -32,6 +32,14 @@ WORKING = Work(n=3, title="Write the report")
 typing = AgentRow(n=1, title="claude-1", data={"wrote": True})
 polling = AgentRow(n=1, title="claude-1", data={"commands": [{"tool": "Bash", "command": "git status"}] * 3})
 varying = AgentRow(n=1, title="claude-1", data={"commands": [{"tool": "Bash", "command": c} for c in ("git status", "git log", "git status")]})
+
+OPENED = WorkCreated(n=3, type="work", action="created", actor=AGENT)
+ENDED_WITH_TODO = WorkCompleted(n=3, type="work", action="completed", actor=AGENT, todo=True)
+ENDED_ALONE = WorkCompleted(n=3, type="work", action="completed", actor=AGENT, todo=False)
+ON_TODO = Work(n=3, title="Fix the crash", data={"todo": 5})
+ENDED_ON_TODO = Work(n=3, title="Fix the crash", completed=2.0, data={"todo": 5})
+STARTED_TODO = Todo(n=5, title="Fix the crash", data={"status": "started"})
+ran = AgentRow(n=1, title="claude-1", data={"commands": [{"tool": "Bash", "command": "ls", "at": 10.0, "done": 11.0}]})
 
 
 def closed(n: int) -> TodoCompleted:
@@ -93,16 +101,31 @@ class WorkFeature(Feature):
                   settings={"work_tracking.ask_awaiting_every": 0}) >> Unchanged(),
             Given(ClockTicked(agent=1), rows=[AGENT_ROW], settings={"work_tracking.ask_awaiting_every": 5}) >> Unchanged(),
         ])
-        journal.events.handler(ClearWaitOnActivity())
+        journal.events.handler(ClearWaitOnActivity(), expects=[
+            Given(ToolFinished(agent=1), rows=[Work(n=3, title="Wait on the build", data={"awaiting": "the build", "awaiting_since": 5.0}), ran]) >> Updated(Work(n=3), awaiting="") & Nudged("wait cleared"),
+            Given(ToolFinished(agent=1), rows=[Work(n=3, title="Wait on the build", data={"awaiting": "the build", "awaiting_since": 20.0}), ran]) >> Unchanged(),
+            Given(ToolFinished(agent=1), rows=[Work(n=3, title="Wait on the helper", data={"awaiting": "the helper", "awaiting_on": "helper:2", "awaiting_since": 5.0}), ran]) >> Unchanged(),
+        ])
         journal.events.handler(NameRepeatedChecks(), expects=[
             Given(ToolFinished(agent=1), rows=[polling]) >> Nudged("polling, no wake"),
             Given(ToolFinished(agent=1), rows=[varying]) >> Unchanged(),
             Given(ToolFinished(agent=1), rows=[polling, WAITING]) >> Unchanged(),
         ])
         journal.events.handler(HoldUntilDeclared())
-        journal.events.handler(OpenWork())
-        journal.events.handler(CloseWork())
-        journal.events.handler(EndWorkWithTodo())
+        journal.events.handler(OpenWork(), expects=[
+            Given(OPENED, rows=[ON_TODO, Todo(n=5, title="Fix the crash")]) >> Updated(Todo(n=5), status="started", work=3),
+            Given(OPENED, rows=[Work(n=3, title="Look around"), Todo(n=5, title="Fix the crash")]) >> Unchanged(),
+        ])
+        journal.events.handler(CloseWork(), expects=[
+            Given(ENDED_WITH_TODO, rows=[ENDED_ON_TODO, STARTED_TODO]) >> Updated(Todo(n=5), outcome="work 3 ended"),
+            Given(ENDED_ALONE, rows=[ENDED_ON_TODO, STARTED_TODO]) >> Updated(Todo(n=5), status=""),
+            Given(ENDED_WITH_TODO, rows=[ENDED_ON_TODO, Todo(n=5, title="Fix the crash", completed=1.0)]) >> Unchanged(),
+            Given(ENDED_WITH_TODO, rows=[Work(n=3, title="Look around", completed=2.0)]) >> Unchanged(),
+        ])
+        journal.events.handler(EndWorkWithTodo(), expects=[
+            Given(closed(5), rows=[Todo(n=5, title="Fix the crash", completed=1.0), ON_TODO]) >> Updated(Work(n=3), outcome="todo 5 done"),
+            Given(closed(9), rows=[Todo(n=9, title="Other", completed=1.0), ON_TODO]) >> Unchanged(),
+        ])
         journal.events.handler(NameParkedOnTodoDone(), expects=[
             Given(closed(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED, AGENT_ROW]) >> Nudged("parked"),
             Given(closed(9), rows=[Todo(n=9, title="Done", completed=1.0), Todo(n=4, title="Next"), PARKED, AGENT_ROW]) >> Unchanged(),
