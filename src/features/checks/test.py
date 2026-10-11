@@ -183,6 +183,16 @@ def test_a_check_that_runs_out_of_time_says_so_and_its_limit_stretches_by_the_lo
     last = Checks(record, actor=USER).run(check.n, wait=True).last
     assert (last["ok"], last["output"].splitlines()[0]) == (False, "started"), "the run fails and keeps what the command printed"
     assert "ran out of time: stopped after 3 seconds" in last["output"].splitlines()[-1], "its last line names the time limit stretched threefold by the load, which the failure notice shows"
+    import time
+    from engine.locks import claim
+    checks = Checks(record, actor=SYSTEM)
+    checks.stamp(check.n, running={"at": time.time(), "output": "half way", "percent": 50})
+    assert (checks.forget_dead_runs(), bool(checks.load(check.n).running)) == (1, False), \
+        "a run whose process is gone leaves its stamp behind and its lock free, so the stamp is cleared and the check stops reading as running"
+    held = claim(checks._lock(check.n))
+    checks.stamp(check.n, running={"at": time.time(), "output": "half way", "percent": 50})
+    assert (checks.forget_dead_runs(), bool(checks.load(check.n).running)) == (0, True), "a run that still holds its lock is left alone"
+    held.close()
 
 
 def test_a_failing_check_reaches_a_waiting_agent_and_is_told_again_only_when_it_changes():

@@ -32,6 +32,7 @@ TESTS = "tests"
 class RunDueChecks(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         checks = context.journal.get(Checks)
+        checks.forget_dead_runs()
         for check in checks.due(time.time()):
             checks.begin(check.n)
 

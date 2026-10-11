@@ -3,6 +3,7 @@ import os
 import subprocess
 import threading
 import time
+from pathlib import Path
 
 import controllers.types as types_module
 import resources.types as resources_module
@@ -160,8 +161,25 @@ class Checks(Controller):
         place = Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
         return place is None or place.is_main()
 
+    def _lock(self, n: int) -> Path:
+        return runtime.folder(self.record.root) / REPORTS / f"{n}.lock"
+
+    def forget_dead_runs(self) -> int:
+        """Clears the stamp of a run whose process is gone: a run holds its lock for as long as it lives, and the stamp alone outlives a process that was killed or died."""
+        forgotten = 0
+        for check in self.rows.standing():
+            if not check.running:
+                continue
+            free = claim(self._lock(check.n))
+            if free is None:
+                continue
+            free.close()
+            self.stamp(check.n, running={})
+            forgotten += 1
+        return forgotten
+
     def in_background(self, n: int) -> bool:
-        held = claim(runtime.folder(self.record.root) / REPORTS / f"{n}.lock")
+        held = claim(self._lock(n))
         if not held:
             return False
         threading.Thread(target=self._ran_in_background, args=(n, held), daemon=True).start()
