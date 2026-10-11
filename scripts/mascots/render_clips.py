@@ -29,7 +29,9 @@ def render_frames(figure, stance, clip, folder, only=None):
     cells = []
     for frame in frames:
         figure.shut_eyes(1.0)
-        clip.pose(Posing(figure.armature), stance, figure, frame / clip.frames)
+        pose = Posing(figure.armature)
+        clip.pose(pose, stance, figure, frame / clip.frames)
+        pose.check()
         cell = folder / f"frame_{clip.name}_{frame:03d}.png"
         render_cell(camera, 0.0, cell)
         cells.append(cell)

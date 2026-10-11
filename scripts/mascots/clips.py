@@ -13,6 +13,8 @@ HANG = 82
 HOLD_LIFT = 12
 HOLD_SWING = 55
 HOLD_TWIST = 25
+HOLD_ROLL = 20
+RAISED_ROLL = 85
 LEVEL_ITEMS = {"butler_tray", "butler_tablet", "colleague_mug"}
 BUSY_ITEMS = LEVEL_ITEMS | {"squire_shield", "coach_clipboard"}
 BLINK_OPENNESS = (1.0, 0.5, 0.06, 0.5)
@@ -69,12 +71,18 @@ def hang(pose, side, swing=0.0, bend=10.0):
     pose.turn(f"forearm_{side}", x=-bend)
 
 
+def hold_direction(sign):
+    """Which way the forearm points when it carries: forward and out by HOLD_SWING, a little above flat."""
+    lift, swing = math.radians(HOLD_LIFT), math.radians(HOLD_SWING)
+    return (sign * math.cos(lift) * math.cos(swing), -math.cos(lift) * math.sin(swing), math.sin(lift))
+
+
 def hold(pose, side):
-    """An arm carrying something level: the forearm out in front, a little above flat, the hand turned part way so what it holds still faces the viewer."""
+    """An arm carrying something level: the upper arm hangs and rolls so the elbow bends toward the front, the forearm points out in front a little above flat, the hand turned part way so what it holds still faces the viewer."""
     sign = SIDES[side]
     pose.turn(f"upper_arm_{side}", y=sign * HANG)
-    pose.turn(f"forearm_{side}", y=-sign * (HANG + HOLD_LIFT))
-    pose.turn(f"forearm_{side}", z=-sign * HOLD_SWING)
+    pose.turn(f"upper_arm_{side}", z=sign * HOLD_ROLL)
+    pose.aim(f"forearm_{side}", hold_direction(sign))
     pose.face(f"hand_{side}", z=-sign * HOLD_TWIST)
 
 
@@ -122,8 +130,9 @@ def wave(pose, stance, figure, t):
     sign = SIDES[side]
     trunk(pose, twist=-sign * 4, turn=-sign * 8, tilt=-sign * 6)
     arms_at_rest(pose, stance, apart=(side,))
+    pose.turn(f"upper_arm_{side}", x=-RAISED_ROLL)
     pose.turn(f"upper_arm_{side}", y=-sign * 10)
-    pose.turn(f"forearm_{side}", y=-sign * (45 + 22 * wave_of(t)))
+    pose.bend(f"forearm_{side}", 45 + 22 * wave_of(t))
 
 
 def think(pose, stance, figure, t):
@@ -147,7 +156,7 @@ def celebrate(pose, stance, figure, t):
     for side in cheering:
         sign = SIDES[side]
         pose.turn(f"upper_arm_{side}", y=-sign * (62 + 8 * wave_of(t, 2)))
-        pose.turn(f"forearm_{side}", y=-sign * 6 * wave_of(t, 4))
+        pose.bend(f"forearm_{side}", 10 + 6 * wave_of(t, 4))
     for side in SIDES:
         pose.turn(f"thigh_{side}", x=-18 * jump)
         pose.turn(f"shin_{side}", x=34 * jump)

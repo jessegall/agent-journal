@@ -12,6 +12,8 @@ from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from clips import hold  # noqa: E402
+from prove_rig import evaluated_points  # noqa: E402
 from rig import BARE, LIMBS, OutOfLimit, Posing, Unreachable, bone_of, figures  # noqa: E402
 from snaps import output_folder  # noqa: E402
 
@@ -45,6 +47,22 @@ def reached(arm, limb, side, way):
     return {"miss": round((pose.matrix(bone_of(end, side)).to_translation() - target).length, 4), "violations": [str(v) for v in pose.violations()]}
 
 
+def middle_of(mesh):
+    return Vector(evaluated_points(mesh).mean(axis=0))
+
+
+def gripped(figure, item, shift):
+    """How far a held item's middle ends up from the point its grip was asked to reach: where it sits in the hold, moved by `shift`."""
+    hand = next(iter(figure.hands_holding({item})))
+    side = hand.removeprefix("hand_")
+    mesh = next(worn for worn in figure.worn if worn.get("item") == item)
+    hold(Posing(figure.armature), side)
+    target = middle_of(mesh) + Vector(shift)
+    pose = Posing(figure.armature)
+    pose.reach("arm", side, target, grip=figure.grip(item))
+    return round((middle_of(mesh) - target).length, 3)
+
+
 def too_far(arm):
     pose = Posing(arm)
     try:
@@ -55,6 +73,10 @@ def too_far(arm):
 
 
 def main():
+    (_, figure), = figures([BARE])
+    arm = figure.armature
+    (_, butler), = figures(["butler"])
+    tray_miss = gripped(butler, "butler_tray", (-0.15, 0.0, 0.15))
     (_, figure), = figures([BARE])
     arm = figure.armature
     report = {
@@ -70,6 +92,7 @@ def main():
         "arm_ahead_r": reached(arm, "arm", "r", (-0.3, -1.0, -0.3)),
         "leg_forward": reached(arm, "leg", "l", (0.0, -1.0, -0.8)),
         "arm_out_of_range": too_far(arm),
+        "tray_miss": tray_miss,
     }
     (output_folder() / "limits.json").write_text(json.dumps(report, indent=1))
 

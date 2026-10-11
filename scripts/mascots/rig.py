@@ -80,6 +80,7 @@ SIDED = {"shoulder", "upper_arm", "forearm", "hand", "thigh", "shin", "foot"}
 # What each bone may do, in degrees, as its turn from the parent's own motion, about the world's axes as the rest pose lays them out.
 # Left side's numbers; the right side mirrors y and z. The axis a bone points along is its twist; the other two are how far it swings.
 # A bone with no entry (the root) is free. A pose outside these is refused by Posing.check, never clamped.
+# The hip extends up to 30 degrees: a walking stride swings the thigh back 20 to 30, and every figure's walk reaches 29.2.
 LIMITS = {
     "hips": {"x": (-20, 35), "y": (-15, 15), "z": (-35, 35)},
     "spine": {"x": (-15, 35), "y": (-20, 20), "z": (-35, 35)},
@@ -89,7 +90,7 @@ LIMITS = {
     "shoulder": {"x": (-10, 10), "y": (-20, 25), "z": (-20, 20)},
     "upper_arm": {"x": (-90, 90), "y": (-120, 90), "z": (-120, 60)},
     "hand": {"x": (-90, 90), "y": (-70, 70), "z": (-80, 80)},
-    "thigh": {"x": (-120, 25), "y": (-45, 15), "z": (-40, 40)},
+    "thigh": {"x": (-120, 30), "y": (-45, 15), "z": (-40, 40)},
     "foot": {"x": (-50, 50), "y": (-30, 30), "z": (-30, 30)},
 }
 
@@ -101,9 +102,16 @@ class Hinge:
     reach: float
     off_axis: float
 
+    def neutral(self, side):
+        """The hinge's axis on this side: mirroring flips y and z."""
+        x, y, z = self.axis
+        return Vector((x, y, z) if side == "l" else (x, -y, -z))
+
 
 HINGES = {"forearm": Hinge((0, 0, -1), 150, 60), "shin": Hinge((1, 0, 0), 150, 25)}
 SLACK = 0.5
+GRIP_ROUNDS = 4
+SETTLE_MARGIN = 0.01
 
 
 def vector_part(quaternion):
@@ -384,6 +392,11 @@ class Figure:
         for eye in self.eyes():
             eye.scale.z = max(open_by, MIN_EYE_HEIGHT)
 
+    def grip(self, item):
+        """Where a held item sits from the wrist, in the world's axes as the rest pose lays them out: what Posing.reach asks for."""
+        mesh = next(worn for worn in self.worn if worn.get("item") == item)
+        return centre(mesh) - self.armature.data.bones[hand_under(mesh)].head_local
+
     def hands_holding(self, items):
         """The hand bones holding one of these items."""
         return {hand_under(mesh) for mesh in self.worn if mesh.get("item") in items}
@@ -508,8 +521,7 @@ class Posing:
         found = []
         if flexion > hinge.reach + SLACK:
             found.append(OutOfLimit(name, "bend", flexion, 0, hinge.reach))
-        neutral = Vector(hinge.axis) if side == "l" else Vector((hinge.axis[0], -hinge.axis[1], -hinge.axis[2]))
-        off = math.degrees(axis.angle(neutral))
+        off = math.degrees(axis.angle(hinge.neutral(side)))
         if flexion > 1.0 and off > hinge.off_axis + SLACK:
             found.append(OutOfLimit(name, "bend direction", off, 0, hinge.off_axis))
         return found
@@ -528,19 +540,38 @@ class Posing:
         turn = now.rotation_difference(Vector(direction)).to_matrix().to_4x4()
         self.place(name, Matrix.Translation(at) @ turn @ Matrix.Translation(-at) @ standing)
 
-    def reach(self, limb, side, target, bend=None):
+    def bend(self, name, degrees):
+        """Flexes a hinge bone about its own hinge, which turns with its parent; positive bends the way the bone is allowed to."""
+        base, side = part_side(name)
+        parent = self.arm.pose.bones[name].parent
+        axis = self.delta(parent.name) @ HINGES[base].neutral(side)
+        standing = self.standing(name)
+        at = standing.to_translation()
+        turn = Quaternion(axis, math.radians(degrees)).to_matrix().to_4x4()
+        self.place(name, Matrix.Translation(at) @ turn @ Matrix.Translation(-at) @ standing)
+
+    def reach(self, limb, side, target, bend=None, grip=None):
         """Poses an arm or a leg so that its end bone's head is at `target`, solving the upper and lower bone from their lengths.
 
-        `bend` is the way the middle joint points; Unreachable when the target is out of range."""
+        `bend` is the way the middle joint points. With `grip`, the end bone's offset to what it holds (Figure.grip), `target` is
+        where that grip should be and the end bone is placed to match. Unreachable when the target is out of range."""
         upper, lower, end = (bone_of(role, side) for role in LIMBS[limb].roles)
+        offset = Vector(grip) if grip is not None else Vector()
+        rounds = GRIP_ROUNDS if grip is not None else 1
+        for turn in range(rounds):
+            self.solve(limb, side, upper, lower, Vector(target) - self.delta(end) @ offset, bend, settling=turn < rounds - 1)
+
+    def solve(self, limb, side, upper, lower, end_at, bend, settling=False):
+        """One analytic solve; a round that is only settling toward the grip is kept inside the limb's range, the last one is not."""
         bones = self.arm.pose.bones
         first, second = (bones[name].bone.length for name in (upper, lower))
         shoulder = self.standing(upper).to_translation()
-        way = Vector(target) - shoulder
-        distance = way.length
-        if not abs(first - second) <= distance <= first + second:
-            raise Unreachable(limb, side, distance, abs(first - second), first + second)
-        along = way / distance
+        way = end_at - shoulder
+        nearest, farthest = abs(first - second), first + second
+        distance = min(max(way.length, nearest + SETTLE_MARGIN), farthest - SETTLE_MARGIN) if settling else way.length
+        if not nearest <= distance <= farthest:
+            raise Unreachable(limb, side, distance, nearest, farthest)
+        along = way.normalized()
         back = (first * first - second * second + distance * distance) / (2 * distance)
         pole = Vector(bend or LIMBS[limb].bend)
         if side == "r":
@@ -548,7 +579,7 @@ class Posing:
         pole -= along * pole.dot(along)
         middle = shoulder + along * back + pole.normalized() * math.sqrt(max(first * first - back * back, 0.0))
         self.aim(upper, middle - shoulder)
-        self.aim(lower, Vector(target) - middle)
+        self.aim(lower, end_at - middle)
 
 
 def rest(arm):

@@ -13,11 +13,11 @@ import pytest
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
-from test_clips import CLIPS  # noqa: E402
+from test_clips import VOICES  # noqa: E402
 from test_rig import BLENDER_SECONDS  # noqa: E402
 
-CLEAN_ON_THE_BARE_ROBOT = {"idle", "blink", "nod", "shake", "think", "sleep"}
 REACH_TOLERANCE = 1e-3
+GRIP_TOLERANCE = 0.02
 
 needs_blender = pytest.mark.skipif(shutil.which("blender") is None, reason="needs Blender on the path")
 
@@ -34,7 +34,7 @@ def proved(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def surveyed(tmp_path_factory):
-    return blender("check_clips.py", tmp_path_factory.mktemp("survey"), "--voices", "bare")
+    return blender("check_clips.py", tmp_path_factory.mktemp("survey"), "--voices", ",".join(sorted(VOICES)))
 
 
 @needs_blender
@@ -57,10 +57,15 @@ def test_a_limb_reaches_its_target_and_stays_inside_its_limits(proved):
 
 
 @needs_blender
+def test_a_held_item_ends_up_at_the_grip_asked_for(proved):
+    assert proved["tray_miss"] < GRIP_TOLERANCE
+
+
+@needs_blender
 def test_a_target_out_of_range_is_refused_with_how_far_off(proved):
     assert proved["arm_out_of_range"] == {"limb": "arm", "side": "l", "by": pytest.approx(36.9, abs=0.2)}
 
 
 @needs_blender
-def test_the_clips_that_carry_nothing_pass_the_limits_on_the_bare_robot(surveyed):
-    assert CLEAN_ON_THE_BARE_ROBOT.isdisjoint(surveyed["bare"]) and set(surveyed["bare"]) <= CLIPS
+def test_every_shipped_clip_passes_the_limits_on_every_figure(surveyed):
+    assert {voice: clips for voice, clips in surveyed.items() if clips} == {}
