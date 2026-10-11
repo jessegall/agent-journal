@@ -201,6 +201,10 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     helper_agent.update(helper_agent.primary_to_read().n, at=time.time() - 13 * 60)
     watch()
     assert len(idle()) == 2, "and again once the repeat time has passed"
+    helper_agent.update(helper_agent.primary_to_read().n, at=time.time() - 40 * 60, runs=[{"running": True, "task": "part-level sweep"}])
+    watch()
+    assert len(idle()) == 2, "a helper whose turn ended while its own background run goes on is working, so it is not named idle again"
+    helper_agent.update(helper_agent.primary_to_read().n, runs=[])
     Features(record, actor=SYSTEM).configure("helpers", "idle_repeats", "1")
     helper_agent.update(helper_agent.primary_to_read().n, at=time.time() - 25 * 60)
     watch()

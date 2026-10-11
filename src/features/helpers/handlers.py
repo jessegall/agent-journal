@@ -131,20 +131,23 @@ class NameStoppedOrQuietHelpers(Handler):
             stopped = not agent_runs(context.record, row)
             if stopped and speaking.once("helper stopped", f"{row.n}:{last_seen}"):
                 speaking.agent.say("stopped", n=row.n, name=row.name, cause=launch_failure(context.record.root, row.environment), rows=[row.ref])
-            elif not stopped and time.time() - last_seen >= quiet_after and not self.running_command(context, row) and speaking.once("helper quiet", f"{row.n}:{last_seen}"):
+            elif not stopped and time.time() - last_seen >= quiet_after and not self.working_on_its_own(self.agent_of(context, row)) and speaking.once("helper quiet", f"{row.n}:{last_seen}"):
                 speaking.agent.say("quiet", n=row.n, name=row.name, minutes=int((time.time() - last_seen) // MINUTE))
             if not stopped:
                 self.name_idle(context, speaking, row)
 
     @staticmethod
-    def running_command(context: AgentContext, row) -> bool:
-        """A helper waiting on a long command or a background run says nothing while it works, so it is not quiet."""
-        agent = Agents(Record(context.record.root, row.environment), actor=SYSTEM).primary_to_read()
+    def agent_of(context: AgentContext, row):
+        return Agents(Record(context.record.root, row.environment), actor=SYSTEM).primary_to_read()
+
+    @staticmethod
+    def working_on_its_own(agent) -> bool:
+        """A helper waiting on a long command or a background run says nothing while it works, so it is neither quiet nor idle."""
         return bool(agent) and (agent.command_running or bool(agent.background_run))
 
     def name_idle(self, context: AgentContext, speaking: AgentContext, row) -> None:
-        agent = Agents(Record(context.record.root, row.environment), actor=SYSTEM).primary_to_read()
-        idle = agent.idle_for if agent else 0.0
+        agent = self.agent_of(context, row)
+        idle = 0.0 if self.working_on_its_own(agent) else agent.idle_for if agent else 0.0
         after, every, repeats = (float(context.settings.idle_after) * MINUTE, float(context.settings.idle_every) * MINUTE, int(context.settings.idle_repeats))
         if idle < after:
             return
