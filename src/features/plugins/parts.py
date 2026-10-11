@@ -79,7 +79,7 @@ class AskPluginsToRefuse(ToolInterceptor):
             if not writes and not manifest.reads:
                 continue
             payload = refusal(record, hook, called(row), folder(record.root, called(row)), writes)
-            if not manifest.waits(hook.event):
+            if not manifest.waits(hook.event) or manifest.refuse_socket and not plugin_socket(record.root, called(row)).exists():
                 self._beside(context, row, payload)
                 continue
             started = time.monotonic()

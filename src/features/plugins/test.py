@@ -134,7 +134,9 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
     assert formatted("the colour of it", record) == "the color of it", "a plugin's chat rule rewrites what the chat shows"
     served = alone("served")
     installed(served, "served", "read x; echo '{\"refuse\": \"from the command\"}'\n", refuse_socket="hooks", services={"hooks": {"run": "true"}})
-    assert writing(served) == CLAUDE.blocking("served: from the command"), "with nothing listening on its socket the command is run"
+    from controllers.types import Nudges
+    assert writing(served) == {}, "with nothing listening on its socket the call is not held for the command"
+    assert any("from the command" in nudge.brief for nudge in Nudges(served, actor=SYSTEM).all()), "the command is run beside the call and its refusal reaches the agent as a message"
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listening:
         path = plugin_socket(served.root, "served")
         path.unlink(missing_ok=True)
