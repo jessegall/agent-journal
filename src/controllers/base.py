@@ -261,6 +261,10 @@ class Controller(Files, Links, Discussed):
     def _field_choices(self, r: Resource) -> dict:
         return {}
 
+    def _derived(self, row: Resource) -> dict:
+        """What a row says now that cannot be kept with it, because it depends on more than the row: read each time the viewer is handed the row, never saved."""
+        return {}
+
     def _shaped(self, data: dict) -> dict:
         fields = self.resource.fields
         return {k: checked_field(fields, k, v) for k, v in data.items()}

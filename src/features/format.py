@@ -4,7 +4,7 @@ from controllers.faults import threw
 from engine.markers import plain
 from features.phone.chat_view import stamped
 from features.switches import generation
-from resources.base import SECTION, TEXT_FIELDS, as_dict
+from resources.base import SECTION, SYSTEM, TEXT_FIELDS, as_dict
 from engine.extension import Extension
 from engine.memo import Memo
 
@@ -73,8 +73,15 @@ def shaped(r, record, surface: str = "") -> dict:
     return SHAPED.get((str(record.home), r.type, r.n, r.updated, surface, settled(record)), None, lambda: shape(r, record, surface))
 
 
-def shape(r, record=None, surface: str = "") -> dict:
+def read_as_dict(r, record) -> dict:
+    """The row as it reads now: its saved fields, and over them what its controller says is derived from the rest of the journal."""
+    from controllers.types import CONTROLLERS
     row = as_dict(r)
+    return {**row, **CONTROLLERS[r.type](record, actor=SYSTEM)._derived(r)} if record is not None and r.type in CONTROLLERS else row
+
+
+def shape(r, record=None, surface: str = "") -> dict:
+    row = read_as_dict(r, record)
     fields = {key: formatted(row.get(key), record, surface) for key in TEXT_FIELDS if row.get(key)}
     fields = {**fields, **{key: plain(fields[key]) for key in PLAIN_FIELDS if key in fields}}
     parts = [{**s, SECTION.title: formatted(s.get(SECTION.title), record, surface), SECTION.body: formatted(s.get(SECTION.body), record, surface)}
@@ -97,7 +104,7 @@ def carded(r, record, surface: str = "") -> dict:
 
 def card(r, record=None, surface: str = "") -> dict:
     """What a result card shows, formatted: the title, the abstract or else the brief, and the section titles; no other text."""
-    row = as_dict(r)
+    row = read_as_dict(r, record)
     kept_fields = ("title", "abstract" if row.get("abstract") else "brief")
     fields = {key: formatted(row.get(key), record, surface) for key in kept_fields if row.get(key)}
     fields = {**fields, **{key: plain(fields[key]) for key in PLAIN_FIELDS if key in fields}}

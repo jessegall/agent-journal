@@ -297,7 +297,17 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     FACTS.register(owner, sleepy)
     try:
         sleeper = Triggers(record, actor=USER).create("sleeps", text="wake up", when="state", fact="test.sleepy", over=1, does="nudge")
+        from features.format import shape
+        from features.switches import rebooted
         owner.on = False
+        rebooted()
+        assert shape(Triggers(record, actor=USER).load(sleeper.n), record)["brief"].startswith("Asleep: nothing in this journal watches test.sleepy"), \
+            "a trigger reads asleep the moment its feature goes off, though nothing saved it since"
+        owner.on = True
+        rebooted()
+        assert not shape(Triggers(record, actor=USER).load(sleeper.n), record)["brief"].startswith("Asleep"), "and reads awake the moment the feature is back"
+        owner.on = False
+        rebooted()
         Triggers(record, actor=USER).update(sleeper.n, text="wake up now")
         assert Triggers(record, actor=USER).load(sleeper.n).brief.startswith("Asleep: nothing in this journal watches test.sleepy"), "a trigger whose fact has gone says on its row why it sleeps"
         tick(record)

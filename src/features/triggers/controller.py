@@ -49,6 +49,10 @@ class Triggers(Controller):
             r.brief = summary(r, self._starts(r.n), self.record)
         return super().save(r, action, **event)
 
+    def _derived(self, row: Resource) -> dict:
+        """The sentence a trigger reads as is worked out from what the journal watches now, so a trigger sleeps the moment its feature is switched off and wakes the moment it is on."""
+        return {} if row.system else {"brief": summary(row, self._starts(row.n), self.record)}
+
     def _check_watched(self, r: Resource, setting_fact: bool) -> None:
         if r.when not in WHEN:
             raise Refused(f"a trigger watches {' or '.join(WHEN)}, not {r.when!r}")
