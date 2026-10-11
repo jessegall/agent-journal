@@ -409,13 +409,21 @@ function rigOf(root) {
     return {bones, order: bones.map((bone) => bone.name), parents, rest, heads};
 }
 
+// The glb's bytes; a host that serves no .glb, such as a claude.ai artifact, carries it as base64 in <url>.txt
+async function glbBytes(url) {
+    const glb = await fetch(url);
+    if (glb.ok) {
+        return glb.arrayBuffer();
+    }
+    const text = await fetch(`${url}.txt`).then((response) => response.text());
+    return Uint8Array.from(atob(text), (character) => character.charCodeAt(0)).buffer;
+}
+
 // The figure of one voice from its glb, its worn pieces drawn and the body parts they cover left out (rig.assemble)
 export async function loadFigure(url, wardrobe, voice) {
     const draco = new DRACOLoader().setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/");
-    const [gltf, manifest] = await Promise.all([
-        new GLTFLoader().setDRACOLoader(draco).loadAsync(url),
-        fetch(wardrobe).then((response) => response.json()),
-    ]);
+    const [bytes, manifest] = await Promise.all([glbBytes(url), fetch(wardrobe).then((response) => response.json())]);
+    const gltf = await new GLTFLoader().setDRACOLoader(draco).parseAsync(bytes, "");
     const scene = gltf.scene;
     scene.updateMatrixWorld(true);
     const covered = new Set(manifest.outfits[voice].flatMap((item) => manifest.assets[item].hide_base_parts));
