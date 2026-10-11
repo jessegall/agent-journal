@@ -1,9 +1,9 @@
 from engine.events.agents import SessionStarted
-from engine.events.resources import WorkCreated
-from expects import Given, Nudged, Unchanged
+from engine.events.resources import ResourceCreated, WorkCreated
+from expects import Given, Nudged, Unchanged, Updated
 from features.base import Feature
 from features.templates.resource import Template
-from resources.base import AGENT
+from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
 from features.journal import Journal
 from features.templates.applying import ApplyTemplate, CheckTemplate
@@ -20,6 +20,13 @@ BLANK = Template(n=2, title="Bug fix")
 TEMPLATED = Todo(n=5, title="Fix the crash", data={"template": 2})
 STARTED = WorkCreated(n=3, type="work", action="created", actor=AGENT)
 
+REPRODUCE = Template(n=2, title="Bug fix", brief="Reproduce it first.", sections=[{"title": "Steps", "body": "Reproduce it in {{app}}"}],
+                     data={"fields": [{"name": "app", "label": "App", "kind": "text", "default": "the app"}]})
+
+
+def created(todo: Todo) -> Given:
+    return Given(ResourceCreated(n=5, type="todo", action="created", actor=USER), rows=[REPRODUCE, todo])
+
 
 def work_on(todo: int = 5) -> Work:
     return Work(n=3, title="Fix the crash", data={"todo": todo})
@@ -30,7 +37,11 @@ class TemplatesFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.commands.intercept("create", CheckTemplate())
-        journal.events.handler(ApplyTemplate())
+        journal.events.handler(ApplyTemplate(), expects=[
+            created(Todo(n=5, title="Fix the crash", data={"template": 2, "template_values": {"app": "the viewer"}})) >> Updated(Todo(n=5), sections=[{"title": "Steps", "body": "Reproduce it in the viewer"}]),
+            created(Todo(n=5, title="Fix the crash", data={"template": 2})) >> Updated(Todo(n=5), sections=[{"title": "Steps", "body": "Reproduce it in the app"}]),
+            created(Todo(n=5, title="Fix the crash")) >> Unchanged(),
+        ])
         journal.commands.intercept("show", PrefaceShow())
         journal.events.handler(TellOnStart(), expects=[
             Given(STARTED, rows=[BUG_FIX, TEMPLATED, work_on(), AGENT_ROW]) >> Nudged("instructions"),
