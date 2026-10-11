@@ -266,7 +266,7 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch(monkeypatch):
     from providers import transcript_reader
     from types import SimpleNamespace
     monkeypatch.chdir(record.root.parent)
-    broken, agent = record.root.parent / "broken.json", SimpleNamespace(provider="nowhere", transcript="t.jsonl")
+    broken, agent = record.root.parent / "broken.json", SimpleNamespace(provider="nowhere", transcript="t.jsonl", cwd=str(record.root.parent))
     broken.write_text("{not json")
     assert (read_promised_json(broken, dict, {}), transcript_reader(agent)) == ({}, None), "elsewhere a file that is there but unreadable, and a provider nobody supplies, answer blank"
     monkeypatch.setenv("DEVELOPMENT_MODE", "true")

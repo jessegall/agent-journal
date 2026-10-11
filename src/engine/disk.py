@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Callable, TypeVar
 
-from engine.developing import found
+from engine.developing import found, project_of
 from engine.memo import Memo
 
 T = TypeVar("T")
@@ -81,7 +81,7 @@ def read_promised_json(path: Path, into: Callable[[Any], T], default: T) -> T:
     """A file's content for the reader that is promised real state: a mark, a setting, a seat, a stored record. Where the journal develops itself a file that is there and answers the default is said, naming the path; everywhere else, and for a file that is not there, it answers the default as read_json does."""
     answer = read_json(path, into, default)
     if answer is default and Path(path).is_file():
-        return found(Path.cwd(), "a file that is there but is not what its reader promised", str(path), (), default, blank=default)
+        return found(project_of(path), "a file that is there but is not what its reader promised", str(path), (), default, blank=default)
     return answer
 
 

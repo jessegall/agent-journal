@@ -37,6 +37,9 @@ def found(project: Path, what: str, asked, among, value, blank=None):
     raise AnsweredBlank.of(what, asked, among)
 
 
-def developing_here() -> bool:
-    """Whether the journal is developing itself where this process runs, for a read that has no project in hand."""
-    return developing(Path.cwd())
+JOURNAL_FOLDER = ".journal"
+
+
+def project_of(path: Path) -> Path:
+    """The project a journal file belongs to: the folder above the journal root that holds it, so a hook and the server ask the same question of the same file. A file under no journal root is asked of the folder the process runs in."""
+    return next((one.parent for one in Path(path).parents if one.name == JOURNAL_FOLDER), Path.cwd())
