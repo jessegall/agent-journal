@@ -26,7 +26,7 @@ AGENT_ROW = AgentRow(n=1, title="claude-1")
 
 class StalledWhileDrafting:
     def __eq__(self, drafting: dict) -> bool:
-        return drafting["phase"] == "stalled" and drafting["stalled_from"] == "drafting"
+        return {"phase": "stalled", "stalled_from": "drafting"}.items() <= drafting.items()
 
 
 def added(fields=("added",), action="updated") -> BoardChanged:
