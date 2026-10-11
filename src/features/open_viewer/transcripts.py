@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from engine.transcript import page
@@ -9,6 +9,13 @@ from resources.base import Missing
 
 TRANSCRIPT_PAGE = 300
 SPOKEN = ("agent", "human", "injected")
+
+
+@dataclass(frozen=True)
+class Entry:
+    line: int
+    text: str
+    said: str
 
 
 @dataclass(frozen=True)
@@ -42,7 +49,13 @@ def transcript_at(row, subagent: str) -> Transcript | NoTranscript:
     return Transcript(PROVIDERS[row.provider](), path)
 
 
-def paged(found: Transcript | NoTranscript, record, since: int, before: int, last: int) -> dict:
-    got = page(found.turns(), since, before, last)
-    got["turns"] = [{**t, "said": formatted(t["text"], record, VIEWER)} if t["kind"] in SPOKEN and t["text"] else t for t in got["turns"]]
-    return got
+def paged(found: Transcript | NoTranscript, since: int, before: int, last: int) -> dict:
+    return page(found.turns(), since, before, last)
+
+
+def whole(found: Transcript | NoTranscript, record, line: int) -> dict:
+    """The whole text of one entry of the log, asked for when it is opened."""
+    turn = next((turn for turn in found.turns() if turn.line == line), None)
+    if turn is None:
+        raise Missing(f"no entry {line} in this transcript")
+    return asdict(Entry(turn.line, turn.text, formatted(turn.text, record, VIEWER) if turn.kind in SPOKEN and turn.text else ""))

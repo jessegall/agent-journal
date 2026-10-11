@@ -15,7 +15,7 @@ from engine.record import Record
 from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared, tell_in, tell_soon
 from features.helper_worktrees.controller import Worktrees
-from features.open_viewer.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged
+from features.open_viewer.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, whole
 from providers import PROVIDERS
 from features.form_of_address.address import voice_of
 from features.helpers.resource import Helper, held_by_helper
@@ -412,11 +412,11 @@ class Helpers(Controller):
             self.update(row.n, session=agent.title, transcript=agent.transcript)
 
     @action
-    def transcript(self, n: int, since: int = 0, before: int = 0, last: int = TRANSCRIPT_PAGE) -> dict:
+    def transcript(self, n: int, since: int = 0, before: int = 0, last: int = TRANSCRIPT_PAGE, entry: int = 0) -> dict:
         """The conversation of a retired helper, read from the provider's own file recorded when it was retired."""
         row = self.load(n)
         found = Transcript(PROVIDERS[row.provider](), Path(row.transcript)) if row.provider in PROVIDERS and row.transcript and Path(row.transcript).is_file() else NoTranscript()
-        return paged(found, self.record, since, before, last)
+        return whole(found, self.record, entry) if entry else paged(found, since, before, last)
 
     def _packed_folder(self, title: str) -> None:
         home = Record(self.record.root, title).home

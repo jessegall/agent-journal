@@ -11,6 +11,9 @@ export function useTranscript(agent, session, scroller, client = api, active = (
     const total = ref(0);
     const first = ref(0);
     const folded = ref(new Set());
+    const bodies = ref({});
+    const opening = ref(new Set());
+    const unread = ref({});
     const error = ref("");
     const loading = ref(true);
     const paging = ref(false);
@@ -20,10 +23,29 @@ export function useTranscript(agent, session, scroller, client = api, active = (
     const earliest = computed(() => (turns.value.length ? turns.value[0].line : 0));
     const atStart = computed(() => turns.value.length > 0 && earliest.value <= first.value);
 
+    async function fetchBody(line) {
+        if (bodies.value[line] !== undefined || opening.value.has(line)) return;
+        opening.value = new Set(opening.value).add(line);
+        const asked = key();
+        try {
+            const got = await client.transcript(agent(), unref(session), {entry: line});
+            if (asked === key()) bodies.value = {...bodies.value, [line]: got.text};
+            unread.value = {...unread.value, [line]: ""};
+        } catch (reason) {
+            unread.value = {...unread.value, [line]: reason.message};
+        } finally {
+            const next = new Set(opening.value);
+            next.delete(line);
+            opening.value = next;
+        }
+    }
+
     function toggle(line) {
         const next = new Set(folded.value);
-        if (next.has(line)) next.delete(line);
-        else next.add(line);
+        if (next.has(line)) {
+            next.delete(line);
+            fetchBody(line);
+        } else next.add(line);
         folded.value = next;
     }
 
@@ -80,6 +102,8 @@ export function useTranscript(agent, session, scroller, client = api, active = (
 
     watch([() => unref(session), agent], () => {
         turns.value = [];
+        bodies.value = {};
+        unread.value = {};
         total.value = 0;
         first.value = 0;
         loading.value = true;
@@ -89,5 +113,5 @@ export function useTranscript(agent, session, scroller, client = api, active = (
 
     const refresh = usePoll(pollKey(), fetchTurns, EVERY, undefined, active);
 
-    return {turns, total, first, folded, error, loading, paging, atStart, toggle, earlier, retry, refresh};
+    return {turns, total, first, folded, bodies, opening, unread, error, loading, paging, atStart, toggle, earlier, retry, refresh};
 }

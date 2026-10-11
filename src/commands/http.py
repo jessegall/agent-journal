@@ -173,6 +173,7 @@ class TranscriptQuery(Loaded):
     since: int = 0
     before: int = 0
     last: int = TRANSCRIPT_PAGE
+    entry: int = 0
 
 
 @dataclass(frozen=True)
@@ -480,13 +481,13 @@ def get_project_files_found(req: Request) -> Reply:
 def transcript_of(req: Request, subagent: str) -> Reply:
     asked = req.query_as(TranscriptQuery)
     return Reply(200, invoked(req.as_user(Agents), "transcript", (int(req.params["n"]),),
-                              {"subagent": subagent, "since": asked.since, "before": asked.before, "last": asked.last}))
+                              {"subagent": subagent, "since": asked.since, "before": asked.before, "last": asked.last, "entry": asked.entry}))
 
 
 @route("GET", "/api/{env}/helper/{n}/transcript")
 def get_helper_transcript(req: Request) -> Reply:
     asked = req.query_as(TranscriptQuery)
-    return Reply(200, invoked(req.as_user(CONTROLLERS["helper"]), "transcript", (int(req.params["n"]),), {"since": asked.since, "before": asked.before, "last": asked.last}))
+    return Reply(200, invoked(req.as_user(CONTROLLERS["helper"]), "transcript", (int(req.params["n"]),), {"since": asked.since, "before": asked.before, "last": asked.last, "entry": asked.entry}))
 
 
 @route("GET", "/api/{env}/doc/locate")

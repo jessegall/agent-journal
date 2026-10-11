@@ -61,7 +61,8 @@ class TranscriptPage(TypedDict):
     turns: list[dict]
 
 
-def page(turns: list[Turn], since: int = 0, before: int = 0, size: int = 300, cap: int = 20_000) -> TranscriptPage:
+def page(turns: list[Turn], since: int = 0, before: int = 0, size: int = 300) -> TranscriptPage:
+    """A page of the log: what a person said and the agent answered in full, and every other entry as its heading alone, its text asked for when it is opened."""
     kept = [turn for turn in turns if turn.line > since and (not before or turn.line < before)]
     rows = kept[-max(1, min(size, 1000)):]
     return {
@@ -74,8 +75,8 @@ def page(turns: list[Turn], since: int = 0, before: int = 0, size: int = 300, ca
                 "kind": turn.kind,
                 "at": turn.at,
                 "tools": turn.tools,
-                "text": turn.text[:cap],
-                "clipped": len(turn.text) > cap,
+                "text": turn.text if turn.kind in (HUMAN, AGENT) else "",
+                "has_text": bool(turn.text),
             }
             for turn in rows
         ],

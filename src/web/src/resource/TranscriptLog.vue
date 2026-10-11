@@ -12,7 +12,9 @@ const props = defineProps({
     entries: {type: Array, required: true},
     env: {type: String, default: ""},
 });
-const {turns, folded, error, loading, paging, atStart, toggle, earlier, retry} = props.transcript;
+const {turns, folded, bodies, opening, unread, error, loading, paging, atStart, toggle, earlier, retry} = props.transcript;
+const hasBody = (t) => Boolean(t.text || t.has_text);
+const bodyOf = (t) => t.text || bodies.value[t.line] || "";
 const scroller = ref(null);
 const topMark = ref(null);
 const WHO = {
@@ -61,9 +63,9 @@ defineExpose({scroller});
         <template v-for="t in entries" :key="t.line">
             <div :class="['turn', t.kind, {folded: folded.has(t.line)}]">
                 <div class="meta">
-                    <button type="button" class="who" :aria-expanded="t.text ? !folded.has(t.line) : undefined" @click="toggle(t.line)">
+                    <button type="button" class="who" :aria-expanded="hasBody(t) ? !folded.has(t.line) : undefined" @click="toggle(t.line)">
                         {{ WHO[t.kind] || t.kind }}
-                        <template v-if="t.text">
+                        <template v-if="hasBody(t)">
                             <span class="fold-mark">{{ folded.has(t.line) ? "show" : "hide" }}</span>
                         </template>
                     </button>
@@ -73,15 +75,18 @@ defineExpose({scroller});
                         <span class="tools">used {{ t.tools.join(", ") }}</span>
                     </template>
                 </div>
-                <template v-if="t.text && !folded.has(t.line)">
-                    <template v-if="t.kind === 'agent' || t.kind === 'human'">
-                        <div class="turn-text" v-html="render(t.text, {types: [], env: env || route.env})" />
+                <template v-if="hasBody(t) && !folded.has(t.line)">
+                    <template v-if="opening.has(t.line)">
+                        <span class="note">Loading…</span>
+                    </template>
+                    <template v-else-if="unread[t.line]">
+                        <span class="note">Could not load this entry: {{ unread[t.line] }}</span>
+                    </template>
+                    <template v-else-if="t.kind === 'agent' || t.kind === 'human'">
+                        <div class="turn-text" v-html="render(bodyOf(t), {types: [], env: env || route.env})" />
                     </template>
                     <template v-else>
-                        <pre class="raw">{{ t.text }}</pre>
-                    </template>
-                    <template v-if="t.clipped">
-                        <span class="clipped">Cut short here.</span>
+                        <pre class="raw">{{ bodyOf(t) }}</pre>
                     </template>
                 </template>
             </div>
@@ -203,7 +208,7 @@ defineExpose({scroller});
     color: var(--text-2);
 }
 
-.clipped {
+.note {
     font-size: 11px;
     color: var(--text-4);
 }

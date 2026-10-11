@@ -100,6 +100,16 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     with transcript.open("a") as out:
         out.write(json.dumps({"type": "user", "uuid": "u9", "timestamp": "2026-10-08T10:09:00Z", "message": {"role": "user", "content": "a newer line"}}) + "\n")
     assert "a newer line" in [turn.text for turn in environment_transcript(record)], "a conversation that grew is merged again"
+    with transcript.open("a") as out:
+        out.write(json.dumps({"type": "user", "uuid": "u10", "timestamp": "2026-10-08T10:10:00Z", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "t1", "content": "x" * 30_000}]}}) + "\n")
+    from commands.dispatch import dispatch
+    log = f"/api/{record.env}/agent/{agent.n}/transcript"
+    listed = dispatch("GET", log, record.root, {}, {}).body["turns"]
+    tool = next(turn for turn in listed if turn["kind"] == "tool")
+    opened = dispatch("GET", log, record.root, {"entry": str(tool["line"])}, {}).body
+    said = next(turn for turn in listed if turn["text"].startswith("a newer line"))
+    assert (tool["text"], tool["has_text"], "clipped" in tool, len(opened["text"]), said["text"]) == ("", True, False, 30_000, "a newer line"), \
+        "a tool result is listed by its heading alone and its whole text, with no cap, comes when its entry is opened; what is said is listed in full"
 
 
 def test_a_search_mark_keeps_what_the_search_found_and_what_was_read_from_it_until_the_next_search_or_answer():
