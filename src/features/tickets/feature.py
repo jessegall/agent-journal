@@ -1,12 +1,13 @@
+from engine.events.engine import ClockTicked
 from engine.events.resources import QuestionAnswered, ResourceCreated
 from controllers.types import Todos
-from expects import Answered, Given, Kept, Refused, Unchanged, Updated
+from expects import WHEN, Answered, Given, Kept, Refused, Unchanged, Updated, Wrote
 from features.base import Feature
 from features.boards.resource import Board
 from features.tickets.handlers import TicketClosed
 from features.tickets.resource import Ticket
 from resources.base import AGENT, USER
-from resources.types import Environment, Question, Rule, Todo
+from resources.types import AgentRow, Comment, Environment, Question, Rule, Todo
 from features.journal import Journal
 from features.tickets.commands import ShowTicketTodos
 from features.tickets.controller import Tickets
@@ -63,6 +64,17 @@ DRAFT_CARDS = [
 ]
 
 
+LONG_WAIT = "Its work has waited 60 minutes for the orchestrator to review, test and merge it."
+
+
+def run_here(**data) -> Board:
+    return Board(n=1, title="Features", data={"orchestrator": "t", **data})
+
+
+def handed_in(minutes: int, **data) -> Ticket:
+    return Ticket(n=1, title="Dark mode", data={"board": 1, "work_environment": "ticket-1", "handed_in_at": WHEN - minutes * 60, **data})
+
+
 class TicketsFeature(Feature):
     details = TicketsDetails
     nudges = (
@@ -90,7 +102,13 @@ class TicketsFeature(Feature):
             Given((Tickets,), rows=[card(1)]) >> Answered([]),
             Given((Tickets,), rows=[card(1, work_environment="ticket-1")]) >> Answered([]),
         ])
-        journal.events.handler(LookAfterTickets())
+        # One side of the sweep only: it also closes merged tickets, starts queued ones, stops orphaned agents and raises waiting plans, none of which is staged here; what is stated is the long wait of a handed-in ticket and the boards it leaves alone.
+        journal.events.handler(LookAfterTickets(), expects=[
+            Given(ClockTicked(agent=1), rows=[run_here(), handed_in(60), AgentRow(n=1, title="claude-1")]) >> Wrote(Comment(brief=LONG_WAIT)),
+            Given(ClockTicked(agent=1), rows=[run_here(), handed_in(5), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[run_here(paused=WHEN), handed_in(60), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[Board(n=1, title="Features", data={"orchestrator": "another-environment"}), handed_in(60), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        ])
         journal.events.handler(WakeTheTicketAgent(), expects=[
             Given(QuestionAnswered(n=1, type="question", action="answered", actor=USER), rows=[Question(n=1, title="Which branch?", completed=1.0)]) >> Unchanged(),
         ])
