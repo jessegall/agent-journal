@@ -161,8 +161,8 @@ def rows_held(record: Record) -> dict:
     from controllers.types import CONTROLLERS
     held = {}
     for kind, controller in CONTROLLERS.items():
-        for row in controller(record, actor=SYSTEM).rows.every():
-            held[kind, row.n] = (repr((row.title, row.abstract, row.brief, row.sections, row.refs, row.seen, {key: value for key, value in row.data.items() if value}, row.outcome, bool(row.completed))), row)
+        for row in controller(record, actor=SYSTEM).rows.every(deleted=True):
+            held[kind, row.n] = (repr((row.title, row.abstract, row.brief, row.sections, row.refs, row.seen, {key: value for key, value in row.data.items() if value}, row.outcome, bool(row.completed), bool(row.deleted))), row)
     return held
 
 
