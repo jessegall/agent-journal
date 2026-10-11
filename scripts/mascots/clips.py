@@ -71,18 +71,12 @@ def hang(pose, side, swing=0.0, bend=10.0):
     pose.turn(f"forearm_{side}", x=-bend)
 
 
-def hold_direction(sign):
-    """Which way the forearm points when it carries: forward and out by HOLD_SWING, a little above flat."""
-    lift, swing = math.radians(HOLD_LIFT), math.radians(HOLD_SWING)
-    return (sign * math.cos(lift) * math.cos(swing), -math.cos(lift) * math.sin(swing), math.sin(lift))
-
-
 def hold(pose, side):
     """An arm carrying something level: the upper arm hangs and rolls so the elbow bends toward the front, the forearm points out in front a little above flat, the hand turned part way so what it holds still faces the viewer."""
     sign = SIDES[side]
     pose.turn(f"upper_arm_{side}", y=sign * HANG)
     pose.turn(f"upper_arm_{side}", z=sign * HOLD_ROLL)
-    pose.aim(f"forearm_{side}", hold_direction(sign))
+    pose.face(f"forearm_{side}", y=-sign * HOLD_LIFT, z=-sign * HOLD_SWING)
     pose.face(f"hand_{side}", z=-sign * HOLD_TWIST)
 
 
