@@ -1,13 +1,31 @@
 from engine.events.agents import SessionStarted
-from expects import Given, Nudged, Unchanged
+from types import SimpleNamespace
+
+from expects import Answered, Given, Nudged, Unchanged
 from engine.events.resources import AnyEvent
 from features.base import Feature
 from features.journal import Journal
 from resources.types import AgentRow
-from features.session_briefing.block import briefing
+from features.session_briefing.block import COMPACTED, briefing
 from features.session_briefing.details import SessionBriefingDetails
 from providers.payload import HookEvent
 from features.session_briefing.handlers import GreetOnce, RebuildStartBlock
+
+
+CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
+
+
+class Written:
+    def __eq__(self, text: str) -> bool:
+        return bool(text) and not text.startswith(COMPACTED)
+
+
+class Opening:
+    def __init__(self, text: str) -> None:
+        self.text = text
+
+    def __eq__(self, text: str) -> bool:
+        return text.startswith(self.text)
 
 
 class SessionBriefing(Feature):
@@ -20,4 +38,7 @@ class SessionBriefing(Feature):
         journal.events.handler(RebuildStartBlock(), expects=[
             Given(AnyEvent(n=1, type="nudge", action="created"), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
         ])
-        journal.agent.responder(HookEvent.SESSION_START, briefing)
+        journal.agent.responder(HookEvent.SESSION_START, briefing, expects=[
+            Given(SimpleNamespace(source="startup"), rows=[CLAUDE]) >> Answered(Written()),
+            Given(SimpleNamespace(source="compact"), rows=[CLAUDE]) >> Answered(Opening(COMPACTED)),
+        ])

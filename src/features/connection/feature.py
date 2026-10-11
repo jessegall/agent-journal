@@ -6,6 +6,7 @@ from features.connection.details import ConnectionDetails
 from features.connection.routes import get_sync_hello, post_sync_events, post_sync_handback, post_sync_handover, post_sync_holder, post_sync_write
 from features.journal import Journal
 
+DISCONNECTED = "disconnected: nothing more is sent to the server, and what it already has stays there"
 NAME_THE_SERVER = "name the server first: journal environment connect --address <address>, or its address in Settings"
 
 
@@ -16,7 +17,10 @@ class ConnectionFeature(Feature):
         journal.commands.add("environment", ConnectToServer(), expects=[
             Given((Environments,)) >> Refused(NAME_THE_SERVER),
         ])
-        journal.commands.add("environment", DisconnectFromServer())
+        journal.commands.add("environment", DisconnectFromServer(), expects=[
+            Given((Environments,), settings={"connection.address": "https://server.example"}) >> Answered(DISCONNECTED),
+            Given((Environments,)) >> Answered(DISCONNECTED),
+        ])
         journal.commands.add("environment", ShowConnection(), expects=[
             Given((Environments,)) >> Answered({"address": "", "connected": False, "release": "", "step": "", "travels": {"files": 0, "bytes": 0, "environments": ()},
                                                 "role": "", "synced_at": 0.0, "has_key": False}),

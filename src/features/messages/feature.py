@@ -1,8 +1,11 @@
 from controllers.types import Messages
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSent
-from engine.events.resources import MessageUpdated, ResourceCreated
-from expects import Formats, Given, Nudged, Unchanged, Updated, Wrote
+from engine.events.resources import MessageCreated, MessageUpdated, ResourceCreated
+from dataclasses import asdict
+
+from expects import Formats, Given, Nudged, Remembered, Unchanged, Updated, Wrote
+from features.trigger import Mark
 from features.base import Feature
 from features.journal import Journal
 from features.messages.details import MessagesDetails
@@ -66,7 +69,11 @@ class MessagesFeature(Feature):
             Given(said("   "), rows=[IDLE]) >> Unchanged(),
             Given(said("👍"), rows=[IDLE]) >> Nudged("reaction"),
         ])
-        journal.events.handler(ResetCountsOnArrival())
+        journal.events.handler(ResetCountsOnArrival(), expects=[
+            Given(MessageCreated(n=7, type="message", action="created", actor=USER), rows=[AgentRow(n=1, title="claude-1", data={"uses": 10})])
+                >> Remembered("trigger-messages.unread", asdict(Mark(uses=7))) & Remembered("trigger-messages.answering", asdict(Mark(uses=10))),
+            Given(MessageCreated(n=7, type="message", action="created", actor=USER)) >> Unchanged(),
+        ])
         journal.events.handler(NameUnread(), expects=[
             Given(reported(), rows=[wrote("Can you look at this?"), LATER]) >> Nudged("inbox"),
             Given(reported(), rows=[wrote("Can you look at this?"), IDLE]) >> Unchanged(),

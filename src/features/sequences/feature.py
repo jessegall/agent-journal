@@ -1,10 +1,14 @@
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSending, ClockTicked
 from engine.events.resources import AnyEvent, QuestionAnswered
-from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
+import json
+from dataclasses import asdict
+
+from expects import answering, Given, Remembered, Kept, Nudged, Refused, Unchanged, Updated
 from features.base import Feature
 from features.sequences.handlers import TriggerFired
 from features.sequences.resource import Sequence
+from features.trigger import Mark
 from features.triggers.resource import Trigger
 from providers.payload import BashCall
 from resources.base import USER
@@ -26,6 +30,8 @@ def release(step: int = 1, **run) -> Sequence:
     return Sequence(n=4, title="Cutting a patch release", sections=[{"title": "Tag it", "body": "Run journal version tag to cut the tag."}],
                     data={"runs": {"t|by hand": {"step": step, "at": 1.0, **run}}})
 
+
+AFTER_SEVEN_EDITS = {".journal/runtime/sessions/claude-1/trigger-sequences.json": json.dumps(asdict(Mark(edits=7)))}
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
 MOVED = SequenceMoved(n=4, type="sequence", action="updated", actor=USER)
@@ -108,7 +114,10 @@ class SequencesFeature(Feature):
             Given(AgentReported(agent=1), rows=[release(followed=1), AGENT_ROW]) >> Unchanged(),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"wrote": True})]) >> Unchanged(),
         ])
-        journal.events.handler(ResetEditsOnStep())
+        journal.events.handler(ResetEditsOnStep(), expects=[
+            Given(MOVED, rows=[release(), AGENT_ROW], files=answering(AFTER_SEVEN_EDITS)) >> Remembered("trigger-sequences", asdict(Mark(edits=0))),
+            Given(todo("created"), rows=[AGENT_ROW], files=answering(AFTER_SEVEN_EDITS)) >> Remembered("trigger-sequences", asdict(Mark(edits=7))),
+        ])
         journal.events.handler(ReleaseStaleStep(), expects=[
             Given(ClockTicked(agent=1), rows=[release(), AGENT_ROW]) >> Unchanged(),
             Given(ClockTicked(agent=1), rows=[AGENT_ROW]) >> Unchanged(),

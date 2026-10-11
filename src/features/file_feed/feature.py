@@ -1,5 +1,6 @@
 from controllers.types import Agents
-from expects import Answered, Given, Refused
+from engine.events.engine import FileEdited
+from expects import Answered, Given, Refused, Remembered
 from features.base import Feature
 from features.file_feed.details import FileFeedDetails
 from features.file_feed.handlers import KeepEdits
@@ -31,4 +32,6 @@ class FileFeed(Feature):
         journal.commands.add("agent", ShowEditedImage(), expects=[
             Given((Agents, 1, "missing"), rows=[AGENT_ROW]) >> Refused("no picture missing"),
         ])
-        journal.events.handler(KeepEdits())
+        journal.events.handler(KeepEdits(), expects=[
+            Given(FileEdited(agent=1, path="src/app.py", kind="edited", before="a\n", after="a\nb\n", added=1, removed=0), rows=[AGENT_ROW]) >> Remembered("notes"),
+        ])

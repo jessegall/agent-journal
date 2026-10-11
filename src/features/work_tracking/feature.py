@@ -3,9 +3,13 @@ from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
 from engine.events.resources import AnyEvent, TodoCompleted, WorkCreated
 from features.plans.resource import Plan
-from expects import Given, Held, Kept, Nudged, Refused, Unchanged, Updated
+import json
+from dataclasses import asdict
+
+from expects import answering, Given, Held, Kept, Nudged, Refused, Remembered, Unchanged, Updated
+from features.trigger import Mark
 from features.work_tracking.handlers import PlanCompleted, WorkCompleted, WorkLogged
-from providers.payload import BashCall
+from providers.payload import BashCall, WriteCall
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
 from features.base import Feature
@@ -25,6 +29,10 @@ from features.work_tracking.interceptors import WAIT_WAY, RefuseHeldCalls, Refus
 NOTHING_OPEN = 'nothing is open, so this write would not be filed: journal work start "<the work>" first'
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
+CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
+LOG_HELD = "log held: twenty edits without a log entry"
+EDITING = WriteCall.from_payload("Edit", {"file_path": "src/app.py", "new_string": "x"}, {})
+AFTER_NINE_EDITS = {".journal/runtime/sessions/claude-1/trigger-work_tracking.json": json.dumps(asdict(Mark(edits=9)))}
 WAITING = Work(n=3, title="Wait on the build", data={"awaiting": "the build"})
 PARKED = Work(n=3, title="Write the report", data={"parked": "the user asked for something first"})
 
@@ -211,9 +219,16 @@ class WorkFeature(Feature):
             Given(AgentReported(agent=1), rows=[typing], settings={"work_tracking.name_work_every": 1}) >> Unchanged(),
         ])
         journal.events.handler(ResetEditsOnLog(), expects=[
-            Given(WorkLogged(n=3, type="work", action="updated", actor=AGENT), rows=[WORKING, AGENT_ROW]) >> Unchanged(),
+            Given(WorkLogged(n=3, type="work", action="updated", actor=AGENT, section="1 · now"), rows=[WORKING, AGENT_ROW], files=answering(AFTER_NINE_EDITS))
+                >> Remembered("trigger-work_tracking", asdict(Mark(edits=0))),
+            Given(WorkLogged(n=3, type="work", action="updated", actor=AGENT), rows=[WORKING, AGENT_ROW], files=answering(AFTER_NINE_EDITS))
+                >> Remembered("trigger-work_tracking", asdict(Mark(edits=9))),
         ])
-        journal.agent.interceptor(RefuseHeldCalls())
+        journal.agent.interceptor(RefuseHeldCalls(), expects=[
+            Given(EDITING, rows=[CLAUDE], held=LOG_HELD) >> Refused(LOG_HELD),
+            Given(shell("ls src"), rows=[CLAUDE], held=LOG_HELD) >> Kept(),
+            Given(EDITING, rows=[CLAUDE]) >> Kept(),
+        ])
         journal.agent.interceptor(RefuseWaitingInTheShell(), expects=[
             Given(shell("sleep 30")) >> Refused(WAIT_WAY),
             Given(shell("until test -f done; do sleep 1; done")) >> Refused(WAIT_WAY),

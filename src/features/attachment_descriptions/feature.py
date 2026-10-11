@@ -1,6 +1,8 @@
 from features.attachment_descriptions.details import AttachmentDescriptionsDetails
 from engine.events.agents import SessionStarted
-from expects import Given, Nudged, Unchanged
+from engine.events.resources import MessageUpdated
+from expects import Given, Nudged, Unchanged, Updated, answering
+from features.attachment_descriptions.video import TAGGED
 from features.attachment_descriptions.handlers import FileAttached, SampleVideoFrames, TagMissingAtStart, TagNewMedia
 from features.base import Feature
 from features.journal import Journal
@@ -12,6 +14,10 @@ LIVE = AgentRow(n=1, title="claude-1", data={"status": "idle"})
 
 def attached(name: str) -> FileAttached:
     return FileAttached(n=5, type="message", action="updated", actor=USER, file=name)
+
+
+def recorded(name: str) -> MessageUpdated:
+    return MessageUpdated(n=5, type="message", action="updated", actor=USER, numbers=(5,), file=name)
 
 
 def with_files(**files) -> Message:
@@ -35,4 +41,9 @@ class AttachmentDescriptions(Feature):
             Given(SessionStarted(agent=1), rows=[with_files(**{"notes.txt": ""}), LIVE]) >> Unchanged(),
             Given(SessionStarted(agent=1), rows=[LIVE]) >> Unchanged(),
         ])
-        journal.events.handler(SampleVideoFrames())
+        journal.events.handler(SampleVideoFrames(), expects=[
+            Given(recorded("clip.mp4"), rows=[with_files(**{"clip.mp4": ""})], processes=answering({"git": "/usr/bin/git"}))
+                >> Updated(Message(n=5), files={"clip.mp4": f"{TAGGED}ffmpeg and ffprobe are required to extract frames"}),
+            Given(recorded("photo.png"), rows=[with_files(**{"photo.png": ""})], processes=answering({"git": "/usr/bin/git"})) >> Unchanged(),
+            Given(recorded(""), rows=[with_files(**{"clip.mp4": ""})], processes=answering({"git": "/usr/bin/git"})) >> Unchanged(),
+        ])
