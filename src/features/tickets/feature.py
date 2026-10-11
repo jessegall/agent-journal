@@ -71,7 +71,8 @@ def run_here(**data) -> Board:
     return Board(n=1, title="Features", data={"orchestrator": "t", **data})
 
 
-def handed_in(minutes: int, **data) -> Ticket:
+def waiting_for(minutes: int, **data) -> Ticket:
+    """A ticket whose finished work has waited that long for the agent orchestrating its board: what an expectation states its Given with."""
     return Ticket(n=1, title="Dark mode", data={"board": 1, "work_environment": "ticket-1", "handed_in_at": WHEN - minutes * 60, **data})
 
 
@@ -104,10 +105,10 @@ class TicketsFeature(Feature):
         ])
         # One side of the sweep only: it also closes merged tickets, starts queued ones, stops orphaned agents and raises waiting plans, none of which is staged here; what is stated is the long wait of a handed-in ticket and the boards it leaves alone.
         journal.events.handler(LookAfterTickets(), expects=[
-            Given(ClockTicked(agent=1), rows=[run_here(), handed_in(60), AgentRow(n=1, title="claude-1")]) >> Wrote(Comment(brief=LONG_WAIT)),
-            Given(ClockTicked(agent=1), rows=[run_here(), handed_in(5), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[run_here(paused=WHEN), handed_in(60), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[Board(n=1, title="Features", data={"orchestrator": "another-environment"}), handed_in(60), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Wrote(Comment(brief=LONG_WAIT)),
+            Given(ClockTicked(agent=1), rows=[run_here(), waiting_for(5), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[run_here(paused=WHEN), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[Board(n=1, title="Features", data={"orchestrator": "another-environment"}), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
         ])
         journal.events.handler(WakeTheTicketAgent(), expects=[
             Given(QuestionAnswered(n=1, type="question", action="answered", actor=USER), rows=[Question(n=1, title="Which branch?", completed=1.0)]) >> Unchanged(),

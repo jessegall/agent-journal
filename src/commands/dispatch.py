@@ -50,7 +50,8 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Sto
         started = time.perf_counter()
         if earlier:
             earlier()
-        began.announce(Record(root, env), kind, name, profile, answered, stacks, (time.perf_counter() - started) * 1000, request)
+        began.announce(Record(root, env), kind, name, profile=profile, answered=answered, stacks=stacks,
+                       after=(time.perf_counter() - started) * 1000, request=request)
     reply.after = after
     return reply
 
