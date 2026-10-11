@@ -3,7 +3,7 @@ from controllers.types import Agents, Works
 from features.helpers.controller import Helpers
 from resources.base import AGENT, SYSTEM
 from tests.conftest import fresh
-from tests.kit import nudges, report, tick
+from tests.kit import nudges, nudges_with_briefs, report, tick
 
 
 def test_a_wait_on_a_run_and_a_helper_stands_until_both_are_back_and_then_hands_back_their_results(monkeypatch):
@@ -31,7 +31,9 @@ def test_a_wait_on_a_run_and_a_helper_stands_until_both_are_back_and_then_hands_
     done = works.load(work.n)
     assert (done.awaiting, done.awaiting_on) == ("", ""), "the wait ends once every one is back"
     assert "the suite completed" in done.sections[-1]["body"] and "Rhea: hooks spend 40ms in imports" in done.sections[-1]["body"], "their results go into the work's log"
-    assert [n for n in nudges(record) if n.startswith("the suite and Rhea came back")], "the agent is told once to carry on"
+    told = [(n, b) for n, b in nudges_with_briefs(record) if n.startswith(f"What work {work.n} waited on came back")]
+    assert len(told) == 1 and "the suite completed" in told[0][1] and "Rhea: hooks spend 40ms in imports" in told[0][1], \
+        "the agent is told once to carry on, and what came back is in the line's brief, which is never cut to fit a title"
     from features.boards.controller import Boards
     from resources.base import Refused
     Boards(record, actor=AGENT).orchestrate("on")

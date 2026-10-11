@@ -29,6 +29,7 @@ class AwaitedDetails(FeatureDetails):
     lines = [
         Line(
             name="returned",
-            title="{{awaiting}} came back: {{results}} - carry on with work {{n}}",
+            title="What work {{n}} waited on came back - carry on",
+            brief="{{results}}. The wait was: {{awaiting}}.",
         ),
     ]
