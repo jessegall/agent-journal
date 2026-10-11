@@ -68,32 +68,32 @@ class AskQuestions(Feature):
             Given(BashCall.from_payload("Bash", {"command": "ls && pwd"}, {}), rows=[AgentRow(n=1, title="claude-1")]) >> Kept(),
         ])
         journal.commands.intercept("create", OptionsOnlyInTheirButtons(), expects=[
-            Given((Questions, {"title": "which branch?", "brief": "A) main\nB) dev", "options": [{"title": "main"}, {"title": "dev"}]}))
+            Given((Questions, {}, {"title": "which branch?", "brief": "A) main\nB) dev", "options": [{"title": "main"}, {"title": "dev"}]}))
                 >> Refused("the options already carry their own titles and text, so the question does not list them again: take the A/B/C or numbered option lines, or the option names, out of its title, abstract and brief"),
-            Given((Questions, {"title": "which branch?", "options": [{"title": "main"}, {"title": "dev"}]})) >> Kept(),
+            Given((Questions, {}, {"title": "which branch?", "options": [{"title": "main"}, {"title": "dev"}]})) >> Kept(),
         ])
         journal.commands.intercept("create", NamesItsPick(), expects=[
-            Given((Questions, {"title": "which branch?", "options": [{"title": "main"}, {"title": "dev"}]}, AGENT))
+            Given((Questions, {"actor": AGENT}, {"title": "which branch?", "options": [{"title": "main"}, {"title": "dev"}]}))
                 >> Refused("name the option you would pick with --set pick=<1 to 2>: the card marks it as the agent's pick"),
-            Given((Questions, {"title": "which branch?", "options": [{"title": "main"}, {"title": "dev"}], "pick": 1}, AGENT)) >> Kept(),
-            Given((Questions, {"title": "which branch?", "options": [{"title": "main"}, {"title": "dev"}]})) >> Kept(),
+            Given((Questions, {"actor": AGENT}, {"title": "which branch?", "options": [{"title": "main"}, {"title": "dev"}], "pick": 1})) >> Kept(),
+            Given((Questions, {}, {"title": "which branch?", "options": [{"title": "main"}, {"title": "dev"}]})) >> Kept(),
         ])
         journal.commands.intercept("create", AskedOnce(), expects=[
-            Given((Questions, {"title": "which branch?"}), rows=[Question(n=2, title="which branch?")])
+            Given((Questions, {}, {"title": "which branch?"}), rows=[Question(n=2, title="which branch?")])
                 >> Refused("question 2 already asks this and is still open: wait for its answer"),
-            Given((Questions, {"title": "which branch?"}), rows=[Question(n=2, title="which tag?")]) >> Kept(),
+            Given((Questions, {}, {"title": "which branch?"}), rows=[Question(n=2, title="which tag?")]) >> Kept(),
         ])
         journal.commands.intercept("create", OneAskPerRow(), expects=[
-            Given((Questions, {"title": "go ahead?", "about": "todo:7"}), rows=[Todo(n=7, title="the header", data={"buttons": [{"label": "Go ahead", "choice": True}]})])
+            Given((Questions, {}, {"title": "go ahead?", "about": "todo:7"}), rows=[Todo(n=7, title="the header", data={"buttons": [{"label": "Go ahead", "choice": True}]})])
                 >> Refused("todo 7 already asks this through its buttons: wait for that answer, or take its buttons off first"),
-            Given((Questions, {"title": "go ahead?", "about": "todo:7"}), rows=[Todo(n=7, title="the header")]) >> Kept(),
-            Given((Questions, {"title": "go ahead?"})) >> Kept(),
+            Given((Questions, {}, {"title": "go ahead?", "about": "todo:7"}), rows=[Todo(n=7, title="the header")]) >> Kept(),
+            Given((Questions, {}, {"title": "go ahead?"})) >> Kept(),
         ])
         journal.commands.intercept("create", OptionsWhenEnumerable(), expects=[
-            Given((Questions, {"title": "Should I merge?"}, AGENT))
+            Given((Questions, {"actor": AGENT}, {"title": "Should I merge?"}))
                 >> Refused("this question has answers you can list (a yes or no, a which, or alternatives joined by or): give them with "
                            "--set options='[{\"title\": \"...\", \"text\": \"...\"}]' --set pick=<n>, or decide it yourself when an earlier answer settles it; "
                            "a question is open only for a name, a secret or a free description, and then says so with --set free=name|secret|description"),
-            Given((Questions, {"title": "Should I merge?", "free": "name"}, AGENT)) >> Kept(),
-            Given((Questions, {"title": "What is the repository called"}, AGENT)) >> Kept(),
+            Given((Questions, {"actor": AGENT}, {"title": "Should I merge?", "free": "name"})) >> Kept(),
+            Given((Questions, {"actor": AGENT}, {"title": "What is the repository called"})) >> Kept(),
         ])

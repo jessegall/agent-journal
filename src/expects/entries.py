@@ -68,7 +68,7 @@ def speaking(record: Record, given: Given):
 def contexted(promise, given: Given, record: Record) -> Context:
     """The context a registration is handed: over the record, and an AgentContext speaking to the agent when the Given names one."""
     row = speaking(record, given)
-    return (AgentContext if row else Context).of(promise.feature, record, row)
+    return (AgentContext if row else Context).of(promise.feature, record, row, provider_of(row), SimpleNamespace(cwd=None))
 
 
 def what_was_said(record: Record) -> tuple[list, list]:
@@ -166,11 +166,16 @@ def rows_held(record: Record) -> dict:
     return held
 
 
-def rows_touched(before: dict, after: dict) -> tuple[list, list]:
-    """The rows the play created, and the rows it changed. An expectation is written about the row, so the rows themselves are handed back."""
+def rows_touched(before: dict, after: dict, acted_on: set) -> tuple[list, list]:
+    """The rows the play created, and the rows it changed, which includes a row it created and then went on to change. An expectation is written about the row, so the rows themselves are handed back."""
     wrote = [row for key, (_, row) in after.items() if key not in before]
-    updated = [row for key, (said, row) in after.items() if key in before and before[key][0] != said]
+    updated = [row for key, (said, row) in after.items() if key in before and before[key][0] != said or key in acted_on]
     return wrote, updated
+
+
+def rows_acted_on(record: Record, since: int) -> set:
+    """The rows an action other than creating moved during the play, read from the event log: a link, a comment, a completion."""
+    return {(event.type, event.n) for event in record.event_log.events(since) if event.action != "created"}
 
 
 def held_against_the_agents(record: Record) -> str | None:
@@ -205,12 +210,12 @@ def played(promise, expectation) -> Seen:
         raise NoEntryForThisKind.of(promise.kind)
     given = expectation.given
     record, world = scratch(given), World.of(given)
-    world.seen.before, held = rows_now(record), rows_held(record)
+    world.seen.before, held, since = rows_now(record), rows_held(record), record.event_log.last_id()
     with at_the_givens_hour(given):
         ENTRIES[promise.kind](promise, given, record, world)
     world.seen.after = rows_now(record)
     world.seen.said, world.seen.nudged = what_was_said(record)
     world.seen.remembered = remembered_by(record, promise.feature.name)
-    world.seen.wrote, world.seen.updated = rows_touched(held, rows_held(record))
+    world.seen.wrote, world.seen.updated = rows_touched(held, rows_held(record), rows_acted_on(record, since))
     world.seen.held = held_against_the_agents(record)
     return world.seen
