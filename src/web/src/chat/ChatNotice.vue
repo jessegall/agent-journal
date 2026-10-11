@@ -30,7 +30,9 @@ const force = () => run(() => api.forceAgent(props.notice.data.session));
 const permit = (allow) => run(() => api.permitAgent(props.notice.data.session, allow));
 const allowPasskey = () => run(() => api.allowPhonePasskey(props.notice.data.phone));
 const refusePasskey = () => run(() => api.refusePhonePasskey(props.notice.data.phone));
+const ANSWERS = new Set(["permission", "passkey"]);
 const controls = computed(() => props.notice.data.action || "none");
+const awaitsAnswer = computed(() => ANSWERS.has(controls.value));
 
 const ARMED_AFTER = 1500;
 const armed = ref(false);
@@ -45,7 +47,7 @@ function close() {
 </script>
 
 <template>
-    <div :class="['chat-notice', `tone-${notice.data.tone || 'note'}`]">
+    <div :class="['chat-notice', `tone-${notice.data.tone || 'note'}`]" :data-awaits-answer="awaitsAnswer || undefined">
         <span class="chat-notice-dot" />
         <span class="chat-notice-text">{{ notice.title }}</span>
         <template v-if="notice.data.link">

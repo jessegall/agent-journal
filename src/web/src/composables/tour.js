@@ -7,6 +7,9 @@ import {pollKey, startPoll} from "./poll.js";
 const KEY = "tour_seen";
 const START_AFTER = 800;
 
+/** What the tour waits behind: a dialog, a veil, or a notice asking the user for an answer. */
+export const COVERING = ".dialog, .veil, [data-awaits-answer]";
+
 const around = (selector) => boxAround([...document.querySelectorAll(selector)]);
 
 export function useTour(steps, menu) {
@@ -30,7 +33,7 @@ export function useTour(steps, menu) {
         requestAnimationFrame(measure);
     }
 
-    const covered = () => Boolean(document.querySelector(".dialog, .veil"));
+    const covered = () => Boolean(document.querySelector(COVERING));
 
     function attempt() {
         const since = Date.now();
