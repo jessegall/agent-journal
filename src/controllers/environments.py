@@ -55,9 +55,10 @@ class Environments(Controller):
         found, waiting = [], [self.record.env]
         while waiting:
             for name in launched.get(waiting.pop(0), []):
-                if name not in found and name != self.record.env:
-                    found.append(name)
-                    waiting.append(name)
+                if name in found or name == self.record.env:
+                    continue
+                found.append(name)
+                waiting.append(name)
         return found
 
     @action
