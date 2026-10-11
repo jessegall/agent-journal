@@ -157,3 +157,16 @@ def test_a_held_agent_row_of_a_removed_environment_is_dropped_and_never_written(
     PENDING.of(record, n).written -= 7200
     write_pending_rows()
     assert (PENDING.holds(record, n), record.root.exists()) == (False, False), "the row is dropped, and nothing writes the folders of the environment back"
+
+
+def test_a_handler_reads_the_agents_row_the_store_holds_and_never_a_copy_of_it(monkeypatch):
+    from features.wiring import agent_row
+    from resources.base import Resource
+    record = fresh()
+    n = Agents(record, actor=SYSTEM).by_session("claude-1").n
+    copies = []
+    real = Resource.fork
+    monkeypatch.setattr(Resource, "fork", lambda self: copies.append(self.n) or real(self))
+    first = agent_row(record, n)
+    assert (copies, agent_row(record, n) is first) == ([], True), \
+        "an event reaches every handler of the journal with the agent's row, and none of them copies it, since a row that has grown large costs a deep copy each time"
