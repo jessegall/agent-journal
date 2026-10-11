@@ -265,7 +265,7 @@ describe("the one list of reminders", () => {
     test("it holds the journal's nudges and your triggers, each saying where it came from and how often it spoke", () => {
         const [ours, ...yours] = listed();
         expect(ours.label).toBe("The agent is offered the next ready to-do.");
-        expect(ours.hint).toBe("The journal, in Work tracking · Said 3 times in the last day, last 5m ago");
+        expect(ours.hint).toBe("Comes with the journal, in Work tracking · Said 3 times in the last day, last 5m ago");
         expect(yours.map((r) => r.label)).toEqual(["Say it twice", "Unread too long", "Idle"]);
         expect(yours[0].hint).toBe("Yours, written in Triggers · Matched 2 times, last 1m ago");
         expect(yours[1].hint).toContain("Never matched");

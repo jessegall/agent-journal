@@ -47,7 +47,7 @@ class TriggersDetails(FeatureDetails):
         Behaviour(
             name="reminding",
             title="Remind the agent when something in the journal is true",
-            abstract="Triggers that watch a fact about the journal: they nudge or instruct the agent, or hold its writes until the fact stops being true",
+            abstract="Triggers that watch for something being true in the journal. While it is true they remind the agent, tell it what to do, or stop it writing.",
         ),
     ]
 

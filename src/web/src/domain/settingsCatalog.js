@@ -298,7 +298,7 @@ function reminderRow(f, line, nudge, settings, spoken) {
         key: `reminder:${f.name}.${line}`,
         kind: "switch",
         label: nudge.guarantee,
-        hint: `The journal, in ${f.label} \u00b7 ${spokenWords(spoken[`${f.name}.${line}`])}`,
+        hint: `Comes with the journal, in ${f.label} \u00b7 ${spokenWords(spoken[`${f.name}.${line}`])}`,
         value: switchValue(settings, switchName, behaviour.default),
         shipped: behaviour.default,
         target: {path: ["features", switchName]},
