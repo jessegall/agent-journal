@@ -1,6 +1,6 @@
 from engine.events.resources import QuestionAnswered, ResourceCreated
 from controllers.types import Todos
-from expects import Given, Kept, Refused, Unchanged, Updated
+from expects import Answered, Given, Kept, Refused, Unchanged, Updated
 from features.base import Feature
 from features.boards.resource import Board
 from features.tickets.handlers import TicketClosed
@@ -85,7 +85,11 @@ class TicketsFeature(Feature):
         CARD_STORE.add(None, Tickets)
         PHASE_STARTS.add(self, start_tickets_of_phase)
         PLAN_STARTS.add(self, start_worker)
-        journal.commands.add("ticket", ShowTicketTodos())
+        journal.commands.add("ticket", ShowTicketTodos(), expects=[
+            Given((Tickets,)) >> Answered([]),
+            Given((Tickets,), rows=[card(1)]) >> Answered([]),
+            Given((Tickets,), rows=[card(1, work_environment="ticket-1")]) >> Answered([]),
+        ])
         journal.events.handler(LookAfterTickets())
         journal.events.handler(WakeTheTicketAgent(), expects=[
             Given(QuestionAnswered(n=1, type="question", action="answered", actor=USER), rows=[Question(n=1, title="Which branch?", completed=1.0)]) >> Unchanged(),
