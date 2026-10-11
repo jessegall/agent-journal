@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.12 — Every project reports what is slow
+
+- Developer error reports and budget notices are on in every project the journal is installed in, and an upgrade switches them on where the old default had left them off. A project could run for weeks filing none, which is how transportklok's slowness went unreported.
+- An agent that meets one outside the journal's own project is told to send its numbers to the agent-journal session, so a slow hook or command in any project reaches whoever builds the journal.
+
 ## 2.269.11 — A field decides its own absence, and an engine does less per tick
 
 - A to-do's blocked, pending, reported, struck and priority each decide what absence means where they are born, so four places stop inventing a default priority and the board's read model carries real types.
