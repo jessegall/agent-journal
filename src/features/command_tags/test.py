@@ -258,16 +258,9 @@ def test_one_reply_answers_several_messages():
     assert len(made) == 1 and {first.ref, second.ref} <= set(made[0].refs), "one reply answers both messages"
     assert "> Remove the plan." in made[0].brief and "> And write the document." in made[0].brief, "and quotes both"
 
-
-def test_a_reply_links_the_rows_it_is_about_in_the_same_turn():
-    from engine import chat
-    import features
-    from controllers.types import Agents, Docs, Messages, Todos
+    from controllers.types import Docs, Messages, Todos
     from features.command_tags.reading import named
-    from resources.base import AGENT, SYSTEM
-    features.load()
-    record = fresh()
-    report(record, "working", "PreToolUse")
+    from resources.base import AGENT, Refused, SYSTEM
 
     assert named(", todos=(7, 8)") == {"todos": "7,8"} and named(', about=("doc:1")') == {"about": "doc:1"}, \
         "a list a tag carries is read whether its items are quoted or bare; reading only the quoted ones answered nothing at all"
