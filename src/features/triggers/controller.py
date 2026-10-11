@@ -1,4 +1,5 @@
 import time
+from dataclasses import asdict, dataclass
 
 import controllers.types as types_module
 import resources.types as resources_module
@@ -13,6 +14,24 @@ from resources.base import SYSTEM, Refused, Resource
 
 def holding(n: int) -> str:
     return f"hold.{n}"
+
+
+@dataclass(frozen=True)
+class Matching:
+    """What a fact matches at this moment, for someone deciding whether to save a trigger on it."""
+
+    fact: str
+    over: float
+    matching: int
+    capped: bool
+    rows: tuple[str, ...]
+    says: tuple[str, ...]
+
+    @classmethod
+    def of(cls, fact: str, over: float, found: list, text: str | None) -> "Matching":
+        return cls(fact, over, len(found), len(found) >= watched.MOST_NAMED,
+                   tuple(one.values.get("title", "") for one in found),
+                   () if text is None else tuple(watched.filled(text, one.values) for one in found))
 
 
 STARTED_BY = Extension()
@@ -64,6 +83,23 @@ class Triggers(Controller):
     def facts(self) -> list[str]:
         """The facts a trigger in this environment can watch, each with what it means."""
         return [f"{fact.name}: {fact.phrase.format(over='N')}, N in {fact.unit}" for fact in watched.FACTS.each(self.record)]
+
+    @action
+    def matching(self, fact: str, over: float = 0, text: str | None = None) -> dict:
+        """What a trigger on this fact matches right now, and what it would say about each. It reads the fact through the finder a tick uses, rather than counting rows another way and hoping the two agree."""
+        from features import FEATURES
+        from features.parts import Context
+        agent = self._read_against()
+        found = watched.found(watched.Watched.parse(fact, over), Context.of(FEATURES["triggers"], self.record, agent), agent)
+        return asdict(Matching.of(fact, over, found, text))
+
+    def _read_against(self):
+        """The agent row a fact is read against. A fact about the agent itself needs one, so a journal with no agent is refused rather than quietly matching nothing."""
+        from controllers.types import Agents
+        row = Agents(self.record, actor=SYSTEM).primary_to_read()
+        if row is None:
+            raise Refused("no agent is working here, so there is nothing to read a fact against yet")
+        return row
 
     @action
     def delete(self, n: int, why: str = "") -> Resource:

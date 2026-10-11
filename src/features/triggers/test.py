@@ -269,6 +269,14 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
                                                 text="a message has waited {{minutes}} minutes")
     assert fine.n, "and the placeholders the fact does fill are accepted"
 
+    for name, over in (("message.unread.created", 10), ("work.open.logged", 10), ("agent.context", 50)):
+        assert Triggers(record, actor=AGENT).matching(name, over)["matching"] == len(finding(record, name, over)), \
+            f"what a trigger says {name} matches now is read through the very finder a tick uses, so the preview and the firing cannot disagree"
+    full = Triggers(record, actor=AGENT).matching("agent.context", 50, "the context is {{percent}} percent full")
+    assert (full["matching"], full["says"]) == (1, ("the context is 70 percent full",)), \
+        "and it says what the nudge would say, with the real numbers already in it, so nobody saves a wording they have not read"
+    assert Triggers(record, actor=AGENT).matching("agent.context", 99)["matching"] == 0, "a threshold nothing reaches matches nothing, which is the other thing worth seeing before saving"
+
     class Owner:
         on = True
 
