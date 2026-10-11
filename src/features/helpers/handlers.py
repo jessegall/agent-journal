@@ -147,7 +147,9 @@ class NameStoppedOrQuietHelpers(Handler):
 
     def name_idle(self, context: AgentContext, speaking: AgentContext, row) -> None:
         agent = self.agent_of(context, row)
-        idle = 0.0 if self.working_on_its_own(agent) else agent.idle_for if agent else 0.0
+        if not agent or self.working_on_its_own(agent):
+            return
+        idle = agent.idle_for
         after, every, repeats = (float(context.settings.idle_after) * MINUTE, float(context.settings.idle_every) * MINUTE, int(context.settings.idle_repeats))
         if idle < after:
             return
