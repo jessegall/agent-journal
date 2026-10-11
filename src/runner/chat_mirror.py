@@ -6,12 +6,14 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Iterator
 
+import features
 from controllers.types import Agents
 from engine import chat, runtime, waits
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
-from engine.wording import digest
+from engine.wording import digest, plural
+from features.dev_faults.diagnostics import logged
 from providers import PROVIDERS
 from providers.payload import Chunk
 from resources.base import SYSTEM
@@ -24,7 +26,7 @@ MATCHED = "_matched"
 FINALS = "_finals"
 KEPT_DONE = 50
 KEPT_SENT = 500
-LINE_KEY = re.compile(r"transcript:\d+")
+FELL_BACK = "the display hook did not deliver what the agent said"
 COMMIT = re.compile(r"[0-9a-f]{40}")
 CATCH_UP = 600.0
 REPLAYING = threading.Lock()
@@ -152,10 +154,6 @@ def unfinished(root: Path, session: str, row) -> None:
         sent = [*held.get(SENT, [])]
         streamed = [*held.get(MATCHED, [])]
         pending = []
-        if any(LINE_KEY.fullmatch(key) for key in sent):
-            written = ledger.file.stat().st_mtime
-            sent = [turn.key for turn in turns if turn.at <= written]
-            turns = [turn for turn in turns if turn.at > written]
         for turn in turns:
             key = turn.key
             if key in sent:
@@ -172,14 +170,33 @@ def unfinished(root: Path, session: str, row) -> None:
             pending.append(turn)
         held[SENT] = sent[-KEPT_SENT:]
         held[MATCHED] = streamed[-KEPT_SENT:]
+    if not pending:
+        return
+    fell_back(root, session, len(pending))
     for turn in pending:
         send_to_chat(root, session, turn.text, turn.key)
+
+
+def fell_back(root: Path, session: str, messages: int) -> None:
+    """Says that the transcript carried agent text the display hook never delivered, so a hook that has stopped arriving is never hidden by the fallback covering for it."""
+    said = plural(messages, "message")
+    logged(root, f"{FELL_BACK}: {said} in session {session} came from the transcript instead")
+    faults = features.FEATURES.get("dev_faults")
+    if faults is None:
+        return
+    faults.reports.file(recording(root, session), FELL_BACK, f"The chat was filled from the provider's transcript for {said} the display hook never delivered, in session {session}. "
+                        "Nothing was lost here, but the chat is meant to come from the hook alone, and the transcript misses text a turn's tool calls follow: find out why the hook did not arrive.")
+
+
+def recording(root: Path, session: str) -> Record:
+    """The record a session's chat is written to."""
+    return Record(root, Sessions(root).environment(session) or runtime.env(root))
 
 
 def send_to_chat(root: Path, session: str, text: str, turn: str | None = None, streamed: bool = False) -> bool:
     if not text.strip():
         return False
-    record = Record(root, Sessions(root).environment(session) or runtime.env(root))
+    record = recording(root, session)
     row = Agents(record, actor=SYSTEM).rows.by_title(session)
     if row is None:
         return False

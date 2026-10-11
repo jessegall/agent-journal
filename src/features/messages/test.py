@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
 from providers.payload import Chunk
-from runner.chat_mirror import displayed
+from features.dev_faults.diagnostics import log_file
+from runner.chat_mirror import FELL_BACK, displayed
 from runner.hooks import handle
 from engine.gates import held
 from engine.sessions import Sessions
@@ -184,6 +185,8 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Cut short by the next prompt"}]}}) + "\n")
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "UserPromptSubmit", "session_id": "claude-1", "prompt": "next"})
     assert chat().count("Cut short by the next prompt") == 1, "a message cut short when the next prompt starts without a stop is sent whole from the transcript"
+    assert (any(FELL_BACK in line for line in nudges(record)), FELL_BACK in log_file(record.root).read_text()) == (True, True), \
+        "the engine says in its log and to the agent that the transcript filled the chat for the hook, instead of covering for it silently"
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"}))
     assert chat().count("second") == 2, "another turn with the same short answer is recorded separately"
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "f", "index": 0, "final": True, "delta": "👍"}))
