@@ -3,7 +3,6 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {
     DOES,
-    FACTS,
     ONLY_WHEN,
     REPEATS,
     STATE_DOES,
@@ -12,9 +11,11 @@ import {
     doesOf,
     doesReason,
     factOf,
+    facts,
     plain,
     sentence,
     startedBy,
+    unitOf,
     whereReason,
 } from "../domain/triggerWords.js";
 import {open} from "../domain/records.js";
@@ -58,7 +59,9 @@ const does = computed(() => doesOf(values.value.does));
 const state = computed(() => values.value.when === "state");
 const doings = computed(() => (state.value ? DOES.filter((option) => STATE_DOES.includes(option.value)) : DOES));
 const repeats = computed(() =>
-    REPEATS.some((r) => r.value === values.value.timing) ? REPEATS : [...REPEATS, {value: values.value.timing, label: `Every ${values.value.timing} minutes`}]
+    REPEATS.some((r) => r.value === values.value.timing)
+        ? REPEATS
+        : [...REPEATS, {value: values.value.timing, label: `Every ${values.value.timing} minutes`}]
 );
 const textHelp = computed(() => {
     if (values.value.does === "message") return "It reaches the chat as if you had typed it.";
@@ -144,21 +147,30 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
             <ResourceBlock heading="When this is true in the journal">
                 <div class="then">
                     <FormField label="What is true">
-                        <ChoiceList stacked :choices="pickable(FACTS, values.fact)" :disabled="readonly" @pick="(fact) => commit({fact})" />
+                        <ChoiceList
+                            stacked
+                            :choices="pickable(facts(), values.fact)"
+                            :disabled="readonly"
+                            @pick="(fact) => commit({fact})"
+                        />
                     </FormField>
                     <FormField label="Past how much">
                         <UnitTextInput
                             type="number"
                             min="0"
                             :value="values.over"
-                            :unit="factOf(values.fact).unit"
+                            :unit="unitOf(factOf(values.fact))"
                             :disabled="readonly"
                             aria-label="Past how much"
                             @change="commit({over: Number($event.target.value)})"
                         />
                     </FormField>
                     <FormField label="While the agent is">
-                        <ChoiceList :choices="pickable(ONLY_WHEN, values.only_when || 'any')" :disabled="readonly" @pick="(only_when) => commit({only_when})" />
+                        <ChoiceList
+                            :choices="pickable(ONLY_WHEN, values.only_when || 'any')"
+                            :disabled="readonly"
+                            @pick="(only_when) => commit({only_when})"
+                        />
                     </FormField>
                 </div>
             </ResourceBlock>
@@ -219,7 +231,11 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                 </template>
                 <template v-if="state && values.does !== 'hold'">
                     <FormField label="How often it repeats">
-                        <ChoiceList :choices="pickable(repeats, values.timing || 0)" :disabled="readonly" @pick="(timing) => commit({timing})" />
+                        <ChoiceList
+                            :choices="pickable(repeats, values.timing || 0)"
+                            :disabled="readonly"
+                            @pick="(timing) => commit({timing})"
+                        />
                     </FormField>
                     <template v-if="values.timing">
                         <FormField label="Most times for each">

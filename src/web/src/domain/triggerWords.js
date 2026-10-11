@@ -1,4 +1,5 @@
 import {rows} from "../sync/rows.js";
+import {store} from "../state/store.js";
 import {eventWords} from "./moments.js";
 
 const USER = "user";
@@ -85,19 +86,17 @@ export const DOES = [
 
 export const WHEN = [
     {value: "words", label: "When a word is written", hint: "A word you choose shows up in a message or a command."},
-    {value: "state", label: "When something in the journal is true", hint: "For example, a message of yours has waited too long for an answer."},
+    {
+        value: "state",
+        label: "When something in the journal is true",
+        hint: "For example, a message of yours has waited too long for an answer.",
+    },
 ];
 
-export const FACTS = [
-    {value: "message.unread", phrase: "a message of yours has gone unread for more than {over} minutes", label: "A message of yours is still unread", unit: "minutes"},
-    {value: "message.unanswered", phrase: "a message of yours has been read but left unanswered for more than {over} minutes", label: "A message of yours was read but not answered", unit: "minutes"},
-    {value: "work.unlogged", phrase: "work has had no log entry for more than {over} minutes", label: "Work has no log entry", unit: "minutes"},
-    {value: "work.awaiting", phrase: "work has been waiting for something for more than {over} minutes", label: "Work has been waiting for something", unit: "minutes"},
-    {value: "agent.idle", phrase: "the agent has been idle for more than {over} minutes", label: "The agent has been idle", unit: "minutes"},
-    {value: "agent.context", phrase: "the agent's context is more than {over} percent full", label: "The agent's context is getting full", unit: "percent"},
-    {value: "question.open", phrase: "a question has had no answer for more than {over} minutes", label: "A question has no answer", unit: "minutes"},
-    {value: "todo.ready", phrase: "at least {over} to-dos are ready and no work is open", label: "To-dos are ready and no work is open", unit: "to-dos"},
-];
+// The facts a trigger can watch come from the server, in the manifest: {value, label, phrase, unit}.
+export const facts = () => store.spec.facts;
+// What the number past is counted in is the word after it in the phrase: "more than {over} minutes".
+export const unitOf = (fact) => fact.phrase.split("{over}")[1].trim().split(" ")[0];
 
 export const ONLY_WHEN = [
     {value: "any", label: "Either"},
@@ -114,7 +113,7 @@ export const REPEATS = [
 
 export const STATE_DOES = ["nudge", "instruct", "hold"];
 
-export const factOf = (value) => FACTS.find((fact) => fact.value === value) || FACTS[0];
+export const factOf = (value) => facts().find((fact) => fact.value === value) || facts()[0];
 
 export const EXAMPLES = [
     {
@@ -169,7 +168,9 @@ export const whereReason = (trigger) =>
     trigger.does === "deny" ? {[USER]: "Your messages are never blocked, so a blocking trigger can't watch them."} : {};
 
 export const doesReason = (trigger) =>
-    trigger.words_in === USER ? {deny: "Your messages are never blocked, so this isn't available while the trigger only watches them."} : {};
+    trigger.words_in === USER
+        ? {deny: "Your messages are never blocked, so this isn't available while the trigger only watches them."}
+        : {};
 
 const quoted = (word) => `“${word}”`;
 

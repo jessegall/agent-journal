@@ -1,8 +1,58 @@
 import {describe, expect, it} from "vitest";
-import {plain, sentence} from "../src/domain/triggerWords.js";
+import {store} from "../src/state/store.js";
+import {factOf, plain, sentence, unitOf} from "../src/domain/triggerWords.js";
+
+const FACTS = [
+    {
+        value: "message.unread",
+        label: "A message of yours has not been read",
+        phrase: "a message of yours has gone unread for more than {over} minutes",
+        unit: "minutes",
+    },
+    {
+        value: "message.unanswered",
+        label: "A message of yours was read but not answered",
+        phrase: "a message of yours has been read but left unanswered for more than {over} minutes",
+        unit: "minutes",
+    },
+    {
+        value: "agent.context",
+        label: "The agent's context is getting full",
+        phrase: "the agent's context is more than {over} percent full",
+        unit: "percent",
+    },
+    {
+        value: "todo.ready",
+        label: "To-dos are ready and no work is open",
+        phrase: "at least {over} to-dos are ready and no work is open",
+        unit: "count",
+    },
+];
+store.spec = {facts: FACTS};
+
+describe("the facts a trigger can watch", () => {
+    it("are the ones the server sent, and an unknown one reads as the first", () => {
+        expect(factOf("agent.context")).toBe(FACTS[2]);
+        expect(factOf("nothing.of.the.kind")).toBe(FACTS[0]);
+    });
+
+    it("count in the word that follows the number in their phrase", () => {
+        expect(FACTS.map(unitOf)).toEqual(["minutes", "minutes", "percent", "to-dos"]);
+    });
+});
 
 describe("the sentence a trigger on a fact reads as", () => {
-    const state = {when: "state", fact: "message.unanswered", over: 5, only_when: "idle", does: "nudge", text: "Answer it", timing: 15, most: 3, words: []};
+    const state = {
+        when: "state",
+        fact: "message.unanswered",
+        over: 5,
+        only_when: "idle",
+        does: "nudge",
+        text: "Answer it",
+        timing: 15,
+        most: 3,
+        words: [],
+    };
 
     it("names the fact, the gate, the action and how often it repeats", () => {
         expect(plain(sentence(state, []))).toBe(

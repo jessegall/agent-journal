@@ -17,6 +17,7 @@ from providers import PROVIDERS
 from engine.version import version
 from engine.package import data
 from features.open_viewer.attachments import listed_types
+from features.triggers.watched import FACTS
 from typing import TypedDict
 
 
@@ -44,6 +45,7 @@ class Manifest(TypedDict):
     models: list[dict]
     searchable: list[str]
     chat_kinds: dict[str, dict[str, str]]
+    facts: list[dict]
 
 
 def default_models() -> list[dict]:
@@ -53,6 +55,10 @@ def default_models() -> list[dict]:
 
 def built_in() -> dict:
     return {"types": described_types(), "chat_kinds": {"turns": TURNS}}
+
+
+def watchable() -> list[dict]:
+    return [{"value": fact.name, "label": fact.label, "phrase": fact.phrase, "unit": fact.unit} for fact in FACTS.values()]
 
 
 def manifest(root: Path) -> Manifest:
@@ -72,5 +78,6 @@ def manifest(root: Path) -> Manifest:
         "groups": groups.describe(),
         "models": default_models(),
         "searchable": listed_types(),
+        "facts": watchable(),
         **built_in(),
     }
