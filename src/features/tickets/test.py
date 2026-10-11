@@ -431,9 +431,10 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     unmerged = Docs(Record(record.root, second.work_environment), actor=USER).create("How light mode works")
     tickets.complete(second.n, how="dropped", yes=True)
     assert Docs(record).load(unmerged.n).deleted, "a doc a ticket proposed goes with it when the ticket closes without its branch merged"
+    from engine.worktree import Repository
     from features.tickets.landing import Landing
     assert tickets._clean(tickets.load(second.n)) is False, "a ticket with no worktree of its own is not clean"
-    assert [Landing(project, f"worktree-{ticket.work_environment}", ticket.base, home).state(), Landing(project, f"worktree-{second.work_environment}", ticket.base, home).state()] \
+    assert [Landing(Repository(project), f"worktree-{ticket.work_environment}", ticket.base, home).state(), Landing(Repository(project), f"worktree-{second.work_environment}", ticket.base, home).state()] \
         == ["merged", "changed"], "a branch is merged, changed or untouched by where its commits are"
     nested = project / "autoscaling"
     nested.mkdir()
@@ -512,6 +513,24 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
         behind.setattr(bus, "background", lambda key, job: began.append(key))
         started = tickets.start(ticket.n)
     assert (len(began), bool(started.launched)) == (1, True), "a start answers at once with the launch under way, and the branches are cut and the agent started behind the answer"
+    from engine import worktree
+
+    def sweep_calls(count: int) -> int:
+        for number in range(count):
+            row = tickets.bind(tickets.create(f"Swept {count} {number}", board=board.n).n)
+            git("branch", f"worktree-{row.work_environment}")
+            tickets.update(row.n, base=git("rev-parse", f"worktree-{row.work_environment}").stdout.strip(), launched=time.time())
+        tickets.keep_branches()
+        asked = []
+        ran = worktree.git_ran
+        with monkeypatch.context() as counting:
+            counting.setattr(worktree, "git_ran", lambda args, *rest: asked.append(args[0]) or ran(args, *rest))
+            tickets.keep_branches()
+            tickets.close_merged()
+            tickets.clear_worktrees()
+        return len(asked)
+
+    assert sweep_calls(2) == sweep_calls(5), "the landing sweep asks git as many times for seven tickets in one repository as for two: once for the repository, not once for every ticket"
 
 
 def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
