@@ -19,14 +19,14 @@ class CommandTags(Feature):
                 >> Changed("the answer"),
             Given(AgentMessageSending(agent=1, data={"text": "[!reply:99] the answer", "turn": "t1"}),
                   rows=[AgentRow(n=1, title="claude-1")], settings={"command_tags.reader": "agent"})
-                >> Changed("the answer") & Nudged("refused"),
+                >> Changed("the answer") & Nudged("refused", tag="reply", on="99"),
             Given(AgentMessageSending(agent=1, data={"text": 'Filing it.\n[!todo="the footer"]', "turn": "t1"}),
                   rows=[AgentRow(n=1, title="claude-1")], settings={"command_tags.reader": "agent"})
                 >> Wrote(Todo(title="the footer")),
             Given(AgentMessageSending(agent=1, data={"text": "plain words", "turn": "t1"}), rows=[AgentRow(n=1, title="claude-1")]) >> Kept() & Unchanged(),
         ])
         journal.events.handler(TeachTheTag(), expects=[
-            Given(CommandRan(agent=1, tool="Bash", command='journal message reply 12 "the answer"'), rows=[AgentRow(n=1, title="claude-1")]) >> Nudged("hint"),
+            Given(CommandRan(agent=1, tool="Bash", command='journal message reply 12 "the answer"'), rows=[AgentRow(n=1, title="claude-1")]) >> Nudged("hint", tag="reply"),
             Given(CommandRan(agent=1, tool="Bash", command='journal message reply 12 --file notes.md'), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
             Given(CommandRan(agent=1, tool="Bash", command="ls"), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
         ])

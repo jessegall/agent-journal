@@ -1,7 +1,7 @@
 from controllers.types import Rules
 from engine.events.agents import AgentReported
 from engine.events.resources import AgentChanged, ResourceCreated
-from expects import Answered, Given, Held, Nudged, Unchanged, Updated
+from expects import WHEN, Answered, Given, Held, Nudged, Remembered, Unchanged, Updated
 from features.base import Feature
 from features.memory_checkpoints.commands import Reread
 from features.memory_checkpoints.details import MemoryCheckpointsDetails
@@ -18,13 +18,13 @@ class MemoryCheckpoints(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.commands.add("rule", Reread(), expects=[
-            Given((Rules,)) >> Answered(""),
+            Given((Rules,)) >> Answered("") & Remembered("cleanup_read_at", WHEN),
             Given((Rules,), rows=[Rule(n=3, title="Never merge the refactor", brief="until the user approves"), Fact(n=9, title="The viewer runs from dist")])
-                >> Answered("rule 3  Never merge the refactor\nuntil the user approves\n\nfact 9  The viewer runs from dist"),
+                >> Answered("rule 3  Never merge the refactor\nuntil the user approves\n\nfact 9  The viewer runs from dist") & Remembered("cleanup_read_at", WHEN),
         ])
         journal.events.handler(DecideAtMarks(), expects=[
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, data={"context": 60})])
-                >> Held("context 60% full — decide before any other write — journal fact, journal rule, or journal nothing \"<why>\"") & Nudged("decide"),
+                >> Held("context 60% full — decide before any other write — journal fact, journal rule, or journal nothing \"<why>\"") & Nudged("decide", percent=60),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, data={"context": 60, "decided": 60})]) >> Unchanged(),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, data={"context": 5})]) >> Unchanged(),
         ])

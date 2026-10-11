@@ -38,7 +38,7 @@ class AskQuestions(Feature):
         ])
         journal.events.handler(MarkTheAnswer(), expects=[
             Given(QuestionAnswered(n=3, type="question", actor="user"), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?", completed=1.0, outcome="main")])
-                >> Updated(AgentRow(n=1), cards=[{"label": "You answered question 3"}]) & Nudged("answered"),
+                >> Updated(AgentRow(n=1), cards=[{"label": "You answered question 3"}]) & Nudged("answered", n=3, answer="main"),
             Given(QuestionAnswered(n=3, type="question", actor="agent"), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?", completed=1.0, outcome="main")])
                 >> Unchanged(),
             Given(QuestionAnswered(n=3, type="question", actor="user"), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?", completed=1.0, outcome="main", data={"hidden": True})])

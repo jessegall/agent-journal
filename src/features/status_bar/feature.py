@@ -1,6 +1,6 @@
 from controllers.types import Agents
 from engine.events.agents import AgentReported
-from expects import Answered, Given, Unchanged, Updated
+from expects import Answered, Given, Remembered, Unchanged, Updated
 from features.base import Feature
 from features.journal import Journal
 from resources.types import AgentRow
@@ -17,7 +17,7 @@ class StatusLine(Feature):
         journal.routes.add(get_bar)
         journal.commands.add("agent", ShowBar(), expects=[Given((Agents,)) >> Answered({"queue": []})])
         journal.events.handler(WriteBar(), expects=[
-            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged() & Remembered("bar", {"queue": []}),
         ])
         journal.events.handler(RecordWhatItDoes(), expects=[
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, data={"doing": "Reading orchestra.js"})]) >> Updated(AgentRow(n=1), doing=""),

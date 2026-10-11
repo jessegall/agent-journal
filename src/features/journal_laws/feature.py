@@ -3,7 +3,7 @@ from pathlib import Path
 from agents.terminal import OUTPUT_LINES
 from engine.events.agents import SessionStarted, ToolFinished
 from engine.events.engine import AgentMessageSent
-from expects import Given, Kept, Nudged, Refused, Unchanged
+from expects import Given, Kept, Nudged, Refused, Remembered, Unchanged
 from features.base import Feature
 from features.journal import Journal
 from features.journal_laws.controller import Outputs
@@ -62,7 +62,7 @@ class JournalLaws(Feature):
             Given(AgentMessageSent(agent=1, text="The header is fixed."), rows=[AgentRow(n=1)]) >> Unchanged(),
         ])
         journal.events.handler(NoticeLargestResult(), expects=[
-            Given(ToolFinished(agent=1, tool="Bash", size=900_000), rows=[AgentRow(n=1)]) >> Nudged(LARGEST_RESULT),
+            Given(ToolFinished(agent=1, tool="Bash", size=900_000), rows=[AgentRow(n=1)]) >> Nudged(LARGEST_RESULT, tool="Bash", size="900,000") & Remembered("largest", 900_000),
             Given(ToolFinished(agent=1, tool="Bash", size=10), rows=[AgentRow(n=1)]) >> Unchanged(),
         ])
         journal.events.handler(CheckChangedInstructions(), expects=[

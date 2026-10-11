@@ -192,6 +192,13 @@ def at_the_givens_hour(given: Given):
         time.time = was
 
 
+def remembered_by(record: Record, owner: str) -> dict:
+    """What the feature left in the journal's memory: its own state, and the state it keeps for each agent session."""
+    from controllers.types import Agents
+    sessions = (record.state(owner, row.title).all() for row in Agents(record, actor=SYSTEM).rows.standing())
+    return {**record.state(owner).all(), **{key: value for state in sessions for key, value in state.items()}}
+
+
 def played(promise, expectation) -> Seen:
     """Builds the world the Given states, runs the registration through its own entry, and reads what it did."""
     if promise.kind not in ENTRIES:
@@ -203,7 +210,7 @@ def played(promise, expectation) -> Seen:
         ENTRIES[promise.kind](promise, given, record, world)
     world.seen.after = rows_now(record)
     world.seen.said, world.seen.nudged = what_was_said(record)
-    world.seen.remembered = record.state(promise.feature.name).all()
+    world.seen.remembered = remembered_by(record, promise.feature.name)
     world.seen.wrote, world.seen.updated = rows_touched(held, rows_held(record))
     world.seen.held = held_against_the_agents(record)
     return world.seen

@@ -15,7 +15,7 @@ class Awaited(Feature):
         journal.events.handler(ReturnWhenAwaitedReport(), expects=[
             Given(ClockTicked(agent=1),
                   rows=[AgentRow(n=1), Work(n=3, data={"awaiting": "the build", "awaiting_on": "helper:2"}), Helper(n=2, data={"name": "Zed", "report": "built clean"})])
-                >> Updated(Work(n=3), awaiting="", awaiting_on="") & Nudged("returned"),
+                >> Updated(Work(n=3), awaiting="", awaiting_on="") & Nudged("returned", awaiting="the build", results="Zed: built clean", n=3),
             Given(ClockTicked(agent=1),
                   rows=[AgentRow(n=1), Work(n=3, data={"awaiting": "the build", "awaiting_on": "helper:2"}), Helper(n=2, data={"name": "Zed"})])
                 >> Unchanged(),
