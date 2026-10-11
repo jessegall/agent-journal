@@ -11,6 +11,7 @@ from features.collections.controller import Collections
 from features.plans.controller import Plans
 from features.suggestions.controller import Suggestions
 from features.templates.shipped import ship
+from engine import runtime
 from engine.viewer import SERVING
 from features.phone.controller import Phones
 from features.sharing.controller import Shares
@@ -25,6 +26,7 @@ from tests.kit import commit, git
 class PhonePage(NamedTuple):
     pair: str
     desk: str
+    upgrade_mark: str
 
 
 def add_committed_roses(record) -> None:
@@ -84,7 +86,7 @@ def served() -> Iterator[PhonePage]:
     add_committed_roses(record)
     code = Phones(record, actor=USER).connect(7)["link"].split("#", 1)[1]
     try:
-        yield PhonePage(f"http://localhost:{server.server_port}/p/#{code}", f"http://127.0.0.1:{desk.server_port}/#/{record.env}")
+        yield PhonePage(f"http://localhost:{server.server_port}/p/#{code}", f"http://127.0.0.1:{desk.server_port}/#/{record.env}", str(runtime.upgrade_mark(record.root)))
     finally:
         SERVING.pop(str(record.root.resolve()))
         desk.shutdown()

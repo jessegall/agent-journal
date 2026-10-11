@@ -92,7 +92,7 @@ def test_a_shared_page_answers_every_state_a_visitor_meets(shared_browser):
 @pytest.mark.parametrize("script", sorted(path.stem for path in (WEB / "browser" / "phoneapp").glob("*.mjs") if path.stem not in PHONE_HELPERS))
 def test_a_paired_phone_answers_every_state_in_a_browser(shared_browser, script):
     with phone_pages.served() as page:
-        shared_browser.play(f"browser/phoneapp/{script}.mjs", page.pair, page.desk)
+        shared_browser.play(f"browser/phoneapp/{script}.mjs", page.pair, page.desk, page.upgrade_mark)
 
 
 @needs_node_modules

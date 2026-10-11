@@ -17,7 +17,7 @@ import {runsAllowed} from "./runs.js";
 import PhoneUnlockSheet from "./PhoneUnlockSheet.vue";
 import {allowing, asking, enrolled, unlockable, unlocked} from "./unlock.js";
 import {store} from "../state/store.js";
-import {followServer, STATUS_POLL, updating} from "../state/updating.js";
+import {followServer, STATUS_POLL} from "../state/updating.js";
 import UpdateCover from "../layout/UpdateCover.vue";
 
 const OPEN = "open=";
@@ -95,12 +95,11 @@ async function reconnect() {
     }
 }
 
-const UPDATE_EVERY = 4000;
-const UPDATE_FAST = 1000;
+const UPDATE_EVERY = 1000;
 usePoll(
     STATUS_POLL,
     () => phone.update(),
-    () => (updating.countdown || updating.external || updating.version ? UPDATE_FAST : UPDATE_EVERY),
+    UPDATE_EVERY,
     followServer,
     () => state.value === "connected"
 );
