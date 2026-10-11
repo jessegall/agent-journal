@@ -1,4 +1,5 @@
 import json
+import sys
 import threading
 import time
 from dataclasses import asdict, dataclass, field, replace
@@ -212,8 +213,8 @@ class SharePages:
             if share.data.get("token") and share.approved and not share.layout and (not share.expires or share.expires > time.time()):
                 try:
                     self._shared_body(share)
-                except Exception:
-                    continue
+                except Refused as error:
+                    print(f"share {share.n} was not built ahead: {error}", file=sys.stderr)
 
     def _timelines(self, share, scope: set[str]) -> dict[str, list[dict]]:
         """Each shared plan's timeline, keyed by the plan's ref, holding the moments of its to-dos the share shows."""
