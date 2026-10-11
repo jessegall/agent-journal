@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Callable, TypeVar
 
+from engine.developing import found
 from engine.memo import Memo
 
 T = TypeVar("T")
@@ -71,8 +72,10 @@ class JsonFiles:
 def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
     try:
         return into(json.loads(Path(path).read_text()))
-    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+    except OSError:
         return default
+    except (ValueError, TypeError, KeyError, AttributeError) as error:
+        return found(Path.cwd(), "a json file that is there but cannot be read", str(path), (f"{type(error).__name__}: {error}",), default, blank=default)
 
 
 class OutsideRepository(RuntimeError):

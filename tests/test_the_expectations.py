@@ -572,3 +572,13 @@ def test_a_feature_that_registers_an_owing_kind_without_expects_refuses_the_boot
     ready = promised(("handler", "Quiet", (Given("x") >> Unchanged(),)), ("handler", "SendOnTheClock", ()), ("append_to_line", "answered", ()), ("route", "get_page", ()))
     ready.required = True
     ready.refuse_owing("demo")  # a registration with expects, the engine's own two, a line appender and a route owe nothing
+
+
+def test_a_service_nobody_serves_is_refused_by_name_rather_than_left_out():
+    from expects import NoSuchService
+    from expects.playing import World
+
+    world = World.of(Given("x"))
+    assert set(world.given_to({"chat": object, "clock": object})) == {"chat", "clock"}, "a service the play serves is handed over"
+    with pytest.raises(NoSuchService, match="'ledger'"):
+        world.given_to({"chat": object, "ledger": object})

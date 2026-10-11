@@ -5,7 +5,7 @@ from expects import Given, Unchanged, Updated
 from features.base import Feature
 from features.journal import Journal
 from features.dev_faults.details import DevFaultsDetails
-from features.dev_faults.developing import developing
+from engine.developing import developing
 from features.dev_faults.handlers import LiftOverdueHold, ReportSlow, RestartCountOnClose, TodoCompleted
 from engine.events.resources import ResourceCreated
 from resources.types import Notification, Todo

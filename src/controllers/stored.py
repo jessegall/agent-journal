@@ -15,6 +15,7 @@ from engine.stored import append_text, read_json, write_json, write_text
 from engine import transaction
 from engine.locks import WRITING, after_writes
 from engine.disk import ROW_FILES, by_repository
+from engine.developing import found
 from engine.memo import MEMOS, Memo
 from engine.numbers import rows
 
@@ -781,7 +782,7 @@ class RowStore:
         try:
             return self.load(n)
         except Missing:
-            return None
+            return found(self.record.root.parent, f"the {self.type} rows", n, (), None)
 
     @final
     def load(self, n: int | str) -> Resource:

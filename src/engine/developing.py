@@ -35,3 +35,8 @@ def found(project: Path, what: str, asked, among, value, blank=None):
     if value != blank or not developing(project):
         return value
     raise AnsweredBlank.of(what, asked, among)
+
+
+def developing_here() -> bool:
+    """Whether the journal is developing itself where this process runs, for a read that has no project in hand."""
+    return developing(Path.cwd())

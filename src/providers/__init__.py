@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from engine.developing import found
 from providers.claude_driver import ClaudeDriver
 from providers.codex_driver import CodexDriver
 from providers.base import LIBRARY
@@ -11,7 +14,7 @@ DEFAULT_PROVIDER = ClaudeDriver.name
 
 
 def transcript_reader(agent):
-    provider = PROVIDERS.get(agent.provider)
+    provider = found(Path.cwd(), "the providers this journal has", agent.provider, tuple(PROVIDERS), PROVIDERS.get(agent.provider)) if agent.provider else None
     return provider() if provider and agent.transcript else None
 
 

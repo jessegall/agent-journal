@@ -11,7 +11,7 @@ from engine import runtime
 from engine.record import Record
 from engine.version import version
 from engine.wording import digest, plural
-from features.dev_faults.developing import developing
+from engine.developing import developing
 from features.dev_faults.diagnostics import logged
 from resources.base import SYSTEM
 

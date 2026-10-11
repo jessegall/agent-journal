@@ -254,13 +254,27 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch(monkeypatch):
     assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
     assert notified(record) == ["the viewer threw agents.some is not a function"], notified(record)
     assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "took long", "request", "", "slow") is True, "a report of a slow request that was already filed is taken as filed"
-    from features.dev_faults.developing import developing
+    from engine.developing import developing
     from features.dev_faults.diagnostics import logged
     project = record.root.parent / "dev-project"
     project.mkdir()
     (project / ".env").write_text("OTHER=1\nDEVELOPMENT_MODE=true\n")
     monkeypatch.delenv("DEVELOPMENT_MODE", raising=False)
     assert developing(project) is True, "development mode is read from the project's own .env"
+    from engine.developing import AnsweredBlank
+    from engine.disk import read_json
+    from providers import transcript_reader
+    from types import SimpleNamespace
+    monkeypatch.chdir(record.root.parent)
+    broken, agent = record.root.parent / "broken.json", SimpleNamespace(provider="nowhere", transcript="t.jsonl")
+    broken.write_text("{not json")
+    assert (read_json(broken, dict, {}), transcript_reader(agent)) == ({}, None), "elsewhere a file that is there but unreadable, and a provider nobody supplies, answer blank"
+    monkeypatch.setenv("DEVELOPMENT_MODE", "true")
+    with pytest.raises(AnsweredBlank, match="broken.json"):
+        read_json(broken, dict, {})
+    with pytest.raises(AnsweredBlank, match="nowhere"):
+        transcript_reader(agent)
+    monkeypatch.delenv("DEVELOPMENT_MODE")
     blocked = record.root.parent / "not-a-folder"
     blocked.write_text("")
     assert logged(blocked, "no place to write") is None, "a log that cannot be written is left unwritten, not crashed on"

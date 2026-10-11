@@ -8,7 +8,7 @@ import time
 from dataclasses import dataclass, field
 from typing import ClassVar
 
-from expects import At, Answering, Counting, Expectation, Given
+from expects import At, Answering, Counting, Expectation, Given, NoSuchService
 
 
 class NotAnswered(LookupError):
@@ -160,7 +160,10 @@ class World:
 
     def given_to(self, wants: dict[str, object]) -> dict:
         """The services a receiver asked for by name, each the Fake that answers for it."""
-        return {name: getattr(self, name) for name in wants if hasattr(self, name)}
+        for name in wants:
+            if not hasattr(self, name):
+                raise NoSuchService.named(name)
+        return {name: getattr(self, name) for name in wants}
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:
