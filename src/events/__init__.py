@@ -12,11 +12,18 @@ from dataclasses import dataclass, replace
 class Event:
     """Every event carries the id of the event whose tick dispatched it, which the engine fills in."""
 
+    id: str = ""
+    """What the engine called this event when it dispatched it, so the one it causes can point back at it."""
+
     cause: str = ""
 
     @classmethod
     def name(cls) -> str:
         return cls.__name__
+
+    def caused_by(self, causing: "Event", id: str) -> "Event":
+        """The same event as the engine dispatches it: named, and pointing at the event whose tick dispatched it."""
+        return replace(self, id=id, cause=causing.id)
 
 
 @dataclass(frozen=True, kw_only=True)

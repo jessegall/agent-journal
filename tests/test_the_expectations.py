@@ -200,3 +200,123 @@ def test_handlers_on_one_fact_are_ordered_by_name_and_the_boot_walk_checks_it():
         with pytest.raises(raises) as refusal:
             broken()
         assert why in str(refusal.value), f"the refusal names the handlers and what is wrong: {refusal.value}"
+
+
+def test_a_chain_of_facts_runs_tick_by_tick_on_its_lane_and_a_raise_leaves_no_partial_write():
+    from dataclasses import dataclass
+
+    from events import Fact
+    from receiving import Handler, Listener, Registration, Registrations
+    from receiving.ticks import Lane, Services, TickFailed, TooManyTicks
+    from serving import Chat
+
+    @dataclass(frozen=True, kw_only=True)
+    class AgentMessageSent(Fact):
+        text: str
+
+    @dataclass(frozen=True, kw_only=True)
+    class MessageTagged(Fact):
+        tag: str
+
+    @dataclass(frozen=True, kw_only=True)
+    class TagCommandRan(Fact):
+        tag: str
+
+    ran = []
+
+    class TagsInText(Listener[AgentMessageSent]):
+        def listen(self, event: AgentMessageSent) -> list[Fact]:
+            return [MessageTagged(tag="reply")] if "[!" in event.text else []
+
+    class RunTagCommand(Handler[MessageTagged]):
+        def handle(self, event: MessageTagged, chat: Chat) -> list[Fact]:
+            ran.append(event.tag)
+            return [TagCommandRan(tag=event.tag)]
+
+    class Shout(Handler[TagCommandRan]):
+        def handle(self, event: TagCommandRan, chat: Chat) -> list[Fact]:
+            ran.append("shouted")
+            raise ValueError("the tag names no message")
+
+    registered = Registrations()
+    for kind, event, receiver in (("listen", AgentMessageSent, TagsInText()), ("handle", MessageTagged, RunTagCommand()),
+                                  ("handle", TagCommandRan, Shout())):
+        registered.add(Registration.read(kind, event, receiver, ["an expectation"]))
+
+    lane = Lane("claude-1", registered, Services({Chat: "the chat"}))
+    out = lane.run(AgentMessageSent(text="[!reply:12] the answer"))
+    assert [type(one).__name__ for one in out] == ["AgentMessageSent", "MessageTagged", "TagCommandRan", "TickFailed"], \
+        "each fact waits for the next tick, so a listener never sees a write its own fact caused"
+    assert [one.cause for one in out] == ["", out[0].id, out[1].id, out[2].id] and len(set(one.id for one in out)) == 4, \
+        "every fact points back at the event whose tick dispatched it, so a chain reads to its origin"
+    assert isinstance(out[-1], TickFailed) and out[-1].error == "the tag names no message" and out[-1].failed == "TagCommandRan", \
+        "a handler that raises leaves a TickFailed naming the fact and the error in place of what it would have written"
+    assert ran == ["reply", "shouted"] and len(lane.ran) == 4, "the lane runs on after the failure instead of dying with the handler"
+
+    @dataclass(frozen=True, kw_only=True)
+    class RoundAndRound(Fact):
+        n: int
+
+    class Again(Handler[RoundAndRound]):
+        def handle(self, event: RoundAndRound, chat: Chat) -> list[Fact]:
+            return [RoundAndRound(n=event.n + 1)]
+
+    circling = Registrations()
+    circling.add(Registration.read("handle", RoundAndRound, Again(), ["an expectation"]))
+    with pytest.raises(TooManyTicks) as refusal:
+        Lane("project", circling, Services({Chat: "the chat"})).run(RoundAndRound(n=0))
+    assert "causes itself" in str(refusal.value) and "RoundAndRound caused RoundAndRound" in str(refusal.value), \
+        "a lane that never empties is reported with the chain of causes, not left spinning"
+
+
+def test_the_boot_walk_resolves_every_service_and_refuses_a_synchronous_receiver_that_writes():
+    from dataclasses import dataclass
+
+    from events import Fact, Request
+    from receiving import Answerer, Handler, Registration, Registrations
+    from receiving.boot import AsksForNothingKnown, AsksForWhatIsNotServed, WritesSynchronously, walked
+    from serving import Chat, Clock, Rows
+
+    @dataclass(frozen=True, kw_only=True)
+    class ToolCallAsked(Request):
+        tool: str
+
+    @dataclass(frozen=True, kw_only=True)
+    class ToolCallAnswered(Fact):
+        tool: str
+
+    class Todo:
+        pass
+
+    class HeldByGate(Answerer[ToolCallAsked]):
+        def answer(self, event: ToolCallAsked, chat: Chat) -> str:
+            return ""
+
+    class ReadsTheClock(Answerer[ToolCallAsked]):
+        def answer(self, event: ToolCallAsked, clock: Clock) -> str:
+            return ""
+
+    class CountTheRefusal(Handler[ToolCallAnswered]):
+        def handle(self, event: ToolCallAnswered, todos: Rows[Todo]) -> list[Fact]:
+            return []
+
+    class AsksForAString(Handler[ToolCallAnswered]):
+        def handle(self, event: ToolCallAnswered, note: str) -> list[Fact]:
+            return []
+
+    def registered(*ones):
+        held = Registrations()
+        for kind, event, receiver in ones:
+            held.add(Registration.read(kind, event, receiver, ["an expectation"]))
+        return held
+
+    walked(registered(("answer", ToolCallAsked, ReadsTheClock()), ("handle", ToolCallAnswered, CountTheRefusal())), {Chat, Clock, Rows})
+
+    for broken, served, raises, why in (
+        (registered(("answer", ToolCallAsked, HeldByGate())), {Chat, Clock}, WritesSynchronously, "is an answerer and writes Chat"),
+        (registered(("handle", ToolCallAnswered, CountTheRefusal())), {Chat, Clock}, AsksForWhatIsNotServed, "serves to nobody"),
+        (registered(("handle", ToolCallAnswered, AsksForAString())), {Chat, Clock}, AsksForNothingKnown, "is not a service"),
+    ):
+        with pytest.raises(raises) as refusal:
+            walked(broken, served)
+        assert why in str(refusal.value), f"the refusal names the receiver and what it asked for: {refusal.value}"
