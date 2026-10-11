@@ -41,7 +41,7 @@ class Events:
 
     def handler(self, handler: Handler, expects=()) -> None:
         kind, feature = get_type_hints(handler.handle)["event"], self.feature
-        PROMISED.add(Promise(feature.name, "handler", type(handler).__name__, handler, kind, tuple(expects)))
+        PROMISED.add(Promise(feature, "handler", type(handler).__name__, handler, kind, tuple(expects)))
 
         def run(event, record) -> None:
             typed = kind.read(event)
@@ -74,7 +74,7 @@ class Client:
         self.feature = feature
 
     def formatter(self, formatter: TextFormatter, expects=()) -> None:
-        PROMISED.add(Promise(self.feature.name, "formatter", type(formatter).__name__, formatter, str, tuple(expects)))
+        PROMISED.add(Promise(self.feature, "formatter", type(formatter).__name__, formatter, str, tuple(expects)))
         feature = self.feature
         if feature not in FORMATTING_FEATURES:
             FORMATTING_FEATURES.append(feature)
@@ -115,7 +115,7 @@ class AgentHooks:
         APPENDS.add(None, addition, key=on)
 
     def interceptor(self, interceptor: ToolInterceptor, expects=()) -> None:
-        PROMISED.add(Promise(self.feature.name, "interceptor", type(interceptor).__name__, interceptor, object, tuple(expects)))
+        PROMISED.add(Promise(self.feature, "interceptor", type(interceptor).__name__, interceptor, object, tuple(expects)))
         feature, guard = self.feature, Guard.of(interceptor)
         self.guards.append(guard)
 

@@ -12,7 +12,7 @@ from dataclasses import dataclass
 class Promise:
     """One registration and what it says it does."""
 
-    feature: str
+    feature: object
     kind: str
     name: str
     part: object
@@ -26,7 +26,7 @@ class Promise:
 
     def called(self, n: int) -> str:
         """What a failure is named after, so it names the promise and not a line number."""
-        return f"{self.feature}/{self.name}/{n}"
+        return f"{self.feature.name}/{self.name}/{n}"
 
 
 class Promises:

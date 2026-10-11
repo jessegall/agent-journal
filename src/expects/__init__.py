@@ -148,10 +148,19 @@ class Unchanged(Outcome):
 
 @dataclass(frozen=True)
 class Formats(Outcome):
-    """A formatter is a pure function, so its Given and its outcome are one word."""
+    """A formatter is a pure function, so its Given and its outcome are one word: it reads as an expectation wherever one is wanted."""
 
     text: str
     to: str = ""
+
+    @property
+    def given(self) -> "Given":
+        """The text it is handed is its whole world; a Given of its own would say nothing."""
+        return Given(self.text)
+
+    @property
+    def outcomes(self) -> "Outcomes":
+        return Outcomes((self,))
     def holds(self, seen) -> str:
         return "" if seen.changed == self.to else f"it formatted {self.text!r} as {seen.changed!r}, not as {self.to!r}"
 

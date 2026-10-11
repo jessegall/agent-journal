@@ -1,7 +1,11 @@
-"""Doc 80's chapter 'The expects grammar' and src/expects must say the same thing.
+"""The fourth generated run: it plays every expectation every registration carries.
 
-Every word the chapter names is listed here by hand, on purpose: the lists are the chapter,
-so a word added to one and not the other fails here rather than in a reader's head.
+Nothing here is written by hand about any one feature. The features say what they promise where they
+register, this boots them once and plays each promise through the entry the engine really uses, and a
+failure is named feature/registration/index so it names the promise rather than a line number.
+
+The tests below it are the grammar's own self-check: that the words a chapter of doc 80 names are the
+words the code exports, and that the engine they are played through does what the chapter says.
 """
 
 from dataclasses import fields
@@ -16,6 +20,23 @@ from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given,
 OUTCOME_WORDS = (Dispatches, Wrote, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Answered)
 GIVEN_ARGUMENTS = ("on", "rows", "settings", "clock", "ids", "chat", "commands", "files", "processes", "providers")
 SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands")
+
+
+def promised():
+    """Every expectation every feature carries, each with the name its failure is reported under."""
+    import features
+    from features.promises import PROMISED
+    features.load()
+    return [pytest.param(one, expectation, id=one.called(n)) for one, n, expectation in PROMISED.played()]
+
+
+@pytest.mark.parametrize("promise,expectation", promised())
+def test_the_registration_does_what_it_promises(promise, expectation):
+    from expects.entries import played
+    from expects.playing import wrong
+
+    assert (said := wrong(expectation, played(promise, expectation))) == [], \
+        f"{promise.feature.name}'s {promise.name} does not keep its promise: " + "; ".join(said)
 
 
 def test_every_word_the_chapter_names_is_exported_and_every_export_is_named():
@@ -488,8 +509,10 @@ def test_every_registration_gathers_what_it_promises_and_each_outcome_word_reads
     features.load()
     assert len(PROMISED.each) > 200 and {one.kind for one in PROMISED.each} >= {"handler", "formatter", "interceptor"}, \
         "every registration of an owing kind is gathered as the features are wired, with the part itself and its event"
-    assert len(PROMISED.owed()) == len(PROMISED.each), \
-        "none of them carries expectations yet, which is exactly what phase 2 fills in and how its progress is measured"
+    owed, carried = PROMISED.owed(), [one for one in PROMISED.each if one.expects]
+    assert len(owed) + len(carried) == len(PROMISED.each) and not {one.called(0) for one in owed} & {one.called(0) for one in carried}, \
+        "every owing registration either carries its expectations or is counted as owing them; the count is how phase 2 measures its progress"
+    assert carried, "and at least one carries some, so the gathering is really reading what the features declare"
     assert PROMISED.each[0].called(0).count("/") == 2, "a failure is named feature/registration/index, so it names the promise and not a line"
 
     world = World.of(Given("the event", clock=at(1_000.0), ids=counting(40),
