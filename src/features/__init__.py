@@ -10,7 +10,6 @@ from engine.stored import write_text
 
 FEATURES: dict[str, object] = {}
 SWITCHED: list = []
-RENAMED: set[str] = set()
 SEATED: dict[str, int] = {}
 CHANGE_SWITCHES = ("feature", "plugin")
 SEATED_STAMP = "features-seated"
@@ -40,9 +39,6 @@ def discover() -> None:
 def rename_aliases(root: Path) -> None:
     from features.base import REGISTRY
     from features.renames import sweep
-    if str(root) in RENAMED:
-        return
-    RENAMED.add(str(root))
     sweep(root, {was: now for cls in REGISTRY.values() for was, now in cls.renamed_from().items()})
 
 

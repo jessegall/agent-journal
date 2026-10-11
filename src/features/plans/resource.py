@@ -103,15 +103,15 @@ class Tally:
         """Closed and waiting together: the rows whose work is done."""
         return self.closed + self.waiting
 
-    def said(self) -> str:
+    def text(self) -> str:
         return f"{self.closed} of {self.total} done" + (f", {self.waiting} built, waiting for the merge" if self.waiting else "")
 
 
-def tallied(rows) -> Tally:
+def tally_of(rows) -> Tally:
     return Tally(sum(1 for row in rows if row.completed), sum(1 for row in rows if row.awaits_merge()), len(rows))
 
 
-def stood(row) -> str:
+def standing_of(row) -> str:
     """How one row of a plan stands, in a word or two."""
     if row.completed:
         return "done"
