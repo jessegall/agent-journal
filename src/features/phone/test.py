@@ -695,7 +695,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     Sessions(record.root).write("d2c1c997-real", environment="")
     from features.phone.places import shown
     Environments(record, actor=USER).create("ticket-4", owner="ticket:4", kind=EnvironmentKind.TICKET)
-    assert {f"{record.env}-rhea", "ticket-4"}.isdisjoint(comments(record.root)), "a helper's or a ticket's own environment stays out of the phone's places"
+    assert {f"{record.env}-rhea", "ticket-4"}.isdisjoint(shown(record.root)), "a helper's or a ticket's own environment stays out of the phone's places"
     Sessions(record.root).write("claude-4242", environment="")
     assert call(base, "/p/auto", {"on": True}, key).status == 201 and call(base, "/p/feed", key=key).body["running"]["auto"] is True, \
         "the phone switches auto mode, the same setting the desktop's switch flips"
