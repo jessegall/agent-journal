@@ -8,6 +8,10 @@ single test file, and so the boot walk can refuse a kind that owes them and carr
 from dataclasses import dataclass
 
 
+THE_ENGINES_OWN = ("SendOnTheClock", "SendOnToolUse")
+"""Feature.wire adds these two for every feature that declares nudges. They are the engine's own, written once, and the nudges they send are promised by the handlers that cause them."""
+
+
 @dataclass(frozen=True)
 class Promise:
     """One registration and what it says it does."""
@@ -21,8 +25,8 @@ class Promise:
 
     @property
     def owes(self) -> bool:
-        """Every kind owes its expectations but the line appenders, where the engine does all the work and the feature only supplies a value."""
-        return self.kind not in ("append_to_line",)
+        """Every registration owes its expectations but two kinds: a line appender, where the engine does all the work and the feature only supplies a value, and the engine's own, which no feature wrote."""
+        return self.kind not in ("append_to_line", "route") and self.name not in THE_ENGINES_OWN
 
     def called(self, n: int) -> str:
         """What a failure is named after, so it names the promise and not a line number."""

@@ -25,13 +25,37 @@ class NoEntryForThisKind(LookupError):
 
 
 def scratch(given: Given) -> Record:
-    """A record holding just what the Given states, thrown away when the play ends."""
+    """A record holding exactly what the Given states - its settings AND its rows - thrown away when the play ends."""
     record = Record(Path(tempfile.mkdtemp(dir=isolation.world())) / ".journal", "t")
     record.home.mkdir(parents=True)
     for name, value in dict(given.settings).items():
         part, _, key = name.partition(".")
         record.change_setting(part or "features", {key or part: value})
+    for row in given.rows:
+        written(record, row)
     return record
+
+
+def written(record: Record, row) -> None:
+    """Puts one of the Given's rows into the record, through the controller that owns its type, so it is a row like any other."""
+    from controllers.types import CONTROLLERS
+    kind = getattr(row, "type", "") or type(row).__name__.lower()
+    if kind not in CONTROLLERS:
+        raise NoControllerForTheRow.of(kind)
+    CONTROLLERS[kind](record, actor=SYSTEM).rows.persist(row)
+
+
+class NoControllerForTheRow(LookupError):
+    @classmethod
+    def of(cls, kind: str) -> "NoControllerForTheRow":
+        return cls(f"the Given names a row of kind {kind!r}, which no controller owns; name it as the resource dataclass of a registered type")
+
+
+def speaking(record: Record, given: Given):
+    """The agent row a handler speaks to, when the Given names one. A handler that reads context.agent and is given none fails here, by name, rather than at a bare attribute."""
+    from controllers.types import Agents
+    rows = Agents(record, actor=SYSTEM).rows.standing()
+    return rows[0] if rows else None
 
 
 def what_was_said(record: Record) -> tuple[list, list]:
@@ -49,8 +73,11 @@ def rows_now(record: Record) -> tuple:
 
 
 def handled(promise, given: Given, record: Record, world: World) -> None:
-    """A 2.x handler, through the entry the bus uses: its own handle, with a Context over the tick's record."""
-    promise.part.handle(Context.of(promise.feature, record), given.on)
+    """A 2.x handler, through the entry the bus uses: its own handle, with a Context over the record. The Context carries an agent when the Given names one, since most handlers read it."""
+    event, was = given.on, text_of(given.on)
+    promise.part.handle(Context.of(promise.feature, record, speaking(record, given)), event)
+    world.seen.changed = text_of(event) if text_of(event) != was else None
+    world.seen.kept = not stopped(event)
 
 
 def formatted(promise, given: Given, record: Record, world: World) -> None:
@@ -94,14 +121,39 @@ ENTRIES = {"handler": handled, "formatter": formatted, "interceptor": intercepte
 """One entry per kind, and no kind with two, so the run and the engine cannot disagree about how a registration is reached. A route has none yet: it is reached through the server, which an expectation does not stand up."""
 
 
+def stopped(event) -> bool:
+    """Whether a handler stopped the thing it was handed. A sending event carries it in its own data, which is how the engine reads it too."""
+    data = getattr(event, "data", None)
+    return bool(data.get("stopped")) if isinstance(data, dict) else False
+
+
+def text_of(event) -> str | None:
+    """The text an event carries, when it carries one. A sending event keeps it in its own data, which is where the engine reads it too."""
+    data = getattr(event, "data", None)
+    return data.get("text") if isinstance(data, dict) else None
+
+
+def rows_touched(record: Record, since: int, action: str) -> list:
+    """The rows the play created or changed, read back from the record itself. The event log says WHICH rows moved; the rows say what they now hold, and an expectation is written about the row."""
+    from controllers.types import CONTROLLERS
+    touched = []
+    for event in record.event_log.events(since):
+        if event.action != action or event.type not in CONTROLLERS:
+            continue
+        touched.append(CONTROLLERS[event.type](record, actor=SYSTEM).rows.peek(event.n))
+    return touched
+
+
 def played(promise, expectation) -> Seen:
     """Builds the world the Given states, runs the registration through its own entry, and reads what it did."""
     if promise.kind not in ENTRIES:
         raise NoEntryForThisKind.of(promise.kind)
     given = expectation.given
     record, world = scratch(given), World.of(given)
-    world.seen.before = rows_now(record)
+    world.seen.before, since = rows_now(record), record.event_log.last_id()
     ENTRIES[promise.kind](promise, given, record, world)
     world.seen.after = rows_now(record)
     world.seen.said, world.seen.nudged = what_was_said(record)
+    world.seen.wrote = rows_touched(record, since, "created")
+    world.seen.updated = rows_touched(record, since, "updated")
     return world.seen
