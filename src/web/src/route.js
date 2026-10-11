@@ -56,7 +56,9 @@ const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment
 
 export function opening(stack, sub = "") {
     const [path, query = ""] = location.hash.replace(/^#/, "").split("?");
-    const kept = [...new URLSearchParams(query)].filter(([key]) => key !== "open" && key !== "sub").map(([key, value]) => `${key}=${encodeURIComponent(value)}`);
+    const kept = [...new URLSearchParams(query)]
+        .filter(([key]) => key !== "open" && key !== "sub")
+        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`);
     const parts = [...kept, ...(stack.length ? [`open=${stack.map(entry).join(",")}`] : []), ...(sub ? [`sub=${sub}`] : [])].join("&");
     location.replace(`#${path}${parts ? `?${parts}` : ""}`);
 }
@@ -82,6 +84,10 @@ export function peekThere(env, type, n, comment = 0, sub = "") {
     const at = stack.findIndex((open) => open.type === type && open.n === n && open.env === env);
     opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment, env}], sub);
 }
+
+const ROW_REF = /^[a-z_]+:\d+(@.+)?$/;
+
+export const isRef = (link) => ROW_REF.test(link);
 
 export function peekRef(ref) {
     const [row, env] = ref.split("@");

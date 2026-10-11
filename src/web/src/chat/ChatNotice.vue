@@ -6,7 +6,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {useScope} from "../composables/scope.js";
-import {route} from "../route.js";
+import {isRef, peekRef, route} from "../route.js";
 
 const props = defineProps({notice: Object, fixed: Boolean});
 const emit = defineEmits(["closing"]);
@@ -53,7 +53,12 @@ function close() {
         <span class="chat-notice-dot" />
         <span class="chat-notice-text">{{ notice.title }}</span>
         <template v-if="notice.data.link">
-            <a class="chat-notice-go" :href="notice.data.link" target="_blank" rel="noopener">{{ notice.data.label || "open" }}</a>
+            <template v-if="isRef(notice.data.link)">
+                <button type="button" class="chat-notice-go" @click="peekRef(notice.data.link)">{{ notice.data.label || "open" }}</button>
+            </template>
+            <template v-else>
+                <a class="chat-notice-go" :href="notice.data.link" target="_blank" rel="noopener">{{ notice.data.label || "open" }}</a>
+            </template>
         </template>
         <SwitchCase :value="controls">
             <template #none />
@@ -134,6 +139,8 @@ function close() {
 
 .chat-notice-go {
     flex: none;
+    cursor: pointer;
+    font-family: inherit;
     padding: 1px 8px;
     border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
     border-radius: 5px;

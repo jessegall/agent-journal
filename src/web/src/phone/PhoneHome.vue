@@ -11,6 +11,7 @@ import {computed, inject, nextTick, onMounted, onUnmounted, provide, reactive, r
 import {phone} from "../api/phone.js";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
+import {isRef} from "../route.js";
 import {usePoll} from "../composables/poll.js";
 import PhoneCompose from "./PhoneCompose.vue";
 import WaitEdge from "../kit/WaitEdge.vue";
@@ -286,12 +287,11 @@ const newFrom = computed(() => {
 const joined = computed(() => items.value.map((item, i) => !dividers.value[i] && joins(items.value[i - 1], item)));
 const arrivals = ref(new Map());
 const closedNotices = ref(new Set());
-const REF = /^[a-z_]+:\d+$/;
 const notices = computed(() => (feed.value.notices || []).filter((notice) => !closedNotices.value.has(notice.n)));
 
 function openNotice(notice) {
     const link = notice.data?.link || "";
-    if (REF.test(link)) return open(link);
+    if (isRef(link)) return open(link);
     if (link) window.open(link, "_blank", "noopener");
 }
 
