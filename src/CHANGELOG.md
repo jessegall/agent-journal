@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.14 — An engine stops listing the project with git on every tick
+
+- The plugin suggestions are decided once for each offers file, and a tick that finds a run already going starts no other. An engine was relisting every tracked file of every repository in the project, for every agent older than an hour, every five seconds; on a large multi-repository project that run took longer than a tick, so runs piled up twelve deep and two engines each held about 8 percent of a core without pause.
+
 ## 2.269.13 — An engine can say where its time goes
 
 - An engine sent `kill -USR2` looks at its own threads a hundred times a second for a minute and writes the functions the time goes to beside its runtime files, as `engine-profile-<environment>.txt`. It costs nothing until it is asked, and it is how a journal busy on one machine and quiet on another can be told apart.
