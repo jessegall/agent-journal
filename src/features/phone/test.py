@@ -641,10 +641,12 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     agent.card(agent.by_session("codex-1").n, key="command:gone", state="done", ended=now)
     assert all("label" in card for card in agent.by_session("codex-1").data["cards"]), "an update to a mark no longer kept is dropped, so every mark keeps its label"
     from features.format import VIEWER, shaped
-    agent.card(agent.by_session("codex-1").n, label="A plugin note", name="cc", icon="plug")
+    agent.card(agent.by_session("codex-1").n, label="A plugin note", name="cc", icon="plug", kind="plugins")
     agent.card(agent.by_session("codex-1").n, label="You answered", name="cc", icon="plug", side="user")
+    agent.card(agent.by_session("codex-1").n, label="A named mark", name="Rhea", icon="bot")
     shows = {c["label"]: c["shows"] for c in shaped(agent.by_session("codex-1"), record, VIEWER)["data"]["cards"]}
-    assert (shows["A plugin note"], shows["You answered"]) == ("plugins", "notes"), "one rule files a mark, so a plugin's note is a plugin's and the user's own mark is not"
+    assert (shows["A plugin note"], shows["You answered"], shows["A named mark"]) == ("plugins", "notes", "notes"), \
+        "one rule files a mark: a plugin's own card names its kind, and a card is never a plugin note only for carrying a name"
     helper = Helpers(record, actor=SYSTEM).create("Split the phone view", name="Rhea", provider="codex", model="gpt-5-codex",
                                                   environment=f"{record.env}-rhea")
     from controllers.types import Environments

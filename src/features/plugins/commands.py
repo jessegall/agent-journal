@@ -91,7 +91,7 @@ def marked_updated(plugins, n: int):
     agents = Agents(plugins.record, actor=SYSTEM)
     primary = agents.primary_to_read()
     if primary:
-        agents.card(primary.n, key=f"plugin:{n}:{updated.version}", label="Updated plugin", name=updated.title, detail=f"Version {updated.version}",
+        agents.card(primary.n, key=f"plugin:{n}:{updated.version}", label="Updated plugin", kind="plugins", name=updated.title, detail=f"Version {updated.version}",
                     icon="plug", tone="good", side=USER if plugins.actor == USER else AGENT)
     return updated
 

@@ -14,11 +14,10 @@ def hidden(home: Record) -> list[str]:
 
 
 def card_shows(card: dict) -> str:
-    """The chat kind a card belongs to: the one it names, else a plugin's note unless it sits on the user's side, else what its icon marks."""
+    """The chat kind a card belongs to: the one it names, else what its icon marks, else a notice; a plugin's own card names its kind, so a card is never a plugin note by carrying a name."""
     if card.get("kind") is not None:
         return card["kind"]
-    name = card.get("name", card.get("plugin"))
-    return "plugins" if name and card.get("side") != "user" else MARKED.get(card.get("icon"), "notes")
+    return MARKED.get(card.get("icon"), "notes")
 
 
 def whisper_shows(whisper: dict) -> str:

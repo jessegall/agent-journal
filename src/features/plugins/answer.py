@@ -69,7 +69,7 @@ def carded(record, session: str, plugin: str, look: Look, asked: Posting) -> Non
     agent = agents._session_or_primary(session)
     if not agent:
         return
-    agents.card(agent.n, plugin=plugin, label=look.label if look.label else plugin, icon=look.icon if look.icon else "bell", tone=look.tone,
+    agents.card(agent.n, plugin=plugin, kind="plugins", label=look.label if look.label else plugin, icon=look.icon if look.icon else "bell", tone=look.tone,
                 color=look.color if COLOR.match(look.color) else "", detail=next((line.strip(" •-") for line in asked.brief.splitlines() if line.strip()), ""),
                 page=asked.open, settle=asked.key)
 
