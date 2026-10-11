@@ -139,6 +139,40 @@ def defer_once(key: str, job: Callable[[], None]) -> None:
 
 
 BACKGROUND = True
+_spaced_lock = threading.Lock()
+_spaced_last: dict[str, float] = {}
+_spaced_waiting: dict[str, Callable[[], None]] = {}
+
+
+def spaced(key: str, every: float, job: Callable[[], None]) -> None:
+    """Runs the job at most once every so many seconds per key; one asked for sooner is kept, the newest of them replacing the rest, and runs when the time is up, so the last state always lands; with the thread switched off it runs at once."""
+    if not BACKGROUND:
+        job()
+        return
+    with _spaced_lock:
+        wait = _spaced_last.get(key, 0.0) + every - time.monotonic()
+        if wait > 0:
+            if key not in _spaced_waiting:
+                timer = threading.Timer(wait, _spaced_due, (key, every))
+                timer.daemon = True
+                timer.start()
+            _spaced_waiting[key] = job
+            return
+        _spaced_last[key] = time.monotonic()
+    job()
+
+
+def _spaced_due(key: str, every: float) -> None:
+    with _spaced_lock:
+        job = _spaced_waiting.pop(key, None)
+        _spaced_last[key] = time.monotonic()
+    if job:
+        try:
+            job()
+        except Exception:
+            traceback.print_exc()
+
+
 _waiting: dict[str, Callable[[], None]] = {}
 _worker: threading.Thread | None = None
 _worker_lock = threading.Lock()

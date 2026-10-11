@@ -136,11 +136,20 @@ def test_a_terminal_answering_a_query_is_not_the_user_typing():
         "a version or colour reply comes in on the keyboard but holds nothing"
 
 
-def test_every_viewer_is_handed_the_whole_queue_and_keeps_its_own_place():
+def test_every_viewer_is_handed_the_whole_queue_and_keeps_its_own_place(monkeypatch):
     record = fresh()
     queue = [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": time.time(), "done": False}]
     record.state("status_bar").set("bar", {"queue": queue})
     assert current(record)["queue"] == current(record)["queue"] == queue, "no tab's reading moves another tab's place in the queue"
+    from engine import bus
+    written = []
+    with monkeypatch.context() as threaded:
+        threaded.setattr(bus, "BACKGROUND", True)
+        for line in ("first", "second", "third"):
+            bus.spaced("bar test", 0.2, lambda line=line: written.append(line))
+        assert written == ["first"], "a write asked for within the second waits"
+        time.sleep(0.5)
+        assert written == ["first", "third"], "and the latest of the waiting ones is the one written when the time is up"
 
 
 def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
