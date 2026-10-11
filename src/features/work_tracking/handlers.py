@@ -277,10 +277,17 @@ def last_heard_from_the_user(context, agent) -> float:
     return max([float(agent.person_at), *written])
 
 
+def nothing_left(context) -> bool:
+    """Whether this environment holds nothing to carry on with: no work open, no ready row and no row waiting on anything."""
+    return not working(context) and not ready(context.record) and not waiting_rows(context.record)
+
+
 def stopped_in_auto(context, agent) -> list[Sent]:
-    """With auto mode on, an agent that stopped long after the person last spoke is told to carry on, unless the person stopped it themselves."""
+    """With auto mode on, an agent that stopped long after the person last spoke is told to carry on, unless the person stopped it themselves or the environment holds nothing to carry on with."""
     after = context.settings.carry_on_after * MINUTE
     if not automatic(context.record) or agent.subagent or agent.paused or agent.idle_for < FIRST_AFTER * MINUTE or time.time() - last_heard_from_the_user(context, agent) < after:
+        return []
+    if nothing_left(context):
         return []
     provider = PROVIDERS.get(agent.provider)
     if provider is not None and agent.transcript and provider().interrupted_by_user(Path(agent.transcript)):

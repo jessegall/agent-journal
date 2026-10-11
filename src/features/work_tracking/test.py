@@ -174,6 +174,21 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     transcript.write_text(json.dumps({"type": "user", "message": {"content": [{"type": "text", "text": "go on"}]}}) + "\n")
     assert not Claude().interrupted_by_user(transcript), "any other last word is not a stop"
 
+    from controllers.types import Todos as Rows
+    from features.work_tracking.handlers import nothing_left
+    from features.parts import AgentContext
+    from features import FEATURES
+    done = fresh()
+    done.features = {**done.features, "work_tracking.auto": True}
+    agents_here = Agents(done, actor=SYSTEM)
+    agents_here.create("claude-1")
+    here = AgentContext.of(FEATURES["work_tracking"], done, agents_here.by_session("claude-1"))
+    assert nothing_left(here), "an environment with no work, no ready row and nothing waiting has nothing to carry on with"
+    row = Rows(done, actor=AGENT).create("something to do")
+    assert not nothing_left(here), "a ready row is something to carry on with"
+    Rows(done, actor=AGENT).complete(row.n, "done")
+    assert nothing_left(here), "and once it is closed there is nothing again"
+
 
 def test_ready_rows_are_ordered_by_priority_then_by_number_skipping_what_is_not_ready():
     record = fresh()
