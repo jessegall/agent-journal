@@ -32,8 +32,8 @@ store.spec = {facts: FACTS};
 
 describe("the facts a trigger can watch", () => {
     it("are the ones the server sent, and an unknown one reads as the first", () => {
-        expect(factOf("agent.context")).toBe(FACTS[2]);
-        expect(factOf("nothing.of.the.kind")).toBe(FACTS[0]);
+        expect(factOf("agent.context")).toBe(store.spec.facts[2]);
+        expect(factOf("nothing.of.the.kind")).toBe(store.spec.facts[0]);
     });
 
     it("count in the word that follows the number in their phrase", () => {
