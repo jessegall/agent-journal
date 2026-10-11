@@ -41,6 +41,14 @@ describe("the waiting word and its line", () => {
         expect(waitingOn(agent(), [work()], [], NOW).items[0].status).toBe("At work");
     });
 
+    test("work the agent found to do while it waits is what it is shown doing, and the wait comes back when that work ends", () => {
+        const meanwhile = {n: 2, title: "Clearing the budget rows", completed: 0, data: {}};
+        expect(waitingOn(agent(), [work(), meanwhile], [], NOW)).toBe(null);
+        expect(stateOf(agent(), [work(), meanwhile])).not.toBe("waiting");
+        expect(waitingOn(agent(), [work(), {...meanwhile, completed: NOW}], [], NOW).line).toBe("the test suite · 4m 00s");
+        expect(waitingOn(agent(), [work(), {...meanwhile, data: {parked: "later"}}], [], NOW).line).toBe("the test suite · 4m 00s");
+    });
+
     test("an agent whose conversation is being compacted says compacting, never summarizing or shortening", () => {
         expect(lineOf(agent("compacting"), [])).toBe("compacting the conversation, then it carries on");
         expect(STATE_WORDS.compacting).toBe("Compacting");

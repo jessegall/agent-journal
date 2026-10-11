@@ -256,7 +256,9 @@ EXTRAS = {"question": lambda home: {"hold": hold(home)},
 
 
 def awaited(home: Record) -> Awaiting:
-    work = next((w for w in Works(home, actor=SYSTEM).rows.standing() if w.awaiting and not w.parked), None)
+    """What the agent waits on, unless it found something to do meanwhile: work it is getting on with is what it is doing, and the wait comes back when that work ends."""
+    open_work = [w for w in Works(home, actor=SYSTEM).rows.standing() if not w.parked]
+    work = next((w for w in open_work if w.awaiting), None) if all(w.awaiting for w in open_work) else None
     if work is None:
         return Awaiting(text="", work="", on="", since=0.0)
     named = f"to-do {work.todo} · {work.title}" if work.todo else work.title

@@ -8,8 +8,8 @@ export const SILENT_WORD = "Not responding";
 const REPORTED = ["stopped", "idle", "compacting"];
 
 export function currentWork(works) {
-    const open = works.filter((w) => !w.completed);
-    return open.find((w) => !w.data.parked) || null;
+    const open = works.filter((w) => !w.completed && !w.data.parked);
+    return open.find((w) => !w.data.awaiting) || open[0] || null;
 }
 
 export function waitsFor(works) {
