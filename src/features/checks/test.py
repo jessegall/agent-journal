@@ -296,14 +296,17 @@ def test_upgrades_rename_old_stored_keys_in_events_agents_checks_and_settings(tm
     writer.join()
     assert finished == ["1 event logs, 0 rows and 0 settings files use the plain key names"], \
         "a migration never waits for the record lock of a writer, which may itself wait for the migration to end"
-    from scripts.checks.pulls import answered as pull_answered, line as pull_line
-    own = {"number": 7, "title": "Fix", "author": {"login": "jessegall"}, "url": "https://example/7", "comments": []}
-    stranger = {**own, "number": 8, "author": {"login": "stranger"}, "comments": [{"author": {"login": "stranger"}}]}
+    from scripts.checks.github import Thread
+    from scripts.checks.pulls import line as pull_line
+    payload = {"number": 7, "title": "Fix", "author": {"login": "jessegall"}, "url": "https://example/7", "comments": []}
+    own = Thread.from_payload(payload)
+    stranger = Thread.from_payload({**payload, "number": 8, "author": {"login": "stranger"}, "comments": [{"author": {"login": "stranger"}}]})
     assert ("rule 64" in pull_line(own), "by stranger" in pull_line(stranger), "gh pr diff 8" in pull_line(stranger), "never check it out into a live journal" in pull_line(stranger),
             "obfuscated code, workflow edits" in pull_line(stranger)) == (True, True, True, True, True), \
         "a pull request waiting is told with its author, and one not from the user comes with the careful way to handle it"
-    assert (pull_answered(stranger, "jessegall"), pull_answered({**stranger, "comments": [{"author": {"login": "jessegall"}}]}, "jessegall")) == (False, True), \
-        "a pull request the agent commented on last is not told again"
+    answered = Thread.from_payload({**payload, "number": 8, "comments": [{"author": {"login": "jessegall"}}]})
+    assert (stranger.last_commenter, answered.last_commenter) == ("stranger", "jessegall"), \
+        "who spoke last on a pull request is read off it, which is how one the agent answered is not told again"
     import os
     import pytest
     from engine import runtime

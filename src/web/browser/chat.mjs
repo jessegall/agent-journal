@@ -136,6 +136,7 @@ await runScenarios(process.argv[2], {
         writeFileSync(picture, Buffer.from(PIXEL, "base64"));
         const n = numberOf(journal("message", "create", `screen ${Date.now()}`, "--brief", "this one"));
         journal("message", "attach", String(n), picture);
+        journal("message", "tag", String(n), "IMG_1201.png", "a screen cut off at the bottom");
         journal("message", "reply", String(n), `Look at this one:\nmessage ${n} IMG_1201.png\nIt is the cut off screen.`);
         await home(page, url);
         const card = page.locator(".thread-text .file-card").first();

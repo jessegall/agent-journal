@@ -1,6 +1,6 @@
 import sys
 
-from github import my_login, waiting
+from scripts.checks.github import my_login, waiting
 
 if __name__ == "__main__":
     pending = waiting("issue", my_login())

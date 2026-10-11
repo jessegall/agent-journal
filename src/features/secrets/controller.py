@@ -1,4 +1,5 @@
 import re
+import subprocess
 import time
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
 from controllers.types import Environments, Messages
+from engine.package import entry
 from features import FEATURES
 from features.secrets.keys import integration_key_variables
 from features.secrets.reach import servers_reaching
@@ -93,19 +95,15 @@ class Secrets(Controller):
         return ""
 
     @action(here=True)
-    def login(self, n: int) -> str:
+    def login(self, n: int, wait: bool = False) -> str:
         row = self.load(n)
-        if not self._may_log_in(row):
-            self._refuse("only you log in, with the Log in button in the chat: ask for it with journal secret request --kind 'browser login' --url <address>")
         if not row.url:
             raise Refused(f"secret {row.n}, {row.title}, has no site address to log in to")
-        logins = BrowserLogins(self.record.root)
-        saved = logins.record(row.title, row.url)
-        merged = logins.merge()
-        rewired = [provider().browser_logins(self.record.root.parent, merged) for provider in PROVIDERS.values()]
-        self.update(row.n, session=time.time(), session_expires=logins.expires(saved), asked="")
-        restart = " Restart the agent once so its browser tool reads the saved logins." if any(rewired) else ""
-        return f"saved: the agent's own browser starts logged in to {row.url} from its next start.{restart}"
+        if wait:
+            return self._logging_in(row)
+        if not self._may_log_in(row):
+            self._refuse("only you log in, with the Log in button in the chat: ask for it with journal secret request --kind 'browser login' --url <address>")
+        return self._login_opening(row)
 
     @action
     def allow_login(self, n: int) -> str:
@@ -128,18 +126,48 @@ class Secrets(Controller):
     def _login_asked(self, title: str, why: str, url: str) -> Secret:
         known = next((row for row in self.rows.every() if row.kind == Kind.BROWSER_LOGIN and row.title.lower() == title.lower()), None)
         if known and self._may_log_in(known):
-            self.login(known.n)
-            return self.load(known.n)
+            opening = self.login(known.n)
+            row = self.load(known.n)
+            row.preface = opening
+            return row
         if not known and not url:
             raise Refused("a browser login needs the site's address: journal secret request <name> <why> --kind 'browser login' --url <address>")
         row = self.update(known.n, asked=why) if known else self.create(title, kind=Kind.BROWSER_LOGIN.value, asked=why, url=url)
-        buttons = [{"label": "Log in", "type": self.type, "n": row.n, "action": "login", "outcome": f"Logged in to {row.title}", "choice": "login",
+        row.preface = f"a Log in button for {row.title} is in the chat, and nothing happens until the user presses it: carry on with what does not wait on it."
+        buttons = [{"label": "Log in", "type": self.type, "n": row.n, "action": "login", "outcome": f"A browser is opening for you to log in to {row.title}", "choice": "login",
                     "ask": f"Log in to {row.title} for the agent"},
                    {"label": "Always let the agent log in to this site", "type": self.type, "n": row.n, "action": "allow_login", "choice": "login",
-                    "outcome": f"Logged in to {row.title}, and the agent logs in to it on its own from now on"}]
+                    "outcome": f"A browser is opening to log in to {row.title}, and the agent logs in to it on its own from now on"}]
         Messages(self.record, actor=AGENT).create(f"I want to log in on {row.title}, can you do that?", buttons=buttons,
                                                   brief=f"I need it {why}. Log in opens a browser on {row.url}: log in there and close its window, and my browser keeps the login.\n\nsecret {row.n}")
         return row
+
+    def _login_opening(self, row: Secret) -> str:
+        """Opens the browser in a process of its own and answers at once. The window stands until the user closes it, which is longer than any call may take: run here and it holds the server, every command behind it times out, and the button that asked looks dead."""
+        self.update(row.n, logging_in=time.time())
+        subprocess.Popen([*entry("journal"), "--root", str(self.record.root), "--env", self.record.env, "secret", "login", str(row.n), "--wait"],
+                         cwd=self.record.root.parent, start_new_session=True,
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return (f"a browser is opening on {row.url}: log in there and close its window, and the login is saved. "
+                f"The first time it can take a minute while the browser itself is fetched. "
+                f"Secret {row.n} says when the login is saved, and nothing else waits on it.")
+
+    def _logging_in(self, row: Secret) -> str:
+        """The login itself, in the process _login_opening started. It stands on that process's own time, and it is allowed only while that row says a login was started, so it cannot be used to log in without being asked."""
+        if not row.logging_in:
+            raise Refused(f"secret {row.n}, {row.title}, has no login under way: press Log in in the chat, or journal secret login {row.n}")
+        logins = BrowserLogins(self.record.root)
+        try:
+            saved = logins.record(row.title, row.url)
+        except Refused as why:
+            self.update(row.n, logging_in=0.0)
+            Messages(self.record, actor=AGENT).create(f"The login to {row.title} did not save", brief=f"{why}\n\nsecret {row.n}")
+            raise
+        merged = logins.merge()
+        rewired = [provider().browser_logins(self.record.root.parent, merged) for provider in PROVIDERS.values()]
+        self.update(row.n, session=time.time(), session_expires=logins.expires(saved), asked="", logging_in=0.0)
+        restart = " Restart the agent once so its browser tool reads the saved logins." if any(rewired) else ""
+        return f"saved: the agent's own browser starts logged in to {row.url} from its next start.{restart}"
 
     def _may_log_in(self, row: Secret) -> bool:
         return self.actor == USER or row.auto_login or ("secrets" in FEATURES and FEATURES["secrets"].on(self.record, "logins"))

@@ -62,7 +62,7 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
     assert len(notified(record)) == before + 1, "a request that spent its time waiting on a lock, over its budget, is noticed too: whoever holds the lock makes everyone wait"
     stopwatch_times = []
     with monkeypatch.context() as patched:
-        patched.setattr(Stopwatch, "announce", lambda self, *args: stopwatch_times.append(args[-1]))
+        patched.setattr(Stopwatch, "announce", lambda self, *args, **named: stopwatch_times.append(named["after"]))
         timed(Reply(200, {}, after=lambda: time.sleep(0.05)), record.root, record.env, "GET", "/api/main/dashboard", Stopwatch()).after()
     assert 40 < stopwatch_times[-1] < 250, "the time reported after an answer is what the work left behind took, not how long it waited in the queue"
     from engine.after_answer import AfterAnswer

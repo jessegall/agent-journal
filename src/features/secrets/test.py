@@ -176,18 +176,27 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
     assert "needs the site's address" in refused(lambda: agent.request("Staging", "to check the deploy", kind="browser login")), "a login is asked for with its address"
     row = agent.request("Staging", "to check the deploy", kind="browser login", url="https://staging.example.com")
     asked = next(m for m in Messages(record, actor=SYSTEM).rows.every() if m.title == "I want to log in on Staging, can you do that?")
-    assert asked.data["buttons"][0] == {"label": "Log in", "type": "secret", "n": row.n, "action": "login", "outcome": "Logged in to Staging",
+    assert asked.data["buttons"][0] == {"label": "Log in", "type": "secret", "n": row.n, "action": "login", "outcome": "A browser is opening for you to log in to Staging",
                                         "choice": "login", "ask": "Log in to Staging for the agent"}, \
         "the agent's request puts a Log in button in the chat"
     assert "only you log in" in refused(lambda: agent.login(row.n)) and opened == [], "the agent never opens the login itself"
     from features.message_buttons.pressing import press
+    spawned = []
+    monkeypatch.setattr(subprocess, "Popen", lambda command, **options: spawned.append(list(command)))
+    press(record, asked, "Log in", secrets.actor, "viewer")
+    assert (opened, spawned[-1][-4:]) == ([], ["secret", "login", str(row.n), "--wait"]), \
+        "pressing Log in answers at once and opens the browser in a process of its own, so neither the server nor the agent's next command waits on the window"
     missing = lambda command, **options: subprocess.CompletedProcess(command, 1, "", "\nbrowserType.launch: Executable doesn't exist\n")
     monkeypatch.setattr(subprocess, "run", missing)
-    assert "no login was saved: browserType.launch: Executable doesn't exist" in refused(lambda: secrets.login(row.n)), \
+    assert "no login was saved: browserType.launch: Executable doesn't exist" in refused(lambda: secrets.login(row.n, wait=True)), \
         "a browser that fails to open says why, rather than only that nothing was saved"
+    assert [m.title for m in Messages(record, actor=SYSTEM).rows.every()].count("The login to Staging did not save") == 1, \
+        "and the user is told in the chat, since the command that asked has long since answered"
+    assert "has no login under way" in refused(lambda: secrets.login(row.n, wait=True)), \
+        "a failed login leaves none under way, so the browser is never opened again without being asked for"
     monkeypatch.setattr(subprocess, "run", browser)
-    login_text = secrets.login(row.n)
-    press(record, asked, "Log in", secrets.actor, "viewer")
+    secrets.login(row.n)
+    login_text = secrets.login(row.n, wait=True)
     logins = BrowserLogins(record.root)
     merged = json.loads(logins.merged.read_text())
     assert opened[0][:4] == ["npx", "-y", "playwright@latest", "open"] and "Restart the agent once" in login_text, "the browser opens for the user, and the agent is told to restart once"
@@ -200,8 +209,12 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
         "any other Playwright tool Claude Code starts, such as a plugin's, reads the saved logins from the agent's environment"
     codex = (project / ".codex" / "config.toml").read_text()
     assert "[mcp_servers.playwright]" in codex and f'"--storage-state", "{logins.merged}"' in codex, "Codex's browser tool starts from the saved logins too"
-    assert (Secrets(record, actor=SYSTEM).load(row.n).session_expires, Secrets(record, actor=SYSTEM).load(row.n).asked) == (2_000_000_000.0, ""), \
+    saved_row = Secrets(record, actor=SYSTEM).load(row.n)
+    assert (saved_row.session_expires, saved_row.asked, saved_row.logging_in) == (2_000_000_000.0, "", 0.0), \
         "the secret records when its login runs out, and no longer waits"
+    from features.secrets.announcing import updated_added
+    assert "start your browser tools again" in updated_added([row.n], record), \
+        "and the agent is told the saved login only reaches its browser tools when they start again"
     from providers import PROVIDERS
     from runner.hooks import handle
     reason = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "cwd": str(record.root.parent),
@@ -223,22 +236,27 @@ def test_a_site_the_user_lets_the_agent_log_in_to_needs_no_button(tmp_path, monk
         return subprocess.CompletedProcess(command, 0, "", "")
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
     monkeypatch.setattr(subprocess, "run", browser)
+    spawned = []
+    monkeypatch.setattr(subprocess, "Popen", lambda command, **options: spawned.append(list(command)))
     user, agent = Secrets(record, USER), Secrets(record, actor=AGENT)
     row = agent.request("Staging", "to check the deploy", kind="browser login", url="https://staging.example.com")
     asked = lambda: [m for m in Messages(record, actor=SYSTEM).rows.every() if m.title == "I want to log in on Staging, can you do that?"]
     assert [b["label"] for b in asked()[0].data["buttons"]] == ["Log in", "Always let the agent log in to this site"], \
         "beside Log in, the card offers to let the agent log in to the site on its own"
+    assert "nothing happens until the user presses it" in row.preface, \
+        "and the agent is told a button is waiting on the user, so a request that opens no browser is not read as a failure"
     assert "only you let" in refused(lambda: agent.allow_login(row.n)), "only the user lets the agent log in on its own"
     user.allow_login(row.n)
-    assert (agent.request("Staging", "to check again", kind="browser login").n, len(asked()), opened) == (row.n, 1, ["https://staging.example.com"] * 2), \
-        "a site the user allowed is logged in to at once, with no second card"
+    assert (agent.request("Staging", "to check again", kind="browser login").n, len(asked()), len(spawned), opened) == (row.n, 1, 2, []), \
+        "a site the user allowed opens its browser at once, in a process of its own, with no second card"
     user.revoke_login(row.n)
     agent.request("Staging", "once more", kind="browser login")
-    assert (len(asked()), len(opened)) == (2, 2), "once the user takes it back, the agent asks with the button again"
+    assert (len(asked()), len(spawned)) == (2, 2), "once the user takes it back, the agent asks with the button again"
     from features import FEATURES
     FEATURES["secrets"].choose(record, "logins", True)
-    agent.request("Staging", "and again", kind="browser login")
-    assert (len(asked()), len(opened)) == (2, 3), "with Agents log in on their own switched on, any saved site needs no button"
+    assert "a browser is opening" in agent.request("Staging", "and again", kind="browser login").preface, \
+        "with Agents log in on their own switched on, any saved site needs no button, and the agent is told the browser is opening rather than that it is logged in"
+    assert (len(asked()), len(spawned)) == (2, 3), "and no card is put in the chat for it"
 
 
 def test_a_journal_on_a_server_keeps_its_own_values_which_no_backup_restore_or_other_machine_touches(tmp_path, monkeypatch):

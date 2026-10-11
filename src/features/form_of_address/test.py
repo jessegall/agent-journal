@@ -38,6 +38,7 @@ def test_the_start_block_talks_as_the_butler_until_a_profile_is_chosen_and_only_
 
 
 def test_the_five_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrade_rewrites_their_wording():
+    from features.form_of_address.animations import shipped_animations
     record = shipped_record()
     profiles = Profiles(record, actor=USER)
     assert [row["title"] for row in profiles.rows.summaries()] == [voice.title for voice in SHIPPED], "the five ship as rows"
@@ -51,7 +52,7 @@ def test_the_five_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrad
     assert shipped_art == {"Butler": "butler.webp", "Homie": "homie.webp", "Colleague": "colleague.webp", "Coach": "coach.webp", "Squire": "squire.webp"}, \
         "each shipped profile carries its illustration"
     folder = Path(__file__).resolve().parents[2] / "web" / "public" / "voices"
-    assert all((folder / art).is_file() for art in shipped_art.values()), "and the picture it names ships with the viewer"
+    assert all(shipped_animations(folder, art) for art in shipped_art.values()), "and the pictures of the voice it names ship with the viewer"
     held = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).introduction for row in profiles.rows.summaries()}
     assert held == {voice.title: voice.introduction for voice in SHIPPED} and all(held.values()), "each shipped profile introduces itself in its own voice, kept on its row"
     assert profiles.load(profiles.duplicate(n).n).introduction == held["Homie"], "a copy keeps the introduction, which its owner can then rewrite"

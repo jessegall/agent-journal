@@ -30,6 +30,12 @@ describe("secrets", () => {
         expect(whenWords(row({}))).toBe("No value set yet");
     });
 
+    test("a browser login says a browser is open while the user logs in", () => {
+        expect(whenWords(row({kind: "browser login"}))).toBe("Not logged in yet");
+        expect(whenWords(row({kind: "browser login", logging_in: 1000}))).toBe("A browser is open for you to log in");
+        expect(whenWords(row({kind: "browser login", session: 1000}))).toContain("Logged in");
+    });
+
     test("saving drops unnamed fields and gives new ones a variable", () => {
         const draft = {...drafted(null), title: " Mail ", kind: "custom", fields: [{name: "token", hidden: true, variable: ""}, {name: " ", hidden: true, variable: ""}]};
         expect(complete(draft)).toBe(true);

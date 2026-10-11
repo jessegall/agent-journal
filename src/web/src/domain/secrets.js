@@ -55,8 +55,13 @@ export const isWaiting = (row) => fieldsOf(row).some((field) => !isSet(row, fiel
 
 export const asking = (rows) => rows.filter((row) => row.data.asked && isWaiting(row));
 
+function browserLoginWords(row) {
+    if (row.data.logging_in) return "A browser is open for you to log in";
+    return row.data.session ? `Logged in ${ago(row.data.session)}` : "Not logged in yet";
+}
+
 export function whenWords(row) {
-    if (row.data.kind === BROWSER_LOGIN.key) return row.data.session ? `Logged in ${ago(row.data.session)}` : "Not logged in yet";
+    if (row.data.kind === BROWSER_LOGIN.key) return browserLoginWords(row);
     const used = row.data.used;
     if (used) return `Last used ${ago(used)}`;
     const filled = Object.values(row.data.filled || {});

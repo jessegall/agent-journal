@@ -198,7 +198,7 @@ class HookBinding:
 
     def bound(self, session: str, worked: str, prefer: str) -> str:
         env = worked or prefer or self.sessions.choose(session, self.provider.name, runtime.default_env(self.root), self.owned)
-        rivals = self.sessions.rivals(Seat(env, session, self.pid))
+        rivals = self.sessions.rivals(Seat(env, session, self.pid, self.provider.name))
         if rivals:
             return self.asked_to_take_over(session, env, rivals[0])
         seat_session(self.sessions, Seat(env, session, self.pid), provider=self.provider.name)
