@@ -2,6 +2,8 @@
 
 The sheets are checked as shipped. One Blender run renders a still of every clip for one voice, so a clip that no longer poses fails here.
 """
+import ast
+import json
 import shutil
 import subprocess
 import sys
@@ -16,7 +18,13 @@ from manifest import Manifest  # noqa: E402
 
 WEB = HERE.parents[1] / "src" / "web"
 BLENDER_SECONDS = 600
-CLIPS = {"idle", "blink", "nod", "shake", "wave", "think", "celebrate", "sleep", "walk"}
+NEW_CLIPS = {
+    "sit_on_edge": (24, 8, True),
+    "walk_in": (40, 12, False),
+    "run_in": (28, 12, False),
+    "pull_ups": (24, 10, True),
+}
+CLIPS = {"idle", "blink", "nod", "shake", "wave", "think", "celebrate", "sleep", "walk"} | set(NEW_CLIPS)
 VOICES = {"bare", "butler", "homie", "coach", "colleague", "squire"}
 
 needs_blender = pytest.mark.skipif(shutil.which("blender") is None, reason="needs Blender on the path")
@@ -73,3 +81,50 @@ def test_blender_poses_every_clip_of_a_voice_that_carries_something(tmp_path):
         check=True, capture_output=True, timeout=BLENDER_SECONDS,
     )
     assert {p.parent.name for p in (tmp_path / "butler").glob("*/0_still.png")} == CLIPS
+
+
+@pytest.mark.parametrize("name, expected", NEW_CLIPS.items())
+def test_new_clip_registration_contract(name, expected):
+    """Read the real registration without importing Blender into pytest."""
+    tree = ast.parse((HERE / "clips.py").read_text())
+    found = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "Clip":
+            clip_name, frames, fps, loops = (ast.literal_eval(arg) for arg in node.args[:4])
+            assert clip_name not in found, f"duplicate clip {clip_name}"
+            found[clip_name] = (frames, fps, loops)
+            assert isinstance(node.args[4], ast.Name) and node.args[4].id == clip_name
+    assert set(found) == CLIPS
+    assert found[name] == expected
+
+
+@pytest.mark.parametrize("name, expected", NEW_CLIPS.items())
+def test_new_clip_manifest_contract(manifest, name, expected):
+    clip = manifest.clips[name]
+    assert (clip.frames, clip.fps, clip.loops) == expected
+
+
+@pytest.mark.parametrize("name, expected", NEW_CLIPS.items())
+def test_new_clip_browser_contract(name, expected):
+    frames, fps, loops = expected
+    page = (HERE / "stepped" / "figure.js").read_text()
+    entry = f'{{name: "{name}", frames: {frames}, fps: {fps}, loops: {str(loops).lower()}, pose: {name}}}'
+    assert entry in page
+
+
+@needs_blender
+def test_new_clip_animation_contracts_in_blender(tmp_path):
+    """Native limits, empty-hand gate, fixed grips, level props, seams and endpoints.
+
+    Kept separate from rendering; the numerical contract does not certify mesh
+    collision freedom or replace stepping the clip in the viewer.
+    """
+    subprocess.run(
+        ["blender", "-b", "-P", str(HERE / "prove_new_clips.py"), "--", "--out", str(tmp_path)],
+        check=True, capture_output=True, timeout=BLENDER_SECONDS,
+    )
+    report = json.loads((tmp_path / "new_clips.json").read_text())
+    assert report["failures"] == []
+    assert set(report["voices"]) == VOICES
+    assert set(report["clips"]) == set(NEW_CLIPS)
+    assert report["facings"] == [0, 30, 45, 60, 90, 135, 180, 200, 270, 290, 330]

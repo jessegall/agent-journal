@@ -1,5 +1,5 @@
 // Every clip of the butler on one page, each on its own live canvas with a turn of its own.
-import {CLIPS, Stage, loadFigure} from "./figure.js";
+import {CLIPS, Stage, loadFigure, supportsClip} from "./figure.js";
 
 const VOICE = "butler";
 const DEGREES_PER_PIXEL = 1;
@@ -18,9 +18,28 @@ function card(clip, sheet) {
             Turn
             <input type="range" id="turn-${clip.name}" min="0" max="359" step="1" value="0" />
             <span class="degrees">0°</span>
-        </label>`;
+        </label>
+        <div class="frames">
+            <button type="button" class="previous" aria-label="Previous frame">Previous</button>
+            <button type="button" class="next" aria-label="Next frame">Next</button>
+            <output class="frame-count">1 / ${clip.frames}</output>
+            <input class="frame-range" aria-label="Frame of ${clip.name}" type="range" min="0" max="${clip.frames - 1}" step="1" value="0" />
+        </div>
+        <p class="note"></p>`;
     sheet.append(element);
     const entry = {clip, canvas: element.querySelector("canvas"), slider: element.querySelector("input"), shown: ""};
+    entry.manual = null;
+    entry.current = 0;
+    entry.frameRange = element.querySelector(".frame-range");
+    entry.frameCount = element.querySelector(".frame-count");
+    entry.note = element.querySelector(".note");
+    entry.selectFrame = (frame) => {
+        entry.manual = Math.max(0, Math.min(clip.frames - 1, frame));
+        entry.shown = "";
+    };
+    entry.frameRange.addEventListener("input", () => entry.selectFrame(Number(entry.frameRange.value)));
+    element.querySelector(".previous").addEventListener("click", () => entry.selectFrame(entry.current - 1));
+    element.querySelector(".next").addEventListener("click", () => entry.selectFrame(entry.current + 1));
     const readout = element.querySelector(".degrees");
     entry.turn = (degrees) => {
         const facing = ((Math.round(degrees) % 360) + 360) % 360;
@@ -60,7 +79,7 @@ function resize(entries, size) {
 
 async function main() {
     const status = document.getElementById("status");
-    const figure = await loadFigure(`${VOICE}.glb`, "wardrobe_manifest.json", VOICE).catch((error) => {
+    let figure = await loadFigure(`${VOICE}.glb`, "wardrobe_manifest.json", VOICE).catch((error) => {
         status.textContent = `The butler did not load: ${error.message}`;
         throw error;
     });
@@ -68,6 +87,31 @@ async function main() {
     const stage = new Stage();
     const sheet = document.getElementById("sheet");
     const entries = CLIPS.map((clip) => card(clip, sheet));
+    const notes = () => entries.forEach((entry) => {
+        entry.note.textContent = !supportsClip(entry.clip.name, figure.stance)
+            ? "Empty hands required: idle fallback shown."
+            : entry.clip.name === "pull_ups" ? "Partial-range lift on two fixed side handles."
+            : entry.clip.name === "sit_on_edge" ? "Seated loop; host scene supplies the ledge."
+            : entry.clip.name.endsWith("_in") ? "Arrives from the left, brakes, turns, then holds." : "";
+    });
+    notes();
+    const cache = new Map([[VOICE, Promise.resolve(figure)]]);
+    let request = 0;
+    document.getElementById("figure-choice").addEventListener("change", async (event) => {
+        const voice = event.target.value, token = ++request;
+        if (!cache.has(voice)) cache.set(voice, loadFigure(`${VOICE}.glb`, "wardrobe_manifest.json", voice));
+        try {
+            const loaded = await cache.get(voice);
+            if (token !== request) return;
+            figure = loaded;
+            entries.forEach((entry) => entry.shown = "");
+            notes();
+        } catch (error) {
+            cache.delete(voice);
+            status.hidden = false;
+            status.textContent = `The figure did not load: ${error.message}`;
+        }
+    });
     resize(entries, 96);
 
     for (const button of document.querySelectorAll(".sizes button")) {
@@ -80,6 +124,11 @@ async function main() {
     turnAll.addEventListener("input", () => {
         document.getElementById("turn-all-degrees").textContent = `${turnAll.value}°`;
         entries.forEach((entry) => entry.turn(Number(turnAll.value)));
+    });
+
+    document.getElementById("check-angle").addEventListener("change", (event) => {
+        turnAll.value = event.target.value;
+        turnAll.dispatchEvent(new Event("input"));
     });
 
     let paused = false;
@@ -96,10 +145,21 @@ async function main() {
         play.textContent = paused ? "Play" : "Pause";
     });
 
+    document.getElementById("restart").addEventListener("click", () => {
+        started = performance.now();
+        pausedAt = started;
+        entries.forEach((entry) => { entry.manual = null; entry.shown = ""; });
+    });
+
     const tick = (now) => {
         const seconds = ((paused ? pausedAt : now) - started) / 1000;
         for (const entry of entries) {
-            const frame = Math.floor(seconds * entry.clip.fps) % entry.clip.frames;
+            const elapsedFrame = Math.floor(seconds * entry.clip.fps);
+            const automatic = entry.clip.loops ? elapsedFrame % entry.clip.frames : Math.min(elapsedFrame, entry.clip.frames - 1);
+            const frame = entry.manual ?? automatic;
+            entry.current = frame;
+            entry.frameRange.value = frame;
+            entry.frameCount.textContent = `${frame + 1} / ${entry.clip.frames}`;
             const facing = Number(entry.slider.value);
             const key = `${frame}/${facing}/${entry.canvas.width}`;
             if (key === entry.shown) {

@@ -186,6 +186,170 @@ def walk(pose, stance, figure, t):
         pose.turn(f"shin_{side}", x=knee)
         pose.turn(f"foot_{side}", x=-0.8 * (thigh + knee) + 6)
 
+# These clips share the existing rig and pose vocabulary. A non-looping clip's
+# last *rendered* frame must reach its final pose: the renderer samples n / frames,
+# not n / (frames - 1). Keep this mapping in the browser port too.
+ENTRY_DISTANCE = 4.4
+ENTRY_TRAVEL_END = 0.72
+ENTRY_TURN_END = 0.94
+SEAT_LIFT = 0.20
+PULL_GRIP_X = 1.51
+PULL_GRIP_Y = -0.0233463035019455
+PULL_GRIP_Z = 3.17
+PULL_WRIST_X = 1.25
+PULL_WRIST_Z = 2.91
+
+
+def ease(t):
+    """An endpoint-flat 0..1 easing, unlike wave_of (which is signed)."""
+    t = min(max(t, 0.0), 1.0)
+    return t * t * (3.0 - 2.0 * t)
+
+
+def once_time(t, frames):
+    return min(max(t * frames / (frames - 1), 0.0), 1.0)
+
+
+def supports_clip(name, stance):
+    """Pull-ups need BOTH hands free. The caller can select idle instead.
+
+    The clip itself also guards this, because the sheet renderer visits every
+    voice/clip pair. It must not swing a tray, mug, shield or clipboard overhead.
+    """
+    return name != "pull_ups" or not (stance.busy or stance.level)
+
+
+def sit_on_edge(pose, stance, figure, t):
+    """A seated idle, not a stand-to-sit transition; pin the pelvis to the edge."""
+    sway = wave_of(t)
+    pose.lift("root", z=SEAT_LIFT)
+    trunk(pose, lean=1.5 * sway, nod=-1.5 * sway, turn=3.0 * wave_of(t, 1))
+    arms_at_rest(pose, stance)
+    for side, sign in SIDES.items():
+        pose.turn(f"thigh_{side}", x=-88.0)
+        knee = 88.0 + sign * 9.0 * sway
+        pose.bend(f"shin_{side}", knee)
+        pose.turn(f"foot_{side}", x=-sign * 5.0 * sway)
+    figure.shut_eyes(blink_at(t, 0.625, 24))
+
+
+def stride_foot(phase, stride, duty, clearance):
+    """Foot offset and lift; the full stride cancels root travel during stance.
+
+    Root travel advances `stride` per full cycle. The stance offset advances by
+    the same amount in the opposite direction; flight returns it to the front.
+    The entrance's final braking blend then brings both feet back to rest.
+    """
+    phase %= 1.0
+    span = stride * duty
+    if phase < duty:
+        return -span / 2.0 + stride * phase, 0.0
+    flight = (phase - duty) / (1.0 - duty)
+    return span / 2.0 - span * ease(flight), clearance * math.sin(math.pi * flight)
+
+
+def step_leg(pose, side, forward, lift, root_height, toe=0.0):
+    """Solve the sagittal stride about the rig's actual X knee hinge.
+
+    The bones already splay in X in their bind pose. A generic straight-chain
+    reach near full extension would erase that splay and tilt the knee hinge.
+    Read their vertical reaches instead; X rotations preserve the bind splay.
+    """
+    bones = pose.arm.data.bones
+    thigh = bones[f"thigh_{side}"].head_local
+    shin = bones[f"shin_{side}"].head_local
+    foot = bones[f"foot_{side}"].head_local
+    upper, lower = thigh.z - shin.z, shin.z - foot.z
+    down = upper + lower + root_height - lift
+    cosine = (forward * forward + down * down - upper * upper - lower * lower) / (2.0 * upper * lower)
+    # Do not clamp an unreachable request or a joint angle. The geometry of the
+    # authored stride keeps this within reach; only roundoff at rest is tolerated.
+    if not -1.0 - 1e-10 <= cosine <= 1.0 + 1e-10:
+        raise ValueError(f"{side} stride target is outside the unchanged leg reach")
+    knee = math.acos(round(cosine, 10))
+    hip = math.atan2(forward, down) - math.atan2(lower * math.sin(knee), upper + lower * math.cos(knee))
+    pose.turn(f"thigh_{side}", x=math.degrees(hip))
+    pose.bend(f"shin_{side}", math.degrees(knee))
+    pose.face(f"foot_{side}", x=toe)
+
+
+def entering(pose, stance, figure, t, *, frames, running=False):
+    u = once_time(t, frames)
+    q = min(u / ENTRY_TRAVEL_END, 1.0)
+    progress = ease(q)
+    distance = ENTRY_DISTANCE * (1.0 - progress)
+    motion = 1.0 - ease((q - 0.76) / 0.24)
+    stride, duty, clearance = (1.84, 0.38, 0.20) if running else (1.36, 0.60, 0.16)
+    cycle = ENTRY_DISTANCE * progress / stride
+    half_phase = cycle % 0.5
+    flight = max(0.0, math.sin(math.pi * (half_phase - duty) / (0.5 - duty))) if running and half_phase > duty else 0.0
+    root_height = motion * (-(0.075 if running else 0.11) + (0.055 * flight if running else 0.0))
+    pose.lift("root", y=distance, z=root_height)
+    trunk(pose, lean=(10.0 if running else 3.0) * motion,
+          nod=(-6.0 if running else -2.0) * motion)
+    # Busy non-level hands also remain quiet, not just spill-prone level items.
+    swing = (24.0 if running else 14.0) * wave_of(cycle) * motion
+    # The supplied legacy BUSY_ITEMS omits the Squire's quill. Keep that held
+    # hand quiet here without changing the stance or the original nine clips.
+    carried = stance.busy | frozenset(hand.removeprefix("hand_") for hand in figure.hands_holding({"squire_quill"}))
+    jogging = tuple(side for side in SIDES if running and side not in (carried | stance.level))
+    arms_at_rest(pose, stance, apart=jogging,
+                 swing={side: 0.0 if side in carried else sign * swing for side, sign in SIDES.items()})
+    for side in jogging:
+        hang(pose, side, swing=SIDES[side] * swing, bend=10.0 + 40.0 * motion)
+    if motion > 0.0:
+        for side, offset in (("l", 0.0), ("r", 0.5)):
+            step, lift = stride_foot(cycle + offset, stride, duty, clearance)
+            phase = (cycle + offset) % 1.0
+            flight_phase = (phase - duty) / (1.0 - duty) if phase >= duty else 0.0
+            toe = (14.0 if running else 11.0) * math.sin(math.pi * flight_phase) * motion
+            step_leg(pose, side, motion * step, motion * lift, root_height, toe)
+    # Turn in place only after the travel has finished. Revolve carries all bones
+    # together; no child is stranded by moving a cached parent after posing it.
+    facing = 90.0 * (1.0 - ease((u - ENTRY_TRAVEL_END) / (ENTRY_TURN_END - ENTRY_TRAVEL_END)))
+    pose.revolve(facing)
+
+
+def walk_in(pose, stance, figure, t):
+    """Walk from the left of the front camera, stop, then turn toward the viewer."""
+    entering(pose, stance, figure, t, frames=40)
+
+
+def run_in(pose, stance, figure, t):
+    """A quicker entrance with flight phases, braking and a held front-facing end."""
+    entering(pose, stance, figure, t, frames=28, running=True)
+
+
+def pull_ups(pose, stance, figure, t):
+    """Short-range pull-ups on TWO separated handles outside the oversized head.
+
+    The wrist anchors stay fixed; a straight bar between them would intersect
+    the head, so callers must provide side handles, not a bar through the face.
+    Hands carrying items use the documented idle fallback without dropping them.
+    """
+    if not supports_clip("pull_ups", stance):
+        idle(pose, stance, figure, t)
+        return
+    pull = 0.5 - 0.5 * math.cos(2.0 * math.pi * t)
+    pose.lift("root", z=0.20 + 0.38 * pull)
+    trunk(pose, nod=-3.0 * pull)
+    for side, sign in SIDES.items():
+        bones = pose.arm.data.bones
+        shoulder = pose.standing(f"upper_arm_{side}").to_translation()
+        upper = abs(bones[f"forearm_{side}"].head_local.x - bones[f"upper_arm_{side}"].head_local.x)
+        lower = abs(bones[f"hand_{side}"].head_local.x - bones[f"forearm_{side}"].head_local.x)
+        across, up = PULL_WRIST_X - sign * shoulder.x, PULL_WRIST_Z - shoulder.z
+        bend = math.acos((across * across + up * up - upper * upper - lower * lower) / (2.0 * upper * lower))
+        raise_by = math.atan2(up, across) - math.atan2(lower * math.sin(bend), upper + lower * math.cos(bend))
+        # Roll the existing arm hinge into the raising plane; no new IK rig.
+        pose.turn(f"upper_arm_{side}", x=-90.0)
+        pose.turn(f"upper_arm_{side}", y=-sign * math.degrees(raise_by))
+        pose.bend(f"forearm_{side}", math.degrees(bend))
+        pose.face(f"hand_{side}", x=-90.0, y=-sign * 45.0)
+        pose.turn(f"thigh_{side}", x=-8.0)
+        pose.bend(f"shin_{side}", 18.0)
+        pose.turn(f"foot_{side}", x=-10.0)
+
 
 CLIPS = {clip.name: clip for clip in (
     Clip("idle", 24, 8, True, idle),
@@ -197,4 +361,8 @@ CLIPS = {clip.name: clip for clip in (
     Clip("celebrate", 12, 10, True, celebrate),
     Clip("sleep", 18, 6, True, sleep),
     Clip("walk", 12, 12, True, walk),
+    Clip("sit_on_edge", 24, 8, True, sit_on_edge),
+    Clip("walk_in", 40, 12, False, walk_in),
+    Clip("run_in", 28, 12, False, run_in),
+    Clip("pull_ups", 24, 10, True, pull_ups),
 )}

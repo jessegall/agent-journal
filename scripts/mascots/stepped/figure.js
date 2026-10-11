@@ -155,6 +155,12 @@ class Posing {
         this.aim(lower, target.clone().sub(middle));
     }
 
+    // rig.Posing.revolve: rotate a snapshot, not a parent already rotated twice.
+    revolve(degrees) {
+        const turn = new THREE.Matrix4().makeRotationZ(radians(degrees));
+        this.final = new Map(this.rig.order.map((name) => [name, turn.clone().multiply(this.matrix(name))]));
+    }
+
     shutEyes(open) {
         this.eyes = Math.max(open, MIN_EYE_HEIGHT);
     }
@@ -310,6 +316,136 @@ function walk(pose, stance, t) {
     }
 }
 
+// New clips: a direct numerical port of clips.py, not an interpolated animation.
+const ENTRY_DISTANCE = 4.4;
+const ENTRY_TRAVEL_END = 0.72;
+const ENTRY_TURN_END = 0.94;
+const SEAT_LIFT = 0.20;
+const PULL_GRIP_X = 1.51;
+const PULL_GRIP_Y = -0.0233463035019455;
+const PULL_GRIP_Z = 3.17;
+const PULL_WRIST_X = 1.25;
+const PULL_WRIST_Z = 2.91;
+
+function ease(t) {
+    t = Math.min(Math.max(t, 0), 1);
+    return t * t * (3 - 2 * t);
+}
+
+function onceTime(t, frames) {
+    return Math.min(Math.max(t * frames / (frames - 1), 0), 1);
+}
+
+export function supportsClip(name, stance) {
+    return name !== "pull_ups" || !(stance.busy.size || stance.level.size);
+}
+
+function sit_on_edge(pose, stance, t) {
+    const sway = waveOf(t);
+    pose.lift("root", {z: SEAT_LIFT});
+    trunk(pose, {lean: 1.5 * sway, nod: -1.5 * sway, turn: 3 * waveOf(t, 1)});
+    armsAtRest(pose, stance);
+    for (const [side, sign] of Object.entries(SIDES)) {
+        pose.turn(`thigh_${side}`, {x: -88});
+        pose.bend(`shin_${side}`, 88 + sign * 9 * sway);
+        pose.turn(`foot_${side}`, {x: -sign * 5 * sway});
+    }
+    pose.shutEyes(blinkAt(t, 0.625, 24));
+}
+
+function strideFoot(phase, stride, duty, clearance) {
+    phase = ((phase % 1) + 1) % 1;
+    const span = stride * duty;
+    if (phase < duty) {
+        return [-span / 2 + stride * phase, 0];
+    }
+    const flight = (phase - duty) / (1 - duty);
+    return [span / 2 - span * ease(flight), clearance * Math.sin(Math.PI * flight)];
+}
+
+function stepLeg(pose, side, forward, lift, rootHeight, toe = 0) {
+    const thigh = pose.rig.heads.get(`thigh_${side}`);
+    const shin = pose.rig.heads.get(`shin_${side}`);
+    const foot = pose.rig.heads.get(`foot_${side}`);
+    const upper = thigh.z - shin.z, lower = shin.z - foot.z;
+    const down = upper + lower + rootHeight - lift;
+    const cosine = (forward * forward + down * down - upper * upper - lower * lower) / (2 * upper * lower);
+    if (cosine < -1 - 1e-10 || cosine > 1 + 1e-10) {
+        throw new RangeError(`${side} stride target is outside the unchanged leg reach`);
+    }
+    const knee = Math.acos(Math.round(cosine * 1e10) / 1e10);
+    const hip = Math.atan2(forward, down) - Math.atan2(lower * Math.sin(knee), upper + lower * Math.cos(knee));
+    pose.turn(`thigh_${side}`, {x: hip * 180 / Math.PI});
+    pose.bend(`shin_${side}`, knee * 180 / Math.PI);
+    pose.face(`foot_${side}`, {x: toe});
+}
+
+function entering(pose, stance, t, frames, running = false) {
+    const u = onceTime(t, frames);
+    const q = Math.min(u / ENTRY_TRAVEL_END, 1);
+    const progress = ease(q);
+    const distance = ENTRY_DISTANCE * (1 - progress);
+    const motion = 1 - ease((q - 0.76) / 0.24);
+    const [stride, duty, clearance] = running ? [1.84, 0.38, 0.20] : [1.36, 0.60, 0.16];
+    const cycle = ENTRY_DISTANCE * progress / stride;
+    const halfPhase = cycle % 0.5;
+    const flight = running && halfPhase > duty ? Math.max(0, Math.sin(Math.PI * (halfPhase - duty) / (0.5 - duty))) : 0;
+    const rootHeight = motion * (-(running ? 0.075 : 0.11) + (running ? 0.055 * flight : 0));
+    pose.lift("root", {y: distance, z: rootHeight});
+    trunk(pose, {lean: (running ? 10 : 3) * motion, nod: (running ? -6 : -2) * motion});
+    const swing = (running ? 24 : 14) * waveOf(cycle) * motion;
+    const carried = stance.carried ?? stance.busy;
+    const jogging = Object.keys(SIDES).filter((side) => running && !carried.has(side) && !stance.level.has(side));
+    armsAtRest(pose, stance, jogging, Object.fromEntries(Object.entries(SIDES).map(([side, sign]) =>
+        [side, carried.has(side) ? 0 : sign * swing])));
+    for (const side of jogging) hang(pose, side, SIDES[side] * swing, 10 + 40 * motion);
+    if (motion > 0) {
+        for (const [side, offset] of [["l", 0], ["r", 0.5]]) {
+            const [step, lift] = strideFoot(cycle + offset, stride, duty, clearance);
+            const phase = (cycle + offset) % 1;
+            const flightPhase = phase >= duty ? (phase - duty) / (1 - duty) : 0;
+            const toe = (running ? 14 : 11) * Math.sin(Math.PI * flightPhase) * motion;
+            stepLeg(pose, side, motion * step, motion * lift, rootHeight, toe);
+        }
+    }
+    const facing = 90 * (1 - ease((u - ENTRY_TRAVEL_END) / (ENTRY_TURN_END - ENTRY_TRAVEL_END)));
+    pose.revolve(facing);
+}
+
+function walk_in(pose, stance, t) {
+    entering(pose, stance, t, 40);
+}
+
+function run_in(pose, stance, t) {
+    entering(pose, stance, t, 28, true);
+}
+
+function pull_ups(pose, stance, t) {
+    if (!supportsClip("pull_ups", stance)) {
+        idle(pose, stance, t);
+        return;
+    }
+    const pull = 0.5 - 0.5 * Math.cos(2 * Math.PI * t);
+    pose.lift("root", {z: 0.20 + 0.38 * pull});
+    trunk(pose, {nod: -3 * pull});
+    for (const [side, sign] of Object.entries(SIDES)) {
+        const shoulder = pose.head(`upper_arm_${side}`, pose.standing(`upper_arm_${side}`));
+        const heads = pose.rig.heads;
+        const upper = Math.abs(heads.get(`forearm_${side}`).x - heads.get(`upper_arm_${side}`).x);
+        const lower = Math.abs(heads.get(`hand_${side}`).x - heads.get(`forearm_${side}`).x);
+        const across = PULL_WRIST_X - sign * shoulder.x, up = PULL_WRIST_Z - shoulder.z;
+        const bend = Math.acos((across * across + up * up - upper * upper - lower * lower) / (2 * upper * lower));
+        const raiseBy = Math.atan2(up, across) - Math.atan2(lower * Math.sin(bend), upper + lower * Math.cos(bend));
+        pose.turn(`upper_arm_${side}`, {x: -90});
+        pose.turn(`upper_arm_${side}`, {y: -sign * raiseBy * 180 / Math.PI});
+        pose.bend(`forearm_${side}`, bend * 180 / Math.PI);
+        pose.face(`hand_${side}`, {x: -90, y: -sign * 45});
+        pose.turn(`thigh_${side}`, {x: -8});
+        pose.bend(`shin_${side}`, 18);
+        pose.turn(`foot_${side}`, {x: -10});
+    }
+}
+
 export const CLIPS = [
     {name: "idle", frames: 24, fps: 8, loops: true, pose: idle},
     {name: "blink", frames: 6, fps: 12, loops: false, pose: blink},
@@ -320,6 +456,10 @@ export const CLIPS = [
     {name: "celebrate", frames: 12, fps: 10, loops: true, pose: celebrate},
     {name: "sleep", frames: 18, fps: 6, loops: true, pose: sleep},
     {name: "walk", frames: 12, fps: 12, loops: true, pose: walk},
+    {name: "sit_on_edge", frames: 24, fps: 8, loops: true, pose: sit_on_edge},
+    {name: "walk_in", frames: 40, fps: 12, loops: false, pose: walk_in},
+    {name: "run_in", frames: 28, fps: 12, loops: false, pose: run_in},
+    {name: "pull_ups", frames: 24, fps: 10, loops: true, pose: pull_ups},
 ];
 
 // An eye closes about its own middle before the head carries it, as rig.Figure.shut_eyes scales the eye object
@@ -473,12 +613,13 @@ export async function loadFigure(url, wardrobe, voice) {
     const gltf = await new GLTFLoader().setDRACOLoader(draco).parseAsync(bytes, "");
     const scene = gltf.scene;
     scene.updateMatrixWorld(true);
-    const covered = new Set(manifest.outfits[voice].flatMap((item) => manifest.assets[item].hide_base_parts));
+    const bare = voice === "bare";
+    const covered = new Set((bare ? [] : manifest.outfits[voice]).flatMap((item) => manifest.assets[item].hide_base_parts));
     const meshes = [];
     scene.traverse((node) => node.isSkinnedMesh && meshes.push(node));
     const eyes = [];
     for (const mesh of meshes) {
-        mesh.visible = !covered.has(mesh.name);
+        mesh.visible = !covered.has(mesh.name) && !(bare && mesh.userData.item);
         addHullNormals(mesh.geometry);
         const hull = new THREE.SkinnedMesh(mesh.geometry, outlineMaterial(mesh));
         hull.bind(mesh.skeleton, mesh.bindMatrix);
@@ -493,7 +634,9 @@ export async function loadFigure(url, wardrobe, voice) {
             eyes.push(mesh.material, hull.material);
         }
     }
-    const stance = {level: handsHolding(meshes, LEVEL_ITEMS), busy: handsHolding(meshes, BUSY_ITEMS)};
+    const carried = meshes.filter((mesh) => mesh.visible);
+    const stance = {level: handsHolding(carried, LEVEL_ITEMS), busy: handsHolding(carried, BUSY_ITEMS),
+        carried: handsHolding(carried, new Set([...BUSY_ITEMS, "squire_quill"]))};
     return {scene, rig: rigOf(scene), stance, eyes};
 }
 
