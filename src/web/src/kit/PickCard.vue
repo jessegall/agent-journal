@@ -1,12 +1,12 @@
 <script setup>
-import Illustration from "./Illustration.vue";
+import VoicePose from "./VoicePose.vue";
 
-defineProps({title: {type: String, required: true}, picked: Boolean, note: {type: String, default: ""}, art: {type: String, default: ""}});
+defineProps({title: {type: String, required: true}, picked: Boolean, note: {type: String, default: ""}, voice: {type: String, default: ""}});
 </script>
 
 <template>
     <button type="button" role="radio" :aria-checked="picked" :class="['pick-card', {picked}]">
-        <Illustration :src="art" :size="130" fill />
+        <VoicePose :voice="voice" :size="130" />
         <span class="pick-card-head">
             <span class="pick-card-dot" />
             {{ title }}

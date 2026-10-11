@@ -1,5 +1,5 @@
 <script setup>
-import Illustration from "../../kit/Illustration.vue";
+import VoicePose from "../../kit/VoicePose.vue";
 import MoreButton from "./MoreButton.vue";
 import SwipeRow from "./SwipeRow.vue";
 
@@ -10,16 +10,16 @@ defineProps({
     state: {type: String, default: ""},
     lead: {type: Object, default: null},
     trail: {type: Array, default: () => []},
-    art: {type: String, default: ""},
+    voice: {type: String, default: ""},
 });
 const emit = defineEmits(["open", "more"]);
 </script>
 
 <template>
     <SwipeRow :label="title" :lead="lead" :trail="trail" @open="emit('open')" @hold="emit('more')">
-        <div :class="['item-row', {pictured: art}]">
-            <template v-if="art">
-                <Illustration class="item-art" :src="art" :size="150" fill />
+        <div :class="['item-row', {pictured: voice}]">
+            <template v-if="voice">
+                <VoicePose class="item-art" :voice="voice" :size="150" />
             </template>
             <template v-else>
                 <span :class="['item-dot', state]" aria-hidden="true" />

@@ -1,10 +1,10 @@
 <script setup>
 import {ref} from "vue";
-import {artOf, calls, introductionOf} from "../composables/profiles.js";
+import {calls, introductionOf, voiceOf} from "../composables/profiles.js";
 import {dropAnimations} from "../composables/voiceAnimations.js";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
-import Illustration from "../kit/Illustration.vue";
+import VoicePose from "../kit/VoicePose.vue";
 import ProfileMenu from "./ProfileMenu.vue";
 
 const props = defineProps({row: {type: Object, required: true}, inUse: Boolean, standing: Boolean});
@@ -20,7 +20,7 @@ async function dropped(event) {
 
 <template>
     <div :class="['profile-row', {current: inUse || standing, over}]" @dragover.prevent="over = true" @dragleave="over = false" @drop.prevent="dropped">
-        <Illustration :src="artOf(row)" :size="150" fill />
+        <VoicePose :voice="voiceOf(row)" :size="150" />
         <button type="button" class="profile-row-main" @click="$emit('open', row)">
             <span class="profile-row-name">
                 {{ row.title }}

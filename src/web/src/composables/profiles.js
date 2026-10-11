@@ -23,7 +23,7 @@ export const standing = computed(() => profiles.value.find((row) => row.n === pr
 
 export const person = computed(() => `${form().title}|${form().first_name}`);
 
-export const artOf = (row) => (row.data.art ? api.publicUrl(`voices/${row.data.art}`) : "");
+export const voiceOf = (row) => voiceOfArt(row.data.art);
 
 export const mascotOn = computed(() => form().mascot !== false);
 

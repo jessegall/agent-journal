@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import PickCard from "../kit/PickCard.vue";
-import {artOf, butler, introductionOf, profiles, useProfile} from "../composables/profiles.js";
+import {butler, introductionOf, profiles, useProfile, voiceOf} from "../composables/profiles.js";
 
 const picked = ref(0);
 const busy = ref(false);
@@ -30,7 +30,7 @@ async function choose(row) {
                 <PickCard
                     :title="row.title"
                     :picked="row.n === picked"
-                    :art="artOf(row)"
+                    :voice="voiceOf(row)"
                     :note="row.n === butler.n ? 'The voice you have now' : ''"
                     @click="picked = row.n"
                 >
