@@ -106,7 +106,10 @@ class Dispatches(Outcome):
 class Wrote(Outcome):
     row: Any
     def holds(self, seen) -> str:
-        return "" if self.row in seen.wrote else f"it did not write {self.row!r}; it wrote {seen.wrote!r}"
+        wanted = stated(self.row)
+        if any(isinstance(row, type(self.row)) and matches(row, wanted) for row in seen.wrote):
+            return ""
+        return f"it wrote no {type(self.row).__name__} holding {wanted}; it wrote {[named(one) for one in seen.wrote]}"
 
 
 @dataclass(frozen=True, init=False)
