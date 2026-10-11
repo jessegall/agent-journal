@@ -31,21 +31,22 @@ class OpenTodo:
     """A to-do as the board reads it: the few fields a card shows and a lane is worked out from, taken from the row's summary, so no row is parsed for a card."""
     n: int
     title: str
-    priority: int | None
+    priority: int
     position: float
     assigned: str
     updated: float
     completed: float
-    pending: object
-    blocked: object
-    reported: object
-    struck: object
-    after: tuple
+    pending: bool
+    blocked: str
+    reported: bool
+    struck: bool
+    after: tuple[str, ...]
 
     @classmethod
     def of(cls, row: dict) -> "OpenTodo":
-        return cls(row["n"], row["title"], row["priority"], position_of(row["rank"], row["n"]), row["assigned"], row["updated"], row["completed"],
-                   row["pending"], row["blocked"], row["reported"], row["struck"], tuple(row["after"]))
+        """A card's to-do from its summary: the board asks only whether a row is held, reported or struck, so those arrive as answers rather than as the fields they are read from."""
+        return cls(row["n"], row["title"], int(row["priority"]), position_of(row["rank"], row["n"]), row["assigned"], row["updated"], row["completed"],
+                   bool(row["pending"]), row["blocked"], bool(row["reported"]), bool(row["struck"]), tuple(row["after"]))
 
     @property
     def ref(self) -> str:
@@ -61,7 +62,7 @@ def card_of(sources: Sources, todo, main: str = "") -> Card:
     placement = sources.placement(todo)
     work = sources.works.get(todo.n)
     record = sources.todos.record
-    return Card(todo.n, formatted_item(todo.title, record, ""), int(todo.priority or 100), lane_of(sources, todo), formatted_item(reason_of(sources, todo), record, ""),
+    return Card(todo.n, formatted_item(todo.title, record, ""), todo.priority, lane_of(sources, todo), formatted_item(reason_of(sources, todo), record, ""),
                 {"n": placement.n, "title": placement.title, "phase": placement.phase} if placement else None,
                 todo.assigned, worker_of(work, main) if work else None, sources.questions.get(todo.n, 0),
                 bool(todo.reported) and not todo.completed, targets(sources, todo), todo.updated, todo.completed)

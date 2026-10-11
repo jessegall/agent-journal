@@ -133,7 +133,7 @@ class TicketCards:
     def _card(self, ticket, stage: str, stages: list, sessions: dict, running: int) -> Card:
         extras = [extra(self.record, ticket) for extra in CARD_EXTRAS.each(self.record)]
         state = self._runtime(ticket, sessions, running)
-        return Card(ticket.n, ticket.title, int(ticket.priority or LEVELS["default"]), stage, reason=state.text, state=state.kind, session=state.session, assigned=ticket.owner, targets=[s for s in stages if s != stage],
+        return Card(ticket.n, ticket.title, int(ticket.priority), stage, reason=state.text, state=state.kind, session=state.session, assigned=ticket.owner, targets=[s for s in stages if s != stage],
                     updated=ticket.updated, completed=ticket.completed, type=self.type,
                     actions=[*self._actions(ticket, state.session), *(action for more in extras for action in more.actions)],
                     link=next((more.link for more in extras if more.link), ""),
