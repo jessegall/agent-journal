@@ -11,6 +11,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
+import commands.cli  # noqa: F401  wires the command line, as every process that runs the journal does
 from controllers.types import Messages, Nudges
 from engine.record import Record
 from expects import Given
