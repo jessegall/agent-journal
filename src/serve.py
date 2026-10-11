@@ -294,7 +294,6 @@ def watched_reads(root: Path) -> bool:
 
 def watch_runtime(root: Path, halting: threading.Event) -> None:
     from controllers.agents import write_pending_rows
-    from features.auto_update.pausing import resume_when_done
     while not halting.wait(WATCH_SECONDS):
         runtime.refresh_flags(root)
         watch_marks(watched_reads(root))
@@ -307,7 +306,6 @@ def watch_runtime(root: Path, halting: threading.Event) -> None:
         if spooled(root):
             bus.background("spool", lambda: drain(root))
         runtime.restarting(root).unlink(missing_ok=True)
-        resume_when_done(root)
 
 
 def keep_services(root: Path, halting: threading.Event) -> None:

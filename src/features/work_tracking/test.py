@@ -93,14 +93,15 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     Works(record, actor=AGENT).complete(work.n, "done", todo=True)
     idle(record)
     assert nudges(record)[-1] == "todo 2 next", "the row closed with the work: the next row is offered"
-    from engine.inputs import UPDATE
+    from engine import runtime
     agents = Agents(record, actor=SYSTEM)
     Works(record, actor=AGENT).create("on it again", todo=2)
     before = len(nudges(record))
-    agents.update(agents.by_session("claude-1").n, paused_for=UPDATE)
+    runtime.upgrade_mark(record.root).write_text("Installing the new files")
     idle(record)
-    assert nudges(record)[before:] == [], "an agent paused for the update is not told to end or park its work when the pause stops it"
-    agents.update(agents.by_session("claude-1").n, paused_for="", provider="claude", subagent_rows=[{"id": "t1", "session": "sub-1", "task": "Lady Lovelace: the sweep", "running": True}])
+    assert nudges(record)[before:] == [], "an agent held while the journal updates is not told to end or park its work when the hold stops it"
+    runtime.upgrade_mark(record.root).unlink()
+    agents.update(agents.by_session("claude-1").n, provider="claude", subagent_rows=[{"id": "t1", "session": "sub-1", "task": "Lady Lovelace: the sweep", "running": True}])
     todos.create("third")
     Works(record, actor=AGENT).action("await")("the sweep")
     before = len(nudges(record))

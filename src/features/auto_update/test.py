@@ -180,45 +180,15 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert claimed(record.root, "2.9.1", "ask") is False, "a put off update is not offered again at once"
     tries(record.root).set("2.9.1", {"at": time.time() - 3600, "tries": 1, "ok": False})
     assert claimed(record.root, "2.9.1", "ask") is True, "but it is offered again later, as a failed one is"
-    from engine import inputs
-    from engine.sessions import Sessions
-    from features.auto_update import pausing
-    for session, pid in (("claude-1", 1111), ("claude-2", 4242)):
-        Sessions(record.root).write(session, pid=pid)
-    monkeypatch.setattr(pausing, "live", lambda root: [(None, SimpleNamespace(session=name, provider="claude", environment=record.env)) for name in ("claude-1", "claude-2")])
-    monkeypatch.setattr(pausing, "ancestors", lambda: {4242})
-
-    def queued() -> list:
-        return sorted((one.session, one.action, one.value) for one in (inputs.read_json(path, inputs.Input.from_json, None) for path in runtime.inputs(record.root).glob("*.json")) if one)
-
-    assert pausing.pause_all(record.root) == ["paused 1 agent for the update"] and queued()[-1:] == [("claude-1", inputs.PAUSE, inputs.UPDATE)], \
-        "an update pauses every live agent for the update, but the one whose own command runs it"
-    runtime.upgrade_mark(record.root).write_text("Installing the new files")
-    assert (pausing.resume_when_done(record.root), len(pausing.paused(record.root))) == (0, 1), "the agents stay paused while the update runs"
-    runtime.upgrade_mark(record.root).unlink()
-    assert (pausing.resume_when_done(record.root), pausing.paused(record.root), ("claude-1", inputs.RESUME, inputs.UPDATE) in queued()) == (1, [], True), \
-        "once the update is over they are resumed, each told so, once"
-    assert pausing.resume_when_done(record.root) == 0
-    from controllers.agents import Agents
-    from engine.record import Record
-    monkeypatch.setattr(pausing, "live", lambda root: [(None, SimpleNamespace(session="claude-3", provider="claude", environment="ticket-1"))])
-    ticket_row = Agents(Record(record.root, "ticket-1"), actor=SYSTEM).by_session("conversation-3")
-    Agents(Record(record.root, "ticket-1"), actor=SYSTEM).update(ticket_row.n, paused=time.time(), paused_for=inputs.UPDATE)
-    inputs.queue(record.root, "claude-3", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
-    pausing.write_json(pausing.kept(record.root), [])
-    assert (pausing.resume_when_done(record.root), ("claude-3", inputs.RESUME, inputs.UPDATE) in queued(), ("claude-3", inputs.PAUSE, inputs.UPDATE) in queued(), pausing.kept(record.root).is_file()) == (1, True, False, True), \
-        "an agent of another environment that the update holds, its row named for its conversation and not for its seat, is resumed though no list names it, a pause still waiting for it is taken back, and it is asked again until its row is free"
-    Agents(Record(record.root, "ticket-1"), actor=SYSTEM).update(ticket_row.n, paused=time.time() - pausing.STALE_PAUSE - 1)
-    assert pausing.still_paused(record.root) == [], "a pause left on a row for longer than any update takes does not keep the agents being asked to resume every second"
     import install
-    Sessions(record.root).write("claude-4", pid=9999)
-    monkeypatch.setattr(pausing, "live", lambda root: [(None, SimpleNamespace(session="claude-4", provider="claude", environment=record.env))])
+    from controllers.agents import Agents
+    held = [(row.n, row.paused) for row in Agents(record, actor=SYSTEM).rows.every()]
     monkeypatch.setattr(install, "prepare_managed", lambda project, root, yes: SimpleNamespace(held=None, copied=[]))
     monkeypatch.setattr(install, "upgrading", lambda project, root, version: (_ for _ in ()).throw(OSError("no such tag")))
     with pytest.raises(OSError):
         install.upgrade(record.root.parent, record.root, yes=True)
-    assert ("claude-4", inputs.RESUME, inputs.UPDATE) in queued(), \
-        "an upgrade that fails resumes the agents it paused, rather than leaving them to wait the pause out"
+    assert ([(row.n, row.paused) for row in Agents(record, actor=SYSTEM).rows.every()], list(runtime.inputs(record.root).glob("*.json")), runtime.upgrading(record.root)) == (held, [], False), \
+        "an update writes nothing to any agent and queues nothing for one: the agents wait while its mark stands and are free the moment it goes, even when the update fails"
     from features.auto_update import waiting
     report(record, "working", "PreToolUse", session="claude-8", provider="claude", commands=[{"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()}],
            running={"command": "python3 src/journal.py --root .journal upgrade --yes", "tool": "Bash", "at": time.time()})

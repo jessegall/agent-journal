@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from engine.command_line import command_line
 from engine import bus
 from engine.journal_calls import JournalCall, pieces
-from engine.inputs import UPDATE
+from engine import runtime
 from engine.gates import AFTERWARDS, DISPATCHING, POLICIES, HookCall, cancelled
 from engine.reach import Reach
 from resources.base import AGENT
@@ -43,21 +43,12 @@ def serving(policy, call: HookCall) -> bool:
 
 
 def paused(call: HookCall) -> bool:
-    if not (call.row.paused and PAUSE.reaches(call.subagent)):
-        return False
-    return not outlived(call)
+    return bool(call.row.paused) and PAUSE.reaches(call.subagent)
 
 
-def outlived(call: HookCall) -> bool:
-    """A pause for an update that no update is under way for any more and that is older than any update takes: it is cleared here, where the call reads it, so a refusal never outlasts the update that gave it."""
-    from controllers.types import Agents
-    from engine import runtime
-    from features.auto_update.pausing import STALE_PAUSE
-    from resources.base import SYSTEM
-    if call.row.paused_for != UPDATE or runtime.upgrading(call.record.root) or time.time() - float(call.row.paused) < STALE_PAUSE:
-        return False
-    Agents(call.record, actor=SYSTEM).update(call.row.n, paused=0, paused_for="")
-    return True
+def updating(call: HookCall) -> bool:
+    """Whether the journal updates now: the agent waits exactly as long as the update's own mark stands, with nothing written to its row."""
+    return PAUSE.reaches(call.subagent) and runtime.upgrading(call.record.root)
 
 
 def gated(call: HookCall) -> str | None:
@@ -74,7 +65,9 @@ def afterwards(call: HookCall) -> None:
 
 def refusal(call: HookCall) -> str | None:
     if paused(call):
-        return PAUSED_FOR_UPDATE if call.row.paused_for == UPDATE else PAUSED
+        return PAUSED
+    if updating(call):
+        return PAUSED_FOR_UPDATE
     why = gated(call)
     if why is None:
         return None

@@ -265,14 +265,19 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME)
     assert (engine.pausing(), engine.paused, calls[-1]) == ("resumed", False, f"send {engine_module.RESUMED}"), "resuming tells the agent to carry on"
     assert engine.pausing() == ""
+    from engine import runtime
+    runtime.upgrade_mark(root).write_text("Installing the new files")
+    assert (engine.pausing(), engine.paused, f"send {engine_module.PAUSED_FOR_UPDATE}" in calls, engine.agent.current().paused) == ("Paused", False, True, 0), \
+        "an agent is told once that the journal updates and waits, with nothing written to its row"
+    assert (engine.pausing(), calls.count(f"send {engine_module.PAUSED_FOR_UPDATE}")) == ("paused", 1), "and it is not told again while the update goes on"
+    engine.agent.driver.held, engine.agent.driver.sent_at = ["waiting: 2 unread messages"], 0.0
+    engine.pump()
+    assert lines == ["waiting: 1 unread message"], "and nothing the journal holds for it is delivered meanwhile"
+    runtime.upgrade_mark(root).unlink()
+    assert (engine.pausing(), calls[-1]) == ("resumed", f"send {engine_module.RESUMED_AFTER_UPDATE}"), "the moment the update ends the agent is told it may go on, with no resume to ask for"
+    assert engine.pausing() == "", "and only once"
     inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
-    assert (engine.pausing(), engine.paused, f"send {engine_module.PAUSED_FOR_UPDATE}" in calls) == ("Paused", True, True), "an agent paused for the update is told so"
-    inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
-    assert (engine.pausing(), engine.paused, calls[-1]) == ("resumed", False, f"send {engine_module.RESUMED_AFTER_UPDATE}"), "and is told when it may go on"
-    inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
-    sent = len(calls)
-    assert (engine.pausing(), engine.paused, len(calls) == sent, len(list(inputs.runtime.inputs(root).glob("*.json")))) == ("", False, True, 0), \
-        "a resume asked again for an agent that is not paused is taken and not said, so the update's line is not typed again every second"
+    assert (engine.pausing(), engine.paused) == ("", False), "a pause for an update that an older build queued is taken and ignored: no update holds an agent by a written pause any more"
     inputs.queue(root, "claude-77", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
     from tests.kit import counted
     with counted() as work:
@@ -281,28 +286,6 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     assert (len(work.opened), len(work.scanned)) == (1, 1), \
         "an input queued for another session is read once and the folder listed once however many times the engine asks in a tick, since each ask would otherwise open every input of every session"
     inputs.withdraw(root, "claude-77", inputs.PAUSE, inputs.UPDATE)
-    inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
-    engine.pausing()
-    from engine import runtime
-    delivered, driven_lines = engine.agent.driver.send, []
-    engine.agent.driver.send = lambda line, **k: driven_lines.append(line) or False
-    inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
-    assert (engine.pausing(), engine.paused, len(list(runtime.inputs(root).glob("*.json"))), engine.pausing(), driven_lines) == \
-        ("resumed", False, 0, "", [engine_module.RESUMED_AFTER_UPDATE]), "a resume ends the pause at once and tells the agent once, even when its line waits to be typed"
-    engine.agent.driver.send = delivered
-    inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
-    engine.pausing()
-    engine.agent.mark("", "", paused=time.time() - 40)
-    engine.agent.driver.send = lambda *a, **k: False
-    inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
-    assert (engine.pausing(), engine.paused, engine.agent.current().paused) == ("resumed", False, 0), \
-        "a pause that has waited for its resume line past the patience is cleared whether or not the line could be typed, so a screen that takes no input cannot keep an agent held"
-    engine.agent.driver.send = delivered
-    inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
-    engine.pausing()
-    assert engine.pausing() == "paused", "a fresh pause for the update stays while its update may still run"
-    engine.agent.mark("", "", paused=time.time() - engine_module.STALE_PAUSE - 1)
-    assert (engine.pausing(), engine.paused) == ("resumed", False), "a pause for an update that is long over, with no upgrade running and no resume kept, clears itself"
 
     calls.clear()
     inputs.queue(root, "claude-1", (), "Force through", action=inputs.FORCE)

@@ -200,11 +200,16 @@ def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
     assert (refused(call), refused({**call, "agent_id": "sub-1"})) == (PAUSED, PAUSED), "the agent and its subagents stand still while paused"
     agents.update(agents.by_session("claude-1").n, paused=0)
     assert refused(call) != PAUSED, "resuming lets tool calls through again"
-    agents.update(agents.by_session("claude-1").n, paused=time.time() - 60, paused_for="the update")
-    assert refused(call) == PAUSED_FOR_UPDATE_TEXT, "a pause for an update just given is kept while the update may still run"
-    agents.update(agents.by_session("claude-1").n, paused=time.time() - 3600, paused_for="the update")
-    assert (refused(call) != PAUSED_FOR_UPDATE_TEXT, agents.by_session("claude-1").paused) == (True, 0), \
-        "a pause for an update that is an hour old, with no upgrade under way, is cleared by the call that reads it, so a refusal never outlasts the update"
+    from engine import runtime
+    runtime.upgrade_mark(record.root).write_text("Installing the new files")
+    assert (refused(call), refused({**call, "agent_id": "sub-1"}), agents.by_session("claude-1").paused) == (PAUSED_FOR_UPDATE_TEXT, PAUSED_FOR_UPDATE_TEXT, 0), \
+        "while the journal updates every call of an agent and its subagents is held, with nothing written to the agent's row"
+    agents.update(agents.by_session("claude-1").n, paused=time.time())
+    assert refused(call) == PAUSED, "a pause the user set by hand is told as theirs, update or none"
+    runtime.upgrade_mark(record.root).unlink()
+    assert refused(call) == PAUSED, "and it is still there when the update is over"
+    agents.update(agents.by_session("claude-1").n, paused=0)
+    assert refused(call) != PAUSED_FOR_UPDATE_TEXT, "the moment the update's mark is gone the agent is free, though nothing was written to it"
     import features
     features.load()
     loop = {"session_id": "claude-1", "hook_event_name": "PostToolUse", "tool_name": "CronCreate",

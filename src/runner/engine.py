@@ -51,7 +51,6 @@ STAMPED = "stamped"
 SETTLE, STEP = 3.0, 0.1
 OUTPUT_WAIT = 5.0
 TYPING_HOLD = 10.0
-STALE_PAUSE = 600.0
 
 SILENT_AFTER = 120.0
 LONG_COMMAND_AFTER = 1800.0
@@ -60,6 +59,7 @@ FORCE_AFTER = 30.0
 
 CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
 RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
+UPDATE_TOLD = "paused_for_update"
 PAUSED_FOR_UPDATE = "The journal is updating, so you are paused: start no new command and wait; you will be told when to continue."
 RESUMED_AFTER_UPDATE = "The journal has updated and resumed you now: carry on with exactly what you were doing; your open work stays open and is not to be parked."
 
@@ -155,7 +155,7 @@ class Engine:
 
     def pump(self) -> None:
         """The lines the journal holds for the agent go out on each tick but not while it is paused: a line delivered then starts a turn the engine would only stop again, and they go out once it continues."""
-        if not self.paused:
+        if not self.paused and not runtime.upgrading(self.record.root):
             self.agent.driver.pump()
 
     def reading(self) -> Reading | None:
@@ -360,36 +360,41 @@ class Engine:
             Agents(self.record, actor=SYSTEM).update(row.n, queued_commands=[asdict(c) for c in left])
 
     def pausing(self) -> str:
-        if asked := take(self.record.root, self.names(), PAUSE):
+        if (asked := take(self.record.root, self.names(), PAUSE)) and asked.value != UPDATE:
             self.paused = True
-            self.agent.mark("", "", paused=time.time(), paused_for=asked.value)
-            if asked.value == UPDATE:
-                self.agent.driver.send(PAUSED_FOR_UPDATE, now=True)
+            self.agent.mark("", "", paused=time.time())
             return self.held("Paused")
-        if (asked := take(self.record.root, self.names(), RESUME)) and self.paused:
-            return self.released(RESUMED_AFTER_UPDATE if asked.value == UPDATE else RESUMED)
-        if self.paused and self.stale_update_pause():
-            return self.released(RESUMED_AFTER_UPDATE)
-        if not self.paused:
-            return ""
+        if take(self.record.root, self.names(), RESUME) and self.paused:
+            return self.released(RESUMED)
+        return self.interrupted() if self.paused else self.updating()
+
+    def interrupted(self) -> str:
         if self.agent.state() in (BUSY, WORKING) and time.time() - self.held_at > SETTLE:
             return self.held("Interrupted: the agent is paused")
         return "paused"
 
-    def paused_age(self) -> float:
-        return time.time() - float(self.agent.current().paused)
-
-    def stale_update_pause(self) -> bool:
-        """A pause for an update that outlived it: no upgrade runs, no resume is kept for it, and it is older than any update takes."""
-        from features.auto_update.pausing import kept
-        row = self.agent.current()
-        return row.paused_for == UPDATE and not runtime.upgrading(self.record.root) and not kept(self.record.root).is_file() and self.paused_age() >= STALE_PAUSE
+    def updating(self) -> str:
+        """The agent waits exactly while the journal updates: that is read from the update's own mark and written to no agent, so it ends the moment the update does and cannot be forgotten; it is told once when the update begins and once when it ends."""
+        told = self.record.state(UPDATE_TOLD, self.agent.driver.session)
+        if runtime.upgrading(self.record.root):
+            if told.get(UPDATE_TOLD):
+                return self.interrupted()
+            told.set(UPDATE_TOLD, True)
+            self.agent.driver.send(PAUSED_FOR_UPDATE, now=True)
+            return self.held("Paused")
+        if not told.get(UPDATE_TOLD):
+            return ""
+        told.set(UPDATE_TOLD, False)
+        self.resumed_at = time.time()
+        self.noted("Continued")
+        self.agent.driver.send(RESUMED_AFTER_UPDATE)
+        return "resumed"
 
     def released(self, told: str) -> str:
         """The pause ends first, then the agent is told once: the line goes out with the lines held during the pause, so a screen that takes no input cannot keep an agent held and nothing is said twice."""
         self.paused = False
         self.resumed_at = time.time()
-        self.agent.mark("", "", paused=0, paused_for="")
+        self.agent.mark("", "", paused=0)
         self.noted("Continued")
         self.agent.driver.send(told)
         return "resumed"
