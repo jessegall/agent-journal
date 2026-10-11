@@ -821,7 +821,6 @@ def test_old_feature_names_are_renamed_in_settings_gates_and_triggers_in_one_pas
     write_json(record.home / "settings.json", {"features": {"questions": False, "questions.hold": 5}})
     write_json(session / "gate-main.json", {"questions": {"why": "held"}})
     write_json(session / "trigger-questions.json", {"at": 1})
-    features.RENAMED.clear()
     features.load(record.root)
     assert read_json(record.home / "settings.json", dict, {})["features"] == {"ask_questions": False, "ask_questions.hold": 5}, \
         "a switch and a setting under an old feature name move to its new name"
