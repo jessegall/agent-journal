@@ -1,23 +1,23 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.worktree import changed, contains, current_branch, discarded, freed, git, keep, linked, merged, present, roots, scratch_cleared, tip
+from engine.worktree import Repository, contains, discarded, git, linked, present, roots, scratch_cleared, tip
 from features.tickets.resource import Bases
 from controllers.marks import action
 
 
 @dataclass(frozen=True)
 class Landing:
-    place: Path
+    repository: Repository
     branch: str
     base: str
     into: str
 
     def merged(self) -> bool:
-        return merged(self.place, self.branch, self.base, self.into)
+        return self.repository.merged(self.branch, self.base, self.into)
 
     def changed(self) -> bool:
-        return changed(self.place, self.branch, self.base)
+        return self.repository.changed(self.branch, self.base)
 
     def state(self) -> str:
         if self.merged():
@@ -71,30 +71,41 @@ class TicketLanding:
         from features.agent_sessions.launch import running_at
         closed = [r for r in self.rows.every() if r.completed and r.work_environment]
         cleared = []
-        for _, place, _ in self._repositories(closed[0]) if closed else ():
-            held = linked(place)
+        for repository in self._read().values() if closed else ():
+            held = repository.linked()
             for ticket in closed:
                 folder = held.get(ticket.work_environment)
-                if folder is None or running_at(self.record.root, folder) or not present(place, f"refs/heads/{self._branch(ticket)}"):
+                if folder is None or running_at(self.record.root, folder) or not repository.has(self._branch(ticket)):
                     continue
-                if freed(place, folder):
+                if repository.freed(folder):
                     scratch_cleared(folder)
                     cleared.append(ticket.work_environment)
         return cleared
 
     @action
     def keep_branches(self) -> None:
+        readings = self._read()
         for ticket in (r for r in self.rows.standing() if r.work_environment):
-            for _, place, _ in self._repositories(ticket):
-                keep(place, ticket.work_environment, self._branch(ticket))
+            for repository in readings.values():
+                repository.keep(ticket.work_environment, self._branch(ticket))
+
+    def _read(self) -> dict[str, Repository]:
+        """Each repository of the project as git reports it now, for one sweep."""
+        return {name: Repository(place) for name, place in roots(self.record.root.parent).items()}
+
+    def _landings(self, ticket, readings: dict[str, Repository]) -> dict[str, Landing]:
+        branch = self._branch(ticket)
+        return {name: Landing(repository, branch, ticket.base_of(name), self._into_in(ticket, name, repository)) for name, repository in readings.items()}
 
     def _branch(self, ticket) -> str:
         from providers import DRIVERS
         return DRIVERS[ticket.provider].branch(ticket.work_environment)
 
     def _merged(self, ticket) -> bool:
-        branch = self._branch(ticket)
-        states = [(landing.merged(), landing.changed()) for landing in (Landing(place, branch, base, self._into_at(ticket, name, place)) for name, place, base in self._repositories(ticket))]
+        return self._merged_in(ticket, self._read())
+
+    def _merged_in(self, ticket, readings: dict[str, Repository]) -> bool:
+        states = [(landing.merged(), landing.changed()) for landing in self._landings(ticket, readings).values()]
         return any(done for done, _ in states) and all(done or not moved for done, moved in states)
 
     def _into(self, ticket) -> str:
@@ -102,6 +113,9 @@ class TicketLanding:
         return board.branch if board and board.branch else "HEAD"
 
     def _into_at(self, ticket, name: str, place: Path) -> str:
+        return self._into_in(ticket, name, Repository(place))
+
+    def _into_in(self, ticket, name: str, repository: Repository) -> str:
         """The branch a ticket starts from and lands on in one repository: the board's in the project's own, the checked-out one in a nested repository."""
         into = self._into(ticket)
-        return into if into == "HEAD" or name == "." else current_branch(place) or "HEAD"
+        return into if into == "HEAD" or name == "." else repository.current or "HEAD"
