@@ -9,6 +9,9 @@ COMMAND_CODE = (HERE / "commands" / "cli.py", HERE / "commands" / "queries.py", 
 REACHES_A_CONTROLLER = {"controller", "invoked", "captured"}
 OPERATIONAL = {
     "/api/hook/{provider}": "an agent's hook, answered by the hook runner",
+    "/api/slow-command": "the command line's own timing of a command, which only the shim that ran it can measure",
+    "/api/step": "a part of a stepped command reporting from the shell that runs it, answered by the stepping runner",
+    "/api/sync/hello": "answers a connecting copy's hello with what this server holds, the server side of the sync protocol",
     "/api/run": "runs a journal command line, the CLI itself",
     "/api/{env}/stream": "pushes the event log as it grows",
     "/api/{env}/health": "takes the record's locks to show they are free",

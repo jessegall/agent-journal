@@ -56,6 +56,11 @@ def unseen(root: Path, changelog: str) -> list[NewFeature]:
     return [one for one in reversed(new_features(changelog)) if one.id not in held]
 
 
+def unseen_announced(root: Path, changelog: Path) -> list[NewFeature]:
+    """What the changelog file announces and has not been seen; none when the install carries no changelog."""
+    return unseen(root, changelog.read_text() if changelog.is_file() else "")
+
+
 def mark_seen(root: Path, id: str) -> None:
     held = seen(root)
     if id not in held:

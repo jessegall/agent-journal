@@ -10,7 +10,7 @@ from engine.record import Record
 from engine.upgrades import FETCHING, newer, upstream
 from engine.version import version
 from features.auto_update.countdown import cancel
-from features.auto_update.new_feature import mark_seen, unseen
+from features.auto_update.new_feature import mark_seen, unseen_announced
 from features.routing import Reply, Request, handles
 from resources.base import Refused
 from features.journal_laws.managed import changed_managed, changed_message
@@ -48,7 +48,7 @@ def get_changelog(req: Request) -> Reply:
 
 @handles("GET", "/api/new-feature")
 def get_new_feature(req: Request) -> Reply:
-    return Reply(200, [asdict(one) for one in unseen(req.root, CHANGELOG.read_text() if CHANGELOG.is_file() else "")])
+    return Reply(200, [asdict(one) for one in unseen_announced(req.root, CHANGELOG)])
 
 
 @handles("POST", "/api/new-feature")

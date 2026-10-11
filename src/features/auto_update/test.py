@@ -109,6 +109,11 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert "--yes" in install.upgrade(record.root.parent, record.root)[0] and installer.read_text() == "changed by hand\n", \
         "journal upgrade refuses the same changed file before touching it"
     assert dispatch("GET", "/api/changelog", record.root, {}, {}).body["changed"] == [".claude/skills/journal/SKILL.md"], "the updates page is told which files changed"
+    from controllers.invoke import invoked
+    from resources.base import USER
+    (record.root / "CHANGELOG.md").write_text('## 2.9.0 - Two\n<!-- new-feature {"id": "owl", "title": "Owl", "text": "Hoot", "button": "Use it"} -->\n')
+    assert invoked(Features(record, actor=USER), "new_features", ()) == "2.9.0: Owl - Hoot", "the command line lists the new features the viewer announces"
+    assert "cancelled" in invoked(Features(record, actor=USER), "cancel_update", ()), "the command line cancels a counting update as the viewer does"
     announced = dispatch("GET", "/api/new-feature", record.root, {}, {})
     assert (announced.code, isinstance(announced.body, list)) == (200, True), "the viewer asks the server which new features are not yet seen, and an empty list means none"
     from features.auto_update import new_feature
