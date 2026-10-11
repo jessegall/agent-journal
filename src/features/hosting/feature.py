@@ -1,5 +1,6 @@
 from engine.services import SOURCES
-from expects import Answered, Given, Refused, Updated
+from engine.events.engine import ClockTicked
+from expects import Answered, Given, Refused, Unchanged, Updated
 from features.base import Feature
 from features.tickets.controller import Tickets
 from features.tickets.resource import Ticket
@@ -29,6 +30,9 @@ class HostingFeature(Feature):
         journal.commands.add("ticket", ShowApp(), expects=[
             Given((Tickets, 1), rows=[HOSTED]) >> Answered({"url": "", "state": "not started", "why": ""}),
         ])
-        journal.events.handler(StopIdleApps())
+        journal.events.handler(StopIdleApps(), expects=[
+            Given(ClockTicked(agent=1), rows=[HOSTED]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[Ticket(n=1, title="Card")]) >> Unchanged(),
+        ])
         SOURCES.add(self, ticket_apps)
         CARD_EXTRAS.add(self, app_on_card)

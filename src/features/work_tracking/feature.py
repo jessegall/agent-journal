@@ -4,7 +4,7 @@ from engine.events.engine import ClockTicked, FileEdited
 from engine.events.resources import AnyEvent, TodoCompleted, WorkCreated
 from features.plans.resource import Plan
 from expects import Given, Held, Kept, Nudged, Refused, Unchanged, Updated
-from features.work_tracking.handlers import PlanCompleted, WorkCompleted
+from features.work_tracking.handlers import PlanCompleted, WorkCompleted, WorkLogged
 from providers.payload import BashCall
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
@@ -210,7 +210,9 @@ class WorkFeature(Feature):
             Given(AgentReported(agent=1), rows=[WORKING, AGENT_ROW], settings={"work_tracking.name_work_every": 1}) >> Unchanged(),
             Given(AgentReported(agent=1), rows=[typing], settings={"work_tracking.name_work_every": 1}) >> Unchanged(),
         ])
-        journal.events.handler(ResetEditsOnLog())
+        journal.events.handler(ResetEditsOnLog(), expects=[
+            Given(WorkLogged(n=3, type="work", action="updated", actor=AGENT), rows=[WORKING, AGENT_ROW]) >> Unchanged(),
+        ])
         journal.agent.interceptor(RefuseHeldCalls())
         journal.agent.interceptor(RefuseWaitingInTheShell(), expects=[
             Given(shell("sleep 30")) >> Refused(WAIT_WAY),
