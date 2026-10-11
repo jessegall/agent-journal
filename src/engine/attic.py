@@ -20,6 +20,13 @@ def folder(root: Path) -> Path:
     return Path(root) / "attic"
 
 
+def set_aside(source: Path, name: str) -> Path:
+    """Moves a folder into the attic under a name, at once, so it is gone from where it was while it waits to be packed; compress packs what waits."""
+    attic = folder(source.parents[1])
+    attic.mkdir(exist_ok=True)
+    return source.rename(attic / name)
+
+
 def pack(source: Path, name: str) -> Path:
     attic = folder(source.parents[1])
     attic.mkdir(exist_ok=True)

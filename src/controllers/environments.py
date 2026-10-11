@@ -6,7 +6,7 @@ from collections import Counter
 from functools import cached_property
 from controllers.base import CONTROLLERS, Controller
 from controllers.stored import forget_folder
-from engine import attic
+from engine import attic, bus
 from engine.record import Record
 from engine.seats import terminal_of
 from engine.sessions import Sessions, alive
@@ -170,7 +170,9 @@ class Environments(Controller):
         if kept and not yes:
             self._refuse(f"environment {env.title!r} holds {kept}; --yes removes it anyway (its record goes to the attic)")
         if record.home.is_dir():
-            attic.pack(record.home, f"{env.title}-{int(time.time())}")
+            name = f"{env.title}-{int(time.time())}"
+            waiting = attic.set_aside(record.home, name)
+            bus.background(f"pack {name}", lambda: attic.pack(waiting, name))
         forget_folder(record.home)
         record.numbers.forget(env.title)
         self.force_delete(n)
