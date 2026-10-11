@@ -6,11 +6,15 @@ import {
     animationLabel,
     blinkOf,
     fallOf,
+    flipOf,
     hopOf,
     pickWeighted,
     placeOf,
     placedAt,
     showcaseOn,
+    strollOf,
+    strollRoom,
+    strollsIn,
 } from "../domain/mascots.js";
 import {animations, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import {loadProfiles, mascotOf, profiles, profilesLoaded} from "../composables/profiles.js";
@@ -121,7 +125,10 @@ if (showcase) watch(steps, () => staged.value || showNext(), {immediate: true});
 onMounted(() => {
     const box = anchor.value?.parentElement;
     if (!box || typeof ResizeObserver === "undefined") return;
-    watching = new ResizeObserver(() => (roomy.value = box.clientWidth >= NARROWEST_BOX));
+    watching = new ResizeObserver(() => {
+        roomy.value = box.clientWidth >= NARROWEST_BOX;
+        shift.value = Math.min(shift.value, strollRoom(box.clientWidth));
+    });
     watching.observe(box);
 });
 onUnmounted(() => {
@@ -163,6 +170,19 @@ function nextMove() {
     const others = moves.filter((each) => each !== lastMove);
     lastMove = others[Math.floor(Math.random() * others.length)] || moves[0] || null;
     move.value = lastMove;
+    stroll();
+}
+
+// A move that steps carries a standing voice to a new place along the box's edge over its own length, and it stays facing the way it went.
+const shift = ref(0);
+const flip = ref(1);
+
+function stroll() {
+    if (!strollsIn(mascot.value?.voice, move.value)) return;
+    const found = strollOf({boxWidth: anchor.value?.parentElement?.clientWidth ?? 0, at: shift.value, ms: move.value.duration});
+    if (!found) return;
+    shift.value = found.to;
+    flip.value = flipOf(mascot.value.voice, found.toward);
 }
 
 // The eyes are a layer of their own: the lids shut for a moment whatever the rest of the rig is doing, and open again.
@@ -224,6 +244,7 @@ function leave() {
 }
 
 function gone() {
+    shift.value = 0;
     leaving.value = false;
     here.value = false;
     move.value = null;
@@ -286,6 +307,8 @@ const placed = computed(() => ({
     "--edge": place.value.edge,
     "--line": place.value.line,
     "--perch": `${props.perch}px`,
+    "--shift": `${shift.value}px`,
+    "--flip": flip.value,
     "--fall-ms": `${fall.value.ms}ms`,
     "--squash": fall.value.squash,
     "--bounce": `${fall.value.bounce}px`,
@@ -297,7 +320,11 @@ const placed = computed(() => ({
     }),
 }));
 const passage = computed(() => (PASSAGES.includes(rigShown.value?.move?.name) ? rigShown.value.move : null));
-const passed = computed(() => (passage.value ? {...placed.value, "--length": `${passage.value.duration}ms`} : placed.value));
+const strolling = computed(() => !passage.value && strollsIn(rigShown.value?.voice, rigShown.value?.move));
+const passed = computed(() => {
+    if (passage.value) return {...placed.value, "--length": `${passage.value.duration}ms`};
+    return strolling.value ? {...placed.value, "--length": `${rigShown.value.move.duration}ms`} : placed.value;
+});
 </script>
 
 <template>
@@ -305,7 +332,7 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
     <template v-if="rigShown && roomy">
         <span
             class="voice-mascot"
-            :class="[passage && `passing ${passage.name}`, hopping && `hopping ${hopping}`, moved]"
+            :class="[passage && `passing ${passage.name}`, hopping && `hopping ${hopping}`, strolling && 'strolling', moved]"
             :style="passed"
             aria-hidden="true"
         >
@@ -334,9 +361,17 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
     z-index: 3;
     width: var(--size);
     transform-origin: 50% 100%;
+    translate: calc(-1 * var(--shift, 0px)) 0;
+    scale: var(--flip, 1) 1;
     transition: top 260ms cubic-bezier(0.2, 0.8, 0.3, 1);
     height: var(--size);
     pointer-events: none;
+}
+
+.voice-mascot.strolling {
+    transition:
+        top 260ms cubic-bezier(0.2, 0.8, 0.3, 1),
+        translate var(--length) linear;
 }
 
 .voice-mascot.dropping {
@@ -482,7 +517,8 @@ const passed = computed(() => (passage.value ? {...placed.value, "--length": `${
 @media (prefers-reduced-motion: reduce) {
     .voice-mascot,
     .voice-mascot.dropping,
-    .voice-mascot.launched {
+    .voice-mascot.launched,
+    .voice-mascot.strolling {
         transition: none;
         animation: none;
     }

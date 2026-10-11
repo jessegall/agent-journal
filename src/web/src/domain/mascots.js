@@ -38,6 +38,41 @@ export const HOPS = {
 
 export const hopOf = (voice) => (PLACES[voice]?.sits ? HOPS[voice] : null);
 
+// A standing voice strolls along the box's top edge during a move that steps, and stops somewhere new, facing the way it went.
+// A move strolls when it is named walk, or is the one the voice steps in; a sitting voice never strolls.
+export const WALKS = {butler: "little two step", coach: "jog on the spot"};
+export const strollsIn = (voice, move) => !hopOf(voice) && Boolean(move) && (move.name === "walk" || move.name === WALKS[voice]);
+
+// The mascot is this many pixels wide, as the stylesheet draws it.
+export const MASCOT_SIZE = 128;
+// A stroll shorter than this many mascot widths is a shuffle, not a walk at chat size; it goes no faster than STROLL_SPEED of them a second.
+export const MIN_STROLL = 0.75;
+export const STROLL_SPEED = 0.9;
+
+// The way each voice's art faces; a stroll the other way mirrors it.
+export const FACES = {};
+export const facesAt = (voice) => FACES[voice] ?? "left";
+export const flipOf = (voice, toward) => (toward === facesAt(voice) ? 1 : -1);
+
+// How far left of home a mascot may stand: no further than the box's middle, so it never reaches the left edge's controls.
+export const strollRoom = (boxWidth) => Math.max(0, boxWidth / 2 - MASCOT_SIZE);
+
+// Where a stroll that lasts `ms` takes a mascot standing `at` pixels left of home: a new place at least MIN_STROLL away and no further than it can walk in that time, inside the room
+// the box leaves, or null when the box is too narrow for one. `random` is called twice.
+export function strollOf({boxWidth, at, ms, random = Math.random}) {
+    const least = MIN_STROLL * MASCOT_SIZE;
+    const reach = STROLL_SPEED * MASCOT_SIZE * (ms / 1000);
+    const room = strollRoom(boxWidth);
+    const ways = [
+        [Math.max(0, at - reach), at - least],
+        [at + least, Math.min(room, at + reach)],
+    ].filter(([low, high]) => low <= high);
+    if (!ways.length) return null;
+    const [low, high] = ways[Math.floor(random() * ways.length)];
+    const to = low + random() * (high - low);
+    return {to, toward: to > at ? "left" : "right"};
+}
+
 export const placeOf = (art) => PLACES[art.replace(/\.\w+$/, "")] ?? STILL;
 
 // A place moved right and down by the spot a voice saved, in pixels of its 256 px cell.
