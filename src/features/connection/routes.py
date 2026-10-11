@@ -68,7 +68,7 @@ def post_sync_holder(req: Request) -> Reply:
 @handles("POST", "/api/sync/write")
 def post_sync_write(req: Request) -> Reply:
     """A write a copy made into a scope this journal holds, applied once however often it arrives."""
-    Applied(runtime.folder(req.root)).apply(Write.from_json(req.body), lambda held: run(req.root, held.asked))
+    Applied(req.root).apply(Write.from_json(req.body), lambda held: run(req.root, held.asked))
     return Reply(200, {"applied": True})
 
 

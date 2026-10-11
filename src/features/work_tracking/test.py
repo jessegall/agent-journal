@@ -2,7 +2,7 @@ import time
 
 from resources.base import AGENT, USER
 from engine.gates import held
-from tests.kit import idle, nudges, report
+from tests.kit import idle, nudges, nudges_with_briefs, report
 from tests.conftest import fresh, refused
 from controllers.types import Agents, Nudges, Questions, Todos, Works
 from resources.base import SYSTEM
@@ -67,6 +67,8 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     record.features = {**record.features, "work_tracking.auto": True}
     idle(record)
     assert nudges(record) == ["todo 1 next"], "auto on: the next row is offered once per idle stretch"
+    assert "do the work yourself, or send a helper" in nudges_with_briefs(record)[-1][1], \
+        "the offer is worded by the mode: a builder does the work itself"
     for _ in range(4):
         idle(record)
     assert nudges(record).count("todo 1 next") == 1, "a row the agent keeps passing is offered once; the repeat says it again"
@@ -98,6 +100,15 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     agents.update(agents.by_session("claude-1").n, paused_for=UPDATE)
     idle(record)
     assert nudges(record)[before:] == [], "an agent paused for the update is not told to end or park its work when the pause stops it"
+    agents.update(agents.by_session("claude-1").n, paused_for="", provider="claude", subagent_rows=[{"id": "t1", "session": "sub-1", "task": "Lady Lovelace: the sweep", "running": True}])
+    todos.create("third")
+    Works(record, actor=AGENT).action("await")("the sweep")
+    before = len(nudges(record))
+    idle(record)
+    assert nudges(record)[before:] == ["Lady Lovelace is working while work 2 waits, and todo 3 is ready"], \
+        "a working subagent is no reason to sit still: the next ready row is offered at once"
+    idle(record)
+    assert len(nudges(record)) == before + 1, "it is said once while nothing about the row or the work changes"
 
 
 def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working():

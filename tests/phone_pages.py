@@ -18,7 +18,7 @@ from features.sharing.details import SharingDetails
 from features.sharing.server import ShareHandler
 from resources.base import AGENT, SYSTEM, USER
 from serve import Handler, JournalServer
-from tests.conftest import fresh
+from tests.conftest import fresh, returning
 from tests.kit import commit, git
 
 
@@ -48,7 +48,7 @@ def served() -> Iterator[PhonePage]:
     """The computer a phone reaches: its page, its desktop server, a code that pairs it once, two environments, a project file in a git commit with a closed to-do whose work made it and a message naming it, a to-do in a plan, questions and a suggestion waiting for an answer, a document on a shelf with two versions, the shipped templates, to-dos in lanes, and an agent with a loaded skill and a repeating prompt."""
     import features
     features.load()
-    record = fresh()
+    record = returning(fresh())
     Features(record, actor=USER).configure(SharingDetails.name, "host", "t.example")
     server = ThreadingHTTPServer(("127.0.0.1", 0), type("Bound", (ShareHandler,), {"shares": Shares(record, actor=SYSTEM)}))
     threading.Thread(target=server.serve_forever, daemon=True).start()

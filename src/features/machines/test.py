@@ -13,6 +13,7 @@ from controllers.features import Features
 from controllers.requests import deliver, request
 from controllers.types import Rules, Todos
 from engine.event_log import EventLog
+from engine.locks import hold_record_writes, writing
 from engine.machines import Lease, this_machine
 from engine.numbers import BLOCK, Leases, Numbers, rows
 from engine.outbox import Request
@@ -30,7 +31,8 @@ def test_two_machines_leasing_from_one_record_never_hand_out_the_same_number(tmp
     drawn = {"laptop": [], "server": []}
     for turn in range(3 * BLOCK):
         machine = "laptop" if turn % 3 else "server"
-        drawn[machine].append((laptop if machine == "laptop" else server).draw(sequence, lambda: 1))
+        with writing(record.root / "project"):
+            drawn[machine].append((laptop if machine == "laptop" else server).draw(sequence, lambda: 1))
     together = drawn["laptop"] + drawn["server"]
     assert len(set(together)) == len(together), "no number is handed out twice"
     assert all(drawn[m] == sorted(drawn[m]) for m in drawn), "each machine's numbers rise"
@@ -57,7 +59,7 @@ def test_an_existing_record_upgrades_with_its_numbers_continuing():
     last_event = record.event_log.last_id()
     shutil.rmtree(record.root / "project" / "numbers")
     shutil.rmtree(record.root / "runtime" / "numbers")
-    with by_repository():
+    with hold_record_writes(record.root), by_repository():
         importlib.import_module("migrations.m0069_numbers_leased_per_writer").run(record.root)
 
     again = Record(record.root, record.env)

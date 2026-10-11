@@ -167,21 +167,35 @@ def claim(path: Path):
 
 
 @contextmanager
-def project_sweep(path: Path, every: float, owner: str = ""):
-    """Says True to whoever runs a sweep the whole project shares and False to the others, so each environment's engine ticks and the project is looked after once: with an owner named, that owner sweeps whenever it asks and only another's sweep within `every` seconds holds it back; with none, any sweep within `every` seconds does."""
+def swept(path: Path, every: float, owner: str, held_back: Callable[[Path], bool]):
+    """Says True to one sweep and False to the others, the stamp beside the path carrying when it last ran and whose it was."""
     held = claim(path)
     if held is None:
         yield False
         return
     try:
         stamp = path.with_suffix(".swept")
-        if stamp.is_file() and time.time() - stamp.stat().st_mtime < every and (not owner or stamp.read_text() != owner):
+        if stamp.is_file() and time.time() - stamp.stat().st_mtime < every and held_back(stamp):
             yield False
             return
         yield True
         stamp.write_text(owner)
     finally:
         held.close()
+
+
+@contextmanager
+def project_sweep(path: Path, every: float):
+    """Says True to whoever runs a sweep the whole project shares and False to the others, so each environment's engine ticks and the project is looked after once in `every` seconds."""
+    with swept(path, every, "", lambda stamp: True) as mine:
+        yield mine
+
+
+@contextmanager
+def own_sweep(path: Path, every: float, owner: str):
+    """Says True whenever this owner asks for its own sweep, and False only while another owner's sweep within `every` seconds holds it back."""
+    with swept(path, every, owner, lambda stamp: stamp.read_text() != owner) as mine:
+        yield mine
 
 
 @contextmanager
@@ -208,12 +222,19 @@ def guarded(path: Path, roots: tuple[Path, ...]) -> bool:
 
 
 @contextmanager
+def joining(root: Path):
+    """Enters the write funnel for a stretch that goes on to write through it, so a lock taken inside is taken after the funnel and never before it."""
+    with shared_writes(Path(root)).joined():
+        yield
+
+
+@contextmanager
 def writing(path: Path):
     roots = journal_roots(path)
     if not guarded(path, roots):
         yield
         return
-    with shared_writes(roots[0]).joined():
+    with joining(roots[0]):
         yield
 
 

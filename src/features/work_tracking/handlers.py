@@ -14,11 +14,12 @@ from providers.payload import HookEvent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
-from features.work_tracking.next import carried_on, named_rows, questioned, ready, waiting_rows
+from features.work_tracking.next import carried_on, helping, named_rows, questioned, ready, waiting_rows
 from providers import PROVIDERS
 from resources.types import Work
 from engine.command_runs import command_runs
 from controllers.types import Agents, Messages, Todos, Works
+from features.work_modes.modes import taking
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, USER
 
@@ -245,8 +246,21 @@ def next_row(standing: bool):
         if bool(open_work) != standing or (open_work and open_work[0].awaiting):
             return []
         return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": open_work[0].n, "rows": [row.ref, open_work[0].ref]} if standing else
-                     {"n": row.n, "rows": [row.ref]}) for row in ready(context.record)[:1]]
+                     {"n": row.n, "taking": taking(context.record), "rows": [row.ref]}) for row in ready(context.record)[:1]]
     return about
+
+
+def next_while_helping(context, agent) -> list[Sent]:
+    """A main agent whose work waits on a helper or subagent is offered the next ready row at once, to work while it waits."""
+    open_work = working(context)
+    if not open_work or not open_work[0].awaiting:
+        return []
+    rows = ready(context.record)
+    busy = helping(context.record) if rows else []
+    if not busy:
+        return []
+    row, work = rows[0], open_work[0]
+    return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": work.n, "who": busy[0].name, "rows": [row.ref, work.ref]})]
 
 
 

@@ -7,7 +7,7 @@ from typing import Callable
 
 from engine import runtime
 from engine.disk import read_json
-from engine.locks import held_file
+from engine.locks import held_file, joining
 from engine.outbox import Outbox, Request
 from engine.sync import has_joined
 from engine.stored import append_text, write_json, write_text
@@ -49,6 +49,7 @@ class Waiting:
     """What this machine wrote into scopes the server writes, kept in the order it was written until the server takes it."""
 
     def __init__(self, root: Path) -> None:
+        self.root = Path(root)
         self.file = runtime.folder(root) / WAITING
         self.set_aside = runtime.folder(root) / SET_ASIDE
         self.lock = self.file.with_suffix(".lock")
@@ -66,8 +67,9 @@ class Waiting:
         return written(self.set_aside)
 
     def flush(self, send: Callable[[Write], Sent]) -> Flushed:
-        """Sends the waiting writes oldest first and stops at the first one the server could not take, so none overtakes another; one it refused is set aside and the rest go on."""
-        with held_file(self.lock):
+        """Sends the waiting writes oldest first and stops at the first one the server could not take, so none overtakes another; one it refused is set aside and the rest go on.
+        The funnel is entered before the lock, because sending a write runs it through the funnel itself."""
+        with joining(self.root), held_file(self.lock):
             waiting = self.waiting()
             done, refused = 0, []
             try:
@@ -105,13 +107,15 @@ def queue(record, scope: str, asked: Request) -> None:
 class Applied:
     """On the server: the keys of the writes it has already applied, so one sent again after a lost answer is not applied twice."""
 
-    def __init__(self, folder: Path) -> None:
-        self.file = Path(folder) / APPLIED
+    def __init__(self, root: Path) -> None:
+        self.root = Path(root)
+        self.file = runtime.folder(root) / APPLIED
         self.lock = self.file.with_suffix(".lock")
 
     def apply(self, held: Write, run: Callable[[Write], None]) -> Sent:
-        """Runs the write unless its key was applied before; answers taken either way, since the sender may let go of it."""
-        with held_file(self.lock):
+        """Runs the write unless its key was applied before; answers taken either way, since the sender may let go of it.
+        The funnel is entered before the lock, because the write it runs goes through the funnel itself."""
+        with joining(self.root), held_file(self.lock):
             keys = read_json(self.file, list, [])
             if held.key not in keys:
                 run(held)

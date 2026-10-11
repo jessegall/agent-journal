@@ -66,23 +66,37 @@ def sync_rows(root: Path) -> None:
     homes = environment_names(root)
     if homes:
         seen_environments(Record(root, homes[0]))
-    kept = Path(root) / SEATED_STAMP
-    held = kept.read_text().splitlines() if kept.is_file() else []
-    seating = [features_stamp(), *homes]
-    if held != seating:
-        seat(root, unseated(held, seating))
-        write_text(kept, "\n".join(seating))
+    held, wanted = seated_now(root), seating(homes)
+    if held != wanted:
+        new = unseated(held, wanted)
+        if new:
+            seat(root, new)
+        stamp_seated(root, wanted)
     SEATED[str(root)] = generation()
+
+
+def seating(homes: tuple[str, ...] | list[str]) -> list[str]:
+    """The seated stamp: this build's features and every environment, in the one order both writers of the stamp use."""
+    return [features_stamp(), *homes]
+
+
+def seated_now(root: Path) -> list[str]:
+    kept = Path(root) / SEATED_STAMP
+    return kept.read_text().splitlines() if kept.is_file() else []
+
+
+def stamp_seated(root: Path, lines: list[str]) -> None:
+    write_text(Path(root) / SEATED_STAMP, "\n".join(lines))
 
 
 def seat_new_home(root: Path, home: str) -> None:
     """Seats an environment the moment it is made, where the making already costs a write, so the next command finds its feature rows there instead of paying for a hundred of them inside a read."""
-    kept = Path(root) / SEATED_STAMP
-    held = kept.read_text().splitlines() if kept.is_file() else []
+    from engine.paths import environment_names
+    held = seated_now(root)
     if not held or home in held[1:]:
         return
     seat(root, (home,))
-    write_text(kept, "\n".join([*held, home]))
+    stamp_seated(root, seating(environment_names(root)))
 
 
 def features_stamp() -> str:

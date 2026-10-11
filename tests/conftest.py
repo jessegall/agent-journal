@@ -29,11 +29,11 @@ def fresh(env: str = "t") -> Record:
     return record
 
 
-def announced(record: Record) -> Record:
-    """A record served to a browser has seen the announcements, as a first install has: a dialog announcing a feature would cover the page a scenario clicks."""
-    from features.auto_update.new_feature import mark_all_seen
-    from features.auto_update.routes import CHANGELOG
-    mark_all_seen(record.root, CHANGELOG.read_text())
+def returning(record: Record) -> Record:
+    """A record a browser is served: a journal that has been run before, so no first-run overlay covers the page a scenario clicks."""
+    from serve import mark_first_start
+    mark_first_start(record.root)
+    record.change_setting("viewer", {"tour_seen": True})
     return record
 
 

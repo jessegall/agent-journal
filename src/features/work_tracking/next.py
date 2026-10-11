@@ -1,4 +1,6 @@
 from controllers.types import Questions, Todos, Works
+from features.helpers.controller import Helpers
+from features.helpers.reuse import kept
 from resources.base import SYSTEM, WHOM
 
 from engine.extension import Extension
@@ -27,10 +29,20 @@ def carried_on(record) -> list:
     return [w for w in Works(record, actor=SYSTEM).rows.standing() if not w.parked and not w.awaiting and f"todo:{w.todo}" not in asked]
 
 
+def helping(record) -> list:
+    """The helpers and subagents of this environment that are working right now."""
+    return [one for one in kept(record, Helpers(record, actor=SYSTEM).rows.standing()) if not one.idle]
+
+
 def still_next(journal, rows: tuple[str, ...]) -> bool:
     open_work = [w for w in journal.get(Works).rows.standing() if not w.parked]
     named_work = {ref for ref in rows if ref.startswith("work:")}
     return any(t.ref in rows for t in ready(journal.record)) and {w.ref for w in open_work} == named_work and not any(w.awaiting for w in open_work)
+
+
+def still_helped(journal, rows: tuple[str, ...]) -> bool:
+    waiting = [w for w in journal.get(Works).rows.standing() if w.awaiting and w.ref in rows]
+    return bool(waiting) and any(t.ref in rows for t in ready(journal.record)) and bool(helping(journal.record))
 
 
 def still_stopped(journal, rows: tuple[str, ...]) -> bool:

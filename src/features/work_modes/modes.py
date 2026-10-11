@@ -15,8 +15,13 @@ def pick(record, mode: str, actor: str) -> str:
     record.change_setting(NAME, {"mode": mode})
     from features import running
     from features.work_modes.feature import WorkModes
-    running(WorkModes).to_primary(record, MODE_SET, actor=actor, mode=mode, meaning=MODES[mode])
+    running(WorkModes).to_primary(record, MODE_SET, actor=actor, mode=mode, meaning=MODES[mode].meaning)
     return mode
+
+
+def taking(record) -> str:
+    """What the mode this environment is in says to do with the next ready row."""
+    return MODES[mode_of(record)].taking
 
 
 def board_of(record):
@@ -57,5 +62,5 @@ def choose_board(record, n: int, actor: str) -> int:
 
 def carried(record) -> str:
     mode = mode_of(record)
-    lines = [f"WORK MODE: {mode} — {MODES[mode]}." if mode != BUILDER else "", f"NEW WORK: {filing(record)}." if board_of(record) and mode == ORCHESTRATOR else ""]
+    lines = [f"WORK MODE: {mode} — {MODES[mode].meaning}." if mode != BUILDER else "", f"NEW WORK: {filing(record)}." if board_of(record) and mode == ORCHESTRATOR else ""]
     return "\n".join(line for line in lines if line)

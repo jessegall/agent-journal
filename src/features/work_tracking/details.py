@@ -1,5 +1,5 @@
 from features.base import Behaviour, FeatureDetails, Line
-from features.work_tracking.next import still_next, still_stopped
+from features.work_tracking.next import still_helped, still_next, still_stopped
 from features.settings import Setting
 from features.trigger import IDLE, MINUTES, Trigger, WORKED
 from features.groups import Group
@@ -52,7 +52,9 @@ class WorkDetails(FeatureDetails):
         blocking questions, and switching it off stops the offers. The next ready row by priority is offered on idle
         while nothing is open. Stopping with work open while another row is ready earns the
         same offer: a row that waits on the user gets its question with todo ask and the next
-        row is taken, so the agent stops only when nothing ready is left. Five minutes quiet
+        row is taken, so the agent stops only when nothing ready is left. When the work in hand
+        waits on a helper or a subagent that is still working, the next ready row is offered at
+        once, so the agent works on instead of sitting out the helper's turn. Five minutes quiet
         with unparked work open earns a direct question, are you still working? A row is
         ready when it is not blocked, waits on no open row or question, and its plan's phase
         is current.
@@ -162,6 +164,7 @@ class WorkDetails(FeatureDetails):
         Line(
             name="next",
             title="todo {{n}} next",
+            brief="journal todo start {{n}} to take it, and in this mode {{taking}}",
             until=(*STARTED, *ROW_CHANGED),
             owed=still_next,
         ),
@@ -174,6 +177,16 @@ class WorkDetails(FeatureDetails):
                 if work {{work}} waits on the user, decide it yourself when you can; otherwise put the question on
                 its row with journal todo ask, end or park the work, and start todo {{n}}. Stop only when nothing
                 ready is left.
+            """,
+        ),
+        Line(
+            name="next while a helper works",
+            until=(*MOVED, *ROW_CHANGED),
+            owed=still_helped,
+            title="{{who}} is working while work {{work}} waits, and todo {{n}} is ready",
+            brief="""
+                do not sit out a helper's turn: journal todo start {{n}} and work it yourself in the meantime, or
+                journal work park {{work}} "<why>" first if it must stand still. The helper's report wakes you.
             """,
         ),
         Line(

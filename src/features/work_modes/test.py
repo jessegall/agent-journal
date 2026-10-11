@@ -1,8 +1,11 @@
+import time
+
 import features
 from controllers.types import Agents, Nudges, Works
 from features.session_briefing.start import start_block
-from features.work_modes.details import NAME
-from features.work_modes.modes import choose_board, filing, mode_of, pick
+from features.work_modes.details import MODES, NAME
+from features.work_modes.modes import choose_board, filing, mode_of, pick, taking
+from features.work_modes.share import share
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from runner.hooks import handle
@@ -117,3 +120,42 @@ def test_the_board_picked_for_new_work_switches_what_the_agent_is_told_to_file()
     pick(record, "orchestrator", USER)
     choose_board(record, 0, USER)
     assert "NEW WORK" not in start_block(record) and len(told(record, "where new work goes")) == 2, "None goes back to to-dos and the agent is told"
+
+
+def ran(at: float, edits: int) -> dict:
+    return {"id": f"r{at}", "command": "Edit", "tool": "Edit", "at": at, "done": at, "changed": {"edited": edits}}
+
+
+def test_the_builder_is_told_when_most_of_a_stretch_was_edited_by_its_helpers():
+    features.load()
+    record = fresh()
+    agents = Agents(record, actor=SYSTEM)
+    Works(record, actor=AGENT).create("a piece of work")
+    then = time.time()
+    main = agents.create("claude-1", provider="claude",
+                         subagent_rows=[{"id": "t1", "session": "sub-1", "task": "Lady Lovelace: the sweep", "type": "claude", "running": False}])
+    sub = agents.create("sub-1", provider="claude", parent="claude-1")
+    agents.update(main.n, commands=[ran(then, 3)])
+    agents.update(sub.n, commands=[ran(then + 1, 9)])
+    assert share(record) == (3, 9), "the agent's own edits and its subagents' are counted over the one stretch"
+    edit = {"file_path": str(record.root.parent / "code.py"), "old_string": "a", "new_string": "b"}
+    for _ in range(7):
+        called(record, "Edit", edit)
+    assert not told(record, "of the edits in this stretch"), "the share is read every eighth edit of its own, not sooner"
+    called(record, "Edit", edit)
+    assert told(record, "25% of the edits in this stretch were your own"), "a quarter of its own is below the share a builder keeps"
+    agents.update(sub.n, commands=[ran(then + 1, 1)])
+    said = len(told(record, "of the edits in this stretch"))
+    for _ in range(8):
+        called(record, "Edit", edit)
+    assert len(told(record, "of the edits in this stretch")) == said, "three of its own against one of theirs is a builder working"
+
+
+def test_the_offer_of_the_next_row_is_worded_by_the_mode_the_agent_is_in():
+    features.load()
+    record = fresh()
+    assert taking(record) == MODES["builder"].taking, "builder: the agent does the work itself"
+    pick(record, "orchestrator", USER)
+    assert "send a helper or subagent to do it" in taking(record), "orchestrator: the agent sends the work out"
+    pick(record, "solo", USER)
+    assert "no helpers or subagents here" in taking(record), "solo: there is nobody to send it to"

@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from engine import runtime
 from engine.events.engine import ClockTicked
-from engine.locks import project_sweep
+from engine.locks import own_sweep, project_sweep
 from engine.events.resources import QuestionAnswered, ResourceCreated, ResourceEvent
 from features.sending import Sent
 from features.trigger import MINUTE, MINUTES, Trigger
@@ -32,7 +32,7 @@ class LookAfterTickets(Handler):
     behaviour = WHOLE_FEATURE
 
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        with project_sweep(runtime.folder(context.record.root) / SWEEPING, SWEEP_EVERY, context.record.env) as mine:
+        with own_sweep(runtime.folder(context.record.root) / SWEEPING, SWEEP_EVERY, context.record.env) as mine:
             if mine:
                 self.sweep(context, Tickets(context.record, actor=SYSTEM))
 
