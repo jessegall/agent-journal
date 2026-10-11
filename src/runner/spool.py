@@ -36,7 +36,16 @@ def kept_stamp(root: Path) -> int:
 
 def waiting_events(root: Path) -> list[Path]:
     """The events kept while the server could not answer, oldest first, listed again only when the folder that holds them changed."""
-    return WAITING.get(str(root), kept_stamp(root), lambda: sorted(chat_mirror.unsent(root).glob("*.json"), key=lambda f: (f.stat().st_mtime_ns, f.name)))
+    return WAITING.get(str(root), kept_stamp(root), lambda: sorted(recovered(root), key=lambda f: (f.stat().st_mtime_ns, f.name)))
+
+
+def recovered(root: Path) -> list[Path]:
+    """Every kept event, with any whose move to its final name never happened put right: the hook writes a .tmp and moves it, so a .tmp that reads whole is an event a dying hook left behind, and one that does not is still being written and comes with the next listing."""
+    folder = chat_mirror.unsent(root)
+    left_behind = [kept for kept in folder.glob("*.tmp") if read_json(kept, dict, {})]
+    for kept in left_behind:
+        kept.rename(kept.with_suffix(".json"))
+    return [*folder.glob("*.json")]
 
 
 def replay(root: Path, most: int = 0, within: float = 0.0) -> int:

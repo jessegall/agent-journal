@@ -1579,6 +1579,7 @@ def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_
     from types import SimpleNamespace
     from engine.stored import write_json
     from engine.sessions import Sessions
+    from features.dev_faults.diagnostics import log_file
     from runner import chat_mirror, spool
     from tests.kit import report
     record = fresh()
@@ -1588,10 +1589,14 @@ def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_
     folder.mkdir(parents=True)
     (folder / "1.json").write_text(json.dumps({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True, "delta": "replayed words"}))
     (folder / "2.json").write_text("not json")
+    (folder / "3.tmp").write_text(json.dumps({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "b", "index": 0, "final": True, "delta": "left behind"}))
+    (folder / "4.tmp").write_text('{"half writ')
     seen = []
     monkeypatch.setattr(chat_mirror, "shown", lambda root, chunk: seen.append(chunk.delta))
     spool.replay(root)
-    assert seen == ["replayed words"] and not list(folder.glob("*.json")), "what was displayed while the journal was down is shown once it is up, and a file that is not readable is dropped"
+    assert seen == ["replayed words", "left behind"] and not list(folder.glob("*.json")), \
+        "what was displayed while the journal was down is shown once it is up, a file that is not readable is dropped, and an event the hook wrote but never moved to its final name is recovered"
+    assert [kept.name for kept in folder.glob("*.tmp")] == ["4.tmp"], "a file still being written stays for the next listing"
     monkeypatch.undo()
 
     now = time.time()
@@ -1614,11 +1619,11 @@ def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_
         "a turn that was shown in pieces or streamed is not sent again, and one that never was is sent"
 
     sent.clear()
-    write_json(ledger.file, {chat_mirror.SENT: ["transcript:5"]})
-    written = ledger.file.stat().st_mtime
-    turns[:] = [turn("transcript:1", "before the ledger", written - 10), turn("transcript:7", "after the ledger", written + 10)]
+    write_json(ledger.file, {chat_mirror.SENT: []})
+    turns[:] = [turn("transcript:1", "only in the transcript", now)]
     chat_mirror.unfinished(root, "claude-1", row)
-    assert sent == ["after the ledger"], "a ledger of transcript lines sends only the turns written after it"
+    assert (sent, chat_mirror.FELL_BACK in log_file(root).read_text()) == (["only in the transcript"], True), \
+        "a turn the display hook never delivered is sent from the transcript, and the engine says in its log that it had to"
     monkeypatch.undo()
 
     Sessions(root).bind("claude-1", record.env, provider="claude")
