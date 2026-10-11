@@ -46,9 +46,10 @@ class SecretsFeature(Feature):
         journal.agent.interceptor(RefuseSecretsFile(), expects=[
             Given(shell(f"cat {secrets_folder()}/values")) >> Refused(NEVER_READ),
             Given(shell("cat ~/.config/agent-journal/secrets/values")) >> Refused(NEVER_READ),
-            Given(ReadCall.from_payload("Read", {"file_path": f"{secrets_folder()}/values"}, {})) >> Refused(NEVER_READ),
+            Given(ReadCall.from_payload("Read", {"file_path": ".secrets/values"}, {})) >> Refused(NEVER_READ),
             Given(shell("journal secret run github -- gh pr list")) >> Kept(),
-            Given(ReadCall.from_payload("Read", {"file_path": "/etc/hosts"}, {})) >> Kept(),
+            Given(ReadCall.from_payload("Read", {"file_path": "README.md"}, {})) >> Kept(),
+            Given(ReadCall.from_payload("Read", {"file_path": ".secrets/../README.md"}, {})) >> Kept(),
         ])
         SAVE_REWRITES.add(self, LeakAlarm())
         SECRET_CHECKS.add(self, refuse_secret_that_runs_commands)

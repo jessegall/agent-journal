@@ -8,11 +8,11 @@ the providers. Each kind has one entry and no kind has two, so the run and the e
 
 import json
 import os
+from dataclasses import dataclass
 import shutil
 import tempfile
 import time
 from contextlib import contextmanager
-from types import SimpleNamespace
 from pathlib import Path
 
 import commands.cli  # noqa: F401  wires the command line, as every process that runs the journal does
@@ -101,10 +101,28 @@ def speaking(record: Record, given: Given):
     return rows[0] if rows else None
 
 
+@dataclass(frozen=True)
+class PlayedHook:
+    """What a registration reads of the hook it is called under: the tool call, the moment, the folder the agent works in, the subagent it came from and why a session began."""
+
+    tool: object
+    event: str
+    cwd: str
+    agent: str
+    source: str
+    transcript: object = None
+
+
+def hooked(given: Given, record: Record) -> PlayedHook:
+    """The hook the Given declares, with its folder placed under the scratch project and the call the registration is asked about as its tool."""
+    stated = given.hook
+    return PlayedHook(given.on, stated.event, str(record.root.parent / stated.cwd), stated.agent, stated.source)
+
+
 def contexted(promise, given: Given, record: Record) -> Context:
     """The context a registration is handed: over the record, and an AgentContext speaking to the agent when the Given names one. The hook carries the tool call an interceptor is asked about, as the engine's hook does."""
     row = speaking(record, given)
-    return (AgentContext if row else Context).of(promise.feature, record, row, provider_of(row), SimpleNamespace(cwd=None, agent="", transcript=None, event="PreToolUse", source="", tool=given.on))
+    return (AgentContext if row else Context).of(promise.feature, record, row, provider_of(row), hooked(given, record))
 
 
 def what_was_said(record: Record) -> tuple[list, list]:
@@ -171,9 +189,9 @@ def commanded(promise, given: Given, record: Record, world: World) -> None:
 
 
 def answered_a_hook(promise, given: Given, record: Record, world: World) -> None:
-    """A responder, which answers the call the engine builds for a hook event: the provider and the agent the Given names, the record, and the hook the Given states."""
+    """A responder, which answers the call the engine builds for a hook event: the provider and the agent the Given names, the record, and the hook the Given declares."""
     row = speaking(record, given)
-    world.seen.answered = promise.part(HookCall(provider_of(row), record, given.on, row))
+    world.seen.answered = promise.part(HookCall(provider_of(row), record, hooked(given, record), row))
 
 
 ENTRIES = {"handler": handled, "formatter": formatted, "interceptor": intercepted, "canceler": cancelled,

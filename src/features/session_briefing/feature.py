@@ -1,7 +1,5 @@
 from engine.events.agents import SessionStarted
-from types import SimpleNamespace
-
-from expects import Answered, Given, Nudged, Unchanged
+from expects import Answered, Given, Hooked, Nudged, Unchanged
 from engine.events.resources import AnyEvent
 from features.base import Feature
 from features.journal import Journal
@@ -39,6 +37,6 @@ class SessionBriefing(Feature):
             Given(AnyEvent(n=1, type="nudge", action="created"), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
         ])
         journal.agent.responder(HookEvent.SESSION_START, briefing, expects=[
-            Given(SimpleNamespace(source="startup"), rows=[CLAUDE]) >> Answered(Written()),
-            Given(SimpleNamespace(source="compact"), rows=[CLAUDE]) >> Answered(Opening(COMPACTED)),
+            Given("a session starts", rows=[CLAUDE], hook=Hooked(event="SessionStart", source="startup")) >> Answered(Written()),
+            Given("a session starts", rows=[CLAUDE], hook=Hooked(event="SessionStart", source="compact")) >> Answered(Opening(COMPACTED)),
         ])

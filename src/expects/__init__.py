@@ -21,7 +21,7 @@ class NoSuchService(LookupError):
 
 
 __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
-           "Dispatches", "Wrote", "Removed", "File", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
+           "Dispatches", "Wrote", "Removed", "File", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
            "Formats", "Nudged", "Held", "Answered", "Remembered",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
            "NotAnOutcome", "NoSuchService")
@@ -330,6 +330,16 @@ def exited(code: int, output: str = "") -> Exited:
 
 
 @dataclass(frozen=True)
+class Hooked:
+    """The hook call a registration is played under, as the engine's hook carries it: which moment of the tool's life it is, the folder the agent works in (a path under the project folder, empty for the project folder itself), the subagent it came from if any, and why a session began."""
+
+    event: str = "PreToolUse"
+    cwd: str = ""
+    agent: str = ""
+    source: str = ""
+
+
+@dataclass(frozen=True)
 class Given:
     """Everything the registration may read. What a Given does not state is unreachable, so an expectation is exact."""
 
@@ -341,6 +351,7 @@ class Given:
     transcript: str = ""
     """The text of the agent's conversation as its provider writes it, put in a file inside the scratch project and named by the agent row, so a registration that reads what the agent last said finds it."""
     held: str = ""
+    hook: Hooked = Hooked()
     """Why the agents' writes are already held when the registration runs, as a feature's hold would leave them, so a registration that refuses held calls can be played against one."""
     clock: At = At(WHEN)
     ids: Counting = Counting()
