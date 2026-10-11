@@ -7,8 +7,8 @@ MINIMUM = 1000
 INTERVAL = re.compile(r"\b(?:const\s+\w*EVERY\w*\s*=|every:)\s*(\d[\d_]*)\b(?!\s*,\s*unit)")
 # (file, milliseconds) pairs polled faster than a second, each with the reason it has to be.
 ALLOWED = {
-    ("chat/AgentScreen.vue", 400): "a live terminal screen, which has to follow what the agent types",
-    ("sync/polled.js", 500): "the event poll while the agent works, one request shared by every open page",
+    ("chat/AgentScreen.vue", 400): "deliberate: the live terminal screen has to follow what the agent types",
+    ("sync/polled.js", 500): "deliberate: the event poll while the agent works, one request shared by every open page",
 }
 
 
