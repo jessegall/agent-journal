@@ -20,15 +20,15 @@ NEEDS_THE_USER = re.compile(r"\b(?:secrets?|passwords?|credentials?|tokens?|api[
                             r"|delete\w*\s+(?:the\s+)?(?:data|database|branch)|wachtwoord|geheim\w*|productie|betaling\w*)\b", re.IGNORECASE)
 DECIDE = ("decide it yourself and write down what you chose: journal --env {env} question answer {question} --how \"<choice>\" --set reason=\"<what you chose and why>\"; "
           "its agent is told the answer at once, and it is the answer, so do not ask the user")
-ASK_THE_USER = ("this one is the user's: it asks for a secret or a login, or for something outward-facing or in production, so put it to them "
-                "in a question of your own and answer it with what they say")
+ASK_THE_USER = ("this one is the user's: its agent marked it so, or it asks for a secret or a login, or for something outward-facing or in production, "
+                "so put it to them in a question of your own and answer it with what they say")
 SAYS = ("answer it when it is yours to decide with journal --env {env} question answer {question} --how \"<choice>\" --set reason=\"<why>\"; "
         "its agent is told the answer at once. Otherwise ask the user")
 
 
 def needs_the_user(question) -> bool:
-    """Whether a ticket agent's question is the user's whatever the mode: a secret or login, anything outward-facing or in production, money."""
-    return bool(NEEDS_THE_USER.search(f"{question.title} {question.brief}"))
+    """Whether a ticket agent's question is the user's whatever the mode: the agent marked it so when it filed it, which is the line, or, for one that does not think to, its words name a secret or login, anything outward-facing or in production, or money."""
+    return bool(question.for_user) or bool(NEEDS_THE_USER.search(f"{question.title} {question.brief}"))
 
 
 def deciding(record) -> bool:

@@ -632,7 +632,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 f"happens when it is merged. Say when it is done: whoever runs the board merges it into "
                 f"{into if into != 'HEAD' else 'the project branch'} with journal ticket merge. "
                 f"Never merge it yourself, into that branch or any other. When the one who runs your board answers a question of yours, "
-                f"its answer is the answer, the user's included: act on it, and never file a question that has been answered."
+                f"its answer is the answer, the user's included: act on it, and never file a question that has been answered. A question that is the user's "
+                f"to answer, about a secret or a login, a deploy or anything outward-facing or in production, you file with --set for_user=true, "
+                f"so that it is certain to reach them and is never decided for them."
                 + (f" Its owner is the {ticket.owner} domain: hand its work to that domain's lead first." if ticket.owner else "")
                 + self._wait_note(ticket, into)
                 + (f" The user declined its proposed wait on {', '.join(ticket.declined)}: do not wait for them." if ticket.declined else "")

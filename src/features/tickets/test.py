@@ -788,11 +788,13 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     assert [ticket_calls.waits_on_people(root, text) for text in ("waits for jesse", "asks the user", "the build runs")] == [True, True, False], \
         "a wait is on a person when it names the user, an approval or the one who owns the git config"
     from types import SimpleNamespace
-    asked = lambda title: SimpleNamespace(n=4, title=title, brief="")
+    asked = lambda title, marked=False: SimpleNamespace(n=4, title=title, brief="", for_user=marked)
     owner = SimpleNamespace(record=record)
     monkeypatch.setattr(ticket_calls, "deciding", lambda held: True)
     assert ("decide it yourself" in ticket_calls.rule_for(owner, asked("which of the two approaches"), "ticket-1"), ticket_calls.rule_for(owner, asked("what is the production password"), "ticket-1")) == \
         (True, ticket_calls.ASK_THE_USER), "with auto mode and the orchestrator mode the orchestrator decides what is its to decide, and a secret, a login or anything in production still goes to the user"
+    assert ticket_calls.rule_for(owner, asked("which of the two approaches", marked=True), "ticket-1") == ticket_calls.ASK_THE_USER, \
+        "a question its agent marked as the user's is never decided, whatever its words"
     monkeypatch.setattr(ticket_calls, "deciding", lambda held: False)
     assert ticket_calls.rule_for(owner, asked("which of the two approaches"), "ticket-1").endswith("Otherwise ask the user"), "outside that mode the orchestrator is told to answer only what is its to decide"
     monkeypatch.setattr(Tickets, "_plan_status", lambda self, found: ticket_calls.PLAN_DONE)
