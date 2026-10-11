@@ -30,6 +30,10 @@ class Nudge:
         if self.first and not self.most:
             raise ValueError(f"nudge {self.line} offers the first row under a cap, so it needs most")
 
+    def describe(self) -> dict:
+        """What the viewer needs to show a nudge beside the switch that governs it: the behaviour that switches it, and its own cadence when it does not take that behaviour's."""
+        return {"behaviour": self.behaviour, "timing": self.timing.described(), "once": self.once, "most": self.most}
+
     def cadence(self, context) -> trigger.Trigger:
         cadence = self.timing or context.feature.cadence(context.record, self.behaviour)
         return cadence if self.pace is None else replace(cadence, every=self.pace(context))

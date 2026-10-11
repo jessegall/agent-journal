@@ -182,6 +182,15 @@ def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
                 arrived = feature.journal.whisper(record, row, key, **values_for(feature, key, line)) is not None
                 assert arrived == line.reach.reaches(row.subagent), f"{feature.name}.{key} is {line.reach}; it arrived at a subagent row: {row.subagent}"
 
+    for feature in features.FEATURES.values():
+        sent = feature.describe()["nudges"]
+        assert set(sent) == {nudge.line for nudge in feature.nudges}, f"{feature.name} tells the viewer every nudge it sends and no other"
+        for key, nudge in sent.items():
+            assert key in feature.lines, f"{feature.name} sends {key} as a nudge and declares no line for it"
+            assert nudge["behaviour"] in feature.behaviours, f"{feature.name}.{key} names the switch {nudge['behaviour']!r}, which the feature does not declare"
+            assert feature.switched_by(key) == nudge["behaviour"], \
+                f"{feature.name}.{key} is told to the viewer under a switch the journal does not honour"
+
     provider = PROVIDERS["claude"]()
     asked: list = []
     points = (POLICIES, AFTERWARDS, CANCELERS)

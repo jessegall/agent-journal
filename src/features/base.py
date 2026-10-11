@@ -184,7 +184,11 @@ class Feature(ABC):
     def is_owed(self, record, line: str, rows: tuple[str, ...]) -> bool:
         """Whether a line this feature sent about these rows still asks the agent to act."""
         declared = line not in self.lines or self.lines[line].owed(self.journal.at(record), rows)
-        return declared and self.on(record, next((nudge.behaviour for nudge in self.nudges if nudge.line == line), ""))
+        return declared and self.on(record, self.switched_by(line))
+
+    def switched_by(self, line: str) -> str:
+        """The behaviour that switches a line, or none when no nudge of this feature sends it: a line nothing switches is not a nudge, and is never offered a switch."""
+        return next((nudge.behaviour for nudge in self.nudges if nudge.line == line), "")
 
     def keyed(self, key: str = "") -> str:
         return f"{self.name}.{key}" if key else self.name
@@ -271,5 +275,6 @@ class Feature(ABC):
                 "listens": sorted(set(self.journal.events.names)), "trigger": self.trigger.described(),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},
+                "nudges": {nudge.line: nudge.describe() for nudge in self.nudges},
                 "guards": [asdict(guard) for guard in self.journal.agent.guards],
                 "settings": [s.describe() for s in self.settings]}
