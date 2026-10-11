@@ -1,8 +1,9 @@
 // Every clip on one page, the five voices side by side on live canvases that share the clip's turn and frame.
-import {CLIPS, Stage, loadFigure, supportsClip} from "./figure.js";
+import {CLIPS, GROUND, Stage, loadFigure, supportsClip} from "./figure.js";
 
 const VOICES = ["butler", "homie", "colleague", "coach", "squire"];
 const DEGREES_PER_PIXEL = 1;
+const PASSAGES = new Set(["enter", "exit"]);
 
 function timing(clip) {
     return `${clip.frames} frames · ${clip.fps} fps · ${clip.loops ? "loops" : "once"}`;
@@ -15,10 +16,10 @@ function isEmpty(canvas) {
 
 function card(clip, sheet) {
     const element = document.createElement("article");
-    element.className = "card";
+    element.className = PASSAGES.has(clip.name) ? "card passage" : "card";
     const stages = VOICES.map((voice) => `
             <figure class="stage" data-voice="${voice}">
-                <canvas tabindex="0" aria-label="${voice}, ${clip.name}, drag to turn"></canvas>
+                <span class="edge"><canvas tabindex="0" aria-label="${voice}, ${clip.name}, drag to turn"></canvas></span>
                 <figcaption>${voice}</figcaption>
             </figure>`).join("");
     element.innerHTML = `
@@ -106,12 +107,14 @@ async function main() {
             const figure = figures.get(voice);
             const shows = figure && supportsClip(entry.clip.name, figure.stance);
             canvas.hidden = !shows;
-            canvas.nextElementSibling.textContent = shows ? voice : `${voice} · ${figure ? "hands full" : "did not load"}`;
+            canvas.closest(".stage").querySelector("figcaption").textContent = shows ? voice : `${voice} · ${figure ? "hands full" : "did not load"}`;
         }
         entry.note.textContent = entry.clip.name === "pull_ups" ? "Short lift on two fixed side handles, not a full overhead pull-up."
             : entry.clip.name === "sit_on_edge" ? "Seated loop; host scene supplies the ledge."
-            : entry.clip.name.endsWith("_in") ? "Arrives from the left, brakes, turns, then holds." : "";
+            : entry.clip.name.endsWith("_in") ? "Arrives from the left, brakes, turns, then holds."
+            : PASSAGES.has(entry.clip.name) ? "Each voice in its own manner. The band at the foot is the chat box: what is below its edge is hidden, as the chat hides it." : "";
     }
+    sheet.style.setProperty("--ground", `${(GROUND * 100).toFixed(2)}%`);
     resize(entries, 96);
 
     for (const button of document.querySelectorAll(".sizes button")) {
