@@ -4,7 +4,7 @@ from typing import TypedDict
 from controllers.base import Controller, CONTROLLERS
 from controllers.prioritised import Prioritised
 from resources import types
-from resources.base import SYSTEM, Refused
+from resources.base import SYSTEM, Missing, Refused
 from resources.shapes import CHANGE, COMMIT, LEVELS, rank_before
 from controllers.questions import Questions
 from controllers.marks import action
@@ -131,8 +131,8 @@ class Todos(Prioritised, Controller):
             kind, _, num = ref.partition(":")
             try:
                 rows = self.waitable(kind)(self.record, actor=SYSTEM)
-                other = rows.load(num)
-            except (TypeError, ValueError, Refused):
+                other = rows.peek(num)
+            except (TypeError, ValueError, Refused, Missing):
                 continue
             if not rows._finished(other) and not other.deleted:
                 open_.append(ref)
