@@ -68,9 +68,7 @@ export function useRevisions(resource) {
               }
             : {}
     );
-    const status = computed(() =>
-        latest.value && open.value ? `Open for edits, it is saved as a revision in ${minutesLeft.value} min` : ""
-    );
+    const status = computed(() => (latest.value && open.value ? `Being edited - kept as one revision in ${minutesLeft.value} min` : ""));
     const note = computed(() =>
         [
             status.value,
