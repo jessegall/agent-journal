@@ -18,12 +18,13 @@ def assignments(script):
     """The module-level NAME = literal assignments of a Blender script, a Vector(...) or tuple read as its numbers."""
     found = {}
     for node in ast.parse((HERE / script).read_text()).body:
-        if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name):
-            value = node.value.args[0] if isinstance(node.value, ast.Call) and node.value.args else node.value
-            try:
-                found[node.targets[0].id] = ast.literal_eval(value)
-            except ValueError:
-                continue
+        if not (isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name)):
+            continue
+        value = node.value.args[0] if isinstance(node.value, ast.Call) and node.value.args else node.value
+        try:
+            found[node.targets[0].id] = ast.literal_eval(value)
+        except ValueError:
+            continue
     return found
 
 
