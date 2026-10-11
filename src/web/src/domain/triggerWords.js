@@ -1,3 +1,4 @@
+import {pluralTitle} from "./navigation.js";
 import {rows} from "../sync/rows.js";
 import {store} from "../state/store.js";
 import {eventWords} from "./moments.js";
@@ -95,6 +96,13 @@ export const WHEN = [
 
 // The facts a trigger can watch come from the server, in the manifest: {value, label, phrase, unit}.
 export const facts = () => store.spec.facts;
+// What a fact is about is the first part of its name: message.unread.created is about messages, agent.idle about the agent.
+const AGENT = "agent";
+export const aboutOf = (value) => String(value || "").split(".")[0];
+const aboutLabel = (type) => (type === AGENT ? "The agent" : pluralTitle((store.spec.types[type] || {}).title || type));
+export const abouts = () =>
+    [...new Set(facts().map((fact) => aboutOf(fact.value)))].map((type) => ({value: type, label: aboutLabel(type)}));
+export const factsAbout = (type) => facts().filter((fact) => aboutOf(fact.value) === type);
 // What the number past is counted in is the word after it in the phrase: "more than {over} minutes".
 export const unitOf = (fact) => fact.phrase.split("{over}")[1].trim().split(" ")[0];
 

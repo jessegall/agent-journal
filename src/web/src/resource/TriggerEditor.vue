@@ -8,10 +8,12 @@ import {
     STATE_DOES,
     WHEN,
     WHERE,
+    aboutOf,
+    abouts,
     doesOf,
     doesReason,
     factOf,
-    facts,
+    factsAbout,
     neverMatched,
     plain,
     saysWhat,
@@ -31,6 +33,7 @@ import Notice from "../kit/Notice.vue";
 import TextArea from "../kit/TextArea.vue";
 import UnitTextInput from "../kit/UnitTextInput.vue";
 import ResourceBlock from "./ResourceBlock.vue";
+import TriggerMatches from "./TriggerMatches.vue";
 import TriggerSequences from "./TriggerSequences.vue";
 import WatchedWords from "./WatchedWords.vue";
 
@@ -59,6 +62,7 @@ const matches = computed(() => {
 });
 const does = computed(() => doesOf(values.value.does));
 const state = computed(() => values.value.when === "state");
+const about = computed(() => aboutOf(factOf(values.value.fact).value));
 const doings = computed(() => (state.value ? DOES.filter((option) => STATE_DOES.includes(option.value)) : DOES));
 const repeats = computed(() =>
     REPEATS.some((r) => r.value === values.value.timing)
@@ -84,6 +88,10 @@ async function commit(patch) {
     } catch (e) {
         error.value = e.message;
     }
+}
+
+function pickAbout(type) {
+    if (type !== about.value) commit({fact: factsAbout(type)[0].value});
 }
 
 function pickWhen(value) {
@@ -150,10 +158,13 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
         <template v-if="state">
             <ResourceBlock heading="When this is true in the journal">
                 <div class="then">
+                    <FormField label="About">
+                        <ChoiceList :choices="pickable(abouts(), about)" :disabled="readonly" @pick="pickAbout" />
+                    </FormField>
                     <FormField label="What is true">
                         <ChoiceList
                             stacked
-                            :choices="pickable(facts(), values.fact)"
+                            :choices="pickable(factsAbout(about), factOf(values.fact).value)"
                             :disabled="readonly"
                             @pick="(fact) => commit({fact})"
                         />
@@ -168,6 +179,9 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                             aria-label="Past how much"
                             @change="commit({over: Number($event.target.value)})"
                         />
+                    </FormField>
+                    <FormField label="What it matches now">
+                        <TriggerMatches :fact="factOf(values.fact).value" :over="Number(values.over || 0)" :text="values.text || ''" />
                     </FormField>
                     <FormField label="While the agent is">
                         <ChoiceList

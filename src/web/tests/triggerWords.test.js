@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {store} from "../src/state/store.js";
-import {factOf, neverMatched, plain, saysWhat, sentence, unitOf} from "../src/domain/triggerWords.js";
+import {abouts, factOf, factsAbout, neverMatched, plain, saysWhat, sentence, unitOf} from "../src/domain/triggerWords.js";
 
 const FACTS = [
     {
@@ -30,7 +30,18 @@ const FACTS = [
         unit: "count",
     },
 ];
-store.spec = {facts: FACTS};
+store.spec = {facts: FACTS, types: {message: {title: "Message"}, agent: {title: "Agent"}, todo: {title: "To-do"}}};
+
+describe("what a fact is about", () => {
+    it("is the first part of its name, offered once each in the order the server sent them", () => {
+        expect(abouts()).toEqual([
+            {value: "message", label: "Messages"},
+            {value: "agent", label: "The agent"},
+            {value: "todo", label: "To-dos"},
+        ]);
+        expect(factsAbout("message").map((fact) => fact.value)).toEqual(["message.unread", "message.unanswered"]);
+    });
+});
 
 describe("what a fact gives a wording to say", () => {
     it("offers only the placeholders that fact will fill, in the user's words", () => {

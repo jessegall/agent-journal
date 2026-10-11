@@ -437,6 +437,10 @@ export class ApiClient {
         return this.post(this.here(`/${type}/${action}`), body);
     }
 
+    triggerMatching(fact, over, text) {
+        return this.command("trigger", "matching", {fact, over, text});
+    }
+
     press(button) {
         const path = button.n ? `/${button.type}/${button.n}/${button.action}` : `/${button.type}/${button.action}`;
         return this.post(this.here(path), button.body || {}, LONG_WAIT_MS);
@@ -766,7 +770,11 @@ export class ApiClient {
     }
 
     search(q, archived = false, resources = []) {
-        return this.get(this.here(`/search${query({q, ...(archived ? {archived: true} : {}), ...(resources.length ? {resources: resources.join(",")} : {})})}`));
+        return this.get(
+            this.here(
+                `/search${query({q, ...(archived ? {archived: true} : {}), ...(resources.length ? {resources: resources.join(",")} : {})})}`
+            )
+        );
     }
 
     restore(type, n) {
@@ -786,7 +794,9 @@ export class ApiClient {
     }
 
     filesPage({kind, shelf, search, last, skip}) {
-        return this.get(this.here(`/files/page${query({kind, shelf: shelf || undefined, search: search || undefined, last, skip: skip || undefined})}`));
+        return this.get(
+            this.here(`/files/page${query({kind, shelf: shelf || undefined, search: search || undefined, last, skip: skip || undefined})}`)
+        );
     }
 
     changes() {
