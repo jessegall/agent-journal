@@ -170,7 +170,10 @@ def test_a_helper_is_dispatched_told_and_finished_with_the_same_marks_whichever_
     assert code == 200 and started == [(f"{ENV}-rhea", provider)], "the dispatch starts one agent in an environment of its own"
     cards = lambda: [(card["label"], card.get("detail")) for agent in scratch.rows("agent") for card in agent["data"].get("cards") or []]
     assert cards() == [("Dispatched [[chip helper:1|helper 1]]", f"{provider} {model}")], "the dispatcher's chat marks the dispatch"
-    assert scratch.agent("helper", "say", "1", "Also the stop hook.")[0] == 200 and told == [(f"{ENV}-rhea", provider, "Also the stop hook.")], "a follow-up is typed to the helper"
+    assert scratch.agent("helper", "say", "1", "Also the stop hook.")[0] == 200 and told == [
+        (f"{ENV}-rhea", provider, "The agent that dispatched you wrote in message 2, which is in your own environment, "
+                                 "where journal message read 2 shows it:\n\nAlso the stop hook.")], \
+        "a follow-up is typed to the helper, naming who wrote it and the message it was filed as, so the helper answers the record and not a line that appeared on its screen"
     assert [label for label, _ in cards()] == ["Dispatched [[chip helper:1|helper 1]]", "Continued [[chip helper:1|helper 1]]"], "and marked the same way"
     inside = scratch.ask("GET", f"/api/{ENV}-rhea/message")[1]["rows"]
     assert [(row["title"], row["data"].get("from_main")) for row in inside] == [("Profile the hooks", True), ("Also the stop hook.", True)], \
