@@ -39,6 +39,10 @@ def plan(status: str, **data) -> Plan:
     return Plan(n=1, title="Ship it", data={"status": status, **data})
 
 
+def reviewed(to: str) -> ReportLinked:
+    return ReportLinked(n=9, type="report", action="linked", actor=AGENT, to=to)
+
+
 def changed(action: str, actor: str, status: str = "", **fields) -> PlanChanged:
     return PlanChanged(n=1, type="plan", action=action, actor=actor, status=status, **fields)
 
@@ -66,7 +70,11 @@ class PlansFeature(Feature):
             Given(changed("updated", USER), rows=[plan("building"), AGENT_ROW]) >> Unchanged(),
             Given(changed("updated", USER), rows=[plan("approved")]) >> Unchanged(),
         ])
-        journal.events.handler(EndReviewWithItsReport())
+        journal.events.handler(EndReviewWithItsReport(), expects=[
+            Given(reviewed("plan:1"), rows=[plan("reviewing"), AGENT_ROW]) >> Nudged("reviewed"),
+            Given(reviewed("plan:1"), rows=[plan("building"), AGENT_ROW]) >> Unchanged(),
+            Given(reviewed("todo:5"), rows=[plan("reviewing"), AGENT_ROW]) >> Unchanged(),
+        ])
         journal.events.handler(TellParkedAndPickedUp(), expects=[
             Given(changed("updated", USER, "active"), rows=[plan("active"), AGENT_ROW]) >> Nudged("picked up"),
             Given(changed("updated", USER, "parked"), rows=[plan("parked"), AGENT_ROW]) >> Nudged("parked"),
