@@ -1,3 +1,4 @@
+from controllers.types import Messages
 from features.base import Feature
 from features.journal import Journal
 from features.messages.details import MessagesDetails
@@ -5,7 +6,10 @@ from features.messages.formatters import CommandsAsCode
 from features.messages.closing import CloseAnswered, CloseHandled, CloseProcessed, CloseSeenByUser
 from features.messages.inbox import NameUnanswered, NameUnread, ResetCountsOnArrival
 from features.messages.prose import NameBareNumbers, NameRunTogether
+from features.messages.answering import unanswered
 from features.messages.saving import SaveAgentMessage
+from features.triggers.watched import FACTS, state_facts
+from resources.base import AGENT
 
 
 class MessagesFeature(Feature):
@@ -23,3 +27,5 @@ class MessagesFeature(Feature):
         journal.events.handler(NameRunTogether())
         journal.events.handler(NameBareNumbers())
         journal.client.formatter(CommandsAsCode())
+        FACTS.register(self, *state_facts("message", "unread", lambda context: context.journal.get(Messages).unread(AGENT)),
+                       *state_facts("message", "unanswered", lambda context: unanswered(context.journal)))

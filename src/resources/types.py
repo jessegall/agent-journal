@@ -23,6 +23,8 @@ class Message(Shape, Resource):
         help="A message is read once by the other side and processed part by part; what each part became is written on it.",
     )
     moments = ("created", "completed", REQUESTED, REVISED, COMMISSIONED)
+    states = {"unread": "a message of yours has been unread", "unanswered": "a message of yours has been read but left unanswered"}
+    clocks = {"created": "since it was written"}
     deduplicates = True
     filters = ()
     created_in_viewer = False
@@ -104,6 +106,8 @@ class Work(Traced, Resource):
         abstract="What the agent is doing right now, declared before its first write",
         help="Work is opened by the agent, updated as it moves and ended when done; the agent that opened it has seen it.",
     )
+    states = {"open": "work has been open", "awaiting": "work has been waiting for something"}
+    clocks = {"logged": "since its last log entry", "awaiting_since": "since it began waiting", "created": "since it was started"}
     type = "work"
     held, eager = None, True
     indexed = ("todo",)
@@ -257,6 +261,8 @@ class Question(Options, Resource):
         help="A question waits for the user; its answer reaches the agent as an event.",
     )
     listed_open = True
+    states = {"open": "a question has had no answer"}
+    clocks = {"created": "since it was asked"}
     type = "question"
     event_labels = {"created": "Question asked", "completed": "Question closed"}
     status_labels = {"create": "asking", "complete": "answering"}

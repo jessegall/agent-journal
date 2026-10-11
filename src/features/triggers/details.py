@@ -30,8 +30,8 @@ class TriggersDetails(FeatureDetails):
         marked and you are told. A start does nothing of its own: it starts the sequences whose starts_on
         names it (trigger:<n>), which is how a sequence starts on words or a command.
 
-        A trigger can instead watch the journal: --set when=state --set fact=message.unanswered
-        --set over=5 says a message has waited more than 5 minutes. only_when is any, idle or working;
+        A trigger can instead watch the journal: --set when=state --set fact=<a fact> --set over=<how much>.
+        journal trigger facts lists the facts this environment can watch, each with what it means. only_when is any, idle or working;
         timing is the minutes before it says so again (0 says it once for each row); most caps the
         times for each row. A trigger on a fact does nudge, instruct or hold, never message or deny.
     """

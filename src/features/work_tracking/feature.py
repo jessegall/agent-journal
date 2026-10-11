@@ -1,4 +1,8 @@
+from controllers.types import Works
 from features.base import Feature
+from features.triggers.watched import COUNT, FACTS, Fact, state_facts
+from features.work_tracking.next import ready
+from features.sending import Sent
 from features.work_tracking.auto import automatic
 from overview.parts import SUMMARY_PARTS
 from features.journal import Journal
@@ -9,6 +13,17 @@ from features.sending import Nudge
 from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_ready, stopped_in_auto, stopped_with_work, next_while_helping, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import RefuseHeldCalls, RefuseWaitingInTheShell
+
+
+def open_work(context) -> list:
+    return [work for work in context.journal.get(Works).rows.standing() if not work.parked]
+
+
+def todo_ready(context, agent, over: float) -> list[Sent]:
+    rows = ready(context.record)
+    if open_work(context) or len(rows) < over:
+        return []
+    return [Sent("ready", {"n": rows[0].n, "title": rows[0].title, "count": len(rows)})]
 
 
 class WorkFeature(Feature):
@@ -34,6 +49,8 @@ class WorkFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         SUMMARY_PARTS.add(None, automatic, key="auto")
+        FACTS.register(self, *state_facts("work", "open", open_work), *state_facts("work", "awaiting", lambda context: [work for work in open_work(context) if work.awaiting]),
+                       Fact("todo.ready", COUNT, "To-dos are ready and no work is open", "at least {over} to-dos are ready and no work is open", todo_ready))
         journal.commands.add("work", LogWork())
         journal.commands.add("work", ParkWork())
         journal.commands.add("work", ResumeWork())

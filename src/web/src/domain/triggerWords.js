@@ -128,7 +128,7 @@ export const EXAMPLES = [
         name: "Hold the agent while a message waits",
         title: "Answer waiting messages",
         when: "state",
-        fact: "message.unanswered",
+        fact: "message.unanswered.created",
         over: 5,
         only_when: "any",
         does: "hold",

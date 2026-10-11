@@ -12,7 +12,7 @@ const emit = defineEmits(["made", "close"]);
 const blank = () => ({
     title: "",
     when: "words",
-    fact: "message.unanswered",
+    fact: "message.unanswered.created",
     over: 5,
     only_when: "any",
     timing: 0,

@@ -43,10 +43,12 @@ def doing(row: Trigger, titles: list[str]) -> str:
     }[str(row.does)]
 
 
-def state_watching(row: Trigger) -> str:
-    fact = watched.FACTS.get(str(row.fact))
-    if not fact:
-        return ""
+def asleep(row: Trigger) -> str:
+    return (f"Asleep: nothing in this journal watches {row.fact} now, because the feature that finds it is off or gone. "
+            f"It does nothing until that comes back, and can still be changed, retired or deleted.")
+
+
+def state_watching(row: Trigger, fact: watched.Fact) -> str:
     gate = {IDLE: " while the agent is idle", WORKING: " while the agent is working"}.get(str(row.only_when), "")
     return f"When {fact.sentence(row.over)}{gate}"
 
@@ -59,14 +61,18 @@ def repeating(row: Trigger) -> str:
     return f" It says so again every {int(row.timing)} minutes, at most {int(row.most)} times for each."
 
 
-def opening(row: Trigger) -> str:
-    if row.is_state:
-        return state_watching(row)
-    return watching(words_text(list(row.words)), str(row.words_in)) if row.words else ""
+def opening(row: Trigger, record) -> str:
+    if not row.is_state:
+        return watching(words_text(list(row.words)), str(row.words_in)) if row.words else ""
+    if not row.fact:
+        return ""
+    return state_watching(row, watched.FACTS.get(watched.Watched.of(row), record))
 
 
-def summary(row: Trigger, titles: list[str]) -> str:
-    opening_text = opening(row)
+def summary(row: Trigger, titles: list[str], record) -> str:
+    if row.is_state and row.fact and not watched.FACTS.holds(watched.Watched.of(row), record):
+        return asleep(row)
+    opening_text = opening(row, record)
     if not opening_text:
         return EMPTY
     text = f"{opening_text}, {doing(row, titles)}"

@@ -216,6 +216,8 @@ class Resource:
     hidden_listed: ClassVar[bool] = True
     listed_beneath: ClassVar[bool] = False   # the open rows of the environments working under this one are listed with its own, each named for its environment
     moments: ClassVar[tuple] = ("created", "completed")   # what a sequence can start on
+    states: ClassVar[dict[str, str]] = {}   # a state a trigger can watch its rows in, and the words it reads in
+    clocks: ClassVar[dict[str, str]] = {}   # a field a watched state is timed from, and the words it reads in
     scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
     notified: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
     typed_as_title: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"

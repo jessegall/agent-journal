@@ -7,6 +7,7 @@ import subprocess
 import tarfile
 import threading
 import time
+from dataclasses import fields as dataclass_fields
 from functools import partial
 from os.path import commonprefix
 from pathlib import Path
@@ -33,8 +34,9 @@ from engine.disk import by_repository
 from engine.stored import read_json, write_text
 from engine.transaction import snapshot, undoable
 from engine.wording import noun
+from features.triggers.watched import FACTS
 from overview.summary import environment, summarize
-from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, SYSTEM, USER, overview_weight as weigh
+from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, Resource, SYSTEM, USER, overview_weight as weigh
 from resources.pictures import dimensions
 from resources.shapes import normalize_options
 from resources.types import TYPES, EnvironmentKind
@@ -1019,6 +1021,20 @@ def test_pruning_deletes_old_closed_rows_with_a_reason_and_placing_and_waiting_r
             facts["a row cannot wait on itself"] = "wait on itself" in refused(partial(controller.after, open_row.n, str(open_row.n)))
         reckon(wrong, type_, facts)
     assert wrong == {}, "pruning, placing and waiting behave as they say for every type that has them"
+
+
+def test_every_watchable_state_a_type_declares_is_found_by_a_feature_and_every_clock_is_one_of_its_fields():
+    features.load()
+    record = fresh("wa")
+    held = {fact.name: fact for fact in FACTS.each(record)}
+    wrong = {}
+    for type_, resource in TYPES.items():
+        columns = {*resource.fields, *(column.name for column in resource.data_fields), *(column.name for column in dataclass_fields(Resource))}
+        named = [f"{type_}.{state}.{clock}" for state in resource.states for clock in resource.clocks]
+        missing = [name for name in named if name not in held or "{over}" not in held[name].phrase] + [clock for clock in resource.clocks if clock not in columns]
+        if missing:
+            wrong[type_] = missing
+    assert wrong == {}, "every state a type says it can be watched in is found by a feature, in words that fill, and every clock it times them by is a field it has"
 
 
 def test_a_field_given_the_wrong_type_is_refused_in_words_and_nothing_is_stored():

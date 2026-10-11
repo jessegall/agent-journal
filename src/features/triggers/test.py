@@ -106,7 +106,7 @@ def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its
     assert [words_text(words) for words in (["a"], ["a", "b"], ["a", "b", "c", "d"], list("abcde"))] == \
         ["“a”", "“a” or “b”", "“a”, “b”, “c” or 1 other phrase", "“a”, “b”, “c” or 2 other phrases"], "a sentence names the first three phrases and counts the rest"
     from types import SimpleNamespace
-    assert summary(SimpleNamespace(words=[], is_state=False), []) == EMPTY, "a trigger with no words says what it still needs"
+    assert summary(SimpleNamespace(words=[], is_state=False), [], None) == EMPTY, "a trigger with no words says what it still needs"
     from tests.conftest import refused
     assert "a trigger does one of" in refused(lambda: triggers.create("odd", **{"words": ["x"], "does": "dance"})), "a trigger does one of the things a trigger can do"
     assert "needs words to watch for" in refused(lambda: triggers.update(row.n, words=[])), "a trigger emptied of its words would watch for nothing and is refused"
@@ -182,7 +182,7 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
 
     def finding(record, name: str, over: float) -> list[str]:
         context = AgentContext.of(FEATURES["triggers"], record, Agents(record, actor=SYSTEM).by_session("claude-1"))
-        return [found.key for found in watched.found(name, context, context.agent.row, over)]
+        return [found.key for found in watched.found(watched.Watched.parse(name, over), context, context.agent.row)]
 
     record = fresh()
     idle(record, context=70)
@@ -192,21 +192,23 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     Works(record, actor=AGENT).section(work.n, "log", "started")
     now = clock.time()
     monkeypatch.setattr(clock, "time", lambda: now + 20 * 60)
-    assert (finding(record, "message.unread", 10), finding(record, "message.unread", 30)) == (["1"], []), "an unread message is named once it is older than the threshold"
-    assert (finding(record, "question.open", 10), finding(record, "question.open", 30)) == (["1"], []), "an open question is named once it is older than the threshold"
-    assert (finding(record, "work.unlogged", 10), finding(record, "work.unlogged", 30)) == ([str(work.n)], []), "work is unlogged from its last entry, not from its start"
+    assert (finding(record, "message.unread.created", 10), finding(record, "message.unread.created", 30)) == (["1"], []), "an unread message is named once it is older than the threshold"
+    assert (finding(record, "question.open.created", 10), finding(record, "question.open.created", 30)) == (["1"], []), "an open question is named once it is older than the threshold"
+    assert (finding(record, "work.open.logged", 10), finding(record, "work.open.logged", 30)) == ([str(work.n)], []), "work is unlogged from its last entry, not from its start"
     assert (finding(record, "agent.context", 60), finding(record, "agent.context", 80)) == (["claude-1"], []), "the context is named above the percent"
     assert (finding(record, "agent.idle", 10), finding(record, "agent.idle", 30)) == (["claude-1"], []), "an idle agent is named once it has been idle long enough"
     started = clock.perf_counter()
     for _ in range(20):
-        for name in watched.FACTS:
-            finding(record, name, 10)
+        for fact in watched.FACTS.each(record):
+            finding(record, fact.name, 10)
     assert (clock.perf_counter() - started) / 20 < 0.05, "twenty facts are read inside the fifty millisecond hook budget"
     context = AgentContext.of(FEATURES["triggers"], record, Agents(record, actor=SYSTEM).by_session("claude-1"), hook=object())
     counted = []
-    monkeypatch.setitem(watched.FACTS, "agent.idle", watched.Fact("agent.idle", watched.MINUTES, "", "", lambda *given: counted.append(1) or []))
-    for _ in range(3):
-        watched.found("agent.idle", context, context.agent.row, 10)
+    counting = watched.Fact("agent.idle", watched.MINUTES, "Counted", "counted for more than {over} minutes", lambda *given: counted.append(1) or [])
+    with monkeypatch.context() as patched:
+        patched.setattr(watched.FACTS, "get", lambda looked, record: counting)
+        for _ in range(3):
+            watched.found(watched.Watched.parse("agent.idle", 10), context, context.agent.row)
     assert len(counted) == 1, "a fact is read once for each hook, however many triggers ask for it"
     other = fresh("u")
     Todos(other, actor=USER).create("one")
@@ -219,9 +221,9 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     from tests.kit import tick
     for refused in ("message", "deny"):
         with pytest.raises(Refused):
-            Triggers(record, actor=USER).create("never", when="state", fact="message.unread", does=refused)
-    Triggers(record, actor=USER).create("unread for long", text="read message {{n}}", when="state", fact="message.unread", over=10, does="nudge")
-    holder = Triggers(record, actor=USER).create("hold for unread", text="read message {{n}} first", when="state", fact="message.unread", over=10, does="hold")
+            Triggers(record, actor=USER).create("never", when="state", fact="message.unread.created", does=refused)
+    Triggers(record, actor=USER).create("unread for long", text="read message {{n}}", when="state", fact="message.unread.created", over=10, does="nudge")
+    holder = Triggers(record, actor=USER).create("hold for unread", text="read message {{n}} first", when="state", fact="message.unread.created", over=10, does="hold")
     tick(record)
     tick(record)
     assert len([n for n in nudges(record) if "unread for long" in n]) == 1, "a trigger on a fact tells the agent once for each row it names"
@@ -238,3 +240,43 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     assert "hold for unread" in held(record, "claude-1"), "a hold holds again for a new row"
     Triggers(record, actor=USER).delete(holder.n)
     assert "hold for unread" not in held(record, "claude-1"), "and is released when its trigger is deleted"
+    monkeypatch.undo()
+
+    from features.sending import Sent
+    from tests.conftest import refused as refusal
+    from features.triggers.watched import FACTS, ClaimedTwice, Fact, UnknownFact, Watched
+    with pytest.raises(ClaimedTwice):
+        FACTS.register(None, Fact("agent.idle", watched.MINUTES, "Idle again", "the agent has been idle again for more than {over} minutes", lambda *given: []))
+    with pytest.raises(UnknownFact):
+        FACTS.get(Watched.parse("nothing.here", 1), record)
+    assert "work.open.logged: work has been open for more than N minutes since its last log entry, N in minutes" in Triggers(record, actor=AGENT).facts(), \
+        "the command line lists every fact this environment can watch, with what it means"
+
+    class Owner:
+        on = True
+
+        def enabled(self, record) -> bool:
+            return self.on
+
+    owner, sleepy = Owner(), Fact("test.sleepy", watched.MINUTES, "Sleepy", "it has been sleepy for more than {over} minutes", lambda *given: [Sent("x", {"n": 1})])
+    FACTS.register(owner, sleepy)
+    try:
+        sleeper = Triggers(record, actor=USER).create("sleeps", text="wake up", when="state", fact="test.sleepy", over=1, does="nudge")
+        owner.on = False
+        Triggers(record, actor=USER).update(sleeper.n, text="wake up now")
+        assert Triggers(record, actor=USER).load(sleeper.n).brief.startswith("Asleep: nothing in this journal watches test.sleepy"), "a trigger whose fact has gone says on its row why it sleeps"
+        tick(record)
+        assert not [n for n in nudges(record) if "wake up" in n], "and matches nothing, raising nothing"
+        assert "test.sleepy" in refusal(lambda: Triggers(record, actor=USER).update(sleeper.n, fact="test.sleepy", over=2)), "naming a fact that is gone is refused"
+        Triggers(record, actor=USER).complete(sleeper.n, "not needed")
+        Triggers(record, actor=USER).delete(sleeper.n, "not needed")
+    finally:
+        FACTS.facts.remove(sleepy)
+
+    from migrations.m0084_a_watched_fact_names_its_clock import run as rename_facts
+    old = Triggers(record, actor=USER).create("old name", text="answer {{n}}", when="state", fact="work.open.logged", over=10, does="nudge")
+    path = Triggers(record, actor=USER).path(old.n)
+    path.write_text(path.read_text().replace("work.open.logged", "work.unlogged"))
+    assert rename_facts(record.root) == [f"trigger {old.n} watches work.open.logged"], "a trigger stored under one of the five old names is renamed"
+    renamed = Triggers(record, actor=USER).load(old.n)
+    assert (renamed.fact, "since its last log entry" in renamed.brief) == ("work.open.logged", True), "and its sentence is written again"

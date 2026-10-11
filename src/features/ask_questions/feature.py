@@ -1,4 +1,7 @@
+from controllers.types import Questions
 from features.base import Feature
+from features.triggers.watched import FACTS, state_facts
+from resources.base import SYSTEM
 from features.journal import Journal
 from features.ask_questions.answers import answers_added
 from features.ask_questions.details import AskQuestionsDetails
@@ -13,6 +16,7 @@ class AskQuestions(Feature):
                     guarantee="When a question has waited a day for an answer, the agent is told, so a question is not left hanging for ever."),)
 
     def register(self, journal: Journal) -> None:
+        FACTS.register(self, *state_facts("question", "open", lambda context: [q for q in Questions(context.record, actor=SYSTEM).rows.standing() if not q.hidden]))
         journal.events.handler(AskInsteadOfProse())
         journal.events.handler(ReleaseOnceAsked())
         journal.events.handler(ReleaseOnceAnswered())

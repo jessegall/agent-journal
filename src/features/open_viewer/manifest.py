@@ -57,8 +57,8 @@ def built_in() -> dict:
     return {"types": described_types(), "chat_kinds": {"turns": TURNS}}
 
 
-def watchable() -> list[dict]:
-    return [{"value": fact.name, "label": fact.label, "phrase": fact.phrase, "unit": fact.unit} for fact in FACTS.values()]
+def watchable(record: Record) -> list[dict]:
+    return [{"value": fact.name, "label": fact.label, "phrase": fact.phrase, "unit": fact.unit} for fact in FACTS.each(record)]
 
 
 def manifest(root: Path) -> Manifest:
@@ -78,6 +78,6 @@ def manifest(root: Path) -> Manifest:
         "groups": groups.describe(),
         "models": default_models(),
         "searchable": listed_types(),
-        "facts": watchable(),
+        "facts": watchable(Record(root, runtime.env(root))),
         **built_in(),
     }

@@ -76,4 +76,4 @@ class DismissSettledQuestions(Handler):
 
 
 def open_a_day(context, agent) -> list[Sent]:
-    return watched.found("question.open", context, agent, DAY / MINUTE)
+    return watched.found(watched.Watched("question", "open", "created", DAY / MINUTE), context, agent)

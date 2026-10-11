@@ -46,9 +46,10 @@ def in_state(row, agent) -> bool:
 
 
 def current(row, context, agent) -> list[Sent]:
-    if not in_state(row, agent):
+    looked = watched.Watched.of(row)
+    if not in_state(row, agent) or not watched.FACTS.holds(looked, context.record):
         return []
-    return watched.found(str(row.fact), context, agent, row.over)
+    return watched.found(looked, context, agent)
 
 
 def nudge_of(row) -> Nudge:

@@ -26,15 +26,15 @@ class Triggers(Controller):
         if str(r.does) not in DOES:
             raise Refused(f"a trigger does one of {', '.join(DOES)}, not {r.does!r}")
         if not r.system:
-            self._check_watched(r)
-            r.brief = summary(r, self._starts(r.n))
+            self._check_watched(r, action == "created" or bool({"fact", "when"} & set(event.get("fields", ()))))
+            r.brief = summary(r, self._starts(r.n), self.record)
         return super().save(r, action, **event)
 
-    def _check_watched(self, r: Resource) -> None:
+    def _check_watched(self, r: Resource, setting_fact: bool) -> None:
         if r.when not in WHEN:
             raise Refused(f"a trigger watches {' or '.join(WHEN)}, not {r.when!r}")
         if r.is_state:
-            self._check_state(r)
+            self._check_state(r, setting_fact)
         else:
             self._check_words(r)
 
@@ -42,15 +42,20 @@ class Triggers(Controller):
         if not r.words:
             raise Refused('a trigger needs words to watch for: --set words="one,two"')
 
-    def _check_state(self, r: Resource) -> None:
-        if r.fact not in watched.FACTS:
-            raise Refused(f"a trigger on the journal's state watches one of {', '.join(watched.FACTS)}, not {r.fact!r}")
+    def _check_state(self, r: Resource, setting_fact: bool) -> None:
+        if setting_fact:
+            watched.FACTS.get(watched.Watched.of(r), self.record)
         if str(r.does) not in STATE_DOES:
             raise Refused(f"a trigger on the journal's state does one of {', '.join(STATE_DOES)}, not {r.does!r}; it has no call to deny and no words to post as you")
         if r.only_when not in ONLY_WHEN:
             raise Refused(f"only_when is one of {', '.join(ONLY_WHEN)}, not {r.only_when!r}")
         if min(r.over, r.timing, r.most) < 0:
             raise Refused("over, timing and most are not negative")
+
+    @action
+    def facts(self) -> list[str]:
+        """The facts a trigger in this environment can watch, each with what it means."""
+        return [f"{fact.name}: {fact.phrase.format(over='N')}, N in {fact.unit}" for fact in watched.FACTS.each(self.record)]
 
     @action
     def delete(self, n: int, why: str = "") -> Resource:
