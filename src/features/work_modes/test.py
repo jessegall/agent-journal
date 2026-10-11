@@ -44,6 +44,14 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     assert NAME in [e.data.get("setting") for e in record.event_log.events()], "the viewer hears the change and follows it"
     pick(record, "orchestrator", USER)
     assert len(mode_nudges(record, "work mode to orchestrator")) == 1, "picking the same mode again tells nothing"
+    from features.journal_laws.briefing import briefing_files
+    written = lambda: [(record.root.parent / name).read_text() for name in briefing_files() if (record.root.parent / name).is_file()]
+    carried = lambda: "\n".join(written())
+    assert "How you work here" in carried() and "You are the orchestrator here" in carried(), \
+        "picking a mode writes it into the files the agent reads at a start, at once, rather than saying it once in a line it drifts away from"
+    pick(record, "builder", USER)
+    assert "You are the builder here" in carried() and "orchestrator here" not in carried(), \
+        "and changing the mode rewrites it, so the files never carry the mode before last"
 
 
 def test_solo_refuses_a_subagent_and_a_helper_and_hands_on_lets_both_through():

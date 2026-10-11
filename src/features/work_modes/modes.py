@@ -14,7 +14,9 @@ def pick(record, mode: str, actor: str) -> str:
         return mode
     record.change_setting(NAME, {"mode": mode})
     from features import running
+    from features.journal_laws.briefing import brief
     from features.work_modes.feature import WorkModes
+    brief(record.root.parent, record)
     running(WorkModes).to_primary(record, MODE_SET, actor=actor, mode=mode, meaning=MODES[mode].meaning)
     return mode
 

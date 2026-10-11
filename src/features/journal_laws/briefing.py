@@ -58,9 +58,20 @@ def block(record=None, rules: tuple[str, ...] = ()) -> str:
            "These rules ship with the journal and cannot be switched off.", ""]
     for law in laws(record):
         out.extend((f"**{law.name} — {law.text}**", "", law.reason, ""))
+    if working := how_you_work(record):
+        out.extend(("## How you work here", "", working, ""))
     if rules:
         out.extend(("## Rules", "", *(f"- {rule}" for rule in rules), ""))
     return "\n".join((*out, END))
+
+
+def how_you_work(record) -> str:
+    """What the environment's work mode tells the agent to do, written into the files it reads at every start rather than said once in a line it drifts away from."""
+    if record is None:
+        return ""
+    from features.work_modes.details import MODES
+    from features.work_modes.modes import mode_of
+    return MODES[mode_of(record)].written
 
 
 def injected(record) -> tuple[str, ...]:
