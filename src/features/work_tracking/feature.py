@@ -50,7 +50,8 @@ class WorkFeature(Feature):
     def register(self, journal: Journal) -> None:
         SUMMARY_PARTS.add(None, automatic, key="auto")
         FACTS.register(self, *state_facts("work", "open", open_work), *state_facts("work", "awaiting", lambda context: [work for work in open_work(context) if work.awaiting]),
-                       Fact("todo.ready", COUNT, "To-dos are ready and no work is open", "at least {over} to-dos are ready and no work is open", todo_ready))
+                       Fact("todo.ready", COUNT, "To-dos are ready and no work is open", "at least {over} to-dos are ready and no work is open", todo_ready,
+                            fills=("n", "title", COUNT)))
         journal.commands.add("work", LogWork())
         journal.commands.add("work", ParkWork())
         journal.commands.add("work", ResumeWork())

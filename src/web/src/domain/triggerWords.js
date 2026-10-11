@@ -98,6 +98,16 @@ export const facts = () => store.spec.facts;
 // What the number past is counted in is the word after it in the phrase: "more than {over} minutes".
 export const unitOf = (fact) => fact.phrase.split("{over}")[1].trim().split(" ")[0];
 
+// What a fact gives a wording to say, in the user's words, so the editor offers only the placeholders that fact will actually fill.
+const SAYS = {n: "its number", title: "its title", minutes: "how many minutes", percent: "how full", count: "how many"};
+
+export const fillable = (fact) => (fact ? fact.fills || [] : []);
+
+export const saysWhat = (fact) =>
+    fillable(fact)
+        .map((one) => `{{${one}}} for ${SAYS[one] || one}`)
+        .join(", ");
+
 // What a trigger that has never matched is still waiting for, so the editor names the half that is empty rather than stopping at "never".
 export const neverMatched = (values) => {
     if (values.when !== "state") return "Never matched. Nothing the agent wrote or ran has carried these words yet.";

@@ -44,13 +44,21 @@ class Triggers(Controller):
 
     def _check_state(self, r: Resource, setting_fact: bool) -> None:
         if setting_fact:
-            watched.FACTS.get(watched.Watched.of(r), self.record)
+            self._check_wording(watched.FACTS.get(watched.Watched.of(r), self.record), r)
         if str(r.does) not in STATE_DOES:
             raise Refused(f"a trigger on the journal's state does one of {', '.join(STATE_DOES)}, not {r.does!r}; it has no call to deny and no words to post as you")
         if r.only_when not in ONLY_WHEN:
             raise Refused(f"only_when is one of {', '.join(ONLY_WHEN)}, not {r.only_when!r}")
         if min(r.over, r.timing, r.most) < 0:
             raise Refused("over, timing and most are not negative")
+
+    def _check_wording(self, fact, r: Resource) -> None:
+        """A wording may only name what this fact is given. An unknown placeholder is left as its own braces when the line is said, so without this it reaches the agent as {{percent}} for good and without a word."""
+        unfillable = fact.unfillable(r.wording)
+        if unfillable:
+            named = ", ".join(f"{{{{{one}}}}}" for one in unfillable)
+            offered = ", ".join(f"{{{{{one}}}}}" for one in fact.fills)
+            raise Refused(f"{fact.name} never says {named}: it is given {offered}")
 
     @action
     def facts(self) -> list[str]:

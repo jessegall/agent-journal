@@ -58,7 +58,7 @@ def built_in() -> dict:
 
 
 def watchable(record: Record) -> list[dict]:
-    return [{"value": fact.name, "label": fact.label, "phrase": fact.phrase, "unit": fact.unit} for fact in FACTS.each(record)]
+    return [{"value": fact.name, "label": fact.label, "phrase": fact.phrase, "unit": fact.unit, "fills": list(fact.fills)} for fact in FACTS.each(record)]
 
 
 def manifest(root: Path) -> Manifest:

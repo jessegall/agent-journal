@@ -23,8 +23,10 @@ class TriggersFeature(Feature):
     details = TriggersDetails
 
     def register(self, journal: Journal) -> None:
-        FACTS.register(self, Fact("agent.idle", MINUTES, "The agent has been idle", "the agent has been idle for more than {over} minutes", agent_idle),
-                       Fact("agent.context", PERCENT, "The agent's context is getting full", "the agent's context is more than {over} percent full", agent_context))
+        FACTS.register(self, Fact("agent.idle", MINUTES, "The agent has been idle", "the agent has been idle for more than {over} minutes", agent_idle,
+                                  fills=("title", MINUTES)),
+                       Fact("agent.context", PERCENT, "The agent's context is getting full", "the agent's context is more than {over} percent full", agent_context,
+                            fills=("title", PERCENT)))
         journal.events.handler(WatchWhatTheUserWrites())
         journal.events.handler(WatchWhatTheAgentWrites())
         journal.events.handler(SayWhatTheJournalShowsOnTheClock())

@@ -14,6 +14,7 @@ import {
     facts,
     neverMatched,
     plain,
+    saysWhat,
     sentence,
     startedBy,
     unitOf,
@@ -66,7 +67,9 @@ const repeats = computed(() =>
 );
 const textHelp = computed(() => {
     if (values.value.does === "message") return "It reaches the chat as if you had typed it.";
-    return state.value ? "Write {{n}}, {{title}}, {{minutes}}, {{percent}} or {{count}} where it should say what was found." : "";
+    if (!state.value) return "";
+    const says = saysWhat(factOf(values.value.fact));
+    return says ? `Write ${says} where it should say what was found.` : "";
 });
 const pickable = (options, current) => options.map((option) => ({...option, current: option.value === current}));
 const choices = (options, current, unavailable) =>

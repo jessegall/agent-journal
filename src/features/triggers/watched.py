@@ -72,9 +72,15 @@ class Fact:
     label: str
     phrase: str
     find: Callable
+    fills: tuple[str, ...] = ("n", "title")
+    """The placeholders this fact's own finder puts in what it sends, so a trigger can only write the ones it will be given."""
 
     def sentence(self, over: float) -> str:
         return self.phrase.format(over=int(over))
+
+    def unfillable(self, text: str) -> list[str]:
+        """The placeholders in a wording this fact never supplies. Left in, each one reaches the agent as its own braces, for good and without a word."""
+        return sorted({found.group(1) for found in PLACEHOLDER.finditer(text)} - set(self.fills))
 
 
 class FactRegistry:
@@ -114,7 +120,8 @@ def state_facts(type_: str, state: str, rows: Callable) -> list[Fact]:
         raise UndeclaredState.of(type_, state)
     told = resource.states[state]
     return [Fact(f"{type_}.{state}.{clock}", MINUTES, f"{told[0].upper()}{told[1:]} {timed}", f"{told} for more than {{over}} minutes {timed}",
-                 lambda context, agent, over, clock=clock: aged(rows(context), lambda row: getattr(row, clock) or row.created, over))
+                 lambda context, agent, over, clock=clock: aged(rows(context), lambda row: getattr(row, clock) or row.created, over),
+                 fills=("n", "title", MINUTES))
             for clock, timed in resource.clocks.items()]
 
 

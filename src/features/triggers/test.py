@@ -261,6 +261,13 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
         FACTS.get(Watched.parse("nothing.here", 1), record)
     assert "work.open.logged: work has been open for more than N minutes since its last log entry, N in minutes" in Triggers(record, actor=AGENT).facts(), \
         "the command line lists every fact this environment can watch, with what it means"
+    wrong = refusal(lambda: Triggers(record, actor=AGENT).create("Percent on a minutes fact", when="state", fact="message.unread.created", over=5, does="nudge",
+                                                                 text="a message has waited {{percent}}"))
+    assert "never says {{percent}}" in wrong and "{{minutes}}" in wrong, \
+        "a wording may only name what its fact is given: an unknown placeholder would otherwise reach the agent as its own braces, for good and without a word"
+    fine = Triggers(record, actor=AGENT).create("Minutes on a minutes fact", when="state", fact="message.unread.created", over=5, does="nudge",
+                                                text="a message has waited {{minutes}} minutes")
+    assert fine.n, "and the placeholders the fact does fill are accepted"
 
     class Owner:
         on = True

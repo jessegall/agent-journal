@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {store} from "../src/state/store.js";
-import {factOf, neverMatched, plain, sentence, unitOf} from "../src/domain/triggerWords.js";
+import {factOf, neverMatched, plain, saysWhat, sentence, unitOf} from "../src/domain/triggerWords.js";
 
 const FACTS = [
     {
@@ -8,6 +8,7 @@ const FACTS = [
         label: "A message of yours has not been read",
         phrase: "a message of yours has gone unread for more than {over} minutes",
         unit: "minutes",
+        fills: ["n", "title", "minutes"],
     },
     {
         value: "message.unanswered",
@@ -20,6 +21,7 @@ const FACTS = [
         label: "The agent's context is getting full",
         phrase: "the agent's context is more than {over} percent full",
         unit: "percent",
+        fills: ["title", "percent"],
     },
     {
         value: "todo.ready",
@@ -29,6 +31,13 @@ const FACTS = [
     },
 ];
 store.spec = {facts: FACTS};
+
+describe("what a fact gives a wording to say", () => {
+    it("offers only the placeholders that fact will fill, in the user's words", () => {
+        expect(saysWhat(factOf("agent.context"))).toBe("{{title}} for its title, {{percent}} for how full");
+        expect(saysWhat(factOf("message.unread"))).toBe("{{n}} for its number, {{title}} for its title, {{minutes}} for how many minutes");
+    });
+});
 
 describe("a trigger that has never matched", () => {
     it("names the half that is still empty rather than stopping at never", () => {
