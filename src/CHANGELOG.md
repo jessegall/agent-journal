@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.270.3 — A finished agent is left in peace, and a red run says whether to believe it
+
+- An agent with nothing left to do is no longer told to carry on. The line exists so that only you stopping an agent keeps it stopped, but it never asked whether there was anything to carry on with: in a ticket environment whose ticket had merged, with no work open and no row on the list, it said so every fifteen minutes to an agent that had finished.
+- A helper whose turn ended while its own background run goes on is working, not idle. It had been reported idle four times in one night while a ten-minute sweep ran, and each report cost the helper an interruption - the one thing that genuinely wastes its time.
+- A test that ran out of time says how busy the machine was and tells you to run it alone before believing it. A red run used to say nothing until someone re-ran each test by hand.
+- Every server start and every agent launch checks each agent's hooks against what this version writes, and writes again the ones that are missing, stale or pointing at a path that is gone. An agent made inside an existing environment could have no hooks at all and nothing said so.
+- A ticket start whose agent never appears says so on the ticket, with the last words of the launch, instead of staying stamped as launched for good.
+- With auto mode on, an orchestrating agent decides its ticket agents' questions itself and writes down what it chose, instead of leaving them to wait on you. A secret, a login, or anything outward-facing or in production still comes to you, and an agent can mark a question as yours whatever its words.
+- A chat mark's kind is decided once, by the server, and a mark is a plugin note only when a plugin's own card says so. A helper's marks had been filed as plugin notes, so switching those off lost every one of them.
+- The steps of a start are recorded one at a time and written whole, so five warm tracks ending together never drop a line, and journal speed --start says where the last start's time went. The starting cover names the step it is on, and it rises over the unreachable screen as soon as the server listens.
+- The status bar and the doing line are written at most once a second rather than on every tool call, a lock another process holds is tried again after a millisecond and then at growing gaps, and a budget row says which span it measures.
+- The worktree folders left behind are named, read from git rather than from the rows - this repository held 72 git worktrees against 25 standing rows.
+- Seven check scripts that nothing ran are wired, a check whose script is missing says so, eighty-two prose names say what they hold, and every endpoint is answered by a controller method, a shared funnel, or a machine protocol that says who may be on that list.
+
 ## 2.270.2 — Starting a ticket stops making you wait, and the phone says when the journal is updating
 
 - Starting a ticket seats its environment, and the seating was quadratic: it writes a row for every feature, and every row it created made the others be read again. One boot now, and the writes happen after the start has answered, so the command you wait on stops carrying them. Measured on a workspace that starts tickets back to back: up to three quarters of a second of working time per start, and 341 milliseconds of processor time down to 179.
