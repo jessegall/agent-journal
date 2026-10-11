@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.271.1 — The chat no longer blames the display hook for words still on their way
+
+- The turn's last words are waited for before the catch-up judges them. The provider sends a turn's final text and the hook that ends the turn at the same moment, each as its own process, so on a loaded machine the end arrived first: the catch-up found nothing held, called the words undelivered, filed a fault and filled the chat from the transcript. Nothing was lost, but the report named the wrong cause and sent agents looking for a broken hook.
+
 ## 2.271.0 — A nudge of your own can watch anything the journal keeps
 
 <!-- new-feature {"id": "watchable-facts", "title": "Write a nudge that watches anything", "text": "A nudge of your own used to be limited to eight things the journal knew how to look at, fixed in its code. Now every kind of row says what can be watched about it and how long it has been that way, so you can write a nudge about an unread message, an open question, work left unlogged or anything else the journal keeps - and the editor shows you which rows it matches right now, and what it would say about each, before you save it.", "button": "Show me", "note": "Settings, Triggers, New trigger."} -->
