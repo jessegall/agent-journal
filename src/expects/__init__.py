@@ -33,8 +33,7 @@ SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "cloc
 
 def stated(row) -> dict:
     """What an expectation says about a row: the fields it set, and not the ones it left alone. A row's number, its timestamps and its empty fields are the play's business, not the promise's."""
-    blank = type(row)()
-    return {name: value for name, value in held(row).items() if value != held(blank).get(name)}
+    return {name: value for name, value in held(row).items() if value}
 
 
 def held(row) -> dict:
