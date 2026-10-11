@@ -10,8 +10,15 @@ import TextArea from "../kit/TextArea.vue";
 import TextInput from "../kit/TextInput.vue";
 
 const props = defineProps({draft: {type: Object, required: true}});
+const emit = defineEmits(["allowed"]);
 const program = ref("");
 const own = computed(() => props.draft.kind === "custom");
+
+// Allowing a program the agent proposed is a decision of its own, so the page it sits on saves it at once rather than waiting for the Save below.
+function allow(name) {
+    allowedProgram(props.draft, name);
+    emit("allowed", name);
+}
 
 function addProgram() {
     const name = program.value.trim();
@@ -63,7 +70,7 @@ const removeField = (index) => props.draft.fields.splice(index, 1);
             <template v-if="draft.proposed && draft.proposed.length">
                 <div class="secret-programs">
                     <template v-for="name in draft.proposed" :key="name">
-                        <Btn small :aria-label="`Allow ${name}, which the agent proposed`" @click="allowedProgram(draft, name)"><Icon name="plus" :size="12" /> Allow {{ name }}</Btn>
+                        <Btn small :aria-label="`Allow ${name}, which the agent proposed`" @click="allow(name)"><Icon name="plus" :size="12" /> Allow {{ name }}</Btn>
                     </template>
                 </div>
             </template>
