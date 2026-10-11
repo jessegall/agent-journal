@@ -506,17 +506,20 @@ def save_rows(root: Path) -> None:
         traceback.print_exc()
 
 
-def mend_hooks(root: Path) -> None:
+def mend_hooks(root: Path) -> list[str]:
+    """Writes again the hooks that are missing or stale and files a notice for each; the lines are handed back to be printed after the address, which is always the first thing a server prints."""
     try:
         from controllers.types import Notices
         from providers.wiring import repaired
         from engine.record import Record
         from resources.base import SYSTEM
-        for line in repaired(root):
-            print(f"journal: {line}", flush=True)
+        lines = repaired(root)
+        for line in lines:
             Notices(Record(root, default_env(root)), actor=SYSTEM).create(line, tone="note")
+        return lines
     except Exception:
         traceback.print_exc()
+        return []
 
 
 def mark_first_start(root: Path) -> None:
@@ -569,7 +572,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     runtime.mark_booting(root)
     runtime.mark_boot_step(root, "Loading the journal")
     mark_first_start(root)
-    mend_hooks(root)
+    mended = mend_hooks(root)
     runtime.remember_git_user(root)
     tell_threads_on_signal(root)
     allow_open_files()
@@ -577,6 +580,8 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     server = serve(root, port)
     restore_rows(root)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
+    for line in mended:
+        print(f"journal: {line}", flush=True)
     recorded(root, "until the server listens", began)
     changed = threading.Event()
     halting = threading.Event()
