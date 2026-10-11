@@ -303,6 +303,11 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
         rebooted()
         assert shape(Triggers(record, actor=USER).load(sleeper.n), record)["brief"].startswith("Asleep: nothing in this journal watches test.sleepy"), \
             "a trigger reads asleep the moment its feature goes off, though nothing saved it since"
+        import io
+        from commands.cli import run
+        printed = io.StringIO()
+        run(["--root", str(record.root), "--env", record.env, "trigger", "show", str(sleeper.n)], out=printed, err=io.StringIO())
+        assert "Asleep: nothing in this journal watches test.sleepy" in printed.getvalue(), "and the command line, which the agent reads it through, says the same"
         owner.on = True
         rebooted()
         assert not shape(Triggers(record, actor=USER).load(sleeper.n), record)["brief"].startswith("Asleep"), "and reads awake the moment the feature is back"

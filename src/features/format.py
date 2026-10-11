@@ -73,11 +73,16 @@ def shaped(r, record, surface: str = "") -> dict:
     return SHAPED.get((str(record.home), r.type, r.n, r.updated, surface, settled(record)), None, lambda: shape(r, record, surface))
 
 
-def read_as_dict(r, record) -> dict:
-    """The row as it reads now: its saved fields, and over them what its controller says is derived from the rest of the journal."""
+def read_as(r, record):
+    """The row as it reads now: its saved fields, and over them what its controller says is derived from the rest of the journal. The one place that says it, for the viewer, the phone and the command line alike."""
+    from dataclasses import replace
     from controllers.types import CONTROLLERS
-    row = as_dict(r)
-    return {**row, **CONTROLLERS[r.type](record, actor=SYSTEM)._derived(r)} if record is not None and r.type in CONTROLLERS else row
+    derived = CONTROLLERS[r.type](record, actor=SYSTEM)._derived(r) if record is not None and r.type in CONTROLLERS else {}
+    return replace(r, **derived) if derived else r
+
+
+def read_as_dict(r, record) -> dict:
+    return as_dict(read_as(r, record))
 
 
 def shape(r, record=None, surface: str = "") -> dict:
