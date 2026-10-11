@@ -469,9 +469,8 @@ def stepping(root: Path, text: str) -> None:
     """Says which step the running upgrade is on, in the mark it holds, for the viewer and the status line to read."""
     if str(PACKAGE) not in sys.path:
         sys.path.append(str(PACKAGE))
-    from engine.runtime import mark_upgrade, upgrade_mark
-    if upgrade_mark(root).exists():
-        mark_upgrade(root, text)
+    from engine.runtime import mark_upgrade_step
+    mark_upgrade_step(root, text)
 
 
 def installed_here(root: Path, package: Path = PACKAGE) -> bool:

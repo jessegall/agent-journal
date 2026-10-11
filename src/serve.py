@@ -291,9 +291,17 @@ def watched_reads(root: Path) -> bool:
         return True
 
 
+RECKON_UPGRADE_EVERY = 5.0
+
+
 def watch_runtime(root: Path, halting: threading.Event) -> None:
     from controllers.agents import write_pending_rows
+    reckoned = 0.0
     while not halting.wait(WATCH_SECONDS):
+        if time.time() - reckoned >= RECKON_UPGRADE_EVERY:
+            reckoned = time.time()
+            if runtime.clear_stale_upgrade(root):
+                print("journal: the update that held this journal is not running; it holds nobody now", flush=True)
         runtime.refresh_flags(root)
         watch_marks(watched_reads(root))
         renew_stamps()

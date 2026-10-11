@@ -2,11 +2,13 @@ import os
 import json
 import threading
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from datetime import datetime
 from pathlib import Path
 
 from engine.git import config_changed_at, git_user_name
 from engine.locks import RUNTIME
+from engine.proc import run
 from engine.stored import read_json, write_json, write_text
 
 DEFAULT_ENV = "main"
@@ -325,40 +327,98 @@ def warming(root: Path) -> bool:
 
 
 UPGRADE_MARK = "upgrading"
-UPGRADE_LONGEST = 600
+UPGRADE_LONGEST = 300
+
+
+def a_moment(said: str) -> bool:
+    """Whether a line of a mark is the moment a process began: anything else means the mark was not written by an update that said whose it was."""
+    return said.strip().replace(".", "", 1).isdigit()
+
+
+@dataclass(frozen=True)
+class Upgrading:
+    """The process an update is running in, the step it says it is on, and when it began. An update writes this; only the engine takes it away."""
+
+    pid: int = 0
+    born: float = 0.0
+    step: str = ""
+    at: float = 0.0
+
+    @classmethod
+    def read(cls, root: Path) -> "Upgrading":
+        try:
+            lines = upgrade_mark(root).read_text().splitlines()
+            at = upgrade_mark(root).stat().st_mtime
+        except OSError:
+            return cls()
+        if len(lines) < 3 or not lines[0].strip().isdigit() or not a_moment(lines[1]):
+            return cls(step=" ".join(lines).strip(), at=at)
+        return cls(int(lines[0]), float(lines[1]), lines[2].strip(), at)
+
+    @property
+    def is_nobodys(self) -> bool:
+        """Whether the mark names no process, as one written before an update said whose it was does: nothing can be asked about it but its age."""
+        return not self.pid
+
+    def written(self) -> str:
+        return f"{self.pid}\n{self.born}\n{self.step}"
+
+    def still_running(self) -> bool:
+        """Whether the update that wrote this is still going: its process alive and the same one that started, and not running longer than an update may."""
+        from engine.sessions import alive
+        if time.time() - self.at >= UPGRADE_LONGEST:
+            return False
+        if self.is_nobodys:
+            return True
+        return alive(self.pid) and started_at(self.pid) == self.born
 
 
 def upgrade_mark(root: Path) -> Path:
     return folder(root) / UPGRADE_MARK
 
 
-def mark_upgrade(root: Path, step: str) -> None:
-    """Says which step an upgrade is on, with the process running it, so a mark an upgrade was killed before clearing stops holding every agent back."""
-    write_text(upgrade_mark(root), f"{os.getpid()}\n{step}")
-
-
-def upgrade_held(root: Path) -> tuple[int, str]:
-    """The process a mark names and the step it says it is on; a mark from before the process was named reads as nobody, and is judged on its age alone."""
+def started_at(pid: int) -> float:
+    """When a process started, in seconds since the epoch, so a pid the system has handed to something else is not mistaken for the one that took it; a process that cannot be asked answers 0."""
     try:
-        named, _, step = upgrade_mark(root).read_text().partition("\n")
-    except OSError:
-        return 0, ""
-    return (int(named) if named.strip().isdigit() else 0), (step or named).strip()
+        said = run(["ps", "-o", "lstart=", "-p", str(pid)], timeout=2).strip()
+    except (OSError, ValueError):
+        return 0.0
+    try:
+        return datetime.strptime(said, "%a %b %d %H:%M:%S %Y").timestamp() if said else 0.0
+    except ValueError:
+        return 0.0
+
+
+def mark_upgrade(root: Path, step: str) -> None:
+    """Starts an update's mark: the process running it, when that process began, and the step it is on, so the engine can ask whether it is still the one updating."""
+    write_text(upgrade_mark(root), Upgrading(os.getpid(), started_at(os.getpid()), step).written())
+
+
+def mark_upgrade_step(root: Path, step: str) -> None:
+    """Says which step the update is on without taking it over: the install hands part of its work to a process of its own, and that one saying where it has got to must not make the mark its own, or the update would end when it does."""
+    held = Upgrading.read(root)
+    if not held.at:
+        return
+    write_text(upgrade_mark(root), replace(held, step=step).written())
+
+
+def clear_stale_upgrade(root: Path) -> bool:
+    """The engine's own reckoning, on its beat: an update whose process is gone, was replaced, or has run longer than an update may, stops being an update. Nothing else takes the mark away, so no caller can forget to."""
+    held = Upgrading.read(root)
+    if not held.at or held.still_running():
+        return False
+    upgrade_mark(root).unlink(missing_ok=True)
+    return True
 
 
 def upgrade_step(root: Path) -> str:
-    """The step the running upgrade says it is on."""
-    return upgrade_held(root)[1] if upgrading(root) else ""
+    """The step the running update says it is on."""
+    return Upgrading.read(root).step
 
 
 def upgrading(root: Path) -> bool:
-    from engine.sessions import alive
-    try:
-        fresh = time.time() - upgrade_mark(root).stat().st_mtime < UPGRADE_LONGEST
-    except OSError:
-        return False
-    held = upgrade_held(root)[0]
-    return fresh and (held == 0 or alive(held))
+    """Whether an update is running, as the engine last reckoned it: the mark is the answer, and the engine alone decides whether it stays."""
+    return upgrade_mark(root).is_file()
 
 
 TESTS_RUNNING = "tests-running"

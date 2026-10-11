@@ -205,14 +205,33 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
             "a command run by an agent that is a parent of the upgrade is the upgrade's own, and is never waited for"
     finally:
         waiting.ancestors, waiting.pid_of = kept
-    runtime.mark_upgrade(record.root, "Migrating the record")
-    assert runtime.upgrade_step(record.root) == "Migrating the record", "the running upgrade says which step it is on, in the mark it holds"
-    runtime.upgrade_mark(record.root).write_text("4194303\nInstalling the new files")
-    assert (runtime.upgrading(record.root), runtime.upgrade_step(record.root)) == (False, ""), \
-        "a mark an upgrade was killed before clearing holds nobody back: the process it names is gone, so no upgrade is running"
+    import os
+    runtime.mark_upgrade(record.root, "Preparing the update")
+    assert (runtime.upgrading(record.root), runtime.upgrade_step(record.root)) == (True, "Preparing the update"), \
+        "an update that has started holds the mark and says which step it is on"
+    runtime.mark_upgrade_step(record.root, "Migrating the record")
+    moved = runtime.Upgrading.read(record.root)
+    assert (moved.pid, moved.step) == (os.getpid(), "Migrating the record"), \
+        "a step says where the update has got to without taking it over, since the install hands part of its work to a process of its own"
+    assert runtime.clear_stale_upgrade(record.root) is False and runtime.upgrading(record.root), \
+        "the engine leaves an update alone while the process running it is still the one that started it"
+    def reckoned(held: str) -> bool:
+        """What the engine makes of a mark on its beat: whether it took it away, and whether anything is held afterwards."""
+        runtime.upgrade_mark(record.root).write_text(held)
+        return runtime.clear_stale_upgrade(record.root) and not runtime.upgrading(record.root)
+
+    assert reckoned(runtime.Upgrading(4194303, 1.0, "Installing the new files").written()), \
+        "an update whose process is gone is not an update: the engine takes the mark away, so a killed one holds nobody"
+    assert reckoned(runtime.Upgrading(os.getpid(), 1.0, "Installing the new files").written()), \
+        "nor is one whose number the system has handed to another process, which is why the mark says when its process began"
+    runtime.mark_upgrade(record.root, "Installing the new files")
+    os.utime(runtime.upgrade_mark(record.root), (time.time() - runtime.UPGRADE_LONGEST - 1,) * 2)
+    assert runtime.clear_stale_upgrade(record.root) and not runtime.upgrading(record.root), \
+        "and an update still running after the longest one may take stops holding anyone: a hung update is as bad as a dead one"
     runtime.upgrade_mark(record.root).write_text("Migrating the record")
-    assert runtime.upgrade_step(record.root) == "Migrating the record", "a mark from before the process was named is read as it was, and judged on its age alone"
-    runtime.upgrade_mark(record.root).unlink()
+    assert (runtime.upgrading(record.root), runtime.upgrade_step(record.root)) == (True, "Migrating the record"), \
+        "a mark an older build wrote, before an update said whose it was, is read as it was and judged on its age alone"
+    runtime.upgrade_mark(record.root).unlink(missing_ok=True)
     monkeypatch.setattr(routes, "release_versions", lambda: ["2.263.0", "2.262.0", "2.250.0"])
     monkeypatch.setattr(routes, "version", lambda: "2.263.0")
     assert dispatch("GET", "/api/releases", record.root, {}, {}).body == {"versions": ["2.262.0", "2.250.0"]}, "the updates page lists the released versions except the one running"

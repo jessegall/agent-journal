@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.270.4 — An update that is not running stops holding the journal
+
+- A journal held by an update that had already stopped would not let any agent write until ten minutes had passed. The mark that says an update is running was left behind when the update ended any way but the ordinary one, and nothing asked whether it was still true. The engine now asks, every five seconds: the mark names the process running the update and the moment that process started, and an update whose process is gone, whose number the system has handed to something else, or that has run longer than five minutes is no longer an update. Nothing else takes the mark away, so no caller can forget to, and a hung update is now treated like a dead one rather than being waited out.
+- A step of an update says where it has got to without taking the update over. Part of an install runs in a process of its own, and that process saying "migrating the record" used to make the update its own, so the update appeared to end when that part did.
+
 ## 2.270.3 — A finished agent is left in peace, and a red run says whether to believe it
 
 - An agent with nothing left to do is no longer told to carry on. The line exists so that only you stopping an agent keeps it stopped, but it never asked whether there was anything to carry on with: in a ticket environment whose ticket had merged, with no work open and no row on the list, it said so every fifteen minutes to an agent that had finished.
