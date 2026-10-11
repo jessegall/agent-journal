@@ -7,8 +7,11 @@ from email.message import Message
 from email.parser import BytesParser
 from typing import BinaryIO, Iterator
 
-UPLOAD_LIMIT_MB = 100
+UPLOAD_LIMIT_MB = 1024
 UPLOAD_LIMIT = UPLOAD_LIMIT_MB * 1024 * 1024
+# What one upload may be at a door that reads the whole body before passing it on, such as the phone and the journal on a server: its limit is what it can hold at once, not what the journal's own door spools to disk.
+FORWARDED_LIMIT_MB = 64
+FORWARDED_LIMIT = FORWARDED_LIMIT_MB * 1024 * 1024
 CHUNK = 1024 * 1024
 PARSER = BytesParser(policy=policy.default)
 LINE = b"\r\n"

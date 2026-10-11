@@ -12,8 +12,8 @@ from urllib.request import urlopen
 
 from features.format import rendered
 from features.routing import resolve
+from engine.multipart import FORWARDED_LIMIT, FORWARDED_LIMIT_MB
 from engine.disk import KEPT_FREE_BYTES, DiskFull, free_bytes, nearly_full
-from engine.multipart import UPLOAD_LIMIT, UPLOAD_LIMIT_MB
 from engine.record import Record
 from features.phone.controller import Phones
 from engine.color import identity
@@ -391,8 +391,8 @@ class Gateway:
         if visit.handler.command == "POST" and not visit.same_origin():
             return visit.refuse(403, "a change comes only from this journal's own pages")
         size = visit.length()
-        if visit.url.path.endswith("/upload") and size > UPLOAD_LIMIT:
-            return visit.refuse(413, f"that upload is {size // (1024 * 1024)} MB, over the {UPLOAD_LIMIT_MB} MB limit for one upload")
+        if visit.url.path.endswith("/upload") and size > FORWARDED_LIMIT:
+            return visit.refuse(413, f"that upload is {size // (1024 * 1024)} MB, over the {FORWARDED_LIMIT_MB} MB limit for one upload from outside; send it from the machine the journal runs on")
         if size > BODY_LIMIT and not visit.url.path.endswith("/upload"):
             return visit.refuse(413, "too large")
         asked = (visit.handler.command, visit.url.path)

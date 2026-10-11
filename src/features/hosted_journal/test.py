@@ -374,6 +374,11 @@ def test_another_site_plain_http_from_outside_a_strange_host_large_bodies_and_to
     origin = f"http://127.0.0.1:{hosted.port}"
     big = hosted.call("POST", "/api/main/todo", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin=origin, Content_Length=str(2 * 1024 * 1024))
     assert big.status == 413
+    from engine.multipart import FORWARDED_LIMIT, UPLOAD_LIMIT
+    sent = hosted.call("POST", "/api/main/message/1/upload", {"title": "x"}, Cookie=f"{COOKIE}={token}", Origin=origin, Content_Length=str(FORWARDED_LIMIT + 1))
+    assert (sent.status, "send it from the machine" in sent.text) == (413, True), \
+        "an upload from outside is held to what the gateway can read whole, which is far less than the journal's own door takes"
+    assert FORWARDED_LIMIT < UPLOAD_LIMIT, "the journal's own door spools an upload to disk, so it takes much more than a door that forwards one"
     gateway = ROUTES.keyed(hosted.record)[EVERY_OTHER]
     gateway.streams[hashed(token)] = MOST_STREAMS
     assert hosted.call("GET", "/api/main/events", Cookie=f"{COOKIE}={token}", Accept="text/event-stream").status == 429

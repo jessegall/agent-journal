@@ -1,5 +1,5 @@
 const EXTENSIONS = {"image/jpeg": "jpg", "image/svg+xml": "svg", "image/heic": "heic"};
-export const UPLOAD_LIMIT_MB = 100;
+export const UPLOAD_LIMIT_MB = 1024;
 export const UPLOAD_LIMIT = UPLOAD_LIMIT_MB * 1024 * 1024;
 const PASTED = /^image(\.\w+)?$/i;
 

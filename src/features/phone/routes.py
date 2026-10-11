@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass
 from typing import TypedDict
 from http.cookies import SimpleCookie
 
-from engine.multipart import UPLOAD_LIMIT, UPLOAD_LIMIT_MB
+from engine.multipart import FORWARDED_LIMIT, FORWARDED_LIMIT_MB
 from engine.record import Record
 from providers import DEFAULT_PROVIDER
 from resources.fields import Loaded
@@ -345,7 +345,7 @@ class PhoneRoutes:
             return handler.answer(403, "refused")
         length = handler.headers.get("Content-Length", "")
         size = int(length) if length.isdigit() else 0
-        if size > UPLOAD_LIMIT:
+        if size > FORWARDED_LIMIT:
             return handler.answer(413, "too large")
         phone = self.phone(handler)
         if phone is None:
@@ -361,8 +361,8 @@ class PhoneRoutes:
             return handler.answer(403, "refused")
         length = handler.headers.get("Content-Length", "")
         size = int(length) if length.isdigit() else 0
-        if len(rest) != 2 or not rest[0].isdigit() or not 0 < size <= UPLOAD_LIMIT:
-            return handler.answer(413, f"a file goes to one of this phone's messages, up to {UPLOAD_LIMIT_MB} MB")
+        if len(rest) != 2 or not rest[0].isdigit() or not 0 < size <= FORWARDED_LIMIT:
+            return handler.answer(413, f"a file goes to one of this phone's messages, up to {FORWARDED_LIMIT_MB} MB")
         phone = self.phone(handler)
         if phone is None:
             return None
