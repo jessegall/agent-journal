@@ -1,4 +1,11 @@
+from engine.events.resources import QuestionAnswered
+from expects import Given, Unchanged
 from features.base import Feature
+from features.boards.resource import Board
+from features.tickets.handlers import TicketClosed
+from features.tickets.resource import Ticket
+from resources.base import USER
+from resources.types import Question
 from features.journal import Journal
 from features.tickets.commands import ShowTicketTodos
 from features.tickets.controller import Tickets
@@ -25,6 +32,13 @@ from features.tickets.worker import start_worker
 __all__ = ["Tickets"]
 
 
+CLOSED = TicketClosed(n=1, type="ticket", action="completed", actor=USER)
+
+
+def card(n: int, **data) -> Ticket:
+    return Ticket(n=n, title=f"Card {n}", data={"board": 1, **data})
+
+
 class TicketsFeature(Feature):
     details = TicketsDetails
     nudges = (
@@ -49,8 +63,14 @@ class TicketsFeature(Feature):
         PLAN_STARTS.add(self, start_worker)
         journal.commands.add("ticket", ShowTicketTodos())
         journal.events.handler(LookAfterTickets())
-        journal.events.handler(WakeTheTicketAgent())
-        journal.events.handler(FinishTheBoardWithItsLastTicket())
+        journal.events.handler(WakeTheTicketAgent(), expects=[
+            Given(QuestionAnswered(n=1, type="question", action="answered", actor=USER), rows=[Question(n=1, title="Which branch?", completed=1.0)]) >> Unchanged(),
+        ])
+        journal.events.handler(FinishTheBoardWithItsLastTicket(), expects=[
+            Given(CLOSED, rows=[card(1), Board(n=1, title="Launch")]) >> Unchanged(),
+            Given(CLOSED, rows=[card(1), card(2), Board(n=1, title="Launch", data={"started": 5.0})]) >> Unchanged(),
+            Given(CLOSED, rows=[card(1), Board(n=1, title="Launch", data={"started": 5.0, "finished": 9.0})]) >> Unchanged(),
+        ])
         journal.events.handler(HoldTicketKnowledge())
         journal.commands.intercept("create", DraftsCarryOneLine())
         journal.commands.intercept("update", DraftsCarryOneLine())
