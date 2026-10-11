@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.270.1 — A read no longer writes a hundred rows
+
+- An environment is seated where it is made. Seating creates a row for every feature of an environment that has none, and it used to run inside whatever command came next: making a ticket makes an environment, so the next command - usually a plain read - wrote a hundred-odd rows and paid for all of them. On a workspace with 68 tickets that read cost 190 to 241 milliseconds of work where a repeated read costs 20. The cost now sits on the write that caused it, and the next command finds the rows already there.
+- A check whose run has no live process reads as not running. A run stamps its progress and clears it when it ends, but recorded nothing about who was running, so a process that was killed left a check reading as running until someone cleared it by hand. The lock a run holds is what says whether it is alive.
+- An upgrade that fails resumes the agents it paused, instead of leaving them to wait out a staleness rule. A failed fetch left three agents paused in a workspace, one of them refusing every command until a person told it in words to carry on.
+
 ## 2.270.0 — Automatic updates are yours to choose, and the chat shows a sequence's ends
 
 - Automatic updates ship OFF for a journal installed from now on, so nobody is opted in without choosing. A journal that already had them keeps them: a migration records the choice before the default changes under it, and an explicit off stays off.
