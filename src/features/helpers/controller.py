@@ -80,6 +80,13 @@ def given_back(todos: list[Todo]) -> str:
     return f"; given back: to-do {', '.join(str(t.n) for t in todos)}" if todos else ""
 
 
+def wrote(who: str, message: int, words: str) -> str:
+    """Words from one agent to another, naming who wrote them and the message they were filed as, so the one reading them answers the record rather than a line that appeared on its screen."""
+    return f"""{who} wrote in message {message}, which is in your own environment, where journal message read {message} shows it:
+
+{words}"""
+
+
 def handed_over(todos: list[Todo]) -> str:
     if not todos:
         return ""
@@ -254,14 +261,14 @@ class Helpers(Controller):
             return self._said_to_peer(place, n, text, todos)
         row = self._unfinished(n, "finished")
         handed = self._handable(numbers_in(todos))
-        words = f"{handed_over(handed)}\n{text}" if handed else text
+        home = Record(self.record.root, row.environment)
+        filed = Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
+        words = wrote("The agent that dispatched you", filed.n, f"{handed_over(handed)}\n{text}" if handed else text)
         running = tell_soon(self.record, row.environment, row.provider, words)
         if not running:
             if row.worktree:
                 Worktrees(self.record, actor=SYSTEM).renew(int(row.worktree))
             self._revive(row, words)
-        home = Record(self.record.root, row.environment)
-        Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
         self._handed(row, home, handed)
         Helpers(self.record, actor=SYSTEM).update(n, report="", answering=True, latest=titled(text), reuses=int(row.reuses) + 1)
         bus.announce(self.record, HELPER, row.n, Telling.BRIEFED if running else Telling.CONTINUED, AGENT)
@@ -310,7 +317,7 @@ class Helpers(Controller):
         there = Record(self.record.root, peer.environment)
         message = Messages(there, actor=AGENT).create(titled(text), brief=text, peer=me.name)
         answer = f'answer with journal helper say {me.n} "<text>"'
-        if not tell_in(self.record, peer.environment, peer.provider, f"helper {me.n}, {me.name}, wrote in message {message.n}: {text} - {answer}"):
+        if not tell_in(self.record, peer.environment, peer.provider, f"{wrote(f'Helper {me.n}, {me.name},', message.n, text)}\n\n{answer}"):
             Nudges(there, actor=SYSTEM).to_primary(titled(f"helper {me.n}, {me.name}, wrote in message {message.n}"), f"{text}\n\n{answer}")
         return f"sent to {peer.name}"
 

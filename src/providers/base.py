@@ -22,6 +22,11 @@ JOURNAL, PERSON = "journal", "person"
 KEPT_ENDED = 20
 
 
+def said_by(who: str) -> str:
+    """The mark on a line the journal types for somebody else, so the agent reading it can tell a message from a stray paste."""
+    return f"{MARK} a message from the agent in {who}, filed in your own environment as well:"
+
+
 def journal_hook(text: str) -> bool:
     return LEGACY in text or ("/hook.sh" in text and "/.journal" in text)
 

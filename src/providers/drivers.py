@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from controllers.types import Agents
-from providers.base import JOURNAL, MARK
+from providers.base import JOURNAL, MARK, said_by
 from providers.payload import Asking
 from engine import typist
 from resources.base import SYSTEM, Refused
@@ -297,7 +297,10 @@ class Driver(ABC):
         if self.awaits_answer():
             return False
         self.entered_at = 0.0
-        typed = self._typed(f"{MARK} {line}", confirmed=True) if by == JOURNAL else self._typed(line, confirmed=self.ENTER_CAN_MISS)
+        if by == JOURNAL:
+            typed = self._typed(f"{MARK} {line}", confirmed=True)
+        else:
+            typed = self._typed(f"{said_by(by)}\n{line}", confirmed=self.ENTER_CAN_MISS)
         if typed or self.entered_at:
             self.reached[line] = time.time()
         return typed

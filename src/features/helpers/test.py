@@ -149,10 +149,16 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     assert "say why" in refused(lambda: helpers.retire(lost.n)), "retiring a helper takes a reason"
     assert "Are you sure you can't reuse" in refused(lambda: helpers.retire(lost.n, why="its job is done")), "the reason is read back with the way to reuse the helper before it is retired"
     monkeypatch.setattr("features.helpers.controller.tell_in", lambda *given: True)
-    monkeypatch.setattr("features.helpers.controller.tell_soon", lambda *given: True)
+    typed = []
+    monkeypatch.setattr("features.helpers.controller.tell_soon", lambda record, environment, provider, words: typed.append(words) or True)
     assert helpers.say(ghost.n, "carry on") == "sent to Ghost", "a follow-up reaches a helper that is running"
     sent = Messages(Record(record.root, "helper-env"), actor=SYSTEM).rows.every()
     assert [(m.brief, m.data.get("from_main")) for m in sent] == [("carry on", True)], "and is kept in the helper's chat as a message from the main agent, so its inspector can show it"
+    assert typed[-1] == f"The agent that dispatched you wrote in message {sent[0].n}, which is in your own environment, where journal message read {sent[0].n} shows it:\n\ncarry on", \
+        "the words reach the helper naming who wrote them and the message they were filed as, so a helper is never asked to act on a line that appeared on its screen from nobody"
+    from providers.base import said_by
+    assert said_by("main").startswith("[journal] a message from the agent in main"), \
+        "and the journal marks a line it types for somebody else with who it is from, as it marks its own"
     Helpers(record, actor=SYSTEM).update(ghost.n, report="done for now")
     helpers.say(ghost.n, "one more thing")
     assert helpers.load(ghost.n).report == "", "a follow-up takes the helper's earlier report away, so the menu shows it working again"
