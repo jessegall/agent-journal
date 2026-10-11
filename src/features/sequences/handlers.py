@@ -87,8 +87,8 @@ def start(context: Context, moment: str, event: ResourceEvent, about: str) -> No
             continue
         if row.get("only_when_idle") and sequences.in_hand():
             continue
-        unless = sequences.load(row["n"]).unless
-        if unless and event.type in CONTROLLERS and matches(CONTROLLERS[event.type](context.record, actor=SYSTEM).load(event.n), unless):
+        unless = sequences.peek(row["n"]).unless
+        if unless and event.type in CONTROLLERS and matches(CONTROLLERS[event.type](context.record, actor=SYSTEM).peek(event.n), unless):
             continue
         sequences.run(row["n"], about=about)
 
@@ -100,7 +100,7 @@ class EndWithItsRow(Handler):
         sequences = context.journal.get(Sequences)
         key = RunKey(context.record.env, f"{event.type}:{event.n}").text
         for row in sequences.open_rows():
-            sequence = sequences.load(row["n"])
+            sequence = sequences.peek(row["n"])
             if key in sequence.runs:
                 sequences.update(sequence.n, runs=sequences.without(sequence, key))
 
@@ -243,7 +243,7 @@ class DispatchAgainOnAnswer(Handler):
         if not agent or not boards:
             return
         for row in context.journal.get(Sequences).open_rows():
-            sequence = context.journal.get(Sequences).load(row["n"])
+            sequence = context.journal.get(Sequences).peek(row["n"])
             if not sequence.dispatch:
                 continue
             for key in sequence.runs:

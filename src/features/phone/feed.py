@@ -224,7 +224,7 @@ def plan_strip(home: Record, plans: Plans, plan) -> PlanStrip:
 
 def marks(home: Record, since: float) -> list[Mark]:
     agents = Agents(home, actor=SYSTEM)
-    rows = [shaped(agents.load(row["n"]), home, VIEWER) for row in agents.rows.summaries() if not row["deleted"] and row["updated"] >= since]
+    rows = [shaped(agents.peek(row["n"]), home, VIEWER) for row in agents.rows.summaries() if not row["deleted"] and row["updated"] >= since]
     found = [made for row in rows if not row["data"].get("parent") for made in Session.from_view(row).marks()]
     return [made for made in found if made["created"] >= since]
 
@@ -241,7 +241,7 @@ def faces(home: Record, refs: set[str]) -> dict[str, list[dict]]:
 
 def latest(home: Record, kind: str, before: float, away: list[str]) -> list:
     rows = POSTED[kind](home, actor=SYSTEM)
-    loaded = (rows.load(row["n"]) for row in reversed(rows.rows.summaries()) if not row["deleted"])
+    loaded = (rows.peek(row["n"]) for row in reversed(rows.rows.summaries()) if not row["deleted"])
     return list(islice((row for row in loaded if row.created < before and in_feed(kind, row, away)), FEED))[::-1]
 
 

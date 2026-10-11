@@ -46,7 +46,7 @@ def answers(kind: str, message) -> bool:
 def read_and_open(journal) -> list:
     """The open messages the agent has read that are not its own: only the rows its summary says it has seen are read from disk, not every open message."""
     messages = journal.get(Messages)
-    return [m for m in (messages.load(row["n"]) for row in messages.rows.standing_summaries() if AGENT in row["seen"]) if theirs(m)]
+    return [m for m in (messages.peek(row["n"]) for row in messages.rows.standing_summaries() if AGENT in row["seen"]) if theirs(m)]
 
 
 UNANSWERED: dict[tuple, tuple] = {}

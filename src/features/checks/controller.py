@@ -1,5 +1,6 @@
 import fcntl
 import os
+import shlex
 import subprocess
 import threading
 import time
@@ -28,6 +29,8 @@ STAMP_EVERY = 1.0
 REPORTS = "check-reports"
 GATES = "gates.lock"
 REPORT = "JOURNAL_REPORT"
+SCRIPTS = (".py", ".sh")
+CANNOT_RUN = 127
 
 
 class Checks(Controller):
@@ -193,8 +196,28 @@ class Checks(Controller):
         finally:
             held.close()
 
+    def _missing_script(self, command: str) -> str:
+        """The first script the command names that is not in the project, or an empty string."""
+        for word in shlex.split(command, comments=False, posix=True):
+            if word.endswith(SCRIPTS) and not (self._project / word).exists():
+                return word
+        return ""
+
+    def _unrunnable(self, n: int, command: str, script: str):
+        began = time.time()
+        words = f"check {n} cannot run: its script {script} is not there, so the check is at fault, not the code it guards (command: {command})"
+        check = self.load(n)
+        run = CheckRun(ok=False, code=CANNOT_RUN, at=began, took=0.0, output=words)
+        check.last = run.to_json()
+        check.runs = [run.summary, *check.runs][:KEPT_RUNS]
+        check.running = {}
+        return self.save(check, "updated", ran=True)
+
     def _ran(self, n: int):
         check = self.load(n)
+        missing = self._missing_script(check.command)
+        if missing:
+            return self._unrunnable(n, check.command, missing)
         began, last_steps = time.time(), check.last_run.steps
         self.stamp(n, running={"at": began, "output": "", "percent": None})
         stamped_at = [began]

@@ -240,8 +240,8 @@ class Plans(Controller):
     def timeline(self, n: int) -> list[dict]:
         r = self.load(n)
         numbers = {t for phase in r.phases for t in phase[PHASE.todos]}
-        todos = {t.n: t for t in map(Todos(self.record, actor=self.actor).load, numbers)}
-        works = [Works(self.record, actor=self.actor).load(row["n"]) for row in Works(self.record, actor=self.actor).rows.summaries()
+        todos = {t.n: t for t in map(Todos(self.record, actor=self.actor).peek, numbers)}
+        works = [Works(self.record, actor=self.actor).peek(row["n"]) for row in Works(self.record, actor=self.actor).rows.summaries()
                  if not row["deleted"] and row.get("todo") in numbers]
         items = [Moment.of(t, t.completed, "done", t.outcome) for t in todos.values() if t.completed]
         for work in works:

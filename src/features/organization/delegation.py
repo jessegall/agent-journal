@@ -24,7 +24,7 @@ def everywhere(root, domain: str, role: str) -> list[tuple[str, object]]:
     found = []
     for record in Record.every(root):
         todos = Todos(record, actor=SYSTEM)
-        found += [(record.env, todos.load(row["n"])) for row in todos.rows.standing_summaries()]
+        found += [(record.env, todos.peek(row["n"])) for row in todos.rows.standing_summaries()]
     return [(env, r) for env, r in found if r.data.get("domain") == domain and r.data.get("role") == role]
 
 

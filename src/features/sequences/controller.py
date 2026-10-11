@@ -196,7 +196,7 @@ class Sequences(Controller):
         return [key for key in keys or {} if RunKey.of(key).here(self.record.env)]
 
     def _running_here(self) -> list:
-        return [self.load(row["n"]) for row in self.open_rows() if self._here(row.get("runs"))]
+        return [self.peek(row["n"]) for row in self.open_rows() if self._here(row.get("runs"))]
 
     def in_hand(self):
         mine = [(sequence.lasting, sequence.started(key), sequence, key, sequence.runs[key]) for sequence in self._running_here()

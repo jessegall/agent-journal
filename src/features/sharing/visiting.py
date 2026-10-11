@@ -86,7 +86,7 @@ class ShareVisits:
         rows = [row for row in comments.rows.summaries() if not row["deleted"]]
 
         def about(refs: set[str]) -> list:
-            return [comments.load(row["n"]) for row in rows if refs.intersection(row["refs"])]
+            return [comments.peek(row["n"]) for row in rows if refs.intersection(row["refs"])]
 
         visitors = [c for c in about(scope) if c.data.get("share") == share.n]
         asked = {c.ref for c in visitors}

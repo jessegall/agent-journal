@@ -188,7 +188,7 @@ class DraftingBoards:
         asked = board.asked
         sequences = Sequences(self.record, actor=SYSTEM)
         for row in sequences.open_rows():
-            sequence = sequences.load(row["n"])
+            sequence = sequences.peek(row["n"])
             if not sequence.dispatch:
                 continue
             for key, run in sequence.runs.items():
