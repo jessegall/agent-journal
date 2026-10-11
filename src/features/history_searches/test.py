@@ -66,8 +66,8 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
     from controllers.base import SEARCHABLE
     SEARCHABLE.clear()
     serve.warm_texts(record.root)
-    assert any(folder.endswith("todo") for folder in SEARCHABLE) and any(folder.endswith("message") for folder in SEARCHABLE), \
-        "a start reads the text of every to-do and message once, in the warm-up, so the first search after it reads nothing"
+    assert any(folder.endswith("todo") for folder in SEARCHABLE) and any(folder.endswith("message") for folder in SEARCHABLE) and any(folder.endswith("work") for folder in SEARCHABLE), \
+        "a start reads the text of every row of every type once, in the warm-up, so the first search after it reads nothing"
     from controllers.types import Messages
     rows = Messages(record, actor=SYSTEM)
     first, second = rows.create("alpha corpus"), rows.create("beta corpus")

@@ -368,13 +368,14 @@ def warm_replies(root: Path) -> None:
 
 
 def warm_texts(root: Path) -> None:
-    """What a search of the to-dos and the messages reads, each row's text, so the first search after a start does not read every row."""
-    from controllers.types import Messages, Todos
+    """What a search of every type reads, each row's text, so the first search after a start does not read every row."""
+    from controllers.types import CONTROLLERS
     from engine.record import Record
     from resources.base import SYSTEM
+    from surfaces.everything import chosen
     record = Record(root, default_env(root))
-    for controller in (Todos, Messages):
-        controller(record, actor=SYSTEM)._texts()
+    for type_ in chosen(()):
+        CONTROLLERS[type_](record, actor=SYSTEM)._texts()
 
 
 def warm_changed(root: Path) -> None:
