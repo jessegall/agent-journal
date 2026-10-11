@@ -6,6 +6,7 @@ in for everything that is not the record: the clock, the ids, the commands, the 
 the providers. Each kind has one entry and no kind has two, so the run and the engine cannot disagree.
 """
 
+import json
 import shutil
 import tempfile
 import time
@@ -231,10 +232,13 @@ def with_the_givens_programs(given: Given):
 
 
 def remembered_by(record: Record, owner: str) -> dict:
-    """What the feature left in the journal's memory: its own state, and the state it keeps for each agent session."""
+    """What the feature left in the journal's memory: its own state, the state it keeps for each agent session, and the marks its triggers keep for each session, each under the name of its file."""
     from controllers.types import Agents
-    sessions = (record.state(owner, row.title).all() for row in Agents(record, actor=SYSTEM).rows.standing())
-    return {**record.state(owner).all(), **{key: value for state in sessions for key, value in state.items()}}
+    from engine import runtime
+    agents = Agents(record, actor=SYSTEM).rows.standing()
+    sessions = (record.state(owner, row.title).all() for row in agents)
+    marks = {path.stem: json.loads(path.read_text()) for row in agents for path in runtime.session_file(record.root, row.title, "marks").parent.glob("trigger-*.json")}
+    return {**record.state(owner).all(), **{key: value for state in sessions for key, value in state.items()}, **marks}
 
 
 def played(promise, expectation) -> Seen:
