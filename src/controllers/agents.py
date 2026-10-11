@@ -8,7 +8,7 @@ from pathlib import Path
 
 from controllers.base import Controller
 from engine.record import Record
-from resources.base import SYSTEM
+from resources.base import SYSTEM, Missing
 from engine.sessions import Sessions
 from resources import types
 from controllers.marks import action
@@ -120,13 +120,21 @@ class Agents(Controller):
 
     @action
     def by_session(self, session: str):
-        found = self.rows.by_title(session)
-        return self.load(found.n) if found else self.create(session, status="stopped")
+        return self._of_session(session, self.load)
 
     def peek_session(self, session: str):
         """The held row of the session, not a copy: for a reader that changes nothing."""
+        return self._of_session(session, self.peek)
+
+    def _of_session(self, session: str, read):
+        """The row named for the session through `read`; a session with no row, or whose row has gone from the folder, gets a stopped one."""
         found = self.rows.n_of_title(session)
-        return self.peek(found) if found else self.create(session, status="stopped")
+        if found:
+            try:
+                return read(found)
+            except Missing:
+                pass
+        return self.create(session, status="stopped")
 
     def load(self, n: int | str):
         row = super().load(n)
