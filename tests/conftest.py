@@ -161,6 +161,31 @@ def quiet_budgets(monkeypatch):
     monkeypatch.setattr(DevFaults, "default", False)
 
 
+def forget_process_state() -> None:
+    """What a process that has only just started holds: no folder watched, no write deferred, no agent row waiting to be written, nothing remembered of the rows and files it listed."""
+    from controllers.agents import PENDING
+    from engine import event_log, files
+    stored.forget_held()
+    stored.WATCHED.on = False
+    stored.DEFER.clear()
+    PENDING.rows.clear()
+    event_log.RECENT.clear()
+    for table in (files.INDEXES, files.HASHED, files.UNTRACKED, files.REPOSITORIES, files.INDEX_FILES, files.LOOKED):
+        table.clear()
+    files.PENDING.clear()
+
+
+@pytest.fixture(autouse=True)
+def process_state_forgotten():
+    """Every test starts and ends with the process as a fresh one, and no server a test opened outlives it with its threads."""
+    forget_process_state()
+    yield
+    forget_process_state()
+    serve = sys.modules.get("serve")
+    for server in list(serve.JournalServer.SERVING) if serve else []:
+        server.server_close()
+
+
 @pytest.fixture(autouse=True)
 def forgotten_memos():
     from engine.memo import forget_all
