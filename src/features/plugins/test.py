@@ -31,7 +31,7 @@ CLAUDE = PROVIDERS["claude"]()
 @pytest.fixture(autouse=True)
 def plugins_answer_in_their_own_time(monkeypatch):
     """A test plugin is a shell script that may take longer than the hook's wait under load; its refusal is waited for here."""
-    from features.plugins import refusing
+    from features.plugins import parts
     monkeypatch.setattr(parts, "HOOK_WAIT", 20.0)
 
 

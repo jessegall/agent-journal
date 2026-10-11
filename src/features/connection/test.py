@@ -113,7 +113,7 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     record.hand_over("", this_machine())
     monkeypatch.setenv("JOURNAL_ADDRESS", "journal.example.com")
     assert view(record, "").role == "the server", "a journal that runs on a server says that it is the server"
-    monkeypatch.setattr("features.connection.feature.transport_for", lambda record, address: Server(record.root, up=False))
+    monkeypatch.setattr("features.connection.commands.transport_for", lambda record, address: Server(record.root, up=False))
     record.change_setting("connection", {"address": "https://server.example"})
     features.FEATURES["connection"].settings_changed(record, USER)
     assert any("Could not connect" in n.title for n in Notices(record, actor=SYSTEM).all()), "an address nobody answers at becomes a notice, not an error"
