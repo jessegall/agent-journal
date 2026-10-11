@@ -17,7 +17,7 @@ await runScenarios(process.argv[2], {
         await option(dialog, WATCH).click();
         await option(dialog, "The agent").click();
         await option(dialog, "The agent has been idle").click();
-        await dialog.getByText(/match right now|Nothing matches this right now|No agent is working here/).first().waitFor();
+        await dialog.getByText(/matche?s? right now|Nothing matches this right now|No agent is working here/).first().waitFor();
         await dialog.getByPlaceholder(/Name it/).fill(title);
         await dialog.getByPlaceholder(/Name it/).press("Enter");
         await dialog.locator("textarea").fill("Check your messages, {{minutes}} minutes have passed.");

@@ -158,7 +158,7 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
         <template v-if="state">
             <ResourceBlock heading="When this is true in the journal">
                 <div class="then">
-                    <FormField label="About">
+                    <FormField label="Topic">
                         <ChoiceList :choices="pickable(abouts(), about)" :disabled="readonly" @pick="pickAbout" />
                     </FormField>
                     <FormField label="What is true">
@@ -180,7 +180,7 @@ const towhere = () => when.value.$el.scrollIntoView({behavior: "smooth", block: 
                             @change="commit({over: Number($event.target.value)})"
                         />
                     </FormField>
-                    <FormField label="What it matches now">
+                    <FormField label="Matching right now">
                         <TriggerMatches :fact="factOf(values.fact).value" :over="Number(values.over || 0)" :text="values.text || ''" />
                     </FormField>
                     <FormField label="While the agent is">

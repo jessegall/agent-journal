@@ -9,8 +9,8 @@ let asked = 0;
 
 const heading = computed(() => {
     const {matching, capped} = found.value;
-    if (capped) return `At least ${matching} match right now. The trigger names the ${matching} that have waited longest at a time.`;
-    return matching === 1 ? "1 matches right now." : `${matching} match right now.`;
+    if (capped) return `At least ${matching} match right now. The trigger acts on the ${matching} that have waited longest.`;
+    return matching === 1 ? "One matches right now." : `${matching} match right now.`;
 });
 
 watch(
