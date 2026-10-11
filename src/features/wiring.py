@@ -12,6 +12,7 @@ from features.format import FORMATTERS, FORMATTING_FEATURES
 from features.parts import ActionInterceptor, AgentContext, Canceler, Command, Context, Handler, TextFormatter, ToolInterceptor
 from resources.base import SYSTEM, USER, Refused
 from features.routing import FEATURE_ROUTES
+from receiving import ANSWER, HANDLE, LISTEN, REFUSE, REGISTERED, Answerer, Handler, Listener, Refuser, Registration
 
 
 def wanted(part, feature, record, row, timed: bool = True) -> bool:
@@ -52,6 +53,18 @@ class Events:
         self.names.append(kind.name())
         for pattern in kind.patterns(handler.hooks):
             bus.on(pattern, run, enabled=feature.enabled)
+
+    def listen(self, event: type, listener: Listener, expects) -> None:
+        """Reads the event and dispatches the facts it recognises; read-only, in the tick the event belongs to."""
+        REGISTERED.add(Registration.read(LISTEN, event, listener, expects, self.feature.name))
+
+    def handle(self, fact: type, handler: Handler, expects, after: tuple[type, ...] = ()) -> None:
+        """Acts on the fact in the next tick, inside that tick's transaction; after names the handlers on this fact it must follow."""
+        REGISTERED.add(Registration.read(HANDLE, fact, handler, expects, self.feature.name, after))
+
+    def answer(self, request: type, answerer: Answerer, expects) -> None:
+        """Answers the request synchronously and read-only, before anything about it writes."""
+        REGISTERED.add(Registration.read(ANSWER, request, answerer, expects, self.feature.name))
 
 
 class Client:
@@ -147,6 +160,10 @@ class Commands:
         call.network = command.network
         call.runs_commands = command.runs_commands
         COMMANDS.setdefault(type_, {})[command.name] = call
+
+    def refuse(self, write: type, refuser: Refuser, expects) -> None:
+        """Raises Refused before the write reaches the funnel; a hold after the fact is no hold, so this stays synchronous."""
+        REGISTERED.add(Registration.read(REFUSE, write, refuser, expects, self.feature.name))
 
     def intercept(self, action: str, interceptor: ActionInterceptor) -> None:
         feature = self.feature

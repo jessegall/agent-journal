@@ -48,3 +48,106 @@ def test_an_expectation_can_only_be_joined_with_outcomes():
         _ = Given("x") >> "wrote a row"
     assert "not with str" in str(refusal.value), "the refusal names what was joined instead"
     assert Outcomes.of(Kept()) == Outcomes((Kept(),)), "one outcome reads as a list of one"
+
+
+def test_the_four_registration_kinds_name_their_event_and_the_boot_walk_checks_it():
+    from dataclasses import dataclass
+
+    from events import Fact, Request
+    from receiving import (REGISTERED, Answerer, ExpectsNothing, Handler, Listener, NotAReceiver, ReceivesAnother,
+                           ReceivesNothing, Refuser, Registration)
+
+    @dataclass(frozen=True, kw_only=True)
+    class AgentMessageSent(Fact):
+        turn: str
+        text: str
+
+    @dataclass(frozen=True, kw_only=True)
+    class MessageTagged(Fact):
+        turn: str
+        tag: str
+
+    @dataclass(frozen=True, kw_only=True)
+    class ToolCallAsked(Request):
+        tool: str
+
+    class TagsInText(Listener[AgentMessageSent]):
+        def listen(self, event: AgentMessageSent, settings: dict) -> list[Fact]:
+            return [MessageTagged(turn=event.turn, tag="reply").once(f"{event.turn}|reply")]
+
+    class RunTagCommand(Handler[MessageTagged]):
+        def handle(self, event: MessageTagged, commands: dict) -> list[Fact]:
+            return []
+
+    class HeldByGate(Answerer[ToolCallAsked]):
+        def answer(self, event: ToolCallAsked) -> str:
+            return ""
+
+    class NoDuplicateTitles(Refuser[MessageTagged]):
+        def refuse(self, event: MessageTagged) -> None:
+            return None
+
+    assert TagsInText.receives() is AgentMessageSent and TagsInText.wants() == {"settings": dict}, \
+        "a receiver says which event it takes and which services it asks for by type, both read at boot"
+    assert RunTagCommand.wants() == {"commands": dict} and HeldByGate.wants() == {}, \
+        "the services are what follows the event, so a receiver that asks for none says so"
+    assert TagsInText().listen(AgentMessageSent(turn="t1", text="[!reply:12] x"), {})[0].claim == "t1|reply", \
+        "a fact dispatched once carries the key the engine claims for it, so the listener itself never claims"
+
+    kinds = [("listen", AgentMessageSent, TagsInText()), ("handle", MessageTagged, RunTagCommand()),
+             ("answer", ToolCallAsked, HeldByGate()), ("refuse", MessageTagged, NoDuplicateTitles())]
+    read = [Registration.read(kind, event, receiver, ["an expectation"], "command_tags") for kind, event, receiver in kinds]
+    assert [one.kind for one in read] == ["listen", "handle", "answer", "refuse"] and all(one.feature == "command_tags" for one in read), \
+        "all four kinds register, each naming its event class first"
+    assert Registration.read("handle", MessageTagged, RunTagCommand(), ["x"], after=(TagsInText,)).after == (TagsInText,), \
+        "a handler that must follow another names it, rather than carrying a priority number"
+
+    for broken, raises, why in (
+        (lambda: Registration.read("listen", MessageTagged, TagsInText(), ["x"]), ReceivesAnother, "receives AgentMessageSent"),
+        (lambda: Registration.read("listen", AgentMessageSent, RunTagCommand(), ["x"]), NotAReceiver, "is not a Listener"),
+        (lambda: Registration.read("listen", AgentMessageSent, TagsInText(), []), ExpectsNothing, "registers no expectations"),
+    ):
+        with pytest.raises(raises) as refusal:
+            broken()
+        assert why in str(refusal.value), f"the refusal says what is wrong: {refusal.value}"
+
+    class SaysNothing(Listener):
+        def listen(self, event, settings: dict) -> list[Fact]:
+            return []
+
+    with pytest.raises(ReceivesNothing) as refusal:
+        SaysNothing.receives()
+    assert "does not say which event it receives" in str(refusal.value), "a receiver written without its event is refused at boot, not at the first event"
+
+    REGISTERED.clear()
+    for one in read:
+        REGISTERED.add(one)
+    assert len(REGISTERED.of("handle")) == 1 and len(REGISTERED.on(MessageTagged)) == 2, \
+        "the registrations are kept in declaration order and read back by kind and by event"
+    REGISTERED.clear()
+
+
+def test_each_request_says_how_its_answerers_answers_are_reduced():
+    from receiving.answers import (Allowed, Asked, FirstRefusalWins, KeepingWins, Kept, NotTheRequestsAnswer,
+                                   Refused, Rewritten, TextsCompose)
+
+    class ToolCallAsked(Asked):
+        reduces = FirstRefusalWins
+
+    class AgentMessageSending(Asked):
+        reduces = KeepingWins
+
+    class TextFormatting(Asked):
+        reduces = TextsCompose
+
+    assert ToolCallAsked.answered([Allowed(), Refused(why="plan 4 is open"), Rewritten(text="rm -rf .")]) == Refused(why="plan 4 is open"), \
+        "one refusal stops a tool call, whatever the answerers after it said"
+    assert ToolCallAsked.answered([Rewritten(text="a"), Rewritten(text="b")]) == Rewritten(text="b") and ToolCallAsked.answered([]) == Allowed(), \
+        "with nothing refusing, the rewrites compose in declared order and no answerer at all lets the call through"
+    assert AgentMessageSending.answered([Rewritten(text="the brief"), Kept()]) == Kept(), \
+        "a turn kept out of the chat wins, because its words belong to the row its tag writes"
+    assert TextFormatting.answered([Rewritten(text="stripped")]) == Rewritten(text="stripped") and TextFormatting.answered([]) == Allowed(), \
+        "formatting has no winning answer: each formatter reads what the one before it wrote"
+    with pytest.raises(NotTheRequestsAnswer) as refusal:
+        ToolCallAsked.answered(["allowed"])
+    assert "not with str" in str(refusal.value), "an answerer that gives back something that is not an Answer is named, not quietly ignored"
