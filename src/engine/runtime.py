@@ -1,5 +1,6 @@
 import os
 import json
+import threading
 import time
 from pathlib import Path
 
@@ -86,13 +87,17 @@ def restart_began(root: Path) -> float:
     return began if time.time() - began < RESTART_FRESH else 0.0
 
 
+STEPPING = threading.Lock()
+
+
 def record_step(root: Path, step: str, seconds: float, cpu: float = 0.0, version: str = "") -> None:
     """One line of the file that keeps how long each step of an update took, wall and processor seconds, the newest few hundred."""
     file = folder(root) / STEP_TIMES
     try:
-        kept = file.read_text().splitlines()[1 - STEP_TIMES_KEPT:] if file.is_file() else []
-        kept.append(json.dumps({"at": round(time.time()), "version": version, "step": step, "seconds": round(seconds, 2), "cpu": round(cpu, 2)}))
-        file.write_text("\n".join(kept) + "\n")
+        with STEPPING:
+            kept = file.read_text().splitlines()[1 - STEP_TIMES_KEPT:] if file.is_file() else []
+            kept.append(json.dumps({"at": round(time.time()), "version": version, "step": step, "seconds": round(seconds, 2), "cpu": round(cpu, 2)}))
+            write_text(file, "\n".join(kept) + "\n")
     except OSError:
         return
 
