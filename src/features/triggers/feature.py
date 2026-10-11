@@ -1,6 +1,7 @@
-from engine.events.engine import AgentMessageSent
+from engine.events.agents import AgentReported
+from engine.events.engine import AgentMessageSent, ClockTicked
 from engine.events.resources import MessageCreated
-from expects import Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote
+from expects import WHEN, Given, Held, Kept, Nudged, Refused, Unchanged, Updated, Wrote
 from features.base import Feature
 from features.triggers.resource import Trigger
 from providers.payload import BashCall
@@ -31,6 +32,12 @@ NO_FORCE = Trigger(n=1, title="No force push", data={"words": ["--force"], "does
 DEPLOY_NUDGE = Trigger(n=2, title="Mind the gate", data={"words": ["deploy"], "does": "nudge", "text": "Run the gate first."})
 DEPLOY_NOTE = Trigger(n=3, title="Deploy note", data={"words": ["deploy"], "does": "message", "text": "The agent is deploying."})
 FROM_THE_USER = Trigger(n=4, title="Urgent", data={"words": ["urgent"], "words_in": "from the user", "does": "nudge", "text": "The user says it is urgent."})
+IDLE_TOO_LONG = Trigger(n=5, title="Idle too long", data={"when": "state", "fact": "agent.idle", "over": 5, "does": "nudge", "text": "Pick up the next row."})
+HOLD_WHEN_IDLE = Trigger(n=6, title="Hold while idle", data={"when": "state", "fact": "agent.idle", "over": 5, "does": "hold", "text": "Pick up the next row."})
+LONG_IDLE = AgentRow(n=1, title="claude-1", data={"status": "idle", "at": 1.0})
+JUST_NOW = AgentRow(n=1, title="claude-1", data={"status": "idle", "at": WHEN - 60})
+WORKING = AgentRow(n=1, title="claude-1", data={"status": "working", "at": 1.0})
+
 
 def shell(command: str) -> BashCall:
     return BashCall.from_payload("Bash", {"command": command}, {})
@@ -61,9 +68,24 @@ class TriggersFeature(Feature):
             Given(AgentMessageSent(agent=1, text="I will build now", turn="t1"), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Unchanged(),
             Given(AgentMessageSent(agent=1, text="I will git push --force it", turn="t1"), rows=[NO_FORCE, AGENT_ROW]) >> Nudged("denied") & Updated(Trigger(n=1), matched=1),
         ])
-        journal.events.handler(SayWhatTheJournalShowsOnTheClock())
-        journal.events.handler(SayWhatTheJournalShowsOnToolUse())
-        journal.events.handler(HoldWhileTheJournalShows())
+        journal.events.handler(SayWhatTheJournalShowsOnTheClock(), expects=[
+            Given(ClockTicked(agent=1), rows=[IDLE_TOO_LONG, LONG_IDLE]) >> Nudged("nudge"),
+            Given(ClockTicked(agent=1), rows=[IDLE_TOO_LONG, JUST_NOW]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[IDLE_TOO_LONG, WORKING]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[NO_FORCE, LONG_IDLE]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[LONG_IDLE]) >> Unchanged(),
+        ])
+        journal.events.handler(SayWhatTheJournalShowsOnToolUse(), expects=[
+            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, LONG_IDLE]) >> Nudged("nudge"),
+            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, JUST_NOW]) >> Unchanged(),
+            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, WORKING]) >> Unchanged(),
+        ])
+        journal.events.handler(HoldWhileTheJournalShows(), expects=[
+            Given(AgentReported(agent=1), rows=[HOLD_WHEN_IDLE, LONG_IDLE]) >> Held("Hold while idle: Pick up the next row."),
+            Given(AgentReported(agent=1), rows=[HOLD_WHEN_IDLE, JUST_NOW]) >> Unchanged(),
+            Given(AgentReported(agent=1), rows=[HOLD_WHEN_IDLE, WORKING]) >> Unchanged(),
+            Given(AgentReported(agent=1), rows=[IDLE_TOO_LONG, LONG_IDLE]) >> Unchanged(),
+        ])
         journal.agent.interceptor(DenyWhatTheAgentDoes(), expects=[
             Given(shell("git push --force"), rows=[NO_FORCE, AGENT_ROW]) >> Refused("No force push - Never force push.") & Updated(Trigger(n=1), matched=1),
             Given(shell("git push"), rows=[NO_FORCE, AGENT_ROW]) >> Kept() & Unchanged(),
