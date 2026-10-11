@@ -1,6 +1,7 @@
 from controllers.base import SAVE_REWRITES
 from controllers.features import SECRET_CHECKS
-from expects import Given, Kept, Refused
+from engine.events.engine import ClockTicked
+from expects import WHEN, File, Given, Kept, Refused, Wrote, answering
 from features.base import Feature
 from features.journal import Journal
 from features.secrets.announcing import updated_added
@@ -12,7 +13,9 @@ from features.secrets.leaks import LeakAlarm
 from features.secrets.picking import refuse_secret_that_runs_commands
 
 from features.secrets.values import secrets_folder
+from features.secrets.resource import Secret
 from providers.payload import BashCall, ReadCall
+from resources.types import AgentRow
 
 __all__ = ["Secrets"]
 
@@ -23,12 +26,22 @@ NEVER_READ = ("The secrets file is never read by an agent: use journal secret ru
 def shell(command: str) -> BashCall:
     return BashCall.from_payload("Bash", {"command": command}, {})
 
+VALUES = answering({".journal/project-id": "pid", ".secrets/pid.env": 'API_KEY="abc"\n'})
+KEY = [{"name": "key", "variable": "API_KEY"}]
+
+
+def deleted(days: int) -> Secret:
+    return Secret(n=1, title="GitHub", deleted=WHEN - days * 86400, data={"secret_fields": KEY})
+
 
 class SecretsFeature(Feature):
     details = SecretsDetails
 
     def register(self, journal: Journal) -> None:
-        journal.events.handler(PurgeDeletedSecrets())
+        journal.events.handler(PurgeDeletedSecrets(), expects=[
+            Given(ClockTicked(agent=1), rows=[deleted(31), AgentRow(n=1, title="claude-1")], files=VALUES) >> Wrote(File(".secrets/pid.env", "The values of this project's secrets")),
+            Given(ClockTicked(agent=1), rows=[deleted(10), AgentRow(n=1, title="claude-1")], files=VALUES) >> Wrote(File(".secrets/pid.env", 'API_KEY="abc"')),
+        ])
         journal.agent.append_to_line("secret.updated", updated_added)
         journal.agent.interceptor(RefuseSecretsFile(), expects=[
             Given(shell(f"cat {secrets_folder()}/values")) >> Refused(NEVER_READ),

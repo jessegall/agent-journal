@@ -1,11 +1,11 @@
 from engine.events.resources import RuleCreated
-from expects import Given, Nudged, Unchanged
+from expects import Given, Nudged, Unchanged, Wrote, File
 from features.base import Feature
 from features.journal import Journal
 from controllers.types import Rules
 from features.recital import register_recital
 from features.rules.details import RulesDetails
-from features.rules.handlers import InjectRules, ReviewNewRule
+from features.rules.handlers import InjectRules, ReviewNewRule, RuleChanged
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Rule
 
@@ -23,7 +23,12 @@ class RulesFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         register_recital(journal, Rules)
-        journal.events.handler(InjectRules())
+        journal.events.handler(InjectRules(), expects=[
+            Given(RuleChanged(n=3, type="rule", action="created", actor=USER), rows=[Rule(n=3, title="Never skip the gate", data={"injected": True})])
+                >> Wrote(File("CLAUDE.md", "- Never skip the gate")) & Wrote(File("AGENTS.md", "- Never skip the gate")),
+            Given(RuleChanged(n=3, type="rule", action="created", actor=USER), rows=[Rule(n=3, title="Never skip the gate")])
+                >> Wrote(File("CLAUDE.md", "agent-journal, form")),
+        ])
         journal.events.handler(ReviewNewRule(), expects=[
             Given(made(AGENT), rows=[NEW, AGENT_ROW]) >> Nudged("review"),
             Given(made(USER), rows=[NEW, AGENT_ROW]) >> Unchanged(),

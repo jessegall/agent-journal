@@ -2,6 +2,7 @@ from controllers.types import Messages
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSent
 from engine.events.resources import MessageCreated, MessageUpdated, ResourceCreated
+import json
 from dataclasses import asdict
 
 from expects import Formats, Given, Nudged, Remembered, Unchanged, Updated, Wrote
@@ -56,6 +57,13 @@ def touched(*numbers: int) -> MessageUpdated:
 def created(kind: str, actor: str = AGENT) -> ResourceCreated:
     return ResourceCreated(n=1, type=kind, action="created", actor=actor)
 
+
+def in_a_transcript(text: str) -> str:
+    return json.dumps({"type": "assistant", "timestamp": "2026-01-01T00:00:00+00:00", "message": {"content": [{"type": "text", "text": text}]}}) + "\n"
+
+
+CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
+RAN_ON = "This is a sentence. " * 25
 
 SENT = wrote("Closed it earlier", seen=(AGENT,))
 
@@ -121,7 +129,11 @@ class MessagesFeature(Feature):
             Given(created("comment"), rows=[wrote("Done, it is filed.", seen=(AGENT,)), reply(), IDLE]) >> Unchanged(),
             Given(created("todo"), rows=[asked(), Todo(n=1, title="Row"), IDLE]) >> Unchanged(),
         ])
-        journal.events.handler(NameRunTogether())
+        journal.events.handler(NameRunTogether(), expects=[
+            Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON)) >> Nudged("paragraphs"),
+            Given(reported(), rows=[CLAUDE], transcript=in_a_transcript("This is a sentence.")) >> Unchanged(),
+            Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON.replace(". ", ".\n\n", 1))) >> Unchanged(),
+        ])
         journal.events.handler(NameBareNumbers(), expects=[
             Given(said("I closed 482 for you."), rows=[SENT, Todo(n=482, title="Row"), IDLE]) >> Nudged("numbers"),
             Given(said("I closed `482` for you."), rows=[SENT, Todo(n=482, title="Row"), IDLE]) >> Unchanged(),
