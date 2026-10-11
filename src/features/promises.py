@@ -49,9 +49,6 @@ class Owing(LookupError):
 class Promises:
     """Every registration the features made, in the order they made it."""
 
-    required = False
-    """Whether a registration without expects refuses the boot. Off until the sweep of phase 2 is through; the row that ends the sweep removes it, and a missing expects then always fails."""
-
     def __init__(self):
         self.each: list[Promise] = []
 
@@ -64,13 +61,13 @@ class Promises:
         return [one for one in self.each if one.kind == kind]
 
     def owed(self) -> list[Promise]:
-        """The registrations that owe expectations and carry none, which is what the boot walk refuses once phase 2 is through."""
+        """The registrations that owe expectations and carry none, which is what the boot walk refuses."""
         return [one for one in self.each if one.owes and not one.expects]
 
     def refuse_owing(self, feature: str) -> None:
-        """Called as a feature is wired: refuses the boot, naming the feature and its registrations, when it registered an owing kind with no expects."""
+        """Called as a feature is wired: refuses the boot, naming the feature and its registrations, when it registered an owing kind with no expects. Unconditional since the sweep of phase 2 finished and every owing registration carried one; a new registration that owes expectations and brings none does not boot."""
         owed = [one for one in self.owed() if one.feature.name == feature]
-        if self.required and owed:
+        if owed:
             raise Owing.of(feature, owed)
 
     def played(self) -> list[tuple[Promise, int, object]]:
