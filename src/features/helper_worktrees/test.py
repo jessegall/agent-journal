@@ -215,8 +215,8 @@ def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():
         "with every folder git holds owned by a standing row, nothing is left behind"
     stray = project.parent / "stray-worktree"
     git(project, "worktree", "add", "-b", "stray", str(stray))
-    said = worktrees.left_behind()
-    assert str(stray.resolve()) in said and said.startswith("1 worktree folders are left behind"), \
+    left_over = worktrees.left_behind()
+    assert str(stray.resolve()) in left_over and left_over.startswith("1 worktree folders are left behind"), \
         "a folder git holds that no standing row owns is named, which is what a closed row hides"
 
 
