@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from textwrap import dedent
 from pathlib import Path
 
 import controllers.types as types_module
@@ -166,6 +167,20 @@ class Worktrees(Controller):
     def _released(self, helper: str) -> None:
         for row in (r for r in self.rows.standing() if r.adopted and r.helper == helper):
             super().complete(row.n, "its helper finished; the checkout is left as it was")
+
+    def left_behind(self) -> str:
+        """The worktree folders git still holds that no standing row of this journal owns: what a helper left behind after its row was closed. Read from git rather than from the rows, because a closed row is exactly what hides one."""
+        project = self._project()
+        held = {str(Path(row.path).resolve()) for row in self.rows.standing() if row.path}
+        folders = [line.split(" ")[0] for line in lines(project, "worktree", "list") if line and not line.startswith(str(project.resolve()) + " ")]
+        strays = [folder for folder in folders if str(Path(folder).resolve()) not in held]
+        if not strays:
+            return "git holds no worktree that this journal does not"
+        listed = "\n".join(strays)
+        return dedent(f"""\
+            {len(strays)} worktree folders are left behind, owned by no standing row:
+            {listed}
+            Each one is removed with git worktree remove <path>, after its git log is read for work that is not on the working branch.""")
 
     @action(network=True)
     def complete(self, n: int, how: str = "", **data):

@@ -211,6 +211,14 @@ def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():
     assert git(project, "show", f"{kept}:loose.txt") == "not committed", "work left uncommitted is committed to the branch first and kept under refs/journal/helpers, never refused or thrown away"
     assert refused(lambda: worktrees.take(row.n)) == f"worktree {row.n} is dropped", "a dropped worktree takes nothing"
 
+    assert "git holds no worktree that this journal does not" == worktrees.left_behind(), \
+        "with every folder git holds owned by a standing row, nothing is left behind"
+    stray = project.parent / "stray-worktree"
+    git(project, "worktree", "add", "-b", "stray", str(stray))
+    said = worktrees.left_behind()
+    assert str(stray.resolve()) in said and said.startswith("1 worktree folders are left behind"), \
+        "a folder git holds that no standing row owns is named, which is what a closed row hides"
+
 
 def test_a_worktree_is_not_dropped_while_an_agent_runs_in_it():
     import json
