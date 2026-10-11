@@ -25,9 +25,9 @@ class RulesFeature(Feature):
         register_recital(journal, Rules)
         journal.events.handler(InjectRules(), expects=[
             Given(RuleChanged(n=3, type="rule", action="created", actor=USER), rows=[Rule(n=3, title="Never skip the gate", data={"injected": True})])
-                >> Wrote(File("CLAUDE.md", "- Never skip the gate")) & Wrote(File("AGENTS.md", "- Never skip the gate")),
+                >> Wrote(File("AGENTS.md", "- Never skip the gate")) & Wrote(File("CLAUDE.md", "@AGENTS.md")),
             Given(RuleChanged(n=3, type="rule", action="created", actor=USER), rows=[Rule(n=3, title="Never skip the gate")])
-                >> Wrote(File("CLAUDE.md", "agent-journal, form")),
+                >> Wrote(File("AGENTS.md", "agent-journal, form")) & Wrote(File("CLAUDE.md", "@AGENTS.md")),
         ])
         journal.events.handler(ReviewNewRule(), expects=[
             Given(made(AGENT), rows=[NEW, AGENT_ROW]) >> Nudged("review"),
