@@ -489,6 +489,19 @@ def save_rows(root: Path) -> None:
         traceback.print_exc()
 
 
+def mend_hooks(root: Path) -> None:
+    try:
+        from controllers.types import Notices
+        from providers.wiring import repaired
+        from engine.record import Record
+        from resources.base import SYSTEM
+        for line in repaired(root):
+            print(f"journal: {line}", flush=True)
+            Notices(Record(root, default_env(root)), actor=SYSTEM).create(line, tone="note")
+    except Exception:
+        traceback.print_exc()
+
+
 def mark_first_start(root: Path) -> None:
     try:
         from features.auto_update.new_feature import mark_first_start_seen
@@ -538,6 +551,7 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     runtime.mark_started(root)
     runtime.mark_booting(root)
     mark_first_start(root)
+    mend_hooks(root)
     runtime.remember_git_user(root)
     tell_threads_on_signal(root)
     allow_open_files()

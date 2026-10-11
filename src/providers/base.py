@@ -490,6 +490,14 @@ class Provider(ABC):
         """The MCP servers connected to this agent for the project, each name with its address."""
         return {}
 
+    def unwired(self, project: Path, hook: HookCommand) -> str:
+        """Why the hooks this version writes are not all in place, or nothing when they are: an event without the journal's block, a block of an older path, or a hook that runs a file that is gone."""
+        held = self.hooks(project)
+        missing = [event for event, blocks in self.wiring(hook.text)["hooks"].items() if not any(hook.wired_in(block) for block in held.get(event, []))]
+        if missing:
+            return f"no current hook for {', '.join(missing)}"
+        return self.wiring_trouble(project)
+
     def wiring_trouble(self, project: Path) -> str:
         command = self.wired(project)
         if not command:

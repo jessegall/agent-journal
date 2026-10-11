@@ -78,6 +78,28 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
             f"{name}: the flag is a file per environment and session, with the why"
 
 
+def test_the_hooks_of_every_provider_are_checked_at_a_start_and_written_again_when_missing_or_stale():
+    from engine.package import code
+    from providers.base import HookCommand
+    from providers.wiring import repaired
+    record = fresh()
+    project = record.root.parent
+    (code(record.root)).mkdir(parents=True, exist_ok=True)
+    (code(record.root) / "hook.sh").write_text("exit 0\n")
+    for name, cls in PROVIDERS.items():
+        (project / cls.home).mkdir(parents=True, exist_ok=True)
+    first = repaired(record.root)
+    assert len(first) == len(PROVIDERS) and all("no current hook" in line or "no journal hook" in line for line in first), "an agent whose hooks were never wired gets them at the start"
+    assert repaired(record.root) == [], "and nothing is said when all is well"
+    for name, cls in PROVIDERS.items():
+        provider = cls()
+        config = provider.config(project)
+        config.write_text(config.read_text().replace(str(code(record.root)), str(project / "gone")))
+    stale = repaired(record.root)
+    assert len(stale) == len(PROVIDERS), "hooks that run a path that is gone are written again"
+    assert all(cls().unwired(project, HookCommand(code(record.root) / "hook.sh", name, record.root)) == "" for name, cls in PROVIDERS.items()), "and are right after it"
+
+
 def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch):
     features.load()
     record = fresh()
