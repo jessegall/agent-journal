@@ -1,10 +1,11 @@
 from engine.events.resources import QuestionAnswered, ResourceCreated
-from expects import Given, Unchanged, Updated
+from controllers.types import Todos
+from expects import Given, Kept, Refused, Unchanged, Updated
 from features.base import Feature
 from features.boards.resource import Board
 from features.tickets.handlers import TicketClosed
 from features.tickets.resource import Ticket
-from resources.base import USER
+from resources.base import AGENT, USER
 from resources.types import Environment, Question, Rule, Todo
 from features.journal import Journal
 from features.tickets.commands import ShowTicketTodos
@@ -42,9 +43,24 @@ def made(owner: str = "ticket:3") -> Environment:
 def created(type_: str) -> ResourceCreated:
     return ResourceCreated(n=1, type=type_, action="created", actor=USER)
 
-
 def card(n: int, **data) -> Ticket:
     return Ticket(n=n, title=f"Card {n}", data={"board": 1, **data})
+
+ONE_LINE = ('a draft ticket carries --abstract "<one line>" of at most 140 characters, shown whole on its card; '
+            "the deeper explanation goes in --brief and shows under More info")
+SHORT_TITLE = "a draft ticket's title names it in at most 60 characters, so its card shows it whole"
+DRAFTING = {"actor": AGENT}
+DRAFT_CARDS = [
+    Given((Tickets, DRAFTING, {"title": "Add a login", "abstract": "Let people sign in.", "draft": True})) >> Kept(),
+    Given((Tickets, DRAFTING, {"title": "Add a login", "draft": True})) >> Refused(ONE_LINE),
+    Given((Tickets, DRAFTING, {"title": "Add a login", "abstract": "x" * 141, "draft": True})) >> Refused(ONE_LINE),
+    Given((Tickets, DRAFTING, {"title": "t" * 61, "abstract": "Let people sign in.", "draft": True})) >> Refused(SHORT_TITLE),
+    Given((Tickets, DRAFTING, {"title": "Add a login"})) >> Kept(),
+    Given((Todos, DRAFTING, {"title": "Add a login"})) >> Kept(),
+    Given((Tickets, DRAFTING, {"n": 1, "title": "t" * 61}), rows=[card(1, draft=True)]) >> Refused(SHORT_TITLE),
+    Given((Tickets, DRAFTING, {"n": 1, "title": "Sign in"}), rows=[card(1, draft=True)]) >> Kept(),
+    Given((Tickets, DRAFTING, {"n": 1, "abstract": ""}), rows=[card(1, draft=True)]) >> Refused(ONE_LINE),
+]
 
 
 class TicketsFeature(Feature):
@@ -84,5 +100,5 @@ class TicketsFeature(Feature):
             Given(created("rule"), rows=[made(owner=""), Rule(n=1, title="Never skip the gate")]) >> Unchanged(),
             Given(created("todo"), rows=[made(), Todo(n=1, title="Fix the crash")]) >> Unchanged(),
         ])
-        journal.commands.intercept("create", DraftsCarryOneLine())
-        journal.commands.intercept("update", DraftsCarryOneLine())
+        journal.commands.intercept("create", DraftsCarryOneLine(), expects=DRAFT_CARDS)
+        journal.commands.intercept("update", DraftsCarryOneLine(), expects=DRAFT_CARDS)
