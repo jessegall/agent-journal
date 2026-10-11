@@ -382,3 +382,98 @@ def test_the_engine_claims_a_fact_at_dispatch_so_the_same_turn_read_three_ways_i
     assert MessageTagged(turn="t1", tag="reply").once("t1|reply").claim == "t1|reply", \
         "the listener says which key the fact is claimed under and never claims it, which is what keeps a listener read-only"
     assert claims.take("t2|reply") and not claims.take("t2|reply"), "a key is taken once and refused after"
+
+
+def test_a_tick_holds_what_it_remembers_until_it_ends_so_order_within_it_never_matters():
+    from dataclasses import dataclass
+
+    from controllers.types import Todos
+    from engine.record import Record
+    from events import Fact
+    from receiving import Handler, Registration, Registrations
+    from receiving.ticks import Lane, Services
+    from resources.base import SYSTEM
+    from serving import Rows
+    from tests.conftest import fresh
+
+    @dataclass(frozen=True, kw_only=True)
+    class AgentBeat(Fact):
+        at: float
+
+    @dataclass(frozen=True, kw_only=True)
+    class Counted(Fact):
+        how_many: int
+
+    class Todo:
+        pass
+
+    scratch = fresh()
+    record = Record(scratch.root, scratch.env, memo=True)
+    Todos(record, actor=SYSTEM).create("a row that is already there")
+    read = lambda: len(Todos(record, actor=SYSTEM).rows.standing())
+    assert read() == 1, "the tick's record remembers one row before anything in the tick runs"
+
+    class WriteOne(Handler[AgentBeat]):
+        def handle(self, event: AgentBeat, todos: Rows[Todo]) -> list[Fact]:
+            Todos(record, actor=SYSTEM).create("written by this tick")
+            return []
+
+    class CountThem(Handler[AgentBeat]):
+        def handle(self, event: AgentBeat, todos: Rows[Todo]) -> list[Fact]:
+            return [Counted(how_many=read())]
+
+    registered = Registrations()
+    registered.add(Registration.read("handle", AgentBeat, WriteOne(), ["an expectation"]))
+    registered.add(Registration.read("handle", AgentBeat, CountThem(), ["an expectation"], after=("WriteOne",)))
+
+    out = Lane("project", registered, Services({Rows: "the rows"}), record=record).run(AgentBeat(at=1_000.0))
+    counted = [one.how_many for one in out if isinstance(one, Counted)]
+    assert counted == [1], \
+        f"a handler reads the rows its tick began with, not what another handler of the same tick wrote, so their order never matters; it read {counted}"
+    assert read() == 2, "the tick let its snapshot go when it ended, so the next read sees the world as it now is"
+    assert len(Todos(Record(scratch.root, scratch.env), actor=SYSTEM).rows.standing()) == 2, \
+        "the write really happened: it was the snapshot that hid it, not the write that failed"
+
+
+def test_an_unswept_2x_handler_runs_on_the_adapter_and_the_sending_path_cannot():
+    from dataclasses import dataclass
+
+    from events import Fact
+    from features.adapter import CannotBeAdapted, OldHandler, moved
+    from features.parts import Handler as OldStyle
+    from receiving import Registration, Registrations
+    from receiving.boot import walked
+    from receiving.ticks import Lane, Services
+    from serving import Adapted as TheRecord
+
+    @dataclass(frozen=True, kw_only=True)
+    class TodoCreated(Fact):
+        n: int
+
+    minded = []
+
+    class MindTheBoard(OldStyle):
+        def handle(self, context, event):
+            minded.append((event.n, context.record))
+
+    class RunTagCommands(OldStyle):
+        def handle(self, context, event):
+            minded.append("this must never run")
+
+    registered = Registrations()
+    registered.add(Registration.read("handle", TodoCreated, OldHandler(None, MindTheBoard()), [], "tickets"))
+    out = Lane("project", registered, Services({TheRecord: "the tick's record"})).run(TodoCreated(n=7))
+
+    assert minded == [(7, "the tick's record")], \
+        "a 2.x handler runs as a handler of its event, against a Context built over the tick's own record"
+    assert [type(one).__name__ for one in out] == ["TodoCreated"], \
+        "it dispatches nothing itself: what it wrote reaches the engine as the funnel's own resource facts"
+    walked(registered, set()), "the adapter is exempt from the boot rules by declaring itself adapted, not by a name the checker knows"
+
+    with pytest.raises(CannotBeAdapted) as refusal:
+        OldHandler(None, RunTagCommands())
+    assert "a request and not a fact" in str(refusal.value), \
+        "a handler on the sending path cannot be adapted at all, which is why those features are swept first"
+
+    assert [one.says() for one in moved(["plans", "tickets"], {"tickets": ("MindTheBoard",)})] == \
+        ["plans: moved", "tickets: adapted (MindTheBoard)"], "the listing says, per feature, moved or adapted"

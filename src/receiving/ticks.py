@@ -5,6 +5,7 @@ order. Nothing runs inline, so a listener never sees a write that its own fact c
 never runs inside the hook that started it.
 """
 
+from contextlib import contextmanager
 from dataclasses import dataclass, field, replace
 
 from engine import bus
@@ -52,6 +53,14 @@ class Services:
         return found
 
 
+class NothingHeld:
+    """A lane with no record of its own, as a lane under test has: there is nothing to hold, so a tick runs as it is."""
+
+    @contextmanager
+    def snapshot(self):
+        yield None
+
+
 @dataclass
 class Claims:
     """What the engine has already claimed for a lane. A fact carrying a claim is dispatched by whoever takes it and by nobody after, so the same turn read three ways is handled once."""
@@ -73,6 +82,7 @@ class Lane:
     registered: Registrations
     services: Services
     claims: "Claims" = field(default_factory=lambda: Claims())
+    record: object = field(default_factory=NothingHeld)
     ran: list = field(default_factory=list)
     dropped: list = field(default_factory=list)
 
@@ -96,7 +106,8 @@ class Lane:
             if len(self.ran) >= MOST_TICKS:
                 raise TooManyTicks.of(chain)
             self.ran.append(tuple(queued))
-            queued = self.dispatched(self.tick(queued))
+            with self.record.snapshot():
+                queued = self.dispatched(self.tick(queued))
             chain.extend(sorted({type(fact).__name__ for fact in queued}))
         return [one for tick in self.ran for one in tick]
 

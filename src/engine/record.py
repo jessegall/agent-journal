@@ -72,10 +72,27 @@ class Record:
         self._depth = 0
         self._pending: list[Callable[[], None]] = []
         self.memo = {} if memo else None
+        self._snapshot = False
         self._folders: dict[tuple[str, str], Path] = {}
         self.event_log = RecordEvents(env, self.home, self.locked, EventLog(self.root / RESOURCES, partial(self.locked, PROJECT), self._readers))
         self.numbers = Numbers.of(self.root)
         self.settings_file = ScopedSettings(self.home, self.root)
+
+    def forget(self) -> None:
+        """Drops what this record remembered, because a write has made it stale. A tick holds it instead: see snapshot."""
+        if self.memo is not None and not self._snapshot:
+            self.memo.clear()
+
+    @contextmanager
+    def snapshot(self):
+        """Holds what this record remembers for the length of a tick, so every listener of that tick reads the same rows however their order falls and whoever else writes meanwhile. A write clears it at once outside a tick, which is right for a request and wrong for a tick."""
+        held, self._snapshot = self._snapshot, True
+        try:
+            yield self
+        finally:
+            self._snapshot = held
+            if not held:
+                self.forget()
 
     @classmethod
     def every(cls, root: Path) -> list["Record"]:
@@ -191,12 +208,10 @@ class Record:
                 e = stamped(self.numbers.draw(EVENTS, lambda: log.last_id() + 1), quiet or bus.listening())
                 log.append(e)
                 self._pending.append(partial(bus.tell_watchers if quiet else bus.emit, e, self))
-                if self.memo is not None:
-                    self.memo.clear()
+                self.forget()
             return e
         if held_back(release):
-            if self.memo is not None:
-                self.memo.clear()
+            self.forget()
             return stamped(0)
         return release()
 

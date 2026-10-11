@@ -74,6 +74,12 @@ class Ids(Service):
     """The next id. It comes from here and never from the module, for the same reason."""
 
 
+class Adapted(Service):
+    """The tick's record itself, asked for by the adapter alone, which builds an unswept 2.x handler's Context over it. A swept feature asks for the controller it needs instead."""
+
+    writes = True
+
+
 def writing(wants: dict[str, object]) -> set[str]:
     """The kinds of row a receiver writes, keyed by what is written rather than by which service does it: two handlers both asking for Chat need no order, two both writing Todos do."""
     written = set()

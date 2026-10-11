@@ -44,6 +44,9 @@ class Receiver(Generic[E]):
 
     takes: ClassVar[str] = ""
 
+    adapted: ClassVar[bool] = False
+    """True only of the adapter that runs an unswept 2.x handler: it names its event in the registration rather than in its class, and owes no expectations, because the feature it belongs to has not been swept yet."""
+
     @classmethod
     def receives(cls) -> type:
         for base in getattr(cls, "__orig_bases__", ()):
@@ -124,6 +127,8 @@ class Registration:
         wanted, _ = KINDS[kind]
         if not isinstance(receiver, wanted):
             raise NotAReceiver.of(type(receiver), wanted)
+        if type(receiver).adapted:
+            return cls(kind, event, receiver, tuple(expects), feature, tuple(after))
         if (receives := type(receiver).receives()) is not event:
             raise ReceivesAnother.of(type(receiver), receives, event)
         if not expects:
