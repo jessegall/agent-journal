@@ -10,6 +10,8 @@ const FRAMED_HEIGHT = 5.4;
 const FRAMED_MIDDLE = 2.4;
 const DISTANCE = 8;
 const DEPTH = 3;
+// the share of the picture below the ground the figure stands on, where the chat box's top edge runs
+export const GROUND = (FRAMED_HEIGHT / 2 - FRAMED_MIDDLE) / FRAMED_HEIGHT;
 
 // EEVEE takes 16 samples a pixel through a 1.5 px filter; the browser draws twice as wide, scales down and softens
 // by this share of a cell pixel, which measured closest to Blender's own frames
@@ -320,6 +322,9 @@ function walk(pose, stance, t) {
 const ENTRY_DISTANCE = 4.4;
 const ENTRY_TRAVEL_END = 0.72;
 const ENTRY_TURN_END = 0.94;
+const RUN_STRIDE = [1.84, 0.38, 0.20];
+const WALK_STRIDE = [1.36, 0.60, 0.16];
+const DEPART_TURN = 0.14;
 const SEAT_LIFT = 0.20;
 const PULL_GRIP_X = 1.51;
 const PULL_GRIP_Y = -0.0233463035019455;
@@ -335,6 +340,15 @@ function ease(t) {
 function onceTime(t, frames) {
     return Math.min(Math.max(t * frames / (frames - 1), 0), 1);
 }
+
+// how far u is through the stretch from `from` to `to`, held at 0 before and 1 after; eased, and as a swell that rises and falls back to 0
+const span = (u, from, to) => Math.min(Math.max((u - from) / (to - from), 0), 1);
+const rise = (u, from, to) => ease(span(u, from, to));
+const swell = (u, from, to) => Math.sin(Math.PI * span(u, from, to));
+const mix = (from, to, k) => from + (to - from) * k;
+
+// a ring that dies away over s from 0 to 1: `turns` swings, damped by `damping`, and exactly still at both ends
+const ringing = (s, turns, damping) => Math.exp(-damping * s) * Math.sin(2 * Math.PI * turns * s) * (1 - s);
 
 export function supportsClip(name, stance) {
     return name !== "pull_ups" || !(stance.busy.size || stance.level.size);
@@ -380,36 +394,53 @@ function stepLeg(pose, side, forward, lift, rootHeight, toe = 0) {
     pose.face(`foot_${side}`, {x: toe});
 }
 
-function entering(pose, stance, t, frames, running = false) {
-    const u = onceTime(t, frames);
-    const q = Math.min(u / ENTRY_TRAVEL_END, 1);
-    const progress = ease(q);
-    const distance = ENTRY_DISTANCE * (1 - progress);
-    const motion = 1 - ease((q - 0.76) / 0.24);
-    const [stride, duty, clearance] = running ? [1.84, 0.38, 0.20] : [1.36, 0.60, 0.16];
-    const cycle = ENTRY_DISTANCE * progress / stride;
+// A stride `cycle` steps into its run along the figure's own forward line, faded out by `motion`, posed parent first: the root's bob lowered by `drop`,
+// the trunk with idle's first breath, its lean and any `bend` of the trunk on top, the arms not held `apart`, and the legs, folded by `drop` when standing
+function stride(pose, stance, cycle, motion, {running = false, lean = running ? 10 : 3, clearance, apart = [], drop = 0, bend = {}} = {}) {
+    const [length, duty, lift] = running ? RUN_STRIDE : WALK_STRIDE;
     const halfPhase = cycle % 0.5;
     const flight = running && halfPhase > duty ? Math.max(0, Math.sin(Math.PI * (halfPhase - duty) / (0.5 - duty))) : 0;
-    const rootHeight = motion * (-(running ? 0.075 : 0.11) + (running ? 0.055 * flight : 0));
-    pose.lift("root", {y: distance, z: rootHeight});
-    trunk(pose, {lean: (running ? 10 : 3) * motion, nod: (running ? -6 : -2) * motion});
+    const rootHeight = motion * (-(running ? 0.075 : 0.11) + (running ? 0.055 * flight : 0)) - drop;
+    pose.lift("root", {z: rootHeight});
+    breathe(pose, 0);
+    trunk(pose, {...bend, lean: lean * motion + (bend.lean ?? 0), nod: (running ? -6 : -2) * motion + (bend.nod ?? 0)});
     const swing = (running ? 24 : 14) * waveOf(cycle) * motion;
     const carried = stance.carried ?? stance.busy;
-    const jogging = Object.keys(SIDES).filter((side) => running && !carried.has(side) && !stance.level.has(side));
-    armsAtRest(pose, stance, jogging, Object.fromEntries(Object.entries(SIDES).map(([side, sign]) =>
+    const jogging = Object.keys(SIDES).filter((side) => running && !carried.has(side) && !stance.level.has(side) && !apart.includes(side));
+    armsAtRest(pose, stance, [...jogging, ...apart], Object.fromEntries(Object.entries(SIDES).map(([side, sign]) =>
         [side, carried.has(side) ? 0 : sign * swing])));
     for (const side of jogging) hang(pose, side, SIDES[side] * swing, 10 + 40 * motion);
-    if (motion > 0) {
+    if (motion > 0 || drop) {
         for (const [side, offset] of [["l", 0], ["r", 0.5]]) {
-            const [step, lift] = strideFoot(cycle + offset, stride, duty, clearance);
+            const [step, raised] = strideFoot(cycle + offset, length, duty, clearance ?? lift);
             const phase = (cycle + offset) % 1;
             const flightPhase = phase >= duty ? (phase - duty) / (1 - duty) : 0;
             const toe = (running ? 14 : 11) * Math.sin(Math.PI * flightPhase) * motion;
-            stepLeg(pose, side, motion * step, motion * lift, rootHeight, toe);
+            stepLeg(pose, side, motion * step, motion * raised, rootHeight, toe);
         }
     }
-    const facing = 90 * (1 - ease((u - ENTRY_TRAVEL_END) / (ENTRY_TURN_END - ENTRY_TRAVEL_END)));
-    pose.revolve(facing);
+}
+
+// An arrival from the left: off the frame at the start, home by `until`, turned to face the viewer by `faced`; returns the facing to revolve to last
+function arrive(pose, stance, u, until, faced, gait = {}) {
+    const q = span(u, 0, until);
+    const progress = ease(q);
+    pose.lift("root", {y: ENTRY_DISTANCE * (1 - progress)});
+    stride(pose, stance, ENTRY_DISTANCE * progress / (gait.running ? RUN_STRIDE : WALK_STRIDE)[0], 1 - ease((q - 0.76) / 0.24), gait);
+    return 90 * (1 - rise(u, until, faced));
+}
+
+// A departure toward `way` (1 the viewer's right, -1 the left) from home at `from`: it turns first, then strides off the frame, gathering speed; returns the facing
+function depart(pose, stance, u, from, way, gait = {}) {
+    const q = span(u, from + DEPART_TURN / 2, 1);
+    const progress = (q < 0.3 ? (q * q) / 0.6 : q - 0.15) / 0.85;
+    pose.lift("root", {y: -ENTRY_DISTANCE * progress});
+    stride(pose, stance, ENTRY_DISTANCE * progress / (gait.running ? RUN_STRIDE : WALK_STRIDE)[0], ease(q / 0.25), gait);
+    return way * 90 * rise(u, from, from + DEPART_TURN);
+}
+
+function entering(pose, stance, t, frames, running = false) {
+    pose.revolve(arrive(pose, stance, onceTime(t, frames), ENTRY_TRAVEL_END, ENTRY_TURN_END, {running}));
 }
 
 function walk_in(pose, stance, t) {
@@ -446,6 +477,220 @@ function pull_ups(pose, stance, t) {
     }
 }
 
+// Each voice comes in and goes out in a manner of its own; an entrance ends on idle's first frame and an exit starts on it.
+const ENTER_FRAMES = 36;
+const EXIT_FRAMES = 28;
+const BUTLER_SPRINT = 0.5;
+const BUTLER_BOW = 0.36;
+const PLATE_PITCH = 16;
+const PLATE_ROLL = 7;
+const CLIMB_PEEK = -2.94;
+const CLIMB_PULLED = -1.36;
+const CLIMB_GRIP = new THREE.Vector3(0.96, -0.4, 0.02);
+const CLIMB_ELBOW = new THREE.Vector3(0.6, 0.6, 0);
+const HOMIE_FLING = {y: -20, z: -50, bend: 30};
+const HANG_REACH = 0.97;
+const CHIN_ELBOW = new THREE.Vector3(...THINK_ELBOW);
+const LANDED = 0.3;
+const HOP_RISE = 6.04;
+const HOP_FALL = 10.36;
+const HOP_REACH = 2.4;
+const SQUIRE_CHARGE = 0.52;
+const COACH_JOG = 0.42;
+const COLLEAGUE_STROLL = 0.6;
+const SQUIRE_SHIELD = {y: 30, z: -55, bend: 70};
+const SQUIRE_QUILL = {y: -35, z: -80, bend: 10};
+const COACH_POINT = {y: 0, z: -15, bend: 0};
+
+// an arm taken from hanging at rest (k 0) toward a shape of its own (k 1): the upper arm's turn from the T about y, then x, then z, and the elbow's bend
+function armTo(pose, side, k, {y = HANG, x = 0, z = 0, bend = 10}) {
+    const sign = SIDES[side];
+    pose.turn(`upper_arm_${side}`, {y: sign * mix(HANG, y, k)});
+    pose.turn(`upper_arm_${side}`, {x: x * k});
+    pose.turn(`upper_arm_${side}`, {z: sign * z * k});
+    pose.turn(`forearm_${side}`, {x: -mix(10, 0, k)});
+    pose.bend(`forearm_${side}`, bend * k);
+}
+
+// the hand carried from hanging (k 0) up through the front to `target` (k 1), the elbow pointing the way `elbow` says; it stays there while the body moves
+function handTo(pose, side, k, target, elbow) {
+    const shoulder = pose.head(`upper_arm_${side}`, pose.standing(`upper_arm_${side}`));
+    const toTarget = target.clone().sub(shoulder);
+    const hanging = new THREE.Vector3(SIDES[side] * Math.cos(radians(HANG)), 0, -Math.sin(radians(HANG)));
+    const way = hanging.lerp(toTarget.clone().normalize(), k).normalize();
+    pose.reach(side, shoulder.clone().add(way.multiplyScalar(mix(HANG_REACH, toTarget.length(), k))), elbow);
+}
+
+const chin = (side) => new THREE.Vector3(SIDES[side] * CHIN_REST[0], CHIN_REST[1], CHIN_REST[2]);
+
+// the legs folded so the feet stand `depth` nearer the hips, flat on whatever they stand on
+function fold(pose, depth) {
+    for (const side of Object.keys(SIDES)) stepLeg(pose, side, 0, 0, -depth);
+}
+
+// whatever a hand holds level rides on after the body has stopped: it pitches and rolls, and rings out by the end of `s`
+function slosh(pose, stance, s) {
+    [...stance.level].sort().forEach((side, index) => {
+        const lag = Math.max(s - 0.05 * index, 0);
+        pose.turn(`hand_${side}`, {x: PLATE_PITCH * ringing(lag, 3, 2.5), y: SIDES[side] * PLATE_ROLL * ringing(lag, 2.5, 3)});
+    });
+}
+
+// how hard the whistle is blown at u: a short blast at each of `blasts`
+const blowing = (u, blasts) => blasts.reduce((sum, at) => sum + swell(u, at, at + 0.05), 0);
+
+const heldUp = (stance) => [...stance.carried].filter((side) => !stance.busy.has(side));
+
+function butler_enter(pose, stance, u) {
+    const brake = swell(u, BUTLER_SPRINT, BUTLER_SPRINT + 0.22);
+    const facing = arrive(pose, stance, u, BUTLER_SPRINT, BUTLER_SPRINT + 0.14,
+        {running: true, lean: 15, drop: 0.12 * brake, bend: {lean: -7 * brake, nod: 5 * brake}});
+    slosh(pose, stance, span(u, BUTLER_SPRINT, 1));
+    pose.revolve(facing);
+}
+
+function butler_exit(pose, stance, u) {
+    const bow = swell(u, 0, BUTLER_BOW);
+    pose.revolve(depart(pose, stance, u, BUTLER_BOW, -1, {bend: {lean: 30 * bow, nod: 24 * bow}}));
+}
+
+// the homie climbs up from behind the box: his head shows first, his hands slap onto the edge, he pulls up and springs onto it
+function homie_enter(pose, stance, u) {
+    const spring = span(u, 0.55, 0.72);
+    const landed = u < 0.72 ? 0 : LANDED * (1 - rise(u, 0.84, 1));
+    const height = u < 0.55 ? mix(-4.4, CLIMB_PEEK, rise(u, 0, 0.16)) + (CLIMB_PULLED - CLIMB_PEEK) * rise(u, 0.3, 0.55)
+        : u < 0.72 ? mix(CLIMB_PULLED, -LANDED, spring) + 1.2 * Math.sin(Math.PI * spring) : -landed;
+    pose.lift("root", {z: height});
+    breathe(pose, 0);
+    trunk(pose, {turn: 25 * Math.sin(2 * Math.PI * span(u, 0.06, 0.2)), lean: 14 * (landed / LANDED) + 8 * rise(u, 0.3, 0.55) * (1 - spring),
+        nod: -10 * swell(u, 0.86, 1)});
+    const grip = u >= 0.2 && u < 0.55 ? rise(u, 0.2, 0.27) : 0;
+    const fling = swell(u, 0.55, 0.74);
+    armsAtRest(pose, stance, grip || fling ? Object.keys(SIDES) : []);
+    for (const side of Object.keys(SIDES)) {
+        if (grip) {
+            handTo(pose, side, grip, new THREE.Vector3(SIDES[side] * CLIMB_GRIP.x, CLIMB_GRIP.y, CLIMB_GRIP.z), CLIMB_ELBOW);
+        } else if (fling) {
+            armTo(pose, side, fling, HOMIE_FLING);
+        }
+    }
+    fold(pose, u < 0.72 ? mix(0, LANDED, spring) + 0.45 * Math.sin(Math.PI * spring) : landed);
+}
+
+// the homie springs off the box and drops out of sight below its edge, arms up all the way down
+function homie_exit(pose, stance, u) {
+    const flight = span(u, 0.3, 1);
+    const ready = rise(u, 0.05, 0.3);
+    const up = rise(u, 0.3, 0.42);
+    pose.lift("root", {y: -HOP_REACH * flight, z: u < 0.3 ? -LANDED * ready : -LANDED + HOP_RISE * flight - HOP_FALL * flight * flight});
+    breathe(pose, 0);
+    trunk(pose, {lean: 15 * ready * (1 - up), nod: 18 * ready * (1 - up)});
+    for (const side of Object.keys(SIDES)) {
+        armTo(pose, side, ready, {y: mix(HANG, -60, up), x: mix(40, 0, up), z: -60 * up, bend: 15 * up});
+    }
+    fold(pose, u < 0.3 ? LANDED * ready : LANDED * (1 - up) + 0.4 * swell(u, 0.36, 0.62));
+    pose.revolve(-35 * rise(u, 0, 0.2));
+}
+
+// the squire charges in, shield up and quill held aloft like a sword, skids to a stop and lowers both
+function squire_enter(pose, stance, u) {
+    const shield = [...stance.busy];
+    const quill = heldUp(stance);
+    const charge = 1 - rise(u, 0.7, 0.92);
+    const skid = swell(u, SQUIRE_CHARGE, SQUIRE_CHARGE + 0.2);
+    const facing = arrive(pose, stance, u, SQUIRE_CHARGE, SQUIRE_CHARGE + 0.14,
+        {running: true, lean: 14, apart: [...shield, ...quill], drop: 0.14 * skid, bend: {lean: -6 * skid}});
+    shield.forEach((side) => armTo(pose, side, charge, SQUIRE_SHIELD));
+    quill.forEach((side) => armTo(pose, side, charge, SQUIRE_QUILL));
+    pose.shutEyes(1 - 0.45 * charge);
+    pose.revolve(facing);
+}
+
+// the squire salutes with the quill before his face, turns and marches off
+function squire_exit(pose, stance, u) {
+    const quill = heldUp(stance);
+    const salute = rise(u, 0, 0.12) * (1 - rise(u, 0.24, 0.34));
+    const facing = depart(pose, stance, u, 0.34, -1, {clearance: 0.3, lean: 0, apart: salute ? quill : [], bend: {nod: 10 * swell(u, 0.1, 0.26)}});
+    if (salute) quill.forEach((side) => handTo(pose, side, salute, chin(side), CHIN_ELBOW));
+    pose.revolve(facing);
+}
+
+// the coach jogs in, jogs on the spot a few steps, then stops and blows the whistle twice
+function coach_enter(pose, stance, u) {
+    const side = freeSide(stance);
+    const jog = rise(u, COACH_JOG, COACH_JOG + 0.04) * (1 - rise(u, 0.62, 0.7));
+    const cycle = 6 * span(u, COACH_JOG, 0.7);
+    const bob = -0.05 * jog * Math.abs(waveOf(cycle));
+    const whistling = rise(u, 0.7, 0.76) * (1 - rise(u, 0.9, 0.98));
+    const blast = blowing(u, [0.77, 0.83]);
+    pose.lift("root", {z: bob});
+    const facing = arrive(pose, stance, u, COACH_JOG, COACH_JOG + 0.1,
+        {running: true, lean: 6, apart: whistling ? [side] : [], bend: {nod: 7 * blast, lean: 2 * blast}});
+    if (whistling) handTo(pose, side, whistling, chin(side), CHIN_ELBOW);
+    if (jog) {
+        for (const [leg, offset] of [["l", 0], ["r", 0.5]]) stepLeg(pose, leg, 0, 0.22 * jog * Math.max(waveOf(cycle + offset), 0), bob);
+    }
+    pose.shutEyes(1 - 0.6 * blast);
+    pose.revolve(facing);
+}
+
+// the coach blows the whistle, points the way with the free hand and jogs off that way
+function coach_exit(pose, stance, u) {
+    const side = freeSide(stance);
+    const whistling = rise(u, 0, 0.06) * (1 - rise(u, 0.2, 0.26));
+    const pointing = rise(u, 0.26, 0.32) * (1 - rise(u, 0.42, 0.5));
+    const blast = blowing(u, [0.07, 0.13]);
+    const facing = depart(pose, stance, u, 0.4, SIDES[side],
+        {running: true, lean: 6, apart: whistling || pointing ? [side] : [], bend: {nod: 7 * blast, lean: 2 * blast}});
+    if (whistling) handTo(pose, side, whistling, chin(side), CHIN_ELBOW);
+    if (pointing) armTo(pose, side, pointing, COACH_POINT);
+    pose.shutEyes(1 - 0.6 * blast);
+    pose.revolve(facing);
+}
+
+// the colleague strolls in with the mug, stops, and takes a sip
+function colleague_enter(pose, stance, u) {
+    const lifted = rise(u, 0.72, 0.8) * (1 - rise(u, 0.9, 0.98));
+    const tipped = swell(u, 0.78, 0.92);
+    const facing = arrive(pose, stance, u, COLLEAGUE_STROLL, COLLEAGUE_STROLL + 0.12, {bend: {nod: -8 * tipped}});
+    for (const side of stance.level) {
+        pose.turn(`upper_arm_${side}`, {y: -SIDES[side] * 30 * lifted});
+        pose.turn(`forearm_${side}`, {x: -70 * lifted});
+        pose.turn(`hand_${side}`, {x: 70 * lifted - 25 * tipped});
+    }
+    pose.shutEyes(1 - 0.7 * tipped);
+    pose.revolve(facing);
+}
+
+// the colleague gives a small wave with the free hand, turns and strolls off that way
+function colleague_exit(pose, stance, u) {
+    const side = freeSide(stance);
+    const waving = rise(u, 0, 0.08) * (1 - rise(u, 0.24, 0.32));
+    const facing = depart(pose, stance, u, 0.3, SIDES[side], {apart: waving ? [side] : [], bend: {tilt: -SIDES[side] * 5 * waving}});
+    if (waving) armTo(pose, side, waving, {y: 0, x: -RAISED_ROLL, z: WAVE_BACK, bend: WAVE_BEND + WAVE_SWING * waveOf(span(u, 0, 0.32), 2)});
+    pose.revolve(facing);
+}
+
+// the bare robot, with no manner of its own, walks in and turns to the viewer, and walks off
+function bare_enter(pose, stance, u) {
+    pose.revolve(arrive(pose, stance, u, ENTRY_TRAVEL_END, ENTRY_TURN_END));
+}
+
+function bare_exit(pose, stance, u) {
+    pose.revolve(depart(pose, stance, u, 0, -1));
+}
+
+const ENTRANCES = {bare: bare_enter, butler: butler_enter, homie: homie_enter, squire: squire_enter, coach: coach_enter, colleague: colleague_enter};
+const EXITS = {bare: bare_exit, butler: butler_exit, homie: homie_exit, squire: squire_exit, coach: coach_exit, colleague: colleague_exit};
+
+function enter(pose, stance, t) {
+    ENTRANCES[stance.voice](pose, stance, onceTime(t, ENTER_FRAMES));
+}
+
+function exit(pose, stance, t) {
+    EXITS[stance.voice](pose, stance, onceTime(t, EXIT_FRAMES));
+}
+
 export const CLIPS = [
     {name: "idle", frames: 24, fps: 8, loops: true, pose: idle},
     {name: "blink", frames: 6, fps: 12, loops: false, pose: blink},
@@ -460,6 +705,8 @@ export const CLIPS = [
     {name: "walk_in", frames: 40, fps: 12, loops: false, pose: walk_in},
     {name: "run_in", frames: 28, fps: 12, loops: false, pose: run_in},
     {name: "pull_ups", frames: 24, fps: 10, loops: true, pose: pull_ups},
+    {name: "enter", frames: 36, fps: 12, loops: false, pose: enter},
+    {name: "exit", frames: 28, fps: 12, loops: false, pose: exit},
 ];
 
 // An eye closes about its own middle before the head carries it, as rig.Figure.shut_eyes scales the eye object
@@ -635,7 +882,7 @@ export async function loadFigure(url, wardrobe, voice) {
         }
     }
     const carried = meshes.filter((mesh) => mesh.visible);
-    const stance = {level: handsHolding(carried, LEVEL_ITEMS), busy: handsHolding(carried, BUSY_ITEMS),
+    const stance = {voice, level: handsHolding(carried, LEVEL_ITEMS), busy: handsHolding(carried, BUSY_ITEMS),
         carried: handsHolding(carried, new Set([...BUSY_ITEMS, "squire_quill"]))};
     return {scene, rig: rigOf(scene), stance, eyes};
 }
