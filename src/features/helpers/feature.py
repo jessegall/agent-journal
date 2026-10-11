@@ -1,6 +1,7 @@
-from expects import Given, Nudged, Unchanged
+from expects import Given, Kept, Nudged, Unchanged
 from features.ask_questions.handlers import QuestionAsked
 from features.base import Feature
+from providers.payload import Dispatch
 from resources.base import AGENT
 from resources.types import AgentRow, Question
 from features.helpers.controller import Helpers
@@ -38,4 +39,6 @@ class HelpersFeature(Feature):
         journal.commands.add("agent", RetireSubagent())
         journal.agent.interceptor(KeepSubagentFiles())
         journal.agent.interceptor(RefuseTestRunsToHelpers())
-        journal.agent.canceler(OfferKeptAgentsFirst())
+        journal.agent.canceler(OfferKeptAgentsFirst(), expects=[
+            Given(Dispatch("general-purpose", "sonnet", True)) >> Kept(),
+        ])
