@@ -271,6 +271,12 @@ def test_the_attic_packs_unpacks_and_finds_what_was_put_away_and_a_stubborn_serv
     assert attic.latest(root, "main").name == "main-12.tar.gz" and attic.latest(root, "other") is None, "the newest archive of an environment is found by its number"
     assert attic.unpack(attic.folder(root) / "main.tar.gz", tmp_path / "back") == tmp_path / "back" and (tmp_path / "back" / "row.md").read_text() == "kept", \
         "an archive unpacks into the folder it came from and is used up"
+    home = root / "environments" / "away"
+    home.mkdir(parents=True)
+    (home / "row.md").write_text("held")
+    waiting = attic.set_aside(home, "away-5")
+    assert attic.latest(root, "away").name == "away-5.tar.gz" and not waiting.exists(), \
+        "an environment set aside and not yet packed is packed when its archive is asked for, so unarchive never says there is none"
 
     tries = []
     monkeypatch.setattr(attic.time, "sleep", lambda seconds: None)

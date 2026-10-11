@@ -3,6 +3,7 @@ import re
 import shutil
 import tarfile
 import tempfile
+import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +15,7 @@ FRONT = re.compile(r"\A---\n(.*?)\n---\n", re.S)
 STAMPED = re.compile(r"-\d+$")
 REMOVE_TRIES, REMOVE_AGAIN = 10, 0.2
 PACK_LEVEL = 1
+PACKING = threading.Lock()
 
 
 def folder(root: Path) -> Path:
@@ -28,9 +30,15 @@ def set_aside(source: Path, name: str) -> Path:
 
 
 def pack(source: Path, name: str) -> Path:
-    attic = folder(source.parents[1])
+    """Packs a folder into the attic; one pack runs at a time, and a folder another pack has finished meanwhile is not packed again."""
+    with PACKING:
+        attic = folder(source.parents[1])
+        target = attic / f"{name}{SUFFIX}"
+        return pack_held(source, name, attic, target) if source.is_dir() else target
+
+
+def pack_held(source: Path, name: str, attic: Path, target: Path) -> Path:
     attic.mkdir(exist_ok=True)
-    target = attic / f"{name}{SUFFIX}"
     partial = target.with_name(f".{target.name}.partial")
     with tarfile.open(partial, "w:gz", compresslevel=PACK_LEVEL) as tar:
         tar.add(source, arcname=name)
@@ -69,6 +77,9 @@ def compress(root: Path) -> list[str]:
 
 
 def latest(root: Path, env: str) -> Path | None:
+    for waiting in folder(root).glob(f"{env}-*"):
+        if waiting.is_dir() and re.fullmatch(rf"{re.escape(env)}-\d+", waiting.name):
+            pack(waiting, waiting.name)
     stamps = {p: p.name[len(env) + 1:-len(SUFFIX)] for p in folder(root).glob(f"{env}-*{SUFFIX}")}
     found = sorted([(0, p) for p in folder(root).glob(f"{env}{SUFFIX}")] + [(int(stamp), p) for p, stamp in stamps.items() if stamp.isdigit()])
     return found[-1][1] if found else None
