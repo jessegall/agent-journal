@@ -53,26 +53,50 @@ class Services:
 
 
 @dataclass
+class Claims:
+    """What the engine has already claimed for a lane. A fact carrying a claim is dispatched by whoever takes it and by nobody after, so the same turn read three ways is handled once."""
+
+    taken: dict = field(default_factory=dict)
+
+    def take(self, key: str, at: float = 0.0) -> bool:
+        if key in self.taken:
+            return False
+        self.taken[key] = at
+        return True
+
+
+@dataclass
 class Lane:
     """One line of ticks. What a tick dispatches is the next tick's queue, and the lane runs until it empties."""
 
     name: str
     registered: Registrations
     services: Services
-    ids: object = field(default=None)
+    claims: "Claims" = field(default_factory=lambda: Claims())
     ran: list = field(default_factory=list)
+    dropped: list = field(default_factory=list)
 
     def named(self, event: Event, causing: Event) -> Event:
         return event.caused_by(causing, f"{self.name}:{len(self.ran)}:{type(event).__name__}")
 
+    def dispatched(self, events: list[Event]) -> list[Event]:
+        """The events that go on. One carrying a claim goes only if it takes it, so a listener never claims for itself and a handler never asks whether it already ran."""
+        going = []
+        for event in events:
+            if getattr(event, "claim", "") and not self.claims.take(event.claim):
+                self.dropped.append(event)
+                continue
+            going.append(event)
+        return going
+
     def run(self, event: Event) -> list[Event]:
         """Runs the event and everything it causes, tick by tick, until the lane empties or the cap bites."""
-        queued, chain = [self.named(event, event)], [type(event).__name__]
+        queued, chain = self.dispatched([self.named(event, event)]), [type(event).__name__]
         while queued:
             if len(self.ran) >= MOST_TICKS:
                 raise TooManyTicks.of(chain)
             self.ran.append(tuple(queued))
-            queued = self.tick(queued)
+            queued = self.dispatched(self.tick(queued))
             chain.extend(sorted({type(fact).__name__ for fact in queued}))
         return [one for tick in self.ran for one in tick]
 

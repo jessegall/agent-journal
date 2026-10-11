@@ -336,3 +336,49 @@ def test_each_request_reduces_as_specified_and_answering_one_writes_nothing_and_
     lane = Lane("claude-1", registered, services)
     answered(ToolCallAsked(tool="Bash", input="rm -rf ."), registered, services)
     assert lane.ran == [], "answering a request runs no tick at all, so a hook never waits on work that belongs after its answer"
+
+
+def test_the_engine_claims_a_fact_at_dispatch_so_the_same_turn_read_three_ways_is_handled_once():
+    from dataclasses import dataclass
+
+    from events import Fact
+    from receiving import Handler, Listener, Registration, Registrations
+    from receiving.ticks import Claims, Lane, Services
+    from serving import Chat
+
+    @dataclass(frozen=True, kw_only=True)
+    class AgentMessageSent(Fact):
+        turn: str
+        text: str
+
+    @dataclass(frozen=True, kw_only=True)
+    class MessageTagged(Fact):
+        turn: str
+        tag: str
+
+    replied = []
+
+    class TagsInText(Listener[AgentMessageSent]):
+        def listen(self, event: AgentMessageSent) -> list[Fact]:
+            return [MessageTagged(turn=event.turn, tag="reply").once(f"{event.turn}|reply")]
+
+    class RunTagCommand(Handler[MessageTagged]):
+        def handle(self, event: MessageTagged, chat: Chat) -> list[Fact]:
+            replied.append(event.turn)
+            return []
+
+    registered = Registrations()
+    registered.add(Registration.read("listen", AgentMessageSent, TagsInText(), ["an expectation"]))
+    registered.add(Registration.read("handle", MessageTagged, RunTagCommand(), ["an expectation"]))
+
+    claims, services, dropped = Claims(), Services({Chat: "the chat"}), []
+    for _ in ("the display stream", "the transcript catch-up", "the Stop hook"):
+        lane = Lane("claude-1", registered, services, claims)
+        lane.run(AgentMessageSent(turn="t1", text="[!reply:12] the answer"))
+        dropped.append(len(lane.dropped))
+
+    assert replied == ["t1"] and dropped == [0, 1, 1], \
+        "the same turn reaching the journal three ways is handled once: the first dispatch takes the claim and the others are dropped"
+    assert MessageTagged(turn="t1", tag="reply").once("t1|reply").claim == "t1|reply", \
+        "the listener says which key the fact is claimed under and never claims it, which is what keeps a listener read-only"
+    assert claims.take("t2|reply") and not claims.take("t2|reply"), "a key is taken once and refused after"
