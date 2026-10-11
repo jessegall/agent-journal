@@ -253,6 +253,11 @@ class Feature(ABC):
         if agent:
             self.journal.say(record, agent, line, actor=actor, **values)
 
+    def to_running(self, record, line: str, actor: str = SYSTEM, **values) -> None:
+        """Says the line to every agent of the environment that is running and that the line reaches, so a change the user makes reaches the ones already working, not only the first."""
+        for agent in self.reached(record, self.lines[line].reach):
+            self.journal.say(record, agent, line, actor=actor, **values)
+
     def hold(self, record, line: str, key: str = "", agent=None, **values) -> None:
         self._gate(record, Hold(self.line(line, values)[0], self.lines[line].reach, self.lines[line].scope), key, agent)
 

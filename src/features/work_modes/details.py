@@ -99,12 +99,14 @@ class WorkModesDetails(FeatureDetails):
     lines = [
         Line(
             name=MODE_SET,
+            lead=True,
             while_waiting=True,
             title="the user set the work mode to {{mode}}",
-            brief="From now on {{meaning}}.",
+            brief="{{written}}",
         ),
         Line(
             name=BOARD_SET,
+            lead=True,
             while_waiting=True,
             title="the user set where new work goes: {{where}}",
             brief="From now on {{filing}}",

@@ -17,7 +17,7 @@ def pick(record, mode: str, actor: str) -> str:
     from features.journal_laws.briefing import brief
     from features.work_modes.feature import WorkModes
     brief(record.root.parent, record)
-    running(WorkModes).to_primary(record, MODE_SET, actor=actor, mode=mode, meaning=MODES[mode].meaning)
+    running(WorkModes).to_running(record, MODE_SET, actor=actor, mode=mode, written=MODES[mode].written)
     return mode
 
 
@@ -58,7 +58,7 @@ def choose_board(record, n: int, actor: str) -> int:
     from features.work_modes.feature import WorkModes
     board = boards.load(n) if n else None
     where = f"board {n}, {board.title}" if board else "to-dos"
-    running(WorkModes).to_primary(record, BOARD_SET, actor=actor, where=where, filing=filing_on(board))
+    running(WorkModes).to_running(record, BOARD_SET, actor=actor, where=where, filing=filing_on(board))
     return n
 
 
