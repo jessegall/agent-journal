@@ -217,7 +217,7 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     raise_held(record.root, "claude-1")
     assert said() == (True, True), "and once its window has run out with nothing arriving, the engine says in its log and to the agent that the transcript filled the chat for the hook"
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Late but not lost"}]}}) + "\n")
-    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "UserPromptSubmit", "session_id": "claude-1", "prompt": "again"})
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "Late but not lost"})
     raised = log_file(record.root).read_text().count(FELL_BACK)
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "another-id", "index": 0, "final": True, "delta": "Late but not lost"}))
     with ledger.changing() as kept:
