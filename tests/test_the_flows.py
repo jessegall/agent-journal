@@ -238,10 +238,13 @@ def test_a_long_command_among_parallel_calls_is_moved_by_name_once_and_its_card_
     commands = eventually(lambda: [(row["command"], bool(row.get("done"))) for agent in scratch.rows("agent") for row in agent["data"].get("commands") or []],
                           [("journal message read 5", True), ("npm run slow", False)])
     started = next(row["at"] for agent in scratch.rows("agent") for row in agent["data"]["commands"] if row["command"] == "npm run slow")
-    time.sleep(1.2)
-    engine.beat()
-    engine.beat()
-    assert pressed == [("claude-1", str(started))], "the call that runs is the one moved, the press names it, and it is sent once"
+    def beaten():
+        """The engine's own beat is what moves a long call, and the call must be older than the threshold before it will: beating until it happens waits for the state rather than for a stretch of clock that a loaded machine spends elsewhere."""
+        engine.beat()
+        return pressed
+
+    assert eventually(beaten, [("claude-1", str(started))]) and pressed == [("claude-1", str(started))], \
+        "the call that runs is the one moved, the press names it, and it is sent once however many beats it took"
     cards = lambda: [card for agent in scratch.rows("agent") for card in agent["data"].get("cards") or []]
     moved = eventually(lambda: [(card["label"], card["command"], card["state"]) for card in cards()], [("Moved a long command to the background", "npm run slow", "running")])
     assert moved, "the chat shows one card, with the command that was moved"

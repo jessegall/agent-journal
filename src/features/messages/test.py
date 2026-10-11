@@ -1,4 +1,5 @@
 import json
+import threading
 import time
 from datetime import datetime, timezone
 
@@ -180,9 +181,11 @@ def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
     assert list(received.values()) == [False, True], "the terminal is claude-99 but the session is claude-1: its own nudge is spoken"
 
 
-def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display_hook_only(tmp_path):
+def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display_hook_only(tmp_path, monkeypatch):
+    from runner import chat_mirror
     from runner.engine import Engine
     record, transcript, now = fresh(), tmp_path / "s.jsonl", datetime.now(timezone.utc).isoformat()
+    monkeypatch.setattr(chat_mirror, "SETTLE", 0.5)
     transcript.write_text(json.dumps({"type": "user", "timestamp": now, "message": {"content": "go"}}) + "\n")
     report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
@@ -221,6 +224,14 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Done. " * 80}]}}) + "\n")
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "Done. " * 80})
     assert any("paragraph" in line.lower() for line in nudges(record)), "a long answer in one block of sentences is told to be set in paragraphs"
+    late = "Waiting on the measurement."
+    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": late}]}}) + "\n")
+    fell_back = log_file(record.root).read_text().count(FELL_BACK)
+    threading.Timer(0.1, lambda: displayed(record.root, Chunk.from_json(
+        {"session_id": "claude-1", "message_id": "h", "index": 0, "final": True, "delta": late}))).start()
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": late})
+    assert (chat().count(late), log_file(record.root).read_text().count(FELL_BACK)) == (1, fell_back), \
+        "the turn's last words are waited for: a display hook the stop raced past still delivers them, and the transcript is not blamed"
 
 
 def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():

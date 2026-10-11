@@ -29,6 +29,8 @@ KEPT_SENT = 500
 FELL_BACK = "the display hook did not deliver what the agent said"
 COMMIT = re.compile(r"[0-9a-f]{40}")
 CATCH_UP = 600.0
+SETTLE = 3.0
+SETTLE_STEP = 0.05
 REPLAYING = threading.Lock()
 
 
@@ -117,8 +119,27 @@ def fingerprint(text: str) -> str:
 
 def turn_ended(root: Path, session: str, row, last_message: str) -> None:
     if last_message:
+        arrives(root, session, last_message)
         stopped(root, session, last_message)
     unfinished(root, session, row)
+
+
+def arrived(held: dict, text: str) -> bool:
+    """Whether the display hook has brought these words, whole or in the parts a turn's end completes."""
+    return fingerprint(text) in held.get(MATCHED, []) or any(not message.startswith(PRIVATE) and belongs(text, parts)
+                                                             for message, parts in held.items())
+
+
+def arrives(root: Path, session: str, text: str) -> None:
+    """Waits for the display hook to bring the turn's last words. The provider sends them and the hook that ends the turn
+    at the same moment, each as its own process, and a loaded machine lets the end arrive first; without this wait the
+    catch-up then calls words that are still on their way undelivered, and fills the chat from the transcript instead."""
+    ledger = DisplayedLedger(root, session)
+    until = time.time() + SETTLE
+    while not arrived(read_json(ledger.file, dict, {}), text):
+        if time.time() >= until:
+            return
+        time.sleep(SETTLE_STEP)
 
 
 def turn_began(root: Path, session: str, row) -> None:
