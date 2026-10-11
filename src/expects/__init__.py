@@ -4,7 +4,7 @@ The grammar is doc 80's chapter 'The expects grammar'; this module is the vocabu
 The Fakes that answer each service, and the run that plays an expectation, arrive with phase 2.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Any, Mapping
 
 
@@ -38,9 +38,9 @@ def stated(row) -> dict:
 
 
 def held(row) -> dict:
-    """Everything a row holds, its own fields and the ones it keeps in data, flattened so an expectation names either kind the same way."""
-    fields = {name: getattr(row, name) for name in dir(row) if not name.startswith("_") and not callable(getattr(row, name, None))}
-    return {**fields, **(fields.get("data") or {})}
+    """What a row holds: its declared fields and the ones it keeps in data, flattened so an expectation names either kind the same way. Anything derived from them - a ref built out of a type and a number - is left out, because a promise is about what was written, not about what can be worked out from it."""
+    own = {field.name: getattr(row, field.name) for field in fields(row)}
+    return {**own, **(own.get("data") or {})}
 
 
 def matches(row, wanted: dict) -> bool:
@@ -221,6 +221,10 @@ class Answered(Outcome):
         return "" if seen.answered == self.answer else f"it answered {seen.answered!r}, not {self.answer!r}"
 
 
+WHEN = 1_767_225_600.0
+"""The hour a Given is set at when it names no clock: a constant the run chooses, never the wall clock, so an expectation reads the same today and in a year."""
+
+
 @dataclass(frozen=True)
 class At:
     """The time the Clock service answers, fixed."""
@@ -273,7 +277,7 @@ class Given:
     on: Any
     rows: tuple = ()
     settings: Mapping[str, Any] = field(default_factory=dict)
-    clock: At = At(0.0)
+    clock: At = At(WHEN)
     ids: Counting = Counting()
     chat: Answering = Answering({})
     commands: Answering = Answering({})

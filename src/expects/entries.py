@@ -7,6 +7,8 @@ the providers. Each kind has one entry and no kind has two, so the run and the e
 """
 
 import tempfile
+import time
+from contextlib import contextmanager
 from pathlib import Path
 
 from controllers.types import Messages, Nudges
@@ -133,15 +135,31 @@ def text_of(event) -> str | None:
     return data.get("text") if isinstance(data, dict) else None
 
 
-def rows_touched(record: Record, since: int, action: str) -> list:
-    """The rows the play created or changed, read back from the record itself. The event log says WHICH rows moved; the rows say what they now hold, and an expectation is written about the row."""
+CREATED = "created"
+
+
+def rows_touched(record: Record, since: int, made: bool) -> list:
+    """The rows the play made, or the rows it changed, read back from the record itself. The event log says WHICH rows moved; the rows say what they now hold, and an expectation is written about the row.
+
+    Every action but one changes a row that was already there - linked, commented, completed, reopened - so what an expectation calls Updated is any of them, not the one spelt 'updated'."""
     from controllers.types import CONTROLLERS
     touched = []
     for event in record.event_log.events(since):
-        if event.action != action or event.type not in CONTROLLERS:
+        if (event.action == CREATED) is not made or event.type not in CONTROLLERS:
             continue
         touched.append(CONTROLLERS[event.type](record, actor=SYSTEM).rows.peek(event.n))
     return touched
+
+
+@contextmanager
+def at_the_givens_hour(given: Given):
+    """Holds the clock at the hour the Given names, for everything the play touches. A 2.x handler reads time.time() itself rather than asking a service, so without this an expectation about anything aged would read differently tomorrow."""
+    was = time.time
+    time.time = lambda: given.clock.seconds
+    try:
+        yield
+    finally:
+        time.time = was
 
 
 def played(promise, expectation) -> Seen:
@@ -151,9 +169,10 @@ def played(promise, expectation) -> Seen:
     given = expectation.given
     record, world = scratch(given), World.of(given)
     world.seen.before, since = rows_now(record), record.event_log.last_id()
-    ENTRIES[promise.kind](promise, given, record, world)
+    with at_the_givens_hour(given):
+        ENTRIES[promise.kind](promise, given, record, world)
     world.seen.after = rows_now(record)
     world.seen.said, world.seen.nudged = what_was_said(record)
-    world.seen.wrote = rows_touched(record, since, "created")
-    world.seen.updated = rows_touched(record, since, "updated")
+    world.seen.wrote = rows_touched(record, since, made=True)
+    world.seen.updated = rows_touched(record, since, made=False)
     return world.seen
