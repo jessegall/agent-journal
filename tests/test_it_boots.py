@@ -1604,6 +1604,10 @@ def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_
     turns = []
 
     class Provider:
+        @classmethod
+        def shows_what_is_said(cls):
+            return True
+
         def turns(self, path):
             return turns
     monkeypatch.setattr(chat_mirror, "PROVIDERS", {"fake": Provider})

@@ -172,13 +172,14 @@ def unfinished(root: Path, session: str, row) -> None:
         held[MATCHED] = streamed[-KEPT_SENT:]
     if not pending:
         return
-    fell_back(root, session, len(pending))
+    if provider.shows_what_is_said():
+        fell_back(root, session, len(pending))
     for turn in pending:
         send_to_chat(root, session, turn.text, turn.key)
 
 
 def fell_back(root: Path, session: str, messages: int) -> None:
-    """Says that the transcript carried agent text the display hook never delivered, so a hook that has stopped arriving is never hidden by the fallback covering for it."""
+    """Says that the transcript carried agent text the display hook never delivered, so a hook that has stopped arriving is never hidden by the fallback covering for it; a provider that shows nothing as it is displayed is read from its transcript by design and is never reported."""
     said = plural(messages, "message")
     logged(root, f"{FELL_BACK}: {said} in session {session} came from the transcript instead")
     faults = features.FEATURES.get("dev_faults")

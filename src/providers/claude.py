@@ -384,6 +384,10 @@ class Claude(Provider):
         chunk = Chunk.from_json(raw)
         return chunk if chunk.event == DISPLAYED else None
 
+    @classmethod
+    def shows_what_is_said(cls) -> bool:
+        return True
+
     def rewritten(self, hook: Hook, command: str, answered: dict) -> dict:
         if hook.permission_mode != BYPASSING:
             return answered

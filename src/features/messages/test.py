@@ -329,6 +329,15 @@ def test_messages_between_agent_sessions_reach_the_chat_marked_with_the_other_se
         chat.send(record, Agents(record).by_session(session), f"answer from {session}", turn="transcript:1")
     assert [m.brief for m in Messages(record, actor="system").all() if m.brief.startswith("answer from")] == ["answer from claude-1", "answer from codex-1"], \
         "two sessions' answers on the same transcript line are both kept"
+    codex.write_text(codex.read_text() + json.dumps({"type": "response_item", "timestamp": datetime.now(timezone.utc).isoformat(),
+                                                     "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": "what the Codex agent said"}]}}) + "\n")
+    from runner import chat_mirror
+    Sessions(record.root).bind("codex-1", record.env, provider="codex")
+    chat_mirror.unfinished(record.root, "codex-1", Agents(record).by_session("codex-1"))
+    said = [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
+    log = log_file(record.root)
+    assert ("what the Codex agent said" in said, log.exists() and FELL_BACK in log.read_text()) == (True, False), \
+        "a Codex agent's words reach the chat as the agent's own, and a provider that shows nothing as it is displayed is read from its transcript by design, never reported as a hook that failed"
 
 
 def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update():

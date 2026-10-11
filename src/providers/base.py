@@ -208,6 +208,11 @@ class Provider(ABC):
     def display_chunk(cls, raw: dict) -> Chunk | None:
         return None
 
+    @classmethod
+    def shows_what_is_said(cls) -> bool:
+        """Whether the provider tells the journal what the agent said as it is displayed; one that does not leaves the transcript as the only way to read it, and the journal does not report that as a fault."""
+        return False
+
     def response(self, event: str, text: str) -> dict:
         return {"hookSpecificOutput": {"hookEventName": event, "additionalContext": text}} if text else {}
 
