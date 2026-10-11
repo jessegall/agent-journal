@@ -28,10 +28,10 @@ def bodies():
         for path in sorted((HERE / package).rglob("*.py")):
             if path.stem == "test":
                 continue
-            for fn in ast.walk(ast.parse(path.read_text())):
-                if isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)) and statements(fn) >= SMALLEST:
-                    shape = ast.dump(Shape().visit(ast.Module(body=fn.body, type_ignores=[])))
-                    yield shape, f"{path.relative_to(HERE)}:{fn.lineno} {fn.name}"
+            functions = [fn for fn in ast.walk(ast.parse(path.read_text())) if isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)) and statements(fn) >= SMALLEST]
+            for fn in functions:
+                shape = ast.dump(Shape().visit(ast.Module(body=fn.body, type_ignores=[])))
+                yield shape, f"{path.relative_to(HERE)}:{fn.lineno} {fn.name}"
 
 
 def problems() -> list[str]:

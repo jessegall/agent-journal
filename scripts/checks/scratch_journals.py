@@ -44,17 +44,20 @@ def alive(pid: int) -> bool:
 
 
 def seconds(elapsed: str) -> int:
-    days, _, clock = elapsed.rpartition("-")
+    days, clock = elapsed.split("-") if "-" in elapsed else ("0", elapsed)
     parts = [int(part) for part in clock.split(":")]
     hours, minutes, last = ([0] * (3 - len(parts))) + parts
-    return int(days or 0) * 86400 + hours * 3600 + minutes * 60 + last
+    return int(days) * 86400 + hours * 3600 + minutes * 60 + last
 
 
 def processes() -> list[Scratch]:
     listed = subprocess.run(["ps", "-axwwo", "pid=,etime=,command="], capture_output=True, text=True, timeout=30).stdout.splitlines()
     found = []
     for line in listed:
-        pid, elapsed, command = (line.split(None, 2) + ["", ""])[:3]
+        fields = line.split(None, 2)
+        if len(fields) < 3:
+            continue
+        pid, elapsed, command = fields
         if pid.isdigit() and int(pid) != os.getpid() and SCRATCH.search(command) and RUNNING.search(command) and "scratch_journals" not in command:
             found.append(Scratch(int(pid), seconds(elapsed), command))
     return found

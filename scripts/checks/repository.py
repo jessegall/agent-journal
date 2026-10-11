@@ -41,9 +41,8 @@ def problems() -> list[str]:
                 text += [f"{name}:{node.lineno} replaces RowStore.{target.attr}, a funnel method" for target in node.targets
                          if isinstance(target, ast.Attribute) and target.attr in FUNNEL and isinstance(target.value, ast.Attribute) and target.value.attr == "rows"]
         for n, line in enumerate(source.splitlines(), 1):
-            for pattern, what in ((ROW_IO, "row io"), (PARSE, "parse"), (BUILD, "build")):
-                if pattern.search(line) and (name, what) not in ALLOWED:
-                    text.append(f"{name}:{n} reads, writes, parses or makes a row past its repository ({what}); go through the controller's rows, or allow it in scripts/checks/repository.py with its reason")
+            kinds = [what for pattern, what in ((ROW_IO, "row io"), (PARSE, "parse"), (BUILD, "build")) if pattern.search(line) and (name, what) not in ALLOWED]
+            text += [f"{name}:{n} reads, writes, parses or makes a row past its repository ({what}); go through the controller's rows, or allow it in scripts/checks/repository.py with its reason" for what in kinds]
     return text
 
 

@@ -26,6 +26,18 @@ def delegates(method: ast.FunctionDef) -> bool:
     return len(body) == 1 and isinstance(getattr(body[0], "value", None), ast.Call)
 
 
+def file_problems(path: Path) -> list[str]:
+    found = []
+    for node in ast.walk(ast.parse(path.read_text())):
+        if isinstance(node, ast.ImportFrom) and node.module == "features.base" and {a.name for a in node.names} & OLD_MARKERS:
+            found.append(f"{path.relative_to(HERE)} imports an old marker from features.base")
+    for part in classes(path):
+        lines = part.end_lineno - part.lineno + 1
+        if any(getattr(base, "id", "") in PARTS for base in part.bases) and lines > PART_LINES:
+            found.append(f"{path.relative_to(HERE)}: {part.name} is {lines} lines; split it, a part stays under {PART_LINES}")
+    return found
+
+
 def problems() -> list[str]:
     found = []
     for folder in sorted(p for p in (HERE / "features").iterdir() if (p / "feature.py").is_file()):
@@ -38,14 +50,7 @@ def problems() -> list[str]:
             if extra:
                 found.append(f"features/{name}/feature.py holds logic in {', '.join(extra)}; it belongs in a part")
         for path in sorted(folder.glob("*.py")):
-            source = path.read_text()
-            for node in ast.walk(ast.parse(source)):
-                if isinstance(node, ast.ImportFrom) and node.module == "features.base" and {a.name for a in node.names} & OLD_MARKERS:
-                    found.append(f"{path.relative_to(HERE)} imports an old marker from features.base")
-            for part in classes(path):
-                lines = part.end_lineno - part.lineno + 1
-                if any(getattr(base, "id", "") in PARTS for base in part.bases) and lines > PART_LINES:
-                    found.append(f"{path.relative_to(HERE)}: {part.name} is {lines} lines; split it, a part stays under {PART_LINES}")
+            found += file_problems(path)
     return found
 
 

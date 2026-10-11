@@ -11,9 +11,9 @@ ROOTS = (*PACKAGES, "install")
 def imports():
     for package in PACKAGES:
         for path in sorted((HERE / package).rglob("*.py")):
-            for node in ast.walk(ast.parse(path.read_text())):
-                if isinstance(node, ast.ImportFrom) and node.level == 0 and (node.module or "").split(".")[0] in ROOTS:
-                    yield path, node
+            nodes = [node for node in ast.walk(ast.parse(path.read_text())) if isinstance(node, ast.ImportFrom) and node.level == 0 and (node.module or "").split(".")[0] in ROOTS]
+            for node in nodes:
+                yield path, node
 
 
 def missing(module: str, name: str) -> str:

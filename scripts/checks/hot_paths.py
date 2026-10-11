@@ -52,9 +52,8 @@ def problems() -> list[str]:
     for path in hot_files():
         name = str(path.relative_to(HERE))
         for n, line in enumerate(path.read_text().splitlines(), 1):
-            for call, pattern in SLOW.items():
-                if pattern.search(line) and (name, call) not in ALLOWED:
-                    text.append(f"{name}:{n} calls {call} on a hot path; cache it in a funnel or allow it in scripts/checks/hot_paths.py with its reason")
+            slow = [call for call, pattern in SLOW.items() if pattern.search(line) and (name, call) not in ALLOWED]
+            text += [f"{name}:{n} calls {call} on a hot path; cache it in a funnel or allow it in scripts/checks/hot_paths.py with its reason" for call in slow]
     return text
 
 

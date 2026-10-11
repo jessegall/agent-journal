@@ -27,10 +27,7 @@ def loads_in_loops(tree: ast.AST) -> list[ast.Call]:
         if not isinstance(loop, LOOPS):
             continue
         body = loop.body if isinstance(loop, ast.For) else [loop]
-        for statement in body:
-            for call in ast.walk(statement):
-                if is_summary_load(call):
-                    found.append(call)
+        found += [call for statement in body for call in ast.walk(statement) if is_summary_load(call)]
     return found
 
 
