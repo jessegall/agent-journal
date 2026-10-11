@@ -1,4 +1,11 @@
 from controllers.types import Works
+from engine.events.resources import TodoCompleted
+from features.plans.resource import Plan
+from expects import Given, Kept, Nudged, Refused, Unchanged
+from features.work_tracking.handlers import PlanCompleted, WorkCompleted
+from providers.payload import BashCall
+from resources.base import USER
+from resources.types import AgentRow, Todo, Work
 from features.base import Feature
 from features.triggers.watched import COUNT, FACTS, Fact, state_facts
 from features.work_tracking.next import ready
@@ -12,7 +19,20 @@ from features.work_tracking.details import WorkDetails
 from features.sending import Nudge
 from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_ready, stopped_in_auto, stopped_with_work, next_while_helping, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
-from features.work_tracking.interceptors import RefuseHeldCalls, RefuseWaitingInTheShell
+from features.work_tracking.interceptors import WAIT_WAY, RefuseHeldCalls, RefuseWaitingInTheShell
+
+
+AGENT_ROW = AgentRow(n=1, title="claude-1")
+WAITING = Work(n=3, title="Wait on the build", data={"awaiting": "the build"})
+PARKED = Work(n=3, title="Write the report", data={"parked": "the user asked for something first"})
+
+
+def closed(n: int) -> TodoCompleted:
+    return TodoCompleted(n=n, type="todo", action="completed", actor=USER)
+
+
+def shell(command: str, **given) -> BashCall:
+    return BashCall.from_payload("Bash", {"command": command, **given}, {})
 
 
 def open_work(context) -> list:
@@ -63,13 +83,37 @@ class WorkFeature(Feature):
         journal.events.handler(OpenWork())
         journal.events.handler(CloseWork())
         journal.events.handler(EndWorkWithTodo())
-        journal.events.handler(NameParkedOnTodoDone())
-        journal.events.handler(UnblockWaitingRows())
-        journal.events.handler(UnblockWhenPlanFinishes())
-        journal.events.handler(AskStillBlocked())
+        journal.events.handler(NameParkedOnTodoDone(), expects=[
+            Given(closed(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED, AGENT_ROW]) >> Nudged("parked"),
+            Given(closed(9), rows=[Todo(n=9, title="Done", completed=1.0), Todo(n=4, title="Next"), PARKED, AGENT_ROW]) >> Unchanged(),
+            Given(closed(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED]) >> Unchanged(),
+            Given(closed(9), rows=[Todo(n=9, title="Done", completed=1.0), Work(n=3, title="Work", data={"todo": 9, "parked": "later"}), AGENT_ROW]) >> Unchanged(),
+        ])
+        journal.events.handler(UnblockWaitingRows(), expects=[
+            Given(closed(7), rows=[Todo(n=7, title="First", completed=1.0), Todo(n=8, title="Then", data={"after": ["todo:7"]}), AGENT_ROW]) >> Nudged("unblocked"),
+            Given(closed(7), rows=[Todo(n=7, title="First", completed=1.0), Todo(n=8, title="Then", data={"after": ["todo:7", "todo:9"]}), Todo(n=9, title="Other"), AGENT_ROW]) >> Unchanged(),
+            Given(closed(7), rows=[Todo(n=7, title="First", completed=1.0, data={"struck": "not needed"}), Todo(n=8, title="Then", data={"after": ["todo:7"]}), AGENT_ROW]) >> Unchanged(),
+            Given(closed(7), rows=[Todo(n=7, title="First", completed=1.0), Todo(n=8, title="Then", data={"after": ["todo:7"]})]) >> Unchanged(),
+        ])
+        journal.events.handler(UnblockWhenPlanFinishes(), expects=[
+            Given(PlanCompleted(n=2, type="plan", action="completed", actor=USER), rows=[Plan(n=2, title="Ship it", completed=1.0, data={"status": "done"}), Todo(n=8, title="Then", data={"after": ["plan:2"]}), AGENT_ROW]) >> Nudged("unblocked"),
+            Given(PlanCompleted(n=2, type="plan", action="completed", actor=USER), rows=[Plan(n=2, title="Ship it"), Todo(n=8, title="Then", data={"after": ["plan:2"]}), AGENT_ROW]) >> Unchanged(),
+        ])
+        journal.events.handler(AskStillBlocked(), expects=[
+            Given(closed(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1}) >> Nudged("still blocked"),
+            Given(closed(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 2}) >> Unchanged(),
+            Given(closed(7), rows=[Todo(n=8, title="Deploy"), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1}) >> Unchanged(),
+            Given(closed(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"})], settings={"work_tracking.ask_blocked_every": 1}) >> Unchanged(),
+        ])
         journal.events.handler(TrackFiles())
         journal.events.handler(RemindOpenWork())
         journal.events.handler(CountEdits())
         journal.events.handler(ResetEditsOnLog())
         journal.agent.interceptor(RefuseHeldCalls())
-        journal.agent.interceptor(RefuseWaitingInTheShell())
+        journal.agent.interceptor(RefuseWaitingInTheShell(), expects=[
+            Given(shell("sleep 30")) >> Refused(WAIT_WAY),
+            Given(shell("until test -f done; do sleep 1; done")) >> Refused(WAIT_WAY),
+            Given(shell("sleep 30", run_in_background=True)) >> Kept(),
+            Given(shell("sleep 5; echo hi")) >> Kept(),
+            Given(shell("git status")) >> Kept(),
+        ])
