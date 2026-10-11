@@ -2,7 +2,7 @@ from controllers.types import Messages
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSent
 from engine.events.resources import MessageUpdated, ResourceCreated
-from expects import Given, Nudged, Unchanged, Updated, Wrote
+from expects import Formats, Given, Nudged, Unchanged, Updated, Wrote
 from features.base import Feature
 from features.journal import Journal
 from features.messages.details import MessagesDetails
@@ -125,6 +125,12 @@ class MessagesFeature(Feature):
             Given(said("I closed 482 for you."), rows=[Todo(n=482, title="Row"), IDLE]) >> Unchanged(),
             Given(said("I have nothing to add."), rows=[SENT, Todo(n=482, title="Row"), IDLE]) >> Unchanged(),
         ])
-        journal.client.formatter(CommandsAsCode())
+        journal.client.formatter(CommandsAsCode(), expects=[
+            Formats("Run journal todo create to file it", to="Run `journal todo create` to file it"),
+            Formats("Pass --force to push", to="Pass `--force` to push"),
+            Formats("Run `journal todo create` to file it", to="Run `journal todo create` to file it"),
+            Formats("Edit src/--force.py now", to="Edit src/--force.py now"),
+            Formats("Nothing to quote here", to="Nothing to quote here"),
+        ])
         FACTS.register(self, *state_facts("message", "unread", lambda context: context.journal.get(Messages).unread(AGENT)),
                        *state_facts("message", "unanswered", lambda context: unanswered(context.journal)))
