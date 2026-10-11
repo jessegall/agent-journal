@@ -1,6 +1,6 @@
 from controllers.types import Reports
 from engine.events.agents import TurnStopped
-from expects import Given, Refused, Unchanged, Updated, Wrote
+from expects import Answered, Given, Refused, Unchanged, Updated, Wrote
 from features.base import Feature
 from features.journal import Journal
 from features.update_reports.commands import AddItem, Changes, Dismiss, Drop, Note, Recap
@@ -15,11 +15,21 @@ UPDATE = Report(n=1, title="What happened in the last day", data={"kind": "updat
 PLAIN = Report(n=1, title="What the audit found")
 
 
+class StartsWith:
+    def __init__(self, text: str) -> None:
+        self.text = text
+
+    def __eq__(self, listed: list) -> bool:
+        return len(listed) == 1 and listed[0].startswith(self.text)
+
+
 class UpdateReports(Feature):
     details = UpdateReportsDetails
 
     def register(self, journal: Journal) -> None:
-        journal.commands.add("report", Changes())
+        journal.commands.add("report", Changes(), expects=[
+            Given((Reports,)) >> Answered(StartsWith("since ")),
+        ])
         journal.commands.add("report", Recap(), expects=[
             Given((Reports, "Shipped the expectations")) >> Wrote(Report(title="What happened in the last day", abstract="Shipped the expectations")),
             Given((Reports, "Shipped more"), rows=[Report(n=1, title="What happened in the last day", seen=["user"], data={"kind": "update", "number": 1, "until": 100.0})])
