@@ -7,7 +7,8 @@ from features import trigger
 from features.trigger import Trigger
 from features.base import Behaviour, Line
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
-from expects import Given, Nudged, Unchanged
+from expects import Given, Kept, Nudged, Unchanged
+from providers.payload import BashCall
 from resources.types import AgentRow
 from engine.gates import Runs
 from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
@@ -120,9 +121,32 @@ def standing_row(controller: type):
     return controller.resource(n=4, title="The browser scenarios run the built viewer")
 
 
+def keyed_row(controller: type, scope: str = BOTH):
+    """A standing row that is whispered when the word deploy comes up, in what the agent does, says or both."""
+    return controller.resource(n=4, title="Deploy only after the gate passes", brief="Run the gate first.", data={KEYWORDS: ["deploy"], KEYWORDS_IN: scope})
+
+
+def shell(command: str) -> BashCall:
+    return BashCall.from_payload("Bash", {"command": command}, {})
+
+
+def said(text: str) -> AgentMessageSent:
+    return AgentMessageSent(agent=1, text=text, turn="turn-1")
+
+
 def register_recital(journal, controller: type) -> None:
-    journal.agent.interceptor(WhisperOnKeyword(controller))
-    journal.events.handler(WhisperOnKeywordInChat(controller))
+    journal.agent.interceptor(WhisperOnKeyword(controller), expects=[
+        Given(shell("make deploy"), rows=(WORKING, keyed_row(controller))) >> Kept() & Nudged("whisper"),
+        Given(shell("make deploy"), rows=(WORKING, keyed_row(controller, TEXT))) >> Kept() & Unchanged(),
+        Given(shell("make build"), rows=(WORKING, keyed_row(controller))) >> Kept() & Unchanged(),
+        Given(shell("make deploy"), rows=(WORKING,)) >> Kept() & Unchanged(),
+    ])
+    journal.events.handler(WhisperOnKeywordInChat(controller), expects=[
+        Given(said("I will deploy now"), rows=(WORKING, keyed_row(controller))) >> Nudged("whisper"),
+        Given(said("I will deploy now"), rows=(WORKING, keyed_row(controller, COMMANDS))) >> Unchanged(),
+        Given(said("I will build now"), rows=(WORKING, keyed_row(controller))) >> Unchanged(),
+        Given(said("I will deploy now"), rows=(WORKING,)) >> Unchanged(),
+    ])
     journal.events.handler(RepeatStanding(controller), expects=[
         Given(AgentReported(agent=1), rows=(WORKING, standing_row(controller)))
             >> Nudged("standing", rows="4. The browser scenarios run the built viewer"),
