@@ -749,12 +749,19 @@ class RowStore:
         return [n for n, stamp in stamps.items() if (row := known.get(n)) is None or row.get("stamp") != stamp or not (DAMAGED in row or needed <= row.keys())]
 
     def by_idempotency(self, key: str) -> Resource | None:
-        found = next((row["n"] for row in self.summaries() if row[IDEMPOTENCY] == key), None)
-        return self.load(found) if found else None
+        return self.summarised(next((row["n"] for row in self.summaries() if row[IDEMPOTENCY] == key), None))
 
     def by_title(self, title: str, standing: bool = False) -> Resource | None:
-        found = next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None)
-        return self.load(found) if found else None
+        return self.summarised(next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None))
+
+    def summarised(self, n: int | None) -> Resource | None:
+        """The row a summary names, or nothing when it has gone: the summaries and the folder drift, as warm() has long allowed for, and a name left behind is a miss rather than a fault."""
+        if not n:
+            return None
+        try:
+            return self.load(n)
+        except Missing:
+            return None
 
     @final
     def load(self, n: int | str) -> Resource:

@@ -5,9 +5,9 @@ import {onOutboxChange} from "../chat/outbox.js";
 import {withoutAnswered} from "../domain/placeholders.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
+import {PAGE, RECENT} from "./paging.js";
 
-export const PAGE = 25;
-export const RECENT = 100;
+export {PAGE, RECENT};
 
 const watchedTypes = new Set();
 const seen = ref(0);

@@ -64,7 +64,7 @@ onMounted(loadConnection);
                     </div>
                 </template>
                 <template v-else>
-                    <p class="connection-line">Not connected. Give the address of your journal on a server, and this one will share its environments with it.</p>
+                    <p class="connection-line">This journal is connected to no server. Give the address of your journal on a server, and this one will share its environments with it.</p>
                     <TextInput :value="address" aria-label="Server address" placeholder="https://journal.example.com" @input="address = $event.target.value" @keydown.enter="connect" />
                     <TextInput
                         :value="key"

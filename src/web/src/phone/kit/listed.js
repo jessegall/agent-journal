@@ -1,6 +1,5 @@
 import {api} from "../../api/client.js";
-
-const PAGE = 25;
+import {PAGE} from "../../sync/paging.js";
 
 export const newestFirst =
     (type) =>

@@ -84,7 +84,7 @@ class Session:
     def marks(self) -> list[Mark]:
         return [
             *(self.mark(t["at"], t["text"], "thoughts", kind="thought") for t in self.thoughts),
-            *(self.mark(c["at"], c["label"], card_shows(c.get("icon"), c.get("name", c.get("plugin"))), icon=c.get("icon"), name=c.get("name", c.get("plugin")), detail=c.get("detail"), tone=c.get("tone"),
+            *(self.mark(c["at"], c["label"], card_shows(c.get("icon"), c.get("name", c.get("plugin")), c.get("kind")), icon=c.get("icon"), name=c.get("name", c.get("plugin")), detail=c.get("detail"), tone=c.get("tone"),
                         color=c.get("color"), state=c.get("state"), command=c.get("command")) for c in self.cards),
             *(self.mark(sub["at"], "Refused a subagent" if sub.get("refusal") else "Dispatched a subagent", "subagents", icon="agents", name=sub["task"],
                         detail=sub["refusal"] if sub.get("refusal") else sub.get("model"), tone="danger" if sub.get("refusal") else None)

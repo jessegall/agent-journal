@@ -1,9 +1,9 @@
 import {nextTick, ref} from "vue";
 import {api} from "../api/client.js";
+import {PAGE} from "../sync/paging.js";
 import {pollKey, usePoll} from "./poll.js";
 
 const EVERY = 2000;
-const PAGE = 25;
 const SMALL_ROWS = 6;
 const SMALL_CHARS = 44;
 

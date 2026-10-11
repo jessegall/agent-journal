@@ -446,7 +446,7 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     monkeypatch.setattr(Environments, "stop", agent_leaves(repo.record.root))
     assert helpers.stop(1).endswith(f"given back: to-do {left}") and todos.load(left).assigned == "", "stopping the helper gives back what it did not mark"
     Worktrees(repo.record, actor=SYSTEM).complete(int(row.worktree))
-    assert (todos.load(dropped).assigned, todos.load(dropped).pending) == ("", None), "dropping its worktree untaken gives back what waited for the merge"
+    assert (todos.load(dropped).assigned, todos.load(dropped).pending) == ("", {}), "dropping its worktree untaken gives back what waited for the merge"
     stranded = Todos(repo.record, actor=SYSTEM).create("held by a helper that is gone").n
     Todos(repo.record, actor=SYSTEM).assign(stranded, to="helper:99")
     assert todos.unassign(stranded).assigned == "", "a row held by a helper that no longer exists is the agent's to take back"

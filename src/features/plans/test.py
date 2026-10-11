@@ -512,7 +512,7 @@ def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkey
     assert plans.load(plan.n).branch, "a shared plan names its one branch"
     from engine.sessions import Sessions
     stopped = []
-    monkeypatch.setattr(Tickets, "_merged", lambda self, ticket: True)
+    monkeypatch.setattr(Tickets, "_merged", lambda self, ticket, readings: True)
     monkeypatch.setattr(Sessions, "holder", lambda self, name: f"session-{name}" if name == f"plan-{plan.n}" else "")
     monkeypatch.setattr("features.tickets.controller.terminal_of", lambda root, session: session)
     monkeypatch.setattr("features.tickets.controller.ask_session", lambda root, terminal: stopped.append(terminal))

@@ -12,6 +12,7 @@ from features.triggers.controller import Triggers
 from features.triggers.resource import START
 from resources.base import AGENT, SECTION, SYSTEM
 from controllers.marks import action
+from features.phone.chat_view import SEQUENCES, SEQUENCE_STEPS
 
 VIOLET = "#a78bfa"
 TRIGGER = "trigger"
@@ -143,7 +144,7 @@ class Sequences(Controller):
         run = {**r.runs[key], "step": done + 1, "stepped": time.time(), "titles": titles}
         runs = self.without(r, key)
         going = run["step"] <= len(titles)
-        self._mark(r, "Sequence moved on" if going else "Sequence finished", run["step"] if going else 0)
+        self._mark(r, "Sequence moved on" if going else "Sequence finished", run["step"] if going else 0, kind=SEQUENCE_STEPS if going else SEQUENCES)
         self.update(r.n, runs={**runs, key: run} if going else runs)
         if not going:
             self._resume()
@@ -164,7 +165,7 @@ class Sequences(Controller):
     def jump(self, n: int, about: str, step: int):
         r = self.load(n)
         key = self._run_key(r, about)
-        self._mark(r, "Sequence moved on", step)
+        self._mark(r, "Sequence moved on", step, kind=SEQUENCE_STEPS)
         run = {k: v for k, v in r.runs[key].items() if k != "followed"}
         return self.update_run(r, key, {**run, "step": step, "stepped": time.time(), "titles": self._titles(r)})
 
@@ -234,7 +235,7 @@ class Sequences(Controller):
             if self._key(about) in (row.get("runs") or {}):
                 self.abandon(row["n"], about=about, why=why)
 
-    def _mark(self, r, label: str, step: int, why: str = "", about: str | None = None) -> None:
+    def _mark(self, r, label: str, step: int, why: str = "", about: str | None = None, kind: str = SEQUENCES) -> None:
         if r.dispatch:
             return
         agents = Agents(self.record, actor=SYSTEM)
@@ -243,7 +244,7 @@ class Sequences(Controller):
             return
         parts = [r.title, f"step {step}, {self.steps_of(r)[step - 1][SECTION.title]}" if step else "", f"about {about.replace(':', ' ')}" if about is not None and about.strip() else "", why]
         depth = max(0, self._open() - (label != "Sequence started"))
-        agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p), ref=r.ref, depth=depth)
+        agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p), ref=r.ref, depth=depth, kind=kind)
 
     def _open(self) -> int:
         return sum(len(self._here(row.get("runs"))) for row in self.open_rows())

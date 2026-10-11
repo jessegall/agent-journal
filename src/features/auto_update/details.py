@@ -12,6 +12,7 @@ class AutoUpdateDetails(FeatureDetails):
     label = "Install updates automatically"
     hint = "Off: the agent is told to install a new version instead"
     has_skill = False
+    default = False
 
     title = "Automatic updates"
 

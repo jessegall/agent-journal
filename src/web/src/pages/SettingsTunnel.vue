@@ -70,7 +70,7 @@ onMounted(load);
                         {{
                             switching
                                 ? "Logging in with another account replaces the current login for every journal here. Each journal's address stays with the account that claimed it, so those addresses stop answering until you switch back with that account's password."
-                                : "Not connected. Connect once, and every journal on this machine uses it."
+                                : "No account is connected here. Log in once, and every journal on this machine uses that account."
                         }}
                     </p>
                     <TunnelLogin :host="tunnelStatus.host || tunnelStatus.server" @ready="ready" />

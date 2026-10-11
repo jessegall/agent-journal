@@ -25,7 +25,8 @@ export const VISIBILITY_GROUPS = [
         kinds: [
             {key: "commands", label: "Long commands and outputs", icon: "terminal"},
             {key: "commits", label: "Commits", icon: "branch"},
-            {key: "sequences", label: "Sequences", icon: "list"},
+            {key: "sequences", label: "Sequences starting and finishing", icon: "list"},
+            {key: "sequence_steps", label: "Every step of a sequence", icon: "list"},
             {key: "triggers", label: "Triggers", icon: "bolt"},
             {key: "plugins", label: "Plugin notes", icon: "plug"},
             {key: "visitors", label: "Visitor comments", icon: "chat"},
@@ -37,7 +38,7 @@ export const VISIBILITY_GROUPS = [
 
 const chatKinds = () => store.spec.chat_kinds;
 export const HIDDEN_KEY = "chat_hidden";
-export const DEFAULT_HIDDEN = ["acknowledgements", "sequences"];
+export const DEFAULT_HIDDEN = ["acknowledgements", "sequence_steps"];
 
 const KINDS = {
     message: (t) => (t.data.acknowledgement ? "acknowledgements" : ""),
@@ -48,7 +49,7 @@ const KINDS = {
     made: () => "made",
     receipt: () => "filed",
     whisper: (t) => chatKinds().recalled[(t.data.row || "").split(":")[0]] || "rules",
-    card: (t) => (t.data.visitor ? "visitors" : t.data.name && t.data.side !== "user" ? "plugins" : chatKinds().marked[t.data.icon] || "notes"),
+    card: (t) => (t.data.kind ? t.data.kind : t.data.visitor ? "visitors" : t.data.name && t.data.side !== "user" ? "plugins" : chatKinds().marked[t.data.icon] || "notes"),
 };
 
 export const kindOf = (turn) => (KINDS[turn.type] ? KINDS[turn.type](turn) : "");
