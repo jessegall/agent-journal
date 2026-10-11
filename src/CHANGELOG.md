@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.9 — The gate answers a Codex agent again
+
+- A session with no process behind it is no rival for an environment, so a hook from another provider in the same record is no longer moved to an environment of its own. A Codex agent could write with no work open and the gate said nothing; it refuses again.
+- The sweep that renames what a renamed feature left behind runs once for each set of aliases instead of on every process that boots with a root, where it walked every environment's settings and every session's trigger files and had nothing to do.
+
 ## 2.269.8 — The board answers, the blink stops throwing, and a plan counts what waits for a merge
 
 - journal todo board answers instead of throwing. A command is now dispatched by its own name, so a command whose argument happens to be called query is no longer mistaken for a query.
