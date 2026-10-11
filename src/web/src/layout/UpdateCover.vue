@@ -71,7 +71,7 @@ watch(() => store.summary?.version, showArrival);
             <div class="panel">
                 <Spinner :size="22" class="spin" />
                 <p class="title">The journal is starting</p>
-                <p class="step">{{ updating.bootStep || "It answers in a moment" }}</p>
+                <p class="step">{{ updating.bootStep || "Starting the journal" }}</p>
             </div>
         </div>
     </template>
