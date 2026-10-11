@@ -1,7 +1,7 @@
 from controllers.types import Works
 from engine.events.engine import ClockTicked
 from engine.events.resources import TodoCompleted
-from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
+from expects import WHEN, Given, Kept, Nudged, Refused, Unchanged, Updated
 from features.base import Feature
 from features.plans.summary import plans_shown
 from overview.parts import SUMMARY_PARTS
@@ -20,6 +20,8 @@ from features.plans.handlers import (
     TellParkedAndPickedUp,
     blocked_plans,
     still_plans,
+    STILL_TIMES,
+    NameStandingPlans,
 )
 from features.sending import Nudge
 from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
@@ -29,9 +31,8 @@ from features.plans.handlers import PlanChanged, ReportLinked, RowReopened, Todo
 from features.plans.resource import Plan
 from providers.payload import ToolUse
 from resources.base import AGENT, SYSTEM, USER
-from resources.types import AgentRow, Todo
+from resources.types import AgentRow, Question, Todo, Work
 
-STILL_TIMES = 3
 PLAN_MODE_REFUSED = ('plan mode is not used in a journal project - write the plan as a journal plan instead: '
                      'journal plan create "<name>" --set goal="<what is true when done>", then its phases and rows')
 NOT_IN_THE_CURRENT_PHASE = "todo {} is not in the active plan's current phase: finish the plan, raise it to critical, or --force \"<why>\""
@@ -46,6 +47,13 @@ def plan(status: str, **data) -> Plan:
 
 def phases(*todos: int, checkpoint: bool = False) -> list:
     return [{"title": f"Phase {n}", "todos": [todo], "checkpoint": checkpoint and n == 1} for n, todo in enumerate(todos, 1)]
+
+
+VISIBLE = [{"title": "Every nudge is visible", "todos": [4366, 4367], "checkpoint": False}]
+
+
+def row(n: int, **data) -> Todo:
+    return Todo(n=n, title=f"Row {n}", data=data)
 
 
 def finished(n: int) -> TodoCompleted:
@@ -78,6 +86,18 @@ class PlansFeature(Feature):
     def register(self, journal: Journal) -> None:
         SUMMARY_PARTS.add(None, plans_shown, key="plans")
         ROW_HOLDS.add(self, held)
+        journal.events.handler(NameStandingPlans(), expects=[
+            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), AGENT_ROW])
+                >> Nudged("standing still", phase="Every nudge is visible", rows="4366, 4367"),
+            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, blocked="waiting on the key"), row(4367), Question(n=1, title="Which branch?", refs=["todo:4367"]), AGENT_ROW]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, blocked="waiting on the key"), row(4367), AGENT_ROW]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366, after=["todo:9000"]), row(4367), row(9000), AGENT_ROW]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), Todo(n=4366, title="Row 4366", updated=WHEN - 60), row(4367), AGENT_ROW]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367), Work(n=3, title="Build it", data={"todo": 4367}), AGENT_ROW]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), done(4366), done(4367), AGENT_ROW]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[plan("parked", phases=VISIBLE), row(4366), row(4367), AGENT_ROW]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[plan("active", phases=VISIBLE), row(4366), row(4367)]) >> Unchanged(),
+        ])
         journal.events.handler(StartBuilding(), expects=[
             Given(changed("created", USER), rows=[plan("building"), AGENT_ROW]) >> Nudged("started"),
             Given(changed("created", AGENT), rows=[plan("building"), AGENT_ROW]) >> Unchanged(),

@@ -39,6 +39,10 @@ class PlansDetails(FeatureDetails):
         A plan under review cannot be approved: its Approve button is gone and the server refuses
         an approval until the review's report is linked and you mark it ready again.
 
+        A running plan whose current phase has open rows that nothing blocks, that wait on no other row and no
+        question, and that nobody has touched for a few minutes with no work in hand on them, is named to you
+        with its phase and its rows: close each one that is done, or say what it waits on.
+
         Only the user approves a plan, and then you start it with journal plan start <n>; only the user continues it past a checkpoint; with the auto
         feature on, checkpoints are passed without waiting.
 
@@ -73,6 +77,16 @@ class PlansDetails(FeatureDetails):
                 carry on with it now: {{rows}}. If a row is stuck or waits on something, leave it and work
                 the rows you can do; put a question on a row with journal todo ask only for what you cannot
                 decide yourself, and keep going with the rest.
+            """,
+        ),
+        Line(
+            name="standing still",
+            reply_kept=True,
+            title="plan {{n}}, {{title}}, stands still at {{phase}}: its rows are open and nothing holds them",
+            brief="""
+                to-dos {{rows}} have not been touched for {{minutes}} minutes, and nothing blocks them, waits on another
+                row or waits on a question. Close each one that is done with journal todo done <n> --how "<what landed>",
+                or say what it waits on with journal todo block <n> "<why>" or journal todo ask <n> "<question>".
             """,
         ),
         Line(

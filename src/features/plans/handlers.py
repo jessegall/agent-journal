@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -5,14 +6,15 @@ from controllers.types import Todos, Works
 from engine.events.engine import ClockTicked
 from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING, Plans, delegate_plans_holding
-from features.sending import Sent
+from features.sending import Nudge, Sent, send
 from features.trigger import MINUTE
 from features.plans.resource import PHASE, PHASE_FIELDS
 from features.work_tracking.auto import passes_checkpoints
-from features.work_tracking.next import carried_on, named_rows, ready, waiting_rows
+from features.work_tracking.next import carried_on, free, named_rows, ready, waiting_rows
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
 
+STILL_TIMES = 3
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
 
 
@@ -174,3 +176,28 @@ class EndReviewWithItsReport(Handler):
         speaking = context.to_primary()
         if speaking:
             speaking.agent.say("reviewed", n=plan.n, title=plan.title, report=event.n)
+
+
+def standing_still(context, agent) -> list[Sent]:
+    """A running plan whose current phase has open rows that nothing holds, in a while, and no work in hand on them: the plan stands still and nobody has stopped it, the shape of rows built and left open."""
+    quiet = time.time() - float(context.feature.cadence(context.record, "still").every) * MINUTE
+    plans, taken = Plans(context.record, actor=SYSTEM), {int(w.todo) for w in carried_on(context.record)}
+    found = []
+    for plan in plans._active():
+        phase = plan.current_phase
+        rows = [row for row in plans._members(phase) if not row.completed] if phase else []
+        if rows and all(row.type == "todo" and free(context.record, row) and row.n not in taken and row.updated < quiet for row in rows):
+            found.append(Sent(f"{plan.n}:{plan.current}", {"n": plan.n, "title": plan.title, "phase": phase[PHASE.title],
+                                                           "rows": ", ".join(str(row.n) for row in rows), "minutes": int((time.time() - max(row.updated for row in rows)) // MINUTE)}))
+    return found
+
+
+STANDING_STILL = Nudge("standing still", behaviour="still", about=standing_still, most=STILL_TIMES,
+                       guarantee="When a running plan's current phase has open rows that nothing blocks and nobody has touched, the agent is told to close them or say what they wait on.")
+
+
+class NameStandingPlans(Handler):
+    behaviour = "still"
+
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+        send(context, (STANDING_STILL,))
