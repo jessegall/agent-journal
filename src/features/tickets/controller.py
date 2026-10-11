@@ -369,7 +369,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return stopped
 
     def close_merged(self) -> list:
-        return self._closed([r for r in self.rows.standing() if r.work_environment and self._ran(r) and self._settled(r) and self._merged(r)])
+        readings = self._read()
+        return self._closed([r for r in self.rows.standing() if r.work_environment and self._ran(r) and self._settled(r) and self._merged_in(r, readings)])
 
     def _settled(self, ticket) -> bool:
         """Whether its agent has ended its turn and nothing waits for it, so stopping it cuts nothing short: not a turn under way, no message it has not read, and no note typed to it a moment ago."""

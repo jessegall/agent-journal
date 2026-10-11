@@ -5,6 +5,7 @@ import random
 import shutil
 import subprocess
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 
 from engine.package import ARCHIVE
@@ -69,19 +70,81 @@ def unused_name(project: Path) -> str:
     return next((name for name in names if name not in taken), f"worktree-{len(taken) + 1}")
 
 
+class Repository:
+    """One git repository as git reports it for the length of a sweep: each question git answers for the whole repository at once is asked the first time and kept by this object, which a sweep drops when it ends, so the next one sees what changed meanwhile."""
+
+    def __init__(self, place: Path) -> None:
+        self.place = place
+        self._merged_into: dict[str, frozenset[str]] = {}
+
+    @cached_property
+    def worktrees(self) -> list[Path]:
+        listed = git(self.place, "worktree", "list", "--porcelain")
+        folders = [line.split(" ", 1)[1] for line in listed.stdout.splitlines() if line.startswith("worktree ")] if not listed.returncode else []
+        return [Path(folder) for folder in folders[1:]]
+
+    @cached_property
+    def branches(self) -> dict[str, str]:
+        return self._refs("refs/heads")
+
+    @cached_property
+    def kept(self) -> dict[str, str]:
+        return self._refs(KEPT)
+
+    @cached_property
+    def current(self) -> str:
+        return current_branch(self.place)
+
+    def _refs(self, prefix: str, *selected: str) -> dict[str, str]:
+        listed = git(self.place, "for-each-ref", "--format=%(objectname) %(refname)", *selected, prefix).stdout.splitlines()
+        return {name.removeprefix(f"{prefix}/"): commit for commit, _, name in (line.partition(" ") for line in listed) if name}
+
+    def linked(self) -> dict[str, Path]:
+        return {folder.name: folder for folder in self.worktrees}
+
+    def owns(self, folder: Path) -> bool:
+        """Whether a folder is a worktree of this repository: git lists it, whatever its folder and its admin folder are called, however far its checkout got."""
+        return folder.resolve() in {path.resolve() for path in self.worktrees}
+
+    def has(self, branch: str) -> bool:
+        return branch in self.branches
+
+    def changed(self, branch: str, base: str) -> bool:
+        return self.has(branch) and self.branches[branch] != base
+
+    def merged_into(self, into: str) -> frozenset[str]:
+        if into not in self._merged_into:
+            self._merged_into[into] = frozenset(self._refs("refs/heads", f"--merged={into}"))
+        return self._merged_into[into]
+
+    def merged(self, branch: str, base: str, into: str = "HEAD") -> bool:
+        if not base or not self.changed(branch, base) or branch not in self.merged_into(into) or not authored(self.place, branch):
+            return False
+        return git(self.place, "merge-base", "--is-ancestor", base, f"refs/heads/{branch}").returncode == 0
+
+    def keep(self, name: str, branch: str) -> None:
+        if self.has(branch) and self.kept.get(name) != self.branches[branch]:
+            git(self.place, "update-ref", f"{KEPT}/{name}", f"refs/heads/{branch}")
+
+    def freed(self, folder: Path) -> bool:
+        """Removes a worktree that holds nothing unsaved, keeping its branch; false when it is not one or holds changes."""
+        if not self.owns(folder) or git(folder, "status", "--porcelain").stdout.strip():
+            return False
+        removed = git(self.place, "worktree", "remove", str(folder)).returncode == 0
+        git(self.place, "worktree", "prune")
+        return removed
+
+
 def worktrees(project: Path) -> list[Path]:
-    listed = git(project, "worktree", "list", "--porcelain")
-    folders = [line.split(" ", 1)[1] for line in listed.stdout.splitlines() if line.startswith("worktree ")] if not listed.returncode else []
-    return [Path(folder) for folder in folders[1:]]
+    return Repository(project).worktrees
 
 
 def linked(project: Path) -> dict[str, Path]:
-    return {folder.name: folder for folder in worktrees(project)}
+    return Repository(project).linked()
 
 
 def owns(project: Path, folder: Path) -> bool:
-    """Whether a folder is a worktree of this repository: git lists it, whatever its folder and its admin folder are called, however far its checkout got."""
-    return folder.resolve() in {path.resolve() for path in worktrees(project)}
+    return Repository(project).owns(folder)
 
 
 def main_checkout(start: Path) -> Path:
@@ -123,8 +186,7 @@ def roots(project: Path) -> dict[str, Path]:
 
 
 def changed(project: Path, branch: str, base: str) -> bool:
-    ref = f"refs/heads/{branch}"
-    return present(project, ref) and tip(project, ref) != base
+    return Repository(project).changed(branch, base)
 
 
 def discarded(project: Path, folder: Path, branch: str, name: str) -> None:
@@ -138,12 +200,7 @@ def discarded(project: Path, folder: Path, branch: str, name: str) -> None:
 
 
 def freed(project: Path, folder: Path) -> bool:
-    """Removes a worktree that holds nothing unsaved, keeping its branch; false when it is not one or holds changes."""
-    if not owns(project, folder) or git(folder, "status", "--porcelain").stdout.strip():
-        return False
-    removed = git(project, "worktree", "remove", str(folder)).returncode == 0
-    git(project, "worktree", "prune")
-    return removed
+    return Repository(project).freed(folder)
 
 
 def scratch_cleared(folder: Path) -> None:
@@ -204,8 +261,7 @@ def arranged(project: Path, folder: Path, folders: WorkspaceFolders, found: list
 
 
 def keep(project: Path, name: str, branch: str) -> None:
-    if present(project, f"refs/heads/{branch}"):
-        git(project, "update-ref", f"{KEPT}/{name}", f"refs/heads/{branch}")
+    Repository(project).keep(name, branch)
 
 
 def authored(project: Path, branch: str) -> bool:
@@ -215,11 +271,7 @@ def authored(project: Path, branch: str) -> bool:
 
 
 def merged(project: Path, branch: str, base: str, into: str = "HEAD") -> bool:
-    ref = f"refs/heads/{branch}"
-    if not base or not present(project, ref) or tip(project, ref) == base or not authored(project, branch):
-        return False
-    grew = git(project, "merge-base", "--is-ancestor", base, ref).returncode == 0
-    return grew and git(project, "merge-base", "--is-ancestor", ref, into).returncode == 0
+    return Repository(project).merged(branch, base, into)
 
 
 def current_branch(project: Path) -> str:

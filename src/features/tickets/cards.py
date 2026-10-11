@@ -12,7 +12,6 @@ from engine.worktree import spread
 from features.boards.controller import Boards
 from features.boards.resource import REVIEW
 from features.kanban.shapes import BoardLanes, Card, Lane
-from features.tickets.landing import Landing
 from features.tickets.resource import PROPOSED
 from resources.base import SYSTEM, Refused
 from resources.shapes import LEVELS, position_of
@@ -153,6 +152,7 @@ class TicketCards:
 
     def _look_at_repositories(self) -> None:
         """Looks at every open ticket's branch in each repository and keeps what it finds for the boards."""
+        readings = self._read()
         for ticket in self.rows.standing():
             if not ticket.work_environment or ticket.completed:
                 continue
@@ -160,8 +160,7 @@ class TicketCards:
             if held and held[0] == ticket.updated and time.time() - held[1] < LOOK_AGAIN_AFTER:
                 continue
             branch = self._branch(ticket)
-            states = [{"name": name, "branch": branch, "state": Landing(place, branch, base, self._into_at(ticket, name, place)).state()}
-                      for name, place, base in self._repositories(ticket)]
+            states = [{"name": name, "branch": branch, "state": landing.state()} for name, landing in self._landings(ticket, readings).items()]
             REPOSITORY_STATES[str(self.record.root), ticket.n] = (ticket.updated, time.time(), states)
 
     def _actions(self, ticket, session: str) -> list:
