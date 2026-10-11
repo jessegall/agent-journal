@@ -468,6 +468,13 @@ class Posing:
         rest = self.arm.pose.bones[name].bone.matrix_local.to_3x3().to_4x4()
         self.place(name, Matrix.Translation(at) @ Euler((math.radians(x), math.radians(y), math.radians(z)), "XYZ").to_matrix().to_4x4() @ rest)
 
+    def revolve(self, degrees):
+        """Turns the whole figure, as posed, about the vertical axis through its feet, toward the viewer's right; the camera stays where it is."""
+        turn = Matrix.Rotation(math.radians(degrees), 4, "Z")
+        turned = {spec.name: turn @ self.matrix(spec.name) for spec in BONES}
+        for spec in BONES:
+            self.place(spec.name, turned[spec.name])
+
     def lift(self, name, x=0.0, y=0.0, z=0.0):
         """Moves a bone in the world's axes; its children come with it."""
         self.place(name, Matrix.Translation((x, y, z)) @ self.matrix(name))

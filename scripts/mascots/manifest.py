@@ -11,17 +11,23 @@ class ClipInfo:
     loops: bool
 
 
+# The figure turns toward the viewer's right, 45 degrees a step from facing the viewer; a sheet is <voice>/<clip>/<facing>.webp.
+FACINGS = tuple(range(0, 360, 45))
+
+
 @dataclass(frozen=True)
 class Manifest:
     cell: tuple
     columns: int
     voices: tuple
     clips: dict
+    facings: tuple = (0,)
 
     @classmethod
     def load(cls, path):
         raw = json.loads(Path(path).read_text())
-        return cls(tuple(raw["cell"]), raw["columns"], tuple(raw["voices"]), {name: ClipInfo(**clip) for name, clip in raw["clips"].items()})
+        # A manifest from before the turn has no facings: it holds the one, from the front.
+        return cls(tuple(raw["cell"]), raw["columns"], tuple(raw["voices"]), {name: ClipInfo(**clip) for name, clip in raw["clips"].items()}, tuple(raw.get("facings", (0,))))
 
     def dump(self, path):
         Path(path).write_text(json.dumps(asdict(self), indent=1))

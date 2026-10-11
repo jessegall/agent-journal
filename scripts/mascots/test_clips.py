@@ -69,7 +69,7 @@ def test_the_viewer_serves_the_page_and_its_sheets_from_its_own_build():
 @needs_blender
 def test_blender_poses_every_clip_of_a_voice_that_carries_something(tmp_path):
     subprocess.run(
-        ["blender", "-b", "-P", str(HERE / "render_clips.py"), "--", "--out", str(tmp_path), "--voices", "butler", "--stills"],
+        ["blender", "-b", "-P", str(HERE / "render_clips.py"), "--", "--out", str(tmp_path), "--voices", "butler", "--facings", "0", "--stills"],
         check=True, capture_output=True, timeout=BLENDER_SECONDS,
     )
-    assert {p.stem.removesuffix("_still") for p in (tmp_path / "butler").glob("*_still.png")} == CLIPS
+    assert {p.parent.name for p in (tmp_path / "butler").glob("*/0_still.png")} == CLIPS
