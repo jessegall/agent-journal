@@ -1,4 +1,5 @@
 from features.form_of_address.controller import Profiles
+from features.form_of_address.details import VOICE_SET
 from features.form_of_address.names import first_name, title
 from features.form_of_address.voices import PLAIN_WORDS, Voice
 from resources.base import SYSTEM
@@ -13,3 +14,10 @@ def address(record) -> str:
     instruction = voice.calling.instruction(voice.calling.called(title(record), first_name(record), voice.address))
     text = " ".join(part for part in (voice.text, instruction, voice.humour, voice.reacts(), PLAIN_WORDS) if part)
     return f"HOW THE USER WANTS YOU TO TALK, in their own words: {text}"
+
+
+def announce_voice(feature, record, actor: str) -> None:
+    """Tells the agent how it is called, once the profile that names it changed."""
+    line = address(record)
+    if line:
+        feature.to_primary(record, VOICE_SET, actor=actor, voice=line)

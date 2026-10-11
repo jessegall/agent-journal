@@ -3,7 +3,7 @@ from dataclasses import asdict
 from controllers.types import Environments
 from engine.machines import this_machine
 from features.connection.code import pull, push
-from features.connection.linking import hand, join, leave, sync, view
+from features.connection.linking import fail_to_join, hand, join, leave, sync, view
 from features.connection.transport import HttpTransport, ServerKey, Transport
 from features.parts import Command, Context
 from resources.base import Refused
@@ -11,6 +11,16 @@ from resources.base import Refused
 
 def transport_for(record, address: str) -> Transport:
     return HttpTransport(address, ServerKey(record.root).read())
+
+
+def join_again(record, address: str) -> None:
+    """Joins the server a changed address names, and says why when it cannot."""
+    if not address:
+        return
+    try:
+        join(record, transport_for(record, address))
+    except (Refused, OSError) as error:
+        fail_to_join(record, error)
 
 
 def server_of(context: Context) -> Transport:

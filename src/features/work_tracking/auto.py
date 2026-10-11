@@ -13,6 +13,11 @@ def steered(record) -> str:
     return str(place.owner) if place else ""
 
 
+def chosen_or_steered(chosen: bool, record, key: str) -> bool:
+    """Auto mode is on when it is chosen, or when the environment is steered by a row that owns it."""
+    return chosen or (key == "auto" and bool(steered(record)))
+
+
 def automatic(record) -> bool:
     from features import FEATURES
     return "work_tracking" in FEATURES and bool(FEATURES["work_tracking"].on(record, "auto"))

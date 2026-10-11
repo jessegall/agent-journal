@@ -15,9 +15,9 @@ def test_a_checkout_change_is_seen_in_each_environment(tmp_path):
     subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "start"], cwd=tmp_path, check=True)
     handler = CloseRowsFromCommits()
     log = checkout_of(tmp_path).head_log
-    assert handler.moved(log, "main")
-    assert handler.moved(log, "helper")
-    assert not handler.moved(log, "main")
+    assert handler.watched.moved(log, "main")
+    assert handler.watched.moved(log, "helper")
+    assert not handler.watched.moved(log, "main")
 
 
 def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):

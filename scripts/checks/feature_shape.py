@@ -14,6 +14,18 @@ def classes(path: Path) -> list[ast.ClassDef]:
     return [node for node in ast.parse(path.read_text()).body if isinstance(node, ast.ClassDef)]
 
 
+def hooks() -> set[str]:
+    """The methods features.base.Feature declares for a feature to override."""
+    base = next(node for node in classes(HERE / "features" / "base.py") if node.name == "Feature")
+    return {node.name for node in base.body if isinstance(node, ast.FunctionDef) and not node.name.startswith("_")}
+
+
+def delegates(method: ast.FunctionDef) -> bool:
+    """A body that is one call, returned or not, past its docstring: the logic lives in a part."""
+    body = [node for node in method.body if not (isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant))]
+    return len(body) == 1 and isinstance(getattr(body[0], "value", None), ast.Call)
+
+
 def problems() -> list[str]:
     found = []
     for folder in sorted(p for p in (HERE / "features").iterdir() if (p / "feature.py").is_file()):
@@ -22,7 +34,7 @@ def problems() -> list[str]:
             found.append(f"features/{name} has no details.py")
         for feature in classes(folder / "feature.py"):
             allowed = FEATURE_METHODS | SERVICES.get(name, set())
-            extra = [f.name for f in feature.body if isinstance(f, ast.FunctionDef) and f.name not in allowed]
+            extra = [f.name for f in feature.body if isinstance(f, ast.FunctionDef) and f.name not in allowed and not (f.name in hooks() and delegates(f))]
             if extra:
                 found.append(f"features/{name}/feature.py holds logic in {', '.join(extra)}; it belongs in a part")
         for path in sorted(folder.glob("*.py")):

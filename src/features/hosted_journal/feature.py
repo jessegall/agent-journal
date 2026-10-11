@@ -8,7 +8,7 @@ from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, PHONE_OWNER_ACTIONS, Gateway
 from features.hosted_journal.people import people_of
 from features.hosted_journal.phones import VaultGuard
-from features.hosted_journal.settings import FromRecord, FromVault
+from features.hosted_journal.standing import Standing
 from features.hosted_journal.vault import Vault
 from features.hosted_journal.watch import DiskWatch
 from features.journal import Journal
@@ -16,7 +16,7 @@ from features.phone.desktop import CLOSED
 from features.phone.guard import PHONE_GUARDS
 from features.phone.members import MEMBER_RIGHTS
 from features.sharing.address import ANSWERS_AT
-from features.sharing.origins import ORIGINS, ProxyLookup, ProxyOrigins
+from features.sharing.origins import ORIGINS
 from features.sharing.routes import EVERY_OTHER, ROUTES, TICKS
 from features.sharing.services import KEEP_UP, LISTENS, Listen
 
@@ -43,27 +43,16 @@ def phone_vault(record) -> VaultGuard:
 class HostedJournalFeature(Feature):
     details = HostedJournalDetails
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.lookup = ProxyLookup()
-        self.apart = os.environ.get(APART) == "1"
-        self.gateway_settings = FromVault() if self.apart else FromRecord()
-
-    def origins(self, record) -> ProxyOrigins:
-        return ProxyOrigins(self.gateway_settings.of(record).proxy, self.lookup)
-
-    def address(self, record) -> str:
-        return self.gateway_settings.of(record).address
-
     def register(self, journal: Journal) -> None:
+        standing = Standing(os.environ.get(APART) == "1")
         # In the login page's own process, started apart, nothing in the record can switch off or change what guards it.
-        guarding = None if self.apart else self
-        ROUTES.add(guarding, Gateway(self.gateway_settings, PHONE_OWNER_ACTIONS if self.apart else {}), key=EVERY_OTHER)
+        guarding = None if standing.apart else self
+        ROUTES.add(guarding, Gateway(standing.settings, PHONE_OWNER_ACTIONS if standing.apart else {}), key=EVERY_OTHER)
         CLOSED.add(guarding, NEVER_FROM_OUTSIDE)
-        ORIGINS.add(guarding, self.origins)
-        ANSWERS_AT.add(guarding, self.address)
+        ORIGINS.add(guarding, standing.origins)
+        ANSWERS_AT.add(guarding, standing.address)
         MEMBER_RIGHTS.add(guarding, people_of)
-        if self.apart:
+        if standing.apart:
             PHONE_GUARDS.add(None, phone_vault)
         TICKS.add(guarding, DiskWatch())
         KEEP_UP.add(self, always)

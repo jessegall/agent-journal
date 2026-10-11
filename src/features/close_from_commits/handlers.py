@@ -46,22 +46,46 @@ def closing(todos: Todos, works: Works, commit: Commit, held_only: bool = False)
     return closed, ended
 
 
-class CloseRowsFromCommits(Handler):
-    hooks = ANY_BUT_PRE_TOOL_USE
+def reflog(project) -> list[tuple[str, str, str, str]]:
+    out = git(["log", "-g", "--format=%H%x1f%gs%x1f%s%x1f%B%x1e", "-n", "50"], project)
+    return [tuple(c.strip("\n").split("\x1f", 3)) for c in out.split("\x1e") if c.strip()]
+
+
+class Watched:
+    """Which logs have changed since they were last looked at, per environment."""
+
     def __init__(self):
         self.seen: dict[tuple[str, str], int] = {}
+
+    def moved(self, log: Path, environment: str) -> bool:
+        try:
+            stamp = log.stat().st_mtime_ns
+        except OSError:
+            return False
+        key = (str(log), environment)
+        if self.seen.get(key) == stamp:
+            return False
+        self.seen[key] = stamp
+        return True
+
+
+class CloseRowsFromCommits(Handler):
+    hooks = ANY_BUT_PRE_TOOL_USE
+
+    def __init__(self):
+        self.watched = Watched()
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         checkout = checkout_of(context.working_folder)
         if not checkout:
             return
-        if self.moved(checkout.head_log, context.record.env):
+        if self.watched.moved(checkout.head_log, context.record.env):
             self.made_here(context, checkout)
-        if checkout.landing and not checkout.linked and self.moved(checkout.landing_log, context.record.env):
+        if checkout.landing and not checkout.linked and self.watched.moved(checkout.landing_log, context.record.env):
             self.landed(context, checkout)
 
     def made_here(self, context: AgentContext, checkout: Checkout) -> None:
-        commits = self.log(checkout.top)
+        commits = reflog(checkout.top)
         if not commits:
             return
         cursor = f"{context.feature.name}-{digest(str(checkout.head_log), 12)}"
@@ -86,22 +110,7 @@ class CloseRowsFromCommits(Handler):
         for commit in (landing_commits(checkout, f"{seen}..{tip}") if seen else landing_commits(checkout, tip)):
             self.close(context, commit, held_only=not seen)
 
-    def log(self, project) -> list[tuple[str, str, str, str]]:
-        out = git(["log", "-g", "--format=%H%x1f%gs%x1f%s%x1f%B%x1e", "-n", "50"], project)
-        return [tuple(c.strip("\n").split("\x1f", 3)) for c in out.split("\x1e") if c.strip()]
-
     def close(self, context: AgentContext, commit: Commit, held_only: bool = False) -> None:
         closed, ended = closing(context.journal.acting(SYSTEM).get(Todos), context.journal.get(Works), commit, held_only)
         if closed:
             context.agent.say("closed", sha=commit.sha[:9], rows=", ".join(closed), ended=f" and ended {', '.join(ended)}" if ended else "")
-
-    def moved(self, log: Path, environment: str) -> bool:
-        try:
-            stamp = log.stat().st_mtime_ns
-        except OSError:
-            return False
-        key = (str(log), environment)
-        if self.seen.get(key) == stamp:
-            return False
-        self.seen[key] = stamp
-        return True

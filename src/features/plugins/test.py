@@ -31,7 +31,7 @@ CLAUDE = PROVIDERS["claude"]()
 @pytest.fixture(autouse=True)
 def plugins_answer_in_their_own_time(monkeypatch):
     """A test plugin is a shell script that may take longer than the hook's wait under load; its refusal is waited for here."""
-    from features.plugins import parts
+    from features.plugins import refusing
     monkeypatch.setattr(parts, "HOOK_WAIT", 20.0)
 
 
@@ -1059,17 +1059,17 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     assert sorted(started()) == ["Install the Broken plugin", "Install the Snake plugin"], "a list that cannot be reached adds nothing and breaks nothing"
     from types import SimpleNamespace
     from engine import bus
-    from features.plugins import parts
+    from features.plugins import refusing
     context = SimpleNamespace(record=None, feature=SimpleNamespace(journal=None), hook=SimpleNamespace(session="s-1"))
     said = []
     with monkeypatch.context() as slow:
         slow.setattr(bus, "BACKGROUND", True)
-        slow.setattr(parts, "called", lambda row: "slowpoke")
-        slow.setattr(parts, "declared", lambda row: SimpleNamespace(refuse_budget=2.0))
-        slow.setattr(parts, "apply", lambda record, journal, name, session, reply: said.append(reply["say"]))
-        slow.setattr(parts.AskPluginsToRefuse, "_answer", lambda self, record, row, tool, payload, seconds: time.sleep(0.6) or "no")
+        slow.setattr(refusing, "called", lambda row: "slowpoke")
+        slow.setattr(refusing, "declared", lambda row: SimpleNamespace(refuse_budget=2.0))
+        slow.setattr(refusing, "apply", lambda record, journal, name, session, reply: said.append(reply["say"]))
+        slow.setattr(refusing.PluginAsk, "answer", lambda self, record, row, tool, payload, seconds: time.sleep(0.6) or "no")
         began = time.monotonic()
-        waited_for = parts.AskPluginsToRefuse()._within(context, object(), "Bash", {}, 0.2)
+        waited_for = refusing.PluginAsk().within(context, object(), "Bash", {}, 0.2)
         took = time.monotonic() - began
         until = time.monotonic() + 3
         while not said and time.monotonic() < until:

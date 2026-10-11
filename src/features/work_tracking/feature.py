@@ -2,7 +2,7 @@ from features.base import Feature
 from features.work_tracking.auto import automatic
 from overview.parts import SUMMARY_PARTS
 from features.journal import Journal
-from features.work_tracking.auto import steered
+from features.work_tracking.auto import chosen_or_steered, steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
 from features.sending import Nudge
@@ -21,7 +21,7 @@ class WorkFeature(Feature):
               Nudge("nothing ready", behaviour="carry on", about=nothing_ready, most=CARRY_ON_TIMES))
 
     def chosen(self, record, key: str) -> bool:
-        return super().chosen(record, key) or (key == "auto" and bool(steered(record)))
+        return chosen_or_steered(super().chosen(record, key), record, key)
 
     def settings_view(self, record) -> dict:
         return {**super().settings_view(record), "steered": steered(record)}
