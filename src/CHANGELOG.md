@@ -4,6 +4,21 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.271.0 — A nudge of your own can watch anything the journal keeps
+
+<!-- new-feature {"id": "watchable-facts", "title": "Write a nudge that watches anything", "text": "A nudge of your own used to be limited to eight things the journal knew how to look at, fixed in its code. Now every kind of row says what can be watched about it and how long it has been that way, so you can write a nudge about an unread message, an open question, work left unlogged or anything else the journal keeps - and the editor shows you which rows it matches right now, and what it would say about each, before you save it.", "button": "Show me", "note": "Settings, Triggers, New trigger."} -->
+
+- A trigger watches facts the types themselves declare, rather than one of eight written into the journal's code. Each kind of row says which of its states can be watched and which of its clocks times them, and the feature that knows how to find those rows registers them - so a fact arrives with the feature that owns it and goes when that feature is switched off. `journal trigger facts` lists every one this environment can watch.
+- A trigger whose fact is gone sleeps rather than breaking. It matches nothing, says on its own row why it is asleep, and can still be edited, retired and deleted - where before it could not be changed at all.
+- Before you save a trigger, it says which rows it matches right now and what it would say about each, with the real numbers already in it. It reads the fact through the very finder a tick uses, so what you are shown and what it will do cannot disagree.
+- A wording can only name what its fact gives it. Writing `{{percent}}` on a fact that counts minutes used to send the agent the text `{{percent}}`, for good, with nothing said; now it is refused when you save, and the editor offers only the placeholders that fact will fill, in words.
+- A trigger that has never matched says which half is still empty - nothing has carried those words, or it only watches while the agent is idle - instead of "Never matched yet".
+- A fact names at most ten rows each time it is read, the oldest first, so a fact over many rows cannot write a nudge for each of them inside one hook.
+- A hook finds the agent above its shell by asking the kernel, instead of starting up to four `ps` processes while answering.
+- A board is only offered for checking while one of its tickets has an agent running. An orchestrator whose tickets were all waiting was asked every five minutes to look at agents that did not exist.
+- A document opened through a share link shows its revisions, and each earlier one opens through the link.
+- The release is kept in the root `VERSION` file alone; 2.270.6 left a second one behind saying an older number.
+
 ## 2.270.6 — A working session is no longer called silent, and a wait on you is refused
 
 - The viewer said "Not responding" over a session that was working. A session's terminal and its conversation share one process, but the terminal was seated before its process was written down, so the journal could not tell they were one agent and retired the conversation as a stranger. A retired session stops holding its environment, the terminal held it instead, and that row carries none of the agent's hook events - which is exactly what the bar reads to decide a session has gone quiet.
