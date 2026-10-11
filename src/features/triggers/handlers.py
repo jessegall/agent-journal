@@ -31,6 +31,8 @@ def firing(context, text_of, from_user: bool = False) -> list:
 
 
 def fire(context, agent, row, done: str = "", about: str = "") -> None:
+    from features.format import read_as
+    row = read_as(row, context.record)
     if row.does != START:
         context.journal.acting(SYSTEM).get(Agents).card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
                                                    tone="danger" if row.does == DENY else "note", title=row.wording, ref=row.ref)
