@@ -25,7 +25,7 @@ def task_state(row, works: dict) -> str:
 
 def column_order(todo) -> tuple:
     """Where a to-do stands in its column: higher priority first, then the place it was dropped at, then its number; the key a board pages its lanes by."""
-    return (-int(todo.priority or LEVELS["default"]), todo.position, todo.n)
+    return (-int(todo.priority), todo.position, todo.n)
 
 
 class Todos(Prioritised, Controller):
@@ -33,11 +33,11 @@ class Todos(Prioritised, Controller):
 
     @action
     def assign(self, n: int, to: str):
-        return self.update(n, assigned=to, pending=None)
+        return self.update(n, assigned=to, pending={})
 
     @action
     def unassign(self, n: int, **data):
-        return self.update(n, assigned="", pending=None, **data)
+        return self.update(n, assigned="", pending={}, **data)
 
     @action
     def complete(self, n: int, how: str = "", **data):
@@ -48,7 +48,7 @@ class Todos(Prioritised, Controller):
     def reopen(self, n: int, why: str):
         row = self.load(n)
         if row.pending and not row.completed:
-            return self.update(n, pending=None)
+            return self.update(n, pending={})
         return super().reopen(n, why)
 
     @action
@@ -174,8 +174,8 @@ class Todos(Prioritised, Controller):
     @action
     def place(self, n: int, before: int):
         todo, target = self.load(n), self.load(before)
-        level = int(target.priority or LEVELS["default"])
-        column = [t for t in self._ordered(self.rows.standing()) if t.n != todo.n and int(t.priority or LEVELS["default"]) == level]
+        level = int(target.priority)
+        column = [t for t in self._ordered(self.rows.standing()) if t.n != todo.n and int(t.priority) == level]
         return self.update(todo.n, priority=level, rank=rank_before(column, target.n))
 
     def _ordered(self, rows: list) -> list:

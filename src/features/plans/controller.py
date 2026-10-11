@@ -298,7 +298,7 @@ class Plans(Controller):
         placements = [(plan, found) for plan in plans if (found := plan.placement(todo))]
         if placements:
             return all(found.holds and not self._opened_early(plan, found) for plan, found in placements)
-        return any(p.status == ACTIVE for p in plans) and int(todo.priority or LEVELS["default"]) < LEVELS["critical"]
+        return any(p.status == ACTIVE for p in plans) and int(todo.priority) < LEVELS["critical"]
 
     def _start_phase(self, plan) -> None:
         for start in PHASE_STARTS.each(self.record):

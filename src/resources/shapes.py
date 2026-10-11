@@ -123,7 +123,7 @@ class Reasoned(Shape):
 
 class Ranked(Shape):
     data_fields: ClassVar[list[Field]] = [
-        Field(NUMBER, name="priority"),
+        Field(NUMBER, LEVELS["default"], name="priority"),
     ]
     labels = {"priority": "Priority"}
 
