@@ -50,6 +50,12 @@ WATCH = (
 )
 
 
+def load_note() -> str:
+    """How busy the machine is, for a failure that may be the machine and not the code."""
+    busy, cores = os.getloadavg()[0], os.cpu_count()
+    return f"machine load {busy:.0f} on {cores} cores" + (", so a wait may have run out because it was starved: run this test alone before believing it" if busy > cores else "")
+
+
 def bound_to_this_run(command: list[str], watched: int | None = None) -> list[str]:
     """The command run under a watcher that ends it once the process `watched` (this one by default) is gone, however that process ended."""
     return [sys.executable, "-c", WATCH, str(os.getpid() if watched is None else watched), *command]

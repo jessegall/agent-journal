@@ -15,6 +15,7 @@ import pytest
 from engine.record import Record
 from serve import Handler, JournalServer
 from tests.conftest import fresh
+from tests.kit import load_note
 
 WAIT = 15.0
 ENV = "main"
@@ -96,7 +97,7 @@ def eventually(read, expected=True, within: float = WAIT):
         if (seen == expected) if expected is not True else bool(seen):
             return seen
         time.sleep(0.05)
-    raise AssertionError(f"never became {expected!r}; last seen {seen!r}")
+    raise AssertionError(f"never became {expected!r} within {within:.0f} s; last seen {seen!r} ({load_note()})")
 
 
 @contextmanager

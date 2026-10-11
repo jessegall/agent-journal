@@ -39,7 +39,7 @@ from resources.pictures import dimensions
 from resources.shapes import normalize_options
 from resources.types import TYPES, EnvironmentKind
 from tests.conftest import fresh, refused
-from tests.kit import Nudges, project_on, report, run
+from tests.kit import Nudges, load_note, project_on, report, run
 from commands import http  # noqa: F401
 
 VIEWER = Path(__file__).resolve().parents[1] / "src" / "web" / "src"
@@ -434,8 +434,8 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     everything = {"types": ",".join(TYPES), "completed": "1", "events": "100"}
     whole = fastest(lambda: dispatch("GET", f"/api/{record.env}/dashboard", record.root, everything, {}))
     assert wrong == {}, "a listing returns at most one page, and no completed row unless asked"
-    assert slow == {}, f"every listing answers inside {BUDGET}ms"
-    assert whole <= BUDGET * 2, f"the whole dashboard answers inside {BUDGET * 2}ms, took {whole:.0f}"
+    assert slow == {}, f"every listing answers inside {BUDGET}ms ({load_note()})"
+    assert whole <= BUDGET * 2, f"the whole dashboard answers inside {BUDGET * 2}ms, took {whole:.0f} ({load_note()})"
     named = dispatch("GET", f"/api/{record.env}/todo", record.root, {"n": "1,2,3", "completed": "1"}, {}).body
     assert [r["n"] for r in named["rows"]] == [1, 2, 3], "a listing asked for rows by number returns those rows, however old"
     CONTROLLERS["todo"](record, actor=USER).delete(2, why="gone")
@@ -1140,7 +1140,7 @@ def test_a_row_of_every_type_written_behind_the_stores_back_shows_up_in_lists_fr
         facts["an edit shows after the server renews the stamps, with no listing paying for it"] = listed(controller).get(first.n) == "edited once more"
         monkeypatch.undo()
         reckon(wrong, type_, facts)
-    assert wrong == {}, "a row written by another process shows up in lists for every type"
+    assert wrong == {}, f"a row written by another process shows up in lists for every type ({load_note()})"
 
 
 def test_search_finds_a_row_of_every_type_by_its_words_and_sees_an_edit_that_kept_its_updated_stamp(monkeypatch):

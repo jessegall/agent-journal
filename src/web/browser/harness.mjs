@@ -1,6 +1,6 @@
 import {execFileSync, spawnSync} from "node:child_process";
 import {chromium} from "playwright-core";
-import {tmpdir} from "node:os";
+import {cpus, loadavg, tmpdir} from "node:os";
 import {join} from "node:path";
 
 const FIRST_CHOICE_WAIT = 8000;
@@ -8,6 +8,15 @@ const LOCAL = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/;
 
 const JOURNAL_WAIT = 60000;
 const RUNS_LOCALLY = new Set(["404", "409", "000", ""]);
+
+// A wait that ran out says so and says how busy the machine was, so a red run can be told from a regression.
+function failureOf(error) {
+    const words = String(error.message).split("\n").slice(0, 12).join(" ");
+    if (error.name !== "TimeoutError") return words;
+    const [load] = loadavg();
+    const busy = load > cpus().length ? "the machine was overloaded, so this may be the load: run it alone before believing it" : "the machine was not overloaded, so this is probably real";
+    return `TIMED OUT waiting (load ${load.toFixed(1)} on ${cpus().length} cores; ${busy}): ${words}`;
+}
 
 const isOutside = (address) => !LOCAL.test(address.href);
 
@@ -40,7 +49,7 @@ export async function runScenarios(url, scenarios, {voice = true, device = {}} =
             } catch (error) {
                 const picture = join(tmpdir(), `scenario-${Date.now()}.png`);
                 await page.screenshot({path: picture}).catch(() => {});
-                failures[name] = `${String(error.message).split("\n").slice(0, 12).join(" ")} (the page at that moment: ${picture})`;
+                failures[name] = `${failureOf(error)} (the page at that moment: ${picture})`;
             }
             await page.unrouteAll({behavior: "ignoreErrors"});
             await context.close();
