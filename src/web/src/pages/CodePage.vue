@@ -3,18 +3,13 @@ import EmptyState from "../kit/EmptyState.vue";
 import FilePage from "./FilePage.vue";
 import ProjectTree from "../resource/ProjectTree.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
-import {computed, ref} from "vue";
+import {computed} from "vue";
 import {href, route} from "../route.js";
 
-const picked = ref(null);
 const path = computed(() => route.value.q || "");
 const folder = computed(() => path.value.split("/").slice(0, -1).join("/") || "the project root");
-const bytes = computed(() => (picked.value && picked.value.path === path.value ? picked.value.size : null));
 
-function open(entry) {
-    picked.value = entry;
-    window.location.hash = href.page(route.value.env, "code", 0, entry.path).slice(1);
-}
+const open = (entry) => (window.location.hash = href.page(route.value.env, "code", 0, entry.path).slice(1));
 </script>
 
 <template>
@@ -39,10 +34,6 @@ function open(entry) {
                     <dd>{{ path.split("/").pop() }}</dd>
                     <dt>Folder</dt>
                     <dd>{{ folder }}</dd>
-                    <template v-if="bytes !== null">
-                        <dt>Size</dt>
-                        <dd>{{ bytes }} bytes</dd>
-                    </template>
                 </dl>
                 <a class="code-elsewhere" :href="href.file(route.env, path)">Open this file on its own page</a>
             </template>
@@ -56,21 +47,27 @@ function open(entry) {
 <style scoped>
 .code {
     display: grid;
-    grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) minmax(180px, 240px);
-    gap: 16px;
-    align-items: start;
-    height: 100%;
+    grid-template-columns: 200px minmax(0, 1fr);
+    grid-template-areas:
+        "tree open"
+        "about open";
+    grid-template-rows: auto 1fr;
+    gap: 8px 20px;
+    align-content: start;
 }
 
-.code-tree,
-.code-about {
-    position: sticky;
-    top: 0;
-    max-height: 100vh;
+.code-tree {
+    grid-area: tree;
+    max-height: 60vh;
     overflow-y: auto;
 }
 
+.code-about {
+    grid-area: about;
+}
+
 .code-open {
+    grid-area: open;
     min-width: 0;
 }
 
@@ -103,15 +100,31 @@ function open(entry) {
     font-size: 12.5px;
 }
 
-@media (max-width: 900px) {
+@media (min-width: 1400px) {
     .code {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: 200px minmax(0, 1fr) 220px;
+        grid-template-areas: "tree open about";
     }
 
-    .code-tree,
+    .code-tree {
+        position: sticky;
+        top: 0;
+        max-height: 100vh;
+    }
+
     .code-about {
-        position: static;
-        max-height: none;
+        position: sticky;
+        top: 0;
+    }
+}
+
+@media (max-width: 760px) {
+    .code {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "tree"
+            "about"
+            "open";
     }
 }
 </style>

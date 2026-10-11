@@ -128,6 +128,7 @@ export function unpeek() {
 
 export const PAGES = [
     "settings",
+    "code",
     "search",
     "files",
     "commit",
