@@ -73,3 +73,4 @@ src/web/demo-check/
 .claude/skills/commandments-*
 .coverage
 .coverage.*
+live*.txt

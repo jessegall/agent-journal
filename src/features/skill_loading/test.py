@@ -334,7 +334,7 @@ def test_a_plugin_names_the_skills_its_events_require_and_its_skills_carry_keywo
         loading({"no-such-event": ["lint-rules"]})
 
 
-def test_every_word_and_command_of_a_folded_skill_still_loads_the_skill_that_teaches_it():
+def test_every_word_and_command_of_a_folded_skill_still_loads_the_skill_that_teaches_it(monkeypatch):
     from skills import publish, skill_name, teaching
     from features.skill_loading.catalogue import keywords, teaching_command
     record = fresh()
@@ -362,16 +362,12 @@ def test_every_word_and_command_of_a_folded_skill_still_loads_the_skill_that_tea
     assert json.loads((home / "settings.json").read_text())["new"] == {"size": 2, "mode.deep": 3} and (home / "runtime" / "cursor-new").read_text() == "5", \
         "its own settings move under its new name"
     assert rename(root, {"old": "new"}) == {"settings": 0, "gates": 0, "triggers": 0, "cursors": 0}, "renaming twice changes nothing more"
+    from features import renames
     from features.renames import sweep
     walked = []
-    import features.renames as renames
-    was = renames.in_triggers
-    renames.in_triggers = lambda runtime, aliases: walked.append(1) or 0
-    try:
-        assert (sweep(root, {"old": "new"}) is not None, walked) == (True, [1]), "the first sweep for a set of aliases walks the sessions and the environments"
-        assert (sweep(root, {"old": "new"}), walked) == (None, [1]), "a second sweep for the same aliases walks nothing: it is set-up, not work for every command"
-        assert (sweep(root, {"old": "new", "older": "newer"}) is not None, walked) == (True, [1, 1]), "a sweep for aliases it has not seen walks again"
-    finally:
-        renames.in_triggers = was
+    monkeypatch.setattr(renames, "in_triggers", lambda runtime, aliases: walked.append(1) or 0)
+    assert (sweep(root, {"old": "new"}) is not None, walked) == (True, [1]), "the first sweep for a set of aliases walks the sessions and the environments"
+    assert (sweep(root, {"old": "new"}), walked) == (None, [1]), "a second sweep for the same aliases walks nothing: it is set-up, not work for every command"
+    assert (sweep(root, {"old": "new", "older": "newer"}) is not None, walked) == (True, [1, 1]), "a sweep for aliases it has not seen walks again"
     assert (skills_renamed([skill_name("old"), "other"], "old", "new"), skills_renamed(["other"], "old", "new"), skills_renamed([skill_name("old")], "old", "a.b")) == \
         (sorted([skill_name("new"), "other"]), ["other"], [skill_name("old")]), "a chosen skill follows its feature's new name, and a line of a feature has no skill of its own"

@@ -17,9 +17,13 @@ const one = computed(() => rows("secret").find((row) => row.n === props.n && !ro
 const draft = ref(null);
 watch(one, (row) => (draft.value = draft.value || (row && drafted(row))), {immediate: true});
 
-async function save(andBack = true) {
+async function keep() {
     const {done} = await attempt(() => api.updateSecret(props.n, saved(draft.value)));
-    if (done && andBack) emit("back");
+    return done;
+}
+
+async function save() {
+    if (await keep()) emit("back");
 }
 
 async function askEachTime() {
@@ -40,7 +44,7 @@ async function remove() {
         </Btn>
         <template v-if="one && draft">
             <h3 class="secrets-title">{{ one.title }}</h3>
-            <SecretForm :draft="draft" @allowed="save(false)">
+            <SecretForm :draft="draft" @allowed="keep">
                 <div class="secrets-values">
                     <b>Values</b>
                     <template v-for="field in fieldsOf(one)" :key="field.name">
