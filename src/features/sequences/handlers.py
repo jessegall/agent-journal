@@ -3,16 +3,18 @@ from dataclasses import asdict, dataclass
 from typing import ClassVar
 
 from controllers.types import Questions
+from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSending, ClockTicked
 from engine.events.resources import AnyEvent, QuestionAnswered, ResourceEvent
 from engine.journal_calls import JournalCall, calls
 from engine.transcript import IDLE
 from features.journal import waiting
+from features import trigger
 from features.sending import Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
 from engine.gates import Runs, STILL_HELD
 from features.work_tracking.details import WorkDetails
-from features.sequences.details import IN_CHAT, STEP, STEP_HELD, UNFINISHED
+from features.sequences.details import IN_CHAT, STEP, STEP_HELD, STEP_STALLED, UNFINISHED
 from features.sequences.dispatch import board_of, dispatched_by_line, working_agent
 from features.sequences.resource import Run, RunKey
 from features.triggers.controller import Triggers
@@ -22,6 +24,7 @@ from resources.base import SECTION, SYSTEM
 from resources.types import TYPES
 from engine.reach import Reach
 from features.trigger import MINUTE
+from providers.payload import HookEvent
 from features.sequences.controller import Sequences
 
 FREE_NOUNS = ("search", "carry", "status", "user", "conversation", "upgrade", "heal", "verify", "version", "help", "stop")
@@ -161,6 +164,49 @@ def step_in_hand(record, session: str) -> bool:
 
 
 STILL_HELD["sequences.step"] = step_in_hand
+
+
+class HoldAStalledStep(Handler):
+    """A sequence says everything else waits until it is finished, and until now that was only words: taking a step up released the hold and nothing held it again, however long the step stood. It holds again once the writes mount up."""
+
+    hooks = (HookEvent.POST_TOOL_USE,)
+
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
+        found = context.journal.get(Sequences).in_hand()
+        if not context.agent.row.wrote or not found:
+            return
+        sequence, key, run = found
+        if run.get("followed") != run["step"]:
+            return
+        name = context.feature.name
+        edits = trigger.last(context.record, context.agent.row.title, name).edits + 1
+        trigger.write(context.record, context.agent.row, name, edits=edits)
+        if edits >= context.settings.step_after:
+            context.hold(STEP_STALLED, n=sequence.n, title=sequence.title, step=run["step"], edits=edits, about=about_flag(key))
+
+
+class ResetEditsOnStep(Handler):
+    """The count that holds a stalled step starts again whenever the sequence moves, so the writes a step is allowed are its own and not the ones before it."""
+
+    def handle(self, context: Context, event: AnyEvent) -> None:
+        if event.type != "sequence":
+            return
+        for row in context.feature.reached(context.record, context.feature.lines[STEP_STALLED].reach):
+            trigger.write(context.record, row, context.feature.name, edits=0)
+        context.release()
+
+
+def step_stalled(record, session: str) -> bool:
+    """Whether a step taken up has stood through more writes than the setting allows, which holds them until the sequence moves on."""
+    from features import FEATURES
+    found = Sequences(record, actor=SYSTEM).in_hand()
+    if not found or found[2].get("followed") != found[2]["step"]:
+        return False
+    feature = FEATURES["sequences"]
+    return trigger.last(record, session, feature.name).edits >= int(feature.values(record).get("step_after", 25))
+
+
+STILL_HELD["sequences.stalled"] = step_stalled
 
 
 class ReleaseStaleStep(Handler):

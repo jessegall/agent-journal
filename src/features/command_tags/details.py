@@ -47,7 +47,7 @@ class CommandTagsDetails(FeatureDetails):
         moment of acting.
 
         Running a command a tag stands for, such as journal message reply, shows you its tag
-        once in a while, with the reminder that a tag runs only when it opens the last text of
+        once in a while, with the reminder that a tag runs when it opens any text of
         your turn.
     """
 
@@ -73,7 +73,7 @@ class CommandTagsDetails(FeatureDetails):
         Line(
             name="hint",
             title="the {{tag}} tag does this in one step",
-            brief="{{hint}}; it runs only when it opens the last text of your turn",
+            brief="{{hint}}; it runs when it opens any text of your turn, and once per turn, so the work can carry on after it",
         ),
         Line(
             name="refused",

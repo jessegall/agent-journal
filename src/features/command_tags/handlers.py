@@ -2,7 +2,7 @@ import io
 
 from engine.events.engine import AgentMessageSending, CommandRan
 from features.parts import AgentContext, Context, Handler
-from features.command_tags.reading import CARRIED, OPTIONS, named, reader, removed, replies, runs, tag_spelling, tag_for, visible, waits
+from features.command_tags.reading import CARRIED, OPTIONS, kept_out_of_the_chat, named, reader, removed, runs, tag_spelling, tag_for, visible
 from resources.base import AGENT
 from engine.command_line import command_line
 
@@ -10,18 +10,18 @@ from engine.command_line import command_line
 class RunTagCommands(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
         message = event.text
-        failed = CARRIED.search(message) and context.once("tagged", event.turn) and self.run(context, message)
-        if (replies(message) or waits(message)) and not failed:
+        failed = bool(CARRIED.search(message)) and self.run(context, message, event.turn)
+        if kept_out_of_the_chat(message) and not failed:
             event.stop()
         else:
             event.change(visible(message, reader(context.settings)).strip())
 
-    def run(self, context: Context, message: str) -> bool:
+    def run(self, context: Context, message: str, turn: str) -> bool:
         """Runs the commands the tags stand for; true when one failed, so the words are not lost with it: they stay in the chat."""
         commands, text = runs(context.settings), removed(message, reader(context.settings)).strip()
         failed = False
         for name, n, argument, extras in CARRIED.findall(message):
-            if name not in commands:
+            if name not in commands or not context.once("tag", f"{turn}|{name}|{n}|{argument}|{extras}"):
                 continue
             out, err = io.StringIO(), io.StringIO()
             code = command_line().run(["--root", str(context.record.root), "--env", context.record.env, "--session", context.agent.session, "--as", AGENT,

@@ -2,9 +2,11 @@ from resources.base import PROJECT
 from features.base import Behaviour, FeatureDetails, Line
 from features.trigger import MINUTES, Trigger
 from features.groups import Group
+from features.settings import Setting
 
 STEP = "step"
 STEP_HELD = "step held"
+STEP_STALLED = "step stalled"
 DISPATCH = "dispatch"
 IN_CHAT = "in_chat"
 UNFINISHED = "unfinished"
@@ -58,6 +60,15 @@ class SequencesDetails(FeatureDetails):
         with the journal; they are system sequences and cannot be changed or removed.
     """
 
+    settings = [
+        Setting(
+            name="step_after",
+            default=25,
+            title="Block writes after this many with a step taken up and never moved on",
+            unit="edits",
+        ),
+    ]
+
     behaviours = [
         Behaviour(
             name=UNFINISHED,
@@ -104,5 +115,12 @@ class SequencesDetails(FeatureDetails):
             while_waiting=True,
             title="sequence {{n}}, {{title}}, handed you step {{step}} - take it up with journal sequence follow {{n}}{{about}} before any other write",
             brief="then do what the step says and journal sequence next {{n}}{{about}}",
+        ),
+        Line(
+            name=STEP_STALLED,
+            while_waiting=True,
+            title="sequence {{n}}, {{title}}, has stood on step {{step}} for {{edits}} writes - move it on with journal sequence next {{n}}{{about}}",
+            brief="A sequence says everything else waits until it is finished, so it holds your writes now, as an unanswered message does. "
+                  "Finish the step and move on, or give the sequence up with journal sequence abandon {{n}}{{about}} --why \"<why>\".",
         ),
     ]

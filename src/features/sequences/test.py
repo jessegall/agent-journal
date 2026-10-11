@@ -224,6 +224,19 @@ def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
     assert "handed you step 1" in held(record, session), "a handed step holds the agent's writes until it answers it"
     sequences.follow(made.n)
     assert "handed you step" not in held(record, session), "taking the step up releases them, so the step's own work can be done"
+    from features import trigger
+    from features.sequences.details import SequencesDetails
+    agent = Agents(record, actor="system").by_session("claude-1")
+    trigger.write(record, agent, SequencesDetails.name, edits=99)
+    report(record, "working", "PostToolUse", tool="Edit", wrote=True)
+    assert "has stood on step 1" in held(record, session), \
+        "a step taken up and never moved on holds the writes once they mount up, since a sequence says everything else waits until it is finished"
+    sequences.next(made.n)
+    assert "has stood on step" not in held(record, session), "and moving the sequence on releases them and starts the count again"
+    sequences.follow(made.n)
+    assert trigger.last(record, session, SequencesDetails.name).edits == 0, "the writes a step is allowed are its own, not the ones before it"
+    sequences.next(made.n)
+    sequences.run(made.n)
     sequences.follow(made.n)
     sequences.next(made.n)
     assert "handed you step 2" in held(record, session), "each next step is taken up the same way, so none is skipped unseen"

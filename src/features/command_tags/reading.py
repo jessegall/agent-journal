@@ -7,6 +7,7 @@ from engine.memo import Memo
 REPLY_WITH = "reply_with"
 REPLY = "reply"
 AWAIT = "await"
+LOG = "log"
 
 
 @dataclass(frozen=True)
@@ -15,6 +16,8 @@ class Tag:
     runs: str
     hint: str
     options: tuple[str, ...] = ()
+    said_in_chat: bool = True
+    """Whether the turn's words reach the chat as well as the row the tag writes. A reply IS the chat, and a wait and a work log are already shown where they belong, so those three say nothing twice."""
 
     @property
     def command(self) -> re.Pattern:
@@ -22,13 +25,13 @@ class Tag:
 
 
 TAGS = (
-    Tag(REPLY, "message reply {n} {text}", "[!reply:N] makes the turn itself the reply"),
-    Tag("log", "work log {text} --n {n}", "[!log:N] makes the turn itself the log entry"),
+    Tag(REPLY, "message reply {n} {text}", "[!reply:N] makes the turn itself the reply", said_in_chat=False),
+    Tag(LOG, "work log {text} --n {n}", "[!log:N] makes the turn itself the log entry", said_in_chat=False),
     Tag("end", "work end {n} --how {text}", "[!end:N] makes the turn itself what landed"),
     Tag("todo", "todo create {name} --brief {text}", '[!todo="the title"] files it with the turn as its brief'),
     Tag("fact", "fact create {name} --brief {text}", '[!fact="the claim", keywords=(...)] files it with the turn as its brief'),
     Tag("rule", "rule create {name} --brief {text}", '[!rule="the ruling", keywords=(...)] files it with the turn as its brief'),
-    Tag(AWAIT, "work await {text}", "[!await] makes the rest of the turn what you wait for; [!await on=(\"<id>\", \"helper:<n>\")] waits on those", ("on",)),
+    Tag(AWAIT, "work await {text}", "[!await] makes the rest of the turn what you wait for; [!await on=(\"<id>\", \"helper:<n>\")] waits on those", ("on",), said_in_chat=False),
 )
 RUNS = {tag.name: tag.runs for tag in TAGS}
 OPTIONS = {tag.name: tag.options for tag in TAGS}
@@ -67,12 +70,21 @@ def reader(settings: dict) -> re.Pattern:
     return READERS.get("runs", settings.runs, lambda: pattern(dict.fromkeys((*RETIRED, *runs(settings)))))
 
 
-def waits(text: str) -> bool:
-    return any(name == AWAIT for name, *_ in CARRIED.findall(text))
+def carries(text: str, tag: str) -> bool:
+    """Whether a line of the text opens with that tag, which is how a tag asks for the command it stands for to run."""
+    return any(name == tag for name, *_ in CARRIED.findall(text))
 
 
 def replies(text: str) -> bool:
     return any(name == REPLY and (n or argument) for name, n, argument, _ in CARRIED.findall(text))
+
+
+QUIET = {tag.name for tag in TAGS if not tag.said_in_chat} - {REPLY}
+
+
+def kept_out_of_the_chat(text: str) -> bool:
+    """Whether the turn's words belong only to the row its tag writes, which each tag says of itself; a reply says it only when it names the message it answers."""
+    return replies(text) or any(carries(text, tag) for tag in QUIET)
 
 
 def named(extras: str) -> dict[str, str]:

@@ -677,9 +677,9 @@ class Claude(Provider):
             over = Finish(REFUSED, ended[use.id].at) if use.id in held.errors else ended.get(use.id, Finish())
             status, done = over.status, over.at
             written = session.stat().st_mtime if session is not None and session.is_file() else 0.0
-            writing = now - written <= QUIET_SUBAGENT
+            stirred = now - max(written, use.at) <= QUIET_SUBAGENT
             behind = use.background or use.id in held.moved_to_background
-            running = not status or writing and (status == "returned" and behind or written > done)
+            running = stirred and (not status or status == "returned" and behind or written > done)
             subagents.append(ClaudeSubagentRow(id=use.id, task=use.description if use.description else "subagent", type=use.subagent_type, model=use.model,
                                                running=running, at=use.at, ended=0.0 if running else done, status="" if running else status,
                                                session=session.stem.removeprefix("agent-") if session else "", task_id=ids.get(use.id, ""),
