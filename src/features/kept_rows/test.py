@@ -104,3 +104,16 @@ def test_the_row_of_an_agent_read_to_look_at_is_the_held_row_and_is_not_copied(m
     assert (looked.n, looked.status, copies) == (n, "working", []), "a reader that changes nothing gets the held row without a deep copy"
     agents.by_session("session-a")
     assert copies, "a caller that may change the row still gets a copy of its own"
+
+
+def test_the_row_a_hook_gets_back_is_copied_after_the_lock_of_its_environment_is_let_go(monkeypatch):
+    from controllers.agents import Agents as Held
+    from controllers.types import Agents
+    record = fresh()
+    agents = Agents(record, actor=SYSTEM)
+    n = agents.create("session-b", status="working").n
+    loaded_at = []
+    original = Held.load
+    monkeypatch.setattr(Held, "load", lambda self, row: loaded_at.append(record._depth) or original(self, row))
+    seen = agents.saw(n, {}, status="idle")
+    assert (seen.status, loaded_at[-1:]) == ("idle", [0]), "the row a hook gets back is copied after the lock is let go, so the other agents of the environment do not wait for that copy"
