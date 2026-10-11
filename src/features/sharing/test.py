@@ -239,6 +239,8 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header(tmp_path,
         Docs(record, actor=USER).attach(inside.n, str(paper))
         Docs(record, actor=USER).attach(outside.n, str(other))
         Docs(record, actor=USER).section(inside.n, "Links", marked("chip", outside.ref, "the outside doc"))
+        Docs(record, actor=USER).action("keep")(inside.n)
+        Docs(record, actor=USER).update(inside.n, brief="in, revised")
         group = Collections(record, actor=USER).create("Group")
         Collections(record, actor=USER).add(group.n, [inside.ref])
         fenced = Shares(record, actor=USER).create(f"collection:{group.n}")
@@ -260,6 +262,10 @@ def test_the_share_server_takes_a_comment_only_as_json_with_its_header(tmp_path,
         sent = json.loads(fetch(f"{key}/data.json")[1])
         assert (sorted(sent["rows"]), "the outside doc" in json.dumps(sent), "[[chip" in json.dumps(sent)) == ([f"collection:{group.n}", inside.ref], True, False), \
             "the page data holds only the rows in scope, and a chip pointing outside the scope is plain text"
+        first = fetch(f"{key}/revisions/{inside.n}/1")
+        assert (sent["rows"][inside.ref]["data"]["revisions"], first[0], "revised" in json.loads(first[1] or b"{}").get("brief", "revised"),
+                fetch(f"{key}/revisions/{inside.n}/3")[0], fetch(f"{key}/revisions/{outside.n}/1")[0]) == (2, 200, False, 404, 404), \
+            "a shared doc says how many revisions it has, and each earlier one opens through the link, only for a doc in its scope"
         from engine import bus
         from features.sharing import page_data
         built = []

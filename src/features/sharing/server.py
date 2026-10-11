@@ -169,6 +169,8 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.file(share, f"{rest[1]}:{rest[2]}", rest[3])
         if rest[0] == "files" and len(rest) == 3:
             return self.file(share, rest[1], rest[2])
+        if rest[0] == "revisions" and len(rest) == 3 and rest[1].isdigit() and rest[2].isdigit():
+            return self.revision(share, f"doc:{rest[1]}", int(rest[2]))
         if len(rest) == 1:
             return self.shown(share, rest[0])
         if len(rest) == 2:
@@ -233,6 +235,12 @@ class ShareHandler(BaseHTTPRequestHandler):
         picture = next((name for name in row.files if Path(name).suffix.lower() in PICTURES), "")
         image = f"{page}/files/{row.type}/{row.n}/{quote(picture)}" if picture else f"{page}/{PREVIEW}"
         return tags(formatted(row.title, self.shares._home(share), SHARED), row.abstract or row.brief, image, f"{page}/", identity(self.shares.record.root)["project"])
+
+    def revision(self, share, ref: str, k: int) -> None:
+        found = self.shares._shared_revision(share, ref, k)
+        if found is None:
+            return self.page(404, unshared())
+        self.send(200, json.dumps(asdict(found)).encode(), {"Content-Type": "application/json", **APP_HEADERS})
 
     def file(self, share, ref: str, name: str) -> None:
         if ref not in self.shares._scope(share):

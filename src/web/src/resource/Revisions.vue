@@ -8,7 +8,7 @@ import ResourceBody from "./ResourceBody.vue";
 import RevisionStrip from "./RevisionStrip.vue";
 import {useRevisions} from "../composables/revisions.js";
 
-const props = defineProps({resource: Object});
+const props = defineProps({resource: Object, readOnly: Boolean});
 const emit = defineEmits(["close"]);
 const revisions = useRevisions(() => props.resource);
 const page = computed(() => revisions.page);
@@ -17,7 +17,7 @@ const changed = computed(() => revisions.topChanged);
 
 <template>
     <template v-if="revisions.latest && !revisions.comparing">
-        <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')">
+        <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')">
             <template #head>
                 <template v-if="revisions.count > 1 || revisions.open">
                     <RevisionStrip :revisions="revisions" />
@@ -33,8 +33,10 @@ const changed = computed(() => revisions.topChanged);
                     Doc {{ resource.n }}, revision {{ revisions.at + 1 }}
                 </span>
                 <span class="grow" />
-                <CommentToggle :resource="resource" />
-                <CloseButton @click="emit('close')" />
+                <template v-if="!readOnly">
+                    <CommentToggle :resource="resource" />
+                    <CloseButton @click="emit('close')" />
+                </template>
             </header>
             <RevisionStrip :revisions="revisions" />
             <template v-if="!revisions.page">

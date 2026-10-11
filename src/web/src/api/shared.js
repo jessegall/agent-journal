@@ -17,6 +17,12 @@ async function posted(path, given, failed) {
 
 export const sharedFileUrl = (type, n, name) => `./files/${type}/${n}/${encodeURIComponent(name)}`;
 
+export async function sharedRevision(n, number) {
+    const got = await fetch(`./revisions/${n}/${number}`, {cache: "no-store"});
+    if (!got.ok) throw new Error(`Revision ${number} could not be opened`);
+    return got.json();
+}
+
 export function sendComment(about, name, text) {
     return posted("./comment", {about, name, text}, "The comment did not go through");
 }

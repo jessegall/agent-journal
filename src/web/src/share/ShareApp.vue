@@ -1,6 +1,6 @@
 <script setup>
 import SwitchCase from "../kit/SwitchCase.vue";
-import {sharedData, sharedFileUrl} from "../api/shared.js";
+import {sharedData, sharedFileUrl, sharedRevision} from "../api/shared.js";
 import {computed, provide, reactive, ref, watch} from "vue";
 import {refParts} from "../domain/records.js";
 import {usePoll} from "../composables/poll.js";
@@ -16,6 +16,7 @@ import ShareStrip from "./ShareStrip.vue";
 import ShareView from "./ShareView.vue";
 import PlanTimeline from "../resource/PlanTimeline.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
+import Revisions from "../resource/Revisions.vue";
 import Lightbox from "../kit/Lightbox.vue";
 import Notice from "../kit/Notice.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -71,6 +72,7 @@ const drafts = reactive({});
 const errors = reactive({});
 
 provide("fileUrl", sharedFileUrl);
+provide("revision", sharedRevision);
 
 function shareRow(reference, given) {
     const {env, type, n} = refParts(reference);
@@ -116,7 +118,13 @@ function ask() {
     });
 }
 
-usePoll("shared", ask, () => (data.value?.view ? VIEW_REFRESH_MS : REFRESH_MS), take, () => !failed.value);
+usePoll(
+    "shared",
+    ask,
+    () => (data.value?.view ? VIEW_REFRESH_MS : REFRESH_MS),
+    take,
+    () => !failed.value
+);
 
 const currentRef = computed(() => {
     const open = route.value.open;
@@ -203,6 +211,9 @@ watch(currentRef, () => (read.value = 0));
                             </template>
                             <template #plan>
                                 <PlanPage :resource="currentRow" read-only pin-progress :holding="missing" />
+                            </template>
+                            <template #doc>
+                                <Revisions :resource="currentRow" read-only />
                             </template>
                             <template #default>
                                 <ResourceBody :resource="currentRow" :comments="false" :links="false" read-only />

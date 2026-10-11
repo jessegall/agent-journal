@@ -1,10 +1,11 @@
 import json
 import threading
 import time
-from dataclasses import asdict
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 
 from controllers.base import row_of
+from controllers.docs import Docs
 from engine import bus
 from controllers.described import described_types
 from engine.markers import MARKER
@@ -12,6 +13,7 @@ from engine.record import Record
 from features.collections.files import collected_files
 from features.format import SHARED, formatted, shape
 from features.plans.controller import Plans
+from features.revisions.history import count, read
 from features.sharing.views import shared_view
 from features.tickets.controller import Tickets
 from features.tickets.resource import CONFIRMED
@@ -35,9 +37,36 @@ def fresh(kept) -> bool:
     return bool(kept) and bus.BACKGROUND and time.monotonic() - kept[0] < KEPT_FOR
 
 
+@dataclass(frozen=True)
+class SharedRow:
+    """A row as a visitor reads it: its words formatted and stripped of links outside the share, and only the fields a share carries."""
+
+    type: str
+    n: int
+    created: float
+    updated: float
+    title: str
+    abstract: str
+    brief: str
+    sections: list[dict]
+    files: list[str]
+    pictures: dict
+    completed: bool
+    data: dict
+    members: list[str] = field(default_factory=list)
+
+    @classmethod
+    def of(cls, row, record: Record, scope: set[str]) -> "SharedRow":
+        shaped = shape(row, record, SHARED)
+        return cls(row.type, row.n, row.created, row.updated,
+                   scoped(shaped.get("title", ""), scope), scoped(shaped.get("abstract", ""), scope), scoped(shaped.get("brief", ""), scope),
+                   [{"title": scoped(s.get("title", ""), scope), "body": scoped(s.get("body", ""), scope)} for s in shaped.get("sections") or []],
+                   sorted(row.files), dict(getattr(row, "pictures", {}) or {}), row.completed, shared_fields(row, record))
+
+
 SHARED_FIELDS = {"plan": ("status", "stage", "phases", "current", "goal"), "todo": ("struck", "blocked", "status"),
                  "ticket": ("stage", "dependencies", "board"),
-                 "board": ("stages", "goal", "done_when", "meanings")}
+                 "board": ("stages", "goal", "done_when", "meanings"), "doc": ("revisions", "open_until")}
 
 
 def origin_of(record: Record, environment: str) -> str:
@@ -131,6 +160,15 @@ class SharePages:
         found = folder.joinpath(name).resolve()
         return found if found.parent == folder and found.is_file() else None
 
+    def _shared_revision(self, share, ref: str, k: int) -> SharedRow | None:
+        scope = self._scope(share)
+        if ref not in scope:
+            return None
+        row = self._shared_row(share, ref)
+        record = Record(self._home(share).root, row.home_env or self._home(share).env)
+        kept = read(Docs(record, actor=SYSTEM), row.n, k) if row.type == Docs.resource.type and 1 <= k <= count(row) else None
+        return SharedRow.of(kept, record, scope) if kept else None
+
     def _shared_data(self, share) -> dict:
         if share.view:
             return {"share": {"target": f"view:{share.view}", "expires": share.expires, "comments": False}, "rows": {}, "comments": [], "timelines": {}, "types": {},
@@ -140,15 +178,7 @@ class SharePages:
         rows = {}
         for ref in scope:
             row = loaded[ref]
-            shaped = shape(row, record, SHARED)
-            rows[ref] = {
-                "type": row.type, "n": row.n, "created": row.created, "updated": row.updated,
-                "title": scoped(shaped.get("title", ""), scope), "abstract": scoped(shaped.get("abstract", ""), scope), "brief": scoped(shaped.get("brief", ""), scope),
-                "sections": [{"title": scoped(s.get("title", ""), scope), "body": scoped(s.get("body", ""), scope)} for s in shaped.get("sections") or []],
-                "files": sorted(row.files), "pictures": dict(getattr(row, "pictures", {}) or {}),
-                "members": [m.ref for m in held[ref] if m.ref in scope],
-                "completed": row.completed, "data": shared_fields(row, record),
-            }
+            rows[ref] = asdict(replace(SharedRow.of(row, record, scope), members=[m.ref for m in held[ref] if m.ref in scope]))
             if row.type == "collection":
                 rows[ref]["held_files"] = collected_files(record, [row, *(m for m in held[ref] if m.ref in scope)])
         described = described_types()

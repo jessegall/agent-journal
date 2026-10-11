@@ -1,4 +1,4 @@
-import {computed, reactive, ref, watch, watchEffect} from "vue";
+import {computed, inject, reactive, ref, watch, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import {sectionChanges} from "../domain/diff.js";
 import {age} from "../format/time.js";
@@ -14,6 +14,7 @@ export function useRevisions(resource) {
     const changes = ref(false);
     const error = ref("");
     const now = useNow(15000);
+    const revision = inject("revision", (n, k) => api.revision(n, k));
 
     watch(
         numbers,
@@ -29,7 +30,7 @@ export function useRevisions(resource) {
         if (!FETCHING.has(key))
             FETCHING.set(
                 key,
-                api.revision(resource().n, k).finally(() => FETCHING.delete(key))
+                revision(resource().n, k).finally(() => FETCHING.delete(key))
             );
         try {
             pages[k] = await FETCHING.get(key);
@@ -67,7 +68,9 @@ export function useRevisions(resource) {
               }
             : {}
     );
-    const status = computed(() => (latest.value && open.value ? `Open for edits, it is saved as a revision in ${minutesLeft.value} min` : ""));
+    const status = computed(() =>
+        latest.value && open.value ? `Open for edits, it is saved as a revision in ${minutesLeft.value} min` : ""
+    );
     const note = computed(() =>
         [
             status.value,
