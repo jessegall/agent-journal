@@ -65,4 +65,5 @@ def main():
         manifest_of(facings).dump(out / "manifest.json")
 
 
-main()
+if __name__ == "__main__":
+    main()
