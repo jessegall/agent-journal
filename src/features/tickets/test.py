@@ -602,7 +602,19 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     with monkeypatch.context() as working:
         working.setattr(Tickets, "_live", lambda self, found: True)
         assert [r.n for r in user._running()] == [api.n], "a ticket that waits on another holds no running slot, though its agent works"
-        user.update(api.n, halted=True)
+        from controllers.types import Agents
+        from features import FEATURES
+        from features.parts import AgentContext
+        from features.tickets.handlers import boards_to_check
+        from types import SimpleNamespace
+        looking = SimpleNamespace(idle_for=3600.0)
+        with monkeypatch.context() as orchestrating:
+            orchestrating.setattr(Tickets, "_orchestrating", lambda self: [int(board.n)])
+            context = AgentContext.of(FEATURES["tickets"], record, Agents(record, actor=SYSTEM).by_session("claude-1"))
+            assert [sent.key for sent in boards_to_check(context, looking)] == [str(board.n)], "a board whose ticket has a running agent is worth a look"
+            user.update(api.n, halted=True)
+            assert boards_to_check(context, looking) == [], \
+                "and one whose tickets are all waiting is not: there is no agent to check, and asking every five minutes costs the orchestrator a turn each time for nothing"
         assert user._running() == [], "a stopped agent frees its slot at once"
     user.update(api.n, halted=False, work_environment="")
     user.update(ui.n, work_environment="")

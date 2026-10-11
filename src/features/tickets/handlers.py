@@ -162,7 +162,10 @@ def decisions(permission: str):
 
 
 def boards_to_check(context, agent) -> list[Sent]:
-    boards = Tickets(context.record, actor=SYSTEM)._orchestrating()
+    """The boards worth looking at: a board whose tickets are all waiting has no agent to check, and asking every five minutes costs the orchestrator a turn each time for nothing."""
+    tickets = Tickets(context.record, actor=SYSTEM)
+    running = {int(ticket.board) for ticket in tickets._running() if ticket.board}
+    boards = [n for n in tickets._orchestrating() if n in running]
     if not boards or all_parked(context.record):
         return []
     if agent.idle_for < float(context.feature.cadence(context.record, "board check").every) * MINUTE:
