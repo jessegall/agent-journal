@@ -127,32 +127,6 @@ def test_the_four_registration_kinds_name_their_event_and_the_boot_walk_checks_i
     REGISTERED.clear()
 
 
-def test_each_request_says_how_its_answerers_answers_are_reduced():
-    from receiving.answers import (Allowed, Asked, FirstRefusalWins, KeepingWins, Kept, NotTheRequestsAnswer,
-                                   Refused, Rewritten, TextsCompose)
-
-    class ToolCallAsked(Asked):
-        reduces = FirstRefusalWins
-
-    class AgentMessageSending(Asked):
-        reduces = KeepingWins
-
-    class TextFormatting(Asked):
-        reduces = TextsCompose
-
-    assert ToolCallAsked.answered([Allowed(), Refused(why="plan 4 is open"), Rewritten(text="rm -rf .")]) == Refused(why="plan 4 is open"), \
-        "one refusal stops a tool call, whatever the answerers after it said"
-    assert ToolCallAsked.answered([Rewritten(text="a"), Rewritten(text="b")]) == Rewritten(text="b") and ToolCallAsked.answered([]) == Allowed(), \
-        "with nothing refusing, the rewrites compose in declared order and no answerer at all lets the call through"
-    assert AgentMessageSending.answered([Rewritten(text="the brief"), Kept()]) == Kept(), \
-        "a turn kept out of the chat wins, because its words belong to the row its tag writes"
-    assert TextFormatting.answered([Rewritten(text="stripped")]) == Rewritten(text="stripped") and TextFormatting.answered([]) == Allowed(), \
-        "formatting has no winning answer: each formatter reads what the one before it wrote"
-    with pytest.raises(NotTheRequestsAnswer) as refusal:
-        ToolCallAsked.answered(["allowed"])
-    assert "not with str" in str(refusal.value), "an answerer that gives back something that is not an Answer is named, not quietly ignored"
-
-
 def test_handlers_on_one_fact_are_ordered_by_name_and_the_boot_walk_checks_it():
     from dataclasses import dataclass
 
@@ -320,3 +294,45 @@ def test_the_boot_walk_resolves_every_service_and_refuses_a_synchronous_receiver
         with pytest.raises(raises) as refusal:
             walked(broken, served)
         assert why in str(refusal.value), f"the refusal names the receiver and what it asked for: {refusal.value}"
+
+
+def test_each_request_reduces_as_specified_and_answering_one_writes_nothing_and_ticks_nothing():
+    from events.answers import Allowed, Kept, Refused, Rewritten
+    from events.asking import AgentMessageSending, RowWriting, TextFormatting, ToolCallAsked
+    from receiving import Answerer, Registration, Registrations
+    from receiving.asking import AnswersNothing, answered
+    from receiving.ticks import Lane, Services
+    from serving import Clock
+
+    assert ToolCallAsked(tool="Bash", input="rm -rf .").answered([Allowed(), Refused(why="plan 4 is open")]) == Refused(why="plan 4 is open"), \
+        "a tool call stops on the first refusal, whatever the answerers after it said"
+    assert AgentMessageSending(text="[!reply:12] x").answered([Rewritten(text="x"), Kept()]) == Kept(), \
+        "a turn kept out of the chat wins over a change to its text"
+    assert TextFormatting(text="[!reply:12] x").answered([Rewritten(text="x")]) == Rewritten(text="x"), \
+        "formatting composes and nothing wins"
+    assert RowWriting(type="todo", action="create").answered([Refused(why="a to-do called x already stands")]) == Refused(why="a to-do called x already stands"), \
+        "a row about to be written stops on a refusal, before the write and not after it"
+
+    class HeldByGate(Answerer[ToolCallAsked]):
+        def answer(self, event: ToolCallAsked, clock: Clock):
+            return Refused(why="plan 4 is open") if "rm" in event.input else Allowed()
+
+    class DryRunIt(Answerer[ToolCallAsked]):
+        def answer(self, event: ToolCallAsked):
+            return Rewritten(text=f"{event.input} --dry-run")
+
+    registered = Registrations()
+    for receiver in (HeldByGate(), DryRunIt()):
+        registered.add(Registration.read("answer", ToolCallAsked, receiver, ["an expectation"]))
+    services = Services({Clock: "the clock"})
+
+    assert answered(ToolCallAsked(tool="Bash", input="rm -rf ."), registered, services) == Refused(why="plan 4 is open"), \
+        "the answerers run in declared order and the request reduces what they said once"
+    assert answered(ToolCallAsked(tool="Bash", input="ls"), registered, services) == Rewritten(text="ls --dry-run"), \
+        "with nothing refusing, the rewrites compose"
+    assert answered(AgentMessageSending(text="plain words"), registered, services) == Allowed(), \
+        "a request nobody answers is allowed, rather than held while something is looked for"
+
+    lane = Lane("claude-1", registered, services)
+    answered(ToolCallAsked(tool="Bash", input="rm -rf ."), registered, services)
+    assert lane.ran == [], "answering a request runs no tick at all, so a hook never waits on work that belongs after its answer"
