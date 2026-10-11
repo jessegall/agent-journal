@@ -139,13 +139,13 @@ async function rebuilt(type, size) {
 }
 
 export async function load(type) {
-    const size = store.paging.size[type] || PAGE;
+    const held = store.paging.size[type] || 0;
     const starting = new Set((store.rows[type] || []).map((r) => r.n));
-    const got = await rebuilt(type, size);
+    const got = await rebuilt(type, held);
     const listed = new Set(got.rows.map((r) => r.n));
     const arriving = withoutAnswered((store.rows[type] || []).filter((r) => !starting.has(r.n) && !listed.has(r.n)), got.rows);
     took(type, {...got, rows: [...got.rows, ...arriving].sort((a, b) => a.n - b.n)});
-    store.paging.size[type] = size;
+    store.paging.size[type] = Math.max(held, PAGE);
     return store.rows[type];
 }
 
