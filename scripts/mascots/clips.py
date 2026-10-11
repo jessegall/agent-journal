@@ -15,6 +15,14 @@ HOLD_SWING = 55
 HOLD_TWIST = 25
 HOLD_ROLL = 20
 RAISED_ROLL = 85
+WAVE_BACK = 40
+WAVE_BEND = 25
+WAVE_SWING = 10
+CHIN_REST = (0.4, -0.92, 2.1)
+THINK_ELBOW = (0.6, 0.3, -1.0)
+THINK_HAND = (1.0, -0.4, 0.35)
+THINK_TIP = 25
+SLEEP_TILT = 4
 LEVEL_ITEMS = {"butler_tray", "butler_tablet", "colleague_mug"}
 BUSY_ITEMS = LEVEL_ITEMS | {"squire_shield", "coach_clipboard"}
 BLINK_OPENNESS = (1.0, 0.5, 0.06, 0.5)
@@ -125,8 +133,8 @@ def wave(pose, stance, figure, t):
     trunk(pose, twist=-sign * 4, turn=-sign * 8, tilt=-sign * 6)
     arms_at_rest(pose, stance, apart=(side,))
     pose.turn(f"upper_arm_{side}", x=-RAISED_ROLL)
-    pose.turn(f"upper_arm_{side}", y=-sign * 10)
-    pose.bend(f"forearm_{side}", 45 + 22 * wave_of(t))
+    pose.turn(f"upper_arm_{side}", z=sign * WAVE_BACK)
+    pose.bend(f"forearm_{side}", WAVE_BEND + WAVE_SWING * wave_of(t))
 
 
 def think(pose, stance, figure, t):
@@ -134,10 +142,11 @@ def think(pose, stance, figure, t):
     sign = SIDES[side]
     trunk(pose, nod=8 + 3 * wave_of(t), turn=-sign * 10 + 3 * wave_of(t), tilt=-sign * 5)
     arms_at_rest(pose, stance, apart=(side,))
-    pose.turn(f"upper_arm_{side}", y=sign * HANG)
-    pose.turn(f"upper_arm_{side}", x=-40)
-    pose.turn(f"forearm_{side}", x=-100)
-    pose.turn(f"forearm_{side}", z=-sign * 45)
+    x, y, z = CHIN_REST
+    pose.reach("arm", side, (sign * x, y, z), bend=THINK_ELBOW)
+    across, forward, up = THINK_HAND
+    pose.aim(f"hand_{side}", (-sign * across, forward, up))
+    pose.turn(f"hand_{side}", x=THINK_TIP)
 
 
 def celebrate(pose, stance, figure, t):
@@ -159,7 +168,7 @@ def celebrate(pose, stance, figure, t):
 
 def sleep(pose, stance, figure, t):
     breath = wave_of(t)
-    trunk(pose, lean=8 + 1.5 * breath, nod=22 + 2 * breath, tilt=5)
+    trunk(pose, lean=4 + 1.5 * breath, nod=8 + 2 * breath, tilt=SIDES[stance.free] * SLEEP_TILT)
     arms_at_rest(pose, stance)
     figure.shut_eyes(0.0)
 

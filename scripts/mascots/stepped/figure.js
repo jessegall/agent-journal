@@ -32,6 +32,14 @@ const HOLD_SWING = 55;
 const HOLD_TWIST = 25;
 const HOLD_ROLL = 20;
 const RAISED_ROLL = 85;
+const WAVE_BACK = 40;
+const WAVE_BEND = 25;
+const WAVE_SWING = 10;
+const CHIN_REST = [0.4, -0.92, 2.1];
+const THINK_ELBOW = [0.6, 0.3, -1.0];
+const THINK_HAND = [1.0, -0.4, 0.35];
+const THINK_TIP = 25;
+const SLEEP_TILT = 4;
 const LEVEL_ITEMS = new Set(["butler_tray", "butler_tablet", "colleague_mug"]);
 const BUSY_ITEMS = new Set([...LEVEL_ITEMS, "squire_shield", "coach_clipboard"]);
 const BLINK_OPENNESS = [1.0, 0.5, 0.06, 0.5];
@@ -110,6 +118,41 @@ class Posing {
         const axis = hingeAxis(base, side).transformDirection(standing).normalize();
         const turn = new THREE.Matrix4().makeRotationAxis(axis, radians(degrees));
         this.final.set(name, aboutPoint(this.head(name, standing), turn).multiply(standing));
+    }
+
+    aim(name, direction) {
+        const standing = this.standing(name);
+        const now = this.rig.along.get(name).clone().transformDirection(standing);
+        const turn = new THREE.Matrix4().makeRotationFromQuaternion(
+            new THREE.Quaternion().setFromUnitVectors(now, direction.clone().normalize())
+        );
+        this.final.set(name, aboutPoint(this.head(name, standing), turn).multiply(standing));
+    }
+
+    // rig.Posing.reach for an arm: the hand's head put at `target`, the elbow pointing the way `bend` says
+    reach(side, target, bend) {
+        const [upper, lower, end] = ["upper_arm", "forearm", "hand"].map((role) => `${role}_${side}`);
+        const first = this.rig.heads.get(lower).distanceTo(this.rig.heads.get(upper));
+        const second = this.rig.heads.get(end).distanceTo(this.rig.heads.get(lower));
+        const shoulder = this.head(upper, this.standing(upper));
+        const way = target.clone().sub(shoulder);
+        const distance = way.length();
+        if (distance < Math.abs(first - second) || distance > first + second) {
+            throw new Error(`the ${side} arm cannot reach ${distance.toFixed(3)}`);
+        }
+        const along = way.clone().normalize();
+        const back = (first * first - second * second + distance * distance) / (2 * distance);
+        const pole = bend.clone();
+        if (side === "r") {
+            pole.x = -pole.x;
+        }
+        pole.sub(along.clone().multiplyScalar(pole.dot(along)));
+        const middle = shoulder
+            .clone()
+            .add(along.multiplyScalar(back))
+            .add(pole.normalize().multiplyScalar(Math.sqrt(Math.max(first * first - back * back, 0))));
+        this.aim(upper, middle.clone().sub(shoulder));
+        this.aim(lower, target.clone().sub(middle));
     }
 
     shutEyes(open) {
@@ -206,8 +249,8 @@ function wave(pose, stance, t) {
     trunk(pose, {twist: -sign * 4, turn: -sign * 8, tilt: -sign * 6});
     armsAtRest(pose, stance, [side]);
     pose.turn(`upper_arm_${side}`, {x: -RAISED_ROLL});
-    pose.turn(`upper_arm_${side}`, {y: -sign * 10});
-    pose.bend(`forearm_${side}`, 45 + 22 * waveOf(t));
+    pose.turn(`upper_arm_${side}`, {z: sign * WAVE_BACK});
+    pose.bend(`forearm_${side}`, WAVE_BEND + WAVE_SWING * waveOf(t));
 }
 
 function think(pose, stance, t) {
@@ -215,10 +258,11 @@ function think(pose, stance, t) {
     const sign = SIDES[side];
     trunk(pose, {nod: 8 + 3 * waveOf(t), turn: -sign * 10 + 3 * waveOf(t), tilt: -sign * 5});
     armsAtRest(pose, stance, [side]);
-    pose.turn(`upper_arm_${side}`, {y: sign * HANG});
-    pose.turn(`upper_arm_${side}`, {x: -40});
-    pose.turn(`forearm_${side}`, {x: -100});
-    pose.turn(`forearm_${side}`, {z: -sign * 45});
+    const [x, y, z] = CHIN_REST;
+    pose.reach(side, new THREE.Vector3(sign * x, y, z), new THREE.Vector3(...THINK_ELBOW));
+    const [across, forward, up] = THINK_HAND;
+    pose.aim(`hand_${side}`, new THREE.Vector3(-sign * across, forward, up));
+    pose.turn(`hand_${side}`, {x: THINK_TIP});
 }
 
 function celebrate(pose, stance, t) {
@@ -242,7 +286,7 @@ function celebrate(pose, stance, t) {
 
 function sleep(pose, stance, t) {
     const breath = waveOf(t);
-    trunk(pose, {lean: 8 + 1.5 * breath, nod: 22 + 2 * breath, tilt: 5});
+    trunk(pose, {lean: 4 + 1.5 * breath, nod: 8 + 2 * breath, tilt: SIDES[freeSide(stance)] * SLEEP_TILT});
     armsAtRest(pose, stance);
     pose.shutEyes(0.0);
 }
@@ -406,7 +450,10 @@ function rigOf(root) {
     const parents = new Map(bones.map((bone) => [bone.name, bone.parent.isBone ? bone.parent.name : ""]));
     const rest = new Map(bones.map((bone) => [bone.name, bone.matrixWorld.clone()]));
     const heads = new Map(bones.map((bone) => [bone.name, toBlender(new THREE.Vector3().setFromMatrixPosition(bone.matrixWorld))]));
-    return {bones, order: bones.map((bone) => bone.name), parents, rest, heads};
+    const along = new Map(
+        bones.map((bone) => [bone.name, new THREE.Vector3().setFromMatrixColumn(bone.matrixWorld, 1).transformDirection(FROM_GLB)])
+    );
+    return {bones, order: bones.map((bone) => bone.name), parents, rest, heads, along};
 }
 
 // The glb's bytes; a host that serves no .glb, such as a claude.ai artifact, carries it as base64 in <url>.txt
