@@ -58,8 +58,8 @@ class Events:
         """Reads the event and dispatches the facts it recognises; read-only, in the tick the event belongs to."""
         REGISTERED.add(Registration.read(LISTEN, event, listener, expects, self.feature.name))
 
-    def handle(self, fact: type, handler: Handler, expects, after: tuple[type, ...] = ()) -> None:
-        """Acts on the fact in the next tick, inside that tick's transaction; after names the handlers on this fact it must follow."""
+    def handle(self, fact: type, handler: Handler, expects, after: tuple[str, ...] = ()) -> None:
+        """Acts on the fact in the next tick, inside that tick's transaction; after names the handlers on this fact it must follow, by name, since importing another feature is forbidden."""
         REGISTERED.add(Registration.read(HANDLE, fact, handler, expects, self.feature.name, after))
 
     def answer(self, request: type, answerer: Answerer, expects) -> None:

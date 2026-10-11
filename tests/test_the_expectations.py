@@ -151,3 +151,52 @@ def test_each_request_says_how_its_answerers_answers_are_reduced():
     with pytest.raises(NotTheRequestsAnswer) as refusal:
         ToolCallAsked.answered(["allowed"])
     assert "not with str" in str(refusal.value), "an answerer that gives back something that is not an Answer is named, not quietly ignored"
+
+
+def test_handlers_on_one_fact_are_ordered_by_name_and_the_boot_walk_checks_it():
+    from dataclasses import dataclass
+
+    from events import Fact
+    from receiving import Handler, Registration
+    from receiving.ordering import OrdersAnUnknown, OrdersInACircle, WriteTheSameUnordered, ordered
+    from serving import Chat, Clock, Rows
+
+    @dataclass(frozen=True, kw_only=True)
+    class TagRefused(Fact):
+        turn: str
+
+    class Todo:
+        pass
+
+    class FileTheTodo(Handler[TagRefused]):
+        def handle(self, event: TagRefused, todos: Rows[Todo]) -> list[Fact]:
+            return []
+
+    class AlsoFileATodo(Handler[TagRefused]):
+        def handle(self, event: TagRefused, todos: Rows[Todo], clock: Clock) -> list[Fact]:
+            return []
+
+    class RestoreTheWords(Handler[TagRefused]):
+        def handle(self, event: TagRefused, chat: Chat) -> list[Fact]:
+            return []
+
+    def on(receiver, after=()):
+        return Registration.read("handle", TagRefused, receiver, ["an expectation"], "command_tags", after)
+
+    files, also, restores = on(FileTheTodo()), on(AlsoFileATodo()), on(RestoreTheWords())
+    assert (files.writes, restores.writes) == ({"Todo"}, {"Chat"}), \
+        "what a handler writes is keyed by the kind of row, not by the service, so Clock and the others count for nothing"
+    assert [one.name for one in ordered(TagRefused, [files, restores])] == ["FileTheTodo", "RestoreTheWords"], \
+        "two handlers that write different things commute, so neither has to name the other"
+    assert [one.name for one in ordered(TagRefused, [on(AlsoFileATodo(), after=("FileTheTodo",)), files])] == ["FileTheTodo", "AlsoFileATodo"], \
+        "a handler that names the one it follows runs after it, whatever order the features registered in"
+
+    for broken, raises, why in (
+        (lambda: ordered(TagRefused, [on(FileTheTodo(), after=("Nobody",))]), OrdersAnUnknown, "handles no TagRefused"),
+        (lambda: ordered(TagRefused, [files, also]), WriteTheSameUnordered, "both write Todo"),
+        (lambda: ordered(TagRefused, [on(FileTheTodo(), after=("AlsoFileATodo",)), on(AlsoFileATodo(), after=("FileTheTodo",))]),
+         OrdersInACircle, "wait on each other in a circle"),
+    ):
+        with pytest.raises(raises) as refusal:
+            broken()
+        assert why in str(refusal.value), f"the refusal names the handlers and what is wrong: {refusal.value}"

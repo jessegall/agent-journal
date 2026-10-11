@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any, ClassVar, Generic, TypeVar, get_args, get_origin, get_type_hints
 
 from events import Event, Fact, Request
+from serving import writing
 
 E = TypeVar("E", bound=Event)
 LISTEN, HANDLE, ANSWER, REFUSE = "listen", "handle", "answer", "refuse"
@@ -106,10 +107,19 @@ class Registration:
     receiver: Receiver
     expects: tuple
     feature: str = ""
-    after: tuple[type, ...] = ()
+    after: tuple[str, ...] = ()
+    """The handlers on this fact that must run first, by name: a name and never a class, because importing another feature's class is what the boot walk forbids."""
+
+    @property
+    def name(self) -> str:
+        return type(self.receiver).__name__
+
+    @property
+    def writes(self) -> set[str]:
+        return writing(type(self.receiver).wants())
 
     @classmethod
-    def read(cls, kind: str, event: type, receiver: Receiver, expects, feature: str = "", after: tuple[type, ...] = ()) -> "Registration":
+    def read(cls, kind: str, event: type, receiver: Receiver, expects, feature: str = "", after: tuple[str, ...] = ()) -> "Registration":
         """Checks the receiver against the event the registration names, and refuses here rather than on the first event three weeks later."""
         wanted, _ = KINDS[kind]
         if not isinstance(receiver, wanted):
