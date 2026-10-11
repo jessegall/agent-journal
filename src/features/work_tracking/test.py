@@ -115,10 +115,21 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     quiet_record = fresh()
     quiet_record.features = {**quiet_record.features, "work_tracking.auto": True}
     Works(quiet_record, actor=AGENT).create("something still open")
-    assert "still working" in still_there(quiet_record, QUIET_FOR + 60, "busy"), \
-        "quiet for long enough, with work open and auto on, earns the question"
-    assert [still_there(quiet_record, QUIET_FOR + 60, "idle"), still_there(quiet_record, 5.0, "busy")] == ["", ""], \
-        "not while it is answering, not while it is idle, and not before the time is up"
+    work = Works(quiet_record, actor=AGENT).rows.standing()[0]
+    asked = still_there(quiet_record, QUIET_FOR + 60, "busy")
+    assert f"work {work.n}, something still open, is still open" in asked and "end it, or say plainly what it waits on" in asked, \
+        "quiet for long enough, with work open and auto on, the work is named back with what to do about it"
+    assert still_there(quiet_record, QUIET_FOR + 60, "idle") == asked, \
+        "an idle agent with work open is told too: idle is the state the work is most likely forgotten in"
+    assert [still_there(quiet_record, 5.0, "busy"), still_there(quiet_record, QUIET_FOR + 60, "stopped")] == ["", ""], \
+        "not before the time is up, and never once the agent is stopped"
+    Works(quiet_record, actor=AGENT).update(work.n, parked="the machine was swapping")
+    parked = still_there(quiet_record, QUIET_FOR + 60, "idle")
+    assert "parked because the machine was swapping" in parked, \
+        "a parked work is named too, with what it was parked for, since that is usually what has passed"
+    Works(quiet_record, actor=AGENT).update(work.n, parked="", awaiting="the release workflow")
+    assert still_there(quiet_record, QUIET_FOR + 60, "idle") == "", "a work that is waiting on something named has its own cadence and is left alone"
+    Works(quiet_record, actor=AGENT).update(work.n, awaiting="")
     quiet_record.features = {**quiet_record.features, "work_tracking.auto": False}
     assert still_there(quiet_record, QUIET_FOR + 60, "busy") == "", "and never with auto off"
     from types import SimpleNamespace
