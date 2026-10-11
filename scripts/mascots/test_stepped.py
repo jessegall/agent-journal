@@ -1,4 +1,4 @@
-"""The browser drawing in stepped/ uses the same numbers as the Blender scripts it copies: the look, the camera and the clip."""
+"""The browser drawing in stepped/ uses the same numbers as the Blender scripts it copies: the look, the camera and the clips."""
 import ast
 import re
 from pathlib import Path
@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 HERE = Path(__file__).resolve().parent
-PAGE = (HERE / "stepped" / "stepped.js").read_text()
+PAGE = (HERE / "stepped" / "figure.js").read_text()
 
 # the shade step on N.L that toon.py's ramp gives: a 0.8 grey Diffuse BSDF reads 0.8 N.L under a sun of strength pi,
 # plus 0.8 of the render's 0.05 grey world
@@ -53,9 +53,10 @@ def test_the_camera_is_render_clips():
     assert page_number("DISTANCE") == snaps["DISTANCE"]
 
 
-def test_the_wave_is_clips_py():
+def test_the_clips_are_clips_py():
     clips = assignments("clips.py")
-    for name in ("HANG", "HOLD_LIFT", "HOLD_SWING", "HOLD_TWIST", "HOLD_ROLL", "RAISED_ROLL"):
-        assert page_number(name) == clips[name], name
-    wave = re.search(r'Clip\("wave", (\d+), (\d+),', (HERE / "clips.py").read_text())
-    assert f"frames: {wave.group(1)}, fps: {wave.group(2)}" in PAGE
+    for name in ("HANG", "HOLD_LIFT", "HOLD_SWING", "HOLD_TWIST", "HOLD_ROLL", "RAISED_ROLL", "BLINK_OPENNESS"):
+        assert re.search(rf"^const {name} = {re.escape(str(clips[name]).replace('(', '[').replace(')', ']'))};", PAGE, re.M), name
+    assert page_number("MIN_EYE_HEIGHT") == assignments("rig.py")["MIN_EYE_HEIGHT"]
+    for name, frames, fps, loops in re.findall(r'Clip\("(\w+)", (\d+), (\d+), (True|False),', (HERE / "clips.py").read_text()):
+        assert f'{{name: "{name}", frames: {frames}, fps: {fps}, loops: {loops.lower()}, pose: {name}}}' in PAGE, name

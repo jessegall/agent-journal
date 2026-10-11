@@ -1,26 +1,20 @@
-// The butler's wave clip drawn twice: from the rendered sheet, and in the browser from the rigged glb, posed by a port of
-// clips.py and rig.Posing and shaded as toon.py shades it, held for each step of the clip.
+// A rigged figure drawn in the browser as Blender draws it: posed by a port of clips.py and rig.Posing, shaded as
+// toon.py shades it, one held pose for each step of a clip.
 import * as THREE from "three";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {DRACOLoader} from "three/addons/loaders/DRACOLoader.js";
 
-const VOICE = "butler";
-const CLIP = {name: "wave", frames: 12, fps: 12};
-const SHEET = {url: `../../../src/web/dist/mascots/${VOICE}/${CLIP.name}.webp`, cell: 224, columns: 8};
-const FIGURE = new URLSearchParams(location.search).get("figure") ?? `${VOICE}.glb`;
-const WARDROBE = "../wardrobe/wardrobe_manifest.json";
-
 // render_clips.py and snaps.py: an orthographic camera eight units in front, framing 5.4 units about a height of 2.4
+export const CELL = 224;
 const FRAMED_HEIGHT = 5.4;
 const FRAMED_MIDDLE = 2.4;
 const DISTANCE = 8;
 const DEPTH = 3;
 
-// EEVEE takes 16 samples a pixel; the browser draws the cell this many times wider and scales it down
-const SUPERSAMPLE = Number(new URLSearchParams(location.search).get("supersample") ?? 2);
-
-// and softens it as EEVEE's 1.5 px pixel filter does, as a blur this many cell pixels wide
-const SOFTEN = Number(new URLSearchParams(location.search).get("soften") ?? 0.5);
+// EEVEE takes 16 samples a pixel through a 1.5 px filter; the browser draws twice as wide, scales down and softens
+// by this share of a cell pixel, which measured closest to Blender's own frames
+const SUPERSAMPLE = 2;
+const SOFTEN = 0.5;
 
 // toon.py; the step is on N.L, worked out from its ramp: a 0.8 grey Diffuse BSDF under a sun of strength pi and the
 // render's 0.05 grey world reads 0.8 N.L + 0.04, which crosses LIT_FROM = 0.52 at N.L = 0.6 (measured on a sphere: 0.600)
@@ -40,6 +34,8 @@ const HOLD_ROLL = 20;
 const RAISED_ROLL = 85;
 const LEVEL_ITEMS = new Set(["butler_tray", "butler_tablet", "colleague_mug"]);
 const BUSY_ITEMS = new Set([...LEVEL_ITEMS, "squire_shield", "coach_clipboard"]);
+const BLINK_OPENNESS = [1.0, 0.5, 0.06, 0.5];
+const MIN_EYE_HEIGHT = 0.06;
 const HINGES = {forearm: new THREE.Vector3(0, 0, -1), shin: new THREE.Vector3(1, 0, 0)};
 
 // Blender's Z up and -Y front become the glb's Y up and +Z front
@@ -72,6 +68,7 @@ class Posing {
     constructor(rig) {
         this.rig = rig;
         this.final = new Map();
+        this.eyes = 1;
     }
 
     standing(name) {
@@ -99,8 +96,12 @@ class Posing {
             name,
             translation(at)
                 .multiply(euler(x, y, z))
-                .multiply(translation(rest)),
+                .multiply(translation(rest))
         );
+    }
+
+    lift(name, {x = 0, y = 0, z = 0}) {
+        this.final.set(name, translation(new THREE.Vector3(x, y, z)).multiply(this.matrix(name)));
     }
 
     bend(name, degrees) {
@@ -111,17 +112,30 @@ class Posing {
         this.final.set(name, aboutPoint(this.head(name, standing), turn).multiply(standing));
     }
 
-    moves() {
+    shutEyes(open) {
+        this.eyes = Math.max(open, MIN_EYE_HEIGHT);
+    }
+
+    // every bone's move, the whole figure turned `facing` degrees toward the viewer's right as rig.Posing.revolve turns it
+    moves(facing) {
+        const turn = new THREE.Matrix4().makeRotationZ(radians(facing));
         const moves = new Map();
         for (const name of this.rig.order) {
             const parent = this.rig.parents.get(name);
             moves.set(name, this.final.get(name) ?? (parent ? moves.get(parent) : new THREE.Matrix4()));
         }
-        return moves;
+        return new Map([...moves].map(([name, move]) => [name, turn.clone().multiply(move)]));
     }
 }
 
 const waveOf = (t, turns = 1) => Math.sin(2 * Math.PI * turns * t);
+
+function breathe(pose, t, amount = 1) {
+    pose.turn("spine", {x: 1.0 * amount * waveOf(t)});
+    pose.turn("chest", {x: 1.5 * amount * waveOf(t - 0.05)});
+    pose.turn("neck", {x: -0.8 * amount * waveOf(t - 0.1)});
+    pose.turn("head", {x: -1.2 * amount * waveOf(t - 0.12)});
+}
 
 function trunk(pose, {lean = 0, twist = 0, nod = 0, turn = 0, tilt = 0}) {
     pose.turn("spine", {x: lean * 0.4, z: twist * 0.4});
@@ -144,7 +158,7 @@ function hold(pose, side) {
     pose.face(`hand_${side}`, {z: -sign * HOLD_TWIST});
 }
 
-function armsAtRest(pose, stance, apart = []) {
+function armsAtRest(pose, stance, apart = [], swing = {}) {
     for (const side of Object.keys(SIDES)) {
         if (apart.includes(side)) {
             continue;
@@ -153,12 +167,41 @@ function armsAtRest(pose, stance, apart = []) {
             hold(pose, side);
             continue;
         }
-        hang(pose, side);
+        hang(pose, side, swing[side] ?? 0);
     }
 }
 
+function blinkAt(t, start, frames) {
+    const index = t >= start ? Math.floor((t - start) * frames) : -1;
+    return index >= 0 && index < BLINK_OPENNESS.length ? BLINK_OPENNESS[index] : 1.0;
+}
+
+const freeSide = (stance) => (stance.busy.has("r") ? "l" : "r");
+
+function idle(pose, stance, t) {
+    breathe(pose, t);
+    armsAtRest(pose, stance);
+    pose.shutEyes(blinkAt(t, 0.62, 24));
+}
+
+function blink(pose, stance, t) {
+    armsAtRest(pose, stance);
+    pose.shutEyes(blinkAt(t, 0.15, 6));
+}
+
+function nod(pose, stance, t) {
+    const dip = Math.max(waveOf(t, 2), 0);
+    trunk(pose, {lean: 4 * dip, nod: 26 * dip});
+    armsAtRest(pose, stance);
+}
+
+function shake(pose, stance, t) {
+    trunk(pose, {turn: 28 * waveOf(t, 2), tilt: 4 * waveOf(t, 2)});
+    armsAtRest(pose, stance);
+}
+
 function wave(pose, stance, t) {
-    const side = stance.busy.has("r") ? "l" : "r";
+    const side = freeSide(stance);
     const sign = SIDES[side];
     trunk(pose, {twist: -sign * 4, turn: -sign * 8, tilt: -sign * 6});
     armsAtRest(pose, stance, [side]);
@@ -167,11 +210,82 @@ function wave(pose, stance, t) {
     pose.bend(`forearm_${side}`, 45 + 22 * waveOf(t));
 }
 
+function think(pose, stance, t) {
+    const side = freeSide(stance);
+    const sign = SIDES[side];
+    trunk(pose, {nod: 8 + 3 * waveOf(t), turn: -sign * 10 + 3 * waveOf(t), tilt: -sign * 5});
+    armsAtRest(pose, stance, [side]);
+    pose.turn(`upper_arm_${side}`, {y: sign * HANG});
+    pose.turn(`upper_arm_${side}`, {x: -40});
+    pose.turn(`forearm_${side}`, {x: -100});
+    pose.turn(`forearm_${side}`, {z: -sign * 45});
+}
+
+function celebrate(pose, stance, t) {
+    const jump = Math.max(Math.sin(2 * Math.PI * 2 * t), 0);
+    pose.lift("root", {z: 0.28 * jump});
+    pose.turn("hips", {z: 6 * waveOf(t, 2)});
+    trunk(pose, {lean: -5, turn: -6 * waveOf(t, 2)});
+    const cheering = Object.keys(SIDES).filter((side) => !stance.busy.has(side));
+    armsAtRest(pose, stance, cheering);
+    for (const side of cheering) {
+        const sign = SIDES[side];
+        pose.turn(`upper_arm_${side}`, {y: -sign * (62 + 8 * waveOf(t, 2))});
+        pose.bend(`forearm_${side}`, 10 + 6 * waveOf(t, 4));
+    }
+    for (const side of Object.keys(SIDES)) {
+        pose.turn(`thigh_${side}`, {x: -18 * jump});
+        pose.turn(`shin_${side}`, {x: 34 * jump});
+        pose.turn(`foot_${side}`, {x: -10 * jump});
+    }
+}
+
+function sleep(pose, stance, t) {
+    const breath = waveOf(t);
+    trunk(pose, {lean: 8 + 1.5 * breath, nod: 22 + 2 * breath, tilt: 5});
+    armsAtRest(pose, stance);
+    pose.shutEyes(0.0);
+}
+
+function walk(pose, stance, t) {
+    const phase = 2 * Math.PI * t;
+    pose.lift("root", {z: 0.05 * Math.cos(2 * phase)});
+    pose.turn("hips", {z: 5 * Math.sin(phase)});
+    trunk(pose, {lean: 3, twist: -7 * Math.sin(phase), turn: 3 * Math.sin(phase)});
+    armsAtRest(pose, stance, [], {l: 22 * Math.sin(phase), r: -22 * Math.sin(phase)});
+    for (const [side, offset] of [
+        ["l", 0.0],
+        ["r", Math.PI],
+    ]) {
+        const angle = phase + offset;
+        const thigh = -30 * Math.sin(angle);
+        const knee = 42 * Math.max(Math.cos(angle), 0);
+        pose.turn(`thigh_${side}`, {x: thigh});
+        pose.turn(`shin_${side}`, {x: knee});
+        pose.turn(`foot_${side}`, {x: -0.8 * (thigh + knee) + 6});
+    }
+}
+
+export const CLIPS = [
+    {name: "idle", frames: 24, fps: 8, loops: true, pose: idle},
+    {name: "blink", frames: 6, fps: 12, loops: false, pose: blink},
+    {name: "nod", frames: 10, fps: 12, loops: false, pose: nod},
+    {name: "shake", frames: 12, fps: 12, loops: false, pose: shake},
+    {name: "wave", frames: 12, fps: 12, loops: true, pose: wave},
+    {name: "think", frames: 12, fps: 6, loops: true, pose: think},
+    {name: "celebrate", frames: 12, fps: 10, loops: true, pose: celebrate},
+    {name: "sleep", frames: 18, fps: 6, loops: true, pose: sleep},
+    {name: "walk", frames: 12, fps: 12, loops: true, pose: walk},
+];
+
+// An eye closes about its own middle before the head carries it, as rig.Figure.shut_eyes scales the eye object
 const SKINNED = /* glsl */ `
     #include <common>
     #include <skinning_pars_vertex>
     attribute vec3 hullNormal;
     uniform float push;
+    uniform float openness;
+    uniform float eyeMiddle;
     varying vec3 worldNormal;
 
     void main() {
@@ -182,6 +296,7 @@ const SKINNED = /* glsl */ `
         #include <skinbase_vertex>
         #include <skinnormal_vertex>
         #include <begin_vertex>
+        transformed.y = eyeMiddle + (transformed.y - eyeMiddle) * openness;
         #include <skinning_vertex>
         transformed += normalize(objectNormal) * push;
         worldNormal = normalize(mat3(modelMatrix) * objectNormal);
@@ -216,33 +331,40 @@ const LINE = /* glsl */ `
     }
 `;
 
-function flatMaterial(colour) {
+function vertexUniforms(mesh, push) {
+    const position = mesh.geometry.attributes.position;
+    let middle = 0;
+    for (let i = 0; i < position.count; i++) {
+        middle += position.getY(i) / position.count;
+    }
+    // a quantized glb scales each mesh up from small units, so the outline is pushed in the mesh's own units
+    return {push: {value: push / mesh.getWorldScale(new THREE.Vector3()).x}, openness: {value: 1}, eyeMiddle: {value: middle}};
+}
+
+function flatMaterial(mesh) {
+    const {r, g, b} = mesh.material.color;
     return new THREE.ShaderMaterial({
         vertexShader: SKINNED,
         fragmentShader: FLAT,
         side: THREE.DoubleSide,
         uniforms: {
-            push: {value: 0},
-            colour: {value: new THREE.Vector3(colour.r, colour.g, colour.b)},
-            light: {value: toGlbDirection(LIGHT_FROM)},
+            ...vertexUniforms(mesh, 0),
+            colour: {value: new THREE.Vector3(r, g, b)},
+            light: {value: LIGHT_FROM.clone().normalize().applyMatrix4(TO_GLB)},
             shade: {value: SHADE},
             litFrom: {value: LIT_FROM},
         },
     });
 }
 
-function outlineMaterial() {
+function outlineMaterial(mesh) {
     return new THREE.ShaderMaterial({
         vertexShader: SKINNED,
         fragmentShader: LINE,
         side: THREE.BackSide,
         defines: {HULL: ""},
-        uniforms: {push: {value: OUTLINE_WIDTH}, colour: {value: OUTLINE_COLOUR}},
+        uniforms: {...vertexUniforms(mesh, OUTLINE_WIDTH), colour: {value: OUTLINE_COLOUR}},
     });
-}
-
-function toGlbDirection(vector) {
-    return vector.clone().normalize().applyMatrix4(TO_GLB);
 }
 
 // Solidify pushes each vertex along its smooth normal; a flat-shaded mesh arrives split, so its corners are averaged
@@ -270,10 +392,6 @@ function addHullNormals(geometry) {
     geometry.setAttribute("hullNormal", new THREE.BufferAttribute(hull, 3));
 }
 
-function coveredParts(manifest) {
-    return new Set(manifest.outfits[VOICE].flatMap((item) => manifest.assets[item].hide_base_parts));
-}
-
 function handsHolding(meshes, items) {
     const sides = new Set();
     for (const mesh of meshes.filter((mesh) => items.has(mesh.userData.item))) {
@@ -291,145 +409,79 @@ function rigOf(root) {
     return {bones, order: bones.map((bone) => bone.name), parents, rest, heads};
 }
 
-function poseRig(rig, moves) {
-    const world = new Map();
-    for (const bone of rig.bones) {
-        const move = TO_GLB.clone().multiply(moves.get(bone.name)).multiply(FROM_GLB);
-        const placed = move.multiply(rig.rest.get(bone.name));
-        world.set(bone.name, placed);
-        const parentWorld = bone.parent.isBone ? world.get(bone.parent.name) : bone.parent.matrixWorld;
-        parentWorld.clone().invert().multiply(placed).decompose(bone.position, bone.quaternion, bone.scale);
-    }
-}
-
-async function loadFigure() {
+// The figure of one voice from its glb, its worn pieces drawn and the body parts they cover left out (rig.assemble)
+export async function loadFigure(url, wardrobe, voice) {
     const draco = new DRACOLoader().setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/");
     const [gltf, manifest] = await Promise.all([
-        new GLTFLoader().setDRACOLoader(draco).loadAsync(FIGURE),
-        fetch(WARDROBE).then((response) => response.json()),
+        new GLTFLoader().setDRACOLoader(draco).loadAsync(url),
+        fetch(wardrobe).then((response) => response.json()),
     ]);
     const scene = gltf.scene;
     scene.updateMatrixWorld(true);
-    const covered = coveredParts(manifest);
+    const covered = new Set(manifest.outfits[voice].flatMap((item) => manifest.assets[item].hide_base_parts));
     const meshes = [];
     scene.traverse((node) => node.isSkinnedMesh && meshes.push(node));
+    const eyes = [];
     for (const mesh of meshes) {
         mesh.visible = !covered.has(mesh.name);
         addHullNormals(mesh.geometry);
-        const hull = new THREE.SkinnedMesh(mesh.geometry, outlineMaterial());
+        const hull = new THREE.SkinnedMesh(mesh.geometry, outlineMaterial(mesh));
         hull.bind(mesh.skeleton, mesh.bindMatrix);
         hull.visible = mesh.visible;
         hull.frustumCulled = mesh.frustumCulled = false;
-        mesh.material = flatMaterial(mesh.material.color);
+        mesh.material = flatMaterial(mesh);
         mesh.parent.add(hull);
         hull.position.copy(mesh.position);
         hull.quaternion.copy(mesh.quaternion);
         hull.scale.copy(mesh.scale);
+        if (mesh.name.startsWith("eye_")) {
+            eyes.push(mesh.material, hull.material);
+        }
     }
     const stance = {level: handsHolding(meshes, LEVEL_ITEMS), busy: handsHolding(meshes, BUSY_ITEMS)};
-    return {scene, rig: rigOf(scene), stance};
+    return {scene, rig: rigOf(scene), stance, eyes};
 }
 
-function camera() {
-    const half = FRAMED_HEIGHT / 2;
-    const view = new THREE.OrthographicCamera(-half, half, half, -half, DISTANCE - DEPTH, DISTANCE + DEPTH);
-    view.position.set(0, FRAMED_MIDDLE, DISTANCE);
-    view.lookAt(0, FRAMED_MIDDLE, 0);
-    return view;
-}
-
-function sheetCell(size) {
-    const cell = document.createElement("div");
-    cell.className = "sheet";
-    const rows = Math.ceil(CLIP.frames / SHEET.columns);
-    Object.assign(cell.style, {
-        width: `${size}px`,
-        height: `${size}px`,
-        backgroundImage: `url(${SHEET.url})`,
-        backgroundSize: `${size * SHEET.columns}px ${size * rows}px`,
-    });
-    return {
-        element: cell,
-        show(frame) {
-            const row = Math.floor(frame / SHEET.columns);
-            cell.style.backgroundPosition = `${-(frame % SHEET.columns) * size}px ${-row * size}px`;
-        },
-    };
-}
-
-function figureCaption(element, words) {
-    const figure = document.createElement("figure");
-    const caption = document.createElement("figcaption");
-    caption.textContent = words;
-    figure.append(element, caption);
-    return figure;
-}
-
-async function main() {
-    const {scene, rig, stance} = await loadFigure();
-    const view = camera();
-    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true, preserveDrawingBuffer: true});
-    renderer.setPixelRatio(1);
-    renderer.setSize(SHEET.cell * SUPERSAMPLE, SHEET.cell * SUPERSAMPLE, false);
-    renderer.setClearColor(0x000000, 0);
-    const cells = [];
-    const pictures = [];
-    for (const row of document.querySelectorAll(".row")) {
-        const size = Number(row.dataset.size);
-        const cell = sheetCell(size);
-        const picture = document.createElement("canvas");
-        Object.assign(picture.style, {width: `${size}px`, height: `${size}px`});
-        picture.width = picture.height = SHEET.cell;
-        cells.push(cell);
-        pictures.push(picture);
-        row.append(figureCaption(cell.element, `Rendered sheet, ${size} px`), figureCaption(picture, `Browser, ${size} px`));
+function place(figure, pose, facing) {
+    const moves = pose.moves(facing);
+    const world = new Map();
+    for (const bone of figure.rig.bones) {
+        const placed = TO_GLB.clone().multiply(moves.get(bone.name)).multiply(FROM_GLB).multiply(figure.rig.rest.get(bone.name));
+        world.set(bone.name, placed);
+        const parentWorld = bone.parent.isBone ? world.get(bone.parent.name) : bone.parent.matrixWorld;
+        parentWorld.clone().invert().multiply(placed).decompose(bone.position, bone.quaternion, bone.scale);
     }
-    let frame = 0;
-    let shown = -1;
-    let paused = false;
-    let started = performance.now();
-    const draw = () => {
-        const pose = new Posing(rig);
-        wave(pose, stance, frame / CLIP.frames);
-        poseRig(rig, pose.moves());
-        renderer.render(scene, view);
-        for (const picture of pictures) {
-            const context = picture.getContext("2d");
-            context.clearRect(0, 0, SHEET.cell, SHEET.cell);
-            context.imageSmoothingQuality = "high";
-            context.filter = `blur(${SOFTEN}px)`;
-            context.drawImage(renderer.domElement, 0, 0, SHEET.cell, SHEET.cell);
-        }
-        cells.forEach((cell) => cell.show(frame));
-        document.getElementById("frame").textContent = `Frame ${frame + 1} of ${CLIP.frames}`;
-        shown = frame;
-    };
-    const tick = (now) => {
-        if (!paused) {
-            frame = Math.floor(((now - started) / 1000) * CLIP.fps) % CLIP.frames;
-        }
-        if (frame !== shown) {
-            draw();
-        }
-        requestAnimationFrame(tick);
-    };
-    document.getElementById("pause").addEventListener("click", (event) => {
-        paused = !paused;
-        started = performance.now() - (frame / CLIP.fps) * 1000;
-        event.target.textContent = paused ? "Play" : "Pause";
-    });
-    document.getElementById("step").addEventListener("click", () => {
-        paused = true;
-        document.getElementById("pause").textContent = "Play";
-        frame = (frame + 1) % CLIP.frames;
-    });
-    window.showFrame = (index) => {
-        paused = true;
-        frame = index;
-        draw();
-        return pictures[0].toDataURL("image/png");
-    };
-    requestAnimationFrame(tick);
+    for (const material of figure.eyes) {
+        material.uniforms.openness.value = pose.eyes;
+    }
 }
 
-main();
+// One renderer for every picture on a page: it poses the figure, draws it and copies the result onto a canvas
+export class Stage {
+    constructor() {
+        const half = FRAMED_HEIGHT / 2;
+        this.camera = new THREE.OrthographicCamera(-half, half, half, -half, DISTANCE - DEPTH, DISTANCE + DEPTH);
+        this.camera.position.set(0, FRAMED_MIDDLE, DISTANCE);
+        this.camera.lookAt(0, FRAMED_MIDDLE, 0);
+        this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true, preserveDrawingBuffer: true});
+        this.renderer.setPixelRatio(1);
+        this.renderer.setClearColor(0x000000, 0);
+    }
+
+    // the clip's pose at this frame, the figure turned `facing` degrees, drawn to fill the canvas
+    draw(figure, clip, frame, facing, canvas) {
+        const pose = new Posing(figure.rig);
+        clip.pose(pose, figure.stance, frame / clip.frames);
+        place(figure, pose, facing);
+        const size = canvas.width * SUPERSAMPLE;
+        if (this.renderer.domElement.width !== size) {
+            this.renderer.setSize(size, size, false);
+        }
+        this.renderer.render(figure.scene, this.camera);
+        const context = canvas.getContext("2d");
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.imageSmoothingQuality = "high";
+        context.filter = `blur(${(SOFTEN * canvas.width) / CELL}px)`;
+        context.drawImage(this.renderer.domElement, 0, 0, canvas.width, canvas.height);
+    }
+}

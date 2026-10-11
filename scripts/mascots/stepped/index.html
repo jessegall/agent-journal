@@ -1,70 +1,268 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Sheet and browser side by side</title>
-        <style>
-            body {
-                margin: 0;
-                padding: 24px;
-                background: #f4f4f6;
-                color: #222;
-                font:
-                    14px/1.4 system-ui,
-                    sans-serif;
-            }
+<title>Butler Animation Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap"
+/>
+<style>
+    /* A contact sheet: one card per clip, each a live stage with its name, its timing and a dial to turn it */
+    :root {
+        --ground: #eceef4;
+        --card: #ffffff;
+        --stage: #f6f7fb;
+        --ink: #1c1d2b;
+        --muted: #5d6075;
+        --rule: #d5d8e4;
+        --accent: #5b55e0;
+        --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+        --body: "IBM Plex Sans", "Helvetica Neue", system-ui, sans-serif;
+        --data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    }
 
-            .row {
-                display: flex;
-                gap: 32px;
-                align-items: flex-end;
-                margin-bottom: 24px;
-            }
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --ground: #15161f;
+            --card: #1e2030;
+            --stage: #262839;
+            --ink: #e8e9f3;
+            --muted: #9a9db4;
+            --rule: #33364b;
+            --accent: #8f8aff;
+            color-scheme: dark;
+        }
+    }
 
-            figure {
-                margin: 0;
-                text-align: center;
-            }
+    :root[data-theme="dark"] {
+        --ground: #15161f;
+        --card: #1e2030;
+        --stage: #262839;
+        --ink: #e8e9f3;
+        --muted: #9a9db4;
+        --rule: #33364b;
+        --accent: #8f8aff;
+        color-scheme: dark;
+    }
 
-            figcaption {
-                margin-top: 6px;
-                color: #555;
-                font-size: 12px;
-            }
+    body {
+        background: var(--ground);
+        color: var(--ink);
+        font-family: var(--body);
+        font-size: 15px;
+        line-height: 1.5;
+    }
 
-            .sheet {
-                background-repeat: no-repeat;
-            }
+    main {
+        display: grid;
+        gap: 24px;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding-inline: 20px;
+        padding-block: 28px 48px;
+    }
 
-            canvas {
-                display: block;
-            }
+    header {
+        display: grid;
+        gap: 6px;
+    }
 
-            .controls {
-                display: flex;
-                gap: 12px;
-                align-items: center;
-            }
-        </style>
-        <script type="importmap">
-            {
-                "imports": {
-                    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-                    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-                }
-            }
-        </script>
-    </head>
-    <body>
-        <h1>Butler, wave clip: the rendered sheet beside the browser's drawing</h1>
-        <div class="row" data-size="96"></div>
-        <div class="row" data-size="224"></div>
-        <div class="controls">
-            <button id="pause">Pause</button>
-            <button id="step">Next frame</button>
-            <span id="frame"></span>
+    h1 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: clamp(28px, 4vw, 40px);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+    }
+
+    header p {
+        max-width: 66ch;
+        margin: 0;
+        color: var(--muted);
+    }
+
+    .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 24px;
+        align-items: center;
+        padding-block: 12px;
+        border-block: 1px solid var(--rule);
+    }
+
+    .control {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 13px;
+        color: var(--muted);
+    }
+
+    .label {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .sizes {
+        display: flex;
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .sizes button,
+    .play {
+        padding: 4px 10px;
+        border: 0;
+        background: var(--card);
+        color: var(--ink);
+        font: 500 13px var(--data);
+        cursor: pointer;
+    }
+
+    .sizes button + button {
+        border-left: 1px solid var(--rule);
+    }
+
+    .sizes button[aria-pressed="true"] {
+        background: var(--accent);
+        color: var(--card);
+    }
+
+    .play {
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        font-family: var(--body);
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    canvas:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    input[type="range"] {
+        accent-color: var(--accent);
+        width: 160px;
+        max-width: 100%;
+    }
+
+    .degrees {
+        min-width: 4ch;
+        font-family: var(--data);
+        font-variant-numeric: tabular-nums;
+        color: var(--ink);
+        text-align: right;
+    }
+
+    .sheet {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(var(--cell, 200px), 1fr));
+        gap: 16px;
+    }
+
+    .card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid var(--rule);
+        border-radius: 8px;
+        background: var(--card);
+    }
+
+    .stage {
+        display: grid;
+        place-items: center;
+        padding-block: 8px;
+        border-radius: 6px;
+        background: var(--stage);
+    }
+
+    .stage canvas {
+        display: block;
+        max-width: 100%;
+        cursor: grab;
+        touch-action: none;
+    }
+
+    .stage canvas:active {
+        cursor: grabbing;
+    }
+
+    .name {
+        display: grid;
+        gap: 2px;
+    }
+
+    .name h2 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: 18px;
+        font-weight: 500;
+    }
+
+    .timing {
+        font-family: var(--data);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+        color: var(--muted);
+    }
+
+    .turn {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 13px;
+        color: var(--muted);
+    }
+
+    .turn input {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .status {
+        color: var(--muted);
+    }
+</style>
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+    }
+</script>
+<main>
+    <header>
+        <h1>The butler's animations</h1>
+        <p>
+            Each clip plays live from the rigged model, held on each frame at the clip's own rate, as the app will play it. Turn any of them
+            with its slider, or drag the figure. At 96 px it is the size the chat shows.
+        </p>
+    </header>
+    <div class="controls">
+        <div class="control">
+            <span class="label">Size</span>
+            <div class="sizes" role="group" aria-label="Picture size">
+                <button type="button" id="size-96" data-size="96" aria-pressed="true">96 px</button>
+                <button type="button" id="size-160" data-size="160" aria-pressed="false">160 px</button>
+                <button type="button" id="size-240" data-size="240" aria-pressed="false">240 px</button>
+            </div>
         </div>
-        <script type="module" src="stepped.js"></script>
-    </body>
-</html>
+        <label class="control" for="turn-all">
+            <span class="label">Turn all</span>
+            <input type="range" id="turn-all" min="0" max="359" step="1" value="0" />
+            <span class="degrees" id="turn-all-degrees">0&deg;</span>
+        </label>
+        <button type="button" class="play" id="play">Pause</button>
+    </div>
+    <p class="status" id="status">Loading the butler (about 7 MB)&hellip;</p>
+    <div class="sheet" id="sheet"></div>
+</main>
+<script type="module" src="sheet.js"></script>
