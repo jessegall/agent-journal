@@ -237,6 +237,9 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     tick(record)
     tick(record)
     assert len([n for n in nudges(record) if "unread for long" in n]) == 1, "a trigger on a fact tells the agent once for each row it names"
+    from controllers.nudges import Nudges
+    said = Nudges(record, actor=SYSTEM).spoken()["triggers.nudge"]
+    assert (said["day"], said["last"] > 0) == (1, True), "the journal keeps when each line was last said and how many times in the last day, so the one list of reminders can show how often each speaks"
     report(record, "working", "PreToolUse")
     assert "hold for unread" in held(record, "claude-1"), "a hold keeps the main agent's writes while the fact is true"
     assert held(record, "claude-1", subagent=True) == "", "and does not reach a subagent"
@@ -250,6 +253,13 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     assert "hold for unread" in held(record, "claude-1"), "a hold holds again for a new row"
     Triggers(record, actor=USER).delete(holder.n)
     assert "hold for unread" not in held(record, "claude-1"), "and is released when its trigger is deleted"
+    Triggers(record, actor=USER).create("hold again", text="read first", when="state", fact="message.unread.created", over=1, does="hold")
+    record.change_setting("features", {"triggers.watching": False})
+    report(record, "working", "PreToolUse")
+    assert "hold again" in held(record, "claude-1"), "switching off the behaviour for words leaves a trigger on a fact running"
+    record.change_setting("features", {"triggers.reminding": False})
+    report(record, "working", "PreToolUse")
+    assert "hold again" not in held(record, "claude-1"), "and the behaviour for facts is what switches it off"
     monkeypatch.undo()
 
     from features.sending import Sent

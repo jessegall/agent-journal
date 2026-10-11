@@ -1,3 +1,4 @@
+import {ago} from "../format/time.js";
 import {providerName} from "./agents.js";
 
 export const DIAGNOSTICS_LINE = "Slow pages and errors, saved on your computer for the developer";
@@ -275,6 +276,68 @@ function group(g, members, settings, loose) {
     };
 }
 
+const times = (count) => `${count} ${count === 1 ? "time" : "times"}`;
+
+// How often a journal nudge has spoken, from the nudges the record still keeps.
+function spokenWords(spoken) {
+    return spoken ? `Said ${times(spoken.day)} in the last day, last ${ago(spoken.last)}` : "Not said yet";
+}
+
+// How often a trigger of yours has matched, from the count the trigger itself keeps.
+function matchedWords(data) {
+    return data.matched ? `Matched ${times(data.matched)}, last ${ago(data.matched_at)}` : "Never matched";
+}
+
+// The switch that governs a trigger of yours: the one for words, or the one for facts about the journal.
+const governing = (trigger) => `triggers.${trigger.data.when === "state" ? "reminding" : "watching"}`;
+
+function reminderRow(f, line, nudge, settings, spoken) {
+    const switchName = `${f.name}.${nudge.behaviour}`;
+    const behaviour = f.behaviours[nudge.behaviour];
+    return row({
+        key: `reminder:${f.name}.${line}`,
+        kind: "switch",
+        label: nudge.guarantee,
+        hint: `The journal, in ${f.label} \u00b7 ${spokenWords(spoken[`${f.name}.${line}`])}`,
+        value: switchValue(settings, switchName, behaviour.default),
+        shipped: behaviour.default,
+        target: {path: ["features", switchName]},
+    });
+}
+
+function triggerRow(trigger, behaviours, sharing, settings) {
+    const name = governing(trigger);
+    const behaviour = behaviours[name];
+    const value = switchValue(settings, name, behaviour.default);
+    const others = sharing[name] - 1;
+    const shared = others ? ` \u00b7 The same switch governs ${others} other ${others === 1 ? "trigger" : "triggers"} of yours` : "";
+    return row({
+        key: `reminder:trigger:${trigger.n}`,
+        kind: "switch",
+        label: trigger.title,
+        hint: `Yours, written in Triggers \u00b7 ${matchedWords(trigger.data)}${value ? "" : ` \u00b7 Off because "${behaviour.title}" is off`}${shared}`,
+        value,
+        shipped: behaviour.default,
+        target: {path: ["features", name]},
+    });
+}
+
+// Every line the agent hears in one list: the journal's own nudges, then the triggers you wrote. Each shows the switch that governs it, so it is the same switch as the one in its own group.
+function reminderRows(features, settings, context) {
+    const spoken = context.spoken || {};
+    const ours = features.flatMap((f) =>
+        Object.entries(f.nudges || {})
+            .filter(([, nudge]) => nudge.guarantee && f.behaviours[nudge.behaviour])
+            .map(([line, nudge]) => reminderRow(f, line, nudge, settings, spoken))
+    );
+    const behaviours = Object.fromEntries(
+        features.filter((f) => f.name === "triggers").flatMap((f) => Object.entries(f.behaviours).map(([key, b]) => [`triggers.${key}`, b]))
+    );
+    const yours = (context.triggers || []).filter((t) => !t.completed && !t.deleted && !t.data.system && behaviours[governing(t)]);
+    const sharing = yours.reduce((found, t) => ({...found, [governing(t)]: (found[governing(t)] || 0) + 1}), {});
+    return [...ours, ...yours.map((t) => triggerRow(t, behaviours, sharing, settings))];
+}
+
 function looseRows(settings, context) {
     const delivery = settings.delivery || {};
     const viewer = settings.viewer || {};
@@ -295,6 +358,7 @@ function looseRows(settings, context) {
         });
     return {
         rows: {
+            reminders: reminderRows(context.features || [], settings, context),
             models: (context.models || []).map((m) =>
                 row({
                     key: `models:${m.provider}`,
@@ -416,7 +480,7 @@ function looseRows(settings, context) {
 
 export function catalog(spec, settings, context) {
     const features = Object.values(spec.features || {}).map(normalised);
-    const loose = looseRows(settings || {}, {...context, models: spec.models});
+    const loose = looseRows(settings || {}, {...context, models: spec.models, features, spoken: spec.spoken});
     const groups = (spec.groups || []).map((g) =>
         group(
             g,

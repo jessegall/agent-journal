@@ -16,7 +16,7 @@ from resources.base import SYSTEM, USER
 from engine.reach import Reach
 from controllers.types import Agents, Messages
 
-WATCHING = "watching"
+WATCHING, REMINDING = "watching", "reminding"
 CHAT_DENIED = "caught a denied word in the agent's message"
 DONE = {MESSAGE: "sent a message", NUDGE: "nudged the agent", INSTRUCT: "instructed the agent", DENY: "denied the call", START: "started its sequence", HOLD: "held the agent"}
 
@@ -57,7 +57,7 @@ def nudge_of(row) -> Nudge:
         return [Sent(f"{row.n}:{found.key}", {**found.values, "title": row.title, "text": watched.filled(row.wording, found.values)}) for found in current(row, context, agent)]
 
     cadence = trigger.Trigger(unit=trigger.MINUTES, every=row.timing) if row.timing else trigger.NEVER
-    return Nudge(str(row.does), WATCHING, about, private=True, once=not row.timing, most=int(row.most), timing=cadence)
+    return Nudge(str(row.does), REMINDING, about, private=True, once=not row.timing, most=int(row.most), timing=cadence)
 
 
 def state_nudges(context) -> tuple:
@@ -77,7 +77,7 @@ class SayWhatTheJournalShowsOnToolUse(Handler):
 
 
 class HoldWhileTheJournalShows(Handler):
-    behaviour = WATCHING
+    behaviour = REMINDING
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         for row in standing(context):

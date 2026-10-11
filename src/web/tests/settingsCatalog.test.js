@@ -1,6 +1,20 @@
 // @vitest-environment node
 import {describe, expect, test} from "vitest";
-import {TABS, catalog, groupRows, inTab, navGroups, navSections, same, settingChanges, timingEvery, timingMarks, timingUnit, timingWords, untitled} from "../src/domain/settingsCatalog.js";
+import {
+    TABS,
+    catalog,
+    groupRows,
+    inTab,
+    navGroups,
+    navSections,
+    same,
+    settingChanges,
+    timingEvery,
+    timingMarks,
+    timingUnit,
+    timingWords,
+    untitled,
+} from "../src/domain/settingsCatalog.js";
 
 describe("timing words", () => {
     test.each([
@@ -107,7 +121,13 @@ describe("the Agent tab", () => {
     test("it is the first tab and holds the groups the server places in it", () => {
         expect(TABS[0].key).toBe("agent");
         const sections = [
-            {title: "Agent", groups: [{key: "agent", tab: "agent"}, {key: "viewer", tab: "features"}]},
+            {
+                title: "Agent",
+                groups: [
+                    {key: "agent", tab: "agent"},
+                    {key: "viewer", tab: "features"},
+                ],
+            },
             {title: "Chat", groups: [{key: "chat", tab: "features"}]},
         ];
         expect(inTab(sections, "agent").map((s) => s.groups.map((g) => g.key))).toEqual([["agent"]]);
@@ -132,7 +152,9 @@ describe("model pickers", () => {
     };
 
     test("each provider gets a picker of its own models, with the saved one chosen", () => {
-        const rows = groupRows(catalog(spec, {boards: {filler_model: {codex: "gpt-6-luna"}}}, {})[0].groups[0]).filter((r) => r.key.startsWith("boards:filler_model"));
+        const rows = groupRows(catalog(spec, {boards: {filler_model: {codex: "gpt-6-luna"}}}, {})[0].groups[0]).filter((r) =>
+            r.key.startsWith("boards:filler_model")
+        );
         expect(rows.map((r) => [r.label, r.options.map((o) => o.label), r.value])).toEqual([
             ["Model for the agent that fills a board on Claude Code", ["Opus", "Sonnet"], "sonnet"],
             ["Model for the agent that fills a board on Codex", ["GPT-6 Sol", "GPT-6 Luna"], "gpt-6-luna"],
@@ -140,7 +162,9 @@ describe("model pickers", () => {
     });
 
     test("picking one provider's model keeps every other provider's", () => {
-        const [claude] = groupRows(catalog(spec, {boards: {filler_model: {codex: "gpt-6-luna"}}}, {})[0].groups[0]).filter((r) => r.key.startsWith("boards:filler_model"));
+        const [claude] = groupRows(catalog(spec, {boards: {filler_model: {codex: "gpt-6-luna"}}}, {})[0].groups[0]).filter((r) =>
+            r.key.startsWith("boards:filler_model")
+        );
         expect(settingChanges(claude.target, "opus", {boards: {filler_model: {codex: "gpt-6-luna"}}})).toEqual({
             boards: {filler_model: {claude: "opus", codex: "gpt-6-luna"}},
         });
@@ -149,9 +173,19 @@ describe("model pickers", () => {
 
 describe("the Models group", () => {
     test("it lists the model each provider starts agents on", () => {
-        const spec = {features: {}, groups: [{key: "models", title: "Models", line: "", section: "Agent", tab: "agent", lead: ""}], models: [{provider: "claude", model: "sonnet", label: "Sonnet"}, {provider: "codex", model: "gpt-6-sol", label: "GPT-6 Sol"}]};
+        const spec = {
+            features: {},
+            groups: [{key: "models", title: "Models", line: "", section: "Agent", tab: "agent", lead: ""}],
+            models: [
+                {provider: "claude", model: "sonnet", label: "Sonnet"},
+                {provider: "codex", model: "gpt-6-sol", label: "GPT-6 Sol"},
+            ],
+        };
         const [section] = catalog(spec, {}, {});
-        expect(groupRows(section.groups[0]).map((r) => [r.key, r.kind, r.value])).toEqual([["models:claude", "fixed", "Sonnet"], ["models:codex", "fixed", "GPT-6 Sol"]]);
+        expect(groupRows(section.groups[0]).map((r) => [r.key, r.kind, r.value])).toEqual([
+            ["models:claude", "fixed", "Sonnet"],
+            ["models:codex", "fixed", "GPT-6 Sol"],
+        ]);
     });
 });
 
@@ -169,7 +203,10 @@ describe("what a switch sends", () => {
                 },
                 nudges: {
                     next: {behaviour: "auto", guarantee: "With auto mode on, the agent is offered the next to-do that is ready."},
-                    "next while waiting": {behaviour: "auto", guarantee: "When the work in hand is waiting, the agent is offered the next ready to-do."},
+                    "next while waiting": {
+                        behaviour: "auto",
+                        guarantee: "When the work in hand is waiting, the agent is offered the next ready to-do.",
+                    },
                 },
             },
         },
@@ -182,5 +219,73 @@ describe("what a switch sends", () => {
             "With auto mode on, the agent is offered the next to-do that is ready. When the work in hand is waiting, the agent is offered the next ready to-do."
         );
         expect(hintOf("work.quiet")).toBe("a switch that sends no nudge");
+    });
+});
+
+describe("the one list of reminders", () => {
+    const spec = {
+        features: {
+            work: {
+                name: "work",
+                label: "Work tracking",
+                group: "work",
+                settings: [],
+                behaviours: {auto: {title: "Offer the next to-do", abstract: "", default: true}},
+                nudges: {
+                    next: {behaviour: "auto", guarantee: "The agent is offered the next ready to-do."},
+                    quiet: {behaviour: "auto", guarantee: ""},
+                },
+            },
+            triggers: {
+                name: "triggers",
+                label: "Triggers",
+                group: "reminders",
+                settings: [],
+                behaviours: {
+                    watching: {title: "Run a trigger when its word appears", abstract: "", default: true},
+                    reminding: {title: "Remind the agent when something in the journal is true", abstract: "", default: true},
+                },
+                nudges: {},
+            },
+        },
+        groups: [
+            {key: "work", title: "Work", section: "Agent", tab: "agent", lead: "work"},
+            {key: "reminders", title: "Reminders", section: "Agent", tab: "agent", lead: ""},
+        ],
+        spoken: {"work.next": {last: Date.now() / 1000 - 300, day: 3}},
+    };
+    const trigger = (n, title, when, data = {}) => ({n, title, completed: 0, deleted: 0, data: {when, matched: 0, matched_at: 0, ...data}});
+    const triggers = [
+        trigger(1, "Say it twice", "words", {matched: 2, matched_at: Date.now() / 1000 - 60}),
+        trigger(2, "Unread too long", "state"),
+        trigger(3, "Idle", "state"),
+    ];
+    const listed = (settings = {}) => groupRows(catalog(spec, settings, {triggers})[0].groups.find((g) => g.key === "reminders"));
+
+    test("it holds the journal's nudges and your triggers, each saying where it came from and how often it spoke", () => {
+        const [ours, ...yours] = listed();
+        expect(ours.label).toBe("The agent is offered the next ready to-do.");
+        expect(ours.hint).toBe("The journal, in Work tracking · Said 3 times in the last day, last 5m ago");
+        expect(yours.map((r) => r.label)).toEqual(["Say it twice", "Unread too long", "Idle"]);
+        expect(yours[0].hint).toBe("Yours, written in Triggers · Matched 2 times, last 1m ago");
+        expect(yours[1].hint).toContain("Never matched");
+    });
+
+    test("a line with no sentence of its own is not listed, and each row is the switch that governs it", () => {
+        expect(listed()).toHaveLength(4);
+        expect(listed().map((r) => r.target.path.join("."))).toEqual([
+            "features.work.auto",
+            "features.triggers.watching",
+            "features.triggers.reminding",
+            "features.triggers.reminding",
+        ]);
+    });
+
+    test("a trigger of yours reads as off because its switch is off, and says what else that switch governs", () => {
+        const [, words, unread] = listed({features: {"triggers.reminding": false}});
+        expect(words.value).toBe(true);
+        expect(unread.value).toBe(false);
+        expect(unread.hint).toContain('Off because "Remind the agent when something in the journal is true" is off');
+        expect(unread.hint).toContain("The same switch governs 1 other trigger of yours");
     });
 });

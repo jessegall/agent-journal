@@ -135,7 +135,7 @@ const CLOSES = {
     message: "Mark as handled",
     fact: "Strike it",
     rule: "Strike it",
-    trigger: "Turn it off",
+    trigger: "Retire it",
     sequence: "Turn it off",
     work: "End it",
 };
@@ -154,7 +154,11 @@ export const PROFILE_FIELDS = [
     text("sample", "A sample line", {value: (row) => row.data.sample, area: true}),
     optional("introduction", "A short introduction, in its own voice", {value: (row) => row.data.introduction, area: true}),
 ];
-export const NEW_PROFILE = {title: "", brief: "", data: {calling: "title and name", sample: "", introduction: "", humour: "", naming: "", agent_name: ""}};
+export const NEW_PROFILE = {
+    title: "",
+    brief: "",
+    data: {calling: "title and name", sample: "", introduction: "", humour: "", naming: "", agent_name: ""},
+};
 const closed = (row) => Boolean(row.completed);
 const standing = (row) => !row.completed;
 const named = (row) => `${kindWord(row.type)} ${row.n}`;
@@ -162,7 +166,11 @@ const named = (row) => `${kindWord(row.type)} ${row.n}`;
 async function roles() {
     const got = await api.organization();
     const picked = (got.domains || []).flatMap((domain) =>
-        (domain.roles || []).map((role) => ({value: `${domain.name}/${role.name}`, label: role.title || role.name, sub: domain.title || domain.name}))
+        (domain.roles || []).map((role) => ({
+            value: `${domain.name}/${role.name}`,
+            label: role.title || role.name,
+            sub: domain.title || domain.name,
+        }))
     );
     return picked;
 }
@@ -218,7 +226,11 @@ const COMMON = {
         when: standing,
         fields: [optional("how", "How did it end? You can leave this empty.", {placeholder: "Say how it ended", area: true})],
         result: (row) => (row.type === "todo" ? `Marked ${named(row)} done` : `Closed ${named(row)}`),
-        undo: (row) => ({word: "reopen", body: {why: "Undone on the phone right after it was closed"}, result: `${named(row)} is open again`}),
+        undo: (row) => ({
+            word: "reopen",
+            body: {why: "Undone on the phone right after it was closed"},
+            result: `${named(row)} is open again`,
+        }),
     },
     reopen: {
         label: "Reopen",
@@ -283,8 +295,18 @@ const OWN = {
             empty: "No roles yet. Roles come from Organization.",
             result: (row, to) => `Assigned ${named(row)} to ${to}`,
         },
-        unassign: {label: "Assign to nobody", when: (row) => standing(row) && Boolean(row.data.assigned), result: (row) => `No one has ${named(row)}`},
-        shift: {label: "Move to another lane", pick: lanes, name: "lane", ask: true, result: (row, lane) => `Moved ${named(row)} to ${lane}`},
+        unassign: {
+            label: "Assign to nobody",
+            when: (row) => standing(row) && Boolean(row.data.assigned),
+            result: (row) => `No one has ${named(row)}`,
+        },
+        shift: {
+            label: "Move to another lane",
+            pick: lanes,
+            name: "lane",
+            ask: true,
+            result: (row, lane) => `Moved ${named(row)} to ${lane}`,
+        },
         after: {
             label: "Wait on another to-do",
             when: standing,
@@ -304,7 +326,11 @@ const OWN = {
         dismiss: {label: "Hide from the chat", result: () => "Hidden"},
         start: {label: "Start the plan", when: (row) => row.data.status === "approved", result: (row) => `Started ${named(row)}`},
         park: {label: "Pause the plan", when: standing, result: (row) => `Paused ${named(row)}`},
-        continue: {label: "Go on to the next phase", when: (row) => row.data.status === "waiting", result: (row) => `${named(row)} goes on`},
+        continue: {
+            label: "Go on to the next phase",
+            when: (row) => row.data.status === "waiting",
+            result: (row) => `${named(row)} goes on`,
+        },
         abandon: {
             label: "Close without finishing",
             danger: true,
@@ -319,9 +345,16 @@ const OWN = {
         hide: {label: "Hide from lists", when: (row) => !row.data.hidden, result: () => "Hidden from lists"},
         unhide: {label: "Show in lists", when: (row) => Boolean(row.data.hidden), result: () => "Shown in lists"},
         keep: null,
-        supersede: {label: "Replaced by another document", fields: [text("by", "Which document replaces it?", {placeholder: "Its number"})], result: () => "Saved"},
+        supersede: {
+            label: "Replaced by another document",
+            fields: [text("by", "Which document replaces it?", {placeholder: "Its number"})],
+            result: () => "Saved",
+        },
     },
-    report: {doc: {label: "Make a document from it", result: () => "Made a document"}, dismiss: {label: "Hide from the chat", when: standing, result: () => "Hidden"}},
+    report: {
+        doc: {label: "Make a document from it", result: () => "Made a document"},
+        dismiss: {label: "Hide from the chat", when: standing, result: () => "Hidden"},
+    },
     ticket: {
         move: {label: "Move to another stage", fields: [text("stage", "Which stage?")], result: (row) => `Moved ${named(row)}`},
         priority: PRIORITY,
@@ -331,16 +364,32 @@ const OWN = {
             result: (row) => `Started ${named(row)}`,
         },
         stop: {label: "Stop its agent", danger: true, confirm: true, result: (row) => `Stopped ${named(row)}`},
-        confirm: {label: "Confirm it", fields: [optional("why", "Why? You can leave this empty.")], result: (row) => `Confirmed ${named(row)}`},
+        confirm: {
+            label: "Confirm it",
+            fields: [optional("why", "Why? You can leave this empty.")],
+            result: (row) => `Confirmed ${named(row)}`,
+        },
         merge: {label: "Merge it", confirm: true, result: (row) => `Merged ${named(row)}`},
         approve_plan: {label: "Approve its plan", result: () => "Plan approved"},
         continue_plan: {label: "Go on with its plan", result: () => "Its plan goes on"},
         accept_dependencies: {label: "Accept its dependencies", result: () => "Dependencies accepted"},
         decline_dependencies: {label: "Decline its dependencies", fields: [optional("why", "Why?")], result: () => "Dependencies declined"},
-        send_back: {label: "Send it back", fields: [text("note", "What should change?", {area: true})], result: (row) => `Sent ${named(row)} back`},
+        send_back: {
+            label: "Send it back",
+            fields: [text("note", "What should change?", {area: true})],
+            result: (row) => `Sent ${named(row)} back`,
+        },
         tell: {label: "Tell its agent", fields: [text("note", "Your words", {area: true})], result: () => "Sent"},
-        queue_before: {label: "Put it before another ticket", fields: [text("other", "Which ticket?", {placeholder: "Its number"})], result: () => "Moved up"},
-        depend: {label: "Wait on another ticket", fields: [text("on", "Which ticket?", {placeholder: "Its number"})], result: (row) => `${named(row)} waits now`},
+        queue_before: {
+            label: "Put it before another ticket",
+            fields: [text("other", "Which ticket?", {placeholder: "Its number"})],
+            result: () => "Moved up",
+        },
+        depend: {
+            label: "Wait on another ticket",
+            fields: [text("on", "Which ticket?", {placeholder: "Its number"})],
+            result: (row) => `${named(row)} waits now`,
+        },
     },
     work: {resume: {label: "Resume", result: (row) => `Resumed ${named(row)}`}},
     environment: {
@@ -377,11 +426,31 @@ const OWN = {
         inject: {label: "Load at every session start", result: () => "Loads at every start"},
         uninject: {label: "Stop loading at session start", result: () => "No longer loads at start"},
     },
-    message: {archive: {label: "Archive", fields: [text("why", "Why archive it?")], result: () => "Archived"}, edit: {label: "Change the words", fields: [text("text", "Your message", {value: (row) => row.brief, area: true})], result: () => "Changed"}},
-    question: {dismiss: {label: "Close", when: standing, fields: [optional("why", "Why close it?")], result: () => "Closed"}, complete: null},
+    message: {
+        archive: {label: "Archive", fields: [text("why", "Why archive it?")], result: () => "Archived"},
+        edit: {
+            label: "Change the words",
+            fields: [text("text", "Your message", {value: (row) => row.brief, area: true})],
+            result: () => "Changed",
+        },
+    },
+    question: {
+        dismiss: {label: "Close", when: standing, fields: [optional("why", "Why close it?")], result: () => "Closed"},
+        complete: null,
+    },
     suggestion: {complete: null},
     sequence: {
-        abandon: {label: "Stop the run", danger: true, fields: [optional("why", (row) => (row.removes_on_abandon ? "Why stop it? Stopping also removes the row it is about." : "Why stop it?"))], body: {sure: true}, result: () => "Stopped"},
+        abandon: {
+            label: "Stop the run",
+            danger: true,
+            fields: [
+                optional("why", (row) =>
+                    row.removes_on_abandon ? "Why stop it? Stopping also removes the row it is about." : "Why stop it?"
+                ),
+            ],
+            body: {sure: true},
+            result: () => "Stopped",
+        },
         run: {label: "Run it now", runs: true, fields: [optional("about", "What is it about?")], result: () => "Started"},
         steps: {
             label: "Edit the steps",
@@ -411,10 +480,17 @@ const OWN = {
         },
         remove: {label: "Take an item out", when: (row) => row.refs.length > 0, pick: refsOf, name: "ref", result: () => "Taken out"},
     },
-    helper: {say: {label: "Send it a message", fields: [text("text", "Your words", {area: true})], result: () => "Sent"}, stop: {label: "Stop it", danger: true, result: () => "Stopped"}},
+    helper: {
+        say: {label: "Send it a message", fields: [text("text", "Your words", {area: true})], result: () => "Sent"},
+        stop: {label: "Stop it", danger: true, result: () => "Stopped"},
+    },
     plugin: {
         upgrade: {label: "Check for updates", runs: true, body: {yes: true}, result: updated},
-        purge: {label: "Remove it with its data", danger: true, confirm: true, result: () => "Removed"}, enable: {label: "Turn on", runs: true, result: () => "Turned on"}, disable: {label: "Turn off", result: () => "Turned off"}, clear_log: {label: "Clear its log", result: () => "Log cleared"}},
+        purge: {label: "Remove it with its data", danger: true, confirm: true, result: () => "Removed"},
+        enable: {label: "Turn on", runs: true, result: () => "Turned on"},
+        disable: {label: "Turn off", result: () => "Turned off"},
+        clear_log: {label: "Clear its log", result: () => "Log cleared"},
+    },
 };
 
 const EXTRA = [
@@ -499,7 +575,12 @@ export function runsOffLine(row) {
     return hides ? runsOff.value : "";
 }
 
-export const filled = (fields, row) => fields.map((field) => ({...field, label: typeof field.label === "function" ? field.label(row) : field.label, value: field.value ? field.value(row) || "" : ""}));
+export const filled = (fields, row) =>
+    fields.map((field) => ({
+        ...field,
+        label: typeof field.label === "function" ? field.label(row) : field.label,
+        value: field.value ? field.value(row) || "" : "",
+    }));
 
 export async function perform(row, action, body = {}) {
     if (action.run) return action.run(row, body.value);

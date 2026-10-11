@@ -10,7 +10,7 @@ from features import groups
 from controllers.base import actions
 from controllers.base import Controller
 from controllers.described import described_types
-from resources.base import ACTIONS, ACTORS, SCOPES, VIEWS, Resource
+from resources.base import ACTIONS, ACTORS, SCOPES, SYSTEM, VIEWS, Resource
 from resources.types import priority
 from engine import runtime
 from providers import PROVIDERS
@@ -18,6 +18,7 @@ from engine.version import version
 from engine.package import data
 from features.open_viewer.attachments import listed_types
 from features.triggers.watched import FACTS
+from controllers.nudges import Nudges
 from typing import TypedDict
 
 
@@ -46,6 +47,7 @@ class Manifest(TypedDict):
     searchable: list[str]
     chat_kinds: dict[str, dict[str, str]]
     facts: list[dict]
+    spoken: dict[str, dict]
 
 
 def default_models() -> list[dict]:
@@ -62,6 +64,7 @@ def watchable(record: Record) -> list[dict]:
 
 
 def manifest(root: Path) -> Manifest:
+    record = Record(root, runtime.env(root))
     return {
         "project": root.resolve().parent.name,
         "environment": runtime.env(root),
@@ -74,10 +77,11 @@ def manifest(root: Path) -> Manifest:
         "priority": priority(),
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
-        "features": catalogue(features.describe(), Record(root, runtime.env(root))),
+        "features": catalogue(features.describe(), record),
         "groups": groups.describe(),
         "models": default_models(),
         "searchable": listed_types(),
-        "facts": watchable(Record(root, runtime.env(root))),
+        "facts": watchable(record),
+        "spoken": Nudges(record, actor=SYSTEM).spoken(),
         **built_in(),
     }

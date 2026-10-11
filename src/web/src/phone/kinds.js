@@ -1,4 +1,3 @@
-
 const KINDS = {
     waiting: {many: "Needs you"},
     todo: {
@@ -88,9 +87,8 @@ const KINDS = {
         word: "trigger",
         many: "Triggers",
         icon: "bolt",
-        intro: "Rules that start an action when you say a phrase or a time comes.",
+        intro: "Rules that start an action when you say a phrase or a time comes. Write and edit them in the viewer on your computer; the Reminders list in Settings shows each one and its switch.",
         description: "Rules that start an action when you say a phrase or a time comes",
-        make: "New trigger",
     },
     sequence: {
         one: "Sequence",

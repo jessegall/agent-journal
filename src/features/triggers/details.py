@@ -42,6 +42,12 @@ class TriggersDetails(FeatureDetails):
         Behaviour(
             name="watching",
             title="Run a trigger when its word appears",
+            abstract="Triggers that watch for words in what you or the agent write or run",
+        ),
+        Behaviour(
+            name="reminding",
+            title="Remind the agent when something in the journal is true",
+            abstract="Triggers that watch a fact about the journal: they nudge or instruct the agent, or hold its writes until the fact stops being true",
         ),
     ]
 

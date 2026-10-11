@@ -4,6 +4,7 @@ import {stopJournal as stopServer} from "../../actions/stopJournal.js";
 import {api} from "../../api/client.js";
 import {catalog, counts, inTab, narrowed} from "../../domain/settingsCatalog.js";
 import {demo} from "../../platform/demo.js";
+import {rows} from "../../sync/rows.js";
 import {store} from "../../state/store.js";
 import {toast} from "../kit/toast.js";
 import {runsAllowed} from "../runs.js";
@@ -34,6 +35,7 @@ export const sections = computed(() =>
         identity: store.identity,
         extension: extension.value,
         extensionZip: api.extensionZip(),
+        triggers: rows("trigger"),
         stoppable: !demo && runsAllowed.value,
         stopping: stopping.value,
     })

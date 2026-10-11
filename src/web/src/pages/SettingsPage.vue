@@ -22,6 +22,7 @@ import {remember, remembered} from "../platform/storage.js";
 import {useScrollSpy} from "../composables/scrollSpy.js";
 import {useSlashFocus} from "../composables/slashFocus.js";
 import {route} from "../route.js";
+import {rows} from "../sync/rows.js";
 import {store} from "../state/store.js";
 
 const TAB = "journal.settings.tab";
@@ -45,6 +46,7 @@ const sections = computed(() =>
               identity: store.identity,
               extension: extension.value,
               extensionZip: api.extensionZip(),
+              triggers: rows("trigger"),
               stoppable: !demo,
               stopping: stopping.value,
           })

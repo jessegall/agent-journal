@@ -1,9 +1,12 @@
+import time
+
 from controllers.base import Controller
 from resources import types
 from resources.base import SYSTEM, Refused
 
 
 LOOKED_BACK = 20
+DAY = 24 * 60 * 60
 
 
 class Nudges(Controller):
@@ -21,6 +24,19 @@ class Nudges(Controller):
         except Refused:
             if not self.load(n).completed:
                 raise
+
+    def spoken(self) -> dict[str, dict]:
+        """When each line was last said to the agent, and how many times in the last day, from the nudges still kept: {"<feature>.<line>": {"last": stamp, "day": count}}."""
+        since = time.time() - DAY
+        found: dict[str, dict] = {}
+        for row in self.rows.summaries():
+            nudge = None if row["deleted"] else self.peek(row["n"])
+            if nudge is None or not nudge.line:
+                continue
+            said = found.setdefault(f"{nudge.data.get('feature', '')}.{nudge.line}", {"last": 0.0, "day": 0})
+            said["last"] = max(said["last"], nudge.created)
+            said["day"] += nudge.created > since
+        return found
 
     def _repeats_last(self, session: str, title: str, brief: str, agent_at: float) -> bool:
         """Whether the last line said to this session was this very line and the agent has done nothing since, so that saying it again would add nothing."""
