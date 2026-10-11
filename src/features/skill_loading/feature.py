@@ -27,7 +27,7 @@ class SkillLoading(Feature):
                 & Wrote(Message(title="Please load the journal skill now")),
         ])
         journal.commands.add("agent", SetKeywords(), expects=[
-            Given((Agents, "journal", [" notes ", "plans", " "])) >> Answered(["notes", "plans"]),
+            Given((Agents, "journal", [" notes ", "plans", " "])) >> Answered({"keywords": ["notes", "plans"]}),
         ])
         START_PARTS.add(self, handed, key=SKILLS)
         journal.events.handler(RemindUnloaded(), expects=[
