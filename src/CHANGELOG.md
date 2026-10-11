@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.10 — Allow means allow, and the board reads summaries
+
+- Allowing a program the agent proposed, under Settings > Secrets, saves the secret there and then. The button moved the program into the allowed list and wrote nothing until a Save further down the page, so a program you had allowed was still refused when the agent ran it.
+- The to-do board is built from the summaries of the to-dos and parses none of them, a row's summary carries the default of an indexed field that was never set, and the server builds its default environment's board while it warms up, so the first board a session asks for is not a cold one.
+
 ## 2.269.9 — The gate answers a Codex agent again
 
 - A session with no process behind it is no rival for an environment, so a hook from another provider in the same record is no longer moved to an environment of its own. A Codex agent could write with no work open and the gate said nothing; it refuses again.
