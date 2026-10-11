@@ -1629,8 +1629,12 @@ def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_
     write_json(ledger.file, {chat_mirror.SENT: []})
     turns[:] = [turn("transcript:1", "only in the transcript", now)]
     chat_mirror.unfinished(root, "claude-1", row)
-    assert (sent, chat_mirror.FELL_BACK in log_file(root).read_text()) == (["only in the transcript"], True), \
-        "a turn the display hook never delivered is sent from the transcript, and the engine says in its log that it had to"
+    assert (sent, chat_mirror.FELL_BACK in log_file(root).read_text()) == (["only in the transcript"], False), \
+        "a turn the display hook never delivered is sent from the transcript at once, and the fault is only held while the hook may still be late"
+    with ledger.changing() as kept:
+        kept[chat_mirror.FAULTS] = {one: 0.0 for one in kept[chat_mirror.FAULTS]}
+    chat_mirror.raise_held(root, "claude-1")
+    assert chat_mirror.FELL_BACK in log_file(root).read_text(), "and once its window has run out with nothing arriving, the engine says in its log that it had to"
     monkeypatch.undo()
 
     Sessions(root).bind("claude-1", record.env, provider="claude")
