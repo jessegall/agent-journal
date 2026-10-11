@@ -4,13 +4,13 @@ from features.settings import Setting
 
 
 class CatchingUpDetails(FeatureDetails):
-    explains = 'After its conversation is shortened, the agent reads the latest messages before it changes anything. You choose how many.'
+    explains = 'After its conversation is compacted, the agent reads the latest messages before it changes anything. You choose how many.'
     name = "catching_up"
     group = Group.AGENT
-    label = "Make the agent read the latest messages after its conversation is shortened"
+    label = "Make the agent read the latest messages after its conversation is compacted"
     has_skill = False
 
-    title = "Catch up after a shortened conversation"
+    title = "Catch up after a compacted conversation"
 
     abstract = """
         A compaction keeps a summary of the conversation and drops the chat around it. Until the agent has read

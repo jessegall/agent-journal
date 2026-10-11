@@ -97,7 +97,7 @@ export function wordOf(state) {
 export function lineOf(agent, works, auto = false, helpers = [], helping = 0) {
     const state = stateOf(agent, works);
     if (state === "stopped") return "no agent is on this environment";
-    if (state === "compacting") return "summarizing the conversation, then it carries on";
+    if (state === "compacting") return "compacting the conversation, then it carries on";
     if (state === "waiting") return waitingOn(agent, works, helpers)?.line || "a background run";
     if (state === "paused") return "held until you resume it";
     const current = currentWork(works);

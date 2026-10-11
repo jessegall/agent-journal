@@ -15,7 +15,7 @@ says what it is about, or what happens when they press it, in the words a newcom
 
 - **`plain-viewer-text`** - a label, title, placeholder, tooltip or help attribute, a label, title, hint, heading, placeholder, help, line, note or empty value in a script, or text on a page, that:
   - speaks as the app: "I sort it by subject", "What I'm doing", "my", "we";
-  - uses a word from inside the journal: row, hook, nudge, engine, compact, summarised, "comes up", pile,
+  - uses a word from inside the journal: row, hook, nudge, engine, summarised, "comes up", pile,
     hub, steered, inject, dispatched, moment, resource, orchestrator, "ships with";
   - uses one of the words the house has replaced: park (Pause), dismiss or abandon (Close).
 

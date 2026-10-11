@@ -40,6 +40,10 @@ describe("the waiting word and its line", () => {
         expect(waitingOn(agent(), [work()], [], NOW).items[0].status).toBe("At work");
     });
 
+    test("an agent whose conversation is being compacted says compacting, never summarizing or shortening", () => {
+        expect(lineOf(agent("compacting"), [])).toBe("compacting the conversation, then it carries on");
+    });
+
     test("an idle agent with nothing to wait on is ready, never waiting", () => {
         expect(lineOf(agent(), [], false)).toBe("ready for your next message");
         expect(lineOf(agent(), [], true)).toBe("ready for the next to-do");

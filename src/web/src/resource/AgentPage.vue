@@ -39,7 +39,7 @@ const STATES = {
     working: {word: "Working", dot: "running"},
     busy: {word: "Working", dot: "running"},
     idle: {word: "Idle", dot: "queued"},
-    compacting: {word: "Summarising its context", dot: "running"},
+    compacting: {word: "Compacting its context", dot: "running"},
     stopped: {word: "Stopped", dot: ""},
     paused: {word: "Paused", dot: "queued"},
 };

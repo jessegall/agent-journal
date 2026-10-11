@@ -378,7 +378,7 @@ class AgentRow(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Agent",
         abstract="A session of Claude or Codex, and what it is doing right now",
-        help="The journal watches what the agent reports and tells whether it is idle, busy, working, or has shortened its conversation.",
+        help="The journal watches what the agent reports and tells whether it is idle, busy, working, or has compacted its conversation.",
     )
     type = "agent"
     held, eager = None, True
