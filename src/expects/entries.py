@@ -87,6 +87,7 @@ def rows_now(record: Record) -> tuple:
 
 def handled(promise, given: Given, record: Record, world: World) -> None:
     """A 2.x handler, through the entry the bus uses: its own handle, with a Context over the record. The Context carries an agent when the Given names one, since most handlers read it."""
+    import commands.cli  # noqa: F401 - wires the command line a tag runs its command through
     event, was = given.on, text_of(given.on)
     promise.part.handle(contexted(promise, given, record), event)
     world.seen.changed = text_of(event) if text_of(event) != was else None
