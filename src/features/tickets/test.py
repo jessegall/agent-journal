@@ -720,7 +720,7 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: told.append((n, note)))
     Environments(record, actor=SYSTEM).create("ticket-1", owner=ticket.ref)
     Questions(place, actor=USER).complete(asked.n, how="Dark")
-    assert told == [(ticket.n, f"Your question {asked.n}, Which theme?, is answered: Dark")], "an answered question wakes the ticket's agent with the answer"
+    assert told == [(ticket.n, f"Your question {asked.n}, Which theme?, is answered: Dark. That is the answer of the one who runs your board: act on it, and never file the question again.")], "an answered question wakes the ticket's agent with the answer"
     assert any(f"ticket {drafted.n}, A drafted card, is a draft waiting for you" in line for line in nudges(record)), \
         "the orchestrator is told when a proposal it may decide waits"
     monkeypatch.setattr(Tickets, "agent_session", lambda self, n: "claude-t1")
@@ -763,7 +763,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
     ticket = Tickets(record, actor=USER).create("Dark mode", board=board.n)
     report(record, "working", "PreToolUse")
-    moments, held = [], [[("ticket_replied", "message:1", {"text": "done?"}, 0), (ticket_calls.PLAN_DONE_CALL, "plan:5", {}, 15), ("ticket_asks", "question:2", {"question": 2, "text": "which one", "env": "ticket-1"}, 15)]]
+    moments, held = [], [[("ticket_replied", "message:1", {"text": "done?"}, 0), (ticket_calls.PLAN_DONE_CALL, "plan:5", {}, 15), ("ticket_asks", "question:2", {"question": 2, "text": "which one", "env": "ticket-1", "rule": "decide it"}, 15)]]
     monkeypatch.setattr(handlers, "watched", lambda tickets: [ticket])
     monkeypatch.setattr(handlers, "calls", lambda tickets, found: held[0])
     monkeypatch.setattr(Tickets, "raise_moment", lambda self, n, moment, **data: moments.append(moment))
