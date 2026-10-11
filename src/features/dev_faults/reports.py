@@ -74,7 +74,7 @@ class FaultReports:
         return bool(agent) and (agent_uses is None or agent.uses - int(agent_uses) >= TOLD_EVERY)
 
     def slow(self, record, kind: str, name: str, took: float, working: float | None = None, garbage: float = 0.0, waiting: float = 0.0,
-             after: float = 0.0, whole_reads: tuple[str, ...] = (), by: str = "") -> None:
+             after: float = 0.0, whole_reads: tuple[str, ...] = (), by: str = "", request: int = 0, within: int = 0) -> None:
         if working is not None and working <= self.milliseconds(record, kind) and waiting <= self.milliseconds(record, kind):
             return
         parts = [f"{working:.0f}ms of it working" if working is not None else "", f"{garbage:.0f}ms collecting garbage" if garbage >= 1 else "",
@@ -84,6 +84,7 @@ class FaultReports:
         title = f"{kind} {name} {OVER}"[:80]
         brief = f"{took:.0f}ms last{f' ({spent})' if spent else ''}, against a budget of {self.milliseconds(record, kind)}ms."
         brief += f" Run by the helper in environment {by}." if by else ""
+        brief += span_of(request, within)
         brief += f" The machine's load was {load():.1f} on {os.cpu_count()} cores."
         self.file(record, title, brief, kind=kind, target=name, worst=took)
         self.answer(record, title, brief)
@@ -150,7 +151,7 @@ class FaultReports:
         (folder / f"{time.strftime('%H%M%S')}-{name.replace('/', '_').replace(' ', '-')}-{took:.0f}ms.txt").write_text(out.getvalue())
 
     def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None, profile=None, garbage: float = 0.0,
-              waiting: float = 0.0, after: float = 0.0, whole_reads: tuple[str, ...] = (), stacks: str = "") -> None:
+              waiting: float = 0.0, after: float = 0.0, whole_reads: tuple[str, ...] = (), stacks: str = "", request: int = 0, within: int = 0) -> None:
         if whole_reads:
             logged(root, f"{kind} {name} read a whole transcript for {'; '.join(whole_reads)}")
         if took < min(BUDGET.values() or [0]) or cold(Path(root), kind, name) or runtime.tests_running(Path(root)):
@@ -162,23 +163,23 @@ class FaultReports:
                 logged(root, f"slow {kind} {name} {took:.0f}ms" + (f", {working:.0f}ms working" if working is not None else "")
                        + (f", {waiting:.0f}ms waiting on locks" if waiting >= 1 else "") + f", machine load {load():.1f} on {os.cpu_count()} cores")
             if self.feature.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
-                self.breached(root, kind, name, took, working, after)
+                self.breached(root, kind, name, took, working, after, request, within)
                 if working is not None and working > self.milliseconds(record, kind):
-                    self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "")
+                    self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "", request=request, within=within)
                     if profile or stacks:
                         self.kept(root, name, took, profile, stacks)
                 elif kind != "command" and working is not None and waiting > self.milliseconds(record, kind):
-                    self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "")
+                    self.slow(record, kind, name, took, working, garbage, waiting, after, whole_reads, by=ran.env if record.env != ran.env else "", request=request, within=within)
                 elif working is not None and took - working - waiting > self.milliseconds(record, kind):
                     self.starved(root, record, kind, name, took, working)
         except (OSError, ValueError, KeyError):
             return
 
     @staticmethod
-    def breached(root, kind: str, name: str, took: float, working: float | None, after: float) -> None:
+    def breached(root, kind: str, name: str, took: float, working: float | None, after: float, request: int = 0, within: int = 0) -> None:
         """One line for every breach of a budget, with the release and the moment, so a release's effect can be read off the file; it keeps its newest half when it grows too large."""
         line = json.dumps({"version": version(), "kind": kind, "target": name, "took": round(took), "working": None if working is None else round(working), "after": round(after),
-                           "load": round(load(), 2), "time": round(time.time())})
+                           "request": request, "within": within, "load": round(load(), 2), "time": round(time.time())})
         try:
             file = runtime.folder(Path(root)) / BUDGET_LOG
             if file.is_file() and file.stat().st_size > BUDGET_LOG_KEPT:
@@ -208,6 +209,15 @@ class FaultReports:
             return False
         self.threw(record, message, where, stack, kind)
         return True
+
+
+def span_of(request: int, within: int) -> str:
+    """Which span a row measures, so the two rows of one call are joined by their numbers and not mistaken for a disagreement."""
+    if request:
+        return f" This measures request {request} whole: its answer and what ran after it."
+    if within:
+        return f" This measures the command alone, run inside request {within}, whose own row measures the whole of it."
+    return ""
 
 
 def load() -> float:

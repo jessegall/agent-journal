@@ -90,6 +90,8 @@ class Measured(TypedEvent):
     took: float = 0.0
     working: float = 0.0
     after: float = 0.0
+    request: int = 0
+    within: int = 0
     garbage: float = 0.0
     waiting: float = 0.0
     whole_reads: tuple[str, ...] = ()

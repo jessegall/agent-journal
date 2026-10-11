@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 from engine import bus, runtime
 from engine.record import Record
-from engine.timing import EVENT, Sampler, Stopwatch, profiler, waited_to_start
+from engine.timing import EVENT, Sampler, Stopwatch, profiler, request_began, request_ended, waited_to_start
 from controllers.faults import threw
 from engine.disk import DiskFull
 from resources.base import Missing, Refused
@@ -38,7 +38,7 @@ def hook_path(path: str) -> bool:
     return path.startswith(HOOK_PATH)
 
 
-def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Stopwatch, profile=None, stacks: str = "") -> Reply:
+def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Stopwatch, profile=None, stacks: str = "", request: int = 0) -> Reply:
     if not reply.timed:
         return reply
     name = f"{method} {path}" if reply.named is None else f"{method} {path} ({reply.named})"
@@ -50,7 +50,7 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: Sto
         started = time.perf_counter()
         if earlier:
             earlier()
-        began.announce(Record(root, env), kind, name, profile, answered, stacks, (time.perf_counter() - started) * 1000)
+        began.announce(Record(root, env), kind, name, profile, answered, stacks, (time.perf_counter() - started) * 1000, request)
     reply.after = after
     return reply
 
@@ -73,6 +73,7 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     if bus.heard(EVENT):
         sampler.start()
     req = Request(root, params, query, body)
+    request = request_began()
     try:
         with bus.held() as queued:
             try:
@@ -86,7 +87,8 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
                 if profile:
                     profile.disable()
                 stacks = sampler.stop()
-        return guarded(timed(later(reply, lambda: bus.release(queued)), root, params.get("env") or "main", method, path, began, profile, stacks),
+                request_ended()
+        return guarded(timed(later(reply, lambda: bus.release(queued)), root, params.get("env") or "main", method, path, began, profile, stacks, request),
                        root, req.env, f"after {method} {path}")
     except Missing as e:
         return Reply(404, {"error": str(e)})

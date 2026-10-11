@@ -1,4 +1,5 @@
 import cProfile
+import itertools
 import sys
 import threading
 import time
@@ -104,6 +105,22 @@ class Sampler:
 
 
 ARRIVED = threading.local()
+REQUESTS = itertools.count(1)
+CURRENT = threading.local()
+
+
+def request_began() -> int:
+    """The number of the request this thread now answers, so a command it runs says which request it ran inside."""
+    CURRENT.request = next(REQUESTS)
+    return CURRENT.request
+
+
+def request_ended() -> None:
+    CURRENT.request = 0
+
+
+def inside_request() -> int:
+    return getattr(CURRENT, "request", 0)
 
 
 def arrived(waited: float) -> None:
@@ -137,14 +154,14 @@ class Stopwatch:
         return Lap((time.perf_counter() - self.wall) * 1000, (time.thread_time() - self.working) * 1000, waits.total() - self.waiting,
                    whole_reads.since(self.read_whole))
 
-    def announce(self, record: Record, kind: str, name: str, profile: cProfile.Profile | None = None, answered: Lap | None = None, stacks: str = "", after: float = 0.0) -> None:
+    def announce(self, record: Record, kind: str, name: str, profile: cProfile.Profile | None = None, answered: Lap | None = None, stacks: str = "", after: float = 0.0, request: int = 0) -> None:
         if not bus.heard(EVENT):
             return
         total = self.lap()
         answer = answered if answered else total
         bus.announce(None, TIMING, 0, MEASURED, SYSTEM, {
             "root": str(record.root), "env": record.env, "kind": kind, "target": name, "profile": profile, "stacks": stacks,
-            "took": answer.took, "working": answer.working, "after": after,
+            "took": answer.took, "working": answer.working, "after": after, "request": request, "within": 0 if request else inside_request(),
             "garbage": (collecting() - self.garbage) * 1000, "waiting": answer.waiting,
             "whole_reads": list(answer.whole_reads)})
 

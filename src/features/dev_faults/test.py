@@ -345,6 +345,11 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
     lines = [json.loads(line) for line in (runtime.folder(record.root) / "budget.jsonl").read_text().splitlines()]
     assert {"version", "kind", "target", "took", "working", "after", "load", "time"} <= set(lines[-1]) and lines[-1]["target"] == "GET /api/main/starved", \
         "every breach leaves a line with its release, its time and the load, whichever notice it earned"
+    reports.spent(record.root, record.env, "request", "POST /api/run (ticket merge)", 400, working=400, request=7)
+    reports.spent(record.root, record.env, "command", "ticket merge", 400, working=400, within=7)
+    lines = [json.loads(line) for line in (runtime.folder(record.root) / "budget.jsonl").read_text().splitlines()]
+    assert [(line["request"], line["within"]) for line in lines[-2:]] == [(7, 0), (0, 7)] and "inside request 7" in " ".join(r.brief for r in Notifications(record, actor=SYSTEM).rows.every()), \
+        "the row of a request and the row of the command it ran carry the request's number, and each says which span it measures"
     monkeypatch.setattr("features.dev_faults.reports.load", lambda: 0.0)
     reports.spent(record.root, record.env, "request", "GET /api/main/board", 400, working=400)
     assert "request GET /api/main/board is slower than its budget" in notified(record), "its next run is held to the budget"
