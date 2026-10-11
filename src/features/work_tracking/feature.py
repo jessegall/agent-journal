@@ -1,6 +1,6 @@
 from controllers.types import Works
 from engine.events.agents import AgentReported, ToolFinished
-from engine.events.engine import ClockTicked
+from engine.events.engine import ClockTicked, FileEdited
 from engine.events.resources import TodoCompleted, WorkCreated
 from features.plans.resource import Plan
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
@@ -39,6 +39,18 @@ ON_TODO = Work(n=3, title="Fix the crash", data={"todo": 5})
 ENDED_ON_TODO = Work(n=3, title="Fix the crash", completed=2.0, data={"todo": 5})
 STARTED_TODO = Todo(n=5, title="Fix the crash", data={"status": "started"})
 ran = AgentRow(n=1, title="claude-1", data={"commands": [{"tool": "Bash", "command": "ls", "at": 10.0, "done": 11.0}]})
+
+
+class ChangesOnly:
+    def __init__(self, *paths: str) -> None:
+        self.paths = list(paths)
+
+    def __eq__(self, changed: list) -> bool:
+        return [change["path"] for change in changed] == self.paths
+
+
+def edited(path: str, before: str, after: str) -> FileEdited:
+    return FileEdited(agent=1, path=path, kind="edited", before=before, after=after, added=1, removed=0)
 
 
 class LoggedAs:
@@ -173,7 +185,12 @@ class WorkFeature(Feature):
             Given(closed(7), rows=[Todo(n=8, title="Deploy"), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1}) >> Unchanged(),
             Given(closed(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"})], settings={"work_tracking.ask_blocked_every": 1}) >> Unchanged(),
         ])
-        journal.events.handler(TrackFiles())
+        journal.events.handler(TrackFiles(), expects=[
+            Given(edited("src/app.py", "a\n", "a\nb\n"), rows=[WORKING, AGENT_ROW]) >> Updated(Work(n=3), changed=ChangesOnly("src/app.py")),
+            Given(edited("src/app.py", "a\n", "a\n"), rows=[WORKING, AGENT_ROW]) >> Unchanged(),
+            Given(edited("src/app.py", "a\n", "a\nb\n"), rows=[PARKED, AGENT_ROW]) >> Unchanged(),
+            Given(edited("src/app.py", "a\n", "a\nb\n"), rows=[AGENT_ROW]) >> Unchanged(),
+        ])
         journal.events.handler(RemindOpenWork(), expects=[
             Given(AgentReported(agent=1), rows=[WORKING, AGENT_ROW]) >> Nudged("unlogged"),
             Given(AgentReported(agent=1), rows=[Work(n=3, title="Write the report", sections=[{"title": "1", "body": "started"}]), AGENT_ROW]) >> Nudged("open"),
