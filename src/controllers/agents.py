@@ -172,7 +172,7 @@ class Agents(Controller):
             if pending.is_due(time.time()):
                 self._flush(int(n))
             self._emit(int(n), action, **fact)
-            row = self.load(n)
+        row = self.load(n)
         if self.record.memo is not None:
             self.record.memo[self.type, row.title] = row
         return row
