@@ -178,4 +178,5 @@ def main():
     proof.dump(reports, out / "report.json")
 
 
-main()
+if __name__ == "__main__":
+    main()
