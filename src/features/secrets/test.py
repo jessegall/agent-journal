@@ -74,6 +74,12 @@ def test_a_secret_made_with_instructions_that_name_a_command_arrives_with_its_pr
     assert stated.programs == ["curl"], "a program shown in the instructions is allowed, a shell or interpreter never is"
     assert made.create("Plain", kind="api key", brief="Used by the billing job.").programs == [], "instructions that name no command leave the list empty"
     assert made.create("Chosen", kind="api key", brief="curl -H @- https://x", programs=["gh"]).programs == ["gh"], "programs the user chose are kept"
+    from engine.wording import appended
+    from features.secrets.announcing import updated_added
+    assert updated_added([stated.n], record) == 'the user changed secret "Linear": it may now run curl, so work that waited on it can go on', \
+        "the line an agent is sent for a secret the user changed says who changed it, what it may now run, and that work waiting on it can go on"
+    assert appended("secret.updated", {"numbers": [stated.n], "record": record}, f"secret {stated.n} updated").startswith(f"secret {stated.n} updated - the user changed"), \
+        "and follows the bare 'updated' line"
 
 
 def test_a_key_is_not_requested_for_a_service_a_connected_mcp_server_reaches(tmp_path, monkeypatch):

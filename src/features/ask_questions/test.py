@@ -112,6 +112,17 @@ def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_
     answered, = [n for n in Nudges(record, actor=SYSTEM).all() if n.title == f"question {asked.n} is answered - act on the answer"]
     assert ("this one" in answered.brief, "work.created" in answered.until) == (True, True), \
         "the agent is told to act on the answer, and told again until it starts, logs or ends work"
+    from features.ask_questions.answers import answers_added
+    assert answers_added([asked.n], record) == 'the user answered "which one?": wrote "this one"', "the line an agent is sent for a closed question carries what the user did to it"
+    asking = Questions(record, actor=AGENT).create("which colour?", options=[{"title": "red"}, {"title": "blue"}], pick=1)
+    Questions(record, actor=USER).complete(asking.n, how="red")
+    back = Questions(record, actor=AGENT).create("which size?", options=[{"title": "S"}, {"title": "L"}], pick=1)
+    Questions(record, actor=USER).complete(back.n, how="Is it already done, right?")
+    mine = Questions(record, actor=AGENT).create("which font?", options=[{"title": "serif"}, {"title": "sans"}], pick=1)
+    Questions(record, actor=AGENT).complete(mine.n, how="sans", reason="the user said sans earlier")
+    assert (answers_added([asking.n], record), answers_added([back.n], record).endswith("so reply to the user"), answers_added([mine.n], record)) == \
+        ('the user answered "which colour?": picked "red"', True, ""), \
+        "a picked option is named by its title, free text that asks something back says a reply is owed, and an answer the agent gave itself adds nothing"
     from types import SimpleNamespace
     from features.ask_questions import handlers
     pressed = []

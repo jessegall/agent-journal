@@ -2,6 +2,7 @@ from controllers.base import SAVE_REWRITES
 from controllers.features import SECRET_CHECKS
 from features.base import Feature
 from features.journal import Journal
+from features.secrets.announcing import updated_added
 from features.secrets.controller import Secrets
 from features.secrets.details import SecretsDetails
 from features.secrets.guard import RefuseSecretsFile
@@ -17,6 +18,7 @@ class SecretsFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(PurgeDeletedSecrets())
+        journal.agent.append_to_line("secret.updated", updated_added)
         journal.agent.interceptor(RefuseSecretsFile())
         SAVE_REWRITES.add(self, LeakAlarm())
         SECRET_CHECKS.add(self, refuse_secret_that_runs_commands)
