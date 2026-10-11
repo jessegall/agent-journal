@@ -190,6 +190,8 @@ def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
             assert nudge["behaviour"] in feature.behaviours, f"{feature.name}.{key} names the switch {nudge['behaviour']!r}, which the feature does not declare"
             assert feature.switched_by(key) == nudge["behaviour"], \
                 f"{feature.name}.{key} is told to the viewer under a switch the journal does not honour"
+            assert nudge["guarantee"].endswith("."), \
+                f"{feature.name}.{key} is shown to the user without a sentence saying when it is sent and what the agent is told"
 
     provider = PROVIDERS["claude"]()
     asked: list = []

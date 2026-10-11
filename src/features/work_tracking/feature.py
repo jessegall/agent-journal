@@ -13,12 +13,18 @@ from features.work_tracking.interceptors import RefuseHeldCalls, RefuseWaitingIn
 
 class WorkFeature(Feature):
     details = WorkDetails
-    nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, most=1),
-              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, most=1),
-              Nudge("next while a helper works", behaviour="auto", about=next_while_helping, private=False, most=1),
-              Nudge("carry on", behaviour="carry on", about=stopped_with_work, once=True),
-              Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, most=CARRY_ON_TIMES),
-              Nudge("nothing ready", behaviour="carry on", about=nothing_ready, most=CARRY_ON_TIMES))
+    nudges = (Nudge("next", behaviour="auto", about=next_row(standing=False), private=False, most=1,
+                    guarantee="With auto mode on and no work in hand, the agent is offered the next to-do that is ready."),
+              Nudge("next while waiting", behaviour="auto", about=next_row(standing=True), private=False, most=1,
+                    guarantee="When the work in hand is waiting on something, the agent is offered the next ready to-do rather than sitting out the wait."),
+              Nudge("next while a helper works", behaviour="auto", about=next_while_helping, private=False, most=1,
+                    guarantee="When the work in hand waits on a helper, the agent is offered the next ready to-do instead of waiting for it."),
+              Nudge("carry on", behaviour="carry on", about=stopped_with_work, once=True,
+                    guarantee="When the agent stops with work still in hand, it is asked once to carry on with it."),
+              Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, most=CARRY_ON_TIMES,
+                    guarantee="With auto mode on, an agent that stops while the user has been quiet is told to carry on, a few times."),
+              Nudge("nothing ready", behaviour="carry on", about=nothing_ready, most=CARRY_ON_TIMES,
+                    guarantee="When every open row is waiting on something, the agent is told there is nothing ready to take."))
 
     def chosen(self, record, key: str) -> bool:
         return chosen_or_steered(super().chosen(record, key), record, key)

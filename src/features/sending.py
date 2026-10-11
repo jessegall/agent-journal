@@ -18,6 +18,8 @@ class Nudge:
     line: str
     behaviour: str
     about: Callable
+    guarantee: str = ""
+    """What this nudge promises, in the words the user reads on the Settings page: when it is sent, and what the agent is told. The line itself is written for the agent and says it in the agent's words."""
     private: bool = True
     pace: Callable | None = None
     once: bool = False
@@ -32,7 +34,7 @@ class Nudge:
 
     def describe(self) -> dict:
         """What the viewer needs to show a nudge beside the switch that governs it: the behaviour that switches it, and its own cadence when it does not take that behaviour's."""
-        return {"behaviour": self.behaviour, "timing": self.timing.described(), "once": self.once, "most": self.most}
+        return {"behaviour": self.behaviour, "guarantee": self.guarantee, "timing": self.timing.described(), "once": self.once, "most": self.most}
 
     def cadence(self, context) -> trigger.Trigger:
         cadence = self.timing or context.feature.cadence(context.record, self.behaviour)

@@ -6,7 +6,7 @@
         "where": [
             {
                 "inside": {
-                    "extendsAny": "FeatureDetails"
+                    "extendsAny": "Feature*"
                 }
             },
             {
@@ -21,7 +21,8 @@
                                 "label",
                                 "hint",
                                 "explains",
-                                "trigger_label"
+                                "trigger_label",
+                                "guarantee"
                             ]
                         }
                     ]

@@ -27,7 +27,10 @@ STILL_TIMES = 3
 
 class PlansFeature(Feature):
     details = PlansDetails
-    nudges = (Nudge("still", behaviour="still", about=still_plans, most=STILL_TIMES), Nudge("blocked", behaviour="blocked", about=blocked_plans))
+    nudges = (Nudge("still", behaviour="still", about=still_plans, most=STILL_TIMES,
+                    guarantee="When a running plan has not moved for a while, the agent is told, a few times."),
+              Nudge("blocked", behaviour="blocked", about=blocked_plans,
+                    guarantee="When a running plan has blocked to-dos, the agent is told to check whether each one is still blocked."))
 
     def register(self, journal: Journal) -> None:
         SUMMARY_PARTS.add(None, plans_shown, key="plans")

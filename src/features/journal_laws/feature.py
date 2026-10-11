@@ -15,7 +15,8 @@ __all__ = ["Outputs"]
 
 class JournalLaws(Feature):
     details = LawDetails
-    nudges = (Nudge(TOO_LONG, behaviour=TOO_LONG, about=long_briefings),)
+    nudges = (Nudge(TOO_LONG, behaviour=TOO_LONG, about=long_briefings,
+                    guarantee="When a briefing file has grown longer than the agent's provider will read, the agent is told which file and by how much."),)
 
     def register(self, journal: Journal) -> None:
         START_PARTS.add(self, carry, key=LAW)

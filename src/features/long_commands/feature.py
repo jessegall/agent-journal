@@ -8,9 +8,12 @@ from features.sending import Nudge
 
 class LongCommands(Feature):
     details = LongCommandsDetails
-    nudges = (Nudge(RUN_ENDED, behaviour=WATCHED, about=ended_runs, once=True),
-              Nudge(RUN_STALLED, behaviour=WATCHED, about=stalled_runs, once=True),
-              Nudge(RUN_OPEN, behaviour=WATCHED, about=open_runs, once=True))
+    nudges = (Nudge(RUN_ENDED, behaviour=WATCHED, about=ended_runs, once=True,
+                    guarantee="When a command the agent left running finishes, it is told once, with how the command ended."),
+              Nudge(RUN_STALLED, behaviour=WATCHED, about=stalled_runs, once=True,
+                    guarantee="When a command the agent left running has shown nothing new for a while, it is told once, so a hung run is not waited on for ever."),
+              Nudge(RUN_OPEN, behaviour=WATCHED, about=open_runs, once=True,
+                    guarantee="When the agent stops while a command it started is still running, it is told once, so nothing is left running unwatched."))
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(MoveLongCommands())

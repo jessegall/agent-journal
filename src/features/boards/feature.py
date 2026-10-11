@@ -22,7 +22,8 @@ def board_of_message(record, message) -> int:
 
 class BoardsFeature(Feature):
     details = BoardsDetails
-    nudges = (Nudge("ideas", behaviour="ideas", about=boards_wanting_ideas),)
+    nudges = (Nudge("ideas", behaviour="ideas", about=boards_wanting_ideas,
+                    guarantee="When a board asks for ideas, the agent is told to think up what might be wanted on it."),)
     sequences = SEQUENCES
 
     def register(self, journal: Journal) -> None:

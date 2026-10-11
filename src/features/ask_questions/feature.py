@@ -9,7 +9,8 @@ from features.ask_questions.interceptors import AskedOnce, AskInTheJournal, AskO
 
 class AskQuestions(Feature):
     details = AskQuestionsDetails
-    nudges = (Nudge("settled", behaviour="settled", about=open_a_day),)
+    nudges = (Nudge("settled", behaviour="settled", about=open_a_day,
+                    guarantee="When a question has waited a day for an answer, the agent is told, so a question is not left hanging for ever."),)
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(AskInsteadOfProse())

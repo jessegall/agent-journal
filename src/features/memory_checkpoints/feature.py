@@ -8,7 +8,8 @@ from features.journal import Journal
 
 class MemoryCheckpoints(Feature):
     details = MemoryCheckpointsDetails
-    nudges = (Nudge("reread", behaviour="rereading", about=owed_reading, private=False),)
+    nudges = (Nudge("reread", behaviour="rereading", about=owed_reading, private=False,
+                    guarantee="When the weekly reading of every rule and fact is owed, the agent is told to do it."),)
 
     def register(self, journal: Journal) -> None:
         journal.commands.add("rule", Reread())

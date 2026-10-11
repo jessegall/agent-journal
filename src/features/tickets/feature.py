@@ -27,11 +27,16 @@ __all__ = ["Tickets"]
 class TicketsFeature(Feature):
     details = TicketsDetails
     nudges = (
-        Nudge("ticket_asks", behaviour="asks", about=ticket_calls("ticket_asks")),
-        Nudge("ticket_awaits", behaviour="awaits", about=ticket_calls("ticket_awaits")),
-        Nudge(WAITS, behaviour="decisions", about=decisions(WAITS)),
-        Nudge(DRAFTS, behaviour="decisions", about=decisions(DRAFTS)),
-        Nudge("check_board", behaviour="board check", about=boards_to_check),
+        Nudge("ticket_asks", behaviour="asks", about=ticket_calls("ticket_asks"),
+              guarantee="When a ticket's own agent asks a question, the agent orchestrating its board is told, and told again until it is answered."),
+        Nudge("ticket_awaits", behaviour="awaits", about=ticket_calls("ticket_awaits"),
+              guarantee="When a ticket's own agent is waiting on something, the agent orchestrating its board is told what it waits for."),
+        Nudge(WAITS, behaviour="decisions", about=decisions(WAITS),
+              guarantee="When a ticket proposes that it should wait on another, the orchestrating agent is asked to accept or decline it."),
+        Nudge(DRAFTS, behaviour="decisions", about=decisions(DRAFTS),
+              guarantee="While a drafted ticket waits to be confirmed, the orchestrating agent is told it is waiting."),
+        Nudge("check_board", behaviour="board check", about=boards_to_check,
+              guarantee="While a board has tickets running, the agent orchestrating it is told to look in on their agents."),
     )
 
     def register(self, journal: Journal) -> None:

@@ -14,7 +14,8 @@ __all__ = ["Sequences"]
 
 class SequencesFeature(Feature):
     details = SequencesDetails
-    nudges = (Nudge(UNFINISHED, behaviour=UNFINISHED, about=standing_steps, private=False, pace=step_pace),)
+    nudges = (Nudge(UNFINISHED, behaviour=UNFINISHED, about=standing_steps, private=False, pace=step_pace,
+                    guarantee="While a sequence stands at a step, the agent is told which step it is on until it moves on or gives the sequence up."),)
     sequences = SEQUENCES
 
     def register(self, journal: Journal) -> None:
