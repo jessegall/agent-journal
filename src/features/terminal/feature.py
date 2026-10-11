@@ -1,3 +1,6 @@
+from engine.events.engine import CommandRan
+from expects import Given, Unchanged
+from resources.types import AgentRow
 from features.base import Feature
 from features.journal import Journal
 from features.terminal.details import TerminalDetails
@@ -10,4 +13,6 @@ class Terminal(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.routes.add(get_terminal)
-        journal.events.handler(KeepCommands())
+        journal.events.handler(KeepCommands(), expects=[
+            Given(CommandRan(agent=1, tool="Bash", command="ls", output="a.txt"), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        ])

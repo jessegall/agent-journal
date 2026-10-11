@@ -16,7 +16,9 @@ class StatusLine(Feature):
     def register(self, journal: Journal) -> None:
         journal.routes.add(get_bar)
         journal.commands.add("agent", ShowBar(), expects=[Given((Agents,)) >> Answered({"queue": []})])
-        journal.events.handler(WriteBar())
+        journal.events.handler(WriteBar(), expects=[
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        ])
         journal.events.handler(RecordWhatItDoes(), expects=[
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, data={"doing": "Reading orchestra.js"})]) >> Updated(AgentRow(n=1), doing=""),
             Given(AgentReported(agent=1), rows=[AgentRow(n=1)]) >> Unchanged(),

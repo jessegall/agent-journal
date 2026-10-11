@@ -1,3 +1,4 @@
+from engine.events.agents import AgentReported
 from features.base import Feature
 from engine.events.engine import AgentMessageSent
 from expects import Given, Unchanged, Updated
@@ -11,7 +12,9 @@ class Thinking(Feature):
     details = ThinkingDetails
 
     def register(self, journal: Journal) -> None:
-        journal.events.handler(FollowThinking())
+        journal.events.handler(FollowThinking(), expects=[
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        ])
         journal.events.handler(ClearOnMessage(), expects=[
             Given(AgentMessageSent(agent=1, text="Done with the header."), rows=[AgentRow(n=1, data={"thinking": "weighing the header"})])
                 >> Updated(AgentRow(n=1), thinking=""),
