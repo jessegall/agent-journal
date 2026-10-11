@@ -8,7 +8,7 @@ from features import actions, trigger
 from features.triggers import watched
 from features.sending import Nudge, Sent, send
 from features.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Context, Handler, ToolInterceptor
-from engine.gates import Runs
+from engine.gates import Runs, STILL_HELD
 from features.recital import COMMANDS, mentioned, searched
 from features.triggers.controller import Triggers, holding
 from features.triggers.resource import DENY, FROM_USER, HOLD, IDLE, INSTRUCT, MESSAGE, NUDGE, START, WORKING, Trigger
@@ -74,6 +74,15 @@ class SayWhatTheJournalShowsOnToolUse(Handler):
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         send(context, state_nudges(context))
+
+
+def reminding(record, session: str) -> bool:
+    """Whether the behaviour for facts is on, which is all that keeps a hold of a trigger standing: switching it off lets every one go."""
+    from features import FEATURES
+    return FEATURES["triggers"].on(record, REMINDING)
+
+
+STILL_HELD["triggers.hold"] = reminding
 
 
 class HoldWhileTheJournalShows(Handler):

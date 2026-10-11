@@ -9,6 +9,7 @@ from engine.extension import Extension
 
 POLICIES = Extension()
 STILL_HELD: dict = {}
+"""Whether a feature still stands by a hold, by the key of the hold or the key every hold of a kind starts with before its own number."""
 AFTERWARDS = Extension()
 CANCELERS = Extension()
 RESPONDERS = Extension()
@@ -95,7 +96,8 @@ def holds(record, session: str, subagent: bool = False) -> list[Hold]:
     standing = []
     for key, raw in gate.all().items():
         one = Hold.from_json(raw)
-        if one.why and key in STILL_HELD and not STILL_HELD[key](record, session):
+        still = next((check for stands, check in STILL_HELD.items() if key == stands or key.startswith(f"{stands}.")), None)
+        if one.why and still and not still(record, session):
             with gate.changing() as kept:
                 kept.pop(key, None)
             continue
