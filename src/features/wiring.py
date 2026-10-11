@@ -1,9 +1,11 @@
 import inspect
+import time
 from typing import get_type_hints
 
 from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents
 from engine import bus
+from engine.developing import developing
 from engine.events.base import AgentEvent
 from engine.gates import CANCELERS, RESPONDERS, HookCall
 from engine.reach import Guard
@@ -14,6 +16,7 @@ from resources.base import SYSTEM, USER, Refused
 from features.routing import FEATURE_ROUTES
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE, REGISTERED, Answerer, Handler, Listener, Refuser, Registration
 from features.promises import PROMISED, Promise
+from expects.watching import WATCH
 
 
 def wanted(part, feature, record, row, timed: bool = True) -> bool:
@@ -34,6 +37,12 @@ def agent_row(record, n: int):
     return record.memo[key]
 
 
+def watched(promise, event, record, began: float) -> None:
+    """Where the journal develops itself, a handler's run is noted for the watch, which looks at it elsewhere and on its own time; a run with no record is not watched."""
+    if record is not None and developing(record.root.parent):
+        WATCH.ran(promise, event, record, began)
+
+
 class Events:
     def __init__(self, feature):
         self.feature = feature
@@ -41,7 +50,8 @@ class Events:
 
     def handler(self, handler: Handler, expects=()) -> None:
         kind, feature = get_type_hints(handler.handle)["event"], self.feature
-        PROMISED.add(Promise(feature, "handler", type(handler).__name__, handler, kind, tuple(expects)))
+        promise = Promise(feature, "handler", type(handler).__name__, handler, kind, tuple(expects))
+        PROMISED.add(promise)
 
         def run(event, record) -> None:
             typed = kind.read(event)
@@ -51,7 +61,9 @@ class Events:
                 return
             row = agent_row(record, typed.agent) if isinstance(typed, AgentEvent) else None
             if wanted(handler, feature, record, row):
+                began = time.time()
                 handler.handle(AgentContext.of(feature, record, row) if row else Context.of(feature, record), typed)
+                watched(promise, typed, record, began)
         self.names.append(kind.name())
         for pattern in kind.patterns(handler.hooks):
             bus.on(pattern, run, enabled=feature.enabled)

@@ -579,3 +579,47 @@ def test_a_service_nobody_serves_is_refused_by_name_rather_than_left_out():
     assert set(world.given_to({"chat": object, "clock": object})) == {"chat", "clock"}, "a service the play serves is handed over"
     with pytest.raises(NoSuchService, match="'ledger'"):
         world.given_to({"chat": object, "ledger": object})
+
+
+def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_path_and_one_that_did_not_do_it_is_told(tmp_path):
+    import time
+    import features
+    from engine.events.resources import ResourceCreated
+    from expects.entries import scratch
+    from expects.watching import BROKEN, WAIT, Watch
+    from features.parts import Context
+    from features.promises import PROMISED
+    from resources.base import USER
+    from resources.types import Environment, Rule
+
+    features.load()
+    promise = next(one for one in PROMISED.each if one.name == "HoldTicketKnowledge")
+    live = Given(ResourceCreated(n=7, type="rule", action="created", actor=USER),
+                 rows=[Environment(n=4, title="t", data={"owner": "ticket:3"}), Rule(n=7, title="Never skip the gate")])
+    told = []
+    BROKEN.add(None, lambda record, title, brief: told.append((title, brief)))
+    try:
+        for ran in (False, True):
+            record, told[:] = scratch(live, tmp_path), []
+            watch, event, began = Watch(background=False), live.on, time.time() - 1
+            if ran:
+                promise.part.handle(Context.of(promise.feature, record), event)
+            watch.ran(promise, event, record, began)
+            assert (watch.inbox.qsize(), watch.pending) == (1, []), "the run's own path only notes that it ran; nothing is tested there"
+            watch.settle()
+            assert [one.number for one in watch.pending] == [0], "the live world is the world the first expectation states, its numbers read as the live ones"
+            assert watch.pending[0].binding.numbers == {("rule", 1): 7}, "the Given's rule 1 is the live rule 7"
+            watch.sweep(began + WAIT - 1)
+            assert told == [], "nothing is looked at before its wait is over"
+            watch.sweep(began + WAIT + 1)
+            assert [title for title, _ in told] == ([] if ran else [told[0][0]]), "a promise that came true says nothing; one that did not is told"
+            assert ran or "rule 1→7" in told[0][1], "what was told names the numbers bound"
+        other = Given(live.on, rows=[Environment(n=4, title="t", data={"owner": ""}), Rule(n=7, title="Never skip the gate")])
+        watch = Watch(background=False)
+        watch.ran(promise, other.on, scratch(other, tmp_path), time.time())
+        watch.settle()
+        assert watch.pending == [], "a world no expectation states is one the handler never promised anything about"
+        watch.ran(promise, other.on, None, time.time())
+        assert watch.inbox.qsize() == 0, "a run with no record cannot be watched: there is nothing to read what it did from"
+    finally:
+        BROKEN.entries = [entry for entry in BROKEN.entries if entry.owner is not None]
