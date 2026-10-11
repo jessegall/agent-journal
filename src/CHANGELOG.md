@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.15 — A test leaves the process as it found it
+
+- A server stops its pool of workers when it is closed, and every test starts and ends with the process fresh: nothing watched, nothing deferred, no agent row waiting, no server left open. A run of the core flows used to leave a hundred idle threads behind, and state one test left was the cause of every test that passed alone and failed in a run.
+
 ## 2.269.14 — An engine stops listing the project with git on every tick
 
 - The plugin suggestions are decided once for each offers file, and a tick that finds a run already going starts no other. An engine was relisting every tracked file of every repository in the project, for every agent older than an hour, every five seconds; on a large multi-repository project that run took longer than a tick, so runs piled up twelve deep and two engines each held about 8 percent of a core without pause.
