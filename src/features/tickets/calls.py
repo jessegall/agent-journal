@@ -15,6 +15,36 @@ WAITS_ON_PEOPLE = re.compile(r"\b(?:orchestrator|user|you|your|approv\w*|decisio
                              r"|gebruiker|jij|jouw|goedkeur\w*|goedgekeurd|beslissing|beslis\w*|antwoord\w*|beoordel\w*)\b", re.IGNORECASE)
 
 
+NEEDS_THE_USER = re.compile(r"\b(?:secrets?|passwords?|credentials?|tokens?|api[ -]?keys?|logins?|2fa|production|prod|live\s+(?:site|server|data)|deploy\w*|release\w*|publish\w*"
+                            r"|send\w*\s+(?:an?\s+)?(?:e-?mail|message|invoice)|e-?mails?|payments?|billing|invoice\w*|refund\w*|spend\w*|purchase\w*|force[- ]push"
+                            r"|delete\w*\s+(?:the\s+)?(?:data|database|branch)|wachtwoord|geheim\w*|productie|betaling\w*)\b", re.IGNORECASE)
+DECIDE = ("decide it yourself and write down what you chose: journal --env {env} question answer {question} --how \"<choice>\" --set reason=\"<what you chose and why>\"; "
+          "its agent is told the answer at once, and it is the answer, so do not ask the user")
+ASK_THE_USER = ("this one is the user's: it asks for a secret or a login, or for something outward-facing or in production, so put it to them "
+                "in a question of your own and answer it with what they say")
+SAYS = ("answer it when it is yours to decide with journal --env {env} question answer {question} --how \"<choice>\" --set reason=\"<why>\"; "
+        "its agent is told the answer at once. Otherwise ask the user")
+
+
+def needs_the_user(question) -> bool:
+    """Whether a ticket agent's question is the user's whatever the mode: a secret or login, anything outward-facing or in production, money."""
+    return bool(NEEDS_THE_USER.search(f"{question.title} {question.brief}"))
+
+
+def deciding(record) -> bool:
+    """Whether the orchestrator answers its ticket agents' questions itself: auto mode on and the work mode orchestrator."""
+    from features.work_modes.details import ORCHESTRATOR
+    from features.work_modes.modes import mode_of
+    from features.work_tracking.auto import automatic
+    return automatic(record) and mode_of(record) == ORCHESTRATOR
+
+
+def rule_for(tickets, question, env) -> str:
+    if needs_the_user(question):
+        return ASK_THE_USER
+    return (DECIDE if deciding(tickets.record) else SAYS).format(env=env, question=question.n)
+
+
 def handed_in(tickets, ticket) -> bool:
     working = Agents(tickets.record, actor=SYSTEM).state(ticket.work_environment) == WORKING_STATE
     return tickets._plan_status(ticket) == PLAN_DONE and tickets._clean(ticket) and not working
@@ -23,7 +53,8 @@ def handed_in(tickets, ticket) -> bool:
 def calls(tickets, ticket) -> list[tuple[str, str, dict, int]]:
     place = Record(tickets.record.root, ticket.work_environment)
     soon = int(TicketsDetails.values(tickets.record).remind_every)
-    asks = [("ticket_asks", q.ref, {"question": q.n, "text": q.title, "env": ticket.work_environment}, soon) for q in Questions(place, actor=SYSTEM).rows.standing()]
+    asks = [("ticket_asks", q.ref, {"question": q.n, "text": q.title, "env": ticket.work_environment, "rule": rule_for(tickets, q, ticket.work_environment)}, soon)
+            for q in Questions(place, actor=SYSTEM).rows.standing()]
     awaits = [("ticket_awaits", f"{w.n}|{w.awaiting}", {"text": w.awaiting}, soon)
               for w in Works(place, actor=SYSTEM).rows.standing() if w.awaiting and waits_on_people(tickets.record.root, w.awaiting)]
     messages = Messages(place, actor=SYSTEM)

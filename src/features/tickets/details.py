@@ -64,8 +64,7 @@ class TicketsDetails(FeatureDetails):
             reply_kept=True,
             while_waiting=True,
             title="ticket {{ticket}}, {{title}}, asks question {{question}} - {{text}}",
-            brief="answer it when it is yours to decide with journal --env {{env}} question answer {{question}} --how \"<choice>\" "
-                  "--set reason=\"<why>\"; its agent is told the answer at once. Otherwise ask the user",
+            brief="{{rule}}",
         ),
         Line(
             name="ticket_awaits",

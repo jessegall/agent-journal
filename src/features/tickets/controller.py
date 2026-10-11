@@ -631,7 +631,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 f"Commit your work on your own branch without releasing it, with no version bump and no tag: the release "
                 f"happens when it is merged. Say when it is done: whoever runs the board merges it into "
                 f"{into if into != 'HEAD' else 'the project branch'} with journal ticket merge. "
-                f"Never merge it yourself, into that branch or any other."
+                f"Never merge it yourself, into that branch or any other. When the one who runs your board answers a question of yours, "
+                f"its answer is the answer, the user's included: act on it, and never file a question that has been answered."
                 + (f" Its owner is the {ticket.owner} domain: hand its work to that domain's lead first." if ticket.owner else "")
                 + self._wait_note(ticket, into)
                 + (f" The user declined its proposed wait on {', '.join(ticket.declined)}: do not wait for them." if ticket.declined else "")

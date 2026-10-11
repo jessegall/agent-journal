@@ -20,7 +20,10 @@ ORCHESTRATION = ShippedSequence(
                                   "\"<the change>\"; accept or decline proposed waits with journal ticket accept_dependencies <n> or "
                                   "decline_dependencies <n> --why \"<reason>\"; confirm drafts with journal ticket confirm <n> --why "
                                   "\"<reason>\". Accept the waits between the cards now. The user keeps the checkpoints and any change "
-                                  "to the board's goal; say so in one line."),
+                                  "to the board's goal; say so in one line. When auto mode is on, the questions the ticket agents file are yours as "
+                                  "well: answer them with journal --env <ticket's environment> question answer <n> --how \"<choice>\" "
+                                  "--set reason=\"<what you chose and why>\", and write down what you chose; go to the user only for "
+                                  "what needs them: a secret or a login, anything outward-facing or in production."),
         ("Start the tickets", "Choose each ticket's model as you would for any dispatch, the least expensive one that does the job "
                               "well, then move every ticket into the board's start stage in the order they must run: journal ticket "
                               "move <n> \"<start stage>\" --model <model>. A ticket started without a model is refused. Each agent "

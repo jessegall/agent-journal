@@ -92,7 +92,8 @@ class WakeTheTicketAgent(Handler):
             return
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         try:
-            tickets.tell(n, f"Your question {question.n}, {question.title}, is answered: {question.outcome}")
+            tickets.tell(n, f"Your question {question.n}, {question.title}, is answered: {question.outcome}. That is the answer of the one who runs your board: "
+                            f"act on it, and never file the question again.")
         except Refused:
             return
 
