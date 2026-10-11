@@ -321,7 +321,7 @@ def subagents_of(home: Record, rows: list[dict]) -> list[dict]:
                 state = "stopped"
             case _:
                 state = "finished"
-        found.append({**row, "state": state, "task": formatted(row.get("task", ""), home, VIEWER),
+        found.append({**row, "state": state, "task": formatted(row.get("task", ""), home, VIEWER), "latest": formatted(row.get("latest", ""), home, VIEWER),
                       "outcome": formatted(row.get("outcome", ""), home, VIEWER),
                       "refusal": formatted(row.get("refusal", ""), home, VIEWER)})
     return found

@@ -384,7 +384,7 @@ class AgentRow(Shape, Resource):
     held, eager = None, True
     indexed = ("parent", "at")
     takes_comments = False
-    formatted_data = {"cards": ("label", "detail"), "subagent_rows": ("task",), "thoughts": ("text",)}
+    formatted_data = {"cards": ("label", "detail"), "subagent_rows": ("task", "latest"), "thoughts": ("text",)}
     event_labels = {"reported": "Agent reported", "heard": "Agent heard the journal", "updated": "Agent updated"}
     icon = "bot"
     in_sidebar = False

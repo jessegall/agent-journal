@@ -69,6 +69,7 @@ class Crew:
     ended: dict = field(default_factory=dict)
     errors: dict = field(default_factory=dict)
     moved_to_background: set = field(default_factory=set)
+    sent: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -92,6 +93,7 @@ class ClaudeSubagentRow(SubagentRow):
     refusal: str | None
     skills: list[str]
     facts: SubagentFacts | None
+    latest: str
 
     def to_json(self) -> dict:
         fields = asdict(self)
@@ -606,6 +608,8 @@ class Claude(Provider):
             crew.window.clear()
         for use in self.tool_uses(row):
             crew.window.append(use)
+            if use.name == SENDS and use.to:
+                crew.sent[use.to] = use.message
             if use.name in (*DISPATCHES, "Monitor", "TaskStop") or use.name == "Bash" and use.background:
                 crew.uses.append(use)
         if row.type == "queue-operation" and row.operation == "enqueue":
@@ -647,7 +651,7 @@ class Claude(Provider):
             subagents.append(ClaudeSubagentRow(id=use.id, task=use.description if use.description else "subagent", type=use.subagent_type, model=use.model,
                                                running=running, at=use.at, ended=0.0 if running else done, status="" if running else status,
                                                session=session.stem.removeprefix("agent-") if session else "", task_id=ids.get(use.id, ""),
-                                               refusal=held.errors.get(use.id), skills=self.skills(session),
+                                               refusal=held.errors.get(use.id), skills=self.skills(session), latest=held.sent.get(ids.get(use.id, ""), ""),
                                                facts=subagent_facts(self.recent_rows(session)) if session else None).to_json())
         shells = []
         for use in (u for u in uses if u.name == "Bash" and (u.background or u.id in held.moved_to_background)):

@@ -51,6 +51,10 @@ const toggle = () => (helper.value ? emit("open", props.row) : (unfolded.value =
         </button>
         <template v-if="!helper && unfolded">
             <div class="at-work-unfolded">
+                <template v-if="row.latest">
+                    <span>Latest message to it</span>
+                    <TextDisplay :text="row.latest" />
+                </template>
                 <span>Task</span>
                 <TextDisplay :text="row.task" />
                 <SwitchCase :value="row.state">

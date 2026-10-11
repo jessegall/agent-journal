@@ -421,7 +421,9 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
                 {"type": "tool_use", "id": "fg", "name": "Agent", "input": {"description": "Ada: review", "subagent_type": "reviewer", "model": "sonnet"}},
                 {"type": "tool_use", "id": "bg", "name": "Agent", "input": {"description": "Rex: research", "subagent_type": "Explore", "model": "haiku", "run_in_background": True}}]}},
             {"type": "user", "uuid": "b", "message": {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "fg", "content": "One finding"},
-                                                                                   {"type": "tool_result", "tool_use_id": "bg", "content": "Async agent launched"}]}}]
+                                                                                   {"type": "tool_result", "tool_use_id": "bg", "content": "Async agent launched\nagentId: bg1"}]}},
+            {"type": "assistant", "uuid": "c", "message": {"role": "assistant", "content": [
+                {"type": "tool_use", "id": "sm", "name": "SendMessage", "input": {"to": "bg1", "message": "Also check the phone"}}]}}]
     assert Claude().crew_stamp(transcript) == (), "a conversation with no subagents folder has an empty stamp"
     for agent, use in (("fg1", "fg"), ("bg1", "bg")):
         folder = transcript.with_suffix("") / "subagents"
@@ -435,6 +437,8 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
     assert Claude().crew_stamp(transcript) != before, "a subagent writing changes the stamp, so a waiting orchestrator's crew is read again"
     crew = {sub["task"]: sub["running"] for sub in Claude().crew(transcript)["subagent_rows"]}
     assert crew == {"Ada: review": False, "Rex: research": True}, "a subagent that returned its answer is done; one sent to the background works on until it goes quiet"
+    latest = {sub["task"]: sub["latest"] for sub in Claude().crew(transcript)["subagent_rows"]}
+    assert latest == {"Ada: review": "", "Rex: research": "Also check the phone"}, "a subagent's row carries the last message the main agent sent it, and nothing before one is sent"
 
     from providers.codex import Codex
     parent, child = "01a0fe58-a59b-7910-b452-68b6adf88ce9", "01a0fe67-b6bf-7260-8a22-b2b6bf0f549f"
