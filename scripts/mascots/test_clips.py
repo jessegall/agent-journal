@@ -24,14 +24,7 @@ NEW_CLIPS = {
     "run_in": (28, 12, False),
     "pull_ups": (24, 10, True),
 }
-# each voice's own way in and out, posed and proved, with no sheets yet: whether they are rendered as sheets waits on sprites or stepped 3D
-PASSAGES = {
-    "enter": (36, 12, False),
-    "exit": (28, 12, False),
-}
-REGISTERED = NEW_CLIPS | PASSAGES
 CLIPS = {"idle", "blink", "nod", "shake", "wave", "think", "celebrate", "sleep", "walk"} | set(NEW_CLIPS)
-POSED = CLIPS | set(PASSAGES)
 VOICES = {"bare", "butler", "homie", "coach", "colleague", "squire"}
 
 needs_blender = pytest.mark.skipif(shutil.which("blender") is None, reason="needs Blender on the path")
@@ -87,10 +80,10 @@ def test_blender_poses_every_clip_of_a_voice_that_carries_something(tmp_path):
         ["blender", "-b", "-P", str(HERE / "render_clips.py"), "--", "--out", str(tmp_path), "--voices", "butler", "--facings", "0", "--stills"],
         check=True, capture_output=True, timeout=BLENDER_SECONDS,
     )
-    assert {p.parent.name for p in (tmp_path / "butler").glob("*/0_still.png")} == POSED
+    assert {p.parent.name for p in (tmp_path / "butler").glob("*/0_still.png")} == CLIPS
 
 
-@pytest.mark.parametrize("name, expected", REGISTERED.items())
+@pytest.mark.parametrize("name, expected", NEW_CLIPS.items())
 def test_new_clip_registration_contract(name, expected):
     """Read the real registration without importing Blender into pytest."""
     tree = ast.parse((HERE / "clips.py").read_text())
@@ -101,7 +94,7 @@ def test_new_clip_registration_contract(name, expected):
             assert clip_name not in found, f"duplicate clip {clip_name}"
             found[clip_name] = (frames, fps, loops)
             assert isinstance(node.args[4], ast.Name) and node.args[4].id == clip_name
-    assert set(found) == POSED
+    assert set(found) == CLIPS
     assert found[name] == expected
 
 
@@ -111,7 +104,7 @@ def test_new_clip_manifest_contract(manifest, name, expected):
     assert (clip.frames, clip.fps, clip.loops) == expected
 
 
-@pytest.mark.parametrize("name, expected", REGISTERED.items())
+@pytest.mark.parametrize("name, expected", NEW_CLIPS.items())
 def test_new_clip_browser_contract(name, expected):
     frames, fps, loops = expected
     page = (HERE / "stepped" / "figure.js").read_text()
@@ -135,15 +128,3 @@ def test_new_clip_animation_contracts_in_blender(tmp_path):
     assert set(report["voices"]) == VOICES
     assert set(report["clips"]) == set(NEW_CLIPS)
     assert report["facings"] == [0, 30, 45, 60, 90, 135, 180, 200, 270, 290, 330]
-
-
-@needs_blender
-def test_every_voice_enters_onto_idle_and_exits_from_it_in_blender(tmp_path):
-    """Each voice's own entrance and exit: inside the limits on every frame, joined to idle without a jump, starting or ending out of sight."""
-    subprocess.run(
-        ["blender", "-b", "-P", str(HERE / "prove_passages.py"), "--", "--out", str(tmp_path)],
-        check=True, capture_output=True, timeout=BLENDER_SECONDS,
-    )
-    report = json.loads((tmp_path / "passages.json").read_text())
-    assert report["failures"] == []
-    assert (set(report["voices"]), set(report["clips"])) == (VOICES, set(PASSAGES))

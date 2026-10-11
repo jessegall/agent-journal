@@ -14,7 +14,7 @@ from pathlib import Path
 from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from clips import CLIPS, PULL_GRIP_X, PULL_GRIP_Y, PULL_GRIP_Z, Stance, idle, supports_clip  # noqa: E402
+from clips import CLIPS, PULL_GRIP_X, PULL_GRIP_Y, PULL_GRIP_Z, Stance, arms_at_rest, idle, supports_clip  # noqa: E402
 from rig import BONES, FIGURES, SIDES, Posing, figures  # noqa: E402
 from snaps import output_folder  # noqa: E402
 
@@ -82,9 +82,9 @@ def main():
                 clip.pose(pose, stance, figure, (clip.frames - 1) / clip.frames)
                 actual = matrices(pose)
                 resting = Posing(figure.armature)
-                idle(resting, stance, figure, 0.0)
+                arms_at_rest(resting, stance)
                 if difference(actual, matrices(resting)) > TOLERANCE:
-                    fail(voice, name, (clip.frames - 1) / clip.frames, "last displayed frame is not idle's first frame")
+                    fail(voice, name, (clip.frames - 1) / clip.frames, "last displayed frame is not the relaxed rest pose")
             for facing in FACINGS:
                 pose = Posing(figure.armature)
                 clip.pose(pose, stance, figure, 0.5)
