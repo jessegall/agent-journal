@@ -1,5 +1,6 @@
 import json
 import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from engine import runtime
@@ -29,9 +30,18 @@ def remaining(root: Path) -> dict:
     return {"version": version, "seconds": max(0, round(until - now))} if until - now > -1 else {}
 
 
-def update_state(root: Path) -> dict:
+@dataclass(frozen=True)
+class UpdateState:
     """What a screen needs to know to cover itself: an upgrade under way and its step, the server still booting, an update counting down."""
-    return {"updating": runtime.upgrading(root), "ready": not runtime.booting(root), "step": runtime.upgrade_step(root), "countdown": remaining(root)}
+
+    updating: bool
+    ready: bool
+    step: str
+    countdown: dict
+
+
+def update_state(root: Path) -> dict:
+    return asdict(UpdateState(runtime.upgrading(root), not runtime.booting(root), runtime.upgrade_step(root), remaining(root)))
 
 
 def cancel(root: Path) -> None:
