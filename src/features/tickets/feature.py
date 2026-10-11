@@ -1,11 +1,11 @@
-from engine.events.resources import QuestionAnswered
-from expects import Given, Unchanged
+from engine.events.resources import QuestionAnswered, ResourceCreated
+from expects import Given, Unchanged, Updated
 from features.base import Feature
 from features.boards.resource import Board
 from features.tickets.handlers import TicketClosed
 from features.tickets.resource import Ticket
 from resources.base import USER
-from resources.types import Question
+from resources.types import Environment, Question, Rule, Todo
 from features.journal import Journal
 from features.tickets.commands import ShowTicketTodos
 from features.tickets.controller import Tickets
@@ -33,6 +33,14 @@ __all__ = ["Tickets"]
 
 
 CLOSED = TicketClosed(n=1, type="ticket", action="completed", actor=USER)
+
+
+def made(owner: str = "ticket:3") -> Environment:
+    return Environment(n=1, title="t", data={"owner": owner})
+
+
+def created(type_: str) -> ResourceCreated:
+    return ResourceCreated(n=1, type=type_, action="created", actor=USER)
 
 
 def card(n: int, **data) -> Ticket:
@@ -71,6 +79,10 @@ class TicketsFeature(Feature):
             Given(CLOSED, rows=[card(1), card(2), Board(n=1, title="Launch", data={"started": 5.0})]) >> Unchanged(),
             Given(CLOSED, rows=[card(1), Board(n=1, title="Launch", data={"started": 5.0, "finished": 9.0})]) >> Unchanged(),
         ])
-        journal.events.handler(HoldTicketKnowledge())
+        journal.events.handler(HoldTicketKnowledge(), expects=[
+            Given(created("rule"), rows=[made(), Rule(n=1, title="Never skip the gate")]) >> Updated(Rule(n=1), proposed_for="ticket:3"),
+            Given(created("rule"), rows=[made(owner=""), Rule(n=1, title="Never skip the gate")]) >> Unchanged(),
+            Given(created("todo"), rows=[made(), Todo(n=1, title="Fix the crash")]) >> Unchanged(),
+        ])
         journal.commands.intercept("create", DraftsCarryOneLine())
         journal.commands.intercept("update", DraftsCarryOneLine())
