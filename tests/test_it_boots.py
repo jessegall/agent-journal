@@ -50,6 +50,10 @@ CODE = HERE / "src"
 
 def test_every_import_in_the_package_resolves():
     assert [f"{path.name}:{node.lineno}" for path, node in imports() for alias in node.names if missing(node.module, alias.name)] == []
+    import install
+    source = Path(install.__file__).read_text()
+    assert "sys.path.insert(0, str(PACKAGE))" not in source, \
+        "the package an installer runs from goes last on the path, never first: an older build upgrading a newer one would otherwise shadow it, and a module imported afterwards would come from the build being replaced"
 
 
 @pytest.mark.parametrize("name", list(DRIVERS))

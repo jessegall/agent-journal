@@ -465,7 +465,7 @@ def timed(root: Path, step: str):
         yield
     finally:
         if str(PACKAGE) not in sys.path:
-            sys.path.insert(0, str(PACKAGE))
+            sys.path.append(str(PACKAGE))
         from engine.runtime import record_step
         record_step(root, step, time.perf_counter() - began, sum(os.times()[:4]) - worked, version_in(code(root)))
 
@@ -473,7 +473,7 @@ def timed(root: Path, step: str):
 def stepping(root: Path, text: str) -> None:
     """Says which step the running upgrade is on, in the mark it holds, for the viewer and the status line to read."""
     if str(PACKAGE) not in sys.path:
-        sys.path.insert(0, str(PACKAGE))
+        sys.path.append(str(PACKAGE))
     from engine.runtime import upgrade_mark
     mark = upgrade_mark(root)
     if mark.exists():
@@ -776,7 +776,7 @@ class Package:
 def light() -> tuple:
     """What building the archive needs of the package, imported alone, so the new code is not compiled from source just to be packed: the pointer to a build and the builds in use."""
     if str(PACKAGE) not in sys.path:
-        sys.path.insert(0, str(PACKAGE))
+        sys.path.append(str(PACKAGE))
     from engine.package import point
     from engine.sessions import held_builds
     return point, held_builds
@@ -784,7 +784,8 @@ def light() -> tuple:
 
 @cache
 def loaded() -> Package:
-    sys.path.insert(0, str(PACKAGE))
+    if str(PACKAGE) not in sys.path:
+        sys.path.append(str(PACKAGE))
     from commands.cli import served
     from engine.package import point
     from engine.sessions import held_builds
