@@ -8,6 +8,11 @@ function timing(clip) {
     return `${clip.frames} frames · ${clip.fps} fps · ${clip.loops ? "loops" : "once"}`;
 }
 
+function isEmpty(canvas) {
+    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    return pixels.every((value, index) => index % 4 !== 3 || value === 0);
+}
+
 function card(clip, sheet) {
     const element = document.createElement("article");
     element.className = "card";
@@ -27,7 +32,7 @@ function card(clip, sheet) {
         </div>
         <p class="note"></p>`;
     sheet.append(element);
-    const entry = {clip, canvas: element.querySelector("canvas"), slider: element.querySelector("input"), shown: ""};
+    const entry = {clip, element, canvas: element.querySelector("canvas"), slider: element.querySelector("input"), shown: ""};
     entry.manual = null;
     entry.current = 0;
     entry.frameRange = element.querySelector(".frame-range");
@@ -88,9 +93,8 @@ async function main() {
     const sheet = document.getElementById("sheet");
     const entries = CLIPS.map((clip) => card(clip, sheet));
     const notes = () => entries.forEach((entry) => {
-        entry.note.textContent = !supportsClip(entry.clip.name, figure.stance)
-            ? "Empty hands required: idle fallback shown."
-            : entry.clip.name === "pull_ups" ? "Partial-range lift on two fixed side handles."
+        entry.element.hidden = !supportsClip(entry.clip.name, figure.stance);
+        entry.note.textContent = entry.clip.name === "pull_ups" ? "Short lift on two fixed side handles, not a full overhead pull-up."
             : entry.clip.name === "sit_on_edge" ? "Seated loop; host scene supplies the ledge."
             : entry.clip.name.endsWith("_in") ? "Arrives from the left, brakes, turns, then holds." : "";
     });
@@ -159,13 +163,14 @@ async function main() {
             const frame = entry.manual ?? automatic;
             entry.current = frame;
             entry.frameRange.value = frame;
-            entry.frameCount.textContent = `${frame + 1} / ${entry.clip.frames}`;
+            entry.frameCount.textContent = `${frame + 1} / ${entry.clip.frames}${entry.entering ? " · entering the frame" : ""}`;
             const facing = Number(entry.slider.value);
             const key = `${frame}/${facing}/${entry.canvas.width}`;
             if (key === entry.shown) {
                 continue;
             }
             stage.draw(figure, entry.clip, frame, facing, entry.canvas);
+            entry.entering = isEmpty(entry.canvas);
             entry.shown = key;
         }
         requestAnimationFrame(tick);
