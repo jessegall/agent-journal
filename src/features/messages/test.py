@@ -210,20 +210,6 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     from runner.chat_mirror import FAULTS, DisplayedLedger, fingerprint, raise_held
     said = lambda: (any(FELL_BACK in line for line in nudges(record)), FELL_BACK in log_file(record.root).read_text())
     assert said() == (False, False), "the transcript fills the chat at once, but the fault is only held: the hook may be late, not lost"
-    ledger = DisplayedLedger(record.root, "claude-1")
-    with ledger.changing() as kept:
-        assert fingerprint("Cut short by the next prompt") in kept[FAULTS], "the held fault is kept by the fingerprint of the words"
-        kept[FAULTS] = {one: 0.0 for one in kept[FAULTS]}
-    raise_held(record.root, "claude-1")
-    assert said() == (True, True), "and once its window has run out with nothing arriving, the engine says in its log and to the agent that the transcript filled the chat for the hook"
-    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Late but not lost"}]}}) + "\n")
-    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "Late but not lost"})
-    raised = log_file(record.root).read_text().count(FELL_BACK)
-    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "another-id", "index": 0, "final": True, "delta": "Late but not lost"}))
-    with ledger.changing() as kept:
-        assert kept.get(FAULTS, {}) == {}, "the words arriving under another message id withdraw the held fault, by their fingerprint"
-    raise_held(record.root, "claude-1")
-    assert (log_file(record.root).read_text().count(FELL_BACK), chat().count("Late but not lost")) == (raised, 1), "and nothing is said about it, nor shown twice"
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"}))
     assert chat().count("second") == 2, "another turn with the same short answer is recorded separately"
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "f", "index": 0, "final": True, "delta": "👍"}))
@@ -247,6 +233,20 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": late})
     assert (chat().count(late), log_file(record.root).read_text().count(FELL_BACK)) == (1, fell_back), \
         "the turn's last words are waited for: a display hook the stop raced past still delivers them, and the transcript is not blamed"
+    ledger = DisplayedLedger(record.root, "claude-1")
+    with ledger.changing() as kept:
+        assert fingerprint("Cut short by the next prompt") in kept[FAULTS], "the held fault is kept by the fingerprint of the words"
+        kept[FAULTS] = {one: 0.0 for one in kept[FAULTS]}
+    raise_held(record.root, "claude-1")
+    assert said() == (True, True), "and once its window has run out with nothing arriving, the engine says in its log and to the agent that the transcript filled the chat for the hook"
+    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "Late but not lost"}]}}) + "\n")
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "Late but not lost"})
+    raised = log_file(record.root).read_text().count(FELL_BACK)
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "another-id", "index": 0, "final": True, "delta": "Late but not lost"}))
+    with ledger.changing() as kept:
+        assert kept.get(FAULTS, {}) == {}, "the words arriving under another message id withdraw the held fault, by their fingerprint"
+    raise_held(record.root, "claude-1")
+    assert (log_file(record.root).read_text().count(FELL_BACK), chat().count("Late but not lost")) == (raised, 1), "and nothing is said about it, nor shown twice"
 
 
 def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
