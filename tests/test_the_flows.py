@@ -174,7 +174,7 @@ def test_a_helper_is_dispatched_told_and_finished_with_the_same_marks_whichever_
         (f"{ENV}-rhea", provider, "The agent that dispatched you wrote in message 2, which is in your own environment, "
                                  "where journal message read 2 shows it:\n\nAlso the stop hook.")], \
         "a follow-up is typed to the helper, naming who wrote it and the message it was filed as, so the helper answers the record and not a line that appeared on its screen"
-    assert [label for label, _ in cards()] == ["Dispatched [[chip helper:1|helper 1]]", "Briefed [[chip helper:1|helper 1]]"], "and marked the same way"
+    assert eventually(lambda: [label for label, _ in cards()], ["Dispatched [[chip helper:1|helper 1]]", "Briefed [[chip helper:1|helper 1]]"]), "and marked the same way, once the event that writes the mark has run"
     inside = scratch.ask("GET", f"/api/{ENV}-rhea/message")[1]["rows"]
     assert [(row["title"], row["data"].get("from_main")) for row in inside] == [("Profile the hooks", True), ("Also the stop hook.", True)], \
         "the helper finds both in its own chat, from the main agent"
