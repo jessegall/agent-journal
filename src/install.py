@@ -428,6 +428,14 @@ def half_done(root: Path) -> bool:
     return (code(root) / "__main__.py").is_file() and (root / ARCHIVE).exists()
 
 
+def held_by_hand(project: Path, root: Path, yes: bool) -> str:
+    """Why an update cannot start yet: a managed file was changed by hand and the user has not said to set it aside. It is asked before the update is started on its own, so the answer reaches whoever asked for it rather than a log nobody is watching."""
+    changed = loaded().managed.changed_managed(project, root)
+    if yes or not changed:
+        return ""
+    return loaded().managed.changed_message(project, changed)
+
+
 def upgrade_words(root: Path, yes: bool, version: str | None) -> list[str]:
     """The command line that installs this journal again, with only the options that were asked for."""
     words = [str(root / "journal"), "--root", str(root), "upgrade"]

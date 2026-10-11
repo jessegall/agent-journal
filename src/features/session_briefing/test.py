@@ -106,6 +106,12 @@ def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
         "a retired session keeps its environment, so its transcript and its chat stay where the work happened, and stops holding it"
     assert sessions.holder(record.env) == "" and sessions.last(record.env, "claude") == "", \
         "and is never the holder again, nor a session to be taken up again"
+    import os
+    from agents.terminal import seat_session
+    sessions.bind("conversation-here", record.env, pid=os.getpid(), provider="claude")
+    seat_session(sessions, record.env, "claude-here", pid=os.getpid(), provider="claude")
+    assert not sessions.read("conversation-here").retired and sessions.holder(record.env) in sessions.agent("claude-here"), \
+        "an agent's terminal and its conversation are one agent, so seating one never retires the other: the terminal is seated with the process it shares, and the environment stays this agent's"
     handed = start("startup")
     assert "ANOTHER AGENT WORKED THIS ENVIRONMENT UNTIL" in handed and "written to that agent, not to you" in handed, \
         "a session that is not the first in its environment is told what it took over, so it reads the chat above as history rather than as instructions to itself"

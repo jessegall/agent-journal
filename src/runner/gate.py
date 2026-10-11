@@ -99,8 +99,8 @@ def reads_a_message_file(call: HookCall) -> bool:
     paths = call.hook.tool.paths
     if not paths or call.hook.tool.writings:
         return False
-    attached = Messages(call.record).rows.folder().resolve()
-    return all(attached in Path(path).resolve().parents for path in paths)
+    attached = Messages(call.record).rows.folder()
+    return all(attached in Path(path).parents for path in paths)
 
 
 def run_answer(call: HookCall, journal: JournalCall) -> Ran:

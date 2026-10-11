@@ -215,8 +215,17 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return self._plan_status(ticket) in (READY, WAITING)
 
     def _idle_by_design(self, ticket) -> bool:
-        """A ticket that waits on open tickets, on its plan's approval, on its approved plan's turn or on its merge has an agent with nothing to do on purpose."""
-        return bool(self._waiting_on(ticket)) or bool(ticket.handed_in_at) or ticket.approved_early or self._plan_status(ticket) in (READY, WAITING, PLAN_DONE) or self._rows_done(ticket)
+        """A ticket that waits on open tickets, on its plan's approval, on its approved plan's turn, on its merge, or whose every open row is blocked has an agent with nothing to do on purpose."""
+        return bool(self._waiting_on(ticket)) or bool(ticket.handed_in_at) or ticket.approved_early or self._plan_status(ticket) in (READY, WAITING, PLAN_DONE) \
+            or self._rows_done(ticket) or self._nothing_ready(ticket)
+
+    def _nothing_ready(self, ticket) -> bool:
+        """Whether the ticket's own environment holds open rows and not one of them can be taken: each is blocked, waits on another row or waits on a question to the user. Its agent is then idle because the work is, which is the same readiness the agent's own next row is picked by."""
+        from features.work_tracking.next import open_rows, ready
+        if not ticket.work_environment:
+            return False
+        here = self.record.sibling(ticket.work_environment)
+        return bool(open_rows(here)) and not ready(here)
 
     def _rows_done(self, ticket) -> bool:
         """Whether every row of the ticket's plan is closed, though the plan has not yet been marked done: its agent has finished and waits on the merge."""
@@ -388,7 +397,10 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             finished = board.stage_for(DONE) if board else ""
             how = f"its branch {self._branch(ticket)} was merged"
             try:
-                self._finished(ticket, how, True) if landed else self.complete(ticket.n, how=how)
+                if landed:
+                    self._finished(ticket, how, True)
+                else:
+                    self.complete(ticket.n, how=how)
             except Refused:
                 continue
             if finished:

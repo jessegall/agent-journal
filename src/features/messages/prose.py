@@ -44,7 +44,8 @@ def unit_after(text: str) -> bool:
 HANDLED = re.compile(r"\b(?:repl(?:y|ied|ying) to|answer(?:ed|ing)?|clos(?:ed|ing)|fil(?:ed|ing)|start(?:ed|ing)|park(?:ed|ing)|resum(?:ed|ing)|end(?:ed|ing)"
                      r"|finish(?:ed|ing)|struck|reopen(?:ed|ing)|process(?:ed|ing))\s+#?$", re.IGNORECASE)
 SMALL = 100
-STATUS = re.compile(r"\b(?:answers?|answered|returns?|returned|responds?|responded|status|http|errors?|code)\s+(?:with\s+)?(?:an?\s+)?(?:(?:http|status|error)\s+)*$", re.IGNORECASE)
+STATUS = re.compile(r"\b(?:answers?|answered|returns?|returned|responds?|responded|status|http|errors?|code|came back|comes back|come back|fails? with|failed with)"
+                    r"\s+(?:with\s+)?(?:an?\s+)?(?:(?:http|status|error)\s+)*$", re.IGNORECASE)
 STATUSES = range(100, 600)
 
 
@@ -53,11 +54,22 @@ def is_status(before: str, value: int) -> bool:
     return value in STATUSES and bool(STATUS.search(before))
 
 
+MEASURED = re.compile(r"\b(?:load|loads|average|averages|memory|cpu|size|width|height|depth|rate|budget|score|temperature)"
+                      r"(?:\s+(?:of|was|were|is|are|at|hit|reached|around|about))*\s*:?\s*$", re.IGNORECASE)
+AGAINST = re.compile(r"^[ \t]*(?:on|of|out of|against|over|per)[ \t]+\d", re.IGNORECASE)
+
+
+def is_measurement(before: str, after: str) -> bool:
+    """A number the sentence has already said what it measures, such as the load was 395, or one joined to a second number by on, of or against, as in 395 on 10 cores. Neither is a row the user can open."""
+    return bool(MEASURED.search(before)) or bool(AGAINST.match(after))
+
+
 def bare(text: str) -> list[int]:
     text = LISTED.sub("", QUOTED.sub("", text))
     return list(dict.fromkeys(int(m.group(1)) for m in STANDALONE.finditer(text)
                               if not typed_before(text[max(0, m.start() - 24):m.start()]) and not unit_after(text[m.end():m.end() + 28])
                               and not is_status(text[max(0, m.start() - 40):m.start()], int(m.group(1)))
+                              and not is_measurement(text[max(0, m.start() - 40):m.start()], text[m.end():m.end() + 28])
                               and (int(m.group(1)) >= SMALL or HANDLED.search(text[max(0, m.start() - 24):m.start()]))))
 
 

@@ -222,6 +222,16 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     tickets.mark_seen()
     assert (tickets.load(never.n).launched, any("it did not start: no agent was running" in c.brief for c in Comments(record, actor=SYSTEM).all())) == (0.0, True), \
         "a start whose agent never appeared is not left stamped as launched: the ticket says it did not start"
+    from controllers.types import Todos
+    here = record.sibling(f"ticket-{ticket.n}")
+    held = Todos(here, actor=AGENT).create("wait for the secret")
+    Todos(here, actor=AGENT).block(held.n, "the user has not granted the secret")
+    assert tickets._needing_a_look([board.n]) == [], \
+        "an agent whose every open row is blocked is idle because the work is, not because it is stuck"
+    Todos(here, actor=AGENT).unblock(held.n)
+    assert [(t.n, state.kind) for t, state in tickets._needing_a_look([board.n])] == [(ticket.n, "stopped")], \
+        "and once a row it could take is ready, a silent agent needs a look again"
+    Todos(here, actor=AGENT).strike(held.n, "no longer wanted")
     tickets.update(ticket.n, dependencies={third.ref: "confirmed"})
     assert tickets._needing_a_look([board.n]) == [], "an agent idle because its ticket waits on an open ticket is not stuck"
     tickets.update(ticket.n, dependencies={})
@@ -302,15 +312,16 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert git("rev-parse", f"refs/journal/worktrees/{ticket.work_environment}").stdout == git("rev-parse", f"worktree-{ticket.work_environment}").stdout, \
         "the backup ref follows the ticket's branch to its latest commit"
     git("merge", "-q", "--no-edit", f"worktree-{ticket.work_environment}")
+    left_alone = lambda: tickets.close_merged() == [] and not tickets.load(ticket.n).completed
     with monkeypatch.context() as busy:
         busy.setattr(Tickets, "_working", lambda self, row: True)
-        assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "a ticket whose agent is working is left alone by the sweep, even when its branch landed"
+        assert left_alone(), "a ticket whose agent is working is left alone by the sweep, even when its branch landed"
     from controllers.types import Messages
     waiting = Messages(Record(record.root, ticket.work_environment), actor=SYSTEM).create("one more thing to do")
-    assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "a merged ticket whose agent has a message it has not read yet is not closed, so the follow-up is not cut off"
+    assert left_alone(), "a merged ticket whose agent has a message it has not read yet is not closed, so the follow-up is not cut off"
     Messages(Record(record.root, ticket.work_environment), actor=AGENT).read(waiting.n)
     tickets.update(ticket.n, told=time.time())
-    assert tickets.close_merged() == [] and not tickets.load(ticket.n).completed, "nor is one that was told something a moment ago"
+    assert left_alone(), "nor is one that was told something a moment ago"
     tickets.update(ticket.n, told=0.0)
     with monkeypatch.context() as unsure:
         unsure.setattr(Tickets, "_merged", lambda self, row: False)

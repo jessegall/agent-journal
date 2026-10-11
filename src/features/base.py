@@ -152,6 +152,8 @@ class Feature(ABC):
             PROJECT_PARTS.keep(Record.features, cls.name)
         if switches := [f"{cls.name}.{key}" for key, b in cls.behaviours.items() if b.scope == PROJECT]:
             PROJECT_PARTS.keep(Record.features, *switches)
+        if lines := [f"{cls.name}.{name}" for name in cls.lines]:
+            PROJECT_PARTS.keep(Record.said, *lines)
         if shared := [s.name for s in cls.settings if s.scope == PROJECT]:
             PROJECT_PARTS.keep(cls.name, *shared)
 

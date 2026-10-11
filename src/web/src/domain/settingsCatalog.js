@@ -127,6 +127,27 @@ function behaviourRow(f, key, b, settings) {
     });
 }
 
+// A sentence of the user's own, added to the end of one nudge. The journal's own words stay as they are; this is said after them.
+function nudgeRow(f, line, nudge, settings) {
+    const name = `${f.name}.${line}`;
+    return row({
+        key: `said:${name}`,
+        kind: "text",
+        indent: true,
+        label: nudge.guarantee || line,
+        hint: "Said to the agent after this nudge, in your own words",
+        value: (settings.said || {})[name] ?? "",
+        shipped: "",
+        target: {path: ["said", name], sparse: true, shipped: ""},
+    });
+}
+
+function nudgeRowsOf(f, key, settings) {
+    return Object.entries(f.nudges || {})
+        .filter(([, nudge]) => nudge.behaviour === key)
+        .map(([line, nudge]) => nudgeRow(f, line, nudge, settings));
+}
+
 function settingRow(f, setting, settings) {
     const saved = (settings[f.name] || {})[setting.name] ?? setting.default;
     const value = setting.kind !== "choice" || setting.choices.includes(saved) ? saved : setting.default;
@@ -166,7 +187,8 @@ function modelRows(f, setting, settings) {
     });
 }
 
-const settingRows = (f, setting, settings) => (setting.kind === "models" ? modelRows(f, setting, settings) : [settingRow(f, setting, settings)]);
+const settingRows = (f, setting, settings) =>
+    setting.kind === "models" ? modelRows(f, setting, settings) : [settingRow(f, setting, settings)];
 
 function featureRows(f, settings, extras) {
     const declared = f.settings.filter((s) => s.kind !== "map" && !s.hidden);
@@ -177,7 +199,11 @@ function featureRows(f, settings, extras) {
             : [];
     return [
         ...own,
-        ...Object.entries(f.behaviours).flatMap(([key, b]) => [behaviourRow(f, key, b, settings), ...under(key)]),
+        ...Object.entries(f.behaviours).flatMap(([key, b]) => [
+            behaviourRow(f, key, b, settings),
+            ...nudgeRowsOf(f, key, settings),
+            ...under(key),
+        ]),
         ...declared.filter((s) => !s.under).flatMap((s) => settingRows(f, s, settings)),
         ...(extras[f.name] || []),
     ];
@@ -270,7 +296,13 @@ function looseRows(settings, context) {
     return {
         rows: {
             models: (context.models || []).map((m) =>
-                row({key: `models:${m.provider}`, kind: "fixed", label: providerName(m.provider), hint: "The model it starts agents on unless one is named", value: m.label})
+                row({
+                    key: `models:${m.provider}`,
+                    kind: "fixed",
+                    label: providerName(m.provider),
+                    hint: "The model it starts agents on unless one is named",
+                    value: m.label,
+                })
             ),
             project: [
                 row({
@@ -440,11 +472,27 @@ export function narrowed(sections, query, filter) {
 }
 
 export const TABS = [
-    {key: "agent", title: "Agent", line: "How the agent works, talks to you and keeps track of its work. Each of these can be switched off on its own."},
-    {key: "features", title: "Features", line: "What the journal does besides the agent's own settings, which are in the Agent tab. Each feature can be switched off on its own."},
+    {
+        key: "agent",
+        title: "Agent",
+        line: "How the agent works, talks to you and keeps track of its work. Each of these can be switched off on its own.",
+    },
+    {
+        key: "features",
+        title: "Features",
+        line: "What the journal does besides the agent's own settings, which are in the Agent tab. Each feature can be switched off on its own.",
+    },
     {key: "system", title: "System", line: "Project settings, updates, browser settings and shutting down."},
-    {key: "services", title: "Services", line: "The processes the journal and its plugins keep running. Start, stop, restart and read their logs."},
-    {key: "sharing", title: "Phone and share links", line: "Your phone and share links reach this journal through the tunler account below."},
+    {
+        key: "services",
+        title: "Services",
+        line: "The processes the journal and its plugins keep running. Start, stop, restart and read their logs.",
+    },
+    {
+        key: "sharing",
+        title: "Phone and share links",
+        line: "Your phone and share links reach this journal through the tunler account below.",
+    },
     {key: "plugins", title: "Plugins", line: "The settings of each installed plugin."},
     {key: "environments", title: "Environments", line: "The environments of this project. Each has its own to-dos, agent and history."},
     {key: "developer", title: "Developer", line: "Only needed when you work on the journal itself."},

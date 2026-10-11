@@ -50,15 +50,28 @@ def seen(root: Path) -> list[str]:
     return read_json(root / SEEN, list, [])
 
 
-def unseen(root: Path, changelog: str) -> list[NewFeature]:
-    """The new features not yet seen, oldest first, so the releases an update skipped over announce themselves one after another."""
-    held = seen(root)
-    return [one for one in reversed(new_features(changelog)) if one.id not in held]
+def offers(one: NewFeature) -> str:
+    """The setting a card asks the user to change, as feature.key; a card offering a voice asks for the profile."""
+    if one.setting:
+        return one.setting
+    return "form_of_address.profile" if one.profile else ""
 
 
-def unseen_announced(root: Path, changelog: Path) -> list[NewFeature]:
+def already_chosen(record, one: NewFeature) -> bool:
+    """Whether the user already has what the card offers: a voice they picked, or a switch already on. Such a card is not news, which is how a start after a long gap can offer the Squire to someone who chose him months before."""
+    feature, _, key = offers(one).partition(".")
+    return bool(key) and bool(record.setting(feature, {}).get(key))
+
+
+def unseen(record, changelog: str) -> list[NewFeature]:
+    """The new features not yet seen, oldest first, so the releases an update skipped over announce themselves one after another; one offering what the user already chose is left out, since it asks for a choice that was made."""
+    held = seen(record.root)
+    return [one for one in reversed(new_features(changelog)) if one.id not in held and not already_chosen(record, one)]
+
+
+def unseen_announced(record, changelog: Path) -> list[NewFeature]:
     """What the changelog file announces and has not been seen; none when the install carries no changelog."""
-    return unseen(root, changelog.read_text() if changelog.is_file() else "")
+    return unseen(record, changelog.read_text() if changelog.is_file() else "")
 
 
 def mark_seen(root: Path, id: str) -> None:

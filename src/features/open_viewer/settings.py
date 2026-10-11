@@ -25,6 +25,7 @@ def switches(record: Record) -> dict:
 def settings(record: Record) -> dict:
     return {Record.features: switches(record),
             Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery, Record.viewer: record.viewer,
+            Record.said: record.said,
             **{name: view for name, f in features.FEATURES.items() if (view := f.settings_view(record)) is not None}}
 
 
@@ -44,7 +45,7 @@ def apply(record: Record, body: dict, actor: str) -> dict:
             record.set_setting(key, {**{n: o for n, o in record.features.items() if "." in n or n in PROJECT_PARTS.of(key)},
                                      **{n: o for n, o in asked.items() if "." in n}})
             continue
-        if key == Record.viewer and isinstance(value, dict):
+        if key in (Record.viewer, Record.said) and isinstance(value, dict):
             record.change_setting(key, value)
             continue
         record.set_setting(key, value)

@@ -28,7 +28,7 @@ def changelog_page(text: str, skip: int) -> tuple[str, int, bool]:
     starts = [found.start() for found in ENTRY.finditer(text)]
     stop = min(skip + RELEASES_PER_PAGE, len(starts))
     ends = [*starts[1:], len(text)]
-    heading = text[:starts[0] if starts else len(text)] if not skip else ""
+    heading = "" if skip else text[:starts[0] if starts else len(text)]
     return heading + (text[starts[skip]:ends[stop - 1]] if skip < stop else ""), stop, stop < len(starts)
 
 
@@ -39,7 +39,7 @@ def get_changelog(req: Request) -> Reply:
         return Reply(404, {"error": "this install carries no changelog"})
     cache = runtime.upstream_cache(req.root)
     latest = cache.read_text().strip() if cache.is_file() else ""
-    changelog, releases_so_far, more = changelog_page(CHANGELOG.read_text(), int(req.query.get("skip") or 0))
+    changelog, releases_so_far, more = changelog_page(CHANGELOG.read_text(), req.counted("skip", 0))
     return Reply(200, {"version": version(), "changelog": changelog, "shown": releases_so_far, "more": more, "latest": latest, "newer": newer(latest, version()),
                        "checking": FETCHING.locked(), "updating": runtime.upgrade_mark(req.root).exists(),
                        "repository": journal_repository(req.root.parent),
@@ -48,7 +48,7 @@ def get_changelog(req: Request) -> Reply:
 
 @handles("GET", "/api/new-feature")
 def get_new_feature(req: Request) -> Reply:
-    return Reply(200, [asdict(one) for one in unseen_announced(req.root, CHANGELOG)])
+    return Reply(200, [asdict(one) for one in unseen_announced(req.record(), CHANGELOG)])
 
 
 @handles("POST", "/api/new-feature")

@@ -9,6 +9,11 @@ from features.wiring import AgentHooks, Client, Commands, Events, Routes
 from resources.base import SYSTEM, titled
 
 
+def their_words(record, feature: str, line: str) -> str:
+    """The sentence the user added to this nudge. It is said after the journal's own instruction, never before it, so it adds to what the line tells the agent instead of standing in front of it."""
+    return str(record.said.get(f"{feature}.{line}", "")).strip()
+
+
 @dataclass
 class Message:
     kind: type
@@ -83,7 +88,8 @@ class Journal:
         message = self.message(Nudges, line, values, actor, session=agent.title, private=private, whisper=whisper, lead=lead, yields=yields, reply_kept=spec.reply_kept,
                                **spec.asking(self.feature.name))
         added = appended(f"{self.feature.name}.{line}", {**values, "record": record}, "").removeprefix(" - ")
-        amended = replace(message, brief=". ".join(part for part in (added, message.brief) if part))
+        theirs = their_words(record, self.feature.name, line)
+        amended = replace(message, brief=". ".join(part for part in (added, message.brief, theirs) if part))
         if Nudges(record, actor=SYSTEM)._repeats_last(agent.title, titled(amended.title), amended.brief, agent.at):
             return None
         return self.send(record, amended)

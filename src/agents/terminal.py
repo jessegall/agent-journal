@@ -100,12 +100,13 @@ class TerminalSession:
     session: str
 
 
-def seat_session(sessions: Sessions, env: str, session: str, **bound) -> None:
+def seat_session(sessions: Sessions, env: str, session: str, pid: int = 0, **bound) -> None:
+    """Seats a session on an environment: bound to it, succeeding whoever held it before, and kept in its chair. The process is named here and not written afterwards, because succeeding without it makes the agent's own other session - its conversation beside its terminal - look like a stranger and retires it."""
     from controllers.types import Environments
     from engine.record import Record
     from resources.base import SYSTEM
-    sessions.bind(session, env, **bound)
-    sessions.succeed(env, session)
+    sessions.bind(session, env, pid=pid, **bound)
+    sessions.succeed(env, session, pid)
     Environments(Record(sessions.root, env), actor=SYSTEM)._seat(env, session)
 
 
@@ -113,7 +114,7 @@ def seated(seat: TerminalSession) -> TerminalSession:
     launched = Launched.read(seat.root, seat.session)
     sessions = Sessions(seat.root)
     if not sessions.known(seat.session):
-        seat_session(sessions, seat.env, seat.session)
+        seat_session(sessions, seat.env, seat.session, pid=launched.pid, provider=seat.agent)
     sessions.write(seat.session, pid=launched.pid, provider=seat.agent, args=list(launched.command), launch=launched.launch)
     return replace(seat, env=sessions.environment(seat.session) or seat.env)
 

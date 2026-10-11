@@ -47,7 +47,7 @@ BUILT = "journal.record"
 
 
 class Record:
-    SETTINGS = ("features", "triggers", "keep", "messages", "tags", "agents", "skills", "questions", "delivery", "viewer")
+    SETTINGS = ("features", "triggers", "keep", "messages", "tags", "agents", "skills", "questions", "delivery", "viewer", "said")
     features = Setting(dict)
     triggers = Setting(dict)
     keep = Setting(dict)
@@ -57,6 +57,7 @@ class Record:
     skills = Setting(list)
     questions = Setting(dict)
     delivery = Setting(dict, project=("channel",))
+    said = Setting(dict)
     viewer = Setting(dict, project=("color_scheme", "chat_hidden", "away", "tour_seen", "open_with", "port"))
 
     def __init__(self, root: Path, env: str, memo: bool = False, writer: ThisMachine | Pushing | Lease = ThisMachine()):

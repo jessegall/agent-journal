@@ -119,22 +119,32 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     from features.auto_update import new_feature
     notes = ('## 2.9.0 — Two\n<!-- new-feature {"id": "owl", "title": "Owl", "text": "Hoot", "button": "Use it"} -->\n\n'
              '## 2.8.0 — One\n<!-- new-feature {"id": "squire", "title": "Squire", "text": "Hail", "button": "Use it"} -->\n')
-    assert [one.id for one in new_feature.unseen(record.root, notes)] == ["squire", "owl"], "the new features of releases an update skipped over queue, oldest first"
+    assert [one.id for one in new_feature.unseen(record, notes)] == ["squire", "owl"], "the new features of releases an update skipped over queue, oldest first"
     new_feature.mark_seen(record.root, "squire")
     new_feature.mark_seen(record.root, "squire")
-    assert ([one.id for one in new_feature.unseen(record.root, notes)], new_feature.seen(record.root)) == (["owl"], ["squire"]), \
+    record.change_setting("form_of_address", {"profile": 3})
+    chosen = ('# Changelog\n\n## 2.9.0 — A voice\n<!-- new-feature {"id": "knight", "title": "The Squire", "text": "Hail", '
+              '"button": "Use the Squire voice", "profile": "Squire"} -->\n')
+    assert [one.id for one in new_feature.unseen(record, chosen)] == [], \
+        "a card offering a voice is not shown to someone who has already chosen one: it asks for a choice that was made"
+    record.change_setting("form_of_address", {"profile": ""})
+    assert [one.id for one in new_feature.unseen(record, chosen)] == ["knight"], "and is shown to someone who has not"
+    assert ([one.id for one in new_feature.unseen(record, notes)], new_feature.seen(record.root)) == (["owl"], ["squire"]), \
         "a new feature seen on the server is not announced again, wherever the viewer is opened next"
-    assert dispatch("POST", "/api/new-feature", record.root, {}, {"id": "owl"}).code == 200 and new_feature.unseen(record.root, notes) == [], \
+    assert dispatch("POST", "/api/new-feature", record.root, {}, {"id": "owl"}).code == 200 and new_feature.unseen(record, notes) == [], \
         "the viewer tells the server which new feature it has shown"
     from engine.ledger import ledger as migrations
+    from engine.record import Record
     young = record.root.parent / "young" / ".journal"
     young.mkdir(parents=True)
-    assert (new_feature.mark_first_start_seen(young, notes), new_feature.unseen(young, notes), new_feature.mark_first_start_seen(young, notes)) == (True, [], False), \
+    fresh_start = Record(young, record.env)
+    assert (new_feature.mark_first_start_seen(young, notes), new_feature.unseen(fresh_start, notes), new_feature.mark_first_start_seen(young, notes)) == (True, [], False), \
         "a journal that starts with no record of an install or an update announces nothing: only later updates do"
     older = record.root.parent / "older" / ".journal"
     older.mkdir(parents=True)
     migrations(older).write_text("{}")
-    assert (new_feature.mark_first_start_seen(older, notes), [one.id for one in new_feature.unseen(older, notes)]) == (False, ["squire", "owl"]), \
+    was_installed = Record(older, record.env)
+    assert (new_feature.mark_first_start_seen(older, notes), [one.id for one in new_feature.unseen(was_installed, notes)]) == (False, ["squire", "owl"]), \
         "one that was installed before still announces what an update brought"
     from controllers.types import Agents
     from engine import runtime

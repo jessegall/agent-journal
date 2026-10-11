@@ -92,7 +92,9 @@ def released(place: Path) -> Path:
 
 
 def upgrade_from(repository: Path, root: Path) -> subprocess.CompletedProcess:
-    env = {**os.environ, "HOME": str(root.parents[1] / "home"), "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""}
+    """Upgrades a journal and hands back what the install said. It runs as the detached process does, since journal upgrade from a terminal starts one of those and returns at once; what the CLI starts on its own is proved in the auto_update feature's own test."""
+    from install import DETACHED
+    env = {**os.environ, "HOME": str(root.parents[1] / "home"), "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": "", DETACHED: "1"}
     return subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "upgrade"], cwd=root.parent, env=env, capture_output=True, text=True, timeout=180)
 
 
@@ -154,7 +156,8 @@ def test_an_upgrade_copies_a_changed_file_into_the_attic_before_replacing_it(tmp
     command = [sys.executable, str(CODE / "install.py"), "upgrade", str(root.parent)]
     held = subprocess.run(command, env=env, capture_output=True, text=True, timeout=120)
     assert ".agents/skills/journal/SKILL.md" in held.stdout and changed.read_bytes().endswith(b"# changed by hand\n")
-    by_hand = subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "upgrade"], env=env,
+    from install import DETACHED
+    by_hand = subprocess.run([sys.executable, str(root / "journal.py"), "--root", str(root), "upgrade"], env={**env, DETACHED: "1"},
                              capture_output=True, text=True, timeout=120)
     assert ".agents/skills/journal/SKILL.md" in by_hand.stdout and changed.read_bytes().endswith(b"# changed by hand\n")
     updated = subprocess.run([*command, "--yes"], env=env, capture_output=True, text=True, timeout=120)

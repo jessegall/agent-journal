@@ -270,6 +270,9 @@ def test_a_mistyped_command_through_the_server_says_what_is_wrong():
         assert code == 0, text
     parked = Works(record, actor=AGENT).load(made.n)
     assert (parked.parked, parked.awaiting) == ("something else goes first", ""), "park and await take the number first too, as the nudges print them"
+    text, code = captured(["--env", record.env, "--as", AGENT, "work", "await", str(made.n), "the user to answer my question"], record.root)
+    assert (code != 0, "being idle, not waiting" in text) == (True, True), \
+        "waiting for the user is being idle: a wait is for something that happens on its own and lets the work go on, so the journal refuses it and names what to do instead"
     text, code = captured(["--env", record.env, "--as", AGENT, "work", "log", str(made.n), "too late"], record.root)
     assert (code != 0, "is parked" in text) == (True, True), "a log entry names the work it was meant for when that work is parked"
     text, code = captured(["--env", record.env, "--as", AGENT, "work", "resume", str(made.n)], record.root)

@@ -501,6 +501,13 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     from controllers.types import Environments, Features
     from resources.base import AGENT, Refused
     assert invoked(Features(record, actor=AGENT), "settings") == ask("GET", f"/api/{record.env}/settings").body, "the viewer reads its settings through the command the CLI runs"
+    from features.journal import their_words
+    assert ask("POST", f"/api/{record.env}/settings", body={"said": {"work_tracking.carry on": "and tell me which row you took"}}).code == 200
+    assert their_words(record, "work_tracking", "carry on") == "and tell me which row you took", \
+        "a sentence the user writes for one nudge is kept under that nudge's own name and read back for it"
+    assert ask("POST", f"/api/{record.env}/settings", body={"said": {"messages.answer": "in Dutch"}}).code == 200
+    assert their_words(record, "work_tracking", "carry on") == "and tell me which row you took", \
+        "and writing one nudge's sentence leaves every other nudge's alone"
     assert invoked(Environments(record, actor=AGENT), "events") == ask("GET", f"/api/{record.env}/events").body, "and its events"
     with pytest.raises(Refused, match="only the user"):
         invoked(Features(record, actor=AGENT), "save", named={"values": {"viewer": {"theme": "light"}}})

@@ -113,7 +113,10 @@ class SeatReport:
         self.subagents_moved(last, facts.get(AgentRow.subagent_rows))
         if facts and any(last.data.get(k) != v for k, v in facts.items()):
             status = status_after(facts.get(AgentRow.compacting), self.agent.current().status)
-            self.agent.note(**facts, **({AgentRow.status: status} if status != self.agent.current().status else {}))
+            noted = dict(facts)
+            if status != self.agent.current().status:
+                noted[AgentRow.status] = status
+            self.agent.note(**noted)
 
     def subagents_moved(self, last, subagents: list | None) -> None:
         if subagents is None:
@@ -201,7 +204,7 @@ class HookBinding:
         seat_session(self.sessions, env, session, pid=self.pid, provider=self.provider.name)
         terminal = self.sessions.terminal(self.provider.name, self.pid)
         if worked and terminal:
-            seat_session(self.sessions, env, terminal)
+            seat_session(self.sessions, env, terminal, pid=self.pid, provider=self.provider.name)
         return env
 
     def asked_to_take_over(self, session: str, env: str, holder: str) -> str:

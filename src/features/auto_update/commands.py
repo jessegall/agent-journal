@@ -17,5 +17,5 @@ class ShowNewFeatures(Command):
     name = "new_features"
 
     def run(self, context: Context, features) -> str:
-        found = unseen_announced(context.record.root, routes.CHANGELOG)
+        found = unseen_announced(context.record, routes.CHANGELOG)
         return "\n".join(f"{one.version}: {one.title} - {one.text}" for one in found) or "no new feature waits to be seen"

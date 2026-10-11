@@ -164,11 +164,14 @@ def demo(ctx) -> str:
     return demo_built(Path(ctx["folder"]), Path(ctx["into"]), ctx["environment"], ctx["name"])
 
 def upgrade_here(ctx) -> str:
-    from install import DETACHED, upgrade, upgrade_on_its_own
+    from install import DETACHED, held_by_hand, upgrade, upgrade_on_its_own
     root = ctx["record"].root
-    if not os.environ.get(DETACHED):
-        return upgrade_on_its_own(root, yes=ctx["yes"], version=ctx["to"])
-    return "\n".join(upgrade(root.parent, root, yes=ctx["yes"], version=ctx["to"]))
+    if os.environ.get(DETACHED):
+        return "\n".join(upgrade(root.parent, root, yes=ctx["yes"], version=ctx["to"]))
+    held = held_by_hand(root.parent, root, ctx["yes"])
+    if held:
+        return held
+    return upgrade_on_its_own(root, yes=ctx["yes"], version=ctx["to"])
 
 def halt(ctx) -> str:
     from engine.stop import ask, clear, ended

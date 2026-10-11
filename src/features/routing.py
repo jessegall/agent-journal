@@ -67,8 +67,13 @@ class Request:
     def body_as(self, kind):
         return kind.from_json(self.body)
 
+    def counted(self, name: str, fallback: int) -> int:
+        """A number the query may carry. A query without it is not a missing value to invent one for: it means the default this page is read with."""
+        given = self.query.get(name)
+        return int(given) if given else fallback
+
     def asked_lines(self) -> int:
-        return int(self.query.get("lines") or 200)
+        return self.counted("lines", 200)
 
     @property
     def env(self) -> str:

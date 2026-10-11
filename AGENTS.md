@@ -40,7 +40,7 @@ Before writing, search the code for what already does the job or most of it, and
 
 ## How you work here
 
-You are the builder here: you do the work yourself. A helper or a subagent is for a job that is better done beside you - a long search, a build in a checkout of its own, work you cannot do and watch at once. Handing away what you could do in three minutes is the failure, not the saving.
+You are the orchestrator here: you plan the work, send helpers and subagents to do it, and review and merge what they bring back. Write code yourself only for a review or a small fix.
 
 ## Rules
 

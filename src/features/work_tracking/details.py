@@ -40,7 +40,8 @@ class WorkDetails(FeatureDetails):
         ahead until something happens is blocked, not parked: journal todo after, todo ask or
         todo block on its row. Never park to wait for an answer you could carry on without.
 
-        journal work await "<what>" says you are waiting for something outside your hands,
+        journal work await "<what>" says you are waiting for something outside your hands that will
+        happen on its own and let the work go on,
         such as a long build or a run in Docker, in your own words, and the chat shows it. Say it
         once instead of writing another line each time nothing has changed. Working again clears
         it, and you are told that it was cleared; parking clears it too. While it stands you
@@ -212,9 +213,10 @@ class WorkDetails(FeatureDetails):
             owed=still_stopped,
             title="you stopped with work {{n}}, {{title}}, in hand",
             brief="""
-                carry on with it now. If it waits on something outside your hands, say journal work await
-                "<what you wait for>"; if it waits on the user, put the question on its row with journal todo ask
-                and take the next ready row; if something else goes first, journal work park {{n}} "<why>".
+                carry on with it now. If it waits on the user, put the question on its row with journal todo ask
+                and take the next ready row - waiting for the user is being idle, not waiting, and journal work
+                await is refused for it. If it waits on something outside your hands that will happen on its own,
+                say journal work await "<what you wait for>"; if something else goes first, journal work park {{n}} "<why>".
             """,
         ),
         Line(

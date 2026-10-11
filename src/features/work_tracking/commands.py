@@ -1,3 +1,4 @@
+import re
 import time
 
 from controllers.types import Works
@@ -41,11 +42,19 @@ class ParkWork(Command):
         return works.update(in_hand(works, n).n, parked=why, awaiting="", awaiting_on="")
 
 
+WAITING_ON_THE_USER = re.compile(r"\b(?:the user|you|sir|user's|your)\b[^.]{0,40}\b(?:answer|answers|reply|replies|response|word|instruction|instructions|message|decision|go-ahead|say|says|to say|to answer|to reply|to decide)"
+                                 r"|\b(?:waiting|wait|waits)\s+(?:for|on)\s+(?:the\s+)?(?:user|you|sir|him|them)\b"
+                                 r"|\b(?:what|which|whether)\s+(?:the\s+user|you)\b", re.IGNORECASE)
+
+
 class AwaitWork(Command):
     name = "await"
 
     def run(self, context: Context, works: Works, *words: str, n: int = 0, on: str = ""):
         n, awaiting = numbered(words, n, "say what you are waiting for: journal work await <n> \"<what>\"")
+        if WAITING_ON_THE_USER.search(awaiting):
+            raise Refused("waiting for the user is being idle, not waiting: a wait is for something that will happen on its own and let the work go on. "
+                          "Put the question on its row with journal todo ask and take the next ready row, or end your turn")
         named = ",".join(part.strip() for part in on.split(",") if part.strip())
         if orchestrating(context.record) and any(part.startswith("helper:") for part in named.split(",")):
             raise Refused("an orchestrating agent does not wait on a helper: end your turn, and you are told when it reports")
