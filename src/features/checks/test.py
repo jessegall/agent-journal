@@ -304,3 +304,16 @@ def test_upgrades_rename_old_stored_keys_in_events_agents_checks_and_settings(tm
         "a pull request waiting is told with its author, and one not from the user comes with the careful way to handle it"
     assert (pull_answered(stranger, "jessegall"), pull_answered({**stranger, "comments": [{"author": {"login": "jessegall"}}]}, "jessegall")) == (False, True), \
         "a pull request the agent commented on last is not told again"
+    import os
+    import pytest
+    from engine import runtime
+    from scripts.checks.scratch_journals import Scratch, seconds
+    assert (seconds("04:14:07"), seconds("1-02:03:04"), seconds("12:30")) == (15247, 93784, 750), "a process's elapsed time is read in seconds, days and all"
+    assert Scratch(1, 600, "journal --root /T/pytest-of-me/x").line().startswith("1 has run 10 minutes"), "a scratch journal is told with its pid and how long it has run"
+    with pytest.MonkeyPatch.context() as owned:
+        owned.delenv(runtime.TEST_OWNER, raising=False)
+        assert runtime.owner_gone() is False, "a journal with no test as its owner never stops for want of one"
+        owned.setenv(runtime.TEST_OWNER, str(os.getpid()))
+        assert runtime.owner_gone() is False, "one whose test still runs stays up"
+        owned.setenv(runtime.TEST_OWNER, "999999")
+        assert runtime.owner_gone() is True, "one whose test has ended stops, however it was started again since"

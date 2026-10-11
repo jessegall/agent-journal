@@ -277,7 +277,7 @@ def watch_code(root: Path, package: Path, server: ThreadingHTTPServer, changed: 
 def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event, began: float = 0.0) -> None:
     while not halting.is_set():
         time.sleep(STOP_SECONDS)
-        if asked(root, began):
+        if asked(root, began) or runtime.owner_gone():
             halting.set()
             server.shutdown()
 

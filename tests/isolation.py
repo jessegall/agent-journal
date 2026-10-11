@@ -8,6 +8,8 @@ import tempfile
 from collections.abc import Callable
 from pathlib import Path
 
+from engine.runtime import TEST_OWNER
+
 REPO = Path(__file__).resolve().parents[1]
 HOME = "AGENT_JOURNAL_HOME"
 OFFLINE = REPO / "tests" / "fixtures" / "offline-bin"
@@ -94,6 +96,7 @@ def settle() -> None:
     os.environ["CLAUDE_CONFIG_DIR"] = str(home())
     os.environ["PATH"] = offline(os.environ["PATH"])
     os.environ["JOURNAL_ENV"] = "main"
+    os.environ[TEST_OWNER] = str(os.getpid())
     os.environ["AGENT_JOURNAL_REPO"] = str(Path(tempfile.gettempdir()) / "no-journal-releases")
     for away in ("CLAUDE_CODE_MESSAGING_SOCKET", "JOURNAL_ROOT", "AGENT_JOURNAL_ROOT"):
         os.environ.pop(away, None)

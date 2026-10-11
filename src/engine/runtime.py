@@ -288,6 +288,14 @@ def upgrading(root: Path) -> bool:
 
 
 TESTS_RUNNING = "tests-running"
+TEST_OWNER = "AGENT_JOURNAL_TEST_OWNER"
+
+
+def owner_gone() -> bool:
+    """Whether the test that started this journal has ended: a journal a test starts is born with that test's process in its environment and stops with it, however it was started or restarted since; one with no such owner never is."""
+    from engine.sessions import alive
+    owner = os.environ.get(TEST_OWNER)
+    return bool(owner) and not alive(owner)
 
 
 def tests_running(root: Path) -> bool:
