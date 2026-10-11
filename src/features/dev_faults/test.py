@@ -422,6 +422,15 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
         stored.watch_marks()
         assert todos.load(written.n).title == "changed by another process", \
             f"a row another process rewrote is read anew after one look of the watch loop, not kept as it was ({elsewhere.title})"
+        from pathlib import Path
+        folder = row_file.parent
+        stored.mark_of(folder)
+        stored.WATCHED.asked[str(folder)] -= 2 * stored.WATCHED_FOR
+        known = stored.WATCHED.marks[str(folder)]
+        os.utime(folder, ns=(known + 5_000_000_000, known + 5_000_000_000))
+        stored.watch_marks()
+        assert stored.WATCHED.marks[str(folder)] == known, "the watch loop does not look at a folder no request asked about for a minute"
+        assert stored.mark_of(folder) == known + 5_000_000_000, "a request for it then asks the disk, so a quiet folder is never read as it was"
         from engine import runtime
         import serve
         from features.open_viewer.details import OpenViewerDetails

@@ -117,7 +117,7 @@ def rolling(folder: str, limit: int | None) -> Memo:
 
 def forget_held() -> None:
     """Lets go of everything every folder holds in memory, as a process that has only just started holds nothing."""
-    for table in (SUMMARIES, STANDING, INDEXED, PENDING, INDEXED_AT, STAMPED, STAMPED_OWN, WRITTEN, UNSAVED, UNCOUNTED, SEEDS, COUNTED, DERIVED, WATCHED.marks):
+    for table in (SUMMARIES, STANDING, INDEXED, PENDING, INDEXED_AT, STAMPED, STAMPED_OWN, WRITTEN, UNSAVED, UNCOUNTED, SEEDS, COUNTED, DERIVED, WATCHED.marks, WATCHED.asked):
         table.clear()
     for memo in HELD.values():
         memo.clear()
@@ -129,7 +129,7 @@ def forget_folder(home: Path) -> None:
 
     def under(key: str) -> bool:
         return key == prefix or key.startswith(prefix + os.sep)
-    for table in (SUMMARIES, STANDING, INDEXED, PENDING, INDEXED_AT, STAMPED, STAMPED_OWN, WATCHED.marks, WRITTEN, UNSAVED, UNCOUNTED, SEEDS, OPEN):
+    for table in (SUMMARIES, STANDING, INDEXED, PENDING, INDEXED_AT, STAMPED, STAMPED_OWN, WATCHED.marks, WATCHED.asked, WRITTEN, UNSAVED, UNCOUNTED, SEEDS, OPEN):
         for key in [key for key in table if under(key)]:
             opened_archive = table.pop(key)
             if table is OPEN:
@@ -163,11 +163,19 @@ def mtime(path: Path) -> int:
         return 0
 
 
+WATCHED_FOR = 60.0
+
+
 @dataclass
 class Watched:
     """The marks of the folders and pack indexes a server holds, renewed by its watch loop once a tick, so a request reads them from memory; a process with no watch loop asks the disk."""
     marks: dict[str, int] = field(default_factory=dict)
+    asked: dict[str, float] = field(default_factory=dict)
     on: bool = False
+
+    def is_watching(self, key: str, now: float) -> bool:
+        """Whether a request asked for the mark within the last minute, which is as long as the watch loop keeps it fresh."""
+        return key in self.marks and now - self.asked.get(key, -WATCHED_FOR) <= WATCHED_FOR
 
 
 WATCHED = Watched()
@@ -176,11 +184,14 @@ WATCHED = Watched()
 def mark_of(path: Path) -> int:
     """The modification time of a folder or pack index: from the watch loop's last look in a server, from the disk anywhere else."""
     key = str(path)
-    if WATCHED.on and key in WATCHED.marks:
+    if not WATCHED.on:
+        return path.stat().st_mtime_ns if path.name != INDEX else mtime(path)
+    now = time.monotonic()
+    if WATCHED.is_watching(key, now):
+        WATCHED.asked[key] = now
         return WATCHED.marks[key]
     found = path.stat().st_mtime_ns if path.name != INDEX else mtime(path)
-    if WATCHED.on:
-        WATCHED.marks[key] = found
+    WATCHED.marks[key], WATCHED.asked[key] = found, now
     return found
 
 
@@ -191,13 +202,16 @@ def remark(path: Path) -> None:
 
 
 def watch_marks(enabled: bool = True) -> None:
-    """The watch loop's one look a tick at every mark this server holds, which is all the disk a warm read needs; a folder whose mark moved has its row stamps looked at again here, off every request. Switched off, the marks are dropped and every read asks the disk, as before the watch loop."""
+    """The watch loop's one look a tick at every mark a request asked for within the last minute, which is all the disk a warm read needs; a folder whose mark moved has its row stamps looked at again here, off every request. Switched off, the marks are dropped and every read asks the disk, as before the watch loop."""
     WATCHED.on = enabled
     if not enabled:
         WATCHED.marks.clear()
+        WATCHED.asked.clear()
         return
     now = time.monotonic()
     for key in list(WATCHED.marks):
+        if not WATCHED.is_watching(key, now):
+            continue
         WATCHED.marks[key] = mtime(Path(key))
         held = STAMPED.get(key)
         if held is not None and held.mark != WATCHED.marks[key]:
