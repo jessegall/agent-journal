@@ -5,7 +5,7 @@ import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
-import {api} from "../api/client.js";
+import {useScope} from "../composables/scope.js";
 import Icon from "../kit/Icon.vue";
 import PlanList from "../layout/PlanList.vue";
 import {approvePlan, startPlan} from "../actions/plans.js";
@@ -16,6 +16,7 @@ import {rows} from "../sync/rows.js";
 
 const PREVIEW_PHASES = 5;
 const props = defineProps({plan: Object, folded: Boolean});
+const scope = useScope();
 const dock = ref(null);
 const listing = ref(false);
 const lifted = ref(false);
@@ -83,7 +84,7 @@ async function start() {
                     </Btn>
                 </template>
             </span>
-            <CloseButton title="Hide from chat; it stays on the Plans page" @click="api.act('plan', plan.n, 'dismiss')" />
+            <CloseButton title="Hide from chat; it stays on the Plans page" @click="scope.api.act('plan', plan.n, 'dismiss')" />
         </template>
         <template v-if="!parked && (phases.length || building)">
             <ol class="plan-card-phases" data-fades>

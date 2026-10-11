@@ -5,11 +5,13 @@ import Notice from "../kit/Notice.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
+import {useScope} from "../composables/scope.js";
 import {route} from "../route.js";
 
 const props = defineProps({notice: Object, fixed: Boolean});
 const emit = defineEmits(["closing"]);
 
+const scope = useScope();
 const working = ref(false);
 const failure = ref("");
 
@@ -40,7 +42,7 @@ onMounted(() => setTimeout(() => (armed.value = true), ARMED_AFTER));
 
 function close() {
     if (!armed.value) return;
-    const request = api.closeNotice(props.notice.n);
+    const request = scope.api.closeNotice(props.notice.n);
     request.catch(() => {});
     emit("closing", props.notice.n, request);
 }

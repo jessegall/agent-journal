@@ -6,12 +6,13 @@ import Btn from "../kit/Btn.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
-import {api} from "../api/client.js";
+import {useScope} from "../composables/scope.js";
 import {peek} from "../route.js";
 import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
 import {open as openRows} from "../domain/records.js";
 
 const props = defineProps({report: Object, folded: Boolean});
+const scope = useScope();
 const dock = ref(null);
 const update = computed(() => isUpdate(props.report));
 const label = computed(() => (update.value ? updateLabel(props.report) : `Report ${props.report.n}`));
@@ -50,7 +51,7 @@ function open() {
             </span>
             <CloseButton
                 title="Hide from chat; it stays on the Reports page"
-                @click="api.act('report', report.n, 'dismiss')"
+                @click="scope.api.act('report', report.n, 'dismiss')"
             />
         </template>
         <template v-if="lead">

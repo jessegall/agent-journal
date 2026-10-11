@@ -4,12 +4,13 @@ import Btn from "../kit/Btn.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
-import {api} from "../api/client.js";
+import {useScope} from "../composables/scope.js";
 import {peek} from "../route.js";
 import {rows} from "../sync/rows.js";
 import {dumpCollection} from "../domain/docks.js";
 
 const props = defineProps({dump: Object, folded: Boolean});
+const scope = useScope();
 const collection = computed(() => rows("collection").find((c) => c.n === dumpCollection(props.dump)) || null);
 const line = computed(() => {
     if (!collection.value) return "";
@@ -34,7 +35,7 @@ function open() {
             <span class="dump-dock-acts chat-dock-acts">
                 <Btn small @click="open">Open the collection</Btn>
             </span>
-            <CloseButton title="Hide from chat; its collection stays" @click="api.act('dump', dump.n, 'dismiss')" />
+            <CloseButton title="Hide from chat; its collection stays" @click="scope.api.act('dump', dump.n, 'dismiss')" />
         </template>
     </ChatDock>
 </template>

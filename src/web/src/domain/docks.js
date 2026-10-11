@@ -2,10 +2,12 @@ import {isUpdate} from "./updates.js";
 
 const newestOf = (rows) => rows.filter((r) => !r.deleted).sort((a, b) => b.created - a.created || b.n - a.n)[0] || null;
 
-export function dockedReport(reports) {
+// A report stays above the chat until it is closed, read, or the person has written to the agent since it came: the work it was for has moved on.
+export function dockedReport(reports, lastWrittenAt = 0) {
     const newest = newestOf(reports);
     if (!newest || newest.completed || newest.data.dismissed) return null;
-    return isUpdate(newest) || !newest.seen.includes("user") ? newest : null;
+    if (isUpdate(newest)) return newest;
+    return !newest.seen.includes("user") && newest.created > lastWrittenAt ? newest : null;
 }
 
 export function dockedDump(dumps) {
