@@ -1,4 +1,6 @@
 import json
+import time
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from typing import TypedDict
 
@@ -13,6 +15,26 @@ from overview.counts import counts
 LISTED = worded(KEEP_SHAPED)
 VIEWED = worded(KEEP_SHAPED)
 DASHBOARDS = worded(KEEP_SHAPED)
+ASKED: dict[str, float] = {}
+WATCHED_FOR = 60.0
+
+
+def watched(record) -> bool:
+    """Whether a viewer has asked for this environment's dashboard lately, so rebuilding it after a write is for someone."""
+    return time.monotonic() - ASKED.get(str(record.home), -WATCHED_FOR) < WATCHED_FOR
+
+
+@contextmanager
+def unwatched(record):
+    """A rebuild nobody asked for does not count as a viewer's interest, or it would keep itself going."""
+    kept = ASKED.get(str(record.home))
+    try:
+        yield
+    finally:
+        if kept is None:
+            ASKED.pop(str(record.home), None)
+        else:
+            ASKED[str(record.home)] = kept
 
 
 class Unchanged:
@@ -214,6 +236,7 @@ def held_rows(record, type_: str, query: dict, controller=None, summaries: list 
 
 def dashboard(record, wanted: list[str], tallied: list[str], query: dict) -> tuple[bytes, bytes]:
     """The dashboard's lists and counts as the JSON they are sent as, each type's rows held apart."""
+    ASKED[str(record.home)] = time.monotonic()
     controllers = {type_: CONTROLLERS[type_](record, actor=USER) for type_ in dict.fromkeys([*wanted, *tallied])}
     scanned = {type_: controller.rows.summaries() for type_, controller in controllers.items()}
     lists = b", ".join(json.dumps(type_).encode() + b": " + held_rows(record, type_, query, controllers[type_], scanned[type_]) for type_ in wanted)

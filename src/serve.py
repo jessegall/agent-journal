@@ -465,6 +465,7 @@ def warmed(root: Path, warm: threading.Event, began: float = BEGAN) -> None:
         recorded(root, "until the viewer is warm", began)
         WARMERS.append(lambda: warm_changed(root))
         HOME_WARMERS.append(warm_dashboard)
+        bus.on("*", rebuild_dashboard)
         together(timed(root, "commands warm", began, warm_commands), timed(root, "rows warm", began, lambda: warm_rows(root)),
                  timed(root, "transcripts read", began, lambda: read_transcripts(root)), timed(root, "hooks warm", began, warm_hooks),
                  timed(root, "board warm", began, lambda: warm_board(root)))
@@ -548,6 +549,22 @@ def settle_agents(root: Path) -> None:
             after_restart(record)
     except Exception:
         traceback.print_exc()
+
+
+REBUILD_EVERY = 0.5
+
+
+def rebuild_dashboard(event, record) -> None:
+    """A write makes the dashboard of its environment stale, and the next request would pay to build it again; while a viewer is watching it is built again here, after the write has answered, at most twice a second, so the viewer's next ask finds it ready."""
+    from surfaces.listing import unwatched, watched
+    if record is None or not watched(record):
+        return
+
+    def rebuild() -> None:
+        with unwatched(record):
+            warm_dashboard(record.root, record.env)
+    key = f"dashboard {record.home}"
+    bus.spaced(key, REBUILD_EVERY, lambda: bus.background(key, rebuild))
 
 
 def warm_dashboard(root: Path, env: str) -> None:

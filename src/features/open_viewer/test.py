@@ -394,6 +394,17 @@ def test_the_viewer_waits_for_a_busy_port_opens_a_page_only_when_no_tab_has_it_a
     monkeypatch.setattr(serve, "dispatch", lambda method, path, *given: asked.append(path))
     serve.warm_changed(kept)
     assert asked == ["/api/main/dashboard"], "what a setting change cleared is warmed in the background, the dashboard's rows included, so no request pays for rebuilding them"
+    from surfaces import listing
+    from engine.record import Record as Written
+    written = Written(kept, "main")
+    asked.clear()
+    serve.rebuild_dashboard(None, written)
+    serve.rebuild_dashboard(None, None)
+    assert asked == [], "a write rebuilds the dashboard for nobody while no viewer has asked for it"
+    listing.ASKED[str(written.home)] = time.monotonic()
+    serve.rebuild_dashboard(None, written)
+    assert (asked, listing.watched(written)) == (["/api/main/dashboard"], True), "once a viewer watches it, a write builds the dashboard again after its answer, and that build is not a viewer's interest"
+    listing.ASKED.clear()
     from engine.record import Record
     from engine.runtime import env as runtime_env
     assert viewer.configured(kept) == 0, "a journal that has set no port of its own has none configured"
