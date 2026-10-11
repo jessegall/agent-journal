@@ -55,7 +55,8 @@ def test_the_camera_is_render_clips():
 
 def test_the_clips_are_clips_py():
     clips = assignments("clips.py")
-    for name in ("HANG", "HOLD_LIFT", "HOLD_SWING", "HOLD_TWIST", "HOLD_ROLL", "RAISED_ROLL", "BLINK_OPENNESS"):
+    for name in ("HANG", "HOLD_LIFT", "HOLD_SWING", "HOLD_TWIST", "HOLD_ROLL", "RAISED_ROLL", "BLINK_OPENNESS", "WAVE_BACK", "WAVE_BEND", "WAVE_SWING",
+                 "CHIN_REST", "THINK_ELBOW", "THINK_HAND", "THINK_TIP", "SLEEP_TILT"):
         assert re.search(rf"^const {name} = {re.escape(str(clips[name]).replace('(', '[').replace(')', ']'))};", PAGE, re.M), name
     assert page_number("MIN_EYE_HEIGHT") == assignments("rig.py")["MIN_EYE_HEIGHT"]
     for name, frames, fps, loops in re.findall(r'Clip\("(\w+)", (\d+), (\d+), (True|False),', (HERE / "clips.py").read_text()):
