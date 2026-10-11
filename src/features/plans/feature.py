@@ -1,4 +1,6 @@
-from expects import Given, Kept, Nudged, Refused, Unchanged
+from engine.events.engine import ClockTicked
+from engine.events.resources import TodoCompleted
+from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
 from features.base import Feature
 from features.plans.summary import plans_shown
 from overview.parts import SUMMARY_PARTS
@@ -22,11 +24,11 @@ from features.sending import Nudge
 from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
 from features.plans.progress import held
 from features.work_tracking.next import ROW_HOLDS
-from features.plans.handlers import PlanChanged, ReportLinked
+from features.plans.handlers import PlanChanged, ReportLinked, RowReopened, TodoUpdated
 from features.plans.resource import Plan
 from providers.payload import ToolUse
 from resources.base import AGENT, SYSTEM, USER
-from resources.types import AgentRow
+from resources.types import AgentRow, Todo
 
 STILL_TIMES = 3
 PLAN_MODE_REFUSED = ('plan mode is not used in a journal project - write the plan as a journal plan instead: '
@@ -37,6 +39,22 @@ AGENT_ROW = AgentRow(n=1, title="claude-1")
 
 def plan(status: str, **data) -> Plan:
     return Plan(n=1, title="Ship it", data={"status": status, **data})
+
+
+def phases(*todos: int, checkpoint: bool = False) -> list:
+    return [{"title": f"Phase {n}", "todos": [todo], "checkpoint": checkpoint and n == 1} for n, todo in enumerate(todos, 1)]
+
+
+def finished(n: int) -> TodoCompleted:
+    return TodoCompleted(n=n, type="todo", action="completed", actor=USER)
+
+
+def done(n: int) -> Todo:
+    return Todo(n=n, title=f"Row {n}", completed=1.0)
+
+
+def reopened(n: int) -> RowReopened:
+    return RowReopened(n=n, type="todo", action="reopened", actor=USER)
 
 
 def reviewed(to: str) -> ReportLinked:
@@ -62,7 +80,11 @@ class PlansFeature(Feature):
             Given(changed("created", AGENT), rows=[plan("building"), AGENT_ROW]) >> Unchanged(),
             Given(changed("created", USER), rows=[plan("building")]) >> Unchanged(),
         ])
-        journal.events.handler(DelegatePlansOfHandedRows())
+        journal.events.handler(DelegatePlansOfHandedRows(), expects=[
+            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5", data={"assigned": "helper:3"}), plan("active", phases=phases(5))]) >> Updated(Plan(n=1), delegated=True),
+            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5))]) >> Unchanged(),
+            Given(TodoUpdated(n=5, type="todo", action="updated", actor=USER), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"assigned": "helper:3"}), plan("active", phases=phases(5))]) >> Unchanged(),
+        ])
         journal.events.handler(StartApproved(), expects=[
             Given(changed("updated", USER), rows=[plan("approved"), AGENT_ROW]) >> Nudged("approved"),
             Given(changed("updated", SYSTEM), rows=[plan("approved"), AGENT_ROW]) >> Nudged("approved"),
@@ -89,10 +111,31 @@ class PlansFeature(Feature):
             Given(changed("linked", AGENT), rows=[plan("active"), AGENT_ROW]) >> Unchanged(),
             Given(changed("updated", AGENT), rows=[plan("building"), AGENT_ROW]) >> Nudged("phases"),
         ])
-        journal.events.handler(PassCheckpointsInAuto())
-        journal.events.handler(AdvancePlans())
-        journal.events.handler(ReopenPlansWithTheirRows())
-        journal.events.handler(TakeStruckRowsOutOfUnapprovedPlans())
+        journal.events.handler(PassCheckpointsInAuto(), expects=[
+            Given(ClockTicked(agent=1), rows=[AGENT_ROW, done(5), Todo(n=6, title="Row 6"), plan("waiting", phases=phases(5, 6, checkpoint=True), current=1)], settings={"features.work_tracking.auto": True}) >> Updated(Plan(n=1), status="active"),
+            Given(ClockTicked(agent=1), rows=[AGENT_ROW, done(5), Todo(n=6, title="Row 6"), plan("waiting", phases=phases(5, 6, checkpoint=True), current=1)], settings={"features.work_tracking.auto": False}) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[AGENT_ROW, Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6), current=1)], settings={"features.work_tracking.auto": True}) >> Unchanged(),
+        ])
+        journal.events.handler(AdvancePlans(), expects=[
+            Given(finished(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Updated(Plan(n=1), current=2),
+            Given(finished(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6), current=1)]) >> Updated(Plan(n=1), status="active"),
+            Given(finished(5), rows=[done(5), plan("active", phases=phases(5))]) >> Updated(Plan(n=1), status="done"),
+            Given(finished(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))], settings={"features.work_tracking.auto": False}) >> Updated(Plan(n=1), status="waiting"),
+            Given(finished(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))], settings={"features.work_tracking.auto": True}) >> Updated(Plan(n=1), current=2),
+            Given(finished(5), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Unchanged(),
+            Given(finished(5), rows=[done(5), plan("parked", phases=phases(5))]) >> Unchanged(),
+        ])
+        journal.events.handler(ReopenPlansWithTheirRows(), expects=[
+            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=2)]) >> Updated(Plan(n=1), status="active", current=1),
+            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=1)]) >> Unchanged(),
+            Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("abandoned", phases=phases(5, 6), current=2)]) >> Unchanged(),
+            Given(reopened(9), rows=[Todo(n=9, title="Row 9"), plan("active", phases=phases(5, 6), current=2)]) >> Unchanged(),
+        ])
+        journal.events.handler(TakeStruckRowsOutOfUnapprovedPlans(), expects=[
+            Given(finished(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(5))]) >> Updated(Plan(n=1), phases=[{"title": "Phase 1", "todos": [], "checkpoint": False}]),
+            Given(finished(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("active", phases=phases(5))]) >> Unchanged(),
+            Given(finished(5), rows=[done(5), plan("building", phases=phases(5))]) >> Unchanged(),
+        ])
         journal.agent.interceptor(RefusePlanMode(), expects=[
             Given(ToolUse.from_payload("EnterPlanMode", {}, {})) >> Refused(PLAN_MODE_REFUSED),
             Given(ToolUse.from_payload("Read", {}, {})) >> Kept(),
