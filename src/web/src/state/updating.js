@@ -8,7 +8,7 @@ const THIRD_STEP_AT = 25;
 
 export const STATUS_POLL = "summary";
 
-export const updating = reactive({version: "", failure: "", late: false, since: 0, external: false, step: "", countdown: null, target: "", starting: false});
+export const updating = reactive({version: "", failure: "", late: false, since: 0, external: false, step: "", countdown: null, target: "", starting: false, bootStep: ""});
 
 export const stepAt = (seconds) => (seconds < SECOND_STEP_AT ? STEPS[0] : seconds < THIRD_STEP_AT ? STEPS[1] : STEPS[2]);
 export const locked = () => Boolean(updating.version || updating.external) && !updating.failure && !updating.late;
@@ -17,7 +17,10 @@ export const locked = () => Boolean(updating.version || updating.external) && !u
 export const covered = () => Boolean(updating.countdown) || locked() || updating.starting;
 
 // The server says whether it has booted and is ready; an older server says nothing, which leaves the page as it is.
-export const starting = (ready) => (updating.starting = ready === false);
+export function starting(ready, step = "") {
+    updating.starting = ready === false;
+    updating.bootStep = updating.starting ? step : "";
+}
 
 // The automatic update the server is counting down to, with the second it starts at; none clears it.
 export function counting(countdown) {
@@ -59,7 +62,7 @@ export function follow(running, step = "") {
 // What the server says about an update, taken the same way by the viewer and the phone; reloads once an upgrade seen running has finished.
 export function followServer(got) {
     counting(got.countdown);
-    starting(got.ready);
+    starting(got.ready, got.step);
     if (follow(Boolean(got.updating), got.step)) window.location.reload();
 }
 

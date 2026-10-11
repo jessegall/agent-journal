@@ -195,6 +195,26 @@ def mark_booting(root: Path) -> None:
 
 def mark_booted(root: Path) -> None:
     booting_mark(root).unlink(missing_ok=True)
+    boot_step_mark(root).unlink(missing_ok=True)
+
+
+def boot_step_mark(root: Path) -> Path:
+    return folder(root) / "booting-step"
+
+
+def mark_boot_step(root: Path, step: str) -> None:
+    """The step the start is on, for the cover to show; a plain write that never raises, so the mark cannot break the step it names."""
+    try:
+        boot_step_mark(root).write_text(step)
+    except OSError:
+        return
+
+
+def boot_step(root: Path) -> str:
+    try:
+        return boot_step_mark(root).read_text().strip() if booting(root) else ""
+    except OSError:
+        return ""
 
 
 def booting(root: Path) -> bool:

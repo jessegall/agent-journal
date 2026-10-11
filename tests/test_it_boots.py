@@ -1158,6 +1158,15 @@ def test_a_machine_with_only_one_agent_warms_up_without_ending_the_server(tmp_pa
     steps = (root / "runtime" / "upgrade-steps.jsonl").read_text()
     assert "start: until the viewer is warm" in steps and "start: until everything is warm" in steps and "start: commands warm" in steps, \
         "every start, not only a restart, records how long it had taken when each step ended"
+    from commands.speed import last_start
+    from engine import runtime
+    serve.recorded(root, "until the server listens", time.time() - 1)
+    runtime.mark_booting(root)
+    runtime.mark_boot_step(root, "Warming the viewer")
+    from features.auto_update.countdown import update_state
+    assert update_state(root)["step"] == "Warming the viewer" and update_state(root)["ready"] is False, "a server that is starting says which step it is on"
+    runtime.mark_booted(root)
+    assert update_state(root)["step"] == "" and "until everything is warm" in last_start(root), "once warm it names no step, and journal speed --start reports where the start went"
 
 
 def test_a_plugin_service_runs_from_the_packed_build_and_stops_when_the_last_session_ends(tmp_path, free_port):

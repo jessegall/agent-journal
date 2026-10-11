@@ -151,7 +151,9 @@ def help_text(word: str) -> str:
     return f"no command {word!r}"
 
 def speed(ctx) -> str:
-    from commands.speed import measure
+    from commands.speed import last_start, measure
+    if ctx["start"]:
+        return last_start(ctx["record"].root)
     if ctx["board"]:
         from commands.speed_board import measure_board
         return measure_board(ctx["runs"], Path(ctx["out"]) if ctx["out"] else None)

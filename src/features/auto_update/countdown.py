@@ -41,7 +41,7 @@ class UpdateState:
 
 
 def update_state(root: Path) -> dict:
-    return asdict(UpdateState(runtime.upgrading(root), not runtime.booting(root), runtime.upgrade_step(root), remaining(root)))
+    return asdict(UpdateState(runtime.upgrading(root), not runtime.booting(root), runtime.upgrade_step(root) or runtime.boot_step(root), remaining(root)))
 
 
 def cancel(root: Path) -> None:

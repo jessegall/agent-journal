@@ -24,6 +24,8 @@ from serve import serve
 from engine.stored import write_text
 
 HERE = Path(__file__).resolve().parents[1]
+START = "start: "
+LISTENING = f"{START}until the server listens"
 
 COMMANDS = (("start",), ("status",), ("message", "all"), ("message", "unread"), ("todo", "all"), ("work", "all"))
 TYPES = ("message", "todo", "work", "comment", "notification", "agent", "question", "reaction")
@@ -144,3 +146,20 @@ def timings(live: Path, scratch: Path, env: str, runs: int, url: str) -> dict:
         address = base + path.format(env=env)
         rows[f"GET {path}"] = timed(lambda: urlopen(address, timeout=30).read(), runs)
     return rows
+
+
+def last_start(root: Path) -> str:
+    """Where the newest start's time went: each step in the order it ended, the seconds since the start it ended at and the gap since the one before."""
+    from engine import runtime
+    file = runtime.folder(root) / runtime.STEP_TIMES
+    rows = [json.loads(line) for line in file.read_text().splitlines()] if file.is_file() else []
+    began = next((at for at in range(len(rows) - 1, -1, -1) if rows[at]["step"] == LISTENING), None)
+    if began is None:
+        return "no start has been recorded yet"
+    steps = sorted((row for row in rows[began:] if row["step"].startswith(START)), key=lambda row: row["seconds"])
+    before = 0.0
+    lines = []
+    for row in steps:
+        lines.append(f"{row['seconds']:7.2f}s  +{row['seconds'] - before:5.2f}s  {row['step'].removeprefix(START)}")
+        before = row["seconds"]
+    return f"the start of version {steps[0]['version']}, seconds since it began, then since the step before\n" + "\n".join(lines)
