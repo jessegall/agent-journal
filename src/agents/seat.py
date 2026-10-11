@@ -209,27 +209,27 @@ class HookBinding:
 
     def asked_to_take_over(self, session: str, env: str, holder: str) -> str:
         """An environment has one live session: the one that starts beside another waits in an environment of its own, and the user is asked whether it takes the busy one over."""
-        waiting = self.waiting_beside(env, holder)
-        side = waiting[0] if waiting else self.sessions.free(env)
-        for each in self.sessions.agent(session, self.pid):
-            seat_session(self.sessions, Seat(side, each, self.pid), provider=self.provider.name)
-        if waiting:
-            self.sessions.write(session, takeover={"environment": env, "question": waiting[1], "holder": holder})
-            return side
-        question = Questions(Record(self.root, env), actor=SYSTEM).create(
+        side = self.sessions.free(env)
+        for each in self.sessions.agent(session, self.pid, self.provider.name):
+            seat_session(self.sessions, Seat(side, each, self.pid, self.provider.name), provider=self.provider.name)
+        asked = self.asked_about(env, holder) or self.asking(session, env, side, holder)
+        self.sessions.write(session, takeover={"environment": env, "question": asked, "holder": holder})
+        return side
+
+    def asking(self, session: str, env: str, side: str, holder: str) -> int:
+        """Puts the question to the user and answers with its number. It is the user's alone: the answer moves a working agent out of the environment it was launched for."""
+        return Questions(Record(self.root, env), actor=SYSTEM).create(
             f"A second session started in {env}", brief=f"Session {session} started in {env}, where session {holder} is already working. It waits in {side} until you answer. "
             f"Taking {env} over unbinds {holder} from it, and {session} holds it.",
             options=[{"title": f"Take over {env}", "description": f"{holder} is unbound from {env}, and {session} works there"},
-                     {"title": f"Stay in {side}", "description": f"{holder} keeps {env}"}], user_only=True)
-        self.sessions.write(session, takeover={"environment": env, "question": question.n, "holder": holder})
-        return side
+                     {"title": f"Stay in {side}", "description": f"{holder} keeps {env}"}], user_only=True).n
 
-    def waiting_beside(self, env: str, holder: str) -> list[tuple[str, int]]:
-        """The environment of its own and the question the user has not answered yet about this pair, the busy environment and the session holding it: another session that starts beside the same holder waits there and asks nothing more, so one pair is asked once however many sessions start."""
+    def asked_about(self, env: str, holder: str) -> int:
+        """The question the user has not answered yet about this pair - the busy environment and the session holding it - or none. Each session that starts beside the holder waits in an environment of its own, because an environment has one live session, but they all wait on the one question, so a pair is asked about once however many start."""
         questions = Questions(Record(self.root, env), actor=SYSTEM)
-        return [(held.environment, held.takeover["question"]) for held in self.sessions.all().values()
-                if held.takeover.get("environment") == env and held.takeover.get("holder") == holder and held.environment
-                and questions.rows.exists(held.takeover["question"]) and not questions.rows.peek(held.takeover["question"]).completed][:1]
+        return next((held.takeover["question"] for held in self.sessions.all().values()
+                     if held.takeover.get("environment") == env and held.takeover.get("holder") == holder and held.environment
+                     and questions.rows.exists(held.takeover["question"]) and not questions.rows.peek(held.takeover["question"]).completed), 0)
 
     def relaunched(self, session: str, old: int) -> None:
         terminal = self.sessions.terminal(self.provider.name, old)
