@@ -1,6 +1,7 @@
 from resources.base import PROJECT
 from features.base import Behaviour, FeatureDetails, Line
 from features.triggers.resource import DOES
+from features.triggers.watched import MOST_NAMED
 from features.groups import Group
 
 
@@ -34,6 +35,7 @@ class TriggersDetails(FeatureDetails):
         journal trigger facts lists the facts this environment can watch, each with what it means. only_when is any, idle or working;
         timing is the minutes before it says so again (0 says it once for each row); most caps the
         times for each row. A trigger on a fact does nudge, instruct or hold, never message or deny.
+        A fact names at most {MOST_NAMED} rows each time it is read, the oldest first; the rest come up as those are handled.
     """
 
     behaviours = [

@@ -12,6 +12,7 @@ from resources.base import Refused
 from resources.types import TYPES
 
 MINUTES, PERCENT, COUNT = "minutes", "percent", "count"
+MOST_NAMED = 10
 FOUND = Memo(limit=256)
 
 
@@ -126,11 +127,14 @@ def minutes_since(stamp: float) -> int:
 
 
 def aged(rows: list, since: Callable, over: float) -> list[Sent]:
-    return [Sent(str(row.n), {"n": row.n, "title": row.title, "minutes": minutes_since(since(row))}) for row in rows if minutes_since(since(row)) > over]
+    """The rows older than the threshold, the oldest first."""
+    ages = sorted(((minutes_since(since(row)), row) for row in rows), key=lambda pair: -pair[0])
+    return [Sent(str(row.n), {"n": row.n, "title": row.title, "minutes": minutes}) for minutes, row in ages if minutes > over]
 
 
 def found(watched: Watched, context, agent) -> list[Sent]:
+    """What the fact names now: at most MOST_NAMED rows each time it is read, so a fact over many rows never writes a nudge for each of them in one hook."""
     fact = FACTS.get(watched, context.record)
     if context.hook is None:
-        return fact.find(context, agent, watched.over)
-    return FOUND.get((str(context.record.root), context.record.env, watched, id(context.hook)), context.hook, lambda: fact.find(context, agent, watched.over))
+        return fact.find(context, agent, watched.over)[:MOST_NAMED]
+    return FOUND.get((str(context.record.root), context.record.env, watched, id(context.hook)), context.hook, lambda: fact.find(context, agent, watched.over)[:MOST_NAMED])

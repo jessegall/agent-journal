@@ -197,11 +197,21 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     assert (finding(record, "work.open.logged", 10), finding(record, "work.open.logged", 30)) == ([str(work.n)], []), "work is unlogged from its last entry, not from its start"
     assert (finding(record, "agent.context", 60), finding(record, "agent.context", 80)) == (["claude-1"], []), "the context is named above the percent"
     assert (finding(record, "agent.idle", 10), finding(record, "agent.idle", 30)) == (["claude-1"], []), "an idle agent is named once it has been idle long enough"
-    started = clock.perf_counter()
-    for _ in range(20):
-        for fact in watched.FACTS.each(record):
-            finding(record, fact.name, 10)
-    assert (clock.perf_counter() - started) / 20 < 0.05, "twenty facts are read inside the fifty millisecond hook budget"
+    def took(name: str) -> float:
+        started = clock.perf_counter()
+        for _ in range(5):
+            finding(record, name, 10)
+        return (clock.perf_counter() - started) / 5
+
+    slowest = max(watched.FACTS.each(record), key=lambda fact: took(fact.name))
+    assert took(slowest.name) < 0.005, f"each fact on its own is read in a tenth of the fifty millisecond hook budget, however many facts there are; {slowest.name} was not"
+    for n in range(50):
+        Messages(record, actor=USER).create(f"waiting {n}")
+    monkeypatch.setattr(clock, "time", lambda: now + 40 * 60)
+    assert finding(record, "message.unread.created", 10) == [str(n) for n in range(1, watched.MOST_NAMED + 1)], \
+        "a fact over many rows names at most its budget of them in one reading, the oldest first"
+    monkeypatch.setattr(clock, "time", lambda: now + 20 * 60)
+    Messages(record, actor=AGENT).read_all(list(range(2, 52)))
     context = AgentContext.of(FEATURES["triggers"], record, Agents(record, actor=SYSTEM).by_session("claude-1"), hook=object())
     counted = []
     counting = watched.Fact("agent.idle", watched.MINUTES, "Counted", "counted for more than {over} minutes", lambda *given: counted.append(1) or [])
