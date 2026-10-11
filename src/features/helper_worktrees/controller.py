@@ -212,7 +212,7 @@ class Worktrees(Controller):
             raise Refused(f"{folder} has changes that could not be committed to {row.branch}: {(made.stderr or made.stdout).strip()}")
 
     def _marked(self, label: str, row) -> None:
-        Agents(self.record, actor=SYSTEM)._mark_primary(label, name=row.title, icon="branch", detail=row.branch)
+        Agents(self.record, actor=SYSTEM)._mark_primary(label, name=row.title, icon="branch", kind="commits", detail=row.branch)
 
     def _drift(self, row) -> Drift:
         project = self._project()
