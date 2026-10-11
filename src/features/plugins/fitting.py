@@ -27,6 +27,7 @@ FRESH_FOR = 86400
 WORKED_FIRST = 3600
 LANGUAGES = {".php": "PHP", ".py": "Python", ".ts": "TypeScript", ".vue": "Vue", ".cs": "C#"}
 REFRESHING: dict[Path, threading.Lock] = {}
+DECIDED: dict[Path, int] = {}
 
 
 @dataclass(frozen=True)
@@ -84,11 +85,16 @@ def offers_kept(root: Path) -> list[Offer]:
         return []
 
 
-def offers_fresh(root: Path) -> bool:
+def offers_stamp(root: Path) -> int:
     try:
-        return time.time() - (Path(root) / "runtime" / KEPT).stat().st_mtime < FRESH_FOR
+        return (Path(root) / "runtime" / KEPT).stat().st_mtime_ns
     except OSError:
-        return False
+        return 0
+
+
+def offers_fresh(root: Path) -> bool:
+    stamp = offers_stamp(root)
+    return bool(stamp) and time.time() - stamp / 1e9 < FRESH_FOR
 
 
 def offers_read(root: Path) -> list[Offer]:
@@ -116,12 +122,10 @@ def suggest(record, offers: list[Offer]) -> None:
                            described=offer.description, runs=list(offer.commands))
 
 
-def refresh(record) -> None:
-    refreshing = REFRESHING.setdefault(Path(record.root), threading.Lock())
-    if not refreshing.acquire(blocking=False):
-        return
+def settle(record, refreshing: threading.Lock, read) -> None:
     try:
-        suggest(record, offers_read(record.root))
+        suggest(record, read(record.root))
+        DECIDED[Path(record.root)] = offers_stamp(record.root)
     finally:
         refreshing.release()
 
@@ -179,7 +183,10 @@ class SuggestFittingPlugins(Handler):
         record = context.record
         if time.time() - in_use_since(record, context.agent.row) < WORKED_FIRST:
             return
-        if offers_fresh(record.root):
-            suggest(record, offers_kept(record.root))
+        fresh = offers_fresh(record.root)
+        if fresh and DECIDED.get(Path(record.root)) == offers_stamp(record.root):
             return
-        threading.Thread(target=refresh, args=(record,), name="plugin-fit", daemon=True).start()
+        refreshing = REFRESHING.setdefault(Path(record.root), threading.Lock())
+        if not refreshing.acquire(blocking=False):
+            return
+        threading.Thread(target=settle, args=(record, refreshing, offers_kept if fresh else offers_read), name="plugin-fit", daemon=True).start()

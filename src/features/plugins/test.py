@@ -996,6 +996,22 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     assert sorted(suggested) == ["Install the Broken plugin", "Install the Snake plugin"], \
         f"a listed plugin whose declared languages the project is written in is suggested, and one that declares other languages is not: {sorted(suggested)}"
     assert len(asked) == 1, "the official list is read once a day, not at every session start"
+    listings, calls, gate = [], [], threading.Event()
+    with monkeypatch.context() as watched:
+        tracked = fitting.tracked_files
+        watched.setattr(fitting, "tracked_files", lambda project: listings.append(project) or tracked(project))
+        for _ in range(3):
+            started()
+        assert listings == [], "ticks after the offers were decided do not list the project's files again"
+        fitting.DECIDED.clear()
+        watched.setattr(fitting, "suggest", lambda record, offers: calls.append(offers) or gate.wait(30))
+        for _ in range(3):
+            fitting.SuggestFittingPlugins().handle(context, ClockTicked())
+        running = [t for t in threading.enumerate() if t.name == "plugin-fit"]
+        gate.set()
+        for thread in running:
+            thread.join(60)
+    assert (len(calls), len(running)) == (1, 1), "a run still going is never started again on top of itself"
     from dataclasses import replace
     monkeypatch.setattr(fitting, "OPEN_SUGGESTIONS", 0)
     another = replace(next(o for o in fitting.offers_kept(repo.record.root) if o.title == "Snake"), source="elsewhere", title="Another snake")
