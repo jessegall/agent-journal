@@ -1,3 +1,5 @@
+from itertools import dropwhile
+
 from controllers.types import Messages
 from features.command_tags.reading import REPLY_WITH
 from features.messages.answering import acknowledges
@@ -14,12 +16,22 @@ def carried(messages, row) -> str:
     return (f" — it brings {'; '.join(brought)}" if brought else "") + sections
 
 
+QUOTE = ">"
+
+
+def unquoted(text: str) -> str:
+    """What was actually typed, without the message quoted above it: a reply made in the viewer carries the message it answers, which the line names instead, so the agent is never handed its own words back to read again."""
+    lines = list(dropwhile(lambda line: line.startswith(QUOTE) or not line.strip(), text.splitlines()))
+    return "\n".join(lines).strip() or text.strip()
+
+
 def said(row, several: bool = False, messages=None) -> str:
     """The message as the line names it: who wrote it, the message it answers, their words, and whatever it carries - its files by path and its linked rows - so nothing of what the user sent is left behind a second command."""
     who = row.data.get("peer") or ("the user" if row.author == USER else row.author)
     answers = "".join(f", answering message {ref.partition(':')[2]}" for ref in row.refs if ref.startswith("message:"))
     rest = carried(messages, row) if messages is not None else ""
-    return f"{who} wrote{f' {row.n}' if several else ''}{answers}: {(row.brief or row.title).strip()}{rest}"
+    words = (row.brief or row.title).strip()
+    return f"{who} wrote{f' {row.n}' if several else ''}{answers}: {unquoted(words) if answers else words}{rest}"
 
 
 def answered(numbers: list, record, **_) -> str:

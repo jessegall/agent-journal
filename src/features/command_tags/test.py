@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 
 from controllers.types import Comments, Messages, Nudges
-from resources.base import AGENT, USER
+from resources.base import AGENT, SYSTEM, USER
 from providers.payload import Chunk
 from runner.chat_mirror import displayed
 from engine.sessions import Sessions
@@ -113,6 +113,11 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     assert f"the user wrote {thanks.n}: Thank you, sir." in both and f"the user wrote {asked.n}: Thanks, but which branch?" in both, \
         "when several come in one line each is named by its number"
     assert counted({("message", "created"): {4465: None, 4466: None}}, record)[0].endswith("answer each by opening a turn with [!reply:<n>]")
+    answering = asked_and_read(record, "Replying in the viewer", brief="> what the agent said at length\n> and the rest of it\n\nOkay, but which branch?")
+    Messages(record, actor=SYSTEM).link(answering.n, f"message:{asked.n}")
+    quoting = counted({("message", "created"): {answering.n: None}}, record)[0]
+    assert (f"answering message {asked.n}" in quoting, "Okay, but which branch?" in quoting, "what the agent said at length" in quoting) == (True, True, False), \
+        "a reply names the message it answers and carries only what the user typed: its own words quoted above are named, never read back"
     assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"
     Messages(record, actor=AGENT).complete(asked.n, how="answered")
     assert counted({("message", "created"): {asked.n: None}}, record) == [], "a closed message is no longer announced as new"
@@ -145,7 +150,7 @@ def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
 
 
 def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
-    from resources.base import SYSTEM
+
     record = fresh()
     transcript = tmp_path / "s.jsonl"
     now = datetime.now(timezone.utc).isoformat()
