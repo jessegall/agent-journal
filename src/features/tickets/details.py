@@ -100,7 +100,8 @@ class TicketsDetails(FeatureDetails):
     behaviours = [
         Behaviour(name="asks", title="Remind the board's agent of a ticket's open question", trigger=Trigger(every=5, unit=MINUTES)),
         Behaviour(name="awaits", title="Remind the board's agent of a ticket waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
-        Behaviour(name="decisions", title="Remind the board's agent of decisions it can make itself", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="waits", title="Remind the board's agent of a wait one ticket proposes on another", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="drafts", title="Remind the board's agent of a drafted ticket waiting to be confirmed", trigger=Trigger(every=5, unit=MINUTES)),
         Behaviour(name="board check", title="Ask an idle board agent to check its boards", trigger=Trigger(every=5, unit=MINUTES)),
     ]
 

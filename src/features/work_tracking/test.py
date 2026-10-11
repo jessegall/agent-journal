@@ -64,6 +64,17 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     record.set_setting("features", {"work_tracking.auto": False})
     idle(record)
     assert nudges(record) == [], "auto off: nothing offered"
+
+    from migrations.m0082_a_split_switch_keeps_its_choice import kept
+    record.set_setting("features", {"work_tracking.carry on": False, "tickets.decisions": False})
+    record.set_setting("triggers", {"work_tracking.carry on": {"every": 42, "unit": "minutes"}})
+    kept(record)
+    assert record.features["work_tracking.nothing ready"] is False and record.features["tickets.waits"] is False \
+        and record.features["tickets.drafts"] is False, \
+        "a switch split out of a shared one starts off when the shared one was off, so a nudge the user silenced stays silent"
+    assert record.triggers["work_tracking.nothing ready"] == {"every": 42, "unit": "minutes"}, \
+        "and keeps the cadence the user set, rather than going back to the one it ships with"
+    record.set_setting("features", {"work_tracking.carry on": True})
     record.features = {**record.features, "work_tracking.auto": True}
     idle(record)
     assert nudges(record) == ["todo 1 next"], "auto on: the next row is offered once per idle stretch"

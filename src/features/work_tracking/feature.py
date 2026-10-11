@@ -23,7 +23,7 @@ class WorkFeature(Feature):
                     guarantee="When the agent stops with work still in hand, it is asked once to carry on with it."),
               Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, most=CARRY_ON_TIMES,
                     guarantee="With auto mode on, an agent that stops while the user has been quiet is told to carry on, a few times."),
-              Nudge("nothing ready", behaviour="carry on", about=nothing_ready, most=CARRY_ON_TIMES,
+              Nudge("nothing ready", behaviour="nothing ready", about=nothing_ready, most=CARRY_ON_TIMES,
                     guarantee="When every open row is waiting on something, the agent is told there is nothing ready to take."))
 
     def chosen(self, record, key: str) -> bool:

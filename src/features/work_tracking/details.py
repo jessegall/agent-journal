@@ -76,6 +76,11 @@ class WorkDetails(FeatureDetails):
             title="Tell a stopped agent to carry on",
             trigger=Trigger(every=10, unit=MINUTES),
         ),
+        Behaviour(
+            name="nothing ready",
+            title="Say when nothing can be taken",
+            trigger=Trigger(every=10, unit=MINUTES),
+        ),
     ]
 
     settings = [
