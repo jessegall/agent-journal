@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.270.2 — Starting a ticket stops making you wait, and the phone says when the journal is updating
+
+- Starting a ticket seats its environment, and the seating was quadratic: it writes a row for every feature, and every row it created made the others be read again. One boot now, and the writes happen after the start has answered, so the command you wait on stops carrying them. Measured on a workspace that starts tickets back to back: up to three quarters of a second of working time per start, and 341 milliseconds of processor time down to 179.
+- A new environment's dashboard is built where the environment is seated. Its first reader used to pay for it, which is the same fault the seating itself had and showed up the same way - one slow read right after tickets were made, then nothing for an hour.
+- The first search of a session no longer reads every kind of row cold. The warm-up read to-dos and messages and nothing else, so the first search paid for work, comments, reports, agents and the rest; searching for a word across everything cost 1081 milliseconds of processor time and now costs 106.
+- Closing a ticket's environment packs it into the attic, and the merge waited for it. The record is set aside at once and packed afterwards, which takes a fifth of a second off every merge. An archive asked for while it is still being packed is packed first, so unarchive never answers that there is none.
+- The phone says when the journal is updating. It never asked whether an update was running - only the desktop did - so during an upgrade every tap failed with nothing shown, for as long as the upgrade took. Both now ask the same question of the server, the phone covers its screen as the viewer does, and it notices within a second. The cover also keeps one size as its words change, which fixes the desktop's too.
+- A chat mark's kind is decided once, by the server, and the phone and the desktop both read it. The rule was written twice and the copies had drifted: a visitor's comment had no kind on the phone at all, and a mark for something you did was filed as a plugin note there.
+- A write enters the lock funnel before it takes a lock of its own. Two writes took their own file lock and then joined the record's shared write hold, which is the order that deadlocks.
+- A check whose script is missing says so, instead of failing as though the thing it guards were broken. Seven check scripts that nothing ran are now wired, including one that reads pull requests - which found one that had been waiting four days.
+- The journal tells a building agent when its helpers and subagents made most of the edits, and words its offer of the next row in the mode the agent is in.
+
 ## 2.270.1 — A read no longer writes a hundred rows
 
 - An environment is seated where it is made. Seating creates a row for every feature of an environment that has none, and it used to run inside whatever command came next: making a ticket makes an environment, so the next command - usually a plain read - wrote a hundred-odd rows and paid for all of them. On a workspace with 68 tickets that read cost 190 to 241 milliseconds of work where a repeated read costs 20. The cost now sits on the write that caused it, and the next command finds the rows already there.
