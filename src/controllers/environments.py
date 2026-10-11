@@ -9,7 +9,7 @@ from controllers.stored import forget_folder
 from engine import attic, bus
 from engine.record import Record
 from engine.seats import terminal_of
-from engine.sessions import Sessions, alive
+from engine.sessions import Seat, Sessions, alive
 from engine.stop import ask_session
 from resources import types
 from resources.base import ENVIRONMENT, SYSTEM, UNTITLED, Refused, check_title
@@ -263,7 +263,7 @@ class Environments(Controller):
         env = self.peek(n)
         session = self._bound_session()
         holder = self._sessions.holder(env.title)
-        self._sessions.take(env.title, session, why)
+        self._sessions.take(Seat(env.title, session), why)
         self._bind_agent(session, env.title)
         return self.update(n, holder=session, claimed={"from": holder, "why": why})
 

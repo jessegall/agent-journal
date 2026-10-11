@@ -201,6 +201,15 @@ SESSION_FILES = SessionFilesSet()
 SESSION = "session.json"
 
 
+@dataclass(frozen=True)
+class Seat:
+    """Which chair an agent takes: the environment, the name its session goes by, and the process behind it. The three travel together wherever a seat is claimed, succeeded or taken over, and the process is what says two names are one agent."""
+
+    env: str
+    session: str
+    pid: int = 0
+
+
 class Sessions:
     def __init__(self, root: Path):
         self.root = Path(root)
@@ -305,12 +314,13 @@ class Sessions:
         past = [s for s in self.all().values() if s.environment == env and s.retired]
         return max(past, key=lambda s: s.retired["at"], default=SessionFiles.NONE)
 
-    def succeed(self, env: str, session: str, pid: int = 0) -> list[str]:
+    def succeed(self, seat: "Seat") -> list[str]:
         """Retires every other session of an environment when a new one takes it: an environment houses one agent, and the ones before it become its past rather than disappearing from it."""
-        mine = self.agent(session, pid)
+        env = seat.env
+        mine = self.agent(seat.session, seat.pid)
         before = [name for name, s in self.all().items() if s.environment == env and name not in mine and not s.retired]
         for name in before:
-            self.retire(name, session, "a new session took this environment")
+            self.retire(name, seat.session, "a new session took this environment")
         return before
 
     def evict(self, session: str, by: str, env: str, why: str) -> None:
@@ -321,21 +331,21 @@ class Sessions:
         pid = pid or self.read(session).pid
         return {name for name, s in self.all().items() if pid and s.pid == pid} | {session}
 
-    def _others(self, env: str, session: str, pid: int = 0) -> list[str]:
+    def _others(self, seat: "Seat") -> list[str]:
         """Every other agent holding an environment: its holders but this session's own."""
-        mine = self.agent(session, pid)
-        return [holder for holder in self.holders(env) if holder not in mine]
+        mine = self.agent(seat.session, seat.pid)
+        return [holder for holder in self.holders(seat.env) if holder not in mine]
 
-    def rivals(self, env: str, session: str, pid: int = 0) -> list[str]:
+    def rivals(self, seat: "Seat") -> list[str]:
         """The sessions of other agents on an environment whose process is alive: an environment has one live session, and one with no process behind it, as in a record only read, is no rival."""
-        return [holder for holder in self._others(env, session, pid) if self.read(holder).pid]
+        return [holder for holder in self._others(seat) if self.read(holder).pid]
 
-    def take(self, env: str, session: str, why: str, pid: int = 0) -> list[str]:
+    def take(self, seat: "Seat", why: str) -> list[str]:
         """Unbinds every other agent from an environment, each told it was taken over, so the session that asked for it is the one that holds it."""
-        ended = self._others(env, session, pid)
+        ended = self._others(seat)
         for holder in ended:
             for each in self.agent(holder):
-                self.evict(each, session, env, why)
+                self.evict(each, seat.session, seat.env, why)
         return ended
 
     def asking(self, question: int) -> str:

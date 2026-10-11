@@ -6,7 +6,7 @@ import sys
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from engine.sessions import ACTIVE_ENV, Sessions, hold_build
+from engine.sessions import ACTIVE_ENV, Seat, Sessions, hold_build
 from engine import runtime
 from engine.state import State
 from engine.stored import write_json, write_text
@@ -100,21 +100,21 @@ class TerminalSession:
     session: str
 
 
-def seat_session(sessions: Sessions, env: str, session: str, pid: int = 0, **bound) -> None:
-    """Seats a session on an environment: bound to it, succeeding whoever held it before, and kept in its chair. The process is named here and not written afterwards, because succeeding without it makes the agent's own other session - its conversation beside its terminal - look like a stranger and retires it."""
+def seat_session(sessions: Sessions, seat: Seat, **bound) -> None:
+    """Seats a session on an environment: bound to it, succeeding whoever held it before, and kept in its chair. The seat carries the process, which is written here and not afterwards, because succeeding without it makes the agent's own other session - its conversation beside its terminal - look like a stranger and retires it."""
     from controllers.types import Environments
     from engine.record import Record
     from resources.base import SYSTEM
-    sessions.bind(session, env, pid=pid, **bound)
-    sessions.succeed(env, session, pid)
-    Environments(Record(sessions.root, env), actor=SYSTEM)._seat(env, session)
+    sessions.bind(seat.session, seat.env, pid=seat.pid, **bound)
+    sessions.succeed(seat)
+    Environments(Record(sessions.root, seat.env), actor=SYSTEM)._seat(seat.env, seat.session)
 
 
 def seated(seat: TerminalSession) -> TerminalSession:
     launched = Launched.read(seat.root, seat.session)
     sessions = Sessions(seat.root)
     if not sessions.known(seat.session):
-        seat_session(sessions, seat.env, seat.session, pid=launched.pid, provider=seat.agent)
+        seat_session(sessions, Seat(seat.env, seat.session, launched.pid), provider=seat.agent)
     sessions.write(seat.session, pid=launched.pid, provider=seat.agent, args=list(launched.command), launch=launched.launch)
     return replace(seat, env=sessions.environment(seat.session) or seat.env)
 

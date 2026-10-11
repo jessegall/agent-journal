@@ -96,11 +96,11 @@ def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
     with bus.held():
         assert start("startup") == plain, "with the block not yet written and the bus held, as inside a request, the start writes it and hands it over"
 
-    from engine.sessions import Sessions, live
+    from engine.sessions import Seat, Sessions, live
     sessions = Sessions(record.root)
     sessions.bind("s-before", record.env, pid=1, provider="claude")
     assert sessions.holder(record.env) == "s-before", "the session that bound the environment holds it"
-    assert sessions.succeed(record.env, "s-after") == ["s-before"], "a session taking an environment retires every other session of it"
+    assert sessions.succeed(Seat(record.env, "s-after")) == ["s-before"], "a session taking an environment retires every other session of it"
     left = sessions.read("s-before")
     assert (left.environment, bool(left.retired), live(left)) == (record.env, True, False), \
         "a retired session keeps its environment, so its transcript and its chat stay where the work happened, and stops holding it"
@@ -109,7 +109,7 @@ def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
     import os
     from agents.terminal import seat_session
     sessions.bind("conversation-here", record.env, pid=os.getpid(), provider="claude")
-    seat_session(sessions, record.env, "claude-here", pid=os.getpid(), provider="claude")
+    seat_session(sessions, Seat(record.env, "claude-here", os.getpid()), provider="claude")
     assert not sessions.read("conversation-here").retired and sessions.holder(record.env) in sessions.agent("claude-here"), \
         "an agent's terminal and its conversation are one agent, so seating one never retires the other: the terminal is seated with the process it shares, and the environment stays this agent's"
     handed = start("startup")
