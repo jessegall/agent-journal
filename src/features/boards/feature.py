@@ -64,6 +64,6 @@ class BoardsFeature(Feature):
             Given(added(action="created"), rows=[board(4, 5), AGENT_ROW]) >> Unchanged(),
         ])
         journal.events.handler(MarkQuietFillingStalled(), expects=[
-            Given(ClockTicked(agent=1), rows=[Board(n=1, title="Launch", data={"drafting": {"phase": "drafting"}}), AGENT_ROW]) >> Updated(Board(n=1), drafting=StalledWhileDrafting()),
+            Given(ClockTicked(agent=1), rows=[Board(n=1, title="Launch", data={"drafting": {"phase": "drafting", "since": 1.0}}), AGENT_ROW]) >> Updated(Board(n=1), drafting=StalledWhileDrafting()),
             Given(ClockTicked(agent=1), rows=[Board(n=1, title="Launch", data={"drafting": {"phase": "waiting"}}), AGENT_ROW]) >> Unchanged(),
         ])
