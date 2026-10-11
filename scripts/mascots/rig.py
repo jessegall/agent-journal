@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import bpy
-from mathutils import Euler, Matrix, Vector
+from mathutils import Euler, Matrix, Quaternion, Vector
 from mathutils.kdtree import KDTree
 
 HERE = Path(__file__).resolve().parent
@@ -76,6 +76,66 @@ def trunk_bones():
 
 BONES = trunk_bones() + [bone for side, sign in SIDES.items() for bone in side_bones(side, sign)]
 SIDED = {"shoulder", "upper_arm", "forearm", "hand", "thigh", "shin", "foot"}
+
+# What each bone may do, in degrees, as its turn from the parent's own motion, about the world's axes as the rest pose lays them out.
+# Left side's numbers; the right side mirrors y and z. The axis a bone points along is its twist; the other two are how far it swings.
+# A bone with no entry (the root) is free. A pose outside these is refused by Posing.check, never clamped.
+LIMITS = {
+    "hips": {"x": (-20, 35), "y": (-15, 15), "z": (-35, 35)},
+    "spine": {"x": (-15, 35), "y": (-20, 20), "z": (-35, 35)},
+    "chest": {"x": (-15, 35), "y": (-20, 20), "z": (-40, 40)},
+    "neck": {"x": (-35, 40), "y": (-35, 35), "z": (-60, 60)},
+    "head": {"x": (-45, 45), "y": (-35, 35), "z": (-80, 80)},
+    "shoulder": {"x": (-10, 10), "y": (-20, 25), "z": (-20, 20)},
+    "upper_arm": {"x": (-90, 90), "y": (-120, 90), "z": (-120, 60)},
+    "hand": {"x": (-90, 90), "y": (-70, 70), "z": (-80, 80)},
+    "thigh": {"x": (-120, 25), "y": (-45, 15), "z": (-40, 40)},
+    "foot": {"x": (-50, 50), "y": (-30, 30), "z": (-30, 30)},
+}
+
+
+@dataclass(frozen=True)
+class Hinge:
+    """A joint that bends one way: up to `reach` degrees about `axis` (left side), the axis itself turning at most `off_axis` degrees away."""
+    axis: tuple
+    reach: float
+    off_axis: float
+
+
+HINGES = {"forearm": Hinge((0, 0, -1), 150, 60), "shin": Hinge((1, 0, 0), 150, 25)}
+SLACK = 0.5
+
+
+def vector_part(quaternion):
+    return Vector((quaternion.x, quaternion.y, quaternion.z))
+
+
+class OutOfLimit(Exception):
+    """A pose asks a bone for more than it may do: which bone, which motion, how far, and by how much it is over."""
+
+    def __init__(self, bone, motion, angle, low, high):
+        self.bone, self.motion, self.angle, self.low, self.high = bone, motion, angle, low, high
+        self.by = max(low - angle, angle - high)
+        super().__init__(f"{bone} {motion} is {angle:.1f} degrees, allowed {low:g} to {high:g}: over by {self.by:.1f}")
+
+
+class Unreachable(Exception):
+    """A hand or foot target no pose of the limb can touch: too far, or too close to the shoulder or hip."""
+
+    def __init__(self, limb, side, distance, nearest, farthest):
+        self.limb, self.side, self.distance = limb, side, distance
+        self.by = max(nearest - distance, distance - farthest)
+        super().__init__(f"{limb}_{side} cannot reach a target {distance:.2f} away, only {nearest:.2f} to {farthest:.2f}: off by {self.by:.2f}")
+
+
+@dataclass(frozen=True)
+class Limb:
+    """The two bones and the end bone of a chain a pose can reach with, and the way its middle joint points unless told otherwise."""
+    roles: tuple
+    bend: tuple
+
+
+LIMBS = {"arm": Limb(("upper_arm", "forearm", "hand"), (0.3, 0.8, -1.0)), "leg": Limb(("thigh", "shin", "foot"), (0.0, -1.0, 0.0))}
 
 
 @dataclass(frozen=True)
@@ -398,6 +458,97 @@ class Posing:
     def lift(self, name, x=0.0, y=0.0, z=0.0):
         """Moves a bone in the world's axes; its children come with it."""
         self.place(name, Matrix.Translation((x, y, z)) @ self.matrix(name))
+
+    def delta(self, name):
+        """How far a bone has turned from its rest pose, in the world's axes."""
+        return self.matrix(name).to_3x3() @ self.arm.pose.bones[name].bone.matrix_local.to_3x3().inverted()
+
+    def turned_from_parent(self, name):
+        """The bone's turn on top of its parent's own motion, as the limits read it."""
+        bone = self.arm.pose.bones[name].bone
+        return self.delta(name) if bone.parent is None else self.delta(bone.parent.name).inverted() @ self.delta(name)
+
+    def violations(self):
+        """Every limit the pose breaks, as OutOfLimit values, parent bones first."""
+        found = []
+        for spec in BONES:
+            base, side = part_side(spec.name)
+            turn = self.turned_from_parent(spec.name)
+            if base in LIMITS:
+                found += self.over_ranges(spec, base, side, turn)
+            if base in HINGES:
+                found += self.over_hinge(spec.name, HINGES[base], side, turn)
+        return found
+
+    def over_ranges(self, spec, base, side, turn):
+        quaternion = turn.to_quaternion()
+        if quaternion.w < 0:
+            quaternion.negate()
+        along = (Vector(spec.tail) - Vector(spec.head)).normalized()
+        twist_axis = max(range(3), key=lambda i: abs(along[i]))
+        twist = Quaternion((quaternion.w, *(along * vector_part(quaternion).dot(along)))).normalized()
+        swing = quaternion @ twist.inverted()
+        found = []
+        for index, axis in enumerate("xyz"):
+            part = twist if index == twist_axis else swing
+            angle = math.degrees(2 * math.atan2(vector_part(part)[index], part.w))
+            low, high = LIMITS[base][axis]
+            if side == "r" and axis != "x":
+                low, high = -high, -low
+            if not low - SLACK <= angle <= high + SLACK:
+                found.append(OutOfLimit(spec.name, f"turn about {axis}", angle, low, high))
+        return found
+
+    def over_hinge(self, name, hinge, side, turn):
+        quaternion = turn.to_quaternion()
+        if quaternion.w < 0:
+            quaternion.negate()
+        axis, radians = quaternion.to_axis_angle()
+        flexion = math.degrees(radians)
+        found = []
+        if flexion > hinge.reach + SLACK:
+            found.append(OutOfLimit(name, "bend", flexion, 0, hinge.reach))
+        neutral = Vector(hinge.axis) if side == "l" else Vector((hinge.axis[0], -hinge.axis[1], -hinge.axis[2]))
+        off = math.degrees(axis.angle(neutral))
+        if flexion > 1.0 and off > hinge.off_axis + SLACK:
+            found.append(OutOfLimit(name, "bend direction", off, 0, hinge.off_axis))
+        return found
+
+    def check(self):
+        """Raises the first limit the pose breaks."""
+        found = self.violations()
+        if found:
+            raise found[0]
+
+    def aim(self, name, direction):
+        """Sets a bone's direction outright, turning it about its head the shortest way, whatever its parent does."""
+        standing = self.standing(name)
+        at = standing.to_translation()
+        now = standing.to_3x3() @ Vector((0.0, 1.0, 0.0))
+        turn = now.rotation_difference(Vector(direction)).to_matrix().to_4x4()
+        self.place(name, Matrix.Translation(at) @ turn @ Matrix.Translation(-at) @ standing)
+
+    def reach(self, limb, side, target, bend=None):
+        """Poses an arm or a leg so that its end bone's head is at `target`, solving the upper and lower bone from their lengths.
+
+        `bend` is the way the middle joint points; Unreachable when the target is out of range."""
+        upper, lower, end = (bone_of(role, side) for role in LIMBS[limb].roles)
+        bones = self.arm.pose.bones
+        first, second = (bones[name].bone.length for name in (upper, lower))
+        shoulder = self.standing(upper).to_translation()
+        way = Vector(target) - shoulder
+        distance = way.length
+        if not abs(first - second) <= distance <= first + second:
+            raise Unreachable(limb, side, distance, abs(first - second), first + second)
+        along = way / distance
+        back = (first * first - second * second + distance * distance) / (2 * distance)
+        pole = Vector(bend or LIMBS[limb].bend)
+        if side == "r":
+            pole.x = -pole.x
+        pole -= along * pole.dot(along)
+        middle = shoulder + along * back + pole.normalized() * math.sqrt(max(first * first - back * back, 0.0))
+        self.aim(upper, middle - shoulder)
+        self.aim(lower, Vector(target) - middle)
 
 
 def rest(arm):
