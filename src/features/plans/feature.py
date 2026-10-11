@@ -1,3 +1,4 @@
+from controllers.types import Works
 from engine.events.engine import ClockTicked
 from engine.events.resources import TodoCompleted
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
@@ -33,6 +34,8 @@ from resources.types import AgentRow, Todo
 STILL_TIMES = 3
 PLAN_MODE_REFUSED = ('plan mode is not used in a journal project - write the plan as a journal plan instead: '
                      'journal plan create "<name>" --set goal="<what is true when done>", then its phases and rows')
+NOT_IN_THE_CURRENT_PHASE = "todo {} is not in the active plan's current phase: finish the plan, raise it to critical, or --force \"<why>\""
+A_PLAN_IS_ACTIVE = "a plan is active: open work for a row of its current phase with journal todo start <n>, or --force \"<why>\""
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
 
@@ -140,4 +143,13 @@ class PlansFeature(Feature):
             Given(ToolUse.from_payload("EnterPlanMode", {}, {})) >> Refused(PLAN_MODE_REFUSED),
             Given(ToolUse.from_payload("Read", {}, {})) >> Kept(),
         ])
-        journal.commands.intercept("work.open", HoldWhilePlanned())
+        journal.commands.intercept("work.open", HoldWhilePlanned(), expects=[
+            Given((Works, {"actor": AGENT}, {"todo": 6}), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Refused(NOT_IN_THE_CURRENT_PHASE.format(6)),
+            Given((Works, {"actor": AGENT}, {"todo": 5}), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Kept(),
+            Given((Works, {"actor": AGENT}, {"todo": 9}), rows=[Todo(n=9, title="Row 9"), plan("active", phases=phases(5, 6))]) >> Refused(NOT_IN_THE_CURRENT_PHASE.format(9)),
+            Given((Works, {"actor": AGENT}, {"todo": 9}), rows=[Todo(n=9, title="Row 9", data={"priority": 300}), plan("active", phases=phases(5, 6))]) >> Kept(),
+            Given((Works, {"actor": AGENT}, {"todo": 9}), rows=[Todo(n=9, title="Row 9")]) >> Kept(),
+            Given((Works, {"actor": AGENT}, {"todo": 9}), rows=[Todo(n=9, title="Row 9"), plan("parked", phases=phases(5, 6))]) >> Kept(),
+            Given((Works, {"actor": AGENT}, {}), rows=[plan("active", phases=phases(5, 6))]) >> Refused(A_PLAN_IS_ACTIVE),
+            Given((Works, {"actor": AGENT}, {}), rows=[plan("parked", phases=phases(5, 6))]) >> Kept(),
+        ])
