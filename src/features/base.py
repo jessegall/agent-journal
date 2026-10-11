@@ -28,9 +28,10 @@ VALUES = Memo()
 
 class Behaviour:
     def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: Trigger = NEVER, name: str = "",
-                 prefix: str = ""):
+                 prefix: str = "", scope: str = PROJECT):
         self.name, self.title, self.abstract, self.default, self.trigger = name, paragraphs(title), paragraphs(abstract), default, trigger
-        self.prefix = prefix
+        self.prefix, self.scope = prefix, scope
+        """Where the switch is kept. A switch over nudges is the project's, since silencing one in a single environment and meeting it again in the next is not what silencing means. One an environment decides for itself, such as a mode, says so."""
 
     def describe(self) -> dict:
         return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": self.trigger.described(),
@@ -149,6 +150,8 @@ class Feature(ABC):
     def kept_in_project(cls) -> None:
         if cls.scope == PROJECT:
             PROJECT_PARTS.keep(Record.features, cls.name)
+        if switches := [f"{cls.name}.{key}" for key, b in cls.behaviours.items() if b.scope == PROJECT]:
+            PROJECT_PARTS.keep(Record.features, *switches)
         if shared := [s.name for s in cls.settings if s.scope == PROJECT]:
             PROJECT_PARTS.keep(cls.name, *shared)
 

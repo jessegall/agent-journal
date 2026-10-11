@@ -1,3 +1,4 @@
+from resources.base import ENVIRONMENT
 from features.base import Behaviour, FeatureDetails, Line
 from features.work_tracking.next import still_helped, still_next, still_stopped
 from features.settings import Setting
@@ -70,6 +71,7 @@ class WorkDetails(FeatureDetails):
             title="Start the next to-do without asking",
             default=True,
             trigger=Trigger(on=IDLE),
+            scope=ENVIRONMENT,
         ),
         Behaviour(
             name="carry on",
