@@ -239,7 +239,7 @@ describe("the one list of reminders", () => {
             triggers: {
                 name: "triggers",
                 label: "Triggers",
-                group: "reminders",
+                group: "shared_records",
                 settings: [],
                 behaviours: {
                     watching: {title: "Run a trigger when its word appears", abstract: "", default: true},
