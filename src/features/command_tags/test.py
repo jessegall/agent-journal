@@ -90,6 +90,18 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     from controllers.types import Agents, Messages
     from resources.base import AGENT, USER
     thanks, asked = asked_and_read(record, "Thank you, sir."), asked_and_read(record, "Thanks, but which branch?")
+
+    from controllers.types import Docs
+    writing = Messages(record, actor=USER)
+    carrying = writing.create("Look at this", brief="Look at this")
+    note = Docs(record, actor=USER).create("What it is about")
+    writing.link(carrying.n, f"doc:{note.n}")
+    here = record.root.parent / "shot.png"
+    here.write_bytes(b"png")
+    writing.attach(carrying.n, str(here))
+    brought = counted({("message", "created"): {carrying.n: None}}, record)[0]
+    assert str(writing.paths(carrying.n)[0]) in brought and f"doc:{note.n}" in brought, \
+        "an arriving message carries its file by path and its linked row, so nothing the user sent waits behind a second command"
     line = counted({("message", "created"): {thanks.n: None}}, record)[0]
     assert (line.startswith(f"1 new message {thanks.n} - the user wrote: Thank you, sir."), "[journal]" in line, '"title"' in line,
             f'message {thanks.n} only acknowledges: react to it with journal message react {thanks.n} "👍"' in line) == (True, False, False, True), \

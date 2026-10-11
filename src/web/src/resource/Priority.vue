@@ -76,7 +76,7 @@ async function pick(level) {
 .prio-menu {
     position: absolute;
     top: calc(100% + 4px);
-    right: 0;
+    left: 0;
     z-index: 20;
     min-width: 140px;
     padding: 4px;

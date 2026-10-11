@@ -5,12 +5,20 @@ from engine.wording import plural
 from resources.base import AGENT, SYSTEM, USER
 
 
-def said(row, several: bool = False) -> str:
-    """The message as the line names it: who wrote it, the message it answers, and their words, the number only where several come in one line; a long message or one with files says where the rest is."""
+def carried(messages, row) -> str:
+    """What the message brings with it, named so the agent can open it without a second command: its files by their path, and the rows it links to by their reference."""
+    paths = messages.paths(row.n) if row.files else []
+    linked = [ref for ref in row.refs if not ref.startswith("message:")]
+    brought = [part for part in (", ".join(paths), ", ".join(linked)) if part]
+    sections = f" (and {plural(len(row.sections), 'section')}: journal message read {row.n})" if row.sections else ""
+    return (f" — it brings {'; '.join(brought)}" if brought else "") + sections
+
+
+def said(row, several: bool = False, messages=None) -> str:
+    """The message as the line names it: who wrote it, the message it answers, their words, and whatever it carries - its files by path and its linked rows - so nothing of what the user sent is left behind a second command."""
     who = row.data.get("peer") or ("the user" if row.author == USER else row.author)
     answers = "".join(f", answering message {ref.partition(':')[2]}" for ref in row.refs if ref.startswith("message:"))
-    more = [part for part in (plural(len(row.files), "file") if row.files else "", plural(len(row.sections), "section") if row.sections else "") if part]
-    rest = f" (and {' and '.join(more)}: journal message read {row.n})" if more else ""
+    rest = carried(messages, row) if messages is not None else ""
     return f"{who} wrote{f' {row.n}' if several else ''}{answers}: {(row.brief or row.title).strip()}{rest}"
 
 
@@ -21,7 +29,7 @@ def answered(numbers: list, record, **_) -> str:
         if AGENT not in row.seen:
             Messages(record, actor=AGENT).read(row.n)
     panel = {row.n: row.data[REPLY_WITH] for row in rows if REPLY_WITH in row.data}
-    row_lines = [said(row, several=len(rows) > 1) for row in rows]
+    row_lines = [said(row, several=len(rows) > 1, messages=messages) for row in rows]
     row_lines += [f"answer message {n} with {how}, never in the chat" for n, how in panel.items()]
     acknowledging = [row.n for row in rows if row.n not in panel and acknowledges(row)]
     row_lines += [f'message {n} only acknowledges: react to it with journal message react {n} "👍", no words needed' for n in acknowledging]
