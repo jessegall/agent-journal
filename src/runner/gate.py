@@ -63,8 +63,13 @@ def outlived(call: HookCall) -> bool:
 def gated(call: HookCall) -> str | None:
     dispatch = call.provider.dispatch(call.hook.tool, call.record.root.parent)
     reason = cancelled(DISPATCHING, call, dispatch) if dispatch else None
-    bus.defer(lambda: [policy(call) for policy in AFTERWARDS.each() if serving(policy, call)])
+    afterwards(call)
     return reason or next((reason for policy in POLICIES.each() if serving(policy, call) and (reason := policy(call))), None)
+
+
+def afterwards(call: HookCall) -> None:
+    """Runs the parts that declared themselves asynchronous on a thread of their own, so what one of them does cannot reach the hook's answer however it is later written."""
+    bus.background(f"afterwards:{call.session}:{call.hook.at}", lambda: [policy(call) for policy in AFTERWARDS.each() if serving(policy, call)])
 
 
 def refusal(call: HookCall) -> str | None:

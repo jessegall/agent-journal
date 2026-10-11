@@ -107,15 +107,37 @@ def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one(monkeypa
 
 def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once():
     from controllers.types import Nudges
+    from engine import bus
     record = fresh()
     claude = PROVIDERS["claude"]()
     call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "cat features/parts.py"}}
     handle(claude, record.root, record.env, {**call, "hook_event_name": "PreToolUse"})
+    assert bus.background_finished(), "the whisper runs off the hook's answer, so the test waits for it as the agent never has to"
     assert [n.title for n in Nudges(record).all() if n.title.startswith("law L3")], "a keyword whispers its law"
     for size in (30_000, 25_000, 40_000, 1_000):
         handle(claude, record.root, record.env, {**call, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "x" * size}})
+    assert bus.background_finished(), "every whisper is waited for the same way"
     named = [n.title for n in Nudges(record).all() if "the largest this session" in n.title]
     assert [title.split(" characters")[0].split()[-1] for title in named] == ["30,014", "40,014"], "only a new largest result is named"
+
+    import threading
+    from engine.gates import AFTERWARDS
+    from engine.reach import Guard, Reach
+    held_open, let_go = threading.Event(), threading.Event()
+
+    def blocking(given):
+        held_open.set()
+        let_go.wait(10)
+
+    blocking.guard = Guard("blocking", Reach.BOTH)
+    AFTERWARDS.add(None, blocking)
+    try:
+        handle(claude, record.root, record.env, {**call, "hook_event_name": "PreToolUse"})
+        assert held_open.wait(5) and not let_go.is_set(), \
+            "a part that declared itself asynchronous cannot reach the hook's answer: the hook came back while this one was still blocked, which no stopwatch had to measure"
+    finally:
+        let_go.set()
+        AFTERWARDS.remove(blocking)
 
 
 def test_a_dispatch_is_an_event_a_plugin_can_cancel_even_when_the_laws_allow_it():

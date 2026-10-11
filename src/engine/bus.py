@@ -192,6 +192,17 @@ def background(key: str, job: Callable[[], None]) -> None:
         _worker.start()
 
 
+def background_finished(within: float = 5.0) -> bool:
+    """Whether the background thread has run everything asked of it, waited for up to `within` seconds; for a test or a shutdown that must see its work done."""
+    until = time.monotonic() + within
+    while time.monotonic() < until:
+        with _worker_lock:
+            if not _waiting and (_worker is None or not _worker.is_alive()):
+                return True
+        time.sleep(0.005)
+    return False
+
+
 def _work_through() -> None:
     while True:
         with _worker_lock:
