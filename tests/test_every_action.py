@@ -1132,6 +1132,15 @@ def test_a_row_of_every_type_written_behind_the_stores_back_shows_up_in_lists_fr
             stored.flush_indexes()
             time.sleep(0.02)
         facts["a bulk past the flush count is written to the index"] = {first.n, base, *bulk} <= indexed()
+        early, late = range(base + 8, base + 11), range(base + 11, base + 14)
+        for n in early:
+            written_elsewhere(controller, n, f"early row {n}")
+        listed(controller)
+        for n in late:
+            written_elsewhere(controller, n, f"late row {n}")
+        listed(controller)
+        stored.flush_indexes()
+        facts["rows that arrive over two reads, each under the flush count, are written to the index by the next flush"] = {*early, *late} <= indexed()
         monkeypatch.undo()
         monkeypatch.setattr(stored, "STAMPS_RENEW", 0.0)
         listed(controller)

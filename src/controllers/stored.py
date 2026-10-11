@@ -316,7 +316,7 @@ def saved(folder: Path, rows: dict) -> None:
 
 
 def flush_indexes() -> None:
-    """Writes the row indexes that a read left to be saved later, and the index of a folder whose totals were counted from its rows, so no request waits on a write of its own."""
+    """Writes the row indexes that a read left to be saved later, the index of a folder whose totals were counted from its rows, and the index of a folder whose rows changed by fewer than a flush, so no request waits on a write of its own and no index stays behind its rows."""
     for key in list(UNSAVED):
         store, folder, rows = UNSAVED.pop(key)
         store.save_index(folder, dict(rows))
@@ -749,6 +749,8 @@ class RowStore:
         elif changed and due:
             self.save_index(folder, rows)
             WRITTEN[str(folder)] = time.time()
+        elif changed:
+            UNCOUNTED[str(folder)] = self
         if changed:
             PENDING.setdefault(str(folder), set()).update(gone, stale)
         INDEXED[str(folder)] = rows
