@@ -119,7 +119,7 @@ export function sizeOf(p) {
 }
 
 export function stoppedOf(p, todos) {
-    return `Stopped at phase ${p.data.current || 1} · ${standingOf(p, todos)}`;
+    return `Stopped at phase ${p.data.current || 1} · ${standingOf(p, todos).title}`;
 }
 
 export function phaseOf(p) {
@@ -143,11 +143,20 @@ export function awaitingMergeOf(p, todos) {
     }).length;
 }
 
+// How a plan's rows stand: closed, built and waiting for a merge, and how many there are, with the words and the bar's two widths.
 export function standingOf(p, todos) {
     const done = doneOf(p, todos);
     const waiting = awaitingMergeOf(p, todos);
     const rows = rowsOf(p).length;
-    return waiting ? `${done} of ${rows} to-dos done · ${waiting} built, waiting for the merge` : `${done} of ${rows} to-dos done`;
+    const part = (count) => (100 * count) / Math.max(1, rows);
+    return {
+        done,
+        waiting,
+        rows,
+        donePart: part(done),
+        waitingPart: part(waiting),
+        title: waiting ? `${done} of ${rows} to-dos done · ${waiting} built, waiting for the merge` : `${done} of ${rows} to-dos done`,
+    };
 }
 
 export function planButton(p) {

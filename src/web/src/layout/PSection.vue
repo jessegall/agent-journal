@@ -1,5 +1,5 @@
 <script setup>
-import {awaitingMergeOf, delegationOf, doneOf, NOT_STARTED, phaseOf, planButton, rowsOf, standingOf} from "../domain/plans.js";
+import {delegationOf, NOT_STARTED, phaseOf, planButton, rowsOf, standingOf} from "../domain/plans.js";
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
@@ -30,6 +30,7 @@ const delegation = computed(() =>
     delegationOf(props.p, {todos: rows("todo"), helpers: rows("helper"), worktrees: rows("worktree"), tickets: rows("ticket")})
 );
 const count = computed(() => props.data.phases.length);
+const standing = computed(() => standingOf(props.p, rows("todo")));
 const toggle = (what) => (opened.value = opened.value === what ? "" : what);
 
 function open() {
@@ -99,12 +100,12 @@ async function park() {
             <span class="planbar-step">{{ NOT_STARTED[data.status] }}</span>
         </template>
         <template v-else>
-            <span class="planbar-step" :title="standingOf(p, rows('todo'))">
-                {{ doneOf(p, rows("todo")) }}<template v-if="awaitingMergeOf(p, rows('todo'))">+{{ awaitingMergeOf(p, rows("todo")) }}</template>/{{ rowsOf(p).length }}
+            <span class="planbar-step" :title="standing.title">
+                {{ standing.done }}<template v-if="standing.waiting">+{{ standing.waiting }}</template>/{{ standing.rows }}
             </span>
             <span class="planbar-track" role="progressbar">
-                <span :style="{width: `${(100 * doneOf(p, rows('todo'))) / Math.max(1, rowsOf(p).length)}%`}" />
-                <span class="planbar-waiting" :style="{width: `${(100 * awaitingMergeOf(p, rows('todo'))) / Math.max(1, rowsOf(p).length)}%`}" />
+                <span :style="{width: `${standing.donePart}%`}" />
+                <span class="planbar-waiting" :style="{width: `${standing.waitingPart}%`}" />
             </span>
         </template>
         <template v-if="planButton(p)">
