@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.11 — A field decides its own absence, and an engine does less per tick
+
+- A to-do's blocked, pending, reported, struck and priority each decide what absence means where they are born, so four places stop inventing a default priority and the board's read model carries real types.
+- Every indexed field is a declared field, so the row store reads them one way instead of falling back to the data.
+- A handler reads the agent's row the store holds rather than a deep copy of it, and the inputs queued for a record are listed and read once for the several times an engine asks for them in a tick.
+- The sweep that renames what a renamed feature left behind runs once for each set of aliases, not on every process that boots with a root.
+- The board is warmed by the route a session asks on, and the plan bar reads one standing shape instead of re-walking its rows five times.
+
 ## 2.269.10 — Allow means allow, and the board reads summaries
 
 - Allowing a program the agent proposed, under Settings > Secrets, saves the secret there and then. The button moved the program into the allowed list and wrote nothing until a Save further down the page, so a program you had allowed was still refused when the agent ran it.
