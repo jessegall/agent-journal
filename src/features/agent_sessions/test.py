@@ -320,6 +320,12 @@ def test_a_session_that_starts_beside_a_live_one_is_never_offered_its_environmen
             "and the conversation it runs in a child of that process is the same agent, so it holds the same environment"
         assert [q.title for q in Questions(own, actor=USER).rows.standing()] == [], \
             "nobody is asked to take anything over: a provider that names its conversation after its rollout was reading as a second session arriving, and taking the environment from the agent it is"
+        from types import SimpleNamespace
+        from providers.drivers import Driver
+        terminal = SimpleNamespace(record=own, pid=lambda: parent.pid)
+        theirs.write("other", pid=running[0].pid)
+        assert (Driver.owns(terminal, SimpleNamespace(title=rollout)), Driver.owns(terminal, SimpleNamespace(title="other"))) == (True, False), \
+            "a terminal owns the conversation it runs in a child process and no other agent's, so its report is found and the conversation is pointed at it"
     finally:
         for process in running:
             process.kill()

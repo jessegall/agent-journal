@@ -12,7 +12,7 @@ from engine import typist
 from resources.base import SYSTEM, Refused
 from engine.wording import counted
 from engine import runtime
-from engine.sessions import Sessions
+from engine.sessions import Sessions, forebears
 from supervisor import KEYED, PRINTED, SCREEN, TYPED
 from engine.worktree import BRANCHED, environment, linked, main_checkout, opened, spread, unused_name, workspace
 from providers.catalogue import workspace_folders
@@ -522,8 +522,9 @@ class Driver(ABC):
         return Sessions(self.record.root).read(self.session).pid
 
     def owns(self, row) -> bool:
+        """Whether the row is this terminal's own conversation: its process is the terminal's, or one the terminal's started, as Codex runs its conversation in a child."""
         mine = self.pid()
-        return bool(mine) and Sessions(self.record.root).read(row.title).pid == mine
+        return bool(mine) and mine in forebears(Sessions(self.record.root).read(row.title).pid)
 
     def quiet_for(self) -> float:
         try:
