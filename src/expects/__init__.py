@@ -37,6 +37,10 @@ class Outcome:
     def __and__(self, other) -> "Outcomes":
         return Outcomes((self,)) & other
 
+    def holds(self, seen) -> str:
+        """Empty when this outcome holds of the play, else what the play did instead. Each word reads the play itself, so no checker has to know them all."""
+        raise NotImplementedError
+
 
 @dataclass(frozen=True)
 class Outcomes:
@@ -68,11 +72,20 @@ class Dispatches(Outcome):
 
     fact: Any
     claimed: str = ""
+    def holds(self, seen) -> str:
+        if isinstance(self.fact, Nothing):
+            return "" if not seen.facts else f"it dispatched {[type(one).__name__ for one in seen.facts]}, and the expectation says it dispatches nothing"
+        for one in seen.facts:
+            if one == self.fact and (not self.claimed or getattr(one, "claim", "") == self.claimed):
+                return ""
+        return f"it did not dispatch {self.fact!r}; it dispatched {seen.facts!r}"
 
 
 @dataclass(frozen=True)
 class Wrote(Outcome):
     row: Any
+    def holds(self, seen) -> str:
+        return "" if self.row in seen.wrote else f"it did not write {self.row!r}; it wrote {seen.wrote!r}"
 
 
 @dataclass(frozen=True, init=False)
@@ -85,21 +98,29 @@ class Updated(Outcome):
     def __init__(self, row, **changed) -> None:
         object.__setattr__(self, "row", row)
         object.__setattr__(self, "changed", tuple(sorted(changed.items())))
+    def holds(self, seen) -> str:
+        return "" if (self.row, self.changed) in seen.updated else f"it did not change {self.row!r} in {dict(self.changed)}; it changed {seen.updated!r}"
 
 
 @dataclass(frozen=True)
 class Printed(Outcome):
     text: str
+    def holds(self, seen) -> str:
+        return "" if self.text in seen.said else f"it did not say {self.text!r}; it said {seen.said!r}"
 
 
 @dataclass(frozen=True)
 class Ran(Outcome):
     argv: tuple[str, ...]
+    def holds(self, seen) -> str:
+        return "" if self.argv in seen.ran else f"it did not run {self.argv!r}; it ran {seen.ran!r}"
 
 
 @dataclass(frozen=True)
 class Refused(Outcome):
     why: str
+    def holds(self, seen) -> str:
+        return "" if seen.refused == self.why else f"it refused with {seen.refused!r}, not with {self.why!r}"
 
 
 @dataclass(frozen=True)
@@ -107,16 +128,22 @@ class Changed(Outcome):
     """What a handler on a mutable answer turned its text into."""
 
     text: str
+    def holds(self, seen) -> str:
+        return "" if seen.changed == self.text else f"it changed the text to {seen.changed!r}, not to {self.text!r}"
 
 
 @dataclass(frozen=True)
 class Kept(Outcome):
     """It refused, changed and stopped nothing: what it was handed goes on unchanged."""
+    def holds(self, seen) -> str:
+        return "" if seen.refused is None and seen.changed is None else f"it did not let it through: it refused {seen.refused!r} and changed {seen.changed!r}"
 
 
 @dataclass(frozen=True)
 class Unchanged(Outcome):
     """Nothing in the world changed: no row, no file, no setting. What a read-only listener owes."""
+    def holds(self, seen) -> str:
+        return "" if seen.is_unchanged else f"it changed the world: wrote {seen.wrote!r} and changed {seen.updated!r}"
 
 
 @dataclass(frozen=True)
@@ -125,6 +152,8 @@ class Formats(Outcome):
 
     text: str
     to: str = ""
+    def holds(self, seen) -> str:
+        return "" if seen.changed == self.to else f"it formatted {self.text!r} as {seen.changed!r}, not as {self.to!r}"
 
 
 @dataclass(frozen=True, init=False)
@@ -137,11 +166,15 @@ class Nudged(Outcome):
     def __init__(self, line: str, **values) -> None:
         object.__setattr__(self, "line", line)
         object.__setattr__(self, "values", tuple(sorted(values.items())))
+    def holds(self, seen) -> str:
+        return "" if (self.line, self.values) in seen.nudged else f"it did not nudge {self.line!r} with {dict(self.values)}; it nudged {seen.nudged!r}"
 
 
 @dataclass(frozen=True)
 class Held(Outcome):
     why: str
+    def holds(self, seen) -> str:
+        return "" if seen.held == self.why else f"it held the writes with {seen.held!r}, not with {self.why!r}"
 
 
 @dataclass(frozen=True)
@@ -149,6 +182,8 @@ class Answered(Outcome):
     """The reduced answer to a request, not one answerer's part."""
 
     answer: Any
+    def holds(self, seen) -> str:
+        return "" if seen.answered == self.answer else f"it answered {seen.answered!r}, not {self.answer!r}"
 
 
 @dataclass(frozen=True)

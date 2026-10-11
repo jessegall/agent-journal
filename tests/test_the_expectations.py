@@ -477,3 +477,36 @@ def test_an_unswept_2x_handler_runs_on_the_adapter_and_the_sending_path_cannot()
 
     assert [one.says() for one in moved(["plans", "tickets"], {"tickets": ("MindTheBoard",)})] == \
         ["plans: moved", "tickets: adapted (MindTheBoard)"], "the listing says, per feature, moved or adapted"
+
+
+def test_every_registration_gathers_what_it_promises_and_each_outcome_word_reads_the_play_itself():
+    import features
+    from expects import Given, Nudged, Printed, Ran, Refused, Unchanged, Wrote, answering, at, counting, exited
+    from expects.playing import NotAnswered, Seen, World, wrong
+    from features.promises import PROMISED
+
+    features.load()
+    assert len(PROMISED.each) > 200 and {one.kind for one in PROMISED.each} >= {"handler", "formatter", "interceptor"}, \
+        "every registration of an owing kind is gathered as the features are wired, with the part itself and its event"
+    assert len(PROMISED.owed()) == len(PROMISED.each), \
+        "none of them carries expectations yet, which is exactly what phase 2 fills in and how its progress is measured"
+    assert PROMISED.each[0].called(0).count("/") == 2, "a failure is named feature/registration/index, so it names the promise and not a line"
+
+    world = World.of(Given("the event", clock=at(1_000.0), ids=counting(40),
+                           commands=answering({"message reply 12": exited(0, "replied")})))
+    assert (world.clock.now(), world.ids.next(), world.ids.next()) == (1_000.0, 40, 41), \
+        "time and ids come from the Given, so an expectation is exact and never flaky"
+    assert world.commands.run("message reply 12") == exited(0, "replied"), "a command answers what the Given said it answers"
+    with pytest.raises(NotAnswered) as refusal:
+        world.commands.run("todo done 7")
+    assert "name it in the Given" in str(refusal.value), \
+        "an ask the Given does not name is a failure naming the ask, never a silent empty answer"
+
+    seen = Seen(said=["todo 7"], nudged=[("tags.refused", (("tag", "reply"),))], ran=[("journal", "todo", "done", "7")])
+    holds = Given("x") >> Printed("todo 7") & Nudged("tags.refused", tag="reply") & Ran(("journal", "todo", "done", "7"))
+    assert wrong(holds, seen) == [], "an expectation that holds of the play says nothing"
+    assert wrong(Given("x") >> Printed("todo 8") & Refused("nope"), seen) == \
+        ["it did not say 'todo 8'; it said ['todo 7']", "it refused with None, not with 'nope'"], \
+        "and one that does not holds says what the play did instead, word by word"
+    assert wrong(Given("x") >> Unchanged(), Seen()) == [] and wrong(Given("x") >> Unchanged(), seen) == [], \
+        "Unchanged is about the world, not about what was said: saying something changes nothing"

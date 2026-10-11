@@ -13,6 +13,7 @@ from features.parts import ActionInterceptor, AgentContext, Canceler, Command, C
 from resources.base import SYSTEM, USER, Refused
 from features.routing import FEATURE_ROUTES
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE, REGISTERED, Answerer, Handler, Listener, Refuser, Registration
+from features.promises import PROMISED, Promise
 
 
 def wanted(part, feature, record, row, timed: bool = True) -> bool:
@@ -38,8 +39,9 @@ class Events:
         self.feature = feature
         self.names: list[str] = []
 
-    def handler(self, handler: Handler) -> None:
+    def handler(self, handler: Handler, expects=()) -> None:
         kind, feature = get_type_hints(handler.handle)["event"], self.feature
+        PROMISED.add(Promise(feature.name, "handler", type(handler).__name__, handler, kind, tuple(expects)))
 
         def run(event, record) -> None:
             typed = kind.read(event)
@@ -71,7 +73,8 @@ class Client:
     def __init__(self, feature):
         self.feature = feature
 
-    def formatter(self, formatter: TextFormatter) -> None:
+    def formatter(self, formatter: TextFormatter, expects=()) -> None:
+        PROMISED.add(Promise(self.feature.name, "formatter", type(formatter).__name__, formatter, str, tuple(expects)))
         feature = self.feature
         if feature not in FORMATTING_FEATURES:
             FORMATTING_FEATURES.append(feature)
@@ -111,7 +114,8 @@ class AgentHooks:
     def append_to_line(self, on: str, addition) -> None:
         APPENDS.add(None, addition, key=on)
 
-    def interceptor(self, interceptor: ToolInterceptor) -> None:
+    def interceptor(self, interceptor: ToolInterceptor, expects=()) -> None:
+        PROMISED.add(Promise(self.feature.name, "interceptor", type(interceptor).__name__, interceptor, object, tuple(expects)))
         feature, guard = self.feature, Guard.of(interceptor)
         self.guards.append(guard)
 
