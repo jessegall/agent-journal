@@ -75,6 +75,16 @@ def sync_rows(root: Path) -> None:
     SEATED[str(root)] = generation()
 
 
+def seat_new_home(root: Path, home: str) -> None:
+    """Seats an environment the moment it is made, where the making already costs a write, so the next command finds its feature rows there instead of paying for a hundred of them inside a read."""
+    kept = Path(root) / SEATED_STAMP
+    held = kept.read_text().splitlines() if kept.is_file() else []
+    if not held or home in held[1:]:
+        return
+    seat(root, (home,))
+    write_text(kept, "\n".join([*held, home]))
+
+
 def features_stamp() -> str:
     return hashlib.sha256("\n".join(sorted(FEATURES)).encode()).hexdigest()
 

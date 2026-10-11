@@ -670,6 +670,14 @@ def test_a_feature_row_marked_missing_is_found_again_and_a_switch_relayed_from_e
     rows.update(row.n, missing=True)
     features.seat(record.root, environment_names(record.root))
     assert not rows.load(row.n).missing, "a feature that is there again is no longer marked missing"
+    features.sync_rows(record.root)
+    CONTROLLERS["environment"](record, actor=SYSTEM).create("ticket-99", kind="ticket")
+    features.SEATED.clear()
+    made = record.sibling("ticket-99")
+    assert CONTROLLERS["feature"](made, actor=SYSTEM).rows.by_title("thinking") is not None, "an environment is seated the moment it is made"
+    seated = Path(record.root) / features.SEATED_STAMP
+    assert "ticket-99" in seated.read_text().splitlines(), \
+        "and the seating is recorded, so the next command finds its rows there instead of writing a hundred of them inside a read"
     rows.update(row.n, enabled=False)
     features.passed(record.event_log.events()[-1], record)
     assert not features.FEATURES["thinking"].enabled(record), "a switch another process made is read when its event is relayed"

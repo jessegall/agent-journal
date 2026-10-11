@@ -113,6 +113,8 @@ class Environments(Controller):
         made = super().create(name, abstract, brief, **{**data, "kind": self._kind_made(data.get("kind"), data.get("owner", ""))})
         home.mkdir(parents=True, exist_ok=True)
         runtime.forget_rename(self.record.root, name)
+        from features import seat_new_home
+        seat_new_home(self.record.root, name)
         return made
 
     def _kind_made(self, kind: str | None, owner: str) -> EnvironmentKind:
