@@ -22,6 +22,7 @@ SIDES = {"l": 1, "r": -1}
 NEAREST_VERTICES = 8
 MOST_BONES_PER_VERTEX = 4
 MIN_WEIGHT = 0.001
+MIN_EYE_HEIGHT = 0.06
 CHEST_BASE = 1.95
 NECK_BASE = 2.34
 HEAD_TOP = 4.0
@@ -256,6 +257,13 @@ class Body:
         return max(weights, key=weights.get)
 
 
+def recentre(obj):
+    """Moves an object's origin to the middle of its mesh, so scaling it closes it about its own centre."""
+    middle = centre(obj)
+    obj.data.transform(Matrix.Translation(-middle))
+    obj.location = middle
+
+
 def covered_parts(items):
     return {part for item in items for part in MANIFEST["assets"][item]["hide_base_parts"]}
 
@@ -283,6 +291,7 @@ def dress(voice, body, arm):
             assign(mesh, weights)
             bind(mesh, arm)
             mesh["slot"] = slot
+            mesh["item"] = item
             worn.append(mesh)
     return worn
 
@@ -293,6 +302,18 @@ class Figure:
     armature: object
     body: list
     worn: list
+
+    def eyes(self):
+        return [part for part in self.body if part.name.startswith("eye_")]
+
+    def shut_eyes(self, open_by):
+        """Eyes open by this share of their height: 1 is open, 0 is a thin line."""
+        for eye in self.eyes():
+            eye.scale.z = max(open_by, MIN_EYE_HEIGHT)
+
+    def hands_holding(self, items):
+        """The hand bones holding one of these items."""
+        return {hand_under(mesh) for mesh in self.worn if mesh.get("item") in items}
 
 
 def assemble(voice=None):
@@ -311,24 +332,55 @@ def assemble(voice=None):
         bind(part, arm)
         part.hide_render = part.name in covered
     worn = dress(voice, body, arm) if voice else []
+    for eye in (part for part in parts if part.name.startswith("eye_")):
+        recentre(eye)
     return Figure(voice, arm, parts, worn)
 
 
-def turn(arm, name, x=0.0, y=0.0, z=0.0):
-    """Rotates a bone about its own head by angles in degrees about the world's axes, on top of whatever its parent does.
+class Posing:
+    """Poses bones from the rest pose, parent first, without evaluating the scene between turns.
 
-    Call it parent first: each bone reads where its parent now stands.
+    Every turn is by degrees about the world's axes, about the bone's own head, on top of where its parent now stands and
+    of any turn the bone already had, so a bone can be turned in steps.
     """
-    pose_bone = arm.pose.bones[name]
-    rest = pose_bone.bone.matrix_local
-    follows = rest if pose_bone.parent is None else pose_bone.parent.matrix @ pose_bone.parent.bone.matrix_local.inverted() @ rest
-    pivot_at = follows.to_translation()
-    delta = Matrix.Translation(pivot_at) @ Euler((math.radians(x), math.radians(y), math.radians(z)), "XYZ").to_matrix().to_4x4() @ Matrix.Translation(-pivot_at)
-    pose_bone.matrix = delta @ follows
-    bpy.context.view_layer.update()
+
+    def __init__(self, arm):
+        self.arm = arm
+        self.final = {}
+        for pose_bone in arm.pose.bones:
+            pose_bone.matrix_basis = Matrix.Identity(4)
+
+    def standing(self, name):
+        """Where a bone stands before its own turn: its rest place carried by its parent's pose."""
+        bone = self.arm.pose.bones[name].bone
+        if bone.parent is None:
+            return bone.matrix_local
+        return self.matrix(bone.parent.name) @ bone.parent.matrix_local.inverted() @ bone.matrix_local
+
+    def matrix(self, name):
+        return self.final[name] if name in self.final else self.standing(name)
+
+    def place(self, name, final):
+        self.arm.pose.bones[name].matrix_basis = self.standing(name).inverted() @ final
+        self.final[name] = final
+
+    def turn(self, name, x=0.0, y=0.0, z=0.0):
+        current = self.matrix(name)
+        at = current.to_translation()
+        delta = Matrix.Translation(at) @ Euler((math.radians(x), math.radians(y), math.radians(z)), "XYZ").to_matrix().to_4x4() @ Matrix.Translation(-at)
+        self.place(name, delta @ current)
+
+    def face(self, name, x=0.0, y=0.0, z=0.0):
+        """Sets a bone's direction outright, as the rest pose turned by these angles, whatever its parent does."""
+        at = self.standing(name).to_translation()
+        rest = self.arm.pose.bones[name].bone.matrix_local.to_3x3().to_4x4()
+        self.place(name, Matrix.Translation(at) @ Euler((math.radians(x), math.radians(y), math.radians(z)), "XYZ").to_matrix().to_4x4() @ rest)
+
+    def lift(self, name, x=0.0, y=0.0, z=0.0):
+        """Moves a bone in the world's axes; its children come with it."""
+        self.place(name, Matrix.Translation((x, y, z)) @ self.matrix(name))
 
 
 def rest(arm):
     for pose_bone in arm.pose.bones:
         pose_bone.matrix_basis = Matrix.Identity(4)
-    bpy.context.view_layer.update()

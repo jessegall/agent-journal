@@ -7,17 +7,16 @@ Writes DIR/report.json and, unless --no-render, one sheet per voice: every pose 
 import json
 import sys
 from dataclasses import dataclass
-from math import cos, radians, sin
 from pathlib import Path
 
 import bpy
 import numpy
-from mathutils import Vector
 from mathutils.kdtree import KDTree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from rig import VOICES, assemble, rest, turn  # noqa: E402
+from rig import VOICES, Posing, assemble, rest  # noqa: E402
+from snaps import render_cell, set_up_render, sheet  # noqa: E402
 
 CELL = 360
 SAMPLE_LIMIT = 2500
@@ -50,16 +49,16 @@ VIEWS = {"front": 0.0, "side": 90.0}
 
 
 def apply(arm, name):
-    rest(arm)
+    posing = Posing(arm)
     for bone, angles in POSES[name]:
-        turn(arm, bone, **angles)
+        posing.turn(bone, **angles)
 
 
 def evaluated_points(obj):
     graph = bpy.context.evaluated_depsgraph_get()
     evaluated = obj.evaluated_get(graph)
     mesh = evaluated.to_mesh()
-    points = numpy.array([tuple(v.co) for v in mesh.vertices])
+    points = numpy.array([tuple(obj.matrix_world @ v.co) for v in mesh.vertices])
     evaluated.to_mesh_clear()
     return points
 
@@ -164,60 +163,8 @@ def measure(figure):
     return report
 
 
-def colour_materials():
-    for material in bpy.data.materials:
-        node = next((n for n in material.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None) if material.use_nodes else None
-        if node:
-            material.diffuse_color = node.inputs["Base Color"].default_value
-
-
-def set_up_render():
-    scene = bpy.context.scene
-    scene.render.engine = "BLENDER_WORKBENCH"
-    scene.render.resolution_x = scene.render.resolution_y = CELL
-    shading = scene.display.shading
-    shading.light, shading.color_type, shading.show_cavity = "STUDIO", "MATERIAL", False
-    scene.world = bpy.data.worlds.new("backdrop")
-    scene.world.color = (0.82, 0.83, 0.86)
-    camera = bpy.data.objects.new("camera", bpy.data.cameras.new("camera"))
-    scene.collection.objects.link(camera)
-    camera.data.type, camera.data.ortho_scale = "ORTHO", 4.9
-    scene.camera = camera
-    colour_materials()
-    return camera
-
-
-def render_cell(camera, azimuth, path):
-    """One picture from an angle round the robot, looking at its middle; 0 is the front."""
-    angle = radians(azimuth)
-    camera.location = Vector((8 * sin(angle), -8 * cos(angle), 2.15))
-    camera.rotation_euler = (radians(90), 0, angle)
-    bpy.context.scene.render.filepath = str(path)
-    bpy.ops.render.render(write_still=True)
-
-
-def sheet(cells, path):
-    """Lays the pictures out in a grid, in pose order, and saves it as one picture."""
-    rows = -(-len(cells) // SHEET_COLUMNS)
-    canvas = numpy.zeros((rows * CELL, SHEET_COLUMNS * CELL, 4), dtype=numpy.float32)
-    for index, cell in enumerate(cells):
-        image = bpy.data.images.load(str(cell))
-        pixels = numpy.empty(CELL * CELL * 4, dtype=numpy.float32)
-        image.pixels.foreach_get(pixels)
-        row, column = divmod(index, SHEET_COLUMNS)
-        top = (rows - 1 - row) * CELL
-        canvas[top:top + CELL, column * CELL:(column + 1) * CELL] = pixels.reshape(CELL, CELL, 4)
-        bpy.data.images.remove(image)
-    out = bpy.data.images.new("sheet", SHEET_COLUMNS * CELL, rows * CELL)
-    out.pixels.foreach_set(canvas.ravel())
-    out.filepath_raw = str(path)
-    out.file_format = "PNG"
-    out.save()
-    bpy.data.images.remove(out)
-
-
 def render_poses(figure, folder):
-    camera = set_up_render()
+    camera = set_up_render((CELL, CELL), height=4.9)
     cells = []
     for name in POSES:
         apply(figure.armature, name)
@@ -241,7 +188,7 @@ def main():
         if "--no-render" in given:
             continue
         cells = render_poses(figure, out)
-        sheet(cells, out / f"{voice}.png")
+        sheet(cells, SHEET_COLUMNS, (CELL, CELL), out / f"{voice}.png")
         for cell in cells:
             cell.unlink()
     (out / "report.json").write_text(json.dumps(report, indent=1))

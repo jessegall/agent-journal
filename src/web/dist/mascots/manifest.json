@@ -1,0 +1,62 @@
+{
+ "cell": [
+  256,
+  256
+ ],
+ "columns": 8,
+ "voices": [
+  "bare",
+  "butler",
+  "homie",
+  "coach",
+  "colleague",
+  "squire"
+ ],
+ "clips": {
+  "idle": {
+   "frames": 48,
+   "fps": 12,
+   "loops": true
+  },
+  "blink": {
+   "frames": 10,
+   "fps": 12,
+   "loops": false
+  },
+  "nod": {
+   "frames": 14,
+   "fps": 12,
+   "loops": false
+  },
+  "shake": {
+   "frames": 17,
+   "fps": 12,
+   "loops": false
+  },
+  "wave": {
+   "frames": 24,
+   "fps": 12,
+   "loops": true
+  },
+  "think": {
+   "frames": 24,
+   "fps": 12,
+   "loops": true
+  },
+  "celebrate": {
+   "frames": 18,
+   "fps": 12,
+   "loops": true
+  },
+  "sleep": {
+   "frames": 36,
+   "fps": 12,
+   "loops": true
+  },
+  "walk": {
+   "frames": 12,
+   "fps": 12,
+   "loops": true
+  }
+ }
+}
