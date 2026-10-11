@@ -89,3 +89,18 @@ def test_a_kept_row_that_will_not_read_back_is_dropped_and_read_from_its_file():
     snapshot_file(record.root).write_bytes(b"not a snapshot")
     assert read(record.root, "") == 0, "a snapshot that is not one is dropped, and the server starts with nothing held"
     assert not snapshot_file(record.root).exists()
+
+
+def test_the_row_of_an_agent_read_to_look_at_is_the_held_row_and_is_not_copied(monkeypatch):
+    from controllers.types import Agents
+    from resources import base
+    record = fresh()
+    agents = Agents(record, actor=SYSTEM)
+    n = agents.create("session-a", status="working").n
+    copies = []
+    original = base.copied
+    monkeypatch.setattr(base, "copied", lambda value: copies.append(1) or original(value))
+    looked = agents.peek_session("session-a")
+    assert (looked.n, looked.status, copies) == (n, "working", []), "a reader that changes nothing gets the held row without a deep copy"
+    agents.by_session("session-a")
+    assert copies, "a caller that may change the row still gets a copy of its own"

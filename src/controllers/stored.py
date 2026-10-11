@@ -752,7 +752,11 @@ class RowStore:
         return self.summarised(next((row["n"] for row in self.summaries() if row[IDEMPOTENCY] == key), None))
 
     def by_title(self, title: str, standing: bool = False) -> Resource | None:
-        return self.summarised(next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None))
+        return self.summarised(self.n_of_title(title, standing))
+
+    def n_of_title(self, title: str, standing: bool = False) -> int:
+        """The number of the row with the title, 0 when there is none."""
+        return next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), 0)
 
     def summarised(self, n: int | None) -> Resource | None:
         """The row a summary names, or nothing when it has gone: the summaries and the folder drift, as warm() has long allowed for, and a name left behind is a miss rather than a fault."""

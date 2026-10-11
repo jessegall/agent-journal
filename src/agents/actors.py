@@ -163,9 +163,9 @@ class Agent(Actor):
         return WORKING if Works(self.record, actor=SYSTEM).rows.standing() else BUSY
 
     def current(self):
-        """The agent's row as it stands now, not as the report cached a moment ago read it."""
+        """The agent's held row as it stands now, not as the report cached a moment ago read it; it is read, never changed."""
         last = self.driver.last_report()
-        return Agents(self.record, actor=SYSTEM).by_session((last and last.title) or self.driver.session)
+        return Agents(self.record, actor=SYSTEM).peek_session((last and last.title) or self.driver.session)
 
     def note(self, **facts) -> None:
         """Writes facts onto the agent's row and leaves its status, event and time to the hooks that report them, so a report read earlier never writes an older state over a newer one."""

@@ -123,6 +123,11 @@ class Agents(Controller):
         found = self.rows.by_title(session)
         return self.load(found.n) if found else self.create(session, status="stopped")
 
+    def peek_session(self, session: str):
+        """The held row of the session, not a copy: for a reader that changes nothing."""
+        found = self.rows.n_of_title(session)
+        return self.peek(found) if found else self.create(session, status="stopped")
+
     def load(self, n: int | str):
         row = super().load(n)
         row.data.update(PENDING.delta(self.record, int(n)))
