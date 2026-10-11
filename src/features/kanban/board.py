@@ -1,8 +1,10 @@
 import time
+from dataclasses import dataclass
 from typing import TypedDict
 
 from controllers.stored import PAGE, cursor_of, cursor_text, paged
 from controllers.todos import column_order
+from resources.shapes import position_of
 from features.format import formatted_item
 from features.kanban.lanes import DONE, LANES, Sources, lane_of, reason_of
 from features.kanban.shifts import targets
@@ -22,6 +24,32 @@ class Worker(TypedDict):
     agent: str
     subagent: bool
     parked: bool
+
+
+@dataclass(frozen=True)
+class OpenTodo:
+    """A to-do as the board reads it: the few fields a card shows and a lane is worked out from, taken from the row's summary, so no row is parsed for a card."""
+    n: int
+    title: str
+    priority: int | None
+    position: float
+    assigned: str
+    updated: float
+    completed: float
+    pending: object
+    blocked: object
+    reported: object
+    struck: object
+    after: tuple
+
+    @classmethod
+    def of(cls, row: dict) -> "OpenTodo":
+        return cls(row["n"], row["title"], row["priority"], position_of(row["rank"], row["n"]), row["assigned"], row["updated"], row["completed"],
+                   row["pending"], row["blocked"], row["reported"], row["struck"], tuple(row["after"]))
+
+    @property
+    def ref(self) -> str:
+        return f"todo:{self.n}"
 
 
 def worker_of(work, main: str) -> Worker:
@@ -60,7 +88,7 @@ def build(journal, done_days: float, plan: int, agent: str, lane: str | None = N
     sources = sources_of(journal)
     works, plans = sources.works, sources.plans
     since = time.time() - float(done_days) * DAY
-    rows = [t for t in journal.get(Todos).rows.standing(closed_since=since, closed_last=DONE_SHOWN) if not t.completed or not t.struck]
+    rows = [OpenTodo.of(row) for row in journal.get(Todos).rows.kept_summaries(since, DONE_SHOWN) if not row["hidden"] and (not row["completed"] or not row["struck"])]
     if plan:
         placed = next((p for p in plans if p.n == int(plan)), None)
         rows = [t for t in rows if placed and t.ref in placed.refs]

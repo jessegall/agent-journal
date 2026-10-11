@@ -65,7 +65,7 @@ class Todo(Ranked, Placed, Resource):
         abstract="One thing to do later, with a brief that says why and where to start",
         help="A to-do waits on the list until it is started as work and closed; auto mode works the list in order.",
     )
-    indexed = ("hidden", "assigned", "status", WHOM)
+    indexed = ("hidden", "assigned", "status", WHOM, "priority", "rank", "pending", "blocked", "reported", "struck", "after")
     hidden_listed = False
     listed_open = True
     type = "todo"
