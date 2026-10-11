@@ -2,6 +2,7 @@ import {createApp, h, reactive} from "vue";
 import {beforeEach, describe, expect, test} from "vitest";
 import WaitEdge from "../src/kit/WaitEdge.vue";
 import {lineOf, stateOf, waitingFor, waitingOn, wordOf} from "../src/domain/agentState.js";
+import {STATE_WORDS} from "../src/domain/journals.js";
 import {ref} from "vue";
 import {useWaiting} from "../src/composables/waiting.js";
 import {phoneWaiting} from "../src/phone/agentWait.js";
@@ -42,6 +43,7 @@ describe("the waiting word and its line", () => {
 
     test("an agent whose conversation is being compacted says compacting, never summarizing or shortening", () => {
         expect(lineOf(agent("compacting"), [])).toBe("compacting the conversation, then it carries on");
+        expect(STATE_WORDS.compacting).toBe("Compacting");
     });
 
     test("an idle agent with nothing to wait on is ready, never waiting", () => {
