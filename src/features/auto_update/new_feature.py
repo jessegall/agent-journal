@@ -20,6 +20,9 @@ class NewFeature:
     text: str
     button: str
     profile: str = ""
+    opens: str = ""
+    """The page the button takes the reader to, as the viewer names it: 'settings'. Without one the button only closes the card, which is what a reader reads as nothing happening."""
+
     art: str = ""
     note: str = ""
     eyebrow: str = "Hey, new feature"

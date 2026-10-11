@@ -5,12 +5,15 @@ const second = {...first, id: "owl", version: "2.10.0", title: "A second feature
 const asked = vi.fn();
 const marked = vi.fn();
 const useProfile = vi.fn();
+const went = vi.fn();
 const reported = vi.fn();
 
 vi.mock("../src/api/client.js", () => ({
     api: {newFeatures: () => asked(), markNewFeatureSeen: (id) => marked(id), publicUrl: (path) => `/${path}`},
 }));
 vi.mock("../src/platform/faults.js", () => ({report: (...args) => reported(...args)}));
+vi.mock("../src/route.js", () => ({go: (env, page) => went(env, page)}));
+vi.mock("../src/state/store.js", () => ({store: {env: "main"}}));
 vi.mock("../src/composables/profiles.js", () => ({
     loadProfiles: vi.fn(),
     profiles: {value: [{n: 1, title: "Butler"}, {n: 6, title: "Squire"}]},
@@ -26,6 +29,7 @@ beforeEach(async () => {
     marked.mockReset().mockResolvedValue({});
     reported.mockReset();
     useProfile.mockReset();
+    went.mockReset();
     await loadNewFeatures();
 });
 
@@ -90,5 +94,19 @@ describe("the new features a release announces", () => {
         asked.mockResolvedValue([second]);
         await loadNewFeatures();
         expect(newFeature.value.art).toBe("/announcements/owl.png");
+    });
+});
+
+describe("the button on a card that points at a page", () => {
+    test("takes the reader there, and a card pointing nowhere only closes", async () => {
+        asked.mockResolvedValue([{...second, opens: "settings"}, second]);
+        await loadNewFeatures();
+        await useNewFeature();
+        expect(went).toHaveBeenCalledWith("main", "settings");
+        expect(marked).toHaveBeenCalledWith("owl");
+
+        went.mockReset();
+        await useNewFeature();
+        expect(went).not.toHaveBeenCalled();
     });
 });
