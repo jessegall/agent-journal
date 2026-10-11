@@ -779,7 +779,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     tick(record)
     assert moments.count("finished") == 1 and len(sent()) == 1, "a finished plan raises its moment once, so the sequence it starts is not restarted, and the reply is not repeated"
     assert Tickets(record, actor=SYSTEM).load(ticket.n).handed_in_at, "the ticket carries that its work was handed in as a fact written when it reported"
-    assert any("has committed its work and has waited" in n for n in nudges(record)), "while its work waits the orchestrator is told how long, by a nudge that repeats"
+    assert any("has finished its work and has waited" in n for n in nudges(record)), "while its work waits the orchestrator is told how long, by a nudge that repeats"
     now[0] += 31 * MINUTE
     tick(record)
     assert any("waited" in c.title or "waited" in c.brief for c in Tickets(record, actor=SYSTEM).comments(ticket.n)), "past the limit the user is told on the ticket"

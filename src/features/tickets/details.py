@@ -76,9 +76,9 @@ class TicketsDetails(FeatureDetails):
         Line(
             name="ticket_handed_in",
             while_waiting=True,
-            title="ticket {{ticket}}, {{title}}, has committed its work and has waited {{waited}} minutes for you",
-            brief="it is not idle, it waits on you: follow the sequence Merging a ticket with journal sequence follow <its number> --about ticket:{{ticket}}, "
-                  "review its diff, run its tests one at a time, then merge it with journal ticket merge {{ticket}} or send it back with journal ticket send_back {{ticket}} \"<what failed>\"",
+            title="ticket {{ticket}}, {{title}}, has finished its work and has waited {{waited}} minutes for you",
+            brief="it has finished its work and waits on you: review its changes, run its tests one at a time, then merge it with journal ticket merge {{ticket}}, "
+                  "or send it back with journal ticket send_back {{ticket}} \"<what failed>\"",
         ),
         Line(
             name="ticket_replied",
@@ -124,7 +124,7 @@ class TicketsDetails(FeatureDetails):
         Setting(
             name="tell_the_user_after",
             default=30,
-            title="Tell you a ticket's finished work has waited for the orchestrator, after",
+            title="Tell you when a ticket's finished work has waited for the agent",
             unit="minutes",
             scope=PROJECT,
         ),
