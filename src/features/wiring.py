@@ -23,11 +23,12 @@ def wanted(part, feature, record, row, timed: bool = True) -> bool:
 
 
 def agent_row(record, n: int):
+    """The agent's row for a handler to read: the one the store holds, not a copy, since a handler that changes the agent does it through the controller."""
     if record.memo is None:
-        return Agents(record, actor=SYSTEM).load(n)
+        return Agents(record, actor=SYSTEM).peek(n)
     key = ("agent row", n)
     if key not in record.memo:
-        record.memo[key] = Agents(record, actor=SYSTEM).load(n)
+        record.memo[key] = Agents(record, actor=SYSTEM).peek(n)
     return record.memo[key]
 
 

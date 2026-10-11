@@ -273,6 +273,14 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     sent = len(calls)
     assert (engine.pausing(), engine.paused, len(calls) == sent, len(list(inputs.runtime.inputs(root).glob("*.json")))) == ("", False, True, 0), \
         "a resume asked again for an agent that is not paused is taken and not said, so the update's line is not typed again every second"
+    inputs.queue(root, "claude-77", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
+    from tests.kit import counted
+    with counted() as work:
+        for _ in range(8):
+            inputs.take(root, {"claude-1"}, inputs.RESUME)
+    assert (len(work.opened), len(work.scanned)) == (1, 1), \
+        "an input queued for another session is read once and the folder listed once however many times the engine asks in a tick, since each ask would otherwise open every input of every session"
+    inputs.withdraw(root, "claude-77", inputs.PAUSE, inputs.UPDATE)
     inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
     engine.pausing()
     from engine import runtime

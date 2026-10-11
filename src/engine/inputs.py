@@ -1,8 +1,10 @@
+import os
 import time
 import uuid
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from engine import runtime
+from engine.memo import Memo
 from engine.stored import read_json, write_json
 from resources.fields import Loaded
 
@@ -75,10 +77,30 @@ def withdraw(root: Path, session: str, action: str, value: str = "") -> None:
             path.unlink(missing_ok=True)
 
 
-def take(root: Path, sessions: set[str], action: str = "", among: tuple = ()) -> Input | None:
+LISTED = Memo()
+
+
+def waiting(root: Path) -> list[tuple[Path, Input | None]]:
+    """The inputs queued for the whole record, oldest first, read again only when the folder changed: every engine asks for them a few times a tick, and each of those would otherwise open every input of every session."""
     folder = runtime.inputs(root)
-    for path in sorted(folder.glob("*.json")):
-        queued = read_json(path, Input.from_json, None)
+    try:
+        stamp = os.stat(folder).st_mtime_ns
+    except OSError:
+        return []
+    return LISTED.get(str(root), stamp, lambda: [(path, read_json(path, Input.from_json, None)) for path in sorted(folder.glob("*.json"))])
+
+
+def taken_by_us(path: Path) -> bool:
+    """Whether this process removed the input: another engine that got to it first has it."""
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        return False
+    return True
+
+
+def take(root: Path, sessions: set[str], action: str = "", among: tuple = ()) -> Input | None:
+    for path, queued in waiting(root):
         if queued is None:
             path.unlink(missing_ok=True)
             continue
@@ -87,8 +109,8 @@ def take(root: Path, sessions: set[str], action: str = "", among: tuple = ()) ->
             continue
         if queued.session not in sessions or not wanted(queued, action, among):
             continue
-        path.unlink(missing_ok=True)
-        return queued
+        if taken_by_us(path):
+            return queued
     return None
 
 
