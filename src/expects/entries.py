@@ -68,7 +68,7 @@ def speaking(record: Record, given: Given):
 def contexted(promise, given: Given, record: Record) -> Context:
     """The context a registration is handed: over the record, and an AgentContext speaking to the agent when the Given names one."""
     row = speaking(record, given)
-    return (AgentContext if row else Context).of(promise.feature, record, row, provider_of(row), SimpleNamespace(cwd=None, agent="", transcript=None))
+    return (AgentContext if row else Context).of(promise.feature, record, row, provider_of(row), SimpleNamespace(cwd=None, agent="", transcript=None, event="PreToolUse", tool=given.on))
 
 
 def what_was_said(record: Record) -> tuple[list, list]:
