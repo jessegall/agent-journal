@@ -18,6 +18,7 @@ from features.phone.members import rights_of
 from features.phone.passkey import Assertion, Enrolment, Relying, requested
 from features.phone.surface import PhoneSurface
 from engine.color import identity
+from features.auto_update.countdown import update_state
 from features.sharing.controller import Shares
 from features.sharing.page import disposition, unshared
 from features.sharing.preview import icon
@@ -204,6 +205,8 @@ def read_body(phones: Phones, phone, rest: list[str], query: dict[str, list[str]
         return surface.helper(int(asked["n"]))
     if rest == ["bar"]:
         return surface.bar()
+    if rest == ["update"]:
+        return update_state(surface.home.root)
     if len(rest) == 3:
         return surface.read(f"{rest[1]}:{rest[2]}")
     raise Refused("no such page")
@@ -228,7 +231,7 @@ class PhoneRoutes:
         if rest == [WORKER]:
             return handler.send(200, (APP_DIR / WORKER_FILE).read_bytes(), {"Content-Type": "text/javascript", "Cache-Control": "no-cache",
                                                                           "Service-Worker-Allowed": "/p/", **APP_HEADERS})
-        if rest[:1] in (["state"], ["feed"], ["helper"], ["bar"], ["places"], ["push-key"], ["source"], ["list"], ["row"], ["export"]):
+        if rest[:1] in (["state"], ["feed"], ["helper"], ["bar"], ["update"], ["places"], ["push-key"], ["source"], ["list"], ["row"], ["export"]):
             return self.read(handler, rest)
         if rest == [MANIFEST]:
             return self.manifest(handler)

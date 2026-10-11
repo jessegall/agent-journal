@@ -29,6 +29,11 @@ def remaining(root: Path) -> dict:
     return {"version": version, "seconds": max(0, round(until - now))} if until - now > -1 else {}
 
 
+def update_state(root: Path) -> dict:
+    """What a screen needs to know to cover itself: an upgrade under way and its step, the server still booting, an update counting down."""
+    return {"updating": runtime.upgrading(root), "ready": not runtime.booting(root), "step": runtime.upgrade_step(root), "countdown": remaining(root)}
+
+
 def cancel(root: Path) -> None:
     state(root).unlink(missing_ok=True)
 

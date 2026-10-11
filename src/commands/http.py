@@ -13,7 +13,7 @@ from urllib.parse import quote
 
 import features
 from engine.multipart import uploads
-from features.auto_update.countdown import remaining
+from features.auto_update.countdown import update_state
 from controllers.shared import row_shared
 from surfaces.package import archive as extension_archive, info as extension_info
 from engine.color import identity, set_color
@@ -276,7 +276,7 @@ def post_identity(req: Request) -> Reply:
 
 @route("GET", "/api/summary")
 def get_summary(req: Request) -> Reply:
-    return Reply(200, {**invoked(req.as_user(Environments), "summary"), "updating": runtime.upgrading(req.root), "ready": not runtime.booting(req.root), "step": runtime.upgrade_step(req.root), "countdown": remaining(req.root)})
+    return Reply(200, {**invoked(req.as_user(Environments), "summary"), **update_state(req.root)})
 
 
 @route("GET", "/api/agents")

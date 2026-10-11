@@ -36,6 +36,7 @@ export const phone = {
     feed: () => got("./feed"),
     older: (before) => got(`./feed?before=${encodeURIComponent(before)}`),
     bar: () => got("./bar"),
+    update: () => got("./update"),
     places: () => got("./places"),
     source: (q) => got(`./source?q=${encodeURIComponent(q)}`),
     fileAt: (path) => `./file/${path}`,

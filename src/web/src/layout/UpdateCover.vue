@@ -98,14 +98,18 @@ watch(() => store.summary?.version, showArrival);
     backdrop-filter: blur(6px);
     box-shadow: inset 0 0 120px color-mix(in srgb, var(--accent) 22%, transparent);
     cursor: progress;
+    touch-action: none;
 }
 
 .panel {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    min-width: 260px;
+    box-sizing: border-box;
+    width: min(300px, calc(100vw - 32px));
+    height: 150px;
     padding: 22px 28px;
     border: 1px solid var(--border-2);
     border-radius: 12px;

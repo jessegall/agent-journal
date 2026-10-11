@@ -17,6 +17,8 @@ import {runsAllowed} from "./runs.js";
 import PhoneUnlockSheet from "./PhoneUnlockSheet.vue";
 import {allowing, asking, enrolled, unlockable, unlocked} from "./unlock.js";
 import {store} from "../state/store.js";
+import {followServer, STATUS_POLL, updating} from "../state/updating.js";
+import UpdateCover from "../layout/UpdateCover.vue";
 
 const OPEN = "open=";
 const BASE = "/p";
@@ -92,6 +94,16 @@ async function reconnect() {
         failed(error);
     }
 }
+
+const UPDATE_EVERY = 4000;
+const UPDATE_FAST = 1000;
+usePoll(
+    STATUS_POLL,
+    () => phone.update(),
+    () => (updating.countdown || updating.external || updating.version ? UPDATE_FAST : UPDATE_EVERY),
+    followServer,
+    () => state.value === "connected"
+);
 
 usePoll("phone-retry", load, RETRY_EVERY, undefined, () => state.value === "unreachable");
 
@@ -187,6 +199,7 @@ onUnmounted(() => {
                 </div>
             </template>
         </SwitchCase>
+        <UpdateCover />
         <template v-if="asking || allowing">
             <PhoneUnlockSheet />
         </template>

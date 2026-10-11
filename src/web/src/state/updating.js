@@ -6,6 +6,8 @@ export const STEPS = ["Installing the new version", "Restarting the journal", "L
 const SECOND_STEP_AT = 8;
 const THIRD_STEP_AT = 25;
 
+export const STATUS_POLL = "summary";
+
 export const updating = reactive({version: "", failure: "", late: false, since: 0, external: false, step: "", countdown: null, target: "", starting: false});
 
 export const stepAt = (seconds) => (seconds < SECOND_STEP_AT ? STEPS[0] : seconds < THIRD_STEP_AT ? STEPS[1] : STEPS[2]);
@@ -52,6 +54,13 @@ export function follow(running, step = "") {
     if (running || !updating.external) return false;
     clear();
     return true;
+}
+
+// What the server says about an update, taken the same way by the viewer and the phone; reloads once an upgrade seen running has finished.
+export function followServer(got) {
+    counting(got.countdown);
+    starting(got.ready);
+    if (follow(Boolean(got.updating), got.step)) window.location.reload();
 }
 
 export const updatedTo = () => remembered(UPDATED_KEY, "");

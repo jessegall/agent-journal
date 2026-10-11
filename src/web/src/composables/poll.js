@@ -1,6 +1,6 @@
 import {onMounted, onUnmounted} from "vue";
 import {transport} from "../api/transport.js";
-import {covered} from "../state/updating.js";
+import {covered, STATUS_POLL} from "../state/updating.js";
 
 const BACKOFF_CAP_MS = 60000;
 const SLOW_FACTOR = 4;
@@ -72,7 +72,7 @@ async function rounds(held) {
         held.again = false;
         clearTimeout(held.timer);
         try {
-            if (!newest(held).active() || (covered() && held.key !== "summary")) continue;
+            if (!newest(held).active() || (covered() && held.key !== STATUS_POLL)) continue;
             const got = await answer(held);
             held.last = {got};
             held.users.forEach((user) => user.take(got));

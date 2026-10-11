@@ -94,7 +94,7 @@ ALLOWED = (
     get("/api/{env}/files"), get("/api/{env}/plugin/{n}/dashboard/{name}"), get("/api/{env}/project-files"),
     get("/api/{env}/project-files/find"), get("/api/{env}/search"), get("/api/{env}/settings"), get("/api/{env}/skills"),
     get("/api/{env}/skills/{name}"),
-    post("/api/identity"), post("/api/journals/forget"), post("/api/update/check"), post("/api/{env}/agent/{session}/relaunch"),
+    post("/api/identity"), post("/api/journals/forget"), post("/api/update/check"), post("/api/update/cancel"), post("/api/{env}/agent/{session}/relaunch"),
     post("/api/{env}/skills/{name}/always"), post("/api/{env}/skills/{name}/keywords"), post("/api/{env}/skills/{name}/load"),
     post("/api/{env}/agent/{session}/control"), post("/api/{env}/appoint"),
     *actions("agent", "all attach comment complete delete detach link move read_all reopen show unlink update"),
