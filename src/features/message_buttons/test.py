@@ -81,3 +81,38 @@ def test_a_document_carries_buttons_that_say_something_for_the_user():
     asking = Reports(record, actor=AGENT).create("Another choice", buttons=choice)
     assert f"report {asking.n} already asks this" in refused(lambda: Questions(record, actor=AGENT).create("Reshape it?", about=asking.ref, options=[{"title": "Yes", "text": "Reshape it"}, {"title": "No", "text": "Keep it"}], pick=1)), \
         "a row that asks through its buttons is not asked the same thing again as a question"
+
+
+def test_a_button_can_run_a_command_the_agent_asks_for_and_it_runs_only_on_the_press():
+    from engine import bus
+    from features.message_buttons.pressing import press, said, unspent
+    from features.message_buttons.shaping import Button
+
+    record = fresh()
+    rows = Messages(record, actor=AGENT)
+    argv = ["journal", "plugin", "upgrade", "20", "--yes"]
+    asked = {"label": "Upgrade the plugin", "runs": argv}
+
+    assert shaped(record, [asked]) == [asked], "a button that names a command is kept, with the command as its own words"
+    assert Button.from_payload(asked).command == "journal plugin upgrade 20 --yes", \
+        "the card reads the command whole, because pressing the button is the user reading it and saying yes"
+    assert shaped(record, [{"label": "Upgrade", "runs": "journal plugin upgrade 20"}]) == [], \
+        "a command written as one string is dropped: the words the agent named are the words that run, and nothing splits them"
+    assert shaped(record, [{"label": "", "runs": argv}]) == [], "and a button with no label is dropped, as any other is"
+
+    ran = []
+    row = rows.create("Ready when you are", buttons=[asked])
+    with pytest.MonkeyPatch.context() as patched:
+        patched.setattr(bus, "BACKGROUND", False)
+        patched.setattr("engine.proc.ran", lambda args, **more: ran.append((args, more.get("cwd"))) or None)
+        assert not ran, "the command has not run merely by being offered"
+        press(record, rows.load(row.n), "Upgrade the plugin", AGENT, "test")
+
+    assert ran == [(argv, record.root.parent)], "the press runs exactly the words the agent named, in the project"
+    assert [one.label for one in unspent(rows.load(row.n))] == [], "and the button goes, so it cannot be pressed twice"
+    from controllers.types import Nudges
+    told = [one.brief for one in Nudges(record).all(completed=True)]
+    assert any("journal plugin upgrade 20 --yes" in one for one in told), \
+        "the agent is told what the command said, with the command it was"
+    assert said(None) == "it could not be run at all, so nothing happened", \
+        "a command that could not run at all is said as that, rather than as an empty answer"

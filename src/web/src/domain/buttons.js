@@ -32,4 +32,5 @@ export function choiceGroups(row) {
 
 export const unanswered = (row) => !row.data.answered_own && choiceGroups(row).some((group) => !group.chosen);
 
-export const doing = (button) => `${button.action.replaceAll("_", " ")} ${button.type}${button.n ? ` ${button.n}` : ""}`;
+export const doing = (button) =>
+    button.runs ? button.runs.join(" ") : `${button.action.replaceAll("_", " ")} ${button.type}${button.n ? ` ${button.n}` : ""}`;
