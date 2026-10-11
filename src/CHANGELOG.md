@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.269.13 — An engine can say where its time goes
+
+- An engine sent `kill -USR2` looks at its own threads a hundred times a second for a minute and writes the functions the time goes to beside its runtime files, as `engine-profile-<environment>.txt`. It costs nothing until it is asked, and it is how a journal busy on one machine and quiet on another can be told apart.
+
 ## 2.269.12 — Every project reports what is slow
 
 - Developer error reports and budget notices are on in every project the journal is installed in, and an upgrade switches them on where the old default had left them off. A project could run for weeks filing none, which is how transportklok's slowness went unreported.
