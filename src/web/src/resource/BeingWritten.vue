@@ -21,11 +21,14 @@ const emit = defineEmits(["follow"]);
 
 <style scoped>
 .written {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     display: block;
     width: 100%;
-    padding: 0;
+    padding: 0 0 6px;
     border: 0;
-    background: none;
+    background: var(--bg);
     text-align: left;
     cursor: pointer;
 }
