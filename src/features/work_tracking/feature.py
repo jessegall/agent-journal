@@ -1,9 +1,9 @@
 from controllers.types import Works
 from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
-from engine.events.resources import TodoCompleted, WorkCreated
+from engine.events.resources import AnyEvent, TodoCompleted, WorkCreated
 from features.plans.resource import Plan
-from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
+from expects import Given, Held, Kept, Nudged, Refused, Unchanged, Updated
 from features.work_tracking.handlers import PlanCompleted, WorkCompleted
 from providers.payload import BashCall
 from resources.base import AGENT, USER
@@ -22,6 +22,7 @@ from features.sending import Nudge
 from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_ready, stopped_in_auto, stopped_with_work, next_while_helping, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import WAIT_WAY, RefuseHeldCalls, RefuseWaitingInTheShell
+NOTHING_OPEN = 'nothing is open, so this write would not be filed: journal work start "<the work>" first'
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
 WAITING = Work(n=3, title="Wait on the build", data={"awaiting": "the build"})
@@ -148,7 +149,13 @@ class WorkFeature(Feature):
             Given(ToolFinished(agent=1), rows=[varying]) >> Unchanged(),
             Given(ToolFinished(agent=1), rows=[polling, WAITING]) >> Unchanged(),
         ])
-        journal.events.handler(HoldUntilDeclared())
+        journal.events.handler(HoldUntilDeclared(), expects=[
+            Given(AnyEvent(n=1, type="agent", action="created", actor=USER), rows=[AGENT_ROW]) >> Held(NOTHING_OPEN),
+            Given(AnyEvent(n=1, type="agent", action="created", actor=USER), rows=[AGENT_ROW, WORKING]) >> Unchanged(),
+            Given(AnyEvent(n=1, type="agent", action="created", actor=USER), rows=[AGENT_ROW, PARKED]) >> Held(NOTHING_OPEN),
+            Given(AnyEvent(n=3, type="work", action="created", actor=AGENT), rows=[AGENT_ROW]) >> Held(NOTHING_OPEN),
+            Given(AnyEvent(n=1, type="todo", action="created", actor=USER), rows=[AGENT_ROW]) >> Unchanged(),
+        ])
         journal.events.handler(OpenWork(), expects=[
             Given(OPENED, rows=[ON_TODO, Todo(n=5, title="Fix the crash")]) >> Updated(Todo(n=5), status="started", work=3),
             Given(OPENED, rows=[Work(n=3, title="Look around"), Todo(n=5, title="Fix the crash")]) >> Unchanged(),
