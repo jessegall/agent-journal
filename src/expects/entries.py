@@ -24,7 +24,6 @@ from expects import Given
 from expects.playing import Seen, World
 from features.parts import AgentContext, Context
 from resources.base import Refused, SYSTEM
-from tests import isolation
 
 
 class NoEntryForThisKind(LookupError):
@@ -33,9 +32,9 @@ class NoEntryForThisKind(LookupError):
         return cls(f"there is no way to play a {kind!r} registration yet; the run plays {', '.join(sorted(ENTRIES))}")
 
 
-def scratch(given: Given) -> Record:
-    """A record holding exactly what the Given states - its settings AND its rows - thrown away when the play ends."""
-    record = Record(Path(tempfile.mkdtemp(dir=isolation.world())) / ".journal", "t")
+def scratch(given: Given, inside: Path) -> Record:
+    """A record holding exactly what the Given states - its settings AND its rows - thrown away when the play ends. The caller says which folder it is built in, because only the caller knows what else is running beside it."""
+    record = Record(Path(tempfile.mkdtemp(dir=inside)) / ".journal", "t")
     record.home.mkdir(parents=True)
     for name, value in dict(given.settings).items():
         part, _, key = name.partition(".")
@@ -296,12 +295,12 @@ def files_left(record: Record) -> dict:
     return {str(path.relative_to(project)): path.read_text(errors="replace") for path in project.rglob("*") if path.is_file()}
 
 
-def played(promise, expectation) -> Seen:
+def played(promise, expectation, inside: Path) -> Seen:
     """Builds the world the Given states, runs the registration through its own entry, and reads what it did."""
     if promise.kind not in ENTRIES:
         raise NoEntryForThisKind.of(promise.kind)
     given = expectation.given
-    record, world = scratch(given), World.of(given)
+    record, world = scratch(given, inside), World.of(given)
     world.seen.before, held, since = rows_now(record), rows_held(record), record.event_log.last_id()
     with at_the_givens_hour(given), with_the_givens_programs(given), with_the_scratch_secrets(record):
         ENTRIES[promise.kind](promise, given, record, world)

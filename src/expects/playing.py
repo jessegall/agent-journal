@@ -6,6 +6,7 @@ record of the play itself - so a word added to the grammar is a word added in on
 
 import time
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 from expects import At, Answering, Counting, Expectation, Given
 
@@ -58,59 +59,62 @@ class Chat:
 
 
 @dataclass
-class Commands:
-    """Journal commands the registration ran, and what the Given said they answer."""
+class Asked:
+    """A service that answers only what the Given named: anything else is a failure naming the ask, never a silent empty answer. This one rule is what makes a Fake trustworthy, so every Fake that answers reads it from here."""
 
     seen: Seen
     answers: Answering
+    service: ClassVar[str] = ""
+
+    def answer(self, asked):
+        if asked not in self.answers.answers:
+            raise NotAnswered.of(self.service, asked)
+        return self.answers.answers[asked]
+
+
+@dataclass
+class Commands(Asked):
+    """Journal commands the registration ran, and what the Given said they answer."""
+
+    service: ClassVar[str] = "commands"
 
     def run(self, command: str):
         self.seen.ran.append(command)
-        if command not in self.answers.answers:
-            raise NotAnswered.of("commands", command)
-        return self.answers.answers[command]
+        return self.answer(command)
 
 
 @dataclass
-class Processes:
+class Processes(Asked):
     """Processes started and stopped, by their argv."""
 
-    seen: Seen
-    answers: Answering
+    service: ClassVar[str] = "processes"
 
     def start(self, argv: tuple):
         self.seen.ran.append(argv)
-        if argv not in self.answers.answers:
-            raise NotAnswered.of("processes", argv)
-        return self.answers.answers[argv]
+        return self.answer(argv)
 
 
 @dataclass
-class Files:
+class Files(Asked):
     """A file tree in memory. A read of a path the Given does not name is a failure naming the path, never a silent empty file."""
 
-    seen: Seen
-    answers: Answering
+    service: ClassVar[str] = "files"
 
     def read(self, path: str) -> str:
-        if path not in self.answers.answers:
-            raise NotAnswered.of("files", path)
-        return self.answers.answers[path]
+        return self.answer(path)
 
     def write(self, path: str, text: str) -> None:
         self.seen.wrote.append((path, text))
 
 
 @dataclass
-class Providers:
-    """What a provider says. It answers and records nothing of its own."""
+class Providers(Asked):
+    """What a provider says."""
 
-    answers: Answering
+    service: ClassVar[str] = "providers"
 
     def of(self, asked):
-        if asked not in self.answers.answers:
-            raise NotAnswered.of("providers", asked)
-        return self.answers.answers[asked]
+        return self.answer(asked)
 
 
 @dataclass
@@ -152,7 +156,7 @@ class World:
     def of(cls, given: Given) -> "World":
         seen = Seen()
         return cls(seen, Chat(seen), Commands(seen, given.commands), Files(seen, given.files),
-                   Processes(seen, given.processes), Providers(given.providers), Clock(given.clock), Ids(given.ids))
+                   Processes(seen, given.processes), Providers(seen, given.providers), Clock(given.clock), Ids(given.ids))
 
     def given_to(self, wants: dict[str, object]) -> dict:
         """The services a receiver asked for by name, each the Fake that answers for it."""

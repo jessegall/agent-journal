@@ -4,7 +4,8 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[2] / "src"
-PACKAGES = ("commands", "controllers", "engine", "features", "migrations", "providers", "resources", "surfaces")
+PACKAGES = ("commands", "controllers", "engine", "events", "expects", "features", "migrations", "providers", "receiving", "resources",
+            "serving", "surfaces")
 ROOTS = (*PACKAGES, "install")
 
 

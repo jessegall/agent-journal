@@ -25,7 +25,8 @@ from typing import Callable
 
 
 PACKAGE = Path(__file__).resolve().parent
-PACKED_DIRS = ("agents", "commands", "controllers", "engine", "features", "migrations", "overview", "providers", "resources", "runner", "surfaces")
+PACKED_DIRS = ("agents", "commands", "controllers", "engine", "events", "expects", "features", "migrations", "overview", "providers",
+                "receiving", "resources", "runner", "serving", "surfaces")
 PACKAGE_DIRS = (*PACKED_DIRS, "extension", "skills")
 VERSION = "VERSION"
 PACKAGE_FILES = ("CHANGELOG.md", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "keeper.py", "serve.py", "supervisor.py", "skills.py", "worker.py")

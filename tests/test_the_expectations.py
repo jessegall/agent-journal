@@ -34,8 +34,9 @@ def promised():
 def test_the_registration_does_what_it_promises(promise, expectation):
     from expects.entries import played
     from expects.playing import wrong
+    from tests import isolation
 
-    assert (said := wrong(expectation, played(promise, expectation))) == [], \
+    assert (said := wrong(expectation, played(promise, expectation, isolation.world()))) == [], \
         f"{promise.feature.name}'s {promise.name} does not keep its promise: " + "; ".join(said)
 
 
@@ -533,6 +534,13 @@ def test_every_registration_gathers_what_it_promises_and_each_outcome_word_reads
         world.commands.run("todo done 7")
     assert "name it in the Given" in str(refusal.value), \
         "an ask the Given does not name is a failure naming the ask, never a silent empty answer"
+    asks = {"commands": lambda: world.commands.run("todo done 7"), "files": lambda: world.files.read("notes.md"),
+            "processes": lambda: world.processes.start(("ffmpeg",)), "providers": lambda: world.providers.of("transcript")}
+    for service, ask in asks.items():
+        with pytest.raises(NotAnswered) as unnamed:
+            ask()
+        assert f"what {service} answers" in str(unnamed.value), \
+            f"every Fake that answers reads that one rule, so {service} names itself and the ask rather than inventing an answer"
 
     seen = Seen(said=["todo 7"], nudged=[("tags.refused", "The reply tag did not run", "it named no message: reply")], ran=[("journal", "todo", "done", "7")])
     holds = Given("x") >> Printed("todo 7") & Nudged("tags.refused", tag="reply") & Ran(("journal", "todo", "done", "7"))
