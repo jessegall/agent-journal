@@ -72,8 +72,9 @@ MERGING_A_TICKET = ShippedSequence(
     title="Merging a ticket",
     brief="A ticket finished its plan with a clean worktree. Check its work before it lands on the board's branch.",
     starts_on="ticket.finished",
+    finishes_when={"completed": True},
     steps=[
-        ("Review its work", f"{FIND_IT} Dispatch the ticket-reviewer agent type: it runs the ticket's tests in its worktree and checks "
+        ("Review its work", f"{FIND_IT} Dispatch the ticket-reviewer agent type: it runs the ticket's tests in its worktree, one run at a time and never beside another, and checks "
                             "the diff against every done-when clause of its card, and answers pass or fail with evidence. On a fail, "
                             "send it back with what failed (journal ticket send_back <ticket n> \"<what failed>\") and abandon this run: "
                             "it comes back when the ticket finishes again."),

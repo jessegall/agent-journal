@@ -138,7 +138,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     @action
     def send_back(self, n: int, note: str):
         ticket = self._told(n, note)
-        ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, **given(stage=self._board(ticket).stage_for(START)))
+        ticket = self.update(ticket.n, sent_back=int(ticket.sent_back) + 1, handed_in_at=0.0, **given(stage=self._board(ticket).stage_for(START)))
         if ticket.sent_back >= RETURNS_BEFORE_ESCALATING:
             self._emit(ticket.n, ESCALATED)
         return ticket
@@ -216,7 +216,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _idle_by_design(self, ticket) -> bool:
         """A ticket that waits on open tickets, on its plan's approval, on its approved plan's turn or on its merge has an agent with nothing to do on purpose."""
-        return bool(self._waiting_on(ticket)) or ticket.approved_early or self._plan_status(ticket) in (READY, WAITING, PLAN_DONE) or self._rows_done(ticket)
+        return bool(self._waiting_on(ticket)) or bool(ticket.handed_in_at) or ticket.approved_early or self._plan_status(ticket) in (READY, WAITING, PLAN_DONE) or self._rows_done(ticket)
 
     def _rows_done(self, ticket) -> bool:
         """Whether every row of the ticket's plan is closed, though the plan has not yet been marked done: its agent has finished and waits on the merge."""
@@ -316,6 +316,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             else:
                 rows.delete(proposal.n, f"{self.type} {closed.n} closed without its branch merged")
         self._stop(closed)
+        if landed:
+            self._retire(closed)
         environments = Environments(self.record, actor=self.actor)
         place = environments.rows.by_title(closed.work_environment) if closed.work_environment else None
         if place:
@@ -446,6 +448,12 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         until = time.monotonic() + STOP_WAIT
         while self._alive_agents(ticket) and time.monotonic() < until:
             time.sleep(STOP_POLL)
+
+    def _retire(self, ticket) -> None:
+        """A merged ticket's session becomes its environment's past: its transcript and chat stay, and it no longer holds anything."""
+        sessions = Sessions(self.record.root)
+        for name in [name for name, held in sessions.all().items() if held.environment == ticket.work_environment and not held.retired]:
+            sessions.retire(name, by=self.record.env, why=f"{self.type} {ticket.n}'s branch was merged")
 
     def _stop(self, ticket) -> None:
         session = self.agent_session(ticket.n)

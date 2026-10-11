@@ -12,6 +12,7 @@ from features.tickets.handlers import (
     WakeTheTicketAgent,
     boards_to_check,
     decisions,
+    handed_in,
     ticket_calls,
 )
 from features.tickets.limits import DraftsCarryOneLine
@@ -35,6 +36,8 @@ class TicketsFeature(Feature):
               guarantee="When a ticket proposes that it should wait on another, the orchestrating agent is asked to accept or decline it."),
         Nudge(DRAFTS, behaviour="drafts", about=decisions(DRAFTS),
               guarantee="While a drafted ticket waits to be confirmed, the orchestrating agent is told it is waiting."),
+        Nudge("ticket_handed_in", behaviour="handed in", about=handed_in,
+              guarantee="While a ticket's finished work waits for the agent orchestrating its board, that agent is told how long it has waited and what to do: review, test and merge it."),
         Nudge("check_board", behaviour="board check", about=boards_to_check,
               guarantee="While a board has tickets running, the agent orchestrating it is told to look in on their agents."),
     )

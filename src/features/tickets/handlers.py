@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -13,10 +14,12 @@ from features.plans.controller import WAITING
 from features.boards.controller import Boards
 from features.tickets.calls import PLAN_DONE_CALL, calls
 from features.tickets.controller import HELD, Tickets
+from features.tickets.details import TicketsDetails
 from resources.base import CHECKPOINT, FINISHED, PLAN_WAITS, STUCK, SYSTEM, Refused
 
 NUDGED = ("ticket_asks", "ticket_awaits")
 PLAN_WAITS_ONCE = "plan_waits"
+LONG_WAIT = "ticket_long_wait"
 ATTENTION_EVERY = "ticket_attention"
 LOOK_AGAIN = 15
 SWEEPING, SWEEP_EVERY = "tickets-sweeping.lock", 5.0
@@ -49,6 +52,7 @@ class LookAfterTickets(Handler):
         raise_waiting_plans(context, tickets)
         pass_on_calls(context, tickets)
         look_at_stuck(context, tickets)
+        tell_the_user_of_long_waits(context, tickets)
 
 
 def raise_waiting_plans(context: AgentContext, tickets: Tickets) -> None:
@@ -64,10 +68,30 @@ def pass_on_calls(context: AgentContext, tickets: Tickets) -> None:
         for kind, key, values, every in calls(tickets, ticket):
             if kind in NUDGED or not (context.every(kind, f"{ticket.ref}|{key}", Trigger(every=every, unit=MINUTES)) if every else context.once(kind, f"{ticket.ref}|{key}")):
                 continue
-            if kind == PLAN_DONE_CALL:
+            if kind == PLAN_DONE_CALL and not ticket.handed_in_at:
+                tickets.update(ticket.n, handed_in_at=time.time())
                 tickets.raise_moment(ticket.n, FINISHED)
+            elif kind == PLAN_DONE_CALL:
+                continue
             else:
                 context.agent.whisper(kind, ticket=ticket.n, title=ticket.title, **values)
+
+
+def waited(ticket) -> int:
+    return int((time.time() - ticket.handed_in_at) // MINUTE)
+
+
+def tell_the_user_of_long_waits(context: AgentContext, tickets: Tickets) -> None:
+    limit = int(TicketsDetails.values(tickets.record).tell_the_user_after)
+    for ticket in [t for t in watched(tickets) if t.handed_in_at and waited(t) >= limit]:
+        if context.once(LONG_WAIT, f"{ticket.ref}|{ticket.handed_in_at}"):
+            tickets.comment(ticket.n, f"Its work has waited {waited(ticket)} minutes for the orchestrator to review, test and merge it.")
+
+
+def handed_in(context, agent) -> list[Sent]:
+    tickets = Tickets(context.record, actor=SYSTEM)
+    return [Sent(f"{ticket.ref}|{ticket.handed_in_at}", {"ticket": ticket.n, "title": ticket.title, "waited": waited(ticket)})
+            for ticket in watched(tickets) if ticket.handed_in_at]
 
 
 def look_at_stuck(context: AgentContext, tickets: Tickets) -> None:

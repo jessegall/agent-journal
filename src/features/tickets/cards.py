@@ -196,6 +196,8 @@ class TicketCards:
         reviewing = self._reviewing(ticket)
         if reviewing:
             return CardState("running", f"under review ({reviewing}) in {place}")
+        if ticket.handed_in_at:
+            return CardState("you", f"finished, waiting for the orchestrator to review, test and merge it", "")
         row = self._reporting(place, sessions)
         session = row.title if row else ""
         state = self._agent_state(ticket, row, running)

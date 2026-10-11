@@ -245,8 +245,10 @@ class Sequences(Controller):
         row = self._about_row(key)
         for name, wanted in r.finishes_when.items():
             allowed = wanted if isinstance(wanted, list) else [wanted]
-            if row and row.data.get(name) not in allowed:
-                self._refuse(f"sequence {r.n} cannot finish until {row.ref} has {name} {' or '.join(map(str, allowed))}, and it has {row.data.get(name)}: "
+            found = row.data.get(name, getattr(row, name, None)) if row else None
+            found = bool(found) if isinstance(wanted, bool) else found
+            if row and found not in allowed:
+                self._refuse(f"sequence {r.n} cannot finish until {row.ref} has {name} {' or '.join(map(str, allowed))}, and it has {found}: "
                              f"do what the steps say to get it there, then journal sequence next {r.n}{self._flag(key)}")
 
     def _remove_row(self, r, key: str, why: str) -> None:

@@ -764,7 +764,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     ticket = Tickets(record, actor=USER).create("Dark mode", board=board.n)
     report(record, "working", "PreToolUse")
     moments, held = [], [[("ticket_replied", "message:1", {"text": "done?"}, 0), (ticket_calls.PLAN_DONE_CALL, "plan:5", {}, 15), ("ticket_asks", "question:2", {"question": 2, "text": "which one", "env": "ticket-1", "rule": "decide it"}, 15)]]
-    monkeypatch.setattr(handlers, "watched", lambda tickets: [ticket])
+    monkeypatch.setattr(handlers, "watched", lambda tickets: [tickets.load(ticket.n)])
     monkeypatch.setattr(handlers, "calls", lambda tickets, found: held[0])
     monkeypatch.setattr(Tickets, "raise_moment", lambda self, n, moment, **data: moments.append(moment))
     now = [time.time()]
@@ -777,11 +777,16 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     assert moments.count("finished") == 1 and len(sent()) == 1, "nothing is said again at once"
     now[0] += 16 * MINUTE
     tick(record)
-    assert moments.count("finished") == 2 and len(sent()) == 1, "the plan that is still finished raises its moment again after its window, and the reply is not repeated"
+    assert moments.count("finished") == 1 and len(sent()) == 1, "a finished plan raises its moment once, so the sequence it starts is not restarted, and the reply is not repeated"
+    assert Tickets(record, actor=SYSTEM).load(ticket.n).handed_in_at, "the ticket carries that its work was handed in as a fact written when it reported"
+    assert any("has committed its work and has waited" in n for n in nudges(record)), "while its work waits the orchestrator is told how long, by a nudge that repeats"
+    now[0] += 31 * MINUTE
+    tick(record)
+    assert any("waited" in c.title or "waited" in c.brief for c in Tickets(record, actor=SYSTEM).comments(ticket.n)), "past the limit the user is told on the ticket"
     held[0] = []
     now[0] += 16 * MINUTE
     tick(record)
-    assert moments.count("finished") == 2, "a ticket with nothing to call about raises nothing"
+    assert moments.count("finished") == 1, "a ticket with nothing to call about raises nothing"
 
     root = record.root
     ticket_calls.PEOPLE[str(root)] = ["jesse"]

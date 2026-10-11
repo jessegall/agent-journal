@@ -74,6 +74,13 @@ class TicketsDetails(FeatureDetails):
             brief="if it waits on you, give it what it needs with journal ticket tell {{ticket}} \"<what>\"; if it waits on the user, ask them",
         ),
         Line(
+            name="ticket_handed_in",
+            while_waiting=True,
+            title="ticket {{ticket}}, {{title}}, has committed its work and has waited {{waited}} minutes for you",
+            brief="it is not idle, it waits on you: follow the sequence Merging a ticket with journal sequence follow <its number> --about ticket:{{ticket}}, "
+                  "review its diff, run its tests one at a time, then merge it with journal ticket merge {{ticket}} or send it back with journal ticket send_back {{ticket}} \"<what failed>\"",
+        ),
+        Line(
             name="ticket_replied",
             while_waiting=True,
             title="ticket {{ticket}}, {{title}}, answered - {{text}}",
@@ -102,6 +109,7 @@ class TicketsDetails(FeatureDetails):
         Behaviour(name="awaits", title="Remind the board's agent of a ticket waiting on a person", trigger=Trigger(every=5, unit=MINUTES)),
         Behaviour(name="waits", title="Remind the board's agent of a wait one ticket proposes on another", trigger=Trigger(every=5, unit=MINUTES)),
         Behaviour(name="drafts", title="Remind the board's agent of a drafted ticket waiting to be confirmed", trigger=Trigger(every=5, unit=MINUTES)),
+        Behaviour(name="handed in", title="Remind the board's agent of a ticket whose finished work waits for it", trigger=Trigger(every=5, unit=MINUTES)),
         Behaviour(name="board check", title="Ask an idle board agent to check its boards", trigger=Trigger(every=5, unit=MINUTES)),
     ]
 
@@ -110,6 +118,13 @@ class TicketsDetails(FeatureDetails):
             name="remind_every",
             default=5,
             title="Remind the board's agent that a ticket's plan is done, every",
+            unit="minutes",
+            scope=PROJECT,
+        ),
+        Setting(
+            name="tell_the_user_after",
+            default=30,
+            title="Tell you a ticket's finished work has waited for the orchestrator, after",
             unit="minutes",
             scope=PROJECT,
         ),

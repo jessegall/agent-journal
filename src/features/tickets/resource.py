@@ -65,6 +65,7 @@ class Ticket(Placed, Resource):
         Field(FLAG, False, name="halted"),
         Field(NUMBER, 0, name="restarts"),
         Field(NUMBER, 0.0, name="told"),
+        Field(NUMBER, 0.0, name="handed_in_at"),
         Field(NUMBER, 0.0, name="agent_seen"),
         Field(LIST, list, name="covers"),
         Field(NUMBER, 0, name="sent_back"),
