@@ -15,7 +15,7 @@ from controllers.types import Messages, Nudges
 from engine.record import Record
 from expects import Given
 from expects.playing import Seen, World
-from features.parts import Context
+from features.parts import AgentContext, Context
 from resources.base import Refused, SYSTEM
 from tests import isolation
 
@@ -80,7 +80,8 @@ def rows_now(record: Record) -> tuple:
 def handled(promise, given: Given, record: Record, world: World) -> None:
     """A 2.x handler, through the entry the bus uses: its own handle, with a Context over the record. The Context carries an agent when the Given names one, since most handlers read it."""
     event, was = given.on, text_of(given.on)
-    promise.part.handle(Context.of(promise.feature, record, speaking(record, given)), event)
+    row = speaking(record, given)
+    promise.part.handle((AgentContext if row else Context).of(promise.feature, record, row), event)
     world.seen.changed = text_of(event) if text_of(event) != was else None
     world.seen.kept = not stopped(event)
 
@@ -112,8 +113,10 @@ def refused_before_the_write(promise, given: Given, record: Record, world: World
 def commanded(promise, given: Given, record: Record, world: World) -> None:
     """A command, through its own run: the controller it is on, then the arguments the Given states."""
     controller, *arguments = given.on
-    answer = promise.part.run(Context.of(promise.feature, record), controller(record, actor=SYSTEM), *arguments)
-    world.seen.answered = answer
+    try:
+        world.seen.answered = promise.part.run(Context.of(promise.feature, record), controller(record, actor=SYSTEM), *arguments)
+    except Refused as refusal:
+        world.seen.refused = str(refusal)
 
 
 def answered_a_hook(promise, given: Given, record: Record, world: World) -> None:
