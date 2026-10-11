@@ -420,13 +420,10 @@ def warm_hooks() -> None:
 
 
 def warm_board(root: Path) -> None:
-    """Builds the to-do board of the default environment once, so the first board asked for does not read the indexes and load the formatters it needs; a failure leaves the first board slower."""
-    from engine.record import Record
-    from features.kanban.board import build
-    from features.parts import Context
+    """Asks for the to-do board of the default environment once, by the route a session asks on, so the first real board does not pay for the indexes and the formatters it meets first; a failure here only leaves that board slower."""
+    env = default_env(root)
     try:
-        journal = Context.of(features.FEATURES["kanban"], Record(root, default_env(root))).journal
-        build(journal, 0, 0, "")
+        dispatch("POST", "/api/run", root, {"actor": "agent", "env": env, "session": "warm"}, {"_raw": b"todo\0board"})
     except Exception:
         traceback.print_exc()
 
