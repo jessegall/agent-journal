@@ -1,6 +1,7 @@
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSending, ClockTicked
-from expects import Given, Kept, Nudged, Refused, Unchanged
+from engine.events.resources import AnyEvent
+from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
 from features.base import Feature
 from features.sequences.resource import Sequence
 from providers.payload import BashCall
@@ -37,6 +38,19 @@ def sending(text: str) -> AgentMessageSending:
     return AgentMessageSending(agent=1, data={"text": text, "turn": "turn-1"})
 
 
+def on_creating(starts_on: str, **data) -> Sequence:
+    return Sequence(n=4, title="Triage a to-do", sections=[{"title": "Look", "body": "Read it."}], data={"starts_on": starts_on, **data})
+
+
+class AtStepOne:
+    def __eq__(self, run) -> bool:
+        return run["step"] == 1
+
+
+def todo(action: str, actor: str = USER) -> AnyEvent:
+    return AnyEvent(n=5, type="todo", action=action, actor=actor)
+
+
 def shell(command: str) -> BashCall:
     return BashCall.from_payload("Bash", {"command": command}, {})
 
@@ -49,7 +63,14 @@ class SequencesFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         STARTED_BY.add(None, Sequences)
-        journal.events.handler(StartOnMoment())
+        journal.events.handler(StartOnMoment(), expects=[
+            Given(todo("created"), rows=[on_creating("todo.created")]) >> Updated(Sequence(n=4), runs={"t|todo:5": AtStepOne()}),
+            Given(todo("created"), rows=[on_creating("plan.created")]) >> Unchanged(),
+            Given(AnyEvent(n=4, type="sequence", action="created", actor=USER), rows=[on_creating("sequence.created")]) >> Unchanged(),
+            Given(todo("created"), rows=[on_creating("todo.created", started_by="agent")]) >> Unchanged(),
+            Given(todo("created"), rows=[on_creating("todo.created", only_when_idle=True), release()]) >> Unchanged(),
+            Given(todo("renamed"), rows=[on_creating("todo.created")]) >> Unchanged(),
+        ])
         journal.events.handler(StartOnTrigger())
         journal.events.handler(DispatchAgainOnAnswer())
         journal.agent.interceptor(HoldJournalWritesForTheStep(), expects=[
@@ -61,7 +82,11 @@ class SequencesFeature(Feature):
             Given(shell("journal sequence next 4"), rows=[release()]) >> Kept(),
             Given(shell("git status"), rows=[release()]) >> Kept(),
         ])
-        journal.events.handler(EndWithItsRow())
+        journal.events.handler(EndWithItsRow(), expects=[
+            Given(todo("deleted"), rows=[Sequence(n=4, title="Triage a to-do", data={"runs": {"t|todo:5": {"step": 1, "at": 1.0}}})]) >> Updated(Sequence(n=4), runs={}),
+            Given(todo("deleted"), rows=[Sequence(n=4, title="Triage a to-do", data={"runs": {"t|todo:6": {"step": 1, "at": 1.0}}})]) >> Unchanged(),
+            Given(todo("completed"), rows=[Sequence(n=4, title="Triage a to-do", data={"runs": {"t|todo:5": {"step": 1, "at": 1.0}}})]) >> Unchanged(),
+        ])
         journal.events.handler(HandStepToAgent(), expects=[
             Given(MOVED, rows=[release(), AGENT_ROW]) >> Nudged("step"),
             Given(MOVED, rows=[release(followed=1), AGENT_ROW]) >> Unchanged(),
