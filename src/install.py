@@ -573,7 +573,9 @@ def finish(project: Path, root: Path) -> list[str]:
         done += configure(project, root)
     loaded()
     from engine.package import fetch_free_threaded
-    done += [line for line in [fetch_free_threaded()] if line]
+    stepping(root, "Fetching a Python for the server")
+    with timed(root, "fetch a Python the server answers on every core with"):
+        done += [line for line in [fetch_free_threaded()] if line]
     stepping(root, "Migrating the record")
     fresh = not (root / "migrations.json").is_file()
     if loaded().migrations_pending(root):

@@ -135,7 +135,7 @@ def test_an_answered_question_leaves_the_notifications_panel_and_marks_the_chat_
     assert pressed == [(2, "B", 2), (0, "Rhea", 0)], \
         "an answer is pressed into the question the agent stands at on its screen: the option's number, or the words in the free choice"
     from providers import DRIVERS
-    assert (b"Entertoselect" in DRIVERS["claude"].ASKING, hasattr(DRIVERS["claude"], "answer_prompt")), \
+    assert (b"Entertoselect" in DRIVERS["claude"].ASKING, hasattr(DRIVERS["claude"], "answer_prompt")) == (True, True), \
         "Claude's own question prompt is seen on its screen, and every driver can answer one"
 
 

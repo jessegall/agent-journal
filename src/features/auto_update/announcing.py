@@ -26,6 +26,9 @@ def announce(root: Path, version: str = "") -> str:
         return ""
     record = Record(Path(root), default_env(Path(root)))
     brief = f"The journal went from {before} to {version}." if before else f"The journal updated to {version}."
+    took = runtime.update_steps(root).said()
+    if took:
+        brief += f" {took}"
     if location:
         brief += f" Managed files from before the update were copied to {location}."
     Notifications(record, actor=SYSTEM)._logged(f"Journal updated to {version}", brief=brief,

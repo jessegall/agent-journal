@@ -2,6 +2,7 @@ import os
 import json
 import threading
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 from engine.git import config_changed_at, git_user_name
@@ -100,6 +101,65 @@ def record_step(root: Path, step: str, seconds: float, cpu: float = 0.0, version
             write_text(file, "\n".join(kept) + "\n")
     except OSError:
         return
+
+
+@dataclass(frozen=True)
+class Step:
+    """One recorded step of an update: what it was and how long it took."""
+
+    step: str
+    seconds: float
+
+    @property
+    def is_a_mark(self) -> bool:
+        """Says whether its figure is the time since the server began rather than the step's own, as a start's marks are: they overlap, so they are never added up."""
+        return self.step.startswith(("start:", "restart:"))
+
+    def said(self) -> str:
+        return f"{self.step} ({self.seconds:.1f}s)"
+
+
+@dataclass(frozen=True)
+class Update:
+    """How long the last update took: the steps that ran one after another, the restart and warm-up they ended in, and the slowest of the steps."""
+
+    installing: float
+    restarting: float
+    slowest: tuple[Step, ...]
+
+    @property
+    def seconds(self) -> float:
+        return self.installing + self.restarting
+
+    def said(self) -> str:
+        """What the update took, in words for the user."""
+        if not self.seconds:
+            return ""
+        took = (f"The update took {self.seconds:.0f} seconds: {self.installing:.0f} to install the files "
+                f"and {self.restarting:.0f} for the server to restart and warm up.")
+        if not self.slowest:
+            return took
+        return f"{took} The slowest steps were {', '.join(step.said() for step in self.slowest)}."
+
+
+FIRST_STEP = "copy the new files"
+SLOWEST_SAID = 3
+
+
+def update_steps(root: Path) -> Update:
+    """How long the update that just finished took, read from the step file: every step since it copied the new files, and the marks the start that followed wrote."""
+    try:
+        rows = [json.loads(line) for line in (folder(root) / STEP_TIMES).read_text().splitlines() if line]
+    except (OSError, ValueError):
+        return Update(0.0, 0.0, ())
+    copied = [index for index, row in enumerate(rows) if row.get("step") == FIRST_STEP]
+    if not copied:
+        return Update(0.0, 0.0, ())
+    steps = [Step(row.get("step", ""), row.get("seconds", 0.0)) for row in rows[copied[-1]:]]
+    ran = [step for step in steps if not step.is_a_mark]
+    marks = [step.seconds for step in steps if step.is_a_mark]
+    slowest = sorted(ran, key=lambda step: step.seconds, reverse=True)[:SLOWEST_SAID]
+    return Update(sum(step.seconds for step in ran), max(marks, default=0.0), tuple(slowest))
 
 
 def channel_queue(root: Path, pid: int) -> Path:

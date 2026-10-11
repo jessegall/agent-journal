@@ -236,7 +236,6 @@ def serve(root: Path, port: int = DEFAULT_PORT) -> ThreadingHTTPServer:
         print(f"journal: this journal is already served at {other}", flush=True)
         raise SystemExit(0)
     boot(root)
-    announce(root)
     features.FEATURES["plugins"].host(root)
     server = JournalServer(("127.0.0.1", port), Handler)
     remember(root, server.server_address[1])
@@ -473,6 +472,7 @@ def warmed(root: Path, warm: threading.Event, began: float = BEGAN) -> None:
     except Exception:
         traceback.print_exc()
         os._exit(1)
+    announce(root)
     settle_agents(root)
     pruning = threading.Timer(QUICK, prune_builds, (root,))
     pruning.daemon = True

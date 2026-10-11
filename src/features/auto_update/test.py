@@ -390,6 +390,14 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     copy_note = record.root / "runtime" / LEGACY_COPY_MARKER
     copy_note.parent.mkdir(parents=True, exist_ok=True)
     copy_note.write_text(".journal/attic/before-update-1.0.0-123")
+    from engine import runtime
+    for step, seconds in [("copy the new files", 1.0), ("build the archive", 4.0), ("run the migrations", 2.0),
+                          ("start: rows warm", 9.0), ("start: until everything is warm", 9.0)]:
+        runtime.record_step(record.root, step, seconds, 0.0, "1.0.1")
+    took = runtime.update_steps(record.root)
+    assert (took.installing, took.restarting, [one.step for one in took.slowest]) == \
+        (7.0, 9.0, ["build the archive", "run the migrations", "copy the new files"]), \
+        "the steps of an update are added up, the marks a start writes overlap so the longest of them counts once, and the slowest steps come first"
     assert announce(record.root, "1.0.1") == "1.0.1"
     from engine.runtime import default_env
     from engine.record import Record
@@ -405,6 +413,8 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     assert (len(notified), "user" in notified[0].seen) == (1, True), "announced once, already seen"
     assert ".journal/attic/before-update-1.0.0-123" in notified[0].brief and not copy_note.exists(), \
         "the update notice names the copy of legacy managed files once"
+    assert "The update took 16 seconds: 7 to install the files and 9 for the server to restart and warm up." in notified[0].brief, \
+        "the update notice says what the update took, so the step file is not something the user has to know about"
 
 
 def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypatch):
