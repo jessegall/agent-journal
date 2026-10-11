@@ -43,9 +43,18 @@ def held(row) -> dict:
     return {**own, **(own.get("data") or {})}
 
 
+def contains(got, want) -> bool:
+    """Whether a value holds what was stated of it: a dict by the keys named, a list item by item, anything else exactly. What the journal fills in beside is never stated."""
+    if isinstance(want, dict):
+        return isinstance(got, dict) and all(key in got and contains(got[key], value) for key, value in want.items())
+    if isinstance(want, (list, tuple)):
+        return isinstance(got, (list, tuple)) and len(got) == len(want) and all(contains(one, other) for one, other in zip(got, want))
+    return got == want
+
+
 def matches(row, wanted: dict) -> bool:
     found = held(row)
-    return all(found.get(name) == value for name, value in wanted.items())
+    return all(name in found and contains(found[name], value) for name, value in wanted.items())
 
 
 def named(row) -> str:

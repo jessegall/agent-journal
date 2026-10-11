@@ -1,5 +1,9 @@
+from controllers.types import Agents
+from engine.events.agents import AgentReported
+from expects import Answered, Given, Unchanged, Updated
 from features.base import Feature
 from features.journal import Journal
+from resources.types import AgentRow
 from features.status_bar.details import StatusLineDetails
 from features.status_bar.handlers import RecordWhatItDoes, RefreshUsage, WriteBar
 from features.status_bar.commands import ShowBar
@@ -11,7 +15,12 @@ class StatusLine(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.routes.add(get_bar)
-        journal.commands.add("agent", ShowBar())
+        journal.commands.add("agent", ShowBar(), expects=[Given((Agents,)) >> Answered({"queue": []})])
         journal.events.handler(WriteBar())
-        journal.events.handler(RecordWhatItDoes())
-        journal.events.handler(RefreshUsage())
+        journal.events.handler(RecordWhatItDoes(), expects=[
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, data={"doing": "Reading orchestra.js"})]) >> Updated(AgentRow(n=1), doing=""),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1)]) >> Unchanged(),
+        ])
+        journal.events.handler(RefreshUsage(), expects=[
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1)]) >> Unchanged(),
+        ])

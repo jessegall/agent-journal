@@ -9,6 +9,7 @@ the providers. Each kind has one entry and no kind has two, so the run and the e
 import tempfile
 import time
 from contextlib import contextmanager
+from types import SimpleNamespace
 from pathlib import Path
 
 import commands.cli  # noqa: F401  wires the command line, as every process that runs the journal does
@@ -97,6 +98,12 @@ def formatted(promise, given: Given, record: Record, world: World) -> None:
     world.seen.changed = promise.part.format(Context.of(promise.feature, record), given.on)
 
 
+def provider_of(agent):
+    """The provider an agent row names, as the hook would carry it, or none when the Given names an agent with no provider."""
+    from providers import PROVIDERS
+    return PROVIDERS[agent.provider]() if agent is not None and agent.provider in PROVIDERS else None
+
+
 def intercepted(promise, given: Given, record: Record, world: World) -> None:
     """An interceptor, through its own intercept. It answers a refusal, or nothing when it lets the call through."""
     why = promise.part.intercept(contexted(promise, given, record), given.on)
@@ -148,20 +155,29 @@ def text_of(event) -> str | None:
     return data.get("text") if isinstance(data, dict) else None
 
 
-CREATED = "created"
-
-
-def rows_touched(record: Record, since: int, made: bool) -> list:
-    """The rows the play made, or the rows it changed, read back from the record itself. The event log says WHICH rows moved; the rows say what they now hold, and an expectation is written about the row.
-
-    Every action but one changes a row that was already there - linked, commented, completed, reopened - so what an expectation calls Updated is any of them, not the one spelt 'updated'."""
+def rows_held(record: Record) -> dict:
+    """Every row the record holds, by type and number, with what it says now. The play is read by comparing this before and after, so a write that emits no event is seen too."""
     from controllers.types import CONTROLLERS
-    touched = []
-    for event in record.event_log.events(since):
-        if (event.action == CREATED) is not made or event.type not in CONTROLLERS:
-            continue
-        touched.append(CONTROLLERS[event.type](record, actor=SYSTEM).rows.peek(event.n))
-    return touched
+    held = {}
+    for kind, controller in CONTROLLERS.items():
+        for row in controller(record, actor=SYSTEM).rows.every():
+            held[kind, row.n] = (repr((row.title, row.abstract, row.brief, row.sections, row.refs, row.seen, {key: value for key, value in row.data.items() if value}, row.outcome, bool(row.completed))), row)
+    return held
+
+
+def rows_touched(before: dict, after: dict) -> tuple[list, list]:
+    """The rows the play created, and the rows it changed. An expectation is written about the row, so the rows themselves are handed back."""
+    wrote = [row for key, (_, row) in after.items() if key not in before]
+    updated = [row for key, (said, row) in after.items() if key in before and before[key][0] != said]
+    return wrote, updated
+
+
+def held_against_the_agents(record: Record) -> str | None:
+    """Why the agents' writes are held after the play, read from the gate files the engine itself reads."""
+    from controllers.types import Agents
+    from engine.gates import holds
+    whys = [one.why for row in Agents(record, actor=SYSTEM).rows.standing() for one in holds(record, row.title)]
+    return whys[0] if whys else None
 
 
 @contextmanager
@@ -181,12 +197,12 @@ def played(promise, expectation) -> Seen:
         raise NoEntryForThisKind.of(promise.kind)
     given = expectation.given
     record, world = scratch(given), World.of(given)
-    world.seen.before, since = rows_now(record), record.event_log.last_id()
+    world.seen.before, held = rows_now(record), rows_held(record)
     with at_the_givens_hour(given):
         ENTRIES[promise.kind](promise, given, record, world)
     world.seen.after = rows_now(record)
     world.seen.said, world.seen.nudged = what_was_said(record)
     world.seen.remembered = record.state(promise.feature.name).all()
-    world.seen.wrote = rows_touched(record, since, made=True)
-    world.seen.updated = rows_touched(record, since, made=False)
+    world.seen.wrote, world.seen.updated = rows_touched(held, rows_held(record))
+    world.seen.held = held_against_the_agents(record)
     return world.seen
