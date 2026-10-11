@@ -217,6 +217,15 @@ def test_a_write_locks_its_repository_for_a_moment_a_read_waits_for_it_without_l
         each.join(8)
     assert (failures, time.monotonic() - began < 4, (record.root / "migrated.txt").exists(), (record.root / "written.txt").exists()) == ([], True, True, True), \
         "a write that reaches the repository during a migration waits for it before it takes any lock, so the migration, which writes under the same locks, never waits for a writer that waits for it"
+    with locks.held_file(record.root / "apart.lock"):
+        try:
+            with Record(record.root, record.env).locked():
+                pass
+        except locks.LockOrder as error:
+            ordered = error
+        else:
+            ordered = None
+    assert ordered is not None, "a write that takes the record lock while another lock is held, instead of entering through the shared write hold first, is refused in the tests"
 
 
 def test_an_engine_asked_with_a_signal_looks_at_its_threads_and_names_the_functions_the_time_goes_to():

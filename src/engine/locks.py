@@ -28,6 +28,14 @@ class RepositoryBusy(TimeoutError):
         return cls(f"the repository {path.parent.name} stayed locked by another write for {LOCK_WAIT:g} seconds; this write gave up and can be tried again")
 
 
+class LockOrder(RuntimeError):
+    """A thread holding a lock of its own asked to join the shared write hold: a migration holding the hold exclusively would wait for that lock, and the thread for the hold."""
+
+    @classmethod
+    def of(cls, path: str) -> "LockOrder":
+        return cls(f"the shared write hold {path} was joined after another lock was taken; every write enters through locks.writing first")
+
+
 class WriteInProgress:
     def __init__(self) -> None:
         self.thread = threading.get_ident()
@@ -53,6 +61,16 @@ def writing_to(key: str):
         gate.done.set()
 
 
+@contextmanager
+def locked_apart():
+    """Marks a lock taken outside the write funnel; joining the shared write hold while one is held is a lock-order inversion."""
+    HOLDING.apart = getattr(HOLDING, "apart", 0) + 1
+    try:
+        yield
+    finally:
+        HOLDING.apart -= 1
+
+
 def after_writes(key: str) -> None:
     """Lets a read that comes during another thread's write to the repository wait until that write has finished; a read takes no lock and waits for no other read, and with no write under way it costs one look at an empty table. A thread that holds a repository lock of its own does not wait: the write it would wait for may be waiting for that very lock."""
     gate = WRITING.get(key)
@@ -72,11 +90,15 @@ class SharedWrites:
 
     @contextmanager
     def joined(self):
+        if getattr(HOLDING, "apart", 0) and not getattr(HOLDING, "joined", 0) and "PYTEST_CURRENT_TEST" in os.environ:
+            raise LockOrder.of(self.held.name)
         with waits.waited("writes"):
             wait_for(self.joined_now, self.held.name)
+        HOLDING.joined = getattr(HOLDING, "joined", 0) + 1
         try:
             yield
         finally:
+            HOLDING.joined -= 1
             with self.guard:
                 self.writers -= 1
                 if not self.writers:
@@ -237,6 +259,7 @@ def held_file(path: Path):
         held = kept.current()
         acquire(held, fcntl.LOCK_EX)
         try:
-            yield held
+            with locked_apart():
+                yield held
         finally:
             fcntl.flock(held, fcntl.LOCK_UN)
