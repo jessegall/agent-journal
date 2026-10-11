@@ -18,7 +18,7 @@ from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given,
                      exited, nothing)
 
 OUTCOME_WORDS = (Dispatches, Wrote, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Answered)
-GIVEN_ARGUMENTS = ("on", "rows", "settings", "clock", "ids", "chat", "commands", "files", "processes", "providers")
+GIVEN_ARGUMENTS = ("on", "rows", "settings", "remembered", "clock", "ids", "chat", "commands", "files", "processes", "providers")
 SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands")
 
 
