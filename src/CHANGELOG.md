@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.270.0 — Automatic updates are yours to choose, and the chat shows a sequence's ends
+
+- Automatic updates ship OFF for a journal installed from now on, so nobody is opted in without choosing. A journal that already had them keeps them: a migration records the choice before the default changes under it, and an explicit off stays off.
+- The chat's default view shows a sequence starting and finishing, and leaves out each step in between. Both switches are in the chat's dropdown, so you can have every step back or none at all. A card written before this still reads by its icon.
+- A build carries its own version inside its archive and reports that, so a process left running on an older build never names the installed one as its own.
+- Three lookups that raised where a row had simply gone now read it as missing: the small caches threw when one thread dropped a key another was reading, the store of rows a hook has changed asked whether it held a row and then asked for it as two steps, and a lookup by title trusted an index the folder no longer matched. All three were reported from a workspace running against this journal.
+- Whether a ticket's branch has landed is one question again, asked of the reading it is given. Two ways to ask it had drifted apart, and a merged plan stopped closing its tickets.
+- The landing sweep reads each repository from git once and answers every ticket from that reading, instead of starting a git process for each ticket and each question. On a project with fifty tickets that sweep was most of an engine's work, once a minute.
+- Every write enters through one lock funnel, a reader that changes nothing no longer copies the row, the folder watch costs the same whatever the number of environments, the folder of a session whose agent ended is pruned after six hours, and a plugin whose refusal socket is down no longer makes the hook wait for a process to start.
+- The viewer keeps one page size rather than four copies of the same number, and each settings line names what is not connected rather than two of them beginning with the same two words.
+
 ## 2.269.15 — A test leaves the process as it found it
 
 - A server stops its pool of workers when it is closed, and every test starts and ends with the process fresh: nothing watched, nothing deferred, no agent row waiting, no server left open. A run of the core flows used to leave a hundred idle threads behind, and state one test left was the cause of every test that passed alone and failed in a run.
