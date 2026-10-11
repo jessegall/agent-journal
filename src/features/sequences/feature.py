@@ -1,7 +1,11 @@
-from expects import Given, Kept, Refused
+from engine.events.agents import AgentReported
+from engine.events.engine import AgentMessageSending, ClockTicked
+from expects import Given, Kept, Nudged, Refused, Unchanged
 from features.base import Feature
 from features.sequences.resource import Sequence
 from providers.payload import BashCall
+from resources.base import USER
+from resources.types import AgentRow
 from features.journal import Journal
 from features.sending import Nudge
 from features.sequences.controller import Sequences
@@ -10,7 +14,7 @@ from features.triggers.controller import STARTED_BY
 from features.sequences.details import UNFINISHED
 from features.sequences.shipped import SEQUENCES
 from features.sequences.handlers import (DispatchAgainOnAnswer, EndWithItsRow, HandStepToAgent, HoldAStalledStep, HoldJournalWritesForTheStep, KeepOutOfTheChat,
-                                         ReleaseStaleStep, ResetEditsOnStep, StartOnMoment, StartOnTrigger, standing_steps, step_pace)
+                                         ReleaseStaleStep, ResetEditsOnStep, SequenceMoved, StartOnMoment, StartOnTrigger, standing_steps, step_pace)
 
 __all__ = ["Sequences"]
 
@@ -18,6 +22,19 @@ __all__ = ["Sequences"]
 def release(step: int = 1, **run) -> Sequence:
     return Sequence(n=4, title="Cutting a patch release", sections=[{"title": "Tag it", "body": "Run journal version tag to cut the tag."}],
                     data={"runs": {"t|by hand": {"step": step, "at": 1.0, **run}}})
+
+
+AGENT_ROW = AgentRow(n=1, title="claude-1")
+MOVED = SequenceMoved(n=4, type="sequence", action="updated", actor=USER)
+
+
+def talking(place: str = "the viewer") -> Sequence:
+    return Sequence(n=4, title="Writing an update", sections=[{"title": "Write it", "body": "Write the update."}],
+                    data={"talks_in": place, "runs": {"t|by hand": {"step": 1, "at": 1.0}}})
+
+
+def sending(text: str) -> AgentMessageSending:
+    return AgentMessageSending(agent=1, data={"text": text, "turn": "turn-1"})
 
 
 def shell(command: str) -> BashCall:
@@ -45,8 +62,24 @@ class SequencesFeature(Feature):
             Given(shell("git status"), rows=[release()]) >> Kept(),
         ])
         journal.events.handler(EndWithItsRow())
-        journal.events.handler(HandStepToAgent())
-        journal.events.handler(HoldAStalledStep())
+        journal.events.handler(HandStepToAgent(), expects=[
+            Given(MOVED, rows=[release(), AGENT_ROW]) >> Nudged("step"),
+            Given(MOVED, rows=[release(followed=1), AGENT_ROW]) >> Unchanged(),
+            Given(SequenceMoved(n=4, type="sequence", action="deleted", actor=USER), rows=[AGENT_ROW]) >> Unchanged(),
+            Given(MOVED, rows=[release()]) >> Unchanged(),
+        ])
+        journal.events.handler(HoldAStalledStep(), expects=[
+            Given(AgentReported(agent=1), rows=[release(followed=1), AGENT_ROW]) >> Unchanged(),
+            Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"wrote": True})]) >> Unchanged(),
+        ])
         journal.events.handler(ResetEditsOnStep())
-        journal.events.handler(ReleaseStaleStep())
-        journal.events.handler(KeepOutOfTheChat())
+        journal.events.handler(ReleaseStaleStep(), expects=[
+            Given(ClockTicked(agent=1), rows=[release(), AGENT_ROW]) >> Unchanged(),
+            Given(ClockTicked(agent=1), rows=[AGENT_ROW]) >> Unchanged(),
+        ])
+        journal.events.handler(KeepOutOfTheChat(), expects=[
+            Given(sending("Here is the update."), rows=[talking(), AGENT_ROW]) >> Nudged("in_chat"),
+            Given(sending("Here is the update."), rows=[talking(""), AGENT_ROW]) >> Unchanged(),
+            Given(sending("   "), rows=[talking(), AGENT_ROW]) >> Unchanged(),
+            Given(sending("Here is the update."), rows=[AGENT_ROW]) >> Unchanged(),
+        ])
