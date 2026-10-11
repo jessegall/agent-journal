@@ -1,10 +1,56 @@
+import ctypes
+import ctypes.util
 import subprocess
+import sys
 import threading
+from dataclasses import dataclass
+from pathlib import Path
 
 from engine.keeper import teardown
 from install import git_env
 
 GRACE = 1.0
+PROC_PIDTBSDINFO = 3
+
+
+@dataclass(frozen=True)
+class Process:
+    pid: int
+    parent: int
+    name: str
+
+
+class BsdInfo(ctypes.Structure):
+    """The kernel's struct proc_bsdinfo, which proc_pidinfo fills for PROC_PIDTBSDINFO."""
+
+    _fields_ = [("flags", ctypes.c_uint32), ("status", ctypes.c_uint32), ("xstatus", ctypes.c_uint32), ("pid", ctypes.c_uint32),
+                ("ppid", ctypes.c_uint32), ("uid", ctypes.c_uint32), ("gid", ctypes.c_uint32), ("ruid", ctypes.c_uint32),
+                ("rgid", ctypes.c_uint32), ("svuid", ctypes.c_uint32), ("svgid", ctypes.c_uint32), ("rfu", ctypes.c_uint32),
+                ("comm", ctypes.c_char * 16), ("name", ctypes.c_char * 32), ("nfiles", ctypes.c_uint32), ("pgid", ctypes.c_uint32),
+                ("pjobc", ctypes.c_uint32), ("e_tdev", ctypes.c_uint32), ("e_tpgid", ctypes.c_uint32), ("nice", ctypes.c_int32),
+                ("start_tvsec", ctypes.c_uint64), ("start_tvusec", ctypes.c_uint64)]
+
+
+def from_libproc(pid: int) -> Process | None:
+    """A running process's parent and command name, asked of the macOS kernel rather than of ps; nothing when it has gone."""
+    info = BsdInfo()
+    if LIBPROC.proc_pidinfo(pid, PROC_PIDTBSDINFO, ctypes.c_uint64(0), ctypes.byref(info), ctypes.sizeof(info)) != ctypes.sizeof(info):
+        return None
+    return Process(pid, info.ppid, info.comm.decode(errors="replace"))
+
+
+def from_proc_stat(pid: int) -> Process | None:
+    """The same, read from Linux's /proc."""
+    try:
+        line = Path(f"/proc/{pid}/stat").read_text()
+    except OSError:
+        return None
+    head, _, rest = line.rpartition(")")
+    return Process(pid, int(rest.split()[1]), head.partition("(")[2])
+
+
+LIBPROC = ctypes.CDLL(ctypes.util.find_library("proc")) if sys.platform == "darwin" else None
+process = from_libproc if LIBPROC else from_proc_stat
 
 
 def ran(args: list[str], cwd=None, timeout: float = 5, stdin: str | None = None, env: dict | None = None) -> subprocess.CompletedProcess | None:

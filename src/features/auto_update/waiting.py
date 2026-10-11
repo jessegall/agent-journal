@@ -1,10 +1,10 @@
 import os
 import re
-import subprocess
 import time
 from collections.abc import Callable
 
 from controllers.types import Agents
+from engine.proc import process
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.wording import clipped
@@ -18,17 +18,13 @@ UPGRADE = re.compile(r"\b(?:journal(?:\.py)?|install\.py)\b.*\bupgrade\b")
 JOURNAL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s")
 
 
-def parent_of(pid: int) -> int:
-    found = subprocess.run(["ps", "-o", "ppid=", "-p", str(pid)], capture_output=True, text=True, timeout=5).stdout.strip()
-    return int(found) if found.isdigit() else 0
-
-
 def ancestors() -> set[int]:
     """The processes this one runs under, up to the first."""
     found, pid = set(), os.getppid()
     while pid > 1 and pid not in found:
         found.add(pid)
-        pid = parent_of(pid)
+        current = process(pid)
+        pid = current.parent if current else 0
     return found
 
 

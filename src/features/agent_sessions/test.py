@@ -575,7 +575,8 @@ def test_a_background_subagent_stops_running_when_its_completion_arrives(tmp_pat
         (builds / name).write_text(build)
     assert (held_builds(record.root), [p.name for p in builds.iterdir()]) == ({"mine.pyz"}, [str(os.getpid())]), \
         "a build is held only by a live process, and every other marker is cleared"
-    monkeypatch.setattr("engine.sessions.run", lambda *args, **kwargs: "4242 -zsh\n")
+    from engine.proc import Process
+    monkeypatch.setattr("engine.sessions.process", lambda pid: Process(pid, 4242, "-zsh"))
     assert agent_pid(77) == 4242, "a chain of shells is climbed only so far"
     sessions.write("claude-2", environment="spare", provider="claude", since=1.0)
     assert sessions.choose("claude-3", "claude", "main", set()) == "spare", "a new session takes the environment an ended one left behind"

@@ -8,7 +8,7 @@ from resources.fields import Loaded
 
 from resources.types import TYPES
 from engine.stored import read_json, write_json, write_text
-from engine.proc import run
+from engine.proc import process
 from engine import locks, runtime, waits
 
 
@@ -89,13 +89,10 @@ def live(session: SessionRecord) -> bool:
 
 def agent_pid(pid: int) -> int:
     for _ in range(4):
-        try:
-            parent, name = run(["ps", "-o", "ppid=,comm=", "-p", str(pid)], timeout=2).split(None, 1)
-        except ValueError:
+        found = process(pid)
+        if found is None or found.name.lstrip("-") not in SHELLS:
             return pid
-        if Path(name.strip()).name.lstrip("-") not in SHELLS:
-            return pid
-        pid = int(parent)
+        pid = found.parent
     return pid
 
 
