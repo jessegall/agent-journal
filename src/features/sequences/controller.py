@@ -238,7 +238,10 @@ class Sequences(Controller):
         kind, _, n = RunKey.of(key).about.partition(":")
         if kind not in types_module.CONTROLLERS or not n.isdigit():
             return None
-        row = types_module.CONTROLLERS[kind](self.record, actor=SYSTEM).peek(int(n))
+        about = types_module.CONTROLLERS[kind](self.record, actor=SYSTEM)
+        if not about.rows.exists(int(n)):
+            return None
+        row = about.peek(int(n))
         return None if row.deleted else row
 
     def _check_finishable(self, r, key: str) -> None:
