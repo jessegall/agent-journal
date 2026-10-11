@@ -220,7 +220,7 @@ class HookBinding:
             f"A second session started in {env}", brief=f"Session {session} started in {env}, where session {holder} is already working. It waits in {side} until you answer. "
             f"Taking {env} over unbinds {holder} from it, and {session} holds it.",
             options=[{"title": f"Take over {env}", "description": f"{holder} is unbound from {env}, and {session} works there"},
-                     {"title": f"Stay in {side}", "description": f"{holder} keeps {env}"}])
+                     {"title": f"Stay in {side}", "description": f"{holder} keeps {env}"}], user_only=True)
         self.sessions.write(session, takeover={"environment": env, "question": question.n, "holder": holder})
         return side
 
