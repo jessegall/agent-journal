@@ -1,11 +1,9 @@
 import inspect
-from contextlib import nullcontext
 from typing import get_type_hints
 
 from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents
 from engine import bus
-from engine.developing import developing
 from engine.events.base import AgentEvent
 from engine.gates import CANCELERS, RESPONDERS, HookCall
 from engine.reach import Guard
@@ -16,7 +14,6 @@ from resources.base import SYSTEM, USER, Refused
 from features.routing import FEATURE_ROUTES
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE, REGISTERED, Answerer, Handler, Listener, Refuser, Registration
 from features.promises import PROMISED, Promise
-from expects.watching import WATCH
 
 
 def wanted(part, feature, record, row, timed: bool = True) -> bool:
@@ -37,11 +34,6 @@ def agent_row(record, n: int):
     return record.memo[key]
 
 
-def watched(promise, event, record):
-    """Where the journal develops itself, a handler's run is held to what its expectations say; elsewhere it runs as it is."""
-    return WATCH.around(promise, event, record) if developing(record.root.parent) else nullcontext()
-
-
 class Events:
     def __init__(self, feature):
         self.feature = feature
@@ -49,8 +41,7 @@ class Events:
 
     def handler(self, handler: Handler, expects=()) -> None:
         kind, feature = get_type_hints(handler.handle)["event"], self.feature
-        promise = Promise(feature, "handler", type(handler).__name__, handler, kind, tuple(expects))
-        PROMISED.add(promise)
+        PROMISED.add(Promise(feature, "handler", type(handler).__name__, handler, kind, tuple(expects)))
 
         def run(event, record) -> None:
             typed = kind.read(event)
@@ -60,8 +51,7 @@ class Events:
                 return
             row = agent_row(record, typed.agent) if isinstance(typed, AgentEvent) else None
             if wanted(handler, feature, record, row):
-                with watched(promise, typed, record):
-                    handler.handle(AgentContext.of(feature, record, row) if row else Context.of(feature, record), typed)
+                handler.handle(AgentContext.of(feature, record, row) if row else Context.of(feature, record), typed)
         self.names.append(kind.name())
         for pattern in kind.patterns(handler.hooks):
             bus.on(pattern, run, enabled=feature.enabled)

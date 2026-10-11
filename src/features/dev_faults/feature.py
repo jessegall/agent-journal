@@ -2,7 +2,6 @@ from functools import cached_property
 
 from engine.events.engine import Measured
 from expects import Given, Unchanged, Updated
-from expects.watching import BROKEN
 from features.base import Feature
 from features.journal import Journal
 from features.dev_faults.details import DevFaultsDetails
@@ -37,7 +36,6 @@ class DevFaults(Feature):
             Given(TodoCompleted(n=2, type="todo"), rows=[Todo(n=2, title="the header"), Notification(n=1, title=SLOW_TITLE, data={"times": 5})]) >> Unchanged(),
         ])
         journal.routes.add(get_diagnostics, post_clear_diagnostics)
-        BROKEN.add(self, self.reports.broken)
 
     @cached_property
     def reports(self) -> FaultReports:

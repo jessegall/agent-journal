@@ -89,10 +89,6 @@ class FaultReports:
         self.file(record, title, brief, kind=kind, target=name, worst=took)
         self.answer(record, title, brief)
 
-    def broken(self, record, title: str, brief: str) -> None:
-        """A handler that ran in the world an expectation states and did not do what it says: told like a slow request, once with its count."""
-        self.file(record, title, brief, kind="expectation", target=title)
-
     def answer(self, record, title: str, brief: str) -> None:
         """A first breach files its own to-do, and one seen over and over with no to-do open holds the agent's writes until one is filed."""
         fault = Notifications(record, actor=SYSTEM).rows.by_title(title, standing=True)
