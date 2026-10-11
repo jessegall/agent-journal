@@ -3,7 +3,9 @@ from engine.events.engine import AgentMessageSending, ClockTicked
 from engine.events.resources import AnyEvent
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
 from features.base import Feature
+from features.sequences.handlers import TriggerFired
 from features.sequences.resource import Sequence
+from features.triggers.resource import Trigger
 from providers.payload import BashCall
 from resources.base import USER
 from resources.types import AgentRow
@@ -71,7 +73,12 @@ class SequencesFeature(Feature):
             Given(todo("created"), rows=[on_creating("todo.created", only_when_idle=True), release()]) >> Unchanged(),
             Given(todo("renamed"), rows=[on_creating("todo.created")]) >> Unchanged(),
         ])
-        journal.events.handler(StartOnTrigger())
+        journal.events.handler(StartOnTrigger(), expects=[
+            Given(TriggerFired(n=2, type="trigger", action="fired", actor=USER, about="message:7"), rows=[Trigger(n=2, title="Triage", data={"does": "start", "words": ["triage"]}), on_creating("trigger:2")])
+                >> Updated(Sequence(n=4), runs={"t|message:7": AtStepOne()}),
+            Given(TriggerFired(n=2, type="trigger", action="fired", actor=USER, about="message:7"), rows=[Trigger(n=2, title="Triage", data={"does": "nudge", "words": ["triage"]}), on_creating("trigger:2")]) >> Unchanged(),
+            Given(TriggerFired(n=2, type="trigger", action="fired", actor=USER, about="message:7"), rows=[Trigger(n=2, title="Triage", data={"does": "start", "words": ["triage"]}), on_creating("trigger:3")]) >> Unchanged(),
+        ])
         journal.events.handler(DispatchAgainOnAnswer())
         journal.agent.interceptor(HoldJournalWritesForTheStep(), expects=[
             Given(shell('journal todo create "Later"'), rows=[release()]) >> Refused("sequence 4, Cutting a patch release, handed you step 1 - take it up with journal sequence follow 4 before any other write - then do what the step says and journal sequence next 4"),
