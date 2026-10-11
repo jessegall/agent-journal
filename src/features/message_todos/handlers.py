@@ -11,7 +11,7 @@ from resources.base import AGENT
 def todos_named(text: str) -> set[int]:
     names, found = named()
     mentions = (Mention.of(m, names) for m in found.finditer(text))
-    return {int(n) for said in mentions if said.name == "todo" and said.env is None for n in said.numbers}
+    return {int(n) for mention in mentions if mention.name == "todo" and mention.env is None for n in mention.numbers}
 
 
 class LinkTodosToTheirMessage(Handler):

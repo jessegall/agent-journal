@@ -128,11 +128,11 @@ class Checks(Controller):
     def _gated(self, n: int, message: str, paths: list[str]) -> None:
         try:
             self._ran(n)
-            told = self._landed(self.load(n), message, paths)
+            landed_text = self._landed(self.load(n), message, paths)
         except Exception:
             threw(self.record.root, self.record.env, f"gating on check {n}")
             return
-        Nudges(self.record, actor=SYSTEM).to_primary(titled(told.split("\n")[0]), told)
+        Nudges(self.record, actor=SYSTEM).to_primary(titled(landed_text.split("\n")[0]), landed_text)
 
     def _landed(self, check, message: str, paths: list[str]) -> str:
         if not check.last_run.ok:

@@ -55,11 +55,11 @@ class FaultReports:
             return
         times = int(standing.data["times"]) + 1 if standing else 1
         summary = f"{brief} Seen {plural(times, 'time')}."
-        told = {"told_uses": agent.uses} if agent else {}
+        agent_uses = {"told_uses": agent.uses} if agent else {}
         if standing:
-            rows.update(standing.n, brief=summary, times=times, **told, **data)
+            rows.update(standing.n, brief=summary, times=times, **agent_uses, **data)
         else:
-            self.feature.journal.log(record, "fault", title=title, summary=summary, times=times, send=self.send(record), **told, **data)
+            self.feature.journal.log(record, "fault", title=title, summary=summary, times=times, send=self.send(record), **agent_uses, **data)
         if agent:
             self.feature.journal.say(record, agent, "fault", title=title, summary=summary, send=self.send(record))
 
@@ -70,8 +70,8 @@ class FaultReports:
 
     @staticmethod
     def _due(standing, agent) -> bool:
-        told = standing.data.get("told_uses")
-        return bool(agent) and (told is None or agent.uses - int(told) >= TOLD_EVERY)
+        agent_uses = standing.data.get("told_uses")
+        return bool(agent) and (agent_uses is None or agent.uses - int(agent_uses) >= TOLD_EVERY)
 
     def slow(self, record, kind: str, name: str, took: float, working: float | None = None, garbage: float = 0.0, waiting: float = 0.0,
              after: float = 0.0, whole_reads: tuple[str, ...] = (), by: str = "") -> None:

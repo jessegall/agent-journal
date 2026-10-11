@@ -42,10 +42,10 @@ def status_file(root: Path, sid: str) -> Path:
 
 def holder(root: Path, sid: str) -> int:
     try:
-        said = lock_file(root, sid).read_text().strip()
+        locked_by = lock_file(root, sid).read_text().strip()
     except OSError:
         return 0
-    return int(said) if said.isdigit() else 0
+    return int(locked_by) if locked_by.isdigit() else 0
 
 
 def lock_file(root: Path, sid: str) -> Path:

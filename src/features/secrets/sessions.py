@@ -29,8 +29,8 @@ class BrowserLogins:
         subprocess.run(INSTALL_BROWSER, check=False, capture_output=True)
         opened = subprocess.run([*OPEN_BROWSER, f"--save-storage={saved}", url], check=False, capture_output=True, text=True)
         if not saved.is_file():
-            said = [line for line in opened.stderr.splitlines() if line.strip()]
-            raise Refused(f"no login was saved: {said[0].strip() if said else UNSAVED}")
+            error_lines = [line for line in opened.stderr.splitlines() if line.strip()]
+            raise Refused(f"no login was saved: {error_lines[0].strip() if error_lines else UNSAVED}")
         saved.chmod(0o600)
         return saved
 

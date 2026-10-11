@@ -190,8 +190,8 @@ class MemberLogins:
 
     def listed(self, gateway: Gateway, visit: Visit, login: KeptLogin) -> None:
         connected = gateway.connected(visit.vault.clock())
-        shown = [member for member in Roster(visit.vault).all() if login.is_owners() or member.has_joined()]
-        members = [{**member.shown_to(login.member), "connected": member.id in connected} for member in shown]
+        listed_members = [member for member in Roster(visit.vault).all() if login.is_owners() or member.has_joined()]
+        members = [{**member.shown_to(login.member), "connected": member.id in connected} for member in listed_members]
         return visit.json(200, {"owner": {"name": OWNER_NAME, "connected": OWNER_ID in connected}, "members": members})
 
     def invite(self, visit: Visit) -> None:

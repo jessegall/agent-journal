@@ -44,8 +44,8 @@ class Page:
         names, pattern = named()
 
         def linked(m) -> str:
-            said = Mention.of(m, names)
-            ref = said.ref(said.numbers[0])
+            mention = Mention.of(m, names)
+            ref = mention.ref(mention.numbers[0])
             return f'<a href="{self.href(ref)}">{m.group(0)}</a>' if ref in self.scope else m.group(0)
 
         return pattern.sub(linked, text)
@@ -114,8 +114,8 @@ class Page:
 
     def table(self, block: list[str]) -> str:
         rows = [[c.strip() for c in line.strip().strip("|").split("|")] for line in block]
-        shown = [cells for cells in rows if not all(set(c) <= set("-: ") for c in cells)]
-        return "<table>" + "".join("<tr>" + "".join(f"<td>{self.inline(c)}</td>" for c in cells) + "</tr>" for cells in shown) + "</table>"
+        body_rows = [cells for cells in rows if not all(set(c) <= set("-: ") for c in cells)]
+        return "<table>" + "".join("<tr>" + "".join(f"<td>{self.inline(c)}</td>" for c in cells) + "</tr>" for cells in body_rows) + "</table>"
 
     def row(self, r) -> str:
         ref = r.ref
@@ -147,8 +147,8 @@ class Page:
 
 def disposition(name: str) -> str:
     """How a file is handed over: a picture shows in place, anything else is downloaded."""
-    shown = "inline" if name.lower().endswith(PICTURES) else "attachment"
-    return f"{shown}; filename*=UTF-8''{quote(name)}"
+    body_rows = "inline" if name.lower().endswith(PICTURES) else "attachment"
+    return f"{body_rows}; filename*=UTF-8''{quote(name)}"
 
 
 def ending(expires: float) -> str:

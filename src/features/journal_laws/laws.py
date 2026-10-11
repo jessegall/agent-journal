@@ -46,9 +46,9 @@ NAMED = re.compile(r"^[A-Z][\w.,'-]*(?:\s+[\w.,'-]+){0,3}\s*:\s*\S")
 
 def laws(record=None) -> tuple[Law, ...]:
     voice = voice_in_use(record)
-    told = (f"{voice.naming} Every helper and subagent addresses you as {voice.agent_name} and never the user: "
+    address_rule = (f"{voice.naming} Every helper and subagent addresses you as {voice.agent_name} and never the user: "
             f"their reports are written to you.")
-    return tuple(replace(law, text=f"{law.text} {told}") if law.name == NAMING_LAW else law for law in LAWS)
+    return tuple(replace(law, text=f"{law.text} {address_rule}") if law.name == NAMING_LAW else law for law in LAWS)
 
 
 def naming_of(record=None) -> str:

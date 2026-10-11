@@ -116,12 +116,12 @@ class TicketCards:
         working: dict = {}
         for place, ticket in {ticket.work_environment: ticket for ticket in self._running()}.items():
             plan = self._plan_owner(place)
-            shown = {"plan": plan, "title": self._plans_here().load(plan).title} if plan else {"plan": 0, "title": ticket.title}
+            plan_label = {"plan": plan, "title": self._plans_here().load(plan).title} if plan else {"plan": 0, "title": ticket.title}
             todos = Todos(self.record.sibling(place), actor=SYSTEM)
             for todo in todos.rows.standing():
                 if todo.data.get("role") and todo.data.get("status") == "started":
                     working.setdefault((todo.data["domain"], todo.data["role"]), []).append(
-                        {"n": ticket.n, **shown, "env": todo.data.get("role_environment", ""), "worktree": place})
+                        {"n": ticket.n, **plan_label, "env": todo.data.get("role_environment", ""), "worktree": place})
         return working
 
     def _slots(self, running: list, sessions: dict) -> Slots:

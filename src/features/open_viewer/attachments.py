@@ -73,11 +73,11 @@ def matches(file: AttachedFile, words: list[str]) -> bool:
 def attachments_page(record, kind: FileKind = FileKind.ALL, shelf: str | None = None, search: str = "", last: int = FILES_PAGE, skip: int = 0) -> dict:
     """One page of the attached files, newest first, filtered on the server by kind (images or other), by what they are attached to and by the words searched; the counts cover the whole set."""
     every = attachments(record)
-    shown = [f for f in every if FileKind(kind).holds(f)]
+    held = [f for f in every if FileKind(kind).holds(f)]
     shelves: dict[str, int] = {}
-    for f in shown:
+    for f in held:
         shelves[f["type"]] = shelves.get(f["type"], 0) + 1
     words = search.lower().split()
-    found = [f for f in shown if (shelf is None or f["type"] == shelf) and matches(f, words)]
+    found = [f for f in held if (shelf is None or f["type"] == shelf) and matches(f, words)]
     return {"files": found[skip:skip + last], "more": len(found) > skip + last, "found": len(found),
             "counts": {"all": len(every), "images": sum(f["image"] for f in every), "other": sum(not f["image"] for f in every), "shelves": shelves}}

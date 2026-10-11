@@ -158,13 +158,13 @@ def newest_listed(controller, wanted: Listing, summaries: list) -> tuple[list[di
     """The rows of the usual listing, the newest page and the open rows with it, and whether older rows are left out."""
     last, hidden_listed = wanted.last, controller.resource.hidden_listed
     listable = lambda row: (hidden_listed or not row.get("hidden")) and row["updated"] > 0
-    shown = lambda row: not row["deleted"] and (wanted.completed or not row["completed"]) and listable(row)
+    is_listed = lambda row: not row["deleted"] and (wanted.completed or not row["completed"]) and listable(row)
     standing = controller.rows.standing_summaries()
     open_newest = newest_among(standing, last, listable)
     kept = open_newest
     if wanted.completed:
         open_rows = [row for row in standing if listable(row)] if controller.resource.listed_open else open_newest
-        kept = sorted({row["n"]: row for row in (*open_rows, *newest_among(summaries, last, shown))}.values(), key=lambda row: row["n"])
+        kept = sorted({row["n"]: row for row in (*open_rows, *newest_among(summaries, last, is_listed))}.values(), key=lambda row: row["n"])
     every, open_only = controller.rows.counts("listable", summaries)
     return kept, (every if wanted.completed else open_only) > len(kept)
 

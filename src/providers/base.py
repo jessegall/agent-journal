@@ -524,8 +524,8 @@ class Provider(ABC):
                 continue
             hooks = read_json(f, dict, {}).get("hooks") or {}
             if hooks:
-                shown = f"~/{f.relative_to(Path.home())}" if f.is_relative_to(Path.home()) and not f.is_relative_to(project) else str(f.relative_to(project))
-                found.append({"path": shown, "hooks": hooks})
+                display_path = f"~/{f.relative_to(Path.home())}" if f.is_relative_to(Path.home()) and not f.is_relative_to(project) else str(f.relative_to(project))
+                found.append({"path": display_path, "hooks": hooks})
         return found
 
     def set_hooks(self, project: Path, hooks: dict) -> dict:

@@ -90,8 +90,8 @@ class Sampler:
         if not self.last:
             return ""
         number, threads = self.last
-        shown = [f"thread {name}{' (this request)' if ident == self.mine else ''}:\n{unread_lines(summary)}" for ident, (name, summary) in threads.items()]
-        return (f"--- {number} x {SAMPLES_AT[number - 1] * 1000:.0f}ms into the request ---\n" + "\n".join(shown))[:STACKS_KEPT]
+        thread_lines = [f"thread {name}{' (this request)' if ident == self.mine else ''}:\n{unread_lines(summary)}" for ident, (name, summary) in threads.items()]
+        return (f"--- {number} x {SAMPLES_AT[number - 1] * 1000:.0f}ms into the request ---\n" + "\n".join(thread_lines))[:STACKS_KEPT]
 
     def due(self, now: float) -> bool:
         number = self.last[0] if self.last else 0

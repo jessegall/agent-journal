@@ -198,9 +198,9 @@ def feed(home: Record, phone, before: float = math.inf) -> Feed:
     found = faces(home, {item["ref"] for item in items})
     items = [{**item, "reactions": found.get(item["ref"], [])} for item in items]
     since = items[0]["created"] if items else before
-    shown = [mark for mark in marks(home, since) if mark["created"] < before and mark["shows"] not in away]
+    earlier_marks = [mark for mark in marks(home, since) if mark["created"] < before and mark["shows"] not in away]
     tasks = task_names(home) if any(item["data"].get("sent_to") for item in items) else {}
-    items = sorted([*({**item, "to": tasks.get(item["data"].get("sent_to"))} for item in items), *shown], key=lambda item: item["created"])
+    items = sorted([*({**item, "to": tasks.get(item["data"].get("sent_to"))} for item in items), *earlier_marks], key=lambda item: item["created"])
     return Feed(items=items, waiting=waiting(home, phone), agent=Agents(home, actor=SYSTEM).state(phone.environment), notices=notices(home),
                 running=running(home, phone.environment), plans=plan_strips(home))
 
@@ -334,11 +334,11 @@ def helper(home: Record, phone, n: int) -> dict:
     summary = lately_summarized(home.root)
     payload = next((found for found in summary["helpers"] if found["owner"] == row.ref), {})
     environment = HelperSnapshot.from_payload(payload)
-    shown = next(found for found in helpers_of(home, summary) if found["n"] == n)
+    earlier_marks = next(found for found in helpers_of(home, summary) if found["n"] == n)
     record = Record(home.root, row.environment)
     agent = Agents(record, actor=SYSTEM).primary()
     activity = [] if agent is None else Session.from_view(shaped(agent, record, VIEWER)).marks()[-5:][::-1]
-    return {**shown, "activity": activity, "running": bool(environment.agent.status and environment.agent.status != "stopped")}
+    return {**earlier_marks, "activity": activity, "running": bool(environment.agent.status and environment.agent.status != "stopped")}
 
 
 def task_names(home: Record) -> dict[str, str]:

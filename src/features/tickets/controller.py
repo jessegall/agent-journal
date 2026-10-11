@@ -110,8 +110,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     @action
     def screen(self, n: int, lines: int = SCREEN_LINES) -> str:
         ticket = self.load(n)
-        shown = [line.rstrip() for line in self._driver(ticket, "look at").screen(SCREEN_BYTES).replace("\r", "\n").splitlines() if line.strip()]
-        return "\n".join(shown[-int(lines):])
+        screen_lines = [line.rstrip() for line in self._driver(ticket, "look at").screen(SCREEN_BYTES).replace("\r", "\n").splitlines() if line.strip()]
+        return "\n".join(screen_lines[-int(lines):])
 
     def _driver(self, ticket, doing: str):
         from providers import DRIVERS
@@ -707,8 +707,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 self.update(ticket.n, launched=0.0, agent_seen=time.time())
                 continue
             if ticket.launched and not ticket.agent_seen and time.time() - ticket.launched > LAUNCHING_FOR:
-                said = launch_failure(self.record.root, ticket.work_environment)
-                self._failed_to_start(ticket.n, f"no agent was running {LAUNCHING_FOR:g} seconds after its launch{': ' + said if said else ''}")
+                failure = launch_failure(self.record.root, ticket.work_environment)
+                self._failed_to_start(ticket.n, f"no agent was running {LAUNCHING_FOR:g} seconds after its launch{': ' + failure if failure else ''}")
 
     def _confirmed(self, ticket) -> None:
         if ticket.draft:

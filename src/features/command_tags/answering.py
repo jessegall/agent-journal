@@ -21,14 +21,14 @@ def answered(numbers: list, record, **_) -> str:
         if AGENT not in row.seen:
             Messages(record, actor=AGENT).read(row.n)
     panel = {row.n: row.data[REPLY_WITH] for row in rows if REPLY_WITH in row.data}
-    told = [said(row, several=len(rows) > 1) for row in rows]
-    told += [f"answer message {n} with {how}, never in the chat" for n, how in panel.items()]
+    row_lines = [said(row, several=len(rows) > 1) for row in rows]
+    row_lines += [f"answer message {n} with {how}, never in the chat" for n, how in panel.items()]
     acknowledging = [row.n for row in rows if row.n not in panel and acknowledges(row)]
-    told += [f'message {n} only acknowledges: react to it with journal message react {n} "👍", no words needed' for n in acknowledging]
+    row_lines += [f'message {n} only acknowledges: react to it with journal message react {n} "👍", no words needed' for n in acknowledging]
     here = [n for n in numbers if n not in panel and n not in acknowledging]
     if here:
-        told.append(tagged(here))
-    return "; ".join(told)
+        row_lines.append(tagged(here))
+    return "; ".join(row_lines)
 
 
 def tagged(numbers: list) -> str:

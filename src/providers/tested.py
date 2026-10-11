@@ -51,5 +51,5 @@ def tested(command: str) -> Tested:
     if not piece:
         return Tested("Tests", command)
     named = list(dict.fromkeys(called(target) for target in targets(piece)))
-    shown = ", ".join(named[:MANY]) + (f" and {len(named) - MANY} more" if len(named) > MANY else "")
-    return Tested(shown or WHOLE_SUITE, " ".join(piece))
+    named_list = ", ".join(named[:MANY]) + (f" and {len(named) - MANY} more" if len(named) > MANY else "")
+    return Tested(named_list or WHOLE_SUITE, " ".join(piece))

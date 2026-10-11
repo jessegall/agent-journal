@@ -325,9 +325,9 @@ def configure(project: Path, root: Path) -> list[str]:
     if written:
         done.append(f"agent types: {', '.join(f.stem for f in written)}")
     done.append(f"the journal command: {alias(project, root).relative_to(project)}")
-    told = put_on_path(Path.home() / ".local" / "bin")
-    if told:
-        done.append(told)
+    path_line = put_on_path(Path.home() / ".local" / "bin")
+    if path_line:
+        done.append(path_line)
     return done
 
 

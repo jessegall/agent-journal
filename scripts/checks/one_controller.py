@@ -7,6 +7,8 @@ ROUTES = (HERE / "commands" / "http.py", *sorted((HERE / "features").glob("*/rou
 COMMAND_CODE = (HERE / "commands" / "cli.py", HERE / "commands" / "queries.py", *sorted((HERE / "controllers").rglob("*.py")),
                 *sorted((HERE / "features").glob("*/controller.py")), *sorted((HERE / "features").glob("*/commands.py")))
 REACHES_A_CONTROLLER = {"controller", "invoked", "captured"}
+# An endpoint belongs here only when a process, never a person, calls it, and its reason names that caller: the shell shim, the stepping runner, the sync peer.
+# A route a viewer page or a person's action calls is answered by a controller method or a command, whatever it is about.
 OPERATIONAL = {
     "/api/hook/{provider}": "an agent's hook, answered by the hook runner",
     "/api/slow-command": "the command line's own timing of a command, which only the shim that ran it can measure",

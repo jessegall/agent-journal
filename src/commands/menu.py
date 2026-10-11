@@ -26,13 +26,13 @@ def choices_of(given: list) -> list[Choice]:
 
 def lines(heading: str, notes: list[str], choices: list[Choice], at: int) -> list[str]:
     width = max(len(choice.label) for choice in choices)
-    shown = [f"  {ACCENT}?{RESET} {BOLD}{heading}{RESET}", ""]
-    shown += [f"    {DIM}{note}{RESET}" for note in notes] + ([""] if notes else [])
+    menu_lines = [f"  {ACCENT}?{RESET} {BOLD}{heading}{RESET}", ""]
+    menu_lines += [f"    {DIM}{note}{RESET}" for note in notes] + ([""] if notes else [])
     for i, choice in enumerate(choices):
         badges = "".join(f"  {BADGE}[{badge}]{RESET}" for badge in choice.badges)
         label = f"{choice.label:<{width}}"
-        shown.append(f"  {ACCENT}❯ {BOLD}{label}{RESET}{badges}" if i == at else f"    {label}{badges}")
-    return [*shown, "", f"  {DIM}{HINT}{RESET}"]
+        menu_lines.append(f"  {ACCENT}❯ {BOLD}{label}{RESET}{badges}" if i == at else f"    {label}{badges}")
+    return [*menu_lines, "", f"  {DIM}{HINT}{RESET}"]
 
 
 def read_keys(fd: int) -> list[str]:
@@ -56,10 +56,10 @@ def pick(heading: str, notes: list[str], given: list, default: int) -> int:
         tty.setcbreak(fd)
         sys.stdout.write("\x1b[?25l")
         while True:
-            shown = lines(heading, notes, choices, at)
-            sys.stdout.write((f"\x1b[{drawn}F\x1b[J" if drawn else "") + "\n".join(shown) + "\n")
+            menu_lines = lines(heading, notes, choices, at)
+            sys.stdout.write((f"\x1b[{drawn}F\x1b[J" if drawn else "") + "\n".join(menu_lines) + "\n")
             sys.stdout.flush()
-            drawn = len(shown)
+            drawn = len(menu_lines)
             for key in read_keys(fd):
                 if key in ENTER:
                     return at

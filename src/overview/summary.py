@@ -29,16 +29,16 @@ def subagents(agent) -> list[dict]:
         return []
     live = (agent.status or "stopped") != "stopped"
     now = time.time()
-    shown = []
+    recent_subagents = []
     for sub in agent.subagent_rows:
         if not sub.get("session"):
             continue
         active = max(float(sub.get("at", 0.0)), last_written(agent, sub["session"]))
         running = bool(sub.get("running")) and live and now - active < RECENT
         if running or now - float(sub.get("ended", 0.0)) < RECENT:
-            shown.append({**{key: sub.get(key) for key in SUBAGENT_FIELDS}, "running": running, "active": active, "parent": agent.n,
+            recent_subagents.append({**{key: sub.get(key) for key in SUBAGENT_FIELDS}, "running": running, "active": active, "parent": agent.n,
                           "report": agent.subagent_reports.get(sub.get("id"), 0)})
-    return shown
+    return recent_subagents
 
 KEPT_FOR = 4.0
 PART_FOR = 30.0

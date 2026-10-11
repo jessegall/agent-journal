@@ -39,8 +39,8 @@ def get_changelog(req: Request) -> Reply:
         return Reply(404, {"error": "this install carries no changelog"})
     cache = runtime.upstream_cache(req.root)
     latest = cache.read_text().strip() if cache.is_file() else ""
-    changelog, shown, more = changelog_page(CHANGELOG.read_text(), int(req.query.get("skip") or 0))
-    return Reply(200, {"version": version(), "changelog": changelog, "shown": shown, "more": more, "latest": latest, "newer": newer(latest, version()),
+    changelog, releases_so_far, more = changelog_page(CHANGELOG.read_text(), int(req.query.get("skip") or 0))
+    return Reply(200, {"version": version(), "changelog": changelog, "shown": releases_so_far, "more": more, "latest": latest, "newer": newer(latest, version()),
                        "checking": FETCHING.locked(), "updating": runtime.upgrade_mark(req.root).exists(),
                        "repository": journal_repository(req.root.parent),
                        "changed": [path.relative_to(req.root.parent).as_posix() for path in changed_managed(req.root.parent, req.root)]})

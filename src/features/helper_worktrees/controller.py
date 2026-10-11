@@ -42,7 +42,7 @@ class Drift:
 
 def within(folder: Path, places: tuple[Path, ...], commands: tuple[str, ...]) -> bool:
     named = re.compile(re.escape(str(folder)) + r"(?![\w.-])")
-    return any(place == folder or folder in place.parents for place in places) or any(named.search(said) for said in commands)
+    return any(place == folder or folder in place.parents for place in places) or any(named.search(command) for command in commands)
 
 
 class Worktrees(Controller):

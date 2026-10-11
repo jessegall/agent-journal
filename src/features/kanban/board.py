@@ -101,17 +101,17 @@ def build(journal, done_days: float, plan: int, agent: str, lane: str | None = N
         rows = [t for t in rows if words in f"#{t.n} {t.title}".lower()]
     if only:
         rows = [t for t in rows if t.n == int(only)]
-    lanes, shown = [], []
+    lanes, all_cards = [], []
     for each in LANES:
         if lane and each.key != lane:
             continue
         page = paged([t for t in rows if lane_of(sources, t) == each.key], placed_order(each.key), cursor_of(after) if each.key == lane else None, int(size))
         cards = [card_of(sources, t, main) for t in page.rows]
-        shown += cards
+        all_cards += cards
         lanes.append((Lane(each.key, each.title, page.total, cursor_text(page.next)), cards))
     active = next((p for p in plans if p.status == ACTIVE), None)
     hold = f"Plan {active.n} is active: rows outside it wait unless they are critical" if active else None
-    return BoardLanes(lanes, agents_of(journal, works, main, {c.assigned for c in shown if c.assigned}), hold)
+    return BoardLanes(lanes, agents_of(journal, works, main, {c.assigned for c in all_cards if c.assigned}), hold)
 
 
 def main_agent(journal) -> str:

@@ -559,10 +559,10 @@ def get_search(req: Request) -> Reply:
     record = req.record()
     hits = sorted((hit for hit in found(record, USER, term, req.query.get("archived") == "true", tuple(filter(None, req.query.get("resources", "").split(",")))) if row_shared(hit.type, vars(hit.row))),
                   key=lambda hit: hit.row.updated, reverse=True)
-    shown = [{**carded(hit.row, record, VIEWER), "matches": [{"name": name, "tags": tags, "url": f"/api/{record.env}/{hit.type}/{hit.row.n}/files/{quote(name, safe='')}"}
+    cards = [{**carded(hit.row, record, VIEWER), "matches": [{"name": name, "tags": tags, "url": f"/api/{record.env}/{hit.type}/{hit.row.n}/files/{quote(name, safe='')}"}
                                                             for name, tags in hit.files]}
              for hit in hits[:SHOWN_HITS]]
-    return Reply(200, {"hits": shown, "more": len(hits) - len(shown)})
+    return Reply(200, {"hits": cards, "more": len(hits) - len(cards)})
 
 
 @route("GET", "/api/{env}/search/attic")

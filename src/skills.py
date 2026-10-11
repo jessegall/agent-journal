@@ -42,8 +42,8 @@ def reference() -> str:
         owner = owners.get(controller.__module__.rsplit(".", 1)[0])
         out.append(f"### {type_} — {r.details.abstract}")
         taught = teaching(features.FEATURES[owner]) if owner else ""
-        told = f"The {skill_name(taught)} skill says how it works." if taught else r.details.help
-        out.append(f"{told}  Scope: {r.scope}. Seen by: {', '.join(r.notified) or 'nobody'}.")
+        skill_line = f"The {skill_name(taught)} skill says how it works." if taught else r.details.help
+        out.append(f"{skill_line}  Scope: {r.scope}. Seen by: {', '.join(r.notified) or 'nobody'}.")
         renamed = [f"{name} is {word}" for name, word in sorted(r.command_names.items()) if name in shared and word != name]
         if renamed:
             out.append(f"Renamed: {', '.join(renamed)}.")
@@ -93,9 +93,9 @@ def sentence(text: str) -> str:
 
 
 def reaching(f) -> str:
-    told = [*(f"the line {name}" for name, line in f.lines.items() if line.reach != Reach.MAIN),
+    skill_line = [*(f"the line {name}" for name, line in f.lines.items() if line.reach != Reach.MAIN),
             *(f"the guard {guard.name}" for guard in f.journal.agent.guards if guard.reach != Reach.MAIN)]
-    return f"These reach your subagents too: {', '.join(told)}." if told else "Its lines and guards are for the main agent only; none reach a subagent."
+    return f"These reach your subagents too: {', '.join(skill_line)}." if skill_line else "Its lines and guards are for the main agent only; none reach a subagent."
 
 
 def folded_parts(folded: list) -> str:

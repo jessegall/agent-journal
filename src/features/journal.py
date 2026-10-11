@@ -83,10 +83,10 @@ class Journal:
         message = self.message(Nudges, line, values, actor, session=agent.title, private=private, whisper=whisper, lead=lead, yields=yields, reply_kept=spec.reply_kept,
                                **spec.asking(self.feature.name))
         added = appended(f"{self.feature.name}.{line}", {**values, "record": record}, "").removeprefix(" - ")
-        said = replace(message, brief=". ".join(part for part in (added, message.brief) if part))
-        if Nudges(record, actor=SYSTEM)._repeats_last(agent.title, titled(said.title), said.brief, agent.at):
+        amended = replace(message, brief=". ".join(part for part in (added, message.brief) if part))
+        if Nudges(record, actor=SYSTEM)._repeats_last(agent.title, titled(amended.title), amended.brief, agent.at):
             return None
-        return self.send(record, said)
+        return self.send(record, amended)
 
     def whisper(self, record, agent, line: str, actor: str = SYSTEM, **values):
         return self.say(record, agent, line, private=True, actor=actor, **values)

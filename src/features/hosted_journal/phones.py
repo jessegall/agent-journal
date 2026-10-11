@@ -24,10 +24,10 @@ class VaultGuard(RecordGuard):
             with self.vault.held():
                 phones = self.vault.read(PHONES)
                 self.vault.write(PHONES, {**phones, str(n): {**phones.get(str(n), {}), **guarded}})
-        shown = {name: value for name, value in fields.items() if name not in SECRET}
+        public_fields = {name: value for name, value in fields.items() if name not in SECRET}
         if fields.get("key"):
-            shown["key"] = KEPT_ELSEWHERE
-        return shown
+            public_fields["key"] = KEPT_ELSEWHERE
+        return public_fields
 
     def drop(self, n: int) -> None:
         self.vault.drop(PHONES, str(n))

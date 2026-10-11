@@ -213,9 +213,9 @@ class DraftingBoards:
         if int(count) < FEWEST and not fewer.strip():
             raise Refused(f"a board is filled with at least {FEWEST} cards, preferably 8; for fewer, say why with --fewer \"<why>\"")
         board = self.load(n)
-        shown = board.expected
-        if int(count) < shown and board.phase == DRAFTING_PHASE:
-            raise Refused(f"{shown} placeholders already show; the count only grows, so draft them or leave it at {shown}")
+        board_expected = board.expected
+        if int(count) < board_expected and board.phase == DRAFTING_PHASE:
+            raise Refused(f"{board_expected} placeholders already show; the count only grows, so draft them or leave it at {board_expected}")
         return self.update(int(n), expected=int(count))
 
     @action

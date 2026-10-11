@@ -139,9 +139,9 @@ class Dumps(Controller):
         if not how.strip():
             raise Refused("say what should happen next: journal dump direct <n> \"<what to do>\"")
         r = self._choosing(n)
-        said = {"label": how.strip(), "pick": OWN_WORDS, ENTRY.at: time.time()}
+        dump_entry = {"label": how.strip(), "pick": OWN_WORDS, ENTRY.at: time.time()}
         Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(titled(how), brief=how.strip(), about=r.ref, window=r.ref)
-        return self.appended(r, "said", said, LOG_KEPT, chosen=said)
+        return self.appended(r, "said", dump_entry, LOG_KEPT, chosen=dump_entry)
 
     def _choosing(self, n: int):
         if self.actor == AGENT:

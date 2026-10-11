@@ -56,5 +56,5 @@ def get_edited_file(req: Request) -> Reply:
 @handles("GET", "/api/{env}/agent/{n}/edits/image")
 def get_edited_image(req: Request) -> Reply:
     asked = req.query_as(EditedImageQuery)
-    shown = invoked(req.as_user(Agents), "edited_image", (int(req.params["n"]),), {"id": asked.id})
-    return Reply(200, shown.data, mimetypes.guess_type(shown.path)[0] or "application/octet-stream")
+    edited = invoked(req.as_user(Agents), "edited_image", (int(req.params["n"]),), {"id": asked.id})
+    return Reply(200, edited.data, mimetypes.guess_type(edited.path)[0] or "application/octet-stream")

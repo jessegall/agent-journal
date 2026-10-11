@@ -63,8 +63,8 @@ def paged(found: list, order: Callable, after: tuple | None = None, size: int = 
     found = sorted(found, key=order)
     keys = [order(item) for item in found]
     start = bisect_right(keys, after) if after is not None else 0
-    shown = found[start:start + size]
-    return Page(shown, keys[start + len(shown) - 1] if shown and start + len(shown) < len(found) else None, len(found))
+    window = found[start:start + size]
+    return Page(window, keys[start + len(window) - 1] if window and start + len(window) < len(found) else None, len(found))
 
 
 def wholes(rows: list, part_of) -> list:
