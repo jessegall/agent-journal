@@ -62,10 +62,10 @@ def environment(record: Record) -> dict:
     agent = Agents(record, actor=SYSTEM).primary()
     shelf = Works(record, actor=SYSTEM)
     works = [row for row in shelf.rows.summaries() if not row["deleted"]]
-    held = [shelf.load(row["n"]) for row in works if not row["completed"]]
+    held = [shelf.peek(row["n"]) for row in works if not row["completed"]]
     current = next((w for w in held if not w.parked), None) or next(iter(held), None)
     finished = [row for row in works if row["completed"]]
-    last = shelf.load(max(finished, key=lambda row: row["completed"])["n"]) if finished else None
+    last = shelf.peek(max(finished, key=lambda row: row["completed"])["n"]) if finished else None
     todos = {row["n"]: bool(row["completed"]) for row in Todos(record, actor=SYSTEM).rows.summaries() if not row["deleted"]}
     work = lambda w: {"n": w.n, "title": w.title, "todo": w.todo, "parked": bool(w.parked), "awaiting": w.awaiting,
                       "completed": w.completed, "created": w.created} if w else None
