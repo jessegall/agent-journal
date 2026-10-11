@@ -534,7 +534,7 @@ def test_every_registration_gathers_what_it_promises_and_each_outcome_word_reads
     assert "name it in the Given" in str(refusal.value), \
         "an ask the Given does not name is a failure naming the ask, never a silent empty answer"
 
-    seen = Seen(said=["todo 7"], nudged=[("tags.refused", (("tag", "reply"),))], ran=[("journal", "todo", "done", "7")])
+    seen = Seen(said=["todo 7"], nudged=[("tags.refused", "The reply tag did not run", "it named no message: reply")], ran=[("journal", "todo", "done", "7")])
     holds = Given("x") >> Printed("todo 7") & Nudged("tags.refused", tag="reply") & Ran(("journal", "todo", "done", "7"))
     assert wrong(holds, seen) == [], "an expectation that holds of the play says nothing"
     assert wrong(Given("x") >> Printed("todo 8") & Refused("nope"), seen) == \

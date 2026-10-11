@@ -63,7 +63,7 @@ def speaking(record: Record, given: Given):
 def what_was_said(record: Record) -> tuple[list, list]:
     """What reached the chat and what was nudged, read from the rows the journal keeps rather than from anything the play says about itself."""
     said = [row.brief or row.title for row in Messages(record, actor=SYSTEM).all(completed=True) if row.seen[:1] == ["agent"]]
-    nudged = [(row.line, ()) for row in Nudges(record, actor=SYSTEM).all(completed=True)]
+    nudged = [(row.line, row.title, row.brief) for row in Nudges(record, actor=SYSTEM).all(completed=True)]
     return said, nudged
 
 
@@ -173,6 +173,7 @@ def played(promise, expectation) -> Seen:
         ENTRIES[promise.kind](promise, given, record, world)
     world.seen.after = rows_now(record)
     world.seen.said, world.seen.nudged = what_was_said(record)
+    world.seen.remembered = record.state(promise.feature.name).all()
     world.seen.wrote = rows_touched(record, since, made=True)
     world.seen.updated = rows_touched(record, since, made=False)
     return world.seen

@@ -33,6 +33,7 @@ class Seen:
     held: str | None = None
     before: tuple = ()
     after: tuple = ()
+    remembered: dict = field(default_factory=dict)
 
     @property
     def is_unchanged(self) -> bool:

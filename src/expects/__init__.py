@@ -22,7 +22,7 @@ class NoSuchService(LookupError):
 
 __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "Dispatches", "Wrote", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
-           "Formats", "Nudged", "Held", "Answered",
+           "Formats", "Nudged", "Held", "Answered", "Remembered",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
            "NotAnOutcome", "NoSuchService")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
@@ -193,7 +193,7 @@ class Formats(Outcome):
 
 @dataclass(frozen=True, init=False)
 class Nudged(Outcome):
-    """That nudge line was sent, with those values filled in. The line is named by its key, never by its wording."""
+    """That nudge line was sent, and what it said carries these values. The line is named by its key, never by its wording, but the values are checked against the words the agent really heard."""
 
     line: str
     values: tuple[tuple[str, Any], ...]
@@ -201,8 +201,31 @@ class Nudged(Outcome):
     def __init__(self, line: str, **values) -> None:
         object.__setattr__(self, "line", line)
         object.__setattr__(self, "values", tuple(sorted(values.items())))
+
     def holds(self, seen) -> str:
-        return "" if (self.line, self.values) in seen.nudged else f"it did not nudge {self.line!r} with {dict(self.values)}; it nudged {seen.nudged!r}"
+        said = [one for one in seen.nudged if one[0] == self.line]
+        if not said:
+            return f"it did not nudge {self.line!r}; it nudged {[one[0] for one in seen.nudged] or 'nothing'}"
+        for _, title, brief in said:
+            if all(str(value) in f"{title} {brief}" for _, value in self.values):
+                return ""
+        return (f"it nudged {self.line!r}, but what it said carried none of {[str(v) for _, v in self.values]}: "
+                f"{[f'{t} {b}'.strip() for _, t, b in said]}")
+
+
+@dataclass(frozen=True)
+class Remembered(Outcome):
+    """What a registration left in the journal's own memory rather than in a row: a claim it took, a count it raised, a mark that something was said. Read back from the state the feature owns, so it asserts what is really remembered."""
+
+    key: str
+    value: Any = None
+
+    def holds(self, seen) -> str:
+        if self.key not in seen.remembered:
+            return f"it remembered nothing under {self.key!r}; it remembered {sorted(seen.remembered)}"
+        if self.value is not None and seen.remembered[self.key] != self.value:
+            return f"it remembered {seen.remembered[self.key]!r} under {self.key!r}, not {self.value!r}"
+        return ""
 
 
 @dataclass(frozen=True)
