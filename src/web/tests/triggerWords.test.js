@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {store} from "../src/state/store.js";
-import {factOf, plain, sentence, unitOf} from "../src/domain/triggerWords.js";
+import {factOf, neverMatched, plain, sentence, unitOf} from "../src/domain/triggerWords.js";
 
 const FACTS = [
     {
@@ -29,6 +29,17 @@ const FACTS = [
     },
 ];
 store.spec = {facts: FACTS};
+
+describe("a trigger that has never matched", () => {
+    it("names the half that is still empty rather than stopping at never", () => {
+        expect(neverMatched({when: "state", only_when: "idle"})).toBe("Never matched. It only watches while the agent is idle.");
+        expect(neverMatched({when: "state", only_when: "working"})).toBe("Never matched. It only watches while the agent is working.");
+        expect(neverMatched({when: "state", only_when: "any"})).toBe("Never matched. What it watches for has not been true yet.");
+        expect(neverMatched({when: "words", only_when: "idle"})).toBe(
+            "Never matched. Nothing the agent wrote or ran has carried these words yet."
+        );
+    });
+});
 
 describe("the facts a trigger can watch", () => {
     it("are the ones the server sent, and an unknown one reads as the first", () => {

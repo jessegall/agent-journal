@@ -12,6 +12,7 @@ import {
     doesReason,
     factOf,
     facts,
+    neverMatched,
     plain,
     sentence,
     startedBy,
@@ -52,7 +53,7 @@ const consequence = computed(() => {
 });
 const matches = computed(() => {
     const {matched = 0, matched_at: last} = values.value;
-    if (!matched) return "Never matched yet";
+    if (!matched) return neverMatched(values.value);
     return matched === 1 ? `Matched once, ${ago(last)}` : `Matched ${matched} times, last ${ago(last)}`;
 });
 const does = computed(() => doesOf(values.value.does));

@@ -98,6 +98,14 @@ export const facts = () => store.spec.facts;
 // What the number past is counted in is the word after it in the phrase: "more than {over} minutes".
 export const unitOf = (fact) => fact.phrase.split("{over}")[1].trim().split(" ")[0];
 
+// What a trigger that has never matched is still waiting for, so the editor names the half that is empty rather than stopping at "never".
+export const neverMatched = (values) => {
+    if (values.when !== "state") return "Never matched. Nothing the agent wrote or ran has carried these words yet.";
+    const gate = ONLY_WHEN.find((one) => one.value === values.only_when);
+    if (gate && gate.value !== "any") return `Never matched. It only watches while the agent is ${gate.label.toLowerCase()}.`;
+    return "Never matched. What it watches for has not been true yet.";
+};
+
 export const ONLY_WHEN = [
     {value: "any", label: "Either"},
     {value: "idle", label: "Idle"},
