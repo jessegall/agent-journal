@@ -313,12 +313,16 @@ class Given:
     settings: Mapping[str, Any] = field(default_factory=dict)
     remembered: Mapping[str, Any] = field(default_factory=dict)
     """What the journal already remembers when the registration runs: the claims it has taken, the marks that something was said. A handler reads this where a row would be too much to seed."""
+    held: str = ""
+    """Why the agents' writes are already held when the registration runs, as a feature's hold would leave them, so a registration that refuses held calls can be played against one."""
     clock: At = At(WHEN)
     ids: Counting = Counting()
     chat: Answering = Answering({})
     commands: Answering = Answering({})
     files: Answering = Answering({})
+    """Files that already exist, by path under the project folder to their text, written there before the play so what a registration reads from disk is what the Given says."""
     processes: Answering = Answering({})
+    """The programs on the machine, by name to where they live. A Given that names none leaves the machine's own; one that names any says every other program is absent."""
     providers: Answering = Answering({})
 
     def __rshift__(self, outcomes) -> "Expectation":

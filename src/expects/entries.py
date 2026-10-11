@@ -6,6 +6,7 @@ in for everything that is not the record: the clock, the ids, the commands, the 
 the providers. Each kind has one entry and no kind has two, so the run and the engine cannot disagree.
 """
 
+import shutil
 import tempfile
 import time
 from contextlib import contextmanager
@@ -14,6 +15,7 @@ from pathlib import Path
 
 import commands.cli  # noqa: F401  wires the command line, as every process that runs the journal does
 from controllers.types import Messages, Nudges
+from engine.gates import Hold, HookCall, hold
 from engine.record import Record
 from expects import Given
 from expects.playing import Seen, World
@@ -40,7 +42,24 @@ def scratch(given: Given) -> Record:
         record.state(owner or name).set(key or name, value)
     for row in given.rows:
         written(record, row)
+    for path, text in given.files.answers.items():
+        staged(record.root.parent / path, text)
+    if given.held:
+        holding(record, given.held)
     return record
+
+
+def staged(path: Path, text: str) -> None:
+    """Puts one file the Given says exists on disk under the scratch project, where whatever reads it will find it."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text)
+
+
+def holding(record: Record, why: str) -> None:
+    """Leaves every agent's writes held, as a feature that held them would have, in the gate file the engine reads."""
+    from controllers.types import Agents
+    for row in Agents(record, actor=SYSTEM).rows.standing():
+        hold(record, row.title, "expects", Hold(why=why))
 
 
 def written(record: Record, row) -> None:
@@ -66,9 +85,9 @@ def speaking(record: Record, given: Given):
 
 
 def contexted(promise, given: Given, record: Record) -> Context:
-    """The context a registration is handed: over the record, and an AgentContext speaking to the agent when the Given names one."""
+    """The context a registration is handed: over the record, and an AgentContext speaking to the agent when the Given names one. The hook carries the tool call an interceptor is asked about, as the engine's hook does."""
     row = speaking(record, given)
-    return (AgentContext if row else Context).of(promise.feature, record, row, provider_of(row), SimpleNamespace(cwd=None, agent="", transcript=None, event="PreToolUse", tool=given.on))
+    return (AgentContext if row else Context).of(promise.feature, record, row, provider_of(row), SimpleNamespace(cwd=None, agent="", transcript=None, event="PreToolUse", source="", tool=given.on))
 
 
 def what_was_said(record: Record) -> tuple[list, list]:
@@ -135,8 +154,9 @@ def commanded(promise, given: Given, record: Record, world: World) -> None:
 
 
 def answered_a_hook(promise, given: Given, record: Record, world: World) -> None:
-    """A responder, which answers a hook event and writes nothing."""
-    world.seen.answered = promise.part(given.on)
+    """A responder, which answers the call the engine builds for a hook event: the provider and the agent the Given names, the record, and the hook the Given states."""
+    row = speaking(record, given)
+    world.seen.answered = promise.part(HookCall(provider_of(row), record, given.on, row))
 
 
 ENTRIES = {"handler": handled, "formatter": formatted, "interceptor": intercepted, "canceler": cancelled,
@@ -197,6 +217,19 @@ def at_the_givens_hour(given: Given):
         time.time = was
 
 
+@contextmanager
+def with_the_givens_programs(given: Given):
+    """Leaves only the programs the Given names on the machine's path, when it names any, so a registration that looks for ffmpeg finds it or does not, as the Given says, wherever the play runs."""
+    present = dict(given.processes.answers)
+    was = shutil.which
+    if present:
+        shutil.which = lambda name, *args, **kwargs: present.get(name)
+    try:
+        yield
+    finally:
+        shutil.which = was
+
+
 def remembered_by(record: Record, owner: str) -> dict:
     """What the feature left in the journal's memory: its own state, and the state it keeps for each agent session."""
     from controllers.types import Agents
@@ -211,7 +244,7 @@ def played(promise, expectation) -> Seen:
     given = expectation.given
     record, world = scratch(given), World.of(given)
     world.seen.before, held, since = rows_now(record), rows_held(record), record.event_log.last_id()
-    with at_the_givens_hour(given):
+    with at_the_givens_hour(given), with_the_givens_programs(given):
         ENTRIES[promise.kind](promise, given, record, world)
     world.seen.after = rows_now(record)
     world.seen.said, world.seen.nudged = what_was_said(record)
