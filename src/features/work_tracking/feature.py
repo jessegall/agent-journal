@@ -23,7 +23,6 @@ from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_r
                                     TrackFiles)
 from features.work_tracking.interceptors import WAIT_WAY, RefuseHeldCalls, RefuseWaitingInTheShell
 
-
 AGENT_ROW = AgentRow(n=1, title="claude-1")
 WAITING = Work(n=3, title="Wait on the build", data={"awaiting": "the build"})
 PARKED = Work(n=3, title="Write the report", data={"parked": "the user asked for something first"})
@@ -40,6 +39,14 @@ ON_TODO = Work(n=3, title="Fix the crash", data={"todo": 5})
 ENDED_ON_TODO = Work(n=3, title="Fix the crash", completed=2.0, data={"todo": 5})
 STARTED_TODO = Todo(n=5, title="Fix the crash", data={"status": "started"})
 ran = AgentRow(n=1, title="claude-1", data={"commands": [{"tool": "Bash", "command": "ls", "at": 10.0, "done": 11.0}]})
+
+
+class LoggedAs:
+    def __init__(self, text: str) -> None:
+        self.text = text
+
+    def __eq__(self, sections: list) -> bool:
+        return any(section["body"] == self.text for section in sections)
 
 
 def closed(n: int) -> TodoCompleted:
@@ -87,10 +94,28 @@ class WorkFeature(Feature):
         FACTS.register(self, *state_facts("work", "open", open_work), *state_facts("work", "awaiting", lambda context: [work for work in open_work(context) if work.awaiting]),
                        Fact("todo.ready", COUNT, "To-dos are ready and no work is open", "at least {over} to-dos are ready and no work is open", todo_ready,
                             fills=("n", "title", COUNT)))
-        journal.commands.add("work", LogWork())
-        journal.commands.add("work", ParkWork())
-        journal.commands.add("work", ResumeWork())
-        journal.commands.add("work", AwaitWork())
+        journal.commands.add("work", LogWork(), expects=[
+            Given((Works, "Chose the retry over the timeout"), rows=[WORKING]) >> Updated(Work(n=3), sections=LoggedAs("Chose the retry over the timeout")),
+            Given((Works,), rows=[WORKING]) >> Refused('say what was decided or done: journal work log <n> "<text>"'),
+            Given((Works, "Chose the retry"), rows=[]) >> Refused('nothing is open: journal work start "<the work>" first'),
+            Given((Works, "3", "Chose the retry"), rows=[PARKED]) >> Refused("work 3 is parked; the one in hand is what a log entry means"),
+        ])
+        journal.commands.add("work", ParkWork(), expects=[
+            Given((Works, "the user asked for something first"), rows=[WAITING]) >> Updated(Work(n=3), parked="the user asked for something first", awaiting=""),
+            Given((Works,), rows=[WORKING]) >> Refused('say why it waits: journal work park <n> "<why>"'),
+            Given((Works, "later"), rows=[]) >> Refused('nothing is open: journal work start "<the work>" first'),
+        ])
+        journal.commands.add("work", ResumeWork(), expects=[
+            Given((Works, 3), rows=[PARKED]) >> Updated(Work(n=3), parked=""),
+            Given((Works, 3), rows=[WORKING]) >> Refused("work 3 is not parked"),
+            Given((Works, 3), rows=[PARKED, Work(n=4, title="Something else")]) >> Refused('work 4 is open: end it with journal work end --how "<what landed>", or set it aside with journal work park "<why>", before starting another'),
+        ])
+        journal.commands.add("work", AwaitWork(), expects=[
+            Given((Works, "the build"), rows=[WORKING]) >> Updated(Work(n=3), awaiting="the build"),
+            Given((Works, "the build"), rows=[]) >> Updated(Work(n=1), awaiting="the build"),
+            Given((Works, "the user to answer"), rows=[WORKING]) >> Refused("waiting for the user is being idle, not waiting: a wait is for something that will happen on its own and let the work go on. Put the question on its row with journal todo ask and take the next ready row, or end your turn"),
+            Given((Works,), rows=[WORKING]) >> Refused('say what you are waiting for: journal work await <n> "<what>"'),
+        ])
         journal.events.handler(AskStillAwaiting(), expects=[
             Given(ClockTicked(agent=1), rows=[Work(n=3, title="Wait on the build", data={"awaiting": "the build", "awaiting_since": 1.0}), AGENT_ROW],
                   settings={"work_tracking.ask_awaiting_every": 5}) >> Nudged("still awaiting"),
