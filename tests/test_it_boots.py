@@ -1155,6 +1155,9 @@ def test_a_machine_with_only_one_agent_warms_up_without_ending_the_server(tmp_pa
     monkeypatch.setattr(serve.os, "_exit", exits.append)
     serve.warmed(root, threading.Event())
     assert exits == [], f"warming a machine with only {present} must not end the server and make the supervisor roll back"
+    steps = (root / "runtime" / "upgrade-steps.jsonl").read_text()
+    assert "start: until the viewer is warm" in steps and "start: until everything is warm" in steps and "start: commands warm" in steps, \
+        "every start, not only a restart, records how long it had taken when each step ended"
 
 
 def test_a_plugin_service_runs_from_the_packed_build_and_stops_when_the_last_session_ends(tmp_path, free_port):

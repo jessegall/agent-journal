@@ -9,6 +9,9 @@ import sys
 import tempfile
 import threading
 import time
+
+BEGAN = time.time()
+
 import traceback
 import weakref
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -443,17 +446,30 @@ def warm_rows(root: Path) -> None:
     warm_texts(root)
 
 
-def warmed(root: Path, warm: threading.Event, restarted: float = 0.0) -> None:
+def recorded(root: Path, step: str, began: float) -> None:
+    """Records how long the start has taken when a step ends, under the step's name."""
+    runtime.record_step(root, f"start: {step}", time.time() - began, time.process_time(), version())
+
+
+def timed(root: Path, step: str, began: float, work):
+    """The work, followed by a record of how long the start had taken when it ended."""
+    def run() -> None:
+        work()
+        recorded(root, step, began)
+    return run
+
+
+def warmed(root: Path, warm: threading.Event, began: float = BEGAN) -> None:
     try:
         warm_viewer(root, default_env(root), warm)
         runtime.mark_booted(root)
-        if restarted:
-            runtime.record_step(root, "restart: until the viewer is warm", time.time() - restarted, time.process_time(), version())
+        recorded(root, "until the viewer is warm", began)
         WARMERS.append(lambda: warm_changed(root))
         HOME_WARMERS.append(warm_dashboard)
-        together(warm_commands, lambda: warm_rows(root), lambda: read_transcripts(root), warm_hooks, lambda: warm_board(root))
-        if restarted:
-            runtime.record_step(root, "restart: until everything is warm", time.time() - restarted, time.process_time(), version())
+        together(timed(root, "commands warm", began, warm_commands), timed(root, "rows warm", began, lambda: warm_rows(root)),
+                 timed(root, "transcripts read", began, lambda: read_transcripts(root)), timed(root, "hooks warm", began, warm_hooks),
+                 timed(root, "board warm", began, lambda: warm_board(root)))
+        recorded(root, "until everything is warm", began)
     except Exception:
         traceback.print_exc()
         os._exit(1)
@@ -555,16 +571,15 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     runtime.remember_git_user(root)
     tell_threads_on_signal(root)
     allow_open_files()
-    restarted = runtime.restart_began(root)
+    began = runtime.restart_began(root) or BEGAN
     server = serve(root, port)
     restore_rows(root)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
-    if restarted:
-        runtime.record_step(root, "restart: until the new server listens", time.time() - restarted, time.process_time(), version())
+    recorded(root, "until the server listens", began)
     changed = threading.Event()
     halting = threading.Event()
     server.warm.clear()
-    threading.Thread(target=warmed, args=(root, server.warm, restarted), daemon=True).start()
+    threading.Thread(target=warmed, args=(root, server.warm, began), daemon=True).start()
     threading.Thread(target=watch_code, args=(root, Path(root) / ARCHIVE if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=watch_runtime, args=(root, halting), daemon=True).start()
