@@ -1153,6 +1153,7 @@ def test_a_machine_with_only_one_agent_warms_up_without_ending_the_server(tmp_pa
     monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
     exits = []
     monkeypatch.setattr(serve.os, "_exit", exits.append)
+    serve.recorded(root, "until the server listens", time.time() - 1)
     serve.warmed(root, threading.Event())
     assert exits == [], f"warming a machine with only {present} must not end the server and make the supervisor roll back"
     steps = (root / "runtime" / "upgrade-steps.jsonl").read_text()
@@ -1160,7 +1161,6 @@ def test_a_machine_with_only_one_agent_warms_up_without_ending_the_server(tmp_pa
         "every start, not only a restart, records how long it had taken when each step ended"
     from commands.speed import last_start
     from engine import runtime
-    serve.recorded(root, "until the server listens", time.time() - 1)
     runtime.mark_booting(root)
     runtime.mark_boot_step(root, "Loading the viewer")
     from features.auto_update.countdown import update_state
