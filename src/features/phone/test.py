@@ -600,8 +600,8 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     assert call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Accept"}, key).status == 201
     assert f"doc:{proposal.n}" not in waiting(), "and leaves Needs you once its choice is made"
     assert call(base, "/p/comment", {"ref": f"doc:{proposal.n}", "text": "Looks right to me"}, key).status == 201
-    shown = call(base, f"/p/row/doc/{proposal.n}", key=key).body["comments"]
-    assert [c["brief"] for c in shown] == ["Looks right to me"] and shown[0]["who"] == USER, "a comment from the phone lands on the row, as on the desktop"
+    comments = call(base, f"/p/row/doc/{proposal.n}", key=key).body["comments"]
+    assert [c["brief"] for c in comments] == ["Looks right to me"] and comments[0]["who"] == USER, "a comment from the phone lands on the row, as on the desktop"
     urgent = Todos(record, actor=AGENT).create("Ship the fix")
     Todos(record, actor=AGENT).priority(urgent.n, "high")
     assert call(base, f"/p/row/todo/{urgent.n}", key=key).body["priority_name"] == "high", "a priority that is a named level reaches the phone by its name"
@@ -624,8 +624,8 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
         shutil.which = which
     shared = call(base, "/p/share", {"ref": f"doc:{proposal.n}"}, key)
     assert shared.status == 201 and "/s/" in shared.body["link"], "and as a share link the user made, open at once"
-    said = [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m["title"] == "I accept this proposal"]
-    assert said and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
+    accept_messages = [m for m in Messages(record, actor=SYSTEM).rows.summaries() if m["title"] == "I accept this proposal"]
+    assert accept_messages and call(base, "/p/press", {"ref": f"doc:{proposal.n}", "label": "Change it"}, key).status == 409, \
         "a button pressed on the phone says its words, and the other button of the same choice is gone"
     now = time.time()
     CONTROLLERS["agent"](record, actor=SYSTEM).create(
@@ -661,8 +661,8 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     fed = call(base, "/p/feed", key=key).body
     assert fed["agent"] == "offline", "the phone sees no agent running"
     assert fed["build"].startswith("phone-") and fed["build"].endswith(".js"), "the phone learns which build of its app is installed"
-    shown = [(item["type"], item.get("label", "")) for item in fed["items"]]
-    assert ("thought", "Weighing it") in shown and any(kind == "card" and label.startswith("Agent committed") for kind, label in shown), \
+    comments = [(item["type"], item.get("label", "")) for item in fed["items"]]
+    assert ("thought", "Weighing it") in comments and any(kind == "card" and label.startswith("Agent committed") for kind, label in comments), \
         "the agent's thoughts and chat marks reach the phone"
     record.set_setting("viewer", {"chat_hidden": ["thoughts", "notes"]})
     kept = [(item["type"], item.get("label", "")) for item in call(base, "/p/feed", key=key).body["items"]]
@@ -695,7 +695,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     Sessions(record.root).write("d2c1c997-real", environment="")
     from features.phone.places import shown
     Environments(record, actor=USER).create("ticket-4", owner="ticket:4", kind=EnvironmentKind.TICKET)
-    assert {f"{record.env}-rhea", "ticket-4"}.isdisjoint(shown(record.root)), "a helper's or a ticket's own environment stays out of the phone's places"
+    assert {f"{record.env}-rhea", "ticket-4"}.isdisjoint(comments(record.root)), "a helper's or a ticket's own environment stays out of the phone's places"
     Sessions(record.root).write("claude-4242", environment="")
     assert call(base, "/p/auto", {"on": True}, key).status == 201 and call(base, "/p/feed", key=key).body["running"]["auto"] is True, \
         "the phone switches auto mode, the same setting the desktop's switch flips"

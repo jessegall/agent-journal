@@ -159,15 +159,15 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
     import json
     from controllers.types import Messages
     from providers.claude import Claude
-    said = lambda: [n for n in nudges(asking) if n.startswith("auto mode is on and you stopped")]
-    count = len(said())
-    assert set(said()) == {"auto mode is on and you stopped - the user last wrote more than 15 minutes ago"}, "with auto mode on, an agent that stopped long after the user last spoke is told to carry on"
+    auto_stop_nudges = lambda: [n for n in nudges(asking) if n.startswith("auto mode is on and you stopped")]
+    count = len(auto_stop_nudges())
+    assert set(auto_stop_nudges()) == {"auto mode is on and you stopped - the user last wrote more than 15 minutes ago"}, "with auto mode on, an agent that stopped long after the user last spoke is told to carry on"
     Messages(asking, actor=USER).create("carry on please")
     idle_for(8)
-    assert len(said()) == count, "the user wrote a moment ago: nothing new is said"
+    assert len(auto_stop_nudges()) == count, "the user wrote a moment ago: nothing new is said"
     row = agents.by_session("claude-1")
     agents.update(row.n, person_at=time.time())
-    assert len(said()) == count, "a prompt the user typed themselves counts the same"
+    assert len(auto_stop_nudges()) == count, "a prompt the user typed themselves counts the same"
     transcript = asking.root / "transcript.jsonl"
     transcript.write_text(json.dumps({"type": "user", "message": {"content": [{"type": "text", "text": "[Request interrupted by user]"}]}}) + "\n")
     assert Claude().interrupted_by_user(transcript), "a turn the user stopped is read from the transcript"
@@ -233,13 +233,13 @@ def test_a_mistyped_command_through_the_server_says_what_is_wrong():
     text, code = captured(["--env", record.env, "--as", AGENT, "work", "log", "words with no work open"], record.root)
     assert (code != 0, "nothing is open" in text) == (True, True), "a log entry with no work open says to start one"
     made = Works(record, actor=AGENT).create("Logging from the command line")
-    for said in (["--env", record.env, "--as", AGENT, "work", "log", str(made.n), "the number first, as the nudges say"], ["--env", record.env, "--as", AGENT, "work", "log", "with the flag", "--n", str(made.n)]):
-        text, code = captured(said, record.root)
+    for auto_stop_nudges in (["--env", record.env, "--as", AGENT, "work", "log", str(made.n), "the number first, as the nudges say"], ["--env", record.env, "--as", AGENT, "work", "log", "with the flag", "--n", str(made.n)]):
+        text, code = captured(auto_stop_nudges, record.root)
         assert code == 0, text
     assert [part["body"] for part in Works(record, actor=AGENT).load(made.n).sections] == ["the number first, as the nudges say", "with the flag"], \
         "journal work log takes the work's number first or as --n"
-    for said in (["await", str(made.n), "the build"], ["park", str(made.n), "something else goes first"]):
-        text, code = captured(["--env", record.env, "--as", AGENT, "work", *said], record.root)
+    for auto_stop_nudges in (["await", str(made.n), "the build"], ["park", str(made.n), "something else goes first"]):
+        text, code = captured(["--env", record.env, "--as", AGENT, "work", *auto_stop_nudges], record.root)
         assert code == 0, text
     parked = Works(record, actor=AGENT).load(made.n)
     assert (parked.parked, parked.awaiting) == ("something else goes first", ""), "park and await take the number first too, as the nudges print them"

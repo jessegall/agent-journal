@@ -514,18 +514,18 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     from features.open_viewer.manifest import built
     assert re.fullmatch(r"main-[\w-]+\.js", built()), "the manifest names the bundle the page loads, whatever the bundle is called, so an open tab sees a new build and reloads"
     started = runtime.STARTED[0] = time.time()
-    told: list = []
-    monkeypatch.setattr(http, "broke", lambda _, text, **__: told.append(text))
+    broken_reports: list = []
+    monkeypatch.setattr(http, "broke", lambda _, text, **__: broken_reports.append(text))
     runtime.hook_failures(record.root).write_text(f"{started - 3} 000 claude {record.env}\n{started + 3} 000 claude {record.env}\n")
     http.unanswered(record.root)
-    assert not told, "a hook that got no answer while the server restarted, warm-up included, is not reported"
+    assert not broken_reports, "a hook that got no answer while the server restarted, warm-up included, is not reported"
     runtime.hook_failures(record.root).write_text(f"{started + 100} 000 claude {record.env} 500.0\n")
     http.unanswered(record.root)
-    assert not told, "a hook that got no answer once is not reported: it kept the event in its spool and the agent never noticed"
+    assert not broken_reports, "a hook that got no answer once is not reported: it kept the event in its spool and the agent never noticed"
     runtime.hook_failures(record.root).write_text("".join(f"{started + 100 + i} 000 claude {record.env} 500.0\n" for i in range(5)))
     http.unanswered(record.root)
-    assert told and "machine load 500.0" in told[-1], "a hook that keeps getting no answer is reported, with the load beside it"
-    told.clear()
+    assert broken_reports and "machine load 500.0" in broken_reports[-1], "a hook that keeps getting no answer is reported, with the load beside it"
+    broken_reports.clear()
     import serve
     import threading
     from commands.parser import PARSERS
@@ -540,11 +540,11 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     started = runtime.STARTED[0]
     runtime.hook_failures(record.root).write_text("".join(f"{started - http.RESTART_GRACE - 5 - i} 000 claude {record.env}\n" for i in range(http.MISSES_TO_REPORT)))
     http.unanswered(record.root)
-    assert told, "after a crash, with no marker, the failures from before the new server's grace are reported"
-    told.clear()
+    assert broken_reports, "after a crash, with no marker, the failures from before the new server's grace are reported"
+    broken_reports.clear()
     runtime.hook_failures(record.root).write_text("".join(f"{started + http.RESTART_GRACE + 5 + i} 000 claude {record.env}\n" for i in range(http.MISSES_TO_REPORT)))
     http.unanswered(record.root)
-    assert told, "hooks with no answer long after the server was up are reported"
+    assert broken_reports, "hooks with no answer long after the server was up are reported"
     assert ask("GET", "/api/agent-hooks/nobody").code == 404, "hooks of a provider that does not exist are not found"
     wired = ask("GET", "/api/agent-hooks/claude").body
     assert {"path", "hooks", "elsewhere"} <= set(wired), "a provider's hooks come with the file that holds them"

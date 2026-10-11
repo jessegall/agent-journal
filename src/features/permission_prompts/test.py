@@ -133,9 +133,9 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
     assert rewind.foreign() is False, "Claude's Rewind list, which has no decline label, is a list of past messages you opened to read, so the journal never closes it"
     from types import SimpleNamespace
     from runner.worker import Dialogs
-    shown = "Blender MCP wants to share data. Allow?\r\n❯ 1. Yes, allow\r\n  2. No, do not share\r\nEnter to select · Esc to cancel"
+    prompt_screen = "Blender MCP wants to share data. Allow?\r\n❯ 1. Yes, allow\r\n  2. No, do not share\r\nEnter to select · Esc to cancel"
     pressed = []
-    stub = SimpleNamespace(PROMPT_TAIL=1, name="claude", record=fresh(), screen=lambda size: shown, last_report=lambda: None,
+    stub = SimpleNamespace(PROMPT_TAIL=1, name="claude", record=fresh(), screen=lambda size: prompt_screen, last_report=lambda: None,
                            quiet_for=lambda: 9.0, press_raw=pressed.append, keyed_at=lambda: 0.0)
     own = Dialogs(stub)
     own.tick()

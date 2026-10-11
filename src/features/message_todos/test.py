@@ -204,13 +204,13 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
     assert ('"a": 1' in written, "a body that stays out of the head" in written.split("---\n", 2)[2], '"brief"' in written) == (True, True, False), \
         "a row is written from its own fields, a dataclass inside it as its fields, its brief and sections after the head and not in it"
     import controllers.base as base
-    said = Messages(record, actor=USER)
-    first, second = said.create("same words", brief="again"), said.create("other words", brief="other")
-    assert said.create("same words", brief="again").n == first.n, "the same words said twice at once are one message"
+    user_messages = Messages(record, actor=USER)
+    first, second = user_messages.create("same words", brief="again"), user_messages.create("other words", brief="other")
+    assert user_messages.create("same words", brief="again").n == first.n, "the same words said twice at once are one message"
     window = base.TWIN_WINDOW
     base.TWIN_WINDOW = 1
     try:
-        assert said.create("same words", brief="again").n > second.n, "a create looks for its twin among the newest rows only, never through every row of the store"
+        assert user_messages.create("same words", brief="again").n > second.n, "a create looks for its twin among the newest rows only, never through every row of the store"
     finally:
         base.TWIN_WINDOW = window
     from controllers.types import Docs

@@ -249,8 +249,8 @@ def test_five_wrong_passwords_lock_a_place_out_across_a_restart_until_fifteen_mi
         WrongTries(hosted.vault).counted(f"10.1.{place // 250}.{place % 250}")
     assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.77", **proxied).status == 429
     assert hosted.call("GET", "/login", X_Forwarded_For="203.0.113.77", **proxied).status == 429
-    shown = hosted.call("GET", "/login", X_Forwarded_For="203.0.113.77", Cookie=device, **proxied)
-    assert shown.status == 200 and "Log in</button>" in shown.text, "a known browser sees the login form during a flood"
+    login_page = hosted.call("GET", "/login", X_Forwarded_For="203.0.113.77", Cookie=device, **proxied)
+    assert login_page.status == 200 and "Log in</button>" in login_page.text, "a known browser sees the login form during a flood"
     assert hosted.call("POST", "/login", {"password": PASSWORD}, X_Forwarded_For="203.0.113.77", Cookie=device, **proxied).status == 303, \
         "a browser that logged in before is never locked out by wrong tries from elsewhere"
     assert "cleared" in clear_tries(hosted.record.root)
@@ -539,8 +539,8 @@ def test_a_login_page_run_apart_trusts_nothing_the_record_says(hosted, monkeypat
         kept_apart.main(["keep", str(root), "--host", "127.0.0.1", "--port", "0"])
     assert started == [("serve", os.getuid(), "/")], "the keeper holds the port and starts the login page as its own user, from /, again after it ends"
     guard = VaultGuard(Vault(root))
-    shown = guard.kept(41, {"key": "a phone key", "title": "Phone", "environment": "main"})
-    assert (shown, guard.read(41)["key"], guard.read(41)["environment"]) == ({"title": "Phone", "environment": "main", "key": KEPT_ELSEWHERE}, "a phone key", "main"), \
+    login_page = guard.kept(41, {"key": "a phone key", "title": "Phone", "environment": "main"})
+    assert (login_page, guard.read(41)["key"], guard.read(41)["environment"]) == ({"title": "Phone", "environment": "main", "key": KEPT_ELSEWHERE}, "a phone key", "main"), \
         "a phone's key and environment are kept in the vault, and its row shows only that they are kept elsewhere"
     guard.drop(41)
     assert guard.read(41)["key"] == "", "a phone dropped from the vault keeps nothing there"

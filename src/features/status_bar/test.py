@@ -123,8 +123,8 @@ def test_the_whole_bar_is_the_queue_and_nothing_else():
     from runner.hooks import handle
     record = fresh()
     transcript = record.root / "rollout.jsonl"
-    said = lambda role, text: json.dumps({"type": "response_item", "timestamp": "2026-10-09T10:00:00Z", "payload": {"type": "message", "role": role, "content": [{"type": "output_text" if role == "assistant" else "input_text", "text": text}]}}) + "\n"
-    transcript.write_text(said("user", "fix it") + said("assistant", "Reading the parser first") + said("assistant", "The parser is fixed"))
+    response_line = lambda role, text: json.dumps({"type": "response_item", "timestamp": "2026-10-09T10:00:00Z", "payload": {"type": "message", "role": role, "content": [{"type": "output_text" if role == "assistant" else "input_text", "text": text}]}}) + "\n"
+    transcript.write_text(response_line("user", "fix it") + response_line("assistant", "Reading the parser first") + response_line("assistant", "The parser is fixed"))
     handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "codex-1", "transcript_path": str(transcript), "tool_name": "shell", "tool_input": {}})
     assert Agents(record, actor="system").by_session("rollout").last_message == "The parser is fixed", \
         "a Codex agent's cell says what it last said, read from its transcript where its hooks carry no message"
@@ -299,7 +299,7 @@ def test_the_codex_model_and_effort_picker_moves_by_arrow_keys_and_refuses_what_
     assert [choice["value"] for choice in options["groups"][1]["choices"]] == ["low", "high"], "with no model named, the configured model's efforts are offered"
     assert [group["key"] for group in options["groups"][:1]] == ["model"]
     named = [("gpt-6.1-sol", "GPT-6.1-Sol"), ("gpt-6-astra", "GPT-6-Astra"), ("gpt-5.6-terra", "GPT-5.6-Terra"), ("gpt-5.5", "GPT-5.5"), ("plain", "Plain Name")]
-    cache.write_text(json.dumps({"models": [{**model, "display_name": shown} for model, (_, shown) in zip(codex_models(*[(slug, "low", ["low"]) for slug, _ in named]), named)]}))
+    cache.write_text(json.dumps({"models": [{**model, "display_name": model_name} for model, (_, model_name) in zip(codex_models(*[(slug, "low", ["low"]) for slug, _ in named]), named)]}))
     assert ([(choice["value"], choice["label"]) for choice in codex.control_options("")["groups"][0]["choices"]], list(codex().model_labels().values())) == \
         ([("gpt-6.1-sol", "Sol 6.1"), ("gpt-6-astra", "Astra 6"), ("gpt-5.6-terra", "Terra 5.6"), ("gpt-5.5", "5.5"), ("plain", "Plain Name")], ["Sol 6.1", "Astra 6", "Terra 5.6", "5.5", "Plain Name"]), \
         "a Codex model is labelled without GPT- and with its name first, and the id Codex is given stays as it is"

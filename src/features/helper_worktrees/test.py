@@ -33,14 +33,14 @@ def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
     working_tip = commit(project, "later.txt", "later\n")
     (project / "deps").mkdir()
     (project / ".worktreelinks").write_text("deps\n")
-    said = Worktrees(record, actor=AGENT).cut("rhea", helper="Rhea")
+    cut_result = Worktrees(record, actor=AGENT).cut("rhea", helper="Rhea")
     row = Worktrees(record, actor=AGENT).all()[0]
     folder = Path(row.path)
     assert (row.working, row.base, row.branch, row.helper) == ("phone-connection", working_tip, "helper-rhea", "Rhea"), \
         "the row names the working branch, the commit it was cut at, its branch and its helper"
     assert git(folder, "rev-parse", "HEAD") == working_tip and (folder / "later.txt").is_file(), \
         "the worktree starts at the working branch's tip, with its latest commit, not at main"
-    assert str(folder) in said and "helper-rhea" in said, "the path and branch are printed for the dispatch prompt"
+    assert str(folder) in cut_result and "helper-rhea" in cut_result, "the path and branch are printed for the dispatch prompt"
     assert (folder / ".journal").resolve() == record.root.resolve(), "the helper writes to the project's journal"
     assert (folder / "deps").resolve() == (project / "deps").resolve(), "a folder .worktreelinks lists, like node_modules, is linked in, not copied"
     assert refused(lambda: Worktrees(record, actor=AGENT).cut("rhea")).startswith("the worktree rhea is taken"), "a name is cut once"
@@ -150,11 +150,11 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
             "tool_input": {"file_path": str(folder / "shared.txt")}}
     drifts = lambda: [f"{title}. {brief}" for title, brief in nudges_with_briefs(record) if "since your worktree was cut" in title]
 
-    def told(hook: dict) -> str:
+    def advice(hook: dict) -> str:
         before = len(drifts())
         reason = handle(provider, record.root, record.env, hook).get("reason", "")
         return " ".join([*drifts()[before:], reason]).strip()
-    helper = lambda: told({**read, "agent_id": "rhea"})
+    helper = lambda: advice({**read, "agent_id": "rhea"})
     assert helper() == "", "nothing is said while the working branch has not moved"
     assert worktrees._checked_tips().get(str(worktrees.all()[0].n)) == tip(project, "phone-connection"), \
         "the tip it checked is kept on this machine, not in the shared row, so the next tool call runs no git"
@@ -163,7 +163,7 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
     assert (told_tip.startswith("phone-connection moved since your worktree was cut"), "1 commit" in told_tip, f"Rebase onto phone-connection in {folder}" in told_tip) == \
         (True, True, True), "the helper is told the branch moved, what it gained and where to rebase"
     assert helper() == "", "once for that tip"
-    assert "moved" not in told(read), "the main agent reading the helper's files is never told to rebase"
+    assert "moved" not in advice(read), "the main agent reading the helper's files is never told to rebase"
     commit(project, "again.txt", "and again\n")
     assert "It gained 2 commits" in helper(), "a new tip is told again"
     strayed = {**read, "cwd": str(folder)}
@@ -247,8 +247,8 @@ def test_a_new_repository_a_detached_head_and_a_missing_git_identity_are_refused
     record.root.mkdir(parents=True, exist_ok=True)
     project = record.root.resolve().parent
     git(project, "init", "-q", "-b", "main")
-    said = refused(lambda: Worktrees(record, actor=AGENT).cut("rhea"))
-    assert "has no commits" in said and "invalid reference" not in said, said
+    cut_result = refused(lambda: Worktrees(record, actor=AGENT).cut("rhea"))
+    assert "has no commits" in cut_result and "invalid reference" not in cut_result, cut_result
     from engine.worktree import branched
     assert "could not be made from main" in branched(project, "ticket-1", "main"), "a branch off a repository with no commits is refused, not skipped"
     repo = project_on("phone-connection")
@@ -266,8 +266,8 @@ def test_a_new_repository_a_detached_head_and_a_missing_git_identity_are_refused
     monkeypatch.setenv("GIT_AUTHOR_NAME", "")
     monkeypatch.setenv("GIT_COMMITTER_NAME", "")
     monkeypatch.setenv("EMAIL", "")
-    said = refused(lambda: worktrees.take(row.n))
-    assert "was undone" in said and "Traceback" not in said and git(repo.project, "status", "--porcelain") == "", said
+    cut_result = refused(lambda: worktrees.take(row.n))
+    assert "was undone" in cut_result and "Traceback" not in cut_result and git(repo.project, "status", "--porcelain") == "", cut_result
 
 
 def test_a_branch_is_merged_where_it_is_checked_out_or_without_a_checkout_and_conflicts_are_named(tmp_path):

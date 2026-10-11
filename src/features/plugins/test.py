@@ -267,8 +267,8 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     (linked / MANIFEST).write_text(json.dumps({**WORKS, "name": "linked", "setup": [], "requires": {"nothere": {"check": "false", "hint": "install nothere"}}}))
     assert "needs nothere: install nothere" in refused(lambda: plugins.action("install")(str(linked), yes=True)), "a tool a plugin requires and the machine lacks is named with how to get it"
     (linked / MANIFEST).write_text(json.dumps({**WORKS, "name": "linked", "setup": []}))
-    shown = plugins.action("preview")(repository(tmp_path, WORKS, name="peeked"))
-    assert "works" in shown.lower() and "peeked" not in str(list(home(fine.root).glob(".staging-*"))), "a plugin can be looked at without installing it, and leaves no copy"
+    previewed = plugins.action("preview")(repository(tmp_path, WORKS, name="peeked"))
+    assert "works" in previewed.lower() and "peeked" not in str(list(home(fine.root).glob(".staging-*"))), "a plugin can be looked at without installing it, and leaves no copy"
     in_place = plugins.action("install")(str(linked), yes=True)
     assert in_place.linked, "a folder on this machine is installed in place, not copied"
     assert plugins.action("upgrade")(in_place.n, again=True).linked, "a plugin installed in place is read again, and its setup run again, on request"
@@ -318,8 +318,8 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     host = Host(record.root, FEATURES["plugins"].journal)
     for _ in range(2):
         host.refusal("linter", refusals[0])
-    told = [n.title for n in Notices(Record(record.root, "other"), actor=SYSTEM).all()]
-    assert told == ["Plugin linter queued a line the journal refused"], "a refusal is told once, as a notice, in the environment of the line"
+    other_notices = [n.title for n in Notices(Record(record.root, "other"), actor=SYSTEM).all()]
+    assert other_notices == ["Plugin linter queued a line the journal refused"], "a refusal is told once, as a notice, in the environment of the line"
     Path(queued).write_text('todo create "Elsewhere again" --env ' + record.env + "\n")
     assert host.drained(["linter"]) == 1 and len(Notices(Record(record.root, "other"), actor=SYSTEM).all()) == 1, \
         "the host drains a plugin's queue in turn, and what it refuses is told through the same notice"
@@ -370,12 +370,12 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     from engine import bus
     apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "sin-found", "brief": "before any agent"}, "say": "before any agent"})
     assert Agents(record, actor=SYSTEM).all() == [], "with no agent to tell, a plugin's card and words wait for nobody"
-    heard = []
+    typed_briefs = []
     Agents(record, actor=AGENT).create("s-1")
-    off = bus.on("typed.sin-found", lambda event, record: heard.append(event.data["brief"]))
+    off = bus.on("typed.sin-found", lambda event, record: typed_briefs.append(event.data["brief"]))
     apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "sin-found", "brief": "deep-nesting at src/A.php:12"}})
     raised = [e for e in record.event_log.events() if e.action == "raised"][-1]
-    assert (raised.data["title"], raised.data["tone"], raised.data["brief"], heard) == ("Sin found", "warn", "deep-nesting at src/A.php:12", ["deep-nesting at src/A.php:12"]), \
+    assert (raised.data["title"], raised.data["tone"], raised.data["brief"], typed_briefs) == ("Sin found", "warn", "deep-nesting at src/A.php:12", ["deep-nesting at src/A.php:12"]), \
         "a plugin raises an event it declared, styled from its manifest, and anything listening by its name hears it"
     apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "checked", "brief": "all clean"}})
     card = Agents(record, actor=SYSTEM).primary().data["cards"][-1]
@@ -386,7 +386,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert "[[file src/A.php" in viewed, f"its words pass the formatters like any brief, so a file is a chip: {viewed}"
     from features.plugins.commands import Raise
     Raise().run(None, plugins, "typed", "sin-found", "again at src/B.php:3", open="sins/sin/deep-nesting/src/B.php")
-    assert heard[-1] == "again at src/B.php:3", "journal plugin raise, from the queue, raises the same declared event"
+    assert typed_briefs[-1] == "again at src/B.php:3", "journal plugin raise, from the queue, raises the same declared event"
     assert Agents(record, actor=SYSTEM).primary().data["cards"][-1]["page"] == "sins/sin/deep-nesting/src/B.php", \
         "and a raise that names a dashboard page gives its card that page to open"
     assert "declares no event" in refused(lambda: Raise().run(None, plugins, "typed", "made-up", "")), "and refuses one it does not declare"
@@ -415,15 +415,15 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     declared_before = answer.declared
     answer.declared = lambda row: Manifest.of({"name": "typed", "command": "bin/tool"})
     try:
-        said = answer.own_command(record, "typed")
+        own_command_text = answer.own_command(record, "typed")
     finally:
         answer.declared = declared_before
-    assert (plain, "plugins/typed/bin/tool inside the repository that holds the file" in said, "Install nothing" in said) == ("", True, True), \
+    assert (plain, "plugins/typed/bin/tool inside the repository that holds the file" in own_command_text, "Install nothing" in own_command_text) == ("", True, True), \
         "a plugin that declares its own command has its nudge say the exact command to run from inside the repository, so the agent installs nothing"
     from features.plugins.manifest import typed as checked
-    shown = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},
+    previewed = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},
                      "either": {"type": "flag", "when": [{"php": True}, {"vue": True}]}})
-    assert [shown["sin"]["when"], shown["either"]["when"]] == [[{"php": True}], [{"php": True}, {"vue": True}]], \
+    assert [previewed["sin"]["when"], previewed["either"]["when"]] == [[{"php": True}], [{"php": True}, {"vue": True}]], \
         "a setting may be shown only while another has a value, or while any of several do"
     assert "names settings" in refused(lambda: checked({"sin": {"type": "flag", "when": {"ruby": True}}})), "a condition names a setting that exists"
     from features.plugins.manifest import read
@@ -909,10 +909,10 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
     assert "poster" in host.trouble, "a plugin whose server does not answer is marked as in trouble"
     Todos(record, actor=SYSTEM).create("Far too old")
     assert host.step(now + 100000) == 0, "an event older than the replay window is passed over, not delivered late"
-    told = lambda: [n.title for n in Notices(record, actor=SYSTEM).all() if n.title.endswith("a line the journal refused")]
+    other_notices = lambda: [n.title for n in Notices(record, actor=SYSTEM).all() if n.title.endswith("a line the journal refused")]
     host.refusal("answerer", Refusal(record.env, "todo", "no such word"))
     host.refusal("answerer", Refusal(record.env, "todo", "no such word"))
-    assert told() == ["Plugin answerer queued a line the journal refused"], "the same refusal of a plugin's line is told once"
+    assert other_notices() == ["Plugin answerer queued a line the journal refused"], "the same refusal of a plugin's line is told once"
     watched = []
     monkeypatch.setattr(hosting.Host, "step", lambda self, now=0.0: 1 / 0)
     monkeypatch.setattr(hosting, "threw", lambda root, env, where: watched.append(where))
@@ -1061,18 +1061,18 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     from engine import bus
     from features.plugins import refusing
     context = SimpleNamespace(record=None, feature=SimpleNamespace(journal=None), hook=SimpleNamespace(session="s-1"))
-    said = []
+    own_command_text = []
     with monkeypatch.context() as slow:
         slow.setattr(bus, "BACKGROUND", True)
         slow.setattr(refusing, "called", lambda row: "slowpoke")
         slow.setattr(refusing, "declared", lambda row: SimpleNamespace(refuse_budget=2.0))
-        slow.setattr(refusing, "apply", lambda record, journal, name, session, reply: said.append(reply["say"]))
+        slow.setattr(refusing, "apply", lambda record, journal, name, session, reply: own_command_text.append(reply["say"]))
         slow.setattr(refusing.PluginAsk, "answer", lambda self, record, row, tool, payload, seconds: time.sleep(0.6) or "no")
         began = time.monotonic()
         waited_for = refusing.PluginAsk().within(context, object(), "Bash", {}, 0.2)
         took = time.monotonic() - began
         until = time.monotonic() + 3
-        while not said and time.monotonic() < until:
+        while not own_command_text and time.monotonic() < until:
             time.sleep(0.02)
-    assert (waited_for, took < 0.5, bool(said) and "answered after the call went ahead" in said[0]) == ("", True, True), \
+    assert (waited_for, took < 0.5, bool(own_command_text) and "answered after the call went ahead" in own_command_text[0]) == ("", True, True), \
         "a plugin's refusal is waited for as long as the hook may wait; past that the call goes ahead and the plugin's answer reaches the agent late"

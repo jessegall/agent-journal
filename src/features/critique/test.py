@@ -17,9 +17,9 @@ def test_a_round_hands_out_one_read_only_critic_per_lens_and_a_report_for_their_
     assert "does not answer" in refused(lambda: critiques.round("the helper list")), "an app that does not answer is refused in words"
     up["answers"] = True
     assert "no lens colour" in refused(lambda: critiques.round("the helper list", lenses="words,colour")), "an unknown lens is named with the list"
-    said = critiques.round("the helper list", lenses="first-time,words")
+    round_result = critiques.round("the helper list", lenses="first-time,words")
     row = critiques.all()[0]
-    assert ([c["lens"] for c in row.critics], "read-only subagent per lens" in said, f"journal report section {row.report}" in said) == \
+    assert ([c["lens"] for c in row.critics], "read-only subagent per lens" in round_result, f"journal report section {row.report}" in round_result) == \
         (["first-time", "words"], True, True), "one critic per lens, dispatched by the agent as a subagent, its findings filed in the round's report"
     briefs = [Path(c["brief"]).read_text() for c in row.critics]
     assert all("round.md" in b and "Your findings are your answer" in b and "journal" not in b.split("round.md")[1] for b in briefs), \

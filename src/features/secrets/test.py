@@ -180,11 +180,11 @@ def test_a_login_is_saved_once_and_the_agents_browser_starts_with_it(tmp_path, m
     assert "no login was saved: browserType.launch: Executable doesn't exist" in refused(lambda: secrets.login(row.n)), \
         "a browser that fails to open says why, rather than only that nothing was saved"
     monkeypatch.setattr(subprocess, "run", browser)
-    said = secrets.login(row.n)
+    login_text = secrets.login(row.n)
     press(record, asked, "Log in", secrets.actor, "viewer")
     logins = BrowserLogins(record.root)
     merged = json.loads(logins.merged.read_text())
-    assert opened[0][:4] == ["npx", "-y", "playwright@latest", "open"] and "Restart the agent once" in said, "the browser opens for the user, and the agent is told to restart once"
+    assert opened[0][:4] == ["npx", "-y", "playwright@latest", "open"] and "Restart the agent once" in login_text, "the browser opens for the user, and the agent is told to restart once"
     assert (len(merged["cookies"]), len(merged["origins"])) == (1, 1), "logging in again replaces the saved session instead of adding a second"
     assert {stat.S_IMODE(path.stat().st_mode) for path in (logins.merged, logins.saved_for("Staging"))} == {0o600}, "only the owner reads a saved login"
     servers = json.loads((project / ".mcp.json").read_text())["mcpServers"]

@@ -293,8 +293,8 @@ def test_the_turns_an_agent_spoke_are_read_from_its_transcript_a_whole_line_at_a
     crossed = tmp_path / "claude-5.jsonl"
     crossed.write_text(json.dumps({"type": "queue-operation", "operation": "enqueue", "timestamp": stamp,
                                    "content": '<cross-session-message from="uds:/tmp/cc-socks/1.sock" from-name="Coco" from-mode="bypass">\nthe report is ready\n</cross-session-message>'}) + "\n")
-    heard = Claude().turns(crossed)[0]
-    assert (heard.kind, heard.peer.address, heard.peer.name, heard.text) == ("peer", "uds:/tmp/cc-socks/1.sock", "Coco", "the report is ready"), \
+    first_turn = Claude().turns(crossed)[0]
+    assert (first_turn.kind, first_turn.peer.address, first_turn.peer.name, first_turn.text) == ("peer", "uds:/tmp/cc-socks/1.sock", "Coco", "the report is ready"), \
         "a message another Claude Code session sent is an agent's message, named for that session, in its own words"
     listed = tmp_path / "claude-4.jsonl"
     listed.write_text(json.dumps(user_line([{"type": "tool_result", "tool_use_id": "z", "content": [{"type": "text", "text": "a result in parts"}, "stray", {"type": "text", "text": "and more"}]}])) + "\n")
@@ -318,8 +318,8 @@ def test_the_turns_an_agent_spoke_are_read_from_its_transcript_a_whole_line_at_a
         item("function_call_output", call_id="c1", output="done"),
         item("reasoning", summary=[]),
         {"type": "event_msg", "timestamp": stamp, "payload": {"type": "task_started"}})))
-    heard = Codex().turns(rollout)
-    assert [(turn.who, turn.text) for turn in heard if turn.text] == [("agent", "Built it."), ("tool", "done")], \
+    first_turn = Codex().turns(rollout)
+    assert [(turn.who, turn.text) for turn in first_turn if turn.text] == [("agent", "Built it."), ("tool", "done")], \
         "a Codex rollout is read as what the agent wrote and what its tools returned, leaving out blank lines, system text, reasoning and events"
     agents.update(row.n, transcript=str(transcript), status="working")
     read_transcripts(record.root)
@@ -410,10 +410,10 @@ def test_a_long_transcript_answers_its_newest_turns_at_once_and_fills_in_behind(
     monkeypatch.setattr(transcript_cache.CACHE, "folder", tmp_path / "folds")
     monkeypatch.setattr(transcript_cache, "FOLD_IN_PLACE_BYTES", 10_000)
     monkeypatch.setattr(transcript_cache, "RECENT_BYTES", 5_000)
-    said = lambda n: {"type": "user", "timestamp": "2026-10-05T10:00:00Z", "message": {"content": f"question {n} " + "x" * 200}}
+    question_line = lambda n: {"type": "user", "timestamp": "2026-10-05T10:00:00Z", "message": {"content": f"question {n} " + "x" * 200}}
     answered = lambda n: {"type": "assistant", "timestamp": "2026-10-05T10:00:01Z", "message": {"content": [{"type": "text", "text": f"answer {n}"}]}}
     transcript = tmp_path / "long.jsonl"
-    transcript.write_text("".join(json.dumps(row) + "\n" for n in range(200) for row in (said(n), answered(n))))
+    transcript.write_text("".join(json.dumps(row) + "\n" for n in range(200) for row in (question_line(n), answered(n))))
     claude = PROVIDERS["claude"]()
     began = time.monotonic()
     first = claude.turns(transcript)

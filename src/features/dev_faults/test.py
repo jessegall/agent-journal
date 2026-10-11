@@ -60,11 +60,11 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
             with waits.waited("record"):
                 time.sleep(0.2)
     assert len(notified(record)) == before + 1, "a request that spent its time waiting on a lock, over its budget, is noticed too: whoever holds the lock makes everyone wait"
-    heard = []
+    stopwatch_times = []
     with monkeypatch.context() as patched:
-        patched.setattr(Stopwatch, "announce", lambda self, *args: heard.append(args[-1]))
+        patched.setattr(Stopwatch, "announce", lambda self, *args: stopwatch_times.append(args[-1]))
         timed(Reply(200, {}, after=lambda: time.sleep(0.05)), record.root, record.env, "GET", "/api/main/dashboard", Stopwatch()).after()
-    assert 40 < heard[-1] < 250, "the time reported after an answer is what the work left behind took, not how long it waited in the queue"
+    assert 40 < stopwatch_times[-1] < 250, "the time reported after an answer is what the work left behind took, not how long it waited in the queue"
     from engine.after_answer import AfterAnswer
     workers, ran = AfterAnswer.started(1), []
     with workers.answering_hook():
@@ -123,8 +123,8 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
         busy(0.08)
     assert "slow request GET /api/main/message" in log.read_text(), "switched on, a slow request is written to the diagnostic log"
     from commands.http import dispatch
-    shown = dispatch("GET", f"/api/{record.env}/diagnostics", record.root, {"lines": "50"}, {}).body["log"]
-    assert "slow request GET /api/main/message" in shown, "the viewer shows the diagnostic log in Settings"
+    log_lines = dispatch("GET", f"/api/{record.env}/diagnostics", record.root, {"lines": "50"}, {}).body["log"]
+    assert "slow request GET /api/main/message" in log_lines, "the viewer shows the diagnostic log in Settings"
     dispatch("POST", f"/api/{record.env}/diagnostics/clear", record.root, {}, {})
     assert dispatch("GET", f"/api/{record.env}/diagnostics", record.root, {}, {}).body["log"] == "", "and clears it"
 

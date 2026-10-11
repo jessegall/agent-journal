@@ -45,8 +45,8 @@ def test_a_keyword_matches_as_a_whole_word_only_where_its_row_says():
     chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "I said so")
     whispered = [n.title.split(" — ")[0] for n in Nudges(record).all() if n.title.startswith("fact ")]
     assert whispered == [f"fact {ran.n}", f"fact {wrote.n}"], "a whole word in a command, then in chat; not inside 'unsaid', not in a file path"
-    shown = [(w["ref"], w["title"]) for w in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("whispers") or []]
-    assert shown == [(ran.ref, "in commands"), (wrote.ref, "in text")], f"each reminder is kept on the agent for the chat to show: {shown}"
+    whisper_rows = [(w["ref"], w["title"]) for w in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("whispers") or []]
+    assert whisper_rows == [(ran.ref, "in commands"), (wrote.ref, "in text")], f"each reminder is kept on the agent for the chat to show: {whisper_rows}"
     words = [w["words"] for w in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("whispers") or []]
     assert words == [f"Reminded the agent of fact {ran.n}", f"Reminded the agent of fact {wrote.n}"], "one wording for the computer's chat mark and the phone's"
     hook(tool_name="Bash", tool_input={"command": "grep -rn said ."})
@@ -65,16 +65,16 @@ def test_dismissing_a_fact_from_the_rail_is_not_told_to_the_agent_but_editing_it
     engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
     n = Facts(record, actor=AGENT).create("the server reloads itself", keywords="server").n
     engine.deliver()
-    told, notify = [], engine.agent.notify
-    engine.agent.notify = lambda event: (told.append(event.data.get("fields")), notify(event))
+    dismissal_fields, notify = [], engine.agent.notify
+    engine.agent.notify = lambda event: (dismissal_fields.append(event.data.get("fields")), notify(event))
     user = Facts(record, actor=USER)
     user.set(n, "kept", "false")
     user.read(n)
     engine.deliver()
-    assert told == [], f"a dismissal only shapes the user's own rail: {told}"
+    assert dismissal_fields == [], f"a dismissal only shapes the user's own rail: {dismissal_fields}"
     user.update(n, brief="it re-execs on a .py change")
     engine.deliver()
-    assert told == [["brief"]], f"a real edit by the user still reaches the agent: {told}"
+    assert dismissal_fields == [["brief"]], f"a real edit by the user still reaches the agent: {dismissal_fields}"
 
 
 def test_upgrades_turn_old_pin_folders_into_facts_and_repoint_what_named_them(tmp_path):

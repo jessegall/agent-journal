@@ -218,10 +218,10 @@ def test_an_integration_holds_one_client_and_builds_it_again_when_its_settings_c
         variable = linear.log_in(record, browser(), origin)
         entry = json.loads((record.root.parent / ".mcp.json").read_text())["mcpServers"]["journal-linear"]
         assert variable in entry["headersHelper"] and "tok-xyz" not in json.dumps(entry), "once signed in the agent's entry carries the command that fetches the token, never the token"
-        shown = io.StringIO()
-        with contextlib.redirect_stdout(shown):
+        output_buffer = io.StringIO()
+        with contextlib.redirect_stdout(output_buffer):
             assert mcp_headers.main([str(record.root), variable]) == 0
-        assert json.loads(shown.getvalue()) == {"Authorization": "Bearer tok-xyz"}, "and that command answers the sign-in header"
+        assert json.loads(output_buffer.getvalue()) == {"Authorization": "Bearer tok-xyz"}, "and that command answers the sign-in header"
         from features.integrations.login import RENEWAL_SUFFIX, Renewal
         running_out = Renewal.read(ValuesFile(record.root).values()[variable + RENEWAL_SUFFIX])
         ValuesFile(record.root).put(variable + RENEWAL_SUFFIX, Renewal(running_out.refresh_token, running_out.client_id, running_out.token_url, time.time() + 10).text())

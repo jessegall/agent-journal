@@ -304,8 +304,8 @@ def test_stop_in_the_viewer_tells_the_agent_to_stop_that_task_in_its_providers_w
     agents = Agents(record, actor="user")
     agent = agents.by_session("claude-1")
     agents.stop_task(agent.n, "b7wu1410l", description="Poll production")
-    told = [n for n in Nudges(record).all() if n.title == "the user asked to stop Poll production"]
-    assert [n.brief for n in told] == ["run TaskStop with task_id b7wu1410l now; then carry on with the work"], "once, in Claude's words"
+    stop_nudges = [n for n in Nudges(record).all() if n.title == "the user asked to stop Poll production"]
+    assert [n.brief for n in stop_nudges] == ["run TaskStop with task_id b7wu1410l now; then carry on with the work"], "once, in Claude's words"
     agents.stamp(agent.n, status="stopped")
     agents.stop_task(agent.n, "b8old", description="An old poll")
     assert not [n for n in Nudges(record).all() if "An old poll" in n.title], "an agent whose session has stopped is never asked to stop a task, so no later session hears of it"
@@ -390,8 +390,8 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
     running = {"id": "t1", "task": "audit the hooks", "type": "auditor", "model": "sonnet", "ended": 0.0}
     for subagents in ([last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], {**running, "ended": 9.0, "status": "completed"}]):
         seat.subagents_moved(last, subagents)
-    heard = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.event_log.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
-    assert heard == [("dispatched", "audit the hooks", "auditor", "sonnet"), ("returned", "audit the hooks", "auditor", "sonnet")], heard
+    subagent_events = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.event_log.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
+    assert subagent_events == [("dispatched", "audit the hooks", "auditor", "sonnet"), ("returned", "audit the hooks", "auditor", "sonnet")], subagent_events
     from agents import seat as seats
     from types import SimpleNamespace
     written = []

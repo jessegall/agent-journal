@@ -99,9 +99,9 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     import agents.screen as screen
     from engine import runtime
     root = tmp_path / ".journal"
-    shown = runtime.session_file(root, "claude-3", screen.SCREEN)
-    shown.parent.mkdir(parents=True)
-    shown.write_bytes(b"hello from the agent")
+    screen_file = runtime.session_file(root, "claude-3", screen.SCREEN)
+    screen_file.parent.mkdir(parents=True)
+    screen_file.write_bytes(b"hello from the agent")
     master, slave = pty.openpty()
     out_read, out_write = os.pipe()
     monkeypatch.setattr(screen.sys, "stdin", SimpleNamespace(fileno=lambda: slave))
@@ -284,10 +284,10 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
     engine.pausing()
     from engine import runtime
-    delivered, told = engine.agent.driver.send, []
-    engine.agent.driver.send = lambda line, **k: told.append(line) or False
+    delivered, driven_lines = engine.agent.driver.send, []
+    engine.agent.driver.send = lambda line, **k: driven_lines.append(line) or False
     inputs.queue(root, "claude-1", (), "Resume", action=inputs.RESUME, value=inputs.UPDATE)
-    assert (engine.pausing(), engine.paused, len(list(runtime.inputs(root).glob("*.json"))), engine.pausing(), told) == \
+    assert (engine.pausing(), engine.paused, len(list(runtime.inputs(root).glob("*.json"))), engine.pausing(), driven_lines) == \
         ("resumed", False, 0, "", [engine_module.RESUMED_AFTER_UPDATE]), "a resume ends the pause at once and tells the agent once, even when its line waits to be typed"
     engine.agent.driver.send = delivered
     inputs.queue(root, "claude-1", (), "Pause", action=inputs.PAUSE, value=inputs.UPDATE)
@@ -511,8 +511,8 @@ def test_a_worker_that_keeps_failing_with_no_earlier_build_is_retried_slower_the
     ours.worker_began = time.time()
     assert ours.after_worker(1) == 99, "after the cap the session ends instead of restarting the worker again"
     os.close(write)
-    said = os.read(read, 4096).decode()
-    assert said.count("no earlier build to go back to") == 1, "one plain line says why"
+    typed_output = os.read(read, 4096).decode()
+    assert typed_output.count("no earlier build to go back to") == 1, "one plain line says why"
     ours.worker_began = time.time() - supervisor.QUICK - 1
     ours.unhealed = 3
     assert ours.after_worker(supervisor.RELOAD) is None and ours.unhealed == 0, "a worker that ran on resets the count"

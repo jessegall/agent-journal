@@ -224,8 +224,8 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
     assert bare("all 358 viewer unit tests pass, and 358 viewer unit tests ran") == [], "a number before a noun phrase ending in a plural, or after all, is a count"
     assert bare("a number under 250 is a count, and so is more than 300") == [], "a quantity word before a number makes it a count"
     assert formatted("a journal question with options; journal question ask", record, VIEWER) == "a journal question with options; `journal question ask`", "only a real command is code"
-    shown = formatted("run python3 journal.py --root .journal upgrade, or pass --why", record, VIEWER)
-    assert shown.endswith(" --root .journal upgrade, or pass `--why`"), "a flag of another program and a .journal path stay plain text"
+    formatted_text = formatted("run python3 journal.py --root .journal upgrade, or pass --why", record, VIEWER)
+    assert formatted_text.endswith(" --root .journal upgrade, or pass `--why`"), "a flag of another program and a .journal path stay plain text"
     long = "see src/a.py and docs/b.md --flag " * 4000
     began = time.thread_time()
     formatted(long, record, VIEWER)
@@ -336,10 +336,10 @@ def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update(
     agent.read_all([n + 1])
     agent.action("read")(n)
     agent.action("react")(n, "👍")
-    heard = [(e.type, e.action, e.data.get("by")) for e in record.event_log.events() if e.n == n or e.type == "reaction"]
+    reaction_events = [(e.type, e.action, e.data.get("by")) for e in record.event_log.events() if e.n == n or e.type == "reaction"]
     read = [e.data.get("by") for e in record.event_log.events() if e.type == "message" and e.action == "updated" and e.data.get("seen") == AGENT]
     assert read == ["read", "read"], f"a read from the viewer's read-all and from the command both say read: {read}"
-    assert [by for t, _, by in heard if t == "reaction"] == [None], f"a row of another type saved inside the command is not stamped with it: {heard}"
+    assert [by for t, _, by in reaction_events if t == "reaction"] == [None], f"a row of another type saved inside the command is not stamped with it: {reaction_events}"
     closing = Messages(record, actor=SYSTEM)
     held_open = closing.create("closed twice")
     assert (closing._closed_once(held_open.n, "first").completed > 0, closing._closed_once(held_open.n, "second"), closing.load(held_open.n).outcome) == (True, None, "first"), \

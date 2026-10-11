@@ -172,9 +172,9 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     printed = runtime.session_file(record.root, terminal_of(record.root, "claude-9"), "printed")
     printed.parent.mkdir(parents=True, exist_ok=True)
     printed.write_bytes("\x1b[2KReading the tree contract\r\n\x1b[1m❯\u00a0\x1b[2mapproved, go ahead\x1b[22m\r\n".encode())
-    shown = tickets.screen(ticket.n)
-    assert "Reading the tree contract" in shown, "journal ticket screen shows what the ticket agent's terminal says"
-    assert "[a suggestion, not sent: approved, go ahead]" in shown, "Claude Code's dimmed next-prompt suggestion is marked, never read as typed"
+    ticket_screen = tickets.screen(ticket.n)
+    assert "Reading the tree contract" in ticket_screen, "journal ticket screen shows what the ticket agent's terminal says"
+    assert "[a suggestion, not sent: approved, go ahead]" in ticket_screen, "Claude Code's dimmed next-prompt suggestion is marked, never read as typed"
     tickets.start(ticket.n)
     assert len(launched) == 1, "a ticket whose agent runs is not started twice"
     from tests.kit import report
@@ -463,8 +463,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     with monkeypatch.context() as quiet:
         quiet.setattr(Tickets, "_driver", lambda self, found, doing: SimpleNamespace(send=lambda text, now, by=None: typed.append(text) or True))
         quiet.setattr(Tickets, "_working", lambda self, found: False)
-        said = tickets.tell(ticket.n, "carry on with the tests")
-    assert (said, typed) == (f"told ticket {ticket.n}'s agent: carry on with the tests", ["carry on with the tests"]), \
+        tell_result = tickets.tell(ticket.n, "carry on with the tests")
+    assert (tell_result, typed) == (f"told ticket {ticket.n}'s agent: carry on with the tests", ["carry on with the tests"]), \
         "a note to a ticket's agent is delivered and answered with the note, never with the ticket's whole brief"
     from controllers.agents import IDLE_STATE
     from controllers.types import Agents
@@ -547,10 +547,10 @@ def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start()
     assert ("is a draft" in refused(lambda: Tickets(record, actor=USER).move(drafted.n, "Building")), Tickets(record).load(drafted.n).stage) == \
         (True, "Ideas"), "a draft cannot start, and stays where it was"
     assert "does not let its orchestrator confirm the draft" in refused(lambda: Tickets(record, actor=AGENT).confirm(drafted.n)), "the agent cannot confirm a draft its board does not let it, and the refusal says which setting allows it"
-    shown = lambda: [card["n"] for lane in Tickets(record, actor=USER).board(board.n)["lanes"] for card in lane["cards"]]
-    assert drafted.n not in shown(), "a draft stays off the board"
+    ticket_screen = lambda: [card["n"] for lane in Tickets(record, actor=USER).board(board.n)["lanes"] for card in lane["cards"]]
+    assert drafted.n not in ticket_screen(), "a draft stays off the board"
     assert Tickets(record, actor=USER).confirm(drafted.n).draft is False, "the user confirms it"
-    assert drafted.n in shown(), "once confirmed it shows on the board"
+    assert drafted.n in ticket_screen(), "once confirmed it shows on the board"
 
 
 def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monkeypatch):

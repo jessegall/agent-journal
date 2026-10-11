@@ -253,10 +253,10 @@ def test_a_copy_that_connects_is_told_how_its_release_and_its_record_stand_again
     from engine import bus
     from engine.sync import pulled_cursor, replay
     from resources.base import Event
-    heard, record = [], fresh()
-    off = bus.on("todo.created", lambda event, record: heard.append(event.id))
+    created_ids, record = [], fresh()
+    off = bus.on("todo.created", lambda event, record: created_ids.append(event.id))
     pulled = [Event(id=9000 + i, at=1.0, type="todo", n=900 + i, action="created", actor=AGENT, env="elsewhere") for i in range(2)]
-    assert (replay(record, PROJECT, pulled), replay(record, PROJECT, pulled), heard) == (2, 0, []), \
+    assert (replay(record, PROJECT, pulled), replay(record, PROJECT, pulled), created_ids) == (2, 0, []), \
         "pulled events are put into the log once and no feature fires on them"
     assert ([e.id for e in record.event_log.project.events(since=8999)], all(e.handled for e in record.event_log.project.events(since=8999))) == ([9000, 9001], True), \
         "they are kept as already handled"

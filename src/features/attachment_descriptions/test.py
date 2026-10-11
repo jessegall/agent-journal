@@ -105,16 +105,16 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
         "viewer search identifies the matching attachment"
     from features.format import card
     messages.section(message.n, "Detail", "a long body the result card never shows")
-    shown = card(messages.load(message.n), record)
-    assert (shown["title"], shown["sections"], "outcome" in shown) == ("look at this", [{"title": "Detail"}], False), \
+    message_card = card(messages.load(message.n), record)
+    assert (message_card["title"], message_card["sections"], "outcome" in message_card) == ("look at this", [{"title": "Detail"}], False), \
         "a result card carries its formatted title and summary and only its section titles, never text it does not show"
     from commands import http
     again = messages.create("three regions again")
-    shown, http.SHOWN_HITS = http.SHOWN_HITS, 1
+    message_card, http.SHOWN_HITS = http.SHOWN_HITS, 1
     try:
         narrowed = dispatch("GET", "/api/t/search", record.root, {"q": "three regions"}, {}).body
     finally:
-        http.SHOWN_HITS = shown
+        http.SHOWN_HITS = message_card
     assert ([hit["title"] for hit in narrowed["hits"]], narrowed["more"]) == (["three regions again"], 1), \
         "a search shapes only the newest hits it shows and counts the rest"
     assert refused(lambda: messages.tag(message.n, "missing.png", "nothing")) == "message 1 has no file missing.png", \

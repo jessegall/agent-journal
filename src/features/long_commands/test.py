@@ -284,12 +284,12 @@ def test_a_monitor_runs_until_it_ends_or_its_time_is_up_and_the_agents_thoughts_
     assert [row["command"] for row in Claude().crew(transcript)["monitor_rows"] if row["task"] == "watch 4"] == ["wss://feed.example/stream"], "a monitor of an address is shown by that address"
 
     thought = lambda text: {"type": "assistant", "timestamp": now, "message": {"id": "a1", "content": [{"type": "thinking", "thinking": text}]}}
-    said = {"type": "assistant", "timestamp": now, "message": {"id": "a2", "content": [{"type": "text", "text": "Done."},
+    assistant_line = {"type": "assistant", "timestamp": now, "message": {"id": "a2", "content": [{"type": "text", "text": "Done."},
                                                                                              {"type": "tool_use", "id": "t9", "name": "Read", "input": {}}]}}
     asked = {"type": "user", "timestamp": now, "message": {"content": "go on"}}
     own = tmp_path / "thinking.jsonl"
     own.write_text("\n".join(json.dumps(row) for row in (thought("  Weighing the two options  "), {**thought("then the second"), "message": {"id": "a1", "content": [
-        {"type": "thinking", "thinking": "then the second"}, {"type": "tool_use", "id": "t8", "name": "Read", "input": {}}]}}, said, asked)) + "\n")
+        {"type": "thinking", "thinking": "then the second"}, {"type": "tool_use", "id": "t8", "name": "Read", "input": {}}]}}, assistant_line, asked)) + "\n")
     found, offset = Claude().thoughts(own, 0)
     assert found == [("thinking", "Weighing the two options\n\nthen the second"), ("text", "")], \
         "what an agent weighed in one turn is kept together, and an answer in words is only marked as spoken"

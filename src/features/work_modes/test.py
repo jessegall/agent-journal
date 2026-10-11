@@ -19,7 +19,7 @@ def called(record, tool: str, given: dict) -> dict:
                                                                   "tool_input": given, "cwd": str(record.root.parent)})
 
 
-def told(record, words: str) -> list:
+def mode_nudges(record, words: str) -> list:
     return [n for n in Nudges(record, actor=SYSTEM).all() if words in n.title]
 
 
@@ -34,7 +34,7 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     assert dispatch("POST", f"/api/{record.env}/mode", record.root, {}, {"mode": "orchestrator"}).body == {"mode": "orchestrator"}, \
         "the viewer's mode switch picks the mode"
     assert mode_of(record) == "orchestrator" and "WORK MODE: orchestrator" in start_block(record), "the mode is kept and carried after a restart or compaction"
-    assert len(told(record, "work mode to orchestrator")) == 1, "the agent is told once when it changes"
+    assert len(mode_nudges(record, "work mode to orchestrator")) == 1, "the agent is told once when it changes"
     from features.sequences.shipped import shipped_sequences
     routines = {shipped.title: shipped for shipped in shipped_sequences()}
     assert [title in routines for title in ("Taking a helper's report", "Routing a user's report", "Cutting a patch release")] == [True] * 3, \
@@ -43,7 +43,7 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
         "routing a report starts by searching in a few commands, before a subagent is sent for a quick question"
     assert NAME in [e.data.get("setting") for e in record.event_log.events()], "the viewer hears the change and follows it"
     pick(record, "orchestrator", USER)
-    assert len(told(record, "work mode to orchestrator")) == 1, "picking the same mode again tells nothing"
+    assert len(mode_nudges(record, "work mode to orchestrator")) == 1, "picking the same mode again tells nothing"
 
 
 def test_solo_refuses_a_subagent_and_a_helper_and_hands_on_lets_both_through():
@@ -76,13 +76,13 @@ def test_orchestrator_reminds_the_agent_after_its_own_edits_and_hands_on_never(m
     edit = {"file_path": str(record.root.parent / "code.py"), "old_string": "a", "new_string": "b"}
     for _ in range(9):
         called(record, "Edit", edit)
-    assert not told(record, "orchestrator here"), "builder is never reminded"
+    assert not mode_nudges(record, "orchestrator here"), "builder is never reminded"
     pick(record, "orchestrator", USER)
     for _ in range(7):
         called(record, "Edit", edit)
-    assert not told(record, "orchestrator here"), "a few edits of its own are fine"
+    assert not mode_nudges(record, "orchestrator here"), "a few edits of its own are fine"
     called(record, "Edit", edit)
-    assert told(record, "orchestrator here and have made 8 edits"), "the eighth edit brings a gentle reminder"
+    assert mode_nudges(record, "orchestrator here and have made 8 edits"), "the eighth edit brings a gentle reminder"
 
 
 def test_an_upgrade_turns_auto_mode_on_and_renames_the_hands_on_mode():
@@ -112,14 +112,14 @@ def test_the_board_picked_for_new_work_switches_what_the_agent_is_told_to_file()
     assert "no board 99" in refused(lambda: choose_board(record, 99, USER)), "a board that is not there is refused"
     assert dispatch("POST", f"/api/{record.env}/mode/board", record.root, {}, {"board": board.n}).body == {"board": board.n}, "the viewer's selector picks the board"
     assert f"NEW WORK: file each new request as a ticket on board {board.n}, Rewrite" in start_block(record), "a start carries where new work goes"
-    assert len(told(record, "where new work goes")) == 1 and "journal ticket create" in told(record, "where new work goes")[0].brief and "journal todo create" not in told(record, "where new work goes")[0].brief, "the agent is told once, to file tickets on the board it picked, never to-dos"
+    assert len(mode_nudges(record, "where new work goes")) == 1 and "journal ticket create" in mode_nudges(record, "where new work goes")[0].brief and "journal todo create" not in mode_nudges(record, "where new work goes")[0].brief, "the agent is told once, to file tickets on the board it picked, never to-dos"
     choose_board(record, board.n, USER)
-    assert len(told(record, "where new work goes")) == 1, "picking the same board tells nothing"
+    assert len(mode_nudges(record, "where new work goes")) == 1, "picking the same board tells nothing"
     pick(record, "builder", USER)
     assert "NEW WORK" not in start_block(record) and "journal todo create" in filing(record), "outside orchestrator mode the board is not used: to-dos"
     pick(record, "orchestrator", USER)
     choose_board(record, 0, USER)
-    assert "NEW WORK" not in start_block(record) and len(told(record, "where new work goes")) == 2, "None goes back to to-dos and the agent is told"
+    assert "NEW WORK" not in start_block(record) and len(mode_nudges(record, "where new work goes")) == 2, "None goes back to to-dos and the agent is told"
 
 
 def ran(at: float, edits: int) -> dict:
@@ -141,14 +141,14 @@ def test_the_builder_is_told_when_most_of_a_stretch_was_edited_by_its_helpers():
     edit = {"file_path": str(record.root.parent / "code.py"), "old_string": "a", "new_string": "b"}
     for _ in range(7):
         called(record, "Edit", edit)
-    assert not told(record, "of the edits in this stretch"), "the share is read every eighth edit of its own, not sooner"
+    assert not mode_nudges(record, "of the edits in this stretch"), "the share is read every eighth edit of its own, not sooner"
     called(record, "Edit", edit)
-    assert told(record, "25% of the edits in this stretch were your own"), "a quarter of its own is below the share a builder keeps"
+    assert mode_nudges(record, "25% of the edits in this stretch were your own"), "a quarter of its own is below the share a builder keeps"
     agents.update(sub.n, commands=[ran(then + 1, 1)])
-    said = len(told(record, "of the edits in this stretch"))
+    edit_nudge_count = len(mode_nudges(record, "of the edits in this stretch"))
     for _ in range(8):
         called(record, "Edit", edit)
-    assert len(told(record, "of the edits in this stretch")) == said, "three of its own against one of theirs is a builder working"
+    assert len(mode_nudges(record, "of the edits in this stretch")) == edit_nudge_count, "three of its own against one of theirs is a builder working"
 
 
 def test_the_offer_of_the_next_row_is_worded_by_the_mode_the_agent_is_in():

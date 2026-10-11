@@ -65,10 +65,10 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
     assert sent[-1].startswith("installing journal 3.0.0 failed") and [n.title for n in Notices(record).all()][-1] == "The journal could not update to 3.0.0", \
         "a failed install is told to the agent and filed as a notice"
-    told = len(sent)
+    sent_count = len(sent)
     monkeypatch.setattr(updates, "installed", lambda root, yes, version: "")
     updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
-    assert len(sent) == told, "an install that went well tells nothing; the restart says the rest"
+    assert len(sent) == sent_count, "an install that went well tells nothing; the restart says the rest"
     assert updates.claimed(record.root, "3.0.1", "patches") and not updates.claimed(record.root, "3.0.1", "patches"), "a release just tried waits before it is tried again"
     monkeypatch.setattr(updates, "changed_managed", lambda project, root: [project / "CLAUDE.md"])
     monkeypatch.setattr(updates, "upstream", lambda root: "3.0.2")
@@ -379,10 +379,10 @@ def test_the_installed_entries_fall_through_a_sleeping_server_and_run_the_curren
     (home / ".local" / "bin").mkdir(parents=True)
     for name, value in (("HOME", str(home)), ("SHELL", "/bin/bash"), ("PATH", "/usr/bin:/bin")):
         monkeypatch.setenv(name, value)
-    told = put_on_path(home / ".local" / "bin")
+    sent_count = put_on_path(home / ".local" / "bin")
     put_on_path(home / ".local" / "bin")
     profile = (home / ".bash_profile").read_text()
-    assert "open a new terminal" in told and profile.count(ON_PATH) == 1 and 'export PATH="$HOME/.local/bin:$PATH"' in profile, \
+    assert "open a new terminal" in sent_count and profile.count(ON_PATH) == 1 and 'export PATH="$HOME/.local/bin:$PATH"' in profile, \
         "a journal command off the PATH puts its folder on the PATH once, in the shell's own profile, and says so"
     monkeypatch.setenv("PATH", f"{home / '.local' / 'bin'}:/usr/bin")
     assert put_on_path(home / ".local" / "bin") == "", "a folder already on the PATH is left as it is"

@@ -30,14 +30,14 @@ class Server:
     """A stand-in for the journal on a server: it answers as told and keeps what it was sent."""
 
     def __init__(self, root, epoch=0, up=True):
-        self.said = Hello(version(), Shape(PROTOCOL, frozenset(applied(root)), epoch), "server-1")
+        self.held_hello = Hello(version(), Shape(PROTOCOL, frozenset(applied(root)), epoch), "server-1")
         self.up, self.handed, self.taken, self.events_to_give = up, [], [], []
         self.leases, self.loses_answers, self.loses_handovers = {}, False, False
 
     def hello(self):
         if not self.up:
             raise OSError("the server does not answer")
-        return self.said
+        return self.held_hello
 
     def handover(self, env, lease):
         if not self.up:
@@ -79,9 +79,9 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     assert join(record, Server(record.root, epoch=5)).comparison == Comparison(Step.PULL_AGAIN), "a server in another epoch, such as after a restore, makes this copy pull everything again"
     assert local_hello(record).machine == this_machine(), "the check names this machine"
     newer = Server(record.root)
-    newer.said = Hello("99.0.0", Shape(PROTOCOL, newer.said.shape.migrations | {"m9999_new"}, 0), "server-1", 99)
+    newer.held_hello = Hello("99.0.0", Shape(PROTOCOL, newer.held_hello.shape.migrations | {"m9999_new"}, 0), "server-1", 99)
     assert "too old" in refused(lambda: join(record, newer)), "a server can ask for a newer copy than this one, and this one is told it is too old"
-    newer.said = Hello("99.0.0", Shape(PROTOCOL, newer.said.shape.migrations, 0), "server-1")
+    newer.held_hello = Hello("99.0.0", Shape(PROTOCOL, newer.held_hello.shape.migrations, 0), "server-1")
     join(record, newer)
     assert any("not in step" in n.title for n in Notices(record, actor=SYSTEM).all()), "a server on a newer release leaves a notice that this copy is not in step with it"
     from features.connection.linking import leave, view, what_travels
@@ -98,8 +98,8 @@ def test_connecting_checks_the_server_and_keeps_what_it_found_and_a_server_that_
     Features(record, actor=USER).switch("connection", True)
     Environments(record, actor=USER).action("connect")("https://server.example", "the-machine-key")
     kept = ServerKey(record.root)
-    shown = str(Environments(record, actor=USER).action("connection")())
-    assert (kept.read(), kept.file.stat().st_mode & 0o777, view(record, "https://server.example").has_key, "the-machine-key" in shown) == ("the-machine-key", 0o600, True, False), \
+    connection_text = str(Environments(record, actor=USER).action("connection")())
+    assert (kept.read(), kept.file.stat().st_mode & 0o777, view(record, "https://server.example").has_key, "the-machine-key" in connection_text) == ("the-machine-key", 0o600, True, False), \
         "the machine key given in the viewer is saved on this computer alone, readable by its owner only, and never shown again"
     assert "the-machine-key" not in "".join(path.read_text(errors="ignore") for path in record.root.rglob("*") if path.is_file() and path != kept.file), \
         "and no other file of the record holds it"
@@ -288,7 +288,7 @@ def test_a_sync_that_meets_a_server_down_an_epoch_change_or_an_interrupted_push_
         waiting.hold(record.env, asked(record.env, name))
     assert "does not answer" in refused(lambda: sync(record, Server(record.root, up=False))) and len(waiting.waiting()) == 3, "with the server down nothing is sent and every write is kept"
     moved = Server(record.root)
-    answers = iter([moved.said, Hello(version(), Shape(PROTOCOL, moved.said.shape.migrations, 9), "server-1")])
+    answers = iter([moved.held_hello, Hello(version(), Shape(PROTOCOL, moved.held_hello.shape.migrations, 9), "server-1")])
     moved.hello = lambda: next(answers)
     assert "new epoch" in refused(lambda: sync(record, moved)) and waiting.waiting() == [], \
         "an epoch change in the middle of a sync stops it before anything is pulled, after what was sent has gone"

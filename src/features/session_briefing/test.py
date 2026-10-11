@@ -337,11 +337,11 @@ def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
     monkeypatch.setattr("providers.drivers.ECHO_WAIT", 0)
     sent = []
 
-    def answering(shown):
+    def answering(redraw):
         def typed(raw):
             sent.append(raw)
             if raw.startswith(b"/model"):
-                screen.write_bytes(shown(screen.read_bytes()))
+                screen.write_bytes(redraw(screen.read_bytes()))
             return True
         return typed
 

@@ -74,13 +74,13 @@ def test_a_request_opens_a_session_that_cancel_closes():
     assert "say why" in refused(lambda: filler_board.stall(board.n, " ")), "a stall says why filling cannot go on"
     filler_board.ideas(board.n, ["Share by link", "Invite by mail", "Take a share back"])
     assert boards.load(board.n).ideas == ["Share by link", "Invite by mail", "Take a share back"], "the agent's ideas replace the board's chips"
-    from tests.kit import nudges as said, tick
+    from tests.kit import nudges as nudged_lines, tick
     tick(record)
-    assert not any("think up what the user might ask for" in line for line in said(record)), "fresh ideas wait for the hours to pass"
+    assert not any("think up what the user might ask for" in line for line in nudged_lines(record)), "fresh ideas wait for the hours to pass"
     boards.update(board.n, ideas_at=0)
     tick(record)
     tick(record)
-    assert sum(f"on board {board.n}" in line and "think up" in line for line in said(record)) == 1, "stale ideas ask for new ones once"
+    assert sum(f"on board {board.n}" in line and "think up" in line for line in nudged_lines(record)) == 1, "stale ideas ask for new ones once"
     filler_board._merged(boards.load(board.n), "drafting", phase="drafting")
     import features.boards.handlers as board_handlers
     quiet, board_handlers.QUIET_FILL = board_handlers.QUIET_FILL, -1
@@ -236,8 +236,8 @@ def test_added_cards_make_the_agent_offer_to_place_them():
     tickets = Tickets(record, actor=AGENT)
     first, second = tickets.create("Port the core", board=board.n, covers=[1]), tickets.create("Port the CLI", board=board.n, covers=[1])
     Boards(record, actor=USER).added(board.n, f"{first.n}, {second.n}")
-    told = next(n for n in Nudges(record).all() if n.title.startswith("the user added 2 cards to board"))
-    assert '"action": "start"' in told.brief and "Its tests pass" in told.brief and "It builds" not in told.brief.split("miss")[-1], \
+    board_nudge = next(n for n in Nudges(record).all() if n.title.startswith("the user added 2 cards to board"))
+    assert '"action": "start"' in board_nudge.brief and "Its tests pass" in board_nudge.brief and "It builds" not in board_nudge.brief.split("miss")[-1], \
         "the agent offers Play for the added cards and names the clause no kept card covers"
 
 
@@ -288,8 +288,8 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
         "the model chosen before becomes Claude's, and one already per provider is left as it is"
     call = lambda command: {"session_id": "claude-1", "agent_id": "sub-1", "agent_type": "board-filler", "tool_name": "Bash",
                             "tool_input": {"command": command}, "hook_event_name": "PreToolUse"}
-    said = lambda command: str(handle(PROVIDERS["claude"](), record.root, record.env, call(command)).get("reason", ""))
-    assert said("git status") == "", "a subagent gets no journal guard, the board-filler included"
+    nudged_lines = lambda command: str(handle(PROVIDERS["claude"](), record.root, record.env, call(command)).get("reason", ""))
+    assert nudged_lines("git status") == "", "a subagent gets no journal guard, the board-filler included"
     exploring = next(s for s in Sequences(record, actor=SYSTEM).all(last=0) if s.title == "Exploring a request")
     assert [run["step"] for run in exploring.runs.values()] == [4] and exploring.sections[3]["title"] == "Say what done means (score 3)", \
         "the score moves the filler's run to the step for it"

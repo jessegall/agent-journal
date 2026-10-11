@@ -342,8 +342,8 @@ def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_wher
     quiet(6)
     assert f"plan {first}, first, is running and nothing has moved for 6 minutes" in nudges(record), \
         "six quiet minutes with a row it can do tell the agent to carry on with the plan"
-    told = [n.brief for n in Nudges(record).all() if "nothing has moved" in n.title][0]
-    assert "take to-do 2" in told and "leave it and work the rows you can do" in told, \
+    stuck_brief = [n.brief for n in Nudges(record).all() if "nothing has moved" in n.title][0]
+    assert "take to-do 2" in stuck_brief and "leave it and work the rows you can do" in stuck_brief, \
         "it names the row to take and says to leave what is stuck and work what it can"
     tick(record)
     assert sum("is running and nothing has moved" in n for n in nudges(record)) == 1, "once per stretch of standing still"
@@ -404,8 +404,8 @@ def test_a_plan_is_built_at_the_depth_the_user_picked():
     plans = Plans(record, actor=USER)
     assert refused(lambda: plans.create("Rollout", depth="deep")) == "a plan's depth is normal or thorough", "only the two depths"
     plans.create("Rollout", depth="thorough")
-    told = [n.brief for n in Nudges(record).all() if n.title.startswith("the user started plan")]
-    assert "file a to-do for every small thing" in told[-1], "the agent is told to plan every small thing"
+    stuck_brief = [n.brief for n in Nudges(record).all() if n.title.startswith("the user started plan")]
+    assert "file a to-do for every small thing" in stuck_brief[-1], "the agent is told to plan every small thing"
 
 
 def test_a_row_struck_while_its_plan_is_unapproved_leaves_the_plan_and_stays_once_approved():

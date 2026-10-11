@@ -73,8 +73,8 @@ def test_a_visitor_comment_is_named_never_quoted_and_only_lands_where_the_link_a
     Docs(record, actor=AGENT).comment(doc.n, "The costs section is in")
     Comments(record, actor=AGENT).comment(made.n, "Thanks Robin, I left the repository alone")
     Docs(record, actor=USER).comment(doc.n, "A note for myself")
-    shown = shares._shared_data(shares.load(share.n))["comments"]
-    assert [(c["name"], [r["text"] for r in c["replies"]]) for c in shown] == [("Robin", ["Thanks Robin, I left the repository alone"]), ("Agent", [])], \
+    shared_comments = shares._shared_data(shares.load(share.n))["comments"]
+    assert [(c["name"], [r["text"] for r in c["replies"]]) for c in shared_comments] == [("Robin", ["Thanks Robin, I left the repository alone"]), ("Agent", [])], \
         "the agent's comment and its reply under the visitor's show on the page; the user's own comment stays in the journal"
     asked = Shares(record, actor=AGENT).ask(made.n, "Should it cover the night shift too?", "Yes, both shifts|Only the day shift")
     assert "pick one" in refused_with(lambda: shares._visitor_answer(shares.load(share.n), asked.n, "Robin", "Maybe")), "only an offered option answers"

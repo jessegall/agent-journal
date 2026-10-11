@@ -253,5 +253,5 @@ def test_a_command_a_tag_stands_for_shows_its_tag_once_in_a_while():
     assert not any("tag does this" in line for line in nudges(record)), "a command no tag stands for shows nothing"
     announce(record, agent.n, "Bash", f'{run} message reply 3 "on it"', "replied")
     announce(record, agent.n, "Bash", f'{run} work log "moved"', "logged")
-    shown = [line for line in nudges(record) if "tag does this" in line]
-    assert len(shown) == 1 and "reply tag" in shown[0], shown
+    tag_lines = [line for line in nudges(record) if "tag does this" in line]
+    assert len(tag_lines) == 1 and "reply tag" in tag_lines[0], tag_lines

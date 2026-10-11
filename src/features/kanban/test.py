@@ -208,8 +208,8 @@ def test_a_card_dropped_before_another_takes_that_place_and_its_priority():
     board(record)
     stored.forget_held()
     with counted() as work:
-        shown = board(record)
-    assert ([kind for kind, _ in work.parsed if kind == "todo"], sum(len(one["cards"]) for one in shown["lanes"]) > 10) == ([], True), \
+        board_view = board(record)
+    assert ([kind for kind, _ in work.parsed if kind == "todo"], sum(len(one["cards"]) for one in board_view["lanes"]) > 10) == ([], True), \
         "the board of a server that holds nothing yet is built from the summaries of the to-dos, and parses none of them"
 
 
