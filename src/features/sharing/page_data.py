@@ -167,8 +167,8 @@ class SharePages:
             return None
         row = self._shared_row(share, ref)
         record = Record(self._home(share).root, row.home_env or self._home(share).env)
-        kept = read(Docs(record, actor=SYSTEM), row.n, k) if row.type == Docs.resource.type and 1 <= k <= count(row) else None
-        return SharedRow.of(kept, record, scope) if kept else None
+        revision = read(Docs(record, actor=SYSTEM), row.n, k) if row.type == Docs.resource.type and 1 <= k <= count(row) else None
+        return SharedRow.of(revision, record, scope) if revision else None
 
     def _shared_data(self, share) -> dict:
         if share.view:
