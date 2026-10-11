@@ -49,6 +49,8 @@ BUILDING_A_PLAN = ShippedSequence(
     title="Building a plan",
     brief="How a plan is built with the user, in order, from its goal to the moment it is ready for them to approve.",
     starts_on="plan.created",
+    finishes_when={"status": ["ready", "approved", "active", "waiting", "parked", "done"]},
+    removes_on_abandon=True,
     steps=[
         ("Agree on the plan’s goal", "Settle with the user what is true when the plan is done, and set it as the plan's goal."),
         ("Add the plan’s phases", "Add every phase in order with journal plan phase <plan n> \"<title>\" --when \"<complete when>\", and "
@@ -185,7 +187,7 @@ CHECKING_THE_INSTRUCTION_FILES = ShippedSequence(
 SEQUENCES = (FILING_A_DUMP, BUILDING_A_PLAN, WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT,
              FILING_A_WRITTEN_DOCUMENT, WRITING_A_REPORT)
 
-SHIPPED_FIELDS = ("brief", "starts_on", "started_by", "only_when_idle", "talks_in", "lasting", "unless", "dispatch")
+SHIPPED_FIELDS = ("brief", "starts_on", "started_by", "only_when_idle", "talks_in", "lasting", "unless", "dispatch", "finishes_when", "removes_on_abandon")
 
 
 def shipped_sequences() -> list[ShippedSequence]:

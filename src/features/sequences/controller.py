@@ -141,6 +141,8 @@ class Sequences(Controller):
         done = r.runs[key]["step"] if through is None else int(through)
         if done < r.runs[key]["step"] or done > len(titles):
             self._refuse(f"--through names a step from {r.runs[key]['step']} to {len(titles)}, the steps still ahead")
+        if done == len(titles):
+            self._check_finishable(r, key)
         run = {**r.runs[key], "step": done + 1, "stepped": time.time(), "titles": titles}
         runs = self.without(r, key)
         going = run["step"] <= len(titles)
@@ -221,14 +223,36 @@ class Sequences(Controller):
             self._refuse(f"step {r.runs[key]['step']} of sequence {r.n} was never taken up, so you cannot know it no longer applies: "
                          f"journal sequence follow {r.n}{flag} and read it first")
         if self.actor == AGENT and not sure:
-            self._refuse(f"abandoning skips {'; '.join(self.left(r, key))}. If none of these still applies, "
+            removal = f" and removes {RunKey.of(key).about.replace(':', ' ')}" if r.removes_on_abandon and RunKey.of(key).about != BY_HAND else ""
+            self._refuse(f"abandoning skips {'; '.join(self.left(r, key))}{removal}. If none of these still applies, "
                          f"journal sequence abandon {r.n}{flag} --why \"<why>\" --sure")
+        self._remove_row(r, key, why.strip())
         runs = self.without(r, key)
         left = {"about": key, "step": r.runs[key]["step"], "why": why.strip(), "at": time.time()}
         self._mark(r, "Sequence abandoned", 0, why.strip())
         abandoned = self.update(r.n, runs=runs, abandoned=[*(r.data.get("abandoned") or []), left])
         self._resume()
         return abandoned
+
+    def _about_row(self, key: str):
+        kind, _, n = RunKey.of(key).about.partition(":")
+        if kind not in types_module.CONTROLLERS or not n.isdigit():
+            return None
+        row = types_module.CONTROLLERS[kind](self.record, actor=SYSTEM).peek(int(n))
+        return None if row.deleted else row
+
+    def _check_finishable(self, r, key: str) -> None:
+        row = self._about_row(key)
+        for name, wanted in r.finishes_when.items():
+            allowed = wanted if isinstance(wanted, list) else [wanted]
+            if row and row.data.get(name) not in allowed:
+                self._refuse(f"sequence {r.n} cannot finish until {row.ref} has {name} {' or '.join(map(str, allowed))}, and it has {row.data.get(name)}: "
+                             f"do what the steps say to get it there, then journal sequence next {r.n}{self._flag(key)}")
+
+    def _remove_row(self, r, key: str, why: str) -> None:
+        row = self._about_row(key) if r.removes_on_abandon else None
+        if row:
+            types_module.CONTROLLERS[row.type](self.record, actor=SYSTEM).delete(row.n, why=f"sequence {r.n} was abandoned: {why}")
 
     def give_up(self, about: str, why: str) -> None:
         for row in self.open_rows():

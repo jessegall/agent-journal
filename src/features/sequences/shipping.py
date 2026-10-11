@@ -13,6 +13,8 @@ class ShippedSequence:
     lasting: bool = False
     only_when_idle: bool = False
     unless: dict = field(default_factory=dict)
+    finishes_when: dict = field(default_factory=dict)
+    removes_on_abandon: bool = False
     words: tuple = ()
 
     def started_on(self, starts_on: str) -> "ShippedSequence":

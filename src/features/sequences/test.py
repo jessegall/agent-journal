@@ -208,6 +208,26 @@ def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
     assert "say why" in refused(lambda: sequences.abandon(outer.n, why=" ")), "abandoning a run says why"
     assert "is not running about doc:3" in refused(lambda: sequences.next(outer.n, about="doc:3")), "a sequence that is not running about a row says which row"
     assert sequences.finish(outer.n, "doc:3").n == outer.n, "finishing a run that is not there changes nothing"
+    plans = CONTROLLERS["plan"](record, actor=AGENT)
+    building = titled("Building a plan")
+    plan = plans.create("A plan to write")
+    sequences.run(building.n, about=plan.ref)
+    for _ in range(3):
+        sequences.follow(building.n, about=plan.ref)
+        sequences.next(building.n, about=plan.ref)
+    sequences.follow(building.n, about=plan.ref)
+    assert "cannot finish until plan" in refused(lambda: sequences.next(building.n, about=plan.ref)), \
+        "the last step of a sequence that declares what must be true refuses while the row it runs about is not there yet"
+    plans.ready(plan.n)
+    assert "is finished" in sequences.next(building.n, about=plan.ref), "once the plan is ready the sequence finishes"
+    doomed = plans.create("A plan to drop")
+    sequences.run(building.n, about=doomed.ref)
+    sequences.follow(building.n, about=doomed.ref)
+    assert f"removes {doomed.ref.replace(':', ' ')}" in refused(lambda: sequences.abandon(building.n, about=doomed.ref, why="no longer wanted")), \
+        "abandoning names the row it deletes before it asks for confirmation"
+    sequences.abandon(building.n, about=doomed.ref, why="no longer wanted", sure=True)
+    assert plans.peek(doomed.n).deleted, "abandoning a sequence that builds a row deletes that row"
+    assert not plans.peek(plan.n).deleted, "a sequence about another row leaves it alone"
 
 
 def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():

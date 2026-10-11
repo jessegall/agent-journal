@@ -50,6 +50,8 @@ class Sequence(Shape, Resource):
         Field(FLAG, False, name="lasting"),
         Field(default="", name="dispatch"),
         Field(default=dict, name="unless"),
+        Field(default=dict, name="finishes_when"),
+        Field(FLAG, False, name="removes_on_abandon"),
         Field(default=dict, name="runs"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
