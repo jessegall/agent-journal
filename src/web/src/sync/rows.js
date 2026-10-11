@@ -116,10 +116,32 @@ function took(type, got) {
     store.paging.more[type] = got.more;
 }
 
+const oldest = (held) => {
+    const closed = held.filter((r) => r.completed);
+    return (closed.length ? closed : held).reduce((low, r) => Math.min(low, r.n), Infinity);
+};
+
+const beforeKey = (held) => (Number.isFinite(oldest(held)) ? oldest(held) : 0);
+
+async function rebuilt(type, size) {
+    const first = await api.list(type, {last: PAGE, completed: true});
+    let rows = first.rows;
+    let more = first.more;
+    while (more && rows.length < size) {
+        const page = await api.list(type, {last: PAGE, completed: true, before: beforeKey(rows)});
+        const known = new Set(rows.map((r) => r.n));
+        const fresh = page.rows.filter((r) => !known.has(r.n));
+        more = page.more;
+        if (!fresh.length) break;
+        rows = [...fresh, ...rows];
+    }
+    return {rows, more};
+}
+
 export async function load(type) {
     const size = store.paging.size[type] || PAGE;
     const starting = new Set((store.rows[type] || []).map((r) => r.n));
-    const got = await api.list(type, {last: size, completed: true});
+    const got = await rebuilt(type, size);
     const listed = new Set(got.rows.map((r) => r.n));
     const arriving = withoutAnswered((store.rows[type] || []).filter((r) => !starting.has(r.n) && !listed.has(r.n)), got.rows);
     took(type, {...got, rows: [...got.rows, ...arriving].sort((a, b) => a.n - b.n)});
@@ -143,10 +165,7 @@ export async function earlier(...types) {
     const growing = types.filter((type) => store.paging.more[type]);
     await Promise.all(
         growing.map(async (type) => {
-            const starting = store.rows[type] || [];
-            const closed = starting.filter((r) => r.completed);
-            const before = (closed.length ? closed : starting).reduce((low, r) => Math.min(low, r.n), Infinity);
-            const got = await api.list(type, {last: PAGE, completed: true, before: Number.isFinite(before) ? before : 0});
+            const got = await api.list(type, {last: PAGE, completed: true, before: beforeKey(store.rows[type] || [])});
             const held = store.rows[type] || [];
             const known = new Set(held.map((r) => r.n));
             store.rows[type] = [...got.rows.filter((r) => !known.has(r.n)), ...held].sort((a, b) => a.n - b.n);
