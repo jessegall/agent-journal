@@ -38,6 +38,8 @@ LONG_IDLE = AgentRow(n=1, title="claude-1", data={"status": "idle", "at": 1.0})
 JUST_NOW = AgentRow(n=1, title="claude-1", data={"status": "idle", "at": WHEN - 60})
 WORKING = AgentRow(n=1, title="claude-1", data={"status": "working", "at": 1.0})
 
+THE_WORD_FORCE = Trigger(n=7, title="No force", data={"words": ["force"], "does": "deny", "text": "Never force."})
+
 
 def shell(command: str) -> BashCall:
     return BashCall.from_payload("Bash", {"command": command}, {})
@@ -90,6 +92,8 @@ class TriggersFeature(Feature):
             Given(shell("git push --force"), rows=[NO_FORCE, AGENT_ROW]) >> Refused("No force push - Never force push.") & Updated(Trigger(n=1), matched=1),
             Given(shell("git push"), rows=[NO_FORCE, AGENT_ROW]) >> Kept() & Unchanged(),
             Given(shell("git push --force"), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Kept(),
+            Given(shell("git push --force"), rows=[THE_WORD_FORCE, AGENT_ROW]) >> Kept(),
+            Given(shell("git push force"), rows=[THE_WORD_FORCE, AGENT_ROW]) >> Refused("No force - Never force."),
         ])
         journal.agent.interceptor(WatchWhatTheAgentDoes(), expects=[
             Given(shell("make deploy"), rows=[DEPLOY_NUDGE, AGENT_ROW]) >> Kept() & Nudged("nudge") & Updated(Trigger(n=2), matched=1),
