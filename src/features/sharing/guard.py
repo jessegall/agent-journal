@@ -14,6 +14,8 @@ PLAIN = re.compile(r"[\w .:@/+-]+")
 AGREE_OPTIONS = {"--env", "--agent", "--root"}
 USER_ACTOR = re.compile(r"(?:^|[\s?&])(?:--as(?:=|\s+)|JOURNAL_ACTOR\s*=|actor\s*=)\s*['\"]?user\b", re.I)
 ASSIGNED = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+ASSIGNMENT = re.compile(r"JOURNAL_ACTOR=user", re.I)
+SET_ACTOR = re.compile(r"actor=user", re.I)
 
 
 def tells_the_journal(command: str) -> bool:
@@ -24,12 +26,25 @@ def tells_the_journal(command: str) -> bool:
     return (bool(words) and words[0] == "journal") or "/api/" in command
 
 
+def claims_the_user(command: str) -> bool:
+    """Whether the command makes the journal take the user as its actor: by an option, an assignment or a query string, never by prose a quoted word of it holds, since a brief is one word to the shell and names an option only as text."""
+    if "/api/" in command:
+        return bool(USER_ACTOR.search(command))
+    words = tokens(command)
+    return any(claims(word, following) for word, following in zip(words, [*words[1:], ""]))
+
+
+def claims(word: str, following: str) -> bool:
+    option, _, given = word.partition("=")
+    return bool(ASSIGNMENT.fullmatch(word)) or (option == "--as" and (given or following).lower() == "user") or (option == "--set" and bool(SET_ACTOR.fullmatch(given or following)))
+
+
 class RefuseClaimedUser(ToolInterceptor):
     reach = Reach.BOTH
     runs = Runs.SYNC
 
     def intercept(self, context: AgentContext, call) -> str:
-        if any(tells_the_journal(command) and USER_ACTOR.search(command) for command in call.commands):
+        if any(tells_the_journal(command) and claims_the_user(command) for command in call.commands):
             return "An agent cannot claim to be the user. Ask the user to make this change in the viewer."
         return ""
 

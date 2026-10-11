@@ -171,6 +171,11 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
         "every way of telling the journal that the user wrote something is refused, including behind an environment assignment"
     assert [claimed(command) for command in (f"python3 -c 'Messages(record, {named.upper()}).create(1)'", f"grep -rn '{named.upper()}' src")] == [False, False], \
         "and a command that only writes or reads those words in a file is left alone: the guard is about what the journal is told, not what the agent types"
+    prose = [f'journal work log 1 "the guard refuses --as {"user"} and {named}"', f"journal todo create 'x' --brief 'JOURNAL_ACTOR={'user'} is refused'"]
+    assert [claimed(command) for command in prose] == [False, False], \
+        "a journal call whose quoted prose only names the claim is left alone: the guard judges the options and assignments a call carries, not the words of its brief"
+    assert [claimed(f"journal todo create x --set '{named}'"), claimed("journal --as=" + "user todo all")] == [True, True], \
+        "while the same claim made by an option is refused whatever its quoting"
     assert any(f"Sam commented on doc {doc.n} through a shared link with a password" in line for line in nudges(record)), \
         "and the agent is told it came from someone the user gave the password to"
 
