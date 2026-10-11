@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 
 from controllers.types import Comments, Messages, Nudges
-from resources.base import AGENT, SYSTEM, USER
+from resources.base import AGENT, Refused, SYSTEM, USER
 from providers.payload import Chunk
 from runner.chat_mirror import displayed
 from engine.sessions import Sessions
@@ -257,6 +257,36 @@ def test_one_reply_answers_several_messages():
     made = Comments(record, actor="system").all()
     assert len(made) == 1 and {first.ref, second.ref} <= set(made[0].refs), "one reply answers both messages"
     assert "> Remove the plan." in made[0].brief and "> And write the document." in made[0].brief, "and quotes both"
+
+
+def test_a_reply_links_the_rows_it_is_about_in_the_same_turn():
+    from engine import chat
+    import features
+    from controllers.types import Agents, Docs, Messages, Todos
+    from features.command_tags.reading import named
+    from resources.base import AGENT, SYSTEM
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+
+    assert named(", todos=(7, 8)") == {"todos": "7,8"} and named(', about=("doc:1")') == {"about": "doc:1"}, \
+        "a list a tag carries is read whether its items are quoted or bare; reading only the quoted ones answered nothing at all"
+
+    asked = asked_and_read(record, "Two things please.", brief="Two things please.")
+    one = Todos(record, actor=AGENT).create("The first thing")
+    two = Todos(record, actor=AGENT).create("The second thing")
+    doc = Docs(record, actor=AGENT).create("What it is about")
+    chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"),
+              f'[!reply:{asked.n}, todos=({one.n}, {two.n}), about=("{doc.ref}")]\nFiled both, and the document says why.')
+
+    answered = Messages(record, actor=SYSTEM).peek(asked.n)
+    assert {one.ref, two.ref, doc.ref} <= set(answered.refs), \
+        f"the reply links what it is about, in the same act as the answer: {answered.refs}"
+
+    afterwards = asked_and_read(record, "One more.", brief="One more.")
+    with pytest.raises(Refused) as refusal:
+        Messages(record, actor=AGENT).reply(str(afterwards.n), "Answer.", todos="9999")
+    assert "there is no todo 9999" in str(refusal.value), "a number naming no row is refused, so a wrong one cannot pass silently"
 
 
 def test_a_command_a_tag_stands_for_shows_its_tag_once_in_a_while():
