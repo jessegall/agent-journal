@@ -381,7 +381,7 @@ const OWN = {
     question: {dismiss: {label: "Close", when: standing, fields: [optional("why", "Why close it?")], result: () => "Closed"}, complete: null},
     suggestion: {complete: null},
     sequence: {
-        abandon: {label: "Stop the run", danger: true, fields: [optional("why", "Why stop it?")], body: {sure: true}, result: () => "Stopped"},
+        abandon: {label: "Stop the run", danger: true, fields: [optional("why", (row) => (row.removes_on_abandon ? "Why stop it? Stopping also removes the row it is about." : "Why stop it?"))], body: {sure: true}, result: () => "Stopped"},
         run: {label: "Run it now", runs: true, fields: [optional("about", "What is it about?")], result: () => "Started"},
         steps: {
             label: "Edit the steps",
@@ -499,7 +499,7 @@ export function runsOffLine(row) {
     return hides ? runsOff.value : "";
 }
 
-export const filled = (fields, row) => fields.map((field) => ({...field, value: field.value ? field.value(row) || "" : ""}));
+export const filled = (fields, row) => fields.map((field) => ({...field, label: typeof field.label === "function" ? field.label(row) : field.label, value: field.value ? field.value(row) || "" : ""}));
 
 export async function perform(row, action, body = {}) {
     if (action.run) return action.run(row, body.value);
