@@ -154,3 +154,33 @@ describe("the Models group", () => {
         expect(groupRows(section.groups[0]).map((r) => [r.key, r.kind, r.value])).toEqual([["models:claude", "fixed", "Sonnet"], ["models:codex", "fixed", "GPT-6 Sol"]]);
     });
 });
+
+describe("what a switch sends", () => {
+    const spec = {
+        features: {
+            work: {
+                name: "work",
+                label: "Work",
+                group: "work",
+                settings: [],
+                behaviours: {
+                    auto: {title: "Offer the next to-do", abstract: "the behaviour's own words", default: true},
+                    quiet: {title: "Say nothing", abstract: "a switch that sends no nudge", default: true},
+                },
+                nudges: {
+                    next: {behaviour: "auto", guarantee: "With auto mode on, the agent is offered the next to-do that is ready."},
+                    "next while waiting": {behaviour: "auto", guarantee: "When the work in hand is waiting, the agent is offered the next ready to-do."},
+                },
+            },
+        },
+        groups: [{key: "work", title: "Work", section: "Agent", lead: "work"}],
+    };
+    const hintOf = (key) => groupRows(catalog(spec, {}, {})[0].groups[0]).find((r) => r.key === key)?.hint;
+
+    test("a switch says what it turns off, in the words the user reads, and keeps its own when it sends none", () => {
+        expect(hintOf("work.auto")).toBe(
+            "With auto mode on, the agent is offered the next to-do that is ready. When the work in hand is waiting, the agent is offered the next ready to-do."
+        );
+        expect(hintOf("work.quiet")).toBe("a switch that sends no nudge");
+    });
+});

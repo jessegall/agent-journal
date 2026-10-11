@@ -105,13 +105,20 @@ const switchValue = (settings, name, fallback) => {
     return name in saved ? Boolean(saved[name]) : fallback;
 };
 
+// What a switch governs, said the way the user reads it: the sentence of each nudge it turns off, or the behaviour's own words when it sends none.
+const whatItSends = (f, key) =>
+    Object.values(f.nudges || {})
+        .filter((n) => n.behaviour === key && n.guarantee)
+        .map((n) => n.guarantee)
+        .join(" ");
+
 function behaviourRow(f, key, b, settings) {
     const name = `${f.name}.${key}`;
     return row({
         key: name,
         kind: "switch",
         label: b.title,
-        hint: b.abstract,
+        hint: whatItSends(f, key) || b.abstract,
         value: switchValue(settings, name, b.default),
         shipped: b.default,
         timing: timing(name, b.trigger, settings),
