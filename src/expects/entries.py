@@ -63,6 +63,12 @@ def speaking(record: Record, given: Given):
     return rows[0] if rows else None
 
 
+def contexted(promise, given: Given, record: Record) -> Context:
+    """The context a registration is handed: over the record, and an AgentContext speaking to the agent when the Given names one."""
+    row = speaking(record, given)
+    return (AgentContext if row else Context).of(promise.feature, record, row)
+
+
 def what_was_said(record: Record) -> tuple[list, list]:
     """What reached the chat and what was nudged, read from the rows the journal keeps rather than from anything the play says about itself."""
     said = [row.brief or row.title for row in Messages(record, actor=SYSTEM).all(completed=True) if row.seen[:1] == ["agent"]]
@@ -80,8 +86,7 @@ def rows_now(record: Record) -> tuple:
 def handled(promise, given: Given, record: Record, world: World) -> None:
     """A 2.x handler, through the entry the bus uses: its own handle, with a Context over the record. The Context carries an agent when the Given names one, since most handlers read it."""
     event, was = given.on, text_of(given.on)
-    row = speaking(record, given)
-    promise.part.handle((AgentContext if row else Context).of(promise.feature, record, row), event)
+    promise.part.handle(contexted(promise, given, record), event)
     world.seen.changed = text_of(event) if text_of(event) != was else None
     world.seen.kept = not stopped(event)
 
@@ -93,13 +98,13 @@ def formatted(promise, given: Given, record: Record, world: World) -> None:
 
 def intercepted(promise, given: Given, record: Record, world: World) -> None:
     """An interceptor, through its own intercept. It answers a refusal, or nothing when it lets the call through."""
-    why = promise.part.intercept(Context.of(promise.feature, record), given.on)
+    why = promise.part.intercept(contexted(promise, given, record), given.on)
     world.seen.refused = why or None
 
 
 def cancelled(promise, given: Given, record: Record, world: World) -> None:
     """A canceler, through its own cancel. It answers why the thing must not happen, or nothing to let it."""
-    world.seen.refused = promise.part.cancel(Context.of(promise.feature, record), given.on) or None
+    world.seen.refused = promise.part.cancel(contexted(promise, given, record), given.on) or None
 
 
 def refused_before_the_write(promise, given: Given, record: Record, world: World) -> None:
