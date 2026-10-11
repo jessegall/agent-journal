@@ -34,7 +34,7 @@ from engine.timing import arrived  # noqa: E402
 from engine.after_answer import AfterAnswer  # noqa: E402
 from engine.quiet_collector import QuietCollector  # noqa: E402
 from supervisor import QUICK  # noqa: E402
-from features.switches import WARMERS  # noqa: E402
+from features.switches import HOME_WARMERS, WARMERS  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, pulse, remember  # noqa: E402
 from controllers.types import warm  # noqa: E402
@@ -450,6 +450,7 @@ def warmed(root: Path, warm: threading.Event, restarted: float = 0.0) -> None:
         if restarted:
             runtime.record_step(root, "restart: until the viewer is warm", time.time() - restarted, time.process_time(), version())
         WARMERS.append(lambda: warm_changed(root))
+        HOME_WARMERS.append(warm_dashboard)
         together(warm_commands, lambda: warm_rows(root), lambda: read_transcripts(root), warm_hooks, lambda: warm_board(root))
         if restarted:
             runtime.record_step(root, "restart: until everything is warm", time.time() - restarted, time.process_time(), version())

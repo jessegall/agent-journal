@@ -90,13 +90,20 @@ def stamp_seated(root: Path, lines: list[str]) -> None:
 
 
 def seat_new_home(root: Path, home: str) -> None:
-    """Seats an environment the moment it is made, where the making already costs a write, so the next command finds its feature rows there instead of paying for a hundred of them inside a read."""
+    """Seats an environment as soon as it is made, after the answer that made it, so the next command finds its feature rows there instead of paying for a hundred of them inside a read or inside the making; until then its switches read as their defaults."""
+    bus.background(f"seat {root}/{home}", lambda: seated_home(root, home))
+
+
+def seated_home(root: Path, home: str) -> None:
     from engine.paths import environment_names
+    from features.switches import HOME_WARMERS
     held = seated_now(root)
     if not held or home in held[1:]:
         return
     seat(root, (home,))
     stamp_seated(root, seating(environment_names(root)))
+    for warm in HOME_WARMERS:
+        warm(root, home)
 
 
 def features_stamp() -> str:
@@ -125,7 +132,7 @@ def seat(root: Path, homes: tuple[str, ...]) -> None:
         known = {r.title: r for r in rows.rows.every()}
         with bus.settled():
             for name, feature in FEATURES.items():
-                if name not in known and feature.scope != PROJECT:
+                if name not in known and feature.scope != PROJECT and not rows.rows.n_of_title(name):
                     rows.create(name, enabled=feature.default_for(root))
             for name, row in known.items():
                 if name not in FEATURES and not row.missing:

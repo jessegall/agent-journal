@@ -14,6 +14,7 @@ CHANGE_LOGS: dict[str, str] = {}
 UNEVENTED = [False]
 ENVIRONMENT_NAMES: dict[str, tuple] = {}
 WARMERS: list = []
+HOME_WARMERS: list = []
 
 
 def watch_change_log() -> None:
@@ -59,7 +60,7 @@ def switch_changed(event, record) -> None:
     if event.data.get("setting") not in (None, Record.features):
         return
     if event.type == Features.resource.type and event.action == CREATED:
-        booted(record)
+        bus.defer_once(f"boot {record.home}", lambda: booted(record))
         return
     rebooted(event, record)
 
