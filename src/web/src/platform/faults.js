@@ -1,8 +1,7 @@
 import {api} from "../api/client.js";
 import {transport} from "../api/transport.js";
 import {route} from "../route.js";
-
-const PAGE = 25;
+import {PAGE} from "../sync/paging.js";
 const QUIET = 60000;
 const reported = new Map();
 const flying = new Map();

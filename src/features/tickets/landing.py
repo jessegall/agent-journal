@@ -101,10 +101,7 @@ class TicketLanding:
         from providers import DRIVERS
         return DRIVERS[ticket.provider].branch(ticket.work_environment)
 
-    def _merged(self, ticket) -> bool:
-        return self._merged_in(ticket, self._read())
-
-    def _merged_in(self, ticket, readings: dict[str, Repository]) -> bool:
+    def _merged(self, ticket, readings: dict[str, Repository]) -> bool:
         states = [(landing.merged(), landing.changed()) for landing in self._landings(ticket, readings).values()]
         return any(done for done, _ in states) and all(done or not moved for done, moved in states)
 

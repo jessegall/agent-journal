@@ -16,11 +16,17 @@ class Memo:
 
     def get(self, key, stamp, make: Callable):
         held = self.held.get(key)
-        if held is not None and (held[0] is stamp or held[0] == stamp):
-            if self.limit:
+        if held is None or (held[0] is not stamp and held[0] != stamp):
+            return self.put(key, stamp, make())
+        if self.limit:
+            self.freshen(key)
+        return held[1]
+
+    def freshen(self, key) -> None:
+        """Moves a key to the newest end, under the lock and only while it is still there: another thread drops and rewrites the same keys."""
+        with self.keeping:
+            if key in self.held:
                 self.held[key] = self.held.pop(key)
-            return held[1]
-        return self.put(key, stamp, make())
 
     def put(self, key, stamp, value):
         """Keeps a value and drops the oldest once the limit is reached, holding the drop because the background writes to the same memo as the request does."""
@@ -31,13 +37,16 @@ class Memo:
         return value
 
     def forget(self, key) -> None:
-        self.held.pop(key, None)
+        with self.keeping:
+            self.held.pop(key, None)
 
     def forget_mentioning(self, words) -> None:
-        self.held = {key: held for key, held in list(self.held.items()) if not any(word in str(held[1]) for word in words)}
+        with self.keeping:
+            self.held = {key: held for key, held in self.held.items() if not any(word in str(held[1]) for word in words)}
 
     def clear(self) -> None:
-        self.held.clear()
+        with self.keeping:
+            self.held.clear()
 
 
 def forget_all() -> None:

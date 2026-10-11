@@ -303,7 +303,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
     @action
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
         ticket = self.load(n)
-        landed = bool(ticket.work_environment) and self._merged(ticket)
+        landed = bool(ticket.work_environment) and self._merged(ticket, self._read())
         if ticket.work_environment and not yes and not landed:
             raise Refused(f"{self.type} {ticket.n}'s branch {self._branch(ticket)} is not merged: merge its pull request first, or --yes closes it anyway")
         return self._finished(ticket, how, landed, **data)
@@ -337,7 +337,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             environments.restored(ticket.work_environment, owner=ticket.ref, launched_from=self.record.env, kind=EnvironmentKind.TICKET)
         if ticket.plan and self._plan_of(ticket) is None:
             ticket = self.update(ticket.n, plan=0)
-        if self._merged(ticket):
+        if self._merged(ticket, self._read()):
             ticket = self._based(ticket, self._landed_at(ticket))
         board = self._board(ticket)
         began = board.stage_for(START) if board else ""
@@ -370,7 +370,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def close_merged(self) -> list:
         readings = self._read()
-        return self._closed([r for r in self.rows.standing() if r.work_environment and self._ran(r) and self._settled(r) and self._merged_in(r, readings)])
+        return self._closed([r for r in self.rows.standing() if r.work_environment and self._ran(r) and self._settled(r) and self._merged(r, readings)])
 
     def _settled(self, ticket) -> bool:
         """Whether its agent has ended its turn and nothing waits for it, so stopping it cuts nothing short: not a turn under way, no message it has not read, and no note typed to it a moment ago."""

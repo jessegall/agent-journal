@@ -292,7 +292,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert stubborn.poll() is not None and time.time() - began < 5, "an agent that ignores the polite signals is still stopped, so a restart never hangs"
 
 
-def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_path, monkeypatch):
+def test_the_installed_entries_fall_through_a_sleeping_server_and_run_the_current_hook(tmp_path, monkeypatch):
     import sys
     from install import launcher
     script = tmp_path / "said.py"
@@ -306,28 +306,13 @@ def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_pa
     (tmp_path / ".journal" / "runtime" / "heartbeat").write_text(f"{int(time.time())} http://127.0.0.1:9/\n")
     ran = subprocess.run(["sh", str(shim), "todo", "all"], capture_output=True, text=True, timeout=20)
     assert (ran.stdout.strip(), ran.stderr) == ("ran", ""), "a fresh heartbeat but no server answering, as during a restart: it falls through too"
-    from install import ON_PATH, put_on_path
-    home = tmp_path / "home"
-    (home / ".local" / "bin").mkdir(parents=True)
-    for name, value in (("HOME", str(home)), ("SHELL", "/bin/bash"), ("PATH", "/usr/bin:/bin")):
-        monkeypatch.setenv(name, value)
-    told = put_on_path(home / ".local" / "bin")
-    put_on_path(home / ".local" / "bin")
-    profile = (home / ".bash_profile").read_text()
-    assert "open a new terminal" in told and profile.count(ON_PATH) == 1 and 'export PATH="$HOME/.local/bin:$PATH"' in profile, \
-        "a journal command off the PATH puts its folder on the PATH once, in the shell's own profile, and says so"
-    monkeypatch.setenv("PATH", f"{home / '.local' / 'bin'}:/usr/bin")
-    assert put_on_path(home / ".local" / "bin") == "", "a folder already on the PATH is left as it is"
-
-
-def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_passes_nothing(tmp_path):
-    import sys
     from install import HOOK
-    (tmp_path / "src").mkdir()
-    (tmp_path / "src" / "hook.sh").write_text('echo "$1 $2"\n')
-    (tmp_path / "hook.py").write_text(HOOK)
-    ran = subprocess.run([sys.executable, str(tmp_path / "hook.py")], capture_output=True, text=True, timeout=20)
-    assert ran.stdout.strip() == f"claude {tmp_path.resolve()}", "no provider given: Claude, on the journal hook.py sits in"
+    entry = tmp_path / "entry"
+    (entry / "src").mkdir(parents=True)
+    (entry / "src" / "hook.sh").write_text('echo "$1 $2"\n')
+    (entry / "hook.py").write_text(HOOK)
+    ran = subprocess.run([sys.executable, str(entry / "hook.py")], capture_output=True, text=True, timeout=20)
+    assert ran.stdout.strip() == f"claude {entry.resolve()}", "no provider given: Claude, on the journal hook.py sits in"
     import stat
     import sys
     import threading
@@ -375,6 +360,18 @@ def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_pa
         "a command started while an update writes the source waits for the update to finish before it falls back to the source, never running it half written"
     from install import ENTRYPOINTS
     assert all(text.startswith("#!/usr/bin/env python3") for text in ENTRYPOINTS.values()), "an entry made executable runs with Python, never the shell"
+    from install import ON_PATH, put_on_path
+    home = tmp_path / "home"
+    (home / ".local" / "bin").mkdir(parents=True)
+    for name, value in (("HOME", str(home)), ("SHELL", "/bin/bash"), ("PATH", "/usr/bin:/bin")):
+        monkeypatch.setenv(name, value)
+    told = put_on_path(home / ".local" / "bin")
+    put_on_path(home / ".local" / "bin")
+    profile = (home / ".bash_profile").read_text()
+    assert "open a new terminal" in told and profile.count(ON_PATH) == 1 and 'export PATH="$HOME/.local/bin:$PATH"' in profile, \
+        "a journal command off the PATH puts its folder on the PATH once, in the shell's own profile, and says so"
+    monkeypatch.setenv("PATH", f"{home / '.local' / 'bin'}:/usr/bin")
+    assert put_on_path(home / ".local" / "bin") == "", "a folder already on the PATH is left as it is"
 
 
 def test_an_install_over_version_1_leaves_only_its_own_hooks(tmp_path):
@@ -979,3 +976,23 @@ def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_ta
     assert [Rules(record, actor=SYSTEM).load(n).title for n in (1, 2, 3)] == ["Never push", "Struck rule", "Added later"], "rules come from their files named by the old record, then from the rest of the record"
     assert ("user" in Notifications(record, actor=SYSTEM).load(1).seen, "user" in Notifications(record, actor=SYSTEM).load(2).seen) == (True, False), "a notification read in the old record stays read and an unread one stays unread"
     assert read_old_record(old) == 0, "a record that has rows of every type is not read again"
+
+
+def test_automatic_updates_ship_off_and_a_journal_that_already_had_them_keeps_them():
+    import features
+    from controllers.types import Features
+    from features.auto_update.feature import AutoUpdate
+    from features.switches import booted
+    from migrations.m0081_auto_update_was_chosen import run as auto_update_was_chosen
+    from resources.base import SYSTEM
+    from tests.conftest import fresh
+    features.load()
+    installed_now = fresh("now")
+    assert AutoUpdate.on_for(installed_now) is False, "a journal installed after the change starts with automatic updates off, so nobody is opted in without choosing"
+    for record, stored in ((fresh("never"), None), (fresh("on"), True), (fresh("off"), False)):
+        if stored is not None:
+            Features(record, actor=SYSTEM).create("auto_update", enabled=stored)
+        auto_update_was_chosen(record.root)
+        booted(record)
+        assert AutoUpdate.on_for(record) is (True if stored is None else stored), \
+            f"a journal that stored {stored} keeps what its user is used to: never chosen becomes on, and an explicit off survives"

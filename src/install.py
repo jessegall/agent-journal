@@ -668,6 +668,7 @@ def build_archive(root: Path) -> tuple[Path | None, str]:
             archive.writestr(zipfile.ZipInfo(name, held.moment if unchanged else moment), source)
             archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", held.moment if unchanged else moment),
                              held.compiled if unchanged else compiled(source, str(root / ARCHIVE / name), stamp))
+        archive.writestr(zipfile.ZipInfo(VERSION, moment), version_in(src, "0"))
     with timed(root, "pack: start the archive once"):
         refused = start_refused(built, root)
     if refused:

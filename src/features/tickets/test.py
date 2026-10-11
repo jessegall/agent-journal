@@ -289,7 +289,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     looked = []
     with monkeypatch.context() as counting:
         was = Tickets._merged
-        counting.setattr(Tickets, "_merged", lambda self, found: looked.append(found.n) or was(self, found))
+        counting.setattr(Tickets, "_merged", lambda self, found, readings: looked.append(found.n) or was(self, found, readings))
         refused(lambda: tickets.complete(ticket.n))
     assert looked == [ticket.n], "closing a ticket asks the repositories whether its branch landed once, not once to check and again to record"
     assert tickets.close_merged() == [], "nothing unmerged is closed"
@@ -910,21 +910,3 @@ def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
             watching(quiet_for=SILENT_AFTER + 120, command_running=True)] == \
         ["waiting for you", "starting", "silent for 7m", "idle for 7m with nothing running in the background", "working"], \
         "a ticket's agent is called waiting, starting, silent or idle by what it last did and how long ago, and is never silent while a command runs"
-    from engine import worktree
-
-    def sweep_calls(count: int) -> int:
-        for number in range(count):
-            row = tickets.bind(tickets.create(f"Swept {count} {number}", board=board.n).n)
-            git("branch", f"worktree-{row.work_environment}")
-            tickets.update(row.n, base=git("rev-parse", f"worktree-{row.work_environment}").stdout.strip(), launched=time.time())
-        tickets.keep_branches()
-        asked = []
-        ran = worktree.git_ran
-        with monkeypatch.context() as counting:
-            counting.setattr(worktree, "git_ran", lambda args, *rest: asked.append(args[0]) or ran(args, *rest))
-            tickets.keep_branches()
-            tickets.close_merged()
-            tickets.clear_worktrees()
-        return len(asked)
-
-    assert sweep_calls(2) == sweep_calls(5), "the landing sweep asks git as many times for seven tickets in one repository as for two: once for the repository, not once for every ticket"

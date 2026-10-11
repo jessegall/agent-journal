@@ -70,17 +70,20 @@ class PendingRows:
         with self.guard:
             return self.key(record, n) in self.rows
 
-    def of(self, record, n: int) -> Pending:
+    def delta(self, record, n: int) -> dict:
+        """What a hook changed and the store has not written yet, empty when nothing is held: asked and answered under the one guard, since another thread writes the same row away between a question and its answer."""
         with self.guard:
-            return self.rows[self.key(record, n)]
+            held = self.rows.get(self.key(record, n))
+            return copy.deepcopy(held.delta) if held else {}
 
     def opened(self, record, row) -> Pending:
         with self.guard:
             return self.rows.setdefault(self.key(record, row.n), Pending.of(row))
 
-    def pop(self, record, n: int) -> Pending:
+    def pop(self, record, n: int) -> "Pending | None":
+        """Takes the held row away and gives it back, or nothing when another thread took it first."""
         with self.guard:
-            return self.rows.pop(self.key(record, n))
+            return self.rows.pop(self.key(record, n), None)
 
     def due(self, now: float) -> list[RowKey]:
         with self.guard:
@@ -122,23 +125,22 @@ class Agents(Controller):
 
     def load(self, n: int | str):
         row = super().load(n)
-        if PENDING.holds(self.record, int(n)):
-            row.data.update(copy.deepcopy(PENDING.of(self.record, int(n)).delta))
+        row.data.update(PENDING.delta(self.record, int(n)))
         return row
 
     def peek(self, n: int | str):
         """The held row with what a hook changed and the store has not written yet, so a reader sees the status and provider the hook reported."""
         held = super().peek(n)
-        if not PENDING.holds(self.record, int(n)):
+        delta = PENDING.delta(self.record, int(n))
+        if not delta:
             return held
         row = held.fork()
-        row.data.update(copy.deepcopy(PENDING.of(self.record, int(n)).delta))
+        row.data.update(delta)
         return row
 
     def save(self, r, action: str, **event):
         saved = super().save(r, action, **event)
-        if PENDING.holds(self.record, r.n):
-            PENDING.pop(self.record, r.n)
+        PENDING.pop(self.record, r.n)
         return saved
 
     def _shared(self, session: str):
@@ -172,9 +174,9 @@ class Agents(Controller):
 
     def _flush(self, n: int) -> None:
         """Writes the held row; one whose environment was removed is dropped, since it has no record to be written into."""
-        if not PENDING.holds(self.record, n):
-            return
         pending = PENDING.pop(self.record, n)
+        if pending is None:
+            return
         if not self.record.home.is_dir():
             return
         with self.record.locked(self.resource.scope):

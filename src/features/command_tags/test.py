@@ -108,7 +108,7 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     Agents(record, actor=AGENT).by_session("claude-1")
     Messages(record, actor=AGENT).read(asked_and_read(record, "how is it going?").n)
     report(record, "idle", "Stop")
-    assert any("answer by opening your turn with [!reply:1]" in n.brief for n in Nudges(record).all() if "before you write" in n.title), \
+    assert any("answer by opening your turn with [!reply:1]" in n.brief for n in Nudges(record).all() if n.data.get("feature") == "messages"), \
         "the line naming a read message still to answer says how to answer it, in its brief"
     from engine.wording import APPENDS, appended
     addition = lambda n, **_: f"work {n} can be ended from the board"

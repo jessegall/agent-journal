@@ -120,7 +120,7 @@ await runScenarios(process.argv[2], {
         await card(page).getByRole("button", {name: "Connect", exact: true}).click();
         await page.getByText("In step with the server.").waitFor();
         await card(page).getByRole("button", {name: "Disconnect"}).click();
-        await page.getByText(/Not connected/).waitFor();
+        await page.getByText(/connected to no server/).waitFor();
     },
     async "a copy that has joined a server says so in the bar, with how it stands and when it last synced"(page, url) {
         journal("feature", "switch", "connection", "--on");
