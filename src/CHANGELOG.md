@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.270.6 — A working session is no longer called silent, and a wait on you is refused
+
+- The viewer said "Not responding" over a session that was working. A session's terminal and its conversation share one process, but the terminal was seated before its process was written down, so the journal could not tell they were one agent and retired the conversation as a stranger. A retired session stops holding its environment, the terminal held it instead, and that row carries none of the agent's hook events - which is exactly what the bar reads to decide a session has gone quiet.
+- `journal work await` refuses a wait whose words name you. Waiting for you is being idle, not waiting: a wait is for something that will happen on its own and let the work go on. The refusal says what to do instead - put the question on the row and take the next ready one.
+- An agent held for an unanswered message can read that message again. The hold stopped every tool call, including `journal message unread`, so an agent could not see what it had to answer; and a command the gate ran in the agent's place now hands back what it printed, instead of running silently.
+- A message carrying a picture nobody opened cannot be replied to. A guess at what a screenshot shows is worse than no answer. Reading the attached picture is never held, so the guard has a way out.
+- `journal upgrade` starts the install in a session of its own. The mark an update writes pauses the agent, and a paused agent is torn down with the command it is running, so an update started by hand died two steps in; detached, it finishes whatever happens to its caller. A managed file you changed by hand is still answered to whoever asked, before anything detaches.
+- A command typed with a leading `!` runs without it. The prompt's own `!` is muscle memory.
+- `journal worktree drift` and `journal worktree take` can no longer disagree about the same branch. Drift measured what the working branch had gained since the worktree was cut, which a rebase leaves behind; it now measures what the branch is missing, read from git each time, and take asks the same question.
+- A turn written after one of the journal's own lines is judged by what it says, not by what prompted it. A turn naming a finding had been kept out of the chat because a journal line came before it.
+- A catch-up card for a voice or a switch you already chose is not shown. Starting after a long gap had offered the Squire to someone who picked him months before.
+- A ticket agent whose every open row is blocked is idle because the work is, not stuck. The sequence for unsticking one had fired twice on a ticket waiting on a secret.
+- A number the sentence says is a measurement is not read as a row number. A load average on ten cores is not a to-do.
+- A sequence run about a row that no longer exists can finish. Its finish condition peeked the row and a missing one raised, so the run stuck at its last step.
+- Each of the journal's nudges can carry a sentence of your own, written on the Settings page under the switch that governs it. It is said to the agent after the journal's own words, so it adds to the instruction rather than standing in front of it.
+
 ## 2.270.4 — An update that is not running stops holding the journal
 
 - A journal held by an update that had already stopped would not let any agent write until ten minutes had passed. The mark that says an update is running was left behind when the update ended any way but the ordinary one, and nothing asked whether it was still true. The engine now asks, every five seconds: the mark names the process running the update and the moment that process started, and an update whose process is gone, whose number the system has handed to something else, or that has run longer than five minutes is no longer an update. Nothing else takes the mark away, so no caller can forget to, and a hung update is now treated like a dead one rather than being waited out.
