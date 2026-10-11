@@ -7,6 +7,7 @@ the providers. Each kind has one entry and no kind has two, so the run and the e
 """
 
 import json
+import os
 import shutil
 import tempfile
 import time
@@ -17,6 +18,7 @@ from pathlib import Path
 import commands.cli  # noqa: F401  wires the command line, as every process that runs the journal does
 from controllers.types import Messages, Nudges
 from engine.gates import Hold, HookCall, hold
+from engine.project_files import walk
 from engine.record import Record
 from expects import Given
 from expects.playing import Seen, World
@@ -45,6 +47,10 @@ def scratch(given: Given) -> Record:
         written(record, row)
     for path, text in given.files.answers.items():
         staged(record.root.parent / path, text)
+    if given.files.answers:
+        walk(record.root.parent)
+    if given.transcript:
+        speaking_from(record, given.transcript)
     if given.held:
         holding(record, given.held)
     return record
@@ -54,6 +60,16 @@ def staged(path: Path, text: str) -> None:
     """Puts one file the Given says exists on disk under the scratch project, where whatever reads it will find it."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text)
+
+
+def speaking_from(record: Record, text: str) -> None:
+    """Writes the conversation the Given states inside the scratch project and points each agent row at it, so nothing names a path before the scratch exists."""
+    from controllers.types import Agents
+    agents = Agents(record, actor=SYSTEM)
+    for row in agents.rows.standing():
+        path = record.root.parent / f"{row.title}.transcript.jsonl"
+        staged(path, text)
+        agents.update(row.n, transcript=str(path))
 
 
 def holding(record: Record, why: str) -> None:
@@ -219,6 +235,21 @@ def at_the_givens_hour(given: Given):
 
 
 @contextmanager
+def with_the_scratch_secrets(record: Record):
+    """Points the secrets folder at the scratch project for the whole play, so no secret value a play writes or drops is ever the user's own."""
+    from features.secrets.values import FOLDER_VARIABLE
+    was = os.environ.get(FOLDER_VARIABLE)
+    os.environ[FOLDER_VARIABLE] = str(record.root.parent / ".secrets")
+    try:
+        yield
+    finally:
+        if was is None:
+            os.environ.pop(FOLDER_VARIABLE, None)
+        else:
+            os.environ[FOLDER_VARIABLE] = was
+
+
+@contextmanager
 def with_the_givens_programs(given: Given):
     """Leaves only the programs the Given names on the machine's path, when it names any, so a registration that looks for ffmpeg finds it or does not, as the Given says, wherever the play runs."""
     present = dict(given.processes.answers)
@@ -241,6 +272,12 @@ def remembered_by(record: Record, owner: str) -> dict:
     return {**record.state(owner).all(), **{key: value for state in sessions for key, value in state.items()}, **marks}
 
 
+def files_left(record: Record) -> dict:
+    """Every file under the scratch project after the play, by path under the project folder to its text, which is what Wrote(File) and Removed read."""
+    project = record.root.parent
+    return {str(path.relative_to(project)): path.read_text(errors="replace") for path in project.rglob("*") if path.is_file()}
+
+
 def played(promise, expectation) -> Seen:
     """Builds the world the Given states, runs the registration through its own entry, and reads what it did."""
     if promise.kind not in ENTRIES:
@@ -248,11 +285,12 @@ def played(promise, expectation) -> Seen:
     given = expectation.given
     record, world = scratch(given), World.of(given)
     world.seen.before, held, since = rows_now(record), rows_held(record), record.event_log.last_id()
-    with at_the_givens_hour(given), with_the_givens_programs(given):
+    with at_the_givens_hour(given), with_the_givens_programs(given), with_the_scratch_secrets(record):
         ENTRIES[promise.kind](promise, given, record, world)
     world.seen.after = rows_now(record)
     world.seen.said, world.seen.nudged = what_was_said(record)
     world.seen.remembered = remembered_by(record, promise.feature.name)
     world.seen.wrote, world.seen.updated = rows_touched(held, rows_held(record), rows_acted_on(record, since))
     world.seen.held = held_against_the_agents(record)
+    world.seen.files = files_left(record)
     return world.seen

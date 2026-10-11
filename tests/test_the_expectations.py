@@ -14,11 +14,11 @@ import pytest
 
 import expects
 from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given, Held, Kept, NotAnOutcome, Nudged,
-                     Outcome, Outcomes, Printed, Ran, Refused, Unchanged, Updated, Wrote, answering, at, counting,
+                     Outcome, Outcomes, Printed, Ran, Refused, Removed, Unchanged, Updated, Wrote, answering, at, counting,
                      exited, nothing)
 
-OUTCOME_WORDS = (Dispatches, Wrote, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Answered)
-GIVEN_ARGUMENTS = ("on", "rows", "settings", "remembered", "held", "clock", "ids", "chat", "commands", "files", "processes", "providers")
+OUTCOME_WORDS = (Dispatches, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Answered)
+GIVEN_ARGUMENTS = ("on", "rows", "settings", "remembered", "transcript", "held", "clock", "ids", "chat", "commands", "files", "processes", "providers")
 SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands")
 
 

@@ -21,7 +21,7 @@ class NoSuchService(LookupError):
 
 
 __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
-           "Dispatches", "Wrote", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
+           "Dispatches", "Wrote", "Removed", "File", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
            "Formats", "Nudged", "Held", "Answered", "Remembered",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
            "NotAnOutcome", "NoSuchService")
@@ -111,13 +111,38 @@ class Dispatches(Outcome):
 
 
 @dataclass(frozen=True)
+class File:
+    """A file under the project folder the play ran in. As a Given states it, it is a file that exists; as an outcome states it, the text is what the file must contain, never the whole file."""
+
+    path: str
+    text: str = ""
+
+
+@dataclass(frozen=True)
 class Wrote(Outcome):
     row: Any
     def holds(self, seen) -> str:
+        if isinstance(self.row, File):
+            return self.file_holds(seen.files.get(self.row.path))
         wanted = stated(self.row)
         if any(isinstance(row, type(self.row)) and matches(row, wanted) for row in seen.wrote):
             return ""
         return f"it wrote no {type(self.row).__name__} holding {wanted}; it wrote {[named(one) for one in seen.wrote]}"
+
+    def file_holds(self, found: str | None) -> str:
+        if found is None:
+            return f"it left no file {self.row.path!r}"
+        return "" if self.row.text in found else f"the file {self.row.path!r} does not hold {self.row.text!r}; it holds {found[:200]!r}"
+
+
+@dataclass(frozen=True)
+class Removed(Outcome):
+    """A file is gone after the play: it is not under the project folder any more."""
+
+    file: File
+
+    def holds(self, seen) -> str:
+        return "" if self.file.path not in seen.files else f"the file {self.file.path!r} is still there"
 
 
 @dataclass(frozen=True, init=False)
@@ -313,6 +338,8 @@ class Given:
     settings: Mapping[str, Any] = field(default_factory=dict)
     remembered: Mapping[str, Any] = field(default_factory=dict)
     """What the journal already remembers when the registration runs: the claims it has taken, the marks that something was said. A handler reads this where a row would be too much to seed."""
+    transcript: str = ""
+    """The text of the agent's conversation as its provider writes it, put in a file inside the scratch project and named by the agent row, so a registration that reads what the agent last said finds it."""
     held: str = ""
     """Why the agents' writes are already held when the registration runs, as a feature's hold would leave them, so a registration that refuses held calls can be played against one."""
     clock: At = At(WHEN)

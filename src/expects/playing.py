@@ -34,6 +34,7 @@ class Seen:
     before: tuple = ()
     after: tuple = ()
     remembered: dict = field(default_factory=dict)
+    files: dict = field(default_factory=dict)
 
     @property
     def is_unchanged(self) -> bool:
