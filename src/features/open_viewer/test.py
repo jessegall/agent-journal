@@ -45,10 +45,12 @@ def test_other_systems_and_a_missing_tab_leave_opening_to_the_normal_path():
 def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does(monkeypatch):
     visible = []
     up = {"url": "http://127.0.0.1:8422/"}
-    monkeypatch.setattr(viewer, "running", lambda root: up["url"])
+    probes = []
+    monkeypatch.setattr(viewer, "running", lambda root: probes.append(root) or up["url"])
     monkeypatch.setattr(viewer, "show", lambda url, env="": visible.append(f"{url}#/{env}"))
 
     record = fresh()
+    viewer.RUNNING.clear()
     Agents(record, actor=SYSTEM).create("claude-1")
     report(record, "working", "UserPromptSubmit")
     assert visible == [], "no session start yet: the tab is left alone"
@@ -60,11 +62,13 @@ def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does(monkeypa
     assert len(visible) == 1, "a second start of the same session, a compaction or a clear, shows nothing more"
 
     report(record, "idle", "SessionStart", session="claude-2")
-    assert len(visible) == 2, "a new session shows the viewer again"
+    assert (len(visible), len(probes)) == (2, 1), "a new session shows the viewer again, and the ports are probed once for the starts within a few seconds"
 
     up["url"] = ""
+    viewer.RUNNING.clear()
     report(record, "idle", "SessionStart", session="claude-3")
     up["url"] = "http://127.0.0.1:8424/"
+    viewer.RUNNING.clear()
     report(record, "idle", "SessionStart", session="claude-3")
     assert visible[2:] == [f"http://127.0.0.1:8424/#/{record.env}"], "no viewer: nothing; once one runs, the next start shows it"
 

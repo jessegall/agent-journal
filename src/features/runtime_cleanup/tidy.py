@@ -14,8 +14,7 @@ from features.trigger import DAY
 
 TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "launches/*.log": 1024 * 1024,
          "channels/*.jsonl": 1024 * 1024}
-CAPTURES = ("printed", "screen")
-ENDED_FOR = DAY
+GONE_FOR = 6 * 3600
 EVENTS_KEPT = 100
 READERS_WITHIN = DAY
 STAGING_FOR = 3600
@@ -71,10 +70,12 @@ def tidy_files(root: Path, days: float) -> Tidied:
     if not kept.is_dir():
         return Tidied(leftovers=left)
     quiet = time.time() - days * DAY
-    removed = [d for d in sessions(root).glob("*") if d.is_dir() and max((mtime(f) / 1e9 for f in d.iterdir()), default=0) < quiet]
+    gone = time.time() - GONE_FOR
+    ended = set(ended_sessions(root))
+    removed = [d for d in sessions(root).glob("*") if d.is_dir() and max((mtime(f) / 1e9 for f in d.iterdir()), default=0) < (gone if d.name in ended else quiet)]
     for d in removed:
         shutil.rmtree(d, ignore_errors=True)
-    spent = older(kept.glob("launches/*.log"), days * DAY) + older(ended_captures(root), ENDED_FOR)
+    spent = older(kept.glob("launches/*.log"), days * DAY)
     for f in spent:
         f.unlink(missing_ok=True)
     trimmed = [f for pattern, keep in TAILS.items() for f in kept.glob(pattern) if f.is_file() and not listened_to(f) and trim(f, keep)]
@@ -86,9 +87,8 @@ def listened_to(f: Path) -> bool:
     return f.suffix == ".jsonl" and f.parent.name == "channels" and time.time() - mtime(f.with_suffix(".on")) / 1e9 < LISTENING_FOR
 
 
-def ended_captures(root: Path) -> list[Path]:
-    ended = [name for name, session in Sessions(root).all().items() if not alive(session.pid)]
-    return [f for name in ended for f in (sessions(root) / name / capture for capture in CAPTURES) if f.is_file()]
+def ended_sessions(root: Path) -> list[str]:
+    return [name for name, session in Sessions(root).all().items() if not alive(session.pid)]
 
 
 def older(paths, age: float) -> list[Path]:

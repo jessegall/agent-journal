@@ -77,23 +77,23 @@ def test_a_quiet_launch_log_goes_and_a_running_one_keeps_its_last_megabyte(monke
     assert running.read_bytes().endswith(b"still going\n"), "and ends as it did"
 
 
-def test_an_ended_session_loses_its_terminal_captures_after_a_day(monkeypatch):
+def test_an_ended_session_loses_its_folder_after_six_hours_and_a_live_one_keeps_it(monkeypatch):
     record = fresh()
     monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", record.root.parent / "folds")
     sessions = {}
-    for name, pid in (("claude-ended", 999_999_999), ("claude-live", os.getpid())):
+    for name, pid, age in (("claude-ended", 999_999_999, 0.3), ("claude-just-ended", 999_999_998, 0.1), ("claude-live", os.getpid(), 0.3)):
         folder = runtime.sessions(record.root) / name
         folder.mkdir(parents=True)
         (folder / "session.json").write_text(json.dumps({"environment": "main", "pid": pid}))
-        for capture in ("printed", "screen"):
-            (folder / capture).write_bytes(b"frames")
-        aged(folder, 1.5)
+        (folder / "screen").write_bytes(b"frames")
+        aged(folder, age)
         sessions[name] = folder
 
     tidy(record.root, 2)
 
-    assert sorted(f.name for f in sessions["claude-ended"].iterdir()) == ["session.json"], "an ended session's captures go after a day"
-    assert sorted(f.name for f in sessions["claude-live"].iterdir()) == ["printed", "screen", "session.json"], "a live session keeps them"
+    assert [name for name, folder in sessions.items() if folder.exists()] == ["claude-just-ended", "claude-live"], \
+        "the folder of a session whose agent ended goes after six hours; one that ended a moment ago and a live one stay"
+
 
 
 def test_the_days_to_keep_is_a_setting():
