@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.stored import read_json, write_json
+from engine.stored import read_promised_json, write_json
 from resources.base import ENVIRONMENT, PROJECT
 
 SETTINGS: dict[str, tuple] = {}
@@ -19,11 +19,11 @@ class SettingsFile:
 
     def reread(self) -> None:
         SETTINGS_VERSION[0] += 1
-        SETTINGS[str(self.file)] = (SETTINGS_VERSION[0], read_json(self.file, dict, {}))
+        SETTINGS[str(self.file)] = (SETTINGS_VERSION[0], read_promised_json(self.file, dict, {}))
 
     def write(self, key: str, value, combine) -> bool:
         """Writes the key, combined with what the file holds now, and says whether its value changed."""
-        held = read_json(self.file, dict, {})
+        held = read_promised_json(self.file, dict, {})
         value = combine(held.get(key), value)
         if key in held and held[key] == value:
             return False

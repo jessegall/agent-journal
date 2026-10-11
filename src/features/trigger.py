@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass, replace
 
 from resources.fields import Loaded
 from resources.base import names
-from engine.stored import read_json, write_json
+from engine.stored import read_promised_json, write_json
 from engine import runtime
 from engine.memo import Memo
 
@@ -61,7 +61,7 @@ def _file(record, session: str, name: str):
 def last(record, session: str, name: str) -> Mark:
     f = str(_file(record, session, name))
     stamp = stamped(f)
-    return HELD.get(f, stamp, lambda: read_json(f, Mark.from_json, Mark.from_json({})))
+    return HELD.get(f, stamp, lambda: read_promised_json(f, Mark.from_json, Mark.from_json({})))
 
 
 def held(f: str, mark: Mark) -> None:

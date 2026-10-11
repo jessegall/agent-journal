@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 from resources.fields import Loaded
-from engine.stored import read_json, write_json
+from engine.stored import read_promised_json, write_json
 from features.secrets.running import Masker
 from features.secrets.values import ValuesFile
 
@@ -37,7 +37,7 @@ def state_file(root: Path, name: str) -> Path:
 
 
 def read_state(root: Path, name: str) -> IntegrationState:
-    return read_json(state_file(root, name), IntegrationState.from_json, IntegrationState())
+    return read_promised_json(state_file(root, name), IntegrationState.from_json, IntegrationState())
 
 
 def write_state(root: Path, name: str, state: IntegrationState) -> None:

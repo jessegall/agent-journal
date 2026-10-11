@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
 
-from engine.disk import Growth, JsonFiles, last_lines, read_json, replace
+from engine.disk import Growth, JsonFiles, last_lines, read_json, read_promised_json, replace
 from engine.locks import writing
 from engine.transaction import snapshot
 
-__all__ = ["Growth", "JsonFiles", "append_text", "last_lines", "read_json", "write_json", "write_text", "write_unlocked"]
+__all__ = ["Growth", "JsonFiles", "append_text", "last_lines", "read_json", "read_promised_json", "write_json", "write_text", "write_unlocked"]
 
 
 def write_text(path: Path, text: str) -> None:

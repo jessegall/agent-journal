@@ -8,7 +8,7 @@ from pathlib import Path
 
 from resources.fields import Loaded
 from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
-from engine.stored import read_json, write_json
+from engine.stored import read_json, read_promised_json, write_json
 from engine.locks import claim
 from engine.package import ARCHIVE, entry
 from engine.ports import free, reserve
@@ -75,7 +75,7 @@ class Wanted(Loaded):
 
     @classmethod
     def read(cls, root: Path, sid: str) -> "Wanted":
-        return read_json(want_file(root, sid), cls.from_json, cls.from_json({}))
+        return read_promised_json(want_file(root, sid), cls.from_json, cls.from_json({}))
 
 
 def beat_file(root: Path) -> Path:

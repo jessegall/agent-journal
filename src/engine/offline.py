@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Callable
 
 from engine import runtime
-from engine.disk import read_json
+from engine.disk import read_promised_json
 from engine.locks import held_file, joining
 from engine.outbox import Outbox, Request
 from engine.sync import has_joined
@@ -116,7 +116,7 @@ class Applied:
         """Runs the write unless its key was applied before; answers taken either way, since the sender may let go of it.
         The funnel is entered before the lock, because the write it runs goes through the funnel itself."""
         with joining(self.root), held_file(self.lock):
-            keys = read_json(self.file, list, [])
+            keys = read_promised_json(self.file, list, [])
             if held.key not in keys:
                 run(held)
                 write_json(self.file, [*keys, held.key][-KEPT_KEYS:])

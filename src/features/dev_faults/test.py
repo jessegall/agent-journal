@@ -262,16 +262,17 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch(monkeypatch):
     monkeypatch.delenv("DEVELOPMENT_MODE", raising=False)
     assert developing(project) is True, "development mode is read from the project's own .env"
     from engine.developing import AnsweredBlank
-    from engine.disk import read_json
+    from engine.disk import read_json, read_promised_json
     from providers import transcript_reader
     from types import SimpleNamespace
     monkeypatch.chdir(record.root.parent)
     broken, agent = record.root.parent / "broken.json", SimpleNamespace(provider="nowhere", transcript="t.jsonl")
     broken.write_text("{not json")
-    assert (read_json(broken, dict, {}), transcript_reader(agent)) == ({}, None), "elsewhere a file that is there but unreadable, and a provider nobody supplies, answer blank"
+    assert (read_promised_json(broken, dict, {}), transcript_reader(agent)) == ({}, None), "elsewhere a file that is there but unreadable, and a provider nobody supplies, answer blank"
     monkeypatch.setenv("DEVELOPMENT_MODE", "true")
+    assert read_json(broken, dict, {}) == {}, "the lenient read answers its default even there, for the reader for whom nothing is an answer"
     with pytest.raises(AnsweredBlank, match="broken.json"):
-        read_json(broken, dict, {})
+        read_promised_json(broken, dict, {})
     with pytest.raises(AnsweredBlank, match="nowhere"):
         transcript_reader(agent)
     monkeypatch.delenv("DEVELOPMENT_MODE")

@@ -7,7 +7,7 @@ from pathlib import Path
 from resources.fields import Loaded
 
 from resources.types import TYPES
-from engine.stored import read_json, write_json, write_text
+from engine.stored import read_promised_json, write_json, write_text
 from engine.proc import process
 from engine import locks, runtime, waits
 
@@ -175,7 +175,7 @@ class SessionFiles:
         stamp = (found.st_mtime_ns, found.st_size)
         held = self.kept.get(name)
         if not held or held[0] != stamp:
-            held = self.kept[name] = (stamp, read_json(path, SessionRecord.from_json, self.NONE))
+            held = self.kept[name] = (stamp, read_promised_json(path, SessionRecord.from_json, self.NONE))
         return held[1]
 
     def append_change(self, name: str) -> None:
@@ -227,7 +227,7 @@ class Sessions:
             with waits.waited("sessions"):
                 fcntl.flock(lock, fcntl.LOCK_EX)
             with locks.locked_apart():
-                raw = read_json(self.path(session), dict, {})
+                raw = read_promised_json(self.path(session), dict, {})
                 got = {**(raw if isinstance(raw, dict) else {}), **fields}
                 write_json(self.path(session), got)
         self.files.append_change(session)
