@@ -18,7 +18,7 @@ import pytest
 import migrations
 from agents.terminal import relaunch
 from controllers.types import Todos
-from engine import bus, heal, locks, runtime, viewer
+from engine import bus, heal, locks, package, runtime, viewer
 from engine.heal import broken
 from engine.package import code_stamp, point
 from engine.record import Record
@@ -1128,7 +1128,7 @@ def test_a_server_our_own_deadline_stopped_is_never_counted_as_a_crash(tmp_path,
     (root / "runtime").mkdir(parents=True)
     monkeypatch.setattr(viewer, "COMING_UP", 1.0)
     monkeypatch.setattr(viewer, "PORTS", [free_port()])
-    monkeypatch.setattr(viewer, "entry", lambda name: [sys.executable, "-c", "import time; time.sleep(600)"])
+    monkeypatch.setattr(package, "entry", lambda name: [sys.executable, "-c", "import time; time.sleep(600)"])
     exits = []
     for _ in range(3):
         url, code = viewer.launch(root, tmp_path)
