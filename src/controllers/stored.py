@@ -636,7 +636,7 @@ class RowStore:
     def _row(self, r: Resource, stamp: str) -> dict:
         return {"n": r.n, "created": r.created, IDEMPOTENCY: r.data.get(IDEMPOTENCY, ""), "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
                 "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), DRAFT_OF: r.data.get(DRAFT_OF, ""), OWNER: r.data.get(OWNER, ""),
-                **{k: getattr(r, k, r.data.get(k)) for k in self.resource.indexed}, "stamp": stamp}
+                **{k: getattr(r, k) for k in self.resource.indexed}, "stamp": stamp}
 
     def packed(self) -> dict[int, dict]:
         index = self.folder() / PACKED / INDEX

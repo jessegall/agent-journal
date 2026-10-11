@@ -59,6 +59,7 @@ class Todo(Ranked, Placed, Resource):
         Field(default=list, name="after"),
         Field(name="struck"),
         Field(FLAG, False, name="hidden"),
+        Field(default="", name=WHOM),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="To-do",
@@ -126,6 +127,7 @@ class Doc(Shape, Resource):
         Field(default=0, name="open_until"),
         Field(default=False, name="written"),
         Field(default=False, name="hidden"),
+        Field(default="", name="proposed_for"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Document",
@@ -202,6 +204,7 @@ class Fact(Reasoned, Resource):
 class Rule(Reasoned, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(FLAG, name="injected"),
+        Field(default="", name="proposed_for"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Rule",
@@ -484,6 +487,7 @@ class Tool(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="entry", runs_commands=True),
         Field(TEXT, name="usage"),
+        Field(default="", name="proposed_for"),
     ]
     type = "tool"
     indexed = ("proposed_for",)
