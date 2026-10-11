@@ -33,6 +33,9 @@ def scratch(given: Given) -> Record:
     for name, value in dict(given.settings).items():
         part, _, key = name.partition(".")
         record.change_setting(part or "features", {key or part: value})
+    for name, value in dict(given.remembered).items():
+        owner, _, key = name.partition(".")
+        record.state(owner or name).set(key or name, value)
     for row in given.rows:
         written(record, row)
     return record

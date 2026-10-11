@@ -300,6 +300,8 @@ class Given:
     on: Any
     rows: tuple = ()
     settings: Mapping[str, Any] = field(default_factory=dict)
+    remembered: Mapping[str, Any] = field(default_factory=dict)
+    """What the journal already remembers when the registration runs: the claims it has taken, the marks that something was said. A handler reads this where a row would be too much to seed."""
     clock: At = At(WHEN)
     ids: Counting = Counting()
     chat: Answering = Answering({})
