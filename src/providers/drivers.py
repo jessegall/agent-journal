@@ -19,6 +19,7 @@ from providers.catalogue import workspace_folders
 
 ENTER_AFTER = 0.3
 AGENT_COMMAND = "/"
+RUN_HERE = "!"
 RECHECK, RESUBMITS = 1.0, 3
 ECHO_WAIT, ECHO_STEP = 2.0, 0.1
 DELIVERED_FOR = 30.0
@@ -228,8 +229,11 @@ class Driver(ABC):
             return args
         return [*cls.unresumed(args), next(iter(cls.RESUMING)), conversation]
 
-    def permit(self, allow: bool) -> None:
-        self._wrote(self.ALLOW) if allow else self._escape()
+    def allow(self) -> None:
+        self._wrote(self.ALLOW)
+
+    def deny(self) -> None:
+        self._escape()
 
     def answer_prompt(self, option: int, text: str, options: int) -> bool:
         """Answers the question the agent shows on its screen: the option's number, or for a free answer the last choice, the one that takes the agent's own words, then the words; false when no question is on the screen."""

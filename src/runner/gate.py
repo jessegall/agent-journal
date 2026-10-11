@@ -1,5 +1,6 @@
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 from engine.command_line import command_line
 from engine import bus
@@ -14,7 +15,8 @@ PAUSED_FOR_UPDATE = "The journal is updating and has paused you: start no comman
 PAUSE = Reach.BOTH
 EXPANDING = ("$", "`", "<<")
 ANSWERED, KEPT_ANSWERED = "answers_ran", 200
-ANSWERING = frozenset({("message", "reply"), ("message", "react"), ("message", "read"), ("message", "process"), ("message", "processed"), ("todo", "create")})
+ANSWERING = frozenset({("message", "reply"), ("message", "react"), ("message", "read"), ("message", "unread"), ("message", "process"), ("message", "processed"),
+                       ("message", "tag"), ("todo", "create")})
 
 
 def answers(journal: JournalCall) -> bool:
@@ -72,15 +74,39 @@ def refusal(call: HookCall) -> str | None:
     if why is None:
         return None
     line = ShellLine.of(call.hook.tool.commands)
-    if line.is_answering_only:
+    if line.is_answering_only or reads_a_message_file(call):
         return None
     return why if call.subagent else f"{why}{alongside(call, line)}"
 
 
-def run_answer(call: HookCall, journal: JournalCall) -> bool:
+@dataclass(frozen=True)
+class Ran:
+    """A journal command the gate ran in the agent's place, and what it printed, so a refused line still hands back what it asked for."""
+
+    journal: JournalCall
+    printed: str = ""
+    ok: bool = False
+
+    @classmethod
+    def before(cls, journal: JournalCall) -> "Ran":
+        """One that ran on an earlier try of the same call, whose output the agent already has."""
+        return cls(journal, ok=True)
+
+
+def reads_a_message_file(call: HookCall) -> bool:
+    """Whether the call only reads files the user attached to a message. A picture cannot be weighed without opening it, so a hold on answering, which stops reading as well as writing, never stops that."""
+    from controllers.types import Messages
+    paths = call.hook.tool.paths
+    if not paths or call.hook.tool.writings:
+        return False
+    attached = Messages(call.record).rows.folder().resolve()
+    return all(attached in Path(path).resolve().parents for path in paths)
+
+
+def run_answer(call: HookCall, journal: JournalCall) -> Ran:
     cwd = ("--cwd", call.hook.cwd) if call.hook.cwd else ()
-    _, code = command_line().captured(["--env", call.record.env, "--session", call.session, "--as", AGENT, *cwd, *journal.words[1:]], call.record.root)
-    return code == 0
+    printed, code = command_line().captured(["--env", call.record.env, "--session", call.session, "--as", AGENT, *cwd, *journal.words[1:]], call.record.root)
+    return Ran(journal, printed.strip(), code == 0)
 
 
 def ran_already(call: HookCall, journal: JournalCall) -> bool:
@@ -92,18 +118,21 @@ def answered_key(call: HookCall, journal: JournalCall) -> str:
     return f"{call.hook.tool_use}:{journal.line}"
 
 
-def answered(call: HookCall, journal: JournalCall) -> bool:
+def answered(call: HookCall, journal: JournalCall) -> Ran:
     """Runs a command the refusal answers in the call's place, and keeps that it ran only when it did, so a command that failed is tried again and never listed as run."""
     if ran_already(call, journal):
-        return True
-    if not run_answer(call, journal):
-        return False
-    return call.record.state(ANSWERED, call.session).claim(answered_key(call, journal), time.time(), keep=KEPT_ANSWERED) or True
+        return Ran.before(journal)
+    ran = run_answer(call, journal)
+    if ran.ok:
+        call.record.state(ANSWERED, call.session).claim(answered_key(call, journal), time.time(), keep=KEPT_ANSWERED)
+    return ran
 
 
 def alongside(call: HookCall, line: ShellLine) -> str:
     answering = [journal for journal in line.calls if line.runnable and answers(journal) and call.hook.tool_use]
-    done = [journal for journal in answering if answered(call, journal)]
-    left = [journal for journal in line.calls if journal not in done]
-    return "".join([f" — these journal commands on the same line ran, so do not run them again: {'; '.join(j.line for j in done)}" if done else "",
-                    f" — and these were on the same line, so they did not run either: {'; '.join(j.line for j in left)}" if left else ""])
+    done = [ran for ran in (answered(call, journal) for journal in answering) if ran.ok]
+    left = [journal for journal in line.calls if journal not in [ran.journal for ran in done]]
+    said = "\n\n".join(f"{ran.journal.line}:\n{ran.printed}" for ran in done if ran.printed)
+    return "".join([f" — these journal commands on the same line ran, so do not run them again: {'; '.join(ran.journal.line for ran in done)}" if done else "",
+                    f" — and these were on the same line, so they did not run either: {'; '.join(j.line for j in left)}" if left else "",
+                    f"\n\n{said}" if said else ""])

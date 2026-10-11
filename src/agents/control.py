@@ -6,7 +6,7 @@ from controllers.types import Agents, Notices
 from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, QueuedCommand, RESUME, SHELL, STALE, queue, waiting_commands
 from engine.record import Record
 from engine.seats import live_session, offline
-from providers.drivers import AGENT_COMMAND
+from providers.drivers import AGENT_COMMAND, RUN_HERE
 from agents.terminal import relaunch as relaunch_session
 from providers import DRIVERS, PROVIDERS
 from providers.base import Provider
@@ -81,14 +81,21 @@ def move_to_background(root: Path, env: str, session: str, running: str = "") ->
     return pressed(root, env, session, "Move to the background", BACKGROUND, value=running)
 
 
+def typed(command: str) -> str:
+    """A command as the user meant it. The prompt's own ! for run this here is muscle memory, so one leading ! is not part of the command."""
+    said = command.strip()
+    return said[1:].lstrip() if said.startswith(RUN_HERE) else said
+
+
 def shell(root: Path, env: str, session: str, command: str, now: bool = False) -> dict:
     found = online(root, env, session)
-    if not command.strip():
+    said = typed(command)
+    if not said:
         raise Refused("type a command to run")
-    for_agent = command.strip().startswith(AGENT_COMMAND)
+    for_agent = said.startswith(AGENT_COMMAND)
     if not for_agent and not DRIVERS[found.provider].SHELL:
         raise Refused(f"{found.provider} has no shell command to type")
-    queued = queue(Path(root), session, (), f"Run {command.strip()}", provider=found.provider, action=SHELL, value=command.strip())
+    queued = queue(Path(root), session, (), f"Run {said}", provider=found.provider, action=SHELL, value=said)
     if for_agent:
         return queued.for_viewer
     agents = Agents(Record(Path(root), env), actor=SYSTEM)

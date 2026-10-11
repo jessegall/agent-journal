@@ -3,6 +3,7 @@ from pathlib import Path
 from agents.seat import HookBinding
 from controllers.types import Agents
 from engine import bus, runtime
+from engine.after_answer import after_answered
 from engine.gates import HookCall, responded
 from engine.record import Record
 from providers.base import asking_row
@@ -69,13 +70,13 @@ def started(call: HookCall) -> dict:
 
 
 def ended(call: HookCall) -> dict:
-    bus.defer(lambda: chat_mirror.turn_ended(call.record.root, call.session, call.row, call.hook.last_message))
+    after_answered(lambda: chat_mirror.turn_ended(call.record.root, call.session, call.row, call.hook.last_message))
     return {}
 
 
 def prompted(call: HookCall) -> dict:
     if not call.provider.journal_typed(call.hook.prompt):
-        bus.defer(lambda: chat_mirror.turn_began(call.record.root, call.session, call.row))
+        after_answered(lambda: chat_mirror.turn_began(call.record.root, call.session, call.row))
     return {}
 
 

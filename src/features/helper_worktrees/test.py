@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 import features
@@ -26,6 +27,28 @@ def test_a_helper_is_not_told_about_another_environments_worktrees():
     assert "unread worktree" not in Engine(helper, DRIVERS["claude"](helper, "helper")).owed()
 
 
+@dataclass(frozen=True)
+class Cut:
+    """A project on phone-connection with the worktree rhea cut from it, which is where every test below starts."""
+
+    record: object
+    project: Path
+    worktrees: Worktrees
+    row: object
+
+    @property
+    def folder(self) -> Path:
+        return Path(self.row.path)
+
+
+def a_cut_worktree() -> Cut:
+    features.load()
+    repo = project_on("phone-connection")
+    worktrees = Worktrees(repo.record, actor=AGENT)
+    worktrees.cut("rhea")
+    return Cut(repo.record, repo.project, worktrees, worktrees.all()[0])
+
+
 def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
     features.load()
     repo = project_on("phone-connection")
@@ -47,22 +70,19 @@ def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
 
 
 def test_take_refuses_a_branch_behind_the_working_tip_and_lands_it_once_rebased():
-    features.load()
-    repo = project_on("phone-connection")
-    record, project = repo.record, repo.project
-    worktrees = Worktrees(record, actor=AGENT)
-    worktrees.cut("rhea")
-    row = worktrees.all()[0]
-    folder = Path(row.path)
+    cut = a_cut_worktree()
+    record, project, worktrees, row, folder = cut.record, cut.project, cut.worktrees, cut.row, cut.folder
     commit(folder, "helper.txt", "from the helper\n")
     commit(project, "main.txt", "meanwhile\n")
-    assert "phone-connection gained 1 commit" in worktrees.drift(row.n) and "does not contain" in worktrees.drift(row.n), \
-        "drift names what the working branch gained and that the helper lacks its tip"
+    assert "helper-rhea is missing 1 commit" in worktrees.drift(row.n) and "rebase it onto phone-connection" in worktrees.drift(row.n), \
+        "drift names what the helper's branch lacks, not what the working branch gained since a cut a rebase has left behind"
     from engine.gates import Runs
     from features.helper_worktrees.interceptors import TellDrift
     assert TellDrift.runs == Runs.ASYNC, "drift is told in a message after the call is answered, never by holding the call back"
     assert "rebase it onto phone-connection" in refused(lambda: worktrees.take(row.n)), "a stale branch is refused, with the rebase to do"
     git(folder, "rebase", "-q", "phone-connection")
+    assert "holds every commit of phone-connection" in worktrees.drift(row.n), \
+        "and once it is rebased drift says so, so drift and take never disagree about the same branch"
     assert worktrees.take(row.n).startswith("took 1 commit from helper-rhea onto phone-connection"), "a rebased branch is taken"
     assert (project / "helper.txt").read_text() == "from the helper\n" and git(project, "log", "-1", "--format=%s") == "write helper.txt", \
         "the helper's commit lands on the working branch by cherry-pick"
@@ -84,12 +104,8 @@ def test_take_asks_for_a_wording_review_when_the_helper_changed_viewer_text():
 
 
 def test_take_refuses_a_dirty_main_checkout_only_for_the_files_it_touches():
-    features.load()
-    repo = project_on("phone-connection")
-    record, project = repo.record, repo.project
-    worktrees = Worktrees(record, actor=AGENT)
-    worktrees.cut("rhea")
-    row = worktrees.all()[0]
+    cut = a_cut_worktree()
+    record, project, worktrees, row = cut.record, cut.project, cut.worktrees, cut.row
     commit(Path(row.path), "shared.txt", "changed by the helper\n")
     (project / "shared.txt").write_text("someone else's edit\n")
     assert "shared.txt" in refused(lambda: worktrees.take(row.n)), "another agent's edit to a touched file is never overwritten"
@@ -139,16 +155,12 @@ def test_take_refuses_a_dirty_main_checkout_only_for_the_files_it_touches():
 
 
 def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never():
-    features.load()
-    repo = project_on("phone-connection")
-    record, project = repo.record, repo.project
-    worktrees = Worktrees(record, actor=AGENT)
-    worktrees.cut("rhea")
-    folder = Path(worktrees.all()[0].path)
+    cut = a_cut_worktree()
+    record, project, worktrees, row, folder = cut.record, cut.project, cut.worktrees, cut.row, cut.folder
     provider = PROVIDERS["claude"]()
     read = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "cwd": str(project), "tool_name": "Read",
             "tool_input": {"file_path": str(folder / "shared.txt")}}
-    drifts = lambda: [f"{title}. {brief}" for title, brief in nudges_with_briefs(record) if "since your worktree was cut" in title]
+    drifts = lambda: [f"{title}. {brief}" for title, brief in nudges_with_briefs(record) if "is behind" in title]
 
     def advice(hook: dict) -> str:
         before = len(drifts())
@@ -160,12 +172,12 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
         "the tip it checked is kept on this machine, not in the shared row, so the next tool call runs no git"
     commit(project, "main.txt", "meanwhile\n")
     told_tip = helper()
-    assert (told_tip.startswith("phone-connection moved since your worktree was cut"), "1 commit" in told_tip, f"Rebase onto phone-connection in {folder}" in told_tip) == \
-        (True, True, True), "the helper is told the branch moved, what it gained and where to rebase"
+    assert (told_tip.startswith("Your branch is behind phone-connection"), "missing 1 commit" in told_tip, f"Rebase onto phone-connection in {folder}" in told_tip) == \
+        (True, True, True), "the helper is told its branch is behind, what it lacks and where to rebase"
     assert helper() == "", "once for that tip"
-    assert "moved" not in advice(read), "the main agent reading the helper's files is never told to rebase"
+    assert "behind" not in advice(read), "the main agent reading the helper's files is never told to rebase"
     commit(project, "again.txt", "and again\n")
-    assert "It gained 2 commits" in helper(), "a new tip is told again"
+    assert "It is missing 2 commits" in helper(), "a new tip is told again"
     strayed = {**read, "cwd": str(folder)}
     assert "another checkout" in handle(provider, record.root, record.env, strayed).get("reason", ""), \
         "the main agent sitting in a helper's checkout is refused before a compaction can move it there"
@@ -196,13 +208,8 @@ def test_a_helper_is_told_once_for_each_new_working_tip_and_the_main_agent_never
 
 
 def test_drop_removes_the_worktree_and_its_branch_but_keeps_its_last_commit():
-    features.load()
-    repo = project_on("phone-connection")
-    record, project = repo.record, repo.project
-    worktrees = Worktrees(record, actor=AGENT)
-    worktrees.cut("rhea")
-    row = worktrees.all()[0]
-    folder = Path(row.path)
+    cut = a_cut_worktree()
+    record, project, worktrees, row, folder = cut.record, cut.project, cut.worktrees, cut.row, cut.folder
     commit(folder, "helper.txt", "kept\n")
     (folder / "loose.txt").write_text("not committed\n")
     worktrees.complete(row.n)

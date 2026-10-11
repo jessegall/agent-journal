@@ -10,7 +10,7 @@ from engine import runtime
 from engine.state import State
 from engine.wording import plural
 from features.agent_sessions.launch import running_at
-from engine.worktree import contains, current_branch, freed, git, included, keep_own_packages, lines, link_folders, packages_linked, present, roots, scratch_cleared, share_journal, tip
+from engine.worktree import current_branch, freed, git, included, keep_own_packages, lines, link_folders, packages_linked, present, roots, scratch_cleared, share_journal, tip
 from providers import workspace_folders
 from features.helper_worktrees.resource import Worktree
 from controllers.types import Agents, Todos
@@ -28,16 +28,22 @@ CHECKED_TIPS = "worktree-tips.json"
 
 @dataclass(frozen=True)
 class Drift:
+    """How far a worktree's branch is from the working branch: the commits of the working branch its own does not hold, read from git each time rather than from the point it was cut at, which a rebase leaves behind."""
+
     working: str
     base: str
     tip: str
-    gained: tuple[str, ...]
-    current: bool
+    missing: tuple[str, ...]
+
+    @property
+    def current(self) -> bool:
+        """Whether the branch already holds every commit of the working branch, which is exactly the question take asks before it takes one."""
+        return not self.missing
 
     @property
     def commits(self) -> str:
-        first = "; ".join(self.gained[:SHOWN]) + (f"; and {len(self.gained) - SHOWN} more" if len(self.gained) > SHOWN else "")
-        return f"{plural(len(self.gained), 'commit')} ({first})"
+        first = "; ".join(self.missing[:SHOWN]) + (f"; and {len(self.missing) - SHOWN} more" if len(self.missing) > SHOWN else "")
+        return f"{plural(len(self.missing), 'commit')} ({first})"
 
 
 def within(folder: Path, places: tuple[Path, ...], commands: tuple[str, ...]) -> bool:
@@ -90,8 +96,7 @@ class Worktrees(Controller):
     def _reused(self, row, working: str, base: str, helper: str):
         """Moves a finished worktree to the working branch's tip, keeping what its branch held under the ref of the dropped ones."""
         project, folder = self._project(), Path(row.path)
-        if row.branch and present(project, f"refs/heads/{row.branch}"):
-            git(project, "update-ref", f"{KEPT}/{row.title}", f"refs/heads/{row.branch}")
+        self._kept_branch(project, row)
         moved = git(folder, "checkout", "-q", "-B", row.branch, base)
         if moved.returncode:
             raise Refused(f"the worktree {row.title} could not be reused: {(moved.stderr or moved.stdout).strip()}")
@@ -101,8 +106,9 @@ class Worktrees(Controller):
     def drift(self, n: int) -> str:
         row = self._unfinished(n, "dropped")
         found = self._drift(row)
-        moved = f"{found.working} gained {found.commits} since the cut" if found.gained else f"{found.working} has not moved since the cut"
-        return f"{moved}; {row.branch} {'contains' if found.current else 'does not contain'} its tip {found.tip[:10]}"
+        if found.current:
+            return f"{row.branch} holds every commit of {found.working}, whose tip is {found.tip[:10]}: nothing to rebase"
+        return f"{row.branch} is missing {found.commits} of {found.working}, whose tip is {found.tip[:10]}: rebase it onto {found.working}"
 
     @action(network=True)
     def take(self, n: int, reviewed: bool = False) -> str:
@@ -112,7 +118,7 @@ class Worktrees(Controller):
             raise Refused(f"the main checkout is not on {row.working}; switch it back before taking worktree {n}")
         found = self._drift(row)
         if not found.current:
-            raise Refused(f"{row.branch} does not contain the tip of {row.working}, which gained {found.commits}: "
+            raise Refused(f"{row.branch} is missing {found.commits} of {row.working}: "
                           f"rebase it onto {row.working} in {row.path} first")
         commits = lines(project, "rev-list", "--reverse", f"{row.working}..{row.branch}")
         if not commits:
@@ -196,8 +202,7 @@ class Worktrees(Controller):
                 self._committed(folder, row)
             git(project, "worktree", "remove", str(folder))
             scratch_cleared(folder)
-        if row.branch and present(project, f"refs/heads/{row.branch}"):
-            git(project, "update-ref", f"{KEPT}/{row.title}", f"refs/heads/{row.branch}")
+        if self._kept_branch(project, row):
             git(project, "branch", "-D", row.branch)
         listed = Todos(self.record, actor=SYSTEM)
         for todo in self._waiting(row):
@@ -234,8 +239,8 @@ class Worktrees(Controller):
         now = tip(project, row.working)
         if not now or not row.base:
             raise Refused(f"worktree {row.n} has no working branch to measure against")
-        gained = tuple(lines(project, "log", "--format=%h %s", f"{row.base}..{now}"))
-        return Drift(row.working, row.base, now, gained, bool(row.branch) and contains(project, now, row.branch))
+        missing = tuple(lines(project, "log", "--format=%h %s", f"{row.branch}..{now}")) if row.branch else (now,)
+        return Drift(row.working, row.base, now, missing)
 
     def _drifted(self, places: tuple[Path, ...], commands: tuple[str, ...]):
         project = self._project()
@@ -248,6 +253,13 @@ class Worktrees(Controller):
             if not found.current:
                 return row, found
         return None
+
+    def _kept_branch(self, project: Path, row) -> bool:
+        """Keeps what a worktree's branch holds under the ref of the dropped ones, so nothing a helper committed is lost when the branch goes; false when there is no branch to keep."""
+        if not row.branch or not present(project, f"refs/heads/{row.branch}"):
+            return False
+        git(project, "update-ref", f"{KEPT}/{row.title}", f"refs/heads/{row.branch}")
+        return True
 
     def _checked_tips(self) -> State:
         return State(runtime.folder(self.record.root) / CHECKED_TIPS)

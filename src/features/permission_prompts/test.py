@@ -108,7 +108,7 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
     asker.press_raw = asker._wrote = pressed.append
     monkeypatch.setattr(time, "sleep", slept.append)
     asker.stop_turn()
-    asker.permit(False)
+    asker.deny()
     assert (pressed, len(slept), slept[-1] > 0.5) == ([b"\x1b", b"\x1b"], 2, True), \
         "the journal spaces its Escape presses so two never open Claude Code's Rewind menu"
     asker._screen_file().parent.mkdir(parents=True, exist_ok=True)

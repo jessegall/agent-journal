@@ -46,6 +46,26 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
         report(record, "working", "PreToolUse")
     assert len(text()) == 3, "said three times in all and then it lets the agent be"
     assert "tool calls are held" in holds(record).get("messages.answering", ""), "the hold stands while the message is unanswered, however long it waits"
+    refusal = handle(PROVIDERS["claude"](), record.root, record.env,
+                     {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_use_id": "use-1", "tool_name": "Bash",
+                      "tool_input": {"command": f"journal message read {m.n} | head -5"}}).get("reason", "")
+    assert "how is it going?" in refusal, \
+        "a held line whose journal command the gate ran in the agent's place hands back what it printed, so asking what to answer is never a dead end"
+    shot = record.root.parent / "shot.png"
+    shot.write_bytes(bytes.fromhex("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a4944415478019c6300010000050001"
+                                   "0d0a2db40000000049454e44ae426082"))
+    with_picture = Messages(record, actor=USER).create("what does this say?")
+    Messages(record, actor=USER).attach(with_picture.n, str(shot))
+    Messages(record, actor=AGENT).read(with_picture.n)
+    assert "open the picture before you answer it" in refused(lambda: Messages(record, actor=AGENT).reply(with_picture.n, "it says the build is green")), \
+        "a message carrying a picture nobody opened cannot be answered: a guess at what a screenshot shows is worse than no answer"
+    shown = handle(PROVIDERS["claude"](), record.root, record.env,
+                   {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_use_id": "use-2", "tool_name": "Read",
+                    "tool_input": {"file_path": str(Messages(record).rows.row_folder(with_picture.n) / "shot.png")}}).get("reason", "")
+    assert not shown, "and reading that picture is never held, since it is how the message gets answered"
+    Messages(record, actor=AGENT).tag(with_picture.n, "shot.png", "a terminal showing the build passing")
+    Messages(record, actor=AGENT).reply(with_picture.n, "it says the build is green")
+    assert Messages(record).load(with_picture.n).completed, "once the picture is tagged the reply goes through"
     from controllers.types import Todos
     filed = Todos(record, actor=AGENT).create("wire the last route")
     Messages(record, actor=AGENT).process(m.n, "how is it going?", f"todo {filed.n}")
@@ -67,7 +87,6 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     footer = Todos(record, actor=AGENT).create("wire up the footer")
     Messages(record, actor=AGENT).process(ask.n, "please wire up the footer too", f"todo {footer.n}")
     assert Messages(record).load(ask.n).completed, "a message processed into a row is handled at once, not when the agent next goes idle"
-    from tests.conftest import refused
     by_agent = Messages(record, actor=AGENT).create("a line from the agent")
     assert "only a message you sent" in refused(lambda: Messages(record, actor=USER).delete(by_agent.n, "gone")), "a message the user did not write cannot be deleted, whoever asks"
     Messages(record, actor=USER).delete(ask.n, "gone")

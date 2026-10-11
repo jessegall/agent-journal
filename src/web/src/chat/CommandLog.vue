@@ -11,7 +11,6 @@ defineProps({
 const emit = defineEmits(["now"]);
 
 const {members: opened, toggle} = useToggledSet();
-
 </script>
 
 <template>
@@ -19,7 +18,13 @@ const {members: opened, toggle} = useToggledSet();
         <template v-for="c in lines" :key="c.at">
             <div :class="['log-line', {shell: c.tool === 'Bash', noted: c.tool === 'Journal'}]">
                 <span class="log-mark">{{ commandMark(c.tool) }}</span>
-                <span class="log-text">{{ c.command }}</span>
+                <span
+                    :class="['log-text', {open: opened.has(c.at)}]"
+                    :title="opened.has(c.at) ? 'Click to fold this line' : 'Click to show the whole line'"
+                    @click="toggle(c.at)"
+                >
+                    {{ c.command }}
+                </span>
             </div>
             <template v-if="c.output">
                 <pre
@@ -117,7 +122,16 @@ const {members: opened, toggle} = useToggledSet();
     word-break: break-word;
     display: -webkit-box;
     overflow: hidden;
+    cursor: pointer;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+}
+
+.log-text.open {
+    display: block;
+}
+
+.queued .log-text {
+    cursor: default;
 }
 </style>

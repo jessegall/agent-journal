@@ -1636,6 +1636,22 @@ def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_
     assert chat_mirror.send_to_chat(root, "claude-1", "once only") and chat_mirror.send_to_chat(root, "claude-1", "once only"), "a message already sent counts as sent and is not sent twice"
 
 
+def test_the_turn_end_catch_up_queues_behind_a_display_event_already_on_the_session_lane():
+    from engine.after_answer import AfterAnswer, after_answered, answering_for
+    pool = AfterAnswer(0)
+    ran = []
+    pool.add(lambda: ran.append("displayed"), "claude-1")
+    with pool.answering_hook():
+        answering_for("claude-1")
+        after_answered(lambda: ran.append("turn ended"))
+    for _ in range(2):
+        job, lane = pool.jobs.get_nowait()
+        job()
+        pool.next_in(lane)
+    assert ran == ["displayed", "turn ended"], \
+        "the stop hook's catch-up runs on the session's lane after a display event that arrived before it, so the hook's text is in the ledger before the transcript is read"
+
+
 def test_a_server_that_stops_answering_is_stopped_with_its_threads_kept(tmp_path, monkeypatch):
     from engine import viewer
     root = tmp_path / ".journal"
@@ -1885,6 +1901,9 @@ def test_a_damaged_ledger_is_refused_a_rolled_back_record_gets_its_files_back_an
     assert json.loads((root / "record.json").read_text()) == {"kept": True}, "a rolled back record gets its single files back as they were"
 
     assert ShellLine.of(("echo 'never closed",)).others == 1, "a shell line with a quote that never closes is still read as one command"
+    assert ShellLine.of(("journal message unread",)).is_answering_only, \
+        "reading the inbox is how the agent sees what it has to answer, so a hold on answering never stops it"
+    assert not ShellLine.of(("journal todo done 3",)).is_answering_only, "a command that answers no message is held like any other"
 
     record = fresh()
     report(record, "working", "PreToolUse", session="claude-1")

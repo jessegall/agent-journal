@@ -288,7 +288,10 @@ class Engine:
         queued = take(self.record.root, self.names(), PERMIT)
         if not queued:
             return ""
-        self.agent.driver.permit(queued.value == "allow")
+        if queued.value == "allow":
+            self.agent.driver.allow()
+        else:
+            self.agent.driver.deny()
         return f"permission: {queued.value}"
 
     def shelled(self) -> str:

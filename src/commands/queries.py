@@ -164,8 +164,10 @@ def demo(ctx) -> str:
     return demo_built(Path(ctx["folder"]), Path(ctx["into"]), ctx["environment"], ctx["name"])
 
 def upgrade_here(ctx) -> str:
-    from install import upgrade
+    from install import DETACHED, upgrade, upgrade_on_its_own
     root = ctx["record"].root
+    if not os.environ.get(DETACHED):
+        return upgrade_on_its_own(root, yes=ctx["yes"], version=ctx["to"])
     return "\n".join(upgrade(root.parent, root, yes=ctx["yes"], version=ctx["to"]))
 
 def halt(ctx) -> str:

@@ -91,6 +91,9 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     lines = [raw for raw in typed if raw.strip(b"\x05\x15\x7f\r")]
     assert (lines[-1], b"!/effort high" in typed, "/effort high" in pending()) == (b"/effort high", False, False), \
         "a line starting with / is a command for the agent: typed as it is, and not waited on as a shell command"
+    from agents.control import typed as read_command
+    assert (read_command("! journal upgrade"), read_command("!ls"), read_command("ls")) == ("journal upgrade", "ls", "ls"), \
+        "the prompt's own ! for run this here is muscle memory, so a command typed with one in front runs without it"
     assert DRIVERS["codex"].SHELL == "", "a provider without a shell mark takes no command"
     import os
     import pty
@@ -213,7 +216,8 @@ def fake_engine(monkeypatch, state="idle"):
         def stop_turn(self): self.calls.append("stop_turn")
         def interrupt(self): self.calls.append("interrupt")
         def clear_input(self): self.calls.append("clear_input")
-        def permit(self, allow): self.calls.append(f"permit {allow}")
+        def allow(self): self.calls.append("permit True")
+        def deny(self): self.calls.append("permit False")
         def move_to_background(self): return self.calls.append("background") or True
         def press(self, keys): return self.calls.append(f"press {keys}") or True
         def send(self, text="", groups=None, yielding="", now=False, by="journal"): return self.calls.append(f"send {text}") or True
@@ -325,8 +329,8 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     claude = DRIVERS["claude"](record, "claude-5", fd=write)
     assert claude.press_raw(b"\x1b[B\r") is None and claude.press_raw(b"\r") is None, "raw keys are written, the enter after them in a write of its own"
     claude.stop_turn()
-    claude.permit(True)
-    claude.permit(False)
+    claude.allow()
+    claude.deny()
     sent = os.read(read, 4096)
     assert sent == b"\x1b[B\r\r\x1b" + claude.ALLOW + claude.STOP, "stop and the answer to a permission are written to the terminal as keys"
     assert claude.move_to_background() is bool(claude.MOVE_TO_BACKGROUND), "a driver moves a run to the background only when its agent has a key for it"

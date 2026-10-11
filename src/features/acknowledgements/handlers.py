@@ -9,6 +9,7 @@ from features.acknowledgements.details import KEPT_OUT
 from resources.base import AGENT, USER, Ref, Refused, titled
 
 ALWAYS_KEPT = ("message", "question", "comment")
+A_NOD = 120
 
 
 def reply_kept(context: Context, delivered: list[str]) -> bool:
@@ -37,7 +38,8 @@ def awaiting_person(context: Context, ref: Ref) -> bool:
 
 
 def tells_something(row, text: str) -> bool:
-    return bool(row.failure or row.turn_wrote or "?" in text or CARRIED.search(text))
+    """Whether a turn written after a journal line is for the user. It is judged by what it says, never by what prompted it: a failure, work that landed, a question and anything longer than a nod are written to the user however the turn started. Only a short note that acknowledges the line and says nothing of its own is noise, and erring towards the chat is the safe direction, since a turn kept out is invisible and is found missing only by comparing the chat with the terminal."""
+    return bool(row.failure or row.turn_wrote or "?" in text or CARRIED.search(text)) or len(text) > A_NOD
 
 
 class HideJournalOnlyTurns(Handler):

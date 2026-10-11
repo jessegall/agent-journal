@@ -66,6 +66,11 @@ class Messages(Controller):
         with self.record.locked(self.resource.scope):
             return None if self.load(n).completed else self.complete(n, how)
 
+    def _unopened_pictures(self, n: int) -> list[str]:
+        """The pictures on a message that nobody has said what they show. A tag is the proof the file was opened, and a guess at what a screenshot says is worse than no answer at all."""
+        r = self.load(n)
+        return [name for name in r.pictures if not str(r.files.get(name, "")).strip()]
+
     @action
     def reply(self, n: str, text: str, file: str = ""):
         numbers = [int(part) for part in str(n).replace(",", " ").split()]
@@ -78,6 +83,10 @@ class Messages(Controller):
             self._refuse(f"read message {unread[0]} before you answer it: journal message read {unread[0]}")
         for number in unread:
             self.read(number)
+        unopened = [f"message {number} {name}" for number in numbers for name in self._unopened_pictures(number)]
+        if unopened and self.actor == AGENT:
+            self._refuse(f"open the picture before you answer it: {', '.join(unopened)}. "
+                         f"Read each file, then journal message tag <n> \"<name>\" \"<what it shows>\"")
         skipped, numbers = self._unanswerable(numbers)
         if not numbers:
             self._refuse("; ".join(why for _, why in skipped))

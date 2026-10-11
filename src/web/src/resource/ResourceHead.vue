@@ -6,6 +6,7 @@ import CloseButton from "../kit/CloseButton.vue";
 import {originOf} from "../domain/origin.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
+import BeingWritten from "./BeingWritten.vue";
 import Chapters from "./Chapters.vue";
 import ResourceMenu from "./ResourceMenu.vue";
 import DownloadLink from "./DownloadLink.vue";
@@ -69,15 +70,6 @@ const chaptered = computed(
                     Comes with the journal
                 </span>
             </template>
-            <template v-if="writing && kind.view === 'document' && !readOnly">
-                <button type="button" class="writing-now" title="Go to what the agent is writing" @click="emit('follow')">
-                    <span class="writing-dot" />
-                    The agent is writing this
-                    <template v-if="writing.section">
-                        <span class="writing-where">{{ writing.section }}</span>
-                    </template>
-                </button>
-            </template>
             <span class="age">{{ age(resource.created) }}</span>
             <slot name="tools" />
             <template v-if="!readOnly">
@@ -90,6 +82,9 @@ const chaptered = computed(
                 <CloseButton :title="`Close the ${kind.title.toLowerCase()}`" @click="emit('close')" />
             </template>
         </div>
+        <template v-if="writing && !readOnly">
+            <BeingWritten :writing="writing" @follow="emit('follow')" />
+        </template>
         <template v-if="data.template && !readOnly">
             <button type="button" class="from" @click="peek('template', Number(template))">
                 <Icon name="docs" :size="11" />
@@ -172,50 +167,6 @@ const chaptered = computed(
     white-space: nowrap;
 }
 
-.writing-now {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-    max-width: 280px;
-    padding: 0 8px 0 7px;
-    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-    border-radius: 99px;
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 10.5px;
-    line-height: 17px;
-    letter-spacing: 0;
-    text-transform: none;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.writing-now:hover {
-    background: color-mix(in srgb, var(--accent) 22%, transparent);
-}
-
-.writing-dot {
-    flex: none;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent-text);
-    animation: writing-pulse 1.4s ease-in-out infinite;
-}
-
-.writing-where {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--text-2);
-}
-
-.writing-where::before {
-    content: "· ";
-}
-
 .standing {
     flex: none;
     white-space: nowrap;
@@ -264,12 +215,5 @@ const chaptered = computed(
     background: var(--raised);
     font-size: 17px;
     font-weight: 600;
-}
-
-@keyframes writing-pulse {
-    50% {
-        opacity: 0.35;
-        transform: scale(0.7);
-    }
 }
 </style>

@@ -44,6 +44,7 @@ ARCHIVE = "journal.pyz"
 UPGRADE_MARK = "upgrading"
 KEPT_BUILDS = 2
 KEPT_COPIES = 1
+DETACHED = "AGENT_JOURNAL_UPDATE_DETACHED"
 FRESH_FOR = 3600
 NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
 STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "worker", "worker.py": "worker", "engine/keeper.py": "keeper", "keeper.py": "keeper"}
@@ -427,7 +428,28 @@ def half_done(root: Path) -> bool:
     return (code(root) / "__main__.py").is_file() and (root / ARCHIVE).exists()
 
 
-def upgrade(project: Path, root: Path | None = None, yes: bool = False, version: str = "") -> list[str]:
+def upgrade_words(root: Path, yes: bool, version: str | None) -> list[str]:
+    """The command line that installs this journal again, with only the options that were asked for."""
+    words = [str(root / "journal"), "--root", str(root), "upgrade"]
+    if yes:
+        words.append("--yes")
+    if version is not None:
+        words += ["--to", version]
+    return words
+
+
+def upgrade_on_its_own(root: Path, yes: bool = False, version: str | None = None) -> str:
+    """Starts the upgrade in a session of its own. The upgrade's own mark pauses whoever asked for it, and a paused agent is torn down with the command it is running, so an upgrade that is a child of that command dies two steps in; detached, it finishes whatever happens to its caller."""
+    log = root / "runtime" / "upgrade.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    words = upgrade_words(root, yes, version)
+    with log.open("a") as printing:
+        subprocess.Popen(words, cwd=str(root.parent), env={**os.environ, DETACHED: "1"},
+                         stdin=subprocess.DEVNULL, stdout=printing, stderr=subprocess.STDOUT, start_new_session=True)
+    return f"the update is running on its own, so nothing that pauses this session can stop it; it writes to {log}"
+
+
+def upgrade(project: Path, root: Path | None = None, yes: bool = False, version: str | None = None) -> list[str]:
     root = root or project / ".journal"
     mark = loaded().upgrade_mark(root)
     mark.parent.mkdir(parents=True, exist_ok=True)
@@ -478,7 +500,7 @@ def installed_here(root: Path, package: Path = PACKAGE) -> bool:
     return built or package in (root.resolve(), code(root).resolve())
 
 
-def upgrading(project: Path, root: Path, version: str = "") -> list[str]:
+def upgrading(project: Path, root: Path, version: str | None = None) -> list[str]:
     done = []
     source, temporary, newest = PACKAGE, None, ""
     reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
@@ -717,7 +739,7 @@ def clear_unpacked(src: Path, files: list[Path], dirs: list[str]) -> None:
 def main(argv: list[str]) -> list[str]:
     word = argv[0] if argv else "install"
     if word == "upgrade":
-        target = argv[argv.index("--to") + 1] if "--to" in argv else ""
+        target = argv[argv.index("--to") + 1] if "--to" in argv else None
         return upgrade(Path(next((arg for arg in argv[1:] if arg not in ("--yes", "--to", target)), ".")).resolve(), yes="--yes" in argv, version=target)
     if word == "finish":
         project = Path(argv[1] if len(argv) > 1 else ".").resolve()
@@ -807,9 +829,18 @@ def loaded() -> Package:
                    migrations_pending=lambda root: bool(pending(applied(root))), restarting=restarting, managed=managed)
 
 
+def finishing_an_unpacked_install() -> bool:
+    """Whether this run only finishes an install whose code is still loose on disk, which is the one case the package is read from there rather than from the archive."""
+    asked = Path(sys.argv[2] if len(sys.argv) > 2 else ".").resolve() / ".journal"
+    return sys.argv[1:2] == ["finish"] and not os.environ.get(ARCHIVED) and not packed(asked)
+
+
 if __name__ == "__main__":
     try:
-        light() if sys.argv[1:2] == ["finish"] and not os.environ.get(ARCHIVED) and not packed(Path(sys.argv[2] if len(sys.argv) > 2 else ".").resolve() / ".journal") else loaded()
+        if finishing_an_unpacked_install():
+            light()
+        else:
+            loaded()
     except ImportError:
         if os.environ.get(HEALED):
             raise

@@ -48,6 +48,9 @@ def test_a_turn_that_only_answers_a_journal_line_is_kept_out_of_the_chat_unless_
     assert answered("Understood.", prompt="carry on") == [False], "a turn the person started is never hidden"
     assert answered("The suite broke on the gate.", failure="the turn failed") == [False], "a failed turn is never hidden"
     assert answered("Got it, but which branch should I use?") == [False], "a question waiting on the person is never hidden"
+    assert answered("The display hook dropping a turn and fact 24 are two different faults, and a fix for one will not touch the other, "
+                    "so both are filed and neither waits on the other.") == [False], \
+        "a turn that names a finding is written to the user however it was prompted: a turn is judged by what it says, never by what came before it"
     hook("UserPromptSubmit", prompt="[journal] todo 5 next")
     agents.update(row.n, delivered=[f"nudge:{kept.n}"])
     for _ in range(2):

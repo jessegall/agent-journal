@@ -33,9 +33,9 @@ def shape_mark() -> str:
 
 @cache
 def fold_mark(fold) -> str:
-    """A digest of a fold's own code, so a release that changes what the fold keeps reads its transcript again instead of reading back a value of the shape the old code stored. It takes the plain function, since a bound method is a new object on every look-up and would be read again each time."""
+    """A digest of the module a fold is written in, so a release that changes anything the fold keeps reads its transcript again instead of reading back a value of the shape the old code stored. The fold's own body is not enough: what it stores is built from the types beside it, and changing one of those leaves the body untouched. It takes the plain function, since a bound method is a new object on every look-up and would be read again each time."""
     try:
-        return digest(inspect.getsource(fold), 12)
+        return digest(inspect.getsource(inspect.getmodule(fold)), 12)
     except (OSError, TypeError):
         return ""
 

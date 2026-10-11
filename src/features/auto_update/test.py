@@ -215,10 +215,13 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         "a step says where the update has got to without taking it over, since the install hands part of its work to a process of its own"
     assert runtime.clear_stale_upgrade(record.root) is False and runtime.upgrading(record.root), \
         "the engine leaves an update alone while the process running it is still the one that started it"
-    def reckoned(held: str) -> bool:
-        """What the engine makes of a mark on its beat: whether it took it away, and whether anything is held afterwards."""
-        runtime.upgrade_mark(record.root).write_text(held)
+    def taken_away() -> bool:
+        """What the engine makes of the mark on its beat: whether it took it away, so nothing is held afterwards."""
         return runtime.clear_stale_upgrade(record.root) and not runtime.upgrading(record.root)
+
+    def reckoned(held: str) -> bool:
+        runtime.upgrade_mark(record.root).write_text(held)
+        return taken_away()
 
     assert reckoned(runtime.Upgrading(4194303, 1.0, "Installing the new files").written()), \
         "an update whose process is gone is not an update: the engine takes the mark away, so a killed one holds nobody"
@@ -226,7 +229,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
         "nor is one whose number the system has handed to another process, which is why the mark says when its process began"
     runtime.mark_upgrade(record.root, "Installing the new files")
     os.utime(runtime.upgrade_mark(record.root), (time.time() - runtime.UPGRADE_LONGEST - 1,) * 2)
-    assert runtime.clear_stale_upgrade(record.root) and not runtime.upgrading(record.root), \
+    assert taken_away(), \
         "and an update still running after the longest one may take stops holding anyone: a hung update is as bad as a dead one"
     runtime.upgrade_mark(record.root).write_text("Migrating the record")
     assert (runtime.upgrading(record.root), runtime.upgrade_step(record.root)) == (True, "Migrating the record"), \
@@ -535,6 +538,21 @@ def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tm
     shutil.rmtree(root / "project")
     assert launch.repaired(record) == launch.LOST and launch.repaired(record) == "", "records lost to 2.84.0 are said once, plainly"
     assert [n.title for n in Notices(record, actor="system").all()].count(launch.LOST) == 1
+
+    import install
+    from commands.queries import upgrade_here
+    started = []
+    monkeypatch.setattr(install.subprocess, "Popen", lambda words, **kept: started.append((words, kept)))
+    monkeypatch.delenv(install.DETACHED, raising=False)
+    said = upgrade_here({"record": record, "yes": True, "to": None})
+    words, kept = started[0]
+    assert (words[2:], kept["start_new_session"], kept["env"][install.DETACHED]) == ([str(root), "upgrade", "--yes"], True, "1"), \
+        "an upgrade asked for from the command line starts in a session of its own, since the pause it writes tears down whoever asked for it"
+    assert "running on its own" in said, "and says so instead of waiting for an install it no longer owns"
+    monkeypatch.setenv(install.DETACHED, "1")
+    monkeypatch.setattr(install, "upgrade", lambda project, root, yes=False, version=None: ["installed"])
+    assert upgrade_here({"record": record, "yes": True, "to": None}) == "installed" and len(started) == 1, \
+        "the detached run installs where it stands and never starts a third process"
 
 
 def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_path, monkeypatch):
