@@ -1,3 +1,5 @@
+from controllers.types import Features
+from expects import Answered, Given
 from features.base import Feature
 from features.journal import Journal
 from features.auto_update.commands import CancelUpdate, ShowNewFeatures
@@ -9,6 +11,6 @@ class AutoUpdate(Feature):
     details = AutoUpdateDetails
 
     def register(self, journal: Journal) -> None:
-        journal.commands.add("feature", CancelUpdate())
+        journal.commands.add("feature", CancelUpdate(), expects=[Given((Features,)) >> Answered("the update that was counting down is cancelled")])
         journal.commands.add("feature", ShowNewFeatures())
         journal.routes.add(get_changelog, get_new_feature, post_new_feature_seen, post_update, post_update_cancel, get_upstream, get_releases)
