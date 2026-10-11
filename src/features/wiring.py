@@ -130,8 +130,9 @@ class AgentHooks:
         policy.guard = guard
         interceptor.runs.policies().add(None, policy)
 
-    def canceler(self, canceler: Canceler) -> None:
+    def canceler(self, canceler: Canceler, expects=()) -> None:
         feature, guard = self.feature, Guard.of(canceler)
+        PROMISED.add(Promise(feature, "canceler", type(canceler).__name__, canceler, object, tuple(expects)))
         self.guards.append(guard)
 
         def cancel(call: HookCall, data) -> str:
@@ -141,7 +142,8 @@ class AgentHooks:
         cancel.guard = guard
         CANCELERS.add(None, cancel, key=canceler.event)
 
-    def responder(self, event: str, respond) -> None:
+    def responder(self, event: str, respond, expects=()) -> None:
+        PROMISED.add(Promise(self.feature, "responder", getattr(respond, "__name__", event), respond, object, tuple(expects)))
         RESPONDERS.add(None, respond, key=event)
 
 
@@ -149,8 +151,9 @@ class Commands:
     def __init__(self, feature):
         self.feature = feature
 
-    def add(self, type_: str, command: Command) -> None:
+    def add(self, type_: str, command: Command, expects=()) -> None:
         feature = self.feature
+        PROMISED.add(Promise(feature, "command", type(command).__name__, command, object, tuple(expects)))
 
         def call(controller, *args, **kwargs):
             if not feature.enabled(controller.record):
@@ -169,8 +172,9 @@ class Commands:
         """Raises Refused before the write reaches the funnel; a hold after the fact is no hold, so this stays synchronous."""
         REGISTERED.add(Registration.read(REFUSE, write, refuser, expects, self.feature.name))
 
-    def intercept(self, action: str, interceptor: ActionInterceptor) -> None:
+    def intercept(self, action: str, interceptor: ActionInterceptor, expects=()) -> None:
         feature = self.feature
+        PROMISED.add(Promise(feature, "action_interceptor", type(interceptor).__name__, interceptor, object, tuple(expects)))
         HANDLERS.setdefault(action, []).append(
             lambda controller, **args: interceptor.intercept(Context.of(feature, controller.record), controller, **args) if feature.enabled(controller.record) else None)
 
@@ -179,6 +183,8 @@ class Routes:
     def __init__(self, feature):
         self.feature = feature
 
-    def add(self, *handlers) -> None:
+    def add(self, *handlers, expects=()) -> None:
+        for one in handlers:
+            PROMISED.add(Promise(self.feature, "route", getattr(one, "__name__", type(one).__name__), one, object, tuple(expects)))
         for handler in handlers:
             FEATURE_ROUTES.add(None, handler.route)

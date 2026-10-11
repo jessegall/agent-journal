@@ -14,7 +14,7 @@ from engine.record import Record
 from expects import Given
 from expects.playing import Seen, World
 from features.parts import Context
-from resources.base import SYSTEM
+from resources.base import Refused, SYSTEM
 from tests import isolation
 
 
@@ -64,7 +64,34 @@ def intercepted(promise, given: Given, record: Record, world: World) -> None:
     world.seen.refused = why or None
 
 
-ENTRIES = {"handler": handled, "formatter": formatted, "interceptor": intercepted}
+def cancelled(promise, given: Given, record: Record, world: World) -> None:
+    """A canceler, through its own cancel. It answers why the thing must not happen, or nothing to let it."""
+    world.seen.refused = promise.part.cancel(Context.of(promise.feature, record), given.on) or None
+
+
+def refused_before_the_write(promise, given: Given, record: Record, world: World) -> None:
+    """An interceptor on a controller action, which refuses by raising before the write reaches the funnel."""
+    try:
+        promise.part.intercept(Context.of(promise.feature, record), *given.on)
+    except Refused as refusal:
+        world.seen.refused = str(refusal)
+
+
+def commanded(promise, given: Given, record: Record, world: World) -> None:
+    """A command, through its own run: the controller it is on, then the arguments the Given states."""
+    controller, *arguments = given.on
+    answer = promise.part.run(Context.of(promise.feature, record), controller(record, actor=SYSTEM), *arguments)
+    world.seen.answered = answer
+
+
+def answered_a_hook(promise, given: Given, record: Record, world: World) -> None:
+    """A responder, which answers a hook event and writes nothing."""
+    world.seen.answered = promise.part(given.on)
+
+
+ENTRIES = {"handler": handled, "formatter": formatted, "interceptor": intercepted, "canceler": cancelled,
+           "action_interceptor": refused_before_the_write, "command": commanded, "responder": answered_a_hook}
+"""One entry per kind, and no kind with two, so the run and the engine cannot disagree about how a registration is reached. A route has none yet: it is reached through the server, which an expectation does not stand up."""
 
 
 def played(promise, expectation) -> Seen:
