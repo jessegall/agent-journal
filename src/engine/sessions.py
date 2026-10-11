@@ -68,6 +68,7 @@ class SessionRecord(Loaded):
     grants: tuple = ()
     worked_in: str = ""
     takeover: dict = field(default_factory=dict)
+    retired: dict = field(default_factory=dict)
 
     @property
     def evicted_since_start(self) -> bool:
@@ -79,6 +80,8 @@ class SessionRecord(Loaded):
 
 
 def live(session: SessionRecord) -> bool:
+    if session.retired:
+        return False
     if session.pid:
         return alive(session.pid)
     return time.time() - session.last_heard < RECENT
@@ -234,7 +237,7 @@ class Sessions:
             return own
         others = self.all()
         ended = sorted((s for name, s in others.items() if name != session and s.provider == provider and s.environment and not live(s)
-                        and s.environment not in owned), key=lambda s: s.last_heard)
+                        and not s.retired and s.environment not in owned), key=lambda s: s.last_heard)
         for s in reversed(ended):
             if not self.holder(s.environment):
                 return s.environment
@@ -242,7 +245,7 @@ class Sessions:
 
     def last(self, env: str, provider: str) -> str:
         ended = [(s.last_heard, name) for name, s in self.all().items()
-                 if s.environment == env and s.provider == provider and s.pid and not live(s)
+                 if s.environment == env and s.provider == provider and s.pid and not live(s) and not s.retired
                  and not name.startswith(f"{provider}-")]
         return max(ended)[1] if ended else ""
 
@@ -292,6 +295,23 @@ class Sessions:
         for _, session, env in sorted(((s.last_heard, session, s.environment) for session, s in self.all().items() if s.environment and live(s)), reverse=True):
             held.setdefault(env, session)
         return held
+
+    def retire(self, session: str, by: str, why: str) -> None:
+        """Marks a session as the environment's past: it keeps the environment, its transcript and its chat, and stops holding it, being nudged or being taken up again."""
+        self.write(session, retired={"by": by, "why": why, "at": time.time()})
+
+    def retired_in(self, env: str) -> SessionRecord:
+        """The last session this environment moved past, so a new one can be told whose the chat above it is; a session with no retirement stands for none."""
+        past = [s for s in self.all().values() if s.environment == env and s.retired]
+        return max(past, key=lambda s: s.retired["at"], default=SessionFiles.NONE)
+
+    def succeed(self, env: str, session: str, pid: int = 0) -> list[str]:
+        """Retires every other session of an environment when a new one takes it: an environment houses one agent, and the ones before it become its past rather than disappearing from it."""
+        mine = self.agent(session, pid)
+        before = [name for name, s in self.all().items() if s.environment == env and name not in mine and not s.retired]
+        for name in before:
+            self.retire(name, session, "a new session took this environment")
+        return before
 
     def evict(self, session: str, by: str, env: str, why: str) -> None:
         self.write(session, environment="", evicted={"by": by, "environment": env, "why": why, "at": time.time()})

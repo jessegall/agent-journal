@@ -105,6 +105,7 @@ def seat_session(sessions: Sessions, env: str, session: str, **bound) -> None:
     from engine.record import Record
     from resources.base import SYSTEM
     sessions.bind(session, env, **bound)
+    sessions.succeed(env, session)
     Environments(Record(sessions.root, env), actor=SYSTEM)._seat(env, session)
 
 

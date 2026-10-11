@@ -96,6 +96,20 @@ def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
     with bus.held():
         assert start("startup") == plain, "with the block not yet written and the bus held, as inside a request, the start writes it and hands it over"
 
+    from engine.sessions import Sessions, live
+    sessions = Sessions(record.root)
+    sessions.bind("s-before", record.env, pid=1, provider="claude")
+    assert sessions.holder(record.env) == "s-before", "the session that bound the environment holds it"
+    assert sessions.succeed(record.env, "s-after") == ["s-before"], "a session taking an environment retires every other session of it"
+    left = sessions.read("s-before")
+    assert (left.environment, bool(left.retired), live(left)) == (record.env, True, False), \
+        "a retired session keeps its environment, so its transcript and its chat stay where the work happened, and stops holding it"
+    assert sessions.holder(record.env) == "" and sessions.last(record.env, "claude") == "", \
+        "and is never the holder again, nor a session to be taken up again"
+    handed = start("startup")
+    assert "ANOTHER AGENT WORKED THIS ENVIRONMENT UNTIL" in handed and "written to that agent, not to you" in handed, \
+        "a session that is not the first in its environment is told what it took over, so it reads the chat above as history rather than as instructions to itself"
+
 
 def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts():
     import time
@@ -241,9 +255,11 @@ def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits_and_a_foll
     monkeypatch.setattr(follow, "_typed", lambda line, confirmed: typed.append(line) or True)
     monkeypatch.setattr(follow, "awaits_answer", lambda: False)
     assert follow.TAKES_CHANNEL and follow.send("do the next step", now=True, by="claude-1")
-    assert (posted, typed) == ([], ["do the next step"]), "a follow-up is typed as an instruction, without the journal mark, and never posted on the channel"
+    from providers.base import said_by
+    assert (posted, typed) == ([], [f"{said_by('claude-1')}\ndo the next step"]), \
+        "a follow-up is typed as an instruction, never posted on the channel, and says which agent it comes from, so the agent reading it can tell a message from a stray paste"
     assert follow.send("todo 5 next", now=True)
-    assert (posted, typed) == ([("todo 5 next", "journal")], ["do the next step"]), "the journal's own line still goes over the channel"
+    assert (posted, typed) == ([("todo 5 next", "journal")], [f"{said_by('claude-1')}\ndo the next step"]), "the journal's own line still goes over the channel"
     import time
     twice = DRIVERS["claude"](fresh(), "claude-8")
     channel, typing = [], []

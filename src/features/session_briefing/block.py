@@ -15,9 +15,22 @@ Load the journal skill again (Skill: journal); the compaction emptied it. Then c
 
 def briefing(call) -> str:
     path = start_file(call.record.root, call.record.env, call.provider.compacted(call.hook))
-    if not path.is_file():
+    if not path.is_file() or written_before(path, retirement(call.record)):
         rebuild(call.record)
     return path.read_text() if path.is_file() else ""
+
+
+def retirement(record) -> float:
+    """When this environment last moved past a session, which is the one change the block must carry before a new session reads it."""
+    from engine.sessions import Sessions
+    return Sessions(record.root).retired_in(record.env).retired.get("at", 0.0)
+
+
+def written_before(path, moment: float) -> bool:
+    try:
+        return path.stat().st_mtime < moment
+    except OSError:
+        return True
 
 
 def rebuild(record) -> None:
