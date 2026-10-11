@@ -100,6 +100,14 @@ def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch
     assert "never given to bash" in refused(lambda: agent.propose_programs(row.n, "bash")), "a shell is not even proposed"
     agent.propose_programs(row.n, "cat")
     assert (Secrets(record, actor=SYSTEM).load(row.n).programs, Secrets(record, actor=SYSTEM).load(row.n).proposed) == ([], ["cat"]), "a proposal waits for the confirmation"
+    from commands.http import dispatch
+    held = Secrets(record, actor=SYSTEM).load(row.n)
+    payload = {"title": held.title, "abstract": held.abstract, "brief": held.brief, "secret_fields": held.secret_fields, "programs": ["cat"], "proposed": [], "helpers": False}
+    sent = dispatch("POST", f"/api/{record.env}/secret/{row.n}/update", record.root, {}, payload)
+    assert sent.code == 200, sent.body
+    after = Secrets(record, actor=SYSTEM).load(row.n)
+    assert (after.programs, after.proposed) == (["cat"], []), "a grant from the viewer's own payload leaves the program allowed, not proposed"
+    Secrets(record, actor=SYSTEM).update(row.n, programs=[], proposed=["cat"])
     from migrations.m0074_secrets_name_their_programs import run as tell_unlisted
     assert len(tell_unlisted(record.root)) == 1 and any("GitHub (secret" in notice.brief for notice in Notices(record, actor=SYSTEM).all()), \
         "an upgrade tells the user which secrets list no programs"

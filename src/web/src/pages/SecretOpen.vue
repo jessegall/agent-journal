@@ -2,7 +2,7 @@
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {useAttempt} from "../composables/attempt.js";
-import {complete, drafted, fieldsOf, saved} from "../domain/secrets.js";
+import {complete, drafted, fieldsOf, programsKept, saved} from "../domain/secrets.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import Icon from "../kit/Icon.vue";
@@ -18,7 +18,11 @@ const draft = ref(null);
 watch(one, (row) => (draft.value = draft.value || (row && drafted(row))), {immediate: true});
 
 async function keep() {
-    const {done} = await attempt(() => api.updateSecret(props.n, saved(draft.value)));
+    const {done, got} = await attempt(() => api.updateSecret(props.n, saved(draft.value)));
+    if (done && !programsKept(draft.value, got)) {
+        failure.value = "The programs you allowed were not kept. Reload the page and allow them again.";
+        return false;
+    }
     return done;
 }
 

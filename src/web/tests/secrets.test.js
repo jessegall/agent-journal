@@ -1,6 +1,6 @@
 // @vitest-environment node
 import {describe, expect, test} from "vitest";
-import {allowedProgram, asking, complete, creating, daysLeft, drafted, handedVariable, isWaiting, keptWords, pickable, pickedBy, saved, variableOf, whenWords} from "../src/domain/secrets.js";
+import {allowedProgram, asking, complete, creating, daysLeft, drafted, handedVariable, isWaiting, keptWords, pickable, pickedBy, programsKept, saved, variableOf, whenWords} from "../src/domain/secrets.js";
 
 const row = (data, more = {}) => ({n: 1, title: "Stripe test", abstract: "", brief: "", data: {kind: "login", secret_fields: [{name: "username", hidden: false, variable: "U"}, {name: "password", hidden: true, variable: "P"}], ...data}, ...more});
 
@@ -53,5 +53,14 @@ describe("secrets", () => {
         allowedProgram(draft, "gh");
         expect(saved(draft).programs).toEqual(["gh", "curl"]);
         expect(saved(draft).proposed).toEqual([]);
+    });
+});
+
+describe("a grant the server did not keep", () => {
+    test("is noticed from the row the server answered, never taken for saved", () => {
+        const draft = {programs: ["curl"]};
+        expect(programsKept(draft, row({programs: ["curl"], proposed: []}))).toBe(true);
+        expect(programsKept(draft, row({programs: [], proposed: ["curl"]}))).toBe(false);
+        expect(programsKept(draft, null)).toBe(false);
     });
 });

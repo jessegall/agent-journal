@@ -110,6 +110,8 @@ export function allowedProgram(draft, name) {
     if (!draft.programs.includes(name)) draft.programs.push(name);
 }
 
+export const programsKept = (draft, row) => draft.programs.every((name) => ((row && row.data && row.data.programs) || []).includes(name));
+
 export function creating(draft) {
     const {secret_fields: fields, ...rest} = saved(draft);
     return draft.kind === "custom" ? {...rest, kind: draft.kind, secret_fields: fields} : {...rest, kind: draft.kind};
