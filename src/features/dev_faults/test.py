@@ -351,6 +351,12 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
     lines = [json.loads(line) for line in (runtime.folder(record.root) / "budget.jsonl").read_text().splitlines()]
     assert [(line["request"], line["within"]) for line in lines[-2:]] == [(7, 0), (0, 7)] and "inside request 7" in " ".join(r.brief for r in Notifications(record, actor=SYSTEM).rows.every()), \
         "the row of a request and the row of the command it ran carry the request's number, and each says which span it measures"
+    from engine import locks
+    pauses, tries = [], iter([False] * 8 + [True])
+    monkeypatch.setattr(locks.time, "sleep", pauses.append)
+    locks.wait_for(lambda: next(tries), "a lock")
+    assert pauses == [0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.05, 0.05], \
+        "a lock another process holds is tried again at once, then at growing gaps up to the usual 50ms, so a short hold costs a short wait"
     monkeypatch.setattr("features.dev_faults.reports.load", lambda: 0.0)
     reports.spent(record.root, record.env, "request", "GET /api/main/board", 400, working=400)
     assert "request GET /api/main/board is slower than its budget" in notified(record), "its next run is held to the budget"

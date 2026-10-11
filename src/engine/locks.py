@@ -13,6 +13,7 @@ MIGRATIONS = ContextVar("migrations", default=())
 MIGRATION_LOCK = ".migrations.lock"
 LOCK_WAIT = 30.0
 RETRY = 0.05
+FIRST_RETRY = 0.001
 RUNTIME = "runtime"
 
 
@@ -149,10 +150,12 @@ def acquire(held, operation: int) -> None:
 
 def wait_for(taking: Callable[[], bool], name: str, giving_up: Callable[[str], Exception] = MigrationsRunning) -> None:
     deadline = time.monotonic() + LOCK_WAIT
+    pause = FIRST_RETRY
     while not taking():
         if time.monotonic() >= deadline:
             raise giving_up(name)
-        time.sleep(RETRY)
+        time.sleep(pause)
+        pause = min(RETRY, pause * 2)
 
 
 def claim(path: Path):
