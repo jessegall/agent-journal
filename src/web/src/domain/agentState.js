@@ -65,7 +65,8 @@ export function waitingFor({text, on, since}, {runs = [], helpers = [], now = Da
 export function waitingOn(agent, works, helpers = [], now = Date.now() / 1000) {
     const work = currentWork(works);
     const runs = RUN_ROWS.flatMap((kind) => (agent?.data[kind] || []).map((entry) => ({...entry, kind: RUN_KINDS[kind]})));
-    const text = work?.data.awaiting || backgroundRun(agent);
+    const text = work?.data.awaiting;
+    if (!text) return null;
     return waitingFor({text, on: work?.data.awaiting_on, since: Number(work?.data.awaiting_since || 0)}, {runs, helpers, now});
 }
 
@@ -73,7 +74,8 @@ export function stateOf(agent, works) {
     if (agent && agent.data.paused) return "paused";
     const reported = agent ? agent.data.status : "stopped";
     if (reported === "working") return "working";
-    if (reported === "idle" && (backgroundRun(agent) || waitsFor(works))) return "waiting";
+    if (reported === "idle" && waitsFor(works)) return "waiting";
+    if (reported === "idle" && backgroundRun(agent)) return "running";
     return REPORTED.includes(reported) ? reported : waitsFor(works) ? "waiting" : currentWork(works) ? "working" : "busy";
 }
 
@@ -88,7 +90,7 @@ export function queued(todos, auto, questions = []) {
     return auto && open.some((t) => !t.data.blocked && !t.data.assigned && !asked(t) && !waits(t));
 }
 
-const WORDS = {working: "Working", waiting: "Waiting", busy: "Busy", compacting: "Busy", paused: "Paused", [SILENT]: SILENT_WORD};
+const WORDS = {working: "Working", waiting: "Waiting", running: "Running", busy: "Busy", compacting: "Busy", paused: "Paused", [SILENT]: SILENT_WORD};
 
 export function wordOf(state) {
     return WORDS[state] || "Idle";
@@ -98,7 +100,8 @@ export function lineOf(agent, works, auto = false, helpers = [], helping = 0) {
     const state = stateOf(agent, works);
     if (state === "stopped") return "no agent is on this environment";
     if (state === "compacting") return "compacting the conversation, then it carries on";
-    if (state === "waiting") return waitingOn(agent, works, helpers)?.line || "a background run";
+    if (state === "waiting") return waitingOn(agent, works, helpers)?.line || "something it has not named";
+    if (state === "running") return `${backgroundRun(agent)} in the background`;
     if (state === "paused") return "held until you resume it";
     const current = currentWork(works);
     if (current) return named(current);

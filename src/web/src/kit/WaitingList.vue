@@ -1,6 +1,7 @@
 <script setup>
 import Chip from "./Chip.vue";
 import CloseButton from "./CloseButton.vue";
+import TextDisplay from "./TextDisplay.vue";
 import {oneLine} from "../format/command.js";
 import {store} from "../state/store.js";
 
@@ -19,7 +20,7 @@ const emit = defineEmits(["close"]);
         <ul class="waiting-items">
             <template v-for="item in waiting.items" :key="item.label">
                 <li :class="['waiting-item', {back: item.reported}]">
-                    <span class="waiting-label">{{ oneLine(item.label, store.summary?.project) }}</span>
+                    <TextDisplay class="waiting-label" inline :text="oneLine(item.label, store.summary?.project)" />
                     <span class="waiting-report">{{ item.status }}</span>
                     <span class="waiting-meta">
                         <template v-if="item.kind">
