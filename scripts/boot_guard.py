@@ -144,9 +144,9 @@ if __name__ == "__main__":
     except AssertionError as failed:
         print(f"boot guard: the journal does not boot, push refused\n{failed}", file=sys.stderr)
         sys.exit(1)
-    print(f"boot guard: installs, serves and launches {', '.join(DRIVERS)} in {took:.1f}s")
+    print(f"boot guard: installs, serves and launches {', '.join(DRIVERS)} in {took:.1f}s at {factor():.2f} times its cores")
     if not calm or not quiet():
-        print(f"boot guard: boot speed not judged, the machine ran at {factor():.1f} times its cores; it boots, which is what a busy machine can prove")
+        print("boot guard: boot speed not judged, the machine was not quiet; it boots, which is what a busy machine can prove")
         sys.exit(0)
     if took > LIMIT:
         print(f"boot guard: slower than {LIMIT:.0f}s on a quiet machine", file=sys.stderr)
