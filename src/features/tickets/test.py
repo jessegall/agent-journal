@@ -829,7 +829,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: delivered.append(note))
     question = Questions(record, actor=AGENT).create("Which one?", options=[{"title": "A"}, {"title": "B"}], pick=1)
     Questions(record, actor=USER).complete(question.n, how="Both")
-    assert delivered == [f"Your question {question.n}, Which one?, is answered: Both"], "a ticket's agent is told when the user answers its question"
+    assert delivered == [f"Your question {question.n}, Which one?, is answered: Both. That is the answer of the one who runs your board: act on it, and never file the question again."], "a ticket's agent is told when the user answers its question"
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("no agent")))
     handlers.WakeTheTicketAgent().handle(context, SimpleNamespace(n=question.n))
     monkeypatch.setattr(Tickets, "_owned_by", lambda self, env, kind: 0)
