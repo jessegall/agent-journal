@@ -300,15 +300,18 @@ class Sessions:
         pid = pid or self.read(session).pid
         return {name for name, s in self.all().items() if pid and s.pid == pid} | {session}
 
+    def _others(self, env: str, session: str, pid: int = 0) -> list[str]:
+        """Every other agent holding an environment: its holders but this session's own."""
+        mine = self.agent(session, pid)
+        return [holder for holder in self.holders(env) if holder not in mine]
+
     def rivals(self, env: str, session: str, pid: int = 0) -> list[str]:
         """The sessions of other agents on an environment whose process is alive: an environment has one live session, and one with no process behind it, as in a record only read, is no rival."""
-        mine = self.agent(session, pid)
-        return [holder for holder in self.holders(env) if holder not in mine and self.read(holder).pid]
+        return [holder for holder in self._others(env, session, pid) if self.read(holder).pid]
 
     def take(self, env: str, session: str, why: str, pid: int = 0) -> list[str]:
         """Unbinds every other agent from an environment, each told it was taken over, so the session that asked for it is the one that holds it."""
-        mine = self.agent(session, pid)
-        ended = [holder for holder in self.holders(env) if holder not in mine]
+        ended = self._others(env, session, pid)
         for holder in ended:
             for each in self.agent(holder):
                 self.evict(each, session, env, why)
