@@ -19,6 +19,7 @@ from features.open_viewer.transcripts import TRANSCRIPT_PAGE, NoTranscript, Tran
 from providers import PROVIDERS
 from features.form_of_address.address import voice_of
 from features.helpers.resource import Helper, held_by_helper
+from features.helpers.state import Telling
 from features.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
@@ -263,7 +264,7 @@ class Helpers(Controller):
         Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
         self._handed(row, home, handed)
         Helpers(self.record, actor=SYSTEM).update(n, report="", answering=True, latest=titled(text), reuses=int(row.reuses) + 1)
-        Agents(self.record, actor=SYSTEM)._mark_primary(f"{'Continued' if running else 'Reused'} helper {n}", name=row.name, icon="bot", kind="helpers", helper=row.n, detail=titled(text))
+        bus.announce(self.record, HELPER, row.n, Telling.BRIEFED if running else Telling.CONTINUED, AGENT)
         return f"sent to {row.name}" + (f", with to-do {', '.join(str(t.n) for t in handed)}" if handed else "")
 
     def _revive(self, row: Helper, words: str) -> None:

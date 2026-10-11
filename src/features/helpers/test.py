@@ -174,6 +174,14 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     Features(record, actor=AGENT).configure("helpers", "kept", "12")
     assert [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"]][1:] == ["Changed helpers.kept from 5 to 12"], \
         "an agent changing a setting shows a mark once, and a person's change shows none"
+    marks = lambda: [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"] if c.get("kind") == "helpers"]
+    monkeypatch.setattr("features.helpers.controller.tell_soon", lambda *given: True)
+    Helpers(record, actor=AGENT).say(1, "the next thing")
+    assert marks()[-1] == "Briefed helper 1", "telling a helper that is already working shows it as briefed"
+    monkeypatch.setattr("features.helpers.controller.tell_soon", lambda *given: False)
+    monkeypatch.setattr(Helpers, "_revive", lambda self, row, words: None)
+    Helpers(record, actor=AGENT).say(1, "pick it up again")
+    assert marks()[-1] == "Continued helper 1", "starting a helper again after its agent stopped shows it as continued, which is what the chat could not tell before"
     from features.helpers.interceptors import runs_tests
     assert [runs_tests(c) for c in ("pytest -q -n auto", "python -m pytest", "pytest tests/a.py", "cd src/web && npx vitest run", "node src/web/browser/chat.mjs", "journal check touched 1", "ls", "git status")] == [True, True, True, True, True, True, False, False], \
         "any test run is refused to a helper or subagent, and nothing else is"

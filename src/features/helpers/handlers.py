@@ -1,21 +1,57 @@
 import time
+from dataclasses import dataclass
+from typing import ClassVar
 
 from agents.terminal import Launched, launch_failure, launch_output
 from controllers.types import Agents, Messages, Questions
 from engine.record import Record
 from engine.seats import terminal_of
 from engine.events.engine import ClockTicked
-from engine.events.resources import AgentChanged, MessageCreated
+from engine.events.resources import AgentChanged, MessageCreated, ResourceEvent
 from engine.sessions import Sessions, alive
 from features.ask_questions.handlers import QuestionAsked
 from features.helpers.controller import Helpers
 from features.helpers.reuse import agent_runs, subagent_rows
+from features.helpers.state import Telling
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from features.trigger import MINUTE
 from providers import PROVIDERS
 from controllers.stored import IDEMPOTENCY
 from resources.base import AGENT, SYSTEM, titled
 from resources.types import FAILED
+
+
+@dataclass(frozen=True)
+class HelperTold(ResourceEvent):
+    """A helper was given more work; which of the two it was is the event's own action, and its row says what it was told."""
+
+
+@dataclass(frozen=True)
+class HelperContinued(HelperTold):
+    on: ClassVar[str] = f"helper.{Telling.CONTINUED}"
+
+
+@dataclass(frozen=True)
+class HelperBriefed(HelperTold):
+    on: ClassVar[str] = f"helper.{Telling.BRIEFED}"
+
+
+class MarkTheHelperTold(Handler):
+    """The chat mark for a helper given more work, so a helper started again after it went idle reads differently from one already working that was told its next job."""
+
+    def mark(self, context: Context, event: HelperTold) -> None:
+        row = Helpers(context.record, actor=SYSTEM).peek(event.n)
+        Agents(context.record, actor=SYSTEM)._mark_primary(Telling(event.action).mark(event.n), name=row.name, icon="bot", kind="helpers", helper=event.n, detail=row.latest)
+
+
+class MarkTheHelperContinued(MarkTheHelperTold):
+    def handle(self, context: Context, event: HelperContinued) -> None:
+        self.mark(context, event)
+
+
+class MarkTheHelperBriefed(MarkTheHelperTold):
+    def handle(self, context: Context, event: HelperBriefed) -> None:
+        self.mark(context, event)
 
 
 class TellAFailedTurn(Handler):

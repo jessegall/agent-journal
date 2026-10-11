@@ -2,6 +2,16 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 
+class Telling(StrEnum):
+    """How a helper was given more work: continued when its agent had stopped and was started again, briefed when it was already working."""
+
+    CONTINUED = "continued"
+    BRIEFED = "briefed"
+
+    def mark(self, n: int) -> str:
+        return f"{self.capitalize()} helper {n}"
+
+
 class WorkState(StrEnum):
     NEEDS = "needs"
     WORKING = "working"
