@@ -12,7 +12,7 @@ from controllers.features import MOVED
 from engine import bus
 from events import Fact, Request
 from features.parts import Context, Handler as OldStyle
-from receiving import HANDLE, REGISTERED, Handler, Registration
+from receiving import HANDLE, Handler, Registration, Registrations
 from serving import Adapted as TheRecord
 
 ON_THE_SENDING_PATH = {
@@ -22,6 +22,9 @@ ON_THE_SENDING_PATH = {
 }
 """A request is answered before anything writes, so a handler of one cannot run on the adapter at all. Those features are swept first."""
 
+
+ADAPTED = Registrations()
+"""The old handlers on the adapter, kept apart from the registry of the swept features, so removing the adapter removes them whole and nothing that clears the registry takes them with it."""
 
 NOT_ADAPTABLE: dict[tuple[str, str], str] = {}
 """The old handlers that could not be put on the adapter, by feature and name, with why: the listing names them, so no feature reads as moved while one is left."""
@@ -116,17 +119,16 @@ def adapted_beside_the_bus(feature, handler: OldStyle, run, kind) -> None:
     except CannotBeAdapted as refusal:
         NOT_ADAPTABLE[feature.name, type(handler).__name__] = str(refusal)
         return
-    REGISTERED.forget(HANDLE, feature.name, receiver.called())
-    REGISTERED.add(Registration.read(HANDLE, OldEvent, receiver, (), feature.name))
+    ADAPTED.forget(HANDLE, feature.name, receiver.called())
+    ADAPTED.add(Registration.read(HANDLE, OldEvent, receiver, (), feature.name))
 
 
 def listing() -> str:
     """Per feature, adapted or moved: what `journal feature moved` prints."""
     from features import FEATURES
     adapted: dict[str, list[str]] = {}
-    for one in REGISTERED.of(HANDLE):
-        if type(one.receiver).adapted:
-            adapted.setdefault(one.feature, []).append(one.name)
+    for one in ADAPTED.of(HANDLE):
+        adapted.setdefault(one.feature, []).append(one.name)
     stuck: dict[str, list[str]] = {}
     for (feature, name) in NOT_ADAPTABLE:
         stuck.setdefault(feature, []).append(name)
