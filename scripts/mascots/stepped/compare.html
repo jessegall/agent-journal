@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Sheet and browser side by side</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 24px;
+                background: #f4f4f6;
+                color: #222;
+                font:
+                    14px/1.4 system-ui,
+                    sans-serif;
+            }
+
+            .row {
+                display: flex;
+                gap: 32px;
+                align-items: flex-end;
+                margin-bottom: 24px;
+            }
+
+            figure {
+                margin: 0;
+                text-align: center;
+            }
+
+            figcaption {
+                margin-top: 6px;
+                color: #555;
+                font-size: 12px;
+            }
+
+            .sheet {
+                background-repeat: no-repeat;
+            }
+
+            canvas {
+                display: block;
+            }
+
+            .controls {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+        </style>
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+                    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Butler, wave clip: the rendered sheet beside the browser's drawing</h1>
+        <div class="row" data-size="96"></div>
+        <div class="row" data-size="224"></div>
+        <div class="controls">
+            <button id="pause">Pause</button>
+            <button id="step">Next frame</button>
+            <span id="frame"></span>
+        </div>
+        <script type="module" src="compare.js"></script>
+    </body>
+</html>

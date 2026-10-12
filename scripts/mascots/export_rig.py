@@ -17,9 +17,10 @@ from rig import Figure, clear_scene, rest  # noqa: E402
 from snaps import figures_asked_for, output_folder  # noqa: E402
 
 
-def write(figure, path):
+def write(figure, path, **settings):
+    """The figure at rest as a glb; `settings` are further options of Blender's glTF exporter, such as its Draco compression."""
     rest(figure.armature)
-    bpy.ops.export_scene.gltf(filepath=str(path), export_format="GLB", export_skins=True, export_extras=True, export_apply=False)
+    bpy.ops.export_scene.gltf(filepath=str(path), export_format="GLB", export_skins=True, export_extras=True, export_apply=False, **settings)
 
 
 def reopen(voice, path):

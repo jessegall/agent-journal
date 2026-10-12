@@ -30,13 +30,16 @@ LEGWEAR_ON_THIGHS = 0.75
 needs_blender = pytest.mark.skipif(shutil.which("blender") is None, reason="needs Blender on the path")
 
 
+def run_blender(script, out, *extra):
+    """Runs one of these scripts in Blender with no window, writing into `out`; Blender exits 0 after a script raises unless told not to."""
+    subprocess.run(["blender", "-b", "--python-exit-code", "1", "-P", str(HERE / script), "--", "--out", str(out), *extra],
+                   check=True, capture_output=True, timeout=BLENDER_SECONDS)
+
+
 @pytest.fixture(scope="module")
 def report(tmp_path_factory):
     out = tmp_path_factory.mktemp("rig")
-    subprocess.run(
-        ["blender", "-b", "-P", str(HERE / "prove_rig.py"), "--", "--out", str(out), "--no-render"],
-        check=True, capture_output=True, timeout=BLENDER_SECONDS,
-    )
+    run_blender("prove_rig.py", out, "--no-render")
     return proof.load(out / "report.json")
 
 
