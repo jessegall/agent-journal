@@ -106,6 +106,7 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
     assert asker.asked() is None, "once the command runs again, nothing is asked"
     pressed, slept = [], []
     asker.press_raw = asker._wrote = pressed.append
+    waited_for = time.sleep
     monkeypatch.setattr(time, "sleep", slept.append)
     asker.stop_turn()
     asker.deny()
@@ -156,7 +157,7 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
     for _ in range(50):
         if curious.asking.answers:
             break
-        time.sleep(0.1)
+        waited_for(0.1)
     curious.at = 0.0
     curious.tick()
     assert pressed == [b"\x1b[B\r"], "the agent's pick, option 2, is pressed once it has answered"
