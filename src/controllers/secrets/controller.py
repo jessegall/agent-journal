@@ -188,7 +188,7 @@ class Secrets(Controller):
         if not row.helpers and (self.agent or helping):
             raise Refused(f"secret {row.n}, {row.title}, is for the main agent only; the user can share it with helpers and subagents on the Secrets page")
 
-    def _purge(self) -> list[str]:
+    def purge_expired(self) -> list[str]:
         gone = [row for row in self.rows.every(deleted=True) if row.deleted and time.time() - row.deleted > KEPT_DAYS * 86400]
         variables = [raw["variable"] for row in gone for raw in row.secret_fields]
         if variables:

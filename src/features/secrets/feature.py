@@ -1,7 +1,8 @@
 from controllers.base import SAVE_REWRITES
 from declaring.registries import SECRET_CHECKS
 from events.agents import ClockTicked
-from expects import WHEN, File, Given, Kept, Refused, Wrote, answering
+from events.secrets import PurgeDue
+from expects import WHEN, Dispatches, File, Given, Kept, Refused, Wrote, answering, at
 from framework.base import Feature
 from framework.journal import Journal
 from features.secrets.announcing import updated_added
@@ -10,12 +11,12 @@ from features.secrets.details import SecretsDetails
 from features.secrets.guard import RefuseSecretsFile
 from features.secrets.handlers import PurgeDeletedSecrets
 from features.secrets.leaks import LeakAlarm
+from features.secrets.listeners import PURGE_EVERY, SpotThePurgeHour
 from features.secrets.picking import refuse_secret_that_runs_commands
 
 from controllers.secrets.values import secrets_folder
 from resources.secrets import Secret
 from payload import BashCall, ReadCall
-from resources.types import AgentRow
 
 __all__ = ["Secrets"]
 
@@ -38,9 +39,12 @@ class SecretsFeature(Feature):
     details = SecretsDetails
 
     def register(self, journal: Journal) -> None:
-        journal.events.handler(PurgeDeletedSecrets(), expects=[
-            Given(ClockTicked(agent=1), rows=[deleted(31), AgentRow(n=1, title="claude-1")], files=VALUES) >> Wrote(File(".secrets/pid.env", "The values of this project's secrets", mode="600")),
-            Given(ClockTicked(agent=1), rows=[deleted(10), AgentRow(n=1, title="claude-1")], files=VALUES) >> Wrote(File(".secrets/pid.env", 'API_KEY="abc"')),
+        journal.events.listen(ClockTicked, SpotThePurgeHour(), expects=[
+            Given(ClockTicked(agent=1), clock=at(WHEN)) >> Dispatches(PurgeDue().once(f"purge|{int(WHEN // PURGE_EVERY)}")),
+        ])
+        journal.events.handle(PurgeDue, PurgeDeletedSecrets(), expects=[
+            Given(PurgeDue(), rows=[deleted(31)], files=VALUES) >> Wrote(File(".secrets/pid.env", "The values of this project's secrets", mode="600")),
+            Given(PurgeDue(), rows=[deleted(10)], files=VALUES) >> Wrote(File(".secrets/pid.env", 'API_KEY="abc"')),
         ])
         journal.agent.append_to_line("secret.updated", updated_added)
         journal.agent.interceptor(RefuseSecretsFile(), expects=[

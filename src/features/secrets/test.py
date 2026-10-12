@@ -3,7 +3,6 @@ import re
 import shutil
 import stat
 import subprocess
-import time
 from pathlib import Path
 
 import features
@@ -49,20 +48,6 @@ def test_a_secret_keeps_its_value_in_a_file_of_its_own_and_nowhere_in_the_journa
     assert (values.values()["STAGING_PASSWORD"], made.exists()) == ("generated-pass-9x", False), "a value the agent made is moved in, and its file removed"
     assert "is one of api key, login, browser login, custom" in refused(lambda: Secrets(record, actor=USER).create("X", kind="token")), "the kinds are named"
     assert "has no field 'pin'" in refused(lambda: Secrets(record, actor=USER).fill(login.n, "pin", "1")), "a field the secret lacks is named"
-
-
-def test_a_deleted_secret_keeps_its_values_for_30_days(tmp_path, monkeypatch):
-    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
-    features.load()
-    record = fresh()
-    secrets = Secrets(record, actor=USER)
-    row = secrets.create("GitHub", kind="api key")
-    secrets.fill(row.n, "key", VALUE)
-    secrets.delete(row.n, "no longer needed")
-    assert (secrets._purge(), ValuesFile(record.root).values()) == ([], {"GITHUB_KEY": VALUE}), "a secret deleted today keeps its value"
-    later = time.time() + 31 * 86400
-    monkeypatch.setattr(time, "time", lambda: later)
-    assert (secrets._purge(), ValuesFile(record.root).values()) == (["GITHUB_KEY"], {}), "after 30 days its values leave the file"
 
 
 def test_a_secret_made_with_instructions_that_name_a_command_arrives_with_its_program_allowed(tmp_path, monkeypatch):

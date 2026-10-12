@@ -1,20 +1,11 @@
-import time
-
-from events.agents import ClockTicked
-from framework.parts import WHOLE_FEATURE, AgentContext, Handler
-from controllers.secrets.controller import Secrets
-from resources.base import SYSTEM
-
-PURGE_EVERY = 3600
+from events import Fact
+from events.secrets import PurgeDue
+from receiving import Handler
+from resources.secrets import Secret
+from serving import Rows
 
 
-class PurgeDeletedSecrets(Handler):
-    behaviour = WHOLE_FEATURE
-    purged: dict[str, float] = {}
-
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        place = str(context.record.root)
-        if time.time() - self.purged.get(place, 0.0) < PURGE_EVERY:
-            return
-        self.purged[place] = time.time()
-        Secrets(context.record, actor=SYSTEM)._purge()
+class PurgeDeletedSecrets(Handler[PurgeDue]):
+    def handle(self, event: PurgeDue, secrets: Rows[Secret]) -> list[Fact]:
+        secrets.purge_expired()
+        return []
