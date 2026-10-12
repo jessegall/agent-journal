@@ -160,7 +160,7 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     monkeypatch.undo()
     from types import SimpleNamespace
     from engine import runtime
-    from features.checks import controller as running_checks
+    from controllers.checks import controller as running_checks
     seen = []
     with monkeypatch.context() as scoped:
         scoped.setattr(running_checks.threading, "Thread", lambda target, args, daemon: SimpleNamespace(start=lambda: target(*args)))
