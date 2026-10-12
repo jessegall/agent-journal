@@ -5,6 +5,7 @@ order. Nothing runs inline, so a listener never sees a write that its own fact c
 never runs inside the hook that started it.
 """
 
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field, replace
 
@@ -61,17 +62,31 @@ class NothingHeld:
         yield None
 
 
-@dataclass
-class Claims:
-    """What the engine has already claimed for a lane. A fact carrying a claim is dispatched by whoever takes it and by nobody after, so the same turn read three ways is handled once."""
+KEPT_CLAIMS = 1000
+"""How many claims are remembered. The same number the 2.x once() keeps, in the same store, so a journal that upgrades mid-turn finds its claims where it left them and never handles a held turn twice."""
 
-    taken: dict = field(default_factory=dict)
 
-    def take(self, key: str, at: float = 0.0) -> bool:
+class Remembered:
+    """Claims held only for the life of a process, for a lane under test. Nothing durable is wanted there, and nothing is."""
+
+    def __init__(self):
+        self.taken: dict = {}
+
+    def claim(self, key: str, value, keep: int = 0) -> bool:
         if key in self.taken:
             return False
-        self.taken[key] = at
+        self.taken[key] = value
         return True
+
+
+@dataclass
+class Claims:
+    """What the engine has claimed for a lane, kept in a store so a restart does not hand a held turn out again."""
+
+    held: object = field(default_factory=Remembered)
+
+    def take(self, key: str, at: float = 0.0) -> bool:
+        return self.held.claim(key, at or time.time(), keep=KEPT_CLAIMS)
 
 
 @dataclass
