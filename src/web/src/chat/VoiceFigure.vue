@@ -3,35 +3,33 @@ import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
-import {RESTS, beatsAfter, clipOf, eggFor, facesAfter, figureStateOf, testResultsAfter} from "../domain/figureState.js";
+import {beatsAfter, clipFor, facesAfter, figureStateOf, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
-import {BUBBLE, HANGS, HANG_STAY, between, perchOn, perchSpot, roamNext} from "../figure/perches.js";
-import {LOOK_SECONDS, WORKED_SECONDS, ambientFor, eyesShown, flips, reactionTo, workClip} from "../figure/reactions.js";
-import {CHANGE_SECONDS, HOME, POSTURES, boxAt, groundEdge, openTabs, pointedView, postureOf, seatOf, spotOf} from "../figure/places.js";
+import {stayAtHome, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
+import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, workMoments} from "../figure/reactions.js";
+import {
+    CHANGE_SECONDS,
+    HOME,
+    POSTURES,
+    boxAt,
+    facingToward,
+    footingNow,
+    footingOn,
+    postureOf,
+    spotOf,
+    tripBetween,
+} from "../figure/places.js";
 import {rows} from "../sync/rows.js";
 
-// The figure is this many pixels square, as the chat's flat figure is; it walks this many of them a second and hops in this many milliseconds
+// The figure plays what the figure modules decide: what it does in figureState.js and reactions.js, where it goes in perches.js, and how
+// it stands and travels in places.js. This component holds only the drawing and the clock.
+
+// The figure is this many pixels square, as the chat's flat figure is
 const SIZE = 112;
-const WALK_SPEED = 90;
-// a jump crouches this long before it leaves the ground and is in the air for this long, a little longer for a higher perch; a fall
-// takes as long as a body takes to drop that far
-const JUMP_CROUCH_MS = 280;
-const JUMP_AIR_MS = 420;
-const JUMP_AIR_PER_PIXEL = 0.25;
-const GRAVITY = 2400;
-const FLIP_CROUCH_MS = 290;
-const FLIP_AIR_MS = 600;
-const JUMP_EASING = "cubic-bezier(0.2, 0.7, 0.4, 1)";
-const FALL_EASING = "cubic-bezier(0.55, 0, 0.9, 0.6)";
-// a difference smaller than this is no trip at all: a clip in motion can leave this much of a gap under the figure's feet, and the
-// figure settles where it is rather than falling those few pixels
-const STEADY = 5;
 // how often the figure looks again at what the agent does and where things are, in milliseconds
 const LOOK_EVERY = 1000;
-// how many times a second the eyes are drawn while they wear a look, and the body while it eases from one clip, posture or facing to the next
-const LOOK_FPS = 12;
+// how many times a second the body is drawn while it eases from one clip, posture or facing to the next
 const BLEND_FPS = 30;
-const WORKING = new Set(["thinking", "searching", "writing", "running"]);
 
 const props = defineProps({voice: {type: String, required: true}});
 
@@ -55,20 +53,18 @@ const below = ref(0);
 const place = ref({x: 0, y: 0, posture: "stand", view: null, on: null});
 // the picture's left and top in the window: kept at the place while the figure rests, and at the end of each leg while it travels
 const at = ref({x: 0, y: 0});
-// the trip in hand, as its legs still to go and the spot it goes to, or null; `started` once the figure has set off
+// the trip in hand (places.js tripBetween), as its legs still to go and the spot it goes to, or null; `started` once it has set off
 const moving = ref(null);
 const leg = ref({x: 0, y: 0, ms: 0, lead: 0, easing: "linear"});
-// the one-off clips the body waits to play, oldest first, each as {clip, card}: a reaction to a moment, or the egg that belongs to it;
-// `card` is the key of the chat mark the figure turns to face while it plays, or ""
+// the one-off clips the body waits to play, oldest first, each as {clip, card}, `card` the chat mark it turns to while it plays, or ""
 const beats = ref([]);
-// the look the eyes wear, as its mood, when it began in seconds of the page's clock, and how long it has been seen
+// the look the eyes wear (reactions.js eyesAt), or null
 let looking = null;
-// when each reaction last played, when each ambient one may next play, and the state each test run's card had when last looked at
-const reacted = new Map();
-const ambientDue = new Map();
+// what the figure remembers between looks: when each reaction last played and the eggs played so far, when each pastime may next play,
+// and the state each test run's card had when last looked at
+const memory = {reacted: new Map(), played: []};
+const pastimesDue = new Map();
 const testStates = new Map();
-// the eggs played so far, so none plays twice for one occurrence or twice in a row
-const played = [];
 // the voice's own entrance plays when its figure appears, and its exit when the environment's agent goes; with no agent it is not shown
 const arriving = ref(false);
 // the landing plays once after a jump or a fall, unless the figure goes on to hang
@@ -83,66 +79,46 @@ const shownClip = ref(null);
 let drawn = "stand";
 
 const held = computed(() => figureStateOf(agent.value, rows("work"), waitingSince.value, now.value));
-// Where the figure stays while nothing calls it anywhere: the roam it drew (perches.js), when the stay ends in seconds, and what it holds
-// for the stay, the bubble it perches on, the tab it stands on or the point along the home edge it strolls to
+// the stay the figure keeps while nothing calls it anywhere (perches.js)
 let stay = {where: "seat", until: 0};
 // the sides, "l" or "r", of the hands this voice carries nothing in, which it can hang by
 let hands = [];
-// what the figure rests on, as the element and where the figure's spot is on it, watched each frame; null while it travels
+// what the figure rests on (places.js footingOn), watched each frame; null while it travels
 let footing = null;
-// the clip the figure rolled for the stretch it is in, a stretch of work or one state, so it does not change its mind within it
-let worked = {stretch: "", clip: ""};
-// the user has typed in the compose box since the last look, and when the agent's work began, so that finishing it is a moment
+// the clip rolled for the stretch the figure is in (reactions.js stretchClip)
+let rolled = {stretch: "", clip: ""};
+// the user has typed in the compose box since the last look, and when the agent's work in hand began
 let typed = false;
 let workBegan = 0;
 
-// the first of these clips the figure has; idle when it has none of them
-const clipNamed = (...names) =>
-    names.map((name) => clips.find((clip) => clip.name === name)).find(Boolean) || clips.find((clip) => clip.name === "idle");
+// the clip of this name the figure has, or idle when it has none
+const clipNamed = (name) => clips.find((clip) => clip.name === name) || clips.find((clip) => clip.name === "idle");
 const hasClip = (name) => clips.some((clip) => clip.name === name);
+const canDraw = (name, posture) => clipNamed(name).postures.includes(posture);
+const figureSize = () => ({size: SIZE, below: below.value});
 
-// What the figure plays now: its entrance or exit, a walk or a hop while it travels, the landing, its hang while it hangs, a beat until it
-// is done, pointing once it stands at a tab, or the held state's clip
+// the clip the figure's body shows for the stretch it is in
+function doing() {
+    rolled = stretchClip(held.value.state, rolled, Math.random);
+    return rolled.shows;
+}
+
+// what plays now, as figureState.js clipFor decides it, with the clip itself in place of its name
 function current() {
-    if (leaving.value) return {clip: clipNamed("exit"), facing: 0, once: true, departure: true};
-    if (arriving.value) return {clip: clipNamed("enter"), facing: 0, once: true, arrival: true};
-    if (moving.value?.hopping) return {clip: clipNamed(moving.value.clip), facing: 0};
-    if (landing.value) return {clip: clipNamed("land"), facing: 0, once: true, landed: true};
-    if (moving.value) return walkingClip(moving.value.way > 0 ? 90 : 270);
-    // a hanging figure holds on until it is let go; a beat waits until it has dropped
-    if (place.value.posture === "hang") return {clip: clipNamed(`hang_${place.value.grip}`), facing: place.value.face};
-    if (beats.value.length) return {clip: clipNamed(beats.value[0].clip), facing: facingCard(beats.value[0].card), once: true};
-    // pointing is a pose, so it plays only while the agent itself waits on the user; at work, it stands at the tab doing the work
-    if (place.value.view && held.value.state === "asking") return {clip: clipNamed("point"), facing: 0};
-    return {clip: drawable(clipNamed(heldClip())), facing: place.value.posture === "sit" ? place.value.face : 0};
-}
-
-// On the move the figure walks on with whatever its body was doing, thinking or working as it goes; with nothing to do, or a clip that
-// needs a lap, it simply walks
-function walkingClip(facing) {
-    const torso = clipNamed(heldClip());
-    const mixes = torso.name !== "idle" && torso.postures.includes("walk");
-    return mixes ? {clip: torso, facing, posture: "walk"} : {clip: clipNamed("walk"), facing};
-}
-
-// the clip as it is drawn where the figure is: the held state's own clip in its place when this one cannot be drawn in that posture, as
-// the laptop cannot standing
-const drawable = (clip) => (clip.postures.includes(place.value.posture) ? clip : clipNamed(clipOf(held.value.state)));
-
-// the clip the held state shows: through a stretch of work, the laptop when the figure rolled it once for the stretch, else the state's own
-function heldClip() {
-    const {state} = held.value;
-    const stretch = WORKING.has(state) ? "work" : state;
-    if (worked.stretch !== stretch) worked = {stretch, clip: WORKING.has(state) ? workClip(Math.random) : ""};
-    return worked.clip || clipOf(state);
-}
-
-// the way the figure turns to look at a chat mark, to its right or its left, or toward the viewer when the mark is not on the page
-function facingCard(key) {
-    const mark = key && document.querySelector(`[data-figure-mark="${CSS.escape(key)}"]`);
-    if (!mark) return 0;
-    const box = mark.getBoundingClientRect();
-    return box.left + box.width / 2 > at.value.x + SIZE / 2 ? 90 : 270;
+    const first = beats.value[0];
+    const beat = first && {clip: first.clip, facing: facingToward(first.card, at.value.x + SIZE / 2)};
+    const scene = {
+        leaving: leaving.value,
+        arriving: arriving.value,
+        trip: moving.value,
+        landing: landing.value,
+        place: place.value,
+        beat,
+        state: held.value.state,
+        doing: doing(),
+    };
+    const wanted = clipFor(scene, canDraw);
+    return {...wanted, clip: clipNamed(wanted.clip)};
 }
 
 const keyOf = (shown) => `${shown.clip.name}/${shown.facing}`;
@@ -163,23 +139,6 @@ function playedOut() {
 function strideNow() {
     const {frames, fps} = clipNamed("walk");
     return (Math.floor((performance.now() / 1000) * fps) % frames) / frames;
-}
-
-// The look the eyes wear now on a figure turned `facing` degrees, stepped as they are drawn, or null once it has been seen its time. Its
-// clock runs only while the eyes are shown, so a look that comes while the figure faces away waits for it to turn back.
-function eyesNow(facing) {
-    if (!looking) return null;
-    const now = performance.now() / 1000;
-    if (!eyesShown(facing)) {
-        looking.began = now - looking.seen;
-        return null;
-    }
-    looking.seen = now - looking.began;
-    if (looking.seen >= LOOK_SECONDS) {
-        looking = null;
-        return null;
-    }
-    return {mood: looking.mood, seconds: Math.floor(looking.seen * LOOK_FPS) / LOOK_FPS, lasts: LOOK_SECONDS};
 }
 
 function step() {
@@ -206,18 +165,19 @@ function step() {
     }
     drawn = shown.posture ?? postureOf(shown.clip, place.value.posture);
     if (!moving.value?.started) rest();
-    const eyes = eyesNow(shown.facing);
+    const look = eyesAt(looking, shown.facing, performance.now() / 1000);
+    looking = look.looking;
     const stride = drawn === "walk" ? strideNow() : null;
     player.show(shown.clip, shown.clip.loops ? index % shown.clip.frames : Math.min(index, shown.clip.frames - 1), shown.facing, {
         posture: drawn,
-        eyes,
+        eyes: look.eyes,
         stride,
     });
-    const fps = Math.max(shown.clip.fps, eyes ? LOOK_FPS : 0, stride === null ? 0 : clipNamed("walk").fps, player.blending() ? BLEND_FPS : 0);
+    const walking = stride === null ? 0 : clipNamed("walk").fps;
+    const fps = Math.max(shown.clip.fps, look.eyes ? LOOK_FPS : 0, walking, player.blending() ? BLEND_FPS : 0);
     frameTimer = setTimeout(step, 1000 / fps);
 }
 
-const figureSize = () => ({size: SIZE, below: below.value});
 // the picture's left and top for a figure on a spot in `posture`
 const placed = (spot, posture) => {
     const box = boxAt(spot, figureSize(), posture);
@@ -241,38 +201,21 @@ function slide() {
     slideTimer = setTimeout(() => (sliding.value = false), CHANGE_SECONDS * 1000);
 }
 
-// The trip to a spot: from where the figure is, on its feet or by its grip, to that spot in the posture it travels in there. Up to a
-// perch it walks to below it and then jumps; down from one it falls first and then walks, never walking on air. `straight` is for ground
-// that came or went under it: it goes straight up or down where it is and walks on from there.
-function moveTo(spot, {straight = false} = {}) {
+// the trip to a spot, from where the figure is in the posture it travels in to that spot in the one it travels in there (places.js)
+function moveTo(spot, straight = false) {
     const from = placed(place.value, POSTURES[place.value.posture].travels);
     const to = placed(spot, POSTURES[spot.posture].travels);
-    if (Math.hypot(to.x - from.x, to.y - from.y) < STEADY) return settle(spot);
+    const trip = tripBetween(from, to, SIZE, {straight, hangs: spot.posture === "hang"});
+    if (!trip) return settle(spot);
     footing = null;
-    const walk = (Math.abs(to.x - from.x) / WALK_SPEED) * 1000;
-    const height = Math.abs(to.y - from.y);
-    const up = to.y < from.y;
-    const flip = up && flips(height, SIZE, Math.random);
-    const air = up ? JUMP_AIR_MS + Math.min(height, 400) * JUMP_AIR_PER_PIXEL : Math.sqrt((2 * height) / GRAVITY) * 1000;
-    const hop = {
-        x: to.x,
-        y: to.y,
-        ms: height > STEADY ? (flip ? FLIP_AIR_MS : air) : 0,
-        lead: flip ? FLIP_CROUCH_MS : up ? JUMP_CROUCH_MS : 0,
-        easing: up ? JUMP_EASING : FALL_EASING,
-        hopping: true,
-        clip: flip ? "backflip" : up ? "jump" : "fall",
-    };
-    const stroll = {x: to.x, y: to.y, ms: walk, lead: 0, easing: "linear"};
-    const legs = up && !straight ? [{...stroll, y: from.y}, hop] : [{...hop, x: from.x}, stroll];
-    moving.value = {way: Math.sign(to.x - from.x) || 1, from, to: spot, legs};
+    moving.value = {...trip, from, to: spot};
     nextLeg();
 }
 
 async function nextLeg() {
     clearTimeout(legTimer);
     if (!moving.value) return;
-    landing.value = Boolean(moving.value.hopping) && moving.value.to.posture !== "hang";
+    landing.value = Boolean(moving.value.hopping && moving.value.lands);
     const legs = moving.value.legs;
     const next = legs.find((each) => each.ms > 0);
     if (!next) {
@@ -287,7 +230,13 @@ async function nextLeg() {
     }
     if (!moving.value.started) await setOff(moving.value.from);
     if (!moving.value) return;
-    moving.value = {...moving.value, started: true, hopping: Boolean(next.hopping), clip: next.clip, legs: legs.slice(legs.indexOf(next) + 1)};
+    moving.value = {
+        ...moving.value,
+        started: true,
+        hopping: Boolean(next.hopping),
+        clip: next.clip,
+        legs: legs.slice(legs.indexOf(next) + 1),
+    };
     leg.value = next;
     at.value = {x: next.x, y: next.y};
     step();
@@ -304,163 +253,80 @@ async function setOff(from) {
     figure.value?.getBoundingClientRect();
 }
 
-// the figure comes to rest at a spot: where the spot is on the element it rests on is what it keeps as the element moves
 function settle(spot) {
     place.value = spot;
-    const element = spot.on;
-    if (!element?.isConnected) {
-        footing = null;
-        return;
-    }
-    const box = element.getBoundingClientRect();
-    footing = {element, dx: spot.x - box.left, dy: spot.y - box.top, home: element === groundEdge().element};
+    footing = footingOn(spot);
 }
 
-// The ground is real: each frame, what the figure rests on carries it along if it moves, and if it is gone the figure falls at once,
-// from wherever it is to whatever ground there is now. It does not wait for its clip, as gravity does not.
+// Each frame what the figure rests on carries it along as it moves (places.js footingNow); when the ground went from under it, it goes at
+// once, without waiting for its clip, as gravity does not, straight up or down to the ground at home and on to its place there
 function watchFooting() {
     footFrame = requestAnimationFrame(watchFooting);
     if (!footing || moving.value || !here.value || document.hidden) return;
-    const {element, dx, dy} = footing;
-    const box = element.isConnected ? element.getBoundingClientRect() : null;
-    if (!box?.width || !box.height) return moveToHomeGround();
-    // the ground at home changed under it, as a bar docks over the compose box or is closed: it is pushed up onto it or falls to it
-    if (footing.home && groundEdge().element !== element) return moveToHomeGround();
-    const to = {x: box.left + dx, y: box.top + dy};
+    const to = footingNow(footing);
+    if (!to) return uprooted();
     if (Math.hypot(to.x - place.value.x, to.y - place.value.y) <= 0.3) return;
     place.value = {...place.value, ...to};
     rest();
 }
 
-// The ground under it went or changed: at once, without waiting for its clip, as gravity does not, it goes straight up onto the ground at
-// home or straight down to it, and walks on from there to its place at home; a stay away from home is given up
-function moveToHomeGround() {
+function uprooted() {
     footing = null;
-    if (stay.where !== "edge") stay = {where: "seat", until: stay.where === "seat" ? stay.until : 0};
+    stay = stayAtHome(stay);
     clearTimeout(legTimer);
     playing = {name: "", started: 0, shown: null, index: 0};
     beats.value = [];
     landing.value = false;
-    moveTo(stayingAt(place.value), {straight: true});
+    moveTo(stayingAt(stay, figureSize(), place.value), true);
 }
 
-// at rest on its own, with nothing to play and its hands free, so free to do something by itself
-const calm = () =>
-    held.value.state === "idle" && place.value.posture !== "hang" && !beats.value.length && !arriving.value && !leaving.value;
-
-// the thread the main chat shows, whose bubbles the figure may perch on
-const threadScroll = () => document.querySelector(HOME)?.closest(".thread")?.querySelector(".thread-scroll") ?? null;
-
-// Where the figure goes: seated at home while its agent cannot act; to the tab of what waits on the user when something does; otherwise
-// where its stay is, drawing the next stay when this one is over or its place is gone. `near` is where it is.
-function targetFor(near) {
-    if (RESTS.has(held.value.state)) return seatOf(figureSize(), near);
-    const pressing = pointedView(counts.value, openTabs());
-    if (pressing) return spotOf(pressing, figureSize(), near);
-    const kept = now.value < stay.until && stayingAt(near);
-    if (kept) return kept;
-    stay = nextStay();
-    return stayingAt(near) || seatOf(figureSize(), near);
-}
-
-// the next stay, drawn by the roams' odds; a hang from a bubble is a short one
-function nextStay() {
-    const {where, stay: seconds} = roamNext(Math.random);
-    const until = now.value + seconds;
-    if (where === "bubble") {
-        const thread = threadScroll();
-        const perch = thread && perchOn([...thread.querySelectorAll(BUBBLE)], thread, figureSize(), hands, Math.random);
-        return {where, until: perch?.kind === HANGS ? now.value + between(HANG_STAY, Math.random) : until, perch};
-    }
-    if (where === "tab") {
-        const tabs = Object.keys(openTabs());
-        return {where, until, view: tabs[Math.floor(Math.random() * tabs.length)]};
-    }
-    if (where === "edge") return {where, until, along: {x: Math.random() * window.innerWidth, y: 0}};
-    return {where, until};
-}
-
-// the spot of the stay now, or null when its bubble or tab is gone or its perch is no longer free; a tab it only visits is not one it
-// points at
-function stayingAt(near) {
-    const figure = figureSize();
-    if (stay.where === "bubble") {
-        const thread = threadScroll();
-        const spot = stay.perch && thread && perchSpot(stay.perch, thread, figure);
-        return spot ? {...spot, view: null} : null;
-    }
-    if (stay.where === "tab") {
-        const tab = stay.view && document.querySelector(`[data-tab="${CSS.escape(stay.view)}"]`);
-        return tab ? {...spotOf(stay.view, figure, near), view: null} : null;
-    }
-    if (stay.where === "edge") return spotOf(null, figure, stay.along);
-    return seatOf(figure, near);
-}
+// the scene the reactions are decided in
+const scene = () => ({place: place.value, beats: beats.value.length, arriving: arriving.value, leaving: leaving.value});
 
 function look() {
     clearTimeout(lookTimer);
     now.value = Date.now() / 1000;
-    const waiting = counts.value.question + counts.value.waiting + counts.value.suggestion > 0;
-    waitingSince.value = waiting ? waitingSince.value || now.value : 0;
-    const happened = [...beatsAfter(agent.value, seenAt), ...testResultsAfter(agent.value, testStates), ...facesAfter(rows("reaction"), seenAt)];
+    waitingSince.value = waitingSinceAt(counts.value, waitingSince.value, now.value);
+    const happened = [
+        ...beatsAfter(agent.value, seenAt),
+        ...testResultsAfter(agent.value, testStates),
+        ...facesAfter(rows("reaction"), seenAt),
+    ];
     if (happened.length) seenAt = Math.max(seenAt, ...happened.map((fire) => fire.at));
-    [...happened, ...momentsOfWork()].forEach(react);
-    const waited = {state: held.value.state, since: held.value.since, lasted: now.value - held.value.since};
-    const after = [eggOf(waited), ambientClip(waited)].filter(Boolean);
-    if (after.length) beats.value = [...beats.value, ...after];
-    const target = targetFor(place.value);
-    if (!moving.value && !arriving.value) moveTo(target);
-    if (!document.hidden) lookTimer = setTimeout(look, LOOK_EVERY);
-}
-
-// the moments of the agent's work and of the user at the compose box: typing, and the end of a stretch of work
-function momentsOfWork() {
-    const moments = [];
-    if (typed) moments.push({beat: "typing", at: now.value});
+    const work = workMoments(held.value.state, typed, workBegan, now.value);
     typed = false;
-    const working = WORKING.has(held.value.state);
-    if (working && !workBegan) workBegan = now.value;
-    if (!working && workBegan) {
-        if (now.value - workBegan >= WORKED_SECONDS) moments.push({beat: "work_done", at: now.value});
-        workBegan = 0;
-    }
-    return moments;
+    workBegan = work.began;
+    [...happened, ...work.moments].forEach(react);
+    const waited = {state: held.value.state, since: held.value.since, lasted: now.value - held.value.since};
+    const egg = answerTo(waited, voice.value, memory, now.value, Math.random, hasClip)?.beat;
+    const pastime = pastimeFor(scene(), waited, pastimesDue, now.value, Math.random, hasClip);
+    const after = [egg, pastime].filter(Boolean);
+    if (after.length) beats.value = [...beats.value, ...after];
+    const target = targetFor({
+        state: held.value.state,
+        counts: counts.value,
+        stay,
+        now: now.value,
+        near: place.value,
+        figure: figureSize(),
+        hands,
+    });
+    stay = target.stay;
+    if (!moving.value && !arriving.value) moveTo(target.spot);
+    if (!document.hidden) lookTimer = setTimeout(look, LOOK_EVERY);
 }
 
 const onType = (event) => {
     if (event.target.closest?.(HOME)) typed = true;
 };
 
-// The eyes take on a look; a figure hanging with its back to the viewer lets go, so it turns round to show it
-function startLook(mood) {
-    looking = {mood, began: performance.now() / 1000, seen: 0};
-    if (place.value.posture === "hang" && !eyesShown(place.value.face)) stay = {...stay, until: 0};
-}
-
-// What the figure does about a moment: the egg that belongs to it, else its reaction when the roll says so, a clip the body plays once
-// or a look the eyes take on over whatever the body is doing
+// what the figure does about a moment, as reactions.js answerTo decides: a beat the body plays, or a look the eyes take on
 function react(moment) {
-    const egg = eggOf(moment);
-    if (egg) return (beats.value = [...beats.value, egg]);
-    const reaction = reactionTo(moment.beat, reacted, now.value, Math.random);
-    if (reaction?.look) startLook(reaction.look);
-    else if (reaction && hasClip(reaction.clip))
-        beats.value = [...beats.value, {clip: reaction.clip, card: reaction.toward === "card" ? moment.card || "" : ""}];
-}
-
-// what it does by itself while it sits at rest, now and then
-function ambientClip(waited) {
-    if (!calm()) return null;
-    const clip = ambientFor(waited.state, waited.lasted, ambientDue, now.value, Math.random);
-    return clip && hasClip(clip) ? {clip, card: ""} : null;
-}
-
-// the egg that belongs to a moment, kept as played, when the voice has its clip
-function eggOf(moment) {
-    const egg = eggFor(voice.value, moment, played);
-    if (!egg || !hasClip(egg.clip)) return null;
-    played.push(egg);
-    return {clip: egg.clip, card: ""};
+    const answer = answerTo(moment, voice.value, memory, now.value, Math.random, hasClip);
+    if (answer?.beat) beats.value = [...beats.value, answer.beat];
+    if (!answer?.look) return;
+    looking = lookOf(answer.look, performance.now() / 1000);
+    stay = stayForLook(stay, place.value);
 }
 
 // the figure appears at home on its feet, where its entrance plays
@@ -551,7 +417,14 @@ const style = computed(() => ({
 </script>
 
 <template>
-    <div v-show="figureStatus === 'shown' && here" ref="figure" class="voice-figure" :style="style" aria-hidden="true" @transitionend="nextLeg">
+    <div
+        v-show="figureStatus === 'shown' && here"
+        ref="figure"
+        class="voice-figure"
+        :style="style"
+        aria-hidden="true"
+        @transitionend="nextLeg"
+    >
         <div :class="['voice-figure-actor', {chasing}]" :style="chasing ? {animationDuration: `${chaseMs}ms`} : null">
             <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
             <template v-if="chasing">

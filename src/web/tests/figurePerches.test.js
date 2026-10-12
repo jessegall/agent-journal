@@ -1,12 +1,14 @@
 // @vitest-environment node
 import {beforeEach, expect, test} from "vitest";
 
-const {HANGS, HANG_SHARE, ROAMS, SITS, perchOn, perchSpot, roamNext} = await import("../src/figure/perches.js");
+const {HANGS, HANG_SHARE, ROAMS, SITS, perchOn, perchSpot, roamNext, stayAtHome, stayForLook, targetFor} =
+    await import("../src/figure/perches.js");
 const {write} = await import("./figurePage.js");
 
 // a page with nothing on it a perch could hide, until a test writes words onto it
 beforeEach(() => {
-    globalThis.document = {querySelectorAll: () => []};
+    globalThis.window = {innerWidth: 1280, innerHeight: 800};
+    globalThis.document = {querySelector: () => null, querySelectorAll: () => []};
 });
 
 const FIGURE = {size: 112, below: 0.05};
@@ -80,4 +82,25 @@ test("a figure sitting or hanging stands where its bubble's corner is, and is le
     expect(perchSpot(hanging, THREAD, FIGURE)).toMatchObject({y: 300, posture: "hang", grip: "r"});
     expect(perchSpot({...sitting, bubble: at(105)}, THREAD, FIGURE)).toBe(null);
     expect(perchSpot({...sitting, bubble: bubble({left: 260, right: 500, top: 300, bottom: 360}, false)}, THREAD, FIGURE)).toBe(null);
+});
+
+test("when its ground goes the figure keeps a stay at home and gives up one away from it, and a look ends a stay hanging back to the viewer", () => {
+    expect(stayAtHome({where: "edge", until: 50, along: {x: 1, y: 0}})).toEqual({where: "edge", until: 50, along: {x: 1, y: 0}});
+    expect(stayAtHome({where: "seat", until: 50})).toEqual({where: "seat", until: 50});
+    expect(stayAtHome({where: "bubble", until: 50, perch: {}})).toEqual({where: "seat", until: 0});
+    const stay = {where: "bubble", until: 50, perch: {}};
+    expect(stayForLook(stay, {posture: "hang", face: 180}).until).toBe(0);
+    expect(stayForLook(stay, {posture: "hang", face: 0})).toBe(stay);
+    expect(stayForLook(stay, {posture: "sit", face: 60})).toBe(stay);
+});
+
+test("the figure goes home to sit while its agent cannot act, keeps a stay until it is over, and then draws the next", () => {
+    const counts = {question: 0, waiting: 0, suggestion: 0};
+    const at = {state: "idle", counts, now: 100, near: {x: 640, y: 800}, figure: FIGURE, hands: HANDS};
+    const resting = targetFor({...at, state: "asleep", stay: {where: "edge", until: 500, along: {x: 0, y: 0}}});
+    expect(resting.spot).toMatchObject({posture: "sit", y: 800});
+    const edge = {where: "edge", until: 500, along: {x: 0, y: 0}};
+    expect(targetFor({...at, stay: edge})).toMatchObject({stay: edge, spot: {posture: "stand"}});
+    const next = targetFor({...at, stay: {...edge, until: 50}, random: () => 0});
+    expect(next.stay).toMatchObject({where: ROAMS[0].where, until: 100 + ROAMS[0].stay[0]});
 });

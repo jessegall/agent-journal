@@ -1,7 +1,8 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {ASLEEP_AFTER, EGGS, POINTED_AFTER, RESTS, beatsAfter, clipOf, eggFor, figureStateOf} = await import("../src/domain/figureState.js");
+const {ASLEEP_AFTER, EGGS, POINTED_AFTER, RESTS, beatsAfter, clipFor, clipOf, eggFor, figureStateOf, waitingSinceAt} =
+    await import("../src/domain/figureState.js");
 const {REACTIONS} = await import("../src/figure/reactions.js");
 const {pointedView} = await import("../src/figure/places.js");
 
@@ -104,4 +105,42 @@ test("a figure whose agent cannot act stays seated at home, and one that is idle
     for (const state of ["asleep", "compacting", "paused", "stopped"]) expect(RESTS.has(state), state).toBe(true);
     for (const state of ["idle", "thinking", "searching", "writing", "running", "waiting", "asking"])
         expect(RESTS.has(state), state).toBe(false);
+});
+
+// a scene in which the figure rests on its feet at home, the agent thinking, unless the test says otherwise
+const scene = (changes = {}) => ({place: {posture: "stand", face: 0, view: null}, state: "thinking", doing: "think", ...changes});
+// every clip draws standing and seated; the laptop only on a lap; and idle, think and work also on the move
+const canDraw = (name, posture) => (name === "type" ? posture === "sit" : posture !== "walk" || ["idle", "think", "work"].includes(name));
+
+test("coming and going, the hop of a trip and the landing come before anything the body is doing", () => {
+    expect(clipFor(scene({leaving: true, arriving: true}), canDraw)).toMatchObject({clip: "exit", departure: true});
+    expect(clipFor(scene({arriving: true}), canDraw)).toMatchObject({clip: "enter", arrival: true});
+    expect(clipFor(scene({trip: {hopping: true, clip: "backflip", way: 1}, landing: true}), canDraw)).toMatchObject({clip: "backflip"});
+    expect(clipFor(scene({landing: true}), canDraw)).toMatchObject({clip: "land", landed: true, once: true});
+});
+
+test("on the move the figure walks on with what its body is doing, and simply walks with nothing to do or a laptop to carry", () => {
+    expect(clipFor(scene({trip: {way: 1}}), canDraw)).toEqual({clip: "think", facing: 90, posture: "walk"});
+    expect(clipFor(scene({trip: {way: -1}, doing: "idle"}), canDraw)).toEqual({clip: "walk", facing: 270});
+    expect(clipFor(scene({trip: {way: 1}, doing: "type"}), canDraw)).toEqual({clip: "walk", facing: 90});
+});
+
+test("at rest it hangs by its grip, plays a beat turned to it, points while the agent waits, and draws what it does in its own posture", () => {
+    expect(clipFor(scene({place: {posture: "hang", grip: "l", face: 180}, beat: {clip: "joy", facing: 90}}), canDraw)).toEqual({
+        clip: "hang_l",
+        facing: 180,
+    });
+    expect(clipFor(scene({beat: {clip: "joy", facing: 270}}), canDraw)).toEqual({clip: "joy", facing: 270, once: true});
+    expect(clipFor(scene({place: {posture: "stand", view: "question"}, state: "asking", doing: "idle"}), canDraw).clip).toBe("point");
+    expect(clipFor(scene({place: {posture: "stand", view: "question"}}), canDraw).clip).toBe("think");
+    expect(clipFor(scene({place: {posture: "sit", face: 60}, state: "running", doing: "type"}), canDraw)).toEqual({clip: "type", facing: 60});
+    // the laptop cannot be drawn standing, so standing it does what the state itself does
+    expect(clipFor(scene({state: "running", doing: "type"}), canDraw)).toEqual({clip: clipOf("running"), facing: 0});
+});
+
+test("something waiting on the user is timed from when it began to wait, and nothing waiting clears the clock", () => {
+    const none = {question: 0, waiting: 0, suggestion: 0};
+    expect(waitingSinceAt({...none, question: 1}, 0, 50)).toBe(50);
+    expect(waitingSinceAt({...none, waiting: 2}, 20, 50)).toBe(20);
+    expect(waitingSinceAt(none, 20, 50)).toBe(0);
 });

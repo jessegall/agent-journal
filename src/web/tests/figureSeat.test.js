@@ -1,7 +1,21 @@
 // @vitest-environment node
 import {afterEach, expect, test} from "vitest";
 
-const {POSTURES, boxAt, groundEdge, hiddenAt, postureOf, seatOf, seatRise, spotOf} = await import("../src/figure/places.js");
+const {
+    POSTURES,
+    STEADY,
+    boxAt,
+    facingToward,
+    footingNow,
+    footingOn,
+    groundEdge,
+    hiddenAt,
+    postureOf,
+    seatOf,
+    seatRise,
+    spotOf,
+    tripBetween,
+} = await import("../src/figure/places.js");
 const {write} = await import("./figurePage.js");
 
 const FIGURE = {size: 112, below: 0.05};
@@ -11,7 +25,7 @@ const page = (box, docked = null) => {
     globalThis.window = {innerWidth: 1280, innerHeight: 800};
     const bars = docked && {getBoundingClientRect: () => docked};
     const thread = {querySelector: (selector) => (selector === "[data-figure-docked-bars]" ? bars : null)};
-    const home = {getBoundingClientRect: () => box, closest: (selector) => (selector === ".thread" ? thread : null)};
+    const home = {isConnected: true, getBoundingClientRect: () => box, closest: (selector) => (selector === ".thread" ? thread : null)};
     globalThis.document = {
         querySelector: (selector) => (selector === "[data-figure-home]" ? home : null),
         querySelectorAll: () => [],
@@ -110,4 +124,48 @@ test("only what the body is drawn over above its line counts, and only words and
     expect(hiddenAt(seat, FIGURE)).toBe(2);
     write([{left: seat.x - 30, right: seat.x + 30, top: 560, bottom: 580}]);
     expect(hiddenAt(seat, FIGURE)).toBe(3);
+});
+
+test("a trip up walks under the place and then jumps, one down falls and then walks, and ground that moved under it goes straight first", () => {
+    expect(tripBetween({x: 100, y: 500}, {x: 102, y: 497}, 112)).toBe(null);
+    const up = tripBetween({x: 100, y: 500}, {x: 300, y: 300}, 112, {random: () => 0.99});
+    expect(up.legs.map((each) => [each.x, each.y, each.clip ?? "walk"])).toEqual([[300, 500, "walk"], [300, 300, "jump"]]);
+    expect([up.way, up.lands]).toEqual([1, true]);
+    const down = tripBetween({x: 300, y: 300}, {x: 100, y: 500}, 112);
+    expect(down.legs.map((each) => [each.x, each.y, each.clip ?? "walk"])).toEqual([[300, 500, "fall"], [100, 500, "walk"]]);
+    const pushed = tripBetween({x: 100, y: 500}, {x: 140, y: 460}, 112, {straight: true, random: () => 0.99});
+    expect(pushed.legs.map((each) => [each.x, each.y, each.clip ?? "walk"])).toEqual([[100, 460, "jump"], [140, 460, "walk"]]);
+    // a high jump now and then turns over, and a figure that goes on to hang does not land
+    expect(tripBetween({x: 100, y: 500}, {x: 100, y: 300}, 112, {random: () => 0, hangs: true})).toMatchObject({lands: false});
+    expect(tripBetween({x: 100, y: 500}, {x: 100, y: 300}, 112, {random: () => 0}).legs[1].clip).toBe("backflip");
+    expect(STEADY).toBeGreaterThan(0);
+});
+
+test("a figure keeps its place on what it rests on as that moves, and loses its ground when it goes or the ground at home changes", () => {
+    const box = {left: 300, top: 600, width: 400, height: 120};
+    page(box);
+    const home = groundEdge().element;
+    const seat = seatOf(FIGURE, {x: 700, y: 600});
+    expect(footingOn(seat)).toEqual({element: home, dx: seat.x - 300, dy: 0, home: true});
+    expect(footingOn({...seat, on: null})).toBe(null);
+    const moved = {isConnected: true, getBoundingClientRect: () => ({...box, left: 320, top: 580})};
+    const kept = {element: moved, dx: 10, dy: 0, home: false};
+    expect(footingNow(kept)).toEqual({x: 330, y: 580});
+    expect(footingNow({...kept, element: {isConnected: false}})).toBe(null);
+    expect(footingNow({...kept, element: {isConnected: true, getBoundingClientRect: () => ({...box, height: 0})}})).toBe(null);
+    // on the ground at home it loses its footing when a bar docks over the compose box
+    page(box, {left: 300, top: 556, width: 400, height: 44});
+    expect(footingNow({element: home, dx: 10, dy: 0, home: true})).toBe(null);
+});
+
+test("a figure turns right or left toward the chat mark it reacts to, and toward the viewer when the mark is not on the page", () => {
+    globalThis.CSS = {escape: (text) => text};
+    page({left: 300, top: 600, width: 400, height: 120});
+    const mark = {getBoundingClientRect: () => ({left: 600, width: 100})};
+    document.querySelector = (selector) => (selector === '[data-figure-mark="right"]' ? mark : null);
+    expect(facingToward("right", 400)).toBe(90);
+    expect(facingToward("right", 700)).toBe(270);
+    expect(facingToward("gone", 400)).toBe(0);
+    expect(facingToward("", 400)).toBe(0);
+    delete globalThis.CSS;
 });

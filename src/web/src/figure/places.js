@@ -1,3 +1,5 @@
+import {flips} from "./reactions.js";
+
 // Where the figure can stand, read from the page as it is laid out at this moment and never stored: the top edge of the main
 // chat's compose box is home, and each of Home's tabs is a place it can go to point at what waits there.
 export const HOME = "[data-figure-home]";
@@ -46,6 +48,46 @@ export const POSTURES = {
 
 // how long the figure takes to change from one clip, posture or facing to the next, easing out of the pose before it, in seconds
 export const CHANGE_SECONDS = 0.25;
+
+// The figure walks this many pixels a second. A jump crouches this long before it leaves the ground and is in the air for this long, a
+// little longer for a higher perch, in milliseconds; a fall takes as long as a body takes to drop that far.
+const WALK_SPEED = 90;
+const JUMP_CROUCH_MS = 280;
+const JUMP_AIR_MS = 420;
+const JUMP_AIR_PER_PIXEL = 0.25;
+const GRAVITY = 2400;
+const FLIP_CROUCH_MS = 290;
+const FLIP_AIR_MS = 600;
+const JUMP_EASING = "cubic-bezier(0.2, 0.7, 0.4, 1)";
+const FALL_EASING = "cubic-bezier(0.55, 0, 0.9, 0.6)";
+// a difference smaller than this is no trip at all: a clip in motion can leave this much of a gap under the figure's feet, and the
+// figure settles where it is rather than falling those few pixels
+export const STEADY = 5;
+
+// The trip of a picture `size` pixels tall from `from` to `to`, its left and top, or null when they are closer than STEADY: its way, -1
+// left or 1 right, and its legs, each a move of the picture taking `ms` after `lead`. Up to a perch it walks to below it and then jumps,
+// now and then turning over on a high jump; down from one it falls first and then walks, never walking on air. `straight` is for ground
+// that came or went under it: it goes straight up or down where it is, then walks. It lands after a hop unless it `hangs` there.
+export function tripBetween(from, to, size, {straight = false, hangs = false, random = Math.random} = {}) {
+    if (Math.hypot(to.x - from.x, to.y - from.y) < STEADY) return null;
+    const walk = (Math.abs(to.x - from.x) / WALK_SPEED) * 1000;
+    const height = Math.abs(to.y - from.y);
+    const up = to.y < from.y;
+    const flip = up && flips(height, size, random);
+    const air = up ? JUMP_AIR_MS + Math.min(height, 400) * JUMP_AIR_PER_PIXEL : Math.sqrt((2 * height) / GRAVITY) * 1000;
+    const hop = {
+        x: to.x,
+        y: to.y,
+        ms: height > STEADY ? (flip ? FLIP_AIR_MS : air) : 0,
+        lead: flip ? FLIP_CROUCH_MS : up ? JUMP_CROUCH_MS : 0,
+        easing: up ? JUMP_EASING : FALL_EASING,
+        hopping: true,
+        clip: flip ? "backflip" : up ? "jump" : "fall",
+    };
+    const stroll = {x: to.x, y: to.y, ms: walk, lead: 0, easing: "linear"};
+    const legs = up && !straight ? [{...stroll, y: from.y}, hop] : [{...hop, x: from.x}, stroll];
+    return {way: Math.sign(to.x - from.x) || 1, legs, lands: !hangs};
+}
 
 // The posture a clip is drawn in at a place of `posture`: that one when the clip can be drawn in it, else the first the clip can
 export const postureOf = (clip, posture) => (clip.postures.includes(posture) ? posture : clip.postures[0]);
@@ -179,6 +221,32 @@ export function groundEdge() {
     if (!element) return {element: null, edge: {left: 0, width: window.innerWidth, top: window.innerHeight}};
     const box = element.getBoundingClientRect();
     return {element, edge: {left: box.left, width: box.width, top: top ? box.top : box.bottom}};
+}
+
+// What a figure resting on a spot keeps of it: the element it rests on, the spot's place on that element, and whether that element is the
+// ground at home; null when it rests on nothing on the page
+export function footingOn(spot) {
+    const element = spot.on;
+    if (!element?.isConnected) return null;
+    const box = element.getBoundingClientRect();
+    return {element, dx: spot.x - box.left, dy: spot.y - box.top, home: element === groundEdge().element};
+}
+
+// Where a footing's spot is now, carried along as its element moves, or null when the ground went from under the figure: the element left
+// the page or has no size, or it was the ground at home and the ground at home is another element now, as a bar docks or is closed
+export function footingNow({element, dx, dy, home}) {
+    const box = element.isConnected ? element.getBoundingClientRect() : null;
+    if (!box?.width || !box.height || (home && groundEdge().element !== element)) return null;
+    return {x: box.left + dx, y: box.top + dy};
+}
+
+// The way a figure whose middle is at `x` turns to look at a chat mark, by its key: to its right or its left, or toward the viewer when
+// the mark is not on the page
+export function facingToward(key, x) {
+    const mark = key && document.querySelector(`[data-figure-mark="${CSS.escape(key)}"]`);
+    if (!mark) return 0;
+    const box = mark.getBoundingClientRect();
+    return box.left + box.width / 2 > x ? 90 : 270;
 }
 
 // Home is the main chat's compose box; a page without one gives the figure the floor of the page itself. Each spot names the element

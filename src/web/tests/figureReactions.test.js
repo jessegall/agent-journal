@@ -1,8 +1,27 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {AMBIENT, FLIP_ODDS, FLIP_OVER, REACTIONS, WORK_VARIANTS, ambientFor, eyesShown, flips, reactionTo, workClip} =
-    await import("../src/figure/reactions.js");
+const {
+    AMBIENT,
+    FLIP_ODDS,
+    FLIP_OVER,
+    LOOK_SECONDS,
+    REACTIONS,
+    WORKED_SECONDS,
+    WORK_VARIANTS,
+    ambientFor,
+    answerTo,
+    eyesAt,
+    eyesShown,
+    flips,
+    letsGoFor,
+    lookOf,
+    pastimeFor,
+    reactionTo,
+    stretchClip,
+    workClip,
+    workMoments,
+} = await import("../src/figure/reactions.js");
 const {EGGS, HELD, beatsAfter, facesAfter, testResultsAfter} = await import("../src/domain/figureState.js");
 const {CLIPS, EYES} = await import("../src/figure/figure.js");
 const {FACES} = await import("../src/domain/faces.js");
@@ -111,4 +130,55 @@ test("every moment a reaction waits for is one the journal makes, from cards sha
 test("a look shows only while the figure faces no further than sideways, so one that comes while it hangs with its back turned waits", () => {
     for (const facing of [0, 60, 90, 270, 300, -90, 450]) expect(eyesShown(facing), facing).toBe(true);
     for (const facing of [180, 150, 210, -180, 540]) expect(eyesShown(facing), facing).toBe(false);
+});
+
+test("a look's clock runs only while its eyes are shown: it waits while the figure faces away, plays out its time, and then ends", () => {
+    let looking = lookOf("hearts", 100);
+    let drawn = eyesAt(looking, 180, 101);
+    expect(drawn.eyes).toBe(null);
+    looking = drawn.looking;
+    drawn = eyesAt(looking, 0, 101.5);
+    expect(drawn.eyes).toMatchObject({mood: "hearts", seconds: 0.5, lasts: LOOK_SECONDS});
+    expect(eyesAt(drawn.looking, 0, 101 + LOOK_SECONDS)).toEqual({looking: null, eyes: null});
+    // only a figure hanging with its back to the viewer lets go of where it is for a look
+    expect(letsGoFor({posture: "hang", face: 180})).toBe(true);
+    expect([letsGoFor({posture: "hang", face: 0}), letsGoFor({posture: "sit", face: 300})]).toEqual([false, false]);
+});
+
+test("the laptop is rolled once for a stretch of work and kept from one tool to the next, and a stretch of rest shows its own clip", () => {
+    let rolled = stretchClip("running", {stretch: "", clip: ""}, () => 0);
+    expect(rolled).toEqual({stretch: "work", clip: "type", shows: "type"});
+    rolled = stretchClip("thinking", rolled, () => 0.99);
+    expect(rolled.shows).toBe("type");
+    expect(stretchClip("idle", rolled, () => 0)).toEqual({stretch: "idle", clip: "", shows: "idle"});
+    expect(stretchClip("running", {stretch: "", clip: ""}, () => 0.99).shows).toBe("work");
+});
+
+test("typing is a moment, and so is the end of a stretch of work long enough, timed from when the work began", () => {
+    expect(workMoments("idle", true, 0, 50)).toEqual({moments: [{beat: "typing", at: 50}], began: 0});
+    expect(workMoments("running", false, 0, 50)).toEqual({moments: [], began: 50});
+    expect(workMoments("thinking", false, 50, 60).began).toBe(50);
+    expect(workMoments("idle", false, 50, 50 + WORKED_SECONDS)).toEqual({moments: [{beat: "work_done", at: 50 + WORKED_SECONDS}], began: 0});
+    expect(workMoments("idle", false, 50, 51).moments).toEqual([]);
+});
+
+test("a moment is answered by its egg first, else by its reaction, a beat for the body or a look for the eyes, and a missing clip by nothing", () => {
+    const memory = () => ({reacted: new Map(), played: []});
+    const has = () => true;
+    expect(answerTo({beat: "failed", at: 1}, "squire", memory(), 0, () => 0, has)).toEqual({beat: {clip: "squire_chase", card: ""}});
+    expect(answerTo({beat: "reacted:\u2764\ufe0f", at: 1}, "butler", memory(), 0, () => 0, has)).toEqual({look: "hearts"});
+    expect(answerTo({beat: "tests_passed", at: 1, card: "tests:1"}, "butler", memory(), 0, () => 0, has)).toEqual({
+        beat: {clip: "joy", card: "tests:1"},
+    });
+    expect(answerTo({beat: "tests_passed", at: 1}, "butler", memory(), 0, () => 0, () => false)).toBe(null);
+});
+
+test("the figure does something by itself only while it is calm: idle, not hanging, with nothing to play and neither coming nor going", () => {
+    const calm = {place: {posture: "sit"}, beats: 0, arriving: false, leaving: false};
+    const waited = {state: "idle", lasted: 1000};
+    const has = () => true;
+    expect(pastimeFor(calm, waited, new Map(), 0, () => 0, has)).toEqual({clip: AMBIENT[0].clip, card: ""});
+    expect(pastimeFor({...calm, beats: 1}, waited, new Map(), 0, () => 0, has)).toBe(null);
+    expect(pastimeFor({...calm, place: {posture: "hang"}}, waited, new Map(), 0, () => 0, has)).toBe(null);
+    expect(pastimeFor(calm, {...waited, state: "running"}, new Map(), 0, () => 0, has)).toBe(null);
 });

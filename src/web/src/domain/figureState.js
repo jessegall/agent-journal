@@ -19,6 +19,9 @@ export const HELD = {
 // The states in which the agent cannot act, so the figure stays seated on a corner of the edge at home instead of roaming
 export const RESTS = new Set(["asleep", "compacting", "paused", "stopped"]);
 
+// The states in which the agent is at work
+export const WORKING = new Set(["thinking", "searching", "writing", "running"]);
+
 // A tool in flight says what the agent is doing with it; the providers report their own tools under these names.
 const TOOL_STATES = {
     Read: "searching",
@@ -55,6 +58,31 @@ export function figureStateOf(agent, works, waitingSince, now = Date.now() / 100
 }
 
 export const clipOf = (state) => HELD[state] || HELD.idle;
+
+// When the oldest thing waiting on the user arrived, in seconds: `since` kept while anything waits, `now` when something has just begun to
+// wait, 0 once nothing does. `counts` are the views' badge counts.
+export const waitingSinceAt = (counts, since, now) => (counts.question + counts.waiting + counts.suggestion > 0 ? since || now : 0);
+
+// What the figure plays now, by clip name, with the way it faces: its entrance or exit, the hop of a trip, the landing, its hang while it
+// hangs, a beat until it is done, pointing once it stands at a tab while the agent waits on the user, else what its body is doing, walked
+// on with on the move or drawn in its place. `scene` says where things stand, `doing` being the clip of the stretch it is in;
+// `canDraw(name, posture)` whether a clip is drawn in a posture. A beat comes with the way it faces.
+export function clipFor(scene, canDraw) {
+    const {leaving, arriving, trip, landing, place, beat, state, doing} = scene;
+    if (leaving) return {clip: "exit", facing: 0, once: true, departure: true};
+    if (arriving) return {clip: "enter", facing: 0, once: true, arrival: true};
+    if (trip?.hopping) return {clip: trip.clip, facing: 0};
+    if (landing) return {clip: "land", facing: 0, once: true, landed: true};
+    if (trip) {
+        const facing = trip.way > 0 ? 90 : 270;
+        return doing !== "idle" && canDraw(doing, "walk") ? {clip: doing, facing, posture: "walk"} : {clip: "walk", facing};
+    }
+    // a hanging figure holds on until it is let go; a beat waits until it has dropped
+    if (place.posture === "hang") return {clip: `hang_${place.grip}`, facing: place.face};
+    if (beat) return {clip: beat.clip, facing: beat.facing, once: true};
+    if (place.view && state === "asking") return {clip: "point", facing: 0};
+    return {clip: canDraw(doing, place.posture) ? doing : clipOf(state), facing: place.posture === "sit" ? place.face : 0};
+}
 
 // One-off beats, each fired by a card the journal wrote on the agent's row and played once before the held state resumes;
 // the first rule a card matches names its beat

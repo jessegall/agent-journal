@@ -1,3 +1,5 @@
+import {WORKING, clipOf, eggFor} from "../domain/figureState.js";
+
 // What the figure does about what happens around it, and how often. Every number that decides it is here, so it can be tuned in one place.
 // Nothing fires every time: `odds` is the chance a moment is reacted to at all, and `cooldown` the seconds before the same reaction may
 // play again, so the figure is a creature that notices things now and then, not a status icon.
@@ -33,6 +35,26 @@ export const LOOK_SECONDS = 3;
 
 // whether a figure turned `facing` degrees shows its eyes: it faces no further than sideways from the viewer
 export const eyesShown = (facing) => Math.abs(((((facing + 180) % 360) + 360) % 360) - 180) <= 90;
+
+// how many times a second the eyes are drawn while they wear a look
+export const LOOK_FPS = 12;
+
+// a look the eyes take on at `now` seconds, not yet seen
+export const lookOf = (mood, now) => ({mood, began: now, seen: 0});
+
+// The look on the eyes of a figure turned `facing` degrees at `now` seconds: the look as it stands after this moment, null once it has
+// been seen its time, and the eyes to draw with it, stepped as they are drawn, or none. Its clock runs only while the eyes are shown, so
+// a look that comes while the figure faces away waits for it to turn round.
+export function eyesAt(looking, facing, now) {
+    if (!looking) return {looking: null, eyes: null};
+    if (!eyesShown(facing)) return {looking: {...looking, began: now - looking.seen}, eyes: null};
+    const seen = now - looking.began;
+    if (seen >= LOOK_SECONDS) return {looking: null, eyes: null};
+    return {looking: {...looking, seen}, eyes: {mood: looking.mood, seconds: Math.floor(seen * LOOK_FPS) / LOOK_FPS, lasts: LOOK_SECONDS}};
+}
+
+// whether a look makes the figure let go of where it is: it hangs there with its back to the viewer, so it lets go to turn round
+export const letsGoFor = (place) => place.posture === "hang" && !eyesShown(place.face);
 
 // While the agent works, the figure seated works at a laptop most of the time, rolled once for each stretch of work so it keeps at it from
 // one tool to the next; on its feet, or when the roll says no, it does what each state's own clip does
@@ -82,4 +104,48 @@ export const flips = (height, size, random) => height > FLIP_OVER * size && rand
 export function workClip(random) {
     const found = WORK_VARIANTS.find(([, odds]) => random() < odds);
     return found ? found[0] : "";
+}
+
+// The clip the figure shows in `state`: through a stretch of work, the laptop when it rolled it once for the stretch, else the state's
+// own. `rolled` is what it rolled for the stretch it was in, {stretch, clip}; it returns the roll for the stretch it is in now, with the
+// clip it shows as `shows`.
+export function stretchClip(state, rolled, random) {
+    const stretch = WORKING.has(state) ? "work" : state;
+    const roll = rolled.stretch === stretch ? rolled : {stretch, clip: WORKING.has(state) ? workClip(random) : ""};
+    return {stretch: roll.stretch, clip: roll.clip, shows: roll.clip || clipOf(state)};
+}
+
+// The moments of the agent's work and of the user at the compose box at `now`: typing since the last look, and the end of a stretch of
+// work that lasted WORKED_SECONDS. `began` is when the work in hand began, 0 with none; it returns the moments and that time as it is now.
+export function workMoments(state, typed, began, now) {
+    const moments = typed ? [{beat: "typing", at: now}] : [];
+    if (WORKING.has(state)) return {moments, began: began || now};
+    if (began && now - began >= WORKED_SECONDS) moments.push({beat: "work_done", at: now});
+    return {moments, began: 0};
+}
+
+// What the figure does about a moment: the egg of `voice` that belongs to it, else its reaction when the roll says so, as a beat the body
+// plays once ({beat: {clip, card}}), `card` being the chat mark it turns to, or a look its eyes take on ({look: mood}); null for nothing.
+// `memory` holds when each reaction last played (`reacted`) and the eggs played so far (`played`), and is filled in here; `has(clip)`
+// says whether the figure has a clip.
+export function answerTo(moment, voice, memory, now, random, has) {
+    const egg = eggFor(voice, moment, memory.played);
+    if (egg && has(egg.clip)) {
+        memory.played.push(egg);
+        return {beat: {clip: egg.clip, card: ""}};
+    }
+    const reaction = reactionTo(moment.beat, memory.reacted, now, random);
+    if (reaction?.look) return {look: reaction.look};
+    if (reaction && has(reaction.clip)) return {beat: {clip: reaction.clip, card: reaction.toward === "card" ? moment.card || "" : ""}};
+    return null;
+}
+
+// What the figure does by itself after `waited` ({state, lasted}), as a beat, or null: only while it is calm, at rest in the idle state
+// with nothing to play, its hands free and neither coming nor going. `scene` says where things stand; `due` when each pastime may next
+// play, filled in here.
+export function pastimeFor(scene, waited, due, now, random, has) {
+    const calm = waited.state === "idle" && scene.place.posture !== "hang" && !scene.beats && !scene.arriving && !scene.leaving;
+    if (!calm) return null;
+    const clip = ambientFor(waited.state, waited.lasted, due, now, random);
+    return clip && has(clip) ? {clip, card: ""} : null;
 }

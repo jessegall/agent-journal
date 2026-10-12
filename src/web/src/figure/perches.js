@@ -1,4 +1,6 @@
-import {hiddenAt, seatAt, seatRise} from "./places.js";
+import {RESTS} from "../domain/figureState.js";
+import {HOME, hiddenAt, openTabs, pointedView, seatAt, seatOf, seatRise, spotOf} from "./places.js";
+import {letsGoFor} from "./reactions.js";
 
 // Where a figure perches on a message bubble now and then, instead of the compose box's edge: on top of it with its legs over the side,
 // or hanging from its top corner by its hands. It is a place in the thread's own coordinates: read from the bubble each frame, so it
@@ -82,3 +84,61 @@ function spotOn(perch, rect, figure) {
     const x = (perch.side === "left" ? rect.left : rect.right) + out;
     return {x, y: rect.top, face: perch.face, posture: "hang", grip: perch.grip, on: perch.bubble};
 }
+
+// the thread the main chat shows, whose bubbles the figure may perch on
+export const threadOf = () => document.querySelector(HOME)?.closest(".thread")?.querySelector(".thread-scroll") ?? null;
+
+// The next stay, drawn at `now` seconds by the roams' odds: where, until when, and what it holds for the stay, the perch on a bubble, the
+// tab it stands on or the point along the home edge it strolls to. A hang from a bubble is a short one.
+export function nextStay(now, figure, hands, random) {
+    const {where, stay: seconds} = roamNext(random);
+    const until = now + seconds;
+    if (where === "bubble") {
+        const thread = threadOf();
+        const perch = thread && perchOn([...thread.querySelectorAll(BUBBLE)], thread, figure, hands, random);
+        return {where, until: perch?.kind === HANGS ? now + between(HANG_STAY, random) : until, perch};
+    }
+    if (where === "tab") {
+        const tabs = Object.keys(openTabs());
+        return {where, until, view: tabs[Math.floor(random() * tabs.length)]};
+    }
+    if (where === "edge") return {where, until, along: {x: random() * window.innerWidth, y: 0}};
+    return {where, until};
+}
+
+// The spot of a stay now for a figure at `near`, or null when its bubble or tab is gone or its perch is no longer free; a tab it only
+// visits is not one it points at
+export function stayingAt(stay, figure, near) {
+    if (stay.where === "bubble") {
+        const thread = threadOf();
+        const spot = stay.perch && thread && perchSpot(stay.perch, thread, figure);
+        return spot ? {...spot, view: null} : null;
+    }
+    if (stay.where === "tab") {
+        const tab = stay.view && document.querySelector(`[data-tab="${CSS.escape(stay.view)}"]`);
+        return tab ? {...spotOf(stay.view, figure, near), view: null} : null;
+    }
+    if (stay.where === "edge") return spotOf(null, figure, stay.along);
+    return seatOf(figure, near);
+}
+
+// Where the figure goes now and the stay it keeps: seated at home while its agent cannot act; to the tab of what waits on the user when
+// something does; otherwise where its stay is, drawing the next stay when this one is over or its place is gone. `near` is where it is,
+// `counts` the views' badge counts and `state` what the agent does.
+export function targetFor({state, counts, stay, now, near, figure, hands, random = Math.random}) {
+    if (RESTS.has(state)) return {spot: seatOf(figure, near), stay};
+    const pressing = pointedView(counts, openTabs());
+    if (pressing) return {spot: spotOf(pressing, figure, near), stay};
+    const kept = now < stay.until && stayingAt(stay, figure, near);
+    if (kept) return {spot: kept, stay};
+    const next = nextStay(now, figure, hands, random);
+    return {spot: stayingAt(next, figure, near) || seatOf(figure, near), stay: next};
+}
+
+// The stay once the ground went from under the figure: a stroll along the home edge or a seat there is kept, any stay away from home is
+// given up for a seat
+export const stayAtHome = (stay) => (stay.where === "edge" ? stay : {where: "seat", until: stay.where === "seat" ? stay.until : 0});
+
+// The stay once a look comes: over at once when the figure hangs there with its back to the viewer, so it lets go and turns round to
+// show it, else kept
+export const stayForLook = (stay, place) => (letsGoFor(place) ? {...stay, until: 0} : stay);
