@@ -216,7 +216,7 @@ def test_a_message_typed_while_codex_runs_a_command_is_sent_at_once_and_only_onc
         "Esc sends it now, while the command runs on in its background terminal, and the engine can say so in the chat"
 
 
-def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running():
+def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running(monkeypatch):
     import json
     from datetime import datetime, timezone
     record = fresh()
@@ -258,8 +258,18 @@ def test_a_codex_agent_hears_once_about_each_turn_of_the_command_it_left_running
                                                "command": ["/bin/zsh", "-lc", "(make test) >/dev/null 2>&1 & echo $!"], "stdout": "999999"}}}) + "\n")
     tick(record)
     assert lines()[3:] == ["the command you left running finished - make test"], "a command it detached is followed by its pid, and told once it is gone"
+    from resources.runs import BackgroundTasks
+    from features.long_commands import watch
+    stalling = lambda: [n for n in nudges(record) if "npm ci" in n]
+    monkeypatch.setattr(watch, "background_tasks_of",
+                        lambda agent: BackgroundTasks(started={"s9": time.time() - 11 * 60}, commands={"s9": "npm ci"}))
     report(record, "idle", "Stop", session="claude-2", provider="claude", transcript=str(transcript))
-    assert len(lines()) == 4, "a provider that wakes its agent itself is left to do so"
+    tick(record)
+    assert stalling() == ["a command you left running has shown nothing new for 11 minutes - npm ci",
+                          "you stopped while a command you started still runs - npm ci"], \
+        "a run going too long, and one still open when the agent stops, are named whatever the provider: one that never ends wakes nobody"
+    assert not any("npm ci" in n and "finished" in n for n in nudges(record)), \
+        "an end is still left to a provider that wakes its own agent about it"
 
 
 def test_a_monitor_runs_until_it_ends_or_its_time_is_up_and_the_agents_thoughts_are_read_from_where_they_stopped(tmp_path):

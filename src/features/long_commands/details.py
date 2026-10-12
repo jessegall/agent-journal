@@ -42,9 +42,10 @@ class LongCommandsDetails(FeatureDetails):
         cancelled move leaves the command in the foreground and tells you why. The chat shows a mark when a command is moved
         and when it ends.
 
-        An agent whose provider does not wake it when a command it left running ends, as Codex's does not, is
-        told by the journal instead: when the command ends, when it has shown nothing new for ten minutes, and when the agent
-        stops while it still runs. Each is said once for each command.
+        An agent whose provider does not wake it when a command it left running ends, as Codex's does not, is told by the
+        journal instead when the command ends. Whatever the provider, the agent is told every five minutes a command keeps
+        running with nothing new to show, and once when it stops while one is still running: a command that never ends
+        wakes nobody, so the provider's own wake is no help there.
     """
 
     behaviours = [
