@@ -27,6 +27,7 @@ from engine.stop import ask
 from engine.stored import append_text, write_text
 from install import STUBS, fetch, version_in
 from providers import DRIVERS, PROVIDERS
+from runner.relay import Relay
 from resources.base import SYSTEM
 from scripts.boot_guard import PROJECT, WAIT, cleared, ended, launches
 from scripts.checks.imports import imports, missing
@@ -1477,10 +1478,10 @@ def test_the_engine_starts_from_a_paused_agent_survives_a_failed_tick_and_relays
     monkeypatch.setattr(engine_module.features, "passed", lambda e, record: None)
     emitted = []
     monkeypatch.setattr(engine_module.bus, "emit", lambda e, record: emitted.append(e.id))
-    engine.relayed = record.event_log.last_id()
+    engine.relaying.cursor = record.event_log.last_id()
     Todos(record, actor=SYSTEM).create("something for the bus")
     engine.relay()
-    assert emitted and engine.relayed == record.event_log.last_id(), "an event no one handled is put on the bus once"
+    assert emitted and engine.relaying.cursor == record.event_log.last_id(), "an event no one handled is put on the bus once"
     monkeypatch.undo()
 
     transcript = tmp_path / "peers.jsonl"
@@ -2155,3 +2156,38 @@ def test_a_worktree_set_that_fails_partway_removes_what_it_made_and_a_retry_clea
     err = io.StringIO()
     assert (exit_code(SystemExit("journal: could not launch"), err), "could not launch" in err.getvalue(), exit_code(SystemExit(3), err), exit_code(SystemExit(), err)) == (1, True, 3, 0), \
         "a command that ends with a message answers 1 and says it; it is never parsed as a number"
+
+
+def test_a_server_coming_up_takes_what_was_written_while_it_was_down():
+    record = fresh()
+    assert list(Relay(record).each()) == [], "a first start takes nothing that was written before it"
+    written = Todos(record, actor=SYSTEM).create("written by a command line while the server was down")
+    taken = [(e.type, e.n, e.action) for e in Relay(record).each()]
+    assert ("todo", written.n, "created") in taken, "a restarted relay takes up where the last one left off"
+    assert list(Relay(record).each()) == [], "and takes each event once"
+
+
+COMMANDS_ONLY = """
+import json, sys
+sys.path.insert(0, sys.argv[1])
+import features
+features.load(commands_only=sys.argv[2] == "yes")
+from controllers.base import COMMANDS
+from engine import bus
+from receiving import REGISTERED
+print(json.dumps({"kinds": sorted({one.kind for one in REGISTERED.each}), "listening": bus.listening(), "commands": sum(len(words) for words in COMMANDS.values())}))
+"""
+
+
+def loaded(commands_only: bool) -> dict:
+    ran = subprocess.run([sys.executable, "-I", "-c", COMMANDS_ONLY, str(Path(__file__).resolve().parents[1] / "src"), "yes" if commands_only else "no"],
+                         capture_output=True, text=True, timeout=120)
+    assert ran.returncode == 0, ran.stderr[-600:]
+    return json.loads(ran.stdout.strip().splitlines()[-1])
+
+
+def test_a_commands_only_load_wires_the_commands_and_no_listener_or_handler():
+    only, full = loaded(commands_only=True), loaded(commands_only=False)
+    assert not {"listen", "handle", "answer"} & set(only["kinds"]) and only["listening"] is False, \
+        "a process that only runs commands puts no handler on the bus, since the server relays what it wrote"
+    assert only["commands"] == full["commands"] > 0 and full["listening"] is True, "the commands are the same in both, and the full load still listens"
