@@ -76,7 +76,7 @@ class Features(Controller):
     def _runs_commands(self, word: str, arguments: Arguments) -> bool:
         if word != "configure":
             return super()._runs_commands(word, arguments)
-        return changes_a_command(self.record, arguments.name, arguments.key, setting_value(str(arguments.value)))
+        return changes_a_command(self.record, arguments.name, arguments.sets.key, setting_value(arguments.sets.said()))
 
 
 def check_choices(name: str, values: dict) -> None:
