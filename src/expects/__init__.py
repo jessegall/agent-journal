@@ -373,6 +373,8 @@ class Given:
     """Everything the registration may read. What a Given does not state is unreachable, so an expectation is exact."""
 
     on: Any
+    earlier: tuple = ()
+    """What the registration was already given, in order, before the event in on: a hold is set by one event and let go by another, and a cadence says the second time nothing happens. The outcomes judge the world after all of them."""
     rows: tuple = ()
     settings: Mapping[str, Any] = field(default_factory=dict)
     remembered: Mapping[str, Any] = field(default_factory=dict)

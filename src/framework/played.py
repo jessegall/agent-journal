@@ -7,7 +7,7 @@ the providers. Each kind has one entry and no kind has two, so the run and the e
 """
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import shutil
 import tempfile
 import time
@@ -329,11 +329,16 @@ def played(promise, expectation, inside: Path) -> Seen:
         raise NoEntryForThisKind.of(promise.kind)
     given = expectation.given
     record, world = scratch(given, inside), World.of(given)
-    world.seen.before, held, since = rows_now(record), rows_held(record), record.event_log.last_id()
     with at_the_givens_hour(given), with_the_givens_programs(given), with_the_scratch_secrets(record):
+        for earlier in given.earlier:
+            ENTRIES[promise.kind](promise, replace(given, on=earlier, earlier=()), record, world)
+        world.seen.forget()
+        already_said, already_nudged = what_was_said(record) if given.earlier else ([], [])
+        world.seen.before, held, since = rows_now(record), rows_held(record), record.event_log.last_id()
         ENTRIES[promise.kind](promise, given, record, world)
     world.seen.after = rows_now(record)
-    world.seen.said, world.seen.nudged = what_was_said(record)
+    said, nudged = what_was_said(record)
+    world.seen.said, world.seen.nudged = said[len(already_said):], nudged[len(already_nudged):]
     world.seen.remembered = remembered_by(record, promise.feature.name)
     world.seen.wrote, world.seen.updated = rows_touched(held, rows_held(record), rows_acted_on(record, since))
     world.seen.held = held_against_the_agents(record)

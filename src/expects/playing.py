@@ -43,6 +43,12 @@ class Seen:
     whispered: list = field(default_factory=list)
     typed: list = field(default_factory=list)
 
+    def forget(self) -> None:
+        """Forgets what the earlier events of a Given did, so the outcomes judge what the last one did. What they left in the record stands."""
+        self.facts, self.ran = [], []
+        self.refused = self.changed = None
+        self.kept, self.answered = False, None
+
     @property
     def is_unchanged(self) -> bool:
         return self.before == self.after and not self.wrote and not self.updated

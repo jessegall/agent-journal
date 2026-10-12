@@ -19,6 +19,10 @@ class Acknowledgements(Feature):
             Given(BusMessageSending(agent=1, data={"text": "Noted.", "turn": "t1"}),
                   rows=[AgentRow(n=1, data={"prompted": "the person", "delivered": ["nudge:2"]}), Nudge(n=2, title="a reminder")])
                 >> Unchanged() & Kept(),
+            Given(BusMessageSending(agent=1, data={"text": "Noted.", "turn": "t1"}),
+                  earlier=(BusMessageSending(agent=1, data={"text": "Noted.", "turn": "t1"}),),
+                  rows=[AgentRow(n=1, data={"prompted": JOURNAL, "delivered": ["nudge:2"]}), Nudge(n=2, title="a reminder")])
+                >> Unchanged(),
             Given(BusMessageSending(agent=1, data={"text": "Got it, but which branch should I use?", "turn": "t1"}),
                   rows=[AgentRow(n=1, data={"prompted": JOURNAL, "delivered": ["nudge:2"]}), Nudge(n=2, title="a reminder")])
                 >> Unchanged() & Kept(),
