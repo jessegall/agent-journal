@@ -67,6 +67,7 @@ class Events:
                 began = time.time()
                 handler.handle(AgentContext.of(feature, record, row) if row else Context.of(feature, record), typed)
                 watched(promise, typed, record, began)
+        run.__qualname__ = type(handler).__name__
         self.names.append(kind.name())
         for pattern in kind.patterns(handler.hooks):
             bus.on(pattern, run, enabled=feature.enabled)

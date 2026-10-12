@@ -2,10 +2,12 @@ import json
 from dataclasses import dataclass
 
 from controllers.base import Arguments, Controller
+from controllers.plugins import Plugins
 from declaring.details import values_of
 from declaring.registries import MOVED, SECRET_CHECKS, SETTING_KEYS, SETTINGS_CHANGED
 from declaring.settings import Settings
 from engine.record import Record
+from events.catalogue import CATALOGUE
 from engine.settings_file import PROJECT_PARTS
 from resources.base import AGENT, Refused, SYSTEM, USER
 from resources import types
@@ -32,6 +34,12 @@ class Features(Controller):
     @action
     def moved(self) -> dict:
         return {"out": "\n".join(listing() for listing in MOVED.each())}
+
+    @action
+    def events(self) -> dict:
+        """Every event this journal can be told, by the string it is matched on, with the plugins' own declared events among them."""
+        Plugins(self.record, actor=self.actor).seated()
+        return {"out": "\n".join(sorted(CATALOGUE.named()))}
 
     @action
     def on(self, name: str, default: bool = True) -> bool:

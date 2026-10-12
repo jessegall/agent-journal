@@ -704,13 +704,15 @@ def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the
     ran: list[str] = []
     registered = Registrations()
     for name, pattern in (("OnTheAction", "created"), ("OnTheType", "todo"), ("OnEverything", "*"), ("OnBoth", "todo.created")):
-        registered.add(Registration.read(HANDLE, OldEvent, BusListener(lambda logged, record, name=name: ran.append(name), pattern, name), ()))
+        listener = lambda logged, record, name=name: ran.append(name)  # noqa: E731  one listener per name, as the bus holds them
+        listener.__qualname__ = name
+        registered.add(Registration.read(HANDLE, OldEvent, BusListener(listener, pattern, lambda record: True), ()))
     ticking = Ticking(registered)
-    ticking.joined()
+    ticking.resolve()
 
     logged = Event(id=1, at=1.0, type="todo", n=1, action="created", actor=SYSTEM, data={}, pid=0, handled=False, env="main")
     ticking.reaches(logged, Held())
-    assert ran == ["OnEverything", "OnTheType", "OnTheAction", "OnBoth"], \
+    assert [one.split(":")[0] for one in ran] == ["OnEverything", "OnTheType", "OnTheAction", "OnBoth"], \
         "the lane runs the old handlers widest pattern first, which is the order bus.patterns put them in"
 
     ran.clear()
@@ -721,8 +723,10 @@ def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the
     listening, BROKEN.entries = BROKEN.entries, []
     BROKEN.add(None, lambda record, title, brief: told.append((title, brief)))
     try:
-        registered.add(Registration.read(HANDLE, OldEvent, BusListener(lambda logged, record: 1 / 0, "*", "Raises"), ()))
-        ticking.joined()
+        raises = lambda logged, record: 1 / 0  # noqa: E731
+        raises.__qualname__ = "Raises"
+        registered.add(Registration.read(HANDLE, OldEvent, BusListener(raises, "*", lambda record: True), ()))
+        ticking.resolve()
         ran.clear()
         ticking.reaches(logged, Held())
         assert told and told[0][0] == "A tick on OldEvent failed", f"a handler that raises is told as a broken tick, not left to break the write: {told}"

@@ -57,3 +57,31 @@ def test_a_catalogue_module_declares_each_string_once(module):
 def test_the_catalogue_imports_no_feature():
     imported = [p.name for p in CATALOGUE.glob("*.py") if "from features" in p.read_text() or "import features" in p.read_text()]
     assert imported == [], f"{imported} import a feature, so the catalogue could cycle with the features that read it"
+
+
+def test_a_plugins_declared_events_are_entries_of_the_catalogue_and_a_pattern_naming_none_is_refused(tmp_path):
+    """A plugin declares its events in its manifest rather than in code, so each one is seated as an entry of its own and its patterns are held to the catalogue like any other."""
+    import json
+
+    from events.catalogue import CATALOGUE
+    from features.plugins.manifest import MANIFEST, patterns, read
+    from resources.base import Refused
+
+    assert "todo.created" in CATALOGUE.named(), "the journal's own events are in the catalogue, read from its modules"
+    CATALOGUE.seat("a-plugin", {"something-happened": {"title": "Something happened"}})
+    assert "a-plugin.something-happened" in CATALOGUE.named(), "a plugin's declared event is an entry named <plugin>.<event>"
+    assert "a-plugin.something-happened" in patterns(), "so another plugin may listen on it by name"
+    assert "todo.escalated" not in patterns(), "a pattern is a string the catalogue holds, not any type and action put together"
+
+    def written(on: dict):
+        folder = tmp_path / str(len(list(tmp_path.iterdir())))
+        (folder / MANIFEST.parent).mkdir(parents=True)
+        (folder / MANIFEST).write_text(json.dumps({"name": "a-plugin", "version": "1.0.0", "title": "A plugin", "description": "for the test",
+                                                   "command": "bin/run", "on": on}))
+        return read(folder)
+
+    with pytest.raises(Refused) as refusal:
+        written({"todo.nothing-like-this": "bin/run"})
+    assert "todo.nothing-like-this" in str(refusal.value), f"the refusal names the pattern: {refusal.value}"
+    assert written({"todo.created": "bin/run", "a-plugin.something-happened": "bin/run"}).name == "a-plugin", \
+        "a pattern the catalogue holds is taken, the plugin's own events among them"

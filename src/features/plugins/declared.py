@@ -2,6 +2,7 @@ from dataclasses import dataclass, field, replace
 from fnmatch import fnmatch
 from pathlib import PurePath
 
+from events.catalogue import CATALOGUE
 from resources.fields import Loaded
 from resources.base import Refused
 
@@ -245,6 +246,7 @@ def declared(row) -> Manifest:
     key = (row.title, row.n, row.updated)
     if key not in MANIFESTS:
         MANIFESTS[key] = Manifest.of(row.manifest)
+        CATALOGUE.seat(MANIFESTS[key].name, [event.name for event in MANIFESTS[key].events])
     return MANIFESTS[key]
 
 

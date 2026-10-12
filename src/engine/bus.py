@@ -25,9 +25,11 @@ def always(record) -> bool:
 def on(pattern: str, listener: Listener, enabled: Callable = always) -> Callable[[], None]:
     entry = (enabled, listener)
     _listeners[pattern].append(entry)
+    _dispatch.joins(pattern, listener, enabled)
 
     def off() -> None:
         _listeners[pattern].remove(entry)
+        _dispatch.leaves(pattern, listener)
     return off
 
 
@@ -86,18 +88,27 @@ def over_the_listeners(event: Event, record=None) -> None:
                 listener(event, record)
 
 
+def nobody_joins(pattern: str, listener: Listener, enabled: Callable) -> None:
+    """The walk needs no telling who joined: a listener on the bus is already where it runs."""
+
+
+def nobody_leaves(pattern: str, listener: Listener) -> None:
+    """The walk needs no telling who left, for the same reason."""
+
+
 class Dispatch:
     """How a told event reaches what acts on it: the walk over the listeners until the engine is seated, and then the engine's own lane, which runs the same receivers inside a tick."""
 
-    def __init__(self, reaches: Listener):
-        self.reaches = reaches
+    def __init__(self, reaches: Listener, joins=nobody_joins, leaves=nobody_leaves):
+        self.reaches, self.joins, self.leaves = reaches, joins, leaves
 
 
 _dispatch = Dispatch(over_the_listeners)
 
 
-def dispatched_by(reaches: Listener) -> None:
-    _dispatch.reaches = reaches
+def dispatched_by(reaches: Listener, joins=nobody_joins, leaves=nobody_leaves) -> None:
+    """Who the told events go to now, and how a listener registered later joins it and leaves it, so the bus keeps one way to be reached."""
+    _dispatch.reaches, _dispatch.joins, _dispatch.leaves = reaches, joins, leaves
 
 
 def run(event: Event, record=None) -> None:

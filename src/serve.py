@@ -27,7 +27,6 @@ import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
 from controllers.stored import DEFER, flush_indexes, renew_stamps, watch_marks  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone  # noqa: E402
-from framework.adapter import listens_beside_the_bus  # noqa: E402
 from framework.routing import resolve  # noqa: E402
 from features.phone.allow_list import PhoneVisit, Reach  # noqa: E402
 from framework.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
@@ -474,7 +473,7 @@ def warmed(root: Path, warm: threading.Event, began: float = BEGAN) -> None:
         recorded(root, "until the viewer is warm", began)
         WARMERS.append(lambda: warm_changed(root))
         HOME_WARMERS.append(warm_dashboard)
-        listens_beside_the_bus("*", rebuild_dashboard, "RebuildDashboard")
+        bus.on("*", rebuild_dashboard)
         together(timed(root, "commands warm", began, warm_commands), timed(root, "rows warm", began, lambda: warm_rows(root)),
                  timed(root, "transcripts read", began, lambda: read_transcripts(root)), timed(root, "hooks warm", began, warm_hooks),
                  timed(root, "board warm", began, lambda: warm_board(root)))

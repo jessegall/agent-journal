@@ -104,7 +104,7 @@ class LoggedHandler(OldHandler):
         if getattr(kind, "marked_as", Fact) is Request:
             raise CannotBeAdapted.of(type(handler), "it answers a request, which is read before anything writes and not handled after")
         super().__init__(feature, handler)
-        self.run, self.kind = run, kind
+        self.listener, self.kind = run, kind
 
     def patterns(self) -> tuple[str, ...]:
         """The bus patterns this handler listened on."""
@@ -117,7 +117,7 @@ class LoggedHandler(OldHandler):
     def handle(self, event: OldEvent, record) -> list[Fact]:
         """Runs the bus's own run of the handler, so the adapter holds no second way to read the event or build the Context."""
         if self.hears(event.logged, record):
-            self.run(event.logged, record)
+            self.listener(event.logged, record)
         return []
 
 
@@ -129,8 +129,9 @@ def adapted_beside_the_bus(feature, handler: OldStyle, run, kind) -> None:
         NOT_ADAPTABLE[feature.name, type(handler).__name__] = str(refusal)
         return
     ADAPTED.forget(HANDLE, feature.name, receiver.called())
+    TICKING.let_go(run)
     ADAPTED.add(Registration.read(HANDLE, OldEvent, receiver, (), feature.name))
-    TICKING.joined()
+    TICKING.resolve()
 
 
 def listing() -> str:
@@ -174,11 +175,11 @@ class BusListener(Handler[Fact]):
 
     adapted = True
 
-    def __init__(self, listener, pattern: str, name: str):
-        self.listener, self.pattern, self.name = listener, pattern, name
+    def __init__(self, listener, pattern: str, enabled):
+        self.listener, self.pattern, self.enabled = listener, pattern, enabled
 
     def called(self) -> str:
-        return self.name
+        return f"{getattr(self.listener, '__qualname__', type(self.listener).__name__)}:{self.pattern}"
 
     @classmethod
     def wants(cls) -> dict[str, type]:
@@ -188,20 +189,12 @@ class BusListener(Handler[Fact]):
         return (self.pattern,)
 
     def hears(self, logged, record) -> bool:
-        return self.pattern in bus.patterns(logged)
+        return self.pattern in bus.patterns(logged) and self.enabled(record)
 
     def handle(self, event: "OldEvent", record) -> list[Fact]:
         if self.hears(event.logged, record):
             self.listener(event.logged, record)
         return []
-
-
-def listens_beside_the_bus(pattern: str, listener, name: str):
-    """Registers one of the engine's own listeners on the bus and on the adapter, so it runs wherever the events go."""
-    ADAPTED.forget(HANDLE, "", name)
-    ADAPTED.add(Registration.read(HANDLE, OldEvent, BusListener(listener, pattern, name), ()))
-    TICKING.joined()
-    return bus.on(pattern, listener)
 
 
 class FailedTick(Handler[Fact]):
@@ -232,12 +225,34 @@ class Ticking:
         self.registered = registered
         self.order = InOrder({})
 
-    def joined(self) -> None:
-        """A receiver has joined, so the order is worked out again: the widest patterns first, as the bus ran them."""
+    def resolve(self) -> None:
+        """Works the order out again, after a receiver has joined or left: the widest patterns first, as the bus ran them."""
         self.registered.forget(HANDLE, "", "FailedTick")
         self.registered.add(Registration.read(HANDLE, TickFailed, FailedTick(), ()))
         self.registered.each.sort(key=lambda one: min((slot_of(pattern) for pattern in one.receiver.patterns()), default=4))
         self.order = InOrder.of(self.registered)
+
+    def already_runs(self, listener) -> bool:
+        return any(getattr(one.receiver, "listener", None) is listener for one in self.registered.of(HANDLE))
+
+    def join(self, pattern: str, listener, enabled) -> None:
+        """A listener the bus has taken runs on the lane too, unless a feature's wiring already put it there as an old handler."""
+        if self.already_runs(listener):
+            return
+        receiver = BusListener(listener, pattern, enabled)
+        self.registered.forget(HANDLE, "", receiver.called())
+        self.registered.add(Registration.read(HANDLE, OldEvent, receiver, ()))
+        self.resolve()
+
+    def leave(self, pattern: str, listener) -> None:
+        one = next((one for one in self.registered.of(HANDLE) if getattr(one.receiver, "listener", None) is listener and getattr(one.receiver, "pattern", "") == pattern), None)
+        if one is not None:
+            self.registered.forget(HANDLE, one.feature, one.name)
+
+    def let_go(self, listener) -> None:
+        """A listener the bus took before its feature's wiring reached the adapter: the old handler replaces it, so it is not run twice."""
+        for one in [one for one in self.registered.of(HANDLE) if getattr(one.receiver, "listener", None) is listener]:
+            self.registered.forget(HANDLE, one.feature, one.name)
 
     def reaches(self, logged, record) -> None:
         """An event with no record of its own cannot be a tick, since a handler is run against one: it keeps the walk."""
@@ -253,5 +268,5 @@ TICKING = Ticking(ADAPTED)
 
 def dispatched_on_a_lane() -> None:
     """From here on a told event is a tick, never a walk over the listeners. Called once, when the features are seated."""
-    TICKING.joined()
-    bus.dispatched_by(TICKING.reaches)
+    TICKING.resolve()
+    bus.dispatched_by(TICKING.reaches, TICKING.join, TICKING.leave)

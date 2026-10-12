@@ -31,9 +31,9 @@ def load(root: Path | None = None, commands_only: bool = False) -> list[str]:
     discover()
     if root:
         rename_aliases(root)
+    dispatch_on_a_lane()
     wire()
     subscribe()
-    dispatch_on_a_lane()
     if root:
         sync_rows(root)
     return sorted(FEATURES)
@@ -62,7 +62,7 @@ def wire() -> None:
 
 
 def dispatch_on_a_lane() -> None:
-    """From here a told event is a tick on a lane, running the same receivers inside a transaction; a process wired for its commands alone keeps the walk over the listeners, since it has none."""
+    """From here a told event is a tick on a lane, running the same receivers inside a transaction. Before the wiring, so every listener the bus takes from here on joins the lane with it; a process wired for its commands alone keeps the walk, since it has no receivers at all."""
     if COMMANDS_ONLY:
         return
     from framework.adapter import dispatched_on_a_lane
@@ -70,12 +70,9 @@ def dispatch_on_a_lane() -> None:
 
 
 def subscribe() -> None:
-    from framework.adapter import listens_beside_the_bus
     from framework.switches import environments_changed, switch_changed
     if not SWITCHED and not COMMANDS_ONLY:
-        SWITCHED.extend([*(listens_beside_the_bus(kind, switch_changed, f"SwitchChanged:{kind}") for kind in CHANGE_SWITCHES),
-                         listens_beside_the_bus("environment", environments_changed, "EnvironmentsChanged"),
-                         listens_beside_the_bus("environment", seat_created_home, "SeatCreatedHome")])
+        SWITCHED.extend([*(bus.on(kind, switch_changed) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed), bus.on("environment", seat_created_home)])
 
 
 def sync_rows(root: Path) -> None:

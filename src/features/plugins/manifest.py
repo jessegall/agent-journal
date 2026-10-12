@@ -8,13 +8,19 @@ from engine.upgrades import newer
 from resources.base import ACTIONS, Refused
 from resources.types import TYPES
 from engine.gates import CANCELABLE
+from events.catalogue import CATALOGUE
 from features.plugins.declared import ASYNC, SYNC, Manifest
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
 KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "dashboards", "settings", "skills", "command", "load", "installed", "events", "cancels", "fits", "hooks")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
-PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS), "hook.*", *(f"hook.{e}" for e in (*EVENTS, DISPLAYED))}
+HOOKS = {"hook.*", *(f"hook.{e}" for e in (*EVENTS, DISPLAYED))}
+
+
+def patterns() -> set[str]:
+    """Every string a plugin may listen on: the wildcard, a type, an action, any event the catalogue holds - the plugins' own among them - and a hook."""
+    return {"*", *TYPES, *ACTIONS, *CATALOGUE.named(), *HOOKS}
 STEP = ("name", "run", "cwd")
 SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show", "when")
 PAGE = ("name", "title", "icon", "service", "path", "status")
@@ -207,7 +213,7 @@ def loads(given, events: dict) -> dict:
     if not isinstance(given, dict):
         raise Refused("plugin.json: load names, for an event or a hook, the skills the agent must load when it happens")
     for pattern, skills in given.items():
-        if pattern not in PATTERNS and pattern not in events:
+        if pattern not in patterns() and pattern not in events:
             raise Refused(f"plugin.json: load {pattern!r} matches no event; it is a journal event, a hook.<event> or one of the plugin's own events")
         if not isinstance(skills, list) or not skills or not all(isinstance(skill, str) and skill for skill in skills):
             raise Refused(f"plugin.json: load {pattern!r} is a list of skill names")
@@ -230,7 +236,7 @@ def handlers(given) -> dict:
         raise Refused("plugin.json: on names an event pattern for each handler")
     out = {}
     for pattern, handler in given.items():
-        if pattern not in PATTERNS:
+        if pattern not in patterns():
             raise Refused(f"plugin.json: on {pattern!r} matches no event; a pattern is *, a type ({', '.join(sorted(TYPES)[:3])}, …), an action ({', '.join(ACTIONS[:2])}, …), type.action, or hook.<event>")
         if isinstance(handler, dict):
             if set(handler) != {"post"} or not isinstance(handler.get("post"), str) or not handler["post"]:
