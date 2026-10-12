@@ -53,7 +53,7 @@ export function figureStateOf(agent, works, waitingSince, now = Date.now() / 100
 export const clipOf = (state) => HELD[state] || HELD.idle;
 
 // One-off beats, each fired by a card the journal wrote on the agent's row and played once before the held state resumes;
-// the first rule a card matches names its beat, and a voice with a gag of its own for a beat plays that instead
+// the first rule a card matches names its beat
 const BEATS = [
     {beat: "committed", matches: (card) => card.tone === "commit"},
     {beat: "failed", matches: (card) => card.icon === "check" && card.tone === "danger"},
@@ -61,8 +61,7 @@ const BEATS = [
     {beat: "answered", matches: (card) => card.icon === "question"},
 ];
 
-const BEAT_CLIPS = {committed: "celebrate", failed: "shake", refused: "shake", answered: "nod", heard: "nod"};
-const GAGS = {butler: {committed: "butler_tray_down"}, squire: {failed: "squire_chase"}};
+export const BEAT_CLIPS = {committed: "celebrate", failed: "shake", refused: "shake", answered: "nod", heard: "nod"};
 
 // The beats for what reached the agent's row after `seenAt` (seconds), oldest first: its cards, and the user's own message
 export function beatsAfter(agent, seenAt) {
@@ -72,5 +71,29 @@ export function beatsAfter(agent, seenAt) {
     return [...fired, ...(heard > seenAt ? [{beat: "heard", at: heard}] : [])].sort((a, b) => a.at - b.at);
 }
 
-// the clips a beat may play, the voice's own gag first
-export const beatClipsOf = (voice, beat) => [GAGS[voice]?.[beat], BEAT_CLIPS[beat]].filter(Boolean);
+// The figure's easter eggs. Each belongs to one true moment read from the agent's row, as the status bar reads it - a beat that fired,
+// or a held state that has lasted long enough - and never plays at random or on a timer of its own.
+export const EGGS = [
+    // the squire runs after a literal bug across the pane when a check goes red
+    {clip: "squire_chase", voice: "squire", beat: "failed"},
+    // the butler sets his tray down when a commit lands, and picks it straight back up
+    {clip: "butler_tray_down", voice: "butler", beat: "committed"},
+    // each voice makes its one pointed remark when the user has kept it waiting a long while
+    {clip: "pointed", state: "asking", lasted: POINTED_AFTER},
+];
+
+// A moment is a beat that fired ({beat, at}) or a held state ({state, since, lasted}); `at` or `since` tells one occurrence from the next
+const occurrenceOf = (moment) => moment.at ?? moment.since;
+const belongs = (egg, voice, moment) =>
+    (!egg.voice || egg.voice === voice) &&
+    (egg.beat ? egg.beat === moment.beat : egg.state === moment.state && moment.lasted >= egg.lasted);
+
+// The egg this moment plays, or null: one belongs to it, it has not played for this occurrence, and it is not the egg played last.
+// `played` lists the eggs played so far, oldest first, each as {clip, occurrence}.
+export function eggFor(voice, moment, played) {
+    const egg = EGGS.find((each) => belongs(each, voice, moment));
+    if (!egg || played.at(-1)?.clip === egg.clip) return null;
+    return played.some((each) => each.clip === egg.clip && each.occurrence === occurrenceOf(moment))
+        ? null
+        : {clip: egg.clip, occurrence: occurrenceOf(moment)};
+}

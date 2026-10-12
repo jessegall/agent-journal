@@ -4,6 +4,25 @@ import {CLIPS, GROUND, Stage, loadFigure, supportsClip} from "./figure.js";
 const VOICES = ["butler", "homie", "colleague", "coach", "squire"];
 const DEGREES_PER_PIXEL = 1;
 const PASSAGES = new Set(["enter", "exit"]);
+const PASSAGE_NOTE = "Each voice in its own manner. The band at the foot is the chat box: what is below its edge is hidden, as the chat hides it.";
+const ARRIVAL_NOTE = "Arrives from the left, brakes, turns, then holds.";
+// what each card's clip is for; an easter egg says the one moment it belongs to, read from the agent as the status bar reads it
+const NOTES = {
+    pull_ups: "Short lift on two fixed side handles, not a full overhead pull-up.",
+    sit_on_edge: "Seated loop; host scene supplies the ledge.",
+    walk_in: ARRIVAL_NOTE,
+    run_in: ARRIVAL_NOTE,
+    enter: PASSAGE_NOTE,
+    exit: PASSAGE_NOTE,
+    search: "Plays while the agent reads or searches files.",
+    write: "Plays while the agent edits a file.",
+    work: "Plays while the agent runs a command.",
+    point: "Plays while it stands at a tab where something waits on you.",
+    hop: "Plays as it jumps from one pane's edge to another.",
+    squire_chase: "Easter egg, the squire's alone: when a check goes red he runs after a bug across the pane. The viewer draws the bug.",
+    butler_tray_down: "Easter egg, the butler's alone: when a commit lands he sets the tray down and picks it straight back up.",
+    pointed: "Easter egg, every voice's own: once, when you have kept it waiting three minutes.",
+};
 
 function timing(clip) {
     return `${clip.frames} frames · ${clip.fps} fps · ${clip.loops ? "loops" : "once"}`;
@@ -109,10 +128,7 @@ async function main() {
             canvas.hidden = !shows;
             canvas.closest(".stage").querySelector("figcaption").textContent = shows ? voice : `${voice} · ${figure ? "hands full" : "did not load"}`;
         }
-        entry.note.textContent = entry.clip.name === "pull_ups" ? "Short lift on two fixed side handles, not a full overhead pull-up."
-            : entry.clip.name === "sit_on_edge" ? "Seated loop; host scene supplies the ledge."
-            : entry.clip.name.endsWith("_in") ? "Arrives from the left, brakes, turns, then holds."
-            : PASSAGES.has(entry.clip.name) ? "Each voice in its own manner. The band at the foot is the chat box: what is below its edge is hidden, as the chat hides it." : "";
+        entry.note.textContent = NOTES[entry.clip.name] || "";
     }
     sheet.style.setProperty("--ground", `${(GROUND * 100).toFixed(2)}%`);
     resize(entries, 96);
