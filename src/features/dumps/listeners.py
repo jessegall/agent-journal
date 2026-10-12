@@ -32,7 +32,7 @@ class SpotDumpWritten(Listener[DumpWritten]):
     def listen(self, event: DumpWritten, dumps: ReadRows[Dump], agents: ReadRows[AgentRow]) -> list[Fact]:
         if not agents.has_primary():
             return []
-        dump, in_hand = dumps.peek(event.n), dumps._in_hand()
+        dump, in_hand = dumps.peek(event.n), dumps.in_hand()
         if dump.data.get("chosen"):
             return chosen_fact(dump)
         facts = []
@@ -54,7 +54,7 @@ class SpotDumpWritten(Listener[DumpWritten]):
 
 class SpotStalledFiling(Listener[ClockTicked]):
     def listen(self, event: ClockTicked, dumps: ReadRows[Dump], agents: ReadRows[AgentRow]) -> list[Fact]:
-        agent, dump = agents.peek(event.agent), dumps._in_hand()
+        agent, dump = agents.peek(event.agent), dumps.in_hand()
         if agent.status != IDLE or dump is None or (dump.data.get("question") or {}).get("text"):
             return []
         left = [name for name in dump.item_names if not dump.item(name).settled]

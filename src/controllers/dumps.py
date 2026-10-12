@@ -262,7 +262,7 @@ class Dumps(Controller):
         super().reopen(n, why)
         return self.update(int(n), queued_at=time.time(), stopped=False)
 
-    def _in_hand(self):
+    def in_hand(self):
         return min(self.rows.standing(), key=lambda r: (r.data.get("queued_at") or r.created, r.n), default=None)
 
     @action
