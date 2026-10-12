@@ -59,10 +59,6 @@ def row(n: int, **data) -> Todo:
     return Todo(n=n, title=f"Row {n}", data=data)
 
 
-def finished(n: int) -> TodoCompleted:
-    return TodoCompleted(n=n, type="todo", action="completed", actor=USER)
-
-
 def done(n: int) -> Todo:
     return Todo(n=n, title=f"Row {n}", completed=1.0)
 
@@ -143,13 +139,13 @@ class PlansFeature(Feature):
             Given(ClockTicked(agent=1), rows=[AGENT_ROW, Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6), current=1)], settings={"features.work_tracking.auto": True}) >> Unchanged(),
         ])
         journal.events.handler(AdvancePlans(), expects=[
-            Given(finished(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Updated(Plan(n=1), current=2),
-            Given(finished(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6), current=1)]) >> Updated(Plan(n=1), status="active"),
-            Given(finished(5), rows=[done(5), plan("active", phases=phases(5))]) >> Updated(Plan(n=1), status="done"),
-            Given(finished(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))], settings={"features.work_tracking.auto": False}) >> Updated(Plan(n=1), status="waiting"),
-            Given(finished(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))], settings={"features.work_tracking.auto": True}) >> Updated(Plan(n=1), current=2),
-            Given(finished(5), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Unchanged(),
-            Given(finished(5), rows=[done(5), plan("parked", phases=phases(5))]) >> Unchanged(),
+            Given(TodoCompleted.of(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Updated(Plan(n=1), current=2),
+            Given(TodoCompleted.of(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6), current=1)]) >> Updated(Plan(n=1), status="active"),
+            Given(TodoCompleted.of(5), rows=[done(5), plan("active", phases=phases(5))]) >> Updated(Plan(n=1), status="done"),
+            Given(TodoCompleted.of(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))], settings={"features.work_tracking.auto": False}) >> Updated(Plan(n=1), status="waiting"),
+            Given(TodoCompleted.of(5), rows=[done(5), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6, checkpoint=True))], settings={"features.work_tracking.auto": True}) >> Updated(Plan(n=1), current=2),
+            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5"), Todo(n=6, title="Row 6"), plan("active", phases=phases(5, 6))]) >> Unchanged(),
+            Given(TodoCompleted.of(5), rows=[done(5), plan("parked", phases=phases(5))]) >> Unchanged(),
         ])
         journal.events.handler(ReopenPlansWithTheirRows(), expects=[
             Given(reopened(5), rows=[Todo(n=5, title="Row 5"), plan("active", phases=phases(5, 6), current=2)]) >> Updated(Plan(n=1), status="active", current=1),
@@ -158,9 +154,9 @@ class PlansFeature(Feature):
             Given(reopened(9), rows=[Todo(n=9, title="Row 9"), plan("active", phases=phases(5, 6), current=2)]) >> Unchanged(),
         ])
         journal.events.handler(TakeStruckRowsOutOfUnapprovedPlans(), expects=[
-            Given(finished(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(5))]) >> Updated(Plan(n=1), phases=[{"title": "Phase 1", "todos": [], "checkpoint": False}]),
-            Given(finished(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("active", phases=phases(5))]) >> Unchanged(),
-            Given(finished(5), rows=[done(5), plan("building", phases=phases(5))]) >> Unchanged(),
+            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("building", phases=phases(5))]) >> Updated(Plan(n=1), phases=[{"title": "Phase 1", "todos": [], "checkpoint": False}]),
+            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Row 5", completed=1.0, data={"struck": "not needed"}), plan("active", phases=phases(5))]) >> Unchanged(),
+            Given(TodoCompleted.of(5), rows=[done(5), plan("building", phases=phases(5))]) >> Unchanged(),
         ])
         journal.agent.interceptor(RefusePlanMode(), expects=[
             Given(ToolUse.from_payload("EnterPlanMode", {}, {})) >> Refused(PLAN_MODE_REFUSED),

@@ -15,21 +15,17 @@ READ_LONG_AGO = Report(n=2, title="What the audit found", seen=[AGENT], updated=
 NOT_READ = Report(n=2, title="What the audit found", seen=[USER], updated=WHEN - 60)
 
 
-def built(kind: str, actor: str = AGENT) -> ResourceCreated:
-    return ResourceCreated(n=1, type=kind, action="created", actor=actor)
-
-
 class SourceLinks(Feature):
     details = SourceLinksDetails
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(NameUncitedSource(), expects=[
-            Given(built("plan"), rows=[Plan(n=1, title="Ship it"), READ_JUST_NOW, AGENT_ROW]) >> Nudged("uncited"),
-            Given(built("plan"), rows=[Plan(n=1, title="Ship it", refs=["report:2"]), READ_JUST_NOW, AGENT_ROW]) >> Unchanged(),
-            Given(built("plan"), rows=[Plan(n=1, title="Ship it"), READ_LONG_AGO, AGENT_ROW]) >> Unchanged(),
-            Given(built("plan"), rows=[Plan(n=1, title="Ship it"), NOT_READ, AGENT_ROW]) >> Unchanged(),
-            Given(built("plan", USER), rows=[Plan(n=1, title="Ship it"), READ_JUST_NOW, AGENT_ROW]) >> Unchanged(),
-            Given(built("todo"), rows=[Todo(n=1, title="Row"), READ_JUST_NOW, AGENT_ROW]) >> Unchanged(),
-            Given(built("plan"), rows=[Plan(n=1, title="Ship it"), READ_JUST_NOW]) >> Unchanged(),
-            Given(built("plan"), rows=[Plan(n=1, title="Ship it"), AGENT_ROW]) >> Unchanged(),
+            Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it"), READ_JUST_NOW, AGENT_ROW]) >> Nudged("uncited"),
+            Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it", refs=["report:2"]), READ_JUST_NOW, AGENT_ROW]) >> Unchanged(),
+            Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it"), READ_LONG_AGO, AGENT_ROW]) >> Unchanged(),
+            Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it"), NOT_READ, AGENT_ROW]) >> Unchanged(),
+            Given(ResourceCreated.of("plan", USER), rows=[Plan(n=1, title="Ship it"), READ_JUST_NOW, AGENT_ROW]) >> Unchanged(),
+            Given(ResourceCreated.of("todo"), rows=[Todo(n=1, title="Row"), READ_JUST_NOW, AGENT_ROW]) >> Unchanged(),
+            Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it"), READ_JUST_NOW]) >> Unchanged(),
+            Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it"), AGENT_ROW]) >> Unchanged(),
         ])

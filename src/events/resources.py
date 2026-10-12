@@ -45,6 +45,10 @@ class AnyEvent(ResourceEvent):
 class ResourceCreated(ResourceEvent):
     on: ClassVar[str] = "created"
 
+    @classmethod
+    def of(cls, kind: str, actor: str = "agent", n: int = 1) -> "ResourceCreated":
+        return cls(n=n, type=kind, action="created", actor=actor)
+
 
 @dataclass(frozen=True)
 class FileAttached(ResourceEvent):

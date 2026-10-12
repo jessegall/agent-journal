@@ -74,10 +74,6 @@ class LoggedAs:
         return any(section["body"] == self.text for section in sections)
 
 
-def closed(n: int) -> TodoCompleted:
-    return TodoCompleted(n=n, type="todo", action="completed", actor=USER)
-
-
 def shell(command: str, **given) -> BashCall:
     return BashCall.from_payload("Bash", {"command": command, **given}, {})
 
@@ -179,30 +175,30 @@ class WorkFeature(Feature):
             Given(ENDED_WITH_TODO, rows=[Work(n=3, title="Look around", completed=2.0)]) >> Unchanged(),
         ])
         journal.events.handler(EndWorkWithTodo(), expects=[
-            Given(closed(5), rows=[Todo(n=5, title="Fix the crash", completed=1.0), ON_TODO]) >> Updated(Work(n=3), outcome="todo 5 done"),
-            Given(closed(9), rows=[Todo(n=9, title="Other", completed=1.0), ON_TODO]) >> Unchanged(),
+            Given(TodoCompleted.of(5), rows=[Todo(n=5, title="Fix the crash", completed=1.0), ON_TODO]) >> Updated(Work(n=3), outcome="todo 5 done"),
+            Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Other", completed=1.0), ON_TODO]) >> Unchanged(),
         ])
         journal.events.handler(NameParkedOnTodoDone(), expects=[
-            Given(closed(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED, AGENT_ROW]) >> Nudged("parked"),
-            Given(closed(9), rows=[Todo(n=9, title="Done", completed=1.0), Todo(n=4, title="Next"), PARKED, AGENT_ROW]) >> Unchanged(),
-            Given(closed(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED]) >> Unchanged(),
-            Given(closed(9), rows=[Todo(n=9, title="Done", completed=1.0), Work(n=3, title="Work", data={"todo": 9, "parked": "later"}), AGENT_ROW]) >> Unchanged(),
+            Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED, AGENT_ROW]) >> Nudged("parked"),
+            Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), Todo(n=4, title="Next"), PARKED, AGENT_ROW]) >> Unchanged(),
+            Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), PARKED]) >> Unchanged(),
+            Given(TodoCompleted.of(9), rows=[Todo(n=9, title="Done", completed=1.0), Work(n=3, title="Work", data={"todo": 9, "parked": "later"}), AGENT_ROW]) >> Unchanged(),
         ])
         journal.events.handler(UnblockWaitingRows(), expects=[
-            Given(closed(7), rows=[Todo(n=7, title="First", completed=1.0), Todo(n=8, title="Then", data={"after": ["todo:7"]}), AGENT_ROW]) >> Nudged("unblocked"),
-            Given(closed(7), rows=[Todo(n=7, title="First", completed=1.0), Todo(n=8, title="Then", data={"after": ["todo:7", "todo:9"]}), Todo(n=9, title="Other"), AGENT_ROW]) >> Unchanged(),
-            Given(closed(7), rows=[Todo(n=7, title="First", completed=1.0, data={"struck": "not needed"}), Todo(n=8, title="Then", data={"after": ["todo:7"]}), AGENT_ROW]) >> Unchanged(),
-            Given(closed(7), rows=[Todo(n=7, title="First", completed=1.0), Todo(n=8, title="Then", data={"after": ["todo:7"]})]) >> Unchanged(),
+            Given(TodoCompleted.of(7), rows=[Todo(n=7, title="First", completed=1.0), Todo(n=8, title="Then", data={"after": ["todo:7"]}), AGENT_ROW]) >> Nudged("unblocked"),
+            Given(TodoCompleted.of(7), rows=[Todo(n=7, title="First", completed=1.0), Todo(n=8, title="Then", data={"after": ["todo:7", "todo:9"]}), Todo(n=9, title="Other"), AGENT_ROW]) >> Unchanged(),
+            Given(TodoCompleted.of(7), rows=[Todo(n=7, title="First", completed=1.0, data={"struck": "not needed"}), Todo(n=8, title="Then", data={"after": ["todo:7"]}), AGENT_ROW]) >> Unchanged(),
+            Given(TodoCompleted.of(7), rows=[Todo(n=7, title="First", completed=1.0), Todo(n=8, title="Then", data={"after": ["todo:7"]})]) >> Unchanged(),
         ])
         journal.events.handler(UnblockWhenPlanFinishes(), expects=[
             Given(PlanCompleted(n=2, type="plan", action="completed", actor=USER), rows=[Plan(n=2, title="Ship it", completed=1.0, data={"status": "done"}), Todo(n=8, title="Then", data={"after": ["plan:2"]}), AGENT_ROW]) >> Nudged("unblocked"),
             Given(PlanCompleted(n=2, type="plan", action="completed", actor=USER), rows=[Plan(n=2, title="Ship it"), Todo(n=8, title="Then", data={"after": ["plan:2"]}), AGENT_ROW]) >> Unchanged(),
         ])
         journal.events.handler(AskStillBlocked(), expects=[
-            Given(closed(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1}) >> Nudged("still blocked"),
-            Given(closed(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 2}) >> Unchanged(),
-            Given(closed(7), rows=[Todo(n=8, title="Deploy"), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1}) >> Unchanged(),
-            Given(closed(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"})], settings={"work_tracking.ask_blocked_every": 1}) >> Unchanged(),
+            Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1}) >> Nudged("still blocked"),
+            Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"}), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 2}) >> Unchanged(),
+            Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy"), AGENT_ROW], settings={"work_tracking.ask_blocked_every": 1}) >> Unchanged(),
+            Given(TodoCompleted.of(7), rows=[Todo(n=8, title="Deploy", data={"blocked": "waiting on the key"})], settings={"work_tracking.ask_blocked_every": 1}) >> Unchanged(),
         ])
         journal.events.handler(TrackFiles(), expects=[
             Given(edited("src/app.py", "a\n", "a\nb\n"), rows=[WORKING, AGENT_ROW]) >> Updated(Work(n=3), changed=ChangesOnly("src/app.py")),

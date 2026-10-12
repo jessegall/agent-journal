@@ -55,10 +55,6 @@ def touched(*numbers: int) -> MessageUpdated:
     return MessageUpdated(n=numbers[0], type="message", action="updated", actor=USER, numbers=numbers)
 
 
-def created(kind: str, actor: str = AGENT) -> ResourceCreated:
-    return ResourceCreated(n=1, type=kind, action="created", actor=actor)
-
-
 def in_a_transcript(text: str) -> str:
     return json.dumps({"type": "assistant", "timestamp": "2026-01-01T00:00:00+00:00", "message": {"content": [{"type": "text", "text": text}]}}) + "\n"
 
@@ -123,12 +119,12 @@ class MessagesFeature(Feature):
             Given(touched(5), rows=[asked("Please file the report", refs=["todo:7"], completed=1.0), IDLE]) >> Unchanged(),
         ])
         journal.events.handler(CloseAnswered(), expects=[
-            Given(created("comment"), rows=[asked(), reply(), IDLE]) >> Updated(Message(n=5), outcome="answered by the agent"),
-            Given(created("reaction"), rows=[asked("Here is the result"), reaction(), IDLE]) >> Updated(Message(n=5), outcome="acknowledged by the agent"),
-            Given(created("reaction"), rows=[asked(), reaction(), IDLE]) >> Unchanged(),
-            Given(created("comment", actor=USER), rows=[asked(), reply(USER), IDLE]) >> Unchanged(),
-            Given(created("comment"), rows=[wrote("Done, it is filed.", seen=(AGENT,)), reply(), IDLE]) >> Unchanged(),
-            Given(created("todo"), rows=[asked(), Todo(n=1, title="Row"), IDLE]) >> Unchanged(),
+            Given(ResourceCreated.of("comment"), rows=[asked(), reply(), IDLE]) >> Updated(Message(n=5), outcome="answered by the agent"),
+            Given(ResourceCreated.of("reaction"), rows=[asked("Here is the result"), reaction(), IDLE]) >> Updated(Message(n=5), outcome="acknowledged by the agent"),
+            Given(ResourceCreated.of("reaction"), rows=[asked(), reaction(), IDLE]) >> Unchanged(),
+            Given(ResourceCreated.of("comment", actor=USER), rows=[asked(), reply(USER), IDLE]) >> Unchanged(),
+            Given(ResourceCreated.of("comment"), rows=[wrote("Done, it is filed.", seen=(AGENT,)), reply(), IDLE]) >> Unchanged(),
+            Given(ResourceCreated.of("todo"), rows=[asked(), Todo(n=1, title="Row"), IDLE]) >> Unchanged(),
         ])
         journal.events.handler(NameRunTogether(), expects=[
             Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON)) >> Nudged("paragraphs"),

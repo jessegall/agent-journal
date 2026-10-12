@@ -19,3 +19,7 @@ class TodoUpdated(ResourceEvent):
 @dataclass(frozen=True)
 class TodoCompleted(ResourceEvent):
     on: ClassVar[str] = "todo.completed"
+
+    @classmethod
+    def of(cls, n: int, actor: str = "user") -> "TodoCompleted":
+        return cls(n=n, type="todo", action="completed", actor=actor)
