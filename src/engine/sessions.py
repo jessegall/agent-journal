@@ -80,8 +80,12 @@ class SessionRecord(Loaded):
 
 
 def live(session: SessionRecord) -> bool:
-    if session.retired:
-        return False
+    """Whether a session still stands as an environment's own: running, and not succeeded by another."""
+    return running(session) and not session.retired
+
+
+def running(session: SessionRecord) -> bool:
+    """Whether the session is at work, by its process or by having been heard from lately. It says nothing about whose turn the environment is."""
     if session.pid:
         return alive(session.pid)
     return time.time() - session.last_heard < RECENT
@@ -316,7 +320,8 @@ class Sessions:
         return next(name for name in (env, *(f"{env}-{i}" for i in range(2, 100))) if not self.holder(name))
 
     def holders(self, env: str) -> list[str]:
-        held = [(s.last_heard, session) for session, s in self.all().items() if s.environment == env and live(s)]
+        """The sessions running in an environment, the one heard from last first: an environment's agent is whichever of its sessions is working, and nothing else decides it. A session that was once succeeded and is running again is its agent again, since being someone's past says nothing about whether it is at work now."""
+        held = [(s.last_heard, session) for session, s in self.all().items() if s.environment == env and running(s)]
         return [session for _, session in sorted(held, reverse=True)]
 
     def version(self) -> tuple[int, int]:

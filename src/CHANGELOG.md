@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.5 — An environment's agent is whichever of its sessions is working
+
+- An agent that had once been succeeded could never hold its environment again, however plainly it was working: one word asked two questions at once, and because being someone's past made a session "not live", it also made it invisible as a worker. Running and being the environment's own are now two questions, and the environment's agent is simply whichever of its sessions is at work, heard from last. Stopping one agent and starting an earlier one again now does what it looks like.
+
 ## 2.272.4 — An environment is held by the agent that is working in it, not by a record of itself it retired
 
 - An agent could take an environment from itself and then report through the record it had just retired, so the environment was held by a name nobody ever touched: never heard from, its row still stopped, and the status bar said "started, but it never reported in" while the agent wrote in the same window. One process is one agent, so a session that goes on reporting through a record its own other name retired was never succeeded, and the retirement is cleared the moment it reports.

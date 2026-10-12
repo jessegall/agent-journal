@@ -104,8 +104,8 @@ def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
     left = sessions.read("s-before")
     assert (left.environment, bool(left.retired), live(left)) == (record.env, True, False), \
         "a retired session keeps its environment, so its transcript and its chat stay where the work happened, and stops holding it"
-    assert sessions.holder(record.env) == "" and sessions.last(record.env, "claude") == "", \
-        "and is never the holder again, nor a session to be taken up again"
+    assert sessions.holder(record.env) == "s-before" and sessions.last(record.env, "claude") == "", \
+        "a session still running is the environment's agent, whatever succeeded it: the environment's agent is whichever of its sessions is at work, and having been someone's past only keeps it from being taken up again as a conversation to resume"
     import os
     from agents.terminal import seat_session
     sessions.bind("conversation-here", record.env, pid=os.getpid(), provider="claude")
