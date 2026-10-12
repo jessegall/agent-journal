@@ -17,7 +17,7 @@ from expects.watching import WATCH, tell
 from framework.loaded import FEATURES
 from framework.lanes import agent_of, answering, due_now, lane_services
 from framework.parts import Context, Handler as OldStyle
-from framework.promises import Promise
+from framework.promises import THE_ENGINES_OWN, Promise
 from receiving import HANDLE, LISTEN, REGISTERED, Handler, Listener, Registration, Registrations
 from receiving.boot import walked
 from receiving.ordering import InOrder
@@ -318,8 +318,9 @@ class HalfSwept(Exception):
 
 def no_feature_is_half_swept() -> None:
     """Refuses a feature that registers for both engines. There is no skip to write: a swept feature registers no 2.x handler, so the only way to run twice is to register twice."""
-    for feature in sorted({one.feature for one in ADAPTED.each if one.feature} & {one.feature for one in REGISTERED.each if one.feature}):
-        raise HalfSwept.of(feature, [one.name for one in ADAPTED.each if one.feature == feature],
+    adapted = [one for one in ADAPTED.each if one.feature and one.name not in THE_ENGINES_OWN]
+    for feature in sorted({one.feature for one in adapted} & {one.feature for one in REGISTERED.each if one.feature}):
+        raise HalfSwept.of(feature, [one.name for one in adapted if one.feature == feature],
                            [one.name for one in REGISTERED.each if one.feature == feature])
 
 

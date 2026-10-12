@@ -47,6 +47,9 @@ class Speaker:
     def hold(self, line: str, behaviour: str = "", **values) -> None:
         self.feature.hold(self.record, line, behaviour, self.row, **values)
 
+    def release(self, behaviour: str = "") -> None:
+        self.feature.release(self.record, behaviour, self.row)
+
     def post(self, text: str, turn: str, **data) -> None:
         """The agent's own words reach the chat as its message, once: words already there from it are not posted again."""
         messages = Messages(self.record, actor=AGENT)

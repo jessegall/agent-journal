@@ -2,6 +2,7 @@
 
 import io
 import shlex
+import time
 from collections.abc import Callable
 from typing import get_args
 
@@ -17,13 +18,35 @@ from receiving.asking import answered
 from receiving.ticks import PerAsk, Services
 from resources.base import AGENT, SYSTEM
 from resources.runs import Exited
-from serving import Adapted as TheRecord, Chat, Commands, ReadRows, Rows, Settings
+from serving import SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, ReadRows, Rows, Settings
 
 
 class NobodyToSpeakTo(LookupError):
     @classmethod
     def of(cls, about: str) -> "NobodyToSpeakTo":
         return cls(f"a receiver asked for the chat about {about}, and no agent row answers for it")
+
+
+class TheClock:
+    """The time, from the one place a receiver reads it."""
+
+    def now(self) -> float:
+        return time.time()
+
+
+class ProjectFiles:
+    """The project's files, by path under the project folder."""
+
+    def __init__(self, record):
+        self.record = record
+
+    def read(self, path: str) -> str:
+        return (self.record.root.parent / path).read_text()
+
+    def write(self, path: str, text: str) -> None:
+        written = self.record.root.parent / path
+        written.parent.mkdir(parents=True, exist_ok=True)
+        written.write_text(text)
 
 
 class JournalCommands:
@@ -44,7 +67,10 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
     def controlling(feature: str, asked):
         return CONTROLLERS[get_args(asked)[0].type](record, actor=SYSTEM)
 
-    return {TheRecord: record,
+    return {**SERVED.answering,
+            TheRecord: record,
+            Clock: TheClock(),
+            Files: ProjectFiles(record),
             Chat: PerAsk(lambda feature, asked: Speaker(FEATURES[feature], record, agent())),
             Settings: PerAsk(lambda feature, asked: FEATURES[feature].values(record)),
             Rows: PerAsk(controlling),
