@@ -180,9 +180,9 @@ def stopped(root: Path, session: str, text: str) -> None:
 
 
 def next_turn(root: Path, session: str) -> None:
+    """A new turn begins: the commit marks go, since the same commit words may be said again. What the display hook delivered stays, by its words, because that is the only thing the catch-up can recognise a transcript turn by: the hook knows a message by the provider's id and the transcript knows it by its own. The catch-up consumes each one as it uses it, so the list neither grows nor covers a second turn."""
     with DisplayedLedger(root, session).changing() as held:
         held[SENT] = [mark for mark in held.get(SENT, []) if not COMMIT.fullmatch(mark)]
-        held[MATCHED] = []
 
 
 def unfinished(root: Path, session: str, row) -> None:

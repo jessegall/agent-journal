@@ -276,6 +276,17 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     cut("Delivered by the hook before the cut")
     engine.cut_off()
     assert chat().count("Delivered by the hook before the cut") == 1, "and words the display hook already delivered are not sent again"
+    across = "Said in one turn and caught up with in the next"
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "across-turns", "index": 0, "final": True, "delta": across}))
+    chat_mirror.turn_began(record.root, "claude-1", Agents(record).by_session("claude-1"))
+    with DisplayedLedger(record.root, "claude-1").changing() as kept:
+        assert fingerprint(across) in kept.get("_matched", []), \
+            "what the hook delivered is still known by its words after the next turn begins: the hook knows a message by the provider's id and the transcript by its own, so the words are the only thing the two share, and a catch-up that runs later has nothing else to recognise it by"
+    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": across}]}}) + "\n")
+    before_catching_up = log_file(record.root).read_text().count(FELL_BACK)
+    chat_mirror.unfinished(record.root, "claude-1", Agents(record).by_session("claude-1"))
+    assert (chat().count(across), log_file(record.root).read_text().count(FELL_BACK)) == (1, before_catching_up), \
+        "so that catch-up neither posts the words a second time nor blames the hook that did deliver them"
 
 
 def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
