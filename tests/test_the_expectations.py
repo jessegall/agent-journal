@@ -584,7 +584,7 @@ def test_a_service_nobody_serves_is_refused_by_name_rather_than_left_out():
 def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_path_and_one_that_did_not_do_it_is_told(tmp_path):
     import time
     import features
-    from engine.events.resources import ResourceCreated
+    from events.resources import ResourceCreated
     from expects.entries import scratch
     from expects.watching import BROKEN, WAIT, Watch
     from features.parts import Context

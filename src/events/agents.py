@@ -94,13 +94,15 @@ class AgentBeat(AgentEvent):
 
 
 @dataclass(frozen=True)
-class AgentMessageSending(AgentEvent):
+class BusMessageSending(AgentEvent):
+    """The bus event a handler may rewrite or stop; events.asking.AgentMessageSending is the engine's request of the same moment."""
+
     on: ClassVar[str] = f"agent.{SENDING}"
     marked_as: ClassVar[type[Event]] = Request
     data: dict = field(default_factory=dict)
 
     @classmethod
-    def read(cls, event) -> "AgentMessageSending":
+    def read(cls, event) -> "BusMessageSending":
         return cls(agent=event.n, data=event.data)
 
     @property
