@@ -90,15 +90,18 @@ class CloseRowsFromCommits(Handler):
             return
         cursor = f"{context.feature.name}-{digest(str(checkout.head_log), 12)}"
         seen = context.record.event_log.cursor_text(cursor)
-        context.record.event_log.set_cursor_text(cursor, commits[0][0])
         shas = [sha for sha, *_ in commits]
-        if seen not in shas:
-            return
-        for sha, action, subject, body in commits[:shas.index(seen)]:
+        # The place is lost when the commit last looked at is no longer in the reflog window, which a rebase, a cherry-pick or a
+        # stretch busier than the window all do. Then the whole window is read rather than none of it, since closing a row that is
+        # already closed does nothing, and only the cards are left out, which would say the same thing twice.
+        lost = seen not in shas
+        for sha, action, subject, body in commits if lost else commits[:shas.index(seen)]:
             if not action.startswith(MADE_HERE):
                 continue
-            context.journal.get(Agents).card(context.agent.row.n, label=f"Agent committed {sha[:8]} on `{checkout.branch}`", icon="branch", tone="commit", title=subject)
+            if not lost:
+                context.journal.get(Agents).card(context.agent.row.n, label=f"Agent committed {sha[:8]} on `{checkout.branch}`", icon="branch", tone="commit", title=subject)
             self.close(context, Commit(sha, subject, body))
+        context.record.event_log.set_cursor_text(cursor, commits[0][0])
 
     def landed(self, context: AgentContext, checkout: Checkout) -> None:
         cursor = f"{context.feature.name}-landed-{digest(checkout.landing, 12)}"
