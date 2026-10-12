@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 from engine import runtime
+from resources.base import DEFAULT_PROVIDER
 from resources.fields import Loaded
 from engine.state import State
 from engine.stored import read_json, write_json
@@ -75,7 +76,7 @@ class ClaudeDriver(Driver):
     ASKED_COMMAND = re.compile(r"(?:Bash command|Run shell command)\s+(.+?)\s+Do you want to proceed", re.S)
     READY = b"?forshortcuts"
     BUSY = b"esctointerrupt"
-    name = "claude"
+    name = DEFAULT_PROVIDER
 
     @classmethod
     def command(cls, args: list[str], cwd: Path | None = None) -> list[str]:

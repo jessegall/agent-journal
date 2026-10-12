@@ -9,7 +9,7 @@ from framework.base import Feature
 from providers.payload import Dispatch
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Message, Question, Todo
-from features.helpers.resource import Helper
+from resources.helpers import Helper
 from features.helpers.controller import Helpers
 from features.helpers.details import HelpersDetails
 from features.helpers.handlers import (HelperBriefed, HelperContinued, MarkTheHelperBriefed, MarkTheHelperContinued, NameStoppedOrQuietHelpers, RelayAnswerToDispatcher,

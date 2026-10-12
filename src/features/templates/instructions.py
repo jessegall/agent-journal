@@ -3,7 +3,7 @@ from events.works import WorkCreated
 from framework.parts import ActionInterceptor, AgentContext, Context, Handler
 from resources.base import Refused
 from features.plans.controller import Plans
-from features.templates.controller import Templates
+from controllers.types import Templates
 from controllers.types import Agents, Todos, Works
 
 INSTRUCTIONS = "instructions"

@@ -1,7 +1,7 @@
 import time
 
 from controllers.types import Messages, Questions
-from features.boards.resource import DRAFTING_PHASE, EXPLORING, LOST, PANEL_REPLY, STALLED, WAITING
+from resources.boards import DRAFTING_PHASE, EXPLORING, LOST, PANEL_REPLY, STALLED, WAITING
 from resources.base import COMMISSIONED, REQUESTED, REVISED, Ref, Refused, SYSTEM, titled
 from controllers.marks import action
 
@@ -184,7 +184,7 @@ class DraftingBoards:
         if board.phase != STALLED:
             raise Refused(f"board {board.n} is not stalled: nothing to retry")
         from features.sequences.controller import Sequences
-        from features.sequences.resource import RunKey
+        from resources.sequences import RunKey
         asked = board.asked
         sequences = Sequences(self.record, actor=SYSTEM)
         for row in sequences.open_rows():

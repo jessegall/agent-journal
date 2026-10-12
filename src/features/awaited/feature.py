@@ -4,7 +4,7 @@ from framework.base import Feature
 from framework.journal import Journal
 from events.agents import ClockTicked
 from expects import Given, Nudged, Unchanged, Updated
-from features.helpers.resource import Helper
+from resources.helpers import Helper
 from resources.types import AgentRow, Work
 
 

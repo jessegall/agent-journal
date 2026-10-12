@@ -1,7 +1,7 @@
 import features
 from controllers.types import Docs
 from tests.kit import Plans
-from features.templates.controller import Templates
+from controllers.types import Templates
 from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
 
@@ -87,7 +87,7 @@ def test_a_functional_design_is_a_doc_whose_approval_makes_the_plan():
 
 def test_a_template_asks_for_its_fields_and_fills_them_in():
     from controllers.types import Todos
-    from features.templates.controller import Templates
+    from controllers.types import Templates
     record = fresh()
     templates = Templates(record, actor=USER)
     critique = templates.create("Critique", brief="Send {{agents}} agents, looking for {{focus}}.")

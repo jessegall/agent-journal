@@ -17,7 +17,7 @@ from features.plans.controller import Plans
 from features.revisions.history import count, read
 from features.sharing.views import shared_view
 from features.tickets.controller import Tickets
-from features.tickets.resource import CONFIRMED
+from resources.tickets import CONFIRMED
 from resources.base import SYSTEM, Ref, Refused
 
 KEPT_FOR = 30.0

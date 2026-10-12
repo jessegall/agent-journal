@@ -2,8 +2,7 @@ import re
 from dataclasses import dataclass
 from typing import ClassVar
 
-from providers import DEFAULT_PROVIDER
-from resources.base import CHECKPOINT, ESCALATED, FINISHED, PLAN_WAITS, PROJECT, STUCK, USER, Resource, ResourceDetails
+from resources.base import CHECKPOINT, DEFAULT_PROVIDER, ESCALATED, FINISHED, PLAN_WAITS, PROJECT, STUCK, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Placed
 
 ROOT = "."

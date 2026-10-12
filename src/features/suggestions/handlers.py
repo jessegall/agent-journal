@@ -1,8 +1,7 @@
 
 from framework.parts import Context, Handler
-from features.suggestions.controller import Decision
-from features.suggestions.controller import Suggestions
-from controllers.types import Agents, Todos
+from controllers.suggestions import Decision
+from controllers.types import Agents, Suggestions, Todos
 from resources.base import SYSTEM, USER
 from events.suggestions import SuggestionCompleted, SuggestionReopened
 

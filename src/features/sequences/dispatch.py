@@ -2,7 +2,7 @@ from engine.sessions import Sessions
 from engine.wording import clipped
 from framework.parts import Context
 from features.sequences.details import DISPATCH
-from features.sequences.resource import RunKey
+from resources.sequences import RunKey
 from providers import dispatch_model
 from controllers.types import Agents, Messages
 from declaring.extension import Extension

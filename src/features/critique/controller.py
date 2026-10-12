@@ -1,5 +1,4 @@
 import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Agents, Reports
 from providers import dispatch_model
@@ -7,7 +6,7 @@ from engine import runtime
 from engine.proc import ran
 from features.critique.details import CritiqueDetails
 from features.critique.lenses import DEFAULT, LENSES
-from features.critique.resource import Critique
+from resources.critique import Critique
 from engine.ports import answers
 from resources.base import SYSTEM, Refused
 from controllers.marks import action
@@ -94,5 +93,4 @@ class Critiques(Controller):
         return super().complete(n, how or "the round is over", **data)
 
 
-resources_module.register(Critique)
 types_module.register(Critiques)

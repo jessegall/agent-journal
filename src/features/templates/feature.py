@@ -4,13 +4,13 @@ from events.works import WorkCreated
 from controllers.types import Todos
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
 from framework.base import Feature
-from features.templates.resource import Template
+from resources.templates import Template
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
 from framework.journal import Journal
 from features.templates.applying import ApplyTemplate, CheckTemplate
 from features.templates.instructions import PrefaceShow, TellAgainOnSessionStart, TellOnStart
-from features.templates.controller import Templates
+from controllers.types import Templates
 from features.templates.details import TemplatesDetails
 
 __all__ = ["Templates"]

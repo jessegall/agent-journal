@@ -4,12 +4,12 @@ from engine.developing import found
 from providers.claude_driver import ClaudeDriver
 from providers.codex_driver import CodexDriver
 from providers.base import LIBRARY
+from resources.base import DEFAULT_PROVIDER  # noqa: F401
 from providers.catalogue import PROVIDER_TYPES, workspace_folders  # noqa: F401
 
 PROVIDERS = {p.name: p for p in PROVIDER_TYPES}
 
 DRIVERS = {d.name: d for d in (ClaudeDriver, CodexDriver)}
-DEFAULT_PROVIDER = ClaudeDriver.name
 
 
 

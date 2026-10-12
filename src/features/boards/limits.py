@@ -1,5 +1,5 @@
 from features.boards.controller import Boards
-from features.boards.resource import PANEL_REPLY
+from resources.boards import PANEL_REPLY
 from resources.base import AGENT, SYSTEM, Refused
 from framework.parts import ActionInterceptor, Context
 from features.sequences.controller import Sequences

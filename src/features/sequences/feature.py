@@ -8,7 +8,7 @@ from dataclasses import asdict
 from expects import answering, Given, Remembered, Kept, Nudged, Refused, Unchanged, Updated
 from framework.base import Feature
 from events.triggers import TriggerFired
-from features.sequences.resource import Sequence
+from resources.sequences import Sequence
 from declaring.trigger import Mark
 from resources.triggers import Trigger
 from providers.payload import BashCall

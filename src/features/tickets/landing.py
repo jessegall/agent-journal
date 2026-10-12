@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine.worktree import Repository, contains, discarded, git, linked, present, roots, scratch_cleared, tip
-from features.tickets.resource import Bases
+from resources.tickets import Bases
 from controllers.marks import action
 
 

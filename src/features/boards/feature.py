@@ -4,7 +4,7 @@ from features.plans.controller import Plans
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
 from framework.base import Feature
 from events.boards import BoardChanged
-from features.boards.resource import PANEL_REPLY, Board
+from resources.boards import PANEL_REPLY, Board
 from features.tickets.controller import Tickets
 from features.boards.exploration import FILLER
 from resources.base import AGENT, USER

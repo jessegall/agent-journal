@@ -4,7 +4,6 @@ from pathlib import Path
 
 import controllers.types as types_module
 from framework.loaded import FEATURES
-import resources.types as resources_module
 from controllers.base import Controller
 from agents.terminal import detached, launch_output, prompted
 from controllers.requests import request
@@ -18,7 +17,7 @@ from features.helper_worktrees.controller import Worktrees
 from features.open_viewer.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, whole
 from providers import PROVIDERS
 from features.form_of_address.address import voice_of
-from features.helpers.resource import Helper, held_by_helper
+from resources.helpers import Helper, held_by_helper
 from events.helpers import Telling
 from features.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
@@ -440,5 +439,4 @@ class Helpers(Controller):
             cut.complete(int(row.worktree))
 
 
-resources_module.register(Helper)
 types_module.register(Helpers)

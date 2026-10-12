@@ -3,7 +3,7 @@ from events.agents import ClockTicked
 from expects import Answered, Given, Refused, Unchanged, Updated
 from framework.base import Feature
 from features.tickets.controller import Tickets
-from features.tickets.resource import Ticket
+from resources.tickets import Ticket
 from features.hosting.card import app_on_card
 from features.hosting.commands import HostApp, ShowApp, StopApp
 from features.hosting.details import HostingDetails

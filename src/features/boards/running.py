@@ -32,7 +32,7 @@ class RunningBoards:
     def _finish_orchestration_runs(self) -> None:
         from features.sequences.controller import Sequences
         from features.boards.orchestrating import ORCHESTRATING_MOMENTS, ORCHESTRATION
-        from features.sequences.resource import RunKey
+        from resources.sequences import RunKey
         sequences = Sequences(self.record, actor=SYSTEM)
         for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
             sequence = sequences.rows.by_title(shipped.title)
