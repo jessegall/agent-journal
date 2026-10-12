@@ -71,9 +71,7 @@ def pruned(root: Path) -> list[str]:
         return []
     current = (root / ARCHIVE).resolve()
     held = held_builds(root)
-    removed = []
-    for build in root.glob("journal-*.pyz"):
-        if build.resolve() != current and build.name not in held:
-            build.unlink(missing_ok=True)
-            removed.append(build.name)
-    return removed
+    stale = [build for build in root.glob("journal-*.pyz") if build.resolve() != current and build.name not in held]
+    for build in stale:
+        build.unlink(missing_ok=True)
+    return [build.name for build in stale]

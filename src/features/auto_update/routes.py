@@ -28,7 +28,8 @@ def changelog_page(text: str, skip: int) -> tuple[str, int, bool]:
     starts = [found.start() for found in ENTRY.finditer(text)]
     stop = min(skip + RELEASES_PER_PAGE, len(starts))
     ends = [*starts[1:], len(text)]
-    heading = "" if skip else text[:starts[0] if starts else len(text)]
+    first = starts[0] if starts else len(text)
+    heading = "" if skip else text[:first]
     return heading + (text[starts[skip]:ends[stop - 1]] if skip < stop else ""), stop, stop < len(starts)
 
 

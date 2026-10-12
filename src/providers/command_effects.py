@@ -134,7 +134,7 @@ KEPT_OUTPUT = 400_000
 CHANGED_FOLDER = re.compile(r"\bcd\s+([^\s;&|()]+)")
 
 
-def background_outcome(command: str, cwd: str, written: str, status: str) -> Outcome:
+def background_outcome(command: str, cwd: str | Path, written: str, status: str) -> Outcome:
     """What a test run that ended in the background found: its tally read from its output file, else the exit it ended with."""
     candidates = [written, *(found for found in OUTPUT_FILE.findall(command) if not found.startswith("&"))]
     folders = [*CHANGED_FOLDER.findall(command), cwd]
