@@ -263,7 +263,7 @@ function settle(spot) {
 function watchFooting() {
     footFrame = requestAnimationFrame(watchFooting);
     if (!footing || moving.value || !here.value || document.hidden) return;
-    const to = footingNow(footing);
+    const to = footingNow(footing, figureSize());
     if (!to) return uprooted();
     if (Math.hypot(to.x - place.value.x, to.y - place.value.y) <= 0.3) return;
     place.value = {...place.value, ...to};

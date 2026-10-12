@@ -102,9 +102,24 @@ const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bot
 // whether an element is drawn at all, its own and its ancestors' opacity and visibility counted, as a turn's tools are not until it is
 // hovered; where the page cannot say, it is taken as drawn
 const visible = (element) => element.checkVisibility?.({opacityProperty: true, visibilityProperty: true}) ?? true;
-// the figure is in the window when its picture's left, right and top are and the line it rests on is; a seated figure's legs may hang
-// past the foot of the window, as they hang past any edge it sits on
-const inWindow = (spot, box) => box.left >= 0 && box.top >= 0 && box.right <= window.innerWidth && spot.y <= window.innerHeight;
+
+// The box the figure lives in, which no part of it is ever drawn outside: the main chat's window while the page has one, else the page
+// area, else the window
+export function worldBox() {
+    const world = document.querySelector(HOME)?.closest(".thread") || document.querySelector(FLOOR);
+    return world ? world.getBoundingClientRect() : {left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight};
+}
+
+// how far past its world's edge a figure may be drawn, in pixels, for the rounding of a spot kept just inside it
+const EDGE = 0.5;
+
+// Whether a figure on a spot is inside its world: its picture within the world's left, right and top, and the line it rests on at or
+// above the world's foot, as a seated figure's legs hang past any edge it sits on; a hanging figure is inside it whole
+export function inWorld(spot, figure, world = worldBox()) {
+    const box = boxAt(spot, figure);
+    const foot = spot.posture === "hang" ? box.bottom : spot.y;
+    return box.left >= world.left - EDGE && box.right <= world.right + EDGE && box.top >= world.top - EDGE && foot <= world.bottom + EDGE;
+}
 
 // Where across a figure's picture it looks for words and controls under its body, as shares of the picture's width and height: the
 // middle of it, where the body is drawn, from the hat to the feet
@@ -142,19 +157,20 @@ export function hiddenAt(spot, figure) {
         .filter(visible)
         .map((control) => control.getBoundingClientRect())
         .filter((control) => control.width && control.height && overlaps(box, control));
-    const onControl = (x, y) => controls.some((control) => x >= control.left && x <= control.right && y >= control.top && y <= control.bottom);
+    const onControl = (x, y) =>
+        controls.some((control) => x >= control.left && x <= control.right && y >= control.top && y <= control.bottom);
     return bodyPoints(box).filter(([x, y]) => onControl(x, y) || onWord(x, y)).length;
 }
 
-// a spot that leaves part of the figure outside the window loses to any spot inside it
-const OUTSIDE = 1000;
-
-// The spot whose figure stays in the window and hides the fewest controls and words, none where it can; of spots alike, the one
-// nearest `near`, where the figure stands now, so it does not wander between equally good places
+// The spot of those inside the figure's world that hides the fewest controls and words, none where it can, or null when none is inside
+// it; of spots alike, the one nearest `near`, where the figure stands now, so it does not wander between equally good places
 export function freeSpot(spots, figure, near) {
-    const covered = (spot) => (inWindow(spot, boxAt(spot, figure)) ? 0 : OUTSIDE) + hiddenAt(spot, figure);
+    const world = worldBox();
     const away = (spot) => (near ? Math.hypot(spot.x - near.x, spot.y - near.y) : 0);
-    const ranked = spots.map((spot) => ({spot, covered: covered(spot), away: away(spot)}));
+    const ranked = spots
+        .filter((spot) => inWorld(spot, figure, world))
+        .map((spot) => ({spot, covered: hiddenAt(spot, figure), away: away(spot)}));
+    if (!ranked.length) return null;
     return ranked.reduce((best, each) =>
         each.covered < best.covered || (each.covered === best.covered && each.away < best.away) ? each : best
     ).spot;
@@ -163,17 +179,11 @@ export function freeSpot(spots, figure, near) {
 // The spots on an element's top edge at each share of its width
 const alongTop = (box, shares) => shares.map((share) => ({x: box.left + box.width * share, y: box.top, posture: "stand"}));
 
-// Where a figure goes to point at a tab: on top of it, just under it with its head at the tab's foot, or half a figure lower still,
-// at the tab or up to a figure and a half to either side, so some spot near it is clear of whatever else is open beside the tabs
-const SIDEWAYS = [0, -0.5, 0.5, -1, 1, -1.5, 1.5];
+// Where a figure goes to point at a tab: standing on top of it, at its middle or toward either end, so its feet are on the tab and some
+// spot on it is clear of whatever else is open beside the tabs
+const ON_TAB = [0.5, 0.25, 0.75];
 
-function tabSpots(tab, figure) {
-    const box = tab.getBoundingClientRect();
-    const middle = box.left + box.width / 2;
-    const under = box.bottom + (1 - figure.below) * figure.size;
-    const heights = [box.top, under, under + figure.size / 2];
-    return SIDEWAYS.flatMap((share) => heights.map((y) => ({x: middle + share * figure.size, y, posture: "stand"})));
-}
+const tabSpots = (tab) => alongTop(tab.getBoundingClientRect(), ON_TAB);
 
 // Where a figure sits: on a corner of a box it perches on, turned along the edge it dangles over and a third of the way back toward the
 // viewer, so its eyes and what it holds on its lap are seen, with its hips a little inboard of the corner so the weight rests on the
@@ -194,22 +204,27 @@ export function seatAt(box, side, {size}, reach = SEAT_INBOARD) {
 // the pixels of a seated figure above the edge it sits on
 export const seatRise = ({size, below}) => (1 - below - SEAT_DROP) * size;
 
-// A spot kept inside the window: the figure's picture within its left, right and top, and the line it rests on at or above the foot of the
-// window, so whatever it stands or sits on there is a line it can rest on in every posture
-export function insideWindow(spot, {size, below}) {
+// A spot at home standing or sitting, moved inside the figure's world: its picture within the world's left, right and top, and the line
+// it rests on at or above the world's foot
+function insideWorld(spot, {size, below}) {
+    const world = worldBox();
     const drop = POSTURES[spot.posture].drop * size;
     return {
         ...spot,
-        x: Math.min(Math.max(spot.x, size / 2), window.innerWidth - size / 2),
-        y: Math.min(Math.max(spot.y, (1 - below) * size - drop), window.innerHeight),
+        x: Math.min(Math.max(spot.x, world.left + size / 2), world.right - size / 2),
+        y: Math.min(Math.max(spot.y, world.top + (1 - below) * size - drop), world.bottom),
     };
 }
 
-// A seat on a corner of the edge the figure stands on at home; with nothing there it sits on the foot of the window, its legs past it
+// A seat on a corner of the edge the figure stands on at home; with nothing there it sits on the foot of its world, its legs past it
 export function seatOf(figure, near) {
     const {element, edge} = groundEdge();
-    const spot = freeSpot(Object.keys(SEAT_SIDES).map((side) => seatAt(edge, side, figure)), figure, near);
-    return {...insideWindow(spot, figure), view: null, on: element};
+    const spot = freeSpot(
+        Object.keys(SEAT_SIDES).map((side) => insideWorld(seatAt(edge, side, figure), figure)),
+        figure,
+        near
+    );
+    return {...spot, view: null, on: element};
 }
 
 // The edge a figure stands on at home: the bars docked over the main chat's compose box while there are any, else the compose box, else
@@ -223,21 +238,23 @@ export function groundEdge() {
     return {element, edge: {left: box.left, width: box.width, top: top ? box.top : box.bottom}};
 }
 
-// What a figure resting on a spot keeps of it: the element it rests on, the spot's place on that element, and whether that element is the
-// ground at home; null when it rests on nothing on the page
+// What a figure resting on a spot keeps of it: the element it rests on, the spot's place on that element, the posture it rests in there,
+// and whether that element is the ground at home; null when it rests on nothing on the page
 export function footingOn(spot) {
     const element = spot.on;
     if (!element?.isConnected) return null;
     const box = element.getBoundingClientRect();
-    return {element, dx: spot.x - box.left, dy: spot.y - box.top, home: element === groundEdge().element};
+    return {element, dx: spot.x - box.left, dy: spot.y - box.top, posture: spot.posture, home: element === groundEdge().element};
 }
 
 // Where a footing's spot is now, carried along as its element moves, or null when the ground went from under the figure: the element left
-// the page or has no size, or it was the ground at home and the ground at home is another element now, as a bar docks or is closed
-export function footingNow({element, dx, dy, home}) {
+// the page or has no size, it was the ground at home and the ground at home is another element now, as a bar docks or is closed, or it
+// carried the figure out of its world, as a bubble scrolls out of the chat
+export function footingNow({element, dx, dy, posture, home}, figure) {
     const box = element.isConnected ? element.getBoundingClientRect() : null;
     if (!box?.width || !box.height || (home && groundEdge().element !== element)) return null;
-    return {x: box.left + dx, y: box.top + dy};
+    const spot = {x: box.left + dx, y: box.top + dy};
+    return inWorld({...spot, posture}, figure) ? spot : null;
 }
 
 // The way a figure whose middle is at `x` turns to look at a chat mark, by its key: to its right or its left, or toward the viewer when
@@ -249,11 +266,23 @@ export function facingToward(key, x) {
     return box.left + box.width / 2 > x ? 90 : 270;
 }
 
-// Home is the main chat's compose box; a page without one gives the figure the floor of the page itself. Each spot names the element
-// it rests on as `on`, so the figure can tell when that element has gone or moved.
+// Where the figure stands at a view's tab, or null when the tab is gone or no spot on it is inside the figure's world; with no view, where
+// it stands at home, on the main chat's compose box, or on the floor of a page without one. Each spot names the element it rests on as
+// `on`, so the figure can tell when that element has gone or moved.
 export function spotOf(view, figure, near) {
-    const tab = view && document.querySelector(`[data-tab="${view}"]`);
-    if (tab) return {...freeSpot(tabSpots(tab, figure), figure, near), view, on: tab};
+    if (view) {
+        const tab = document.querySelector(`[data-tab="${CSS.escape(view)}"]`);
+        const spot = tab && freeSpot(tabSpots(tab), figure, near);
+        return spot ? {...spot, view, on: tab} : null;
+    }
     const {element, edge} = groundEdge();
-    return {...insideWindow(freeSpot(alongTop(edge, HOME_ALONG), figure, near), figure), view: null, on: element};
+    return {
+        ...freeSpot(
+            alongTop(edge, HOME_ALONG).map((spot) => insideWorld(spot, figure)),
+            figure,
+            near
+        ),
+        view: null,
+        on: element,
+    };
 }

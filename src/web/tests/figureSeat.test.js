@@ -10,6 +10,7 @@ const {
     footingOn,
     groundEdge,
     hiddenAt,
+    inWorld,
     postureOf,
     seatOf,
     seatRise,
@@ -20,14 +21,23 @@ const {write} = await import("./figurePage.js");
 
 const FIGURE = {size: 112, below: 0.05};
 
-// a page whose compose box is `box`, with the bars docked over it at `docked` while there are any
-const page = (box, docked = null) => {
+// the main chat's window, the figure's world on a page with a compose box
+const CHAT = {left: 200, top: 100, right: 900, bottom: 800};
+
+// a page whose compose box is `box` in the chat window `chat`, with the bars docked over it at `docked` while there are any, and tabs by
+// their view
+const page = (box, docked = null, {chat = CHAT, tabs = {}} = {}) => {
     globalThis.window = {innerWidth: 1280, innerHeight: 800};
+    globalThis.CSS = {escape: (text) => text};
     const bars = docked && {getBoundingClientRect: () => docked};
-    const thread = {querySelector: (selector) => (selector === "[data-figure-docked-bars]" ? bars : null)};
+    const thread = {
+        getBoundingClientRect: () => chat,
+        querySelector: (selector) => (selector === "[data-figure-docked-bars]" ? bars : null),
+    };
     const home = {isConnected: true, getBoundingClientRect: () => box, closest: (selector) => (selector === ".thread" ? thread : null)};
+    const tab = (view) => tabs[view] && {getBoundingClientRect: () => ({...tabs[view], width: tabs[view].right - tabs[view].left})};
     globalThis.document = {
-        querySelector: (selector) => (selector === "[data-figure-home]" ? home : null),
+        querySelector: (selector) => (selector === "[data-figure-home]" ? home : tab(selector.match(/data-tab="(.*)"/)?.[1])),
         querySelectorAll: () => [],
     };
 };
@@ -36,6 +46,7 @@ afterEach(() => {
     delete globalThis.window;
     delete globalThis.document;
     delete globalThis.Node;
+    delete globalThis.CSS;
 });
 
 test("a figure sitting on the right corner of a box turns right, and on the left corner turns left, part way back to the viewer", () => {
@@ -77,14 +88,20 @@ test("whatever it plays, the figure's feet never go below the edge it rests on: 
 
 test("on the floor of a page the figure sits on the same line it stands on, so sitting down to work never lifts it and getting up never drops it", () => {
     globalThis.window = {innerWidth: 1280, innerHeight: 720};
-    const floor = {getBoundingClientRect: () => ({left: 240, top: 0, width: 1040, bottom: 720})};
+    const floor = {getBoundingClientRect: () => ({left: 240, top: 0, width: 1040, right: 1280, bottom: 720})};
     for (const found of [null, floor]) {
-        globalThis.document = {querySelector: (selector) => (selector === "[data-figure-floor]" ? found : null), querySelectorAll: () => []};
-        for (const near of [{x: 0, y: 700}, {x: 1280, y: 700}]) {
+        globalThis.document = {
+            querySelector: (selector) => (selector === "[data-figure-floor]" ? found : null),
+            querySelectorAll: () => [],
+        };
+        for (const near of [
+            {x: 0, y: 700},
+            {x: 1280, y: 700},
+        ]) {
             const seat = seatOf(FIGURE, near);
             expect(seat).toMatchObject({y: 720, posture: "sit"});
             expect(spotOf(null, FIGURE, near).y).toBe(seat.y);
-            expect(seat.x).toBeGreaterThanOrEqual(FIGURE.size / 2);
+            expect(seat.x).toBeGreaterThanOrEqual((found ? 240 : 0) + FIGURE.size / 2);
             expect(seat.x).toBeLessThanOrEqual(1280 - FIGURE.size / 2);
             expect(boxAt(seat, FIGURE).top).toBeGreaterThanOrEqual(0);
         }
@@ -120,7 +137,13 @@ test("only what the body is drawn over above its line counts, and only words and
     write([{left: seat.x - 30, right: seat.x + 30, top: 610, bottom: 625}], [{box: tools, shown: false}]);
     expect(hiddenAt(seat, FIGURE)).toBe(0);
     // shown, the tools are under two points of the body; a control beside the body, inside its picture's square, is not under it
-    write([], [{box: tools, shown: true}, {box: {left: seat.x + 40, right: seat.x + 50, top: 540, bottom: 590}, shown: true}]);
+    write(
+        [],
+        [
+            {box: tools, shown: true},
+            {box: {left: seat.x + 40, right: seat.x + 50, top: 540, bottom: 590}, shown: true},
+        ]
+    );
     expect(hiddenAt(seat, FIGURE)).toBe(2);
     write([{left: seat.x - 30, right: seat.x + 30, top: 560, bottom: 580}]);
     expect(hiddenAt(seat, FIGURE)).toBe(3);
@@ -129,12 +152,21 @@ test("only what the body is drawn over above its line counts, and only words and
 test("a trip up walks under the place and then jumps, one down falls and then walks, and ground that moved under it goes straight first", () => {
     expect(tripBetween({x: 100, y: 500}, {x: 102, y: 497}, 112)).toBe(null);
     const up = tripBetween({x: 100, y: 500}, {x: 300, y: 300}, 112, {random: () => 0.99});
-    expect(up.legs.map((each) => [each.x, each.y, each.clip ?? "walk"])).toEqual([[300, 500, "walk"], [300, 300, "jump"]]);
+    expect(up.legs.map((each) => [each.x, each.y, each.clip ?? "walk"])).toEqual([
+        [300, 500, "walk"],
+        [300, 300, "jump"],
+    ]);
     expect([up.way, up.lands]).toEqual([1, true]);
     const down = tripBetween({x: 300, y: 300}, {x: 100, y: 500}, 112);
-    expect(down.legs.map((each) => [each.x, each.y, each.clip ?? "walk"])).toEqual([[300, 500, "fall"], [100, 500, "walk"]]);
+    expect(down.legs.map((each) => [each.x, each.y, each.clip ?? "walk"])).toEqual([
+        [300, 500, "fall"],
+        [100, 500, "walk"],
+    ]);
     const pushed = tripBetween({x: 100, y: 500}, {x: 140, y: 460}, 112, {straight: true, random: () => 0.99});
-    expect(pushed.legs.map((each) => [each.x, each.y, each.clip ?? "walk"])).toEqual([[100, 460, "jump"], [140, 460, "walk"]]);
+    expect(pushed.legs.map((each) => [each.x, each.y, each.clip ?? "walk"])).toEqual([
+        [100, 460, "jump"],
+        [140, 460, "walk"],
+    ]);
     // a high jump now and then turns over, and a figure that goes on to hang does not land
     expect(tripBetween({x: 100, y: 500}, {x: 100, y: 300}, 112, {random: () => 0, hangs: true})).toMatchObject({lands: false});
     expect(tripBetween({x: 100, y: 500}, {x: 100, y: 300}, 112, {random: () => 0}).legs[1].clip).toBe("backflip");
@@ -146,16 +178,16 @@ test("a figure keeps its place on what it rests on as that moves, and loses its 
     page(box);
     const home = groundEdge().element;
     const seat = seatOf(FIGURE, {x: 700, y: 600});
-    expect(footingOn(seat)).toEqual({element: home, dx: seat.x - 300, dy: 0, home: true});
+    expect(footingOn(seat)).toEqual({element: home, dx: seat.x - 300, dy: 0, posture: "sit", home: true});
     expect(footingOn({...seat, on: null})).toBe(null);
     const moved = {isConnected: true, getBoundingClientRect: () => ({...box, left: 320, top: 580})};
-    const kept = {element: moved, dx: 10, dy: 0, home: false};
-    expect(footingNow(kept)).toEqual({x: 330, y: 580});
-    expect(footingNow({...kept, element: {isConnected: false}})).toBe(null);
-    expect(footingNow({...kept, element: {isConnected: true, getBoundingClientRect: () => ({...box, height: 0})}})).toBe(null);
+    const kept = {element: moved, dx: 10, dy: 0, posture: "stand", home: false};
+    expect(footingNow(kept, FIGURE)).toEqual({x: 330, y: 580});
+    expect(footingNow({...kept, element: {isConnected: false}}, FIGURE)).toBe(null);
+    expect(footingNow({...kept, element: {isConnected: true, getBoundingClientRect: () => ({...box, height: 0})}}, FIGURE)).toBe(null);
     // on the ground at home it loses its footing when a bar docks over the compose box
     page(box, {left: 300, top: 556, width: 400, height: 44});
-    expect(footingNow({element: home, dx: 10, dy: 0, home: true})).toBe(null);
+    expect(footingNow({element: home, dx: 10, dy: 0, posture: "stand", home: true}, FIGURE)).toBe(null);
 });
 
 test("a figure turns right or left toward the chat mark it reacts to, and toward the viewer when the mark is not on the page", () => {
@@ -168,4 +200,45 @@ test("a figure turns right or left toward the chat mark it reacts to, and toward
     expect(facingToward("gone", 400)).toBe(0);
     expect(facingToward("", 400)).toBe(0);
     delete globalThis.CSS;
+});
+
+test("no part of the figure is ever outside the chat window: not past its sides, its top or, hanging, its foot", () => {
+    page({left: 150, top: 600, width: 800, height: 120});
+    const standing = {x: 500, y: 400, posture: "stand"};
+    expect(inWorld(standing, FIGURE)).toBe(true);
+    expect(inWorld({...standing, x: CHAT.right - 40}, FIGURE)).toBe(false);
+    expect(inWorld({...standing, y: CHAT.top + 50}, FIGURE)).toBe(false);
+    // seated, its legs hang past the line it sits on; hanging, the whole of it is inside
+    expect(inWorld({x: 500, y: CHAT.bottom, posture: "sit"}, FIGURE)).toBe(true);
+    expect(inWorld({x: 500, y: CHAT.bottom - 20, posture: "hang"}, FIGURE)).toBe(false);
+    // a compose box wider than the chat window gives seats and spots at home that are pulled inside it
+    for (const spot of [seatOf(FIGURE, {x: 950, y: 600}), seatOf(FIGURE, {x: 150, y: 600}), spotOf(null, FIGURE, {x: 900, y: 600})]) {
+        expect(spot.y).toBe(600);
+        expect(inWorld(spot, FIGURE)).toBe(true);
+    }
+});
+
+test("a figure goes to a tab only to stand on it inside its world, never in the air under or beside it nor on a tab in another pane", () => {
+    const box = {left: 300, top: 600, width: 400, height: 120};
+    page(box, null, {
+        tabs: {question: {left: 950, right: 980, top: 60, bottom: 90}, inside: {left: 480, right: 520, top: 300, bottom: 330}},
+    });
+    expect(spotOf("question", FIGURE)).toBe(null);
+    expect(spotOf("gone", FIGURE)).toBe(null);
+    const on = spotOf("inside", FIGURE);
+    expect(on).toMatchObject({y: 300, posture: "stand", view: "inside"});
+    expect(on.x).toBeGreaterThanOrEqual(480);
+    expect(on.x).toBeLessThanOrEqual(520);
+});
+
+test("a figure carried by what it rests on loses its footing once that would take any part of it out of the chat window", () => {
+    const box = {left: 300, top: 600, width: 400, height: 120};
+    page(box);
+    let top = 400;
+    const bubble = {isConnected: true, getBoundingClientRect: () => ({left: 300, right: 500, width: 200, top, height: 60})};
+    const footing = footingOn({x: 480, y: 400, posture: "sit", on: bubble});
+    expect(footingNow(footing, FIGURE)).toEqual({x: 480, y: 400});
+    // the thread scrolls the bubble up until the seated figure's head would leave the top of the chat window
+    top = CHAT.top + 40;
+    expect(footingNow(footing, FIGURE)).toBe(null);
 });

@@ -1,5 +1,5 @@
 import {RESTS} from "../domain/figureState.js";
-import {HOME, hiddenAt, openTabs, pointedView, seatAt, seatOf, seatRise, spotOf} from "./places.js";
+import {HOME, hiddenAt, inWorld, openTabs, pointedView, seatAt, seatOf, seatRise, spotOf} from "./places.js";
 import {letsGoFor} from "./reactions.js";
 
 // Where a figure perches on a message bubble now and then, instead of the compose box's edge: on top of it with its legs over the side,
@@ -68,14 +68,14 @@ function perchAt(bubble, kind, box, hands) {
     return grip ? {bubble, kind, side, grip, face: 0} : {bubble, kind, side, grip: hands[0], face: TURNED_TO_THE_BUBBLE};
 }
 
-// Where the perch's figure stands now, with the way it faces, or null when its bubble is gone or out of the thread's view, or when the
-// figure there would hide words or controls, such as those of the message above
+// Where the perch's figure stands now, with the way it faces, or null when its bubble is gone or out of the thread's view, when any part
+// of the figure there would be outside its world, or when it would hide words or controls, such as those of the message above
 export function perchSpot(perch, scroller, figure) {
     if (!perch.bubble.isConnected) return null;
     const rect = perch.bubble.getBoundingClientRect();
     if (!inView(rect, scroller.getBoundingClientRect(), figure)) return null;
     const spot = spotOn(perch, rect, figure);
-    return hiddenAt(spot, figure) ? null : spot;
+    return inWorld(spot, figure) && !hiddenAt(spot, figure) ? spot : null;
 }
 
 function spotOn(perch, rect, figure) {
@@ -89,7 +89,8 @@ function spotOn(perch, rect, figure) {
 export const threadOf = () => document.querySelector(HOME)?.closest(".thread")?.querySelector(".thread-scroll") ?? null;
 
 // The next stay, drawn at `now` seconds by the roams' odds: where, until when, and what it holds for the stay, the perch on a bubble, the
-// tab it stands on or the point along the home edge it strolls to. A hang from a bubble is a short one.
+// tab it stands on, of those with a spot inside its world, or the point along the home edge it strolls to. A hang from a bubble is a short
+// one.
 export function nextStay(now, figure, hands, random) {
     const {where, stay: seconds} = roamNext(random);
     const until = now + seconds;
@@ -99,7 +100,7 @@ export function nextStay(now, figure, hands, random) {
         return {where, until: perch?.kind === HANGS ? now + between(HANG_STAY, random) : until, perch};
     }
     if (where === "tab") {
-        const tabs = Object.keys(openTabs());
+        const tabs = Object.keys(openTabs()).filter((view) => spotOf(view, figure));
         return {where, until, view: tabs[Math.floor(random() * tabs.length)]};
     }
     if (where === "edge") return {where, until, along: {x: random() * window.innerWidth, y: 0}};
@@ -115,20 +116,21 @@ export function stayingAt(stay, figure, near) {
         return spot ? {...spot, view: null} : null;
     }
     if (stay.where === "tab") {
-        const tab = stay.view && document.querySelector(`[data-tab="${CSS.escape(stay.view)}"]`);
-        return tab ? {...spotOf(stay.view, figure, near), view: null} : null;
+        const spot = stay.view && spotOf(stay.view, figure, near);
+        return spot ? {...spot, view: null} : null;
     }
     if (stay.where === "edge") return spotOf(null, figure, stay.along);
     return seatOf(figure, near);
 }
 
 // Where the figure goes now and the stay it keeps: seated at home while its agent cannot act; to the tab of what waits on the user when
-// something does; otherwise where its stay is, drawing the next stay when this one is over or its place is gone. `near` is where it is,
-// `counts` the views' badge counts and `state` what the agent does.
+// something does and that tab has a spot inside the figure's world; otherwise where its stay is, drawing the next stay when this one is
+// over or its place is gone. `near` is where it is, `counts` the views' badge counts and `state` what the agent does.
 export function targetFor({state, counts, stay, now, near, figure, hands, random = Math.random}) {
     if (RESTS.has(state)) return {spot: seatOf(figure, near), stay};
     const pressing = pointedView(counts, openTabs());
-    if (pressing) return {spot: spotOf(pressing, figure, near), stay};
+    const pointing = pressing && spotOf(pressing, figure, near);
+    if (pointing) return {spot: pointing, stay};
     const kept = now < stay.until && stayingAt(stay, figure, near);
     if (kept) return {spot: kept, stay};
     const next = nextStay(now, figure, hands, random);

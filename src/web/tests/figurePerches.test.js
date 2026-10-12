@@ -5,19 +5,34 @@ const {HANGS, HANG_SHARE, ROAMS, SITS, perchOn, perchSpot, roamNext, stayAtHome,
     await import("../src/figure/perches.js");
 const {write} = await import("./figurePage.js");
 
-// a page with nothing on it a perch could hide, until a test writes words onto it
+// a page with nothing on it a perch could hide, until a test writes words onto it, and no chat, so the figure's world is the window
 beforeEach(() => {
     globalThis.window = {innerWidth: 1280, innerHeight: 800};
     globalThis.document = {querySelector: () => null, querySelectorAll: () => []};
+    globalThis.CSS = {escape: (text) => text};
 });
 
 const FIGURE = {size: 112, below: 0.05};
 const HANDS = ["l", "r"];
-const THREAD = {left: 250, right: 700, top: 100, bottom: 660, getBoundingClientRect() { return this; }};
+const THREAD = {
+    left: 250,
+    right: 700,
+    top: 100,
+    bottom: 660,
+    getBoundingClientRect() {
+        return this;
+    },
+};
 
-const bubble = (rect, connected = true) => ({isConnected: connected, getBoundingClientRect: () => ({width: rect.right - rect.left, ...rect})});
+const bubble = (rect, connected = true) => ({
+    isConnected: connected,
+    getBoundingClientRect: () => ({width: rect.right - rect.left, ...rect}),
+});
 const at = (top, left = 260, right = 500) => bubble({left, right, top, bottom: top + 60});
-const fixed = (...values) => () => values.shift() ?? 0;
+const fixed =
+    (...values) =>
+    () =>
+        values.shift() ?? 0;
 
 test("a figure perches on the newest bubble in view first, and never on one too high or too low for it to be seen from", () => {
     const high = at(110);
@@ -103,4 +118,34 @@ test("the figure goes home to sit while its agent cannot act, keeps a stay until
     expect(targetFor({...at, stay: edge})).toMatchObject({stay: edge, spot: {posture: "stand"}});
     const next = targetFor({...at, stay: {...edge, until: 50}, random: () => 0});
     expect(next.stay).toMatchObject({where: ROAMS[0].where, until: 100 + ROAMS[0].stay[0]});
+});
+
+test("a perch that would put any part of the figure past the edge of its world is refused", () => {
+    const edge = at(300, 1000, 1270);
+    expect(perchSpot({bubble: edge, kind: SITS, side: "right", grip: ""}, THREAD, FIGURE)).toBe(null);
+    expect(perchSpot({bubble: edge, kind: HANGS, side: "right", grip: "r", face: 0}, THREAD, FIGURE)).toBe(null);
+    expect(perchSpot({bubble: edge, kind: SITS, side: "left", grip: ""}, THREAD, FIGURE)).toMatchObject({posture: "sit"});
+});
+
+test("with something waiting on the user the figure keeps its stay rather than go to a tab outside its world, and points from one inside", () => {
+    const tab = {
+        dataset: {tab: "question"},
+        getAttribute: () => "false",
+        getBoundingClientRect: () => ({left: 1250, right: 1280, width: 30, top: -40, bottom: -10}),
+    };
+    document.querySelector = (selector) => (selector === '[data-tab="question"]' ? tab : null);
+    document.querySelectorAll = (selector) => (selector === "[data-tab]" ? [tab] : []);
+    const edge = {where: "edge", until: 500, along: {x: 0, y: 0}};
+    const at = {
+        state: "idle",
+        counts: {question: 2, waiting: 0, suggestion: 0},
+        now: 100,
+        near: {x: 640, y: 800},
+        figure: FIGURE,
+        hands: HANDS,
+        stay: edge,
+    };
+    expect(targetFor(at)).toMatchObject({stay: edge, spot: {posture: "stand", view: null, y: 800}});
+    tab.getBoundingClientRect = () => ({left: 600, right: 640, width: 40, top: 400, bottom: 430});
+    expect(targetFor(at)).toMatchObject({stay: edge, spot: {y: 400, view: "question", on: tab}});
 });
