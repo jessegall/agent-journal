@@ -34,6 +34,21 @@ async function arrived(page, marker, within = 20000) {
     }
 }
 
+// the messages holding the marker once they have settled: at least one has reached the server and none has arrived for a quiet spell,
+// so the count is what the sending made, not what had landed at the moment of looking
+async function settledRows(page, marker, quiet = 3000, within = 30000) {
+    await arrived(page, marker, within);
+    const began = Date.now();
+    let rows = await storedRows(page, marker);
+    let since = Date.now();
+    while (Date.now() - since < quiet && Date.now() - began < within) {
+        await page.waitForTimeout(500);
+        const now = await storedRows(page, marker);
+        if (now.length !== rows.length) [rows, since] = [now, Date.now()];
+    }
+    return rows;
+}
+
 const answeredRows = (page, kind) =>
     page.evaluate(async (type) => (await (await fetch(`/api/main/${type}?last=0&completed=true`)).json()).rows, kind);
 
@@ -162,8 +177,7 @@ await runScenarios(process.argv[2], {
         await home(page, url);
         await compose(page).fill(marker);
         await sendButton(page).dblclick();
-        await settle(page);
-        const rows = await storedRows(page, marker);
+        const rows = await settledRows(page, marker);
         if (rows.length !== 1) throw new Error(`two presses made ${rows.length} messages: ${JSON.stringify(rows)}`);
     },
     async "an option picked on a question is saved as its answer"(page, url) {
