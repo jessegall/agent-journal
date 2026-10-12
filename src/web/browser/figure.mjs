@@ -170,4 +170,22 @@ await runScenarios(process.argv[2], {
         if (fetched.length) throw new Error(`the reload fetched the figure's file from the network again: ${fetched.join(", ")}`);
         await shot(page, "figure-on-the-compose-box");
     },
+
+    async "when the profiles cannot be read at first, as while the server restarts, the figure arrives once they can, with no reload"(
+        page,
+        url
+    ) {
+        await working(page);
+        let refusing = true;
+        let refused = 0;
+        await page.route(/\/api\/main\/profile\?/, (route) =>
+            refusing ? (refused++, route.abort("connectionrefused")) : route.continue()
+        );
+        await page.goto(`${url}#/main`);
+        await page.waitForTimeout(5000);
+        if (!refused) throw new Error("the profiles were never asked for while they could not be read");
+        if (await page.locator(FIGURE).isVisible()) throw new Error("the figure showed before its voice's profile could be read");
+        refusing = false;
+        await page.locator(FIGURE).waitFor({state: "visible", timeout: 40000});
+    },
 });
