@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 
-from engine.command_runs import command_runs, waiting_run
+from engine.command_runs import command_runs, open_shell_runs, waiting_run
 from events.agents import AgentBeat, ClockTicked
 from engine.gates import LONG_COMMAND, HookCall, cancelled
 from features.long_commands.details import KEPT, MOVED, background_after, background_switch
@@ -28,7 +28,7 @@ def matching_task(tasks, command: str, pressed: float) -> str:
 
 def running_call(context: AgentContext, row):
     """The shell call the agent is actually waiting on: of the calls that have not ended, those its transcript shows answered did end, though their end was lost on the way (a hook that got no answer from a busy server is dropped), so they are closed and never moved."""
-    opened = [one for one in command_runs(row) if one.tool == "Bash" and not one.done]
+    opened = open_shell_runs(row)
     reader = transcript_reader(row)
     if reader is None:
         return opened[0] if opened else None

@@ -63,6 +63,10 @@ SERVER = "journal"
 BROWSER = "playwright"
 
 
+def sends_to_a_peer(use) -> bool:
+    return use.name == SENDS and bool(use.to)
+
+
 @dataclass(frozen=True)
 class Finish:
     """How a background run ended: the word its notification used, when it ended, and the exit code it reported, which is the part that says whether the run passed."""
@@ -580,7 +584,7 @@ class Claude(Provider):
             named = FROM_NAME.search(cross[1])
             address = sender[1] if sender else ""
             kind, peer, text = PEER, PeerNote(PEER, address, named[1] if named else address), cross[2].strip()
-        sent = next((use for use in uses if use.name == SENDS and use.to), None)
+        sent = next((use for use in uses if sends_to_a_peer(use)), None)
         if sent:
             kind, peer, text = PEER, PeerNote(SENT, sent.to), sent.message if sent.message else text
         asked = [use.id for use in uses if use.name in self.question_tools]
@@ -642,7 +646,7 @@ class Claude(Provider):
             crew.window.clear()
         for use in self.tool_uses(row):
             crew.window.append(use)
-            if use.name == SENDS and use.to:
+            if sends_to_a_peer(use):
                 crew.sent[use.to] = use.message
             if use.name in (*DISPATCHES, "Monitor", "TaskStop") or use.name == "Bash" and use.background:
                 crew.uses.append(use)
