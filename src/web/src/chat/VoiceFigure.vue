@@ -5,7 +5,7 @@ import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
 import {BEAT_CLIPS, beatsAfter, clipOf, eggFor, figureStateOf} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
-import {openTabs, pointedView, spotOf} from "../figure/places.js";
+import {boxAt, openTabs, pointedView, spotOf} from "../figure/places.js";
 import {rows} from "../sync/rows.js";
 
 // The figure is this many pixels square, as the chat's flat figure is; it walks this many of them a second and hops in this many milliseconds
@@ -61,7 +61,8 @@ function current() {
     if (moving.value?.hopping) return {clip: clipNamed("hop"), facing: 0};
     if (moving.value) return {clip: clipNamed("walk"), facing: moving.value.way > 0 ? 90 : 270};
     if (beats.value.length) return {clip: clipNamed(beats.value[0]), facing: 0, once: true};
-    if (target.value.view && !moving.value) return {clip: clipNamed("point"), facing: 0};
+    // pointing is a pose, so it plays only while the agent itself waits on the user; at work, it stands at the tab doing the work
+    if (target.value.view && held.value.state === "asking") return {clip: clipNamed("point"), facing: 0};
     return {clip: clipNamed(clipOf(held.value.state)), facing: 0};
 }
 
@@ -89,7 +90,11 @@ function step() {
 }
 
 // the figure's feet on a spot: its picture's left and top in the window
-const placed = (spot) => ({x: spot.x - SIZE / 2, y: spot.y - (1 - ground) * SIZE});
+const figureSize = () => ({size: SIZE, below: ground});
+const placed = (spot) => {
+    const box = boxAt(spot, figureSize());
+    return {x: box.left, y: box.top};
+};
 
 function moveTo(spot) {
     const from = at.value;
@@ -132,7 +137,8 @@ function look() {
     const waited = {state: held.value.state, since: held.value.since, lasted: now.value - held.value.since};
     const eggs = [...fresh.map((fire) => [fire, BEAT_CLIPS[fire.beat]]), [waited, null]];
     beats.value = [...beats.value, ...eggs.map(([moment, plain]) => eggOf(moment) || plain).filter(Boolean)];
-    target.value = spotOf(pointedView(counts.value, openTabs()), (1 - ground) * SIZE);
+    const feet = {x: at.value.x + SIZE / 2, y: at.value.y + (1 - ground) * SIZE};
+    target.value = spotOf(pointedView(counts.value, openTabs()), figureSize(), feet);
     if (!moving.value && !arriving.value) moveTo(target.value);
     if (!document.hidden) lookTimer = setTimeout(look, LOOK_EVERY);
 }
@@ -150,7 +156,7 @@ function present(live) {
     if (!player || live === here.value) return;
     if (live) {
         here.value = true;
-        at.value = placed(spotOf(null));
+        at.value = placed(spotOf(null, figureSize()));
     }
     leaving.value = !live;
     arriving.value = live;
@@ -175,7 +181,7 @@ async function load(name) {
         below.value = module.GROUND;
         canvas.value.width = canvas.value.height = Math.round(SIZE * (window.devicePixelRatio || 1));
         player = new FigurePlayer(figure, canvas.value);
-        at.value = placed(spotOf(null));
+        at.value = placed(spotOf(null, figureSize()));
         here.value = Boolean(agent.value);
         arriving.value = here.value;
         figureStatus.value = "shown";
@@ -238,9 +244,12 @@ const style = computed(() => ({
     pointer-events: none;
 }
 
+/* a soft rim in the page's own text colour, so the figure reads on a dark page and a light one alike */
 .voice-figure-canvas {
     width: 100%;
     height: 100%;
+    filter: drop-shadow(0 0 1px color-mix(in srgb, var(--text) 60%, transparent))
+        drop-shadow(0 0 3px color-mix(in srgb, var(--text) 22%, transparent));
 }
 
 .voice-figure-actor {
