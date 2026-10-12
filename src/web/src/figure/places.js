@@ -58,15 +58,16 @@ export function freeSpot(spots, figure, near) {
 // The spots on an element's top edge at each share of its width
 const alongTop = (box, shares) => shares.map((share) => ({x: box.left + box.width * share, y: box.top}));
 
-// Where a figure goes to point at a tab: on top of it, just under it with its head at the tab's foot, or a figure's width to either side
+// Where a figure goes to point at a tab: on top of it, just under it with its head at the tab's foot, or half a figure lower still,
+// at the tab or up to a figure and a half to either side, so some spot near it is clear of whatever else is open beside the tabs
+const SIDEWAYS = [0, -0.5, 0.5, -1, 1, -1.5, 1.5];
+
 function tabSpots(tab, figure) {
     const box = tab.getBoundingClientRect();
     const middle = box.left + box.width / 2;
     const under = box.bottom + (1 - figure.below) * figure.size;
-    return [middle, middle - figure.size, middle + figure.size].flatMap((x) => [
-        {x, y: box.top},
-        {x, y: under},
-    ]);
+    const heights = [box.top, under, under + figure.size / 2];
+    return SIDEWAYS.flatMap((share) => heights.map((y) => ({x: middle + share * figure.size, y})));
 }
 
 // Home is the main chat's compose box; a page without one gives the figure the floor of the page itself
