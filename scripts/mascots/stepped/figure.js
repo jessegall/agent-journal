@@ -198,7 +198,7 @@ function trunk(pose, {lean = 0, twist = 0, nod = 0, turn = 0, tilt = 0}) {
 function hang(pose, side, swing = 0, bend = 10) {
     pose.turn(`upper_arm_${side}`, {y: SIDES[side] * HANG});
     pose.turn(`upper_arm_${side}`, {x: swing});
-    pose.turn(`forearm_${side}`, {x: -bend});
+    pose.bend(`forearm_${side}`, bend);
 }
 
 function hold(pose, side) {
@@ -484,14 +484,16 @@ const BUTLER_SPRINT = 0.5;
 const BUTLER_BOW = 0.36;
 const PLATE_PITCH = 16;
 const PLATE_ROLL = 7;
-const CLIMB_PEEK = -2.94;
-const CLIMB_PULLED = -1.36;
-const CLIMB_GRIP = new THREE.Vector3(0.96, -0.4, 0.02);
-const CLIMB_ELBOW = new THREE.Vector3(0.6, 0.6, 0);
+const CLIMB_PEEK = -2.78;
+const CLIMB_PULLED = -1.54;
+const CLIMB_GRIP = new THREE.Vector3(1.0, -0.6, 0.02);
+const CLIMB_ELBOW = new THREE.Vector3(1.0, 0.3, -0.3);
+const HANGING_ELBOW = new THREE.Vector3(0, 1, 0);
 const HOMIE_FLING = {y: -20, z: -50, bend: 30};
 const HANG_REACH = 0.97;
 const CHIN_ELBOW = new THREE.Vector3(...THINK_ELBOW);
-const LANDED = 0.3;
+const LANDED = 0.24;
+const TUCK = 0.1;
 const HOP_RISE = 6.04;
 const HOP_FALL = 10.36;
 const HOP_REACH = 2.4;
@@ -508,8 +510,7 @@ function armTo(pose, side, k, {y = HANG, x = 0, z = 0, bend = 10}) {
     pose.turn(`upper_arm_${side}`, {y: sign * mix(HANG, y, k)});
     pose.turn(`upper_arm_${side}`, {x: x * k});
     pose.turn(`upper_arm_${side}`, {z: sign * z * k});
-    pose.turn(`forearm_${side}`, {x: -mix(10, 0, k)});
-    pose.bend(`forearm_${side}`, bend * k);
+    pose.bend(`forearm_${side}`, mix(10, bend, k));
 }
 
 // the hand carried from hanging (k 0) up through the front to `target` (k 1), the elbow pointing the way `elbow` says; it stays there while the body moves
@@ -518,7 +519,7 @@ function handTo(pose, side, k, target, elbow) {
     const toTarget = target.clone().sub(shoulder);
     const hanging = new THREE.Vector3(SIDES[side] * Math.cos(radians(HANG)), 0, -Math.sin(radians(HANG)));
     const way = hanging.lerp(toTarget.clone().normalize(), k).normalize();
-    pose.reach(side, shoulder.clone().add(way.multiplyScalar(mix(HANG_REACH, toTarget.length(), k))), elbow);
+    pose.reach(side, shoulder.clone().add(way.multiplyScalar(mix(HANG_REACH, toTarget.length(), k))), HANGING_ELBOW.clone().lerp(elbow, k));
 }
 
 const chin = (side) => new THREE.Vector3(SIDES[side] * CHIN_REST[0], CHIN_REST[1], CHIN_REST[2]);
@@ -574,7 +575,7 @@ function homie_enter(pose, stance, u) {
             armTo(pose, side, fling, HOMIE_FLING);
         }
     }
-    fold(pose, u < 0.72 ? mix(0, LANDED, spring) + 0.45 * Math.sin(Math.PI * spring) : landed);
+    fold(pose, u < 0.72 ? mix(0, LANDED, spring) + TUCK * Math.sin(Math.PI * spring) : landed);
 }
 
 // the homie springs off the box and drops out of sight below its edge, arms up all the way down
@@ -588,7 +589,7 @@ function homie_exit(pose, stance, u) {
     for (const side of Object.keys(SIDES)) {
         armTo(pose, side, ready, {y: mix(HANG, -60, up), x: mix(40, 0, up), z: -60 * up, bend: 15 * up});
     }
-    fold(pose, u < 0.3 ? LANDED * ready : LANDED * (1 - up) + 0.4 * swell(u, 0.36, 0.62));
+    fold(pose, u < 0.3 ? LANDED * ready : LANDED * (1 - up) + 2 * TUCK * swell(u, 0.36, 0.62));
     pose.revolve(-35 * rise(u, 0, 0.2));
 }
 
@@ -610,7 +611,7 @@ function squire_enter(pose, stance, u) {
 function squire_exit(pose, stance, u) {
     const quill = heldUp(stance);
     const salute = rise(u, 0, 0.12) * (1 - rise(u, 0.24, 0.34));
-    const facing = depart(pose, stance, u, 0.34, -1, {clearance: 0.3, lean: 0, apart: salute ? quill : [], bend: {nod: 10 * swell(u, 0.1, 0.26)}});
+    const facing = depart(pose, stance, u, 0.34, -1, {clearance: 0.18, lean: 0, apart: salute ? quill : [], bend: {nod: 10 * swell(u, 0.1, 0.26)}});
     if (salute) quill.forEach((side) => handTo(pose, side, salute, chin(side), CHIN_ELBOW));
     pose.revolve(facing);
 }
@@ -655,8 +656,8 @@ function colleague_enter(pose, stance, u) {
     const facing = arrive(pose, stance, u, COLLEAGUE_STROLL, COLLEAGUE_STROLL + 0.12, {bend: {nod: -8 * tipped}});
     for (const side of stance.level) {
         pose.turn(`upper_arm_${side}`, {y: -SIDES[side] * 30 * lifted});
-        pose.turn(`forearm_${side}`, {x: -70 * lifted});
-        pose.turn(`hand_${side}`, {x: 70 * lifted - 25 * tipped});
+        pose.turn(`forearm_${side}`, {x: -50 * lifted});
+        pose.turn(`hand_${side}`, {x: 35 * lifted - 20 * tipped});
     }
     pose.shutEyes(1 - 0.7 * tipped);
     pose.revolve(facing);

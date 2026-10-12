@@ -4,7 +4,6 @@ One Blender run poses the butler's walk at every facing and writes how well each
 """
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -14,7 +13,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from manifest import FACINGS, ClipInfo, Manifest  # noqa: E402
-from test_rig import BLENDER_SECONDS  # noqa: E402
+from test_rig import run_blender  # noqa: E402
 
 needs_blender = pytest.mark.skipif(shutil.which("blender") is None, reason="needs Blender on the path")
 
@@ -36,7 +35,7 @@ def test_a_manifest_keeps_its_facings_and_one_from_before_the_turn_holds_only_th
 @pytest.fixture(scope="module")
 def turned(tmp_path_factory):
     out = tmp_path_factory.mktemp("turn")
-    subprocess.run(["blender", "-b", "-P", str(HERE / "prove_turn.py"), "--", "--out", str(out)], check=True, capture_output=True, timeout=BLENDER_SECONDS)
+    run_blender("prove_turn.py", out)
     return json.loads((out / "turn.json").read_text())
 
 

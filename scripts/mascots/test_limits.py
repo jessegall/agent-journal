@@ -4,7 +4,6 @@ Two Blender runs: prove_limits.py poses the bare robot, check_clips.py runs ever
 """
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -14,7 +13,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from test_clips import VOICES  # noqa: E402
-from test_rig import BLENDER_SECONDS  # noqa: E402
+from test_rig import run_blender  # noqa: E402
 
 REACH_TOLERANCE = 1e-3
 GRIP_TOLERANCE = 0.02
@@ -23,7 +22,7 @@ needs_blender = pytest.mark.skipif(shutil.which("blender") is None, reason="need
 
 
 def blender(script, out, *extra):
-    subprocess.run(["blender", "-b", "-P", str(HERE / script), "--", "--out", str(out), *extra], check=True, capture_output=True, timeout=BLENDER_SECONDS)
+    run_blender(script, out, *extra)
     return json.loads((out / "limits.json").read_text())
 
 

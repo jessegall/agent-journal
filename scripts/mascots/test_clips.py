@@ -5,7 +5,6 @@ The sheets are checked as shipped. One Blender run renders a still of every clip
 import ast
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -15,16 +14,16 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from manifest import Manifest  # noqa: E402
+from test_rig import run_blender  # noqa: E402
 
 WEB = HERE.parents[1] / "src" / "web"
-BLENDER_SECONDS = 600
 NEW_CLIPS = {
     "sit_on_edge": (24, 8, True),
     "walk_in": (40, 12, False),
     "run_in": (28, 12, False),
     "pull_ups": (24, 10, True),
 }
-# each voice's own way in and out, posed and proved, with no sheets yet: whether they are rendered as sheets waits on sprites or stepped 3D
+# each voice's own way in and out, posed and proved, with no sheets: the viewer poses them live on the real figure
 PASSAGES = {
     "enter": (36, 12, False),
     "exit": (28, 12, False),
@@ -83,10 +82,7 @@ def test_the_viewer_serves_the_page_and_its_sheets_from_its_own_build():
 
 @needs_blender
 def test_blender_poses_every_clip_of_a_voice_that_carries_something(tmp_path):
-    subprocess.run(
-        ["blender", "-b", "-P", str(HERE / "render_clips.py"), "--", "--out", str(tmp_path), "--voices", "butler", "--facings", "0", "--stills"],
-        check=True, capture_output=True, timeout=BLENDER_SECONDS,
-    )
+    run_blender("render_clips.py", tmp_path, "--voices", "butler", "--facings", "0", "--stills")
     assert {p.parent.name for p in (tmp_path / "butler").glob("*/0_still.png")} == POSED
 
 
@@ -126,10 +122,7 @@ def test_new_clip_animation_contracts_in_blender(tmp_path):
     Kept separate from rendering; the numerical contract does not certify mesh
     collision freedom or replace stepping the clip in the viewer.
     """
-    subprocess.run(
-        ["blender", "-b", "-P", str(HERE / "prove_new_clips.py"), "--", "--out", str(tmp_path)],
-        check=True, capture_output=True, timeout=BLENDER_SECONDS,
-    )
+    run_blender("prove_new_clips.py", tmp_path)
     report = json.loads((tmp_path / "new_clips.json").read_text())
     assert report["failures"] == []
     assert set(report["voices"]) == VOICES
@@ -140,10 +133,7 @@ def test_new_clip_animation_contracts_in_blender(tmp_path):
 @needs_blender
 def test_every_voice_enters_onto_idle_and_exits_from_it_in_blender(tmp_path):
     """Each voice's own entrance and exit: inside the limits on every frame, joined to idle without a jump, starting or ending out of sight."""
-    subprocess.run(
-        ["blender", "-b", "-P", str(HERE / "prove_passages.py"), "--", "--out", str(tmp_path)],
-        check=True, capture_output=True, timeout=BLENDER_SECONDS,
-    )
+    run_blender("prove_passages.py", tmp_path)
     report = json.loads((tmp_path / "passages.json").read_text())
     assert report["failures"] == []
     assert (set(report["voices"]), set(report["clips"])) == (VOICES, set(PASSAGES))

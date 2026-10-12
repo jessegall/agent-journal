@@ -78,7 +78,7 @@ def hang(pose, side, swing=0.0, bend=10.0):
     """An arm at the robot's side, the forearm bent forward a little."""
     pose.turn(f"upper_arm_{side}", y=SIDES[side] * HANG)
     pose.turn(f"upper_arm_{side}", x=swing)
-    pose.turn(f"forearm_{side}", x=-bend)
+    pose.bend(f"forearm_{side}", bend)
 
 
 def hold(pose, side):
@@ -412,13 +412,15 @@ BUTLER_SPRINT = 0.5
 BUTLER_BOW = 0.36
 PLATE_PITCH = 16
 PLATE_ROLL = 7
-CLIMB_PEEK = -2.94
-CLIMB_PULLED = -1.36
-CLIMB_GRIP = (0.96, -0.4, 0.02)
-CLIMB_ELBOW = (0.6, 0.6, 0.0)
+CLIMB_PEEK = -2.78
+CLIMB_PULLED = -1.54
+CLIMB_GRIP = (1.0, -0.6, 0.02)
+CLIMB_ELBOW = (1.0, 0.3, -0.3)
+HANGING_ELBOW = (0.0, 1.0, 0.0)
 HOMIE_FLING = {"y": -20.0, "z": -50.0, "bend": 30.0}
 HANG_REACH = 0.97
-LANDED = 0.3
+LANDED = 0.24
+TUCK = 0.1
 HOP_RISE = 6.04
 HOP_FALL = 10.36
 HOP_REACH = 2.4
@@ -436,8 +438,7 @@ def arm_to(pose, side, k, y=HANG, x=0.0, z=0.0, bend=10.0):
     pose.turn(f"upper_arm_{side}", y=sign * mix(HANG, y, k))
     pose.turn(f"upper_arm_{side}", x=x * k)
     pose.turn(f"upper_arm_{side}", z=sign * z * k)
-    pose.turn(f"forearm_{side}", x=-mix(10.0, 0.0, k))
-    pose.bend(f"forearm_{side}", bend * k)
+    pose.bend(f"forearm_{side}", mix(10.0, bend, k))
 
 
 def hand_to(pose, side, k, target, elbow):
@@ -446,7 +447,7 @@ def hand_to(pose, side, k, target, elbow):
     to_target = Vector(target) - shoulder
     hanging = Vector((SIDES[side] * math.cos(math.radians(HANG)), 0.0, -math.sin(math.radians(HANG))))
     way = hanging.lerp(to_target.normalized(), k).normalized()
-    pose.reach("arm", side, shoulder + way * mix(HANG_REACH, to_target.length, k), bend=elbow)
+    pose.reach("arm", side, shoulder + way * mix(HANG_REACH, to_target.length, k), bend=Vector(HANGING_ELBOW).lerp(Vector(elbow), k))
 
 
 def chin(side):
@@ -514,7 +515,7 @@ def homie_enter(pose, stance, figure, u):
             hand_to(pose, side, grip, (sign * x, y, z), CLIMB_ELBOW)
         elif fling:
             arm_to(pose, side, fling, **HOMIE_FLING)
-    fold(pose, mix(0.0, LANDED, spring) + 0.45 * math.sin(math.pi * spring) if u < 0.72 else landed)
+    fold(pose, mix(0.0, LANDED, spring) + TUCK * math.sin(math.pi * spring) if u < 0.72 else landed)
 
 
 def homie_exit(pose, stance, figure, u):
@@ -528,7 +529,7 @@ def homie_exit(pose, stance, figure, u):
     trunk(pose, lean=15.0 * ready * (1.0 - up), nod=18.0 * ready * (1.0 - up))
     for side in SIDES:
         arm_to(pose, side, ready, y=mix(HANG, -60.0, up), x=mix(40.0, 0.0, up), z=-60.0 * up, bend=15.0 * up)
-    fold(pose, LANDED * ready if u < 0.3 else LANDED * (1.0 - up) + 0.4 * swell(u, 0.36, 0.62))
+    fold(pose, LANDED * ready if u < 0.3 else LANDED * (1.0 - up) + 2 * TUCK * swell(u, 0.36, 0.62))
     pose.revolve(-35.0 * rise(u, 0.0, 0.2))
 
 
@@ -552,7 +553,7 @@ def squire_exit(pose, stance, figure, u):
     """The squire salutes with the quill before his face, turns and marches off."""
     quill = held_up(stance, figure)
     salute = rise(u, 0.0, 0.12) * (1.0 - rise(u, 0.24, 0.34))
-    facing = depart(pose, stance, figure, u, 0.34, -1, clearance=0.3, lean=0.0, apart=quill if salute else (),
+    facing = depart(pose, stance, figure, u, 0.34, -1, clearance=0.18, lean=0.0, apart=quill if salute else (),
                     bend={"nod": 10.0 * swell(u, 0.1, 0.26)})
     for side in quill if salute else ():
         hand_to(pose, side, salute, chin(side), THINK_ELBOW)
@@ -602,8 +603,8 @@ def colleague_enter(pose, stance, figure, u):
     facing = arrive(pose, stance, figure, u, COLLEAGUE_STROLL, COLLEAGUE_STROLL + 0.12, bend={"nod": -8.0 * tipped})
     for side in sorted(stance.level):
         pose.turn(f"upper_arm_{side}", y=-SIDES[side] * 30.0 * lifted)
-        pose.turn(f"forearm_{side}", x=-70.0 * lifted)
-        pose.turn(f"hand_{side}", x=70.0 * lifted - 25.0 * tipped)
+        pose.turn(f"forearm_{side}", x=-50.0 * lifted)
+        pose.turn(f"hand_{side}", x=35.0 * lifted - 20.0 * tipped)
     figure.shut_eyes(1.0 - 0.7 * tipped)
     pose.revolve(facing)
 
