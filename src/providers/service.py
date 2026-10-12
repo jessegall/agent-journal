@@ -35,6 +35,11 @@ class TheProviders:
     def offers(self, name: str):
         return PROVIDERS[name]() if name in PROVIDERS else None
 
+    def offers_model(self, provider: str, model: str) -> bool:
+        """Whether that provider is one this journal runs and offers that model."""
+        agent = self.offers(provider)
+        return agent is not None and agent.offers(model)
+
     def workspaces(self) -> WorkspaceFolders:
         """The folders a workspace of any provider keeps beside a checkout, which a worktree carries over."""
         return workspace_folders()

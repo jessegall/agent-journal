@@ -21,7 +21,7 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
         (["claude-1"], [], "Moved a long command to the background"), \
         "moved once, and the chat shows the mark; Claude's own tool result tells the agent, so the journal sends no line"
     from features.long_commands import move
-    from providers.base import BackgroundTasks
+    from resources.runs import BackgroundTasks
     monkeypatch.setattr(move, "background_tasks_of", lambda row: BackgroundTasks(started={"b1": started + 50}))
     monkeypatch.setattr(move, "running_part", lambda pid, chain: "npm run slow")
     tick(record)
@@ -337,7 +337,7 @@ def test_a_codex_script_cell_the_agent_waits_on_is_followed_to_its_end(tmp_path)
 def test_a_call_that_never_reported_back_is_closed_and_a_command_that_ended_before_its_move_closes_its_card(monkeypatch, tmp_path):
     from features.long_commands import move
     from providers import PROVIDERS
-    from providers.base import BackgroundTasks
+    from resources.runs import BackgroundTasks
     from framework.command_effects import refused
     from tests.kit import handle
     record = fresh()

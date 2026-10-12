@@ -2,7 +2,7 @@ from resources.base import PROJECT
 from declaring.details import Behaviour, FeatureDetails, Line
 from declaring.trigger import MINUTES, Trigger
 from declaring.settings import Setting
-from providers.settings import ModelsSetting
+from declaring.settings import ModelsSetting
 from resources.boards import MEANINGS
 from declaring.groups import Group
 

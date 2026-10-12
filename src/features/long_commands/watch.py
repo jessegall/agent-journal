@@ -8,7 +8,7 @@ from resources.text import clipped
 from framework.sending import Sent
 from declaring.trigger import DAY, MINUTE
 from serving import SERVED, Providers
-from providers.base import BackgroundTasks
+from resources.runs import BackgroundTasks
 
 RECENT = 10 * MINUTE
 STALLED_AFTER = 10 * MINUTE

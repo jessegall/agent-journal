@@ -13,11 +13,12 @@ from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPER
 from payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
 from framework.tested import testing_piece
 from payload import journal_hook
-from providers.base import REFUSED, BackgroundTasks, HookCommand, OpenCommands, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, running_and_latest
+from providers.base import REFUSED, HookCommand, OpenCommands, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, running_and_latest
 from providers.jsonl import lines_from, parsed_row, rows, tail_lines
 from payload import Dispatch, Hook, HookEvent, InputRewrite, RewrittenAnswer, ToolCall
 from providers.claude_rows import Block, Row
 from resources.fields import Loaded
+from resources.runs import BackgroundTasks, CommandRow, Finish
 from resources.types import AgentRow
 from engine.proc import run
 from engine.stored import JsonFiles, read_json, write_text
@@ -68,21 +69,6 @@ def sends_to_a_peer(use) -> bool:
     return use.name == SENDS and bool(use.to)
 
 
-@dataclass(frozen=True)
-class Finish:
-    """How a background run ended: the word its notification used, when it ended, and the exit code it reported, which is the part that says whether the run passed."""
-
-    status: str = ""
-    at: float = 0.0
-    code: int | None = None
-
-    def said(self) -> str:
-        """What the run came to, for the agent to read: the exit code decides, and a run that reported none is only said to have ended."""
-        if self.code is None:
-            return self.status or "ended"
-        return f"{self.status}, passed" if self.code == 0 else f"{self.status}, failed with exit code {self.code}"
-
-
 @dataclass
 class Crew:
     uses: list = field(default_factory=list)
@@ -121,34 +107,6 @@ class ClaudeSubagentRow(SubagentRow):
         fields = asdict(self)
         facts = fields.pop("facts")
         return {**fields, **(facts or {})}
-
-
-@dataclass(frozen=True)
-class CommandRow(Loaded):
-    id: str = ""
-    task_id: str = ""
-    command: str = ""
-    task: str = ""
-    running: bool = False
-    at: float = 0.0
-    ended: float = 0.0
-    status: str = ""
-    code: int | None = None
-
-    def to_json(self) -> dict:
-        return asdict(self)
-
-    def answers(self, ref: str) -> bool:
-        """Whether this is the run someone waits on, named either by the id its launch answered with or by the tool use's own."""
-        return ref in (self.task_id, self.id)
-
-    def named(self) -> str:
-        """What to call it: what it was asked to do, or the command itself."""
-        return self.task or self.command
-
-    def came_to(self) -> str:
-        """What it came to, for the agent to read."""
-        return Finish(self.status, self.at, self.code).said()
 
 
 SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}

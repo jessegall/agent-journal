@@ -279,7 +279,7 @@ def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(
     assert (claude.conversation_file("conversation-1").name, claude.conversation_file("nowhere")) == ("conversation-1.jsonl", None), "a conversation is found by its name among the projects' transcripts"
     from providers.claude_rows import Block
     from payload import ToolCall
-    from providers.claude import Finish
+    from resources.runs import Finish
     assert claude.stopped({"u1": Finish("returned", 1.0), "u2": Finish("failed", 1.0)}, [ToolCall(name="TaskStop", task="t1", at=5.0), ToolCall(name="TaskStop", task="t2", at=6.0)],
                           {"u1": "t1", "u2": "t2"}) == {"u1": Finish("stopped", 5.0), "u2": Finish("failed", 1.0)}, \
         "a task the agent stopped says so, unless it had already ended some other way"

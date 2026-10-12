@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from resources.fields import Loaded
+from resources.runs import BackgroundTasks
 from engine.transcript import Turn
 from providers.jsonl import WholeRead, lines_after, parsed_row, tail_lines, whole_lines
 from payload import LEGACY, MARK, JOURNAL, PERSON, journal_hook, AgentCall, AskCall, AskedQuestion, Asking, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, HookFacts, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
@@ -122,18 +123,6 @@ def asking_row(asked: Asking | None) -> dict:
 @dataclass
 class WorkLinks:
     links: list[str] = field(default_factory=list)
-
-
-@dataclass
-class BackgroundTasks:
-    started: dict[str, float] = field(default_factory=dict)
-    ended: dict[str, float] = field(default_factory=dict)
-    failed: set[str] = field(default_factory=set)
-    commands: dict[str, str] = field(default_factory=dict)
-    detached: dict[str, int] = field(default_factory=dict)
-    printed: dict[str, float] = field(default_factory=dict)
-    used: dict[str, str] = field(default_factory=dict)
-    outputs: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass

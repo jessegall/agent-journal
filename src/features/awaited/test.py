@@ -32,7 +32,7 @@ def test_a_wait_on_a_run_and_a_helper_stands_until_both_are_back_and_then_hands_
     assert (done.awaiting, done.awaiting_on) == ("", ""), "the wait ends once every one is back"
     assert "the suite completed, passed" in done.sections[-1]["body"] and "Rhea: hooks spend 40ms in imports" in done.sections[-1]["body"], \
         "their results go into the work's log, and a run says whether it passed, which is what decides what the agent does next"
-    from providers.claude import CommandRow, Finish
+    from resources.runs import CommandRow, Finish
     failed = CommandRow.from_json({**run, "running": False, "status": "completed", "code": 1})
     assert (failed.came_to(), CommandRow.from_json(run).came_to()) == ("completed, failed with exit code 1", "ended"), \
         "a run that failed names its exit code, and one that finished saying nothing is only said to have ended"

@@ -22,7 +22,7 @@ NAMES = {
     "serving": set(),
     "skills": set(),
     "supervisor": set(),
-    "declaring": {"resources"},
+    "declaring": {"resources", "serving"},
     "events": {"resources"},
     "payload": {"resources"},
     "receiving": {"engine", "events", "serving"},

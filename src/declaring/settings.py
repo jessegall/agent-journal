@@ -1,5 +1,6 @@
 from resources.base import ENVIRONMENT
 from resources.text import paragraphs
+from serving import SERVED, Providers
 
 
 class Setting:
@@ -43,3 +44,21 @@ class Settings(dict):
             return self[name]
         except KeyError as error:
             raise AttributeError(f"no setting called {name}") from error
+
+
+class ModelsSetting(Setting):
+    """A model for each provider, picked from the models that provider offers."""
+
+    def __init__(self, name: str, title: str, abstract: str = "", scope: str = ENVIRONMENT):
+        super().__init__(name, {agent.name: agent.dispatch_default for agent in SERVED.given(Providers).every()}, title, abstract, scope=scope)
+
+    def kind(self) -> str:
+        return "models"
+
+    def describe(self) -> dict:
+        labels = {agent.name: agent.model_labels() for agent in SERVED.given(Providers).every()}
+        return {**super().describe(), "choices": {provider: list(named) for provider, named in labels.items()}, "labels": labels}
+
+    def allows(self, value) -> bool:
+        providers = SERVED.given(Providers)
+        return isinstance(value, dict) and all(providers.offers_model(name, model) for name, model in value.items())

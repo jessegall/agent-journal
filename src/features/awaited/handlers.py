@@ -3,7 +3,7 @@ from controllers.types import Helpers
 from framework.parts import AgentContext, Handler
 from resources.base import SYSTEM
 from controllers.types import Works
-from providers.claude import CommandRow
+from resources.runs import CommandRow
 
 HELPER = "helper:"
 KEPT = 300

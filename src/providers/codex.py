@@ -8,7 +8,8 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, TOOL, PeerNote, Turn
 from payload import AgentCall, AskCall, BashCall, EVENTS, Failure, PERMISSION, SKILL_READ, UsageWindow, bare
-from providers.base import REFUSED, BackgroundTasks, Provider, SubagentRow, running_and_latest
+from providers.base import REFUSED, Provider, SubagentRow, running_and_latest
+from resources.runs import BackgroundTasks
 from providers.jsonl import head_lines, parsed, rows, tail_lines
 from payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Chunk, Payload, Row
