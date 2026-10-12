@@ -8,6 +8,7 @@ swept feature is held to. It asks for one thing, the tick's record, and nothing 
 
 from dataclasses import dataclass
 
+from controllers.features import MOVED
 from engine import bus
 from events import Fact, Request
 from features.parts import Context, Handler as OldStyle
@@ -130,3 +131,6 @@ def listing() -> str:
     for (feature, name) in NOT_ADAPTABLE:
         stuck.setdefault(feature, []).append(name)
     return "\n".join(one.says() for one in moved(FEATURES, {k: tuple(v) for k, v in adapted.items()}, {k: tuple(v) for k, v in stuck.items()}))
+
+
+MOVED.add(None, listing)

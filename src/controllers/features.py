@@ -13,6 +13,7 @@ from controllers.marks import action
 SETTING_KEYS = Extension()
 SETTINGS_CHANGED = Extension()
 SECRET_CHECKS = Extension()
+MOVED = Extension()
 
 
 class Features(Controller):
@@ -28,8 +29,7 @@ class Features(Controller):
 
     @action
     def moved(self) -> dict:
-        from features.adapter import listing
-        return {"out": listing()}
+        return {"out": "\n".join(listing() for listing in MOVED.each())}
 
     @action
     def on(self, name: str, default: bool = True) -> bool:
