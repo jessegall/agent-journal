@@ -65,7 +65,9 @@ def gated(call: HookCall) -> str | None:
 
 def refused_by_a_feature(call: HookCall) -> str | None:
     """Why a swept feature's answerer refused the call, asked as the engine's request."""
-    asked = bus.asked(ToolCallAsked(tool=call.hook.tool.name, input=input_of(call.hook.tool), session=call.session), call.record)
+    tool = call.hook.tool
+    asked = bus.asked(ToolCallAsked(tool=tool.name, input=input_of(tool), session=call.session, cwd=call.hook.cwd, paths=tuple(tool.paths), subagent=call.subagent),
+                      call.record)
     return asked.why if isinstance(asked, Refused) else None
 
 

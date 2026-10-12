@@ -989,10 +989,12 @@ def test_a_tool_call_a_swept_feature_refuses_is_refused_at_the_gate():
     was = bus._dispatch.asks
     bus.answered_by(answering)
     try:
-        call = HookCall(SimpleNamespace(), SimpleNamespace(), SimpleNamespace(tool=BashCall.from_payload("Bash", {"command": "rm -rf build"}, {})), SimpleNamespace(title="claude-1"))
+        provider = SimpleNamespace(is_subagent=lambda hook: False)
+        call = HookCall(provider, SimpleNamespace(), SimpleNamespace(tool=BashCall.from_payload("Bash", {"command": "rm -rf build"}, {}), cwd="/work/app"), SimpleNamespace(title="claude-1"))
         assert refused_by_a_feature(call) == "plan 4 is open", "a refusing answer is the gate's reason"
-        assert refused_by_a_feature(replace(call, hook=SimpleNamespace(tool=BashCall.from_payload("Bash", {"command": "ls"}, {})))) is None, "and an allowed one refuses nothing"
-        assert (asked[0].tool, asked[0].input, asked[0].session) == ("Bash", "rm -rf build", "claude-1"), "a shell call is asked by its command, for the session that made it"
+        assert refused_by_a_feature(replace(call, hook=SimpleNamespace(tool=BashCall.from_payload("Bash", {"command": "ls"}, {}), cwd="/work/app"))) is None, "and an allowed one refuses nothing"
+        assert (asked[0].tool, asked[0].input, asked[0].session, asked[0].cwd, asked[0].subagent) == ("Bash", "rm -rf build", "claude-1", "/work/app", False), \
+            "a shell call is asked by its command, for the session that made it, in the folder it runs in"
     finally:
         bus.answered_by(was)
 

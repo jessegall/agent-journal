@@ -18,7 +18,7 @@ from receiving.asking import answered
 from receiving.ticks import PerAsk, Services
 from resources.base import AGENT, SYSTEM
 from resources.runs import Exited
-from serving import SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, ReadRows, Rows, Settings
+from serving import SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, ReadRemembered, ReadRows, Remembered, Rows, Settings
 
 
 class NobodyToSpeakTo(LookupError):
@@ -75,7 +75,9 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Settings: PerAsk(lambda feature, asked: FEATURES[feature].values(record)),
             Rows: PerAsk(controlling),
             ReadRows: PerAsk(controlling),
-            Commands: PerAsk(lambda feature, asked: JournalCommands(record, agent()))}
+            Commands: PerAsk(lambda feature, asked: JournalCommands(record, agent())),
+            Remembered: PerAsk(lambda feature, asked: record.state(feature)),
+            ReadRemembered: PerAsk(lambda feature, asked: record.state(feature))}
 
 
 def agent_of(logged, record):

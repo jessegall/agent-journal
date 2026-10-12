@@ -38,6 +38,18 @@ class ReadRows(Rows[T]):
     writes = False
 
 
+class Remembered(Service):
+    """What the asking feature keeps between events, journal-wide; what it keeps for one agent it keys by that agent."""
+
+    writes = True
+
+
+class ReadRemembered(Remembered):
+    """The same, asked for to read only, as a listener or an answerer reads it."""
+
+    writes = False
+
+
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
 

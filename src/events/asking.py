@@ -19,6 +19,10 @@ class ToolCallAsked(Asked):
     tool: str = ""
     input: str = ""
     session: str = ""
+    cwd: str = ""
+    """The folder the agent works in, which a relative path in the call is read against."""
+    paths: tuple[str, ...] = ()
+    subagent: bool = False
 
 
 @dataclass(frozen=True, kw_only=True)
