@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 3.0.0 — Every part of the journal says what it will do
+
+<!-- new-feature {"id": "expects-3-0", "title": "Every part of the journal says what it will do", "text": "Until now a feature's behaviour was written down in its tests, where only the suite could read it. Now each part of the journal declares what it expects to happen - this event arrives, that row is written, that line is said - beside the code that does it. A run plays every one of those promises against the real engine, and nothing new can be added without one. Where the journal develops itself it also watches those promises as they really run, and says so when something that was expected did not happen.", "button": "Show me", "opens": "settings", "note": "Settings, Developer error reports."} -->
+
+- Each registration carries its own expectations: the world it is given, and what must follow. A generated run plays all of them through the engine itself rather than through a copy of it, so a promise that stops being true fails by name - the feature, the registration and the promise, not a line number.
+- A registration that owes expectations and brings none does not boot. The journal refuses to start rather than carry a part nobody has said anything about.
+- Every event the journal knows has one place: a catalogue, a module per type, each marked as something that happened or something being asked. Putting them together showed moments that were declared twice under two names, and events declared by features that do not own them.
+- Where the journal develops itself, a promise is watched as it really runs, off the path of the thing it watches, and one that was not kept is said once.
+
 ## 2.271.1 — The chat no longer blames the display hook for words still on their way
 
 - The turn's last words are waited for before the catch-up judges them. The provider sends a turn's final text and the hook that ends the turn at the same moment, each as its own process, so on a loaded machine the end arrived first: the catch-up found nothing held, called the words undelivered, filed a fault and filled the chat from the transcript. Nothing was lost, but the report named the wrong cause and sent agents looking for a broken hook.
