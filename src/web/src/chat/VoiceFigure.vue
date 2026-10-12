@@ -34,6 +34,8 @@ const waitingSince = ref(0);
 const at = ref({x: 0, y: 0});
 const moving = ref(null);
 const beats = ref([]);
+// the voice's own entrance plays once when its figure first appears
+const arriving = ref(false);
 let seenAt = Date.now() / 1000;
 let pointedFor = 0;
 let playing = {name: "", started: 0};
@@ -49,6 +51,7 @@ const hasClip = (name) => clips.some((clip) => clip.name === name);
 
 // what the figure plays now: a walk while it moves, a beat until it is done, its one pointed remark, pointing once it stands at a tab, or the held state's clip
 function current() {
+    if (arriving.value) return {clip: clipNamed("enter"), facing: 0, once: true, arrival: true};
     if (moving.value?.hopping) return {clip: clipNamed("hop"), facing: 0};
     if (moving.value) return {clip: clipNamed("walk"), facing: moving.value.way > 0 ? 90 : 270};
     if (beats.value.length) return {clip: clipNamed(...beatClipsOf(voice.value, beats.value[0].beat)), facing: 0, once: true};
@@ -69,7 +72,8 @@ function step() {
     shownClip.value = shown.clip;
     const index = Math.floor(((performance.now() - playing.started) / 1000) * shown.clip.fps);
     if (shown.once && index >= shown.clip.frames) {
-        if (shown.pointed) pointedFor = held.value.since;
+        if (shown.arrival) arriving.value = false;
+        else if (shown.pointed) pointedFor = held.value.since;
         else beats.value = beats.value.slice(1);
         playing = {name: "", started: 0};
         return step();
@@ -117,7 +121,7 @@ function look() {
         beats.value = [...beats.value, ...fresh];
     }
     target.value = spotOf(pointedView(counts.value, openTabs()), (1 - ground) * SIZE);
-    if (!moving.value) moveTo(target.value);
+    if (!moving.value && !arriving.value) moveTo(target.value);
     if (!document.hidden) lookTimer = setTimeout(look, LOOK_EVERY);
 }
 
@@ -136,9 +140,11 @@ async function load(name) {
         const {FigurePlayer} = await import("../figure/player.js");
         clips = module.CLIPS;
         ground = module.GROUND;
+        below.value = module.GROUND;
         canvas.value.width = canvas.value.height = Math.round(SIZE * (window.devicePixelRatio || 1));
         player = new FigurePlayer(figure, canvas.value);
         at.value = placed(spotOf(null));
+        arriving.value = true;
         figureStatus.value = "shown";
         look();
         step();
@@ -162,6 +168,9 @@ onUnmounted(() => {
 });
 
 const chasing = computed(() => shownClip.value?.name === "squire_chase");
+// during an entrance or exit what is below the edge the figure stands on is hidden, as the box it climbs over or drops past would hide it
+const passing = computed(() => ["enter", "exit"].includes(shownClip.value?.name));
+const below = ref(0);
 const chaseMs = computed(() => (chasing.value ? (shownClip.value.frames / shownClip.value.fps) * 1000 : 0));
 
 const style = computed(() => ({
@@ -174,7 +183,7 @@ const style = computed(() => ({
 
 <template>
     <div v-show="figureStatus === 'shown'" class="voice-figure" :style="style" aria-hidden="true" @transitionend="nextLeg">
-        <canvas ref="canvas" class="voice-figure-canvas" />
+        <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
         <template v-if="chasing">
             <svg class="voice-figure-bug" :style="{animationDuration: `${chaseMs}ms`}" viewBox="0 0 16 12" width="16" height="12">
                 <path d="M3 3 1 1M3 6H0M3 9 1 11M13 3l2-2M13 6h3M13 9l2 2" stroke="currentColor" stroke-width="1.2" />
