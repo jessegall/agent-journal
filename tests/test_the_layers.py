@@ -41,7 +41,7 @@ NAMES = {
     "serve": {"commands", "controllers", "engine", "features", "framework", "providers", "resources", "runner", "surfaces"},
     "commands": {"agents", "controllers", "engine", "features", "framework", "install", "migrations", "payload", "providers", "resources", "runner", "serve", "surfaces"},
     "features": {"agents", "commands", "controllers", "declaring", "engine", "events", "expects", "framework", "install", "mcp_headers", "migrations",
-                 "overview", "payload", "providers", "resources", "runner", "serve", "serving", "skills", "supervisor", "surfaces"},
+                 "overview", "payload", "providers", "receiving", "resources", "runner", "serve", "serving", "skills", "supervisor", "surfaces"},
     "channel": {"providers"},
     "keeper": {"engine"},
     "worker": {"commands"},

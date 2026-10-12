@@ -1,56 +1,23 @@
-import re
-
-from events.agents import AgentMessageSent, CommandRan
-from engine.ran import DELIVERED
-from engine import triggering
+from events import Fact
+from events.chat_etiquette import EtiquetteDue, ShopTalkInChat, ThirdPersonInChat
 from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON
-from controllers.types import Profiles
-from framework.parts import AgentContext, Handler
-from resources.base import SYSTEM
-
-QUOTES = ('"', "“", "'")
-ABOUT_THEM = r"(?:asks|asked|wants|wanted|says|said|writes|wrote|would like|needs|prefers|is asking|has asked)"
-
-SHOP_TALK = re.compile(r"\b(?:(?:your|the|this) message (?:is|was) (?:answered|processed|read|replied to)|I(?:'ve| have)? (?:replied|reacted|answered your message|processed (?:it|your message))"
-                       r"|(?:filed|added) (?:it )?as a pill|marked (?:it|the message|your message) (?:as )?read|the journal (?:told|nudged|reminded|held|asked) me"
-                       r"|(?:a |one |two |\d+ )?new messages? (?:came in|just came in|arrived|is in|are in)|(?:I'?m |I am )?reading (?:it|them|your message|the new message)(?: first| now)?"
-                       r"|(?:loading|loaded) the \S+ skill|you reacted|thanks for the (?:reaction|\S+ reaction)"
-                       r"|nothing (?:else )?(?:is |was )?(?:open|waiting|pending|waits)(?: on my side| for me| here)?"
-                       r"|(?:^|(?<=[.!?]\s))(?:still waiting|nothing new yet|nothing to report yet|nothing yet)|I'?m still waiting|I am still waiting"
-                       r"|(?<!once )(?<!when )(?<!until )(?<!after )(?<!before )(?:message|to-do|todo|question|comment)s? \d+(?:(?:,| and|, and) \d+)* (?:is|was|are|were) (?:already )?(?:answered|processed|read|filed|closed|done|replied to)"
-                       r"|repl(?:y|ies) (?:to [^.]{0,40})?went out|(?:still )?listed as (?:waiting|unread|unanswered|open)"
-                       r"|closing (?:both|them|it) explicitly|still (?:unread|unanswered)"
-                       r"|(?:je|jouw|het|dit) bericht is (?:beantwoord|verwerkt|gelezen)|ik heb (?:gereageerd|geantwoord|je bericht verwerkt)|(?:het|de) journal (?:zei|herinnerde|vroeg|hield) me"
-                       r"|(?:een |één |twee |\d+ )?nieuwe? berichte?n? (?:is |zijn )?(?:binnengekomen|binnen)|ik lees (?:het|ze|je bericht) (?:eerst|nu)"
-                       r"|(?:de )?\S+ skill (?:geladen|laden)|je reageerde|niets (?:meer )?(?:staat )?open|er wacht niets|ik wacht nog|nog niets te melden"
-                       r"|(?:bericht|to-do|vraag|opmerking)(?:en)? \d+ (?:is|zijn) (?:al )?(?:beantwoord|verwerkt|gelezen|gesloten|afgerond)|staat nog (?:als )?(?:open|ongelezen|onbeantwoord))\b",
-                       re.IGNORECASE | re.MULTILINE)
+from receiving import Handler
+from serving import Chat
 
 
-class NameShopTalk(Handler):
-    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        found = next((m for m in SHOP_TALK.finditer(event.text) if event.text[max(0, m.start() - 1):m.start()] not in QUOTES), None)
-        if found:
-            context.agent.nudge(SHOP, words=found.group(0))
+class NameShopTalk(Handler[ShopTalkInChat]):
+    def handle(self, event: ShopTalkInChat, chat: Chat) -> list[Fact]:
+        chat.nudge(SHOP, words=event.words)
+        return []
 
 
-def third_person(record) -> re.Pattern:
-    profiles = Profiles(record, actor=SYSTEM)
-    names = sorted({name for name in (profiles.user_called(), profiles.user_first_name(), "the user") if name}, key=len, reverse=True)
-    return re.compile(rf"\b(?:{'|'.join(map(re.escape, names))})\s+{ABOUT_THEM}\b", re.IGNORECASE)
+class NameThirdPerson(Handler[ThirdPersonInChat]):
+    def handle(self, event: ThirdPersonInChat, chat: Chat) -> list[Fact]:
+        chat.nudge(THIRD_PERSON, words=event.words)
+        return []
 
 
-class NameThirdPerson(Handler):
-    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        found = next((m for m in third_person(context.record).finditer(event.text) if event.text[max(0, m.start() - 1):m.start()] not in QUOTES), None)
-        if found:
-            context.agent.nudge(THIRD_PERSON, words=found.group(0))
-
-
-class RemindOfEtiquette(Handler):
-    def handle(self, context: AgentContext, event: CommandRan) -> None:
-        if event.tool != DELIVERED or not context.agent:
-            return
-        triggering.noticed(context.record, context.agent.row, context.feature.keyed(REMIND))
-        if context.due(REMIND):
-            context.agent.nudge(REMIND)
+class RemindOfEtiquette(Handler[EtiquetteDue]):
+    def handle(self, event: EtiquetteDue, chat: Chat) -> list[Fact]:
+        chat.nudge(REMIND)
+        return []

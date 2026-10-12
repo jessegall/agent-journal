@@ -1,28 +1,59 @@
 from framework.base import Feature
 from events.agents import AgentMessageSent, CommandRan
+from events.chat_etiquette import EtiquetteDue, ShopTalkInChat, ThirdPersonInChat
 from engine.ran import DELIVERED
-from expects import Given, Nudged, Unchanged
+from expects import Dispatches, Given, Nudged, nothing
 from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON, ChatEtiquetteDetails
 from features.chat_etiquette.handlers import NameShopTalk, NameThirdPerson, RemindOfEtiquette
+from features.chat_etiquette.listeners import CountJournalLines, SpotShopTalk, SpotThirdPerson
 from framework.journal import Journal
 from resources.types import AgentRow
+
+ADA = {"form_of_address.first_name": "Ada", "form_of_address.title": "Sir"}
+
+
+def sent(text: str) -> AgentMessageSent:
+    return AgentMessageSent(agent=1, text=text)
+
+
+def shop(words: str) -> Dispatches:
+    return Dispatches(ShopTalkInChat(agent=1, words=words))
 
 
 class ChatEtiquette(Feature):
     details = ChatEtiquetteDetails
 
     def register(self, journal: Journal) -> None:
-        journal.events.handler(NameShopTalk(), expects=[
-            Given(AgentMessageSent(agent=1, text="Your message is answered, and I replied."), rows=[AgentRow(n=1)]) >> Nudged(SHOP, words="Your message is answered"),
-            Given(AgentMessageSent(agent=1, text='You wrote "your message is answered" in the brief.'), rows=[AgentRow(n=1)]) >> Unchanged(),
-            Given(AgentMessageSent(agent=1, text="The header is fixed and committed."), rows=[AgentRow(n=1)]) >> Unchanged(),
+        journal.events.listen(AgentMessageSent, SpotShopTalk(), expects=[
+            Given(sent("Your message is answered, and I replied.")) >> shop("Your message is answered"),
+            Given(sent("Released 2.85.18. A new message came in, so I'm reading it:")) >> shop("A new message came in"),
+            Given(sent("You reacted to the test-suite result. Nothing else is waiting.")) >> shop("You reacted"),
+            Given(sent("Message 4636 is answered. Continuing.")) >> shop("Message 4636 is answered"),
+            Given(sent("The replies to messages 4749, 4750 went out, but they're still listed as waiting.")) >> shop("replies to messages 4749, 4750 went out"),
+            Given(sent("Closing both explicitly:")) >> shop("Closing both explicitly"),
+            Given(sent("Ik lees je bericht eerst.")) >> shop("Ik lees je bericht eerst"),
+            Given(sent('The build is green; it now catches lines like "your message is answered".')) >> Dispatches(nothing),
+            Given(sent("To-do 1013 trims the log; the reply hint is in the brief.")) >> Dispatches(nothing),
+            Given(sent("plus journal-todos once to-do 1024 is done")) >> Dispatches(nothing),
+            Given(sent("De pagina is klaar.")) >> Dispatches(nothing),
         ])
-        journal.events.handler(NameThirdPerson(), expects=[
-            Given(AgentMessageSent(agent=1, text="The user asks for a faster build."), rows=[AgentRow(n=1)]) >> Nudged(THIRD_PERSON, words="The user asks"),
-            Given(AgentMessageSent(agent=1, text='You said "the user asks" earlier.'), rows=[AgentRow(n=1)]) >> Unchanged(),
-            Given(AgentMessageSent(agent=1, text="You asked for a faster build, so I made one."), rows=[AgentRow(n=1)]) >> Unchanged(),
+        journal.events.listen(AgentMessageSent, SpotThirdPerson(), expects=[
+            Given(sent("The user wants a shorter list.")) >> Dispatches(ThirdPersonInChat(agent=1, words="The user wants")),
+            Given(sent("Sir Ada asks to shorten the description."), settings=ADA) >> Dispatches(ThirdPersonInChat(agent=1, words="Sir Ada asks")),
+            Given(sent("Will do, Sir Ada: shortening it now."), settings=ADA) >> Dispatches(nothing),
+            Given(sent('Your words were "Ada wants a list", so here it is.'), settings=ADA) >> Dispatches(nothing),
+            Given(sent("You asked for a faster build, so I made one.")) >> Dispatches(nothing),
         ])
-        journal.events.handler(RemindOfEtiquette(), expects=[
-            Given(CommandRan(agent=1, tool=DELIVERED), rows=[AgentRow(n=1)]) >> Unchanged(),
-            Given(CommandRan(agent=1, tool="Bash"), rows=[AgentRow(n=1)]) >> Unchanged(),
+        journal.events.listen(CommandRan, CountJournalLines(), expects=[
+            Given(CommandRan(agent=1, tool=DELIVERED)) >> Dispatches(EtiquetteDue(agent=1).due(REMIND)),
+            Given(CommandRan(agent=1, tool="Bash")) >> Dispatches(nothing),
+        ])
+        journal.events.handle(ShopTalkInChat, NameShopTalk(), expects=[
+            Given(ShopTalkInChat(agent=1, words="Your message is answered"), rows=[AgentRow(n=1)]) >> Nudged(SHOP, words="Your message is answered"),
+        ])
+        journal.events.handle(ThirdPersonInChat, NameThirdPerson(), expects=[
+            Given(ThirdPersonInChat(agent=1, words="The user asks"), rows=[AgentRow(n=1)]) >> Nudged(THIRD_PERSON, words="The user asks"),
+        ])
+        journal.events.handle(EtiquetteDue, RemindOfEtiquette(), expects=[
+            Given(EtiquetteDue(agent=1), rows=[AgentRow(n=1)]) >> Nudged(REMIND),
         ])

@@ -697,6 +697,7 @@ def test_an_old_handler_beside_the_bus_is_registered_on_the_adapter_and_the_list
 
 def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the_bus_ran_them():
     """The cut-over: what the bus walked inline now runs inside a tick, in the order the bus walked it, and a raise is told instead of escaping into the write."""
+    from receiving.ticks import Remembered
     from contextlib import contextmanager
     from engine import bus
     from expects.watching import BROKEN
@@ -708,6 +709,9 @@ def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the
         @contextmanager
         def snapshot(self):
             yield self
+
+        def state(self, owner: str):
+            return Remembered()
 
     ran: list[str] = []
     registered = Registrations()
@@ -891,6 +895,31 @@ def test_a_moved_handler_hears_a_logged_event_as_its_catalogue_fact_and_not_whil
 
     Lane("project:3", moved, Services({}), record=record, switched_on=lambda feature: feature != "chat_etiquette").run(AgentMessageSent(agent=3, text="the answer"))
     assert received == [], "a receiver of a feature switched off for the lane's record is not run"
+
+
+def test_a_moved_feature_runs_live_from_a_sent_turn_to_its_nudge_and_its_reminder_waits_for_its_trigger():
+    """The first swept feature, played for real rather than in a Given: a turn the agent sends reaches its listener as the catalogue fact, the handler speaks through the feature's own chat, and a fact dispatched with due goes on only when the feature's trigger says so."""
+    from controllers.types import Agents
+    from engine import chat, ran
+    from tests.conftest import fresh
+    from tests.kit import nudges, report
+
+    import features
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    agent = Agents(record, actor="system").by_session("claude-1")
+    chat.send(record, agent, "Your message is answered. Now the terminal view.")
+    chat.send(record, agent, "The header is fixed and committed.")
+    assert [n for n in nudges(record) if "journal's workings" in n] == ['your chat talked about the journal\'s workings - "Your message is answered"'], \
+        "the turn about the journal's workings is named back, as the feature's own line, and the plain one is not"
+
+    reminded = lambda: [n for n in nudges(record) if n.startswith("chat etiquette")]  # noqa: E731
+    for _ in range(19):
+        ran.announce(record, agent.n, ran.DELIVERED, "2 new messages 314, 315")
+    assert not reminded(), "nineteen journal lines are counted against the trigger and pass without a reminder"
+    ran.announce(record, agent.n, ran.DELIVERED, "todo 5 next")
+    assert len(reminded()) == 1, "the twentieth is due, so the fact goes on and the agent is reminded once"
 
 
 def test_a_feature_registered_for_both_engines_is_refused_at_boot():

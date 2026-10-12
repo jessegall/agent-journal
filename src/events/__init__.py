@@ -31,10 +31,16 @@ class Fact(Event):
     """Something that happened, carrying everything a handler could need, so no handler reads the record to fill in what the listener knew."""
 
     claim: str = ""
+    trigger: str = ""
+    """The behaviour whose trigger says when this fact goes on, for a fact dispatched with due."""
 
     def once(self, key: str) -> "Fact":
         """Dispatched at most once for this key: the engine claims it at dispatch and drops the fact when the claim is lost."""
         return replace(self, claim=key)
+
+    def due(self, behaviour: str) -> "Fact":
+        """Dispatched only when the dispatching feature's trigger for this behaviour says it is due: the engine counts the moment and drops the fact until then."""
+        return replace(self, trigger=behaviour)
 
 
 @dataclass(frozen=True, kw_only=True)

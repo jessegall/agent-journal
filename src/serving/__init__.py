@@ -32,6 +32,12 @@ class Rows(Service, Generic[T]):
         return kind[0].__name__ if kind and isinstance(kind[0], type) else cls.__name__
 
 
+class ReadRows(Rows[T]):
+    """The controller for one kind of row, asked for to read only, as ReadRows[Profile]: what a listener or an answerer reads rows through, since neither may write."""
+
+    writes = False
+
+
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
 

@@ -114,6 +114,8 @@ class Lane:
     record: object = field(default_factory=NothingHeld)
     switched_on: Callable[[str], bool] = lambda feature: True
     """Whether a feature is on for this lane's record: a receiver of a feature switched off is not run."""
+    is_due: Callable[[str, Fact], bool] = lambda feature, fact: True
+    """Whether a fact a listener of this feature dispatched with due is due now: the engine counts the moment and asks the feature's trigger."""
     watch: Callable[[object, Event, float], None] = lambda registration, fact, began: None
     """Notes a handler's run for the runtime watch of its expectations, with when it began."""
     ran: list = field(default_factory=list)
@@ -152,7 +154,8 @@ class Lane:
     def recognised(self, event: Event) -> list[Fact]:
         """What the listeners of this event recognised. They read and write nothing, so they need no transaction."""
         return [fact for one in self.registered.of(LISTEN) if one.event is type(event) and self.switched_on(one.feature)
-                for fact in one.receiver.listen(event, **self.services.given(one.name, one.feature, type(one.receiver).wants()))]
+                for fact in one.receiver.listen(event, **self.services.given(one.name, one.feature, type(one.receiver).wants()))
+                if not fact.trigger or self.is_due(one.feature, fact)]
 
     def handled(self, facts: list[Fact]) -> list[Event]:
         """What the handlers of these facts did, inside one transaction: a raise rolls the whole tick back and leaves a TickFailed in its place."""

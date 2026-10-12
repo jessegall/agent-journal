@@ -11,7 +11,7 @@ from collections.abc import Callable
 from typing import get_args
 
 from declaring.registries import MOVED
-from engine import bus
+from engine import bus, triggering
 from events import Fact, Request
 from events.typed import AgentEvent, TypedEvent
 from engine.developing import developing
@@ -22,11 +22,12 @@ from framework.loaded import FEATURES
 from framework.parts import Context, Handler as OldStyle, Speaker
 from framework.promises import Promise
 from receiving import HANDLE, LISTEN, REGISTERED, Handler, Listener, Registration, Registrations
+from receiving.boot import walked
 from receiving.ordering import InOrder
-from receiving.ticks import Lane, PerAsk, Services, TickFailed
+from receiving.ticks import Claims, Lane, PerAsk, Services, TickFailed
 from resources.base import ACTIONS, SYSTEM
 from resources.types import TYPES
-from serving import Adapted as TheRecord, Chat, Rows, Settings
+from serving import Adapted as TheRecord, Chat, ReadRows, Rows, Settings
 
 ON_THE_SENDING_PATH = {
     "RunTagCommands": "it answers a message about to be sent, which is a request and not a fact",
@@ -303,9 +304,17 @@ class Ticking:
         if record is None:
             bus.over_the_listeners(logged, record)
             return
-        Lane(f"project:{logged.id}", self.running, Services(lane_services(record, lambda: agent_of(logged, record))), record=record, order=self.order,
+        Lane(f"project:{logged.id}", self.running, Services(lane_services(record, lambda: agent_of(logged, record))), Claims(record.state("claims")), order=self.order, record=record,
              switched_on=lambda feature: not feature or FEATURES[feature].enabled(record),
+             is_due=lambda feature, fact: due_now(FEATURES[feature], record, fact),
              watch=lambda one, fact, began: watched(Promise.of(one), fact, record, began) if not type(one.receiver).adapted else None).run(OldEvent(logged=logged))
+
+
+def due_now(feature, record, fact: Fact) -> bool:
+    """Counts the moment against the agent the fact is about, then asks the feature's trigger whether its behaviour is due, as a 2.x handler did with noticed and due."""
+    agent = Agents(record, actor=SYSTEM).peek(fact.agent)
+    triggering.noticed(record, agent, feature.keyed(fact.trigger))
+    return feature.due(record, agent, fact.trigger)
 
 
 def watched(promise, event, record, began: float) -> None:
@@ -316,10 +325,14 @@ def watched(promise, event, record, began: float) -> None:
 
 def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
     """What a receiver is handed, by the service type it asks for, over this record: the same funnels a 2.x handler reached through its Context. The agent is looked up only when a receiver asks for the chat."""
+    def controlling(feature: str, asked):
+        return CONTROLLERS[get_args(asked)[0].type](record, actor=SYSTEM)
+
     return {TheRecord: record,
             Chat: PerAsk(lambda feature, asked: Speaker(FEATURES[feature], record, agent())),
             Settings: PerAsk(lambda feature, asked: FEATURES[feature].values(record)),
-            Rows: PerAsk(lambda feature, asked: CONTROLLERS[get_args(asked)[0].type](record, actor=SYSTEM))}
+            Rows: PerAsk(controlling),
+            ReadRows: PerAsk(controlling)}
 
 
 def agent_of(logged, record):
@@ -349,8 +362,9 @@ def no_feature_is_half_swept() -> None:
 
 
 def ordered_once_the_features_have_registered() -> None:
-    """Works the lane's order out again once every feature has registered, since a feature written for the 3.0 engine registers after the lane is wired and calls nothing that would resolve it."""
+    """Works the lane's order out again once every feature has registered, since a feature written for the 3.0 engine registers after the lane is wired and calls nothing that would resolve it. A moved receiver that asks for what the lane does not serve is refused here, at boot."""
     no_feature_is_half_swept()
+    walked(REGISTERED, set(lane_services(None, lambda: None)))
     TICKING.resolve()
 
 
