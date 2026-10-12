@@ -2,12 +2,11 @@ import json
 import time
 
 import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller, controller_of
 from controllers.types import Messages
 from engine.given import given
 from features.collections.controller import Collections
-from features.dumps.resource import ENTRY, ITEM, Dump, Offer, entry
+from resources.dumps import ENTRY, ITEM, Dump, Offer, entry
 from features.message_buttons.shaping import one
 from resources.base import AGENT, Ref, Refused, titled
 from resources.types import ref_named
@@ -277,5 +276,4 @@ class Dumps(Controller):
         return [f"{name}: {r.item(name).standing}" for name in r.item_names]
 
 
-resources_module.register(Dump)
 types_module.register(Dumps)

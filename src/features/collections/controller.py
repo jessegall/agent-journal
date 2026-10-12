@@ -2,7 +2,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller, row_of
 from features.collections.files import collected_files
-from features.collections.resource import Collection
+from resources.collections import Collection
 from controllers.shared import shared
 from resources.base import Ref, Refused
 from controllers.marks import action
@@ -62,5 +62,4 @@ class Collections(Controller):
         return row
 
 
-resources_module.register(Collection)
 types_module.register(Collections)

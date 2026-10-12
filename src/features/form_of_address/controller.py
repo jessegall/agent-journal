@@ -3,13 +3,12 @@ import tempfile
 from pathlib import Path
 
 import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
 from features.form_of_address.anchoring import Region, anchored, silhouettes
 from features.form_of_address.animations import FRAME, OFFSETS, Animation, Schedule, Tuning, offsets_document, offsets_name, shipped_animations, tuning_of, unpacked, voice_of
 from features.form_of_address.names import first_name, in_use, title
-from features.form_of_address.resource import Profile
+from resources.form_of_address import Profile
 from features.form_of_address.voices import BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
 from resources.base import SYSTEM, Refused
 from resources.pictures import dimensions
@@ -191,5 +190,4 @@ def ship(record) -> list[str]:
     return made
 
 
-resources_module.register(Profile)
 types_module.register(Profiles)

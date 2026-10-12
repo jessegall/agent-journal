@@ -3,7 +3,7 @@ from events.agents import ClockTicked
 from engine.wording import digest
 from expects import Given, Nudged, Unchanged, Updated, Wrote
 from framework.base import Feature
-from features.checks.resource import Check
+from resources.checks import Check
 from resources.base import SYSTEM
 from resources.types import AgentRow, Notification
 from features.checks.controller import Checks

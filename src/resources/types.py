@@ -8,6 +8,13 @@ from resources.fields import Loaded
 
 from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, WHOM, Pruned, Ref, Refused, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows
+from resources.checks import Check
+from resources.collections import Collection
+from resources.dumps import Dump
+from resources.form_of_address import Profile
+from resources.journal_laws import Output
+from resources.session_recording import Recording
+from resources.triggers import Trigger
 
 
 class Message(Shape, Resource):
@@ -661,7 +668,7 @@ def register(*classes) -> None:
     TYPES.update({c.type: c for c in classes})
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Fact, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Plugin, Environment, Ask, Nudge, FeatureRow)}
+TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Fact, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Plugin, Environment, Ask, Nudge, FeatureRow, Trigger, Check, Dump, Recording, Output, Profile, Collection)}
 LISTED = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "fact", "rule", "reminder", "notice", "reaction", "tool", "plugin", "environment", "work", "agent", "notification", "browser", "nudge", "feature")
 
 

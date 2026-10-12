@@ -7,7 +7,6 @@ import time
 from pathlib import Path
 
 import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
 from engine.package import entry
@@ -18,7 +17,7 @@ from engine.load import scaled
 from engine.locks import claim
 from engine.stored import read_json
 from features.checks.output import progress, steps, tail
-from features.checks.resource import TIMEOUT, Check, CheckReport, CheckRun
+from resources.checks import TIMEOUT, Check, CheckReport, CheckRun
 from controllers.types import Environments, Nudges
 from engine.worktree import git
 from features.checks.touched import changed, covering
@@ -251,5 +250,4 @@ class Checks(Controller):
                 if (check.command or check.instruction) and check.every and now - (max(check.last_run.at, check.asked_at) or check.created) >= float(check.every) * 60]
 
 
-resources_module.register(Check)
 types_module.register(Checks)

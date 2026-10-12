@@ -2,10 +2,9 @@ from pathlib import Path
 
 import controllers.types as types_module
 from controllers.types import Agents
-import resources.types as resources_module
 from controllers.base import Controller
 from resources.base import Refused
-from features.journal_laws.resource import Output
+from resources.journal_laws import Output
 from providers import PROVIDERS
 from controllers.marks import action
 
@@ -36,5 +35,4 @@ class Outputs(Controller):
         return f"{made.n} {(self.folder(made.n) / source.name).resolve()}"
 
 
-resources_module.register(Output)
 types_module.register(Outputs)
