@@ -1,7 +1,7 @@
 from features.awaited.details import AwaitedDetails
 from features.awaited.handlers import ReturnWhenAwaitedReport
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from events.agents import ClockTicked
 from expects import Given, Nudged, Unchanged, Updated
 from features.helpers.resource import Helper

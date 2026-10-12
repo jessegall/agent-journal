@@ -1,8 +1,8 @@
 from controllers.types import Reports
 from events.agents import TurnStopped
 from expects import Answered, Given, Refused, Unchanged, Updated, Wrote
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.update_reports.commands import AddItem, Changes, Dismiss, Drop, Note, Recap
 from features.update_reports.details import UpdateReportsDetails
 from features.update_reports.handlers import OfferAnUpdate

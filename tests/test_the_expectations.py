@@ -25,7 +25,7 @@ SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", 
 def promised():
     """Every expectation every feature carries, each with the name its failure is reported under."""
     import features
-    from features.promises import PROMISED
+    from framework.promises import PROMISED
     features.load()
     return [pytest.param(one, expectation, id=one.called(n)) for one, n, expectation in PROMISED.played()]
 
@@ -467,8 +467,8 @@ def test_an_unswept_2x_handler_runs_on_the_adapter_and_the_sending_path_cannot()
     from dataclasses import dataclass
 
     from events import Fact
-    from features.adapter import CannotBeAdapted, OldHandler, moved
-    from features.parts import Handler as OldStyle
+    from framework.adapter import CannotBeAdapted, OldHandler, moved
+    from framework.parts import Handler as OldStyle
     from receiving import Registration, Registrations
     from receiving.boot import walked
     from receiving.ticks import Lane, Services
@@ -511,7 +511,7 @@ def test_every_registration_gathers_what_it_promises_and_each_outcome_word_reads
     import features
     from expects import Given, Nudged, Printed, Ran, Refused, Unchanged, Wrote, answering, at, counting, exited
     from expects.playing import NotAnswered, Seen, World, wrong
-    from features.promises import PROMISED
+    from framework.promises import PROMISED
 
     features.load()
     assert len(PROMISED.each) > 200 and {one.kind for one in PROMISED.each} >= {"handler", "formatter", "interceptor"}, \
@@ -555,7 +555,7 @@ def test_every_registration_gathers_what_it_promises_and_each_outcome_word_reads
 def test_a_feature_that_registers_an_owing_kind_without_expects_refuses_the_boot():
     from types import SimpleNamespace
     from expects import Given, Unchanged
-    from features.promises import Owing, Promise, Promises
+    from framework.promises import Owing, Promise, Promises
 
     def promised(*registrations):
         promises = Promises()
@@ -587,8 +587,8 @@ def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_
     from events.resources import ResourceCreated
     from expects.entries import scratch
     from expects.watching import BROKEN, WAIT, Watch
-    from features.parts import Context
-    from features.promises import PROMISED
+    from framework.parts import Context
+    from framework.promises import PROMISED
     from resources.base import USER
     from resources.types import Environment, Rule
 
@@ -630,9 +630,9 @@ def test_an_old_handler_beside_the_bus_is_registered_on_the_adapter_and_the_list
 
     import features
     from events import Fact, Request
-    from features.adapter import ADAPTED, CannotBeAdapted, LoggedHandler, OldEvent, listing
-    from features.parts import Handler as OldStyle
-    from features.promises import PROMISED
+    from framework.adapter import ADAPTED, CannotBeAdapted, LoggedHandler, OldEvent, listing
+    from framework.parts import Handler as OldStyle
+    from framework.promises import PROMISED
     from receiving import HANDLE, Registration, Registrations
     from receiving.ticks import Lane, Services
     from resources.base import Event

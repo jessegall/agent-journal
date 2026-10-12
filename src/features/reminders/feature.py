@@ -1,7 +1,7 @@
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from controllers.types import Reminders
-from features.recital import register_recital
+from framework.recital import register_recital
 from features.reminders.details import RemindersDetails
 
 

@@ -4,7 +4,7 @@ from events.messages import MessageUpdated
 from engine.transcript import IDLE
 from engine.wording import plural
 from features.dumps.controller import OWN_WORDS
-from features.parts import AgentContext, Context, Handler
+from framework.parts import AgentContext, Context, Handler
 from resources.base import COMPLETED, USER
 from features.dumps.controller import Dumps
 from controllers.types import Messages

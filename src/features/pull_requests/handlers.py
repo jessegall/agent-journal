@@ -1,5 +1,5 @@
 from events.agents import ToolFinished
-from features.parts import AgentContext, Handler
+from framework.parts import AgentContext, Handler
 from features.pull_requests.details import OPEN
 from engine.command_runs import command_runs
 from controllers.types import Notices

@@ -1,10 +1,10 @@
-from features.base import Feature
+from framework.base import Feature
 from events.agents import AgentMessageSent, CommandRan
 from engine.ran import DELIVERED
 from expects import Given, Nudged, Unchanged
 from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON, ChatEtiquetteDetails
 from features.chat_etiquette.handlers import NameShopTalk, NameThirdPerson, RemindOfEtiquette
-from features.journal import Journal
+from framework.journal import Journal
 from resources.types import AgentRow
 
 

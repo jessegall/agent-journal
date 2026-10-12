@@ -9,7 +9,7 @@ from features.work_modes.modes import mode_of
 from providers.command_effects import JOURNAL_CALL
 from engine.sessions import Sessions
 from features.long_commands.watch import background_tasks_of, running_part
-from features.parts import AgentContext, Handler
+from framework.parts import AgentContext, Handler
 from providers import DRIVERS, PROVIDERS, transcript_reader
 from resources.base import SYSTEM
 from controllers.types import Agents

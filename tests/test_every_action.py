@@ -19,7 +19,7 @@ import controllers.files as files
 import controllers.stored as stored
 import features
 from commands.dispatch import dispatch
-from features.routing import ranked, resolve
+from framework.routing import ranked, resolve
 from controllers.invoke import invoked, spread
 from commands import cli
 from commands.parser import parser
@@ -620,7 +620,7 @@ def test_an_update_check_asked_for_reads_the_newest_release_once_at_a_time(monke
 
 
 def test_rows_and_help_shaped_for_the_viewer_are_kept_only_up_to_their_limit(monkeypatch):
-    from features import format as formatting
+    from framework import format as formatting
     monkeypatch.setattr(formatting.SHAPED, "limit", 1)
     monkeypatch.setattr(formatting, "KEEP_CATALOGUES", 1)
     record, other = fresh(), fresh("other")
@@ -685,7 +685,7 @@ def test_a_feature_row_marked_missing_is_found_again_and_a_switch_relayed_from_e
     assert not features.FEATURES["thinking"].enabled(record), "a switch another process made is read when its event is relayed"
     from declaring.reach import Unreached
     from declaring.details import FeatureDetails, Line
-    from features.base import Feature
+    from framework.base import Feature
     from declaring.groups import Group
 
     class Careless(FeatureDetails):

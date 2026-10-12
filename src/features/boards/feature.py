@@ -2,7 +2,7 @@ from events.agents import ClockTicked
 from controllers.types import Comments, Questions, Todos
 from features.plans.controller import Plans
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
-from features.base import Feature
+from framework.base import Feature
 from events.boards import BoardChanged
 from features.boards.resource import PANEL_REPLY, Board
 from features.tickets.controller import Tickets
@@ -15,8 +15,8 @@ from features.boards.details import BoardsDetails
 from features.boards.handlers import MarkQuietFillingStalled, OfferToPlaceAddedCards, boards_wanting_ideas
 from features.boards.shipped import SEQUENCES
 from features.boards.limits import BoardWorkStaysOnTheBoard, FillerKeepsToTheBoard, PanelRepliesStayShort
-from features.journal import Journal
-from features.sending import Nudge
+from framework.journal import Journal
+from framework.sending import Nudge
 from features.sequences.dispatch import BOARD_OF_MESSAGE, DISPATCH_MODELS
 from features.boards.orchestration import filler_model, orchestration
 from features.session_briefing.start import ORCHESTRATION, START_PARTS

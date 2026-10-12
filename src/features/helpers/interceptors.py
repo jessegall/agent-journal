@@ -8,7 +8,7 @@ from declaring.reach import Reach
 from features.helpers.controller import Helpers
 from features.helpers.resource import held_by_helper
 from features.helpers.reuse import kept, named_paths, refusal
-from features.parts import ActionInterceptor, AgentContext, Canceler, Context, ToolInterceptor
+from framework.parts import ActionInterceptor, AgentContext, Canceler, Context, ToolInterceptor
 from engine.record import Record
 from resources.base import AGENT, SYSTEM, Ref
 from resources.types import HELPER

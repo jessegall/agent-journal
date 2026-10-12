@@ -5,7 +5,7 @@ from engine.machines import this_machine
 from features.connection.code import pull, push
 from features.connection.linking import fail_to_join, hand, join, leave, sync, view
 from features.connection.transport import HttpTransport, ServerKey, Transport
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from resources.base import Refused
 
 

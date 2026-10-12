@@ -2,10 +2,10 @@ from controllers.types import Agents
 from events.agents import AgentReported, SessionStarted, ToolFinished
 from events.messages import MessageCreated
 from expects import Answered, Given, Kept, Refused, Unchanged, Updated, Wrote
-from features.base import Feature
+from framework.base import Feature
 from providers.payload import BashCall
 from resources.types import AgentRow, Message
-from features.journal import Journal
+from framework.journal import Journal
 from features.skill_loading.details import SkillLoadingDetails
 from features.skill_loading.handlers import HoldUntilReloaded, NameStaleSkills, RemindUnloaded, RequireAlwaysSkills, RequireSkillsTheUserNames, ShowLoadsInChat
 from features.skill_loading.interceptors import RefuseUntilLoaded, RequireCommandSkill

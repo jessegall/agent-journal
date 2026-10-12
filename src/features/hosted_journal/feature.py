@@ -3,7 +3,7 @@ from pathlib import Path
 
 from agents.terminal import AT_ONCE
 from engine.stop import STAYS_UP
-from features.base import Feature
+from framework.base import Feature
 from features.hosted_journal.details import HostedJournalDetails
 from features.hosted_journal.gateway import NEVER_FROM_OUTSIDE, PHONE_OWNER_ACTIONS, Gateway
 from features.hosted_journal.people import people_of
@@ -11,7 +11,7 @@ from features.hosted_journal.phones import VaultGuard
 from features.hosted_journal.standing import Standing
 from features.hosted_journal.vault import Vault
 from features.hosted_journal.watch import DiskWatch
-from features.journal import Journal
+from framework.journal import Journal
 from features.phone.desktop import CLOSED
 from features.phone.guard import PHONE_GUARDS
 from features.phone.members import MEMBER_RIGHTS

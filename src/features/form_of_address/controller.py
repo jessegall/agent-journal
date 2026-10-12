@@ -168,7 +168,7 @@ class Profiles(Controller):
         return given
 
     def _tell(self) -> None:
-        from features import running
+        from framework.loaded import running
         from features.form_of_address.feature import FormOfAddress
         running(FormOfAddress).settings_changed(self.record, self.actor)
 

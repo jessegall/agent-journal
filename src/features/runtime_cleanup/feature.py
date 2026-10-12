@@ -2,10 +2,10 @@ from events.agents import ClockTicked
 from events.resources import ResourceCreated
 from expects import WHEN, File, Given, Removed, Unchanged, Wrote, answering, at
 from features.auto_update.announcing import KIND
-from features.base import Feature
+from framework.base import Feature
 from features.runtime_cleanup.details import RuntimeCleanupDetails
 from features.runtime_cleanup.handlers import TidyAfterUpdate, TidyRuntime
-from features.journal import Journal
+from framework.journal import Journal
 from resources.base import SYSTEM
 from resources.types import AgentRow, Notification
 

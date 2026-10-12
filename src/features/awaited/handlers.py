@@ -1,6 +1,6 @@
 from events.agents import ClockTicked
 from features.helpers.controller import Helpers
-from features.parts import AgentContext, Handler
+from framework.parts import AgentContext, Handler
 from resources.base import SYSTEM
 from controllers.types import Works
 from providers.claude import CommandRow

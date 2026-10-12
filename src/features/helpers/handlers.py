@@ -12,7 +12,7 @@ from events.questions import QuestionCreated
 from features.helpers.controller import Helpers
 from features.helpers.reuse import agent_runs, subagent_rows
 from events.helpers import HelperBriefed, HelperContinued, HelperTold, Telling
-from features.parts import AgentContext, Context, Handler, OnAgentUpdated
+from framework.parts import AgentContext, Context, Handler, OnAgentUpdated
 from declaring.trigger import MINUTE
 from providers import PROVIDERS
 from controllers.stored import IDEMPOTENCY

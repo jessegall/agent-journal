@@ -2,12 +2,12 @@ import time
 from dataclasses import asdict, dataclass, replace
 
 from controllers.types import Agents, Nudges
-from features import FEATURES
+from framework.loaded import FEATURES
 from events.agents import ClockTicked
 from events.resources import GONE, ResourceEvent, RowChanged
 from resources.fields import Loaded
-from features.journal import waiting
-from features.parts import AgentContext, Context, Handler
+from framework.journal import waiting
+from framework.parts import AgentContext, Context, Handler
 from declaring.trigger import MINUTE
 from resources.types import Nudge
 from events.nudges import NudgeCreated

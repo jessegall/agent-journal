@@ -5,13 +5,13 @@ from events.agents import AgentMessageSent, ClockTicked
 from events.messages import MessageCreated
 from engine.transcript import IDLE as AGENT_IDLE
 from declaring import trigger
-from features import actions
+from framework import actions
 from features.triggers import watched
-from features.sending import Nudge, Sent, send
-from features.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Context, Handler, ToolInterceptor
+from framework.sending import Nudge, Sent, send
+from framework.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Context, Handler, ToolInterceptor
 from declaring.holds import Runs
 from engine.gates import STILL_HELD
-from features.recital import COMMANDS, mentioned, searched
+from framework.recital import COMMANDS, mentioned, searched
 from features.triggers.controller import Triggers, holding
 from features.triggers.resource import DENY, FROM_USER, HOLD, IDLE, INSTRUCT, MESSAGE, NUDGE, START, WORKING, Trigger
 from resources.base import SYSTEM, USER
@@ -33,7 +33,7 @@ def firing(context, text_of, from_user: bool = False) -> list:
 
 
 def fire(context, agent, row, done: str = "", about: str = "") -> None:
-    from features.format import read_as
+    from framework.format import read_as
     row = read_as(row, context.record)
     if row.does != START:
         context.journal.acting(SYSTEM).get(Agents).card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
@@ -82,7 +82,7 @@ class SayWhatTheJournalShowsOnToolUse(Handler):
 
 def reminding(record, session: str) -> bool:
     """Whether the behaviour for facts is on, which is all that keeps a hold of a trigger standing: switching it off lets every one go."""
-    from features import FEATURES
+    from framework.loaded import FEATURES
     return FEATURES["triggers"].on(record, REMINDING)
 
 

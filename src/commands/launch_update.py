@@ -6,7 +6,7 @@ from controllers.types import Notices
 from engine import runtime
 from engine.heal import refused
 from engine.version import version
-from features import running
+from framework.loaded import running
 from features.auto_update.check import failure_in, journal_repository
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM

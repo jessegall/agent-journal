@@ -3,14 +3,14 @@ from pathlib import Path
 
 from controllers.base import CONTROLLERS
 from controllers.messages import Messages
-from features.format import SHARED, formatted
+from framework.format import SHARED, formatted
 from features.sharing.details import ANSWERED
 from features.sharing.visitors import count_sent, index_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, Refused, titled
 
 
 def sharing_feature():
-    from features import running
+    from framework.loaded import running
     from features.sharing.feature import SharingFeature
     return running(SharingFeature)
 

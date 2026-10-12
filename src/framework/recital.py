@@ -6,7 +6,7 @@ from events.agents import AgentMessageSent
 from declaring import trigger
 from declaring.trigger import Trigger
 from declaring.details import Behaviour, Line
-from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
+from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
 from expects import Given, Kept, Nudged, Unchanged
 from providers.payload import BashCall
 from resources.types import AgentRow

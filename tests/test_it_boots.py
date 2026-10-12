@@ -1785,7 +1785,7 @@ def test_a_board_of_two_hundred_tickets_answers_fifty_a_lane_and_its_cursor_hold
 def test_a_request_whose_client_gave_up_is_still_measured_and_the_wait_before_its_handler_counts():
     import serve
     from engine import timing
-    from features.routing import Reply
+    from framework.routing import Reply
     stopped = []
 
     class Gone:

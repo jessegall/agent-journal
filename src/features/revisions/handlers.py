@@ -1,5 +1,5 @@
 
-from features.parts import Context, Handler
+from framework.parts import Context, Handler
 from features.revisions.history import revise
 from resources.base import PART_OF
 from controllers.types import Docs

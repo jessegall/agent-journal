@@ -9,7 +9,7 @@ from controllers.base import Controller
 from controllers.marks import action
 from controllers.types import Environments, Messages
 from engine.package import entry
-from features import FEATURES
+from framework.loaded import FEATURES
 from features.secrets.keys import integration_key_variables
 from features.secrets.reach import servers_reaching
 from features.secrets.resource import Kind, Secret, SecretField

@@ -6,21 +6,21 @@ from typing import ClassVar
 from controllers.features import SETTING_KEYS, SETTINGS_CHANGED
 from controllers.types import Agents
 from engine import triggering
-from features.switches import switches
+from framework.switches import switches
 from declaring.trigger import MINUTE, NEVER, Trigger
 from declaring.holds import Hold
 from engine.gates import hold
 from declaring.reach import Reach, Unreached
 from declaring.details import FeatureDetails, Line
 from declaring.groups import Group
-from features.journal import Journal
+from framework.journal import Journal
 from declaring.settings import Setting, Settings
 from resources.text import paragraphs
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
 from resources.types import STOPPED
 from resources.base import ENVIRONMENT, PROJECT, Refused, SYSTEM
-from features.sending import SendOnTheClock, SendOnToolUse
+from framework.sending import SendOnTheClock, SendOnToolUse
 
 REGISTRY: dict[str, type] = {}
 

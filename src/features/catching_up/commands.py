@@ -1,7 +1,7 @@
 import time
 
 from controllers.types import Messages
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from resources.base import AGENT, USER
 
 WRITERS = {USER: "the user", AGENT: "you"}

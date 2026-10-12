@@ -1,7 +1,7 @@
 from controllers.types import Environments, Messages, Todos
 from engine.record import Record
 from features import load
-from features.format import VIEWER, shaped
+from framework.format import VIEWER, shaped
 from resources.base import USER
 from tests.conftest import fresh
 
@@ -185,7 +185,7 @@ def test_a_setting_change_leaves_formatted_rows_cached_unless_a_formatter_reads_
     assert shaped(todos.load(row.n), record, VIEWER) is not first, "switching off a feature that owns a formatter formats it again"
     from features.row_links.formatters import MarkRows
     from features.row_links.paths import MarkPaths
-    from features.parts import Context
+    from framework.parts import Context
     import features
     here = Context.of(features.FEATURES["row_links"], record)
     assert (MarkRows().format(here, "no digits here"), MarkPaths().format(here, "plain words, nothing linked")) == ("no digits here", "plain words, nothing linked"), \

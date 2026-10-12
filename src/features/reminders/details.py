@@ -1,6 +1,6 @@
 from declaring.trigger import PERCENT, Trigger
 from declaring.details import FeatureDetails
-from features.recital import LINES, whispering
+from framework.recital import LINES, whispering
 from declaring.groups import Group
 
 

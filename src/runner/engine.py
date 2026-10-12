@@ -518,7 +518,7 @@ class Engine:
         return f"typed: {line[:60]}"
 
     def waiting(self) -> bool:
-        from features.journal import waiting
+        from framework.journal import waiting
         last = self.agent.driver.last_report()
         return bool(last) and waiting(self.record, last)
 

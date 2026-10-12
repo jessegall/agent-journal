@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.sessions import alive
 from engine.wording import clipped
-from features.sending import Sent
+from framework.sending import Sent
 from declaring.trigger import DAY, MINUTE
 from providers import PROVIDERS, transcript_reader
 from providers.base import BackgroundTasks

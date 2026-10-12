@@ -103,7 +103,7 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     reply = dispatch("GET", "/api/t/search", record.root, {"q": "three regions"}, {})
     assert reply.body["hits"][0]["matches"] == [{"name": "dashboard.png", "tags": "deployment graph with three regions", "url": "/api/t/message/1/files/dashboard.png"}], \
         "viewer search identifies the matching attachment"
-    from features.format import card
+    from framework.format import card
     messages.section(message.n, "Detail", "a long body the result card never shows")
     message_card = card(messages.load(message.n), record)
     assert (message_card["title"], message_card["sections"], "outcome" in message_card) == ("look at this", [{"title": "Detail"}], False), \
@@ -179,8 +179,8 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
 
 
 def test_a_session_start_asks_for_a_few_untagged_files_one_by_one_and_for_many_in_one_line(tmp_path):
-    from features import FEATURES
-    from features.parts import AgentContext
+    from framework.loaded import FEATURES
+    from framework.parts import AgentContext
     asked = {}
     for count in (2, 12):
         record = fresh()

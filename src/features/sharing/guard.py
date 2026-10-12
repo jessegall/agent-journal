@@ -4,7 +4,7 @@ from controllers.types import Agents, Comments
 from events.agents import CommandRan
 from events.comments import CommentCreated
 from engine.journal_calls import parsed, tokens
-from features.parts import AgentContext, Context, Handler, ToolInterceptor
+from framework.parts import AgentContext, Context, Handler, ToolInterceptor
 from declaring.holds import Runs
 from features.sharing.visitors import AGREEMENT, UNAGREED, hold, read_now
 from resources.base import SYSTEM

@@ -1,11 +1,11 @@
 from controllers.types import Todos
 from events.agents import AgentReported
 from expects import Given, Refused, Unchanged
-from features.base import Feature
+from framework.base import Feature
 from features.close_from_commits.commands import SweepLanded
 from features.close_from_commits.details import CloseFromCommitsDetails
 from features.close_from_commits.handlers import CloseRowsFromCommits
-from features.journal import Journal
+from framework.journal import Journal
 from resources.types import AgentRow, Todo
 
 

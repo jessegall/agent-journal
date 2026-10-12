@@ -16,7 +16,7 @@ from engine.sessions import Sessions
 from providers import PROVIDERS
 from runner.hooks import answer
 from features.helpers.handlers import NameStoppedOrQuietHelpers
-from features.parts import AgentContext
+from framework.parts import AgentContext
 from features.helper_worktrees.controller import Worktrees
 from tests.kit import project_on, run
 from features.helpers.controller import Helpers

@@ -131,7 +131,7 @@ def test_mail_becomes_one_ticket_each_wrapped_as_untrusted_and_only_you_start_it
 def test_an_answer_is_sent_only_when_you_press_send_and_goes_to_the_sender_with_the_exact_text(world):
     from controllers.types import Questions
     from features.gmail.commands import ProposeReply
-    from features.parts import Context
+    from framework.parts import Context
     from features.tickets.controller import Tickets
     record, server, gmail = world.record, world.server, world.gmail
     gmail.check(record)

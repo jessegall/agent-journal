@@ -10,7 +10,7 @@ from runner.chat_mirror import FELL_BACK, displayed
 from runner.hooks import handle
 from engine.gates import held
 from engine.sessions import Sessions
-from features.format import VIEWER, formatted
+from framework.format import VIEWER, formatted
 from providers import DRIVERS, PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, holds, refused
@@ -112,7 +112,7 @@ def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read
         report(record, "working", "PreToolUse", uses=n)
 
     from declaring.reach import Reach
-    from features import FEATURES
+    from framework.loaded import FEATURES
     Agents(record, actor=AGENT).create("s-gone", status="stopped")
     titles = [agent.title for agent in FEATURES["messages"].reached(record, Reach.BOTH)]
     assert "s-gone" not in titles, "a stopped agent hears nothing, so a message that arrives does not rewrite its counters: every old session made the first message after a start slow"

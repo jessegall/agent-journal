@@ -2,7 +2,7 @@ from agents.control import permit
 from controllers.types import Environments
 from engine.record import Record
 from engine.sessions import Sessions
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from features.permission_prompts.routing import orchestrator_of
 from resources.base import Refused, SYSTEM
 

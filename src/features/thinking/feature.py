@@ -1,8 +1,8 @@
 from events.agents import AgentReported
-from features.base import Feature
+from framework.base import Feature
 from events.agents import AgentMessageSent
 from expects import Given, Unchanged, Updated
-from features.journal import Journal
+from framework.journal import Journal
 from resources.types import AgentRow
 from features.thinking.details import ThinkingDetails
 from features.thinking.handlers import ClearOnMessage, FollowThinking

@@ -1,7 +1,7 @@
 from events.agents import SessionStarted
 from expects import Given, Unchanged
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.worktrees.details import WorktreesDetails
 from features.worktrees.handlers import LinkWorktreeJournal
 from resources.types import AgentRow

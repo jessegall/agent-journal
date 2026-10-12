@@ -1,8 +1,8 @@
 from expects import Given, Unchanged, Updated, Wrote
-from features.base import Feature
+from framework.base import Feature
 from features.suggestions.controller import waiting_suggestions
 from overview.parts import SUMMARY_COUNTS
-from features.journal import Journal
+from framework.journal import Journal
 from features.suggestions.details import SuggestionsDetails
 from features.suggestions.handlers import DropTakenBackMark, FileDecidedSuggestion
 from events.suggestions import SuggestionCompleted, SuggestionReopened

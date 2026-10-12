@@ -4,7 +4,7 @@ from pathlib import Path
 
 from events.agents import AgentReported
 from events.agents import AgentMessageSent
-from features.parts import AgentContext, Handler
+from framework.parts import AgentContext, Handler
 from providers import PROVIDERS
 from providers.payload import HookEvent
 from resources.fields import Loaded

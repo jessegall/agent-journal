@@ -2,7 +2,7 @@ import shutil
 
 from controllers.base import Arguments
 from engine.version import version
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from features.plugins.answer import Posting, raised
 from features.plugins.declared import called, declared, named, settings_of, settings_choosing
 from features.plugins.environment import environment, ports_for
