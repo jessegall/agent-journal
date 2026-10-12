@@ -24,7 +24,7 @@ from controllers.secrets.controller import Secrets
 from resources.secrets import Kind
 from controllers.secrets.values import ValuesFile
 from controllers.types import Tickets
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from resources.base import AGENT, Refused, SYSTEM, USER
 from resources.types import AgentRow, Question
 
@@ -105,8 +105,7 @@ class IntegrationFeature(Feature):
         project = record.root.parent
         wanted = self.enabled(record) and bool(self.values(record).use_mcp)
         helper = self.headers_helper(record) if wanted else ""
-        for provider in PROVIDERS.values():
-            agent = provider()
+        for agent in SERVED.given(Providers).every():
             if not agent.present(project):
                 continue
             if wanted:

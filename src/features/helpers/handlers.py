@@ -14,7 +14,7 @@ from controllers.helpers.reuse import agent_runs, subagent_rows
 from events.helpers import HelperBriefed, HelperContinued, HelperTold, Telling
 from framework.parts import AgentContext, Context, Handler, OnAgentUpdated
 from declaring.trigger import MINUTE
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from controllers.stored import IDEMPOTENCY
 from resources.base import AGENT, SYSTEM, titled
 from resources.types import FAILED
@@ -120,7 +120,7 @@ def gone(root, name: str, session) -> bool:
 
 def refused_by_provider(root, row) -> str | None:
     """Why the helper's provider refused to run it, as its launch output says, when it did."""
-    provider = PROVIDERS.get(row.provider)
+    provider = SERVED.given(Providers).offers(row.provider)
     if provider is None:
         return None
     return provider.refusal_in(launch_output(root, row.environment))

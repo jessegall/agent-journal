@@ -42,6 +42,10 @@ class TheProviders:
         return whole(found, record, entry) if entry else paged(found, since, before, last or TRANSCRIPT_PAGE)
 
 
+    def every(self) -> tuple:
+        """Every provider this journal knows, each one itself, for work that must touch all of them."""
+        return tuple(kind() for kind in PROVIDERS.values())
+
     def mcp_servers(self, project: Path) -> dict:
         """Every MCP server any agent has connected in this project, by name and address, so a controller can ask what is reachable without naming a provider."""
         return {name: url for provider in PROVIDERS.values() for name, url in provider().mcp_servers(project).items()}

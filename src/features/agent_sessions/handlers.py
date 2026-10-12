@@ -9,7 +9,7 @@ from events.questions import QuestionCompleted
 from engine.sessions import Sessions, live
 from payload import HookEvent
 from framework.parts import AgentContext, Context, Handler, OnAgentUpdated
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from resources.base import SYSTEM
 from resources.types import COMPACTING, STOPPED, SUBAGENT
 from declaring.trigger import MINUTE
@@ -67,12 +67,12 @@ class AskToStop(Handler):
     def handle(self, context: Context, event: AgentChanged) -> None:
         row = context.journal.get(Agents).rows.peek(event.agent)
         stopping = row.data.get("stopping") or {}
-        provider = PROVIDERS.get(row.provider)
+        provider = SERVED.given(Providers).offers(row.provider)
         if not stopping or not provider or not row.live:
             return
         speaking = context.speaking_to(row)
         if speaking.once(STOP, f"{stopping['task']}|{stopping['at']}"):
-            speaking.agent.say(STOP, description=stopping["description"], how=provider().stop_instruction(stopping["task"]))
+            speaking.agent.say(STOP, description=stopping["description"], how=provider.stop_instruction(stopping["task"]))
 
 
 class MarkSilentStopped(Handler):

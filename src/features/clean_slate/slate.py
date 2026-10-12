@@ -7,7 +7,7 @@ from engine.record import Record
 from engine.sessions import Sessions
 from resources.text import plural
 from engine.stored import read_json, write_json
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from payload import journal_hook
 
 KEY = "clean_slate"
@@ -35,11 +35,11 @@ def keep_moved(record: Record, entries: list[dict]) -> None:
 
 
 def others(project: Path, agent: str) -> list[Path]:
-    return [f for f in PROVIDERS[agent]().hook_files(project) if kept(read_json(f, dict, {})) != read_json(f, dict, {})]
+    return [f for f in SERVED.given(Providers).of(agent).hook_files(project) if kept(read_json(f, dict, {})) != read_json(f, dict, {})]
 
 
 def held(record: Record, project: Path, agent: str) -> list[dict]:
-    files = {str(f) for f in PROVIDERS[agent]().hook_files(project)}
+    files = {str(f) for f in SERVED.given(Providers).of(agent).hook_files(project)}
     return [m for m in moved(record) if m["from"] in files]
 
 
