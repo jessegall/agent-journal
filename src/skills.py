@@ -9,7 +9,8 @@ from controllers.types import CONTROLLERS
 from payload import LIBRARY
 from engine.package import data
 from declaring.reach import Reach
-from providers.skill_homes import LINKED, RETIRED, library, link, pruned, skill_name
+from providers.skill_homes import LINKED, RETIRED, library, link, pruned
+from resources.text import skill_name
 from engine.frontmatter import FRONTMATTER, frontmatter
 
 HERE = data()

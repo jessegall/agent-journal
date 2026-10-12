@@ -32,7 +32,7 @@ def settled(kept: dict, was: str, now: str) -> dict:
 
 
 def skills_renamed(chosen: list, was: str, now: str) -> list:
-    from providers.skill_homes import skill_name
+    from resources.text import skill_name
     if "." in now or skill_name(was) not in chosen:
         return chosen
     return sorted({skill_name(now) if name == skill_name(was) else name for name in chosen})

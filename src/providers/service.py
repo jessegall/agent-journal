@@ -8,6 +8,7 @@ from pathlib import Path
 
 from providers import DRIVERS, PROVIDERS, dispatch_model, transcript_reader, workspace_folders
 from providers.catalogue import WorkspaceFolders
+from providers.skill_homes import LINKED, link, unlink
 from providers.turns import last_text
 from providers.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, transcript_at, whole
 from serving import SERVED, Providers
@@ -41,6 +42,18 @@ class TheProviders:
     def model_for(self, provider: str, chosen: str) -> str:
         """The model a dispatch names on that provider: the one chosen, under the name that provider knows it by."""
         return dispatch_model(provider, chosen)
+
+    def skill_homes(self) -> tuple[str, ...]:
+        """Every folder a provider keeps linked skills in, for a file list or an ignore list."""
+        return tuple(LINKED.values())
+
+    def link_skills(self, project: Path, names: list[str]) -> list[Path]:
+        """Links these skills of the journal's library into every provider's own home for them."""
+        return link(project, names)
+
+    def unlink_skill(self, project: Path, name: str) -> None:
+        """Takes one skill out of the library and out of every provider's home."""
+        unlink(project, name)
 
     def last_said(self, agent) -> str:
         """The words of the agent's own last turn, read from its transcript, or nothing when it has written none."""

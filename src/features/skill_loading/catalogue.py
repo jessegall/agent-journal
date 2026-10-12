@@ -11,7 +11,7 @@ from resources.base import SYSTEM, names
 
 SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size", "keywords", "commands")
 from payload import LIBRARY
-from providers.skill_homes import skill_name
+from resources.text import skill_name
 from engine.package import data
 from controllers.stored import mtime
 from engine.frontmatter import frontmatter

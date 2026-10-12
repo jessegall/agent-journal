@@ -38,3 +38,8 @@ def unquoted(said: str) -> str:
     from itertools import dropwhile
     lines = list(dropwhile(lambda line: line.startswith(QUOTE) or not line.strip(), said.splitlines()))
     return "\n".join(lines).strip() or said.strip()
+
+
+def skill_name(name: str) -> str:
+    """What a feature's skill is called: the feature's own name, in the journal's naming."""
+    return f"journal-{name.removeprefix('journal_').replace('_', '-')}"

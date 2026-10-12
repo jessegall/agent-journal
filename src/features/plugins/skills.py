@@ -4,7 +4,7 @@ from pathlib import Path
 from engine.worktree import ignore
 from features.plugins.paths import folder
 from payload import LIBRARY
-from providers.skill_homes import LINKED, link, unlink
+from serving import SERVED, Providers
 
 MARK = "plugin"
 SKILL = "SKILL.md"
@@ -43,7 +43,7 @@ def shipped(root: Path, plugin: str, manifest) -> dict[str, Path]:
 def ignored(project: Path, names: list[str]) -> None:
     exclude = project / ".git" / "info" / "exclude"
     if exclude.parent.is_dir():
-        ignore(exclude, [f"/{home}/{name}" for name in names for home in (LIBRARY, *LINKED.values())])
+        ignore(exclude, [f"/{home}/{name}" for name in names for home in (LIBRARY, *SERVED.given(Providers).skill_homes())])
 
 
 def published(root: Path, plugin: str, manifest) -> list[str]:
@@ -58,9 +58,9 @@ def published(root: Path, plugin: str, manifest) -> list[str]:
         shutil.copytree(source, target)
         (target / SKILL).write_text(stamped((target / SKILL).read_text(), plugin))
         placed.append(name)
-    link(project, placed)
+    SERVED.given(Providers).link_skills(project, placed)
     for stale in set(owned(project, plugin)) - set(theirs):
-        unlink(project, stale)
+        SERVED.given(Providers).unlink_skill(project, stale)
     ignored(project, placed)
     return placed
 
@@ -69,5 +69,5 @@ def withdrawn(root: Path, plugin: str) -> list[str]:
     project = Path(root).parent
     gone = owned(project, plugin)
     for name in gone:
-        unlink(project, name)
+        SERVED.given(Providers).unlink_skill(project, name)
     return gone
