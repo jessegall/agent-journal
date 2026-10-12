@@ -22,8 +22,15 @@ test("a figure sitting on the right corner of a box faces right, and on the left
     page({left: 300, top: 600, width: 400, height: 120});
     const right = seatOf(FIGURE, {x: 700, y: 600});
     const left = seatOf(FIGURE, {x: 300, y: 600});
-    expect([right.x, right.face]).toEqual([700, 90]);
-    expect([left.x, left.face]).toEqual([300, 270]);
+    expect(right.face).toBe(90);
+    expect(left.face).toBe(270);
+});
+
+test("a figure's hips sit a little inboard of the corner it sits on, so its weight rests on the surface and only its legs reach past the edge", () => {
+    page({left: 300, top: 600, width: 400, height: 120});
+    const inboard = 0.14 * FIGURE.size;
+    expect(seatOf(FIGURE, {x: 700, y: 600}).x).toBeCloseTo(700 - inboard, 5);
+    expect(seatOf(FIGURE, {x: 300, y: 600}).x).toBeCloseTo(300 + inboard, 5);
 });
 
 test("a seated figure's hips sit on the box's edge, and the room it takes above the edge is what the thread leaves", () => {
