@@ -17,6 +17,7 @@ def pick(record, mode: str, actor: str) -> str:
     if mode_of(record) == mode:
         return mode
     record.change_setting(NAME, {"mode": mode})
+    record.emit("feature", 0, "updated", actor, setting=NAME)
     from framework.loaded import running
     from features.work_modes.feature import WorkModes
     for write in CARRIED_IN.each():
