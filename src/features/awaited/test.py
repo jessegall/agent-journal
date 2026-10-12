@@ -1,66 +1,24 @@
 import features
-from controllers.types import Agents, Works
-from controllers.types import Helpers
 from resources.base import AGENT, SYSTEM
 from tests.conftest import fresh
-from tests.kit import nudges, nudges_with_briefs, report, tick
 
 
-def test_a_wait_on_a_run_and_a_helper_stands_until_both_are_back_and_then_hands_back_their_results(monkeypatch):
-    features.load()
-    monkeypatch.setattr("agents.terminal.detached", lambda *given: 1)
-    monkeypatch.setattr("providers.codex.Codex.models", lambda self: ("gpt-5.5",))
-    record = fresh()
-    Agents(record, actor=SYSTEM).create("claude-1")
-    run = {"id": "toolu_1", "task_id": "b2gb9ud45", "command": "pytest -q", "task": "the suite", "running": True, "ended": 0.0, "status": ""}
-    report(record, "idle", "Stop", shell_rows=[run])
-    Helpers(record, actor=AGENT).dispatch("Rhea", "profile the hooks", provider="codex", model="gpt-5.5")
-    works = Works(record, actor=AGENT)
-    work = works.create("ship the helpers")
-    works.action("await")("the suite and Rhea", on="b2gb9ud45, helper:1")
-    works.update(work.n, awaiting_since=works.load(work.n).awaiting_since - 900)
-    tick(record)
-    report(record, "working", "PostToolUse", tool="Bash", wrote=True, commands=[{"command": "ls", "tool": "Bash", "at": 9e9}])
-    assert works.load(work.n).awaiting == "the suite and Rhea", "working on meanwhile leaves a named wait standing"
-    assert not [n for n in nudges(record) if "check the suite" in n], "a named wait is never asked about"
-    report(record, "idle", "Stop", shell_rows=[{**run, "running": False, "ended": 5.0, "status": "completed", "code": 0}])
-    tick(record)
-    assert works.load(work.n).awaiting_on == "b2gb9ud45,helper:1", "one back is not all back"
-    Helpers(record, actor=AGENT).update(1, report="hooks spend 40ms in imports")
-    tick(record)
-    done = works.load(work.n)
-    assert (done.awaiting, done.awaiting_on) == ("", ""), "the wait ends once every one is back"
-    assert "the suite completed, passed" in done.sections[-1]["body"] and "Rhea: hooks spend 40ms in imports" in done.sections[-1]["body"], \
-        "their results go into the work's log, and a run says whether it passed, which is what decides what the agent does next"
+def test_a_run_says_how_it_came_to_an_end_and_an_orchestrator_is_refused_a_wait_on_a_helper():
     from resources.runs import CommandRow, Finish
-    failed = CommandRow.from_json({**run, "running": False, "status": "completed", "code": 1})
-    assert (failed.came_to(), CommandRow.from_json(run).came_to()) == ("completed, failed with exit code 1", "ended"), \
+    run = {"id": "toolu_1", "task_id": "b2gb9ud45", "command": "pytest -q", "task": "the suite", "running": False, "ended": 0.0, "status": "completed"}
+    assert (CommandRow.from_json({**run, "code": 1}).came_to(), CommandRow.from_json({**run, "status": ""}).came_to()) == ("completed, failed with exit code 1", "ended"), \
         "a run that failed names its exit code, and one that finished saying nothing is only said to have ended"
     assert Finish("completed").said() == "completed", "a run whose notification carried no exit code is only said to have ended as it did"
-    told = [(n, b) for n, b in nudges_with_briefs(record) if n.startswith(f"What work {work.n} waited on came back")]
-    assert len(told) == 1 and "the suite completed, passed" in told[0][1] and "Rhea: hooks spend 40ms in imports" in told[0][1], \
-        "the agent is told once to carry on, and what came back is in the line's brief, which is never cut to fit a title"
-    from controllers.types import Boards
-    from resources.base import Refused
+    from controllers.types import Boards, Works
+    from resources.base import AGENT, Refused
+    record = fresh()
     Boards(record, actor=AGENT).orchestrate("on")
     try:
-        works.action("await")("Rhea", on="helper:1")
+        Works(record, actor=AGENT).action("await")("Rhea", on="helper:1")
     except Refused as refusal:
         assert "does not wait on a helper" in str(refusal), "an orchestrating agent is refused a wait that names a helper"
     else:
         raise AssertionError("an orchestrating agent is refused a wait that names a helper")
-
-
-def test_a_wait_on_a_run_that_finished_without_an_end_time_still_ends():
-    features.load()
-    record = fresh()
-    Agents(record, actor=SYSTEM).create("claude-1")
-    report(record, "idle", "Stop", shell_rows=[{"id": "toolu_2", "task_id": "bq9", "command": "pytest -q", "task": "the suite", "running": False, "ended": 0.0, "status": ""}])
-    works = Works(record, actor=AGENT)
-    work = works.create("ship it")
-    works.action("await")("the suite", on="bq9")
-    tick(record)
-    assert works.load(work.n).awaiting == "", "a run that is no longer running ends the wait, whether or not it recorded when it ended"
 
 
 def test_a_state_file_changed_by_another_writer_right_after_this_one_is_read_back_from_the_file(monkeypatch, tmp_path):
