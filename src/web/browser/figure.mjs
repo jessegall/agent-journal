@@ -197,7 +197,8 @@ await runScenarios(process.argv[2], {
         const onTheSpot = longestRun(frames, (frame, last) => frame.walking && frame.x === last.x && frame.y === last.y);
         const clip = await page.locator(FIGURE).evaluate((figure, home) => {
             const ground = document.querySelector(home)?.getBoundingClientRect();
-            return `${figure.dataset.clip} clip, walking ${figure.dataset.walking}, ground ${ground ? `${Math.round(ground.left)}..${Math.round(ground.right)} at ${Math.round(ground.top)}` : "none"}`;
+            const trip = figure.dataset.trip ? `, ${figure.dataset.trip}` : ", on no trip";
+            return `${figure.dataset.clip} clip, walking ${figure.dataset.walking}${trip}, ground ${ground ? `${Math.round(ground.left)}..${Math.round(ground.right)} at ${Math.round(ground.top)}` : "none"}`;
         }, HOME);
         const measured = `from ${Math.round(before.x)},${Math.round(before.y)} to ${Math.round(after.x)},${Math.round(after.y)}, longest step across ${leap.toFixed(1)}px, longest walk on the spot ${onTheSpot}, ${clip}`;
         console.log(`the figure clicked away: ${measured}`);
