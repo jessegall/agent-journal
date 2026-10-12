@@ -18,7 +18,7 @@ from features.work_tracking.details import WorkDetails
 from features.sequences.details import IN_CHAT, STEP, STEP_HELD, STEP_STALLED, UNFINISHED
 from features.sequences.dispatch import board_of, dispatched_by_line, working_agent
 from resources.sequences import Run, RunKey
-from features.triggers.controller import Triggers
+from controllers.types import Triggers
 from resources.triggers import START
 from controllers.types import CONTROLLERS
 from resources.base import FIRED, SECTION, SYSTEM

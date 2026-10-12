@@ -66,7 +66,7 @@ def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_no
     from engine.sessions import Sessions
     from features.sequences.controller import Sequences
     from features.sequences.shipped import ship
-    from features.triggers.controller import Triggers
+    from controllers.triggers.controller import Triggers
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse", provider="claude")

@@ -8,7 +8,7 @@ from engine.given import given
 from controllers.base import Controller
 from controllers.types import Agents
 from resources.sequences import BY_HAND, RunKey, Sequence
-from features.triggers.controller import Triggers
+from controllers.types import Triggers
 from resources.triggers import START
 from resources.base import AGENT, SECTION, SYSTEM
 from controllers.marks import action

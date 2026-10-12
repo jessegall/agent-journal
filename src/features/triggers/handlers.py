@@ -12,7 +12,8 @@ from framework.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Context, Handle
 from declaring.holds import Runs
 from engine.gates import STILL_HELD
 from framework.recital import COMMANDS, mentioned, searched
-from features.triggers.controller import Triggers, holding
+from controllers.types import Triggers
+from resources.triggers import holding
 from resources.triggers import DENY, FROM_USER, HOLD, IDLE, INSTRUCT, MESSAGE, NUDGE, START, WORKING, Trigger
 from resources.base import SYSTEM, USER
 from declaring.reach import Reach

@@ -1,5 +1,6 @@
 from typing import ClassVar
 
+from declaring.extension import Extension
 from resources.base import PROJECT, SIDEBAR, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Shape
 
@@ -11,6 +12,11 @@ STATE_DOES = (NUDGE, INSTRUCT, HOLD)
 ANY, IDLE, WORKING = "any", "idle", "working"
 ONLY_WHEN = (ANY, IDLE, WORKING)
 FROM_USER = "user"
+STARTED_BY = Extension()
+
+
+def holding(n: int) -> str:
+    return f"hold.{n}"
 
 
 class Trigger(Shape, Resource):

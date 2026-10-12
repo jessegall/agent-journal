@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from controllers.types import environment_records
-from features.triggers.controller import Triggers
+from controllers.types import Triggers
 from resources.base import SYSTEM
 
 RENAMED = {"message.unread": "message.unread.created", "message.unanswered": "message.unanswered.created", "work.unlogged": "work.open.logged",
