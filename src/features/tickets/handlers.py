@@ -75,7 +75,7 @@ def pass_on_calls(context: AgentContext, tickets: Tickets) -> None:
             elif kind == PLAN_DONE_CALL:
                 continue
             else:
-                context.agent.whisper(kind, ticket=ticket.n, title=ticket.title, **values)
+                context.agent.nudge(kind, ticket=ticket.n, title=ticket.title, **values)
 
 
 def waited(ticket) -> int:
@@ -98,7 +98,7 @@ def handed_in(context, agent) -> list[Sent]:
 def look_at_stuck(context: AgentContext, tickets: Tickets) -> None:
     for ticket, state in tickets._needing_a_look(tickets._orchestrating()):
         if state.kind == "stopped" and tickets._revive(ticket):
-            context.agent.whisper("ticket_restarted", ticket=ticket.n, title=ticket.title)
+            context.agent.nudge("ticket_restarted", ticket=ticket.n, title=ticket.title)
         elif context.every(ATTENTION_EVERY, f"{ticket.ref}|{state.kind}", Trigger(every=LOOK_AGAIN, unit=MINUTES)):
             tickets.raise_moment(ticket.n, STUCK, reason=state.text)
 

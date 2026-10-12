@@ -164,7 +164,7 @@ class NameRepeatedChecks(Handler):
             return
         if context.once("polled", shell[-1]):
             provider = SERVED.given(Providers).offers(context.agent.row.provider)
-            context.agent.whisper(POLLING if provider and provider.background_wakes else POLLING_NO_WAKE, times=POLLED, command=shell[-1][:80])
+            context.agent.nudge(POLLING if provider and provider.background_wakes else POLLING_NO_WAKE, times=POLLED, command=shell[-1][:80])
 
 
 class ClearWaitOnActivity(Handler):
@@ -175,7 +175,7 @@ class ClearWaitOnActivity(Handler):
             if not w.is_self_clearing or started <= float(w.awaiting_since):
                 continue
             context.journal.get(Works).update(w.n, awaiting="")
-            context.agent.whisper("wait cleared", awaiting=w.awaiting)
+            context.agent.nudge("wait cleared", awaiting=w.awaiting)
 
 
 class AskStillAwaiting(Handler):
@@ -208,7 +208,7 @@ class CountEdits(Handler):
         triggering.write(context.record, row, name, edits=edits)
         every = context.settings.name_work_every
         if every and edits % every == 0:
-            context.agent.whisper("in hand", n=work[0].n, title=work[0].title)
+            context.agent.nudge("in hand", n=work[0].n, title=work[0].title)
         if edits >= context.settings.log_after:
             context.hold("log held", edits=edits, n=work[0].n)
 

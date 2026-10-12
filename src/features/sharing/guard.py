@@ -82,4 +82,4 @@ class NameVisitorComment(Handler):
         agent = context.journal.get(Agents).primary()
         if agent:
             line = "trusted" if comment.data.get("trusted") else "commented"
-            context.speaking_to(agent).agent.whisper(line, name=comment.data["visitor"], about=comment.refs[0].replace(":", " "), n=comment.n)
+            context.speaking_to(agent).agent.nudge(line, name=comment.data["visitor"], about=comment.refs[0].replace(":", " "), n=comment.n)

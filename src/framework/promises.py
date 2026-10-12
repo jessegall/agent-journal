@@ -8,6 +8,7 @@ single test file, and so the boot walk can refuse a kind that owes them and carr
 from dataclasses import dataclass
 
 from engine.kinds import ByKind
+from framework.loaded import FEATURES
 
 
 THE_ENGINES_OWN = ("SendOnTheClock", "SendOnToolUse")
@@ -34,6 +35,11 @@ class Promise:
     def named_as(self) -> tuple[str, str, str]:
         """What makes this registration itself: its feature, its kind and its own name."""
         return (self.feature.name, self.kind, self.name)
+
+    @classmethod
+    def of(cls, registration) -> "Promise":
+        """A registration written for the 3.0 engine, as the promise the play and the watch read."""
+        return cls(FEATURES[registration.feature], registration.kind, registration.name, registration.receiver, registration.event, registration.expects)
 
     def called(self, n: int) -> str:
         """What a failure is named after, so it names the promise and not a line number."""

@@ -8,7 +8,9 @@ from resources.fields import Loaded
 
 
 @dataclass(frozen=True)
-class TypedEvent(Loaded):
+class TypedEvent(Fact, Loaded):
+    """A logged event as the catalogue names it: a fact the lane dispatches to the swept features registered on its class."""
+
     on: ClassVar[str] = ""
     marked_as: ClassVar[type[Event]] = Fact
 

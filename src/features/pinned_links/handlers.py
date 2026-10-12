@@ -15,4 +15,4 @@ class RemindToPinLinks(Handler):
         for url in dict.fromkeys(match.rstrip(".,;:!?") for match in LINK.findall(event.text)):
             if url in pinned or SELF_PINNED.match(url) or not context.once(UNPINNED, url):
                 continue
-            context.agent.whisper(UNPINNED, url=url)
+            context.agent.nudge(UNPINNED, url=url)

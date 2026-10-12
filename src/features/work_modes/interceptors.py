@@ -34,7 +34,7 @@ class RefuseHelperInSolo(ToolInterceptor):
 
 def orchestrator_drifted(context: AgentContext, edits: int) -> None:
     """An orchestrating agent that writes code itself is told how much of it it has written."""
-    context.agent.whisper("drifted", edits=edits)
+    context.agent.nudge("drifted", edits=edits)
 
 
 def builder_handed_away(context: AgentContext, edits: int) -> None:
@@ -43,7 +43,7 @@ def builder_handed_away(context: AgentContext, edits: int) -> None:
     made = own + theirs
     if not made or own * 100 >= int(context.settings.own_share) * made:
         return
-    context.agent.whisper("handed away", share=int(own * 100 / made), own=own, theirs=theirs)
+    context.agent.nudge("handed away", share=int(own * 100 / made), own=own, theirs=theirs)
 
 
 DRIFTS = {ORCHESTRATOR: orchestrator_drifted, BUILDER: builder_handed_away}

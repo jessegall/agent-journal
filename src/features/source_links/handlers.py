@@ -17,7 +17,7 @@ class NameUncitedSource(Handler):
         uncited = [r for r in self.lately(context) if r.ref != made.ref and r.ref not in made.refs]
         agent = context.journal.get(Agents).primary()
         if uncited and agent:
-            context.speaking_to(agent).agent.whisper("uncited", type=event.type, n=event.n, read=", ".join(r.ref for r in uncited[-3:]))
+            context.speaking_to(agent).agent.nudge("uncited", type=event.type, n=event.n, read=", ".join(r.ref for r in uncited[-3:]))
 
     def lately(self, context: Context) -> list:
         since = time.time() - context.settings.within * 60

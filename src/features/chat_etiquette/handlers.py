@@ -31,7 +31,7 @@ class NameShopTalk(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
         found = next((m for m in SHOP_TALK.finditer(event.text) if event.text[max(0, m.start() - 1):m.start()] not in QUOTES), None)
         if found:
-            context.agent.whisper(SHOP, words=found.group(0))
+            context.agent.nudge(SHOP, words=found.group(0))
 
 
 def third_person(record) -> re.Pattern:
@@ -44,7 +44,7 @@ class NameThirdPerson(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
         found = next((m for m in third_person(context.record).finditer(event.text) if event.text[max(0, m.start() - 1):m.start()] not in QUOTES), None)
         if found:
-            context.agent.whisper(THIRD_PERSON, words=found.group(0))
+            context.agent.nudge(THIRD_PERSON, words=found.group(0))
 
 
 class RemindOfEtiquette(Handler):
@@ -53,4 +53,4 @@ class RemindOfEtiquette(Handler):
             return
         triggering.noticed(context.record, context.agent.row, context.feature.keyed(REMIND))
         if context.due(REMIND):
-            context.agent.whisper(REMIND)
+            context.agent.nudge(REMIND)

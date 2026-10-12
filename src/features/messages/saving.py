@@ -10,7 +10,7 @@ class SaveAgentMessage(Handler):
         if not event.text.strip() or not context.once("shown", event.turn):
             return
         if only_emoji(event.text):
-            context.agent.whisper("reaction", face=event.text.strip())
+            context.agent.nudge("reaction", face=event.text.strip())
             return
         messages = context.journal.acting(AGENT).get(Messages)
         if messages.said_already(event.text):

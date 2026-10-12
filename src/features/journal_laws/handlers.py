@@ -13,4 +13,4 @@ class NoticeLargestResult(Handler):
         if event.size <= int(context.state.get("largest", 0)):
             return
         context.state.set("largest", event.size)
-        context.agent.whisper(LARGEST_RESULT, tool=event.tool or "that tool", size=f"{event.size:,}")
+        context.agent.nudge(LARGEST_RESULT, tool=event.tool or "that tool", size=f"{event.size:,}")

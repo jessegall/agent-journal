@@ -7,18 +7,26 @@ swept feature is held to. It asks for one thing, the tick's record, and nothing 
 """
 
 from dataclasses import dataclass
+from collections.abc import Callable
+from typing import get_args
 
 from declaring.registries import MOVED
 from engine import bus
 from events import Fact, Request
-from expects.watching import tell
-from framework.parts import Context, Handler as OldStyle
-from receiving import HANDLE, REGISTERED, Handler, Registration, Registrations
+from events.typed import AgentEvent, TypedEvent
+from engine.developing import developing
+from expects.watching import WATCH, tell
+from controllers.agents import Agents
+from controllers.base import CONTROLLERS
+from framework.loaded import FEATURES
+from framework.parts import Context, Handler as OldStyle, Speaker
+from framework.promises import Promise
+from receiving import HANDLE, LISTEN, REGISTERED, Handler, Listener, Registration, Registrations
 from receiving.ordering import InOrder
-from receiving.ticks import Lane, Services, TickFailed
-from resources.base import ACTIONS
+from receiving.ticks import Lane, PerAsk, Services, TickFailed
+from resources.base import ACTIONS, SYSTEM
 from resources.types import TYPES
-from serving import Adapted as TheRecord
+from serving import Adapted as TheRecord, Chat, Rows, Settings
 
 ON_THE_SENDING_PATH = {
     "RunTagCommands": "it answers a message about to be sent, which is a request and not a fact",
@@ -199,6 +207,31 @@ class BusListener(Handler[Fact]):
         return ran_on_the_bus(self, event, record)
 
 
+class CatalogueFacts(Listener[Fact]):
+    """A logged event as the catalogue names it, once for each typed event a swept feature registered on: what carries the bus's string patterns over to the 3.0 engine's types."""
+
+    adapted = True
+
+    def __init__(self, moved: Registrations):
+        self.moved = moved
+
+    def called(self) -> str:
+        return "CatalogueFacts"
+
+    def patterns(self) -> tuple[str, ...]:
+        """None: it hears every logged event and names its catalogue facts by type."""
+        return ()
+
+    @classmethod
+    def wants(cls) -> dict[str, type]:
+        return {}
+
+    def listen(self, event: "OldEvent") -> list[Fact]:
+        patterns = set(bus.patterns(event.logged))
+        kinds = dict.fromkeys(one.event for one in self.moved.each if issubclass(one.event, TypedEvent) and patterns & set(one.event.patterns(())))
+        return [typed for kind in kinds if (typed := kind.read(event.logged)).wanted() and not (isinstance(typed, AgentEvent) and not typed.agent)]
+
+
 class FailedTick(Handler[Fact]):
     """A tick that raised: the handlers' writes are rolled back and this says so, where the 2.x bus let the raise out into the write that told the event."""
 
@@ -238,6 +271,7 @@ class Ticking:
     def resolve(self) -> None:
         """Works the order out again, after a receiver has joined or left: the widest patterns first, as the bus ran them, and the moved features' own receivers after them."""
         self.registered.add(Registration.read(HANDLE, TickFailed, FailedTick(), ()))
+        self.registered.add(Registration.read(LISTEN, OldEvent, CatalogueFacts(self.moved), ()))
         self.registered.each.sort(key=lambda one: min((slot_of(pattern) for pattern in patterns_of(one.receiver)), default=4))
         self.running = Registrations()
         for one in (*self.registered.each, *self.moved.each):
@@ -269,7 +303,29 @@ class Ticking:
         if record is None:
             bus.over_the_listeners(logged, record)
             return
-        Lane(f"project:{logged.id}", self.running, Services({TheRecord: record}), record=record, order=self.order).run(OldEvent(logged=logged))
+        Lane(f"project:{logged.id}", self.running, Services(lane_services(record, lambda: agent_of(logged, record))), record=record, order=self.order,
+             switched_on=lambda feature: not feature or FEATURES[feature].enabled(record),
+             watch=lambda one, fact, began: watched(Promise.of(one), fact, record, began) if not type(one.receiver).adapted else None).run(OldEvent(logged=logged))
+
+
+def watched(promise, event, record, began: float) -> None:
+    """Where the journal develops itself, a handler's run is noted for the watch, which looks at it elsewhere and on its own time; a run with no record is not watched."""
+    if record is not None and developing(record.root.parent):
+        WATCH.ran(promise, event, record, began)
+
+
+def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
+    """What a receiver is handed, by the service type it asks for, over this record: the same funnels a 2.x handler reached through its Context. The agent is looked up only when a receiver asks for the chat."""
+    return {TheRecord: record,
+            Chat: PerAsk(lambda feature, asked: Speaker(FEATURES[feature], record, agent())),
+            Settings: PerAsk(lambda feature, asked: FEATURES[feature].values(record)),
+            Rows: PerAsk(lambda feature, asked: CONTROLLERS[get_args(asked)[0].type](record, actor=SYSTEM))}
+
+
+def agent_of(logged, record):
+    """The agent a tick's chat is about: the agent the event is about, else the one the environment's chat is with."""
+    agents = Agents(record, actor=SYSTEM)
+    return agents.peek(logged.n) if logged.type == "agent" else agents.primary_to_read()
 
 
 TICKING = Ticking(ADAPTED, REGISTERED)

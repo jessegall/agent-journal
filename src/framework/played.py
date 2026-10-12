@@ -22,6 +22,9 @@ from engine.project_files import walk
 from engine.record import Record
 from expects import Given, Left
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE
+from receiving.ticks import Services
+import serving
+from framework.adapter import lane_services
 from expects.playing import Seen, World, remembered_by
 from framework.parts import AgentContext, Context
 from resources.base import Refused, SYSTEM
@@ -193,25 +196,33 @@ def answered_a_hook(promise, given: Given, record: Record, world: World) -> None
     world.seen.answered = promise.part(HookCall(provider_of(row), record, hooked(given, record), row))
 
 
+def play_services(promise, given: Given, record: Record, world: World) -> dict:
+    """What a 3.0 receiver asked for, by type: the journal's own services over the scratch record, as the lane hands them, and the Fakes for what reaches outside it."""
+    fakes = {serving.Commands: world.commands, serving.Files: world.files, serving.Processes: world.processes,
+             serving.Providers: world.providers, serving.Clock: world.clock, serving.Ids: world.ids}
+    services = Services({**lane_services(record, lambda: speaking(record, given)), **fakes})
+    return services.given(type(promise.part).__name__, promise.feature.name, type(promise.part).wants())
+
+
 def listened(promise, given: Given, record: Record, world: World) -> None:
     """A 3.0 listener, through its own listen. It writes nothing, so the facts it dispatches are the whole of what it did."""
-    world.seen.facts += promise.part.listen(given.on, **world.given_to(type(promise.part).wants()))
+    world.seen.facts += promise.part.listen(given.on, **play_services(promise, given, record, world))
 
 
 def acted_on_a_fact(promise, given: Given, record: Record, world: World) -> None:
     """A 3.0 handler, through its own handle. It never decides whether to act, so what it writes and the facts it answers with are what it did."""
-    world.seen.facts += promise.part.handle(given.on, **world.given_to(type(promise.part).wants())) or []
+    world.seen.facts += promise.part.handle(given.on, **play_services(promise, given, record, world)) or []
 
 
 def answered_a_request(promise, given: Given, record: Record, world: World) -> None:
     """A 3.0 answerer, through its own answer. It is read-only, so what it answers is the whole of what it did."""
-    world.seen.answered = promise.part.answer(given.on, **world.given_to(type(promise.part).wants()))
+    world.seen.answered = promise.part.answer(given.on, **play_services(promise, given, record, world))
 
 
 def refused_the_write(promise, given: Given, record: Record, world: World) -> None:
     """A 3.0 refuser, through its own refuse. It either raises with its reason or lets the write through."""
     try:
-        promise.part.refuse(given.on, **world.given_to(type(promise.part).wants()))
+        promise.part.refuse(given.on, **play_services(promise, given, record, world))
         world.seen.kept = True
     except Refused as why:
         world.seen.refused = str(why)

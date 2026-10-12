@@ -10,7 +10,7 @@ from typing import ClassVar
 
 from engine.record import Record
 from engine.stored import read_json
-from expects import At, Answering, Counting, Expectation, Given, NoSuchService
+from expects import At, Answering, Counting, Expectation, Given
 from resources.base import SYSTEM
 
 
@@ -52,22 +52,6 @@ class Seen:
     @property
     def is_unchanged(self) -> bool:
         return self.before == self.after and not self.wrote and not self.updated
-
-
-@dataclass
-class Chat:
-    """What the agent said and what the journal said to it."""
-
-    seen: Seen
-
-    def say(self, text: str) -> None:
-        self.seen.said.append(text)
-
-    def nudge(self, line: str, **values) -> None:
-        self.seen.nudged.append((line, tuple(sorted(values.items()))))
-
-    def hold(self, why: str) -> None:
-        self.seen.held = why
 
 
 @dataclass
@@ -157,7 +141,6 @@ class World:
     """Everything one play is given: the Fakes, and what the rows looked like before it ran."""
 
     seen: Seen
-    chat: Chat
     commands: Commands
     files: Files
     processes: Processes
@@ -168,15 +151,8 @@ class World:
     @classmethod
     def of(cls, given: Given) -> "World":
         seen = Seen()
-        return cls(seen, Chat(seen), Commands(seen, given.commands), Files(seen, given.files),
+        return cls(seen, Commands(seen, given.commands), Files(seen, given.files),
                    Processes(seen, given.processes), Providers(seen, given.providers), Clock(given.clock), Ids(given.ids))
-
-    def given_to(self, wants: dict[str, object]) -> dict:
-        """The services a receiver asked for by name, each the Fake that answers for it."""
-        for name in wants:
-            if not hasattr(self, name):
-                raise NoSuchService.named(name)
-        return {name: getattr(self, name) for name in wants}
 
 
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:

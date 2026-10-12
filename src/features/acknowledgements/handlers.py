@@ -53,6 +53,6 @@ class HideJournalOnlyTurns(Handler):
             return
         event.stop()
         if context.once("kept out", "told"):
-            context.agent.whisper(KEPT_OUT)
+            context.agent.nudge(KEPT_OUT)
         if text and context.once("acknowledged", f"{','.join(row.delivered)}:{text}"):
             context.journal.acting(AGENT).get(Messages).create(titled(text), brief=text, acknowledgement=True)

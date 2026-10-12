@@ -39,6 +39,6 @@ class HoldHeavyRunsToOneAtATime(ToolInterceptor):
             return ""
         at = queue.joined(Run(shell, context.record.env, at=time.time()))
         where, command = ahead[0]
-        context.agent.whisper(WAITING, command=shell, ahead=command, where=where, place=f"number {queue.place_of(context.record.env)} of {len(at)}")
+        context.agent.nudge(WAITING, command=shell, ahead=command, where=where, place=f"number {queue.place_of(context.record.env)} of {len(at)}")
         return (f"{command} is running in {where}, and two heavy runs at once make both slower and neither time trustworthy. "
                 f"You are number {queue.place_of(context.record.env)} of {len(at)} in the project's queue: start this again when that one has ended.")

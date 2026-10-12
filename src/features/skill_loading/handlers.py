@@ -35,7 +35,7 @@ class RemindUnloaded(Handler):
             state = triggering.last(context.record, row.title, name)
         if state.notified or not context.due() or any(journal_skill(s) for s in row.skills):
             return
-        context.agent.whisper("unloaded")
+        context.agent.nudge("unloaded")
         triggering.write(context.record, row, name, notified=True)
 
 
@@ -62,7 +62,7 @@ class NameStaleSkills(Handler):
             require(context.record, context.agent.session, held)
         rest = sorted(set(changed) - always)
         if rest and context.once("stale", ", ".join(rest)):
-            context.agent.whisper("stale", skills=", ".join(rest))
+            context.agent.nudge("stale", skills=", ".join(rest))
 
 
 class RequireAlwaysSkills(Handler):

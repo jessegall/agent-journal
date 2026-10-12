@@ -17,5 +17,5 @@ class NameAmbiguousFiles(Handler):
             found = matching(project, name) if a_file(name) and name not in named else []
             if len(found) > 1:
                 named.add(name)
-                context.agent.whisper(AMBIGUOUS, name=name, count=len(found), paths=", ".join(found[:5]))
+                context.agent.nudge(AMBIGUOUS, name=name, count=len(found), paths=", ".join(found[:5]))
         context.state.set("ambiguous", sorted(named))

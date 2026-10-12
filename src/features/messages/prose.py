@@ -17,7 +17,7 @@ class NameRunTogether(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         last = SERVED.given(Providers).last_said(context.agent.row).strip()
         if len(last) >= RUN_ON and "\n\n" not in last and last.count(". ") >= SENTENCES:
-            context.agent.whisper("paragraphs")
+            context.agent.nudge("paragraphs")
 
 
 STANDALONE = re.compile(r"(?<![\w.,:/–—-])#?(\d+)(?![\w%:/–—-]|[.,]\d)")
@@ -84,7 +84,7 @@ class NameBareNumbers(Handler):
         named = [str(n) for n in found if n in known]
         sent = next((m for m in reversed(context.journal.get(Messages).rows.summaries()) if m["seen"][:1] == [AGENT]), None)
         if named and sent:
-            context.agent.whisper("numbers", n=sent["n"], numbers=", ".join(named))
+            context.agent.nudge("numbers", n=sent["n"], numbers=", ".join(named))
 
 
 NAMED_WITHIN = 3600.0

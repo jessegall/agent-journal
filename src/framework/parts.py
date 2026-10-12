@@ -36,11 +36,14 @@ class Speaker:
     def say(self, line: str, **values):
         return self.feature.journal.say(self.record, self.row, line, **values)
 
-    def whisper(self, line: str, **values):
+    def nudge(self, line: str, **values):
         return self.feature.journal.whisper(self.record, self.row, line, **values)
 
     def remind(self, line: str, **values):
         return self.feature.journal.remind(self.record, self.row, line, **values)
+
+    def hold(self, line: str, behaviour: str = "", **values) -> None:
+        self.feature.hold(self.record, line, behaviour, self.row, **values)
 
     def move_to_background(self, running: str = "") -> dict:
         from agents.control import move_to_background

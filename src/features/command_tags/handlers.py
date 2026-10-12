@@ -29,7 +29,7 @@ class RunTagCommands(Handler):
                         *self.argv(commands[name], n, argument, text), *self.settings(name, extras)], out=out, err=err)
             if code:
                 failed = True
-                context.agent.whisper("refused", tag=name, on=n or argument, error=tag_spelling((err.getvalue() or out.getvalue()).strip()))
+                context.agent.nudge("refused", tag=name, on=n or argument, error=tag_spelling((err.getvalue() or out.getvalue()).strip()))
                 continue
             keep(context.record, context.agent.session, f"the {name} tag on {n or argument} ran")
         return failed
@@ -46,4 +46,4 @@ class TeachTheTag(Handler):
     def handle(self, context: AgentContext, event: CommandRan) -> None:
         tag = tag_for(event.command)
         if tag and "--file" not in event.command and context.due("hint"):
-            context.agent.whisper("hint", tag=tag.name, hint=tag.hint)
+            context.agent.nudge("hint", tag=tag.name, hint=tag.hint)

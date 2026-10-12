@@ -17,4 +17,4 @@ class ReviewNewRule(Handler):
             return
         agent = context.journal.get(Agents).primary()
         if agent:
-            context.speaking_to(agent).agent.whisper("review", n=event.n, title=context.journal.get(Rules).load(event.n).title)
+            context.speaking_to(agent).agent.nudge("review", n=event.n, title=context.journal.get(Rules).load(event.n).title)

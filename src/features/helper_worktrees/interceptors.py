@@ -25,7 +25,7 @@ class TellDrift(ToolInterceptor):
         if drifted is None:
             return ""
         row, found = drifted
-        context.agent.whisper("drifted", working=row.working, commits=found.commits, path=row.path)
+        context.agent.nudge("drifted", working=row.working, commits=found.commits, path=row.path)
         return ""
 
 

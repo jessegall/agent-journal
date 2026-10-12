@@ -135,7 +135,7 @@ class WatchWhatTheAgentWrites(Handler):
         for row in firing(context, lambda scope: "" if scope == COMMANDS else event.text):
             fire(context, context.agent.row, row, CHAT_DENIED if row.does == DENY else "")
             if row.does == DENY:
-                context.agent.whisper("denied", title=row.title, text=row.wording)
+                context.agent.nudge("denied", title=row.title, text=row.wording)
 
 
 class WatchWhatTheUserWrites(Handler):

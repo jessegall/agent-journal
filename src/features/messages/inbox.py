@@ -43,7 +43,7 @@ class NameUnread(Handler):
             return
         if not context.due("unread"):
             return
-        context.agent.whisper("inbox")
+        context.agent.nudge("inbox")
         if counted(context, "unread") > patient(context, "unread"):
             context.hold("inbox held", "unread")
 
@@ -69,5 +69,5 @@ class NameUnanswered(Handler):
             return
         hold_unanswered(context, held)
         if (context.agent.row.status == IDLE or context.due("answering")) and counted(context, "answering") <= patient(context, "answering"):
-            context.agent.whisper("answer", messages=", ".join(f"message {m.n}" for m in held[-3:]), numbers=[m.n for m in held[-3:]],
+            context.agent.nudge("answer", messages=", ".join(f"message {m.n}" for m in held[-3:]), numbers=[m.n for m in held[-3:]],
                                   rows=[m.ref for m in held[-3:]])

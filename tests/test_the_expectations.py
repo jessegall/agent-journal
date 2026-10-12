@@ -36,7 +36,7 @@ def promised():
     from framework.promises import PROMISED, Promise
     from receiving import REGISTERED
     features.load()
-    moved = [(Promise(FEATURES[one.feature], one.kind, one.name, one.receiver, one.event, one.expects), n, expectation)
+    moved = [(Promise.of(one), n, expectation)
              for one in REGISTERED.each for n, expectation in enumerate(one.expects)]
     return [pytest.param(one, expectation, id=one.called(n)) for one, n, expectation in [*PROMISED.played(), *moved]]
 
@@ -588,13 +588,13 @@ def test_a_feature_that_registers_an_owing_kind_without_expects_refuses_the_boot
 
 
 def test_a_service_nobody_serves_is_refused_by_name_rather_than_left_out():
-    from expects import NoSuchService
-    from expects.playing import World
+    import serving
+    from receiving.ticks import NoSuchService, Services
 
-    world = World.of(Given("x"))
-    assert set(world.given_to({"chat": object, "clock": object})) == {"chat", "clock"}, "a service the play serves is handed over"
-    with pytest.raises(NoSuchService, match="'ledger'"):
-        world.given_to({"chat": object, "ledger": object})
+    services = Services({serving.Clock: object(), serving.Ids: object()})
+    assert set(services.given("Demo", "demo", {"clock": serving.Clock, "ids": serving.Ids})) == {"clock", "ids"}, "a service the play serves is handed over"
+    with pytest.raises(NoSuchService, match="ledger"):
+        services.given("Demo", "demo", {"clock": serving.Clock, "ledger": object})
 
 
 def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_path_and_one_that_did_not_do_it_is_told(tmp_path):
@@ -854,6 +854,43 @@ def test_a_moved_feature_runs_on_the_lane_beside_an_adapted_one_and_each_runs_on
     assert {(one.kind, one.feature, one.name) for one in ADAPTED.each} <= running, "every adapted handler runs on the lane"
     assert {(one.kind, one.feature, one.name) for one in REGISTERED.each} <= running, "and so does every receiver a feature wrote for the 3.0 engine"
     assert len(running) == len(TICKING.running.each), "each of them once, since a registration of one name replaces the one before it"
+
+
+def test_a_moved_handler_hears_a_logged_event_as_its_catalogue_fact_and_not_while_its_feature_is_off():
+    """A swept feature registers on a catalogue class, and the bus tells a logged event: the lane names one as the other, or a moved handler is registered and never run."""
+    from engine.record import Record
+    from events import Fact
+    from events.agents import SENT, AgentMessageSent
+    from framework.adapter import Ticking
+    from receiving import HANDLE, Handler, Registration, Registrations
+    from receiving.ticks import Lane, Services
+    from resources.base import AGENT, SYSTEM, Event
+    from tests.conftest import fresh
+
+    import features
+    features.load()
+    scratch = fresh()
+    record = Record(scratch.root, scratch.env, memo=True)
+    received: list[AgentMessageSent] = []
+
+    class Receives(Handler[AgentMessageSent]):
+        def handle(self, event: AgentMessageSent) -> list[Fact]:
+            received.append(event)
+            return []
+
+    moved = Registrations()
+    moved.add(Registration.read(HANDLE, AgentMessageSent, Receives(), ["an expectation"], "chat_etiquette"))
+    ticking = Ticking(Registrations(), moved)
+    ticking.resolve()
+    ticking.reaches(Event(id=1, at=1.0, type="agent", n=3, action=SENT, actor=AGENT, data={"text": "the answer", "turn": "t1"}, pid=0, handled=False, env=scratch.env), record)
+    assert [(one.agent, one.text, one.turn) for one in received] == [(3, "the answer", "t1")], f"the logged event reaches the moved handler as the fact it registered on: {received}"
+
+    received.clear()
+    ticking.reaches(Event(id=2, at=1.0, type="todo", n=1, action="created", actor=SYSTEM, data={}, pid=0, handled=False, env=scratch.env), record)
+    assert received == [], "an event the catalogue class does not name is not dispatched as it"
+
+    Lane("project:3", moved, Services({}), record=record, switched_on=lambda feature: feature != "chat_etiquette").run(AgentMessageSent(agent=3, text="the answer"))
+    assert received == [], "a receiver of a feature switched off for the lane's record is not run"
 
 
 def test_a_feature_registered_for_both_engines_is_refused_at_boot():

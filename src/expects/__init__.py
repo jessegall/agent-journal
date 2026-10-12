@@ -14,22 +14,15 @@ class NotAnOutcome(TypeError):
         return cls(f"an expectation is joined with outcomes, not with {type(value).__name__}")
 
 
-class NoSuchService(LookupError):
-    @classmethod
-    def named(cls, name: str) -> "NoSuchService":
-        return cls(f"{name!r} is not a service an expectation can answer for; it is one of {', '.join(SERVICES)}")
-
-
 __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "Dispatches", "Wrote", "Removed", "File", "Left", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
            "Formats", "Nudged", "Held", "Answered", "Remembered", "Set", "Whispered",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
-           "NotAnOutcome", "NoSuchService")
+           "NotAnOutcome")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
 
 SERVICES = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands")
 """Every service a registration may reach. A Given names the ones it answers for; anything else is unreachable."""
-
 
 def stated(row) -> dict:
     """What an expectation says about a row: the fields it set, and not the ones it left alone. A row's number, its timestamps and its empty fields are the play's business, not the promise's."""

@@ -6,6 +6,7 @@ never runs inside the hook that started it.
 """
 
 import time
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass, field, replace
 
@@ -38,19 +39,31 @@ class TickFailed(Fact):
     error: str
 
 
+class PerAsk:
+    """A service answered anew for each ask, by the feature asking and the exact type it asked for: a chat that speaks as that feature, the controller of the Rows[Todo] it named."""
+
+    def __init__(self, each: Callable[[str, object], object]):
+        self.each = each
+
+    def of(self, feature: str, asked):
+        return self.each(feature, asked)
+
+
 class Services:
     """Every service a receiver may ask for, resolved once at boot. A miss raises here rather than handing back None."""
 
     def __init__(self, answering: dict[type, object]):
         self.answering = answering
 
-    def given(self, receiver: str, wants: dict[str, object]) -> dict:
+    def given(self, receiver: str, feature: str, wants: dict[str, object]) -> dict:
+        """What one receiver asked for, each answered; a service answered per ask is asked with the receiver's feature and the type it named."""
         found = {}
         for name, asked in wants.items():
             service = getattr(asked, "__origin__", asked)
             if service not in self.answering:
                 raise NoSuchService.of(receiver, name, asked)
-            found[name] = self.answering[service]
+            answers = self.answering[service]
+            found[name] = answers.of(feature, asked) if isinstance(answers, PerAsk) else answers
         return found
 
 
@@ -99,6 +112,10 @@ class Lane:
     claims: "Claims" = field(default_factory=lambda: Claims())
     order: InOrder = field(default_factory=lambda: InOrder({}))
     record: object = field(default_factory=NothingHeld)
+    switched_on: Callable[[str], bool] = lambda feature: True
+    """Whether a feature is on for this lane's record: a receiver of a feature switched off is not run."""
+    watch: Callable[[object, Event, float], None] = lambda registration, fact, began: None
+    """Notes a handler's run for the runtime watch of its expectations, with when it began."""
     ran: list = field(default_factory=list)
     dropped: list = field(default_factory=list)
 
@@ -134,8 +151,8 @@ class Lane:
 
     def recognised(self, event: Event) -> list[Fact]:
         """What the listeners of this event recognised. They read and write nothing, so they need no transaction."""
-        return [fact for one in self.registered.of(LISTEN) if one.event is type(event)
-                for fact in one.receiver.listen(event, **self.services.given(one.name, type(one.receiver).wants()))]
+        return [fact for one in self.registered.of(LISTEN) if one.event is type(event) and self.switched_on(one.feature)
+                for fact in one.receiver.listen(event, **self.services.given(one.name, one.feature, type(one.receiver).wants()))]
 
     def handled(self, facts: list[Fact]) -> list[Event]:
         """What the handlers of these facts did, inside one transaction: a raise rolls the whole tick back and leaves a TickFailed in its place."""
@@ -144,8 +161,12 @@ class Lane:
             try:
                 with bus.unit(), bus.causing(fact.id):
                     for one in self.order.handlers(type(fact), self.registered):
-                        for caused in one.receiver.handle(fact, **self.services.given(one.name, type(one.receiver).wants())):
+                        if not self.switched_on(one.feature):
+                            continue
+                        began = time.time()
+                        for caused in one.receiver.handle(fact, **self.services.given(one.name, one.feature, type(one.receiver).wants())):
                             dispatched.append(self.named(caused, fact))
+                        self.watch(one, fact, began)
             except Exception as raised:
                 dispatched = [one for one in dispatched if one.cause != fact.id]
                 if isinstance(fact, TickFailed):

@@ -58,4 +58,4 @@ def tell(context: Context, work) -> None:
         return
     template = template_of(context.journal, context.journal.get(Todos).load(work.todo))
     if template and template.brief.strip():
-        context.agent.whisper(INSTRUCTIONS, n=template.n, title=template.title, brief=template.brief.strip())
+        context.agent.nudge(INSTRUCTIONS, n=template.n, title=template.title, brief=template.brief.strip())

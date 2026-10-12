@@ -217,7 +217,7 @@ class KeepOutOfTheChat(Handler):
         event.stop()
         sequence, key, run = found
         if context.once(IN_CHAT, f"{sequence.n}|{key}|{run['at']}"):
-            context.agent.whisper(IN_CHAT, title=sequence.title, place=sequence.talks_in)
+            context.agent.nudge(IN_CHAT, title=sequence.title, place=sequence.talks_in)
 
 
 def step_pace(context: AgentContext) -> int:
