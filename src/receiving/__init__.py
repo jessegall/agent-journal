@@ -149,6 +149,8 @@ class Registrations(ByKind):
         self.each: list[Registration] = []
 
     def add(self, registration: Registration) -> None:
+        """Holds one registration of a name. Registering the same name again replaces it, so wiring the features a second time really rewires them rather than leaving two of each."""
+        self.forget(registration.kind, registration.feature, registration.name)
         self.each.append(registration)
 
     def forget(self, kind: str, feature: str, name: str) -> None:
@@ -157,9 +159,6 @@ class Registrations(ByKind):
 
     def on(self, event: type) -> list[Registration]:
         return [one for one in self.each if one.event is event]
-
-    def clear(self) -> None:
-        self.each.clear()
 
 
 REGISTERED = Registrations()

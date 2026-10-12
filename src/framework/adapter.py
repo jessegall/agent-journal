@@ -133,7 +133,6 @@ def adapted_beside_the_bus(feature, handler: OldStyle, run, kind) -> None:
     except CannotBeAdapted as refusal:
         NOT_ADAPTABLE[feature.name, type(handler).__name__] = str(refusal)
         return
-    ADAPTED.forget(HANDLE, feature.name, receiver.called())
     TICKING.let_go(run)
     ADAPTED.add(Registration.read(HANDLE, OldEvent, receiver, (), feature.name))
     TICKING.resolve()
@@ -230,7 +229,6 @@ class Ticking:
 
     def resolve(self) -> None:
         """Works the order out again, after a receiver has joined or left: the widest patterns first, as the bus ran them."""
-        self.registered.forget(HANDLE, "", "FailedTick")
         self.registered.add(Registration.read(HANDLE, TickFailed, FailedTick(), ()))
         self.registered.each.sort(key=lambda one: min((slot_of(pattern) for pattern in one.receiver.patterns()), default=4))
         self.order = InOrder.of(self.registered)
@@ -242,9 +240,7 @@ class Ticking:
         """A listener the bus has taken runs on the lane too, unless a feature's wiring already put it there as an old handler."""
         if self.already_runs(listener):
             return
-        receiver = BusListener(listener, pattern, enabled)
-        self.registered.forget(HANDLE, "", receiver.called())
-        self.registered.add(Registration.read(HANDLE, OldEvent, receiver, ()))
+        self.registered.add(Registration.read(HANDLE, OldEvent, BusListener(listener, pattern, enabled), ()))
         self.resolve()
 
     def leave(self, pattern: str, listener) -> None:

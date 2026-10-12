@@ -79,8 +79,8 @@ def test_the_four_registration_kinds_name_their_event_and_the_boot_walk_checks_i
     from dataclasses import dataclass
 
     from events import Fact, Request
-    from receiving import (REGISTERED, Answerer, ExpectsNothing, Handler, Listener, NotAReceiver, ReceivesAnother,
-                           ReceivesNothing, Refuser, Registration)
+    from receiving import (Answerer, ExpectsNothing, Handler, Listener, NotAReceiver, ReceivesAnother,
+                           ReceivesNothing, Refuser, Registration, Registrations)
 
     @dataclass(frozen=True, kw_only=True)
     class AgentMessageSent(Fact):
@@ -144,12 +144,12 @@ def test_the_four_registration_kinds_name_their_event_and_the_boot_walk_checks_i
         SaysNothing.receives()
     assert "does not say which event it receives" in str(refusal.value), "a receiver written without its event is refused at boot, not at the first event"
 
-    REGISTERED.clear()
+    held = Registrations()
     for one in read:
-        REGISTERED.add(one)
-    assert len(REGISTERED.of("handle")) == 1 and len(REGISTERED.on(MessageTagged)) == 2, \
+        held.add(one)
+    assert len(held.of("handle")) == 1 and len(held.on(MessageTagged)) == 2, \
         "the registrations are kept in declaration order and read back by kind and by event"
-    REGISTERED.clear()
+    assert [one.name for one in Registrations().each] == [], "a test that wants an empty registry builds one; the journal's own is never emptied under it"
 
 
 def test_handlers_on_one_fact_are_ordered_by_name_and_the_boot_walk_checks_it():
