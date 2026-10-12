@@ -5,6 +5,8 @@ from resources.base import DOCUMENT, PROJECT, SIDEBAR, Resource, ResourceDetails
 from resources.shapes import FLAG, Field, Shape
 
 BY_HAND = "by hand"
+SEQUENCES = "sequences"
+SEQUENCE_STEPS = "sequence_steps"
 
 
 @dataclass(frozen=True)

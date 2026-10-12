@@ -25,6 +25,7 @@ from controllers.nudges import Nudges
 from controllers.suggestions import Suggestions
 from controllers.templates import Templates
 from controllers.critique.controller import Critiques
+from controllers.sequences import Sequences
 from controllers.session_recording.controller import Recordings
 from controllers.journal_laws import Outputs
 from controllers.browser_control import Asks
@@ -37,7 +38,7 @@ from controllers.form_of_address.controller import Profiles
 
 register(Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Questions, Comments, Agents,
          Notifications, Notices, Reactions, Tools, Features, Plugins, Environments, Nudges, Suggestions, Templates,
-         Critiques, Recordings, Outputs, Asks, Triggers, Checks, Collections, Dumps, Profiles)
+         Critiques, Recordings, Outputs, Asks, Triggers, Checks, Collections, Dumps, Profiles, Sequences)
 
 
 WARM_PAUSE = 0.02

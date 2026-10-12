@@ -4,7 +4,7 @@ from features.journal_laws.briefing import instructions_hash
 from features.journal_laws.details import LARGEST_RESULT
 from features.sequences.shipped import CHECKING_THE_INSTRUCTION_FILES
 from framework.parts import AgentContext, Handler, in_background
-from features.sequences.controller import Sequences
+from controllers.types import Sequences
 
 
 class NoticeLargestResult(Handler):

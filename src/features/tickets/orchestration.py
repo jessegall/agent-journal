@@ -41,7 +41,7 @@ class TicketOrchestration:
                [(ticket, DRAFTS) for ticket in on_board if ticket.draft and self._orchestrator_may(ticket, DRAFTS)]
 
     def _reviewing(self, ticket) -> str:
-        from features.sequences.controller import Sequences
+        from controllers.types import Sequences
         return next((row["title"] for row in Sequences(self.record, actor=SYSTEM).open_rows() if row.get("starts_on") in REVIEW_MOMENTS
                      and any(RunKey.of(key).about == ticket.ref for key in row.get("runs") or {})), "")
 

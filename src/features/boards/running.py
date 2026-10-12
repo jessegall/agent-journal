@@ -27,7 +27,7 @@ class RunningBoards:
         return f"{self.record.env} {'orchestrates its boards: you only delegate' if mode == 'on' else 'does not orchestrate: you work as usual'}"
 
     def _finish_orchestration_runs(self) -> None:
-        from features.sequences.controller import Sequences
+        from controllers.types import Sequences
         from features.boards.orchestrating import ORCHESTRATING_MOMENTS, ORCHESTRATION
         from resources.sequences import RunKey
         sequences = Sequences(self.record, actor=SYSTEM)

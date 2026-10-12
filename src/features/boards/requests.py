@@ -39,7 +39,7 @@ class DraftingBoards:
         return time.time() - self.load(n).drafting.get("cancelled", 0) < CANCEL_HOLDS
 
     def _stop_drafting(self, board) -> None:
-        from features.sequences.controller import Sequences
+        from controllers.types import Sequences
         sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
         for about in board.asked:
             sequences.give_up(about, why="The request on the board was cancelled")
@@ -127,7 +127,7 @@ class DraftingBoards:
 
     @action
     def score(self, n: int, score: str, reading: str = "", goal: str = "", done: str = ""):
-        from features.sequences.controller import Sequences
+        from controllers.types import Sequences
         from features.boards.drafting import DRAFTING
         from features.boards.exploration import EXPLORATION
         board = self._drafting(n)
@@ -183,7 +183,7 @@ class DraftingBoards:
         board = self._drafting(n)
         if board.phase != STALLED:
             raise Refused(f"board {board.n} is not stalled: nothing to retry")
-        from features.sequences.controller import Sequences
+        from controllers.types import Sequences
         from resources.sequences import RunKey
         asked = board.asked
         sequences = Sequences(self.record, actor=SYSTEM)

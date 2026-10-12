@@ -83,7 +83,7 @@ def test_a_trigger_fires_on_what_the_agent_says_in_the_chat():
 
 
 def test_deleting_a_trigger_sets_the_sequences_it_starts_back_to_by_hand():
-    from features.sequences.controller import Sequences
+    from controllers.types import Sequences
     record = fresh()
     triggers = Triggers(record, actor="system")
     sequences = Sequences(record, actor="system")

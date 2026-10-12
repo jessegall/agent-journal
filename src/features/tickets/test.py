@@ -195,7 +195,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
     assert card["reason"].startswith(f"waiting on its run: go test ./engine/... in ticket-{ticket.n} · "), \
         "an agent idle behind its own running command is waiting on it, never idle"
-    from features.sequences.controller import Sequences
+    from controllers.types import Sequences
     merging = Sequences(record, actor=USER).create("Merging a ticket", starts_on="ticket.finished")
     Sequences(record, actor=USER).section(merging.n, "Review its work", "Dispatch the ticket-reviewer.")
     Sequences(record, actor=SYSTEM).run(merging.n, about=ticket.ref)

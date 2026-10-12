@@ -1,9 +1,8 @@
 from engine.record import Record
+from resources.sequences import SEQUENCE_STEPS
 
 TURNS = {"thought": "thoughts", "skill": "skills", "subagent": "subagents", "compacted": "compactions", "made": "made", "receipt": "filed", "visitor": "visitors"}
 SETTING = "chat_hidden"
-SEQUENCES = "sequences"
-SEQUENCE_STEPS = "sequence_steps"
 DEFAULT_HIDDEN = ["acknowledgements", SEQUENCE_STEPS]
 
 

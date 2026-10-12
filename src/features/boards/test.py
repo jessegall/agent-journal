@@ -7,7 +7,7 @@ from features.boards.requests import START_OVER
 from features.work_modes.modes import mode_of
 from engine.wording import counted
 from tests.kit import Plans
-from features.sequences.controller import Sequences
+from controllers.types import Sequences
 from features.sequences.shipped import ship
 from tests.kit import Tickets
 from resources.base import AGENT, SYSTEM, USER

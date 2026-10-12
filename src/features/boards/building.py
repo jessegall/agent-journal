@@ -28,7 +28,7 @@ class BuildingBoards:
 
     @action
     def discard(self, n: int, why: str = "The user removed the board built from a document"):
-        from features.sequences.controller import Sequences
+        from controllers.types import Sequences
         board = self.load(n)
         Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent).give_up(board.ref, why=why)
         tickets = self._cards(self.actor)
