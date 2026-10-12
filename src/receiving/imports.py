@@ -61,6 +61,11 @@ def named(tree: ast.AST) -> list[tuple[str, int]]:
     return found
 
 
+def packages_in(folder: Path) -> list[Path]:
+    """The folders of this one that are packages, by name."""
+    return sorted(one for one in folder.iterdir() if one.is_dir() and (one / "__init__.py").is_file())
+
+
 @dataclass(frozen=True)
 class Boundary:
     """What the features of one source tree may name. Built from the tree itself, so a package added beside them is known to be one rather than mistaken for the standard library."""
@@ -69,7 +74,7 @@ class Boundary:
 
     @classmethod
     def of(cls, src: Path) -> "Boundary":
-        return cls(frozenset(one.name for one in src.iterdir() if one.is_dir() and (one / "__init__.py").is_file()))
+        return cls(frozenset(one.name for one in packages_in(src)))
 
     def allows(self, module: str, feature: str) -> bool:
         """Whether a feature may name this module: its own package, the packages every feature may name, or the standard library, which is anything the source tree does not hold."""
@@ -83,7 +88,7 @@ class Boundary:
     def reaches(self, features: Path) -> list[Reach]:
         """Every import a feature makes that it may not, over every module of every feature package."""
         found = []
-        for folder in sorted(one for one in features.iterdir() if one.is_dir() and (one / "__init__.py").is_file()):
+        for folder in packages_in(features):
             for module in sorted(folder.rglob("*.py")):
                 if module.name == "test.py":
                     continue
