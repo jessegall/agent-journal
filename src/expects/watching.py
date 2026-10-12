@@ -6,6 +6,7 @@ one of a handler's expectations is satisfied, what it says the handler writes, c
 record is read for it. Nothing happening is never judged, so only the outcomes that assert something are owed.
 """
 
+import traceback
 import copy
 import queue
 import threading
@@ -266,7 +267,8 @@ def guarded(call, record: Record):
     try:
         return call()
     except Exception as fault:
-        tell(record, "the expectation watching failed", f"{type(fault).__name__}: {fault}"[:300])
+        where = traceback.extract_tb(fault.__traceback__)[-1]
+        tell(record, "the expectation watching failed", f"{type(fault).__name__}: {fault} at {where.filename}:{where.lineno} in {where.name}"[:300])
         return None
 
 
