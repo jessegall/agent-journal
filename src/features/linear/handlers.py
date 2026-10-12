@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events.resources import ResourceEvent
+from events.resources import ResourceEvent
 from features.parts import Context, Handler
 
 

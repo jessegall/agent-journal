@@ -1,4 +1,4 @@
-from engine.events.resources import ResourceCreated
+from events.resources import ResourceCreated
 from expects import Given, Nudged, Unchanged, WHEN
 from features.base import Feature
 from features.plans.resource import Plan

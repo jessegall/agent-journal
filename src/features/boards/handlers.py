@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import ClassVar
 
 from engine.events.engine import ClockTicked
-from engine.events.resources import ResourceEvent
+from events.resources import ResourceEvent
 from features.boards.controller import Boards
 from features.boards.resource import DRAFTING_PHASE
 from features.sending import Sent

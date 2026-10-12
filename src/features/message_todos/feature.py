@@ -2,7 +2,7 @@ from features.base import Feature
 from features.journal import Journal
 from features.message_todos.details import MessageTodosDetails
 from features.message_todos.handlers import AskWhetherATodoCameFromAMessage, LinkTodosToTheirMessage
-from engine.events.resources import ResourceCreated
+from events.resources import ResourceCreated
 from expects import Given, Nudged, Unchanged, Updated, WHEN
 from features.message_todos.handlers import TodoCreated
 from resources.base import AGENT, USER

@@ -1,6 +1,6 @@
 from controllers.types import Works
 from engine.events.engine import ClockTicked
-from engine.events.resources import TodoCompleted
+from events.todos import TodoCompleted
 from expects import WHEN, Given, Kept, Nudged, Refused, Unchanged, Updated
 from features.base import Feature
 from features.plans.summary import plans_shown

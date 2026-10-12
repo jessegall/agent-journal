@@ -1,6 +1,7 @@
 from controllers.types import Rules
 from engine.events.agents import AgentReported
-from engine.events.resources import AgentChanged, ResourceCreated
+from events.resources import ResourceCreated
+from events.agents import AgentChanged
 from expects import WHEN, Answered, Given, Held, Nudged, Remembered, Unchanged, Updated
 from features.base import Feature
 from features.memory_checkpoints.commands import Reread

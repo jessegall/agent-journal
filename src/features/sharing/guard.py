@@ -2,7 +2,7 @@ import re
 
 from controllers.types import Agents, Comments
 from engine.events.engine import CommandRan
-from engine.events.resources import CommentCreated
+from events.comments import CommentCreated
 from engine.journal_calls import parsed, tokens
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from engine.gates import Runs

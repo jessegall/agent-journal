@@ -1,6 +1,6 @@
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSent, ClockTicked
-from engine.events.resources import MessageCreated
+from events.messages import MessageCreated
 from expects import WHEN, Given, Held, Kept, Nudged, Refused, Unchanged, Updated, Wrote
 from features.base import Feature
 from features.triggers.resource import Trigger

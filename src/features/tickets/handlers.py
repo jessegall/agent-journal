@@ -5,7 +5,8 @@ from typing import ClassVar
 from engine import runtime
 from engine.events.engine import ClockTicked
 from engine.locks import own_sweep, project_sweep
-from engine.events.resources import QuestionAnswered, ResourceCreated, ResourceEvent
+from events.resources import ResourceCreated, ResourceEvent
+from events.questions import QuestionCompleted
 from features.sending import Sent
 from features.trigger import MINUTE, MINUTES, Trigger
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
@@ -109,7 +110,7 @@ class HoldTicketKnowledge(Handler):
 
 
 class WakeTheTicketAgent(Handler):
-    def handle(self, context: Context, event: QuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionCompleted) -> None:
         tickets = Tickets(context.record, actor=SYSTEM)
         n = tickets._owned_by(context.record.env, "ticket")
         if not n:

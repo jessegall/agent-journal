@@ -5,7 +5,7 @@ from typing import ClassVar
 
 from controllers.types import CONTROLLERS, Plugins
 from engine.events.engine import ClockTicked
-from engine.events.resources import ResourceEvent
+from events.resources import ResourceEvent
 from engine.services import DOWN, want
 from features.parts import ActionInterceptor, Canceler, Context, Handler, TextFormatter, ToolInterceptor
 from engine.gates import Runs

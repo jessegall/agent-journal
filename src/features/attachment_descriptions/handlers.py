@@ -7,7 +7,8 @@ from typing import ClassVar
 from controllers.types import CONTROLLERS, Agents, Messages
 from engine.events.agents import SessionStarted
 from engine.memo import Memo
-from engine.events.resources import MessageUpdated, ResourceEvent
+from events.resources import ResourceEvent
+from events.messages import MessageUpdated
 from features.attachment_descriptions.video import TAGGED, VIDEO, frames_of, probe, sampled, spacing
 from features.parts import AgentContext, Context, Handler
 from controllers.types import CONTROLLERS

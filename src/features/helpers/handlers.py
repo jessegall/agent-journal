@@ -7,7 +7,9 @@ from controllers.types import Agents, Messages, Questions
 from engine.record import Record
 from engine.seats import terminal_of
 from engine.events.engine import ClockTicked
-from engine.events.resources import AgentChanged, MessageCreated, ResourceEvent
+from events.resources import ResourceEvent
+from events.agents import AgentChanged
+from events.messages import MessageCreated
 from engine.sessions import Sessions, alive
 from features.ask_questions.handlers import QuestionAsked
 from features.helpers.controller import Helpers

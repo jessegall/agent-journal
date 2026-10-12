@@ -1,5 +1,5 @@
 from controllers.types import Environments
-from engine.events.resources import MessageCreated
+from events.messages import MessageCreated
 from expects import Given, Refused, Unchanged
 from features.base import Feature
 from providers import DRIVERS

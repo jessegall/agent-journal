@@ -4,7 +4,8 @@ from typing import ClassVar
 
 from controllers.types import Todos, Works
 from engine.events.engine import ClockTicked
-from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
+from events.resources import AnyEvent, ResourceEvent
+from events.todos import TodoCompleted
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING, Plans, delegate_plans_holding
 from features.sending import Nudge, Sent, send
 from features.trigger import MINUTE

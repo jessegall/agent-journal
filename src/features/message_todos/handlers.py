@@ -4,7 +4,7 @@ from controllers.types import Comments, Messages, Todos
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events.resources import ResourceCreated, ResourceEvent
+from events.resources import ResourceCreated, ResourceEvent
 from features.message_todos.details import UNLINKED
 from features.parts import Context, Handler
 from features.row_links.formatters import Mention, named

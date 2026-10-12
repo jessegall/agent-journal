@@ -5,7 +5,9 @@ from typing import ClassVar
 
 from engine.events.engine import ClockTicked
 from engine.events.agents import AgentReported
-from engine.events.resources import AgentChanged, QuestionAnswered, ResourceCreated, ResourceEvent
+from events.resources import ResourceCreated, ResourceEvent
+from events.agents import AgentChanged
+from events.questions import QuestionCompleted
 from engine.sessions import Sessions, live
 from providers.payload import HookEvent
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
@@ -47,7 +49,7 @@ class HoldEvicted(Handler):
 class TakeOverOnAnswer(Handler):
     """A session that started beside another waits for the user's answer: taking the environment over unbinds the session that was there."""
 
-    def handle(self, context: Context, event: QuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionCompleted) -> None:
         sessions = Sessions(context.record.root)
         session = sessions.asking(event.n)
         if not session or Questions(context.record, actor=SYSTEM).load(event.n).chosen != TAKE_OVER:

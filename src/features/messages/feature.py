@@ -1,7 +1,8 @@
 from controllers.types import Messages
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSent
-from engine.events.resources import MessageCreated, MessageUpdated, ResourceCreated
+from events.resources import ResourceCreated
+from events.messages import MessageCreated, MessageUpdated
 import json
 from dataclasses import asdict
 

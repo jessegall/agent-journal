@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events.resources import ResourceEvent, RuleCreated
+from events.resources import ResourceEvent
+from events.rules import RuleCreated
 from features.journal_laws.briefing import brief
 from features.parts import Context, Handler
 from resources.base import AGENT
 from controllers.types import Agents, Rules
-
 
 
 @dataclass(frozen=True)

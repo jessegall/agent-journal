@@ -2,7 +2,9 @@ from features.agent_sessions.details import AgentSessionsDetails
 from features.agent_sessions.handlers import TodoUpdated, AskToStop, ClearLapsedAssignments, ClearLapsedAssignmentsOnChange, HandBackReport, HoldEvicted, KeepSubagentAlive, LinkReportToSubagent, MarkSilentStopped, RecordCompactions, StopEndedAtSessionStart, TakeOverOnAnswer
 from engine.events.agents import AgentReported
 from engine.events.engine import ClockTicked
-from engine.events.resources import AgentChanged, QuestionAnswered, ResourceCreated
+from events.resources import ResourceCreated
+from events.agents import AgentChanged
+from events.questions import QuestionCompleted
 from expects import WHEN, Given, Nudged, Unchanged, Updated
 from features.base import Feature
 from features.journal import Journal
@@ -27,7 +29,7 @@ class AgentSessions(Feature):
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
         ])
         journal.events.handler(TakeOverOnAnswer(), expects=[
-            Given(QuestionAnswered(n=3), rows=[Question(n=3, title="take it over?")]) >> Unchanged(),
+            Given(QuestionCompleted(n=3), rows=[Question(n=3, title="take it over?")]) >> Unchanged(),
         ])
         journal.events.handler(MarkSilentStopped(), expects=[
             Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1", data={"status": "working", "event": "PostToolUse", "at": WHEN - 86_400})])

@@ -2,7 +2,7 @@ from itertools import takewhile
 
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSent, ClockTicked
-from engine.events.resources import MessageCreated
+from events.messages import MessageCreated
 from engine.transcript import IDLE as AGENT_IDLE
 from features import actions, trigger
 from features.triggers import watched

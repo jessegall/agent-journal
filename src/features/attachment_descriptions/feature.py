@@ -1,6 +1,6 @@
 from features.attachment_descriptions.details import AttachmentDescriptionsDetails
 from engine.events.agents import SessionStarted
-from engine.events.resources import MessageUpdated
+from events.messages import MessageUpdated
 from expects import Given, Nudged, Unchanged, Updated, answering
 from features.attachment_descriptions.video import TAGGED
 from features.attachment_descriptions.handlers import FileAttached, SampleVideoFrames, TagMissingAtStart, TagNewMedia

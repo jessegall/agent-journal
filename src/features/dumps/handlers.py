@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events.engine import ClockTicked
-from engine.events.resources import MessageUpdated, ResourceEvent
+from events.resources import ResourceEvent
+from events.messages import MessageUpdated
 from engine.transcript import IDLE
 from engine.wording import plural
 from features.dumps.controller import OWN_WORDS

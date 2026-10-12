@@ -1,5 +1,6 @@
 from engine.events.agents import SessionStarted
-from engine.events.resources import ResourceCreated, WorkCreated
+from events.resources import ResourceCreated
+from events.works import WorkCreated
 from controllers.types import Todos
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
 from features.base import Feature

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events.engine import Measured
-from engine.events.resources import ResourceCreated, ResourceEvent
+from events.resources import ResourceCreated, ResourceEvent
 from features.dev_faults.reports import OVER
 from features.parts import Context, Handler
 from controllers.types import Todos

@@ -7,7 +7,7 @@ from pathlib import Path
 from engine.command_runs import CommandRun, command_runs
 from engine.events.engine import ClockTicked
 from engine.events.agents import AgentReported
-from engine.events.resources import ResourceEvent
+from events.resources import ResourceEvent
 from engine.wording import digest
 from features.checks.output import summary
 from providers.payload import HookEvent

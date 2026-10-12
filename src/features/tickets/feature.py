@@ -1,5 +1,6 @@
 from engine.events.engine import ClockTicked
-from engine.events.resources import QuestionAnswered, ResourceCreated
+from events.resources import ResourceCreated
+from events.questions import QuestionCompleted
 from controllers.types import Todos
 from expects import WHEN, Answered, Given, Kept, Refused, Unchanged, Updated, Wrote
 from features.base import Feature
@@ -111,7 +112,7 @@ class TicketsFeature(Feature):
             Given(ClockTicked(agent=1), rows=[Board(n=1, title="Features", data={"orchestrator": "another-environment", "stages": ["Doing"]}), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Unchanged(),
         ])
         journal.events.handler(WakeTheTicketAgent(), expects=[
-            Given(QuestionAnswered(n=1, type="question", action="answered", actor=USER), rows=[Question(n=1, title="Which branch?", completed=1.0)]) >> Unchanged(),
+            Given(QuestionCompleted(n=1, type="question", action="answered", actor=USER), rows=[Question(n=1, title="Which branch?", completed=1.0)]) >> Unchanged(),
         ])
         journal.events.handler(FinishTheBoardWithItsLastTicket(), expects=[
             Given(CLOSED, rows=[card(1), Board(n=1, title="Launch")]) >> Unchanged(),
