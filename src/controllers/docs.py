@@ -3,6 +3,7 @@ from pathlib import Path
 
 from controllers.base import Controller
 from controllers.doc_hits import located, terms
+from controllers.revisions import revise
 from resources import types
 from resources.base import SECTION, Refused
 from controllers.marks import action
@@ -33,6 +34,9 @@ class Docs(Controller):
         pending = any(button.get("choice") for button in buttons)
         data.setdefault("status", "draft" if pending else "final")
         return super().create(title, abstract, brief, **data)
+
+    def keep_revision(self, n: int, keep_after: float) -> None:
+        revise(self, self.load(n), keep_after)
 
     @action
     def hide(self, n: int):
