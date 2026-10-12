@@ -1,7 +1,7 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {ASLEEP_AFTER, EGGS, POINTED_AFTER, RESTS, beatsAfter, clipFor, clipOf, eggFor, figureStateOf, givesWay, waitingSinceAt} =
+const {ASLEEP_AFTER, EGGS, POINTED_AFTER, RESTS, beatsAfter, canSwitch, clipFor, clipOf, eggFor, figureStateOf, waitingSinceAt} =
     await import("../src/domain/figureState.js");
 const {REACTIONS} = await import("../src/figure/reactions.js");
 const {drawnIn, pointedView} = await import("../src/figure/places.js");
@@ -136,24 +136,24 @@ test("the walk is never named before the figure stands ready to go, and the leg 
     expect(clipFor(scene({trip: {way: 1}}), canDraw)).toEqual({clip: "think", facing: 0});
     expect(clipFor(scene({trip: {way: 1}, beat: {clip: "joy", facing: 90}}), canDraw)).toEqual({clip: "joy", facing: 90, once: true});
     // ready, the clip of the leg is the one the leg sets off with, and once it moves nothing more sets off
-    expect(clipFor(scene({trip: {started: true, way: 1}, doing: "idle"}), canDraw)).toEqual({clip: "walk", facing: 90, departs: true});
-    expect(clipFor(scene({trip: {started: true, hopping: true, clip: "jump"}}), canDraw)).toEqual({clip: "jump", facing: 0, departs: true});
-    expect(clipFor(scene({trip: {started: true, moves: true, way: 1}, doing: "idle"}), canDraw)).not.toHaveProperty("departs");
+    expect(clipFor(scene({trip: {started: true, way: 1}, doing: "idle"}), canDraw)).toEqual({clip: "walk", facing: 90, startsLeg: true});
+    expect(clipFor(scene({trip: {started: true, hopping: true, clip: "jump"}}), canDraw)).toEqual({clip: "jump", facing: 0, startsLeg: true});
+    expect(clipFor(scene({trip: {started: true, moves: true, way: 1}, doing: "idle"}), canDraw)).not.toHaveProperty("startsLeg");
 });
 
 test("the walk is cut short the moment there is nowhere to go, and every other clip plays out", () => {
     const named = Object.fromEntries(CLIPS.map((clip) => [clip.name, clip]));
-    expect(CLIPS.filter((clip) => clip.cutShort).map((clip) => clip.name)).toEqual(["walk"]);
+    expect(CLIPS.filter((clip) => clip.interruptible).map((clip) => clip.name)).toEqual(["walk"]);
     // mid-step the walk gives way at once
-    expect(givesWay(named.walk, 5, 4)).toBe(true);
+    expect(canSwitch(named.walk, 5, 4)).toBe(true);
     // a hop, a landing and a beat play to their end, and a loop to the end of its cycle or of the stretch it leaves at
     for (const name of ["jump", "fall", "backflip", "land", "joy", "dismay", "stretch"]) {
-        expect(givesWay(named[name], named[name].frames - 1, named[name].frames - 2), name).toBe(false);
-        expect(givesWay(named[name], named[name].frames, named[name].frames - 1), name).toBe(true);
+        expect(canSwitch(named[name], named[name].frames - 1, named[name].frames - 2), name).toBe(false);
+        expect(canSwitch(named[name], named[name].frames, named[name].frames - 1), name).toBe(true);
     }
-    expect(givesWay(named.think, 5, 4)).toBe(false);
-    expect(givesWay(named.think, named.think.frames, named.think.frames - 1)).toBe(true);
-    expect(givesWay(named.idle, named.idle.leaves, named.idle.leaves - 1)).toBe(true);
+    expect(canSwitch(named.think, 5, 4)).toBe(false);
+    expect(canSwitch(named.think, named.think.frames, named.think.frames - 1)).toBe(true);
+    expect(canSwitch(named.idle, named.idle.leaves, named.idle.leaves - 1)).toBe(true);
 });
 
 test("a clip walked on with stops walking the moment the figure stops, while what it does plays out in its place", () => {

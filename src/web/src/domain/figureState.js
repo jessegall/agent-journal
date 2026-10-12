@@ -68,13 +68,13 @@ export const waitingSinceAt = (counts, since, now) => (counts.question + counts.
 // drawn in its place. `scene` says where things stand, `doing` being the clip of the stretch it is in; `canDraw(name, posture)` whether a
 // clip is drawn in a posture. A beat comes with the way it faces.
 // A trip has `started` once the figure stands ready to travel and `moves` while a leg carries it; the hop of a leg or the walk is named
-// only then, so the walk is never drawn on the spot. The clip of a leg that waits `departs`: the leg sets off the moment it is on screen.
+// only then, so the walk is never drawn on the spot. The clip of a leg that waits is marked `startsLeg`: the leg sets off the moment it is on screen.
 export function clipFor(scene, canDraw) {
     const {leaving, arriving, trip, landing, place, beat, state, doing} = scene;
     if (leaving) return {clip: "exit", facing: 0, once: true, departure: true};
     if (arriving) return {clip: "enter", facing: 0, once: true, arrival: true};
     if (landing) return {clip: "land", facing: 0, once: true, landed: true};
-    if (trip?.started) return {...legClip(trip, doing, canDraw), ...(trip.moves ? {} : {departs: true})};
+    if (trip?.started) return {...legClip(trip, doing, canDraw), ...(trip.moves ? {} : {startsLeg: true})};
     // a hanging figure holds on until it is let go; a beat waits until it has dropped
     if (place.posture === "hang") return {clip: `hang_${place.grip}`, facing: place.face};
     if (beat) return {clip: beat.clip, facing: beat.facing, once: true};
@@ -89,10 +89,10 @@ function legClip(trip, doing, canDraw) {
     return doing !== "idle" && canDraw(doing, "walk") ? {clip: doing, facing, posture: "walk"} : {clip: "walk", facing};
 }
 
-// Whether the clip on screen gives way to another that is wanted: at once when it is cut short (figure.js CLIPS), else once it has played
+// Whether the clip on screen gives way to another that is wanted: at once when it is interruptible (figure.js CLIPS), else once it has played
 // out, between the frame it was at when last drawn, `last`, and the frame it is at now, `index`
-export function givesWay(clip, index, last) {
-    if (clip.cutShort) return true;
+export function canSwitch(clip, index, last) {
+    if (clip.interruptible) return true;
     if (!clip.loops) return index >= clip.frames;
     const unit = clip.leaves || clip.frames;
     return Math.floor(index / unit) > Math.floor(last / unit);

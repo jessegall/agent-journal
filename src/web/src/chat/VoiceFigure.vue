@@ -3,7 +3,7 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
-import {beatsAfter, clipFor, facesAfter, figureStateOf, givesWay, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
+import {beatsAfter, canSwitch, clipFor, facesAfter, figureStateOf, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {stayAtHome, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
 import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, workMoments} from "../figure/reactions.js";
@@ -126,9 +126,9 @@ function current() {
 const keyOf = (shown) => `${shown.clip.name}/${shown.facing}`;
 const frameOf = (clip) => Math.floor(((performance.now() - playing.started) / 1000) * clip.fps);
 
-// A clip plays out before another starts, or gives way at once when it is cut short (figureState.js givesWay). It is the one rule every
+// A clip plays out before another starts, or gives way at once when it is interruptible (figureState.js canSwitch). It is the one rule every
 // clip goes through, so no clip needs its own check.
-const playedOut = () => !playing.shown || givesWay(playing.shown.clip, frameOf(playing.shown.clip), playing.index);
+const playedOut = () => !playing.shown || canSwitch(playing.shown.clip, frameOf(playing.shown.clip), playing.index);
 
 // how far through its step the walk under a clip on the move is, stepped as the walk's own frames are
 function strideNow() {
@@ -159,7 +159,7 @@ function step() {
         return step();
     }
     // the leg waiting for the clip it sets off with goes in the frame that clip goes on screen, so the walk is never drawn on the spot
-    if (shown === wanted && wanted.departs && !moving.value.moves) depart();
+    if (shown === wanted && wanted.startsLeg && !moving.value.moves) depart();
     drawn = drawnIn(shown, moving.value ? POSTURES[place.value.posture].travels : place.value.posture, moving.value?.moves);
     if (!moving.value?.started) rest();
     const look = eyesAt(looking, shown.facing, performance.now() / 1000);
@@ -171,8 +171,8 @@ function step() {
         eyes: look.eyes,
         stride,
     });
-    const striding = stride === null ? 0 : clipNamed("walk").fps;
-    const fps = Math.max(shown.clip.fps, look.eyes ? LOOK_FPS : 0, striding, player.blending() ? BLEND_FPS : 0);
+    const strideFps = stride === null ? 0 : clipNamed("walk").fps;
+    const fps = Math.max(shown.clip.fps, look.eyes ? LOOK_FPS : 0, strideFps, player.blending() ? BLEND_FPS : 0);
     frameTimer = setTimeout(step, 1000 / fps);
 }
 
@@ -405,13 +405,7 @@ const style = computed(() => ({
 </script>
 
 <template>
-    <div
-        v-show="figureStatus === 'shown' && here"
-        class="voice-figure"
-        :style="style"
-        aria-hidden="true"
-        :data-walking="walking"
-    >
+    <div v-show="figureStatus === 'shown' && here" class="voice-figure" :style="style" aria-hidden="true" :data-walking="walking">
         <div :class="['voice-figure-actor', {chasing}]" :style="chasing ? {animationDuration: `${chaseMs}ms`} : null">
             <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
             <template v-if="chasing">
