@@ -24,7 +24,7 @@ from expects import Given, Left
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE
 from receiving.ticks import Services
 import serving
-from framework.adapter import lane_services
+from framework.lanes import lane_services
 from expects.playing import Seen, World, remembered_by
 from framework.parts import AgentContext, Context
 from resources.base import Refused, SYSTEM

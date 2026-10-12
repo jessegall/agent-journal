@@ -7,27 +7,24 @@ swept feature is held to. It asks for one thing, the tick's record, and nothing 
 """
 
 from dataclasses import dataclass
-from collections.abc import Callable
-from typing import get_args
 
 from declaring.registries import MOVED
-from engine import bus, triggering
+from engine import bus
 from events import Fact, Request
 from events.typed import AgentEvent, TypedEvent
 from engine.developing import developing
 from expects.watching import WATCH, tell
-from controllers.agents import Agents
-from controllers.base import CONTROLLERS
 from framework.loaded import FEATURES
-from framework.parts import Context, Handler as OldStyle, Speaker
+from framework.lanes import agent_of, answering, due_now, lane_services
+from framework.parts import Context, Handler as OldStyle
 from framework.promises import Promise
 from receiving import HANDLE, LISTEN, REGISTERED, Handler, Listener, Registration, Registrations
 from receiving.boot import walked
 from receiving.ordering import InOrder
-from receiving.ticks import Claims, Lane, PerAsk, Services, TickFailed
-from resources.base import ACTIONS, SYSTEM
+from receiving.ticks import Claims, Lane, Services, TickFailed
+from resources.base import ACTIONS
 from resources.types import TYPES
-from serving import Adapted as TheRecord, Chat, ReadRows, Rows, Settings
+from serving import Adapted as TheRecord
 
 ON_THE_SENDING_PATH = {
     "RunTagCommands": "it answers a message about to be sent, which is a request and not a fact",
@@ -310,35 +307,10 @@ class Ticking:
              watch=lambda one, fact, began: watched(Promise.of(one), fact, record, began) if not type(one.receiver).adapted else None).run(OldEvent(logged=logged))
 
 
-def due_now(feature, record, fact: Fact) -> bool:
-    """Counts the moment against the agent the fact is about, then asks the feature's trigger whether its behaviour is due, as a 2.x handler did with noticed and due."""
-    agent = Agents(record, actor=SYSTEM).peek(fact.agent)
-    triggering.noticed(record, agent, feature.keyed(fact.trigger))
-    return feature.due(record, agent, fact.trigger)
-
-
 def watched(promise, event, record, began: float) -> None:
     """Where the journal develops itself, a handler's run is noted for the watch, which looks at it elsewhere and on its own time; a run with no record is not watched."""
     if record is not None and developing(record.root.parent):
         WATCH.ran(promise, event, record, began)
-
-
-def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
-    """What a receiver is handed, by the service type it asks for, over this record: the same funnels a 2.x handler reached through its Context. The agent is looked up only when a receiver asks for the chat."""
-    def controlling(feature: str, asked):
-        return CONTROLLERS[get_args(asked)[0].type](record, actor=SYSTEM)
-
-    return {TheRecord: record,
-            Chat: PerAsk(lambda feature, asked: Speaker(FEATURES[feature], record, agent())),
-            Settings: PerAsk(lambda feature, asked: FEATURES[feature].values(record)),
-            Rows: PerAsk(controlling),
-            ReadRows: PerAsk(controlling)}
-
-
-def agent_of(logged, record):
-    """The agent a tick's chat is about: the agent the event is about, else the one the environment's chat is with."""
-    agents = Agents(record, actor=SYSTEM)
-    return agents.peek(logged.n) if logged.type == "agent" else agents.primary_to_read()
 
 
 TICKING = Ticking(ADAPTED, REGISTERED)
@@ -372,3 +344,4 @@ def dispatched_on_a_lane() -> None:
     """From here on a told event is a tick, never a walk over the listeners. Called once, when the features are seated."""
     TICKING.resolve()
     bus.dispatched_by(TICKING.reaches, TICKING.join, TICKING.leave)
+    bus.answered_by(lambda request, record: answering(TICKING.running, request, record))

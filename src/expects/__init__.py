@@ -5,6 +5,8 @@ The Fakes that answer each service, and the run that plays an expectation, arriv
 """
 
 from dataclasses import dataclass, field, fields
+
+from resources.runs import Exited
 from typing import Any, Mapping
 
 
@@ -338,14 +340,6 @@ class Answering:
     """What a service gives back: a mapping from what the code asks to its answer. An ask it does not name is a failure naming the ask."""
 
     answers: Mapping[Any, Any]
-
-
-@dataclass(frozen=True)
-class Exited:
-    """How a command the registration ran came back."""
-
-    code: int
-    output: str = ""
 
 
 def at(seconds: float) -> At:

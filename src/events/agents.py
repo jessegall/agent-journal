@@ -8,7 +8,7 @@ from events.resources import ResourceEvent, RowAction
 from events.typed import AgentEvent
 
 
-SENDING, SENT = "message.sending", "message.sent"
+SENDING, SENT, WRITTEN = "message.sending", "message.sent", "message.written"
 TICKED, BEAT = "ticked", "beat"
 COMMAND_RAN = "command.ran"
 
@@ -120,6 +120,15 @@ class BusMessageSending(AgentEvent):
 
     def stop(self) -> None:
         self.data["stopped"] = True
+
+
+@dataclass(frozen=True)
+class AgentTurnWritten(AgentEvent):
+    """A turn as the agent wrote it, tags and all, whether or not its words reach the chat."""
+
+    on: ClassVar[str] = f"agent.{WRITTEN}"
+    text: str = ""
+    turn: str = ""
 
 
 @dataclass(frozen=True)

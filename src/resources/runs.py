@@ -5,6 +5,14 @@ from dataclasses import asdict, dataclass, field
 from resources.fields import Loaded
 
 
+@dataclass(frozen=True)
+class Exited:
+    """How a journal command came back: its exit code and what it printed, or on a failure the reason it gave."""
+
+    code: int
+    output: str = ""
+
+
 @dataclass
 class BackgroundTasks:
     started: dict[str, float] = field(default_factory=dict)

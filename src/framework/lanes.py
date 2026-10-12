@@ -1,0 +1,65 @@
+"""What a receiver on a lane is handed: its services by type, over the lane's record, and the engine's own reads that a fact dispatched with due asks for."""
+
+import io
+import shlex
+from collections.abc import Callable
+from typing import get_args
+
+from controllers.agents import Agents
+from controllers.base import CONTROLLERS
+from engine import triggering
+from engine.command_line import command_line
+from events import Fact
+from framework.loaded import FEATURES
+from framework.parts import Speaker
+from events.answers import Answer
+from receiving.asking import answered
+from receiving.ticks import PerAsk, Services
+from resources.base import AGENT, SYSTEM
+from resources.runs import Exited
+from serving import Adapted as TheRecord, Chat, Commands, ReadRows, Rows, Settings
+
+
+class JournalCommands:
+    """Journal commands run in this process as the agent the event is about, as a tag's command always ran."""
+
+    def __init__(self, record, agent):
+        self.record, self.agent = record, agent
+
+    def run(self, command: str) -> Exited:
+        out, err = io.StringIO(), io.StringIO()
+        code = command_line().run(["--root", str(self.record.root), "--env", self.record.env, "--session", self.agent.title, "--as", AGENT, *shlex.split(command)],
+                                  out=out, err=err)
+        return Exited(code, (err.getvalue() or out.getvalue() if code else out.getvalue()).strip())
+
+
+def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
+    """What a receiver is handed, by the service type it asks for, over this record: the same funnels a 2.x handler reached through its Context. The agent is looked up only when a receiver asks for the chat."""
+    def controlling(feature: str, asked):
+        return CONTROLLERS[get_args(asked)[0].type](record, actor=SYSTEM)
+
+    return {TheRecord: record,
+            Chat: PerAsk(lambda feature, asked: Speaker(FEATURES[feature], record, agent())),
+            Settings: PerAsk(lambda feature, asked: FEATURES[feature].values(record)),
+            Rows: PerAsk(controlling),
+            ReadRows: PerAsk(controlling),
+            Commands: PerAsk(lambda feature, asked: JournalCommands(record, agent()))}
+
+
+def agent_of(logged, record):
+    """The agent a tick's chat is about: the agent the event is about, else the one the environment's chat is with."""
+    agents = Agents(record, actor=SYSTEM)
+    return agents.peek(logged.n) if logged.type == "agent" else agents.primary_to_read()
+
+
+def due_now(feature, record, fact: Fact) -> bool:
+    """Counts the moment against the agent the fact is about, then asks the feature's trigger whether its behaviour is due, as a 2.x handler did with noticed and due."""
+    agent = Agents(record, actor=SYSTEM).peek(fact.agent)
+    triggering.noticed(record, agent, feature.keyed(fact.trigger))
+    return feature.due(record, agent, fact.trigger)
+
+
+def answering(registered, request, record) -> Answer:
+    """A request answered by the answerers the features registered, over the record and about the agent of the session it names."""
+    services = Services(lane_services(record, lambda: Agents(record, actor=SYSTEM).peek_session(request.session)))
+    return answered(request, registered, services, switched_on=lambda feature: FEATURES[feature].enabled(record))
