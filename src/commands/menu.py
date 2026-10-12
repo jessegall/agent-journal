@@ -47,6 +47,14 @@ def read_keys(fd: int) -> list[str]:
     return KEYS.findall(raw.decode(errors="ignore"))
 
 
+def someone_can_answer() -> bool:
+    """Whether a person can be asked on the terminal: this process must own stdin and stdout and be its terminal's foreground group. One in the background is read by nobody, and taking the terminal there stops it with SIGTTOU or waits for a key that never comes."""
+    try:
+        return sys.stdin.isatty() and sys.stdout.isatty() and os.tcgetpgrp(sys.stdin.fileno()) == os.getpgrp()
+    except (OSError, ValueError):
+        return False
+
+
 def pick(heading: str, notes: list[str], given: list, default: int) -> int:
     choices = choices_of(given)
     at, drawn = default, 0

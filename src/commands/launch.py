@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from typing import NoReturn
 
-from commands.menu import Choice, choices_of, pick
+from commands.menu import Choice, choices_of, pick, someone_can_answer
 from engine.record import Record
 from engine.version import version as package_version
 from resources.text import plural
@@ -20,7 +20,7 @@ QUESTION_SCREEN = "\x1b8\x1b[J"
 
 
 def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> str:
-    answering = sys.stdin.isatty() if answering is None else answering
+    answering = someone_can_answer() if answering is None else answering
     if "--env" in sys.argv or worktree:
         return record.env
     from controllers.types import Environments
@@ -67,9 +67,10 @@ def defaults(_: str) -> NoReturn:
 def choose(heading: str, notes: list[str], choices: list, default: int, ask=input) -> int | None:
     if ask is defaults:
         return default
-    if sys.stdout.isatty():
+    asking = someone_can_answer()
+    if asking:
         print(QUESTION_SCREEN, end="")
-    if ask is input and sys.stdin.isatty() and sys.stdout.isatty():
+    if ask is input and asking:
         return pick(heading, notes, choices, default)
     print(f"\n  {heading}\n  {'─' * len(heading)}")
     if notes:
@@ -100,7 +101,7 @@ def banner(agent: str, project: Path) -> str:
 def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=None) -> bool:
     from framework.loaded import FEATURES
     from features.clean_slate.slate import held, others, put_back_held, state
-    answering = sys.stdin.isatty() if answering is None else answering
+    answering = someone_can_answer() if answering is None else answering
     hooks, aside = others(project, agent), [Path(m["from"]) for m in held(record, project, agent)]
     if not answering or not FEATURES["clean_slate"].enabled(record) or not (hooks or aside):
         return False
@@ -121,7 +122,7 @@ def lines_of(heading: str, files: list[Path]) -> list[str]:
 
 def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answering=None) -> None:
     from features.permission_prompts.skipping import set_skipped, skipped
-    answering = sys.stdin.isatty() if answering is None else answering
+    answering = someone_can_answer() if answering is None else answering
     driver = DRIVERS.get(agent)
     if not answering or not driver or not driver.SKIP_ARGS or set(driver.SKIP_ARGS) <= set(args):
         return
@@ -136,7 +137,7 @@ def asked_history(record: Record, agent: str, conversation: str, ask=input, answ
     from controllers.types import Agents
     from engine.sessions import Sessions
     from features.agent_sessions.history import history
-    answering = sys.stdin.isatty() if answering is None else answering
+    answering = someone_can_answer() if answering is None else answering
     provider = PROVIDERS[agent]()
     seen = conversation and (Sessions(record.root).known(conversation) or Agents(record, actor=SYSTEM).rows.by_title(conversation))
     path = provider.conversation_file(conversation) if conversation and not seen else None
@@ -150,7 +151,7 @@ def asked_history(record: Record, agent: str, conversation: str, ask=input, answ
 
 def asked_resume(record: Record, agent: str, args: list[str], ask=input, answering=None) -> list[str]:
     from engine.sessions import Sessions
-    answering = sys.stdin.isatty() if answering is None else answering
+    answering = someone_can_answer() if answering is None else answering
     driver = DRIVERS.get(agent)
     worked = (driver and driver.worktree(args)) or record.env
     earlier = Sessions(record.root).last(worked, agent) if driver else ""
@@ -183,7 +184,7 @@ def launch(record: Record, agent: str, given: list[str] | None) -> str:
     quiet = NO_INTERACTION in (given or [])
     args = [arg for arg in given or [] if arg != NO_INTERACTION]
     ask, answering = (defaults, True) if quiet else (input, None)
-    if sys.stdin.isatty() and not quiet:
+    if someone_can_answer() and not quiet:
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         print(banner(agent, project))
     resumed = driver.conversation(args) or driver.continued(args, project)

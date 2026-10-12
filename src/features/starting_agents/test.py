@@ -324,6 +324,11 @@ def test_a_supervisor_is_started_in_the_foreground_or_detached_with_the_launch_i
     terminal_in, terminal_out = os.fdopen(slave, "r"), os.fdopen(os.dup(slave), "w")
     monkeypatch.setattr("sys.stdin", terminal_in)
     monkeypatch.setattr("sys.stdout", terminal_out)
+    from commands.menu import someone_can_answer
+    monkeypatch.setattr("commands.menu.os.tcgetpgrp", lambda fd: os.getpgrp() + 1)
+    assert not someone_can_answer(), "a terminal this process is not the foreground group of is nobody to ask: taking it waits for a key that never comes"
+    monkeypatch.setattr("commands.menu.os.tcgetpgrp", lambda fd: os.getpgrp())
+    assert someone_can_answer(), "and one it does own is asked"
     monkeypatch.setattr(launching, "banner", lambda agent, project: "a banner")
     try:
         launching.launch(record, "claude", [])
