@@ -5,7 +5,7 @@ from features.integrations.state import IntegrationState
 from features.integrations.words import BODY, TITLE, cleaned
 from features.gmail.mail import Mail, Mailbox
 from features.members.words import words_from
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from resources.base import Refused, SYSTEM
 
 SOURCE = "gmail"

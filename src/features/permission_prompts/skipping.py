@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from resources.fields import Loaded
-from features.work_tracking.auto import automatic
+from controllers.features import automatic
 from providers import DRIVERS
 
 SETTING = "permission_prompts"
@@ -20,10 +20,6 @@ def skipped(record) -> bool:
 
 def set_skipped(record, on: bool) -> None:
     record.change_setting(SETTING, {"skip": on})
-
-
-def prompted(record) -> None:
-    set_skipped(record, automatic(record))
 
 
 def typed_skip(record, driver, args: list[str]) -> None:

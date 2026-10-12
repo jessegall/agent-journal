@@ -11,7 +11,7 @@ from engine.sessions import Sessions, alive
 from engine.stop import ask_session
 from providers import DRIVERS
 from resources.base import DEFAULT_PROVIDER
-from features.permission_prompts.skipping import prompted
+from controllers.features import settle_prompts
 from resources.base import SYSTEM
 from resources.types import EnvironmentKind
 
@@ -28,7 +28,7 @@ def prepared(record, name: str, abstract: str, owner: str, folder: Path, kind: E
     if not environments.rows.by_title(name):
         environments.create(name, abstract=abstract, owner=owner, launched_from=record.env, folder=str(folder), kind=kind)
     place = Record(record.root, name)
-    prompted(place)
+    settle_prompts(place)
     for feature in QUIET:
         Features(place, actor=SYSTEM).switch(feature, False)
     return place

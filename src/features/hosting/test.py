@@ -4,7 +4,7 @@ import features
 from controllers.base import COMMANDS
 from features.hosting.services import ticket_apps
 from engine.services import specs
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from resources.base import USER
 from tests.conftest import fresh, refused
 

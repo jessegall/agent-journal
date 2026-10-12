@@ -316,7 +316,7 @@ def test_words_from_an_outside_source_are_wrapped_for_agents_and_plain_for_peopl
 
 def test_issues_become_one_ticket_each_with_their_comments_once_and_one_that_leaves_keeps_its_ticket(monkeypatch, tmp_path):
     from controllers.types import Comments, Messages, Todos
-    from features.tickets.controller import Tickets
+    from controllers.types import Tickets
     from controllers.types import Boards
     from features.tickets.phases import start_tickets_of_phase
     from features.linear.sync import teams_of
@@ -411,7 +411,7 @@ def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_pic
     assert [n for n in Notices(record, actor=SYSTEM).rows.standing() if n.data.get("integration") == "linear"] == [], "and it clears when a sync works again"
     from controllers.types import Questions
     from features.linear.commands import ProposeComment
-    from features.tickets.controller import Tickets
+    from controllers.types import Tickets
     ticket = next(t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.source == "linear")
     words = "Thanks, this is fixed in 1.2"
 

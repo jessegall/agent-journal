@@ -1,5 +1,6 @@
 import time
 
+from controllers.features import automatic  # noqa: F401  the feature's own callers name it here
 from controllers.types import Environments, Works
 from providers import DRIVERS
 from resources.base import SYSTEM
@@ -18,9 +19,7 @@ def chosen_or_steered(chosen: bool, record, key: str) -> bool:
     return chosen or (key == "auto" and bool(steered(record)))
 
 
-def automatic(record) -> bool:
-    from framework.loaded import FEATURES
-    return "work_tracking" in FEATURES and bool(FEATURES["work_tracking"].on(record, "auto"))
+
 
 
 def passes_checkpoints(record) -> bool:

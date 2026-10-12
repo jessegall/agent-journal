@@ -25,7 +25,7 @@ from features.plans.handlers import (
 )
 from framework.sending import Nudge
 from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
-from features.plans.progress import held
+from controllers.plans import held
 from features.work_tracking.next import ROW_HOLDS
 from events.plans import PlanChanged
 from events.reports import ReportLinked

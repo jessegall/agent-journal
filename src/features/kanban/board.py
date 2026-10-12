@@ -11,7 +11,7 @@ from features.kanban.shifts import targets
 from resources.plans import ACTIVE
 from declaring.trigger import DAY
 from resources.base import Ref
-from features.kanban.shapes import AgentChip, BoardLanes, Card, Lane
+from resources.kanban import AgentChip, BoardLanes, Card, Lane
 from controllers.types import Plans
 from controllers.types import Agents, Questions, Todos, Works
 

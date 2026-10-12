@@ -2,7 +2,7 @@ import time
 from controllers.types import Comments, Environments, Todos
 from engine.record import Record
 from controllers.types import Boards
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh
 
@@ -425,8 +425,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     monkeypatch.setattr(bus, "BACKGROUND", False)
     assert [(repo["name"], repo["state"]) for repo in across._repository_states(across.load(spanning.n))] == [("chronos", "untouched"), ("site", "changed")], \
         "its card names each repository and where its branch stands"
-    from features.tickets import cards as card_module
-    from features.tickets.landing import Landing
+    from controllers.tickets import cards as card_module
+    from controllers.tickets.landing import Landing
     asked = []
     with monkeypatch.context() as quiet:
         quiet.setattr(Landing, "state", lambda self: asked.append(self.branch) or "untouched")
@@ -456,7 +456,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     tickets.complete(second.n, how="dropped", yes=True)
     assert Docs(record).load(unmerged.n).deleted, "a doc a ticket proposed goes with it when the ticket closes without its branch merged"
     from engine.worktree import Repository
-    from features.tickets.landing import Landing
+    from controllers.tickets.landing import Landing
     assert tickets._clean(tickets.load(second.n)) is False, "a ticket with no worktree of its own is not clean"
     assert [Landing(Repository(project), f"worktree-{ticket.work_environment}", ticket.base, home).state(), Landing(Repository(project), f"worktree-{second.work_environment}", ticket.base, home).state()] \
         == ["merged", "changed"], "a branch is merged, changed or untouched by where its commits are"
@@ -652,7 +652,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
         assert (decided, user.load(ui.n).approved_early) == ([(ui.n, READY)], False), "the plan is approved the moment the ticket it waited on closes"
     assert "has no plan waiting" in refused(lambda: user.approve_plan(ui.n)), "once its dependency closes, the wait no longer holds the plan"
     from types import SimpleNamespace
-    from features.plans import progress
+    from controllers import plans as progress
     from resources.plans import ACTIVE
     with monkeypatch.context() as finished:
         finished.setattr(Tickets, "_plan_of", lambda self, found: SimpleNamespace(status=ACTIVE, phases=[{}]))
@@ -895,7 +895,7 @@ def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
     assert tickets._queue() == [third.n, second.n], "dropping one queued ticket on another reorders the queue"
     tickets.place(first.n, third.n)
     assert tickets.load(first.n).queued is False, "dropping a ticket that is not queued only moves it within its column"
-    from features.tickets.cards import ago, ordinal
+    from controllers.tickets.cards import ago, ordinal
     assert [ordinal(n) for n in (1, 2, 3, 4, 11, 12, 13, 21, 22, 103)] == ["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "103rd"], \
         "a place in the queue is written as an ordinal"
     assert [ago(seconds) for seconds in (30, 120, 7200)] == ["30s", "2m", "2h"], "a quiet time is written in its largest whole unit"
@@ -951,7 +951,7 @@ def queued_tickets_keep_their_order_and_refuse_what_cannot_start(monkeypatch):
     held = COMMANDS["ticket"]["todos"](tickets)
     assert [(found["ticket"], [row["title"] for row in found["todos"]]) for found in held] == [(fourth.n, ["Draw the dark theme"])], \
         "the to-dos a ticket's own agent keeps are listed under their ticket"
-    from features.tickets.cards import SILENT_AFTER
+    from controllers.tickets.cards import SILENT_AFTER
     from resources.types import IDLE
     tickets.update(fifth.n, dependencies={first.ref: "proposed"})
     tickets.update(fourth.n, dependencies={first.ref: "confirmed"})

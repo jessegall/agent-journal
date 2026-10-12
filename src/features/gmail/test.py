@@ -80,7 +80,7 @@ class World:
 
 
 def mail_tickets(record) -> list:
-    from features.tickets.controller import Tickets
+    from controllers.types import Tickets
     return [t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.source == "gmail"]
 
 
@@ -112,7 +112,7 @@ def test_gmail_reads_nothing_until_an_address_a_search_and_a_board_are_chosen(wo
 
 def test_mail_becomes_one_ticket_each_wrapped_as_untrusted_and_only_you_start_it(world):
     from controllers.types import Messages, Todos
-    from features.tickets.controller import Tickets
+    from controllers.types import Tickets
     record, server, gmail = world.record, world.server, world.gmail
     server.mails[2] = raw("Urgent", HOSTILE)
     gmail.check(record)
@@ -132,7 +132,7 @@ def test_an_answer_is_sent_only_when_you_press_send_and_goes_to_the_sender_with_
     from controllers.types import Questions
     from features.gmail.commands import ProposeReply
     from framework.parts import Context
-    from features.tickets.controller import Tickets
+    from controllers.types import Tickets
     record, server, gmail = world.record, world.server, world.gmail
     gmail.check(record)
     ticket = next(t for t in Tickets(record, actor=SYSTEM).rows.standing() if t.source == "gmail")

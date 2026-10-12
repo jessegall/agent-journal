@@ -23,7 +23,7 @@ from framework.routing import Reply, Request, handles
 from features.secrets.controller import Secrets
 from resources.secrets import Kind
 from features.secrets.values import ValuesFile
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM, USER
 from resources.types import AgentRow, Question

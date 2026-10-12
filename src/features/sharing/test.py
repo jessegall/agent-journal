@@ -823,7 +823,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     assert f"ticket-1/{away.ref}" in sharing._scope(pile_share), "a member from another environment is shared with the collection"
     assert sharing._shared_data(pile_share)["rows"][f"ticket-1/{away.ref}"]["title"] == "From the ticket", "and is read from its own environment"
     from controllers.types import Boards
-    from features.tickets.controller import Tickets
+    from controllers.types import Tickets
     board = Boards(here, actor=USER).create("Features", stages=["Ideas", "Building"])
     tickets = Tickets(here, actor=USER)
     first, second = tickets.create("First", board=board.n), tickets.create("Second", board=board.n)

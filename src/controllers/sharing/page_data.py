@@ -74,7 +74,7 @@ def origin_of(record: Record, environment: str) -> str:
     kept = ORIGINS.get(str(record.root))
     if not fresh(kept):
         owners: dict[str, object] = {}
-        from features.tickets.controller import Tickets
+        from controllers.types import Tickets
         for ticket in Tickets(record, actor=SYSTEM).rows.standing():
             owners.setdefault(ticket.work_environment, ticket)
         kept = ORIGINS[str(record.root)] = (time.monotonic(), owners)
@@ -88,7 +88,7 @@ def shared_fields(row, record: Record) -> dict:
     if "dependencies" in data:
         data["dependencies"] = {ref: stance for ref, stance in data["dependencies"].items() if stance == CONFIRMED}
     if row.type == "ticket":
-        from features.tickets.controller import Tickets
+        from controllers.types import Tickets
         data["status"] = Tickets(Record(record.root, row.home_env or record.env), actor=SYSTEM).status(row.n)
     if row.home_env:
         data["origin"] = origin_of(record, row.home_env)
@@ -117,7 +117,7 @@ class SharePages:
 
     def _loaded_members(self, record: Record, row) -> list:
         if row.type == "board":
-            from features.tickets.controller import Tickets
+            from controllers.types import Tickets
             return [ticket for ticket in Tickets(record, actor=SYSTEM).rows.standing() if ticket.board == row.n]
         members = []
         for ref in self._member_refs(row):

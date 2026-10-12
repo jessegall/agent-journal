@@ -4,7 +4,7 @@ from framework.base import Feature
 from framework.journal import Journal
 from features.kanban.commands import ShiftCard, ShowBoard
 from features.kanban.details import KanbanDetails
-from features.kanban.shapes import BoardLanes, Card, Lane
+from resources.kanban import BoardLanes, Card, Lane
 from resources.types import Todo, Work
 
 LANES = {"todo": "To do", "held": "Held", "doing": "Doing", "asked": "Needs you", "done": "Done"}

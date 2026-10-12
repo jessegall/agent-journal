@@ -4,7 +4,7 @@ from typing import TypedDict
 from engine import runtime
 from engine.record import Record
 from engine.services import status
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from resources.base import SYSTEM
 
 APP = "app"

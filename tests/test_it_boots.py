@@ -1762,8 +1762,8 @@ def test_the_server_starts_on_a_free_threaded_interpreter_when_the_machine_has_o
 
 def test_a_board_of_two_hundred_tickets_answers_fifty_a_lane_and_its_cursor_holds_across_writes_deletes_and_moves():
     from controllers.types import Boards
-    from features.tickets.controller import Tickets
-    from features.tickets.cards import TicketCards
+    from controllers.types import Tickets
+    from controllers.tickets.cards import TicketCards
     from resources.base import AGENT, USER
     import features
     features.load()

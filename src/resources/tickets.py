@@ -6,6 +6,7 @@ from resources.base import CHECKPOINT, DEFAULT_PROVIDER, ESCALATED, FINISHED, PL
 from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Placed
 
 ROOT = "."
+TICKETS = "tickets"
 PROPOSED, CONFIRMED = "proposed", "confirmed"
 
 

@@ -9,7 +9,7 @@ from controllers.environments import Environments
 from controllers.todos import Todos
 from controllers.works import Works
 from resources.plans import (
-    ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, PHASES, READY, REVIEWING, RUNNING, STAGES, TODOS, WAITING, Plan, standing_of, tally_of,
+    ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, PHASES, READY, REVIEWING, RUNNING, STAGES, TODOS, WAITING, Plan, Tally, standing_of, tally_of,
 )
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
 from resources.shapes import LEVELS
@@ -331,3 +331,16 @@ class Plans(Controller):
     def _ticket_of_this_environment(self) -> int:
         place = Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
         return place.owned_by("ticket") if place else 0
+
+
+def first_open_phase(record, plan) -> int:
+    return Plans(record, actor=SYSTEM)._first_open(plan)
+
+
+def held(record, todo) -> bool:
+    return Plans(record, actor=SYSTEM)._holds(todo)
+
+
+def counts(record, plan) -> Tally:
+    """How the rows a plan holds stand, over all its phases."""
+    return tally_of([row for phase in plan.phases for row in Plans(record, actor=SYSTEM)._members(phase)])

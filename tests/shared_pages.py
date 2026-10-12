@@ -10,7 +10,7 @@ from controllers.types import Docs, Todos
 from controllers.collections import Collections
 from controllers.types import Plans
 from controllers.types import Boards
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from engine.record import Record
 from controllers.types import Shares
 from features.sharing.server import ShareHandler

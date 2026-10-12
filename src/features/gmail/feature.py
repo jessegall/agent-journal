@@ -5,7 +5,7 @@ from features.gmail.working import GmailWork
 from features.integrations.base import IntegrationFeature
 from features.integrations.details import SEND
 from framework.journal import Journal
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from resources.tickets import Ticket
 from resources.types import Question
 

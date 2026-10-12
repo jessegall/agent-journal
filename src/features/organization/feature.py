@@ -2,7 +2,7 @@ from controllers.types import Todos
 from events.todos import TodoCompleted
 from expects import Answered, Given, Kept, Refused, Unchanged
 from framework.base import Feature
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from resources.base import AGENT, USER
 from resources.types import Todo
 from framework.journal import Journal

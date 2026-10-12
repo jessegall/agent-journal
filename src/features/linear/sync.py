@@ -3,7 +3,7 @@ from dataclasses import dataclass, replace
 
 from controllers.types import Comments
 from controllers.types import Boards
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from features.integrations.client import Answer, IntegrationClient
 from features.integrations.state import Choice, IntegrationState
 from features.integrations.words import BODY, COMMENT, TITLE, cleaned

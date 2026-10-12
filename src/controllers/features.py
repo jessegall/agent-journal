@@ -143,3 +143,18 @@ def setting_value(value: str) -> bool | int | float | str:
     except ValueError:
         return value
     return parsed if isinstance(parsed, (bool, int, float, str)) else value
+
+
+AUTO_MODE = "work_tracking"
+PERMISSION_PROMPTS = "permission_prompts"
+
+
+def automatic(record) -> bool:
+    """Whether the agent of this environment works the list without asking. Asked of the running feature, never worked out again here: work tracking decides it with its own rule, where an environment steered by a row counts as auto. Read here rather than in the feature, because a controller settling a new environment needs the same answer."""
+    from framework.loaded import FEATURES
+    return AUTO_MODE in FEATURES and bool(FEATURES[AUTO_MODE].on(record, "auto"))
+
+
+def settle_prompts(record) -> None:
+    """Settles whether an environment's agent is asked for permission: it is not, where it works the list on its own. Named apart from agents.terminal.prompted, which is about launching a terminal with a prompt."""
+    record.change_setting(PERMISSION_PROMPTS, {"skip": automatic(record)})

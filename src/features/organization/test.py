@@ -92,7 +92,7 @@ def test_the_board_counts_each_role_by_the_tickets_where_its_work_is_in_hand():
     import features
     from controllers.types import Todos, Works
     from engine.record import Record
-    from features.tickets.controller import Tickets
+    from controllers.types import Tickets
     from resources.base import AGENT
     from tests.conftest import fresh
     features.load()

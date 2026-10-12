@@ -12,7 +12,8 @@ from controllers.types import Questions, Works
 from resources.plans import WAITING
 from controllers.types import Boards
 from features.tickets.calls import PLAN_DONE_CALL, calls
-from features.tickets.controller import HELD, Tickets
+from controllers.tickets.controller import HELD
+from controllers.types import Tickets
 from features.tickets.details import TicketsDetails
 from resources.base import CHECKPOINT, FINISHED, PLAN_WAITS, STUCK, SYSTEM, Refused
 from events.tickets import TicketCompleted

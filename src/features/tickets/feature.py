@@ -11,10 +11,10 @@ from resources.base import AGENT, USER
 from resources.types import AgentRow, Comment, Environment, Question, Rule, Todo
 from framework.journal import Journal
 from features.tickets.commands import ShowTicketTodos
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from features.tickets.details import TicketsDetails
 from framework.sending import Nudge
-from features.tickets.orchestration import DRAFTS, WAITS
+from controllers.tickets.orchestration import DRAFTS, WAITS
 from features.tickets.handlers import (
     FinishTheBoardWithItsLastTicket,
     HoldTicketKnowledge,

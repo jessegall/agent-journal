@@ -1,8 +1,12 @@
 import time
+from dataclasses import asdict
 
-import controllers.types as types_module
 from controllers.agents import IDLE_STATE, WORKING_STATE
-from controllers.types import Agents, Environments, Features, Messages, Notices
+from controllers.agents import Agents
+from controllers.environments import Environments
+from controllers.features import Features, settings_of, settle_prompts
+from controllers.messages import Messages
+from controllers.notices import Notices
 from engine import bus
 from engine.record import Record
 from engine.seats import terminal_of
@@ -10,25 +14,27 @@ from engine.state import State
 from engine.stop import ask_session
 from engine.worktree import branched, changed, current_branch, keep_own_packages, merged_into, present, tip
 from engine.sessions import Sessions, live
-from features.permission_prompts.skipping import prompted
 from controllers.base import CONTROLLERS, Controller, discarding
 from controllers.prioritised import Prioritised
 from controllers.requests import request
 from engine.outbox import Request
 from engine.given import given
-from controllers.types import Boards
+from controllers.boards.controller import Boards
 from resources.boards import DONE, REVIEW, START
 from resources.check_output import tail
 from engine.proc import streamed
-from features.tickets.cards import CardState, TicketCards
-from features.tickets.details import TicketsDetails
-from features.tickets.landing import TicketLanding
-from features.tickets.orchestration import DRAFTS, PLANS, WAITS, TicketOrchestration
+from controllers.tickets.cards import CardState, TicketCards
+from controllers.tickets.landing import TicketLanding
+from controllers.tickets.orchestration import DRAFTS, PLANS, WAITS, TicketOrchestration
 from resources.tickets import CONFIRMED, PROPOSED, Ticket, card_back
-from controllers.types import Comments
-from controllers.types import Plans
+from controllers.comments import Comments
+from controllers.plans import Plans
 from resources.plans import ACTIVE, DONE as PLAN_DONE, READY, WAITING
-from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM, USER, titled
+from resources.tickets import TICKETS
+
+QUIET_IN_TICKETS = ("dev_faults",)
+from resources.base import AGENT, ESCALATED, SYSTEM, USER, Refused, Resource, titled
+from resources.shapes import FieldChoice
 from resources.shapes import rank_before
 from controllers.marks import action
 from resources.types import EnvironmentKind
@@ -39,7 +45,6 @@ TELL_GRACE = 60.0
 RETURNS_BEFORE_ESCALATING = 2
 RELEASE_TIMEOUT = 600
 HELD = ("rule", "doc", "tool")
-QUIET_IN_TICKETS = ("dev_faults",)
 CARRY_ON = "Carry on with {ref} where you left off."
 HANDED = ("{ref}, {title}, is yours to do in this worktree, after the tickets you already have: {brief} Read it with journal "
           "ticket show {n}, commit it on this branch, and say when it is done.")
@@ -101,7 +106,13 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                            brief="Move its tickets to a stage the board has; until then they still save.", stage_lost_board=r.board)
 
     def _limit(self) -> int:
-        return max(0, int(TicketsDetails.values(self.record).running))
+        return max(0, int(settings_of(self.record, TICKETS).running))
+
+    def _settle(self, place) -> None:
+        """What a ticket's own environment starts with: its agent is prompted for permission only when auto mode is off there, and the features a ticket has no use for are switched off."""
+        settle_prompts(place)
+        for feature in QUIET_IN_TICKETS:
+            Features(place, actor=SYSTEM).switch(feature, False)
 
     @action
     def tell(self, n: int, note: str) -> str:
@@ -211,7 +222,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return self.record.remembered(("plan status", ticket.n, ticket.updated), lambda: self._plan_status_now(ticket))
 
     def _plan_status_now(self, ticket) -> str:
-        from features.plans.progress import first_open_phase
+        from controllers.plans import first_open_phase
         if not ticket.plan:
             return ""
         plan = self._plan_of(ticket)
@@ -239,7 +250,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _rows_done(self, ticket) -> bool:
         """Whether every row of the ticket's plan is closed, though the plan has not yet been marked done: its agent has finished and waits on the merge."""
-        from features.plans.progress import first_open_phase
+        from controllers.plans import first_open_phase
         plan = self._plan_of(ticket)
         return plan is not None and plan.status == ACTIVE and bool(plan.phases) and not first_open_phase(self.record.sibling(ticket.work_environment), plan)
 
@@ -269,10 +280,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             environments.create(name, abstract=f"Where {self.type} {ticket.n} runs", owner=ticket.ref, launched_from=self.record.env, kind=EnvironmentKind.TICKET)
         elif not held.owner:
             environments.update(held.n, owner=ticket.ref, launched_from=self.record.env, kind=EnvironmentKind.TICKET)
-        place = Record(self.record.root, name)
-        prompted(place)
-        for feature in QUIET_IN_TICKETS:
-            Features(place, actor=SYSTEM).switch(feature, False)
+        self._settle(Record(self.record.root, name))
         return self.update(ticket.n, work_environment=name)
 
     def _bind_to(self, n: int, name: str):
@@ -515,8 +523,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return self.update(ticket.n, dependencies={**ticket.dependencies, other.ref: stance})
 
     @action
-    def accept_dependencies(self, n: int, only: str = "", why: str = ""):
-        return self._decide_dependencies(n, lambda ref: not only or ref.split(":")[-1] in only.split(","), "Accepted its proposed waits", why)
+    def accept_dependencies(self, n: int, only: str | None = None, why: str = ""):
+        return self._decide_dependencies(n, lambda ref: only is None or ref.split(":")[-1] in only.split(","), "Accepted its proposed waits", why)
 
     @action
     def decline_dependencies(self, n: int, why: str = ""):
@@ -747,13 +755,13 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _field_choices(self, r: Resource) -> dict:
         from engine.organization import organization
-        boards = [{"key": str(board.n), "label": board.title, "first_stage": (board.stages or [""])[0]}
-                  for board in Boards(self.record, actor=SYSTEM).rows.standing()]
+        boards = [FieldChoice(str(board.n), board.title, (board.stages or [""])[0]) for board in Boards(self.record, actor=SYSTEM).rows.standing()]
         try:
-            domains = [{"key": domain.name, "label": domain.title or domain.name} for domain in organization(self.record.root.parent).domains]
+            domains = [FieldChoice(domain.name, domain.title or domain.name) for domain in organization(self.record.root.parent).domains]
         except Refused:
             domains = []
-        return {"board": boards, "stage": [{"key": stage, "label": stage} for stage in self._stages(r.board)], "owner": domains}
+        stages = [FieldChoice(stage, stage) for stage in self._stages(r.board)]
+        return {field: [asdict(one) for one in choices] for field, choices in (("board", boards), ("stage", stages), ("owner", domains))}
 
     def _board(self, ticket):
         return Boards(self.record, actor=SYSTEM).load(ticket.board) if ticket.board else None
@@ -766,5 +774,3 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
             return None
         return next((r for r in self.rows.standing() if r.source == source and r.source_id == source_id), None)
 
-
-types_module.register(Tickets)

@@ -3,7 +3,7 @@ from pathlib import Path
 from controllers.types import environment_records
 from controllers.types import Plans
 from resources.plans import ACTIVE, DONE
-from features.plans.progress import first_open_phase
+from controllers.plans import first_open_phase
 from resources.base import SYSTEM
 
 

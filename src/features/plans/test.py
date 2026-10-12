@@ -516,8 +516,8 @@ def test_a_shared_plan_hands_its_tickets_to_its_own_agent_in_one_worktree(monkey
     stopped = []
     monkeypatch.setattr(Tickets, "_merged", lambda self, ticket, readings: True)
     monkeypatch.setattr(Sessions, "holder", lambda self, name: f"session-{name}" if name == f"plan-{plan.n}" else "")
-    monkeypatch.setattr("features.tickets.controller.terminal_of", lambda root, session: session)
-    monkeypatch.setattr("features.tickets.controller.ask_session", lambda root, terminal: stopped.append(terminal))
+    monkeypatch.setattr("controllers.tickets.controller.terminal_of", lambda root, session: session)
+    monkeypatch.setattr("controllers.tickets.controller.ask_session", lambda root, terminal: stopped.append(terminal))
     tickets.close_merged()
     assert (all(tickets.load(n).completed for n in (first.n, second.n)), stopped, bool(plans.load(plan.n).merged)) == \
         (True, [f"session-plan-{plan.n}"], True), "once the plan's branch is merged its tickets close together and its agent stops, once"

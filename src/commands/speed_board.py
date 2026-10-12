@@ -19,7 +19,7 @@ from engine.sessions import Sessions
 from engine.stored import write_text
 from controllers.types import Boards
 from controllers.types import Plans
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from providers import PROVIDERS
 from resources.base import SYSTEM
 from runner.hooks import answer

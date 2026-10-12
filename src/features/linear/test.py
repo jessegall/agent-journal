@@ -10,7 +10,7 @@ from features.linear.commands import ProposeComment
 from features.linear.reading import reply_of
 from features.linear.routes import WEBHOOK_BODY, LinearWebhook
 from features.linear.webhook import BODY_LIMIT, event_of, signed
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from resources.base import AGENT, SYSTEM, Refused
 from tests.conftest import refused
 

@@ -3,15 +3,18 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from controllers.stored import PAGE, cursor_of, cursor_text
-from controllers.types import Agents, Questions, Todos, Works
+from controllers.agents import Agents
+from controllers.questions import Questions
+from controllers.todos import Todos
+from controllers.works import Works
 from engine import bus
 from engine.record import Record
 from engine.sessions import Sessions, live
 from resources.text import clipped
 from engine.worktree import spread
-from controllers.types import Boards
+from controllers.boards.controller import Boards
 from resources.boards import REVIEW
-from features.kanban.shapes import BoardLanes, Card, Lane
+from resources.kanban import BoardLanes, Card, Lane
 from resources.tickets import PROPOSED
 from resources.base import SYSTEM, Refused
 from resources.shapes import LEVELS, position_of
@@ -91,7 +94,7 @@ class TicketCards:
     @action
     def status(self, n: int) -> dict:
         """Where a ticket stands: its plan with the progress of its rows, what its agent does now, and whether it works or awaits."""
-        from features.plans.progress import Tally, counts
+        from controllers.plans import Tally, counts
         ticket = self.load(n)
         state = self._runtime(ticket, Sessions(self.record.root).all(), len(self._running()))
         if not ticket.work_environment:

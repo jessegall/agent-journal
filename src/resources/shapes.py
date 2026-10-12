@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import ClassVar
 
 import json
@@ -159,3 +160,12 @@ class Traced(Shape):
         Field(rows(path=TEXT, added=NUMBER, removed=NUMBER, created=FLAG), list, name="changed"),
         Field(rows(sha=TEXT, subject=TEXT), list, name="commits"),
     ]
+
+
+@dataclass(frozen=True)
+class FieldChoice:
+    """One option the viewer offers for a field: the value it sets and the words it shows."""
+
+    key: str
+    label: str
+    first_stage: str = ""

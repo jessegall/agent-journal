@@ -9,7 +9,7 @@ from framework.routing import Reply, Request, handles
 from features.secrets.values import ValuesFile
 from engine.address import own_address
 from engine.tunnel import kept_address
-from features.tickets.controller import Tickets
+from controllers.types import Tickets
 from resources.base import Refused, SYSTEM
 
 CATCH_UP = 30 * 60.0
