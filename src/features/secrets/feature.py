@@ -13,7 +13,7 @@ from features.secrets.leaks import LeakAlarm
 from features.secrets.picking import refuse_secret_that_runs_commands
 
 from features.secrets.values import secrets_folder
-from features.secrets.resource import Secret
+from resources.secrets import Secret
 from providers.payload import BashCall, ReadCall
 from resources.types import AgentRow
 

@@ -7,7 +7,7 @@ from engine.package import entry
 from engine.record import Record
 from engine.services import BUILD, allocate, current_build, files_for, log_file
 from features.sharing.controller import ADDRESS_TAKEN, Shares
-from features.sharing.resource import ended
+from resources.sharing import ended
 from features.sharing.tunnel import SERVER, TUNNEL, refused_address, tunler, tunler_build
 from resources.base import Refused, SYSTEM
 from declaring.extension import Extension
