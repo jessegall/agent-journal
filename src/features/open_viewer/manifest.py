@@ -32,6 +32,7 @@ class Manifest(TypedDict):
     project: str
     environment: str
     version: str
+    branch: str
     build: str
     actions: list[str]
     actors: list[str]
@@ -64,11 +65,13 @@ def watchable(record: Record) -> list[dict]:
 
 
 def manifest(root: Path) -> Manifest:
+    from features.auto_update.branch import followed_branch
     record = Record(root, runtime.env(root))
     return {
         "project": root.resolve().parent.name,
         "environment": runtime.env(root),
         "version": version(),
+        "branch": followed_branch(root),
         "build": built(),
         "actions": list(ACTIONS),
         "actors": list(ACTORS),

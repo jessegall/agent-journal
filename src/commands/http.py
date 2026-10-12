@@ -259,9 +259,7 @@ def post_update_check(req: Request) -> Reply:
 def get_identity(req: Request) -> Reply:
     summaries = Environments(Record(req.root, runtime.env(req.root)), actor=USER).rows.summaries()
     names = NAMED.get(str(req.root), summaries, lambda: [row["title"] for row in summaries if not row["deleted"]])
-    from features.auto_update.branch import followed_branch
-    return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "branch": followed_branch(req.root),
-                       "build": CODE.name, "pid": os.getpid(), "environments": names})
+    return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "build": CODE.name, "pid": os.getpid(), "environments": names})
 
 
 @route("GET", "/api/{env}/health")
