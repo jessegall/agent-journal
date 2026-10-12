@@ -256,6 +256,11 @@ def drifted(root: Path) -> bool:
     return ZIPPED and (Path(root) / ARCHIVE).resolve().name != CODE.name and not runtime.upgrading(root)
 
 
+def reloads_itself(root: Path) -> bool:
+    """Whether this server restarts when the code changes: only one serving the journal that this code belongs to. A server run from this code against a root somewhere else - a test's copy under a temp folder - must never come back on a change to the repository, or it outlives the test that started it and waits for work that will never come."""
+    return Path(root).resolve().is_relative_to(CODE.parent.resolve())
+
+
 def watch_code(root: Path, package: Path, server: ThreadingHTTPServer, changed: threading.Event) -> None:
     before = code_stamp(package)
     last_change = 0.0
@@ -611,7 +616,8 @@ def run(root: Path, port: int = DEFAULT_PORT) -> None:
     halting = threading.Event()
     server.warm.clear()
     threading.Thread(target=warmed, args=(root, server.warm, began), daemon=True).start()
-    threading.Thread(target=watch_code, args=(root, Path(root) / ARCHIVE if ZIPPED else CODE, server, changed), daemon=True).start()
+    if reloads_itself(root):
+        threading.Thread(target=watch_code, args=(root, Path(root) / ARCHIVE if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     threading.Thread(target=watch_runtime, args=(root, halting), daemon=True).start()
     threading.Thread(target=server.collector.run, args=(halting,), daemon=True).start()

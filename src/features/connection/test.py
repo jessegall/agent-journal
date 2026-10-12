@@ -216,6 +216,11 @@ def test_code_goes_through_git_as_snapshots_and_is_applied_only_over_files_not_c
 
 def test_a_hosted_world_runs_a_server_and_two_local_copies_as_real_processes_that_connect_and_sync(hosted_world):
     world = hosted_world
+    from engine.package import CODE
+    from serve import reloads_itself
+    assert not reloads_itself(world.server.root), \
+        "a copy's server, run from this code against a root of its own, must not restart itself when this code changes: it would outlive the test that started it and hold its port for good"
+    assert reloads_itself(CODE.parent / ".journal"), "while the journal this code belongs to still reloads on an edit"
     world.server.start()
     world.laptop.start()
     world.desk.start()
