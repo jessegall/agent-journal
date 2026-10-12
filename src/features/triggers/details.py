@@ -1,7 +1,7 @@
 from resources.base import PROJECT
 from declaring.details import Behaviour, FeatureDetails, Line
-from features.triggers.resource import DOES
-from features.triggers.watched import MOST_NAMED
+from resources.triggers import DOES
+from framework.watched import MOST_NAMED
 from declaring.groups import Group
 
 

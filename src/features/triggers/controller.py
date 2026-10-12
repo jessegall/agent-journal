@@ -6,8 +6,8 @@ import resources.types as resources_module
 from controllers.base import Controller, discarding
 from controllers.marks import action
 from declaring.extension import Extension
-from features.triggers import watched
-from features.triggers.resource import DOES, FROM_USER, ONLY_WHEN, START, STATE_DOES, WHEN, Trigger
+from framework import watched
+from resources.triggers import DOES, FROM_USER, ONLY_WHEN, START, STATE_DOES, WHEN, Trigger
 from features.triggers.summary import summary
 from resources.base import FIRED, SYSTEM, Refused, Resource
 

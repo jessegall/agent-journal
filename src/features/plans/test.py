@@ -250,7 +250,7 @@ def test_a_plan_started_with_its_rows_already_closed_completes_itself(env, monke
     assert ran_on(reentering).completed, "a catch-up its own save asks for again runs once, and closes the plan without refusing itself"
     assert ran_on(closed_elsewhere).outcome == "closed by another handler", "a catch-up stops at a plan something else closed while it walked"
 
-    from features.plans.resource import ABANDONED
+    from resources.plans import ABANDONED
     from migrations.m0056_plans_with_open_rows import run as reopen_plans
     from migrations.m0065_abandoned_plans_closed import run as close_abandoned
     stale = by_agent.create("done too early", goal="rows are still open")

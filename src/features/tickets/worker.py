@@ -1,6 +1,6 @@
 from features.agent_sessions.launch import start_agent_in
 from features.plans.controller import Plans
-from features.plans.resource import PHASE
+from resources.plans import PHASE
 from providers import DEFAULT_PROVIDER, DRIVERS
 from resources.base import SYSTEM
 from resources.types import EnvironmentKind

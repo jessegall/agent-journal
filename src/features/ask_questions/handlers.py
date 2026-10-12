@@ -7,7 +7,7 @@ from events.questions import QuestionCompleted, QuestionCreated
 from engine.sessions import Sessions
 from features.agent_sessions.launch import driver_in
 from framework.sending import Sent
-from features.triggers import watched
+from framework import watched
 from declaring.trigger import DAY, MINUTE
 from providers.turns import last_text
 from framework.parts import AgentContext, Context, Handler

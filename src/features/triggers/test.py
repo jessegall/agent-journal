@@ -176,7 +176,7 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     import time as clock
     from controllers.types import Questions, Todos, Works
     from framework.loaded import FEATURES
-    from features.triggers import watched
+    from framework import watched
     from framework.parts import AgentContext
     from resources.base import AGENT, SYSTEM, USER
     from tests.kit import idle
@@ -265,7 +265,7 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
 
     from framework.sending import Sent
     from tests.conftest import refused as refusal
-    from features.triggers.watched import FACTS, ClaimedTwice, Fact, UnknownFact, Watched
+    from framework.watched import FACTS, ClaimedTwice, Fact, UnknownFact, Watched
     with pytest.raises(ClaimedTwice):
         FACTS.register(None, Fact("agent.idle", watched.MINUTES, "Idle again", "the agent has been idle again for more than {over} minutes", lambda *given: []))
     with pytest.raises(UnknownFact):

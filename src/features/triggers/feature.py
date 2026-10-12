@@ -3,13 +3,13 @@ from events.agents import AgentMessageSent, ClockTicked
 from events.messages import MessageCreated
 from expects import WHEN, Given, Held, Kept, Nudged, Refused, Unchanged, Updated, Wrote
 from framework.base import Feature
-from features.triggers.resource import Trigger
+from resources.triggers import Trigger
 from providers.payload import BashCall
 from resources.base import USER
 from resources.types import AgentRow, Message
 from framework.sending import Sent
 from declaring.trigger import MINUTE
-from features.triggers.watched import FACTS, MINUTES, PERCENT, Fact
+from framework.watched import FACTS, MINUTES, PERCENT, Fact
 from framework.journal import Journal
 from features.triggers.controller import Triggers
 from features.triggers.details import TriggersDetails

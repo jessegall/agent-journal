@@ -34,7 +34,7 @@ from engine.disk import by_repository
 from engine.stored import read_json, write_text
 from engine.transaction import snapshot, undoable
 from engine.wording import noun
-from features.triggers.watched import FACTS
+from framework.watched import FACTS
 from overview.summary import environment, summarize
 from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, Resource, SYSTEM, USER, overview_weight as weigh
 from resources.pictures import dimensions

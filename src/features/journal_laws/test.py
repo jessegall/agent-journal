@@ -110,7 +110,7 @@ def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once(
     from engine import bus
     record = fresh()
     claude = PROVIDERS["claude"]()
-    call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "cat features/parts.py"}}
+    call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "cat notes.txt"}}
     handle(claude, record.root, record.env, {**call, "hook_event_name": "PreToolUse"})
     assert bus.background_finished(), "the whisper runs off the hook's answer, so the test waits for it as the agent never has to"
     assert [n.title for n in Nudges(record).all() if n.title.startswith("law L3")], "a keyword whispers its law"

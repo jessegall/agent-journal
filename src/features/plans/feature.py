@@ -31,7 +31,7 @@ from events.plans import PlanChanged
 from events.reports import ReportLinked
 from events.resources import RowReopened
 from events.todos import TodoUpdated
-from features.plans.resource import Plan
+from resources.plans import Plan
 from providers.payload import ToolUse
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import AgentRow, Question, Todo, Work
