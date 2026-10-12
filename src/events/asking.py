@@ -26,6 +26,25 @@ class ToolCallAsked(Asked):
 
 
 @dataclass(frozen=True, kw_only=True)
+class AgentDispatching(Asked):
+    """May this subagent be dispatched, as the provider read the call. One refusal stops it."""
+
+    reduces = FirstRefusalWins
+    session: str = ""
+    subagent: bool = False
+    kind: str = ""
+    model: str = ""
+    model_supported: bool = False
+    models: tuple[str, ...] = ()
+    """The models the provider offers a dispatch, empty when it cannot tell."""
+    name_supported: bool = False
+    description: str = ""
+    task: str = ""
+    prompt: str = ""
+    read_only: bool = False
+
+
+@dataclass(frozen=True, kw_only=True)
 class AgentMessageSending(Asked):
     """What of this turn reaches the chat, or none of it. One answerer keeping it out wins, since the turn's words belong to the row its tag writes."""
 

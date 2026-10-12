@@ -10,6 +10,7 @@ from controllers.agents import Agents
 from controllers.base import CONTROLLERS
 from engine import triggering
 from engine.command_line import command_line
+from engine.sessions import Sessions as TheSessions
 from events import Fact
 from framework.loaded import FEATURES
 from framework.parts import Speaker
@@ -18,7 +19,7 @@ from receiving.asking import answered
 from receiving.ticks import PerAsk, Services
 from resources.base import AGENT, SYSTEM
 from resources.runs import Exited
-from serving import SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, ReadRemembered, ReadRows, Remembered, Rows, Settings
+from serving import SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, ReadRemembered, ReadRows, Remembered, Rows, Sessions, Settings
 
 
 class NobodyToSpeakTo(LookupError):
@@ -77,7 +78,8 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             ReadRows: PerAsk(controlling),
             Commands: PerAsk(lambda feature, asked: JournalCommands(record, agent())),
             Remembered: PerAsk(lambda feature, asked: record.state(feature)),
-            ReadRemembered: PerAsk(lambda feature, asked: record.state(feature))}
+            ReadRemembered: PerAsk(lambda feature, asked: record.state(feature)),
+            Sessions: PerAsk(lambda feature, asked: TheSessions(record.root))}
 
 
 def agent_of(logged, record):

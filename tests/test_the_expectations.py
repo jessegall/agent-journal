@@ -999,6 +999,29 @@ def test_a_tool_call_a_swept_feature_refuses_is_refused_at_the_gate():
         bus.answered_by(was)
 
 
+def test_a_dispatch_a_swept_feature_refuses_is_refused_at_the_gate_with_the_dispatch_as_read():
+    """A subagent dispatch is its own request: an answerer reads the dispatch as the provider read the call - its kind, its model and the models offered - and its refusal stops it."""
+    from events.answers import Allowed, Answer, Refused
+    from engine import bus
+    from engine.gates import HookCall
+    from payload import Dispatch
+    from runner.gate import dispatch_refused
+    from types import SimpleNamespace
+
+    def answering(request, record) -> Answer:
+        return Refused(why="name the model") if not request.model and request.model_supported else Allowed()
+
+    was = bus._dispatch.asks
+    bus.answered_by(answering)
+    try:
+        call = HookCall(SimpleNamespace(is_subagent=lambda hook: False), SimpleNamespace(), SimpleNamespace(), SimpleNamespace(title="claude-1"))
+        assert dispatch_refused(call, Dispatch(kind="Explore", model=None, model_supported=True, models=("haiku", "sonnet"))) == "name the model", \
+            "a dispatch that names no model where the provider takes one is refused with the answerer's reason"
+        assert dispatch_refused(call, Dispatch(kind="Explore", model="haiku", model_supported=True)) is None, "and one that names it goes on"
+    finally:
+        bus.answered_by(was)
+
+
 def test_an_answered_tool_call_is_told_on_the_lane_after_its_answer():
     """What writes about a tool call runs after the gate answered it: the hook path tells ToolCallAnswered, and a swept feature's handler of it hears what was asked and why it was refused."""
     from events import Fact

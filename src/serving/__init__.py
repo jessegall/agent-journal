@@ -50,6 +50,12 @@ class ReadRemembered(Remembered):
     writes = False
 
 
+class Sessions(Service):
+    """The agent sessions this journal runs: which session holds an environment, what a session is bound to, and lending an environment to a session's subagents."""
+
+    writes = True
+
+
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
 
