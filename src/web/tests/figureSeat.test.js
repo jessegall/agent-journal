@@ -8,8 +8,8 @@ const FIGURE = {size: 112, below: 0.05};
 // a page whose compose box is `box`, with the bars docked over it at `docked` while there are any
 const page = (box, docked = null) => {
     globalThis.window = {innerWidth: 1280, innerHeight: 800};
-    const ledge = docked && {getBoundingClientRect: () => docked};
-    const thread = {querySelector: (selector) => (selector === "[data-figure-ledge]" ? ledge : null)};
+    const bars = docked && {getBoundingClientRect: () => docked};
+    const thread = {querySelector: (selector) => (selector === "[data-figure-docked-bars]" ? bars : null)};
     const home = {getBoundingClientRect: () => box, closest: (selector) => (selector === ".thread" ? thread : null)};
     globalThis.document = {
         querySelector: (selector) => (selector === "[data-figure-home]" ? home : null),

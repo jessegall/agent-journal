@@ -108,7 +108,7 @@ function current() {
     if (arriving.value) return {clip: clipNamed("enter"), facing: 0, once: true, arrival: true};
     if (moving.value?.hopping) return {clip: clipNamed(moving.value.clip), facing: 0};
     if (landing.value) return {clip: clipNamed("land"), facing: 0, once: true, landed: true};
-    if (moving.value) return onTheMove(moving.value.way > 0 ? 90 : 270);
+    if (moving.value) return walkingClip(moving.value.way > 0 ? 90 : 270);
     // a hanging figure holds on until it is let go; a beat waits until it has dropped
     if (place.value.posture === "hang") return {clip: clipNamed(`hang_${place.value.grip}`), facing: 0};
     if (beats.value.length) return {clip: clipNamed(beats.value[0].clip), facing: facingCard(beats.value[0].card), once: true};
@@ -119,7 +119,7 @@ function current() {
 
 // On the move the figure walks on with whatever its body was doing, thinking or working as it goes; with nothing to do, or a clip that
 // needs a lap, it simply walks
-function onTheMove(facing) {
+function walkingClip(facing) {
     const torso = clipNamed(heldClip());
     const mixes = torso.name !== "idle" && torso.postures.includes("walk");
     return mixes ? {clip: torso, facing, posture: "walk"} : {clip: clipNamed("walk"), facing};
@@ -215,12 +215,12 @@ const placed = (spot, posture) => {
 };
 // The picture kept where the figure rests, in the posture of the clip on screen; when that posture changes where it rests, as it sits down
 // or gets up, the picture slides to its new place while the body eases into the posture
-let rested = "stand";
+let restedPosture = "stand";
 let slideTimer = 0;
 const sliding = ref(false);
 const rest = () => {
-    if (drawn !== rested) slide();
-    rested = drawn;
+    if (drawn !== restedPosture) slide();
+    restedPosture = drawn;
     at.value = placed(place.value, drawn);
 };
 
@@ -313,9 +313,9 @@ function watchFooting() {
     if (!footing || moving.value || !here.value || document.hidden) return;
     const {element, dx, dy} = footing;
     const box = element.isConnected ? element.getBoundingClientRect() : null;
-    if (!box?.width || !box.height) return uprooted();
+    if (!box?.width || !box.height) return moveToHomeGround();
     // the ground at home changed under it, as a bar docks over the compose box or is closed: it is pushed up onto it or falls to it
-    if (footing.home && groundEdge().element !== element) return uprooted();
+    if (footing.home && groundEdge().element !== element) return moveToHomeGround();
     const to = {x: box.left + dx, y: box.top + dy};
     if (Math.hypot(to.x - place.value.x, to.y - place.value.y) <= 0.3) return;
     place.value = {...place.value, ...to};
@@ -324,7 +324,7 @@ function watchFooting() {
 
 // The ground under it went or changed: at once, without waiting for its clip, as gravity does not, it goes straight up onto the ground at
 // home or straight down to it, and walks on from there to its place at home; a stay away from home is given up
-function uprooted() {
+function moveToHomeGround() {
     footing = null;
     if (stay.where !== "edge") stay = {where: "seat", until: stay.where === "seat" ? stay.until : 0};
     clearTimeout(legTimer);

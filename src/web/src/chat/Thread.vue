@@ -520,7 +520,7 @@ watch(
                                 @grew="settled"
                             />
                         </TransitionGroup>
-                        <div ref="docks" :class="['chat-docks', {docked: dockCount}]" :data-figure-ledge="dockCount ? '' : null">
+                        <div ref="docks" :class="['chat-docks', {docked: dockCount}]" :data-figure-docked-bars="dockCount ? '' : null">
                             <Transition name="dock">
                                 <DumpDock v-if="dumpDock" :key="dumpDock.n" :dump="dumpDock" :folded="short || !planOpen" />
                             </Transition>
