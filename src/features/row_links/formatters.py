@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from functools import cache
 
 from engine.markers import MARKER, marked
-from engine.memo import Memo
+from resources.memo import Memo
 from framework.format import SHARED, VIEWER
 from framework.parts import Context, TextFormatter
 from resources.types import TYPES
