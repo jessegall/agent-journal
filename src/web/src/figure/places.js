@@ -276,6 +276,13 @@ export function footingNow({element, dx, dy, posture, home}, figure) {
     return inWorld({...spot, posture}, figure) ? spot : null;
 }
 
+// Where a trip to a spot ends: the spot carried along by `footing`, taken when the spot was read from the page, as what it rests on may
+// have moved while the figure travelled, so it lands on the line where the line is now; the spot as it was once its ground has gone
+export function landingOn(spot, footing, figure) {
+    const now = footing && footingNow(footing, figure);
+    return now ? {...spot, ...now} : spot;
+}
+
 // The way a figure whose middle is at `x` turns to look at a chat mark, by its key: to its right or its left, or toward the viewer when
 // the mark is not on the page
 export function facingToward(key, x) {

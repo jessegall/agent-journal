@@ -17,6 +17,7 @@ import {
     facingToward,
     footingNow,
     footingOn,
+    landingOn,
     spotOf,
     tripBetween,
 } from "../figure/places.js";
@@ -78,7 +79,7 @@ let playing = {name: "", started: 0, shown: null, index: 0};
 const shownClip = ref(null);
 // the posture the clip on screen is drawn in
 let drawn = "stand";
-// whether the legs on screen walk, as the page marks it for whoever measures the figure
+// whether the legs on screen walk, as the page marks it for whoever measures the figure, beside the name of the clip on screen
 const walking = ref(false);
 
 const held = computed(() => figureStateOf(agent.value, rows("work"), waitingSince.value, now.value));
@@ -87,7 +88,8 @@ let stay = {where: "seat", until: 0};
 let cleared = {until: 0};
 // the sides, "l" or "r", of the hands this voice carries nothing in, which it can hang by
 let hands = [];
-// what the figure rests on (places.js footingOn), watched each frame; null while it travels
+// what the figure rests on (places.js footingOn), watched each frame; null while it travels, when the trip keeps the footing of the spot it
+// goes to, taken as the spot was read from the page
 let footing = null;
 // the clip rolled for the stretch the figure is in (reactions.js stretchClip)
 let rolled = {stretch: "", clip: ""};
@@ -209,7 +211,7 @@ async function moveTo(spot, straight = false) {
     const trip = tripBetween(from, to, SIZE, {straight, hangs: spot.posture === "hang"});
     if (!trip) return settle(spot);
     footing = null;
-    moving.value = {...trip, to: spot};
+    moving.value = {...trip, to: spot, footing: footingOn(spot)};
     step();
     if (sliding.value) await new Promise((done) => setTimeout(done, CHANGE_SECONDS * 1000));
     if (moving.value?.to === spot) nextLeg();
@@ -221,9 +223,11 @@ function nextLeg() {
     const legs = moving.value.legs;
     const next = legs.find((each) => each.ms > 0);
     if (!next) {
-        const {to} = moving.value;
+        const {to, footing: held} = moving.value;
+        const landed = landingOn(to, held, figureSize());
         moving.value = null;
-        settle(to);
+        if (Math.hypot(landed.x - to.x, landed.y - to.y) >= 1) slide();
+        settle(landed, held);
         return step();
     }
     const left = legs.slice(legs.indexOf(next));
@@ -243,9 +247,9 @@ function depart() {
     }, next.lead + next.ms);
 }
 
-function settle(spot) {
+function settle(spot, held = footingOn(spot)) {
     place.value = spot;
-    footing = footingOn(spot);
+    footing = held;
 }
 
 // Each frame what the figure rests on carries it along as it moves (places.js footingNow); when the ground went from under it, it goes at
@@ -422,7 +426,14 @@ const style = computed(() => ({
 </script>
 
 <template>
-    <div v-show="figureStatus === 'shown' && here" class="voice-figure" :style="style" aria-hidden="true" :data-walking="walking">
+    <div
+        v-show="figureStatus === 'shown' && here"
+        class="voice-figure"
+        :style="style"
+        aria-hidden="true"
+        :data-walking="walking"
+        :data-clip="shownClip?.name"
+    >
         <div class="voice-figure-body" :style="bodyStyle" @click="clicked" />
         <div :class="['voice-figure-actor', {chasing}]" :style="chasing ? {animationDuration: `${chaseMs}ms`} : null">
             <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />

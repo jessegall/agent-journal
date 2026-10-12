@@ -11,6 +11,7 @@ const {
     groundEdge,
     hiddenAt,
     inWorld,
+    landingOn,
     postureOf,
     seatOf,
     seatRise,
@@ -191,6 +192,21 @@ test("a figure keeps its place on what it rests on as that moves, and loses its 
     // on the ground at home it loses its footing when a bar docks over the compose box
     page(box, {left: 300, top: 556, width: 400, height: 44});
     expect(footingNow({element: home, dx: 10, dy: 0, posture: "stand", home: true}, FIGURE)).toBe(null);
+});
+
+test("a trip lands on the line where it is when the figure arrives, not where it was when it set off, and never sinks through it", () => {
+    const box = {left: 300, top: 600, width: 400, height: 120};
+    page(box);
+    const spot = spotOf(null, FIGURE, {x: 640, y: 600});
+    const footing = footingOn(spot);
+    // while the figure travels the compose box grows by two lines, so its top edge rises by 40 pixels
+    box.top = 560;
+    expect(landingOn(spot, footing, FIGURE)).toMatchObject({x: spot.x, y: 560, posture: "stand"});
+    // a footing taken only on arrival keeps the old height as an offset from the edge, which is the figure sunk 40 pixels into the box
+    expect(footingOn(spot).dy).toBe(40);
+    expect(footingOn(landingOn(spot, footing, FIGURE)).dy).toBe(0);
+    // with its ground gone the spot is kept as it was, and the footing that is gone uproots the figure as it rests
+    expect(landingOn(spot, {...footing, element: {isConnected: false}}, FIGURE)).toEqual(spot);
 });
 
 test("a figure turns right or left toward the chat mark it reacts to, and toward the viewer when the mark is not on the page", () => {
