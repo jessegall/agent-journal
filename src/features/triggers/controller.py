@@ -2,7 +2,6 @@ import time
 from dataclasses import asdict, dataclass
 
 import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import Controller, discarding
 from controllers.marks import action
 from declaring.extension import Extension
@@ -150,5 +149,4 @@ class Triggers(Controller):
                 self.delete(row.n, why=why)
 
 
-resources_module.register(Trigger)
 types_module.register(Triggers)

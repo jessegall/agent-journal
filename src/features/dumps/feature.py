@@ -3,7 +3,7 @@ from events.agents import ClockTicked
 from events.messages import MessageUpdated
 from expects import WHEN, Given, Nudged, Unchanged, Updated, Wrote
 from framework.base import Feature
-from features.dumps.resource import Dump
+from resources.dumps import Dump
 from features.dumps.details import DumpsDetails
 from features.dumps.controller import OWN_WORDS
 from features.dumps.handlers import CarryOnFiling, PromptFiling, TranscriptToDump

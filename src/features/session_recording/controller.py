@@ -5,13 +5,12 @@ import subprocess
 from pathlib import Path
 
 import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Agents
 from engine.package import entry
 from engine.record import Record
 from features.session_recording.demo import leaks, scrubbed
-from features.session_recording.resource import Recording
+from resources.session_recording import Recording
 from engine.sessions import alive
 from features.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Refused, titled
@@ -76,5 +75,4 @@ class Recordings(Controller):
         return copied
 
 
-resources_module.register(Recording)
 types_module.register(Recordings)
