@@ -16,6 +16,13 @@ def said(row, messages=None) -> str:
     answers = "".join(f" on message {ref.partition(':')[2]}" for ref in row.refs if ref.startswith("message:"))
     rest = carried(messages, row) if messages is not None else ""
     return f"{who} message {row.n}{answers}: journal message read {row.n}{rest}"
+def still_to_answer(numbers: list, record, **_) -> str:
+    """The line about a message the agent has already read and not answered: it says how to answer, because by then the agent has the words."""
+    said = answered(numbers, record)
+    here = [n for n in numbers if Messages(record, actor=SYSTEM).rows.exists(n)]
+    return "; ".join(part for part in (said, tagged(here) if here else "") if part)
+
+
 def answered(numbers: list, record, **_) -> str:
     messages = Messages(record, actor=SYSTEM)
     rows = [messages.load(n) for n in numbers if messages.rows.exists(n)]
@@ -26,9 +33,6 @@ def answered(numbers: list, record, **_) -> str:
     row_lines += [f"answer {n} with {how}, never in the chat" for n, how in panel.items()]
     acknowledging = [row.n for row in rows if row.n not in panel and acknowledges(row)]
     row_lines += [f'{n} only acknowledges: journal message react {n} "👍"' for n in acknowledging]
-    here = [n for n in numbers if n not in panel and n not in acknowledging]
-    if here:
-        row_lines.append(tagged(here))
     return "; ".join(row_lines)
 def tagged(numbers: list) -> str:
     return f"reply by opening your turn with [!reply:{numbers[0]}]" if len(numbers) == 1 else "reply by opening each turn with [!reply:<n>]"
