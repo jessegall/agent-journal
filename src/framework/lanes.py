@@ -19,7 +19,8 @@ from receiving.asking import answered
 from receiving.ticks import PerAsk, Services
 from resources.base import AGENT, SYSTEM
 from resources.runs import Exited
-from serving import SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, ReadRemembered, ReadRows, Remembered, Rows, Sessions, Settings
+from serving import (SERVED, Adapted as TheRecord, Chat, Clock, Commands, Files, Processes, ReadFiles, ReadProcesses, ReadRemembered, ReadRows, ReadSessions,
+                     Remembered, Rows, Sessions, Settings)
 
 
 class NobodyToSpeakTo(LookupError):
@@ -88,6 +89,8 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             TheRecord: record,
             Clock: TheClock(),
             Files: ProjectFiles(record),
+            ReadFiles: ProjectFiles(record),
+            ReadProcesses: PerAsk(lambda feature, asked: SERVED.given(Processes)),
             Chat: PerAsk(lambda feature, asked: Speaker(FEATURES[feature], record, agent())),
             Settings: PerAsk(lambda feature, asked: FeatureSettings(FEATURES[feature], record)),
             Rows: PerAsk(controlling),
@@ -95,7 +98,8 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Commands: PerAsk(lambda feature, asked: JournalCommands(record, agent())),
             Remembered: PerAsk(lambda feature, asked: record.state(feature)),
             ReadRemembered: PerAsk(lambda feature, asked: record.state(feature)),
-            Sessions: PerAsk(lambda feature, asked: TheSessions(record.root))}
+            Sessions: PerAsk(lambda feature, asked: TheSessions(record.root)),
+            ReadSessions: PerAsk(lambda feature, asked: TheSessions(record.root))}
 
 
 def agent_of(logged, record):

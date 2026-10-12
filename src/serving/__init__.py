@@ -56,6 +56,12 @@ class Sessions(Service):
     writes = True
 
 
+class ReadSessions(Sessions):
+    """The agent sessions, asked for to read only, as a listener or an answerer reads them."""
+
+    writes = False
+
+
 class Chat(Service):
     """What the agent says and what the journal says back to it."""
 
@@ -68,10 +74,22 @@ class Files(Service):
     writes = True
 
 
+class ReadFiles(Files):
+    """The project's files, asked for to read only, as a listener or an answerer reads them."""
+
+    writes = False
+
+
 class Processes(Service):
     """Processes the journal starts and stops, such as an agent or a server."""
 
     writes = True
+
+
+class ReadProcesses(Processes):
+    """The processes, asked for to read only, as a listener or an answerer reads them."""
+
+    writes = False
 
 
 class Commands(Service):

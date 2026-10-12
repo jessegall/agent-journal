@@ -198,7 +198,8 @@ def answered_a_hook(promise, given: Given, record: Record, world: World) -> None
 
 def play_services(promise, given: Given, record: Record, world: World) -> dict:
     """What a 3.0 receiver asked for, by type: the journal's own services over the scratch record, as the lane hands them, and the Fakes for what reaches outside it."""
-    fakes = {serving.Commands: world.commands, serving.Files: world.files, serving.Processes: world.processes,
+    fakes = {serving.Commands: world.commands, serving.Files: world.files, serving.ReadFiles: world.files, serving.Processes: world.processes,
+             serving.ReadProcesses: world.processes,
              serving.Providers: world.providers, serving.Clock: world.clock, serving.Ids: world.ids}
     services = Services({**lane_services(record, lambda: speaking(record, given)), **fakes})
     return services.given(type(promise.part).__name__, promise.feature.name, type(promise.part).wants())
