@@ -1,82 +1,53 @@
-
-from events.agents import ClockTicked
-from events.messages import MessageUpdated
-from engine.transcript import IDLE
-from resources.text import plural
-from resources.dumps import OWN_WORDS
-from framework.parts import AgentContext, Context, Handler
-from resources.base import COMPLETED, USER
-from controllers.types import Dumps
-from controllers.types import Messages
-from events.dumps import DumpWritten
-
-FILED = "completed"
+from events import Fact
+from events.dumps import (DumpArrived, DumpChoiceMade, DumpChoiceOpen, DumpFilingStalled, DumpFiledAway, DumpQuestionAnswered,
+                          TranscriptPasted)
+from receiving import Handler
+from resources.types import Dump, Message
+from serving import Chat, Rows
 
 
-class PromptFiling(Handler):
-    def handle(self, context: Context, event: DumpWritten) -> None:
-        dumps, speaking = context.journal.get(Dumps), context.to_primary()
-        dump = dumps.load(event.n)
-        if speaking and self.choice(speaking, dump):
-            return
-        if event.action == FILED:
-            if speaking and not dump.data.get("stopped"):
-                speaking.agent.say("filed", n=dump.n, outcome=dump.outcome)
-            dump = dumps._in_hand()
-            if not dump:
-                return
-        elif getattr(dumps._in_hand(), "n", 0) != dump.n:
-            return
-        if speaking and self.answer(speaking, dump):
-            return
-        waiting = [name for name in dump.item_names if not dump.item(name).insight]
-        if speaking and waiting and not dump.completed:
-            speaking.agent.say("arrived", n=dump.n, count=plural(len(waiting), "item"))
-
-    def choice(self, speaking: AgentContext, dump) -> bool:
-        chosen = dump.data.get("chosen") or {}
-        if not chosen or not speaking.once("dump choice", f"{dump.n}:{chosen.get('at')}"):
-            return False
-        pick = int(chosen.get("pick", -1))
-        if pick == OWN_WORDS:
-            return True
-        if pick < 0:
-            speaking.agent.say("decide", n=dump.n)
-        else:
-            speaking.agent.say("chose", n=dump.n, label=chosen["label"])
-        return True
-
-    def answer(self, speaking: AgentContext, dump) -> bool:
-        answers = dump.data.get("answers") or []
-        if not answers or not speaking.once("dump answer", f"{dump.n}:{len(answers)}"):
-            return False
-        speaking.agent.say("answered", n=dump.n, answer=answers[-1]["answer"], question=answers[-1]["question"])
-        return True
+class TellDumpArrived(Handler[DumpArrived]):
+    def handle(self, event: DumpArrived, chat: Chat) -> list[Fact]:
+        chat.say("arrived", n=event.n, count=event.items)
+        return []
 
 
-class TranscriptToDump(Handler):
-    def handle(self, context: Context, event: MessageUpdated) -> None:
-        messages = context.journal.get(Messages)
-        message = messages.load(event.n)
-        if message.data.get("kind") != "transcript" or any(ref.startswith("dump:") for ref in message.refs):
-            return
-        dumps = context.journal.acting(USER).get(Dumps)
+class TellChoiceMade(Handler[DumpChoiceMade]):
+    def handle(self, event: DumpChoiceMade, chat: Chat) -> list[Fact]:
+        chat.say("chose", n=event.n, label=event.label)
+        return []
+
+
+class TellChoiceOpen(Handler[DumpChoiceOpen]):
+    def handle(self, event: DumpChoiceOpen, chat: Chat) -> list[Fact]:
+        chat.say("decide", n=event.n)
+        return []
+
+
+class TellQuestionAnswered(Handler[DumpQuestionAnswered]):
+    def handle(self, event: DumpQuestionAnswered, chat: Chat) -> list[Fact]:
+        chat.say("answered", n=event.n, answer=event.answer, question=event.question)
+        return []
+
+
+class TellDumpFiled(Handler[DumpFiledAway]):
+    def handle(self, event: DumpFiledAway, chat: Chat) -> list[Fact]:
+        chat.say("filed", n=event.n, outcome=event.outcome)
+        return []
+
+
+class CarryOnFiling(Handler[DumpFilingStalled]):
+    def handle(self, event: DumpFilingStalled, chat: Chat) -> list[Fact]:
+        chat.say("carry on", n=event.n, count=event.items)
+        return []
+
+
+class TranscriptToDump(Handler[TranscriptPasted]):
+    def handle(self, event: TranscriptPasted, messages: Rows[Message], dumps: Rows[Dump]) -> list[Fact]:
+        message = messages.load(event.message)
         dump = dumps.create(brief=message.brief)
         for path in messages.paths(message.n):
             dumps.attach(dump.n, path)
         dumps.link(dump.n, message.ref)
         messages.link(message.n, dump.ref)
-
-
-class CarryOnFiling(Handler):
-    def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        if context.agent.row.status != IDLE:
-            return
-        dumps = context.journal.get(Dumps)
-        dump = dumps._in_hand()
-        if not dump or (dump.data.get("question") or {}).get("text"):
-            return
-        left = [name for name in dump.item_names if not dump.item(name).settled]
-        stretch = f"{dump.n}:{context.agent.row.at}"
-        if left and context.once("carried", stretch):
-            context.agent.say("carry on", n=dump.n, count=plural(len(left), "item"))
+        return []
