@@ -23,8 +23,11 @@ COMMANDS_ONLY: list[bool] = []
 
 
 def load(root: Path | None = None, commands_only: bool = False) -> list[str]:
+    """Wires the features. A full load asked for after a commands-only one unloads first: wire() skips every feature already loaded, so without that the second load would wire nothing at all and the process would run with no handler and no listener."""
     if commands_only:
         COMMANDS_ONLY[:] = [True]
+    elif COMMANDS_ONLY:
+        unload()
     discover()
     if root:
         rename_aliases(root)
