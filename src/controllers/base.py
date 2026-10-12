@@ -272,8 +272,8 @@ class Controller(Files, Links, Discussed):
     def _given(self, data: dict) -> Resource:
         return self.resource(data=self._shaped(data))
 
-    def _made(self, key: str) -> Resource | None:
-        """The row an earlier create with this idempotency key made, or none."""
+    def _keyed(self, key: str) -> Resource | None:
+        """The row an earlier create with this idempotency key made, or none. Named apart from _made, which a controller of the features already uses for something else, so the base cannot shadow it."""
         return self.rows.by_idempotency(key) if key else None
 
     def _twin(self, title: str, brief: str, about, idempotency: str = "") -> Resource | None:
@@ -291,7 +291,7 @@ class Controller(Files, Links, Discussed):
         if self.resource.agent_only and self.actor == USER:
             self._refuse(f"a {self.type} is made by the agent, never by you")
         key = data.get(IDEMPOTENCY, "")
-        made = self._made(key)
+        made = self._keyed(key)
         if made is not None:
             return made
         twin = self._twin(title, brief, data.get("about"), key)
@@ -305,7 +305,7 @@ class Controller(Files, Links, Discussed):
             self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
         with self.record.locked(self.resource.scope):
             # a send repeated while the first was still being written passed the check above beside it; under the lock it finds that row
-            made = self._made(key)
+            made = self._keyed(key)
             if made is not None:
                 return made
             n = self.rows.draw_number()
