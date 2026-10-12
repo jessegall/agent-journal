@@ -1,10 +1,11 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {ASLEEP_AFTER, EGGS, POINTED_AFTER, RESTS, beatsAfter, clipFor, clipOf, eggFor, figureStateOf, waitingSinceAt} =
+const {ASLEEP_AFTER, EGGS, POINTED_AFTER, RESTS, beatsAfter, clipFor, clipOf, eggFor, figureStateOf, givesWay, waitingSinceAt} =
     await import("../src/domain/figureState.js");
 const {REACTIONS} = await import("../src/figure/reactions.js");
-const {pointedView} = await import("../src/figure/places.js");
+const {drawnIn, pointedView} = await import("../src/figure/places.js");
+const {CLIPS} = await import("../src/figure/figure.js");
 
 const NOW = 10_000;
 const agent = (data) => ({n: 1, title: "claude-1", data: {status: "working", at: NOW, ...data}});
@@ -112,17 +113,55 @@ const scene = (changes = {}) => ({place: {posture: "stand", face: 0, view: null}
 // every clip draws standing and seated; the laptop only on a lap; and idle, think and work also on the move
 const canDraw = (name, posture) => (name === "type" ? posture === "sit" : posture !== "walk" || ["idle", "think", "work"].includes(name));
 
-test("coming and going, the hop of a trip and the landing come before anything the body is doing", () => {
+test("coming and going and the landing come before anything else, and a trip's next leg waits for the landing to end", () => {
     expect(clipFor(scene({leaving: true, arriving: true}), canDraw)).toMatchObject({clip: "exit", departure: true});
     expect(clipFor(scene({arriving: true}), canDraw)).toMatchObject({clip: "enter", arrival: true});
-    expect(clipFor(scene({trip: {hopping: true, clip: "backflip", way: 1}, landing: true}), canDraw)).toMatchObject({clip: "backflip"});
     expect(clipFor(scene({landing: true}), canDraw)).toMatchObject({clip: "land", landed: true, once: true});
+    expect(clipFor(scene({trip: {started: true, way: 1}, landing: true}), canDraw)).toMatchObject({clip: "land"});
+    expect(clipFor(scene({trip: {started: true, moves: true, hopping: true, clip: "backflip", way: 1}}), canDraw)).toEqual({
+        clip: "backflip",
+        facing: 0,
+    });
 });
 
 test("on the move the figure walks on with what its body is doing, and simply walks with nothing to do or a laptop to carry", () => {
-    expect(clipFor(scene({trip: {way: 1}}), canDraw)).toEqual({clip: "think", facing: 90, posture: "walk"});
-    expect(clipFor(scene({trip: {way: -1}, doing: "idle"}), canDraw)).toEqual({clip: "walk", facing: 270});
-    expect(clipFor(scene({trip: {way: 1}, doing: "type"}), canDraw)).toEqual({clip: "walk", facing: 90});
+    const moves = {started: true, moves: true};
+    expect(clipFor(scene({trip: {...moves, way: 1}}), canDraw)).toEqual({clip: "think", facing: 90, posture: "walk"});
+    expect(clipFor(scene({trip: {...moves, way: -1}, doing: "idle"}), canDraw)).toEqual({clip: "walk", facing: 270});
+    expect(clipFor(scene({trip: {...moves, way: 1}, doing: "type"}), canDraw)).toEqual({clip: "walk", facing: 90});
+});
+
+test("the walk is never named before the figure stands ready to go, and the leg it names then sets off with it", () => {
+    // getting up, or waiting for what it plays where it rests, it keeps doing what it does in its place
+    expect(clipFor(scene({trip: {way: 1}}), canDraw)).toEqual({clip: "think", facing: 0});
+    expect(clipFor(scene({trip: {way: 1}, beat: {clip: "joy", facing: 90}}), canDraw)).toEqual({clip: "joy", facing: 90, once: true});
+    // ready, the clip of the leg is the one the leg sets off with, and once it moves nothing more sets off
+    expect(clipFor(scene({trip: {started: true, way: 1}, doing: "idle"}), canDraw)).toEqual({clip: "walk", facing: 90, departs: true});
+    expect(clipFor(scene({trip: {started: true, hopping: true, clip: "jump"}}), canDraw)).toEqual({clip: "jump", facing: 0, departs: true});
+    expect(clipFor(scene({trip: {started: true, moves: true, way: 1}, doing: "idle"}), canDraw)).not.toHaveProperty("departs");
+});
+
+test("the walk is cut short the moment there is nowhere to go, and every other clip plays out", () => {
+    const named = Object.fromEntries(CLIPS.map((clip) => [clip.name, clip]));
+    expect(CLIPS.filter((clip) => clip.cutShort).map((clip) => clip.name)).toEqual(["walk"]);
+    // mid-step the walk gives way at once
+    expect(givesWay(named.walk, 5, 4)).toBe(true);
+    // a hop, a landing and a beat play to their end, and a loop to the end of its cycle or of the stretch it leaves at
+    for (const name of ["jump", "fall", "backflip", "land", "joy", "dismay", "stretch"]) {
+        expect(givesWay(named[name], named[name].frames - 1, named[name].frames - 2), name).toBe(false);
+        expect(givesWay(named[name], named[name].frames, named[name].frames - 1), name).toBe(true);
+    }
+    expect(givesWay(named.think, 5, 4)).toBe(false);
+    expect(givesWay(named.think, named.think.frames, named.think.frames - 1)).toBe(true);
+    expect(givesWay(named.idle, named.idle.leaves, named.idle.leaves - 1)).toBe(true);
+});
+
+test("a clip walked on with stops walking the moment the figure stops, while what it does plays out in its place", () => {
+    const think = {clip: {name: "think", postures: ["stand", "sit", "walk"]}, posture: "walk"};
+    expect(drawnIn(think, "stand", true)).toBe("walk");
+    expect(drawnIn(think, "stand", false)).toBe("stand");
+    expect(drawnIn(think, "sit", false)).toBe("sit");
+    expect(drawnIn({clip: {name: "type", postures: ["sit"]}}, "stand", false)).toBe("sit");
 });
 
 test("at rest it hangs by its grip, plays a beat turned to it, points while the agent waits, and draws what it does in its own posture", () => {

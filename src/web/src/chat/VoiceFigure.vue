@@ -1,9 +1,9 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
-import {beatsAfter, clipFor, facesAfter, figureStateOf, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
+import {beatsAfter, clipFor, facesAfter, figureStateOf, givesWay, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {stayAtHome, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
 import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, workMoments} from "../figure/reactions.js";
@@ -12,10 +12,10 @@ import {
     HOME,
     POSTURES,
     boxAt,
+    drawnIn,
     facingToward,
     footingNow,
     footingOn,
-    postureOf,
     spotOf,
     tripBetween,
 } from "../figure/places.js";
@@ -33,7 +33,6 @@ const BLEND_FPS = 30;
 
 const props = defineProps({voice: {type: String, required: true}});
 
-const figure = ref(null);
 const canvas = ref(null);
 const voice = computed(() => props.voice);
 const {views} = useHomeViews();
@@ -53,7 +52,8 @@ const below = ref(0);
 const place = ref({x: 0, y: 0, posture: "stand", view: null, on: null});
 // the picture's left and top in the window: kept at the place while the figure rests, and at the end of each leg while it travels
 const at = ref({x: 0, y: 0});
-// the trip in hand (places.js tripBetween), as its legs still to go and the spot it goes to, or null; `started` once it has set off
+// the trip in hand (places.js tripBetween), as its legs still to go and the spot it goes to, or null; `started` once the figure stands
+// ready to travel, `moves` while a leg carries it, and `hopping` and `clip` for the leg it is on or sets off on next
 const moving = ref(null);
 const leg = ref({x: 0, y: 0, ms: 0, lead: 0, easing: "linear"});
 // the one-off clips the body waits to play, oldest first, each as {clip, card}, `card` the chat mark it turns to while it plays, or ""
@@ -77,6 +77,8 @@ let playing = {name: "", started: 0, shown: null, index: 0};
 const shownClip = ref(null);
 // the posture the clip on screen is drawn in
 let drawn = "stand";
+// whether the legs on screen walk, as the page marks it for whoever measures the figure
+const walking = ref(false);
 
 const held = computed(() => figureStateOf(agent.value, rows("work"), waitingSince.value, now.value));
 // the stay the figure keeps while nothing calls it anywhere (perches.js)
@@ -124,16 +126,9 @@ function current() {
 const keyOf = (shown) => `${shown.clip.name}/${shown.facing}`;
 const frameOf = (clip) => Math.floor(((performance.now() - playing.started) / 1000) * clip.fps);
 
-// A clip plays out before another starts, so the figure never reads as cut off: one that plays once leaves at its end, a loop at the end
-// of its cycle, or of the stretch the clip names as `leaves`. It is the one rule every clip goes through, so no clip needs its own check.
-function playedOut() {
-    if (!playing.shown) return true;
-    const {clip} = playing.shown;
-    const index = frameOf(clip);
-    if (!clip.loops) return index >= clip.frames;
-    const unit = clip.leaves || clip.frames;
-    return Math.floor(index / unit) > Math.floor(playing.index / unit);
-}
+// A clip plays out before another starts, or gives way at once when it is cut short (figureState.js givesWay). It is the one rule every
+// clip goes through, so no clip needs its own check.
+const playedOut = () => !playing.shown || givesWay(playing.shown.clip, frameOf(playing.shown.clip), playing.index);
 
 // how far through its step the walk under a clip on the move is, stepped as the walk's own frames are
 function strideNow() {
@@ -163,18 +158,21 @@ function step() {
         playing = {name: "", started: 0, shown: null, index: 0};
         return step();
     }
-    drawn = shown.posture ?? postureOf(shown.clip, place.value.posture);
+    // the leg waiting for the clip it sets off with goes in the frame that clip goes on screen, so the walk is never drawn on the spot
+    if (shown === wanted && wanted.departs && !moving.value.moves) depart();
+    drawn = drawnIn(shown, moving.value ? POSTURES[place.value.posture].travels : place.value.posture, moving.value?.moves);
     if (!moving.value?.started) rest();
     const look = eyesAt(looking, shown.facing, performance.now() / 1000);
     looking = look.looking;
     const stride = drawn === "walk" ? strideNow() : null;
+    walking.value = stride !== null || shown.clip.name === "walk";
     player.show(shown.clip, shown.clip.loops ? index % shown.clip.frames : Math.min(index, shown.clip.frames - 1), shown.facing, {
         posture: drawn,
         eyes: look.eyes,
         stride,
     });
-    const walking = stride === null ? 0 : clipNamed("walk").fps;
-    const fps = Math.max(shown.clip.fps, look.eyes ? LOOK_FPS : 0, walking, player.blending() ? BLEND_FPS : 0);
+    const striding = stride === null ? 0 : clipNamed("walk").fps;
+    const fps = Math.max(shown.clip.fps, look.eyes ? LOOK_FPS : 0, striding, player.blending() ? BLEND_FPS : 0);
     frameTimer = setTimeout(step, 1000 / fps);
 }
 
@@ -201,21 +199,23 @@ function slide() {
     slideTimer = setTimeout(() => (sliding.value = false), CHANGE_SECONDS * 1000);
 }
 
-// the trip to a spot, from where the figure is in the posture it travels in to that spot in the one it travels in there (places.js)
-function moveTo(spot, straight = false) {
+// the trip to a spot, from where the figure is in the posture it travels in to that spot in the one it travels in there (places.js); the
+// clip on screen is drawn in that posture first, so the figure gets to its feet or takes its grip where it is before the first leg
+async function moveTo(spot, straight = false) {
     const from = placed(place.value, POSTURES[place.value.posture].travels);
     const to = placed(spot, POSTURES[spot.posture].travels);
     const trip = tripBetween(from, to, SIZE, {straight, hangs: spot.posture === "hang"});
     if (!trip) return settle(spot);
     footing = null;
-    moving.value = {...trip, from, to: spot};
-    nextLeg();
+    moving.value = {...trip, to: spot};
+    step();
+    if (sliding.value) await new Promise((done) => setTimeout(done, CHANGE_SECONDS * 1000));
+    if (moving.value?.to === spot) nextLeg();
 }
 
-async function nextLeg() {
+// the trip waits for its next leg to set off (depart), or ends at its spot when no leg is left
+function nextLeg() {
     clearTimeout(legTimer);
-    if (!moving.value) return;
-    landing.value = Boolean(moving.value.hopping && moving.value.lands);
     const legs = moving.value.legs;
     const next = legs.find((each) => each.ms > 0);
     if (!next) {
@@ -224,33 +224,21 @@ async function nextLeg() {
         settle(to);
         return step();
     }
-    if (current().clip !== playing.shown?.clip && !playedOut()) {
-        legTimer = setTimeout(nextLeg, 50);
-        return step();
-    }
-    if (!moving.value.started) await setOff(moving.value.from);
-    if (!moving.value) return;
-    moving.value = {
-        ...moving.value,
-        started: true,
-        hopping: Boolean(next.hopping),
-        clip: next.clip,
-        legs: legs.slice(legs.indexOf(next) + 1),
-    };
-    leg.value = next;
-    at.value = {x: next.x, y: next.y};
+    const left = legs.slice(legs.indexOf(next));
+    moving.value = {...moving.value, started: true, moves: false, hopping: Boolean(next.hopping), clip: next.clip, legs: left};
     step();
 }
 
-// the figure gets to its feet, or takes its grip, where it is, rising or settling into it as it changes posture, and is drawn there before
-// the first leg so the leg starts from it
-async function setOff(from) {
-    const rises = Math.hypot(from.x - at.value.x, from.y - at.value.y) >= 1;
-    if (rises) slide();
-    at.value = from;
-    if (rises) await new Promise((done) => setTimeout(done, CHANGE_SECONDS * 1000));
-    await nextTick();
-    figure.value?.getBoundingClientRect();
+// the next leg carries the picture to its end, and lands it when it hopped
+function depart() {
+    const [next, ...legs] = moving.value.legs;
+    moving.value = {...moving.value, moves: true, legs};
+    leg.value = next;
+    at.value = {x: next.x, y: next.y};
+    legTimer = setTimeout(() => {
+        landing.value = Boolean(moving.value.hopping && moving.value.lands);
+        nextLeg();
+    }, next.lead + next.ms);
 }
 
 function settle(spot) {
@@ -408,7 +396,7 @@ const style = computed(() => ({
     width: `${SIZE}px`,
     height: `${SIZE}px`,
     transform: `translate(${at.value.x}px, ${at.value.y}px)`,
-    transition: moving.value?.started
+    transition: moving.value?.moves
         ? `transform ${leg.value.ms}ms ${leg.value.easing} ${leg.value.lead}ms`
         : sliding.value
           ? `transform ${CHANGE_SECONDS * 1000}ms ease-in-out`
@@ -419,11 +407,10 @@ const style = computed(() => ({
 <template>
     <div
         v-show="figureStatus === 'shown' && here"
-        ref="figure"
         class="voice-figure"
         :style="style"
         aria-hidden="true"
-        @transitionend="nextLeg"
+        :data-walking="walking"
     >
         <div :class="['voice-figure-actor', {chasing}]" :style="chasing ? {animationDuration: `${chaseMs}ms`} : null">
             <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />

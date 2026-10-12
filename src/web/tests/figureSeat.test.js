@@ -171,6 +171,9 @@ test("a trip up walks under the place and then jumps, one down falls and then wa
     expect(tripBetween({x: 100, y: 500}, {x: 100, y: 300}, 112, {random: () => 0, hangs: true})).toMatchObject({lands: false});
     expect(tripBetween({x: 100, y: 500}, {x: 100, y: 300}, 112, {random: () => 0}).legs[1].clip).toBe("backflip");
     expect(STEADY).toBeGreaterThan(0);
+    // a few pixels across are no walk at all, so no leg walks the figure on the spot
+    const above = tripBetween({x: 100, y: 500}, {x: 100 + STEADY - 1, y: 300}, 112, {random: () => 0.99});
+    expect(above.legs.filter((each) => each.ms > 0).map((each) => each.clip ?? "walk")).toEqual(["jump"]);
 });
 
 test("a figure keeps its place on what it rests on as that moves, and loses its ground when it goes or the ground at home changes", () => {

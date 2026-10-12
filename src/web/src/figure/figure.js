@@ -1106,6 +1106,10 @@ const MOVE = ["stand"];
 const HANGING = ["hang"];
 const ON_A_LAP = ["sit"];
 
+// Every clip plays out before another starts, so the figure never reads as cut off: one that plays once to its end, a loop to the end of
+// its cycle or of the stretch it names as `leaves`. A clip that is `cutShort` gives way the moment something else is wanted instead, as the
+// walk does the moment there is nowhere left to go; a beat, a reaction, a hop or a landing never is.
+
 export const CLIPS = [
     {name: "idle", frames: 24, fps: 8, loops: true, leaves: 8, postures: GESTURE, pose: idle},
     {name: "blink", frames: 6, fps: 12, loops: false, postures: GESTURE, pose: blink},
@@ -1115,7 +1119,7 @@ export const CLIPS = [
     {name: "think", frames: 12, fps: 6, loops: true, postures: GESTURE, pose: think},
     {name: "celebrate", frames: 12, fps: 10, loops: true, postures: MOVE, pose: celebrate},
     {name: "sleep", frames: 18, fps: 6, loops: true, postures: GESTURE, pose: sleep},
-    {name: "walk", frames: 12, fps: 12, loops: true, leaves: 6, postures: MOVE, pose: walk},
+    {name: "walk", frames: 12, fps: 12, loops: true, cutShort: true, postures: MOVE, pose: walk},
     {name: "walk_in", frames: 40, fps: 12, loops: false, postures: MOVE, pose: walk_in},
     {name: "run_in", frames: 28, fps: 12, loops: false, postures: MOVE, pose: run_in},
     {name: "pull_ups", frames: 24, fps: 10, loops: true, postures: MOVE, pose: pull_ups},

@@ -108,7 +108,59 @@ const settled = async (page) => {
     throw new Error("the figure never stopped moving");
 };
 
+// The figure's left and top on every frame the page draws for `ms`, and whether its legs walk on that frame
+const framesOf = (page, ms) =>
+    page.evaluate(
+        ([figure, ms]) =>
+            new Promise((done) => {
+                const frames = [];
+                const until = performance.now() + ms;
+                const look = () => {
+                    const element = document.querySelector(figure);
+                    const box = element.getBoundingClientRect();
+                    frames.push({x: box.left, y: box.top, walking: element.dataset.walking === "true"});
+                    if (performance.now() < until) requestAnimationFrame(look);
+                    else done(frames);
+                };
+                requestAnimationFrame(look);
+            }),
+        [FIGURE, ms]
+    );
+
+// the longest run of frames for which `holds(frame, before)` is true
+const longestRun = (frames, holds) => {
+    let run = 0;
+    let longest = 0;
+    for (let at = 1; at < frames.length; at++) {
+        run = holds(frames[at], frames[at - 1]) ? run + 1 : 0;
+        longest = Math.max(longest, run);
+    }
+    return longest;
+};
+
+// a frame or two either side of a leg is the page catching up with the clock that started or ended it; more is the walk on the spot
+const CATCH_UP_FRAMES = 3;
+
 await runScenarios(process.argv[2], {
+    async "the walk plays only while the figure moves across, and the figure moves across only while it walks"(page, url) {
+        await working(page);
+        await questionWaits(page);
+        await page.goto(`${url}#/main`);
+        await page.locator(FIGURE).waitFor({state: "visible"});
+        const tab = page.locator('[data-tab="question"]');
+        if ((await tab.getAttribute("aria-selected")) === "true") await page.locator('[data-tab="waiting"]').click();
+        const frames = await framesOf(page, 12000);
+        const across = (frame, before) => Math.abs(frame.x - before.x) > 0.05;
+        const walked = frames.filter((frame) => frame.walking).length;
+        const onTheSpot = longestRun(frames, (frame, before) => frame.walking && !across(frame, before) && frame.y === before.y);
+        const gliding = longestRun(frames, (frame, before) => !frame.walking && across(frame, before));
+        const measured = `${frames.length} frames, ${walked} walking, longest walk on the spot ${onTheSpot}, longest glide ${gliding}`;
+        console.log(`the figure's walk: ${measured}`);
+        if (!walked) throw new Error(`the figure never walked to the question's tab: ${measured}`);
+        if (onTheSpot > CATCH_UP_FRAMES) throw new Error(`the figure walked on the spot: ${measured}`);
+        if (gliding > CATCH_UP_FRAMES) throw new Error(`the figure moved across without walking: ${measured}`);
+    },
+
     async "it goes to the tab where a question waits behind another, and stands where it hides no control"(page, url) {
         await working(page);
         await questionWaits(page);

@@ -70,7 +70,8 @@ export const STEADY = 5;
 // that came or went under it: it goes straight up or down where it is, then walks. It lands after a hop unless it `hangs` there.
 export function tripBetween(from, to, size, {straight = false, hangs = false, random = Math.random} = {}) {
     if (Math.hypot(to.x - from.x, to.y - from.y) < STEADY) return null;
-    const walk = (Math.abs(to.x - from.x) / WALK_SPEED) * 1000;
+    const across = Math.abs(to.x - from.x);
+    const walk = across < STEADY ? 0 : (across / WALK_SPEED) * 1000;
     const height = Math.abs(to.y - from.y);
     const up = to.y < from.y;
     const flip = up && flips(height, size, random);
@@ -91,6 +92,10 @@ export function tripBetween(from, to, size, {straight = false, hangs = false, ra
 
 // The posture a clip is drawn in at a place of `posture`: that one when the clip can be drawn in it, else the first the clip can
 export const postureOf = (clip, posture) => (clip.postures.includes(posture) ? posture : clip.postures[0]);
+
+// The posture the clip on screen is drawn in at a place of `posture`: on the move only while the figure `moves`, so its legs stop walking
+// the moment it stops, whatever the clip over them still has to play
+export const drawnIn = (shown, posture, moves) => (shown.posture === "walk" && moves ? "walk" : postureOf(shown.clip, posture));
 
 // The box a figure's picture takes in `posture` on a spot's line: `size` pixels square, `below` the share of its picture under its feet
 export const boxAt = (spot, {size, below}, posture = spot.posture) => {
