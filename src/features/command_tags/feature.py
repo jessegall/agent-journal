@@ -3,7 +3,7 @@ from framework.journal import Journal
 from features.command_tags.details import CommandTagsDetails
 from features.command_tags.formatters import StripTags
 from features.command_tags.handlers import RunTagCommands, TeachTheTag
-from features.command_tags.answering import answered
+from features.command_tags.answering import answered, still_to_answer
 from features.command_tags.told import told
 from payload import HookEvent
 from events.agents import BusMessageSending, CommandRan
@@ -45,4 +45,4 @@ class CommandTags(Feature):
             Given("no tag has run", rows=[AgentRow(n=1, title="claude-1")], hook=Hooked(event="PreToolUse")) >> Answered(""),
         ])
         journal.agent.append_to_line("message.created", answered, instead=True)
-        journal.agent.append_to_line("messages.answer", answered)
+        journal.agent.append_to_line("messages.answer", still_to_answer)

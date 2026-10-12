@@ -126,8 +126,8 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
             f'{thanks.n} only acknowledges: journal message react {thanks.n} "👍"' in line) == (True, False, False, True), \
         "the line names who wrote it and how to read it, never the words themselves: the agent takes them in with one command, so what was written reaches it once and only for a message it opens"
     line = counted({("message", "created"): {asked.n: None}}, record)[0]
-    assert ("[!reply:" in line, "[journal]" in line, "Thanks, but which branch?" in line, AGENT in Messages(record, actor=AGENT).load(asked.n).seen) == (True, False, False, True), \
-        "one that asks something still says how to reply, and its words are not in the line: the agent takes them in with journal message read, which is also what marks it seen"
+    assert ("[!reply:" in line, "[journal]" in line, "Thanks, but which branch?" in line, AGENT in Messages(record, actor=AGENT).load(asked.n).seen) == (False, False, False, True), \
+        "the line names the message and nothing else: it carries neither the words nor how to answer them, since both belong with journal message read, where the agent actually takes it in"
     both = counted({("message", "created"): {thanks.n: None, asked.n: None}}, record)[0]
     assert f"user message {thanks.n}:" in both and f"user message {asked.n}:" in both, \
         "when several come in one line each is named by its number"

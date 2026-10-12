@@ -58,8 +58,9 @@ class Message(Shape, Resource):
     command_names = {"complete": "processed"}
 
     def read_out(self) -> str:
-        """A message as the agent reads it, without the part of it that quotes the agent's own words back: a reply carries what it answers, which is named by its number instead."""
-        return super().read_out().replace(self.brief.strip(), unquoted(self.brief).strip()) if self.brief.strip() else super().read_out()
+        """A message as the agent reads it, with how to answer it: without the part that quotes the agent's own words back, since a reply carries the message it answers, which is named by its number instead. How to reply belongs here rather than on the line that announces it, which no longer carries the words."""
+        said = super().read_out().replace(self.brief.strip(), unquoted(self.brief).strip()) if self.brief.strip() else super().read_out()
+        return f"{said}\n\nreply by opening your turn with [!reply:{self.n}]" if self.author == USER and not self.completed else said
 
 
 @dataclass(frozen=True)

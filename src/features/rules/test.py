@@ -27,7 +27,7 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
     assert (use("Bash", {"command": "ls -la"}), text()) == ({}, ""), "a command with none of the words says nothing"
     assert use("Bash", {"command": "git checkout -b spike"}).get("hookSpecificOutput", {}).get("permissionDecision") is None, \
         "a command carrying a rule's word is not refused"
-    assert text() == f"rule {rule.n} — Never change the git branch — A branch change belongs to the user", \
+    assert text() == f"rule {rule.n} — Never change the git branch", \
         "and the rule is whispered, naming it and its reasoning"
 
     use("Bash", {"command": "git checkout main"})
