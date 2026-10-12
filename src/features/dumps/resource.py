@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass, replace
 from typing import ClassVar
 
-from features.message_buttons.shaping import Button, whole
+from resources.buttons import Button, whole
 from resources.base import DOCUMENT, Resource, ResourceDetails
 from resources.shapes import FLAG, Field, Shape, names
 
