@@ -62,9 +62,10 @@ class Chat:
 class Asked:
     """A service that answers only what the Given named: anything else is a failure naming the ask, never a silent empty answer. This one rule is what makes a Fake trustworthy, so every Fake that answers reads it from here."""
 
+    service: ClassVar[str] = ""
+
     seen: Seen
     answers: Answering
-    service: ClassVar[str] = ""
 
     def answer(self, asked):
         if asked not in self.answers.answers:

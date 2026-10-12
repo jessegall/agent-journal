@@ -17,7 +17,7 @@ from features.routing import FEATURE_ROUTES
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE, REGISTERED, Answerer, Handler, Listener, Refuser, Registration
 from features.adapter import adapted_beside_the_bus
 from features.promises import PROMISED, Promise
-from expects.watching import WATCH
+from features.watching import WATCH
 
 
 def wanted(part, feature, record, row, timed: bool = True) -> bool:
