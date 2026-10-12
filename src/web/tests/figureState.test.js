@@ -58,10 +58,9 @@ const MOMENTS = [
     ...Object.keys(BEAT_CLIPS).map((beat) => ({beat, at: 1})),
     ...STATES.flatMap((state) => [0, POINTED_AFTER - 1, POINTED_AFTER, 10 * POINTED_AFTER].map((lasted) => ({state, since: 1, lasted}))),
 ];
-// the design, said plainly: the squire's chase on a failed check, the butler's tray on a commit, any voice's remark after a long wait
+// the design, said plainly: the squire's chase on a failed check, any voice's remark after a long wait
 const expected = (voice, moment) =>
     (voice === "squire" && moment.beat === "failed" && "squire_chase") ||
-    (voice === "butler" && moment.beat === "committed" && "butler_tray_down") ||
     (moment.state === "asking" && moment.lasted >= POINTED_AFTER && "pointed") ||
     null;
 
@@ -74,7 +73,7 @@ test("no egg can fire without its own moment: for every voice and every moment, 
     expect(eggFor("homie", {beat: "failed", at: 1}, [])).toBe(null);
     expect(eggFor("squire", {beat: "committed", at: 1}, [])).toBe(null);
     expect(eggFor("butler", {state: "asking", since: 1, lasted: POINTED_AFTER - 1}, [])).toBe(null);
-    expect(EGGS.map((egg) => egg.clip).sort()).toEqual(["butler_tray_down", "pointed", "squire_chase"]);
+    expect(EGGS.map((egg) => egg.clip).sort()).toEqual(["pointed", "squire_chase"]);
 });
 
 test("an egg plays at most once for one occurrence of its moment, and never twice in a row", () => {

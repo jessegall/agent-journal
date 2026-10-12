@@ -44,9 +44,9 @@ const THINK_ELBOW = [0.6, 0.3, -1.0];
 const THINK_HAND = [1.0, -0.4, 0.35];
 const THINK_TIP = 25;
 const SLEEP_TILT = 4;
-// the check mark on the butler's tablet is left out; the tablet itself stays
-const CHECK_MARK = /__check_(badge|mark)$/;
-const LEVEL_ITEMS = new Set(["butler_tray", "butler_tablet", "colleague_mug"]);
+// what the butler once carried on the platter is left out, so its hands are empty; the cloth stays over the forearm it holds level
+const LEFT_OUT = new Set(["butler_tray", "butler_tablet"]);
+const LEVEL_ITEMS = new Set(["butler_towel", "colleague_mug"]);
 const BUSY_ITEMS = new Set([...LEVEL_ITEMS, "squire_shield", "coach_clipboard"]);
 const BLINK_OPENNESS = [1.0, 0.5, 0.06, 0.5];
 const MIN_EYE_HEIGHT = 0.06;
@@ -677,8 +677,6 @@ const COLLEAGUE_STROLL = 0.6;
 const SIP_LIFT = 70;
 const SIP_FORWARD = 45;
 const SIP_TIP = -25;
-const TRAY_DOWN = -40;
-const TRAY_BACK = 15;
 const SQUIRE_SHIELD = {y: 30, z: -55, bend: 70};
 const SQUIRE_QUILL = {y: -35, z: -80, bend: 10};
 const COACH_POINT = {y: 0, z: -15, bend: 0};
@@ -1035,18 +1033,6 @@ function land(pose, stance, t) {
     fold(pose, 0.32 * dip);
 }
 
-// the butler sets the tray down when a commit lands, and picks it straight back up
-function butler_tray_down(pose, stance, t) {
-    const down = rise(onceTime(t, 16), 0, 0.35) * (1 - rise(onceTime(t, 16), 0.6, 0.95));
-    pose.lift("root", {z: -0.24 * down});
-    breathe(pose, 0);
-    trunk(pose, {lean: 15 * down, nod: 14 * down});
-    const level = [...stance.level].sort();
-    armsAtRest(pose, stance, level);
-    level.forEach((side) => hold(pose, side, mix(HOLD_LIFT, TRAY_DOWN, down), -TRAY_BACK * down));
-    fold(pose, 0.24 * down);
-}
-
 // the squire runs after a bug when a check goes red, quill out ahead of him, and comes back
 function squire_chase(pose, stance, t) {
     const u = onceTime(t, 24);
@@ -1159,7 +1145,6 @@ export const CLIPS = [
     {name: "look_around", frames: 24, fps: 10, loops: false, pose: look_around},
     {name: "stretch", frames: 24, fps: 8, loops: false, pose: stretch},
     {name: "peek", frames: 12, fps: 10, loops: false, pose: peek},
-    {name: "butler_tray_down", frames: 16, fps: 10, loops: false, pose: butler_tray_down},
     {name: "squire_chase", frames: 24, fps: 12, loops: false, pose: squire_chase},
     {name: "pointed", frames: 20, fps: 10, loops: false, pose: pointed},
 ];
@@ -1325,7 +1310,7 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
     scene.traverse((node) => node.isSkinnedMesh && meshes.push(node));
     const eyes = [];
     for (const mesh of meshes) {
-        mesh.visible = shows(mesh) && !CHECK_MARK.test(mesh.name);
+        mesh.visible = shows(mesh) && !LEFT_OUT.has(mesh.userData.item);
         addHullNormals(mesh.geometry);
         const hull = new THREE.SkinnedMesh(mesh.geometry, outlineMaterial(mesh));
         hull.bind(mesh.skeleton, mesh.bindMatrix);

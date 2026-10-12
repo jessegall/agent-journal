@@ -102,8 +102,6 @@ export function beatsAfter(agent, seenAt) {
 export const EGGS = [
     // the squire runs after a literal bug across the pane when a check goes red
     {clip: "squire_chase", voice: "squire", beat: "failed"},
-    // the butler sets his tray down when a commit lands, and picks it straight back up
-    {clip: "butler_tray_down", voice: "butler", beat: "committed"},
     // each voice makes its one pointed remark when the user has kept it waiting a long while
     {clip: "pointed", state: "asking", lasted: POINTED_AFTER},
 ];
