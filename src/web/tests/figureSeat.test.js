@@ -1,14 +1,18 @@
 // @vitest-environment node
 import {afterEach, expect, test} from "vitest";
 
-const {POSTURES, boxAt, postureOf, seatOf, seatRise, spotOf} = await import("../src/figure/places.js");
+const {POSTURES, boxAt, groundEdge, postureOf, seatOf, seatRise, spotOf} = await import("../src/figure/places.js");
 
 const FIGURE = {size: 112, below: 0.05};
 
-const page = (box) => {
+// a page whose compose box is `box`, with the bars docked over it at `docked` while there are any
+const page = (box, docked = null) => {
     globalThis.window = {innerWidth: 1280, innerHeight: 800};
+    const ledge = docked && {getBoundingClientRect: () => docked};
+    const thread = {querySelector: (selector) => (selector === "[data-figure-ledge]" ? ledge : null)};
+    const home = {getBoundingClientRect: () => box, closest: (selector) => (selector === ".thread" ? thread : null)};
     globalThis.document = {
-        querySelector: (selector) => (selector === "[data-figure-home]" ? {getBoundingClientRect: () => box} : null),
+        querySelector: (selector) => (selector === "[data-figure-home]" ? home : null),
         querySelectorAll: () => [],
     };
 };
@@ -69,4 +73,16 @@ test("on the floor of a page the figure sits on the same line it stands on, so s
             expect(boxAt(seat, FIGURE).top).toBeGreaterThanOrEqual(0);
         }
     }
+});
+
+test("a bar docked over the compose box is the ground the figure stands and sits on while it is there, and the box is again once it goes", () => {
+    const box = {left: 300, top: 600, width: 400, height: 120};
+    page(box, {left: 300, top: 556, width: 400, height: 44});
+    const docked = groundEdge();
+    expect(docked.edge.top).toBe(556);
+    expect(seatOf(FIGURE, {x: 700, y: 556})).toMatchObject({y: 556, on: docked.element});
+    expect(spotOf(null, FIGURE).y).toBe(556);
+    page(box);
+    expect(groundEdge().edge.top).toBe(600);
+    expect(seatOf(FIGURE, {x: 700, y: 556}).y).toBe(600);
 });

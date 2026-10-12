@@ -2,12 +2,12 @@
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
-import {figureRise, figureStatus} from "../composables/voiceFigure.js";
+import {figureStatus} from "../composables/voiceFigure.js";
 import {RESTS, beatsAfter, clipOf, eggFor, facesAfter, figureStateOf, testResultsAfter} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {BUBBLE, HANGS, HANG_STAY, between, perchOn, perchSpot, roamNext} from "../figure/perches.js";
 import {LOOK_SECONDS, WORKED_SECONDS, ambientFor, flips, reactionTo, workClip} from "../figure/reactions.js";
-import {CHANGE_SECONDS, HOME, POSTURES, boxAt, openTabs, pointedView, postureOf, seatOf, seatRise, spotOf} from "../figure/places.js";
+import {CHANGE_SECONDS, HOME, POSTURES, boxAt, groundEdge, openTabs, pointedView, postureOf, seatOf, spotOf} from "../figure/places.js";
 import {rows} from "../sync/rows.js";
 
 // The figure is this many pixels square, as the chat's flat figure is; it walks this many of them a second and hops in this many milliseconds
@@ -232,8 +232,9 @@ function slide() {
 }
 
 // The trip to a spot: from where the figure is, on its feet or by its grip, to that spot in the posture it travels in there. Up to a
-// perch it walks to below it and then jumps; down from one it falls first and then walks, never walking on air.
-function moveTo(spot) {
+// perch it walks to below it and then jumps; down from one it falls first and then walks, never walking on air. `straight` is for ground
+// that came or went under it: it goes straight up or down where it is and walks on from there.
+function moveTo(spot, {straight = false} = {}) {
     const from = placed(place.value, POSTURES[place.value.posture].travels);
     const to = placed(spot, POSTURES[spot.posture].travels);
     if (Math.hypot(to.x - from.x, to.y - from.y) < STEADY) return settle(spot);
@@ -252,8 +253,9 @@ function moveTo(spot) {
         hopping: true,
         clip: flip ? "backflip" : up ? "jump" : "fall",
     };
-    const stroll = {x: to.x, y: up ? from.y : to.y, ms: walk, lead: 0, easing: "linear"};
-    moving.value = {way: Math.sign(to.x - from.x) || 1, from, to: spot, legs: up ? [stroll, hop] : [{...hop, x: from.x}, stroll]};
+    const stroll = {x: to.x, y: to.y, ms: walk, lead: 0, easing: "linear"};
+    const legs = up && !straight ? [{...stroll, y: from.y}, hop] : [{...hop, x: from.x}, stroll];
+    moving.value = {way: Math.sign(to.x - from.x) || 1, from, to: spot, legs};
     nextLeg();
 }
 
@@ -301,7 +303,7 @@ function settle(spot) {
         return;
     }
     const box = element.getBoundingClientRect();
-    footing = {element, dx: spot.x - box.left, dy: spot.y - box.top};
+    footing = {element, dx: spot.x - box.left, dy: spot.y - box.top, home: element === groundEdge().element};
 }
 
 // The ground is real: each frame, what the figure rests on carries it along if it moves, and if it is gone the figure falls at once,
@@ -311,21 +313,25 @@ function watchFooting() {
     if (!footing || moving.value || !here.value || document.hidden) return;
     const {element, dx, dy} = footing;
     const box = element.isConnected ? element.getBoundingClientRect() : null;
-    if (!box?.width) return dropped();
+    if (!box?.width || !box.height) return uprooted();
+    // the ground at home changed under it, as a bar docks over the compose box or is closed: it is pushed up onto it or falls to it
+    if (footing.home && groundEdge().element !== element) return uprooted();
     const to = {x: box.left + dx, y: box.top + dy};
     if (Math.hypot(to.x - place.value.x, to.y - place.value.y) <= 0.3) return;
     place.value = {...place.value, ...to};
     rest();
 }
 
-function dropped() {
+// The ground under it went or changed: at once, without waiting for its clip, as gravity does not, it goes straight up onto the ground at
+// home or straight down to it, and walks on from there to its place at home; a stay away from home is given up
+function uprooted() {
     footing = null;
-    stay = {where: "seat", until: 0};
+    if (stay.where !== "edge") stay = {where: "seat", until: stay.where === "seat" ? stay.until : 0};
     clearTimeout(legTimer);
     playing = {name: "", started: 0, shown: null, index: 0};
     beats.value = [];
     landing.value = false;
-    moveTo(seatOf(figureSize(), place.value));
+    moveTo(stayingAt(place.value), {straight: true});
 }
 
 // at rest on its own, with nothing to play and its hands free, so free to do something by itself
@@ -492,7 +498,6 @@ async function load(name) {
 }
 
 watch(voice, load);
-watch([here, figureStatus], () => (figureRise.value = here.value && figureStatus.value === "shown" ? seatRise(figureSize()) : 0));
 watch(() => Boolean(agent.value), present);
 onMounted(() => {
     document.addEventListener("visibilitychange", seen);
@@ -504,7 +509,6 @@ onUnmounted(() => {
     cancelAnimationFrame(footFrame);
     clearTimeout(legTimer);
     clearTimeout(slideTimer);
-    figureRise.value = 0;
     clearTimeout(frameTimer);
     clearTimeout(lookTimer);
     document.removeEventListener("visibilitychange", seen);

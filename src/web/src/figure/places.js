@@ -5,6 +5,9 @@ export const HOME = "[data-figure-home]";
 // the page area, whose foot is the figure's floor on a page with no compose box
 export const FLOOR = "[data-figure-floor]";
 
+// the bars docked over the main chat's compose box, such as a report's, which the figure is pushed up onto while they are there
+export const LEDGE = "[data-figure-ledge]";
+
 // how far along its edge the figure may stand, as shares of the edge's width, the one it prefers first
 const HOME_ALONG = [0.85, 0.6, 0.35, 0.15];
 
@@ -124,13 +127,15 @@ export function seatOf(figure, near) {
     return {...insideWindow(spot, figure), view: null, on: element};
 }
 
-// The edge a figure stands on at home: the main chat's compose box, else the floor of the page itself, else the foot of the window
-function groundEdge() {
+// The edge a figure stands on at home: the bars docked over the main chat's compose box while there are any, else the compose box, else
+// the floor of the page itself, else the foot of the window
+export function groundEdge() {
     const home = document.querySelector(HOME);
-    const element = home || document.querySelector(FLOOR);
+    const top = home?.closest(".thread")?.querySelector(LEDGE) || home;
+    const element = top || document.querySelector(FLOOR);
     if (!element) return {element: null, edge: {left: 0, width: window.innerWidth, top: window.innerHeight}};
     const box = element.getBoundingClientRect();
-    return {element, edge: {left: box.left, width: box.width, top: home ? box.top : box.bottom}};
+    return {element, edge: {left: box.left, width: box.width, top: top ? box.top : box.bottom}};
 }
 
 // Home is the main chat's compose box; a page without one gives the figure the floor of the page itself. Each spot names the element
