@@ -6,12 +6,13 @@ from pathlib import Path
 from engine.sessions import alive
 from resources.text import clipped
 from framework.sending import Sent
-from declaring.trigger import DAY, MINUTE
+from declaring.trigger import MINUTE
 from serving import SERVED, Providers
 from resources.runs import BackgroundTasks
 
 RECENT = 10 * MINUTE
 STALLED_AFTER = 5 * MINUTE
+GIVEN_UP_ON = 2 * 60 * MINUTE
 PS_TIMEOUT = 2
 
 
@@ -40,8 +41,10 @@ def described(tasks: BackgroundTasks, session: str) -> dict:
 
 
 def open_since(tasks: BackgroundTasks) -> dict[str, float]:
+    """How long each run worth telling the agent about has shown nothing new. A run whose command was never recorded gives it nothing to act on, and one still listed hours later is lost rather than slow, so neither is counted."""
     now = time.time()
-    return {session: now - tasks.printed.get(session, at) for session, at in tasks.started.items() if session not in tasks.ended and now - at < DAY}
+    return {session: now - tasks.printed.get(session, at) for session, at in tasks.started.items()
+            if session not in tasks.ended and now - at < GIVEN_UP_ON and tasks.commands.get(session)}
 
 
 def ended_runs(context, agent) -> list[Sent]:
@@ -61,7 +64,8 @@ def stalled_runs(context, agent) -> list[Sent]:
     """A run going a long while with nothing new to show, whatever the provider: a command that never ends wakes nobody, so a provider's own wake is no reason to stay quiet about one."""
     tasks = runs_of(agent)
     return [Sent(f"{session}:{int(running // STALLED_AFTER)}", {**described(tasks, session), "minutes": int(running // MINUTE)})
-            for session, running in open_since(tasks).items() if running >= STALLED_AFTER]
+            for session, running in open_since(tasks).items()
+            if running >= STALLED_AFTER]
 
 
 def running_part(pid: int, chain: str) -> str:
