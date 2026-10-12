@@ -11,6 +11,7 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 
+
 PACKAGE = "features"
 ALLOWED = ("features", "events", "declaring", "expects", "resources")
 """The packages a feature's module may name: its own, the event catalogue, the declarations, the
