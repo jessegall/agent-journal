@@ -63,9 +63,7 @@ class Commands(Service):
 
 
 class Settings(Service):
-    """The settings and feature switches in force, read at boot and on change."""
-
-    writes = True
+    """The asking feature's settings in force, read at boot and on change."""
 
 
 class Providers(Service):

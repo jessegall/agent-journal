@@ -1,49 +1,38 @@
-import io
-
-from events.agents import BusMessageSending, CommandRan
-from framework.parts import AgentContext, Context, Handler
-from features.command_tags.told import keep
-from features.command_tags.reading import CARRIED, OPTIONS, kept_out_of_the_chat, named, reader, removed, runs, tag_spelling, tag_for, visible
-from resources.base import AGENT
-from engine.command_line import command_line
+from events import Fact
+from events.command_tags import MessageTagged, TagCommandRan, TagHintDue, TagRefused, TurnKeptBack
+from features.command_tags.reading import tag_spelling
+from receiving import Handler
+from serving import Chat, Commands
 
 
-class RunTagCommands(Handler):
-    def handle(self, context: AgentContext, event: BusMessageSending) -> None:
-        message = event.text
-        failed = bool(CARRIED.search(message)) and self.run(context, message, event.turn)
-        if kept_out_of_the_chat(message) and not failed:
-            event.stop()
-        else:
-            event.change(visible(message, reader(context.settings)).strip())
-
-    def run(self, context: Context, message: str, turn: str) -> bool:
-        """Runs the commands the tags stand for; true when one failed, so the words are not lost with it: they stay in the chat."""
-        commands, text = runs(context.settings), removed(message, reader(context.settings)).strip()
-        failed = False
-        for name, n, argument, extras in CARRIED.findall(message):
-            if name not in commands or not context.once("tag", f"{turn}|{name}|{n}|{argument}|{extras}"):
-                continue
-            out, err = io.StringIO(), io.StringIO()
-            code = command_line().run(["--root", str(context.record.root), "--env", context.record.env, "--session", context.agent.session, "--as", AGENT,
-                        *self.argv(commands[name], n, argument, text), *self.settings(name, extras)], out=out, err=err)
-            if code:
-                failed = True
-                context.agent.nudge("refused", tag=name, on=n or argument, error=tag_spelling((err.getvalue() or out.getvalue()).strip()))
-                continue
-            keep(context.record, context.agent.session, f"the {name} tag on {n or argument} ran")
-        return failed
-
-    def settings(self, name: str, extras: str) -> list[str]:
-        return [word for key, value in named(extras).items()
-                for word in ((f"--{key}", value) if key in OPTIONS.get(name, ()) else ("--set", f"{key}={value}"))]
-
-    def argv(self, template: str, n: str, name: str, text: str) -> list[str]:
-        return [{"{text}": text, "{n}": n, "{name}": name}.get(word, word) for word in template.split()]
+class RunTagCommand(Handler[MessageTagged]):
+    def handle(self, event: MessageTagged, commands: Commands) -> list[Fact]:
+        ran = commands.run(event.command)
+        if not ran.code:
+            return [TagCommandRan(agent=event.agent, turn=event.turn, tag=event.tag, about=event.about)]
+        refused = TagRefused(agent=event.agent, turn=event.turn, tag=event.tag, about=event.about, why=tag_spelling(ran.output))
+        return [refused, TurnKeptBack(agent=event.agent, turn=event.turn, words=event.words)] if event.withheld else [refused]
 
 
-class TeachTheTag(Handler):
-    def handle(self, context: AgentContext, event: CommandRan) -> None:
-        tag = tag_for(event.command)
-        if tag and "--file" not in event.command and context.due("hint"):
-            context.agent.nudge("hint", tag=tag.name, hint=tag.hint)
+class KeepWhatTheTagRan(Handler[TagCommandRan]):
+    def handle(self, event: TagCommandRan, chat: Chat) -> list[Fact]:
+        chat.keep(f"the {event.tag} tag on {event.about} ran")
+        return []
+
+
+class NameTheRefusal(Handler[TagRefused]):
+    def handle(self, event: TagRefused, chat: Chat) -> list[Fact]:
+        chat.nudge("refused", tag=event.tag, on=event.about, error=event.why)
+        return []
+
+
+class RestoreTheWords(Handler[TurnKeptBack]):
+    def handle(self, event: TurnKeptBack, chat: Chat) -> list[Fact]:
+        chat.post(event.words, event.turn)
+        return []
+
+
+class TeachTheTag(Handler[TagHintDue]):
+    def handle(self, event: TagHintDue, chat: Chat) -> list[Fact]:
+        chat.nudge("hint", tag=event.tag, hint=event.hint)
+        return []

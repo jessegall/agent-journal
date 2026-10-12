@@ -144,7 +144,7 @@ class Messages(Controller):
                 answerable.append(number)
         return skipped, answerable
 
-    def said_already(self, text: str) -> Resource | None:
+    def already_posted(self, text: str) -> Resource | None:
         """The very words already in the chat from this author, as a plain message or as a reply made moments ago, so a turn written twice is posted once. A reply keeps the message it answers quoted above it, so both are compared on what was actually typed."""
         words = unquoted(text.strip())
         if not words:

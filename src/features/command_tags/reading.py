@@ -84,6 +84,11 @@ def replies(text: str) -> bool:
 QUIET = {tag.name for tag in TAGS if not tag.said_in_chat} - {REPLY}
 
 
+def shown(text: str, settings) -> str:
+    """The turn's words as they reach the chat, its tags taken out."""
+    return visible(text, reader(settings)).strip()
+
+
 def kept_out_of_the_chat(text: str) -> bool:
     """Whether the turn's words belong only to the row its tag writes, which each tag says of itself; a reply says it only when it names the message it answers."""
     return replies(text) or any(carries(text, tag) for tag in QUIET)

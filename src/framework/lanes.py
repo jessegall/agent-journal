@@ -20,6 +20,12 @@ from resources.runs import Exited
 from serving import Adapted as TheRecord, Chat, Commands, ReadRows, Rows, Settings
 
 
+class NobodyToSpeakTo(LookupError):
+    @classmethod
+    def of(cls, about: str) -> "NobodyToSpeakTo":
+        return cls(f"a receiver asked for the chat about {about}, and no agent row answers for it")
+
+
 class JournalCommands:
     """Journal commands run in this process as the agent the event is about, as a tag's command always ran."""
 
@@ -49,7 +55,10 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
 def agent_of(logged, record):
     """The agent a tick's chat is about: the agent the event is about, else the one the environment's chat is with."""
     agents = Agents(record, actor=SYSTEM)
-    return agents.peek(logged.n) if logged.type == "agent" else agents.primary_to_read()
+    row = agents.peek(logged.n) if logged.type == "agent" else agents.primary_to_read()
+    if row is None:
+        raise NobodyToSpeakTo.of(f"{logged.type} {logged.n}")
+    return row
 
 
 def due_now(feature, record, fact: Fact) -> bool:
@@ -61,5 +70,12 @@ def due_now(feature, record, fact: Fact) -> bool:
 
 def answering(registered, request, record) -> Answer:
     """A request answered by the answerers the features registered, over the record and about the agent of the session it names."""
-    services = Services(lane_services(record, lambda: Agents(record, actor=SYSTEM).peek_session(request.session)))
+    services = Services(lane_services(record, lambda: session_agent(record, request.session)))
     return answered(request, registered, services, switched_on=lambda feature: FEATURES[feature].enabled(record))
+
+
+def session_agent(record, session: str):
+    row = Agents(record, actor=SYSTEM).peek_session(session)
+    if row is None:
+        raise NobodyToSpeakTo.of(f"session {session}")
+    return row

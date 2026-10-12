@@ -6,16 +6,18 @@ from typing import TYPE_CHECKING, ClassVar
 from controllers.base import Arguments
 from controllers.agents import Agents
 from controllers.environments import Environments
+from controllers.messages import Messages
 from events.agents import AgentChanged
 from declaring.holds import Runs
 from declaring.reach import Reach
 from engine.state import State
+from framework import held_lines
 from resources.text import digest
 from payload import STATUS, HookEvent
 from declaring import trigger
 from engine import triggering
 from declaring.settings import Settings
-from resources.base import SYSTEM
+from resources.base import AGENT, SYSTEM, titled
 
 if TYPE_CHECKING:
     from framework.journal import BoundJournal
@@ -44,6 +46,16 @@ class Speaker:
 
     def hold(self, line: str, behaviour: str = "", **values) -> None:
         self.feature.hold(self.record, line, behaviour, self.row, **values)
+
+    def post(self, text: str, turn: str) -> None:
+        """The agent's own words reach the chat as its message, once: words already there from it are not posted again."""
+        messages = Messages(self.record, actor=AGENT)
+        if not messages.already_posted(text):
+            messages.create(titled(text), brief=text, idempotency=turn)
+
+    def keep(self, line: str) -> None:
+        """Holds the line for the agent's next tool call, where it is told beside the hook's answer."""
+        held_lines.keep(self.record, self.session, line)
 
     def move_to_background(self, running: str = "") -> dict:
         from agents.control import move_to_background

@@ -27,7 +27,6 @@ from resources.types import TYPES
 from serving import Adapted as TheRecord
 
 ON_THE_SENDING_PATH = {
-    "RunTagCommands": "it answers a message about to be sent, which is a request and not a fact",
     "HideJournalOnlyTurns": "it answers a message about to be sent, which is a request and not a fact",
     "StripTags": "it answers a text about to be formatted, which is a request and not a fact",
 }
@@ -217,7 +216,7 @@ class CatalogueFacts(Listener[Fact]):
         return "CatalogueFacts"
 
     def patterns(self) -> tuple[str, ...]:
-        """None: it hears every logged event and names its catalogue facts by type."""
+        """No pattern: every logged event is read for the catalogue facts it is."""
         return ()
 
     @classmethod

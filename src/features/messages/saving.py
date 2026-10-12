@@ -1,8 +1,6 @@
 from controllers.messages import only_emoji
 from events.agents import AgentMessageSent
 from framework.parts import AgentContext, Handler
-from resources.base import AGENT, titled
-from controllers.types import Messages
 
 
 class SaveAgentMessage(Handler):
@@ -12,7 +10,4 @@ class SaveAgentMessage(Handler):
         if only_emoji(event.text):
             context.agent.nudge("reaction", face=event.text.strip())
             return
-        messages = context.journal.acting(AGENT).get(Messages)
-        if messages.said_already(event.text):
-            return
-        messages.create(titled(event.text), brief=event.text, idempotency=event.turn)
+        context.agent.post(event.text, event.turn)

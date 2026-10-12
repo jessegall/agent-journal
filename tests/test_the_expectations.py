@@ -500,7 +500,7 @@ def test_an_unswept_2x_handler_runs_on_the_adapter_and_the_sending_path_cannot()
         def handle(self, context, event):
             minded.append((event.n, context.record))
 
-    class RunTagCommands(OldStyle):
+    class HideJournalOnlyTurns(OldStyle):
         def handle(self, context, event):
             minded.append("this must never run")
 
@@ -515,7 +515,7 @@ def test_an_unswept_2x_handler_runs_on_the_adapter_and_the_sending_path_cannot()
     walked(registered, set()), "the adapter is exempt from the boot rules by declaring itself adapted, not by a name the checker knows"
 
     with pytest.raises(CannotBeAdapted) as refusal:
-        OldHandler(None, RunTagCommands())
+        OldHandler(None, HideJournalOnlyTurns())
     assert "a request and not a fact" in str(refusal.value), \
         "a handler on the sending path cannot be adapted at all, which is why those features are swept first"
 
@@ -657,14 +657,15 @@ def test_an_old_handler_beside_the_bus_is_registered_on_the_adapter_and_the_list
     features.load()
     said = dict(line.split(": ", 1) for line in listing().splitlines())
     assert said["awaited"] == "adapted (ReturnWhenAwaitedReport)", "a feature whose handlers all run on the adapter says which"
-    assert said["command_tags"] == "adapted (TeachTheTag); cannot be adapted (RunTagCommands), swept first", \
+    assert said["sequences"].endswith("; cannot be adapted (KeepOutOfTheChat), swept first"), \
         "a handler on the sending path cannot run there, so its feature is not moved and the listing says it is swept first"
+    assert said["command_tags"] == said["chat_etiquette"] == "moved", "and a feature swept onto the 3.0 engine says so"
     assert said["acknowledgements"] == "cannot be adapted (HideJournalOnlyTurns), swept first", "and one that has nothing else says only that"
     handled = {one.feature.name for one in PROMISED.each if one.kind == "handler"}
     assert all(said[name] != "moved" for name in handled) and all(said[name] == "moved" for name in said if name not in handled), \
         "a feature reads as moved when it holds no old handler, and as adapted or stuck while it holds one"
     adapted = ADAPTED.of(HANDLE)
-    assert len({(one.feature, one.name) for one in adapted}) == len(adapted) and {one.name for one in adapted} >= {"TeachTheTag", "SendOnTheClock"}, \
+    assert len({(one.feature, one.name) for one in adapted}) == len(adapted) and {one.name for one in adapted} >= {"ReturnWhenAwaitedReport", "SendOnTheClock"}, \
         "each registers under its old handler's own name, so the ordering can tell them apart and none is registered twice"
 
     ran = []
@@ -920,6 +921,37 @@ def test_a_moved_feature_runs_live_from_a_sent_turn_to_its_nudge_and_its_reminde
     assert not reminded(), "nineteen journal lines are counted against the trigger and pass without a reminder"
     ran.announce(record, agent.n, ran.DELIVERED, "todo 5 next")
     assert len(reminded()) == 1, "the twentieth is due, so the fact goes on and the agent is reminded once"
+
+
+def test_a_tagged_turn_runs_its_command_live_and_a_refused_one_keeps_its_words():
+    """The sending path on the 3.0 engine, played for real: the turn is asked of the answerers before anything is written, told as written, and its tag's command runs on the lane, once per turn."""
+    from controllers.types import Agents, Comments, Messages, Todos
+    from engine import chat
+    from resources.base import AGENT, USER
+    from tests.conftest import fresh
+    from tests.kit import nudges, report
+
+    import features
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    agent = Agents(record, actor="system").by_session("claude-1")
+    asked = Messages(record, actor=USER).create("are you there?")
+    Messages(record, actor=AGENT).read(asked.n)
+    shown = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]  # noqa: E731
+
+    chat.send(record, agent, "Checking the build next.")
+    chat.send(record, agent, f"[!reply:{asked.n}] yes, here")
+    assert shown() == ["Checking the build next."], "a plain turn reaches the chat, and a reply is not copied into it"
+    assert [c.title for c in Comments(record, actor="system").linked_to(asked.ref)] == ["yes, here"], "the reply tag ran its command"
+
+    chat.send(record, agent, "[!reply:99999] this one cannot be written")
+    assert shown()[-1] == "this one cannot be written", "a reply whose command was refused is not swallowed: its words reach the chat after all"
+    assert any("reply" in n and "99999" in n for n in nudges(record)), f"and the refusal is named back to the agent: {nudges(record)}"
+
+    chat.send(record, agent, '[!todo="Repeated work"] first')
+    chat.send(record, agent, '[!todo="Repeated work"] first')
+    assert [todo.title for todo in Todos(record, actor="system").all()] == ["Repeated work", "Repeated work"], "the same tag in two turns runs twice, once for each"
 
 
 def test_a_feature_registered_for_both_engines_is_refused_at_boot():
