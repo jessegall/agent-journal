@@ -20,3 +20,9 @@ PHASE_STARTS = Extension()
 
 PLAN_STARTS = Extension()
 """What starts a plan's own agent when it is started."""
+
+SECRET_CHECKS = Extension()
+"""The checks a feature adds before a setting that runs a command may be written by an agent."""
+
+MOVED = Extension()
+"""What each feature says to an agent about what it moved, one listing per feature."""

@@ -8,7 +8,7 @@ swept feature is held to. It asks for one thing, the tick's record, and nothing 
 
 from dataclasses import dataclass
 
-from controllers.features import MOVED
+from declaring.registries import MOVED
 from engine import bus
 from events import Fact, Request
 from framework.parts import Context, Handler as OldStyle

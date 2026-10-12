@@ -1,5 +1,5 @@
 from controllers.base import SAVE_REWRITES
-from controllers.features import SECRET_CHECKS
+from declaring.registries import SECRET_CHECKS
 from events.agents import ClockTicked
 from expects import WHEN, File, Given, Kept, Refused, Wrote, answering
 from framework.base import Feature
