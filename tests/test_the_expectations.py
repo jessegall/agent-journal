@@ -997,6 +997,40 @@ def test_a_tool_call_a_swept_feature_refuses_is_refused_at_the_gate():
         bus.answered_by(was)
 
 
+def test_an_answered_tool_call_is_told_on_the_lane_after_its_answer():
+    """What writes about a tool call runs after the gate answered it: the hook path tells ToolCallAnswered, and a swept feature's handler of it hears what was asked and why it was refused."""
+    from events import Fact
+    from events.agents import ToolCallAnswered
+    from framework.adapter import TICKING
+    from providers import PROVIDERS
+    from receiving import HANDLE, Handler, Registration
+    from runner.hooks import handle
+    from tests.conftest import fresh
+    from tests.kit import report
+
+    import features
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    received: list[ToolCallAnswered] = []
+
+    class Receives(Handler[ToolCallAnswered]):
+        def handle(self, event: ToolCallAnswered) -> list[Fact]:
+            received.append(event)
+            return []
+
+    registration = Registration.read(HANDLE, ToolCallAnswered, Receives(), ["an expectation"], "chat_etiquette")
+    TICKING.moved.add(registration)
+    TICKING.resolve()
+    try:
+        handle(PROVIDERS["claude"](), record.root, record.env,
+               {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "ls"}})
+    finally:
+        TICKING.moved.forget(registration.kind, registration.feature, registration.name)
+        TICKING.resolve()
+    assert [(one.tool, one.input, one.why) for one in received] == [("Bash", "ls", "")], f"the call is told with what it asked, and no reason, since it may run: {received}"
+
+
 def test_a_feature_registered_for_both_engines_is_refused_at_boot():
     """There is no skip to write: a swept feature registers no 2.x handler, so the only way to run twice is to register twice.
 

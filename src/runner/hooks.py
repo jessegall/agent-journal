@@ -8,10 +8,11 @@ from engine.gates import HookCall, responded
 from engine.record import Record
 from providers.base import asking_row
 from payload import PERMISSION, STATUS, Hook, HookEvent
-from resources.base import SYSTEM
+from events.agents import TOOL_ANSWERED
+from resources.base import AGENT, SYSTEM
 from resources.types import AgentRow
 from runner import chat_mirror
-from runner.gate import refusal
+from runner.gate import input_of, refusal
 from runner.hook_report import end_refused, report
 from runner.stepping import rewrite
 
@@ -62,6 +63,8 @@ def quiet(call: HookCall) -> dict:
 
 def refused(call: HookCall) -> dict:
     why = refusal(call)
+    after_answered(lambda: bus.announce(call.record, "agent", call.row.n, TOOL_ANSWERED, AGENT,
+                                        {"tool": call.hook.tool.name, "input": input_of(call.hook.tool), "why": why or ""}))
     return {} if why is None else call.provider.blocking(why)
 
 

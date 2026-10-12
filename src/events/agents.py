@@ -11,6 +11,7 @@ from events.typed import AgentEvent
 SENDING, SENT, WRITTEN = "message.sending", "message.sent", "message.written"
 TICKED, BEAT = "ticked", "beat"
 COMMAND_RAN = "command.ran"
+TOOL_ANSWERED = "tool.answered"
 
 
 @dataclass(frozen=True)
@@ -120,6 +121,16 @@ class BusMessageSending(AgentEvent):
 
     def stop(self) -> None:
         self.data["stopped"] = True
+
+
+@dataclass(frozen=True)
+class ToolCallAnswered(AgentEvent):
+    """A tool call the gate answered: what was asked, and why it was refused, empty when it may run. Told after the answer, so what writes about it never holds the call up."""
+
+    on: ClassVar[str] = f"agent.{TOOL_ANSWERED}"
+    tool: str = ""
+    input: str = ""
+    why: str = ""
 
 
 @dataclass(frozen=True)

@@ -64,10 +64,14 @@ def gated(call: HookCall) -> str | None:
 
 
 def refused_by_a_feature(call: HookCall) -> str | None:
-    """Why a swept feature's answerer refused the call, asked as the engine's request: a shell call by its command, any other by its input."""
-    tool = call.hook.tool
-    asked = bus.asked(ToolCallAsked(tool=tool.name, input=tool.shell_command or json.dumps(tool.tool_input, sort_keys=True), session=call.session), call.record)
+    """Why a swept feature's answerer refused the call, asked as the engine's request."""
+    asked = bus.asked(ToolCallAsked(tool=call.hook.tool.name, input=input_of(call.hook.tool), session=call.session), call.record)
     return asked.why if isinstance(asked, Refused) else None
+
+
+def input_of(tool) -> str:
+    """What a tool call asks, as the engine names it: a shell call by its command, any other by its input."""
+    return tool.shell_command or json.dumps(tool.tool_input, sort_keys=True)
 
 
 def afterwards(call: HookCall) -> None:
