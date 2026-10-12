@@ -12,8 +12,8 @@ def only_emoji(text: str) -> bool:
 
 def references(about: str, todos: str) -> list[str]:
     """What a reply says it is about: any row by its reference, and to-dos by their numbers alone, since a reply naming to-dos is the common case."""
-    named = [one.strip() for one in str(about or "").replace(",", " ").split() if one.strip()]
-    numbers = [one.strip() for one in str(todos or "").replace(",", " ").split() if one.strip()]
+    named = [one.strip() for one in str(about).replace(",", " ").split() if one.strip()]
+    numbers = [one.strip() for one in str(todos).replace(",", " ").split() if one.strip()]
     return list(dict.fromkeys([*named, *(f"todo:{one}" for one in numbers)]))
 
 

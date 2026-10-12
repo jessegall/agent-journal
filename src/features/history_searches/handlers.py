@@ -74,7 +74,7 @@ def marked(context: AgentContext, command: str, found: str | None = None) -> lis
     for one in searches(command):
         key = f"search-{time.time_ns()}"
         context.journal.get(Agents).card(context.agent.row.n, key=key, label=one.label, title=one.title, icon="search", tone="note",
-                                         **({} if found is None else {"found": found[:FOUND_LIMIT]}))
+                                         found=found and found[:FOUND_LIMIT])
         keys.append(key)
     if keys:
         context.state.set(OPEN, keys[-1])

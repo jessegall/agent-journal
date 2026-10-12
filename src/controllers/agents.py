@@ -200,7 +200,8 @@ class Agents(Controller):
     def subagent(self, n: int, action: str, **data):
         return self._emit(int(n), action, **data)
 
-    def card(self, n: int, **card):
+    def card(self, n: int, **facts):
+        card = {name: value for name, value in facts.items() if value is not None}
         row = self.load(n)
         cards = row.data.get("cards") or []
         key = card.get("key")

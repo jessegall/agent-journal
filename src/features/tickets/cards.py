@@ -76,8 +76,8 @@ class TicketCards:
         stages = self._stages(n)
         sessions = Sessions(self.record.root).all()
         running = self._running()
-        words = (query or "").strip().lower()
-        wanted = lambda stage: lambda r: int(r["board"] or 0) == int(n) and not r["draft"] and r["stage"] == stage and (not words or words in f"#{r['n']} {r['title']}".lower())
+        words = None if query is None else query.strip().lower()
+        wanted = lambda stage: lambda r: r["board"] not in (None, "") and int(r["board"]) == int(n) and not r["draft"] and r["stage"] == stage and (not words or words in f"#{r['n']} {r['title']}".lower())
         order = lambda r: (position_of(r["rank"], r["n"]), r["n"])
         pages = {stage: self.rows.page(wanted(stage), order, cursor_of(after) if stage == lane else None, int(size))
                  for stage in stages if not lane or stage == lane}

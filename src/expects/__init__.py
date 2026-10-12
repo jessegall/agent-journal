@@ -100,12 +100,13 @@ class Dispatches(Outcome):
     """A fact was dispatched, with those field values; claimed names the key the engine claimed for it."""
 
     fact: Any
-    claimed: str = ""
+    claimed: str | None = None
+
     def holds(self, seen) -> str:
         if isinstance(self.fact, Nothing):
             return "" if not seen.facts else f"it dispatched {[type(one).__name__ for one in seen.facts]}, and the expectation says it dispatches nothing"
         for one in seen.facts:
-            if one == self.fact and (not self.claimed or getattr(one, "claim", "") == self.claimed):
+            if one == self.fact and (self.claimed is None or getattr(one, "claim", "") == self.claimed):
                 return ""
         return f"it did not dispatch {self.fact!r}; it dispatched {seen.facts!r}"
 
