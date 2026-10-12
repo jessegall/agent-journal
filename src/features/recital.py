@@ -10,9 +10,9 @@ from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolIn
 from expects import Given, Kept, Nudged, Unchanged
 from providers.payload import BashCall
 from resources.types import AgentRow
-from engine.gates import Runs
+from declaring.holds import Runs
 from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
-from engine.reach import Reach
+from declaring.reach import Reach
 from engine.wording import plural
 from controllers.types import Agents
 

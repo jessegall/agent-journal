@@ -8,8 +8,9 @@ from controllers.types import Agents
 from declaring import trigger
 from features.switches import switches
 from declaring.trigger import MINUTE, NEVER, Trigger
-from engine.gates import Hold, hold
-from engine.reach import Reach, Unreached
+from declaring.holds import Hold
+from engine.gates import hold
+from declaring.reach import Reach, Unreached
 from declaring.details import FeatureDetails, Line
 from declaring.groups import Group
 from features.journal import Journal

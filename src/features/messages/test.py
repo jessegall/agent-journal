@@ -111,7 +111,7 @@ def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read
     def use(n):
         report(record, "working", "PreToolUse", uses=n)
 
-    from engine.reach import Reach
+    from declaring.reach import Reach
     from features import FEATURES
     Agents(record, actor=AGENT).create("s-gone", status="stopped")
     titles = [agent.title for agent in FEATURES["messages"].reached(record, Reach.BOTH)]

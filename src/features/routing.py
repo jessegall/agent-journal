@@ -9,7 +9,7 @@ from uuid import uuid4
 from controllers.base import Sender
 from controllers.types import CONTROLLERS, Environments
 from engine import runtime
-from engine.extension import Extension
+from declaring.extension import Extension
 from engine.memo import Memo
 from resources.fields import Loaded
 from engine.record import Record

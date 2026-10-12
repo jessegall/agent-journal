@@ -7,7 +7,7 @@ from engine import bus
 from engine.journal_calls import JournalCall, pieces
 from engine import runtime
 from engine.gates import AFTERWARDS, DISPATCHING, POLICIES, HookCall, cancelled
-from engine.reach import Reach
+from declaring.reach import Reach
 from resources.base import AGENT
 
 PAUSED = "The user paused the agent: wait, and carry on only once you are resumed."

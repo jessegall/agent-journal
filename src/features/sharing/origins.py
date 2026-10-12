@@ -3,7 +3,7 @@ import time
 from collections.abc import Callable
 from ipaddress import IPv4Address, IPv6Address, ip_address, ip_network
 
-from engine.extension import Extension
+from declaring.extension import Extension
 from engine.record import Record
 
 LOCAL = ("127.0.0.1", "localhost")

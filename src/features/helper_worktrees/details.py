@@ -1,4 +1,4 @@
-from engine.reach import Reach
+from declaring.reach import Reach
 from declaring.details import FeatureDetails, Line
 from declaring.groups import Group
 

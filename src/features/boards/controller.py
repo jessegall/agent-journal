@@ -9,7 +9,7 @@ from features.boards.resource import DONE, MEANINGS, Board
 from features.boards.running import RunningBoards
 from resources.base import FINISHED, PROJECT, RESUMED, Ref, Refused, Resource, SYSTEM
 from controllers.marks import action
-from engine.extension import Extension
+from declaring.extension import Extension
 
 STAGES = ("To do", "Doing", "Review", "Done")
 BUILD_LOG = 40

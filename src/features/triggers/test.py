@@ -29,7 +29,7 @@ def test_a_trigger_denies_a_command_and_nudges_on_a_word():
                                           **{"words": ["--force"], "does": "deny", "words_in": "commands"})
     Triggers(record, actor="user").create("mind the migrations", text="run the migration test after touching them",
                                           **{"words": ["migration"], "does": "nudge"})
-    from engine.gates import Runs
+    from declaring.holds import Runs
     from features.triggers.handlers import DenyWhatTheAgentDoes, WatchWhatTheAgentDoes
     assert (DenyWhatTheAgentDoes.runs, WatchWhatTheAgentDoes.runs) == (Runs.SYNC, Runs.ASYNC), \
         "a deny decides the call before it is answered; a nudge or an instruction is said after the answer"

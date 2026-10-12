@@ -159,7 +159,7 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
 def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the_chat(monkeypatch):
     from controllers.types import Agents
     from engine.gates import CANCELERS, LONG_COMMAND
-    from engine.reach import Guard, Reach
+    from declaring.reach import Guard, Reach
     from resources.base import SYSTEM
     record = fresh()
     moved = []

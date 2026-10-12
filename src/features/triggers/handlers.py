@@ -9,12 +9,13 @@ from features import actions
 from features.triggers import watched
 from features.sending import Nudge, Sent, send
 from features.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Context, Handler, ToolInterceptor
-from engine.gates import Runs, STILL_HELD
+from declaring.holds import Runs
+from engine.gates import STILL_HELD
 from features.recital import COMMANDS, mentioned, searched
 from features.triggers.controller import Triggers, holding
 from features.triggers.resource import DENY, FROM_USER, HOLD, IDLE, INSTRUCT, MESSAGE, NUDGE, START, WORKING, Trigger
 from resources.base import SYSTEM, USER
-from engine.reach import Reach
+from declaring.reach import Reach
 from controllers.types import Agents, Messages
 
 WATCHING, REMINDING = "watching", "reminding"

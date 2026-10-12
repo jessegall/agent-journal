@@ -18,9 +18,10 @@ ALLOWED = ("events", "declaring", "expects", "resources", "serving", "receiving"
 """The packages every feature may name: the event catalogue, the declarations, the expects grammar,
 the row types and their constants, and the two sides of the engine it is registered through."""
 
-ALSO = ("engine.services",)
+ALSO = ("engine.services", "engine.wording", "engine.version")
 """The modules named in full that a feature may also import: the services' own types, which a
-registration names to ask for one."""
+registration names to ask for one, and the pure helpers that are this codebase's own standard
+library, named one by one so the door is as wide as they are."""
 
 OWN = "features"
 

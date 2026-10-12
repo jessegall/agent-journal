@@ -122,7 +122,7 @@ def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once(
 
     import threading
     from engine.gates import AFTERWARDS
-    from engine.reach import Guard, Reach
+    from declaring.reach import Guard, Reach
     held_open, let_go = threading.Event(), threading.Event()
 
     def blocking(given):

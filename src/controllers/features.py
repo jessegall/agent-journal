@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 
 from controllers.base import Arguments, Controller
-from engine.extension import Extension
+from declaring.extension import Extension
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
 from resources.base import AGENT, Refused, SYSTEM, USER

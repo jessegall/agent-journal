@@ -159,7 +159,7 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
     announce(record, agent.n, "Bash", f'journal share agree {other.n} "{AGREEMENT}"', "agreed")
     assert hook("ls").get("decision") == "block", "reading the comment's file, or running the agreement, does not lift the hold"
     Shares(record, actor=AGENT, session="claude-share").agree(other.n, AGREEMENT)
-    from engine.reach import Reach
+    from declaring.reach import Reach
     from features.sharing.guard import RefuseUntilAgreed
     assert RefuseUntilAgreed.reach is Reach.BOTH, "the hold covers subagents as well as the primary agent"
     from types import SimpleNamespace

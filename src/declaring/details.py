@@ -4,9 +4,9 @@ from typing import Callable, ClassVar
 from declaring.groups import Group
 from declaring.settings import Setting, Settings
 from declaring.trigger import NEVER, Trigger
-from engine.gates import Stops
+from declaring.holds import Stops
 from engine.memo import Memo
-from engine.reach import Reach
+from declaring.reach import Reach
 from resources.base import ENVIRONMENT, PROJECT, Refused
 from resources.text import paragraphs
 

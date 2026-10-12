@@ -2,7 +2,8 @@ import re
 from dataclasses import dataclass
 
 from controllers.types import Agents, Plugins, Todos
-from engine.gates import Hold, hold
+from declaring.holds import Hold
+from engine.gates import hold
 from resources.fields import Loaded
 from features.plugins.paths import folder
 from features.plugins.declared import Look, declared, named, settings_of, settings_choosing

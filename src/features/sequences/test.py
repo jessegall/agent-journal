@@ -272,7 +272,8 @@ def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
         tick(record)
     assert "handed you step" not in held(record, session), "a hold on a step that is no longer in hand is released by the clock, never left to refuse every write"
     assert "handed you step" not in held(record, session), "an abandoned run holds nothing"
-    from engine.gates import Hold, hold
+    from declaring.holds import Hold
+    from engine.gates import hold
     CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(again.n, why="it no longer applies")
     hold(record, session, "sequences.step", Hold("sequence 17, unsticking, handed you step 1 - take it up with journal sequence follow 17 --about ticket:29 before any other write"))
     assert "handed you step" not in held(record, session), "a hold left behind for a sequence that is no longer running holds no write: the writes go ahead and the hold is taken away"

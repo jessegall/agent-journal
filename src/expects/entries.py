@@ -17,7 +17,8 @@ from pathlib import Path
 
 import commands.cli  # noqa: F401  wires the command line, as every process that runs the journal does
 from controllers.types import Messages, Nudges
-from engine.gates import Hold, HookCall, hold
+from declaring.holds import Hold
+from engine.gates import HookCall, hold
 from engine.project_files import walk
 from engine.record import Record
 from expects import Given

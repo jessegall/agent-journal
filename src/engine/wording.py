@@ -1,6 +1,6 @@
 import hashlib
 import re
-from engine.extension import Extension
+from declaring.extension import Extension
 
 SLUG = re.compile(r"[^a-z0-9]+")
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")

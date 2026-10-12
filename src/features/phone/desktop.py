@@ -3,7 +3,7 @@ from http.client import HTTPConnection, HTTPException
 from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit
 
 from features.routing import resolve
-from engine.extension import Extension
+from declaring.extension import Extension
 from engine.viewer import lately_running
 from features.phone.allow_list import Page
 from features.routing import JSON

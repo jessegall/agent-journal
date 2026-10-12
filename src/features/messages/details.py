@@ -1,4 +1,4 @@
-from engine.gates import Stops
+from declaring.holds import Stops
 from declaring.details import Behaviour, FeatureDetails, Line
 from features.messages.answering import still_unanswered
 from declaring.settings import Setting
