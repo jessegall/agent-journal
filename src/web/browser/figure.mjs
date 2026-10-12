@@ -3,8 +3,8 @@ import {runScenarios, shot} from "./harness.mjs";
 const FIGURE = ".voice-figure";
 const HOME = "[data-figure-home]";
 
-// the environment's agent as the agent list reports it, at work with a search in flight
-async function working(page) {
+// the environment's agent as the agent list reports it, with `data` on its row
+async function agentAs(page, data) {
     await page.route(/\/api\/main\/agent\?/, async (route) => {
         const response = await route.fetch();
         const body = await response.json();
@@ -23,11 +23,17 @@ async function working(page) {
             brief: "",
             outcome: "",
             abstract: "",
-            data: {status: "working", event: "PreToolUse", tool: "Grep", at: now, provider: "claude", model: "opus"},
+            data: {at: now, provider: "claude", model: "opus", ...data},
         };
         await route.fulfill({response, json: {...body, rows: [row, ...(body.rows || [])]}});
     });
 }
+
+// at work with a search in flight
+const working = (page) => agentAs(page, {status: "working", event: "PreToolUse", tool: "Grep"});
+
+// paused, so its figure sits on a corner of the compose box
+const paused = (page) => agentAs(page, {status: "idle", paused: true});
 
 // where the figure's feet are, and the top of the compose box it stands on
 const footing = (page) =>
@@ -144,6 +150,9 @@ const CATCH_UP_FRAMES = 3;
 // the walk covers a pixel or two a frame and a hop goes straight up or down, so a figure that moves further across in one frame jumped
 const MOST_ACROSS_IN_A_FRAME = 12;
 
+// the frames a picture may take to finish easing from one posture to the next once the figure moves off, CHANGE_SECONDS at 60 a second
+const SETTLING_FRAMES = 18;
+
 await runScenarios(process.argv[2], {
     async "the walk plays only while the figure moves across, and the figure moves across only while it walks"(page, url) {
         await working(page);
@@ -187,6 +196,45 @@ await runScenarios(process.argv[2], {
         if (overlapping) throw new Error(`clicked, the figure stayed over the box it was in: ${measured}`);
         if (leap > MOST_ACROSS_IN_A_FRAME) throw new Error(`clicked, the figure jumped across the page: ${measured}`);
         if (onTheSpot > CATCH_UP_FRAMES) throw new Error(`clicked, the figure walked on the spot: ${measured}`);
+    },
+
+    async "while it gets up to go, the figure keeps to the compose box as the box moves under it, and then walks level along it"(
+        page,
+        url
+    ) {
+        await paused(page);
+        await page.goto(`${url}#/main`);
+        await page.locator(FIGURE).waitFor({state: "visible"});
+        await settled(page);
+        const RISE = 48;
+        const frames = await page.evaluate(
+            ([figure, home, rise]) =>
+                new Promise((done) => {
+                    const element = document.querySelector(figure);
+                    const box = document.querySelector(home);
+                    const frames = [];
+                    const until = performance.now() + 6000;
+                    // clicked, the seated figure gets up to go to the other corner, and in the same moment the box rises under it
+                    element.querySelector(`${figure}-body`).click();
+                    box.style.transform = `translateY(-${rise}px)`;
+                    const look = () => {
+                        const picture = element.getBoundingClientRect();
+                        const walking = element.dataset.walking === "true";
+                        frames.push({bottom: picture.bottom, edge: box.getBoundingClientRect().top, walking});
+                        if (performance.now() < until) requestAnimationFrame(look);
+                        else done(frames);
+                    };
+                    requestAnimationFrame(look);
+                }),
+            [FIGURE, HOME, RISE]
+        );
+        // past its first steps, as the picture finishes easing up from the seat, the walking figure's feet are on the box's edge
+        const strides = frames.filter((frame) => frame.walking).slice(SETTLING_FRAMES);
+        const off = Math.max(0, ...strides.map((frame) => Math.abs(frame.bottom - frame.edge)));
+        const measured = `${strides.length} walking frames, feet at most ${off.toFixed(1)}px from the edge, which rose ${RISE}px`;
+        console.log(`the figure getting up as the box moved: ${measured}`);
+        if (!strides.length) throw new Error(`clicked, the seated figure never walked to the other corner: ${measured}`);
+        if (off > 12) throw new Error(`the figure walked off the edge it got up from: ${measured}`);
     },
 
     async "it goes to the tab where a question waits behind another, and stands where it hides no control"(page, url) {

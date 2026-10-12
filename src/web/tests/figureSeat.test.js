@@ -17,6 +17,7 @@ const {
     seatRise,
     spotOf,
     tripBetween,
+    tripTo,
 } = await import("../src/figure/places.js");
 const {write} = await import("./figurePage.js");
 
@@ -207,6 +208,26 @@ test("a trip lands on the line where it is when the figure arrives, not where it
     expect(footingOn(landingOn(spot, footing, FIGURE)).dy).toBe(0);
     // with its ground gone the spot is kept as it was, and the footing that is gone uproots the figure as it rests
     expect(landingOn(spot, {...footing, element: {isConnected: false}}, FIGURE)).toEqual(spot);
+});
+
+test("a trip is drawn from where the figure is as it sets off, so one getting up from a seat that moved walks level along the line", () => {
+    const box = {left: 300, top: 600, width: 400, height: 120};
+    page(box);
+    const right = seatOf(FIGURE, {x: 700, y: 600});
+    const left = seatOf(FIGURE, {x: 300, y: 600});
+    const [rightFooting, leftFooting] = [footingOn(right), footingOn(left)];
+    // while it gets up the compose box grows, and the seat it sits on rises with it
+    box.top = 560;
+    const seated = {...right, ...footingNow(rightFooting, FIGURE)};
+    const level = (y) => Math.round(y * 100) / 100;
+    const steps = (trip) => trip.legs.filter((each) => each.ms > 0).map((each) => [each.clip ?? "walk", level(each.y)]);
+    const standing = level(560 - (1 - FIGURE.below) * FIGURE.size);
+    expect(steps(tripTo(seated, landingOn(left, leftFooting, FIGURE), FIGURE))).toEqual([["walk", standing]]);
+    // drawn from where it sat before the box grew, it would walk 40 pixels down in the box and then jump up
+    expect(steps(tripTo(right, landingOn(left, leftFooting, FIGURE), FIGURE, {random: () => 0.99}))).toEqual([
+        ["walk", level(standing + 40)],
+        ["jump", standing],
+    ]);
 });
 
 test("a figure turns right or left toward the chat mark it reacts to, and toward the viewer when the mark is not on the page", () => {

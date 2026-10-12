@@ -276,6 +276,18 @@ export function footingNow({element, dx, dy, posture, home}, figure) {
     return inWorld({...spot, posture}, figure) ? spot : null;
 }
 
+// The trip of a figure resting at `place` to `spot` (tripBetween), from its picture in the posture it travels in where it is to its picture
+// in the posture it travels in there
+export function tripTo(place, spot, figure, {straight = false, random = Math.random} = {}) {
+    const from = boxAt(place, figure, POSTURES[place.posture].travels);
+    const to = boxAt(spot, figure, POSTURES[spot.posture].travels);
+    return tripBetween({x: from.left, y: from.top}, {x: to.left, y: to.top}, figure.size, {
+        straight,
+        hangs: spot.posture === "hang",
+        random,
+    });
+}
+
 // Where a trip to a spot ends: the spot carried along by `footing`, taken when the spot was read from the page, as what it rests on may
 // have moved while the figure travelled, so it lands on the line where the line is now; the spot as it was once its ground has gone
 export function landingOn(spot, footing, figure) {

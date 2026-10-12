@@ -19,7 +19,7 @@ import {
     footingOn,
     landingOn,
     spotOf,
-    tripBetween,
+    tripTo,
 } from "../figure/places.js";
 import {rows} from "../sync/rows.js";
 
@@ -54,8 +54,9 @@ const below = ref(0);
 const place = ref({x: 0, y: 0, posture: "stand", view: null, on: null});
 // the picture's left and top in the window: kept at the place while the figure rests, and at the end of each leg while it travels
 const at = ref({x: 0, y: 0});
-// the trip in hand (places.js tripBetween), as its legs still to go and the spot it goes to, or null; `started` once the figure stands
-// ready to travel, `moves` while a leg carries it, and `hopping` and `clip` for the leg it is on or sets off on next
+// the trip in hand, or null: the spot it goes to with that spot's footing, and once it sets off its legs still to go (places.js tripTo);
+// `started` once the figure stands ready to travel, `moves` while a leg carries it, and `hopping` and `clip` for the leg it is on or
+// sets off on next
 const moving = ref(null);
 const leg = ref({x: 0, y: 0, ms: 0, lead: 0, easing: "linear"});
 // the one-off clips the body waits to play, oldest first, each as {clip, card}, `card` the chat mark it turns to while it plays, or ""
@@ -88,8 +89,8 @@ let stay = {where: "seat", until: 0};
 let cleared = {until: 0};
 // the sides, "l" or "r", of the hands this voice carries nothing in, which it can hang by
 let hands = [];
-// what the figure rests on (places.js footingOn), watched each frame; null while it travels, when the trip keeps the footing of the spot it
-// goes to, taken as the spot was read from the page
+// what the figure rests on (places.js footingOn), watched each frame, also while it gets ready to go; null once it sets off, when the
+// trip keeps the footing of the spot it goes to, taken as the spot was read from the page
 let footing = null;
 // the clip rolled for the stretch the figure is in (reactions.js stretchClip)
 let rolled = {stretch: "", clip: ""};
@@ -206,15 +207,26 @@ function slide() {
 // the trip to a spot, from where the figure is in the posture it travels in to that spot in the one it travels in there (places.js); the
 // clip on screen is drawn in that posture first, so the figure gets to its feet or takes its grip where it is before the first leg
 async function moveTo(spot, straight = false) {
-    const from = placed(place.value, POSTURES[place.value.posture].travels);
-    const to = placed(spot, POSTURES[spot.posture].travels);
-    const trip = tripBetween(from, to, SIZE, {straight, hangs: spot.posture === "hang"});
-    if (!trip) return settle(spot);
-    footing = null;
-    moving.value = {...trip, to: spot, footing: footingOn(spot)};
+    if (!tripTo(place.value, spot, figureSize(), {straight})) return settle(spot);
+    moving.value = {to: spot, straight, footing: footingOn(spot)};
     step();
     if (sliding.value) await new Promise((done) => setTimeout(done, CHANGE_SECONDS * 1000));
-    if (moving.value?.to === spot) nextLeg();
+    if (moving.value?.to === spot) setOff();
+}
+
+// Until it sets off the figure keeps to its ground, so the trip's legs are drawn then, from where it is now to where the spot is now
+function setOff() {
+    const {to, straight, footing: held} = moving.value;
+    const there = landingOn(to, held, figureSize());
+    const trip = tripTo(place.value, there, figureSize(), {straight});
+    footing = null;
+    if (trip) {
+        moving.value = {...moving.value, ...trip};
+        return nextLeg();
+    }
+    moving.value = null;
+    settle(there, held);
+    step();
 }
 
 // the trip waits for its next leg to set off (depart), or ends at its spot when no leg is left
@@ -256,7 +268,7 @@ function settle(spot, held = footingOn(spot)) {
 // once, without waiting for its clip, as gravity does not, straight up or down to the ground at home and on to its place there
 function watchFooting() {
     footFrame = requestAnimationFrame(watchFooting);
-    if (!footing || moving.value || !here.value || document.hidden) return;
+    if (!footing || !here.value || document.hidden) return;
     const to = footingNow(footing, figureSize());
     if (!to) return uprooted();
     if (Math.hypot(to.x - place.value.x, to.y - place.value.y) <= 0.3) return;
