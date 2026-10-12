@@ -336,7 +336,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
                       events={"sin-found": {"title": "Sin found", "tone": "warn", "card": {"icon": "warn"}}, "checked": {"title": "Checked"}})
     assert "true or false" in refused(lambda: Configure().run(None, plugins, typed.n, "on", "yes")), "a switch takes true or false"
     assert "one of low, high" in refused(lambda: Configure().run(None, plugins, typed.n, "level", "mid")), "options take one of theirs"
-    from features.secrets.values import ValuesFile
+    from controllers.secrets.values import ValuesFile
     from resources.base import USER
     ValuesFile(record.root).put("STRIPE_TEST_KEY", "sk-test-plugin-77")
     payer = configured(record, "payer", {"stripe": {"type": "secret", "env": "STRIPE_KEY"}})

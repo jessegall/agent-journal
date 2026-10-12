@@ -42,4 +42,13 @@ class TheProviders:
         return whole(found, record, entry) if entry else paged(found, since, before, last or TRANSCRIPT_PAGE)
 
 
+    def mcp_servers(self, project: Path) -> dict:
+        """Every MCP server any agent has connected in this project, by name and address, so a controller can ask what is reachable without naming a provider."""
+        return {name: url for provider in PROVIDERS.values() for name, url in provider().mcp_servers(project).items()}
+
+    def browser_logins(self, project: Path, storage) -> list[bool]:
+        """Wires every provider's browser to the logins given, and says for each whether anything changed."""
+        return [provider().browser_logins(project, storage) for provider in PROVIDERS.values()]
+
+
 SERVED.answered(Providers, TheProviders())

@@ -2,7 +2,7 @@ import time
 
 from events.agents import ClockTicked
 from framework.parts import WHOLE_FEATURE, AgentContext, Handler
-from features.secrets.controller import Secrets
+from controllers.secrets.controller import Secrets
 from resources.base import SYSTEM
 
 PURGE_EVERY = 3600

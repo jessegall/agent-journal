@@ -1,7 +1,7 @@
 from features.gmail.mail import Mailbox
 from features.gmail.sync import Choices, synced
 from features.integrations.state import IntegrationState, read_state, write_state
-from features.secrets.values import ValuesFile
+from controllers.secrets.values import ValuesFile
 
 
 class GmailWork:

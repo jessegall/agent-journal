@@ -9,9 +9,9 @@ from pathlib import Path
 import features
 from controllers.notices import Notices
 from controllers.types import Messages
-from features.secrets.controller import Secrets
-from features.secrets.sessions import BrowserLogins
-from features.secrets.values import ValuesFile
+from controllers.secrets.controller import Secrets
+from controllers.secrets.sessions import BrowserLogins
+from controllers.secrets.values import ValuesFile
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 
@@ -93,7 +93,7 @@ def test_a_key_is_not_requested_for_a_service_a_connected_mcp_server_reaches(tmp
 
 
 def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch, capsys):
-    from features.secrets.running import Masker
+    from controllers.secrets.running import Masker
     from providers.command_effects import effects
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
     features.load()

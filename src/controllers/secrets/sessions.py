@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 from resources.text import slugged
-from features.secrets.values import project_id, secrets_folder
+from controllers.secrets.values import project_id, secrets_folder
 from resources.base import Refused
 
 OPEN_BROWSER = ("npx", "-y", "playwright@latest", "open")

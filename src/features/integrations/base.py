@@ -20,9 +20,9 @@ from features.integrations.login import OPEN_BROWSER, RENEWAL_SUFFIX, revoked, s
 from features.integrations.state import IntegrationState, read_state, write_state
 from framework.journal import Journal
 from framework.routing import Reply, Request, handles
-from features.secrets.controller import Secrets
+from controllers.secrets.controller import Secrets
 from resources.secrets import Kind
-from features.secrets.values import ValuesFile
+from controllers.secrets.values import ValuesFile
 from controllers.types import Tickets
 from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM, USER

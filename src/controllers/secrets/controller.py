@@ -9,13 +9,12 @@ from controllers.marks import action
 from controllers.types import Environments, Messages
 from engine.package import entry
 from framework.loaded import FEATURES
-from features.secrets.keys import integration_key_variables
-from features.secrets.reach import servers_reaching
+from controllers.secrets.keys import integration_key_variables
+from controllers.secrets.reach import servers_reaching
 from resources.secrets import Kind, Secret, SecretField
-from features.secrets.running import NEVER_GIVEN, checked_program, programs_named, run_masked
-from features.secrets.sessions import BrowserLogins
-from features.secrets.values import ValuesFile
-from providers import PROVIDERS
+from controllers.secrets.running import NEVER_GIVEN, checked_program, programs_named, run_masked
+from controllers.secrets.sessions import BrowserLogins
+from controllers.secrets.values import ValuesFile
 from resources.base import AGENT, SYSTEM, USER, Refused
 
 KEPT_DAYS = 30
@@ -163,7 +162,7 @@ class Secrets(Controller):
             Messages(self.record, actor=AGENT).create(f"The login to {row.title} did not save", brief=f"{why}\n\nsecret {row.n}")
             raise
         merged = logins.merge()
-        rewired = [provider().browser_logins(self.record.root.parent, merged) for provider in PROVIDERS.values()]
+        rewired = self.providers.browser_logins(self.record.root.parent, merged)
         self.update(row.n, session=time.time(), session_expires=logins.expires(saved), asked="", logging_in=0.0)
         restart = " Restart the agent once so its browser tool reads the saved logins." if any(rewired) else ""
         return f"saved: the agent's own browser starts logged in to {row.url} from its next start.{restart}"

@@ -4,7 +4,7 @@ from resources.base import SYSTEM
 
 def updated_added(numbers: list[int], record, **_) -> str:
     """What follows 'secret N updated' in the line an agent is sent, so an agent that waited on it knows it can go on."""
-    from features.secrets.controller import Secrets
+    from controllers.secrets.controller import Secrets
     secrets = Secrets(record, actor=SYSTEM)
     changed = [secrets.rows.peek(n) for n in numbers if secrets.rows.exists(n)]
     return "; ".join(said(secret) for secret in changed)

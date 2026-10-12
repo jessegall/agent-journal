@@ -6,7 +6,7 @@ from features.integrations.state import IntegrationState, read_state, write_stat
 from features.linear.sync import Choices, StageState, TicketsFromLinear, issue_of, send_comment, send_status, synced, teams_of
 from features.linear.webhook import event_of
 from framework.routing import Reply, Request, handles
-from features.secrets.values import ValuesFile
+from controllers.secrets.values import ValuesFile
 from engine.address import own_address
 from engine.tunnel import kept_address
 from controllers.types import Tickets

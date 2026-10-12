@@ -10,7 +10,7 @@ import mcp_headers
 from controllers.features import Features, SettingsWrite
 from features.integrations.client import IntegrationClient
 from features.integrations.state import IntegrationState, read_state, state_file, write_state
-from features.secrets.values import ValuesFile
+from controllers.secrets.values import ValuesFile
 from resources.base import AGENT, USER
 from features.open_viewer.settings import apply
 from tests.conftest import fresh, refused
@@ -38,7 +38,7 @@ def test_only_you_pick_an_integrations_key_and_a_phone_never_does():
         "a settings write that holds a key is told apart, so the phone's allow list can close it"
     assert (has_a_secret({"name": "linear", "key": "key", "value": "LINEAR_KEY"}), has_a_secret({"name": "linear", "key": "enabled", "value": "x"})) == (True, False), \
         "and so is a single setting written by name, whichever route carries it"
-    from features.secrets.controller import Secrets
+    from controllers.secrets.controller import Secrets
     asked = Secrets(record, actor=AGENT).request("Linear key", "for Linear")
     variable = asked.secret_fields[0]["variable"]
     Secrets(record, actor=USER).fill(asked.n, "key", "lin_api_secret_value")

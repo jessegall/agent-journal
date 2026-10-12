@@ -4,7 +4,7 @@ from typing import Callable
 
 from controllers.notifications import Notifications
 from resources.secrets import SecretField
-from features.secrets.values import ValuesFile
+from controllers.secrets.values import ValuesFile
 from resources.base import SYSTEM
 
 SHORTEST = 8
@@ -29,7 +29,7 @@ class LeakAlarm:
         return held[1]
 
     def loaded(self, record) -> dict[str, str]:
-        from features.secrets.controller import Secrets
+        from controllers.secrets.controller import Secrets
         values = ValuesFile(record.root).values()
         fields = ((row.title, SecretField.from_json(raw)) for row in Secrets(record, actor=SYSTEM).rows.every() for raw in row.secret_fields)
         return {values[field.variable]: title for title, field in fields if field.hidden and len(values.get(field.variable, "")) >= SHORTEST}

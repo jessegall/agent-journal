@@ -3,7 +3,7 @@ from pathlib import Path
 from declaring.reach import Reach
 from framework.parts import AgentContext, ToolInterceptor
 from declaring.holds import Runs
-from features.secrets.values import secrets_folder
+from controllers.secrets.values import secrets_folder
 
 NAMED = ("agent-journal/secrets", "agent-journal\\secrets")
 

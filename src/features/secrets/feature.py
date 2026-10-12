@@ -5,14 +5,14 @@ from expects import WHEN, File, Given, Kept, Refused, Wrote, answering
 from framework.base import Feature
 from framework.journal import Journal
 from features.secrets.announcing import updated_added
-from features.secrets.controller import Secrets
+from controllers.secrets.controller import Secrets
 from features.secrets.details import SecretsDetails
 from features.secrets.guard import RefuseSecretsFile
 from features.secrets.handlers import PurgeDeletedSecrets
 from features.secrets.leaks import LeakAlarm
 from features.secrets.picking import refuse_secret_that_runs_commands
 
-from features.secrets.values import secrets_folder
+from controllers.secrets.values import secrets_folder
 from resources.secrets import Secret
 from payload import BashCall, ReadCall
 from resources.types import AgentRow

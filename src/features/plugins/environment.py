@@ -9,7 +9,7 @@ from engine.viewer import lately_running
 from engine.wording import fill
 from features.plugins.declared import Manifest, called, declared, settings_of
 from features.plugins.paths import data, folder, plugin_socket, queue_path
-from features.secrets.values import ValuesFile
+from controllers.secrets.values import ValuesFile
 
 
 def port_values(ports: dict) -> dict:

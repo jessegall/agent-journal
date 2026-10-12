@@ -2,7 +2,7 @@ from pathlib import Path
 
 from controllers.notices import Notices
 from controllers.types import environment_records
-from features.secrets.controller import Secrets
+from controllers.secrets.controller import Secrets
 from resources.base import SYSTEM
 
 
