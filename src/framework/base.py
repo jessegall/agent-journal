@@ -3,7 +3,7 @@ from dataclasses import asdict
 from functools import cached_property
 from typing import ClassVar
 
-from controllers.features import SETTING_KEYS, SETTINGS_CHANGED
+from declaring.registries import SETTING_KEYS, SETTINGS_CHANGED
 from controllers.types import Agents
 from engine import triggering
 from framework.switches import switches

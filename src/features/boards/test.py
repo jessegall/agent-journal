@@ -335,7 +335,7 @@ def test_starting_a_board_starts_its_orchestration(monkeypatch):
     assert any("Pausing a board, step 1 of 1" in line for line in nudges(record)), "pausing hands the orchestrator the pause"
     Boards(record, actor=USER).resume(board.n)
     assert any("Resuming a board, step 1 of 1" in line for line in nudges(record)), "resuming hands it the restart of the halted tickets"
-    from controllers.boards.controller import CARD_STORE
+    from declaring.registries import CARD_STORE
     monkeypatch.setattr(CARD_STORE, "each", lambda: iter(()))
     assert "tickets feature is not loaded" in refused(lambda: Boards(record, actor=USER)._cards(USER)), "boards keep their cards as tickets, so without that feature there is nowhere to keep them"
     monkeypatch.undo()

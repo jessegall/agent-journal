@@ -10,7 +10,7 @@ from features.boards.exploration import FILLER
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Message
 from resources.base import SYSTEM
-from controllers.sequences import SHIPPED
+from declaring.registries import SHIPPED
 from controllers.types import Boards
 from features.boards.details import BoardsDetails
 from features.boards.handlers import MarkQuietFillingStalled, OfferToPlaceAddedCards, boards_wanting_ideas

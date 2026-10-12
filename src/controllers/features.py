@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from controllers.base import Arguments, Controller
 from declaring.details import values_of
 from declaring.extension import Extension
+from declaring.registries import SETTING_KEYS, SETTINGS_CHANGED
 from declaring.settings import Settings
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
@@ -12,8 +13,6 @@ from resources import types
 from controllers.marks import action
 
 
-SETTING_KEYS = Extension()
-SETTINGS_CHANGED = Extension()
 SECRET_CHECKS = Extension()
 MOVED = Extension()
 

@@ -14,13 +14,10 @@ from resources.plans import (
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
 from resources.shapes import LEVELS
 from controllers.marks import action
-from declaring.extension import Extension
+from declaring.registries import PHASE_ROWS, PHASE_STARTS, PLAN_STARTS
 
 LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
 CHECKPOINT = re.compile(r"\s*\(checkpoint\)\s*$", re.IGNORECASE)
-PHASE_ROWS = Extension()
-PHASE_STARTS = Extension()
-PLAN_STARTS = Extension()
 CATCHING_UP: ContextVar[frozenset[str]] = ContextVar("catching_up", default=frozenset())
 
 @dataclass(frozen=True)

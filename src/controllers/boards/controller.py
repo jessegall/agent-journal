@@ -7,11 +7,10 @@ from resources.boards import DONE, MEANINGS, Board
 from controllers.boards.running import RunningBoards
 from resources.base import FINISHED, PROJECT, RESUMED, Ref, Refused, Resource, SYSTEM
 from controllers.marks import action
-from declaring.extension import Extension
+from declaring.registries import CARD_STORE
 
 STAGES = ("To do", "Doing", "Review", "Done")
 BUILD_LOG = 40
-CARD_STORE = Extension()
 
 
 def with_meaning(meanings: dict, stage: str, meaning: str) -> dict:
