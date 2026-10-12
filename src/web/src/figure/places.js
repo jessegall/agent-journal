@@ -34,7 +34,9 @@ const CONTROLS = "button, a[href], input, select, textarea, [role=tab], [role=bu
 // and the posture it travels in to get there. It stands with its feet on the line, sits with its hips on it and hangs by its hands from
 // it; it walks to a seat on its feet and sits down there, and leaps straight to a hang. On the move it walks with its feet on the line.
 const SEAT_DROP = 0.26;
-const HANG_DROP = 0.8;
+// the gripping hand of every voice's hang is 2.91 of the picture's 5.4 units above its standing feet: the short arms of these figures
+// reach no higher than the head, so the hand, not the hat, is what meets the bubble's corner
+const HANG_DROP = 0.54;
 export const POSTURES = {
     stand: {drop: 0, travels: "stand"},
     sit: {drop: SEAT_DROP, travels: "stand"},
@@ -100,10 +102,11 @@ const SEAT_SIDES = {
 };
 const SEAT_INBOARD = 0.14;
 
-// The seat on one corner of a box's top edge, `side` being "left" or "right"; `face` turns the figure along the edge, 0 faces the viewer
-export function seatAt(box, side, {size}) {
+// The seat on one corner of a box's top edge, `side` being "left" or "right", the hips `reach` of the figure's height inside the corner;
+// `face` turns the figure along the edge, 0 faces the viewer
+export function seatAt(box, side, {size}, reach = SEAT_INBOARD) {
     const {along, inboard, face} = SEAT_SIDES[side];
-    return {x: box.left + box.width * along + inboard * SEAT_INBOARD * size, y: box.top, face, posture: "sit"};
+    return {x: box.left + box.width * along + inboard * reach * size, y: box.top, face, posture: "sit"};
 }
 
 // the pixels of a seated figure above the edge it sits on

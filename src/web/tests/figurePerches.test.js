@@ -55,6 +55,8 @@ test("a figure sitting or hanging stands where its bubble's corner is, and is le
     const hanging = {...sitting, kind: HANGS, grip: "r"};
     expect(perchSpot(sitting, THREAD, FIGURE).face).toBe(60);
     expect(perchSpot(sitting, THREAD, FIGURE).on).toBe(one);
+    // its hips sit over the bubble's padding, inside the corner by less than the padding, so its legs hang clear of the words
+    expect(500 - perchSpot(sitting, THREAD, FIGURE).x).toBeLessThan(7);
     expect(perchSpot(hanging, THREAD, FIGURE)).toMatchObject({face: 0});
     expect(perchSpot(hanging, THREAD, FIGURE).x).toBeGreaterThan(500);
     expect(perchSpot(hanging, THREAD, FIGURE)).toMatchObject({y: 300, posture: "hang", grip: "r"});

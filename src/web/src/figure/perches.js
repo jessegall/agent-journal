@@ -37,6 +37,10 @@ const sideOf = (rect, scroller) => (rect.left - scroller.left > scroller.right -
 // whether a figure perched on this bubble's top corner stays inside the thread's view
 const inView = (rect, scroller, figure) => rect.top - seatRise(figure) >= scroller.top && rect.top <= scroller.bottom - 8;
 
+// a figure sitting on a bubble has its hips this share of its height inside the corner, over the bubble's padding rather than its words,
+// so its legs hang clear of them
+const PERCH_INBOARD = 0.05;
+
 // a hang is by one hand, the corner it takes the one on that hand's side; the body hangs outside the bubble so it never covers its words
 const HAND_CORNER = {l: "left", r: "right"};
 const HANG_OUT = 0.3;
@@ -60,7 +64,7 @@ export function perchSpot(perch, scroller, figure) {
     if (!perch.bubble.isConnected) return null;
     const rect = perch.bubble.getBoundingClientRect();
     if (!inView(rect, scroller.getBoundingClientRect(), figure)) return null;
-    if (perch.kind === SITS) return {...seatAt(rect, perch.side, figure), on: perch.bubble};
+    if (perch.kind === SITS) return {...seatAt(rect, perch.side, figure, PERCH_INBOARD), on: perch.bubble};
     const out = (perch.side === "left" ? -1 : 1) * HANG_OUT * figure.size;
     return {x: (perch.side === "left" ? rect.left : rect.right) + out, y: rect.top, face: 0, posture: "hang", grip: perch.grip, on: perch.bubble};
 }
