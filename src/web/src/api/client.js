@@ -73,6 +73,19 @@ export class ApiClient {
         return transport.request("GET", this.publicUrl(`voices/rigs/${voice}/${voice}_moves.json`));
     }
 
+    // each voice's 3D figure file, by voice; a file is named by a hash of its content
+    voiceFigures() {
+        return transport.request("GET", this.publicUrl("voices/figures/figures.json"));
+    }
+
+    voiceFigureUrl(file) {
+        return this.publicUrl(`voices/figures/${file}`);
+    }
+
+    figureDecoderUrl() {
+        return this.publicUrl("voices/figures/draco/");
+    }
+
     markNewFeatureSeen(id) {
         return this.post("/new-feature", {id});
     }
