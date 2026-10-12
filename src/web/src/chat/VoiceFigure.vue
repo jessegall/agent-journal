@@ -215,10 +215,11 @@ function slide() {
 // clip on screen is drawn in that posture first, so the figure gets to its feet or takes its grip where it is before the first leg
 async function moveTo(spot, {straight = false, pace = 1} = {}) {
     if (!tripTo(place.value, spot, figureSize(), {straight, pace})) return settle(spot);
-    moving.value = {to: spot, straight, pace, footing: footingOn(spot)};
+    const trip = {to: spot, straight, pace, footing: footingOn(spot)};
+    moving.value = trip;
     step();
     if (sliding.value) await new Promise((done) => setTimeout(done, CHANGE_SECONDS * 1000));
-    if (moving.value?.to === spot) setOff();
+    if (moving.value === trip) setOff();
 }
 
 // Until it sets off the figure keeps to its ground, so the trip's legs are drawn then, from where it is now to where the spot is now
