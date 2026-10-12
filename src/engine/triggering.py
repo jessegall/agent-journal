@@ -17,8 +17,8 @@ def saved(record, name: str, default: Trigger) -> Trigger:
     return Trigger.from_json(kept) if isinstance(kept, dict) else default
 
 
-def markmark_file(record, session: str, name: str):
-    return runtime.sessionmark_file(record.root, session, f"trigger-{name}.json")
+def mark_file(record, session: str, name: str):
+    return runtime.session_file(record.root, session, f"trigger-{name}.json")
 
 
 def last(record, session: str, name: str) -> Mark:
