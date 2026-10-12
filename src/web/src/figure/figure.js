@@ -203,12 +203,14 @@ function hang(pose, side, swing = 0, bend = 10) {
     pose.bend(`forearm_${side}`, bend);
 }
 
-function hold(pose, side) {
+// clips.hold: `lift` is how far above flat the forearm points, `forward` how far the upper arm swings forward, `tip` how far the hand tips what it holds
+function hold(pose, side, lift = HOLD_LIFT, forward = 0, tip = 0) {
     const sign = SIDES[side];
     pose.turn(`upper_arm_${side}`, {y: sign * HANG});
+    pose.turn(`upper_arm_${side}`, {x: -forward});
     pose.turn(`upper_arm_${side}`, {z: sign * HOLD_ROLL});
-    pose.face(`forearm_${side}`, {y: -sign * HOLD_LIFT, z: -sign * HOLD_SWING});
-    pose.face(`hand_${side}`, {z: -sign * HOLD_TWIST});
+    pose.face(`forearm_${side}`, {y: -sign * lift, z: -sign * HOLD_SWING});
+    pose.face(`hand_${side}`, {x: tip, z: -sign * HOLD_TWIST});
 }
 
 function armsAtRest(pose, stance, apart = [], swing = {}) {
@@ -502,6 +504,11 @@ const HOP_REACH = 2.4;
 const SQUIRE_CHARGE = 0.52;
 const COACH_JOG = 0.42;
 const COLLEAGUE_STROLL = 0.6;
+const SIP_LIFT = 70;
+const SIP_FORWARD = 45;
+const SIP_TIP = -25;
+const TRAY_DOWN = -40;
+const TRAY_BACK = 15;
 const SQUIRE_SHIELD = {y: 30, z: -55, bend: 70};
 const SQUIRE_QUILL = {y: -35, z: -80, bend: 10};
 const COACH_POINT = {y: 0, z: -15, bend: 0};
@@ -655,12 +662,9 @@ function coach_exit(pose, stance, u) {
 function colleague_enter(pose, stance, u) {
     const lifted = rise(u, 0.72, 0.8) * (1 - rise(u, 0.9, 0.98));
     const tipped = swell(u, 0.78, 0.92);
-    const facing = arrive(pose, stance, u, COLLEAGUE_STROLL, COLLEAGUE_STROLL + 0.12, {bend: {nod: -8 * tipped}});
-    for (const side of stance.level) {
-        pose.turn(`upper_arm_${side}`, {y: -SIDES[side] * 30 * lifted});
-        pose.turn(`forearm_${side}`, {x: -50 * lifted});
-        pose.turn(`hand_${side}`, {x: 35 * lifted - 20 * tipped});
-    }
+    const level = [...stance.level].sort();
+    const facing = arrive(pose, stance, u, COLLEAGUE_STROLL, COLLEAGUE_STROLL + 0.12, {apart: lifted ? level : [], bend: {nod: -8 * tipped}});
+    if (lifted) level.forEach((side) => hold(pose, side, mix(HOLD_LIFT, SIP_LIFT, lifted), SIP_FORWARD * lifted, SIP_TIP * tipped));
     pose.shutEyes(1 - 0.7 * tipped);
     pose.revolve(facing);
 }
@@ -694,6 +698,146 @@ function exit(pose, stance, t) {
     EXITS[stance.voice](pose, stance, onceTime(t, EXIT_FRAMES));
 }
 
+// What the figure does while the agent works, and the moments it marks; each pose starts and ends on idle's first frame unless it loops
+const SEARCH_CROUCH = 0.2;
+const CHASE_REACH = 1.4;
+const TAP_LIFT = 0.13;
+
+// rummages through a pile in front of it with the free hand, looking down and from side to side
+function search(pose, stance, t) {
+    const side = freeSide(stance);
+    const sweep = waveOf(t);
+    pose.lift("root", {z: -SEARCH_CROUCH});
+    breathe(pose, 0);
+    trunk(pose, {lean: 26, nod: 20, turn: -SIDES[side] * 28 * sweep, twist: -SIDES[side] * 10 * sweep});
+    armsAtRest(pose, stance, [side]);
+    armTo(pose, side, 1, {y: 55, z: -55 + 30 * sweep, bend: 35});
+    fold(pose, SEARCH_CROUCH);
+}
+
+// writes in small strokes with the free hand at chest height, head bent over it; the squire writes with his quill
+function write(pose, stance, t) {
+    const side = freeSide(stance);
+    breathe(pose, 0);
+    trunk(pose, {lean: 6, nod: 16, turn: -SIDES[side] * 10});
+    armsAtRest(pose, stance, [side]);
+    armTo(pose, side, 1, {y: 40 + 6 * waveOf(t, 2), z: -70 + 10 * waveOf(t), bend: 75 + 8 * waveOf(t, 2)});
+}
+
+// hammers away with the free hand, the body dipping into each blow
+function work(pose, stance, t) {
+    const side = freeSide(stance);
+    const raised = 0.5 + 0.5 * Math.cos(2 * Math.PI * t);
+    const blow = 1 - raised;
+    pose.lift("root", {z: -0.04 * blow});
+    breathe(pose, 0);
+    trunk(pose, {lean: 8 + 6 * blow, nod: 10});
+    armsAtRest(pose, stance, [side]);
+    armTo(pose, side, 1, {y: mix(75, -45, raised), z: -50, bend: mix(15, 105, raised)});
+    fold(pose, 0.04 * blow);
+}
+
+// points up at what waits for the user, looking at it, the arm bobbing a little
+function point(pose, stance, t) {
+    const side = freeSide(stance);
+    breathe(pose, 0);
+    trunk(pose, {nod: -14, lean: -3, tilt: -SIDES[side] * 5});
+    armsAtRest(pose, stance, [side]);
+    armTo(pose, side, 1, {y: -50 + 4 * waveOf(t), z: -35, bend: 6});
+}
+
+// a hop from one pane's edge to another: crouch, spring, tuck, land
+function hop(pose, stance, t) {
+    const u = onceTime(t, 8);
+    const airborne = swell(u, 0.25, 0.85);
+    pose.lift("root", {z: 0.5 * airborne - 0.2 * (swell(u, 0, 0.3) + swell(u, 0.8, 1))});
+    breathe(pose, 0);
+    trunk(pose, {lean: 10 * (swell(u, 0, 0.3) + swell(u, 0.8, 1))});
+    armsAtRest(pose, stance);
+    fold(pose, 0.2 * (swell(u, 0, 0.3) + swell(u, 0.8, 1)) + 0.15 * swell(u, 0.35, 0.75));
+}
+
+// the butler sets the tray down when a commit lands, and picks it straight back up
+function butler_tray_down(pose, stance, t) {
+    const down = rise(onceTime(t, 16), 0, 0.35) * (1 - rise(onceTime(t, 16), 0.6, 0.95));
+    pose.lift("root", {z: -0.24 * down});
+    breathe(pose, 0);
+    trunk(pose, {lean: 15 * down, nod: 14 * down});
+    const level = [...stance.level].sort();
+    armsAtRest(pose, stance, level);
+    level.forEach((side) => hold(pose, side, mix(HOLD_LIFT, TRAY_DOWN, down), -TRAY_BACK * down));
+    fold(pose, 0.24 * down);
+}
+
+// the squire runs after a bug when a check goes red, quill out ahead of him, and comes back
+function squire_chase(pose, stance, t) {
+    const u = onceTime(t, 24);
+    const out = u < 0.5;
+    const reach = CHASE_REACH * (out ? ease(span(u, 0, 0.5)) : 1 - ease(span(u, 0.5, 1)));
+    const motion = Math.sqrt(Math.max(Math.sin(Math.PI * u), 0));
+    const quill = heldUp(stance);
+    pose.lift("root", {y: out ? -reach : reach});
+    stride(pose, stance, 4 * u, motion, {running: true, lean: 12, apart: quill});
+    quill.forEach((side) => armTo(pose, side, motion, SQUIRE_QUILL));
+    pose.revolve((out ? 90 : -90) * Math.min(1, 3 * Math.sin(Math.PI * u)));
+}
+
+// Each voice's one pointed remark after a long wait on the user, played once
+// the butler taps his foot, patiently
+function butler_pointed(pose, stance, u) {
+    const tap = TAP_LIFT * Math.max(waveOf(3 * u), 0) * swell(u, 0, 1);
+    breathe(pose, 0);
+    trunk(pose, {tilt: 8 * swell(u, 0, 1), nod: 6 * swell(u, 0, 1), turn: 10 * swell(u, 0, 1)});
+    armsAtRest(pose, stance);
+    stepLeg(pose, "r", 0, tap, 0, 15 * tap / TAP_LIFT);
+}
+
+// the homie shrugs: arms out, palms up, head on one side
+function homie_pointed(pose, stance, u) {
+    const shrug = swell(u, 0, 1);
+    breathe(pose, 0);
+    trunk(pose, {tilt: 14 * shrug, nod: -8 * shrug});
+    for (const side of Object.keys(SIDES)) armTo(pose, side, shrug, {y: 30, z: -15, bend: 100});
+}
+
+// the coach gives one long blast on the whistle
+function coach_pointed(pose, stance, u) {
+    const side = freeSide(stance);
+    const whistling = rise(u, 0, 0.15) * (1 - rise(u, 0.8, 1));
+    const blast = swell(u, 0.2, 0.75);
+    breathe(pose, 0);
+    trunk(pose, {lean: -4 * blast, nod: -6 * blast});
+    armsAtRest(pose, stance, whistling ? [side] : []);
+    if (whistling) handTo(pose, side, whistling, chin(side), CHIN_ELBOW);
+    pose.shutEyes(1 - 0.7 * blast);
+}
+
+// the colleague looks at the time on the free wrist, then at you
+function colleague_pointed(pose, stance, u) {
+    const side = freeSide(stance);
+    const wrist = rise(u, 0, 0.2) * (1 - rise(u, 0.6, 0.85));
+    breathe(pose, 0);
+    trunk(pose, {nod: 18 * wrist * (1 - rise(u, 0.35, 0.5)), turn: -SIDES[side] * 8 * wrist});
+    armsAtRest(pose, stance, wrist ? [side] : []);
+    if (wrist) handTo(pose, side, wrist, chin(side), CHIN_ELBOW);
+}
+
+// the squire wags his quill at you, tut tut
+function squire_pointed(pose, stance, u) {
+    const quill = heldUp(stance);
+    const raised = rise(u, 0, 0.2) * (1 - rise(u, 0.75, 1));
+    breathe(pose, 0);
+    trunk(pose, {tilt: -5 * raised, nod: 4 * raised});
+    armsAtRest(pose, stance, raised ? quill : []);
+    if (raised) quill.forEach((side) => armTo(pose, side, raised, {y: -10, z: -70 + 15 * waveOf(3 * u), bend: 60}));
+}
+
+const POINTED = {bare: butler_pointed, butler: butler_pointed, homie: homie_pointed, coach: coach_pointed, colleague: colleague_pointed, squire: squire_pointed};
+
+function pointed(pose, stance, t) {
+    POINTED[stance.voice](pose, stance, onceTime(t, 20));
+}
+
 export const CLIPS = [
     {name: "idle", frames: 24, fps: 8, loops: true, pose: idle},
     {name: "blink", frames: 6, fps: 12, loops: false, pose: blink},
@@ -710,6 +854,14 @@ export const CLIPS = [
     {name: "pull_ups", frames: 24, fps: 10, loops: true, pose: pull_ups},
     {name: "enter", frames: 36, fps: 12, loops: false, pose: enter},
     {name: "exit", frames: 28, fps: 12, loops: false, pose: exit},
+    {name: "search", frames: 12, fps: 10, loops: true, pose: search},
+    {name: "write", frames: 12, fps: 12, loops: true, pose: write},
+    {name: "work", frames: 8, fps: 10, loops: true, pose: work},
+    {name: "point", frames: 12, fps: 8, loops: true, pose: point},
+    {name: "hop", frames: 8, fps: 16, loops: false, pose: hop},
+    {name: "butler_tray_down", frames: 16, fps: 10, loops: false, pose: butler_tray_down},
+    {name: "squire_chase", frames: 24, fps: 12, loops: false, pose: squire_chase},
+    {name: "pointed", frames: 20, fps: 10, loops: false, pose: pointed},
 ];
 
 // An eye closes about its own middle before the head carries it, as rig.Figure.shut_eyes scales the eye object

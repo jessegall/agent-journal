@@ -18,8 +18,6 @@ const LOOK_EVERY = 1000;
 // below the figure's feet in its picture, as a share of its height: the clips' ground row (figure.js GROUND)
 let ground = 0;
 
-const POINTED = {butler: "butler_pointed", homie: "homie_pointed", coach: "coach_pointed", colleague: "colleague_pointed", squire: "squire_pointed"};
-
 const props = defineProps({voice: {type: String, required: true}});
 
 const canvas = ref(null);
@@ -39,6 +37,8 @@ const beats = ref([]);
 let seenAt = Date.now() / 1000;
 let pointedFor = 0;
 let playing = {name: "", started: 0};
+// the clip on screen, so the page can draw what the rig has no bones for, such as the bug the squire chases
+const shownClip = ref(null);
 
 const held = computed(() => figureStateOf(agent.value, rows("work"), waitingSince.value, now.value));
 const target = ref({x: 0, y: 0, view: null});
@@ -49,11 +49,12 @@ const hasClip = (name) => clips.some((clip) => clip.name === name);
 
 // what the figure plays now: a walk while it moves, a beat until it is done, its one pointed remark, pointing once it stands at a tab, or the held state's clip
 function current() {
+    if (moving.value?.hopping) return {clip: clipNamed("hop"), facing: 0};
     if (moving.value) return {clip: clipNamed("walk"), facing: moving.value.way > 0 ? 90 : 270};
     if (beats.value.length) return {clip: clipNamed(...beatClipsOf(voice.value, beats.value[0].beat)), facing: 0, once: true};
     const pointedDue = held.value.state === "asking" && now.value - held.value.since >= POINTED_AFTER && pointedFor !== held.value.since;
-    if (pointedDue && hasClip(POINTED[voice.value])) {
-        return {clip: clipNamed(POINTED[voice.value]), facing: 0, once: true, pointed: true};
+    if (pointedDue && hasClip("pointed")) {
+        return {clip: clipNamed("pointed"), facing: 0, once: true, pointed: true};
     }
     if (target.value.view && !moving.value) return {clip: clipNamed("point"), facing: 0};
     return {clip: clipNamed(clipOf(held.value.state)), facing: 0};
@@ -65,6 +66,7 @@ function step() {
     const shown = current();
     const key = `${shown.clip.name}/${shown.facing}`;
     if (playing.name !== key) playing = {name: key, started: performance.now()};
+    shownClip.value = shown.clip;
     const index = Math.floor(((performance.now() - playing.started) / 1000) * shown.clip.fps);
     if (shown.once && index >= shown.clip.frames) {
         if (shown.pointed) pointedFor = held.value.since;
@@ -84,7 +86,8 @@ function moveTo(spot) {
     const to = placed(spot);
     if (Math.hypot(to.x - from.x, to.y - from.y) < 2) return;
     const walk = (Math.abs(to.x - from.x) / WALK_SPEED) * 1000;
-    moving.value = {way: Math.sign(to.x - from.x) || 1, legs: [{x: to.x, y: from.y, ms: walk, easing: "linear"}, {x: to.x, y: to.y, ms: Math.abs(to.y - from.y) > 2 ? Math.max(HOP_MS, (Math.abs(to.y - from.y) / HOP_SPEED) * 1000) : 0, easing: "ease-out"}]};
+    const hop = Math.abs(to.y - from.y) > 2 ? Math.max(HOP_MS, (Math.abs(to.y - from.y) / HOP_SPEED) * 1000) : 0;
+    moving.value = {way: Math.sign(to.x - from.x) || 1, legs: [{x: to.x, y: from.y, ms: walk, easing: "linear"}, {x: to.x, y: to.y, ms: hop, easing: "ease-out", hopping: true}]};
     nextLeg();
 }
 
@@ -97,7 +100,7 @@ function nextLeg() {
         moving.value = null;
         return step();
     }
-    moving.value = {...moving.value, legs: legs.slice(legs.indexOf(next) + 1)};
+    moving.value = {...moving.value, hopping: Boolean(next.hopping), legs: legs.slice(legs.indexOf(next) + 1)};
     leg.value = next;
     at.value = {x: next.x, y: next.y};
     step();
@@ -158,6 +161,9 @@ onUnmounted(() => {
     window.removeEventListener("resize", look);
 });
 
+const chasing = computed(() => shownClip.value?.name === "squire_chase");
+const chaseMs = computed(() => (chasing.value ? (shownClip.value.frames / shownClip.value.fps) * 1000 : 0));
+
 const style = computed(() => ({
     width: `${SIZE}px`,
     height: `${SIZE}px`,
@@ -169,6 +175,12 @@ const style = computed(() => ({
 <template>
     <div v-show="figureStatus === 'shown'" class="voice-figure" :style="style" aria-hidden="true" @transitionend="nextLeg">
         <canvas ref="canvas" class="voice-figure-canvas" />
+        <template v-if="chasing">
+            <svg class="voice-figure-bug" :style="{animationDuration: `${chaseMs}ms`}" viewBox="0 0 16 12" width="16" height="12">
+                <path d="M3 3 1 1M3 6H0M3 9 1 11M13 3l2-2M13 6h3M13 9l2 2" stroke="currentColor" stroke-width="1.2" />
+                <ellipse cx="8" cy="6" rx="5" ry="4" fill="currentColor" />
+            </svg>
+        </template>
     </div>
 </template>
 
@@ -184,5 +196,38 @@ const style = computed(() => ({
 .voice-figure-canvas {
     width: 100%;
     height: 100%;
+}
+
+/* the bug runs off ahead of the squire and gets away while he turns back */
+.voice-figure-bug {
+    position: absolute;
+    bottom: 8%;
+    left: 60%;
+    color: var(--text);
+    animation-name: voice-figure-bug;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+@keyframes voice-figure-bug {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    45% {
+        transform: translateX(120%) translateX(60px);
+        opacity: 1;
+    }
+
+    60% {
+        transform: translateX(120%) translateX(90px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(120%) translateX(90px);
+        opacity: 0;
+    }
 }
 </style>

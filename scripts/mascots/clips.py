@@ -81,13 +81,16 @@ def hang(pose, side, swing=0.0, bend=10.0):
     pose.bend(f"forearm_{side}", bend)
 
 
-def hold(pose, side):
-    """An arm carrying something level: the upper arm hangs and rolls so the elbow bends toward the front, the forearm points out in front a little above flat, the hand turned part way so what it holds still faces the viewer."""
+def hold(pose, side, lift=HOLD_LIFT, forward=0.0, tip=0.0):
+    """An arm carrying something level: the upper arm hangs and rolls so the elbow bends toward the front, the forearm points out in front `lift` degrees above flat, the hand turned part way so what it holds still faces the viewer.
+
+    `forward` swings the upper arm forward and `tip` tips what the hand holds; the hand is set outright, so what it holds stays level whatever the arm does."""
     sign = SIDES[side]
     pose.turn(f"upper_arm_{side}", y=sign * HANG)
+    pose.turn(f"upper_arm_{side}", x=-forward)
     pose.turn(f"upper_arm_{side}", z=sign * HOLD_ROLL)
-    pose.face(f"forearm_{side}", y=-sign * HOLD_LIFT, z=-sign * HOLD_SWING)
-    pose.face(f"hand_{side}", z=-sign * HOLD_TWIST)
+    pose.face(f"forearm_{side}", y=-sign * lift, z=-sign * HOLD_SWING)
+    pose.face(f"hand_{side}", x=tip, z=-sign * HOLD_TWIST)
 
 
 def arms_at_rest(pose, stance, apart=(), swing=None):
@@ -430,6 +433,9 @@ SQUIRE_QUILL = {"y": -35.0, "z": -80.0, "bend": 10.0}
 COACH_JOG = 0.42
 COACH_POINT = {"y": 0.0, "z": -15.0, "bend": 0.0}
 COLLEAGUE_STROLL = 0.6
+SIP_LIFT = 70.0
+SIP_FORWARD = 45.0
+SIP_TIP = -25.0
 
 
 def arm_to(pose, side, k, y=HANG, x=0.0, z=0.0, bend=10.0):
@@ -600,11 +606,10 @@ def colleague_enter(pose, stance, figure, u):
     """The colleague strolls in with the mug, stops, and takes a sip."""
     lifted = rise(u, 0.72, 0.8) * (1.0 - rise(u, 0.9, 0.98))
     tipped = swell(u, 0.78, 0.92)
-    facing = arrive(pose, stance, figure, u, COLLEAGUE_STROLL, COLLEAGUE_STROLL + 0.12, bend={"nod": -8.0 * tipped})
-    for side in sorted(stance.level):
-        pose.turn(f"upper_arm_{side}", y=-SIDES[side] * 30.0 * lifted)
-        pose.turn(f"forearm_{side}", x=-50.0 * lifted)
-        pose.turn(f"hand_{side}", x=35.0 * lifted - 20.0 * tipped)
+    level = tuple(sorted(stance.level))
+    facing = arrive(pose, stance, figure, u, COLLEAGUE_STROLL, COLLEAGUE_STROLL + 0.12, apart=level if lifted else (), bend={"nod": -8.0 * tipped})
+    for side in level if lifted else ():
+        hold(pose, side, mix(HOLD_LIFT, SIP_LIFT, lifted), SIP_FORWARD * lifted, SIP_TIP * tipped)
     figure.shut_eyes(1.0 - 0.7 * tipped)
     pose.revolve(facing)
 
@@ -641,6 +646,159 @@ def exit(pose, stance, figure, t):
     EXITS[figure.voice](pose, stance, figure, once_time(t, EXIT_FRAMES))
 
 
+# What the figure does while the agent works, and the moments it marks; each pose starts and ends on idle's first frame unless it loops
+SEARCH_CROUCH = 0.2
+CHASE_REACH = 1.4
+TAP_LIFT = 0.13
+TRAY_DOWN = -40.0
+TRAY_BACK = 15.0
+
+
+def search(pose, stance, figure, t):
+    """Rummages through a pile in front of it with the free hand, looking down and from side to side."""
+    side = stance.free
+    sweep = wave_of(t)
+    pose.lift("root", z=-SEARCH_CROUCH)
+    breathe(pose, 0.0)
+    trunk(pose, lean=26.0, nod=20.0, turn=-SIDES[side] * 28.0 * sweep, twist=-SIDES[side] * 10.0 * sweep)
+    arms_at_rest(pose, stance, apart=(side,))
+    arm_to(pose, side, 1.0, y=55.0, z=-55.0 + 30.0 * sweep, bend=35.0)
+    fold(pose, SEARCH_CROUCH)
+
+
+def write(pose, stance, figure, t):
+    """Writes in small strokes with the free hand at chest height, head bent over it; the squire writes with his quill."""
+    side = stance.free
+    breathe(pose, 0.0)
+    trunk(pose, lean=6.0, nod=16.0, turn=-SIDES[side] * 10.0)
+    arms_at_rest(pose, stance, apart=(side,))
+    arm_to(pose, side, 1.0, y=40.0 + 6.0 * wave_of(t, 2), z=-70.0 + 10.0 * wave_of(t), bend=75.0 + 8.0 * wave_of(t, 2))
+
+
+def work(pose, stance, figure, t):
+    """Hammers away with the free hand, the body dipping into each blow."""
+    side = stance.free
+    raised = 0.5 + 0.5 * math.cos(2.0 * math.pi * t)
+    blow = 1.0 - raised
+    pose.lift("root", z=-0.04 * blow)
+    breathe(pose, 0.0)
+    trunk(pose, lean=8.0 + 6.0 * blow, nod=10.0)
+    arms_at_rest(pose, stance, apart=(side,))
+    arm_to(pose, side, 1.0, y=mix(75.0, -45.0, raised), z=-50.0, bend=mix(15.0, 105.0, raised))
+    fold(pose, 0.04 * blow)
+
+
+def point(pose, stance, figure, t):
+    """Points up at what waits for the user, looking at it, the arm bobbing a little."""
+    side = stance.free
+    breathe(pose, 0.0)
+    trunk(pose, nod=-14.0, lean=-3.0, tilt=-SIDES[side] * 5.0)
+    arms_at_rest(pose, stance, apart=(side,))
+    arm_to(pose, side, 1.0, y=-50.0 + 4.0 * wave_of(t), z=-35.0, bend=6.0)
+
+
+def hop(pose, stance, figure, t):
+    """A hop from one pane's edge to another: crouch, spring, tuck, land."""
+    u = once_time(t, 8)
+    airborne = swell(u, 0.25, 0.85)
+    crouched = swell(u, 0.0, 0.3) + swell(u, 0.8, 1.0)
+    pose.lift("root", z=0.5 * airborne - 0.2 * crouched)
+    breathe(pose, 0.0)
+    trunk(pose, lean=10.0 * crouched)
+    arms_at_rest(pose, stance)
+    fold(pose, 0.2 * crouched + 0.15 * swell(u, 0.35, 0.75))
+
+
+def butler_tray_down(pose, stance, figure, t):
+    """The butler sets the tray down when a commit lands, and picks it straight back up, level all the while."""
+    u = once_time(t, 16)
+    down = rise(u, 0.0, 0.35) * (1.0 - rise(u, 0.6, 0.95))
+    pose.lift("root", z=-0.24 * down)
+    breathe(pose, 0.0)
+    trunk(pose, lean=15.0 * down, nod=14.0 * down)
+    level = tuple(sorted(stance.level))
+    arms_at_rest(pose, stance, apart=level)
+    for side in level:
+        hold(pose, side, mix(HOLD_LIFT, TRAY_DOWN, down), -TRAY_BACK * down)
+    fold(pose, 0.24 * down)
+
+
+def squire_chase(pose, stance, figure, t):
+    """The squire runs after a bug when a check goes red, quill out ahead of him, and comes back."""
+    u = once_time(t, 24)
+    out = u < 0.5
+    reach = CHASE_REACH * (ease(span(u, 0.0, 0.5)) if out else 1.0 - ease(span(u, 0.5, 1.0)))
+    motion = math.sqrt(max(math.sin(math.pi * u), 0.0))
+    quill = held_up(stance, figure)
+    pose.lift("root", y=-reach if out else reach)
+    stride(pose, stance, figure, 4.0 * u, motion, running=True, lean=12.0, apart=quill)
+    for side in quill:
+        arm_to(pose, side, motion, **SQUIRE_QUILL)
+    pose.revolve((90.0 if out else -90.0) * min(1.0, 3.0 * math.sin(math.pi * u)))
+
+
+def butler_pointed(pose, stance, figure, u):
+    """The butler taps his foot, patiently."""
+    tap = TAP_LIFT * max(wave_of(3.0 * u), 0.0) * swell(u, 0.0, 1.0)
+    breathe(pose, 0.0)
+    trunk(pose, tilt=8.0 * swell(u, 0.0, 1.0), nod=6.0 * swell(u, 0.0, 1.0), turn=10.0 * swell(u, 0.0, 1.0))
+    arms_at_rest(pose, stance)
+    step_leg(pose, "r", 0.0, tap, 0.0, 15.0 * tap / TAP_LIFT)
+
+
+def homie_pointed(pose, stance, figure, u):
+    """The homie shrugs: arms out, palms up, head on one side."""
+    shrug = swell(u, 0.0, 1.0)
+    breathe(pose, 0.0)
+    trunk(pose, tilt=14.0 * shrug, nod=-8.0 * shrug)
+    for side in SIDES:
+        arm_to(pose, side, shrug, y=30.0, z=-15.0, bend=100.0)
+
+
+def coach_pointed(pose, stance, figure, u):
+    """The coach gives one long blast on the whistle."""
+    side = stance.free
+    whistling = rise(u, 0.0, 0.15) * (1.0 - rise(u, 0.8, 1.0))
+    blast = swell(u, 0.2, 0.75)
+    breathe(pose, 0.0)
+    trunk(pose, lean=-4.0 * blast, nod=-6.0 * blast)
+    arms_at_rest(pose, stance, apart=(side,) if whistling else ())
+    if whistling:
+        hand_to(pose, side, whistling, chin(side), THINK_ELBOW)
+    figure.shut_eyes(1.0 - 0.7 * blast)
+
+
+def colleague_pointed(pose, stance, figure, u):
+    """The colleague looks at the time on the free wrist, then at you."""
+    side = stance.free
+    wrist = rise(u, 0.0, 0.2) * (1.0 - rise(u, 0.6, 0.85))
+    breathe(pose, 0.0)
+    trunk(pose, nod=18.0 * wrist * (1.0 - rise(u, 0.35, 0.5)), turn=-SIDES[side] * 8.0 * wrist)
+    arms_at_rest(pose, stance, apart=(side,) if wrist else ())
+    if wrist:
+        hand_to(pose, side, wrist, chin(side), THINK_ELBOW)
+
+
+def squire_pointed(pose, stance, figure, u):
+    """The squire wags his quill at you, tut tut."""
+    quill = held_up(stance, figure)
+    raised = rise(u, 0.0, 0.2) * (1.0 - rise(u, 0.75, 1.0))
+    breathe(pose, 0.0)
+    trunk(pose, tilt=-5.0 * raised, nod=4.0 * raised)
+    arms_at_rest(pose, stance, apart=quill if raised else ())
+    for side in quill if raised else ():
+        arm_to(pose, side, raised, y=-10.0, z=-70.0 + 15.0 * wave_of(3.0 * u), bend=60.0)
+
+
+POINTED = {"bare": butler_pointed, "butler": butler_pointed, "homie": homie_pointed, "coach": coach_pointed,
+           "colleague": colleague_pointed, "squire": squire_pointed}
+
+
+def pointed(pose, stance, figure, t):
+    """Each voice's one pointed remark after a long wait on the user, played once."""
+    POINTED[figure.voice](pose, stance, figure, once_time(t, 20))
+
+
 CLIPS = {clip.name: clip for clip in (
     Clip("idle", 24, 8, True, idle),
     Clip("blink", 6, 12, False, blink),
@@ -657,4 +815,12 @@ CLIPS = {clip.name: clip for clip in (
     Clip("pull_ups", 24, 10, True, pull_ups),
     Clip("enter", 36, 12, False, enter),
     Clip("exit", 28, 12, False, exit),
+    Clip("search", 12, 10, True, search),
+    Clip("write", 12, 12, True, write),
+    Clip("work", 8, 10, True, work),
+    Clip("point", 12, 8, True, point),
+    Clip("hop", 8, 16, False, hop),
+    Clip("butler_tray_down", 16, 10, False, butler_tray_down),
+    Clip("squire_chase", 24, 12, False, squire_chase),
+    Clip("pointed", 20, 10, False, pointed),
 )}

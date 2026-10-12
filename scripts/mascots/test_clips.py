@@ -28,9 +28,20 @@ PASSAGES = {
     "enter": (36, 12, False),
     "exit": (28, 12, False),
 }
-REGISTERED = NEW_CLIPS | PASSAGES
+# what the always-visible figure does while the agent works, and the moments it marks
+STATE_CLIPS = {
+    "search": (12, 10, True),
+    "write": (12, 12, True),
+    "work": (8, 10, True),
+    "point": (12, 8, True),
+    "hop": (8, 16, False),
+    "butler_tray_down": (16, 10, False),
+    "squire_chase": (24, 12, False),
+    "pointed": (20, 10, False),
+}
+REGISTERED = NEW_CLIPS | PASSAGES | STATE_CLIPS
 CLIPS = {"idle", "blink", "nod", "shake", "wave", "think", "celebrate", "sleep", "walk"} | set(NEW_CLIPS)
-POSED = CLIPS | set(PASSAGES)
+POSED = CLIPS | set(PASSAGES) | set(STATE_CLIPS)
 VOICES = {"bare", "butler", "homie", "coach", "colleague", "squire"}
 
 needs_blender = pytest.mark.skipif(shutil.which("blender") is None, reason="needs Blender on the path")
