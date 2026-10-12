@@ -28,6 +28,10 @@ def dump(n: int = 1, **data) -> Dump:
     return Dump(n=n, title="Notes", brief="Some ideas", created=WHEN - 10 * n, data={"files": {"a.png": ""}, **data})
 
 
+def choosing(pick: int, label: str) -> Dump:
+    return dump(chosen={"at": 5.0, "pick": pick, "label": label})
+
+
 def on_arrival(*rows) -> Given:
     return Given.of(arrived(), *rows)
 
@@ -45,9 +49,9 @@ class DumpsFeature(Feature):
             on_arrival(dump(items=NOTED), IDLE) >> Unchanged(),
             on_arrival(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"files": {"a.png": ""}}), IDLE) >> Unchanged(),
             on_arrival(dump(), dump(n=2), IDLE) >> Unchanged(),
-            on_arrival(dump(chosen={"at": 5.0, "pick": 1, "label": "Keep it"}), IDLE) >> Nudged("chose", label="Keep it"),
-            on_arrival(dump(chosen={"at": 5.0, "pick": -1, "label": ""}), IDLE) >> Nudged("decide"),
-            on_arrival(dump(chosen={"at": 5.0, "pick": OWN_WORDS, "label": "my own words"}), IDLE) >> Unchanged(),
+            on_arrival(choosing(1, "Keep it"), IDLE) >> Nudged("chose", label="Keep it"),
+            on_arrival(choosing(-1, ""), IDLE) >> Nudged("decide"),
+            on_arrival(choosing(OWN_WORDS, "my own words"), IDLE) >> Unchanged(),
             on_arrival(dump(answers=[{"answer": "Tomorrow", "question": "When should it be done?"}]), IDLE) >> Nudged("answered", answer="Tomorrow"),
             on_completion(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, outcome="2 filed", data={"items": FILED, "files": {"a.png": ""}}), IDLE) >> Nudged("filed"),
             on_completion(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"stopped": True, "files": {"a.png": ""}}), IDLE) >> Unchanged(),

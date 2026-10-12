@@ -56,6 +56,11 @@ def touched(*numbers: int) -> MessageUpdated:
     return MessageUpdated(n=numbers[0], type="message", action="updated", actor=USER, numbers=numbers)
 
 
+FILE_THE_REPORT = asked("Please file the report", refs=["todo:7"])
+ABOUT_A_TODO = asked(refs=["todo:7"])
+FILE_THE_REPORT_WRITTEN = wrote("Please file the report", refs=["todo:7"])
+
+
 def after_report(*rows) -> Given:
     return Given.of(reported(), *rows)
 
@@ -104,19 +109,19 @@ class MessagesFeature(Feature):
             after_report(asked(), IDLE) >> Nudged("answer"),
             after_report(asked(), reply(), IDLE) >> Unchanged(),
             after_report(asked(), reaction(), IDLE) >> Nudged("answer"),
-            after_report(asked("Please file the report", refs=["todo:7"]), IDLE) >> Unchanged(),
-            after_report(asked(refs=["todo:7"]), IDLE) >> Nudged("answer"),
+            after_report(FILE_THE_REPORT, IDLE) >> Unchanged(),
+            after_report(ABOUT_A_TODO, IDLE) >> Nudged("answer"),
             after_report(asked("Here is the result"), IDLE) >> Nudged("answer"),
             after_report(wrote("What do you think about the plan?"), IDLE) >> Unchanged(),
             after_report(wrote("Here is the plan", seen=(AGENT, USER)), IDLE) >> Unchanged(),
             after_report(IDLE) >> Unchanged(),
         ])
         journal.events.handler(CloseHandled(), expects=[
-            after_report(asked("Please file the report", refs=["todo:7"]), IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
-            after_report(asked("Please file the report", refs=["todo:7"]), WORKING) >> Unchanged(),
-            after_report(asked(refs=["todo:7"]), IDLE) >> Unchanged(),
-            after_report(asked(refs=["todo:7"]), reply(), IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
-            after_report(wrote("Please file the report", refs=["todo:7"]), IDLE) >> Unchanged(),
+            after_report(FILE_THE_REPORT, IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
+            after_report(FILE_THE_REPORT, WORKING) >> Unchanged(),
+            after_report(ABOUT_A_TODO, IDLE) >> Unchanged(),
+            after_report(ABOUT_A_TODO, reply(), IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
+            after_report(FILE_THE_REPORT_WRITTEN, IDLE) >> Unchanged(),
             after_report(asked("Please file the report"), IDLE) >> Unchanged(),
         ])
         journal.events.handler(CloseSeenByUser(), expects=[
@@ -125,10 +130,10 @@ class MessagesFeature(Feature):
             after_touch(wrote("Please look at this", seen=(USER, AGENT)), IDLE) >> Unchanged(),
         ])
         journal.events.handler(CloseProcessed(), expects=[
-            after_touch(asked("Please file the report", refs=["todo:7"]), IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
-            after_touch(asked(refs=["todo:7"]), IDLE) >> Unchanged(),
+            after_touch(FILE_THE_REPORT, IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
+            after_touch(ABOUT_A_TODO, IDLE) >> Unchanged(),
             after_touch(asked("Please file the report"), IDLE) >> Unchanged(),
-            after_touch(wrote("Please file the report", refs=["todo:7"]), IDLE) >> Unchanged(),
+            after_touch(FILE_THE_REPORT_WRITTEN, IDLE) >> Unchanged(),
             after_touch(asked("Please file the report", refs=["todo:7"], completed=1.0), IDLE) >> Unchanged(),
         ])
         journal.events.handler(CloseAnswered(), expects=[
