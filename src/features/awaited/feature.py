@@ -38,7 +38,7 @@ class Awaited(Feature):
             Given(ClockTicked(agent=1), rows=[agent({**RUN, "running": True}), waiting(), helper(report="done")]) >> Dispatches(nothing),
             Given(ClockTicked(agent=1), rows=[agent(), waiting(), helper(report="done")]) >> Dispatches(nothing),
             Given(ClockTicked(agent=1), rows=[agent(RUN), waiting(parked="something else first"), helper(report="done")]) >> Dispatches(nothing),
-            Given(ClockTicked(agent=1), rows=[agent({**RUN, "ended": 0.0, "status": ""}), Work(n=3, data={"awaiting": "the suite", "awaiting_on": "b2gb9ud45"})])
+            Given(ClockTicked(agent=1), rows=[agent({**RUN, "ended": 0.0, "status": "", "code": None}), Work(n=3, data={"awaiting": "the suite", "awaiting_on": "b2gb9ud45"})])
                 >> Dispatches(WaitEnded(work=3, awaiting="the suite", results="the suite ended", count=0)),
             Given(ClockTicked(agent=1), rows=[agent({**RUN, "code": 1}), Work(n=3, data={"awaiting": "the suite", "awaiting_on": "b2gb9ud45"})])
                 >> Dispatches(WaitEnded(work=3, awaiting="the suite", results="the suite completed, failed with exit code 1", count=0)),
