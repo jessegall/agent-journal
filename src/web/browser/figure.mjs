@@ -195,7 +195,11 @@ await runScenarios(process.argv[2], {
         const leaps = frames.slice(1).map((frame, at) => Math.abs(frame.x - frames[at].x));
         const leap = Math.max(0, ...leaps);
         const onTheSpot = longestRun(frames, (frame, last) => frame.walking && frame.x === last.x && frame.y === last.y);
-        const measured = `from ${Math.round(before.x)},${Math.round(before.y)} to ${Math.round(after.x)},${Math.round(after.y)}, longest step across ${leap.toFixed(1)}px, longest walk on the spot ${onTheSpot}`;
+        const clip = await page.locator(FIGURE).evaluate((figure, home) => {
+            const ground = document.querySelector(home)?.getBoundingClientRect();
+            return `${figure.dataset.clip} clip, walking ${figure.dataset.walking}, ground ${ground ? `${Math.round(ground.left)}..${Math.round(ground.right)} at ${Math.round(ground.top)}` : "none"}`;
+        }, HOME);
+        const measured = `from ${Math.round(before.x)},${Math.round(before.y)} to ${Math.round(after.x)},${Math.round(after.y)}, longest step across ${leap.toFixed(1)}px, longest walk on the spot ${onTheSpot}, ${clip}`;
         console.log(`the figure clicked away: ${measured}`);
         if (overlapping) throw new Error(`clicked, the figure stayed over the box it was in: ${measured}`);
         if (leap > MOST_ACROSS_IN_A_FRAME) throw new Error(`clicked, the figure jumped across the page: ${measured}`);
