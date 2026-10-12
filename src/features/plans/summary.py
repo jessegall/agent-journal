@@ -34,7 +34,8 @@ def rows_of(p) -> list[int]:
 
 
 def helping(record, p) -> list[Helping]:
-    if not p.delegated or p.current_phase is None:
+    """The helpers working a row of this plan's current phase right now. Asked of the helpers themselves rather than of the plan's flag, which is set when a row is handed over and stays set after the helper has gone."""
+    if p.current_phase is None:
         return []
     todos, helpers, worktrees = Todos(record, actor=SYSTEM), Helpers(record, actor=SYSTEM), Worktrees(record, actor=SYSTEM)
     held = {todo.assigned for todo in map(todos.load, p.current_phase["todos"]) if not todo.completed and todo.assigned.startswith("helper:")}
@@ -51,9 +52,10 @@ def open_tickets(record, p) -> list[int]:
 def plan(record, p, todos: dict) -> PlanSummary:
     current = p.phases[p.current - 1] if p.phases and 0 < p.current <= len(p.phases) else None
     rows = rows_of(p)
+    helpers, tickets = helping(record, p), open_tickets(record, p)
     return {"n": p.n, "title": p.title, "status": p.status, "current": p.current, "phase": current["title"] if current else "",
             "phases": len(p.phases), "rows": len(rows), "done": sum(bool(todos.get(n)) for n in rows),
-            "delegated": p.delegated, "helpers": helping(record, p), "tickets": open_tickets(record, p)}
+            "delegated": bool(helpers) or bool(tickets), "helpers": helpers, "tickets": tickets}
 
 
 def plans_shown(record) -> list[PlanSummary]:

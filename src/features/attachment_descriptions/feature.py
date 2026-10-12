@@ -7,7 +7,7 @@ from features.attachment_descriptions.handlers import SampleVideoFrames, TagMiss
 from events.resources import FileAttached
 from framework.base import Feature
 from framework.journal import Journal
-from resources.base import USER
+from resources.base import AGENT, USER
 from resources.types import AgentRow, Message
 
 LIVE = AgentRow(n=1, title="claude-1", data={"status": "idle"})
@@ -22,7 +22,8 @@ def recorded(name: str) -> MessageUpdated:
 
 
 def with_files(**files) -> Message:
-    return Message(n=5, title="Look at this", data={"files": files})
+    """A message the agent has already read: an unread one is not asked about, since the line announcing it already names the file it brings."""
+    return Message(n=5, title="Look at this", seen=[AGENT], data={"files": files})
 
 
 class AttachmentDescriptions(Feature):
@@ -31,6 +32,7 @@ class AttachmentDescriptions(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.handler(TagNewMedia(), expects=[
             Given(attached("photo.png"), rows=[with_files(**{"photo.png": ""}), LIVE]) >> Nudged("untagged"),
+            Given(attached("photo.png"), rows=[Message(n=5, title="Look at this", data={"files": {"photo.png": ""}}), LIVE]) >> Unchanged(),
             Given(attached("notes.txt"), rows=[with_files(**{"notes.txt": ""}), LIVE]) >> Unchanged(),
             Given(attached("photo.png"), rows=[with_files(**{"photo.png": "a screenshot of the login page"}), LIVE]) >> Unchanged(),
             Given(attached("photo.png"), rows=[with_files(**{"photo.png": ""})]) >> Unchanged(),

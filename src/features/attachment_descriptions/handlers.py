@@ -3,6 +3,7 @@ import mimetypes
 import shutil
 
 from controllers.types import CONTROLLERS, Agents, Messages
+from resources.base import AGENT
 from events.agents import SessionStarted
 from resources.memo import Memo
 from events.resources import FileAttached
@@ -40,6 +41,8 @@ class TagNewMedia(Handler):
         row = context.journal.get(CONTROLLERS[event.type]).load(event.n)
         if event.file not in row.files or row.files.get(event.file):
             return
+        if event.type == Messages.resource.type and AGENT not in row.seen:
+            return  # the line announcing it already names what it brings, and the agent is asked for tags when it reads it
         for agent in context.journal.get(Agents).rows.every():
             if agent.live:
                 tell(context.speaking_to(agent), event.type, row.n, event.file)

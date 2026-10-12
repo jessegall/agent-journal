@@ -6,7 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from controllers.types import Messages
 from features.attachment_descriptions import handlers as feature, video
-from resources.base import USER
+from resources.base import AGENT, USER
 from tests.conftest import fresh
 from controllers.types import Agents, Messages, Nudges
 from commands.queries import search_text
@@ -86,9 +86,13 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     image.write_bytes(b"png")
     messages.attach(message.n, str(image))
 
+    assert Nudges(record, actor=SYSTEM).all() == [], \
+        "a message the agent has not read yet is not asked about: the line announcing it already names the file it brings"
+    Messages(record, actor=AGENT).read(message.n)
+    messages.attach(message.n, str(image))
     nudges = Nudges(record, actor=SYSTEM).all()
     assert (len(nudges), nudges[0].title) == (1, "message 1 file dashboard.png needs tags"), \
-        "an uploaded image asks the agent for tags"
+        "once it has been read, an untagged image asks the agent for tags"
     tagged = subprocess.run(
         [sys.executable, str(HERE / "journal.py"), "--root", str(record.root), "--env", record.env,
          "message", "tag", str(message.n), image.name, "deployment graph with three regions"],
