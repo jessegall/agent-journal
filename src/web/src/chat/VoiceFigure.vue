@@ -3,7 +3,7 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
-import {beatClipsOf, beatsAfter, clipOf, figureStateOf, POINTED_AFTER} from "../domain/figureState.js";
+import {BEAT_CLIPS, beatsAfter, clipOf, eggFor, figureStateOf} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {openTabs, pointedView, spotOf} from "../figure/places.js";
 import {rows} from "../sync/rows.js";
@@ -33,11 +33,15 @@ const now = ref(Date.now() / 1000);
 const waitingSince = ref(0);
 const at = ref({x: 0, y: 0});
 const moving = ref(null);
+// the one-off clips waiting to play, oldest first: a beat's clip, or the egg that belongs to the moment
 const beats = ref([]);
-// the voice's own entrance plays once when its figure first appears
+// the eggs played so far, so none plays twice for one occurrence or twice in a row
+const played = [];
+// the voice's own entrance plays when its figure appears, and its exit when the environment's agent goes; with no agent it is not shown
 const arriving = ref(false);
+const leaving = ref(false);
+const here = ref(false);
 let seenAt = Date.now() / 1000;
-let pointedFor = 0;
 let playing = {name: "", started: 0};
 // the clip on screen, so the page can draw what the rig has no bones for, such as the bug the squire chases
 const shownClip = ref(null);
@@ -46,19 +50,17 @@ const held = computed(() => figureStateOf(agent.value, rows("work"), waitingSinc
 const target = ref({x: 0, y: 0, view: null});
 
 // the first of these clips the figure has; idle when it has none of them
-const clipNamed = (...names) => names.map((name) => clips.find((clip) => clip.name === name)).find(Boolean) || clips.find((clip) => clip.name === "idle");
+const clipNamed = (...names) =>
+    names.map((name) => clips.find((clip) => clip.name === name)).find(Boolean) || clips.find((clip) => clip.name === "idle");
 const hasClip = (name) => clips.some((clip) => clip.name === name);
 
 // what the figure plays now: a walk while it moves, a beat until it is done, its one pointed remark, pointing once it stands at a tab, or the held state's clip
 function current() {
+    if (leaving.value) return {clip: clipNamed("exit"), facing: 0, once: true, departure: true};
     if (arriving.value) return {clip: clipNamed("enter"), facing: 0, once: true, arrival: true};
     if (moving.value?.hopping) return {clip: clipNamed("hop"), facing: 0};
     if (moving.value) return {clip: clipNamed("walk"), facing: moving.value.way > 0 ? 90 : 270};
-    if (beats.value.length) return {clip: clipNamed(...beatClipsOf(voice.value, beats.value[0].beat)), facing: 0, once: true};
-    const pointedDue = held.value.state === "asking" && now.value - held.value.since >= POINTED_AFTER && pointedFor !== held.value.since;
-    if (pointedDue && hasClip("pointed")) {
-        return {clip: clipNamed("pointed"), facing: 0, once: true, pointed: true};
-    }
+    if (beats.value.length) return {clip: clipNamed(beats.value[0]), facing: 0, once: true};
     if (target.value.view && !moving.value) return {clip: clipNamed("point"), facing: 0};
     return {clip: clipNamed(clipOf(held.value.state)), facing: 0};
 }
@@ -72,8 +74,12 @@ function step() {
     shownClip.value = shown.clip;
     const index = Math.floor(((performance.now() - playing.started) / 1000) * shown.clip.fps);
     if (shown.once && index >= shown.clip.frames) {
+        if (shown.departure) {
+            leaving.value = false;
+            here.value = false;
+            return;
+        }
         if (shown.arrival) arriving.value = false;
-        else if (shown.pointed) pointedFor = held.value.since;
         else beats.value = beats.value.slice(1);
         playing = {name: "", started: 0};
         return step();
@@ -91,7 +97,13 @@ function moveTo(spot) {
     if (Math.hypot(to.x - from.x, to.y - from.y) < 2) return;
     const walk = (Math.abs(to.x - from.x) / WALK_SPEED) * 1000;
     const hop = Math.abs(to.y - from.y) > 2 ? Math.max(HOP_MS, (Math.abs(to.y - from.y) / HOP_SPEED) * 1000) : 0;
-    moving.value = {way: Math.sign(to.x - from.x) || 1, legs: [{x: to.x, y: from.y, ms: walk, easing: "linear"}, {x: to.x, y: to.y, ms: hop, easing: "ease-out", hopping: true}]};
+    moving.value = {
+        way: Math.sign(to.x - from.x) || 1,
+        legs: [
+            {x: to.x, y: from.y, ms: walk, easing: "linear"},
+            {x: to.x, y: to.y, ms: hop, easing: "ease-out", hopping: true},
+        ],
+    };
     nextLeg();
 }
 
@@ -116,13 +128,33 @@ function look() {
     const waiting = counts.value.question + counts.value.waiting + counts.value.suggestion > 0;
     waitingSince.value = waiting ? waitingSince.value || now.value : 0;
     const fresh = beatsAfter(agent.value, seenAt);
-    if (fresh.length) {
-        seenAt = fresh[fresh.length - 1].at;
-        beats.value = [...beats.value, ...fresh];
-    }
+    if (fresh.length) seenAt = fresh[fresh.length - 1].at;
+    const waited = {state: held.value.state, since: held.value.since, lasted: now.value - held.value.since};
+    const eggs = [...fresh.map((fire) => [fire, BEAT_CLIPS[fire.beat]]), [waited, null]];
+    beats.value = [...beats.value, ...eggs.map(([moment, plain]) => eggOf(moment) || plain).filter(Boolean)];
     target.value = spotOf(pointedView(counts.value, openTabs()), (1 - ground) * SIZE);
     if (!moving.value && !arriving.value) moveTo(target.value);
     if (!document.hidden) lookTimer = setTimeout(look, LOOK_EVERY);
+}
+
+// the egg that belongs to a moment, kept as played, when the voice has its clip
+function eggOf(moment) {
+    const egg = eggFor(voice.value, moment, played);
+    if (!egg || !hasClip(egg.clip)) return null;
+    played.push(egg);
+    return egg.clip;
+}
+
+// the environment's agent arriving or going: the figure enters, or makes its exit and is gone
+function present(live) {
+    if (!player || live === here.value) return;
+    if (live) {
+        here.value = true;
+        at.value = placed(spotOf(null));
+    }
+    leaving.value = !live;
+    arriving.value = live;
+    step();
 }
 
 const seen = () => {
@@ -144,7 +176,8 @@ async function load(name) {
         canvas.value.width = canvas.value.height = Math.round(SIZE * (window.devicePixelRatio || 1));
         player = new FigurePlayer(figure, canvas.value);
         at.value = placed(spotOf(null));
-        arriving.value = true;
+        here.value = Boolean(agent.value);
+        arriving.value = here.value;
         figureStatus.value = "shown";
         look();
         step();
@@ -155,6 +188,7 @@ async function load(name) {
 }
 
 watch(voice, load);
+watch(() => Boolean(agent.value), present);
 onMounted(() => {
     document.addEventListener("visibilitychange", seen);
     window.addEventListener("resize", look);
@@ -182,14 +216,16 @@ const style = computed(() => ({
 </script>
 
 <template>
-    <div v-show="figureStatus === 'shown'" class="voice-figure" :style="style" aria-hidden="true" @transitionend="nextLeg">
-        <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
-        <template v-if="chasing">
-            <svg class="voice-figure-bug" :style="{animationDuration: `${chaseMs}ms`}" viewBox="0 0 16 12" width="16" height="12">
-                <path d="M3 3 1 1M3 6H0M3 9 1 11M13 3l2-2M13 6h3M13 9l2 2" stroke="currentColor" stroke-width="1.2" />
-                <ellipse cx="8" cy="6" rx="5" ry="4" fill="currentColor" />
-            </svg>
-        </template>
+    <div v-show="figureStatus === 'shown' && here" class="voice-figure" :style="style" aria-hidden="true" @transitionend="nextLeg">
+        <div :class="['voice-figure-actor', {chasing}]" :style="chasing ? {animationDuration: `${chaseMs}ms`} : null">
+            <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
+            <template v-if="chasing">
+                <svg class="voice-figure-bug" :style="{animationDuration: `${chaseMs}ms`}" viewBox="0 0 16 12" width="16" height="12">
+                    <path d="M3 3 1 1M3 6H0M3 9 1 11M13 3l2-2M13 6h3M13 9l2 2" stroke="currentColor" stroke-width="1.2" />
+                    <ellipse cx="8" cy="6" rx="5" ry="4" fill="currentColor" />
+                </svg>
+            </template>
+        </div>
     </div>
 </template>
 
@@ -205,6 +241,28 @@ const style = computed(() => ({
 .voice-figure-canvas {
     width: 100%;
     height: 100%;
+}
+
+.voice-figure-actor {
+    width: 100%;
+    height: 100%;
+}
+
+/* the squire runs out across the pane after the bug and comes back */
+.voice-figure-actor.chasing {
+    animation-name: voice-figure-chase;
+    animation-timing-function: ease-in-out;
+}
+
+@keyframes voice-figure-chase {
+    0%,
+    100% {
+        transform: none;
+    }
+
+    50% {
+        transform: translateX(160px);
+    }
 }
 
 /* the bug runs off ahead of the squire and gets away while he turns back */

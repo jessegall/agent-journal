@@ -76,7 +76,17 @@ export const helperName = (row) => row.data?.name || `Helper ${row.n}`;
 export const helperEnvironment = (row) => row.data?.environment;
 export const helperReport = (row) => row.data?.report || "";
 
-const SECTION_OF = {needs: "working", working: "working", running: "working", idle: "waiting", reported: "waiting", stopped: "closed", ended: "closed", refused: "closed", finished: "retired"};
+const SECTION_OF = {
+    needs: "working",
+    working: "working",
+    running: "working",
+    idle: "waiting",
+    reported: "waiting",
+    stopped: "closed",
+    ended: "closed",
+    refused: "closed",
+    finished: "retired",
+};
 
 export function helpersBySection(rows) {
     const ordered = [...rows].sort((a, b) => stateRank(helperState(a)) - stateRank(helperState(b)) || stateAt(b) - stateAt(a));
@@ -106,7 +116,10 @@ export const helperHolding = (todo, helpers) => helpers.find((row) => `helper:${
 const ASSIGNED_HELPER = /^helper:(\d+)$/;
 
 export function holdingHelpers(todos) {
-    const numbers = todos.map((todo) => String(todo.data?.assigned || "").match(ASSIGNED_HELPER)).filter(Boolean).map((found) => Number(found[1]));
+    const numbers = todos
+        .map((todo) => String(todo.data?.assigned || "").match(ASSIGNED_HELPER))
+        .filter(Boolean)
+        .map((found) => Number(found[1]));
     return [...new Set(numbers)];
 }
 

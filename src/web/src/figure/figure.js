@@ -326,10 +326,10 @@ function walk(pose, stance, t) {
 const ENTRY_DISTANCE = 4.4;
 const ENTRY_TRAVEL_END = 0.72;
 const ENTRY_TURN_END = 0.94;
-const RUN_STRIDE = [1.84, 0.38, 0.20];
-const WALK_STRIDE = [1.36, 0.60, 0.16];
+const RUN_STRIDE = [1.84, 0.38, 0.2];
+const WALK_STRIDE = [1.36, 0.6, 0.16];
 const DEPART_TURN = 0.14;
-const SEAT_LIFT = 0.20;
+const SEAT_LIFT = 0.2;
 const PULL_GRIP_X = 1.51;
 const PULL_GRIP_Y = -0.0233463035019455;
 const PULL_GRIP_Z = 3.17;
@@ -342,7 +342,7 @@ function ease(t) {
 }
 
 function onceTime(t, frames) {
-    return Math.min(Math.max(t * frames / (frames - 1), 0), 1);
+    return Math.min(Math.max((t * frames) / (frames - 1), 0), 1);
 }
 
 // how far u is through the stretch from `from` to `to`, held at 0 before and 1 after; eased, and as a swell that rises and falls back to 0
@@ -385,7 +385,8 @@ function stepLeg(pose, side, forward, lift, rootHeight, toe = 0) {
     const thigh = pose.rig.heads.get(`thigh_${side}`);
     const shin = pose.rig.heads.get(`shin_${side}`);
     const foot = pose.rig.heads.get(`foot_${side}`);
-    const upper = thigh.z - shin.z, lower = shin.z - foot.z;
+    const upper = thigh.z - shin.z,
+        lower = shin.z - foot.z;
     const down = upper + lower + rootHeight - lift;
     const cosine = (forward * forward + down * down - upper * upper - lower * lower) / (2 * upper * lower);
     if (cosine < -1 - 1e-10 || cosine > 1 + 1e-10) {
@@ -393,8 +394,8 @@ function stepLeg(pose, side, forward, lift, rootHeight, toe = 0) {
     }
     const knee = Math.acos(Math.round(cosine * 1e10) / 1e10);
     const hip = Math.atan2(forward, down) - Math.atan2(lower * Math.sin(knee), upper + lower * Math.cos(knee));
-    pose.turn(`thigh_${side}`, {x: hip * 180 / Math.PI});
-    pose.bend(`shin_${side}`, knee * 180 / Math.PI);
+    pose.turn(`thigh_${side}`, {x: (hip * 180) / Math.PI});
+    pose.bend(`shin_${side}`, (knee * 180) / Math.PI);
     pose.face(`foot_${side}`, {x: toe});
 }
 
@@ -403,7 +404,7 @@ function stepLeg(pose, side, forward, lift, rootHeight, toe = 0) {
 function stride(pose, stance, cycle, motion, {running = false, lean = running ? 10 : 3, clearance, apart = [], drop = 0, bend = {}} = {}) {
     const [length, duty, lift] = running ? RUN_STRIDE : WALK_STRIDE;
     const halfPhase = cycle % 0.5;
-    const flight = running && halfPhase > duty ? Math.max(0, Math.sin(Math.PI * (halfPhase - duty) / (0.5 - duty))) : 0;
+    const flight = running && halfPhase > duty ? Math.max(0, Math.sin((Math.PI * (halfPhase - duty)) / (0.5 - duty))) : 0;
     const rootHeight = motion * (-(running ? 0.075 : 0.11) + (running ? 0.055 * flight : 0)) - drop;
     pose.lift("root", {z: rootHeight});
     breathe(pose, 0);
@@ -411,11 +412,18 @@ function stride(pose, stance, cycle, motion, {running = false, lean = running ? 
     const swing = (running ? 24 : 14) * waveOf(cycle) * motion;
     const carried = stance.carried ?? stance.busy;
     const jogging = Object.keys(SIDES).filter((side) => running && !carried.has(side) && !stance.level.has(side) && !apart.includes(side));
-    armsAtRest(pose, stance, [...jogging, ...apart], Object.fromEntries(Object.entries(SIDES).map(([side, sign]) =>
-        [side, carried.has(side) ? 0 : sign * swing])));
+    armsAtRest(
+        pose,
+        stance,
+        [...jogging, ...apart],
+        Object.fromEntries(Object.entries(SIDES).map(([side, sign]) => [side, carried.has(side) ? 0 : sign * swing]))
+    );
     for (const side of jogging) hang(pose, side, SIDES[side] * swing, 10 + 40 * motion);
     if (motion > 0 || drop) {
-        for (const [side, offset] of [["l", 0], ["r", 0.5]]) {
+        for (const [side, offset] of [
+            ["l", 0],
+            ["r", 0.5],
+        ]) {
             const [step, raised] = strideFoot(cycle + offset, length, duty, clearance ?? lift);
             const phase = (cycle + offset) % 1;
             const flightPhase = phase >= duty ? (phase - duty) / (1 - duty) : 0;
@@ -430,7 +438,7 @@ function arrive(pose, stance, u, until, faced, gait = {}) {
     const q = span(u, 0, until);
     const progress = ease(q);
     pose.lift("root", {y: ENTRY_DISTANCE * (1 - progress)});
-    stride(pose, stance, ENTRY_DISTANCE * progress / (gait.running ? RUN_STRIDE : WALK_STRIDE)[0], 1 - ease((q - 0.76) / 0.24), gait);
+    stride(pose, stance, (ENTRY_DISTANCE * progress) / (gait.running ? RUN_STRIDE : WALK_STRIDE)[0], 1 - ease((q - 0.76) / 0.24), gait);
     return 90 * (1 - rise(u, until, faced));
 }
 
@@ -439,7 +447,7 @@ function depart(pose, stance, u, from, way, gait = {}) {
     const q = span(u, from + DEPART_TURN / 2, 1);
     const progress = (q < 0.3 ? (q * q) / 0.6 : q - 0.15) / 0.85;
     pose.lift("root", {y: -ENTRY_DISTANCE * progress});
-    stride(pose, stance, ENTRY_DISTANCE * progress / (gait.running ? RUN_STRIDE : WALK_STRIDE)[0], ease(q / 0.25), gait);
+    stride(pose, stance, (ENTRY_DISTANCE * progress) / (gait.running ? RUN_STRIDE : WALK_STRIDE)[0], ease(q / 0.25), gait);
     return way * 90 * rise(u, from, from + DEPART_TURN);
 }
 
@@ -461,19 +469,20 @@ function pull_ups(pose, stance, t) {
         return;
     }
     const pull = 0.5 - 0.5 * Math.cos(2 * Math.PI * t);
-    pose.lift("root", {z: 0.20 + 0.38 * pull});
+    pose.lift("root", {z: 0.2 + 0.38 * pull});
     trunk(pose, {nod: -3 * pull});
     for (const [side, sign] of Object.entries(SIDES)) {
         const shoulder = pose.head(`upper_arm_${side}`, pose.standing(`upper_arm_${side}`));
         const heads = pose.rig.heads;
         const upper = Math.abs(heads.get(`forearm_${side}`).x - heads.get(`upper_arm_${side}`).x);
         const lower = Math.abs(heads.get(`hand_${side}`).x - heads.get(`forearm_${side}`).x);
-        const across = PULL_WRIST_X - sign * shoulder.x, up = PULL_WRIST_Z - shoulder.z;
+        const across = PULL_WRIST_X - sign * shoulder.x,
+            up = PULL_WRIST_Z - shoulder.z;
         const bend = Math.acos((across * across + up * up - upper * upper - lower * lower) / (2 * upper * lower));
         const raiseBy = Math.atan2(up, across) - Math.atan2(lower * Math.sin(bend), upper + lower * Math.cos(bend));
         pose.turn(`upper_arm_${side}`, {x: -90});
-        pose.turn(`upper_arm_${side}`, {y: -sign * raiseBy * 180 / Math.PI});
-        pose.bend(`forearm_${side}`, bend * 180 / Math.PI);
+        pose.turn(`upper_arm_${side}`, {y: (-sign * raiseBy * 180) / Math.PI});
+        pose.bend(`forearm_${side}`, (bend * 180) / Math.PI);
         pose.face(`hand_${side}`, {x: -90, y: -sign * 45});
         pose.turn(`thigh_${side}`, {x: -8});
         pose.bend(`shin_${side}`, 18);
@@ -553,8 +562,12 @@ const heldUp = (stance) => [...stance.carried].filter((side) => !stance.busy.has
 
 function butler_enter(pose, stance, u) {
     const brake = swell(u, BUTLER_SPRINT, BUTLER_SPRINT + 0.22);
-    const facing = arrive(pose, stance, u, BUTLER_SPRINT, BUTLER_SPRINT + 0.14,
-        {running: true, lean: 15, drop: 0.12 * brake, bend: {lean: -7 * brake, nod: 5 * brake}});
+    const facing = arrive(pose, stance, u, BUTLER_SPRINT, BUTLER_SPRINT + 0.14, {
+        running: true,
+        lean: 15,
+        drop: 0.12 * brake,
+        bend: {lean: -7 * brake, nod: 5 * brake},
+    });
     slosh(pose, stance, span(u, BUTLER_SPRINT, 1));
     pose.revolve(facing);
 }
@@ -568,12 +581,19 @@ function butler_exit(pose, stance, u) {
 function homie_enter(pose, stance, u) {
     const spring = span(u, 0.55, 0.72);
     const landed = u < 0.72 ? 0 : LANDED * (1 - rise(u, 0.84, 1));
-    const height = u < 0.55 ? mix(-4.4, CLIMB_PEEK, rise(u, 0, 0.16)) + (CLIMB_PULLED - CLIMB_PEEK) * rise(u, 0.3, 0.55)
-        : u < 0.72 ? mix(CLIMB_PULLED, -LANDED, spring) + 1.2 * Math.sin(Math.PI * spring) : -landed;
+    const height =
+        u < 0.55
+            ? mix(-4.4, CLIMB_PEEK, rise(u, 0, 0.16)) + (CLIMB_PULLED - CLIMB_PEEK) * rise(u, 0.3, 0.55)
+            : u < 0.72
+              ? mix(CLIMB_PULLED, -LANDED, spring) + 1.2 * Math.sin(Math.PI * spring)
+              : -landed;
     pose.lift("root", {z: height});
     breathe(pose, 0);
-    trunk(pose, {turn: 25 * Math.sin(2 * Math.PI * span(u, 0.06, 0.2)), lean: 14 * (landed / LANDED) + 8 * rise(u, 0.3, 0.55) * (1 - spring),
-        nod: -10 * swell(u, 0.86, 1)});
+    trunk(pose, {
+        turn: 25 * Math.sin(2 * Math.PI * span(u, 0.06, 0.2)),
+        lean: 14 * (landed / LANDED) + 8 * rise(u, 0.3, 0.55) * (1 - spring),
+        nod: -10 * swell(u, 0.86, 1),
+    });
     const grip = u >= 0.2 && u < 0.55 ? rise(u, 0.2, 0.27) : 0;
     const fling = swell(u, 0.55, 0.74);
     armsAtRest(pose, stance, grip || fling ? Object.keys(SIDES) : []);
@@ -608,8 +628,13 @@ function squire_enter(pose, stance, u) {
     const quill = heldUp(stance);
     const charge = 1 - rise(u, 0.7, 0.92);
     const skid = swell(u, SQUIRE_CHARGE, SQUIRE_CHARGE + 0.2);
-    const facing = arrive(pose, stance, u, SQUIRE_CHARGE, SQUIRE_CHARGE + 0.14,
-        {running: true, lean: 14, apart: [...shield, ...quill], drop: 0.14 * skid, bend: {lean: -6 * skid}});
+    const facing = arrive(pose, stance, u, SQUIRE_CHARGE, SQUIRE_CHARGE + 0.14, {
+        running: true,
+        lean: 14,
+        apart: [...shield, ...quill],
+        drop: 0.14 * skid,
+        bend: {lean: -6 * skid},
+    });
     shield.forEach((side) => armTo(pose, side, charge, SQUIRE_SHIELD));
     quill.forEach((side) => armTo(pose, side, charge, SQUIRE_QUILL));
     pose.shutEyes(1 - 0.45 * charge);
@@ -620,7 +645,12 @@ function squire_enter(pose, stance, u) {
 function squire_exit(pose, stance, u) {
     const quill = heldUp(stance);
     const salute = rise(u, 0, 0.12) * (1 - rise(u, 0.24, 0.34));
-    const facing = depart(pose, stance, u, 0.34, -1, {clearance: 0.18, lean: 0, apart: salute ? quill : [], bend: {nod: 10 * swell(u, 0.1, 0.26)}});
+    const facing = depart(pose, stance, u, 0.34, -1, {
+        clearance: 0.18,
+        lean: 0,
+        apart: salute ? quill : [],
+        bend: {nod: 10 * swell(u, 0.1, 0.26)},
+    });
     if (salute) quill.forEach((side) => handTo(pose, side, salute, chin(side), CHIN_ELBOW));
     pose.revolve(facing);
 }
@@ -634,11 +664,19 @@ function coach_enter(pose, stance, u) {
     const whistling = rise(u, 0.7, 0.76) * (1 - rise(u, 0.9, 0.98));
     const blast = blowing(u, [0.77, 0.83]);
     pose.lift("root", {z: bob});
-    const facing = arrive(pose, stance, u, COACH_JOG, COACH_JOG + 0.1,
-        {running: true, lean: 6, apart: whistling ? [side] : [], bend: {nod: 7 * blast, lean: 2 * blast}});
+    const facing = arrive(pose, stance, u, COACH_JOG, COACH_JOG + 0.1, {
+        running: true,
+        lean: 6,
+        apart: whistling ? [side] : [],
+        bend: {nod: 7 * blast, lean: 2 * blast},
+    });
     if (whistling) handTo(pose, side, whistling, chin(side), CHIN_ELBOW);
     if (jog) {
-        for (const [leg, offset] of [["l", 0], ["r", 0.5]]) stepLeg(pose, leg, 0, 0.22 * jog * Math.max(waveOf(cycle + offset), 0), bob);
+        for (const [leg, offset] of [
+            ["l", 0],
+            ["r", 0.5],
+        ])
+            stepLeg(pose, leg, 0, 0.22 * jog * Math.max(waveOf(cycle + offset), 0), bob);
     }
     pose.shutEyes(1 - 0.6 * blast);
     pose.revolve(facing);
@@ -650,8 +688,12 @@ function coach_exit(pose, stance, u) {
     const whistling = rise(u, 0, 0.06) * (1 - rise(u, 0.2, 0.26));
     const pointing = rise(u, 0.26, 0.32) * (1 - rise(u, 0.42, 0.5));
     const blast = blowing(u, [0.07, 0.13]);
-    const facing = depart(pose, stance, u, 0.4, SIDES[side],
-        {running: true, lean: 6, apart: whistling || pointing ? [side] : [], bend: {nod: 7 * blast, lean: 2 * blast}});
+    const facing = depart(pose, stance, u, 0.4, SIDES[side], {
+        running: true,
+        lean: 6,
+        apart: whistling || pointing ? [side] : [],
+        bend: {nod: 7 * blast, lean: 2 * blast},
+    });
     if (whistling) handTo(pose, side, whistling, chin(side), CHIN_ELBOW);
     if (pointing) armTo(pose, side, pointing, COACH_POINT);
     pose.shutEyes(1 - 0.6 * blast);
@@ -663,7 +705,10 @@ function colleague_enter(pose, stance, u) {
     const lifted = rise(u, 0.72, 0.8) * (1 - rise(u, 0.9, 0.98));
     const tipped = swell(u, 0.78, 0.92);
     const level = [...stance.level].sort();
-    const facing = arrive(pose, stance, u, COLLEAGUE_STROLL, COLLEAGUE_STROLL + 0.12, {apart: lifted ? level : [], bend: {nod: -8 * tipped}});
+    const facing = arrive(pose, stance, u, COLLEAGUE_STROLL, COLLEAGUE_STROLL + 0.12, {
+        apart: lifted ? level : [],
+        bend: {nod: -8 * tipped},
+    });
     if (lifted) level.forEach((side) => hold(pose, side, mix(HOLD_LIFT, SIP_LIFT, lifted), SIP_FORWARD * lifted, SIP_TIP * tipped));
     pose.shutEyes(1 - 0.7 * tipped);
     pose.revolve(facing);
@@ -674,7 +719,8 @@ function colleague_exit(pose, stance, u) {
     const side = freeSide(stance);
     const waving = rise(u, 0, 0.08) * (1 - rise(u, 0.24, 0.32));
     const facing = depart(pose, stance, u, 0.3, SIDES[side], {apart: waving ? [side] : [], bend: {tilt: -SIDES[side] * 5 * waving}});
-    if (waving) armTo(pose, side, waving, {y: 0, x: -RAISED_ROLL, z: WAVE_BACK, bend: WAVE_BEND + WAVE_SWING * waveOf(span(u, 0, 0.32), 2)});
+    if (waving)
+        armTo(pose, side, waving, {y: 0, x: -RAISED_ROLL, z: WAVE_BACK, bend: WAVE_BEND + WAVE_SWING * waveOf(span(u, 0, 0.32), 2)});
     pose.revolve(facing);
 }
 
@@ -687,7 +733,14 @@ function bare_exit(pose, stance, u) {
     pose.revolve(depart(pose, stance, u, 0, -1));
 }
 
-const ENTRANCES = {bare: bare_enter, butler: butler_enter, homie: homie_enter, squire: squire_enter, coach: coach_enter, colleague: colleague_enter};
+const ENTRANCES = {
+    bare: bare_enter,
+    butler: butler_enter,
+    homie: homie_enter,
+    squire: squire_enter,
+    coach: coach_enter,
+    colleague: colleague_enter,
+};
 const EXITS = {bare: bare_exit, butler: butler_exit, homie: homie_exit, squire: squire_exit, coach: coach_exit, colleague: colleague_exit};
 
 function enter(pose, stance, t) {
@@ -789,7 +842,7 @@ function butler_pointed(pose, stance, u) {
     breathe(pose, 0);
     trunk(pose, {tilt: 8 * swell(u, 0, 1), nod: 6 * swell(u, 0, 1), turn: 10 * swell(u, 0, 1)});
     armsAtRest(pose, stance);
-    stepLeg(pose, "r", 0, tap, 0, 15 * tap / TAP_LIFT);
+    stepLeg(pose, "r", 0, tap, 0, (15 * tap) / TAP_LIFT);
 }
 
 // the homie shrugs: arms out, palms up, head on one side
@@ -832,7 +885,14 @@ function squire_pointed(pose, stance, u) {
     if (raised) quill.forEach((side) => armTo(pose, side, raised, {y: -10, z: -70 + 15 * waveOf(3 * u), bend: 60}));
 }
 
-const POINTED = {bare: butler_pointed, butler: butler_pointed, homie: homie_pointed, coach: coach_pointed, colleague: colleague_pointed, squire: squire_pointed};
+const POINTED = {
+    bare: butler_pointed,
+    butler: butler_pointed,
+    homie: homie_pointed,
+    coach: coach_pointed,
+    colleague: colleague_pointed,
+    squire: squire_pointed,
+};
 
 function pointed(pose, stance, t) {
     POINTED[stance.voice](pose, stance, onceTime(t, 20));
@@ -1041,8 +1101,12 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
         }
     }
     const carried = meshes.filter((mesh) => mesh.visible);
-    const stance = {voice, level: handsHolding(carried, LEVEL_ITEMS), busy: handsHolding(carried, BUSY_ITEMS),
-        carried: handsHolding(carried, new Set([...BUSY_ITEMS, "squire_quill"]))};
+    const stance = {
+        voice,
+        level: handsHolding(carried, LEVEL_ITEMS),
+        busy: handsHolding(carried, BUSY_ITEMS),
+        carried: handsHolding(carried, new Set([...BUSY_ITEMS, "squire_quill"])),
+    };
     return {scene, rig: rigOf(scene), stance, eyes};
 }
 
