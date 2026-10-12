@@ -28,22 +28,30 @@ def dump(n: int = 1, **data) -> Dump:
     return Dump(n=n, title="Notes", brief="Some ideas", created=WHEN - 10 * n, data={"files": {"a.png": ""}, **data})
 
 
+def on_arrival(*rows) -> Given:
+    return Given.of(arrived(), *rows)
+
+
+def on_completion(*rows) -> Given:
+    return Given.of(arrived("completed"), *rows)
+
+
 class DumpsFeature(Feature):
     details = DumpsDetails
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(PromptFiling(), expects=[
-            Given.of(arrived(), dump(), IDLE) >> Nudged("arrived"),
-            Given.of(arrived(), dump(items=NOTED), IDLE) >> Unchanged(),
-            Given.of(arrived(), Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"files": {"a.png": ""}}), IDLE) >> Unchanged(),
-            Given.of(arrived(), dump(), dump(n=2), IDLE) >> Unchanged(),
-            Given.of(arrived(), dump(chosen={"at": 5.0, "pick": 1, "label": "Keep it"}), IDLE) >> Nudged("chose", label="Keep it"),
-            Given.of(arrived(), dump(chosen={"at": 5.0, "pick": -1, "label": ""}), IDLE) >> Nudged("decide"),
-            Given.of(arrived(), dump(chosen={"at": 5.0, "pick": OWN_WORDS, "label": "my own words"}), IDLE) >> Unchanged(),
-            Given.of(arrived(), dump(answers=[{"answer": "Tomorrow", "question": "When should it be done?"}]), IDLE) >> Nudged("answered", answer="Tomorrow"),
-            Given.of(arrived("completed"), Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, outcome="2 filed", data={"items": FILED, "files": {"a.png": ""}}), IDLE) >> Nudged("filed"),
-            Given.of(arrived("completed"), Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"stopped": True, "files": {"a.png": ""}}), IDLE) >> Unchanged(),
-            Given.of(arrived(), dump()) >> Unchanged(),
+            on_arrival(dump(), IDLE) >> Nudged("arrived"),
+            on_arrival(dump(items=NOTED), IDLE) >> Unchanged(),
+            on_arrival(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"files": {"a.png": ""}}), IDLE) >> Unchanged(),
+            on_arrival(dump(), dump(n=2), IDLE) >> Unchanged(),
+            on_arrival(dump(chosen={"at": 5.0, "pick": 1, "label": "Keep it"}), IDLE) >> Nudged("chose", label="Keep it"),
+            on_arrival(dump(chosen={"at": 5.0, "pick": -1, "label": ""}), IDLE) >> Nudged("decide"),
+            on_arrival(dump(chosen={"at": 5.0, "pick": OWN_WORDS, "label": "my own words"}), IDLE) >> Unchanged(),
+            on_arrival(dump(answers=[{"answer": "Tomorrow", "question": "When should it be done?"}]), IDLE) >> Nudged("answered", answer="Tomorrow"),
+            on_completion(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, outcome="2 filed", data={"items": FILED, "files": {"a.png": ""}}), IDLE) >> Nudged("filed"),
+            on_completion(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"stopped": True, "files": {"a.png": ""}}), IDLE) >> Unchanged(),
+            on_arrival(dump()) >> Unchanged(),
         ])
         journal.events.handler(CarryOnFiling(), expects=[
             Given.of(ClockTicked(agent=1), dump(), IDLE) >> Nudged("carry on"),
