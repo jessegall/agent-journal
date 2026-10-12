@@ -16,11 +16,11 @@ import pytest
 
 import commands.cli  # noqa: F401  wires the command line a tag runs its command through, as every process that runs the journal does
 import expects
-from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given, Held, Kept, NotAnOutcome, Nudged,
+from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given, Held, Kept, NotAnOutcome, Nudged, Set,
                      Outcome, Outcomes, Printed, Ran, Refused, Removed, Unchanged, Updated, Wrote, answering, at, counting,
                      exited, nothing)
 
-OUTCOME_WORDS = (Dispatches, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Answered)
+OUTCOME_WORDS = (Dispatches, Wrote, Removed, Updated, Printed, Ran, Refused, Changed, Kept, Unchanged, Formats, Nudged, Held, Answered, Set)
 GIVEN_ARGUMENTS = ("on", "rows", "settings", "remembered", "transcript", "held", "hook", "clock", "ids", "chat", "commands", "files", "processes", "providers")
 SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", "clock", "ids", "commands")
 

@@ -1,5 +1,5 @@
 from events.boards import BoardStarted
-from expects import Given, Kept, Refused, Unchanged
+from expects import Given, Kept, Refused, Unchanged, Set
 from framework.base import Feature
 from framework.journal import Journal
 from features.session_briefing.start import MODE, START_PARTS
@@ -22,6 +22,7 @@ class WorkModes(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(OrchestrateWhenABoardStarts(), expects=[
+            Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings={"work_modes.mode": "builder"}) >> Set("work_modes.mode", "orchestrator"),
             Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings={"work_modes.mode": "orchestrator"}) >> Unchanged(),
         ])
         journal.routes.add(post_mode)

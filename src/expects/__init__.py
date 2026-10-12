@@ -22,7 +22,7 @@ class NoSuchService(LookupError):
 
 __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "Dispatches", "Wrote", "Removed", "File", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
-           "Formats", "Nudged", "Held", "Answered", "Remembered",
+           "Formats", "Nudged", "Held", "Answered", "Remembered", "Set",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
            "NotAnOutcome", "NoSuchService")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
@@ -193,6 +193,20 @@ class Changed(Outcome):
     text: str
     def holds(self, seen) -> str:
         return "" if seen.changed == self.text else f"it changed the text to {seen.changed!r}, not to {self.text!r}"
+
+
+@dataclass(frozen=True)
+class Set(Outcome):
+    """A setting the handler wrote, named as a Given names one: the feature, a dot and the key."""
+
+    setting: str
+    value: Any
+
+    def holds(self, seen) -> str:
+        if self.setting not in seen.settings:
+            return f"it set no {self.setting}; the settings it left are {sorted(seen.settings)}"
+        found = seen.settings[self.setting]
+        return "" if found == self.value else f"it set {self.setting} to {found!r}, not to {self.value!r}"
 
 
 @dataclass(frozen=True)

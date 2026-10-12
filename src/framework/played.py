@@ -283,6 +283,11 @@ def files_left(record: Record) -> dict:
     return {str(path.relative_to(project)): path.read_text(errors="replace") for path in project.rglob("*") if path.is_file()}
 
 
+def settings_now(record) -> dict:
+    """Every setting the record holds after the play, by the same dotted name a Given states one with."""
+    return {f"{part}.{key}": value for part, held in record.settings().items() if isinstance(held, dict) for key, value in held.items()}
+
+
 def played(promise, expectation, inside: Path) -> Seen:
     """Builds the world the Given states, runs the registration through its own entry, and reads what it did."""
     if promise.kind not in ENTRIES:
@@ -298,4 +303,5 @@ def played(promise, expectation, inside: Path) -> Seen:
     world.seen.wrote, world.seen.updated = rows_touched(held, rows_held(record), rows_acted_on(record, since))
     world.seen.held = held_against_the_agents(record)
     world.seen.files = files_left(record)
+    world.seen.settings = settings_now(record)
     return world.seen
