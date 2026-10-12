@@ -44,6 +44,15 @@ class CheckRun(Loaded):
         return {"ok": self.ok, "code": self.code, "at": self.at, "took": self.took}
 
 
+@dataclass(frozen=True)
+class CheckRunning(Loaded):
+    """The run under way, as the row stores it. A row stamped by an older version names no process group, which reads as none."""
+    at: float = 0.0
+    output: str = ""
+    percent: int | None = None
+    pid: int = 0
+
+
 class Check(Shape, Resource):
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Check",
@@ -74,6 +83,10 @@ class Check(Shape, Resource):
     @property
     def last_run(self) -> CheckRun:
         return CheckRun.from_json(self.last)
+
+    @property
+    def under_way(self) -> CheckRunning:
+        return CheckRunning.from_json(self.running)
 
     def failure_title(self, headline: str) -> str:
         return (self.failure.replace("{summary}", headline) if self.failure else f"check {self.n} failed - {headline}")[:80]

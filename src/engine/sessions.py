@@ -80,8 +80,12 @@ class SessionRecord(Loaded):
 
 
 def live(session: SessionRecord) -> bool:
-    if session.retired:
-        return False
+    """Whether a session still stands as an environment's own: running, and not succeeded by another."""
+    return running(session) and not session.retired
+
+
+def running(session: SessionRecord) -> bool:
+    """Whether the session is at work, by its process or by having been heard from lately. It says nothing about whose turn the environment is."""
     if session.pid:
         return alive(session.pid)
     return time.time() - session.last_heard < RECENT
@@ -267,13 +271,19 @@ class Sessions:
         return prefer
 
     def last(self, env: str, provider: str) -> str:
+        """The session of this environment to start again: the one heard from last that is not running. A session is there to be taken up again because it exists, not because nothing has taken its place since, so what succeeded it does not come into it."""
         ended = [(s.last_heard, name) for name, s in self.all().items()
-                 if s.environment == env and s.provider == provider and s.pid and not live(s) and not s.retired
+                 if s.environment == env and s.provider == provider and s.pid and not running(s)
                  and not name.startswith(f"{provider}-")]
         return max(ended)[1] if ended else ""
 
     def touch(self, session: str, worked_in: str) -> None:
-        self.write(session, seen=time.time(), worked_in=worked_in)
+        self.write(session, seen=time.time(), worked_in=worked_in, **self._unretired(session))
+
+    def _unretired(self, session: str) -> dict:
+        """Clears a retirement made by another name of this same agent. One process is one agent, so a record it retired and then went on reporting through was never succeeded: it took the environment from itself, which leaves the environment held by a record nobody touches while the working session sits retired out of sight."""
+        held = self.read(session)
+        return {"retired": {}} if held.retired and held.retired.get("by") in self.agent(session, held.pid) else {}
 
     def unbind(self, session: str) -> None:
         self.write(session, environment="")
@@ -311,7 +321,8 @@ class Sessions:
         return next(name for name in (env, *(f"{env}-{i}" for i in range(2, 100))) if not self.holder(name))
 
     def holders(self, env: str) -> list[str]:
-        held = [(s.last_heard, session) for session, s in self.all().items() if s.environment == env and live(s)]
+        """The sessions running in an environment, the one heard from last first: an environment's agent is whichever of its sessions is working, and nothing else decides it. A session that was once succeeded and is running again is its agent again, since being someone's past says nothing about whether it is at work now."""
+        held = [(s.last_heard, session) for session, s in self.all().items() if s.environment == env and running(s)]
         return [session for _, session in sorted(held, reverse=True)]
 
     def version(self) -> tuple[int, int]:

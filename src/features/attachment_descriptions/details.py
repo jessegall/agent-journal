@@ -42,11 +42,11 @@ class AttachmentDescriptionsDetails(FeatureDetails):
         Line(
             name="untagged",
             title="{{type}} {{n}} file {{name}} needs tags",
-            brief='inspect the attachment, then journal {{type}} tag {{n}} {{quoted}} "<a few words describing what it shows>"',
+            brief='look at it, then journal {{type}} tag {{n}} {{quoted}} "<what it shows>"',
         ),
         Line(
             name="many untagged",
             title="{{count}} attached files need tags",
-            brief='the first {{shown}}, as type, number and name: {{listed}}. Inspect each, then journal <type> tag <n> "<name>" "<a few words describing what it shows>"',
+            brief='{{listed}}. Look at each, then journal <type> tag <n> "<name>" "<what it shows>"',
         ),
     ]

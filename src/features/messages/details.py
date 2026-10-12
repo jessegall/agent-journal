@@ -72,7 +72,7 @@ class MessagesDetails(FeatureDetails):
         ),
         Setting(
             name="answering.hold",
-            default=0,
+            default=10,
             title="Hold the agent's tool calls after this many tool uses with a message unanswered",
             unit="uses",
             under="answering",

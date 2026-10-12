@@ -74,11 +74,16 @@ def git(args: list[str], cwd, timeout: float = 5, stdin: str | None = None) -> s
     return done.stdout if done else ""
 
 
-def streamed(args: list[str], cwd, timeout: float, on_output, env: dict | None = None) -> tuple[int | None, str]:
+def nothing_started(group: int) -> None:
+    """What a caller that does not need the process group is given in its place."""
+
+
+def streamed(args: list[str], cwd, timeout: float, on_output, env: dict | None = None, started=nothing_started) -> tuple[int | None, str]:
     try:
         child = subprocess.Popen(args, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=True)
     except OSError as error:
         return None, str(error)
+    started(child.pid)
     timer = threading.Timer(timeout, teardown, (child.pid, GRACE))
     timer.start()
     output = bytearray()

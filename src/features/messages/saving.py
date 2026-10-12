@@ -12,4 +12,7 @@ class SaveAgentMessage(Handler):
         if only_emoji(event.text):
             context.agent.whisper("reaction", face=event.text.strip())
             return
-        context.journal.acting(AGENT).get(Messages).create(titled(event.text), brief=event.text, idempotency=event.turn)
+        messages = context.journal.acting(AGENT).get(Messages)
+        if messages.said_already(event.text):
+            return
+        messages.create(titled(event.text), brief=event.text, idempotency=event.turn)

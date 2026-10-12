@@ -277,12 +277,16 @@ class Controller(Files, Links, Discussed, Buttons):
         """The row an earlier create with this idempotency key made, or none. Named apart from _made, which a controller of the features already uses for something else, so the base cannot shadow it."""
         return self.rows.by_idempotency(key) if key else None
 
+    def lately(self, since: float) -> list[Resource]:
+        """The rows written since a moment, newest first and read without copying. A row written lately is near the end of the summaries, so only their tail is walked."""
+        numbers = [row["n"] for row in self.rows.summaries()[-TWIN_WINDOW:] if not row["deleted"] and row["updated"] >= since]
+        return [self.peek(n) for n in reversed(numbers[-20:])]
+
     def _twin(self, title: str, brief: str, about, idempotency: str = "") -> Resource | None:
         if not self.resource.deduplicates:
             return None
         since = time.time() - TWICE_WITHIN
-        lately = [row["n"] for row in self.rows.summaries()[-TWIN_WINDOW:] if not row["deleted"] and row["updated"] >= since]
-        recent = (self.load(n) for n in reversed(lately[-20:]))
+        recent = self.lately(since)
         return next((r for r in recent if r.created >= since and r.title == title and r.brief == brief
                      and r.author == self.actor and (not about or about in r.refs)
                      and (not idempotency or r.data.get("idempotency") == idempotency)), None)

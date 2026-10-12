@@ -1,4 +1,6 @@
 import re
+from dataclasses import dataclass
+from typing import Callable
 from declaring.extension import Extension
 from resources.text import noun, plural
 
@@ -8,8 +10,17 @@ PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
 APPENDS = Extension()
 
 
+@dataclass(frozen=True)
+class Addition:
+    """What a feature adds to an announcement. One that names the rows itself stands instead of the count, which would otherwise say the same thing twice."""
+    says: Callable
+    instead: bool = False
+
+
 def appended(on: str, values: dict, line: str) -> str:
-    return " - ".join([line, *(added for added in (append(**values) for append in APPENDS.each(key=on)) if added)])
+    written = [(add.instead, said) for add in APPENDS.each(key=on) if (said := add.says(**values))]
+    replacing = next((said for instead, said in written if instead), "")
+    return " - ".join([replacing or line, *(said for instead, said in written if not instead)])
 
 
 def counted(announced: dict[tuple, dict], record) -> list[str]:

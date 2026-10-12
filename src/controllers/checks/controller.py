@@ -9,7 +9,8 @@ from pathlib import Path
 from controllers.base import Controller
 from controllers.marks import action
 from engine.package import entry
-from engine.proc import streamed
+from engine.proc import nothing_started, streamed
+from engine.keeper import GRACE, teardown
 from controllers.faults import threw
 from engine import runtime
 from engine.load import scaled
@@ -38,7 +39,8 @@ class Checks(Controller):
     @action
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         made = super().create(title, abstract, brief, **data)
-        return self.update(made.n, buttons=[{"label": "Run", "type": self.type, "action": "run", "n": made.n, "again": True}])
+        return self.update(made.n, buttons=[{"label": "Run", "type": self.type, "action": "run", "n": made.n, "again": True},
+                                            {"label": "Stop", "type": self.type, "action": "stop", "n": made.n, "again": True}])
 
     @action
     def run(self, n: int, wait: bool = False):
@@ -93,8 +95,8 @@ class Checks(Controller):
     def _project(self):
         return self.record.root.resolve().parent
 
-    def _shell(self, command: str, on_output=lambda _: None, env: dict | None = None, timeout: float = TIMEOUT) -> tuple[int | None, str]:
-        return streamed(["/bin/sh", "-c", command], self._project, timeout, on_output, env=env)
+    def _shell(self, command: str, on_output=lambda _: None, env: dict | None = None, timeout: float = TIMEOUT, started=nothing_started) -> tuple[int | None, str]:
+        return streamed(["/bin/sh", "-c", command], self._project, timeout, on_output, env=env, started=started)
 
     @action(network=True)
     def touched(self, n: int) -> str:
@@ -150,7 +152,20 @@ class Checks(Controller):
 
     @action
     def sweep(self, wait: bool = False):
-        return [self.run(check.n, wait=wait) for check in self.rows.standing() if check.command or check.instruction]
+        """Runs the checks that keep a schedule. One with no interval is run by hand and by hand only, so a sweep never fires it."""
+        return [self.run(check.n, wait=wait) for check in self.rows.standing() if (check.command or check.instruction) and check.every]
+
+    @action
+    def stop(self, n: int) -> str:
+        check = self.load(n)
+        if not check.running:
+            return f"check {n} is not running"
+        group = check.under_way.pid
+        if not group:
+            self.stamp(n, running={})
+            return f"check {n} was waiting on the agent, not on a process; it no longer is"
+        teardown(group, GRACE)
+        return f"check {n} is stopped; the run records what it had reached"
 
     def begin(self, n: int) -> bool:
         """Starts a due check: a command in the background, an instruction as a turn for the agent; False when it is already under way."""
@@ -218,19 +233,24 @@ class Checks(Controller):
         if missing:
             return self._unrunnable(n, check.command, missing)
         began, last_steps = time.time(), check.last_run.steps
-        self.stamp(n, running={"at": began, "output": "", "percent": None})
+        running = {"at": began, "output": "", "percent": None, "pid": 0}
+        self.stamp(n, running=running)
         stamped_at = [began]
+
+        def started(group: int) -> None:
+            running["pid"] = group
+            self.stamp(n, running=dict(running))
 
         def on_output(output: str) -> None:
             if time.time() - stamped_at[0] >= STAMP_EVERY:
                 stamped_at[0] = time.time()
-                self.stamp(n, running={"at": began, "output": tail(output), **progress(output, last_steps)})
+                self.stamp(n, running={**running, "output": tail(output), **progress(output, last_steps)})
 
         report = runtime.folder(self.record.root) / REPORTS / f"{n}.json"
         report.parent.mkdir(parents=True, exist_ok=True)
         report.unlink(missing_ok=True)
         timeout = scaled(float(check.timeout))
-        code, output = self._shell(check.command, on_output, env={**os.environ, REPORT: str(report)}, timeout=timeout)
+        code, output = self._shell(check.command, on_output, env={**os.environ, REPORT: str(report)}, timeout=timeout, started=started)
         check, took = self.load(n), time.time() - began
         kept = tail(output)
         if code is None and took >= timeout:

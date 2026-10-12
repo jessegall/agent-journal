@@ -4,6 +4,30 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.7 — The agent is told its tag ran, and never says the same thing twice
+
+- A tag that runs says so, in one short line naming it. Nothing ever confirmed a tag, so a turn whose tool call was held afterwards read as a turn that had failed whole, and the agent wrote the same words again.
+- A message the agent has just said is not filed a second time, whether the first copy was a plain message or a reply. The chat has nothing to filter because the duplicate is never written.
+- A message is owed an answer from the tenth tool use, not the next one (`messages.answering.hold`, was 0). The line that announces a message also marks it read, so the hold used to bite before there was any chance to reply.
+- The line announcing a message is `user message 4465: …` instead of `1 new message 4465 - the user wrote: …`, and the attachment and reply hints are shorter too.
+- A check with no interval is run by hand only: `journal check sweep` skipped the interval and fired every check at once, which is not what "never, unless I ask" means.
+- `journal check stop <n>` stops a check that is running, and every check row carries a Stop button beside its Run button.
+- The Developer group — error reports, session recording and design critique — is switched off wherever an earlier version switched it on (migration m0085). The defaults changed in 2.272.3, but a switch already written keeps the value it was given.
+- The viewer reloads when it finds the server serving a version other than the one the page came from. It only ever reloaded after an update it had watched from the start, so a page that was away, asleep or simply not looking at the right moment went on running against a journal that had moved under it.
+
+## 2.272.6 — The updating screen asks for itself, and a session is yours to start again because it exists
+
+- The screen that covers the journal while it updates now asks the server for itself, twice a second, for as long as it is up. It only ever read what the page's ordinary polling told it, so when that polling stopped the screen stayed over a journal that was perfectly alive. A request that fails is now a round that found nothing, and the next one goes out all the same.
+- The session the journal offers to start again is simply the one heard from last that is not running. It used to pass over any session another had taken the environment from, so an agent you had swapped away from could not be picked up again. What succeeded a session says nothing about whether you can return to it.
+
+## 2.272.5 — An environment's agent is whichever of its sessions is working
+
+- An agent that had once been succeeded could never hold its environment again, however plainly it was working: one word asked two questions at once, and because being someone's past made a session "not live", it also made it invisible as a worker. Running and being the environment's own are now two questions, and the environment's agent is simply whichever of its sessions is at work, heard from last. Stopping one agent and starting an earlier one again now does what it looks like.
+
+## 2.272.4 — An environment is held by the agent that is working in it, not by a record of itself it retired
+
+- An agent could take an environment from itself and then report through the record it had just retired, so the environment was held by a name nobody ever touched: never heard from, its row still stopped, and the status bar said "started, but it never reported in" while the agent wrote in the same window. One process is one agent, so a session that goes on reporting through a record its own other name retired was never succeeded, and the retirement is cleared the moment it reports.
+
 ## 2.272.3 — Nothing in the Developer group is on unless you ask, and a chat you scrolled up never jumps
 
 - Developer error reports, session recording and the critique rounds are off until you switch them on. All three were on in every project, because a feature is on unless it says otherwise and none of them said otherwise. Developer error reports in particular turn the journal's quiet fallbacks into refusals, which is not what a project that is merely using the journal wants.
