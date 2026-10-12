@@ -37,8 +37,8 @@ class JournalLaws(Feature):
         journal.agent.canceler(EnforceDispatchLaw(), expects=[
             Given(Dispatch(kind="general-purpose", model="sonnet", model_supported=True), rows=[AgentRow(n=1)])
                 >> Refused("Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."),
-            # model="" is the case: a missing model is what law L1 refuses
-            Given(Dispatch(kind="Plan", model="", model_supported=True, description="Dr. Einstein: profile the build"), rows=[AgentRow(n=1)])
+            # no model is the case: a missing model is what law L1 refuses
+            Given(Dispatch(kind="Plan", model=None, model_supported=True, description="Dr. Einstein: profile the build"), rows=[AgentRow(n=1)])
                 >> Refused("Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."),
             Given(Dispatch(kind="Plan", model="gpt-9", model_supported=True, models=("sonnet", "haiku"), description="Dr. Einstein: profile the build"), rows=[AgentRow(n=1)])
                 >> Refused("gpt-9 is not a model this account offers. Choose one of sonnet, haiku."),

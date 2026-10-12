@@ -129,7 +129,7 @@ class UsageWindow:
 @dataclass(frozen=True)
 class Dispatch:
     kind: str
-    model: str
+    model: str | None
     model_supported: bool
     task: str = ""
     description: str = ""

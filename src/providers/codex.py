@@ -402,7 +402,7 @@ class Codex(Provider):
     def dispatch(self, tool, project: Path) -> Dispatch | None:
         if not isinstance(tool, AgentCall):
             return None
-        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip(), model_supported=True, models=self.models(),
+        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip() or None, model_supported=True, models=self.models(),
                         prompt=tool.prompt, read_only=self.reads_only(project, tool.kind.strip()))
 
     def reads_only(self, project: Path, kind: str) -> bool:
