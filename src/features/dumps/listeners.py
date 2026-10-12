@@ -30,7 +30,7 @@ def answered_fact(dump: Dump) -> list[Fact]:
 
 class SpotDumpWritten(Listener[DumpWritten]):
     def listen(self, event: DumpWritten, dumps: ReadRows[Dump], agents: ReadRows[AgentRow]) -> list[Fact]:
-        if agents.primary_to_read() is None:
+        if not agents.has_primary():
             return []
         dump, in_hand = dumps.peek(event.n), dumps._in_hand()
         if dump.data.get("chosen"):

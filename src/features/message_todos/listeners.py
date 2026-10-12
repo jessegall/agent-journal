@@ -24,7 +24,7 @@ class SpotTodoForWaitingMessage(Listener[TodoCreated]):
     """A to-do filed while a message of the user's is waiting is almost certainly from it, so the journal asks at once rather than waiting for a reply that may never be written."""
 
     def listen(self, event: TodoCreated, todos: ReadRows[Todo], messages: ReadRows[Message], agents: ReadRows[AgentRow]) -> list[Fact]:
-        if event.actor != AGENT or agents.primary_to_read() is None:
+        if event.actor != AGENT or not agents.has_primary():
             return []
         todo = todos.peek(event.n)
         if messages.is_linked(todo.ref):
@@ -36,7 +36,7 @@ class SpotTodoForWaitingMessage(Listener[TodoCreated]):
 class SpotTodosInReply(Listener[ResourceCreated]):
     def listen(self, event: ResourceCreated, comments: ReadRows[Comment], todos: ReadRows[Todo], messages: ReadRows[Message],
                agents: ReadRows[AgentRow], settings: Settings, clock: Clock) -> list[Fact]:
-        if event.type != "comment" or event.actor != AGENT or agents.primary_to_read() is None:
+        if event.type != "comment" or event.actor != AGENT or not agents.has_primary():
             return []
         reply = comments.peek(event.n)
         answered = [int(n) for kind, _, n in (ref.partition(":") for ref in reply.refs) if kind == "message" and n.isdigit()]

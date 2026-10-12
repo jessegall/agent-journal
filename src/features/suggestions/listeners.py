@@ -13,7 +13,7 @@ SAID = {Decision.ACCEPT: "You said yes to suggestion", Decision.ADJUST: "You cha
 def answered(suggestion: Suggestion, actor: str, agents, todo: int = 0) -> list[Fact]:
     """The user's answer as a mark in the chat; the agent's own answer leaves none."""
     decision = Decision(suggestion.decision)
-    if actor != USER or decision not in SAID or agents.primary_to_read() is None:
+    if actor != USER or decision not in SAID or not agents.has_primary():
         return []
     return [UserAnswered(n=suggestion.n, label=SAID[decision], detail=f"Added to-do {todo}" if todo else "")]
 
@@ -33,4 +33,4 @@ class SpotFiledSuggestion(Listener[SuggestionFiled]):
 
 class SpotTakenBackAnswer(Listener[SuggestionReopened]):
     def listen(self, event: SuggestionReopened, agents: ReadRows[AgentRow]) -> list[Fact]:
-        return [] if agents.primary_to_read() is None else [AnswerTakenBack(n=event.n)]
+        return [AnswerTakenBack(n=event.n)] if agents.has_primary() else []

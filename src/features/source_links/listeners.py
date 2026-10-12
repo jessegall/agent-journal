@@ -13,7 +13,7 @@ NAMED = 3
 class SpotUncitedSource(Listener[ResourceCreated]):
     def listen(self, event: ResourceCreated, plans: ReadRows[Plan], docs: ReadRows[Doc], reports: ReadRows[Report],
                agents: ReadRows[AgentRow], settings: Settings, clock: Clock) -> list[Fact]:
-        if event.actor != AGENT or event.type not in BUILT_ON or agents.primary_to_read() is None:
+        if event.actor != AGENT or event.type not in BUILT_ON or not agents.has_primary():
             return []
         made = {"plan": plans, "doc": docs, "report": reports}[event.type].peek(event.n)
         since = clock.now() - settings.within * 60
