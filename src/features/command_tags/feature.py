@@ -4,9 +4,14 @@ from features.command_tags.details import CommandTagsDetails
 from features.command_tags.formatters import StripTags
 from features.command_tags.handlers import RunTagCommands, TeachTheTag
 from features.command_tags.answering import answered
+from features.command_tags.told import told
+from payload import HookEvent
 from events.agents import BusMessageSending, CommandRan
-from expects import Changed, Formats, Given, Kept, Nudged, Unchanged, Updated, Wrote
+from expects import Answered, Changed, Formats, Given, Hooked, Kept, Nudged, Unchanged, Updated, Wrote, answering
 from resources.types import AgentRow, Message, Todo
+
+
+RAN = answering({".journal/runtime/sessions/claude-1/tags-ran.txt": "the reply tag on 12 ran\n"})
 
 
 class CommandTags(Feature):
@@ -33,6 +38,11 @@ class CommandTags(Feature):
         journal.client.formatter(StripTags(), expects=[
             Formats('[!reply:12] the answer', to='the answer'),
             Formats('plain words', to='plain words'),
+        ])
+        journal.agent.responder(HookEvent.PRE_TOOL_USE, told, expects=[
+            Given("a tag ran while the agent was writing", rows=[AgentRow(n=1, title="claude-1")], hook=Hooked(event="PreToolUse"), files=RAN)
+                >> Answered("[journal] the reply tag on 12 ran\n"),
+            Given("no tag has run", rows=[AgentRow(n=1, title="claude-1")], hook=Hooked(event="PreToolUse")) >> Answered(""),
         ])
         journal.agent.append_to_line("message.created", answered, instead=True)
         journal.agent.append_to_line("messages.answer", answered)
