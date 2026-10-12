@@ -4,7 +4,7 @@ from declaring.holds import Runs
 from engine.gates import held
 from declaring.reach import Reach
 from framework.parts import AgentContext, ToolInterceptor
-from providers import command_effects
+from framework import command_effects
 
 
 class RefuseHeldCalls(ToolInterceptor):

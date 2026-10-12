@@ -16,7 +16,7 @@ from features.plugins.paths import folder, logged, plugin_socket
 from features.plugins.payload import refusal
 from features.plugins.run import PluginReply, call
 from features.plugins.skills import withdrawn
-from providers import command_effects
+from framework import command_effects
 from resources.base import OWNER, PLUGIN, SYSTEM
 from declaring.reach import Reach
 from events.plugins import PluginCompleted

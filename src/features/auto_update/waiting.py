@@ -8,7 +8,7 @@ from engine.proc import process
 from engine.record import Record
 from engine.sessions import Sessions
 from resources.text import clipped
-from providers.command_effects import settled
+from framework.command_effects import settled
 from resources.base import SYSTEM
 from resources.marks import Card
 

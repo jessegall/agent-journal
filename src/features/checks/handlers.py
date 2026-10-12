@@ -8,8 +8,8 @@ from events.agents import AgentReported
 from resources.text import digest
 from resources.check_output import summary
 from payload import HookEvent
-from providers.command_effects import background_outcome
-from providers.tested import testing_piece, tested
+from framework.command_effects import background_outcome
+from framework.tested import testing_piece, tested
 from framework.parts import AgentContext, Context, Handler
 from controllers.types import Checks
 from controllers.types import Agents, Notifications

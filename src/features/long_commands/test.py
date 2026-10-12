@@ -56,7 +56,7 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
     assert not Agents(record, actor="system").by_session("claude-1").step, "a part whose end arrived before its start is never shown as running"
     from dataclasses import replace
     from providers.base import Provider
-    from providers.command_effects import shell as hooked
+    from framework.command_effects import shell as hooked
     from payload import Hook
     from engine.command_runs import waiting_run
     call = lambda event, name, text, at: replace(Hook.read({"hook_event_name": event, "session_id": "x", "tool_name": "Bash", "tool_use_id": name, "tool_input": {"command": text}}, Provider.tool_kinds), at=at)
@@ -140,7 +140,7 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
         "a shell line and a slash command you typed are read with what they printed"
     assert Claude().work_links(transcript) == ["https://claude.ai/design/def?file=page.html", "https://github.com/jessegall/agent-journal/pull/8"], \
         "the links worth opening are kept once each, newest first, and an image inside a design is not one"
-    from providers.command_effects import background_outcome
+    from framework.command_effects import background_outcome
     out = tmp_path / "suite.txt"
     out.write_text("....\n7 passed, 1 failed in 3.2s\n")
     suite = f"journal work resume 2; (cd {tmp_path} && .venv/bin/python -m pytest -q src/features/plans/test.py > suite.txt 2>&1)"
@@ -338,7 +338,7 @@ def test_a_call_that_never_reported_back_is_closed_and_a_command_that_ended_befo
     from features.long_commands import move
     from providers import PROVIDERS
     from providers.base import BackgroundTasks
-    from providers.command_effects import refused
+    from framework.command_effects import refused
     from tests.kit import handle
     record = fresh()
     moved = []

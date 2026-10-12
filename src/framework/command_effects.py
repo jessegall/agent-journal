@@ -7,7 +7,7 @@ from payload import AgentCall, BashCall, FetchCall, Hook, HookEvent, ReadCall, S
 from dataclasses import replace
 
 from engine.command_runs import CommandRun, Outcome, command_runs, current_run
-from providers.tested import testing_piece
+from framework.tested import testing_piece
 from resources.types import AgentRow
 
 KINDS = ((ReadCall, "reads"), (SearchCall, "searches"), (FetchCall, "fetches"), (AgentCall, "dispatches"), (SkillCall, "loads"))

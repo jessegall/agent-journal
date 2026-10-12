@@ -94,7 +94,7 @@ def test_a_key_is_not_requested_for_a_service_a_connected_mcp_server_reaches(tmp
 
 def test_a_command_gets_the_value_and_prints_only_its_mask(tmp_path, monkeypatch, capsys):
     from controllers.secrets.running import Masker
-    from providers.command_effects import effects
+    from framework.command_effects import effects
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "config"))
     features.load()
     record = fresh()

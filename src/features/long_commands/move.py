@@ -6,7 +6,7 @@ from events.agents import AgentBeat, ClockTicked
 from engine.gates import LONG_COMMAND, HookCall, cancelled
 from features.long_commands.details import KEPT, MOVED, background_after, background_switch
 from features.work_modes.modes import mode_of
-from providers.command_effects import JOURNAL_CALL
+from framework.command_effects import JOURNAL_CALL
 from engine.sessions import Sessions
 from features.long_commands.watch import background_tasks_of, running_part
 from framework.parts import AgentContext, Handler

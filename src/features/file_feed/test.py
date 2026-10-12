@@ -9,7 +9,7 @@ from engine.files import announce, announce_writes, blobs
 from providers import skill_folders
 from features.file_feed.feed import PAGE, Side, edited_file, edits_before, edits_since
 from engine.record import Record
-from providers.command_effects import inside, may_change_files, writes
+from framework.command_effects import inside, may_change_files, writes
 from providers.base import Provider
 from providers.codex import Codex
 from payload import Hook
@@ -216,8 +216,8 @@ def test_a_repository_with_nothing_in_it_a_missing_folder_and_a_job_that_fails_a
 
 
 def test_a_test_run_inside_a_long_compound_background_command_is_named_by_its_test_part():
-    from providers.command_effects import test_command
-    from providers.tested import tested
+    from framework.command_effects import test_command
+    from framework.tested import tested
     command = f"journal work resume 5 --how '{'x' * 500}'; (cd /project && .venv/bin/python -m pytest -q src/features/plans/test.py > out.txt 2>&1)"
     hook = Hook.read({"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": command, "run_in_background": True}, "cwd": "/project"},
                      Provider.tool_kinds)
