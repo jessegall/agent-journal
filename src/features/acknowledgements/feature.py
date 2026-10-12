@@ -1,45 +1,53 @@
-from features.acknowledgements.details import AcknowledgementsDetails
-from features.acknowledgements.handlers import HideJournalOnlyTurns
+from features.acknowledgements.details import KEPT_OUT, AcknowledgementsDetails
+from features.acknowledgements.handlers import ExplainTheWithholding, FileTheAcknowledgement
+from features.acknowledgements.listeners import KeepNodsOutOfTheChat, SpotNods
 from framework.base import Feature
 from framework.journal import Journal
-from events.agents import BusMessageSending
-from expects import Given, Kept, Unchanged, Wrote
+from events.acknowledgements import FirstNodWithheld, NodWithheld
+from events.agents import AgentTurnWritten
+from events.answers import Allowed, Kept
+from events.asking import AgentMessageSending
+from expects import Answered, Dispatches, Given, Nudged, Wrote, nothing
 from payload import JOURNAL
 from resources.types import AgentRow, Message, Nudge
+
+REMINDER = Nudge(n=2, title="a reminder")
+
+
+def prompted(by: str = JOURNAL, delivered: str = "nudge:2", **more) -> AgentRow:
+    return AgentRow(n=1, title="claude-1", data={"prompted": by, "delivered": [delivered], **more})
+
+
+def sending(text: str) -> AgentMessageSending:
+    return AgentMessageSending(text=text, turn="t1", session="claude-1")
 
 
 class Acknowledgements(Feature):
     details = AcknowledgementsDetails
 
     def register(self, journal: Journal) -> None:
-        journal.events.handler(HideJournalOnlyTurns(), expects=[
-            Given(BusMessageSending(agent=1, data={"text": "Noted.", "turn": "t1"}),
-                  rows=[AgentRow(n=1, data={"prompted": JOURNAL, "delivered": ["nudge:2"]}), Nudge(n=2, title="a reminder")])
-                >> Wrote(Message(n=1, title="Noted.", brief="Noted.", data={"acknowledgement": True})),
-            Given(BusMessageSending(agent=1, data={"text": "Noted.", "turn": "t1"}),
-                  rows=[AgentRow(n=1, data={"prompted": "the person", "delivered": ["nudge:2"]}), Nudge(n=2, title="a reminder")])
-                >> Unchanged() & Kept(),
-            Given(BusMessageSending(agent=1, data={"text": "Noted.", "turn": "t1"}),
-                  earlier=(BusMessageSending(agent=1, data={"text": "Noted.", "turn": "t1"}),),
-                  rows=[AgentRow(n=1, data={"prompted": JOURNAL, "delivered": ["nudge:2"]}), Nudge(n=2, title="a reminder")])
-                >> Unchanged(),
-            Given(BusMessageSending(agent=1, data={"text": "Got it, but which branch should I use?", "turn": "t1"}),
-                  rows=[AgentRow(n=1, data={"prompted": JOURNAL, "delivered": ["nudge:2"]}), Nudge(n=2, title="a reminder")])
-                >> Unchanged() & Kept(),
-            Given(BusMessageSending(agent=1, data={"text": "Noted.", "turn": "t1"}),
-                  rows=[AgentRow(n=1, data={"prompted": JOURNAL, "failure": "the turn failed", "delivered": ["nudge:2"]}), Nudge(n=2, title="a reminder")])
-                >> Unchanged() & Kept(),
-            Given(BusMessageSending(agent=1, data={"text": "Carrying on with it.", "turn": "t1"}),
-                  rows=[AgentRow(n=1, data={"prompted": JOURNAL, "delivered": ["nudge:2"]}), Nudge(n=2, title="plan 3 stands still", data={"reply_kept": True})])
-                >> Unchanged() & Kept(),
-            Given(BusMessageSending(agent=1, data={"text": "Okay, on it.", "turn": "t1"}),
-                  rows=[AgentRow(n=1, data={"prompted": JOURNAL, "delivered": ["message:7"]}), Message(n=7, title="can you look at this", seen=["user"])])
-                >> Unchanged() & Kept(),
-            Given(BusMessageSending(agent=1, data={"text": "That is the helper's earlier report.", "turn": "t1"}),
-                  rows=[AgentRow(n=1, data={"prompted": JOURNAL, "delivered": ["message:7"]}), Message(n=7, title="helper 3 reported", seen=["agent"])])
-                >> Wrote(Message(title="That is the helper's earlier report.", data={"acknowledgement": True})),
-            Given(BusMessageSending(agent=1, data={"text": "On it: a hotfix is under way.", "turn": "t1"}),
-                  rows=[AgentRow(n=1, data={"prompted": JOURNAL, "delivered": ["message:7"]}),
-                        Message(n=7, title="a broken command here", seen=["agent"], data={"from_session": "uds:/tmp/b.sock"})])
-                >> Unchanged() & Kept(),
+        journal.events.answer(AgentMessageSending, KeepNodsOutOfTheChat(), expects=[
+            Given(sending("Noted."), rows=[prompted(), REMINDER]) >> Answered(Kept()),
+            Given(sending("Noted."), rows=[prompted(by="the person"), REMINDER]) >> Answered(Allowed()),
+            Given(sending("Got it, but which branch should I use?"), rows=[prompted(), REMINDER]) >> Answered(Allowed()),
+            Given(sending("Noted."), rows=[prompted(failure="the turn failed"), REMINDER]) >> Answered(Allowed()),
+            Given(sending("Carrying on with it."), rows=[prompted(), Nudge(n=2, title="plan 3 stands still", data={"reply_kept": True})]) >> Answered(Allowed()),
+            Given(sending("Okay, on it."), rows=[prompted(delivered="message:7"), Message(n=7, title="can you look at this", seen=["user"])]) >> Answered(Allowed()),
+            Given(sending("That is the helper's earlier report."), rows=[prompted(delivered="message:7"), Message(n=7, title="helper 3 reported", seen=["agent"])])
+                >> Answered(Kept()),
+            Given(sending("On it: a hotfix is under way."), rows=[prompted(delivered="message:7"),
+                                                                   Message(n=7, title="a broken command here", seen=["agent"], data={"from_session": "uds:/tmp/b.sock"})])
+                >> Answered(Allowed()),
+        ])
+        journal.events.listen(AgentTurnWritten, SpotNods(), expects=[
+            Given(AgentTurnWritten(agent=1, turn="t1", text="Noted."), rows=[prompted(), REMINDER])
+                >> Dispatches(FirstNodWithheld(agent=1).once("kept out|claude-1")) & Dispatches(NodWithheld(agent=1, turn="t1", text="Noted.").once("nudge:2:Noted.")),
+            Given(AgentTurnWritten(agent=1, turn="t1", text="Noted."), rows=[prompted(by="the person"), REMINDER]) >> Dispatches(nothing),
+            Given(AgentTurnWritten(agent=1, turn="t1", text="  "), rows=[prompted(), REMINDER]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(NodWithheld, FileTheAcknowledgement(), expects=[
+            Given(NodWithheld(agent=1, turn="t1", text="Noted."), rows=[prompted()]) >> Wrote(Message(title="Noted.", brief="Noted.", data={"acknowledgement": True})),
+        ])
+        journal.events.handle(FirstNodWithheld, ExplainTheWithholding(), expects=[
+            Given(FirstNodWithheld(agent=1), rows=[prompted()]) >> Nudged(KEPT_OUT),
         ])

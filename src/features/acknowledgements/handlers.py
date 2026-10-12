@@ -1,58 +1,17 @@
-from controllers.base import row_of
-from controllers.types import Messages, Nudges
-from events.agents import BusMessageSending
-from features.command_tags.reading import CARRIED
-from features.messages.answering import answered
-from framework.parts import AgentContext, Context, Handler
-from payload import JOURNAL
+from events import Fact
+from events.acknowledgements import FirstNodWithheld, NodWithheld
 from features.acknowledgements.details import KEPT_OUT
-from resources.base import AGENT, USER, Ref, Refused, titled
-
-ALWAYS_KEPT = ("message", "question", "comment")
-A_NOD = 120
+from receiving import Handler
+from serving import Chat
 
 
-def reply_kept(context: Context, delivered: list[str]) -> bool:
-    try:
-        refs = [Ref.parse(ref) for ref in delivered]
-        if not refs or any(ref.type in ALWAYS_KEPT and awaiting_person(context, ref) for ref in refs):
-            return True
-        return any(row_of(context.record, ref).data.get("reply_kept") for ref in refs if ref.type == Nudges.resource.type)
-    except Refused:
-        return True
+class FileTheAcknowledgement(Handler[NodWithheld]):
+    def handle(self, event: NodWithheld, chat: Chat) -> list[Fact]:
+        chat.post(event.text, event.turn, acknowledgement=True)
+        return []
 
 
-def written_by_person(record, ref: Ref) -> bool:
-    """A message the agent or another agent wrote, such as a helper's report, is a journal line to answer silently, not a message from the person; one that came from another session is a peer's words and is always answered in the chat."""
-    if ref.type != Messages.resource.type:
-        return True
-    message = row_of(record, ref)
-    return USER in message.seen[:1] or bool(message.data.get("from_session"))
-
-
-def awaiting_person(context: Context, ref: Ref) -> bool:
-    """A message, question or comment from the person that nothing has answered yet; one the agent already reacted to or answered, handed over again by a journal line, asks for nothing."""
-    if not written_by_person(context.record, ref):
-        return False
-    return ref.type != Messages.resource.type or not answered(context.journal, context.journal.get(Messages).load(ref.n))
-
-
-def tells_something(row, text: str) -> bool:
-    """Whether a turn written after a journal line is for the user. It is judged by what it says, never by what prompted it: a failure, work that landed, a question and anything longer than a nod are written to the user however the turn started. Only a short note that acknowledges the line and says nothing of its own is noise, and erring towards the chat is the safe direction, since a turn kept out is invisible and is found missing only by comparing the chat with the terminal."""
-    return bool(row.failure or row.turn_wrote or "?" in text or CARRIED.search(text)) or len(text) > A_NOD
-
-
-class HideJournalOnlyTurns(Handler):
-    def handle(self, context: AgentContext, event: BusMessageSending) -> None:
-        row, text = context.agent.row, event.text.strip()
-        if event.data.get("stopped") or row.prompted != JOURNAL:
-            return
-        if tells_something(row, text) or reply_kept(context, row.delivered):
-            if not context.once("sent turn", str(event.data.get("turn", ""))):
-                event.stop()
-            return
-        event.stop()
-        if context.once("kept out", "told"):
-            context.agent.nudge(KEPT_OUT)
-        if text and context.once("acknowledged", f"{','.join(row.delivered)}:{text}"):
-            context.journal.acting(AGENT).get(Messages).create(titled(text), brief=text, acknowledgement=True)
+class ExplainTheWithholding(Handler[FirstNodWithheld]):
+    def handle(self, event: FirstNodWithheld, chat: Chat) -> list[Fact]:
+        chat.nudge(KEPT_OUT)
+        return []

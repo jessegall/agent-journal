@@ -32,7 +32,6 @@ def promised():
     below framework and may not name it. They are brought together here, which is the only place that plays either.
     """
     import features
-    from framework.loaded import FEATURES
     from framework.promises import PROMISED, Promise
     from receiving import REGISTERED
     features.load()
@@ -483,7 +482,7 @@ def test_an_unswept_2x_handler_runs_on_the_adapter_and_the_sending_path_cannot()
     from dataclasses import dataclass
 
     from events import Fact
-    from framework.adapter import CannotBeAdapted, OldHandler, moved
+    from framework.adapter import OldHandler, moved
     from framework.parts import Handler as OldStyle
     from receiving import Registration, Registrations
     from receiving.boot import walked
@@ -500,10 +499,6 @@ def test_an_unswept_2x_handler_runs_on_the_adapter_and_the_sending_path_cannot()
         def handle(self, context, event):
             minded.append((event.n, context.record))
 
-    class HideJournalOnlyTurns(OldStyle):
-        def handle(self, context, event):
-            minded.append("this must never run")
-
     registered = Registrations()
     registered.add(Registration.read("handle", TodoCreated, OldHandler(None, MindTheBoard()), [], "tickets"))
     out = Lane("project", registered, Services({TheRecord: "the tick's record"})).run(TodoCreated(n=7))
@@ -514,10 +509,6 @@ def test_an_unswept_2x_handler_runs_on_the_adapter_and_the_sending_path_cannot()
         "it dispatches nothing itself: what it wrote reaches the engine as the funnel's own resource facts"
     walked(registered, set()), "the adapter is exempt from the boot rules by declaring itself adapted, not by a name the checker knows"
 
-    with pytest.raises(CannotBeAdapted) as refusal:
-        OldHandler(None, HideJournalOnlyTurns())
-    assert "a request and not a fact" in str(refusal.value), \
-        "a handler on the sending path cannot be adapted at all, which is why those features are swept first"
 
     assert [one.says() for one in moved(["plans", "tickets"], {"tickets": ("MindTheBoard",)}, {})] == \
         ["plans: moved", "tickets: adapted (MindTheBoard)"], "the listing says, per feature, moved or adapted"
@@ -659,8 +650,7 @@ def test_an_old_handler_beside_the_bus_is_registered_on_the_adapter_and_the_list
     assert said["awaited"] == "adapted (ReturnWhenAwaitedReport)", "a feature whose handlers all run on the adapter says which"
     assert said["sequences"].endswith("; cannot be adapted (KeepOutOfTheChat), swept first"), \
         "a handler on the sending path cannot run there, so its feature is not moved and the listing says it is swept first"
-    assert said["command_tags"] == said["chat_etiquette"] == "moved", "and a feature swept onto the 3.0 engine says so"
-    assert said["acknowledgements"] == "cannot be adapted (HideJournalOnlyTurns), swept first", "and one that has nothing else says only that"
+    assert said["command_tags"] == said["chat_etiquette"] == said["acknowledgements"] == "moved", "and a feature swept onto the 3.0 engine says so"
     handled = {one.feature.name for one in PROMISED.each if one.kind == "handler"}
     assert all(said[name] != "moved" for name in handled) and all(said[name] == "moved" for name in said if name not in handled), \
         "a feature reads as moved when it holds no old handler, and as adapted or stuck while it holds one"
@@ -952,6 +942,31 @@ def test_a_tagged_turn_runs_its_command_live_and_a_refused_one_keeps_its_words()
     chat.send(record, agent, '[!todo="Repeated work"] first')
     chat.send(record, agent, '[!todo="Repeated work"] first')
     assert [todo.title for todo in Todos(record, actor="system").all()] == ["Repeated work", "Repeated work"], "the same tag in two turns runs twice, once for each"
+
+
+def test_a_turn_that_only_nods_at_a_journal_line_is_kept_out_of_the_chat_live():
+    """Two answerers of one request, played for real: a nod at a journal line is kept out and filed as an acknowledgement, and a turn that tells the user something reaches the chat."""
+    from controllers.types import Agents, Messages, Nudges
+    from engine import chat
+    from payload import JOURNAL
+    from tests.conftest import fresh
+    from tests.kit import report
+
+    import features
+    features.load()
+    record = fresh()
+    report(record, "idle", "Stop")
+    agents = Agents(record, actor="system")
+    row = agents.by_session("claude-1")
+    reminder = Nudges(record, actor="system").create("a reminder")
+
+    def answered(text):
+        agents.update(row.n, prompted=JOURNAL, delivered=[f"nudge:{reminder.n}"])
+        chat.send(record, agents.load(row.n), text)
+        return [bool(m.data.get("acknowledgement")) for m in Messages(record).all() if m.brief == text]
+
+    assert answered("Noted.") == [True], "a bare acknowledgement of a journal line is kept as a message the chat leaves out"
+    assert answered("Which branch should I use for it?") == [False], "a question reaches the chat"
 
 
 def test_a_feature_registered_for_both_engines_is_refused_at_boot():

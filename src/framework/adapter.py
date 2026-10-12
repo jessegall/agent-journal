@@ -26,13 +26,6 @@ from resources.base import ACTIONS
 from resources.types import TYPES
 from serving import Adapted as TheRecord
 
-ON_THE_SENDING_PATH = {
-    "HideJournalOnlyTurns": "it answers a message about to be sent, which is a request and not a fact",
-    "StripTags": "it answers a text about to be formatted, which is a request and not a fact",
-}
-"""A request is answered before anything writes, so a handler of one cannot run on the adapter at all. Those features are swept first."""
-
-
 ADAPTED = Registrations()
 """The old handlers on the adapter, kept apart from the registry of the swept features, so removing the adapter removes them whole and nothing that clears the registry takes them with it."""
 
@@ -75,8 +68,6 @@ class OldHandler(Handler[Fact]):
         return type(self.handler).__name__
 
     def __init__(self, feature, handler: OldStyle):
-        if (why := ON_THE_SENDING_PATH.get(type(handler).__name__)) is not None:
-            raise CannotBeAdapted.of(type(handler), why)
         self.feature, self.handler = feature, handler
 
     @classmethod

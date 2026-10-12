@@ -2,7 +2,7 @@ from events.agents import AgentReported
 from events.resources import ResourceCreated
 from events.messages import MessageUpdated
 from engine.transcript import IDLE
-from features.messages.answering import answered, answers, read_and_open, theirs
+from features.messages.answering import read_and_open, theirs
 from framework.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SECTION, USER
 from controllers.types import CONTROLLERS, Messages
@@ -12,7 +12,7 @@ ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
 
 def close_if_processed(journal, message) -> None:
     """Closes a message the agent processed into rows once it counts as answered: a question stays open until a written reply."""
-    if (message.refs or message.sections) and answered(journal, message):
+    if (message.refs or message.sections) and journal.get(Messages).is_answered(message):
         results = [*message.refs, *(s[SECTION.body] for s in message.sections)]
         journal.get(Messages)._closed_once(message.n, f"handled: {', '.join(dict.fromkeys(results))}")
 
@@ -62,5 +62,5 @@ class CloseAnswered(Handler):
             if kind != "message" or not n.isdigit():
                 continue
             message = messages.load(n)
-            if theirs(message) and answers(event.type, message):
+            if theirs(message) and messages.is_settled_by(event.type, message):
                 messages._closed_once(message.n, f"{ANSWERS[event.type]} by the agent")

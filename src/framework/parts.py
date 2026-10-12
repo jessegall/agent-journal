@@ -47,11 +47,11 @@ class Speaker:
     def hold(self, line: str, behaviour: str = "", **values) -> None:
         self.feature.hold(self.record, line, behaviour, self.row, **values)
 
-    def post(self, text: str, turn: str) -> None:
+    def post(self, text: str, turn: str, **data) -> None:
         """The agent's own words reach the chat as its message, once: words already there from it are not posted again."""
         messages = Messages(self.record, actor=AGENT)
         if not messages.already_posted(text):
-            messages.create(titled(text), brief=text, idempotency=turn)
+            messages.create(titled(text), brief=text, idempotency=turn, **data)
 
     def keep(self, line: str) -> None:
         """Holds the line for the agent's next tool call, where it is told beside the hook's answer."""

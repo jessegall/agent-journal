@@ -1,3 +1,4 @@
+import re
 import time
 from itertools import dropwhile
 
@@ -6,6 +7,7 @@ from resources import types
 from resources.base import AGENT, SYSTEM, USER, Refused, Resource, titled
 from resources.text import QUOTE, unquoted  # noqa: F401  its home is resources, and callers still name it here
 from controllers.comments import Comments
+from controllers.reactions import Reactions
 from controllers.marks import action
 
 
@@ -24,8 +26,38 @@ def references(about: str, todos: str) -> list[str]:
     return list(dict.fromkeys([*named, *(f"todo:{one}" for one in numbers)]))
 
 
+ASKING = re.compile(r"\?|\b(?:relay|reply|answer me|tell me|let me know|what do you think|do you (?:think|agree|understand)|your (?:opinion|view|take)"
+                    r"|geef (?:het |dit |dat )?door|reageer|antwoord (?:me|mij)|vertel (?:me|mij)|laat (?:het )?(?:me|mij) weten|wat (?:denk|vind) je"
+                    r"|denk je|ben je het (?:ermee )?eens|begrijp je|snap je|jouw (?:mening|kijk|idee))\b", re.I)
+
+
+NODS = r"ok(?:ay|é)?|thanks?(?: you)?|got it"
+ACKNOWLEDGING = re.compile(rf"^\W*(?:{NODS}|thx|cool|nice|great|perfect|splendid|sure|sounds good|good|top|prima|mooi"
+                           r"|dank(?:je|jewel| je| u)?|bedankt|helemaal goed|lekker)\b[\W\s]*(?:sir|jesse|man)?[\W\s]*$", re.I)
+
+
 class Messages(Controller):
     resource = types.Message
+
+    def is_asking(self, message) -> bool:
+        return bool(ASKING.search(f"{message.title}\n{message.brief}"))
+
+    def is_acknowledgement(self, message) -> bool:
+        return not self.is_asking(message) and not message.files and bool(ACKNOWLEDGING.match(message.brief or message.title))
+
+    def is_replied(self, message) -> bool:
+        return any(r.author == AGENT for r in Comments(self.record, actor=SYSTEM).linked_to(message.ref))
+
+    def is_answered(self, message) -> bool:
+        if self.is_asking(message):
+            return self.is_replied(message)
+        if message.refs or message.sections:
+            return True
+        return self.is_replied(message) or any(r.author == AGENT for r in Reactions(self.record, actor=SYSTEM).linked_to(message.ref))
+
+    def is_settled_by(self, kind: str, message) -> bool:
+        """Whether an answer of this kind, written just now, settles the message: a reply always does, a reaction unless the message asks."""
+        return kind == "comment" or not self.is_asking(message)
 
     @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
