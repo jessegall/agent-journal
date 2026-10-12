@@ -1,7 +1,7 @@
 from framework.base import Feature
 from events.agents import AgentMessageSent, CommandRan
 from events.chat_etiquette import EtiquetteDue, ShopTalkInChat, ThirdPersonInChat
-from engine.ran import DELIVERED
+from resources.runs import DELIVERED
 from expects import Dispatches, Given, Nudged, nothing
 from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON, ChatEtiquetteDetails
 from features.chat_etiquette.handlers import NameShopTalk, NameThirdPerson, RemindOfEtiquette

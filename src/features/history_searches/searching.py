@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from events.agents import CommandRan
 from engine.journal_calls import PUNCTUATION, JournalCall, pieces
-from engine.ran import SHELL
+from resources.runs import SHELL
 from resources.types import TYPES
 
 TAKES_VALUE = {"--page", "--back"}

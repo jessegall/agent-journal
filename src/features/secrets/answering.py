@@ -1,4 +1,4 @@
-from engine.ran import SHELL
+from resources.runs import SHELL
 from events.answers import Allowed, Answer, Refused
 from events.asking import ToolCallAsked
 from receiving import Answerer

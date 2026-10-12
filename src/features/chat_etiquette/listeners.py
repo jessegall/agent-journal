@@ -1,6 +1,6 @@
 import re
 
-from engine.ran import DELIVERED
+from resources.runs import DELIVERED
 from events import Fact
 from events.agents import AgentMessageSent, CommandRan
 from events.chat_etiquette import EtiquetteDue, ShopTalkInChat, ThirdPersonInChat

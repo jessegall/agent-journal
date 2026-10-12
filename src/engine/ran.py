@@ -5,7 +5,7 @@ from engine.stepped import original_of
 from events.agents import COMMAND_RAN
 from resources.base import SYSTEM
 
-SHELL, TYPED, NOTED, DELIVERED, STEP = "Bash", "Typed", "Journal", "Delivered", "Step"
+from resources.runs import DELIVERED, NOTED, SHELL, STEP, TYPED  # noqa: F401  their home is resources, and the engine names them here
 
 
 def announce(record, agent: int, tool: str, command: str, output: str = "", at: float | None = None, stepped: bool = False) -> None:

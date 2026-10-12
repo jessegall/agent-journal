@@ -3,7 +3,7 @@ from dataclasses import asdict, fields
 
 from events import Fact
 from events.agents import CommandRan
-from engine.ran import DELIVERED, NOTED, SHELL, TYPED
+from resources.runs import DELIVERED, NOTED, SHELL, TYPED
 from framework.command_effects import JOURNAL_CALL
 
 LOG = "terminal"

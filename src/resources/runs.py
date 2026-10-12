@@ -5,6 +5,10 @@ from dataclasses import asdict, dataclass, field
 from resources.fields import Loaded
 
 
+SHELL, TYPED, NOTED, DELIVERED, STEP = "Bash", "Typed", "Journal", "Delivered", "Step"
+"""What ran, as a command row names its tool: a shell command, words typed to the agent, a journal note, a line the journal delivered, a step of a chained command."""
+
+
 @dataclass(frozen=True)
 class Exited:
     """How a journal command came back: its exit code and what it printed, or on a failure the reason it gave."""
