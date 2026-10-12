@@ -26,11 +26,12 @@ from controllers.suggestions import Suggestions
 from controllers.templates import Templates
 from controllers.critique.controller import Critiques
 from controllers.session_recording.controller import Recordings
+from controllers.journal_laws import Outputs
 
 
 register(Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Questions, Comments, Agents,
          Notifications, Notices, Reactions, Tools, Features, Plugins, Environments, Nudges, Suggestions, Templates,
-         Critiques, Recordings)
+         Critiques, Recordings, Outputs)
 
 
 WARM_PAUSE = 0.02
