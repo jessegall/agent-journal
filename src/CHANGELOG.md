@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.6 — The updating screen asks for itself, and a session is yours to start again because it exists
+
+- The screen that covers the journal while it updates now asks the server for itself, twice a second, for as long as it is up. It only ever read what the page's ordinary polling told it, so when that polling stopped the screen stayed over a journal that was perfectly alive. A request that fails is now a round that found nothing, and the next one goes out all the same.
+- The session the journal offers to start again is simply the one heard from last that is not running. It used to pass over any session another had taken the environment from, so an agent you had swapped away from could not be picked up again. What succeeded a session says nothing about whether you can return to it.
+
 ## 2.272.5 — An environment's agent is whichever of its sessions is working
 
 - An agent that had once been succeeded could never hold its environment again, however plainly it was working: one word asked two questions at once, and because being someone's past made a session "not live", it also made it invisible as a worker. Running and being the environment's own are now two questions, and the environment's agent is simply whichever of its sessions is at work, heard from last. Stopping one agent and starting an earlier one again now does what it looks like.

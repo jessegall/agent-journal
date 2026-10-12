@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
@@ -8,7 +8,7 @@ import {api} from "../api/client.js";
 import {report} from "../platform/faults.js";
 import {useNow} from "../composables/now.js";
 import {store} from "../state/store.js";
-import {forgetUpdate, locked, stepAt, updatedTo, updating} from "../state/updating.js";
+import {covered, followServer, forgetUpdate, locked, stepAt, updatedTo, updating} from "../state/updating.js";
 import {go, route} from "../route.js";
 
 const now = useNow();
@@ -31,8 +31,38 @@ function cancel() {
     api.cancelUpdate().catch((error) => report("threw", error.message, "POST /api/update/cancel"));
 }
 
-onMounted(() => showArrival(store.summary?.version));
+// The cover asks the server for itself while it is up, so it closes when the journal comes back even if the page's own
+// polling has stopped: a request that fails is a round that found nothing, and the next one goes out all the same.
+const ASK_EVERY_MS = 2000;
+let asking = 0;
+
+async function askTheServer() {
+    try {
+        const got = await api.summary();
+        store.summary = got;
+        followServer(got);
+    } catch (error) {
+        report("threw", error.message, "GET /summary while the update cover is up");
+    }
+}
+
+function watchTheServer() {
+    if (asking || !covered()) return;
+    asking = window.setInterval(askTheServer, ASK_EVERY_MS);
+}
+
+function stopWatching() {
+    window.clearInterval(asking);
+    asking = 0;
+}
+
+onMounted(() => {
+    showArrival(store.summary?.version);
+    watchTheServer();
+});
+onUnmounted(stopWatching);
 watch(() => store.summary?.version, showArrival);
+watch(covered, (up) => (up ? watchTheServer() : stopWatching()));
 </script>
 
 <template>

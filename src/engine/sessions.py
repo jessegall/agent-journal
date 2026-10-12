@@ -271,8 +271,9 @@ class Sessions:
         return prefer
 
     def last(self, env: str, provider: str) -> str:
+        """The session of this environment to start again: the one heard from last that is not running. A session is there to be taken up again because it exists, not because nothing has taken its place since, so what succeeded it does not come into it."""
         ended = [(s.last_heard, name) for name, s in self.all().items()
-                 if s.environment == env and s.provider == provider and s.pid and not live(s) and not s.retired
+                 if s.environment == env and s.provider == provider and s.pid and not running(s)
                  and not name.startswith(f"{provider}-")]
         return max(ended)[1] if ended else ""
 
