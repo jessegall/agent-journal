@@ -1,7 +1,12 @@
-"""The packages that sit below the features name nothing above them.
+"""declaring and events name nothing above themselves. Those two packages only, named in BELOW.
 
 declaring holds what a feature is declared with and the events catalogue what it is told, so both are read by
 every feature; if either reached up into the engine or a provider, a feature could not be loaded without them.
+
+It is NOT a run about the layers in general: a package absent from BELOW is never opened, so framework,
+engine, controllers and the rest are unexamined here, and the feature boundary is reported by
+receiving.imports.walked rather than held by anything. To-do 4591 widens this; until it does, a clean run
+here says that two packages are held and nothing about the others.
 """
 
 import ast
@@ -24,7 +29,7 @@ def imported_roots(path: Path) -> set[str]:
 
 
 @pytest.mark.parametrize("package,allowed", sorted(BELOW.items()))
-def test_a_package_below_the_features_names_nothing_above_them(package, allowed):
+def test_declaring_and_events_name_nothing_above_themselves(package, allowed):
     own = {p.name for p in SRC.iterdir() if p.is_dir()} | {p.stem for p in SRC.glob("*.py")}
     reaches = {f"{path.relative_to(SRC)}: {root}" for path in (SRC / package).rglob("*.py") for root in imported_roots(path) & own - allowed}
     assert reaches == set(), f"{package} reaches above itself: {sorted(reaches)}"

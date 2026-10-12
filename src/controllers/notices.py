@@ -6,6 +6,8 @@ from controllers.marks import action
 
 WHICH = "fault"
 ONCE = threading.Lock()
+RAISING: set[tuple[str, str]] = set()
+"""The notices being written right now, so a raise that reaches back into one of them answers instead of waiting: writing a notice reads rows, and a damaged row among them asks for the very notice being written."""
 
 
 class Notices(Controller):
@@ -20,10 +22,24 @@ class Notices(Controller):
         pass
 
     def raise_once(self, title: str, brief: str, which: str = "") -> bool:
+        """Writes the notice unless it stands already or is being written. The lock is held over the claim alone: create reads rows, a damaged row among them asks for this same notice, and a lock held across that call is a thread waiting for itself."""
+        if not self._claimed(title, which):
+            return False
+        try:
+            self.create(title, brief=brief, tone="warn", **{WHICH: which})
+        finally:
+            with ONCE:
+                RAISING.discard((title, which))
+        return True
+
+    def _claimed(self, title: str, which: str) -> bool:
+        """Whether this call is the one that writes the notice: it is not standing and nobody else is writing it."""
         with ONCE:
+            if (title, which) in RAISING:
+                return False
             if any(n.title == title and n.data.get(WHICH, "") == which for n in self.rows.standing()):
                 return False
-            self.create(title, brief=brief, tone="warn", **{WHICH: which})
+            RAISING.add((title, which))
             return True
 
     def close_titled(self, title: str, how: str) -> None:
