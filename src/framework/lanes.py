@@ -28,6 +28,22 @@ class NobodyToSpeakTo(LookupError):
         return cls(f"a receiver asked for the chat about {about}, and no agent row answers for it")
 
 
+class FeatureSettings:
+    """The asking feature's settings in force and whether each of its behaviours is switched on; another feature's settings are read by its name."""
+
+    def __init__(self, feature, record):
+        self.feature, self.record = feature, record
+
+    def __getattr__(self, name: str):
+        return getattr(self.feature.values(self.record), name)
+
+    def is_on(self, behaviour: str) -> bool:
+        return self.feature.on(self.record, behaviour)
+
+    def of(self, name: str):
+        return FEATURES[name].values(self.record)
+
+
 class TheClock:
     """The time, from the one place a receiver reads it."""
 
@@ -73,7 +89,7 @@ def lane_services(record, agent: Callable[[], object]) -> dict[type, object]:
             Clock: TheClock(),
             Files: ProjectFiles(record),
             Chat: PerAsk(lambda feature, asked: Speaker(FEATURES[feature], record, agent())),
-            Settings: PerAsk(lambda feature, asked: FEATURES[feature].values(record)),
+            Settings: PerAsk(lambda feature, asked: FeatureSettings(FEATURES[feature], record)),
             Rows: PerAsk(controlling),
             ReadRows: PerAsk(controlling),
             Commands: PerAsk(lambda feature, asked: JournalCommands(record, agent())),

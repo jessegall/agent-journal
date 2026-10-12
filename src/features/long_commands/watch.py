@@ -1,19 +1,16 @@
-import subprocess
 import time
-from collections import defaultdict
 from pathlib import Path
 
 from engine.sessions import alive
 from resources.text import clipped
 from framework.sending import Sent
 from declaring.trigger import MINUTE
-from serving import SERVED, Providers
+from serving import SERVED, Processes, Providers
 from resources.runs import BackgroundTasks
 
 RECENT = 10 * MINUTE
 STALLED_AFTER = 5 * MINUTE
 GIVEN_UP_ON = 2 * 60 * MINUTE
-PS_TIMEOUT = 2
 
 
 def background_tasks_of(agent) -> BackgroundTasks:
@@ -70,21 +67,4 @@ def stalled_runs(context, agent) -> list[Sent]:
 
 def running_part(pid: int, chain: str) -> str:
     """The command of the agent's process tree that is still running and written in the chained command, or nothing when no part of it runs as a process of its own."""
-    if not pid:
-        return ""
-    try:
-        listed = subprocess.run(["ps", "-eo", "pid=,ppid=,command="], capture_output=True, text=True, timeout=PS_TIMEOUT).stdout
-    except (OSError, subprocess.SubprocessError):
-        return ""
-    below = defaultdict(list)
-    for line in listed.splitlines():
-        fields = line.split(None, 2)
-        if len(fields) == 3 and fields[0].isdigit() and fields[1].isdigit():
-            below[int(fields[1])].append((int(fields[0]), fields[2].strip()))
-    leaves, waiting = [], [pid]
-    while waiting:
-        for child, command in below[waiting.pop()]:
-            waiting.append(child)
-            if not below[child]:
-                leaves.append(command)
-    return next((clipped(command, 200) for command in reversed(leaves) if command in chain), "")
+    return next((clipped(command, 200) for command in reversed(SERVED.given(Processes).leaves(pid)) if command in chain), "")

@@ -5,15 +5,40 @@ write. They ask here instead, by type, and this feature - which is the one that 
 launched - is what answers.
 """
 
+import subprocess
+from collections import defaultdict
 from pathlib import Path
 
 from features.agent_sessions import launch
 from resources.types import NewEnvironment, Running
 from serving import SERVED, Processes
 
+PS_TIMEOUT = 2
+
 
 class TheProcesses:
     """The agents this journal starts, tells and reads: one object for every process a controller used to start itself."""
+
+    def leaves(self, pid: int) -> list[str]:
+        """The commands still running at the ends of the process tree under pid, the newest last; none when the tree cannot be read."""
+        if not pid:
+            return []
+        try:
+            listed = subprocess.run(["ps", "-eo", "pid=,ppid=,command="], capture_output=True, text=True, timeout=PS_TIMEOUT).stdout
+        except (OSError, subprocess.SubprocessError):
+            return []
+        below = defaultdict(list)
+        for line in listed.splitlines():
+            fields = line.split(None, 2)
+            if len(fields) == 3 and fields[0].isdigit() and fields[1].isdigit():
+                below[int(fields[1])].append((int(fields[0]), fields[2].strip()))
+        leaves, waiting = [], [pid]
+        while waiting:
+            for child, command in below[waiting.pop()]:
+                waiting.append(child)
+                if not below[child]:
+                    leaves.append(command)
+        return leaves
 
     def environment(self, record, wanted: NewEnvironment):
         """The environment an agent is about to run in, made if it is not there and quietened."""
