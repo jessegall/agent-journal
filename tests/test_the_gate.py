@@ -179,8 +179,10 @@ def test_every_line_and_guard_reaches_exactly_the_agents_its_reach_names():
     for feature in features.FEATURES.values():
         for key, line in feature.lines.items():
             for row in (main, helper):
-                arrived = feature.journal.whisper(record, row, key, **values_for(feature, key, line)) is not None
-                assert arrived == line.reach.reaches(row.subagent), f"{feature.name}.{key} is {line.reach}; it arrived at a subagent row: {row.subagent}"
+                said = feature.journal.whisper(record, row, key, **values_for(feature, key, line))
+                assert (said is not None) == line.reach.reaches(row.subagent), f"{feature.name}.{key} is {line.reach}; it arrived at a subagent row: {row.subagent}"
+                assert said is None or said.data.get("whisper"), \
+                    f"{feature.name}.{key} was whispered and must be marked one, or it is typed at the user as a line of its own rather than reaching the agent through the channel"
 
     for feature in features.FEATURES.values():
         sent = feature.describe()["nudges"]

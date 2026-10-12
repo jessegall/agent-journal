@@ -23,6 +23,9 @@ const FLIP_CROUCH_MS = 290;
 const FLIP_AIR_MS = 600;
 const JUMP_EASING = "cubic-bezier(0.2, 0.7, 0.4, 1)";
 const FALL_EASING = "cubic-bezier(0.55, 0, 0.9, 0.6)";
+// a difference smaller than this is no trip at all: a clip in motion can leave this much of a gap under the figure's feet, and the
+// figure settles where it is rather than falling those few pixels
+const STEADY = 5;
 // how often the figure looks again at what the agent does and where things are, in milliseconds
 const LOOK_EVERY = 1000;
 // how many times a second the eyes are drawn while they wear a look
@@ -203,7 +206,7 @@ const rest = () => {
 function moveTo(spot) {
     const from = placed(place.value, POSTURES[place.value.posture].travels);
     const to = placed(spot, POSTURES[spot.posture].travels);
-    if (Math.hypot(to.x - from.x, to.y - from.y) < 2) return settle(spot);
+    if (Math.hypot(to.x - from.x, to.y - from.y) < STEADY) return settle(spot);
     footing = null;
     const walk = (Math.abs(to.x - from.x) / WALK_SPEED) * 1000;
     const height = Math.abs(to.y - from.y);
@@ -213,7 +216,7 @@ function moveTo(spot) {
     const hop = {
         x: to.x,
         y: to.y,
-        ms: height > 2 ? (flip ? FLIP_AIR_MS : air) : 0,
+        ms: height > STEADY ? (flip ? FLIP_AIR_MS : air) : 0,
         lead: flip ? FLIP_CROUCH_MS : up ? JUMP_CROUCH_MS : 0,
         easing: up ? JUMP_EASING : FALL_EASING,
         hopping: true,

@@ -95,11 +95,12 @@ class Journal:
         return self.send(record, amended)
 
     def whisper(self, record, agent, line: str, actor: str = SYSTEM, **values):
-        return self.say(record, agent, line, private=True, actor=actor, **values)
+        """A line the agent is shown as it works: private, and delivered beside its turn rather than as a line it must answer."""
+        return self.say(record, agent, line, private=True, actor=actor, whisper=True, **values)
 
     def remind(self, record, agent, line: str, actor: str = SYSTEM, **values):
-        """A keyword reminder: private like a whisper, and reaching the agent only through the channel."""
-        return self.say(record, agent, line, private=True, actor=actor, whisper=True, **values)
+        """A keyword reminder: whispered, so it reaches the agent only through the channel."""
+        return self.whisper(record, agent, line, actor=actor, **values)
 
     def notify(self, record, line: str, actor: str = SYSTEM, **values):
         return self.send(record, self.message(Notifications, line, values, actor))
