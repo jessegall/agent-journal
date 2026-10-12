@@ -47,12 +47,6 @@ class BoardFinished(ResourceEvent):
 
 
 @dataclass(frozen=True)
-class BoardOrchestrated(ResourceEvent):
-    on: ClassVar[str] = "board.orchestrated"
-    orchestrating: bool = False
-
-
-@dataclass(frozen=True)
 class BoardChanged(ResourceEvent):
     on: ClassVar[str] = "board"
     fields: list = field(default_factory=list)

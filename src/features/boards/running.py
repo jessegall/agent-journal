@@ -1,7 +1,9 @@
 import time
 
 from engine.worktree import current_branch
-from resources.base import ORCHESTRATED, PAUSED, PROJECT, RESUMED, Refused, STARTED, SYSTEM
+from features.work_modes.details import ORCHESTRATOR
+from features.work_modes.modes import pick
+from resources.base import PAUSED, PROJECT, RESUMED, Refused, STARTED, SYSTEM
 from controllers.marks import action
 
 
@@ -13,6 +15,7 @@ class RunningBoards:
             board = self.update(board.n, branch=current_branch(self.record.root.parent))
         board = self.update(board.n, started=board.started or time.time(), orchestrator=self.record.env, orchestrator_approves_plans=True,
                             orchestrator_accepts_waits=True, orchestrator_confirms_drafts=True)
+        pick(self.record, ORCHESTRATOR, self.actor)
         self._set_orchestrating(True)
         self.record.emit("board", board.n, STARTED, self.actor, scope=PROJECT)
         return board
@@ -39,8 +42,9 @@ class RunningBoards:
                 sequences.finish(sequence.n, run.about)
 
     def _set_orchestrating(self, on: bool) -> None:
+        from features.session_briefing.block import rebuild
         self.record.change_setting("boards", {"orchestrating": on})
-        self.record.emit("board", 0, ORCHESTRATED, self.actor, orchestrating=on)
+        rebuild(self.record)
 
     @action
     def pause(self, n: int):

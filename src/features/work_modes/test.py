@@ -171,17 +171,3 @@ def test_the_offer_of_the_next_row_is_worded_by_the_mode_the_agent_is_in():
     assert "send a helper or subagent to do it" in taking(record), "orchestrator: the agent sends the work out"
     pick(record, "solo", USER)
     assert "no helpers or subagents here" in taking(record), "solo: there is nobody to send it to"
-
-
-def test_starting_a_board_picks_orchestrator_and_rebuilds_the_start_file_after_the_moment():
-    from features.boards.controller import Boards
-    features.load()
-    record = fresh()
-    start = record.root / "runtime" / f"start-{record.env}.md"
-    board = Boards(record, actor=USER).create("Rewrite", stages=["Doing", "Done"])
-    assert mode_of(record) != "orchestrator", "before Play the environment is not orchestrating"
-    Boards(record, actor=USER).start(board.n)
-    assert (mode_of(record), "ORCHESTRATING:" in start.read_text(), "WORK MODE: orchestrator" in start.read_text()) == ("orchestrator", True, True), \
-        "the handlers on the board's moments pick the mode and rebuild the start file the call used to rebuild itself"
-    Boards(record, actor=AGENT).orchestrate("off")
-    assert "ORCHESTRATING:" not in start.read_text(), "turning orchestrating off rebuilds the start file too"

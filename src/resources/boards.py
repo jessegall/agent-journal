@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import COMMISSIONED, FINISHED, ORCHESTRATED, PAUSED, PROJECT, RESUMED, Resource, ResourceDetails, STARTED, USER, WIDE
+from resources.base import COMMISSIONED, FINISHED, PAUSED, PROJECT, RESUMED, Resource, ResourceDetails, STARTED, USER, WIDE
 from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Shape
 
 START, REVIEW, DONE = "start", "review", "done"
@@ -45,7 +45,7 @@ class Board(Shape, Resource):
     scope = PROJECT
     view = WIDE
     in_sidebar = False
-    moments = ("created", "completed", COMMISSIONED, STARTED, PAUSED, RESUMED, FINISHED, ORCHESTRATED)
+    moments = ("created", "completed", COMMISSIONED, STARTED, PAUSED, RESUMED, FINISHED)
     created_in_viewer = True
     notified = (USER,)
     labels = {"brief": "What it is for", "outcome": "Why closed", "stages": "Stages", "meanings": "What the stages mean",
