@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted} from "vue";
 import SuggestionLayer from "./chat/SuggestionLayer.vue";
+import VoiceFigure from "./chat/VoiceFigure.vue";
 import Lightbox from "./kit/Lightbox.vue";
 import Tooltip from "./kit/Tooltip.vue";
 import AwayCard from "./layout/AwayCard.vue";
@@ -11,7 +12,7 @@ import SkillPanel from "./layout/SkillPanel.vue";
 import NewFeatureDialog from "./kit/NewFeatureDialog.vue";
 import FirstChoiceDialog from "./pages/FirstChoiceDialog.vue";
 import {dismissNewFeature, loadNewFeatures, newFeature, turnOffNewFeature, useNewFeature} from "./composables/newFeature.js";
-import {firstChoice} from "./composables/profiles.js";
+import {firstChoice, mascotOf} from "./composables/profiles.js";
 import {store} from "./state/store.js";
 import {ui} from "./state/ui.js";
 
@@ -21,6 +22,9 @@ onMounted(loadNewFeatures);
 <template>
     <Lightbox />
     <Tooltip />
+    <template v-if="mascotOf">
+        <VoiceFigure :voice="mascotOf.voice" />
+    </template>
     <template v-if="ui.away.open">
         <AwayCard />
     </template>
