@@ -7,19 +7,7 @@ import {RESTS, beatsAfter, clipOf, eggFor, facesAfter, figureStateOf, testResult
 import {loadVoiceFigure} from "../figure/assets.js";
 import {BUBBLE, HANGS, HANG_STAY, between, perchOn, perchSpot, roamNext} from "../figure/perches.js";
 import {LOOK_SECONDS, WORKED_SECONDS, ambientFor, flips, reactionTo, workClip} from "../figure/reactions.js";
-import {
-    CHANGE_SECONDS,
-    HOME,
-    POSTURES,
-    boxAt,
-    groundEdge,
-    hiddenAt,
-    openTabs,
-    pointedView,
-    postureOf,
-    seatOf,
-    spotOf,
-} from "../figure/places.js";
+import {CHANGE_SECONDS, HOME, POSTURES, boxAt, groundEdge, openTabs, pointedView, postureOf, seatOf, spotOf} from "../figure/places.js";
 import {rows} from "../sync/rows.js";
 
 // The figure is this many pixels square, as the chat's flat figure is; it walks this many of them a second and hops in this many milliseconds
@@ -122,7 +110,7 @@ function current() {
     if (landing.value) return {clip: clipNamed("land"), facing: 0, once: true, landed: true};
     if (moving.value) return walkingClip(moving.value.way > 0 ? 90 : 270);
     // a hanging figure holds on until it is let go; a beat waits until it has dropped
-    if (place.value.posture === "hang") return {clip: clipNamed(`hang_${place.value.grip}`), facing: 0};
+    if (place.value.posture === "hang") return {clip: clipNamed(`hang_${place.value.grip}`), facing: place.value.face};
     if (beats.value.length) return {clip: clipNamed(beats.value[0].clip), facing: facingCard(beats.value[0].card), once: true};
     // pointing is a pose, so it plays only while the agent itself waits on the user; at work, it stands at the tab doing the work
     if (place.value.view && held.value.state === "asking") return {clip: clipNamed("point"), facing: 0};
@@ -382,15 +370,14 @@ function nextStay() {
     return {where, until};
 }
 
-// the spot of the stay now, or null when its bubble or tab is gone or a bubble's perch would hide words; a tab it only visits is not one
-// it points at
+// the spot of the stay now, or null when its bubble or tab is gone or its perch is no longer free; a tab it only visits is not one it
+// points at
 function stayingAt(near) {
     const figure = figureSize();
     if (stay.where === "bubble") {
         const thread = threadScroll();
         const spot = stay.perch && thread && perchSpot(stay.perch, thread, figure);
-        // a perch where the figure would hide words or controls, such as those of the bubble above, is given up
-        return spot && !hiddenAt(spot, figure) ? {...spot, view: null} : null;
+        return spot ? {...spot, view: null} : null;
     }
     if (stay.where === "tab") {
         const tab = stay.view && document.querySelector(`[data-tab="${CSS.escape(stay.view)}"]`);

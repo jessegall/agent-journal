@@ -1,4 +1,4 @@
-import {seatAt, seatRise} from "./places.js";
+import {hiddenAt, seatAt, seatRise} from "./places.js";
 
 // Where a figure perches on a message bubble now and then, instead of the compose box's edge: on top of it with its legs over the side,
 // or hanging from its top corner by its hands. It is a place in the thread's own coordinates: read from the bubble each frame, so it
@@ -41,30 +41,44 @@ const inView = (rect, scroller, figure) => rect.top - seatRise(figure) >= scroll
 // so its legs hang clear of them
 const PERCH_INBOARD = 0.05;
 
-// a hang is by one hand, the corner it takes the one on that hand's side; the body hangs outside the bubble so it never covers its words
+// the corner each hand takes facing the viewer; the body hangs outside the bubble so it never covers its words
 const HAND_CORNER = {l: "left", r: "right"};
 const HANG_OUT = 0.3;
+const TURNED_TO_THE_BUBBLE = 180;
 
-// The perch a figure takes now, or null when no bubble but the newest is in view. `hands` are the sides, "l" or "r", of the hands that
-// carry nothing; `random` is a function returning 0 up to 1.
+// The perch a figure takes now, or null when no bubble in view has one free: the newest bubble first, as the thread keeps it in view
+// while older ones scroll away, and on each the way the roll says first, a hang or a sit, then the other. `hands` are the sides, "l" or
+// "r", of the hands that carry nothing; `random` is a function returning 0 up to 1.
 export function perchOn(bubbles, scroller, figure, hands, random) {
     const box = scroller.getBoundingClientRect();
-    const shown = bubbles.filter((bubble) => bubble.getBoundingClientRect().width);
-    const open = shown.slice(0, -1).filter((bubble) => inView(bubble.getBoundingClientRect(), box, figure));
-    if (!open.length) return null;
-    const bubble = open[Math.floor(random() * open.length)];
-    const side = sideOf(bubble.getBoundingClientRect(), box);
-    const hangs = hands.length > 0 && random() < HANG_SHARE;
-    const grip = hangs ? hands.find((hand) => HAND_CORNER[hand] === side) || hands[0] : "";
-    return {bubble, kind: hangs ? HANGS : SITS, side: hangs ? HAND_CORNER[grip] : side, grip};
+    const open = bubbles.filter((bubble) => bubble.getBoundingClientRect().width && inView(bubble.getBoundingClientRect(), box, figure));
+    const kinds = !hands.length ? [SITS] : random() < HANG_SHARE ? [HANGS, SITS] : [SITS, HANGS];
+    const perches = open.reverse().flatMap((bubble) => kinds.map((kind) => perchAt(bubble, kind, box, hands)));
+    return perches.find((perch) => perchSpot(perch, scroller, figure)) ?? null;
 }
 
-// Where the perch's figure stands now, with the way it faces, or null when its bubble is gone or out of the thread's view
+// A perch of `kind` on a bubble, on its side with more room. A hang there is by the hand on that side, facing the viewer; with only the
+// other hand free it turns to face the bubble, as one hangs from a ledge facing the wall, so that hand comes to the corner.
+function perchAt(bubble, kind, box, hands) {
+    const side = sideOf(bubble.getBoundingClientRect(), box);
+    if (kind === SITS) return {bubble, kind, side, grip: ""};
+    const grip = hands.find((hand) => HAND_CORNER[hand] === side);
+    return grip ? {bubble, kind, side, grip, face: 0} : {bubble, kind, side, grip: hands[0], face: TURNED_TO_THE_BUBBLE};
+}
+
+// Where the perch's figure stands now, with the way it faces, or null when its bubble is gone or out of the thread's view, or when the
+// figure there would hide words or controls, such as those of the message above
 export function perchSpot(perch, scroller, figure) {
     if (!perch.bubble.isConnected) return null;
     const rect = perch.bubble.getBoundingClientRect();
     if (!inView(rect, scroller.getBoundingClientRect(), figure)) return null;
+    const spot = spotOn(perch, rect, figure);
+    return hiddenAt(spot, figure) ? null : spot;
+}
+
+function spotOn(perch, rect, figure) {
     if (perch.kind === SITS) return {...seatAt(rect, perch.side, figure, PERCH_INBOARD), on: perch.bubble};
     const out = (perch.side === "left" ? -1 : 1) * HANG_OUT * figure.size;
-    return {x: (perch.side === "left" ? rect.left : rect.right) + out, y: rect.top, face: 0, posture: "hang", grip: perch.grip, on: perch.bubble};
+    const x = (perch.side === "left" ? rect.left : rect.right) + out;
+    return {x, y: rect.top, face: perch.face, posture: "hang", grip: perch.grip, on: perch.bubble};
 }

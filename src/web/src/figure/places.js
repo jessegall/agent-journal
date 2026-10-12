@@ -64,8 +64,8 @@ const visible = (element) => element.checkVisibility?.({opacityProperty: true, v
 // past the foot of the window, as they hang past any edge it sits on
 const inWindow = (spot, box) => box.left >= 0 && box.top >= 0 && box.right <= window.innerWidth && spot.y <= window.innerHeight;
 
-// Where across a figure's picture it looks for words under its body, as shares of the picture's width and height: the middle of it,
-// where the body is drawn, from the hat to the feet
+// Where across a figure's picture it looks for words and controls under its body, as shares of the picture's width and height: the
+// middle of it, where the body is drawn, from the hat to the feet
 const BODY_XS = [0.35, 0.5, 0.65];
 const BODY_YS = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9];
 
@@ -85,14 +85,14 @@ function onWord(x, y) {
     return false;
 }
 
-// how many of the points the figure's body covers in this box fall on words
-const wordsUnder = (box) =>
+// the points across a box where the figure's body is drawn
+const bodyPoints = (box) =>
     BODY_YS.flatMap((down) =>
         BODY_XS.map((across) => [box.left + across * (box.right - box.left), box.top + down * (box.bottom - box.top)])
-    ).filter(([x, y]) => onWord(x, y)).length;
+    );
 
-// How many controls and words a figure at this spot hides with its body: the part of it above the line it stands or sits on, as below
-// that line it only hangs over the thing it rests on, and all of a figure hanging from its line
+// How many of the points of its body a figure at this spot draws over a control or a word: the part of it above the line it stands or
+// sits on, as below that line it only hangs over the thing it rests on, and all of a figure hanging from its line
 export function hiddenAt(spot, figure) {
     const picture = boxAt(spot, figure);
     const box = spot.posture === "hang" ? picture : {...picture, bottom: Math.min(picture.bottom, spot.y)};
@@ -100,7 +100,8 @@ export function hiddenAt(spot, figure) {
         .filter(visible)
         .map((control) => control.getBoundingClientRect())
         .filter((control) => control.width && control.height && overlaps(box, control));
-    return controls.length + wordsUnder(box);
+    const onControl = (x, y) => controls.some((control) => x >= control.left && x <= control.right && y >= control.top && y <= control.bottom);
+    return bodyPoints(box).filter(([x, y]) => onControl(x, y) || onWord(x, y)).length;
 }
 
 // a spot that leaves part of the figure outside the window loses to any spot inside it
