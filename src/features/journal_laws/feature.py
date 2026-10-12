@@ -8,6 +8,7 @@ from framework.base import Feature
 from framework.journal import Journal
 from controllers.types import Outputs
 from features.journal_laws.briefing import brief, long_briefings
+from features.journal_laws.commands import Keep
 from features.journal_laws.details import LARGEST_RESULT, TOO_LONG, LawDetails
 from features.journal_laws.handlers import CheckChangedInstructions, NoticeLargestResult
 from features.journal_laws.interceptors import EnforceDispatchLaw, RefuseWholeLongReads, WhisperLawInChat, WhisperLawOnKeyword, lines_in
@@ -29,6 +30,9 @@ class JournalLaws(Feature):
                     guarantee="When a briefing file has grown longer than the agent's provider will read, the agent is told which file and by how much."),)
 
     def register(self, journal: Journal) -> None:
+        journal.commands.add("output", Keep(), expects=[
+            Given((Outputs, "output.txt", "", "nobody")) >> Refused("no such provider: nobody"),
+        ])
         START_PARTS.add(self, carry, key=LAW)
         if brief not in CARRIED_IN.each():
             CARRIED_IN.add(self, brief)

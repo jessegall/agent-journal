@@ -1,4 +1,4 @@
-from features.browser_control.controller import Asks
+from controllers.types import Asks
 from framework.format import VIEWER, shaped
 from framework.routing import Reply, Request, handles
 from resources.base import USER
