@@ -854,3 +854,49 @@ def test_a_moved_feature_runs_on_the_lane_beside_an_adapted_one_and_each_runs_on
     assert {(one.kind, one.feature, one.name) for one in ADAPTED.each} <= running, "every adapted handler runs on the lane"
     assert {(one.kind, one.feature, one.name) for one in REGISTERED.each} <= running, "and so does every receiver a feature wrote for the 3.0 engine"
     assert len(running) == len(TICKING.running.each), "each of them once, since a registration of one name replaces the one before it"
+
+
+def test_a_feature_registered_for_both_engines_is_refused_at_boot():
+    """There is no skip to write: a swept feature registers no 2.x handler, so the only way to run twice is to register twice.
+
+    A half-swept feature would put a handler on the bus and a receiver on the lane, and the lane runs both, so every
+    handler of that feature would fire twice. The boot refuses it instead, naming both halves.
+    """
+    import pytest
+
+    from framework.adapter import ADAPTED, HalfSwept, no_feature_is_half_swept
+    from receiving import HANDLE, REGISTERED, Registration
+
+    from dataclasses import dataclass
+
+    from events import Fact
+    from receiving import Handler, Listener
+
+    @dataclass(frozen=True, kw_only=True)
+    class TurnWritten(Fact):
+        text: str
+
+    class TagsInText(Listener[TurnWritten]):
+        def listen(self, event: TurnWritten) -> list[Fact]:
+            return []
+
+    class RunTheTags(Handler[TurnWritten]):
+        def handle(self, event: TurnWritten) -> list[Fact]:
+            return []
+
+    import features
+    features.load()
+    no_feature_is_half_swept()
+    moved = Registration.read("listen", TurnWritten, TagsInText(), ["an expectation"], "command_tags")
+    adapted = Registration.read(HANDLE, TurnWritten, RunTheTags(), ["an expectation"], "command_tags")
+    REGISTERED.add(moved)
+    ADAPTED.add(adapted)
+    try:
+        with pytest.raises(HalfSwept) as refusal:
+            no_feature_is_half_swept()
+        assert "command_tags" in str(refusal.value) and "fire twice" in str(refusal.value), \
+            f"the refusal names the feature and why both halves cannot run: {refusal.value}"
+    finally:
+        REGISTERED.forget(moved.kind, moved.feature, moved.name)
+        ADAPTED.forget(adapted.kind, adapted.feature, adapted.name)
+    no_feature_is_half_swept()

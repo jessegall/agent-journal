@@ -276,8 +276,25 @@ TICKING = Ticking(ADAPTED, REGISTERED)
 """The one lane every receiver runs on, adapted or moved."""
 
 
+class HalfSwept(Exception):
+    """A feature registering for both engines at once, which the boot refuses rather than let every handler of it fire twice."""
+
+    @classmethod
+    def of(cls, feature: str, adapted: list[str], moved: list[str]) -> "HalfSwept":
+        return cls(f"{feature} registers {', '.join(sorted(adapted))} on the 2.x bus and {', '.join(sorted(moved))} on the 3.0 engine; "
+                   "a feature is swept whole or not at all, because both run on the same lane and every handler of it would fire twice")
+
+
+def no_feature_is_half_swept() -> None:
+    """Refuses a feature that registers for both engines. There is no skip to write: a swept feature registers no 2.x handler, so the only way to run twice is to register twice."""
+    for feature in sorted({one.feature for one in ADAPTED.each if one.feature} & {one.feature for one in REGISTERED.each if one.feature}):
+        raise HalfSwept.of(feature, [one.name for one in ADAPTED.each if one.feature == feature],
+                           [one.name for one in REGISTERED.each if one.feature == feature])
+
+
 def ordered_once_the_features_have_registered() -> None:
     """Works the lane's order out again once every feature has registered, since a feature written for the 3.0 engine registers after the lane is wired and calls nothing that would resolve it."""
+    no_feature_is_half_swept()
     TICKING.resolve()
 
 
