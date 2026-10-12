@@ -90,6 +90,13 @@ def moved(features, adapted: dict[str, tuple[str, ...]], stuck: dict[str, tuple[
     return [Moved(name, tuple(sorted(adapted.get(name, ()))), tuple(sorted(stuck.get(name, ())))) for name in sorted(features)]
 
 
+def ran_on_the_bus(receiver, event: "OldEvent", record) -> list[Fact]:
+    """What a receiver of the lane does in place of the bus: hands the logged event to what the bus would have run, if this one would have heard it. It dispatches nothing: whatever the listener wrote reaches the engine as the funnel's own resource facts."""
+    if receiver.hears(event.logged, record):
+        receiver.listener(event.logged, record)
+    return []
+
+
 @dataclass(frozen=True, kw_only=True)
 class OldEvent(Fact):
     """A bridge: a logged event wrapped so the lane can carry it to the old handlers. The row that removes the adapter removes this class."""
@@ -116,9 +123,7 @@ class LoggedHandler(OldHandler):
 
     def handle(self, event: OldEvent, record) -> list[Fact]:
         """Runs the bus's own run of the handler, so the adapter holds no second way to read the event or build the Context."""
-        if self.hears(event.logged, record):
-            self.listener(event.logged, record)
-        return []
+        return ran_on_the_bus(self, event, record)
 
 
 def adapted_beside_the_bus(feature, handler: OldStyle, run, kind) -> None:
@@ -192,9 +197,7 @@ class BusListener(Handler[Fact]):
         return self.pattern in bus.patterns(logged) and self.enabled(record)
 
     def handle(self, event: "OldEvent", record) -> list[Fact]:
-        if self.hears(event.logged, record):
-            self.listener(event.logged, record)
-        return []
+        return ran_on_the_bus(self, event, record)
 
 
 class FailedTick(Handler[Fact]):
@@ -259,7 +262,7 @@ class Ticking:
         if record is None:
             bus.over_the_listeners(logged, record)
             return
-        Lane("project", self.registered, Services({TheRecord: record}), record=record, order=self.order).run(OldEvent(logged=logged))
+        Lane(f"project:{logged.id}", self.registered, Services({TheRecord: record}), record=record, order=self.order).run(OldEvent(logged=logged))
 
 
 TICKING = Ticking(ADAPTED)

@@ -247,8 +247,8 @@ def test_an_upgrade_leaves_a_helper_running_and_its_job_out_of_the_process_list(
     phrase = f"stop the stuck build {os.getpid()}-{time.time_ns()}"
     launch = (f"import sys; sys.path.insert(0, {str(CODE)!r}); from pathlib import Path; from engine.record import Record; "
               f"from agents.terminal import prompted; from features.agent_sessions.launch import launched, prepared; "
-              f"from resources.types import EnvironmentKind; record = Record(Path({str(root)!r}), 'main'); "
-              f"prepared(record, 'main-ada', 'a helper', '', record.root.parent, EnvironmentKind.HELPER); "
+              f"from resources.types import EnvironmentKind, NewEnvironment; record = Record(Path({str(root)!r}), 'main'); "
+              f"prepared(record, NewEnvironment('main-ada', 'a helper', '', record.root.parent, EnvironmentKind.HELPER)); "
               f"launched(record, 'main-ada', 'claude', prompted(record.root, 'main-ada', ['--model', 'opus'], {phrase!r}), record.root.parent)")
 
     def running() -> tuple[int, int]:
@@ -288,8 +288,8 @@ def test_a_helper_launched_into_an_environment_runs_from_its_launch(tmp_path):
     env.pop("JOURNAL_ENV", None)
     head = (f"import sys; sys.path.insert(0, {str(CODE)!r}); from pathlib import Path; from engine.record import Record; "
             f"from features.agent_sessions.launch import launched, prepared, running_in; "
-            f"from resources.types import EnvironmentKind; record = Record(Path({str(root)!r}), 'main'); ")
-    launch = head + "prepared(record, 'main-ada', 'a helper', '', record.root.parent, EnvironmentKind.HELPER); launched(record, 'main-ada', 'claude', ['--model', 'opus'], record.root.parent)"
+            f"from resources.types import EnvironmentKind, NewEnvironment; record = Record(Path({str(root)!r}), 'main'); ")
+    launch = head + "prepared(record, NewEnvironment('main-ada', 'a helper', '', record.root.parent, EnvironmentKind.HELPER)); launched(record, 'main-ada', 'claude', ['--model', 'opus'], record.root.parent)"
     asked = head + "print(running_in(record, 'main-ada'), running_in(record, 'main-bob'))"
     try:
         subprocess.run([sys.executable, "-c", launch], cwd=root.parent, env=env, capture_output=True, timeout=WAIT, check=True)

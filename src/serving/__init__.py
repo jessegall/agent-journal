@@ -88,3 +88,29 @@ def writing(wants: dict[str, object]) -> set[str]:
         if isinstance(service, type) and issubclass(service, Service) and service.writes:
             written.add(service.written(asked))
     return written
+
+
+class NothingServes(LookupError):
+    @classmethod
+    def of(cls, kind: type) -> "NothingServes":
+        return cls(f"nothing in this journal answers {kind.__name__}; the layer that can do it says so at seating, and a journal that cannot do it at all refuses here rather than pretending")
+
+
+class Serving:
+    """What answers each service in this process. The layer that knows how to do a thing says so once, at seating, and whoever needs it asks by type: a controller never reaches up to the code that does the work."""
+
+    def __init__(self):
+        self.answering: dict[type, object] = {}
+
+    def answered(self, kind: type, doing_it) -> None:
+        """Says what does this kind of work here. Called once, at seating, by the layer that can do it."""
+        self.answering[kind] = doing_it
+
+    def given(self, kind: type):
+        if kind not in self.answering:
+            raise NothingServes.of(kind)
+        return self.answering[kind]
+
+
+SERVED = Serving()
+"""The one answering map of this process, seated once and read by type."""

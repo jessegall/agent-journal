@@ -79,3 +79,8 @@ def ready(record) -> list:
     taken = worked(record)
     fit = [t for t in open_rows(record) if takeable(t) and free(record, t) and not t.assigned and t.n not in taken]
     return sorted(fit, key=lambda t: (-int(t.priority), t.creation_order()))
+
+
+def says_what_is_ready(record) -> tuple[bool, bool]:
+    """Whether this environment holds open rows, and whether any of them can be taken: what ready means, answered by the feature that owns it."""
+    return bool(open_rows(record)), bool(ready(record))

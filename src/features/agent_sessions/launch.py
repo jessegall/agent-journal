@@ -13,21 +13,21 @@ from providers import DRIVERS
 from resources.base import DEFAULT_PROVIDER
 from controllers.features import settle_prompts
 from resources.base import SYSTEM
-from resources.types import EnvironmentKind
+from resources.types import EnvironmentKind, NewEnvironment, Running
 
 QUIET = ("dev_faults",)
 
 
 def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind: EnvironmentKind) -> str:
-    prepared(record, name, abstract, owner, record.root.parent, kind)
+    prepared(record, NewEnvironment(name, abstract, owner, record.root.parent, kind))
     return launched(record, name, DEFAULT_PROVIDER, prompted_by_file(record.root, name, DRIVERS[DEFAULT_PROVIDER].within([], worktree), prompt), record.root.parent)
 
 
-def prepared(record, name: str, abstract: str, owner: str, folder: Path, kind: EnvironmentKind) -> Record:
+def prepared(record, wanted: NewEnvironment) -> Record:
     environments = Environments(record, actor=SYSTEM)
-    if not environments.rows.by_title(name):
-        environments.create(name, abstract=abstract, owner=owner, launched_from=record.env, folder=str(folder), kind=kind)
-    place = Record(record.root, name)
+    if not environments.rows.by_title(wanted.name):
+        environments.create(wanted.name, abstract=wanted.abstract, owner=wanted.owner, launched_from=record.env, folder=str(wanted.folder), kind=wanted.kind)
+    place = Record(record.root, wanted.name)
     settle_prompts(place)
     for feature in QUIET:
         Features(place, actor=SYSTEM).switch(feature, False)
@@ -60,22 +60,23 @@ def launched_in(root: Path, environment: str) -> str:
     return ""
 
 
-def driver_in(record, environment: str, provider: str):
+def driver_in(running: Running):
     from providers import DRIVERS
-    session = running_in(record, environment)
-    return DRIVERS[provider](Record(record.root, environment), terminal_of(record.root, session) or session) if session else None
+    root = running.record.root
+    session = running_in(running.record, running.environment)
+    return DRIVERS[running.provider](Record(root, running.environment), terminal_of(root, session) or session) if session else None
 
 
-def tell_in(record, environment: str, provider: str, text: str) -> bool:
-    driver = driver_in(record, environment, provider)
-    return bool(driver) and driver.send(text, now=True, by=record.env)
+def tell_in(running: Running, text: str) -> bool:
+    driver = driver_in(running)
+    return bool(driver) and driver.send(text, now=True, by=running.record.env)
 
 
-def tell_soon(record, environment: str, provider: str, text: str) -> bool:
+def tell_soon(running: Running, text: str) -> bool:
     """Whether an agent runs in the environment; if so the words are typed to it behind the answer, so the sender never waits on its screen."""
-    driver = driver_in(record, environment, provider)
+    driver = driver_in(running)
     if driver:
-        bus.background(f"tell:{environment}:{time.monotonic()}", lambda: driver.send(text, now=True, by=record.env))
+        bus.background(f"tell:{running.environment}:{time.monotonic()}", lambda: driver.send(text, now=True, by=running.record.env))
     return bool(driver)
 
 

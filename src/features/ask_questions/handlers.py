@@ -1,4 +1,5 @@
 
+from resources.types import Running
 from events.agents import AgentReported
 from controllers.types import Agents, Questions
 from events.resources import AnyEvent
@@ -56,7 +57,7 @@ class AnswerOnTheScreen(Handler):
         """An answer reaches the question the agent stands at on its own screen, which no typed line can: the option is pressed, or the words are typed into the free choice."""
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         row = Agents(context.record, actor=SYSTEM).primary()
-        driver = driver_in(context.record, context.record.env, row.provider) if row else None
+        driver = driver_in(Running(context.record, context.record.env, row.provider)) if row else None
         if driver is not None and question.completed and not Sessions(context.record.root).asking(question.n):
             driver.answer_prompt(int(question.chosen), question.outcome, len(question.options))
 

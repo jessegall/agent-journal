@@ -737,3 +737,31 @@ def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the
     assert bus._dispatch.reaches.__self__ is __import__("framework.adapter", fromlist=["TICKING"]).TICKING, \
         "seating the features puts every told event on the lane; features.load is what wires it"
     assert features.FEATURES, "the features are seated in this run, so the assertion above is about the real wiring"
+
+
+def test_a_write_made_inside_a_tick_is_caused_by_the_event_the_tick_is_handling():
+    """The activity list shows a chain as a tree, which it can only do when the cause names an event rather than the actor who set it off."""
+    from engine import bus
+    from engine.record import Record
+    from framework.adapter import BusListener, OldEvent, Ticking
+    from receiving import HANDLE, Registration, Registrations
+    from controllers.types import Todos
+    from resources.base import SYSTEM, Event
+    from tests.conftest import fresh
+
+    scratch = fresh()
+    record = Record(scratch.root, scratch.env, memo=True)
+    registered = Registrations()
+    writes = lambda logged, record: Todos(record, actor=SYSTEM).create("written by the handler")  # noqa: E731
+    writes.__qualname__ = "WritesOnce"
+    registered.add(Registration.read(HANDLE, OldEvent, BusListener(writes, "*", lambda record: True), ()))
+    ticking = Ticking(registered)
+    ticking.resolve()
+
+    logged = Event(id=71, at=1.0, type="todo", n=1, action="created", actor=SYSTEM, data={}, pid=0, handled=False, env=scratch.env)
+    ticking.reaches(logged, record)
+    assert len(Todos(record, actor=SYSTEM).rows.standing()) == 1, "the handler ran and wrote its row"
+    written = [e for e in record.event_log.events() if e.type == "todo" and e.action == "created"][-1]
+    assert written.data.get("caused_by") == "project:71:0:OldEvent", \
+        f"a write made by a handler is caused by the engine's name for the event being handled, which names the lane and the run: {written.data.get('cause')}"
+    assert bus.caused_by() == "", "and the name is the tick's alone: it is given back when the tick ends"

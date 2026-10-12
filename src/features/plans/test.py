@@ -105,10 +105,11 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     todos.complete(1, "done")
     assert by_agent.load(plan.n).data["current"] == 1, "one row done: the phase is not complete"
     Todos(record, actor=AGENT).complete(2, "done")
-    assert (by_agent.load(plan.n).data["current"], [e for e in record.event_log.events() if e.type == "plan"][-1].actor,
-            [e for e in record.event_log.events() if e.type == "plan"][-1].data) == \
+    moved = [e for e in record.event_log.events() if e.type == "plan"][-1]
+    assert (by_agent.load(plan.n).data["current"], moved.actor, {k: v for k, v in moved.data.items() if k != "caused_by"}) == \
         (2, SYSTEM, {"phase": 1, "complete": True, "status": "active", "passed": False, "cause": AGENT}), \
         "every row done: the next phase is current, by the feature, as SYSTEM, caused by the agent"
+    assert moved.data["caused_by"].startswith("project:"), "and it says which event's tick moved it, which is what the activity list makes a tree of"
     assert ready(record)[0].n == 3, "next offers the new phase's row"
     todos.complete(3, "done")
     assert (by_agent.load(plan.n).data["status"], by_agent.load(plan.n).data["current"]) == ("waiting", 2), \

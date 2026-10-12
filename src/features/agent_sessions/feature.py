@@ -1,3 +1,4 @@
+import features.agent_sessions.service  # noqa: F401  seats what answers the Processes service
 from features.agent_sessions.details import AgentSessionsDetails
 from features.agent_sessions.handlers import AskToStop, ClearLapsedAssignments, ClearLapsedAssignmentsOnChange, HandBackReport, HoldEvicted, KeepSubagentAlive, LinkReportToSubagent, MarkSilentStopped, RecordCompactions, StopEndedAtSessionStart, TakeOverOnAnswer
 from events.todos import TodoUpdated

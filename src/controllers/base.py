@@ -16,6 +16,7 @@ from engine.offline import queue
 from engine.outbox import Request
 from engine.paths import known_environment
 from engine.record import Record
+from serving import SERVED, Processes, Providers
 from resources.base import OWNER, PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
 from controllers.discussion import TWICE_WITHIN, Discussed
@@ -166,6 +167,16 @@ class Controller(Files, Links, Discussed, Buttons):
         self.forced: list[str] = []
         if actor:
             self.actor = actor
+
+    @property
+    def providers(self):
+        """The providers this journal runs agents on. A controller asks the service what a provider offers; it never reaches into the package."""
+        return SERVED.given(Providers)
+
+    @property
+    def processes(self):
+        """The agents this journal starts, tells and reads. A controller calls the service; it never starts a process itself."""
+        return SERVED.given(Processes)
 
     def _refuse(self, why: str) -> None:
         if not self.force:

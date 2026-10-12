@@ -29,6 +29,7 @@ def load(root: Path | None = None, commands_only: bool = False) -> list[str]:
     elif COMMANDS_ONLY:
         unload()
     discover()
+    seat_services()
     if root:
         rename_aliases(root)
     dispatch_on_a_lane()
@@ -59,6 +60,12 @@ def wire() -> None:
         FEATURES[name] = cls()
         FEATURES[name].wire(bool(COMMANDS_ONLY))
         PROMISED.refuse_owing(name)
+
+
+def seat_services() -> None:
+    """What answers each service here, seated before anything is wired: the layer that can do the work says so once, and a process that only runs commands has them too."""
+    import features.agent_sessions.service  # noqa: F401
+    import providers.service  # noqa: F401
 
 
 def dispatch_on_a_lane() -> None:

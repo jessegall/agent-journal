@@ -55,9 +55,8 @@ class TicketLanding:
 
     def _discard_failed_start(self, ticket) -> None:
         """A start that left a base but never reached its agent leaves worktrees and branches at the wrong place; a retry takes them away and starts over."""
-        from providers import workspace_folders
         project, branch = self.record.root.parent, self._branch(ticket)
-        folder = project.joinpath(*workspace_folders().worktree_home, ticket.work_environment)
+        folder = project.joinpath(*self.providers.workspaces().worktree_home, ticket.work_environment)
         for name, repo, _ in self._repositories(ticket):
             discarded(repo, folder if name == "." else folder / name, branch, ticket.work_environment)
 
@@ -98,8 +97,7 @@ class TicketLanding:
         return {name: Landing(repository, branch, ticket.base_of(name), self._into_in(ticket, name, repository)) for name, repository in readings.items()}
 
     def _branch(self, ticket) -> str:
-        from providers import DRIVERS
-        return DRIVERS[ticket.provider].branch(ticket.work_environment)
+        return self.providers.driver(ticket.provider).branch(ticket.work_environment)
 
     def _merged(self, ticket, readings: dict[str, Repository]) -> bool:
         states = [(landing.merged(), landing.changed()) for landing in self._landings(ticket, readings).values()]

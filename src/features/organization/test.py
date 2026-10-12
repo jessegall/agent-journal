@@ -1,6 +1,7 @@
 import pytest
 
 import features
+from resources.types import NewEnvironment
 from controllers.base import COMMANDS
 from controllers.types import Environments
 
@@ -164,7 +165,7 @@ def test_a_role_that_runs_as_an_agent_is_started_in_the_tickets_worktree(monkeyp
         "a full-agent role gets an environment of its own, working in the ticket's worktree"
     write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\ncardinality = "plan"\nruns = "agent"\n')
     entered = []
-    monkeypatch.setattr("features.organization.agents.tell_in", lambda record, name, provider, text: entered.append(name) or len(entered) > 1)
+    monkeypatch.setattr("features.organization.agents.tell_in", lambda running, text: entered.append(running.environment) or len(entered) > 1)
     plan = Todos(Record(record.root, "plan-3"), actor=AGENT)
     agents = [COMMANDS["todo"]["delegate"](plan, task, "engineering")["agent"] for task in ("Draw the header", "Draw the footer")]
     assert (agents, len(launched)) == (["plan-3-developer", "plan-3-developer"], 2), \
@@ -249,8 +250,8 @@ def test_every_environment_is_made_with_its_kind_and_only_main_ones_are_listed_t
     record = fresh()
     envs = Environments(record, actor=SYSTEM)
     main = envs.create(record.env)
-    prepared(record, "helper-ada", "Where helper Ada works", "helper:1", record.root.parent, EnvironmentKind.HELPER)
-    prepared(record, "ticket-3", "Where ticket 3 runs", "ticket:3", record.root.parent, EnvironmentKind.TICKET)
+    prepared(record, NewEnvironment("helper-ada", "Where helper Ada works", "helper:1", record.root.parent, EnvironmentKind.HELPER))
+    prepared(record, NewEnvironment("ticket-3", "Where ticket 3 runs", "ticket:3", record.root.parent, EnvironmentKind.TICKET))
     assert [row.kind for row in envs.rows.every()] == ["main", "helper", "ticket"], "each environment says what kind it is from the moment it is made"
     assert envs.create("helper-bo", owner="helper:2").kind == "helper", "a helper's environment made without a kind takes it from its owner, so it never shows as a main one"
     envs.delete(envs.rows.by_title("helper-bo").n, "made only to check its kind")

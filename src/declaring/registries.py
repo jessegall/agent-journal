@@ -18,6 +18,9 @@ PHASE_ROWS = Extension()
 PHASE_STARTS = Extension()
 """What starts the rows of a plan's phase when it begins."""
 
+READINESS = Extension()
+"""Whether an environment holds open rows and whether any can be taken, registered by the feature that owns what ready means."""
+
 PLAN_STARTS = Extension()
 """What starts a plan's own agent when it is started."""
 

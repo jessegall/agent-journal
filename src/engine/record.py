@@ -195,6 +195,8 @@ class Record:
             raise ValueError(f"not an event: {action} by {actor}")
         if bus.cause() and "cause" not in data:
             data = {**data, "cause": bus.cause()}
+        if bus.caused_by() and "caused_by" not in data:
+            data = {**data, "caused_by": bus.caused_by()}
         if bus.command(type) and "by" not in data:
             data = {**data, "by": bus.command(type)}
         def stamped(id: int, handled: bool = False) -> Event:

@@ -1,5 +1,6 @@
 import os
 import time
+from resources.types import NewEnvironment
 from pathlib import Path
 
 import features
@@ -232,7 +233,7 @@ def test_starting_an_agent_asks_which_environment_and_takes_over_a_busy_one_only
     assert choose("Pick", [], ["a", "b"], 0, ask=lambda prompt: (_ for _ in ()).throw(EOFError)) is None, "a closed input answers nothing"
     assert "agent-journal" in banner("claude", record.root.parent) and "claude".capitalize() in banner("claude", record.root.parent), "the banner names the agent about to start"
     helper = Helpers(record, actor=SYSTEM).create("a long job", name="Hedy", provider="claude", model="sonnet", environment="helper-hedy")
-    prepared(record, "helper-hedy", "Where helper Hedy works", helper.ref, Path(record.root).parent, EnvironmentKind.HELPER)
+    prepared(record, NewEnvironment("helper-hedy", "Where helper Hedy works", helper.ref, Path(record.root).parent, EnvironmentKind.HELPER))
     Sessions(record.root).bind("claude-2", "helper-hedy", pid=os.getpid(), provider="claude")
     offered = []
     monkeypatch.setattr(launch, "choose", lambda *given: offered.append(given[2]) or choose(*given))

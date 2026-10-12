@@ -1,9 +1,8 @@
 import time
 from functools import cached_property
 from pathlib import Path
-from resources.types import COMPACTING, WORKING
+from resources.types import COMPACTING, SubagentRow, WORKING
 from providers import PROVIDERS, workspace_folders
-from providers.base import REFUSED
 from payload import HookEvent
 from agents.terminal import seat_session
 from engine import runtime
@@ -16,7 +15,6 @@ from engine.worktree import checkout, environment
 from controllers.types import Agents, Environments, Questions
 from resources.base import SYSTEM
 from resources.types import AgentRow
-from resources.fields import Loaded
 from dataclasses import dataclass
 
 DISPATCHED, RETURNED = "dispatched", "returned"
@@ -44,26 +42,6 @@ def status_after(compacting, status: str) -> str:
     if compacting is False and status == COMPACTING:
         return WORKING
     return status or ""
-
-
-@dataclass(frozen=True)
-class SubagentRow(Loaded):
-    aliases = {"id": ("id", "session", "task"), "kind": ("type",)}
-    id: str = ""
-    task: str = ""
-    kind: str = ""
-    model: str = ""
-    ended: float = 0.0
-    status: str = ""
-    running: bool = False
-    session: str = ""
-
-    @property
-    def address(self) -> str:
-        return self.session or self.id
-
-    def is_refused(self) -> bool:
-        return self.status == REFUSED
 
 
 class SeatReport:

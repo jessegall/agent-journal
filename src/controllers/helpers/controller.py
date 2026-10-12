@@ -20,7 +20,7 @@ from resources.helpers import Helper, held_by_helper
 from events.helpers import Telling
 from controllers.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
-from resources.types import HELPER, MergeWait, Todo
+from resources.types import HELPER, MergeWait, NewEnvironment, Running, Todo
 from controllers.marks import action
 from resources.text import slugged
 from resources.types import EnvironmentKind
@@ -129,12 +129,11 @@ class Helpers(Controller):
 
     def _dispatched(self, name: str, job: str, provider: str, model: str, brief: str = "", worktree: bool = False, checkout: str = "",
                     todos: tuple[int, ...] = (), packages: bool = False):
-        from providers import DRIVERS, PROVIDERS
-        if provider not in DRIVERS:
-            raise Refused(f"a helper runs on one of {', '.join(DRIVERS)}, not {provider!r}")
+        if not self.providers.knows(provider):
+            raise Refused(f"a helper runs on one of {', '.join(self.providers.named())}, not {provider!r}")
         if not model.strip():
             raise Refused("a helper's model is always named: --model <model>")
-        offered = PROVIDERS[provider]()
+        offered = self.providers.of(provider)
         if not offered.offers(model):
             raise Refused(f"{provider} does not offer {model}; choose one of {', '.join(offered.models())}")
         if worktree and checkout:
@@ -155,19 +154,16 @@ class Helpers(Controller):
             if earlier.n != row.n and earlier.environment == place:
                 Controller.complete(self, earlier.n, how=f"carried on by helper {row.n} in the same environment")
         if worktree:
-            from providers import workspace_folders
-            given = Worktrees(self.record, actor=SYSTEM)._cut(place, workspace_folders(), helper=name, packages=packages)
+            given = Worktrees(self.record, actor=SYSTEM)._cut(place, self.providers.workspaces(), helper=name, packages=packages)
             folder = Path(given.path)
             row = self.update(row.n, worktree=str(given.n))
-        from features.agent_sessions.launch import launched, prepared
-        home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER)
+        home = self.processes.environment(self.record, NewEnvironment(place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER))
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
         Messages(home, actor=AGENT).create(titled(job), brief=f"{job}\n\n{brief}".strip(), from_main=True, opening=True)
         self._handed(row, home, handed)
         prompt = kickoff(row, folder, todo.n, handed, voice_of(self.record).agent_name)
         try:
-            from agents.terminal import prompted
-            launched(self.record, place, provider, prompted(self.record.root, place, ["--model", model], prompt), folder)
+            self.processes.start(self.record, place, provider, self.processes.with_words(self.record.root, place, ["--model", model], prompt), folder)
         except Exception:
             give_back(self.record, handed)
             raise
@@ -198,8 +194,7 @@ class Helpers(Controller):
         home = Record(self.record.root, holder.environment)
         for copy in (t for t in Todos(home, actor=SYSTEM).rows.standing() if t.handed == str(given.n)):
             Todos(home, actor=SYSTEM).strike(copy.n, f"moved to helper {row.n}, {row.name}")
-        from features.agent_sessions.launch import tell_in
-        tell_in(self.record, holder.environment, holder.provider,
+        self.processes.tell(Running(self.record, holder.environment, holder.provider),
                 f"To-do {given.n}, {given.title}, now belongs to helper {row.n}, {row.name}. Stop working on it and leave it out of your report.")
 
     @action
@@ -266,8 +261,7 @@ class Helpers(Controller):
         home = Record(self.record.root, row.environment)
         filed = Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
         words = wrote("The agent that dispatched you", filed.n, f"{handed_over(handed)}\n{text}" if handed else text)
-        from features.agent_sessions.launch import tell_soon
-        running = tell_soon(self.record, row.environment, row.provider, words)
+        running = self.processes.tell_behind(Running(self.record, row.environment, row.provider), words)
         if not running:
             if row.worktree:
                 Worktrees(self.record, actor=SYSTEM).renew(int(row.worktree))
@@ -279,15 +273,15 @@ class Helpers(Controller):
 
     def _revive(self, row: Helper, words: str) -> None:
         """Starts a stopped helper's agent again in its session, with the new work as its first turn."""
-        from providers import DRIVERS, PROVIDERS
-        from agents.terminal import detached, launch_output, prompted
-        earlier = Sessions(self.record.root).last(row.environment, row.provider) or DRIVERS[row.provider].printed_session(launch_output(self.record.root, row.environment))
-        if earlier and not PROVIDERS[row.provider]().conversation_file(earlier):
+        driver = self.providers.driver(row.provider)
+        earlier = Sessions(self.record.root).last(row.environment, row.provider) or driver.printed_session(self.processes.output(self.record.root, row.environment))
+        if earlier and not self.providers.of(row.provider).conversation_file(earlier):
             earlier = ""
         if not earlier:
             raise Refused(f"helper {row.n}, {row.name}, has no session left to go on in; dispatch the job again")
-        args = DRIVERS[row.provider].within(["--model", row.model], row.environment)
-        detached(self.record.root, self._folder(row), row.environment, row.provider, prompted(self.record.root, row.environment, DRIVERS[row.provider].resumed(args, earlier), words))
+        args = driver.within(["--model", row.model], row.environment)
+        self.processes.start_detached(self.record.root, self._folder(row), row.environment, row.provider,
+                                      self.processes.with_words(self.record.root, row.environment, driver.resumed(args, earlier), words))
 
     def _folder(self, row: Helper) -> Path:
         if row.worktree:
@@ -321,8 +315,7 @@ class Helpers(Controller):
         there = Record(self.record.root, peer.environment)
         message = Messages(there, actor=AGENT).create(titled(text), brief=text, peer=me.name)
         answer = f'answer with journal helper say {me.n} "<text>"'
-        from features.agent_sessions.launch import tell_in
-        if not tell_in(self.record, peer.environment, peer.provider, f"{wrote(f'Helper {me.n}, {me.name},', message.n, text)}\n\n{answer}"):
+        if not self.processes.tell(Running(self.record, peer.environment, peer.provider), f"{wrote(f'Helper {me.n}, {me.name},', message.n, text)}\n\n{answer}"):
             Nudges(there, actor=SYSTEM).to_primary(titled(f"helper {me.n}, {me.name}, wrote in message {message.n}"), f"{text}\n\n{answer}")
         return f"sent to {peer.name}"
 
@@ -426,12 +419,8 @@ class Helpers(Controller):
     @action
     def transcript(self, n: int, since: int = 0, before: int = 0, last: int = 0, entry: int = 0) -> dict:
         """The conversation of a retired helper, read from the provider's own file recorded when it was retired."""
-        from providers import PROVIDERS
-        from providers.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, whole
         row = self.load(n)
-        last = last or TRANSCRIPT_PAGE
-        found = Transcript(PROVIDERS[row.provider](), Path(row.transcript)) if row.provider in PROVIDERS and row.transcript and Path(row.transcript).is_file() else NoTranscript()
-        return whole(found, self.record, entry) if entry else paged(found, since, before, last)
+        return self.providers.conversation(self.record, row.provider, row.transcript, since, before, last, entry)
 
     def _packed_folder(self, title: str) -> None:
         home = Record(self.record.root, title).home

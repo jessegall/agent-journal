@@ -142,7 +142,7 @@ class Lane:
         dispatched: list[Event] = []
         for fact in facts:
             try:
-                with bus.unit():
+                with bus.unit(), bus.causing(fact.id):
                     for one in self.order.handlers(type(fact), self.registered):
                         for caused in one.receiver.handle(fact, **self.services.given(one.name, type(one.receiver).wants())):
                             dispatched.append(self.named(caused, fact))

@@ -1,4 +1,5 @@
 import time
+from declaring.registries import READINESS
 from dataclasses import asdict
 
 from controllers.agents import IDLE_STATE, WORKING_STATE
@@ -87,12 +88,11 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     @discarding
     def save(self, r: Resource, action: str, **event) -> Resource:
-        from providers import DRIVERS
         self._kept_from_outside(r)
         if r.board and r.stage not in self._stages(r.board):
             self._stage_lost(r)
-        if r.provider not in DRIVERS:
-            raise Refused(f"no provider {r.provider!r}; one of {', '.join(DRIVERS)}")
+        if not self.providers.knows(r.provider):
+            raise Refused(f"no provider {r.provider!r}; one of {', '.join(self.providers.named())}")
         return super().save(r, action, **event)
 
     def _stage_lost(self, r: Resource) -> None:
@@ -135,11 +135,10 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return "\n".join(screen_lines[-int(lines):])
 
     def _driver(self, ticket, doing: str):
-        from providers import DRIVERS
         session = self.agent_session(ticket.n)
         if not session:
             self._refuse(f"{self.type} {ticket.n} has no agent running to {doing}")
-        return DRIVERS[ticket.provider](Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
+        return self.providers.driver(ticket.provider)(Record(self.record.root, ticket.work_environment), terminal_of(self.record.root, session))
 
     def _build_approved_plans(self) -> None:
         """A ticket agent that stands idle with a plan approved is told to build it: through the journal's channel first, which a prompt that does not take typed text still hears; once in ten minutes."""
@@ -242,11 +241,10 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _nothing_ready(self, ticket) -> bool:
         """Whether the ticket's own environment holds open rows and not one of them can be taken: each is blocked, waits on another row or waits on a question to the user. Its agent is then idle because the work is, which is the same readiness the agent's own next row is picked by."""
-        from features.work_tracking.next import open_rows, ready
         if not ticket.work_environment:
             return False
         here = self.record.sibling(ticket.work_environment)
-        return bool(open_rows(here)) and not ready(here)
+        return any(open_rows and not ready for open_rows, ready in (tell(here) for tell in READINESS.each()))
 
     def _rows_done(self, ticket) -> bool:
         """Whether every row of the ticket's plan is closed, though the plan has not yet been marked done: its agent has finished and waits on the merge."""
@@ -634,11 +632,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         Notices(self.record, actor=SYSTEM).create(f"{self.type} {n} did not start", brief=why, tone="warn")
 
     def _launch(self, ticket, into: str) -> None:
-        from agents.terminal import detached, launch_output, prompted
-        from providers import DRIVERS, PROVIDERS
-        driver, place = DRIVERS[ticket.provider], ticket.work_environment
-        earlier = Sessions(self.record.root).last(place, ticket.provider) or driver.printed_session(launch_output(self.record.root, place))
-        if earlier and not PROVIDERS[ticket.provider]().conversation_file(earlier):
+        driver, place = self.providers.driver(ticket.provider), ticket.work_environment
+        earlier = Sessions(self.record.root).last(place, ticket.provider) or driver.printed_session(self.processes.output(self.record.root, place))
+        if earlier and not self.providers.of(ticket.provider).conversation_file(earlier):
             earlier = ""
         args = driver.within(["--model", ticket.model] if ticket.model else [], place)
         project = self.record.root.parent
@@ -655,9 +651,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 self._refuse(stuck)
         if fresh and into != "HEAD":
             ticket = self._based(ticket, {name: tip(repo, f"refs/heads/{self._branch(ticket)}") for name, repo, _ in self._repositories(ticket)})
-        detached(self.record.root, project, place, ticket.provider,
-                 prompted(self.record.root, place, driver.resumed(args, earlier), f"{CARRY_ON.format(ref=ticket.ref)} {self._kickoff(ticket)}") if earlier
-                 else prompted(self.record.root, place, args, self._kickoff(ticket)))
+        self.processes.start_detached(self.record.root, project, place, ticket.provider,
+                                      self.processes.with_words(self.record.root, place, driver.resumed(args, earlier), f"{CARRY_ON.format(ref=ticket.ref)} {self._kickoff(ticket)}") if earlier
+                                      else self.processes.with_words(self.record.root, place, args, self._kickoff(ticket)))
 
     def _kickoff(self, ticket) -> str:
         into = self._into(ticket)
@@ -737,7 +733,6 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def mark_seen(self) -> None:
         """A start counts as launched once its agent is seen; a launch whose agent is still not there after the launching time failed, and the ticket says so with the last words of the launch."""
-        from agents.terminal import launch_failure
         for ticket in self.rows.standing():
             if not ticket.work_environment:
                 continue
@@ -745,7 +740,7 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 self.update(ticket.n, launched=0.0, agent_seen=time.time())
                 continue
             if ticket.launched and not ticket.agent_seen and time.time() - ticket.launched > LAUNCHING_FOR:
-                failure = launch_failure(self.record.root, ticket.work_environment)
+                failure = self.processes.failure(self.record.root, ticket.work_environment)
                 self._failed_to_start(ticket.n, f"no agent was running {LAUNCHING_FOR:g} seconds after its launch{': ' + failure if failure else ''}")
 
     def _confirmed(self, ticket) -> None:

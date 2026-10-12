@@ -76,6 +76,22 @@ def cause() -> str:
     return getattr(_cause, "actor", "")
 
 
+def caused_by() -> str:
+    """The engine's name for the event being handled here, which the writes made under it are caused by."""
+    return getattr(_cause, "named", "")
+
+
+@contextmanager
+def causing(named: str):
+    """Names the event a tick is handling, so every write it makes says what caused it and the activity list can show the chain as a tree. The actor keeps its own field: who set something off and what it came out of are two different facts."""
+    before = caused_by()
+    _cause.named = named or before
+    try:
+        yield
+    finally:
+        _cause.named = before
+
+
 def patterns(event) -> tuple[str, ...]:
     return (ANY, event.type, event.action, f"{event.type}.{event.action}", event.data.get("event") or "", f"hook.{event.data.get('hook')}" if event.data.get("hook") else "", "hook.*" if event.data.get("hook") else "")
 

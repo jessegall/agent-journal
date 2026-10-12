@@ -8,9 +8,9 @@ const SHOWN = 80;
 
 const minute = (e) => Math.floor(e.at / 60);
 
-// What set an event off, when the engine named it: the id of the event whose tick dispatched this one. A cause that names
-// no event - the actor alone, as the 2.x bus fills it - tells the list nothing, so those events fold by the minute as before.
-const causedBy = (e) => (String(e.data?.cause || "").includes(":") ? e.data.cause : "");
+// What an event came out of: the engine's name for the event whose tick dispatched it. An event the engine did not name - one
+// written outside a tick - tells the list nothing, so those fold by the minute as before.
+const causedBy = (e) => String(e.data?.caused_by || "");
 
 export const counted = (events) =>
     Object.entries(Object.groupBy(events, (e) => e.type))

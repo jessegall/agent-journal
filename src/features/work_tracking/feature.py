@@ -18,7 +18,8 @@ from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
 from framework.base import Feature
 from framework.watched import COUNT, FACTS, Fact, state_facts
-from features.work_tracking.next import ready
+from declaring.registries import READINESS
+from features.work_tracking.next import ready, says_what_is_ready
 from framework.sending import Sent
 from features.work_tracking.auto import automatic
 from overview.parts import SUMMARY_PARTS
@@ -111,6 +112,7 @@ class WorkFeature(Feature):
         return {**super().settings_view(record), "steered": steered(record)}
 
     def register(self, journal: Journal) -> None:
+        READINESS.add(None, says_what_is_ready)
         SUMMARY_PARTS.add(None, automatic, key="auto")
         FACTS.register(self, *state_facts("work", "open", open_work), *state_facts("work", "awaiting", lambda context: [work for work in open_work(context) if work.awaiting]),
                        Fact("todo.ready", COUNT, "To-dos are ready and no work is open", "at least {over} to-dos are ready and no work is open", todo_ready,

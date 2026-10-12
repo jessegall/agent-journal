@@ -340,7 +340,51 @@ STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
 FAILED = "failed"
 AT_REST = (STOPPED, IDLE)
 SUBAGENT = "subagent"
+REFUSED = "refused"
+"""The status of a subagent the provider refused to start. It sits with the other statuses, so a reader below the providers can tell one."""
 RUN_KINDS = ("shell_rows", "subagent_rows", "monitor_rows")
+
+
+@dataclass(frozen=True)
+class Running:
+    """Where an agent is reached: the record that opens it, the environment it works in, and the provider running it there. The three always travel together, so they are one value."""
+
+    record: object
+    environment: str
+    provider: str
+
+
+@dataclass(frozen=True)
+class NewEnvironment:
+    """What an environment is made from: its name, what it is for, who answers for it, the folder it works in and its kind."""
+
+    name: str
+    abstract: str
+    owner: str
+    folder: Path
+    kind: "EnvironmentKind"
+
+
+@dataclass(frozen=True)
+class SubagentRow(Loaded):
+    """One subagent of an agent, as its row carries it."""
+
+    aliases = {"id": ("id", "session", "task"), "kind": ("type",)}
+    id: str = ""
+    task: str = ""
+    kind: str = ""
+    model: str = ""
+    ended: float = 0.0
+    status: str = ""
+    running: bool = False
+    session: str = ""
+
+    @property
+    def address(self) -> str:
+        return self.session or self.id
+
+    def is_refused(self) -> bool:
+        return self.status == REFUSED
 
 
 class AgentRow(Shape, Resource):
