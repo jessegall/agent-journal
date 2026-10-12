@@ -266,10 +266,12 @@ class Claude(Provider):
         return LONG_WINDOW if LONG_MARK in f"{hook.model}{configured}" or used > WINDOW else WINDOW
 
     def channel(self, project: Path, hook: HookCommand) -> None:
+        """Takes the journal's own MCP server back out of the project: the journal types its lines now, so the server carried nothing, while the provider still launched it, kept it alive and put its tools in every agent's context."""
         f = project / ".mcp.json"
         known = read_json(f, dict, {})
-        servers = known.get("mcpServers") or {}
-        servers[SERVER] = {"command": sys.executable, "args": [str(hook.root / "journal.py"), "-m", "channel", str(hook.root)]}
+        if SERVER not in (known.get("mcpServers") or {}):
+            return
+        servers = {name: server for name, server in known["mcpServers"].items() if name != SERVER}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
     def browser_logins(self, project: Path, storage: Path) -> bool:
@@ -324,14 +326,12 @@ class Claude(Provider):
         return True
 
     def wiring_trouble(self, project: Path) -> str:
+        """What is wrong with the wiring, or nothing. The journal's own MCP server is trouble by being there at all: the journal types its lines, so a registered server is launched and kept alive for nothing and puts its tools in every agent's context."""
         found = super().wiring_trouble(project)
         if found:
             return found
-        python = ((read_json(project / ".mcp.json", dict, {}).get("mcpServers") or {}).get(SERVER) or {}).get("command", "")
-        if not (python and Path(python).exists()):
-            return f"its channel runs {python or 'no Python'}, which is gone: reinstall: re-run install.sh"
-        if run([python, "-c", "import sys; print(sys.version_info >= (3, 10))"], timeout=10).strip() != "True":
-            return f"its channel runs {python or 'no Python'}, which is not Python 3.10 or newer"
+        if SERVER in (read_json(project / ".mcp.json", dict, {}).get("mcpServers") or {}):
+            return "its channel server is still registered, which the journal no longer uses"
         return ""
 
     def interrupted_by_user(self, transcript: Path) -> bool:
