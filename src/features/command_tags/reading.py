@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-from engine.memo import Memo
+from resources.memo import Memo
 
 
 REPLY_WITH = "reply_with"

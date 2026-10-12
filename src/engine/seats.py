@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 
 from engine.sessions import Sessions
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.state import State
 from engine.stored import read_promised_json, write_json
 from engine import runtime

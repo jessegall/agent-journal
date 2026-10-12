@@ -4,7 +4,7 @@ import shutil
 
 from controllers.types import CONTROLLERS, Agents, Messages
 from events.agents import SessionStarted
-from engine.memo import Memo
+from resources.memo import Memo
 from events.resources import FileAttached
 from events.messages import MessageUpdated
 from features.attachment_descriptions.video import TAGGED, VIDEO, frames_of, probe, sampled, spacing

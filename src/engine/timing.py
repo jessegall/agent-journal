@@ -10,11 +10,9 @@ from dataclasses import dataclass, field
 from engine import bus, runtime, waits, whole_reads
 from engine.collecting import collecting
 from engine.record import Record
+from events.measured import EVENT, MEASURED, TIMING
 from resources.base import SYSTEM
 
-TIMING = "timing"
-MEASURED = "measured"
-EVENT = f"{TIMING}.{MEASURED}"
 PROFILING = runtime.flag("profile-requests")
 SAMPLES_AT = (0.05, 0.2, 0.8)
 TICK = 0.025

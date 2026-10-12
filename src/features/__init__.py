@@ -148,7 +148,7 @@ def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
     from features.switches import rebooted
     from declaring.extension import clear_all
-    from engine.memo import forget_all
+    from resources.memo import forget_all
     COMMANDS.clear()
     HANDLERS.clear()
     bus.clear()

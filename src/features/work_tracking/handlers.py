@@ -8,7 +8,7 @@ from events.files import FileEdited
 from events.resources import AnyEvent
 from events.todos import TodoCompleted
 from events.works import WorkCompleted, WorkCreated, WorkUpdated
-from declaring import trigger
+from engine import triggering
 from features.sending import Sent
 from declaring.trigger import MINUTE
 from providers.payload import HookEvent
@@ -203,8 +203,8 @@ class CountEdits(Handler):
         if not context.agent.row.wrote or not work:
             return
         row, name = context.agent.row, context.feature.name
-        edits = trigger.last(context.record, row.title, name).edits + 1
-        trigger.write(context.record, row, name, edits=edits)
+        edits = triggering.last(context.record, row.title, name).edits + 1
+        triggering.write(context.record, row, name, edits=edits)
         every = context.settings.name_work_every
         if every and edits % every == 0:
             context.agent.whisper("in hand", n=work[0].n, title=work[0].title)
@@ -217,7 +217,7 @@ class ResetEditsOnLog(Handler):
         if not event.section:
             return
         for row in context.feature.reached(context.record, context.feature.lines["log held"].reach):
-            trigger.write(context.record, row, context.feature.name, edits=0)
+            triggering.write(context.record, row, context.feature.name, edits=0)
         context.release()
 
 

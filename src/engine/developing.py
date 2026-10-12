@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from engine.memo import Memo
+from resources.memo import Memo
 
 READ = Memo()
 DEVELOPING = "DEVELOPMENT_MODE"

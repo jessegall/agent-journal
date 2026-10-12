@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.stored import read_json
 from providers import PROVIDERS
 from providers.payload import Hook

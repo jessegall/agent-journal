@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, TypeVar
 
 from engine.developing import found, project_of
-from engine.memo import Memo
+from resources.memo import Memo
 
 T = TypeVar("T")
 LOG_BYTES = 262144

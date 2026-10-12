@@ -94,8 +94,9 @@ def test_a_reminder_aimed_at_one_agent_is_said_only_to_that_session_and_stays_ou
 
 def test_a_cadence_is_due_by_percent_uses_minutes_idle_worked_start_or_notices_and_never_without_one():
     from types import SimpleNamespace
-    from declaring import trigger
-    from declaring.trigger import MINUTES, NOTICES, PERCENT, START, USES, WORKED, Trigger, due, fired
+    from engine import triggering
+    from declaring.trigger import MINUTES, NOTICES, PERCENT, START, USES, WORKED, Trigger
+    from engine.triggering import due, fired
     record = fresh()
     agent = SimpleNamespace(title="claude-1", context=30.0, uses=5, status="idle", event="Stop")
     named = lambda unit, **given: due(record, agent, f"cadence-{unit}", Trigger(unit=unit, **given))
@@ -107,5 +108,5 @@ def test_a_cadence_is_due_by_percent_uses_minutes_idle_worked_start_or_notices_a
     assert named(START, every=1), "a session start makes the start cadence due"
     fired(record, agent, "cadence-minutes")
     assert (named(MINUTES, every=1), named(NOTICES, every=1)) == (False, False), "a cadence that just fired waits its minutes, and notices wait for something noticed"
-    trigger.noticed(record, agent, "cadence-notices")
+    triggering.noticed(record, agent, "cadence-notices")
     assert named(NOTICES, every=1), "a noticed event makes the notices cadence due"

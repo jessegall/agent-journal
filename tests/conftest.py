@@ -189,7 +189,7 @@ def process_state_forgotten():
 
 @pytest.fixture(autouse=True)
 def forgotten_memos():
-    from engine.memo import forget_all
+    from resources.memo import forget_all
     forget_all()
     yield
 

@@ -6,9 +6,11 @@ from typing import ClassVar
 from events import Event, Request
 from events.resources import ResourceEvent, RowAction
 from events.typed import AgentEvent
-from engine.chat import SENDING, SENT
-from engine.clock import BEAT, TICKED
-from engine.ran import COMMAND_RAN
+
+
+SENDING, SENT = "message.sending", "message.sent"
+TICKED, BEAT = "ticked", "beat"
+COMMAND_RAN = "command.ran"
 
 
 @dataclass(frozen=True)

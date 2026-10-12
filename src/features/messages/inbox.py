@@ -1,7 +1,7 @@
 from events.agents import AgentReported
 from events.messages import MessageCreated
 from engine.transcript import IDLE
-from declaring import trigger
+from engine import triggering
 from features.messages.answering import unanswered
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT
@@ -12,8 +12,8 @@ INBOX_AFTER = 5
 
 def counted(context: Context, behaviour: str) -> int:
     key, row = context.feature.keyed(behaviour), context.agent.row
-    count = trigger.last(context.record, row.title, key).count + 1
-    trigger.write(context.record, row, key, count=count)
+    count = triggering.last(context.record, row.title, key).count + 1
+    triggering.write(context.record, row, key, count=count)
     return count
 
 
@@ -22,16 +22,16 @@ def patient(context: Context, behaviour: str) -> int:
 
 
 def reset(context: AgentContext, behaviour: str) -> None:
-    trigger.write(context.record, context.agent.row, context.feature.keyed(behaviour), count=0)
+    triggering.write(context.record, context.agent.row, context.feature.keyed(behaviour), count=0)
 
 
 class ResetCountsOnArrival(Handler):
     def handle(self, context: Context, event: MessageCreated) -> None:
         every = context.feature.behaviours["unread"].trigger.every
         for row in context.feature.reached(context.record, context.feature.lines["inbox"].reach):
-            trigger.write(context.record, row, context.feature.keyed("unread"), uses=int(row.uses) - every)
+            triggering.write(context.record, row, context.feature.keyed("unread"), uses=int(row.uses) - every)
         for row in context.feature.reached(context.record, context.feature.lines["answer"].reach):
-            trigger.write(context.record, row, context.feature.keyed("answering"), uses=int(row.uses), count=0)
+            triggering.write(context.record, row, context.feature.keyed("answering"), uses=int(row.uses), count=0)
 
 
 class NameUnread(Handler):
@@ -51,10 +51,10 @@ class NameUnread(Handler):
 def hold_unanswered(context: AgentContext, held: list) -> None:
     """Every tool use waits while a message the user wrote is read and unanswered, from the answering.hold tool use onwards."""
     key, row = context.feature.keyed("answer hold"), context.agent.row
-    began = trigger.last(context.record, row.title, key).uses
+    began = triggering.last(context.record, row.title, key).uses
     if not began:
         began = int(row.uses) or 1
-        trigger.write(context.record, row, key, uses=began)
+        triggering.write(context.record, row, key, uses=began)
     if int(row.uses) - began >= int(context.settings["answering.hold"]):
         context.hold("answer held", "answering", messages=", ".join(f"message {m.n}" for m in held[-3:]))
 
@@ -64,7 +64,7 @@ class NameUnanswered(Handler):
         held = unanswered(context.journal)
         if not held:
             reset(context, "answering")
-            trigger.write(context.record, context.agent.row, context.feature.keyed("answer hold"), uses=0)
+            triggering.write(context.record, context.agent.row, context.feature.keyed("answer hold"), uses=0)
             context.release("answering")
             return
         hold_unanswered(context, held)

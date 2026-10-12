@@ -12,6 +12,7 @@ from engine.state import State
 from engine.wording import digest
 from providers.payload import STATUS, HookEvent
 from declaring import trigger
+from engine import triggering
 from declaring.settings import Settings
 from resources.base import SYSTEM
 
@@ -85,7 +86,7 @@ class Context:
         self.feature.release(self.record, behaviour, self.agent.row if self.agent else None)
 
     def every(self, kind: str, key: str, cadence: trigger.Trigger) -> bool:
-        return trigger.claimed(self.record, self.agent.row, f"{self.feature.name}.{kind}.{digest(key.strip(), 12)}", cadence)
+        return triggering.claimed(self.record, self.agent.row, f"{self.feature.name}.{kind}.{digest(key.strip(), 12)}", cadence)
 
     def at_most(self, kind: str, key: str, times: int) -> bool:
         if self.used_up(kind, key, times):

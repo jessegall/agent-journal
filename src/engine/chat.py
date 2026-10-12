@@ -3,9 +3,9 @@ from uuid import uuid4
 
 from engine import bus
 from engine.bus import Event
+from events.agents import SENDING, SENT
 from resources.base import AGENT
 
-SENDING, SENT = "message.sending", "message.sent"
 
 
 def send(record, row, text: str, turn: str | None = None) -> None:

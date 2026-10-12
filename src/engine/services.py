@@ -16,7 +16,7 @@ from engine.runtime import env, folder
 from engine.sessions import alive
 from typing import TypedDict
 from declaring.extension import Extension
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.record import Record
 
 PORTS = range(8440, 8500)
