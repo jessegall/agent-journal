@@ -3,30 +3,33 @@
 // play again, so the figure is a creature that notices things now and then, not a status icon.
 
 // The reactions to a moment, by its name; the first whose roll succeeds plays. `moment` is a beat, a card seen to change, or a held state.
+// What happens in the work moves the body: a `clip` plays once, turned to the card that caused it when `toward` says so. What the user
+// does is answered by the eyes alone: they take on a `look` for LOOK_SECONDS over whatever the body is doing, which goes on undisturbed.
 export const REACTIONS = [
     {moment: "tests_passed", clip: "joy", odds: 0.75, cooldown: 20, toward: "card"},
     {moment: "tests_failed", clip: "dismay", odds: 0.75, cooldown: 20, toward: "card"},
-    {moment: "committed", clip: "celebrate", odds: 0.6, cooldown: 30},
+    {moment: "committed", clip: "joy", odds: 0.6, cooldown: 30},
     {moment: "failed", clip: "shake", odds: 0.6, cooldown: 20, toward: "card"},
     {moment: "refused", clip: "shake", odds: 0.5, cooldown: 20},
-    {moment: "answered", clip: "nod", odds: 0.6, cooldown: 15},
-    {moment: "heard", clip: "wave", odds: 0.15, cooldown: 120},
-    {moment: "heard", clip: "nod", odds: 0.35, cooldown: 15},
-    // the user typing in the box next to it, and the agent settling after a long stretch of work
-    {moment: "typing", clip: "peek", odds: 0.2, cooldown: 60},
     {moment: "work_done", clip: "stretch", odds: 0.4, cooldown: 120},
-    // a face the user puts on a message is aimed at the figure, so it always answers, and turns to the message to do it
-    {moment: "reacted:\u2764\ufe0f", clip: "hearts", odds: 1, cooldown: 0, toward: "card"},
-    {moment: "reacted:\ud83d\udc4d", clip: "nod", odds: 1, cooldown: 0, toward: "card"},
-    {moment: "reacted:\ud83c\udf89", clip: "joy", odds: 1, cooldown: 0, toward: "card"},
-    {moment: "reacted:\ud83d\ude04", clip: "laugh", odds: 1, cooldown: 0, toward: "card"},
-    {moment: "reacted:\ud83d\udc40", clip: "look_around", odds: 1, cooldown: 0, toward: "card"},
-    {moment: "reacted:\ud83d\ude4f", clip: "bow", odds: 1, cooldown: 0, toward: "card"},
-    {moment: "reacted:\ud83d\udc4e", clip: "shake", odds: 1, cooldown: 0, toward: "card"},
-    {moment: "reacted:\ud83d\udc94", clip: "dismay", odds: 1, cooldown: 0, toward: "card"},
-    {moment: "reacted:\ud83d\ude20", clip: "flinch", odds: 1, cooldown: 0, toward: "card"},
-    {moment: "reacted:\ud83c\udfa9", clip: "bow", odds: 1, cooldown: 0, toward: "card"},
+    {moment: "answered", look: "amused", odds: 0.6, cooldown: 15},
+    {moment: "heard", look: "amused", odds: 0.5, cooldown: 30},
+    {moment: "typing", look: "reading", odds: 0.2, cooldown: 60},
+    // a face the user puts on a message is aimed at the figure, so it always answers
+    {moment: "reacted:\u2764\ufe0f", look: "hearts", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83d\udc4d", look: "amused", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83c\udf89", look: "startled", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83d\ude04", look: "amused", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83d\udc40", look: "reading", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83d\ude4f", look: "hearts", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83d\udc4e", look: "worried", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83d\udc94", look: "worried", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83d\ude20", look: "angry", odds: 1, cooldown: 0},
+    {moment: "reacted:\ud83c\udfa9", look: "amused", odds: 1, cooldown: 0},
 ];
+
+// how long the eyes keep a look
+export const LOOK_SECONDS = 3;
 
 // While the agent works, the figure sits down with a laptop most of the time, and otherwise does what the state's own clip does
 export const WORK_VARIANTS = {
@@ -48,14 +51,17 @@ export const WORKED_SECONDS = 30;
 export const FLIP_OVER = 1;
 export const FLIP_ODDS = 0.35;
 
-// the clip that plays for this moment, or "": the first reaction for it that is off cooldown and wins its roll. `memory` maps a clip's name
-// to when it last played, in seconds, and is filled in here
+// what a reaction does, a clip or a look, which is what its cooldown is kept under
+const doing = (reaction) => reaction.clip ?? `look:${reaction.look}`;
+
+// the reaction to this moment, or null: the first for it that is off cooldown and wins its roll. `memory` maps what a reaction does to
+// when it last did it, in seconds, and is filled in here
 export function reactionTo(moment, memory, now, random) {
     const found = REACTIONS.find(
-        (each) => each.moment === moment && now - (memory.get(each.clip) ?? -Infinity) >= each.cooldown && random() < each.odds
+        (each) => each.moment === moment && now - (memory.get(doing(each)) ?? -Infinity) >= each.cooldown && random() < each.odds
     );
     if (!found) return null;
-    memory.set(found.clip, now);
+    memory.set(doing(found), now);
     return found;
 }
 

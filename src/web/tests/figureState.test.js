@@ -1,8 +1,8 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {ASLEEP_AFTER, BEAT_CLIPS, EGGS, POINTED_AFTER, SEATED, beatsAfter, clipOf, eggFor, figureStateOf} =
-    await import("../src/domain/figureState.js");
+const {ASLEEP_AFTER, EGGS, POINTED_AFTER, SITS, beatsAfter, clipOf, eggFor, figureStateOf} = await import("../src/domain/figureState.js");
+const {REACTIONS} = await import("../src/figure/reactions.js");
 const {pointedView} = await import("../src/figure/places.js");
 
 const NOW = 10_000;
@@ -21,7 +21,7 @@ test("a stopped, paused or compacting agent keeps its figure, plainly not workin
     expect(clipOf("stopped")).toBe("sleep");
     expect(stateAt({paused: true})).toBe("paused");
     expect(stateAt({status: "compacting"})).toBe("compacting");
-    expect(clipOf("a state nobody named")).toBe("sit_on_edge");
+    expect(clipOf("a state nobody named")).toBe("idle");
 });
 
 test("an idle agent's figure falls asleep only after a long while, timed from the agent's own row", () => {
@@ -55,7 +55,7 @@ const VOICES = ["bare", "butler", "homie", "coach", "colleague", "squire"];
 const STATES = ["idle", "asleep", "thinking", "searching", "writing", "running", "waiting", "asking", "compacting", "paused", "stopped"];
 // every moment the figure can meet: each beat, and each held state both fresh and long held
 const MOMENTS = [
-    ...Object.keys(BEAT_CLIPS).map((beat) => ({beat, at: 1})),
+    ...[...new Set(REACTIONS.map((each) => each.moment))].map((beat) => ({beat, at: 1})),
     ...STATES.flatMap((state) => [0, POINTED_AFTER - 1, POINTED_AFTER, 10 * POINTED_AFTER].map((lasted) => ({state, since: 1, lasted}))),
 ];
 // the design, said plainly: the squire's chase on a failed check, any voice's remark after a long wait
@@ -100,8 +100,7 @@ test("the walk plays only while the figure moves: no held state is the walk", ()
     for (const state of STATES) expect(clipOf(state)).not.toBe("walk");
 });
 
-test("an idle figure sits on the edge of a panel, and one waiting on a tool stands", () => {
-    expect(clipOf("idle")).toBe("sit_on_edge");
-    expect(SEATED).toContain(clipOf("idle"));
-    expect(SEATED).not.toContain(clipOf("waiting"));
+test("an idle or sleeping figure sits on the edge of a panel, and one at work or waiting on a tool stands", () => {
+    for (const state of ["idle", "asleep", "compacting", "paused", "stopped"]) expect(SITS.has(state), state).toBe(true);
+    for (const state of ["thinking", "searching", "writing", "running", "waiting", "asking"]) expect(SITS.has(state), state).toBe(false);
 });

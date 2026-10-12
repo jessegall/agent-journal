@@ -1,7 +1,7 @@
 // @vitest-environment node
 import {afterEach, expect, test} from "vitest";
 
-const {seatOf, seatRise} = await import("../src/figure/places.js");
+const {POSTURES, boxAt, postureOf, seatOf, seatRise, spotOf} = await import("../src/figure/places.js");
 
 const FIGURE = {size: 112, below: 0.05};
 
@@ -36,8 +36,23 @@ test("a figure's hips sit a little inboard of the corner it sits on, so its weig
 test("a seated figure's hips sit on the box's edge, and the room it takes above the edge is what the thread leaves", () => {
     page({left: 300, top: 600, width: 400, height: 120});
     const spot = seatOf(FIGURE, {x: 700, y: 600});
-    expect(spot.y).toBeGreaterThan(600);
-    expect(seatRise(FIGURE)).toBeCloseTo((1 - FIGURE.below) * FIGURE.size - (spot.y - 600), 5);
+    expect(spot).toMatchObject({y: 600, posture: "sit"});
+    expect(600 - boxAt(spot, FIGURE).top).toBeCloseTo(seatRise(FIGURE), 5);
+});
+
+test("whatever it plays, the figure's feet never go below the edge it rests on: on its feet they are on the line, seated they hang past it", () => {
+    page({left: 300, top: 600, width: 400, height: 120});
+    const feet = (spot, posture) => boxAt(spot, FIGURE, posture).bottom - FIGURE.below * FIGURE.size;
+    const seat = seatOf(FIGURE, {x: 700, y: 600});
+    const standing = spotOf(null, FIGURE);
+    expect(feet(standing, "stand")).toBeCloseTo(600, 5);
+    // a clip that cannot sit, such as the walk or the landing, is drawn on its feet at a seat, not at the seated picture's depth
+    const walk = {postures: ["stand"]};
+    expect(postureOf(walk, seat.posture)).toBe("stand");
+    expect(feet(seat, postureOf(walk, seat.posture))).toBeCloseTo(600, 5);
+    expect(feet(seat, "sit")).toBeCloseTo(600 + POSTURES.sit.drop * FIGURE.size, 5);
+    // it travels to a seat on its feet, so the walk there runs along the line and never sinks into the box
+    expect(POSTURES[seat.posture].travels).toBe("stand");
 });
 
 test("with nothing to sit on the figure sits on the foot of the window, wholly inside it, never past an edge", () => {

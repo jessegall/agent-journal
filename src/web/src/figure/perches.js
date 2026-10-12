@@ -14,9 +14,6 @@ export const ODDS = 10;
 export const HANG_SHARE = 0.4;
 export const STAY_SECONDS = [20, 60];
 
-// a hanging figure's hands are this share of its height above the line its feet stand on
-const HANG_REACH = 0.8;
-
 // the side of a bubble with more room outside it, so a figure there stays off the bubbles' text
 const sideOf = (rect, scroller) => (rect.left - scroller.left > scroller.right - rect.right ? "left" : "right");
 
@@ -49,5 +46,5 @@ export function perchSpot(perch, scroller, figure) {
     if (!inView(rect, scroller.getBoundingClientRect(), figure)) return null;
     if (perch.kind === SITS) return {...seatAt(rect, perch.side, figure), on: perch.bubble};
     const out = (perch.side === "left" ? -1 : 1) * HANG_OUT * figure.size;
-    return {x: (perch.side === "left" ? rect.left : rect.right) + out, y: rect.top + HANG_REACH * figure.size, face: 0, on: perch.bubble};
+    return {x: (perch.side === "left" ? rect.left : rect.right) + out, y: rect.top, face: 0, posture: "hang", grip: perch.grip, on: perch.bubble};
 }

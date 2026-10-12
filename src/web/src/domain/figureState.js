@@ -1,10 +1,9 @@
-import {REACTIONS} from "../figure/reactions.js";
 import {stateOf} from "./agentState.js";
 
 // What the figure does, read from the same agent row and work rows as the status bar, so the two never disagree.
-// Each held state names the clip the figure loops while it is true; a state with no clip of its own sits on the edge. The walk is never held: it plays only while the figure moves.
+// Each held state names the clip the figure loops while it is true; a state with no clip of its own idles. The walk is never held: it plays only while the figure moves.
 export const HELD = {
-    idle: "sit_on_edge",
+    idle: "idle",
     asleep: "sleep",
     thinking: "think",
     searching: "search",
@@ -12,10 +11,13 @@ export const HELD = {
     running: "work",
     waiting: "idle",
     asking: "idle",
-    compacting: "sit_on_edge",
-    paused: "sit_on_edge",
+    compacting: "idle",
+    paused: "idle",
     stopped: "sleep",
 };
+
+// The states in which the agent is doing nothing of its own, so the figure sits on a corner of the edge instead of standing on it
+export const SITS = new Set(["idle", "asleep", "compacting", "paused", "stopped"]);
 
 // A tool in flight says what the agent is doing with it; the providers report their own tools under these names.
 const TOOL_STATES = {
@@ -54,9 +56,6 @@ export function figureStateOf(agent, works, waitingSince, now = Date.now() / 100
 
 export const clipOf = (state) => HELD[state] || HELD.idle;
 
-// The clips in which the figure sits on a panel's corner instead of standing on its edge
-export const SEATED = ["sit_on_edge", "type"];
-
 // One-off beats, each fired by a card the journal wrote on the agent's row and played once before the held state resumes;
 // the first rule a card matches names its beat
 const BEATS = [
@@ -65,9 +64,6 @@ const BEATS = [
     {beat: "refused", matches: (card) => card.tone === "danger"},
     {beat: "answered", matches: (card) => card.icon === "question"},
 ];
-
-// the first clip each moment calls for, as the reactions name them
-export const BEAT_CLIPS = Object.fromEntries([...REACTIONS].reverse().map((each) => [each.moment, each.clip]));
 
 // The beats for faces the user has put on messages since `seenAt` (seconds), oldest first; `reactions` are the journal's reaction rows. The
 // card is the message the face is on.

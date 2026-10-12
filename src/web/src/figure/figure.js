@@ -79,11 +79,14 @@ function hingeAxis(base, side) {
 
 // rig.Posing, kept as each bone's move from its rest place (final @ matrix_local⁻¹) in Blender's armature space
 class Posing {
-    constructor(rig) {
+    constructor(rig, posture = "stand") {
         this.rig = rig;
         this.final = new Map();
         this.eyes = 1;
         this.eyeTint = null;
+        this.hearts = 0;
+        this.sits = posture === "sit";
+        this.sway = 0;
     }
 
     standing(name) {
@@ -168,6 +171,16 @@ class Posing {
         this.final = new Map(this.rig.order.map((name) => [name, turn.clone().multiply(this.matrix(name))]));
     }
 
+    // a point given against the body at rest, carried wherever the root has been lifted or moved
+    carried(point) {
+        return point.clone().add(this.head("root", this.matrix("root")).sub(this.rig.heads.get("root")));
+    }
+
+    // how far the legs of a seated figure swing, from -1 to 1
+    swing(sway) {
+        this.sway = sway;
+    }
+
     shutEyes(open) {
         this.eyes = Math.max(open, MIN_EYE_HEIGHT);
     }
@@ -175,6 +188,11 @@ class Posing {
     // the eyes' colour, as red, green and blue from 0 to 1; none leaves them their own
     tintEyes(colour) {
         this.eyeTint = colour;
+    }
+
+    // hearts in place of the eyes, `size` times their own size; 0 leaves the eyes
+    heartEyes(size) {
+        this.hearts = size;
     }
 
     // every bone's move, the whole figure turned `facing` degrees toward the viewer's right as rig.Posing.revolve turns it
@@ -244,6 +262,7 @@ const freeSide = (stance) => (stance.busy.has("r") ? "l" : "r");
 function idle(pose, stance, t) {
     breathe(pose, t);
     armsAtRest(pose, stance);
+    pose.swing(waveOf(t));
     pose.shutEyes(blinkAt(t, 0.62, 24));
 }
 
@@ -279,7 +298,7 @@ function think(pose, stance, t) {
     trunk(pose, {nod: 8 + 3 * waveOf(t), turn: -sign * 10 + 3 * waveOf(t), tilt: -sign * 5});
     armsAtRest(pose, stance, [side]);
     const [x, y, z] = CHIN_REST;
-    pose.reach(side, new THREE.Vector3(sign * x, y, z), new THREE.Vector3(...THINK_ELBOW));
+    pose.reach(side, pose.carried(new THREE.Vector3(sign * x, y, z)), new THREE.Vector3(...THINK_ELBOW));
     const [across, forward, up] = THINK_HAND;
     pose.aim(`hand_${side}`, new THREE.Vector3(-sign * across, forward, up));
     pose.turn(`hand_${side}`, {x: THINK_TIP});
@@ -368,34 +387,40 @@ export function supportsClip(name, stance) {
     return name !== "pull_ups" || !(stance.busy.size || stance.level.size);
 }
 
-// the lower body of a figure sitting on an edge: the thighs forward, the knees bent over it, `bounce` lifting it off the seat
-function seatedBody(pose, sway = 0, bounce = 0) {
-    pose.lift("root", {z: SEAT_LIFT + bounce});
+// A figure sitting on an edge: the root lifted onto the seat before any clip poses it, and after it the thighs forward and the knees bent
+// over the edge, swinging as the clip says. Every clip but those that move the whole body is drawn seated this way as well as standing.
+function seat(pose) {
+    pose.lift("root", {z: SEAT_LIFT});
+}
+
+function seatedLegs(pose) {
     for (const [side, sign] of Object.entries(SIDES)) {
         pose.turn(`thigh_${side}`, {x: -88});
-        pose.bend(`shin_${side}`, SEAT_SHIN + sign * 9 * sway);
-        pose.turn(`foot_${side}`, {x: -sign * 5 * sway});
+        pose.bend(`shin_${side}`, SEAT_SHIN + sign * 9 * pose.sway);
+        pose.turn(`foot_${side}`, {x: -sign * 5 * pose.sway});
     }
 }
 
-function sit_on_edge(pose, stance, t) {
-    const sway = waveOf(t);
-    trunk(pose, {lean: 1.5 * sway, nod: -1.5 * sway, turn: 3 * waveOf(t, 1)});
-    armsAtRest(pose, stance);
-    seatedBody(pose, sway);
-    pose.shutEyes(blinkAt(t, 0.625, 24));
+// the body lowered by `depth` on bent knees, the feet flat where they stand; seated, it has no knees under it to bend
+function crouch(pose, depth) {
+    if (pose.sits) return;
+    pose.lift("root", {z: -depth});
+    fold(pose, depth);
 }
 
-// the hands of the figure that carry nothing, carried up through the front to a spot `k` of the way (0 hanging, 1 there)
+// the hands of the figure that carry nothing, carried up through the front to a spot `k` of the way (0 hanging, 1 there), the spot
+// given against the body at rest
 function handsTo(pose, stance, k, spot, elbow = THINK_ELBOW) {
-    const free = Object.keys(SIDES).filter((side) => !stance.busy.has(side) && !stance.level.has(side));
-    armsAtRest(pose, stance, free);
-    for (const side of free) handTo(pose, side, k, new THREE.Vector3(SIDES[side] * spot[0], spot[1], spot[2]), new THREE.Vector3(...elbow));
+    armsAtRest(pose, stance, [...stance.free]);
+    for (const side of stance.free) {
+        handTo(pose, side, k, pose.carried(new THREE.Vector3(SIDES[side] * spot[0], spot[1], spot[2])), new THREE.Vector3(...elbow));
+    }
 }
 
-// the eyes' moods: how far they open, and what colour they take on; the figure's helmet hides everything else, so they carry the expression
-const EYES = {
-    hearts: {open: 1.2, tint: [1, 0.4, 0.6]},
+// The looks the eyes take on, over whatever the body does: how far they open, the colour they turn, and whether they are hearts. The
+// helmet hides everything else, so the eyes carry the expression.
+export const EYES = {
+    hearts: {open: 1, tint: null, hearts: true},
     amused: {open: 0.3, tint: [1, 0.85, 0.4]},
     startled: {open: 1.5, tint: [1, 1, 1]},
     worried: {open: 0.7, tint: [0.6, 0.75, 1]},
@@ -410,69 +435,24 @@ function eyesAs(pose, mood, strength = 1) {
 }
 
 // where the hands rest to type on a laptop on the lap, and where they cover the eyes
-const TYPING_HANDS = [0.3, -0.55, 1.75];
-const EYE_HANDS = [0.34, -0.82, 2.52];
+const TYPING_HANDS = [0.3, -0.55, 1.55];
+const EYE_HANDS = [0.34, -0.82, 2.32];
 
-// sits head down at a laptop on its lap, the hands moving, and now and then a pause
+// head down at a laptop on its lap, the hands moving, and now and then a pause
 function type(pose, stance, t) {
     const pause = swell(t, 0.55, 0.75);
     const tap = (1 - pause) * waveOf(t, 6);
-    seatedBody(pose, 0);
     breathe(pose, 0);
     trunk(pose, {lean: 6, nod: 20 - 4 * pause, turn: 2 * waveOf(t)});
     handsTo(pose, stance, 1, [TYPING_HANDS[0], TYPING_HANDS[1], TYPING_HANDS[2] + 0.035 * tap]);
     eyesAs(pose, "reading");
 }
 
-// hands over the heart, the eyes gone pink and wide, the body swaying: the answer to a heart
-function hearts(pose, stance, t) {
-    const u = onceTime(t, 20);
-    const warm = swell(u, 0, 1);
-    seatedBody(pose, 0, 0.04 * waveOf(t, 3) * warm);
-    breathe(pose, 0);
-    trunk(pose, {lean: 6 * warm, nod: 8 * warm, tilt: 6 * waveOf(t, 1.5) * warm});
-    handsTo(pose, stance, warm, [0.28, -0.45, 1.8]);
-    eyesAs(pose, "hearts", warm);
-}
-
-// laughs: the body shaking and the head bobbing, the eyes screwed up
-function laugh(pose, stance, t) {
-    const u = onceTime(t, 16);
-    const fit = swell(u, 0.05, 0.95);
-    seatedBody(pose, 0, 0.05 * Math.abs(waveOf(t, 4)) * fit);
-    breathe(pose, 0);
-    trunk(pose, {lean: -3 * fit, nod: 10 * waveOf(t, 4) * fit, tilt: 4 * waveOf(t, 2) * fit});
-    armsAtRest(pose, stance);
-    eyesAs(pose, "amused", fit);
-}
-
-// bows its head and body, thanks given
-function bow(pose, stance, t) {
-    const u = onceTime(t, 18);
-    const low = swell(u, 0.05, 0.95);
-    seatedBody(pose, 0);
-    breathe(pose, 0);
-    trunk(pose, {lean: 26 * low, nod: 14 * low});
-    armsAtRest(pose, stance);
-    pose.shutEyes(1 - 0.85 * low);
-}
-
-// flinches back from something unpleasant, the arms up in front and the eyes narrowed
-function flinch(pose, stance, t) {
-    const u = onceTime(t, 14);
-    const back = swell(u, 0, 0.7);
-    seatedBody(pose, 0, 0.04 * back);
-    breathe(pose, 0);
-    trunk(pose, {lean: -14 * back, nod: -6 * back, turn: 8 * back});
-    flung(pose, stance, -20 * back, 45 * back);
-    eyesAs(pose, "angry", back);
-}
-
-// jumps for joy where it sits: both arms thrown up and the whole body leaving the seat twice, the head back
+// jumps for joy: both arms thrown up and the whole body leaving the ground, or the seat, twice, the head back
 function joy(pose, stance, t) {
     const u = onceTime(t, 20);
     const leap = Math.max(Math.sin(2 * Math.PI * 2 * span(u, 0.1, 0.9)), 0) * (1 - 0.3 * u);
-    seatedBody(pose, 0, 0.32 * leap);
+    pose.lift("root", {z: 0.32 * leap});
     breathe(pose, 0);
     trunk(pose, {lean: -5 * leap, nod: -14 + 4 * leap});
     flung(pose, stance, 0, 70 + 55 * leap, 6 * waveOf(t, 4));
@@ -484,7 +464,6 @@ function dismay(pose, stance, t) {
     const u = onceTime(t, 28);
     const hands = rise(u, 0, 0.2) * (1 - rise(u, 0.82, 1));
     const shaking = swell(u, 0.28, 0.82);
-    seatedBody(pose, 0);
     breathe(pose, 0);
     trunk(pose, {lean: 4 * hands, nod: 10 * hands, turn: 24 * shaking * waveOf(span(u, 0.28, 0.82), 1.5)});
     handsTo(pose, stance, hands, EYE_HANDS);
@@ -495,28 +474,15 @@ function dismay(pose, stance, t) {
 function look_around(pose, stance, t) {
     const u = onceTime(t, 24);
     const look = swell(u, 0.05, 0.5) - swell(u, 0.5, 0.95);
-    seatedBody(pose, 0);
     breathe(pose, 0);
     trunk(pose, {turn: 34 * look, nod: -4 * Math.abs(look), tilt: 4 * look});
     armsAtRest(pose, stance);
-}
-
-// leans toward the box the user is typing in and looks at it, then settles
-function peek(pose, stance, t) {
-    const u = onceTime(t, 12);
-    const toward = swell(u, 0, 1);
-    seatedBody(pose, 0);
-    breathe(pose, 0);
-    trunk(pose, {lean: 10 * toward, nod: 12 * toward, turn: 14 * toward});
-    armsAtRest(pose, stance);
-    eyesAs(pose, "reading", toward);
 }
 
 // stretches both arms up and leans back with a yawn, then settles
 function stretch(pose, stance, t) {
     const u = onceTime(t, 24);
     const up = swell(u, 0.05, 0.9);
-    seatedBody(pose, 0);
     breathe(pose, 0);
     trunk(pose, {lean: -10 * up, nod: -10 * up});
     flung(pose, stance, 0, 100 * up);
@@ -627,7 +593,7 @@ function pull_ups(pose, stance, t) {
 const dangle = (side) => (pose, stance, t) => gripping(pose, stance, t, {pull: 0, swing: waveOf(t), grips: [side]});
 
 function gripping(pose, stance, t, {pull, swing, grips = Object.keys(SIDES)}) {
-    const free = grips.filter((side) => !stance.busy.has(side) && !stance.level.has(side));
+    const free = grips.filter((side) => stance.free.has(side));
     armsAtRest(pose, stance, free);
     pose.lift("root", {z: 0.2 + 0.38 * pull});
     trunk(pose, {nod: -3 * pull, turn: 2 * swing});
@@ -919,12 +885,11 @@ const TAP_LIFT = 0.13;
 function search(pose, stance, t) {
     const side = freeSide(stance);
     const sweep = waveOf(t);
-    pose.lift("root", {z: -SEARCH_CROUCH});
+    crouch(pose, SEARCH_CROUCH);
     breathe(pose, 0);
     trunk(pose, {lean: 26, nod: 20, turn: -SIDES[side] * 28 * sweep, twist: -SIDES[side] * 10 * sweep});
     armsAtRest(pose, stance, [side]);
     armTo(pose, side, 1, {y: 55, z: -55 + 30 * sweep, bend: 35});
-    fold(pose, SEARCH_CROUCH);
     eyesAs(pose, "reading");
 }
 
@@ -942,12 +907,11 @@ function work(pose, stance, t) {
     const side = freeSide(stance);
     const raised = 0.5 + 0.5 * Math.cos(2 * Math.PI * t);
     const blow = 1 - raised;
-    pose.lift("root", {z: -0.04 * blow});
+    crouch(pose, 0.04 * blow);
     breathe(pose, 0);
     trunk(pose, {lean: 8 + 6 * blow, nod: 10});
     armsAtRest(pose, stance, [side]);
     armTo(pose, side, 1, {y: mix(75, -45, raised), z: -50, bend: mix(15, 105, raised)});
-    fold(pose, 0.04 * blow);
 }
 
 // points up at what waits for the user, looking at it, the arm bobbing a little
@@ -962,9 +926,8 @@ function point(pose, stance, t) {
 
 // the arms of a jump or a fall, those that carry nothing: swung back by `back` degrees and out and up by `up` degrees
 function flung(pose, stance, back, up, flail = 0) {
-    const free = Object.keys(SIDES).filter((side) => !stance.busy.has(side) && !stance.level.has(side));
-    armsAtRest(pose, stance, free);
-    for (const side of free) {
+    armsAtRest(pose, stance, [...stance.free]);
+    for (const side of stance.free) {
         const sign = SIDES[side];
         pose.turn(`upper_arm_${side}`, {x: back + flail * sign});
         pose.turn(`upper_arm_${side}`, {y: -sign * up});
@@ -1109,44 +1072,45 @@ function pointed(pose, stance, t) {
     POINTED[stance.voice](pose, stance, onceTime(t, 20));
 }
 
+// The postures a clip is drawn in: a gesture standing or seated on an edge, its legs laid by the posture; a move of the whole body on its
+// feet alone; a hang from its hands alone; and the laptop only on a lap
+const GESTURE = ["stand", "sit"];
+const MOVE = ["stand"];
+const HANGING = ["hang"];
+const ON_A_LAP = ["sit"];
+
 export const CLIPS = [
-    {name: "idle", frames: 24, fps: 8, loops: true, pose: idle},
-    {name: "blink", frames: 6, fps: 12, loops: false, pose: blink},
-    {name: "nod", frames: 10, fps: 12, loops: false, pose: nod},
-    {name: "shake", frames: 12, fps: 12, loops: false, pose: shake},
-    {name: "wave", frames: 12, fps: 12, loops: true, pose: wave},
-    {name: "think", frames: 12, fps: 6, loops: true, pose: think},
-    {name: "celebrate", frames: 12, fps: 10, loops: true, pose: celebrate},
-    {name: "sleep", frames: 18, fps: 6, loops: true, pose: sleep},
-    {name: "walk", frames: 12, fps: 12, loops: true, leaves: 6, pose: walk},
-    {name: "sit_on_edge", frames: 24, fps: 8, loops: true, leaves: 8, pose: sit_on_edge},
-    {name: "walk_in", frames: 40, fps: 12, loops: false, pose: walk_in},
-    {name: "run_in", frames: 28, fps: 12, loops: false, pose: run_in},
-    {name: "pull_ups", frames: 24, fps: 10, loops: true, pose: pull_ups},
-    {name: "hang_l", frames: 24, fps: 8, loops: true, pose: dangle("l")},
-    {name: "hang_r", frames: 24, fps: 8, loops: true, pose: dangle("r")},
-    {name: "enter", frames: 36, fps: 12, loops: false, pose: enter},
-    {name: "exit", frames: 28, fps: 12, loops: false, pose: exit},
-    {name: "search", frames: 12, fps: 10, loops: true, pose: search},
-    {name: "write", frames: 12, fps: 12, loops: true, pose: write},
-    {name: "work", frames: 8, fps: 10, loops: true, pose: work},
-    {name: "point", frames: 12, fps: 8, loops: true, pose: point},
-    {name: "jump", frames: 16, fps: 20, loops: false, pose: jump},
-    {name: "fall", frames: 12, fps: 12, loops: false, pose: fall},
-    {name: "backflip", frames: 22, fps: 20, loops: false, pose: backflip},
-    {name: "land", frames: 10, fps: 20, loops: false, pose: land},
-    {name: "type", frames: 24, fps: 8, loops: true, leaves: 8, pose: type},
-    {name: "joy", frames: 20, fps: 14, loops: false, pose: joy},
-    {name: "hearts", frames: 20, fps: 10, loops: false, pose: hearts},
-    {name: "laugh", frames: 16, fps: 12, loops: false, pose: laugh},
-    {name: "bow", frames: 18, fps: 10, loops: false, pose: bow},
-    {name: "flinch", frames: 14, fps: 14, loops: false, pose: flinch},
-    {name: "dismay", frames: 28, fps: 10, loops: false, pose: dismay},
-    {name: "look_around", frames: 24, fps: 10, loops: false, pose: look_around},
-    {name: "stretch", frames: 24, fps: 8, loops: false, pose: stretch},
-    {name: "peek", frames: 12, fps: 10, loops: false, pose: peek},
-    {name: "squire_chase", frames: 24, fps: 12, loops: false, pose: squire_chase},
-    {name: "pointed", frames: 20, fps: 10, loops: false, pose: pointed},
+    {name: "idle", frames: 24, fps: 8, loops: true, leaves: 8, postures: GESTURE, pose: idle},
+    {name: "blink", frames: 6, fps: 12, loops: false, postures: GESTURE, pose: blink},
+    {name: "nod", frames: 10, fps: 12, loops: false, postures: GESTURE, pose: nod},
+    {name: "shake", frames: 12, fps: 12, loops: false, postures: GESTURE, pose: shake},
+    {name: "wave", frames: 12, fps: 12, loops: true, postures: GESTURE, pose: wave},
+    {name: "think", frames: 12, fps: 6, loops: true, postures: GESTURE, pose: think},
+    {name: "celebrate", frames: 12, fps: 10, loops: true, postures: MOVE, pose: celebrate},
+    {name: "sleep", frames: 18, fps: 6, loops: true, postures: GESTURE, pose: sleep},
+    {name: "walk", frames: 12, fps: 12, loops: true, leaves: 6, postures: MOVE, pose: walk},
+    {name: "walk_in", frames: 40, fps: 12, loops: false, postures: MOVE, pose: walk_in},
+    {name: "run_in", frames: 28, fps: 12, loops: false, postures: MOVE, pose: run_in},
+    {name: "pull_ups", frames: 24, fps: 10, loops: true, postures: MOVE, pose: pull_ups},
+    {name: "hang_l", frames: 24, fps: 8, loops: true, postures: HANGING, pose: dangle("l")},
+    {name: "hang_r", frames: 24, fps: 8, loops: true, postures: HANGING, pose: dangle("r")},
+    {name: "enter", frames: 36, fps: 12, loops: false, postures: MOVE, pose: enter},
+    {name: "exit", frames: 28, fps: 12, loops: false, postures: MOVE, pose: exit},
+    {name: "search", frames: 12, fps: 10, loops: true, postures: GESTURE, pose: search},
+    {name: "write", frames: 12, fps: 12, loops: true, postures: GESTURE, pose: write},
+    {name: "work", frames: 8, fps: 10, loops: true, postures: GESTURE, pose: work},
+    {name: "point", frames: 12, fps: 8, loops: true, postures: GESTURE, pose: point},
+    {name: "jump", frames: 16, fps: 20, loops: false, postures: MOVE, pose: jump},
+    {name: "fall", frames: 12, fps: 12, loops: false, postures: MOVE, pose: fall},
+    {name: "backflip", frames: 22, fps: 20, loops: false, postures: MOVE, pose: backflip},
+    {name: "land", frames: 10, fps: 20, loops: false, postures: MOVE, pose: land},
+    {name: "type", frames: 24, fps: 8, loops: true, leaves: 8, postures: ON_A_LAP, pose: type},
+    {name: "joy", frames: 20, fps: 14, loops: false, postures: GESTURE, pose: joy},
+    {name: "dismay", frames: 28, fps: 10, loops: false, postures: GESTURE, pose: dismay},
+    {name: "look_around", frames: 24, fps: 10, loops: false, postures: GESTURE, pose: look_around},
+    {name: "stretch", frames: 24, fps: 8, loops: false, postures: GESTURE, pose: stretch},
+    {name: "squire_chase", frames: 24, fps: 12, loops: false, postures: MOVE, pose: squire_chase},
+    {name: "pointed", frames: 20, fps: 10, loops: false, postures: MOVE, pose: pointed},
 ];
 
 // An eye closes about its own middle before the head carries it, as rig.Figure.shut_eyes scales the eye object
@@ -1308,7 +1272,7 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
     scene.updateMatrixWorld(true);
     const meshes = [];
     scene.traverse((node) => node.isSkinnedMesh && meshes.push(node));
-    const eyes = [];
+    const eyes = {materials: [], shapes: [], hearts: []};
     for (const mesh of meshes) {
         mesh.visible = shows(mesh) && !LEFT_OUT.has(mesh.userData.item);
         addHullNormals(mesh.geometry);
@@ -1323,17 +1287,50 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
         hull.scale.copy(mesh.scale);
         if (mesh.name.startsWith("eye_")) {
             mesh.material.userData.colour = mesh.material.uniforms.colour.value.toArray();
-            eyes.push(mesh.material, hull.material);
+            eyes.materials.push(mesh.material, hull.material);
+            eyes.shapes.push(mesh, hull);
+            eyes.hearts.push(heartOver(mesh));
         }
     }
     const carried = meshes.filter((mesh) => mesh.visible);
+    const busy = handsHolding(carried, BUSY_ITEMS);
     const stance = {
         voice,
         level: handsHolding(carried, LEVEL_ITEMS),
-        busy: handsHolding(carried, BUSY_ITEMS),
+        busy,
         carried: handsHolding(carried, new Set([...BUSY_ITEMS, "squire_quill"])),
+        free: new Set(Object.keys(SIDES).filter((side) => !busy.has(side))),
     };
     return {scene, rig: rigOf(scene), stance, eyes};
+}
+
+// A heart the size of an eye, drawn flat toward the viewer, its point down
+const HEART = (() => {
+    const shape = new THREE.Shape();
+    shape.moveTo(0, -0.5);
+    shape.bezierCurveTo(-0.16, -0.3, -0.5, -0.16, -0.5, 0.12);
+    shape.bezierCurveTo(-0.5, 0.4, -0.2, 0.5, 0, 0.26);
+    shape.bezierCurveTo(0.2, 0.5, 0.5, 0.4, 0.5, 0.12);
+    shape.bezierCurveTo(0.5, -0.16, 0.16, -0.3, 0, -0.5);
+    return new THREE.ShapeGeometry(shape, 12);
+})();
+const HEART_SIZE = 0.42;
+const HEART_COLOUR = new THREE.Color(1, 0.3, 0.5);
+
+// a heart over an eye, carried by the head as the eye is, hidden until the eyes are hearts
+function heartOver(eye) {
+    const bounds = new THREE.Box3().setFromBufferAttribute(eye.geometry.attributes.position).applyMatrix4(eye.matrixWorld);
+    const centre = bounds.getCenter(new THREE.Vector3()).setZ(bounds.max.z + 0.01);
+    const head = eye.skeleton.getBoneByName("head");
+    const holder = new THREE.Group();
+    holder.matrixAutoUpdate = false;
+    holder.matrix.copy(head.matrixWorld).invert().multiply(translation(centre));
+    const heart = new THREE.Mesh(HEART, new THREE.MeshBasicMaterial({color: HEART_COLOUR}));
+    heart.frustumCulled = false;
+    heart.visible = false;
+    holder.add(heart);
+    head.add(holder);
+    return heart;
 }
 
 function place(figure, pose, facing) {
@@ -1345,9 +1342,32 @@ function place(figure, pose, facing) {
         const parentWorld = bone.parent.isBone ? world.get(bone.parent.name) : bone.parent.matrixWorld;
         parentWorld.clone().invert().multiply(placed).decompose(bone.position, bone.quaternion, bone.scale);
     }
-    for (const material of figure.eyes) {
+    for (const material of figure.eyes.materials) {
         material.uniforms.openness.value = pose.eyes;
         if (material.uniforms.light) material.uniforms.colour.value.set(...(pose.eyeTint ?? material.userData.colour));
+    }
+    for (const shape of figure.eyes.shapes) shape.visible = !pose.hearts;
+    for (const heart of figure.eyes.hearts) {
+        heart.visible = pose.hearts > 0;
+        heart.scale.setScalar(HEART_SIZE * pose.hearts);
+    }
+}
+
+// A look the eyes take on over whatever the body does, `seconds` into a look that lasts `lasts` seconds: taken on at once and let go at the
+// end, the head turned to the viewer meanwhile so the eyes are seen. Hearts beat as a heart does, a strong swell and a weaker one.
+const BEAT_SECONDS = 0.8;
+const LOOK_TURN = 0.8;
+
+function lookAs(pose, {mood, seconds, lasts}, facing) {
+    const strength = span(seconds, 0, 0.15) * (1 - span(seconds, lasts - 0.3, lasts));
+    const sideways = ((facing + 180) % 360) - 180;
+    pose.turn("neck", {z: -0.3 * LOOK_TURN * sideways * strength});
+    pose.turn("head", {z: -0.7 * LOOK_TURN * sideways * strength});
+    if (EYES[mood].hearts) {
+        const beat = (seconds % BEAT_SECONDS) / BEAT_SECONDS;
+        pose.heartEyes(strength * (1 + 0.28 * swell(beat, 0, 0.3) + 0.14 * swell(beat, 0.3, 0.55)));
+    } else {
+        eyesAs(pose, mood, strength);
     }
 }
 
@@ -1363,10 +1383,13 @@ export class Stage {
         this.renderer.setClearColor(0x000000, 0);
     }
 
-    // the clip's pose at this frame, the figure turned `facing` degrees, drawn to fill the canvas
-    draw(figure, clip, frame, facing, canvas) {
-        const pose = new Posing(figure.rig);
+    // the clip's pose at this frame in `posture`, the figure turned `facing` degrees, with the look `eyes` takes on, drawn to fill the canvas
+    draw(figure, clip, frame, facing, canvas, {posture = "stand", eyes = null} = {}) {
+        const pose = new Posing(figure.rig, posture);
+        if (pose.sits) seat(pose);
         clip.pose(pose, figure.stance, frame / clip.frames);
+        if (pose.sits) seatedLegs(pose);
+        if (eyes) lookAs(pose, eyes, facing);
         place(figure, pose, facing);
         const size = canvas.width * SUPERSAMPLE;
         if (this.renderer.domElement.width !== size) {
