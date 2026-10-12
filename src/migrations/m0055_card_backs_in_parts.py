@@ -2,7 +2,7 @@ from pathlib import Path
 
 from controllers.types import environment_records
 from features.tickets.controller import Tickets
-from features.tickets.resource import card_back
+from resources.tickets import card_back
 from resources.base import SYSTEM
 
 

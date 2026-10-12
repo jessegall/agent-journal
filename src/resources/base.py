@@ -35,6 +35,7 @@ ENVIRONMENT, PROJECT = "environment", "project"
 OWNER_ID = "owner"   # the id of the journal's owner wherever a person is named: on a login, a row's writer or a phone
 WRITER = "member"   # the data key naming the person who made a row: the owner, or a member of a journal on a server
 SIDEBAR, RESULTS, WORKINGS, UNLISTED = "sidebar", "results", "workings", ""
+HELPER, DEFAULT_PROVIDER = "helper", "claude"
 SCOPES = (ENVIRONMENT, PROJECT)
 ACTORS = (USER, AGENT, SYSTEM, PLUGIN)
 

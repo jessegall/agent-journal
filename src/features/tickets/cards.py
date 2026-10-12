@@ -10,9 +10,9 @@ from engine.sessions import Sessions, live
 from engine.wording import clipped
 from engine.worktree import spread
 from features.boards.controller import Boards
-from features.boards.resource import REVIEW
+from resources.boards import REVIEW
 from features.kanban.shapes import BoardLanes, Card, Lane
-from features.tickets.resource import PROPOSED
+from resources.tickets import PROPOSED
 from resources.base import SYSTEM, Refused
 from resources.shapes import LEVELS, position_of
 from resources.types import IDLE

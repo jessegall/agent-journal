@@ -20,7 +20,7 @@ from features.plans.controller import Plans
 from resources.plans import READY, WAITING
 from features.sharing.controller import Shares
 from features.status_bar.bar import current
-from features.suggestions.controller import Suggestions
+from controllers.types import Suggestions
 from features.work_modes.modes import pick
 from features.work_tracking.auto import automatic
 from resources.base import AGENT, SYSTEM, USER, Refused, Stale, titled

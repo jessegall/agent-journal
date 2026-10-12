@@ -11,7 +11,7 @@ from features.linear.webhook import Deliveries
 from features.linear.working import LinearWork
 from features.sharing.routes import ROUTES
 from features.tickets.controller import Tickets
-from features.tickets.resource import Ticket
+from resources.tickets import Ticket
 from resources.base import USER
 from resources.types import Question
 

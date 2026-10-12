@@ -1,11 +1,10 @@
 import time
 
 import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import Controller, discarding
 from features.boards.building import BuildingBoards
 from features.boards.requests import DraftingBoards, numbers_in
-from features.boards.resource import DONE, MEANINGS, Board
+from resources.boards import DONE, MEANINGS, Board
 from features.boards.running import RunningBoards
 from resources.base import FINISHED, PROJECT, RESUMED, Ref, Refused, Resource, SYSTEM
 from controllers.marks import action
@@ -98,5 +97,4 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
         return [clause for number, clause in enumerate(board.done_when, 1) if number not in kept]
 
 
-resources_module.register(Board)
 types_module.register(Boards)

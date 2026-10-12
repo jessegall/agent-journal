@@ -4,7 +4,6 @@ from textwrap import dedent
 from pathlib import Path
 
 import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import Controller
 from engine import runtime
 from engine.state import State
@@ -12,7 +11,7 @@ from engine.wording import plural
 from features.agent_sessions.launch import running_at
 from engine.worktree import current_branch, freed, git, included, keep_own_packages, lines, link_folders, packages_linked, present, roots, scratch_cleared, share_journal, tip
 from providers import workspace_folders
-from features.helper_worktrees.resource import Worktree
+from resources.helper_worktrees import Worktree
 from controllers.types import Agents, Todos
 from resources.base import Refused, SYSTEM
 from controllers.marks import action
@@ -281,5 +280,4 @@ def common_dir(where: Path) -> str | None:
     return found.stdout.strip() if found.returncode == 0 else None
 
 
-resources_module.register(Worktree)
 types_module.register(Worktrees)

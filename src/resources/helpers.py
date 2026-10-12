@@ -1,8 +1,7 @@
 from typing import ClassVar
 
-from resources.base import UNLISTED, Resource, ResourceDetails
+from resources.base import HELPER, UNLISTED, Resource, ResourceDetails
 from resources.shapes import Field, Shape
-from resources.types import HELPER
 
 
 class Helper(Shape, Resource):

@@ -6,7 +6,7 @@ from declaring.holds import Runs
 from engine.gates import DISPATCHING
 from declaring.reach import Reach
 from features.helpers.controller import Helpers
-from features.helpers.resource import held_by_helper
+from resources.helpers import held_by_helper
 from features.helpers.reuse import kept, named_paths, refusal
 from framework.parts import ActionInterceptor, AgentContext, Canceler, Context, ToolInterceptor
 from engine.record import Record

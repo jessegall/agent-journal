@@ -6,7 +6,7 @@ from features.integrations.base import IntegrationFeature
 from features.integrations.details import SEND
 from framework.journal import Journal
 from features.tickets.controller import Tickets
-from features.tickets.resource import Ticket
+from resources.tickets import Ticket
 from resources.types import Question
 
 

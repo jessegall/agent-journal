@@ -2,7 +2,7 @@ from pathlib import Path
 
 from engine import runtime
 from engine.record import Record
-from features.templates.controller import Templates
+from controllers.types import Templates
 from features.templates.shipped import RETIRED, ship
 from resources.base import SYSTEM
 

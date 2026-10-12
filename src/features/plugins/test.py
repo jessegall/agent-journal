@@ -953,7 +953,7 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
         "a project that is no repository itself is read through the repositories inside it, so their languages count"
     from events.agents import ClockTicked
     from framework.parts import AgentContext
-    from features.suggestions.controller import Suggestions
+    from controllers.types import Suggestions
     from controllers.types import Todos
     from tests.kit import project_on
     import features

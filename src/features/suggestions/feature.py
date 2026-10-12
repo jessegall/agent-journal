@@ -1,6 +1,6 @@
 from expects import Given, Unchanged, Updated, Wrote
 from framework.base import Feature
-from features.suggestions.controller import waiting_suggestions
+from controllers.suggestions import waiting_suggestions
 from overview.parts import SUMMARY_COUNTS
 from framework.journal import Journal
 from features.suggestions.details import SuggestionsDetails

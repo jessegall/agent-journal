@@ -18,7 +18,8 @@ from features.plugins.lifecycle import fetched
 from features.plugins.paths import home
 from features.plugins.preview import preview_rows
 from features.plugins.staging import Unreached
-from features.suggestions.controller import Decision, OPEN_SUGGESTIONS, Suggestions
+from controllers.suggestions import Decision, OPEN_SUGGESTIONS
+from controllers.types import Suggestions
 from resources.base import Refused, SYSTEM, USER
 
 LISTED = "plugins.json"

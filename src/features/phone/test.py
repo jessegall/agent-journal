@@ -28,7 +28,7 @@ from features.phone.feed import POSTED
 from features.helpers.controller import Helpers
 from features.tickets.controller import Tickets
 from features.sharing.controller import Shares
-from features.suggestions.controller import Suggestions
+from controllers.types import Suggestions
 from features.sharing.details import SharingDetails
 from features.sharing.server import ShareHandler
 from engine.viewer import SERVING

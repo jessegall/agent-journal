@@ -11,21 +11,20 @@ from engine.stop import ask_session
 from engine.worktree import branched, changed, current_branch, keep_own_packages, merged_into, present, tip
 from engine.sessions import Sessions, live
 from features.permission_prompts.skipping import prompted
-import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller, discarding
 from controllers.prioritised import Prioritised
 from controllers.requests import request
 from engine.outbox import Request
 from engine.given import given
 from features.boards.controller import Boards
-from features.boards.resource import DONE, REVIEW, START
+from resources.boards import DONE, REVIEW, START
 from features.checks.output import tail
 from engine.proc import streamed
 from features.tickets.cards import CardState, TicketCards
 from features.tickets.details import TicketsDetails
 from features.tickets.landing import TicketLanding
 from features.tickets.orchestration import DRAFTS, PLANS, WAITS, TicketOrchestration
-from features.tickets.resource import CONFIRMED, PROPOSED, Ticket, card_back
+from resources.tickets import CONFIRMED, PROPOSED, Ticket, card_back
 from controllers.types import Comments
 from features.plans.controller import ACTIVE, DONE as PLAN_DONE, READY, WAITING, Plans
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM, USER, titled
@@ -767,5 +766,4 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return next((r for r in self.rows.standing() if r.source == source and r.source_id == source_id), None)
 
 
-resources_module.register(Ticket)
 types_module.register(Tickets)

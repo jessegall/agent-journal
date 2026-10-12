@@ -1,8 +1,7 @@
 
-import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from features.templates.resource import Template, TemplateField
+from resources.templates import Template, TemplateField
 from resources.base import Refused
 from engine.wording import slugged
 from controllers.marks import action
@@ -51,7 +50,3 @@ class Templates(Controller):
         unknown = [name for name in names if name not in resources_module.TYPES]
         if unknown:
             raise Refused(f"applies_to names types; {', '.join(unknown)} is not one: {', '.join(sorted(resources_module.TYPES))}")
-
-
-resources_module.register(Template)
-types_module.register(Templates)

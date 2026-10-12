@@ -1,9 +1,8 @@
 import time
 from enum import StrEnum
 
-import controllers.types as types_module
 from controllers.base import Controller
-from controllers.types import Plugins
+from controllers.plugins import Plugins
 from resources import types
 from controllers.marks import action
 from resources.base import SYSTEM, USER
@@ -76,9 +75,6 @@ class Suggestions(Controller):
     @action
     def note_window(self, n: int):
         return self.update(n, window_seen=time.time())
-
-
-types_module.register(Suggestions)
 
 
 def waiting_suggestions(record) -> int:

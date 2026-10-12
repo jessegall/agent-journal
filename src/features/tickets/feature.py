@@ -4,9 +4,9 @@ from events.questions import QuestionCompleted
 from controllers.types import Todos
 from expects import WHEN, Answered, Given, Kept, Refused, Unchanged, Updated, Wrote
 from framework.base import Feature
-from features.boards.resource import Board
+from resources.boards import Board
 from events.tickets import TicketCompleted
-from features.tickets.resource import Ticket
+from resources.tickets import Ticket
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Comment, Environment, Question, Rule, Todo
 from framework.journal import Journal

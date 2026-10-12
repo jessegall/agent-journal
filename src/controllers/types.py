@@ -22,10 +22,12 @@ from controllers.features import Features
 from controllers.plugins import Plugins
 from controllers.environments import Environments
 from controllers.nudges import Nudges
+from controllers.suggestions import Suggestions
+from controllers.templates import Templates
 
 
 register(Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Questions, Comments, Agents,
-         Notifications, Notices, Reactions, Tools, Features, Plugins, Environments, Nudges)
+         Notifications, Notices, Reactions, Tools, Features, Plugins, Environments, Nudges, Suggestions, Templates)
 
 
 WARM_PAUSE = 0.02

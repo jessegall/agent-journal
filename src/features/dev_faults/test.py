@@ -482,7 +482,7 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
         record.change_setting("open_viewer", {"watched_reads": True})
     from features.boards.controller import Boards
     from features.tickets.controller import Tickets
-    from features.tickets.resource import Ticket
+    from resources.tickets import Ticket
     new_build = Tickets(record, actor=SYSTEM)
     placed = Boards(record, actor=SYSTEM).create("Rollback", stages=["Ideas"])
     for title in ("One", "Two", "Three"):
