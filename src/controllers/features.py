@@ -13,6 +13,7 @@ from controllers.marks import action
 SETTING_KEYS = Extension()
 SETTINGS_CHANGED = Extension()
 SECRET_CHECKS = Extension()
+MOVED = Extension()
 
 
 class Features(Controller):
@@ -25,6 +26,10 @@ class Features(Controller):
             return {name: bool(on)}
         row = self.rows.by_title(name)
         return self.update(row.n, enabled=bool(on)) if row else self.create(name, enabled=bool(on))
+
+    @action
+    def moved(self) -> dict:
+        return {"out": "\n".join(listing() for listing in MOVED.each())}
 
     @action
     def on(self, name: str, default: bool = True) -> bool:

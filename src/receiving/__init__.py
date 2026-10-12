@@ -8,6 +8,7 @@ thing, so a dispatch table is never built on a registration's word alone.
 from dataclasses import dataclass
 from typing import Any, ClassVar, Generic, TypeVar, get_args, get_origin, get_type_hints
 
+from engine.kinds import ByKind
 from events import Event, Fact, Request
 from serving import writing
 
@@ -46,6 +47,10 @@ class Receiver(Generic[E]):
 
     adapted: ClassVar[bool] = False
     """True only of the adapter that runs an unswept 2.x handler: it names its event in the registration rather than in its class, and owes no expectations, because the feature it belongs to has not been swept yet."""
+
+    def called(self) -> str:
+        """What this receiver is named in a walk and in an ordering: its class, unless it stands in for another receiver, which then lends its name."""
+        return type(self).__name__
 
     @classmethod
     def receives(cls) -> type:
@@ -115,11 +120,12 @@ class Registration:
 
     @property
     def name(self) -> str:
-        return type(self.receiver).__name__
+        return self.receiver.called()
 
     @property
     def writes(self) -> set[str]:
-        return writing(type(self.receiver).wants())
+        """The kinds of row it writes, none for the adapter: an unswept handler names no order, so it runs in the order its feature registered, as on the 2.x bus, and is never held to commute with another."""
+        return set() if type(self.receiver).adapted else writing(type(self.receiver).wants())
 
     @classmethod
     def read(cls, kind: str, event: type, receiver: Receiver, expects, feature: str = "", after: tuple[str, ...] = ()) -> "Registration":
@@ -136,7 +142,7 @@ class Registration:
         return cls(kind, event, receiver, tuple(expects), feature, tuple(after))
 
 
-class Registrations:
+class Registrations(ByKind):
     """Every registration of the four kinds, in the order the features declared them, which is the order the boot walk checks and a tick runs."""
 
     def __init__(self):
@@ -145,8 +151,9 @@ class Registrations:
     def add(self, registration: Registration) -> None:
         self.each.append(registration)
 
-    def of(self, kind: str) -> list[Registration]:
-        return [one for one in self.each if one.kind == kind]
+    def forget(self, kind: str, feature: str, name: str) -> None:
+        """Drops one feature's registration of this name, so registering it again leaves one."""
+        self.each = [one for one in self.each if (one.kind, one.feature, one.name) != (kind, feature, name)]
 
     def on(self, event: type) -> list[Registration]:
         return [one for one in self.each if one.event is event]
