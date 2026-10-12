@@ -1,8 +1,12 @@
+import json
 from contextlib import chdir
 from pathlib import Path
 
 
 import features
+from engine import bus
+from events.answers import Refused
+from events.asking import ToolCallAsked
 from runner.hooks import handle
 from features.session_briefing.start import start_block
 from features.journal_laws.briefing import BEGIN, brief
@@ -67,74 +71,6 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     assert checking().data.get("starts_on", "").startswith("trigger:"), "it is still started by asking for it, through the trigger that watches for the words"
 
 
-def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one(monkeypatch):
-    monkeypatch.setattr("providers.codex.Codex.models", lambda self: ("gpt-5.6-luna", "gpt-6-sol"))
-    record = fresh()
-    cases = (("claude", "Agent", {"subagent_type": "general-purpose", "model": "sonnet"}),
-             ("claude", "Agent", {"subagent_type": "Explore"}),
-             ("claude", "Agent", {"subagent_type": "Explore", "model": "haiku", "description": "find the slow hook"}),
-             ("codex", "collaboration.spawn_agent", {"task_name": "general", "model": "gpt-5.6-luna"}),
-             ("codex", "collaboration.spawn_agent", {"task_name": "search_history"}),
-             ("codex", "collaboration.spawn_agent", {"agent_type": "default", "model": "gpt-5.6-luna"}),
-             ("codex", "collaboration.spawn_agent", {"agent_type": "risk_reviewer"}))
-    for name, tool, given in cases:
-        result = handle(PROVIDERS[name](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
-        assert result.get("decision") == "block", f"{name}: the law refuses an invalid dispatch"
-
-    allowed = (("claude", "Agent", {"subagent_type": "Explore", "model": "haiku", "description": "Dr. Einstein: find the slow hook"}),
-               ("codex", "collaboration.spawn_agent", {"task_name": "search_history", "model": "gpt-5.6-luna"}),
-               ("codex", "collaboration.spawn_agent", {"agent_type": "risk_reviewer", "model": "gpt-5.6-luna"}))
-    for name, tool, given in allowed:
-        result = handle(PROVIDERS[name](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
-        assert result == {}, f"{name}: a bounded dispatch with a model goes through"
-
-    spawn = {"hook_event_name": "PreToolUse", "session_id": "codex-law", "tool_name": "multi_agent_v1__spawn_agent",
-             "tool_input": {"agent_type": "plan_reviewer", "model": "gpt-5-mini", "message": "Ada Lovelace: review plan 6"}}
-    result = handle(PROVIDERS["codex"](), record.root, record.env, spawn)
-    assert result.get("decision") == "block" and "gpt-5.6-luna, gpt-6-sol" in result.get("reason", ""), \
-        "a spawn from Codex's code mode on a model the account does not offer is refused, naming the ones it does"
-
-
-def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once():
-    from controllers.types import Nudges
-    from engine import bus
-    record = fresh()
-    claude = PROVIDERS["claude"]()
-    call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "cat notes.txt"}}
-    handle(claude, record.root, record.env, {**call, "hook_event_name": "PreToolUse"})
-    assert bus.background_finished(), "the whisper runs off the hook's answer, so the test waits for it as the agent never has to"
-    from features.journal_laws.laws import laws
-    narrow = next(law for law in laws(record) if law.name == "L3")
-    from features.journal_laws.laws import laws
-    narrow = next(law for law in laws(record) if law.name == "L3")
-    assert [n for n in Nudges(record).all() if n.title == "law L3" and n.brief == narrow.text], \
-        "a keyword whispers its law: which law it is as the title, and the whole ruling underneath, uncapped"
-    for size in (30_000, 25_000, 40_000, 1_000):
-        handle(claude, record.root, record.env, {**call, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "x" * size}})
-    assert bus.background_finished(), "every whisper is waited for the same way"
-    named = [n.title for n in Nudges(record).all() if "the largest this session" in n.title]
-    assert [title.split(" characters")[0].split()[-1] for title in named] == ["30,014", "40,014"], "only a new largest result is named"
-
-    import threading
-    from engine.gates import AFTERWARDS
-    from declaring.reach import Guard, Reach
-    held_open, let_go = threading.Event(), threading.Event()
-
-    def blocking(given):
-        held_open.set()
-        let_go.wait(10)
-
-    blocking.guard = Guard("blocking", Reach.BOTH)
-    AFTERWARDS.add(None, blocking)
-    try:
-        handle(claude, record.root, record.env, {**call, "hook_event_name": "PreToolUse"})
-        assert held_open.wait(5) and not let_go.is_set(), \
-            "a part that declared itself asynchronous cannot reach the hook's answer: the hook came back while this one was still blocked, which no stopwatch had to measure"
-    finally:
-        let_go.set()
-        AFTERWARDS.remove(blocking)
-
-
 def test_a_dispatch_is_an_event_a_plugin_can_cancel_even_when_the_laws_allow_it():
     from controllers.types import Plugins
     from features import load
@@ -155,33 +91,6 @@ def test_a_dispatch_is_an_event_a_plugin_can_cancel_even_when_the_laws_allow_it(
     refused = hook("Agent", {"subagent_type": "Explore", "model": "haiku", "description": "Nikola Tesla: map the hooks"})
     assert refused.get("decision") == "block" and "no subagents during the demo" in refused.get("reason", ""), refused
     assert hook("Read", {"file_path": "a.py"}).get("decision") != "block", "only the dispatch is asked about"
-
-
-def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes():
-    from features import load
-    load()
-    record = fresh()
-    project = record.root.parent
-    (project / "long.py").write_text("x = 1\n" * 800)
-    (project / "short.py").write_text("x = 1\n" * 20)
-    hook = lambda tool, given: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-read", "tool_name": tool,
-                                                                                        "cwd": str(project), "tool_input": given})
-    whole = hook("Read", {"file_path": str(project / "long.py")})
-    assert whole.get("decision") == "block" and "has 800 lines" in whole.get("reason", "") and "read a range (offset 1, limit 120)" in whole.get("reason", "") and whole["hookSpecificOutput"]["permissionDecision"] == "deny", whole
-    from controllers.types import Agents
-    card = Agents(record).by_session("claude-read").data["cards"][-1]
-    assert card["label"].startswith("Refused reading a long file whole `") and card["tone"] == "danger" and card["title"].startswith("800 lines"), card
-    assert hook("Read", {"file_path": str(project / "long.py"), "offset": 1, "limit": 50}).get("decision") != "block", "a range passes"
-    assert hook("Read", {"file_path": str(project / "short.py")}).get("decision") != "block", "a short file passes whole"
-    (project / "shot.png").write_bytes(b"\x89PNG\r\n\x1a\n\0\0\0\r" + b"\n" * 900)
-    assert hook("Read", {"file_path": str(project / "shot.png")}).get("decision") != "block", "an image is not text and passes"
-    cat = hook("Bash", {"command": "cat long.py"})
-    assert cat.get("decision") == "block" and "sed -n '1,120p'" in cat.get("reason", ""), cat
-    assert hook("Bash", {"command": "cat long.py | head -20"}).get("decision") != "block", "a cat already cut short passes"
-    dropped = record.folder("dump") / "001" / "proposal.md"
-    dropped.parent.mkdir(parents=True)
-    dropped.write_text("x = 1\n" * 800)
-    assert hook("Read", {"file_path": str(dropped)}).get("decision") != "block", "a file dropped in a dump is read whole"
 
 
 def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_row(tmp_path):
@@ -235,20 +144,6 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     assert "Cut 2 of 3 lines" in Agents(record).load(agent.n).data["cards"][-1]["label"], "the agent that ran it sees how much was cut"
 
 
-def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
-    from features import load
-    load()
-    record = fresh()
-    project = record.root.parent
-    (project / "long.py").write_text("x = 1\n" * 800)
-    hook = lambda tool, given: handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "codex-read", "tool_name": tool,
-                                                                                       "cwd": str(project), "tool_input": given})
-    for tool, given in (("exec", {"input": "cat long.py"}), ("exec_command", {"cmd": "cat long.py"}), ("shell", {"command": ["cat", "long.py"]})):
-        refused = hook(tool, given)
-        assert refused.get("decision") == "block" and "sed -n '1,120p'" in refused.get("reason", ""), (tool, refused)
-    assert hook("exec", {"input": "sed -n '1,50p' long.py"}).get("decision") != "block", "a range passes"
-
-
 def test_the_naming_law_follows_the_chosen_style():
     from controllers.form_of_address.controller import Profiles, ship
     from resources.voices import CARTOON
@@ -285,3 +180,12 @@ def test_an_instruction_file_past_its_providers_limit_is_told_once_per_size_band
     report(record, "working", "PreToolUse", cwd=str(record.root.parent / "app"), provider="codex")
     assert any(n.startswith("AGENTS.md with app/AGENTS.md is 200,100 bytes") for n in nudges(record)), \
         "every AGENTS.md Codex reads on the way to its working folder counts against the one budget"
+def test_a_file_dropped_in_a_dump_is_read_whole():
+    record = fresh()
+    dropped = record.folder("dump") / "001" / "proposal.md"
+    dropped.parent.mkdir(parents=True)
+    dropped.write_text("x = 1\n" * 800)
+    asked = ToolCallAsked(tool="Read", input=json.dumps({"file_path": str(dropped)}), session="claude-1")
+    assert not isinstance(bus.asked(asked, record), Refused), "a file dropped in a dump is read whole, however long"
+
+

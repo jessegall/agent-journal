@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass, replace
 
 from controllers.form_of_address.address import voice_of
+from events.asking import AgentDispatching
 from resources.voices import BUTLER, Voice
 
 NAMING_LAW = "L5"
@@ -52,14 +53,13 @@ NAMED = re.compile(r"^[A-Z][\w.,'-]*(?:\s+[\w.,'-]+){0,3}\s*:\s*\S")
 
 
 def laws(record=None) -> tuple[Law, ...]:
-    voice = voice_in_use(record)
+    return laws_for(voice_in_use(record))
+
+
+def laws_for(voice: Voice) -> tuple[Law, ...]:
     address_rule = (f"{voice.naming} Every helper and subagent addresses you as {voice.agent_name} and never the user: "
             f"their reports are written to you.")
     return tuple(replace(law, text=f"{law.text} {address_rule}") if law.name == NAMING_LAW else law for law in LAWS)
-
-
-def naming_of(record=None) -> str:
-    return voice_in_use(record).naming
 
 
 def voice_in_use(record=None) -> Voice:
@@ -70,12 +70,12 @@ def carry(record=None) -> str:
     rows = "\n".join(f"  - {law.text}  [{law.name}]" for law in laws(record))
     return f"LAWS THE JOURNAL SHIPS, always in force:\n{rows}"
 
-def refusal(dispatch, naming: str) -> str:
+def refusal(dispatch: AgentDispatching, naming: str) -> str:
     if dispatch.kind in GENERIC and dispatch.task in GENERIC:
         return "Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."
-    if dispatch.model_supported and dispatch.model is None:
+    if dispatch.model_supported and not dispatch.model:
         return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
-    if not dispatch.offers_model():
+    if dispatch.models and dispatch.model not in dispatch.models:
         return f"{dispatch.model} is not a model this account offers. Choose one of {', '.join(dispatch.models)}."
     if dispatch.name_supported and not NAMED.match(dispatch.description):
         return f"Journal law L5 requires a name on every subagent dispatch: start the description with the name, a colon, then the task. {naming}"

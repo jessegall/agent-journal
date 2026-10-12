@@ -1,16 +1,28 @@
-
-from events.agents import ToolFinished
+from events import Fact
+from events.journal_laws import LargerResult, LawMentioned, LongReadRefused
 from features.journal_laws.details import LARGEST_RESULT
-from framework.parts import AgentContext, Handler
+from features.journal_laws.listeners import largest_key
+from framework.recital import WHISPERED_LAW
+from receiving import Handler
+from resources.types import AgentRow
+from serving import Chat, Remembered, Rows
 
 
-class NoticeLargestResult(Handler):
-    behaviour = LARGEST_RESULT
+class RepeatTheLaw(Handler[LawMentioned]):
+    def handle(self, event: LawMentioned, chat: Chat) -> list[Fact]:
+        chat.remind(WHISPERED_LAW, type="law", n=event.law, title=event.text)
+        return []
 
-    def handle(self, context: AgentContext, event: ToolFinished) -> None:
-        if event.size < int(context.settings.result_floor):
-            return
-        if event.size <= int(context.state.get("largest", 0)):
-            return
-        context.state.set("largest", event.size)
-        context.agent.nudge(LARGEST_RESULT, tool=event.tool or "that tool", size=f"{event.size:,}")
+
+class MarkTheRefusedRead(Handler[LongReadRefused]):
+    def handle(self, event: LongReadRefused, agents: Rows[AgentRow]) -> list[Fact]:
+        agents.card(event.agent, label=f"Refused reading a long file whole `{event.path}`", icon="terminal", tone="danger",
+                    title=f"{event.count:,} lines; told to {event.instead} or grep instead")
+        return []
+
+
+class NameTheLargestResult(Handler[LargerResult]):
+    def handle(self, event: LargerResult, chat: Chat, remembered: Remembered) -> list[Fact]:
+        remembered.set(largest_key(event.agent), event.size)
+        chat.nudge(LARGEST_RESULT, tool=event.tool or "that tool", size=f"{event.size:,}")
+        return []
