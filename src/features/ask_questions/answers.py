@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from controllers.questions import ANSWERED_BY
 from controllers.types import Questions
-from engine.wording import clipped
+from resources.text import clipped
 from resources.base import SYSTEM, USER
 
 SHOWN = 200

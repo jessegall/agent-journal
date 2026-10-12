@@ -1,5 +1,5 @@
 from engine.sessions import Sessions
-from engine.wording import clipped
+from resources.text import clipped
 from framework.parts import Context
 from features.sequences.details import DISPATCH
 from resources.sequences import RunKey

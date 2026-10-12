@@ -9,7 +9,7 @@ from events.agents import AgentChanged
 from declaring.holds import Runs
 from declaring.reach import Reach
 from engine.state import State
-from engine.wording import digest
+from resources.text import digest
 from providers.payload import STATUS, HookEvent
 from declaring import trigger
 from engine import triggering

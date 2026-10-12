@@ -5,7 +5,7 @@ from pathlib import Path
 
 from controllers.types import Rules
 from engine.stored import write_text
-from engine.wording import digest
+from resources.text import digest
 from features.journal_laws.laws import carry, laws
 from framework.sending import Sent
 from providers import PROVIDERS

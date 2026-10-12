@@ -7,7 +7,7 @@ from engine.runtime import folder, profiles, sessions
 from engine.sessions import Sessions, alive
 from providers.transcript_cache import FOLD_CACHE, STATES
 from engine.record import Record
-from engine.wording import plural
+from resources.text import plural
 from controllers.stored import mtime
 from resources.base import Refused
 from declaring.trigger import DAY

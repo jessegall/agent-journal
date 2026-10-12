@@ -1,6 +1,6 @@
 from events.agents import AgentReported
 from events.agents import ClockTicked
-from engine.wording import digest
+from resources.text import digest
 from expects import Given, Nudged, Unchanged, Updated, Wrote
 from framework.base import Feature
 from resources.checks import Check

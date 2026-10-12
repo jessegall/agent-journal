@@ -2,7 +2,7 @@
 from events.agents import ClockTicked
 from events.messages import MessageUpdated
 from engine.transcript import IDLE
-from engine.wording import plural
+from resources.text import plural
 from features.dumps.controller import OWN_WORDS
 from framework.parts import AgentContext, Context, Handler
 from resources.base import COMPLETED, USER

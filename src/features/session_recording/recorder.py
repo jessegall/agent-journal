@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.record import Record  # noqa: E402
-from engine.wording import digest  # noqa: E402
+from resources.text import digest  # noqa: E402
 from providers import workspace_folders  # noqa: E402
 
 POLL = 0.5

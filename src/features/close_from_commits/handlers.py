@@ -7,7 +7,7 @@ from engine.git import Checkout, checkout_of
 from engine.proc import git
 from framework.parts import ANY_BUT_PRE_TOOL_USE, AgentContext, Handler
 from resources.base import SYSTEM, Refused
-from engine.wording import digest
+from resources.text import digest
 from controllers.types import Agents, Todos, Works
 
 MADE_HERE = "commit"

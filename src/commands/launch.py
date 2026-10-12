@@ -8,7 +8,7 @@ from typing import NoReturn
 from commands.menu import Choice, choices_of, pick
 from engine.record import Record
 from engine.version import version as package_version
-from engine.wording import plural
+from resources.text import plural
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM, Refused
 from resources.types import EnvironmentKind

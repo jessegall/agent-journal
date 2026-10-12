@@ -9,7 +9,7 @@ from pathlib import Path
 
 from engine.disk import append, read_json, replace
 from engine.viewer import machine
-from engine.wording import digest
+from resources.text import digest
 
 FOLDER = "hosted"
 VAULT = "AGENT_JOURNAL_VAULT"
