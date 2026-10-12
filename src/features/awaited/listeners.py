@@ -7,7 +7,7 @@ from resources.types import AgentRow, Helper, Work
 from serving import ReadRows
 
 HELPER = "helper:"
-KEPT = 300
+REPORT_LIMIT = 300
 
 
 def back(ref: str, helpers: ReadRows[Helper], agent: AgentRow) -> str | None:
@@ -16,7 +16,7 @@ def back(ref: str, helpers: ReadRows[Helper], agent: AgentRow) -> str | None:
         row = helpers.load(int(ref.removeprefix(HELPER)))
         if not row.report and not row.completed:
             return None
-        return f"{row.name}: {row.report[:KEPT]}" if row.report else f"{row.name} finished"
+        return f"{row.name}: {row.report[:REPORT_LIMIT]}" if row.report else f"{row.name} finished"
     runs = (CommandRow.from_json(row) for row in agent.runs)
     run = next((one for one in runs if one.answers(ref) and not one.running), None)
     return f"{run.named() or ref} {run.came_to()}" if run else None
