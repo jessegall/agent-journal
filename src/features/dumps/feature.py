@@ -46,7 +46,7 @@ class DumpsFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.listen(DumpWritten, SpotDumpWritten(), expects=[
-            on_arrival(dump(), IDLE) >> Dispatches(DumpArrived(n=1, items="1 item")),
+            on_arrival(dump(), IDLE) >> Dispatches(DumpArrived(n=1, items="2 items")),
             on_arrival(dump(items=NOTED), IDLE) >> Dispatches(nothing),
             on_arrival(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"files": {"a.png": ""}}), IDLE) >> Dispatches(nothing),
             on_arrival(dump(), dump(n=2), IDLE) >> Dispatches(nothing),
@@ -67,7 +67,7 @@ class DumpsFeature(Feature):
             Given(DumpQuestionAnswered(n=1, answer="Tomorrow", question="When should it be done?"), rows=[IDLE]) >> Nudged("answered", answer="Tomorrow")])
         journal.events.handle(DumpFiledAway, TellDumpFiled(), expects=[Given(DumpFiledAway(n=1, outcome="2 filed"), rows=[IDLE]) >> Nudged("filed", outcome="2 filed")])
         journal.events.listen(ClockTicked, SpotStalledFiling(), expects=[
-            Given.of(ClockTicked(agent=1), dump(), IDLE) >> Dispatches(DumpFilingStalled(n=1, items="1 item").once(f"carried|1:{IDLE.at}")),
+            Given.of(ClockTicked(agent=1), dump(), IDLE) >> Dispatches(DumpFilingStalled(n=1, items="2 items").once(f"carried|1:{IDLE.at}")),
             Given.of(ClockTicked(agent=1), dump(), WORKING) >> Dispatches(nothing),
             Given.of(ClockTicked(agent=1), dump(items=FILED), IDLE) >> Dispatches(nothing),
             Given.of(ClockTicked(agent=1), dump(question={"text": "Which project is this for?"}), IDLE) >> Dispatches(nothing),
