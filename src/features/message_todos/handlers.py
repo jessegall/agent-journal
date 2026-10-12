@@ -1,25 +1,19 @@
 import time
 
 from controllers.types import Comments, Messages, Todos
-from dataclasses import dataclass
-from typing import ClassVar
 
-from events.resources import ResourceCreated, ResourceEvent
+from events.resources import ResourceCreated
 from features.message_todos.details import UNLINKED
 from features.parts import Context, Handler
 from features.row_links.formatters import Mention, named
 from resources.base import AGENT
+from events.todos import TodoCreated
 
 
 def todos_named(text: str) -> set[int]:
     names, found = named()
     mentions = (Mention.of(m, names) for m in found.finditer(text))
     return {int(n) for mention in mentions if mention.name == "todo" and mention.env is None for n in mention.numbers}
-
-
-@dataclass(frozen=True)
-class TodoCreated(ResourceEvent):
-    on: ClassVar[str] = "todo.created"
 
 
 class AskWhetherATodoCameFromAMessage(Handler):

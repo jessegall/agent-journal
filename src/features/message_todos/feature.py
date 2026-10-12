@@ -4,7 +4,7 @@ from features.message_todos.details import MessageTodosDetails
 from features.message_todos.handlers import AskWhetherATodoCameFromAMessage, LinkTodosToTheirMessage
 from events.resources import ResourceCreated
 from expects import Given, Nudged, Unchanged, Updated, WHEN
-from features.message_todos.handlers import TodoCreated
+from events.todos import TodoCreated
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Comment, Message, Todo
 

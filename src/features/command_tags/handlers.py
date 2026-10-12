@@ -1,6 +1,6 @@
 import io
 
-from engine.events.engine import AgentMessageSending, CommandRan
+from events.agents import AgentMessageSending, CommandRan
 from features.parts import AgentContext, Context, Handler
 from features.command_tags.reading import CARRIED, OPTIONS, kept_out_of_the_chat, named, reader, removed, runs, tag_spelling, tag_for, visible
 from resources.base import AGENT

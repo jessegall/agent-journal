@@ -1,7 +1,7 @@
 import time
 
 from engine import bus
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from features.parts import AgentContext, Handler
 from features.status_bar.bar import EMPTY, bar, doing
 from features.status_bar.usage import observe

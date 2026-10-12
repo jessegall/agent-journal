@@ -1,12 +1,11 @@
-from dataclasses import dataclass
-from typing import ClassVar
 
-from engine.events.engine import Measured
-from events.resources import ResourceCreated, ResourceEvent
+from events.measured import Measured
+from events.resources import ResourceCreated
 from features.dev_faults.reports import OVER
 from features.parts import Context, Handler
 from controllers.types import Todos
 from resources.base import SYSTEM
+from events.todos import TodoCompleted
 
 
 class ReportSlow(Handler):
@@ -22,11 +21,6 @@ class LiftOverdueHold(Handler):
         title = Todos(context.record, actor=SYSTEM).load(event.n).title
         if OVER in title:
             context.feature.reports.lift(context.record.root, title)
-
-
-@dataclass(frozen=True)
-class TodoCompleted(ResourceEvent):
-    on: ClassVar[str] = "todo.completed"
 
 
 class RestartCountOnClose(Handler):

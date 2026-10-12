@@ -4,7 +4,8 @@ from features.base import Feature
 from features.journal import Journal
 from features.revisions.commands import Keep, Revision, Revisions
 from features.revisions.details import RevisionsDetails
-from features.revisions.handlers import DocWritten, KeepRevisions
+from features.revisions.handlers import KeepRevisions
+from events.docs import DocWritten
 from resources.base import AGENT
 from resources.types import Doc
 

@@ -1,6 +1,6 @@
 from controllers.types import Messages
-from engine.events.agents import AgentReported
-from engine.events.engine import AgentMessageSent
+from events.agents import AgentReported
+from events.agents import AgentMessageSent
 from events.resources import ResourceCreated
 from events.messages import MessageCreated, MessageUpdated
 import json

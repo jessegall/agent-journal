@@ -1,5 +1,5 @@
 from controllers.types import Works
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from events.todos import TodoCompleted
 from expects import WHEN, Given, Kept, Nudged, Refused, Unchanged, Updated
 from features.base import Feature
@@ -27,7 +27,10 @@ from features.sending import Nudge
 from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
 from features.plans.progress import held
 from features.work_tracking.next import ROW_HOLDS
-from features.plans.handlers import PlanChanged, ReportLinked, RowReopened, TodoUpdated
+from events.plans import PlanChanged
+from events.reports import ReportLinked
+from events.resources import RowReopened
+from events.todos import TodoUpdated
 from features.plans.resource import Plan
 from providers.payload import ToolUse
 from resources.base import AGENT, SYSTEM, USER

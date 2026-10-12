@@ -1,7 +1,7 @@
 from itertools import takewhile
 
-from engine.events.agents import AgentReported
-from engine.events.engine import AgentMessageSent, ClockTicked
+from events.agents import AgentReported
+from events.agents import AgentMessageSent, ClockTicked
 from events.messages import MessageCreated
 from engine.transcript import IDLE as AGENT_IDLE
 from features import actions, trigger

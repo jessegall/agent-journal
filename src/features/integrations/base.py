@@ -6,14 +6,15 @@ from dataclasses import asdict, replace
 from urllib.parse import urlsplit
 
 from controllers.features import Features
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from expects import Answered, Given, Unchanged
 from controllers.types import Agents, Notices, Questions
 from engine import bus
 from features.base import Feature
 from features.integrations.commands import SyncIntegration
 from features.integrations.details import KEEP, REFUSED, SEND, UNREACHABLE
-from features.integrations.handlers import CheckOnClock, QuestionClosed, SendApproved
+from features.integrations.handlers import CheckOnClock, SendApproved
+from events.questions import QuestionCompleted
 from features.integrations.client import IntegrationClient
 from features.integrations.login import OPEN_BROWSER, RENEWAL_SUFFIX, revoked, signed_in
 from features.integrations.state import IntegrationState, read_state, write_state
@@ -60,8 +61,8 @@ class IntegrationFeature(Feature):
         journal.routes.add(self.state_route(), self.login_route(), self.logout_route(), self.check_route())
 
     @staticmethod
-    def closed() -> QuestionClosed:
-        return QuestionClosed(n=1, type="question", action="completed", actor=USER)
+    def closed() -> QuestionCompleted:
+        return QuestionCompleted(n=1, type="question", action="completed", actor=USER)
 
     def proposal(self, outcome: str, by: str = USER, service: str = "") -> Question:
         return Question(n=1, title="Send this answer", brief="Thanks.", outcome=outcome, refs=["ticket:1"], data={"proposal": service or self.name, "answered_by": by})

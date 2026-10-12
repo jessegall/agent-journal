@@ -4,7 +4,8 @@ from features.integrations.details import SEND
 from features.journal import Journal
 from features.linear.commands import ProposeComment
 from features.linear.details import LinearDetails
-from features.linear.handlers import MoveIssue, TicketUpdated
+from features.linear.handlers import MoveIssue
+from events.tickets import TicketUpdated
 from features.linear.routes import LinearWebhook
 from features.linear.webhook import Deliveries
 from features.linear.working import LinearWork

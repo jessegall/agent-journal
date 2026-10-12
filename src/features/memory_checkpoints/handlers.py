@@ -1,5 +1,5 @@
 from controllers.types import CONTROLLERS, Agents
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from events.resources import ResourceCreated
 from features.memory_checkpoints.reread import owed
 from features.sending import Sent

@@ -1,4 +1,4 @@
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from features.parts import AgentContext, Handler
 from providers.payload import HookEvent
 

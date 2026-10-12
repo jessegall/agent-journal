@@ -1,5 +1,5 @@
 from controllers.types import Questions
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from events.resources import AnyEvent, ResourceCreated
 from events.messages import MessageCreated
 from events.questions import QuestionCompleted
@@ -13,7 +13,8 @@ from resources.base import SYSTEM
 from features.journal import Journal
 from features.ask_questions.answers import answers_added
 from features.ask_questions.details import AskQuestionsDetails
-from features.ask_questions.handlers import QuestionAsked, AnswerOnTheScreen, AskInsteadOfProse, DismissSettledQuestions, MarkTheAnswer, ReleaseOnceAnswered, ReleaseOnceAsked, open_a_day
+from features.ask_questions.handlers import AnswerOnTheScreen, AskInsteadOfProse, DismissSettledQuestions, MarkTheAnswer, ReleaseOnceAnswered, ReleaseOnceAsked, open_a_day
+from events.questions import QuestionCreated
 from features.sending import Nudge
 from features.ask_questions.interceptors import AskedOnce, AskInTheJournal, AskOnItsOwn, NamesItsPick, OneAskPerRow, OptionsOnlyInTheirButtons, OptionsWhenEnumerable
 
@@ -33,7 +34,7 @@ class AskQuestions(Feature):
             Given(AgentReported(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
         ])
         journal.events.handler(ReleaseOnceAsked(), expects=[
-            Given(QuestionAsked(n=3), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?")]) >> Unchanged(),
+            Given(QuestionCreated(n=3), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?")]) >> Unchanged(),
         ])
         journal.events.handler(ReleaseOnceAnswered(), expects=[
             Given(MessageCreated(n=3, type="message", actor="user"), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),

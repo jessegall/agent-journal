@@ -289,7 +289,6 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     held.close()
 
 
-
 def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.plugins.commands import Configure
     from features.plugins.declared import settings_of
@@ -952,7 +951,7 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     subprocess.run(["git", "add", "Order.cs"], cwd=spread / "shop", capture_output=True, timeout=30)
     assert fitting.written_in(tracked_files(spread)) == {"C#"}, \
         "a project that is no repository itself is read through the repositories inside it, so their languages count"
-    from engine.events.engine import ClockTicked
+    from events.agents import ClockTicked
     from features.parts import AgentContext
     from features.suggestions.controller import Suggestions
     from controllers.types import Todos

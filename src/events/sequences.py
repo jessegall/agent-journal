@@ -19,3 +19,8 @@ class SequenceUpdated(ResourceEvent):
 @dataclass(frozen=True)
 class SequenceCompleted(ResourceEvent):
     on: ClassVar[str] = "sequence.completed"
+
+
+@dataclass(frozen=True)
+class SequenceMoved(ResourceEvent):
+    on: ClassVar[str] = "sequence"

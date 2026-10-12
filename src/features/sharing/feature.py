@@ -1,4 +1,4 @@
-from engine.events.engine import CommandRan
+from events.agents import CommandRan
 from events.comments import CommentCreated
 from engine.services import SOURCES
 from expects import Given, Kept, Nudged, Refused, Unchanged

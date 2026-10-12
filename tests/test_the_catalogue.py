@@ -15,7 +15,7 @@ from events.typed import TypedEvent
 
 CATALOGUE = Path(events.__file__).parent
 ROW_MOMENTS = ("created", "updated", "completed")
-NOT_A_TYPE = ("__init__", "typed", "answers", "asking", "resources", "engine", "measured", "files")
+NOT_A_TYPE = ("__init__", "typed", "answers", "asking", "resources", "measured", "files")
 
 
 def resource_types() -> dict[str, tuple]:

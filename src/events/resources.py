@@ -1,9 +1,13 @@
+"""What a handler reads of a row that was written, whatever its type; each type's own moments are in the module named for it."""
+
 from dataclasses import dataclass, replace
 from typing import ClassVar
 
 from events.typed import TypedEvent
 
 WRITTEN = ("created", "updated")
+GONE = ("completed", "deleted")
+CHANGES = ("created", "updated", *GONE)
 
 
 @dataclass(frozen=True)
@@ -42,3 +46,18 @@ class ResourceCreated(ResourceEvent):
     on: ClassVar[str] = "created"
 
 
+@dataclass(frozen=True)
+class FileAttached(ResourceEvent):
+    on: ClassVar[str] = "updated"
+    file: str = ""
+
+
+@dataclass(frozen=True)
+class RowChanged(AnyEvent):
+    def wanted(self) -> bool:
+        return self.action in CHANGES
+
+
+@dataclass(frozen=True)
+class RowReopened(ResourceEvent):
+    on: ClassVar[str] = "reopened"

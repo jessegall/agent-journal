@@ -2,7 +2,7 @@ import threading
 from pathlib import Path
 
 from controllers.types import Plugins as PluginRows, Todos
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from expects import WHEN, Answered, Formats, Given, Kept, Refused, Unchanged, Updated
 from features.base import Feature
 from providers.payload import BashCall, Dispatch
@@ -15,7 +15,8 @@ from features.plugins.details import PluginsDetails
 from features.plugins.host import watch
 from features.plugins.fitting import SuggestFittingPlugins
 from engine.gates import CANCELABLE
-from features.plugins.parts import PluginRemoved, AskPluginsToCancel, AskPluginsToRefuse, ClearRemovedPlugin, KeepPluginRows, ReadLinkedManifests, PluginChatRules
+from features.plugins.parts import AskPluginsToCancel, AskPluginsToRefuse, ClearRemovedPlugin, KeepPluginRows, ReadLinkedManifests, PluginChatRules
+from events.plugins import PluginCompleted
 from features.plugins.routes import get_pages, get_plugin_dashboard, get_plugin_log, get_services, post_plugin_upgrade_preview, post_plugins_preview
 
 
@@ -76,7 +77,7 @@ class Plugins(Feature):
             Given(Dispatch("general-purpose", "sonnet", True)) >> Kept(),
         ])
         journal.events.handler(ClearRemovedPlugin(), expects=[
-            Given(PluginRemoved(n=1, type="plugin", action="completed"), rows=[ON]) >> Unchanged(),
+            Given(PluginCompleted(n=1, type="plugin", action="completed"), rows=[ON]) >> Unchanged(),
         ])
         journal.events.handler(ReadLinkedManifests(), expects=[
             Given(ClockTicked(agent=1), rows=[ON]) >> Unchanged(),

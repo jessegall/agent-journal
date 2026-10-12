@@ -1,4 +1,4 @@
-from engine.events.agents import SessionStarted
+from events.agents import SessionStarted
 from expects import Answered, Given, Hooked, Nudged, Unchanged
 from events.resources import AnyEvent
 from features.base import Feature

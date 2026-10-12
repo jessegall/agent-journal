@@ -2,7 +2,7 @@ from agents.terminal import LAUNCH_ARGS
 from controllers.types import Agents
 from engine.seats import live_session
 from engine.sessions import Sessions
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from expects import Given, Refused, Unchanged, Updated, Wrote
 from features.base import Feature
 from features.journal import Journal

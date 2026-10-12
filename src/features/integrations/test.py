@@ -378,7 +378,7 @@ def test_issues_become_one_ticket_each_with_their_comments_once_and_one_that_lea
 def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_picked_and_pauses_and_notices_once(monkeypatch, tmp_path):
     import time
     from controllers.types import Notices
-    from engine.events.engine import ClockTicked
+    from events.agents import ClockTicked
     from features.integrations.handlers import CheckOnClock
     from features.parts import Context
     from resources.base import SYSTEM

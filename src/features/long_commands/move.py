@@ -2,7 +2,7 @@ import time
 from pathlib import Path
 
 from engine.command_runs import command_runs, waiting_run
-from engine.events.engine import AgentBeat, ClockTicked
+from events.agents import AgentBeat, ClockTicked
 from engine.gates import LONG_COMMAND, HookCall, cancelled
 from features.long_commands.details import KEPT, MOVED, background_after, background_switch
 from features.work_modes.modes import mode_of

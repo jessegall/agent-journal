@@ -1,14 +1,13 @@
 import time
-from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar
 
 from engine import bus
-from engine.events.agents import AgentReported, ToolFinished
-from engine.events.engine import ClockTicked, FileEdited
-from events.resources import AnyEvent, ResourceEvent
+from events.agents import AgentReported, ToolFinished
+from events.agents import ClockTicked
+from events.files import FileEdited
+from events.resources import AnyEvent
 from events.todos import TodoCompleted
-from events.works import WorkCreated
+from events.works import WorkCompleted, WorkCreated, WorkUpdated
 from features import trigger
 from features.sending import Sent
 from features.trigger import MINUTE
@@ -24,30 +23,10 @@ from controllers.types import Agents, Messages, Todos, Works
 from features.work_modes.modes import taking
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, USER
+from events.plans import PlanCompleted
 
 ASKED_AGAIN_AFTER = 60
 NAMED_PARKED = "named_parked"
-
-
-@dataclass(frozen=True)
-class WorkCompleted(ResourceEvent):
-    on: ClassVar[str] = "work.completed"
-    todo: bool = False
-
-    @classmethod
-    def read(cls, event) -> "WorkCompleted":
-        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, todo=bool(event.data.get(Work.todo)))
-
-
-@dataclass(frozen=True)
-class PlanCompleted(ResourceEvent):
-    on: ClassVar[str] = "plan.completed"
-
-
-@dataclass(frozen=True)
-class WorkLogged(ResourceEvent):
-    on: ClassVar[str] = "work.updated"
-    section: str = ""
 
 
 def working(context: Context) -> list:
@@ -234,7 +213,7 @@ class CountEdits(Handler):
 
 
 class ResetEditsOnLog(Handler):
-    def handle(self, context: Context, event: WorkLogged) -> None:
+    def handle(self, context: Context, event: WorkUpdated) -> None:
         if not event.section:
             return
         for row in context.feature.reached(context.record, context.feature.lines["log held"].reach):

@@ -1,4 +1,4 @@
-from engine.events.agents import ToolFinished
+from events.agents import ToolFinished
 from expects import Given, Unchanged
 from features.base import Feature
 from features.journal import Journal

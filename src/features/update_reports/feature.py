@@ -1,5 +1,5 @@
 from controllers.types import Reports
-from engine.events.agents import TurnStopped
+from events.agents import TurnStopped
 from expects import Answered, Given, Refused, Unchanged, Updated, Wrote
 from features.base import Feature
 from features.journal import Journal

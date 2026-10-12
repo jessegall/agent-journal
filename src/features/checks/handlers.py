@@ -1,13 +1,10 @@
 import time
-from dataclasses import dataclass
-from typing import ClassVar
 
 from pathlib import Path
 
 from engine.command_runs import CommandRun, command_runs
-from engine.events.engine import ClockTicked
-from engine.events.agents import AgentReported
-from events.resources import ResourceEvent
+from events.agents import ClockTicked
+from events.agents import AgentReported
 from engine.wording import digest
 from features.checks.output import summary
 from providers.payload import HookEvent
@@ -18,12 +15,7 @@ from features.parts import AgentContext, Context, Handler
 from features.checks.controller import Checks
 from controllers.types import Agents, Notifications
 from resources.base import SYSTEM, USER
-
-
-@dataclass(frozen=True)
-class CheckUpdated(ResourceEvent):
-    on: ClassVar[str] = "check.updated"
-    ran: bool = False
+from events.checks import CheckUpdated
 
 
 TESTS = "tests"

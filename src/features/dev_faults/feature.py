@@ -1,13 +1,14 @@
 from functools import cached_property
 
-from engine.events.engine import Measured
+from events.measured import Measured
 from expects import Given, Unchanged, Updated
 from expects.watching import BROKEN
 from features.base import Feature
 from features.journal import Journal
 from features.dev_faults.details import DevFaultsDetails
 from engine.developing import developing
-from features.dev_faults.handlers import LiftOverdueHold, ReportSlow, RestartCountOnClose, TodoCompleted
+from features.dev_faults.handlers import LiftOverdueHold, ReportSlow, RestartCountOnClose
+from events.todos import TodoCompleted
 from events.resources import ResourceCreated
 from resources.types import Notification, Todo
 from features.dev_faults.reports import FaultReports

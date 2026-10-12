@@ -19,3 +19,8 @@ class SuggestionUpdated(ResourceEvent):
 @dataclass(frozen=True)
 class SuggestionCompleted(ResourceEvent):
     on: ClassVar[str] = "suggestion.completed"
+
+
+@dataclass(frozen=True)
+class SuggestionReopened(ResourceEvent):
+    on: ClassVar[str] = "suggestion.reopened"

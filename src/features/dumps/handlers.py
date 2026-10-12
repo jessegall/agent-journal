@@ -1,26 +1,16 @@
-from dataclasses import dataclass
-from typing import ClassVar
 
-from engine.events.engine import ClockTicked
-from events.resources import ResourceEvent
+from events.agents import ClockTicked
 from events.messages import MessageUpdated
 from engine.transcript import IDLE
 from engine.wording import plural
 from features.dumps.controller import OWN_WORDS
 from features.parts import AgentContext, Context, Handler
-from resources.base import USER
+from resources.base import COMPLETED, USER
 from features.dumps.controller import Dumps
 from controllers.types import Messages
+from events.dumps import DumpWritten
 
 FILED = "completed"
-
-
-@dataclass(frozen=True)
-class DumpWritten(ResourceEvent):
-    on: ClassVar[str] = "dump"
-
-    def wanted(self) -> bool:
-        return self.action == FILED or (self.written and self.actor == USER)
 
 
 class PromptFiling(Handler):

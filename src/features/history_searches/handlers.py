@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 
 from controllers.types import CONTROLLERS, Agents
-from engine.events.engine import AgentMessageSent, CommandRan
+from events.agents import AgentMessageSent, CommandRan
 from engine.journal_calls import PUNCTUATION, JournalCall, pieces
 from engine.ran import SHELL
 from engine.reach import Reach

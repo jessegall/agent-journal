@@ -1,4 +1,4 @@
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from expects import Given, Unchanged, Updated, WHEN
 from features.base import Feature
 from features.journal import Journal

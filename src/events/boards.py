@@ -1,6 +1,6 @@
 """The moments of the board resource type."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import ClassVar
 
 from events.resources import ResourceEvent
@@ -44,3 +44,9 @@ class BoardResumed(ResourceEvent):
 @dataclass(frozen=True)
 class BoardFinished(ResourceEvent):
     on: ClassVar[str] = "board.finished"
+
+
+@dataclass(frozen=True)
+class BoardChanged(ResourceEvent):
+    on: ClassVar[str] = "board"
+    fields: list = field(default_factory=list)

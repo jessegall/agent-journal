@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from engine.git import Checkout, checkout_of
 from engine.proc import git
 from features.parts import ANY_BUT_PRE_TOOL_USE, AgentContext, Handler

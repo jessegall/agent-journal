@@ -1,4 +1,4 @@
-from engine.events.agents import SessionStarted
+from events.agents import SessionStarted
 from expects import Given, Unchanged
 from features.base import Feature
 from features.journal import Journal

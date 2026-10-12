@@ -1,5 +1,5 @@
 from controllers.types import Agents
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from expects import Answered, Given, Remembered, Unchanged, Updated
 from features.base import Feature
 from features.journal import Journal

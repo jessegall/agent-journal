@@ -1,5 +1,5 @@
 from controllers.types import Rules
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from events.resources import ResourceCreated
 from events.agents import AgentChanged
 from expects import WHEN, Answered, Given, Held, Nudged, Remembered, Unchanged, Updated

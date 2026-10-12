@@ -1,7 +1,7 @@
 import re
 
-from engine.events.agents import AgentReported
-from engine.events.engine import AgentMessageSent
+from events.agents import AgentReported
+from events.agents import AgentMessageSent
 from features.parts import AgentContext, Handler
 from providers.turns import last_text
 from resources.base import AGENT, ENVIRONMENT

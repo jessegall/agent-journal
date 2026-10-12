@@ -1,5 +1,5 @@
-from engine.events.agents import AgentReported
-from engine.events.engine import AgentMessageSending, ClockTicked
+from events.agents import AgentReported
+from events.agents import AgentMessageSending, ClockTicked
 from events.resources import AnyEvent
 from events.questions import QuestionCompleted
 import json
@@ -7,7 +7,7 @@ from dataclasses import asdict
 
 from expects import answering, Given, Remembered, Kept, Nudged, Refused, Unchanged, Updated
 from features.base import Feature
-from features.sequences.handlers import TriggerFired
+from events.triggers import TriggerFired
 from features.sequences.resource import Sequence
 from features.trigger import Mark
 from features.triggers.resource import Trigger
