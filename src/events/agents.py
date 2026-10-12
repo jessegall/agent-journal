@@ -131,6 +131,7 @@ class ToolCallAnswered(AgentEvent):
     tool: str = ""
     input: str = ""
     why: str = ""
+    subagent: bool = False
 
 
 @dataclass(frozen=True)
