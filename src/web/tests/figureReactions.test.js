@@ -2,7 +2,7 @@
 import {expect, test} from "vitest";
 
 const {AMBIENT, FLIP_ODDS, FLIP_OVER, REACTIONS, WORK_VARIANTS, ambientFor, flips, reactionTo, workClip} = await import("../src/figure/reactions.js");
-const {EGGS, HELD, testResultsAfter} = await import("../src/domain/figureState.js");
+const {EGGS, HELD, beatsAfter, facesAfter, testResultsAfter} = await import("../src/domain/figureState.js");
 const {CLIPS, EYES} = await import("../src/figure/figure.js");
 const {FACES} = await import("../src/domain/faces.js");
 
@@ -82,4 +82,28 @@ test("the user typing now and then makes its eyes read, and finishing a long str
     expect(reactionTo("typing", memory, 10, () => 0)).toBe(null);
     expect(reactionTo("typing", memory, 100, () => 0.99)).toBe(null);
     expect(reactionTo("work_done", memory, 0, () => 0).clip).toBe("stretch");
+});
+
+test("every moment a reaction waits for is one the journal makes, from cards shaped as the server writes them", () => {
+    // features/git_actions, features/checks (a failing check and a test run), features/journal_laws, features/ask_questions,
+    // and the person_at runner/hook_report stamps when the user writes
+    const cards = [
+        {at: 2, tone: "commit", icon: "branch"},
+        {at: 2, icon: "check", tone: "danger"},
+        {at: 2, icon: "terminal", tone: "danger"},
+        {at: 2, icon: "question"},
+        {at: 2, key: "tests:1", icon: "check", state: "done", ended: 3},
+        {at: 2, key: "tests:2", icon: "check", state: "failed", ended: 3},
+    ];
+    const agent = {data: {cards, person_at: 2}};
+    const faces = FACES.map((face, n) => ({deleted: false, seen: ["user"], created: 2, data: {face}, refs: [`message:${n}`]}));
+    const made = new Set([
+        ...beatsAfter(agent, 1),
+        ...testResultsAfter(agent, new Map()),
+        ...facesAfter(faces, 1),
+        // the figure's own page sees these two: a key pressed in the compose box, and the agent settling after WORKED_SECONDS of work
+        {beat: "typing"},
+        {beat: "work_done"},
+    ].map((fire) => fire.beat));
+    for (const each of REACTIONS) expect(made.has(each.moment), each.moment).toBe(true);
 });
