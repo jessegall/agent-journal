@@ -28,13 +28,17 @@ def answered_fact(dump: Dump) -> list[Fact]:
     return [DumpQuestionAnswered(n=dump.n, answer=answers[-1]["answer"], question=answers[-1]["question"]).once(f"dump answer|{dump.n}:{len(answers)}")]
 
 
-class SpotDumpWritten(Listener[DumpWritten]):
+class SpotDumpChoosing(Listener[DumpWritten]):
     def listen(self, event: DumpWritten, dumps: ReadRows[Dump], agents: ReadRows[AgentRow]) -> list[Fact]:
-        if not agents.has_primary():
-            return []
+        dump = dumps.peek(event.n)
+        return chosen_fact(dump) if dump.data.get("chosen") and agents.has_primary() else []
+
+
+class SpotDumpFiling(Listener[DumpWritten]):
+    def listen(self, event: DumpWritten, dumps: ReadRows[Dump], agents: ReadRows[AgentRow]) -> list[Fact]:
         dump, in_hand = dumps.peek(event.n), dumps.in_hand()
-        if dump.data.get("chosen"):
-            return chosen_fact(dump)
+        if dump.data.get("chosen") or not agents.has_primary():
+            return []
         facts = []
         if event.action == COMPLETED:
             if not dump.data.get("stopped"):

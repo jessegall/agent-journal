@@ -6,7 +6,7 @@ from resources.dumps import Dump
 from features.dumps.details import DumpsDetails
 from resources.dumps import OWN_WORDS
 from features.dumps.handlers import (CarryOnFiling, TellChoiceMade, TellChoiceOpen, TellDumpArrived, TellDumpFiled, TellQuestionAnswered, TranscriptToDump)
-from features.dumps.listeners import SpotDumpWritten, SpotStalledFiling, SpotTranscript
+from features.dumps.listeners import SpotDumpChoosing, SpotDumpFiling, SpotStalledFiling, SpotTranscript
 from events.dumps import (DumpArrived, DumpChoiceMade, DumpChoiceOpen, DumpFilingStalled, DumpFiledAway, DumpQuestionAnswered, DumpWritten,
                           TranscriptPasted)
 from framework.journal import Journal
@@ -45,14 +45,19 @@ class DumpsFeature(Feature):
     details = DumpsDetails
 
     def register(self, journal: Journal) -> None:
-        journal.events.listen(DumpWritten, SpotDumpWritten(), expects=[
+        journal.events.listen(DumpWritten, SpotDumpChoosing(), expects=[
+            on_arrival(choosing(1, "Keep it"), IDLE) >> Dispatches(DumpChoiceMade(n=1, label="Keep it").once("dump choice|1:5.0")),
+            on_arrival(choosing(-1, ""), IDLE) >> Dispatches(DumpChoiceOpen(n=1).once("dump choice|1:5.0")),
+            on_arrival(choosing(OWN_WORDS, "my own words"), IDLE) >> Dispatches(nothing),
+            on_arrival(dump(), IDLE) >> Dispatches(nothing),
+            on_arrival(choosing(1, "Keep it")) >> Dispatches(nothing),
+        ])
+        journal.events.listen(DumpWritten, SpotDumpFiling(), expects=[
             on_arrival(dump(), IDLE) >> Dispatches(DumpArrived(n=1, items="2 items")),
             on_arrival(dump(items=NOTED), IDLE) >> Dispatches(nothing),
             on_arrival(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"files": {"a.png": ""}}), IDLE) >> Dispatches(nothing),
             on_arrival(dump(), dump(n=2), IDLE) >> Dispatches(nothing),
-            on_arrival(choosing(1, "Keep it"), IDLE) >> Dispatches(DumpChoiceMade(n=1, label="Keep it").once("dump choice|1:5.0")),
-            on_arrival(choosing(-1, ""), IDLE) >> Dispatches(DumpChoiceOpen(n=1).once("dump choice|1:5.0")),
-            on_arrival(choosing(OWN_WORDS, "my own words"), IDLE) >> Dispatches(nothing),
+            on_arrival(choosing(1, "Keep it"), IDLE) >> Dispatches(nothing),
             on_arrival(dump(answers=[{"answer": "Tomorrow", "question": "When should it be done?"}]), IDLE)
                 >> Dispatches(DumpQuestionAnswered(n=1, answer="Tomorrow", question="When should it be done?").once("dump answer|1:1")),
             on_completion(Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, outcome="2 filed", data={"items": FILED, "files": {"a.png": ""}}), IDLE)
