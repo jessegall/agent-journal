@@ -4,7 +4,7 @@ from events.agents import AgentMessageSent
 from events.resources import ResourceCreated
 from events.messages import MessageCreated, MessageUpdated
 import json
-from dataclasses import asdict
+from dataclasses import asdict, replace
 
 from expects import Formats, Given, Nudged, Remembered, Unchanged, Updated, Wrote
 from declaring.trigger import Mark
@@ -56,9 +56,9 @@ def touched(*numbers: int) -> MessageUpdated:
     return MessageUpdated(n=numbers[0], type="message", action="updated", actor=USER, numbers=numbers)
 
 
-FILE_THE_REPORT = asked("Please file the report", refs=["todo:7"])
 ABOUT_A_TODO = asked(refs=["todo:7"])
-FILE_THE_REPORT_WRITTEN = wrote("Please file the report", refs=["todo:7"])
+FILE_THE_REPORT = replace(ABOUT_A_TODO, title="Please file the report")
+FILE_THE_REPORT_WRITTEN = replace(FILE_THE_REPORT, seen=[USER])
 
 
 def after_report(*rows) -> Given:
