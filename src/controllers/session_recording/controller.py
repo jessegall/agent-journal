@@ -4,15 +4,14 @@ import signal
 import subprocess
 from pathlib import Path
 
-import controllers.types as types_module
 from controllers.base import Controller
-from controllers.types import Agents
+from controllers.agents import Agents
 from engine.package import entry
 from engine.record import Record
-from features.session_recording.demo import leaks, scrubbed
+from controllers.session_recording.demo import leaks, scrubbed
 from resources.session_recording import Recording
 from engine.sessions import alive
-from features.session_recording.scrub import Scrubber
+from controllers.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Refused, titled
 from controllers.marks import action
 
@@ -75,4 +74,3 @@ class Recordings(Controller):
         return copied
 
 
-types_module.register(Recordings)

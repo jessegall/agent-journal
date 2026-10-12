@@ -24,10 +24,11 @@ from controllers.environments import Environments
 from controllers.nudges import Nudges
 from controllers.suggestions import Suggestions
 from controllers.templates import Templates
+from controllers.session_recording.controller import Recordings
 
 
 register(Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Questions, Comments, Agents,
-         Notifications, Notices, Reactions, Tools, Features, Plugins, Environments, Nudges, Suggestions, Templates)
+         Notifications, Notices, Reactions, Tools, Features, Plugins, Environments, Nudges, Suggestions, Templates, Recordings)
 
 
 WARM_PAUSE = 0.02
