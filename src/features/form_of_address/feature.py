@@ -1,6 +1,6 @@
 from controllers.discussion import VOICE_FACES
 from framework.base import Feature
-from features.form_of_address.controller import Profiles
+from controllers.types import Profiles
 from features.form_of_address.details import FormOfAddressDetails
 from framework.journal import Journal
 from features.form_of_address.address import address, announce_voice, voice_of

@@ -11,7 +11,7 @@ from framework.sending import Sent
 from declaring.trigger import MINUTE
 from framework.watched import FACTS, MINUTES, PERCENT, Fact
 from framework.journal import Journal
-from features.triggers.controller import Triggers
+from controllers.types import Triggers
 from features.triggers.details import TriggersDetails
 from features.triggers.handlers import (DenyWhatTheAgentDoes, HoldWhileTheJournalShows, SayWhatTheJournalShowsOnTheClock, SayWhatTheJournalShowsOnToolUse,
                                        WatchWhatTheAgentDoes, WatchWhatTheAgentWrites, WatchWhatTheUserWrites)

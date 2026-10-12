@@ -3,8 +3,8 @@ from pathlib import Path
 
 from controllers.types import environment_records
 from engine.paths import contained
-from features.collections.controller import Collections
-from features.dumps.controller import Dumps
+from controllers.collections import Collections
+from controllers.dumps import Dumps
 from resources.base import Ref, SYSTEM
 
 

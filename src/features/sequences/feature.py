@@ -18,7 +18,7 @@ from framework.journal import Journal
 from framework.sending import Nudge
 from features.sequences.controller import Sequences
 from features.sequences.details import SequencesDetails
-from features.triggers.controller import STARTED_BY
+from resources.triggers import STARTED_BY
 from features.sequences.details import UNFINISHED
 from features.sequences.shipped import SEQUENCES
 from features.sequences.handlers import (DispatchAgainOnAnswer, EndWithItsRow, HandStepToAgent, HoldAStalledStep, HoldJournalWritesForTheStep, KeepOutOfTheChat,

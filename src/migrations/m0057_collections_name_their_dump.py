@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from controllers.types import environment_records
-from features.collections.controller import Collections
+from controllers.collections import Collections
 from resources.base import SYSTEM
 
 

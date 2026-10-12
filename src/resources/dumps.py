@@ -9,6 +9,7 @@ from resources.shapes import FLAG, Field, Shape, names
 ITEM = names("insight", "outcome", "refs", "failed", "added")
 ENTRY = names("at", "text", "on", "making", "detail")
 TEXT = "text"
+OWN_WORDS = -2
 
 
 def entry(text: str, on: str = "", making: str = "", detail: str = "", **extra) -> dict:

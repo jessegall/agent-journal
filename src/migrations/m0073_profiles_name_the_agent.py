@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from controllers.types import environment_records
-from features.form_of_address.controller import Profiles
-from features.form_of_address.voices import SHIPPED, Voice
+from controllers.types import Profiles
+from resources.voices import SHIPPED, Voice
 from resources.base import SYSTEM
 
 NAMES = {voice.title: voice.agent_name for voice in SHIPPED}

@@ -1,18 +1,13 @@
 import time
 from dataclasses import asdict, dataclass
 
-import controllers.types as types_module
+from controllers.agents import Agents
 from controllers.base import Controller, discarding
 from controllers.marks import action
-from declaring.extension import Extension
 from framework import watched
-from resources.triggers import DOES, FROM_USER, ONLY_WHEN, START, STATE_DOES, WHEN, Trigger
-from features.triggers.summary import summary
+from resources.triggers import DOES, FROM_USER, ONLY_WHEN, START, STARTED_BY, STATE_DOES, WHEN, Trigger, holding
+from controllers.triggers.summary import summary
 from resources.base import FIRED, SYSTEM, Refused, Resource
-
-
-def holding(n: int) -> str:
-    return f"hold.{n}"
 
 
 @dataclass(frozen=True)
@@ -31,9 +26,6 @@ class Matching:
         return cls(fact, over, len(found), len(found) >= watched.MOST_NAMED,
                    tuple(one.values.get("title", "") for one in found),
                    () if text is None else tuple(watched.filled(text, one.values) for one in found))
-
-
-STARTED_BY = Extension()
 
 
 class Triggers(Controller):
@@ -98,7 +90,6 @@ class Triggers(Controller):
 
     def _read_against(self):
         """The agent row a fact is read against. A fact about the agent itself needs one, so a journal with no agent is refused rather than quietly matching nothing."""
-        from controllers.types import Agents
         row = Agents(self.record, actor=SYSTEM).primary_to_read()
         if row is None:
             raise Refused("no agent is working here, so there is nothing to read a fact against yet")
@@ -148,5 +139,3 @@ class Triggers(Controller):
             if row.title == title and row.system and not row.deleted:
                 self.delete(row.n, why=why)
 
-
-types_module.register(Triggers)

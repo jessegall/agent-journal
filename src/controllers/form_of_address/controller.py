@@ -2,14 +2,14 @@ import json
 import tempfile
 from pathlib import Path
 
-import controllers.types as types_module
 from controllers.base import Controller
+from controllers.features import SETTINGS_CHANGED, settings_of
 from controllers.marks import action
-from features.form_of_address.anchoring import Region, anchored, silhouettes
-from features.form_of_address.animations import FRAME, OFFSETS, Animation, Schedule, Tuning, offsets_document, offsets_name, shipped_animations, tuning_of, unpacked, voice_of
-from features.form_of_address.names import first_name, in_use, title
+from engine import runtime
+from controllers.form_of_address.anchoring import Region, anchored, silhouettes
+from controllers.form_of_address.animations import FRAME, OFFSETS, Animation, Schedule, Tuning, offsets_document, offsets_name, shipped_animations, tuning_of, unpacked, voice_of
 from resources.form_of_address import Profile
-from features.form_of_address.voices import BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
+from resources.voices import BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
 from resources.base import SYSTEM, Refused
 from resources.pictures import dimensions
 
@@ -20,6 +20,19 @@ SHAPE = ("brief", "calling", "sample", "introduction", "humour", "naming", "addr
 class Profiles(Controller):
     resource = Profile
 
+    def user_first_name(self) -> str:
+        return str(settings_of(self.record, "form_of_address").first_name).strip() or (runtime.git_user(self.record.root).split() or [""])[0]
+
+    def user_title(self) -> str:
+        return str(settings_of(self.record, "form_of_address").title).strip()
+
+    def user_called(self) -> str:
+        return Calling.TITLE_AND_NAME.called(self.user_title(), self.user_first_name())
+
+    def profile_in_use(self) -> int:
+        chosen = settings_of(self.record, "form_of_address").profile
+        return int(chosen) if str(chosen).isdigit() else 0
+
     def voice(self, n: int) -> Voice:
         r = self.rows.peek(n)
         return Voice(title=r.title, text=r.brief, calling=Calling(r.calling), sample=r.sample, introduction=r.introduction, humour=r.humour, naming=r.naming,
@@ -27,7 +40,7 @@ class Profiles(Controller):
 
     def standing(self) -> Voice:
         try:
-            return self.voice(in_use(self.record))
+            return self.voice(self.profile_in_use())
         except (ValueError, Refused):
             return BUTLER
 
@@ -43,13 +56,13 @@ class Profiles(Controller):
         if calling is not None:
             data["calling"] = self._calling(calling)
         row = super().update(n, title, abstract, brief, outcome, **data)
-        if n == in_use(self.record):
+        if n == self.profile_in_use():
             self._tell()
         return row
 
     @action
     def delete(self, n: int, why: str = ""):
-        if n == in_use(self.record):
+        if n == self.profile_in_use():
             self._refuse(f"profile {n} is in use: choose another profile first")
         return super().delete(n, why)
 
@@ -156,7 +169,7 @@ class Profiles(Controller):
         return {r.n: self._sample(r) for r in (self.peek(row["n"]) for row in self.rows.summaries() if not row["deleted"])}
 
     def _called(self, calling: Calling, address: str = "") -> str:
-        return calling.called(title(self.record), first_name(self.record), address)
+        return calling.called(self.user_title(), self.user_first_name(), address)
 
     def _sample(self, row) -> str:
         return filled(row.sample, self._called(Calling(row.calling), row.address))
@@ -167,9 +180,9 @@ class Profiles(Controller):
         return given
 
     def _tell(self) -> None:
-        from framework.loaded import running
-        from features.form_of_address.feature import FormOfAddress
-        running(FormOfAddress).settings_changed(self.record, self.actor)
+        changed = SETTINGS_CHANGED.keyed().get("form_of_address")
+        if changed:
+            changed(self.record, self.actor)
 
 
 def ship(record) -> list[str]:
@@ -188,6 +201,3 @@ def ship(record) -> list[str]:
             continue
         made.append(voice.title)
     return made
-
-
-types_module.register(Profiles)

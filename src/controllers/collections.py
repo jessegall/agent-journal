@@ -1,10 +1,8 @@
-import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import Controller, row_of
-from features.collections.files import collected_files
 from resources.collections import Collection
 from controllers.shared import shared
 from resources.base import Ref, Refused
+from resources.types import ref_named
 from controllers.marks import action
 
 
@@ -21,7 +19,7 @@ class Collections(Controller):
     def add(self, n: int, refs: list[str]):
         collection = self.load(n)
         for named in refs:
-            ref = str(resources_module.ref_named(named))
+            ref = str(ref_named(named))
             self._member(ref)
             collection = self.link(collection.n, ref)
         return collection
@@ -38,7 +36,7 @@ class Collections(Controller):
     def held_files(self, n: int) -> list[dict]:
         """Every file of the collection and of the rows it holds, with the row each belongs to."""
         collection = self.load(n)
-        return collected_files(self.record, [collection, *(row for _, row in self._held(collection))])
+        return self.listed_files([collection, *(row for _, row in self._held(collection))])
 
     def _held(self, collection) -> list[tuple]:
         found = []
@@ -60,6 +58,3 @@ class Collections(Controller):
         if row.data.get("system"):
             raise Refused(f"{ref} ships with the journal and cannot be put in a collection")
         return row
-
-
-types_module.register(Collections)

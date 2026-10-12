@@ -4,7 +4,7 @@ from features import discover
 from framework.base import REGISTRY
 from features.sequences.controller import Sequences
 from features.sequences.shipping import ShippedSequence
-from features.triggers.controller import Triggers
+from controllers.types import Triggers
 from resources.base import AGENT, SECTION, SYSTEM
 
 TITLED = re.compile(r"^sequence:\{(.+)\}$")

@@ -2,7 +2,7 @@ import os
 
 import features
 from controllers.types import Notifications
-from features.checks.controller import Checks
+from controllers.checks.controller import Checks
 from resources.base import SYSTEM, USER
 from controllers.types import Nudges
 from tests.conftest import fresh, refused
@@ -70,7 +70,7 @@ def test_only_the_checks_that_are_due_come_up_on_the_timer():
 
 
 def test_a_running_check_counts_its_steps_against_what_it_knows_of_the_total():
-    from features.checks.output import progress
+    from resources.check_output import progress
     assert progress("building 12/40 files") == {"done": 12, "total": 40, "percent": 30.0}, "an explicit count"
     assert progress("collected 10 items\n\n.....F.") == {"done": 7, "total": 10, "percent": 70.0}, "one mark per test against the collected count"
     assert progress("bringing up nodes...\n\n" + "." * 30, 60) == {"done": 30, "total": 60, "percent": 50.0}, "the last run's count when none is printed"
@@ -93,7 +93,7 @@ def test_a_check_can_leave_a_report_of_findings_that_is_kept_with_its_run():
 def test_a_due_check_runs_in_one_engine_while_another_holds_it():
     from engine import runtime
     from engine.locks import claim
-    from features.checks.controller import REPORTS
+    from controllers.checks.controller import REPORTS
     from tests.conftest import fresh
     record = fresh()
     lock = runtime.folder(record.root) / REPORTS / "3.lock"
@@ -125,7 +125,7 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     (repo.project / "hooks" / "deep" / "inner.py").write_text("inner\n")
     assert "ran hooks/test.py" in touched_output and "no test covers notes.txt" in touched_output, "the test beside a changed file runs, and what no test covers is named"
     spawned = []
-    monkeypatch.setattr("features.checks.controller.subprocess.Popen", lambda args, **how: spawned.append((args, how)))
+    monkeypatch.setattr("controllers.checks.controller.subprocess.Popen", lambda args, **how: spawned.append((args, how)))
     checks.gate(suite.n, "change the hook", paths="hooks/code.py")
     args, how = spawned[0]
     assert args[-6:] == ["gate", str(suite.n), "change the hook", "--paths", "hooks/code.py", "--wait"] and how["start_new_session"], \
@@ -160,7 +160,7 @@ def test_touched_runs_the_tests_beside_what_changed_and_the_gate_commits_only_on
     monkeypatch.undo()
     from types import SimpleNamespace
     from engine import runtime
-    from features.checks import controller as running_checks
+    from controllers.checks import controller as running_checks
     seen = []
     with monkeypatch.context() as scoped:
         scoped.setattr(running_checks.threading, "Thread", lambda target, args, daemon: SimpleNamespace(start=lambda: target(*args)))

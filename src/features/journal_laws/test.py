@@ -255,8 +255,8 @@ def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
 
 
 def test_the_naming_law_follows_the_chosen_style():
-    from features.form_of_address.controller import Profiles, ship
-    from features.form_of_address.voices import CARTOON
+    from controllers.form_of_address.controller import Profiles, ship
+    from resources.voices import CARTOON
     from features.journal_laws.laws import carry, laws
     from resources.base import SYSTEM
     record = fresh()

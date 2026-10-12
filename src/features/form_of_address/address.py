@@ -1,7 +1,6 @@
-from features.form_of_address.controller import Profiles
+from controllers.types import Profiles
 from features.form_of_address.details import VOICE_SET
-from features.form_of_address.names import first_name, title
-from features.form_of_address.voices import PLAIN_WORDS, Voice
+from resources.voices import PLAIN_WORDS, Voice
 from resources.base import SYSTEM
 
 
@@ -11,7 +10,8 @@ def voice_of(record) -> Voice:
 
 def address(record) -> str:
     voice = voice_of(record)
-    instruction = voice.calling.instruction(voice.calling.called(title(record), first_name(record), voice.address))
+    profiles = Profiles(record, actor=SYSTEM)
+    instruction = voice.calling.instruction(voice.calling.called(profiles.user_title(), profiles.user_first_name(), voice.address))
     text = " ".join(part for part in (voice.text, instruction, voice.humour, voice.reacts(), PLAIN_WORDS) if part)
     return f"HOW THE USER WANTS YOU TO TALK, in their own words: {text}"
 

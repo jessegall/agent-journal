@@ -3,10 +3,10 @@ from events.agents import ClockTicked
 from events.messages import MessageUpdated
 from engine.transcript import IDLE
 from resources.text import plural
-from features.dumps.controller import OWN_WORDS
+from resources.dumps import OWN_WORDS
 from framework.parts import AgentContext, Context, Handler
 from resources.base import COMPLETED, USER
-from features.dumps.controller import Dumps
+from controllers.types import Dumps
 from controllers.types import Messages
 from events.dumps import DumpWritten
 

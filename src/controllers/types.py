@@ -28,11 +28,16 @@ from controllers.critique.controller import Critiques
 from controllers.session_recording.controller import Recordings
 from controllers.journal_laws import Outputs
 from controllers.browser_control import Asks
+from controllers.triggers.controller import Triggers
+from controllers.checks.controller import Checks
+from controllers.collections import Collections
+from controllers.dumps import Dumps
+from controllers.form_of_address.controller import Profiles
 
 
 register(Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Questions, Comments, Agents,
          Notifications, Notices, Reactions, Tools, Features, Plugins, Environments, Nudges, Suggestions, Templates,
-         Critiques, Recordings, Outputs, Asks)
+         Critiques, Recordings, Outputs, Asks, Triggers, Checks, Collections, Dumps, Profiles)
 
 
 WARM_PAUSE = 0.02

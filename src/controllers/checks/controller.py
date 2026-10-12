@@ -6,7 +6,6 @@ import threading
 import time
 from pathlib import Path
 
-import controllers.types as types_module
 from controllers.base import Controller
 from controllers.marks import action
 from engine.package import entry
@@ -16,11 +15,12 @@ from engine import runtime
 from engine.load import scaled
 from engine.locks import claim
 from engine.stored import read_json
-from features.checks.output import progress, steps, tail
+from resources.check_output import progress, steps, tail
 from resources.checks import TIMEOUT, Check, CheckReport, CheckRun
-from controllers.types import Environments, Nudges
+from controllers.environments import Environments
+from controllers.nudges import Nudges
 from engine.worktree import git
-from features.checks.touched import changed, covering
+from controllers.checks.touched import changed, covering
 from resources.base import SYSTEM, Refused, titled
 
 KEPT_RUNS = 20
@@ -249,5 +249,3 @@ class Checks(Controller):
         return [check for check in self.rows.standing()
                 if (check.command or check.instruction) and check.every and now - (max(check.last_run.at, check.asked_at) or check.created) >= float(check.every) * 60]
 
-
-types_module.register(Checks)
