@@ -1,4 +1,8 @@
-import {runScenarios, shot} from "./harness.mjs";
+import {journal, runScenarios, shot} from "./harness.mjs";
+
+// The figure belongs to the avatar feature, which is off in a fresh journal, so without this every scenario here waits for a
+// figure that is never mounted and times out. It was off for long enough that all seven did.
+journal("feature", "switch", "avatar", "--on");
 
 const FIGURE = ".voice-figure";
 const HOME = "[data-figure-home]";
