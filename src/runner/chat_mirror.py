@@ -9,7 +9,7 @@ from typing import Iterator
 import features
 from controllers.types import Agents
 from engine import chat, runtime, waits
-from engine.after_answer import after_answered
+from engine.after_answer import after_answered, answering
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
@@ -135,10 +135,11 @@ def turn_ended(root: Path, session: str, row, last_message: str, until: float = 
     if not until:
         raise_held(root, session)
         until = time.time() + SETTLE
-    if last_message and not arrives(root, session, last_message) and time.time() < until:
+    while last_message and not arrives(root, session, last_message) and time.time() < until:
         time.sleep(SETTLE_STEP)
-        after_answered(lambda: turn_ended(root, session, row, last_message, until))
-        return
+        if answering():
+            after_answered(lambda: turn_ended(root, session, row, last_message, until))
+            return
     if last_message:
         traced(root, f"turn ended session {session} last words fingerprint {fingerprint(last_message)} chars {len(last_message)}")
         stopped(root, session, last_message)
