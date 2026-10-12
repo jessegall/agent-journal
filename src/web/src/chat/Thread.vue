@@ -3,6 +3,7 @@ import {openQuestion, questionView, updateView} from "../state/overlays.js";
 import {agent} from "../composables/leadAgent.js";
 import {feedOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
+import {figureRise} from "../composables/voiceFigure.js";
 import {cardPlan} from "../domain/plans.js";
 import {useWaiting} from "../composables/waiting.js";
 import WaitingPanel from "./WaitingPanel.vue";
@@ -503,6 +504,7 @@ watch(
                 <div
                     ref="scroller"
                     :class="['thread-scroll', {focusing: store.focus, loading: !ready, hidden: feeding}]"
+                    :style="here && figureRise ? {paddingBottom: `calc(12px + ${figureRise}px)`} : null"
                     @scroll.passive="watchScroll"
                     @wheel.passive="wheeled"
                     @touchmove.passive="scrolledByHand"

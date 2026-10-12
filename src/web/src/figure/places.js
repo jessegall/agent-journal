@@ -70,20 +70,27 @@ function tabSpots(tab, figure) {
     return SIDEWAYS.flatMap((share) => heights.map((y) => ({x: middle + share * figure.size, y})));
 }
 
-// Where a figure sits: on a corner of the box it perches on, its hips just inside the corner so its legs hang down over it
+// the way a figure turns to face along the edge it dangles over: right on a right corner, left on a left one; facing the viewer is 0
+const FACE_RIGHT = 90;
+const FACE_LEFT = 270;
+
+// Where a figure sits: on a corner of the box it perches on, its hips on the corner so its legs hang down over it
 const SEAT_CORNERS = [
-    {along: 1, over: 0},
-    {along: 0, over: 0},
+    {along: 1, over: 0, face: FACE_RIGHT},
+    {along: 0, over: 0, face: FACE_LEFT},
 ];
 
 // how far below the edge the figure's feet are, as a share of its height, so its hips sit on the edge itself
 const SEAT_DROP = 0.26;
 
+// the pixels of a seated figure above the edge it sits on
+export const seatRise = ({size, below}) => (1 - below - SEAT_DROP) * size;
+
 export function seatOf(figure, near) {
     const home = document.querySelector(HOME);
     const box = (home || document.querySelector(FLOOR)).getBoundingClientRect();
     const top = home ? box.top : box.bottom;
-    const corners = SEAT_CORNERS.map((corner) => ({x: box.left + box.width * corner.along + corner.over * figure.size, y: top + SEAT_DROP * figure.size}));
+    const corners = SEAT_CORNERS.map((corner) => ({x: box.left + box.width * corner.along + corner.over * figure.size, y: top + SEAT_DROP * figure.size, face: corner.face}));
     return {...freeSpot(corners, figure, near), view: null};
 }
 

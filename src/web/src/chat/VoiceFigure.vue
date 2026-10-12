@@ -2,10 +2,10 @@
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
-import {figureStatus} from "../composables/voiceFigure.js";
+import {figureRise, figureStatus} from "../composables/voiceFigure.js";
 import {BEAT_CLIPS, SEATED, beatsAfter, clipOf, eggFor, figureStateOf} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
-import {boxAt, openTabs, pointedView, seatOf, spotOf} from "../figure/places.js";
+import {boxAt, openTabs, pointedView, seatOf, seatRise, spotOf} from "../figure/places.js";
 import {rows} from "../sync/rows.js";
 
 // The figure is this many pixels square, as the chat's flat figure is; it walks this many of them a second and hops in this many milliseconds
@@ -63,7 +63,8 @@ function current() {
     if (beats.value.length) return {clip: clipNamed(beats.value[0]), facing: 0, once: true};
     // pointing is a pose, so it plays only while the agent itself waits on the user; at work, it stands at the tab doing the work
     if (target.value.view && held.value.state === "asking") return {clip: clipNamed("point"), facing: 0};
-    return {clip: clipNamed(clipOf(held.value.state)), facing: 0};
+    const clip = clipNamed(clipOf(held.value.state));
+    return {clip, facing: SEATED.includes(clip.name) ? target.value.face ?? 0 : 0};
 }
 
 function step() {
@@ -196,6 +197,7 @@ async function load(name) {
 }
 
 watch(voice, load);
+watch([here, figureStatus], () => (figureRise.value = here.value && figureStatus.value === "shown" ? seatRise(figureSize()) : 0));
 watch(() => Boolean(agent.value), present);
 onMounted(() => {
     document.addEventListener("visibilitychange", seen);
@@ -203,6 +205,7 @@ onMounted(() => {
     load(voice.value);
 });
 onUnmounted(() => {
+    figureRise.value = 0;
     clearTimeout(frameTimer);
     clearTimeout(lookTimer);
     document.removeEventListener("visibilitychange", seen);
