@@ -1,6 +1,6 @@
 from dataclasses import asdict, dataclass
 
-from declaring.extension import Extension
+from resources.extension import Extension
 from engine.record import Record
 from engine.machines import this_machine
 

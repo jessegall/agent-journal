@@ -9,7 +9,7 @@ from dataclasses import asdict, dataclass, field
 from functools import cache, partial
 
 from engine import bus
-from declaring.extension import Extension
+from resources.extension import Extension
 from resources.fields import Loaded
 from engine.markers import plain
 from engine.offline import queue

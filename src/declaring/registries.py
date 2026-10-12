@@ -1,4 +1,4 @@
-from declaring.extension import Extension
+from resources.extension import Extension
 
 SETTING_KEYS = Extension()
 """The settings each feature declares, by the feature's name: a controller reads them, a feature fills them."""

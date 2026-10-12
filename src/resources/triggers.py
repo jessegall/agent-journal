@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from declaring.extension import Extension
+from resources.extension import Extension
 from resources.base import PROJECT, SIDEBAR, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, LIST, NUMBER, TEXT, Field, Shape
 

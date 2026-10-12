@@ -4,7 +4,7 @@ from controllers.types import CONTROLLERS, Works
 from features.work_tracking.next import ready
 from resources.base import SYSTEM, WHOM
 from resources.types import TYPES, priority
-from declaring.extension import Extension
+from resources.extension import Extension
 
 WAITING = (None, "active", "waiting")
 

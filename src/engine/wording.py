@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from typing import Callable
-from declaring.extension import Extension
+from resources.extension import Extension
 from resources.text import noun, plural
 
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")

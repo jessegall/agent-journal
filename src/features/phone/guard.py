@@ -1,4 +1,4 @@
-from declaring.extension import Extension
+from resources.extension import Extension
 
 PHONE_GUARDS = Extension()
 

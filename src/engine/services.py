@@ -15,7 +15,7 @@ from engine.ports import free, reserve
 from engine.runtime import env, folder
 from engine.sessions import alive
 from typing import TypedDict
-from declaring.extension import Extension
+from resources.extension import Extension
 from resources.memo import Memo
 from engine.record import Record
 

@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import Callable
 
-from declaring.extension import Extension
+from resources.extension import Extension
 from resources.memo import Memo
 from engine.record import Record
 from declaring.details import PLACEHOLDER

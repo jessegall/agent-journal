@@ -20,7 +20,7 @@ from resources.base import SYSTEM, Refused
 from resources.shapes import LEVELS, position_of
 from resources.types import IDLE
 from controllers.marks import action
-from declaring.extension import Extension
+from resources.extension import Extension
 
 SILENT_AFTER = 300.0
 CARD_EXTRAS = Extension()

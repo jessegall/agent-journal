@@ -5,7 +5,7 @@ from engine.markers import plain
 from framework.stamping import stamped
 from framework.switches import generation
 from resources.base import SECTION, SYSTEM, TEXT_FIELDS, as_dict
-from declaring.extension import Extension
+from resources.extension import Extension
 from resources.memo import Memo
 
 FORMATTERS = Extension()

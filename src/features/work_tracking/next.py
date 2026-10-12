@@ -3,7 +3,7 @@ from controllers.types import Helpers
 from controllers.helpers.reuse import kept
 from resources.base import SYSTEM, WHOM
 
-from declaring.extension import Extension
+from resources.extension import Extension
 
 
 ROW_HOLDS = Extension()

@@ -1,5 +1,5 @@
 from features.work_modes.details import BOARD_SET, BUILDER, MODE_SET, MODES, NAME, NEW_WORK_TO_DOS, ORCHESTRATOR, WorkModesDetails
-from declaring.extension import Extension
+from resources.extension import Extension
 from resources.base import Refused
 
 CARRIED_IN = Extension()

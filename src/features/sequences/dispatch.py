@@ -5,7 +5,7 @@ from features.sequences.details import DISPATCH
 from resources.sequences import RunKey
 from providers import dispatch_model
 from controllers.types import Agents, Messages
-from declaring.extension import Extension
+from resources.extension import Extension
 
 REQUEST_TEXT = 400
 DISPATCH_MODELS = Extension()

@@ -26,7 +26,7 @@ from commands.parser import parser
 from controllers.base import Controller, actions
 from controllers.environments import KEPT, SWEPT
 from controllers.types import CONTROLLERS, Environments, Todos, Works
-from declaring.extension import EXTENSIONS
+from resources.extension import EXTENSIONS
 from engine.package import code
 from engine.paths import ROUTED, environment_names
 from engine.record import Record

@@ -11,7 +11,7 @@ from resources.sharing import ADDRESS_TAKEN
 from resources.sharing import ended
 from engine.tunnel import SERVER, TUNNEL, refused_address, tunler, tunler_build
 from resources.base import Refused, SYSTEM
-from declaring.extension import Extension
+from resources.extension import Extension
 
 KEEP_UP = Extension()
 LISTENS = Extension()

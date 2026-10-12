@@ -14,7 +14,7 @@ from dataclasses import dataclass, field, fields, is_dataclass, replace
 from pathlib import Path
 
 from controllers.types import CONTROLLERS, Nudges
-from declaring.extension import Extension
+from resources.extension import Extension
 from engine.record import Record
 from expects import File, Given, Nudged, Updated, Wrote, contains, held, named, stated
 from expects.playing import Seen, remembered_by
