@@ -5,6 +5,9 @@ from declaring.settings import Setting
 from declaring.trigger import IDLE, MINUTES, Trigger, WORKED
 from declaring.groups import Group
 
+CHECK_IN = "check in"
+CHECK_IN_MINUTES = 15
+
 STARTED = ("work.created",)
 MOVED = ("work.created", "work.updated", "work.completed")
 ROW_CHANGED = ("todo.updated", "todo.completed", "todo.deleted")
@@ -84,6 +87,11 @@ class WorkDetails(FeatureDetails):
             title="Say when nothing can be taken",
             trigger=Trigger(every=10, unit=MINUTES),
         ),
+        Behaviour(
+            name=CHECK_IN,
+            title="Check in when nothing has happened for a while",
+            trigger=Trigger(every=CHECK_IN_MINUTES, unit=MINUTES),
+        ),
     ]
 
     settings = [
@@ -110,6 +118,12 @@ class WorkDetails(FeatureDetails):
             default=1,
             title="Recheck blocked to-dos after every",
             unit="closed to-dos",
+        ),
+        Setting(
+            name="check_in_every",
+            default=CHECK_IN_MINUTES,
+            title="Check in with the agent after this long with nothing happening, whatever is open",
+            unit="minutes",
         ),
         Setting(
             name="name_work_every",
@@ -227,6 +241,16 @@ class WorkDetails(FeatureDetails):
                 carry on with what you were doing, or take the next ready row. Only the user stopping you
                 keeps you stopped. If you wait on the user, put it as a question on its row with journal todo ask
                 and take the next ready row.
+            """,
+        ),
+        Line(
+            name=CHECK_IN,
+            reply_kept=True,
+            title="nothing has happened for {{minutes}} minutes - is there anything left for you to do?",
+            brief="""
+                {{seen}}. Carry on with what is open, take the next ready row, or unblock one that can go on now.
+                If every row waits on the user, put each as a question on its row with journal todo ask. If there
+                is genuinely nothing left, say so in one line and stop.
             """,
         ),
         Line(

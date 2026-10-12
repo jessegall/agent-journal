@@ -26,9 +26,9 @@ from overview.parts import SUMMARY_PARTS
 from framework.journal import Journal
 from features.work_tracking.auto import chosen_or_steered, steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
-from features.work_tracking.details import WorkDetails
+from features.work_tracking.details import CHECK_IN, WorkDetails
 from framework.sending import Nudge
-from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_ready, stopped_in_auto, stopped_with_work, next_while_helping, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
+from features.work_tracking.handlers import (CARRY_ON_TIMES, check_in_pace, next_row, nothing_happening, nothing_ready, stopped_in_auto, stopped_with_work, next_while_helping, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import WAIT_WAY, RefuseHeldCalls, RefuseWaitingInTheShell
 NOTHING_OPEN = 'nothing is open, so this write would not be filed: journal work start "<the work>" first'
@@ -103,7 +103,9 @@ class WorkFeature(Feature):
               Nudge("auto carry on", behaviour="carry on", about=stopped_in_auto, most=CARRY_ON_TIMES,
                     guarantee="With auto mode on, an agent that stops while the user has been quiet is told to carry on, a few times."),
               Nudge("nothing ready", behaviour="nothing ready", about=nothing_ready, most=CARRY_ON_TIMES,
-                    guarantee="When every open row is waiting on something, the agent is told there is nothing ready to take."))
+                    guarantee="When every open row is waiting on something, the agent is told there is nothing ready to take."),
+              Nudge(CHECK_IN, behaviour=CHECK_IN, about=nothing_happening, pace=check_in_pace,
+                    guarantee="When nothing has happened for the check-in interval, the agent is asked whether anything is left to do and told what this environment holds, whether or not it has work in hand."))
 
     def chosen(self, record, key: str) -> bool:
         return chosen_or_steered(super().chosen(record, key), record, key)

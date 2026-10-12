@@ -84,3 +84,16 @@ def ready(record) -> list:
 def says_what_is_ready(record) -> tuple[bool, bool]:
     """Whether this environment holds open rows, and whether any of them can be taken: what ready means, answered by the feature that owns it."""
     return bool(open_rows(record)), bool(ready(record))
+
+
+NOTHING_IN_SIGHT = "nothing is open at all"
+
+
+def in_sight(record) -> str:
+    """What this environment holds, in one line, so a check-in names what the agent could be doing instead of only asking."""
+    counted = ((len(open_rows(record)), "open to-dos"),
+               (len(waiting_rows(record)), "of them blocked"),
+               (len(Questions(record, actor=SYSTEM).rows.standing()), "questions waiting on the user"),
+               (len(helping(record)), "helpers working"))
+    said = [f"{count} {what}" for count, what in counted if count]
+    return ", ".join(said) if said else NOTHING_IN_SIGHT
