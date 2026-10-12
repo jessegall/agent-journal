@@ -1,55 +1,29 @@
-import time
-from dataclasses import dataclass
-from pathlib import Path
+from events import Fact
+from events.thinking import ThinkingCleared, TranscriptRead
+from features.thinking.listeners import THINKING, kept_for
+from receiving import Handler
+from resources.types import AgentRow
+from serving import Clock, Remembered, Rows
 
-from events.agents import AgentReported
-from events.agents import AgentMessageSent
-from framework.parts import AgentContext, Handler
-from serving import SERVED, Providers
-from payload import HookEvent
-from resources.fields import Loaded
-from controllers.types import Agents
-
-THINKING = "thinking"
 THOUGHTS = "thoughts"
 KEPT_THOUGHTS = 60
 THOUGHT_CHARS = 1200
-TURN_STARTS = (HookEvent.USER_PROMPT_SUBMIT, HookEvent.SESSION_END)
 
 
-@dataclass(frozen=True)
-class Read(Loaded):
-    path: str = ""
-    offset: int = 0
-
-
-class FollowThinking(Handler):
-    def handle(self, context: AgentContext, event: AgentReported) -> None:
-        row = context.agent.row
-        kind, transcript = SERVED.given(Providers).offers(row.provider), Path(row.transcript)
-        if not kind or not transcript.is_file():
-            return
-        held = Read.from_json(context.state.get("transcript", {}))
-        if held.path != str(transcript):
-            context.state.set("transcript", {"path": str(transcript), "offset": transcript.stat().st_size})
-            return
-        found, offset = kind.thoughts(transcript, held.offset)
-        context.state.set("transcript", {"path": str(transcript), "offset": offset})
-        thought = row.data.get(THINKING) or ""
-        for what, text in found:
-            thought = text if what == THINKING else ""
-        if event.hook in TURN_STARTS:
-            thought = ""
-        kept = [text for what, text in found if what == THINKING and text.strip()]
-        changes = {THINKING: thought} if thought != (row.data.get(THINKING) or "") else {}
-        if kept:
-            now = time.time()
-            changes[THOUGHTS] = [*(row.data.get(THOUGHTS) or []), *({"at": now, "text": text[:THOUGHT_CHARS]} for text in kept)][-KEPT_THOUGHTS:]
+class ShowTheThoughts(Handler[TranscriptRead]):
+    def handle(self, event: TranscriptRead, agents: Rows[AgentRow], memory: Remembered, clock: Clock) -> list[Fact]:
+        row = agents.peek(event.agent)
+        memory.set(kept_for(row), {"path": event.path, "offset": event.offset})
+        changes = {THINKING: event.thinking} if event.thinking != (row.data.get(THINKING) or "") else {}
+        if event.thoughts:
+            now = clock.now()
+            changes[THOUGHTS] = [*(row.data.get(THOUGHTS) or []), *({"at": now, "text": text[:THOUGHT_CHARS]} for text in event.thoughts)][-KEPT_THOUGHTS:]
         if changes:
-            context.journal.get(Agents).stamp(row.n, **changes)
+            agents.stamp(row.n, **changes)
+        return []
 
 
-class ClearOnMessage(Handler):
-    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        if event.text.strip() and context.agent.row.data.get(THINKING):
-            context.journal.get(Agents).stamp(context.agent.row.n, **{THINKING: ""})
+class ClearTheThought(Handler[ThinkingCleared]):
+    def handle(self, event: ThinkingCleared, agents: Rows[AgentRow]) -> list[Fact]:
+        agents.stamp(event.agent, **{THINKING: ""})
+        return []
