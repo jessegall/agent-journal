@@ -82,11 +82,11 @@ def environments_changed(event=None, record=None) -> None:
 
 
 def environments_moved(record, changed: set[str]) -> None:
-    import features
-    from features.format import forget_mentions
+    from framework.format import forget_mentions
+    from framework.loaded import SEATED
     for name in changed:
         SWITCHES.pop(str(environment_home(record.root, name)), None)
-    features.SEATED.pop(str(record.root), None)
+    SEATED.pop(str(record.root), None)
     forget_mentions(changed)
 
 

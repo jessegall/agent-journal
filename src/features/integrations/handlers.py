@@ -1,6 +1,6 @@
 
 from events.agents import ClockTicked
-from features.parts import WHOLE_FEATURE, Context, Handler
+from framework.parts import WHOLE_FEATURE, Context, Handler
 from events.questions import QuestionCompleted
 
 

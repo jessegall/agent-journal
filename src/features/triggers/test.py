@@ -12,8 +12,8 @@ def call(command: str) -> BashCall:
 
 
 def fired(record, command: str) -> str:
-    from features import FEATURES
-    from features.parts import AgentContext
+    from framework.loaded import FEATURES
+    from framework.parts import AgentContext
     from features.triggers.handlers import DenyWhatTheAgentDoes, WatchWhatTheAgentDoes
     context = AgentContext.of(FEATURES["triggers"], record, Agents(record, actor="system").by_session("claude-1"))
     denied = DenyWhatTheAgentDoes().intercept(context, call(command))
@@ -117,7 +117,7 @@ def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its
 
 def test_a_part_a_feature_leaves_unwritten_refuses_until_it_is():
     import pytest
-    from features.parts import ActionInterceptor, Canceler, Command, Handler, TextFormatter, ToolInterceptor
+    from framework.parts import ActionInterceptor, Canceler, Command, Handler, TextFormatter, ToolInterceptor
     calls = (lambda: Handler().handle(None, None), lambda: TextFormatter().format(None, ""), lambda: ToolInterceptor().intercept(None, None),
              lambda: Canceler().cancel(None, None), lambda: Command().run(None, None), lambda: ActionInterceptor().intercept(None, None))
     for call in calls:
@@ -127,7 +127,7 @@ def test_a_part_a_feature_leaves_unwritten_refuses_until_it_is():
 
 def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_setting_is_refused():
     import pytest
-    from features.sending import Nudge, send
+    from framework.sending import Nudge, send
     from declaring.settings import Settings
     with pytest.raises(ValueError, match="needs most"):
         Nudge("line", "behaviour", lambda context, agent: [], first=True)
@@ -137,7 +137,7 @@ def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_sett
     assert send(SimpleNamespace(to_primary=lambda: None), (Nudge("line", "behaviour", lambda context, agent: [1]),)) is None, \
         "with no agent to speak to, a nudge says nothing and asks nothing"
     from declaring import trigger
-    from features import actions
+    from framework import actions
     own = Nudge("line", "behaviour", lambda context, agent: [], timing=trigger.Trigger(unit=trigger.MINUTES, every=1), action=actions.MESSAGE)
     assert (own.action, bool(own.timing), bool(Nudge("line", "behaviour", lambda context, agent: []).timing)) == (actions.MESSAGE, True, False), \
         "a nudge keeps its own timing and action, and has neither unless given"
@@ -175,9 +175,9 @@ def test_every_kind_of_tool_call_says_what_it_is_doing_and_which_words_a_trigger
 def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_inside_the_budget_and_a_trigger_on_one_tells_or_holds(monkeypatch):
     import time as clock
     from controllers.types import Questions, Todos, Works
-    from features import FEATURES
-    from features.triggers import watched
-    from features.parts import AgentContext
+    from framework.loaded import FEATURES
+    from framework import watched
+    from framework.parts import AgentContext
     from resources.base import AGENT, SYSTEM, USER
     from tests.kit import idle
 
@@ -263,9 +263,9 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     assert "hold again" not in held(record, "claude-1"), "and the behaviour for facts is what switches it off"
     monkeypatch.undo()
 
-    from features.sending import Sent
+    from framework.sending import Sent
     from tests.conftest import refused as refusal
-    from features.triggers.watched import FACTS, ClaimedTwice, Fact, UnknownFact, Watched
+    from framework.watched import FACTS, ClaimedTwice, Fact, UnknownFact, Watched
     with pytest.raises(ClaimedTwice):
         FACTS.register(None, Fact("agent.idle", watched.MINUTES, "Idle again", "the agent has been idle again for more than {over} minutes", lambda *given: []))
     with pytest.raises(UnknownFact):
@@ -298,8 +298,8 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     FACTS.register(owner, sleepy)
     try:
         sleeper = Triggers(record, actor=USER).create("sleeps", text="wake up", when="state", fact="test.sleepy", over=1, does="nudge")
-        from features.format import shape
-        from features.switches import rebooted
+        from framework.format import shape
+        from framework.switches import rebooted
         owner.on = False
         rebooted()
         assert shape(Triggers(record, actor=USER).load(sleeper.n), record)["brief"].startswith("Asleep: nothing in this journal watches test.sleepy"), \

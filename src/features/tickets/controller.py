@@ -557,9 +557,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _from_outside(self, ticket) -> bool:
         """Whether the ticket comes from an integration, such as Linear, whose words are not the journal's own."""
-        import features
+        from framework.loaded import FEATURES
         from declaring.groups import Group
-        made = features.FEATURES.get(ticket.source)
+        made = FEATURES.get(ticket.source)
         return bool(made) and made.group == Group.INTEGRATIONS
 
     def _only_you(self, ticket, doing: str, once_asked: bool = False) -> None:

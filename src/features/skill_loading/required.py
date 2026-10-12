@@ -1,7 +1,7 @@
 import time
 
 from controllers.types import Agents, Messages
-from features.recital import mentioned
+from framework.recital import mentioned
 from features.skill_loading.catalogue import available, keywords, loaded_at, loaded_before_compaction
 from resources.base import SYSTEM, USER
 

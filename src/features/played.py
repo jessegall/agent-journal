@@ -23,7 +23,7 @@ from engine.project_files import walk
 from engine.record import Record
 from expects import Given
 from expects.playing import Seen, World
-from features.parts import AgentContext, Context
+from framework.parts import AgentContext, Context
 from resources.base import Refused, SYSTEM
 
 

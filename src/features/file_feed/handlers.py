@@ -1,6 +1,6 @@
 from events.files import FileEdited
 from features.file_feed.feed import noted
-from features.parts import AgentContext, Handler
+from framework.parts import AgentContext, Handler
 
 
 class KeepEdits(Handler):

@@ -1,7 +1,7 @@
 
 from engine import triggering
 from engine.journal_calls import calls
-from features.parts import AgentContext, ToolInterceptor
+from framework.parts import AgentContext, ToolInterceptor
 from declaring.holds import Runs
 from features.skill_loading.catalogue import has_read_every_load, loaded_at, loaded_before_compaction, teaching_command
 from features.skill_loading.required import outstanding, require

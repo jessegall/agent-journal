@@ -1,7 +1,7 @@
 import time
 
 from events.agents import ClockTicked
-from features.parts import WHOLE_FEATURE, AgentContext, Handler
+from framework.parts import WHOLE_FEATURE, AgentContext, Handler
 from features.secrets.controller import Secrets
 from resources.base import SYSTEM
 

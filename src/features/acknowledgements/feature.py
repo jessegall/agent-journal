@@ -1,7 +1,7 @@
 from features.acknowledgements.details import AcknowledgementsDetails
 from features.acknowledgements.handlers import HideJournalOnlyTurns
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from events.agents import BusMessageSending
 from expects import Given, Kept, Unchanged, Wrote
 from providers.base import JOURNAL

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from declaring.reach import Reach
-from features.parts import AgentContext, ToolInterceptor
+from framework.parts import AgentContext, ToolInterceptor
 from declaring.holds import Runs
 from features.secrets.values import secrets_folder
 

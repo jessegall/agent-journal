@@ -1,6 +1,6 @@
 from controllers.messages import only_emoji
 from events.agents import AgentMessageSent
-from features.parts import AgentContext, Handler
+from framework.parts import AgentContext, Handler
 from resources.base import AGENT, titled
 from controllers.types import Messages
 

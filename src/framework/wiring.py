@@ -10,13 +10,13 @@ from events.typed import AgentEvent
 from engine.gates import CANCELERS, RESPONDERS, HookCall, policies
 from declaring.reach import Guard
 from engine.wording import APPENDS
-from features.format import FORMATTERS, FORMATTING_FEATURES
-from features.parts import ActionInterceptor, AgentContext, Canceler, Command, Context, Handler, TextFormatter, ToolInterceptor
+from framework.format import FORMATTERS, FORMATTING_FEATURES
+from framework.parts import ActionInterceptor, AgentContext, Canceler, Command, Context, Handler, TextFormatter, ToolInterceptor
 from resources.base import SYSTEM, USER, Refused
-from features.routing import FEATURE_ROUTES
+from framework.routing import FEATURE_ROUTES
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE, REGISTERED, Answerer, Handler, Listener, Refuser, Registration
-from features.adapter import adapted_beside_the_bus
-from features.promises import PROMISED, Promise
+from framework.adapter import adapted_beside_the_bus
+from framework.promises import PROMISED, Promise
 from features.watching import WATCH
 
 
@@ -50,6 +50,8 @@ class Events:
         self.names: list[str] = []
 
     def handler(self, handler: Handler, expects=()) -> None:
+        if self.feature.commands_only:
+            return
         kind, feature = get_type_hints(handler.handle)["event"], self.feature
         promise = Promise(feature, "handler", type(handler).__name__, handler, kind, tuple(expects))
         PROMISED.add(promise)
@@ -72,14 +74,20 @@ class Events:
 
     def listen(self, event: type, listener: Listener, expects) -> None:
         """Reads the event and dispatches the facts it recognises; read-only, in the tick the event belongs to."""
+        if self.feature.commands_only:
+            return
         REGISTERED.add(Registration.read(LISTEN, event, listener, expects, self.feature.name))
 
     def handle(self, fact: type, handler: Handler, expects, after: tuple[str, ...] = ()) -> None:
         """Acts on the fact in the next tick, inside that tick's transaction; after names the handlers on this fact it must follow, by name, since importing another feature is forbidden."""
+        if self.feature.commands_only:
+            return
         REGISTERED.add(Registration.read(HANDLE, fact, handler, expects, self.feature.name, after))
 
     def answer(self, request: type, answerer: Answerer, expects) -> None:
         """Answers the request synchronously and read-only, before anything about it writes."""
+        if self.feature.commands_only:
+            return
         REGISTERED.add(Registration.read(ANSWER, request, answerer, expects, self.feature.name))
 
 

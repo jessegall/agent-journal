@@ -1,5 +1,5 @@
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.command_tags.details import CommandTagsDetails
 from features.command_tags.formatters import StripTags
 from features.command_tags.handlers import RunTagCommands, TeachTheTag

@@ -7,15 +7,15 @@ from expects import Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote
 from providers.payload import AskCall, BashCall
 from resources.base import AGENT
 from resources.types import AgentRow, Question, Todo
-from features.base import Feature
-from features.triggers.watched import FACTS, state_facts
+from framework.base import Feature
+from framework.watched import FACTS, state_facts
 from resources.base import SYSTEM
-from features.journal import Journal
+from framework.journal import Journal
 from features.ask_questions.answers import answers_added
 from features.ask_questions.details import AskQuestionsDetails
 from features.ask_questions.handlers import AnswerOnTheScreen, AskInsteadOfProse, DismissSettledQuestions, MarkTheAnswer, ReleaseOnceAnswered, ReleaseOnceAsked, open_a_day
 from events.questions import QuestionCreated
-from features.sending import Nudge
+from framework.sending import Nudge
 from features.ask_questions.interceptors import AskedOnce, AskInTheJournal, AskOnItsOwn, NamesItsPick, OneAskPerRow, OptionsOnlyInTheirButtons, OptionsWhenEnumerable
 
 

@@ -1,7 +1,7 @@
 from events.agents import ClockTicked
 from engine.wording import plural
 from features.record_audit.audit import evidence
-from features.parts import WHOLE_FEATURE, AgentContext, Handler
+from framework.parts import WHOLE_FEATURE, AgentContext, Handler
 
 
 class SayEvidence(Handler):

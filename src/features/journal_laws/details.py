@@ -1,5 +1,5 @@
 from declaring.details import Behaviour, FeatureDetails, Line
-from features.recital import LINES, WHISPER, whispering
+from framework.recital import LINES, WHISPER, whispering
 from declaring.settings import Setting
 from declaring.trigger import MINUTES, Trigger
 from declaring.groups import Group

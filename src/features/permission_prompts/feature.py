@@ -4,8 +4,8 @@ from engine.seats import live_session
 from engine.sessions import Sessions
 from events.agents import AgentReported
 from expects import Given, Refused, Unchanged, Updated, Wrote
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.permission_prompts.commands import AnswerPermission
 from features.permission_prompts.details import PermissionsDetails
 from features.permission_prompts.handlers import ShowWaitingPermission

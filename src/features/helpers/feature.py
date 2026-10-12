@@ -5,7 +5,7 @@ from events.messages import MessageCreated
 from providers.payload import BashCall, WriteCall
 from expects import Answered, Given, Kept, Nudged, Refused, Unchanged, Updated
 from events.questions import QuestionCreated
-from features.base import Feature
+from framework.base import Feature
 from providers.payload import Dispatch
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Message, Question, Todo
@@ -17,7 +17,7 @@ from features.helpers.handlers import (HelperBriefed, HelperContinued, MarkTheHe
 from features.helpers.commands import RetireSubagent
 from features.helpers.interceptors import (HandedRowsCloseOnlyThroughTheirHelper, HandedRowsStayAssigned, KeepSubagentFiles,
                                           OfferKeptAgentsFirst, RefuseTestRunsToHelpers)
-from features.journal import Journal
+from framework.journal import Journal
 
 __all__ = ["Helpers"]
 

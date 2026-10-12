@@ -8,8 +8,8 @@ from dataclasses import asdict, replace
 
 from expects import Formats, Given, Nudged, Remembered, Unchanged, Updated, Wrote
 from declaring.trigger import Mark
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.messages.details import MessagesDetails
 from features.messages.formatters import CommandsAsCode
 from features.messages.closing import CloseAnswered, CloseHandled, CloseProcessed, CloseSeenByUser
@@ -17,7 +17,7 @@ from features.messages.inbox import NameUnanswered, NameUnread, ResetCountsOnArr
 from features.messages.prose import NameBareNumbers, NameRunTogether
 from features.messages.answering import unanswered
 from features.messages.saving import SaveAgentMessage
-from features.triggers.watched import FACTS, state_facts
+from framework.watched import FACTS, state_facts
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Comment, Message, Reaction, Todo
 

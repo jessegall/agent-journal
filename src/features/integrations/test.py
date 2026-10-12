@@ -285,7 +285,7 @@ def linear_world(monkeypatch, tmp_path, **given) -> World:
 
 def test_words_from_an_outside_source_are_wrapped_for_agents_and_plain_for_people_and_cleaned_and_cut():
     from controllers.types import Todos
-    from features.format import VIEWER, formatted
+    from framework.format import VIEWER, formatted
     from features.integrations.words import BODY, cleaned
     from features.members.words import words_from
     from resources.base import SYSTEM
@@ -380,7 +380,7 @@ def test_linear_is_checked_on_its_clock_only_when_on_and_a_key_and_board_are_pic
     from controllers.types import Notices
     from events.agents import ClockTicked
     from features.integrations.handlers import CheckOnClock
-    from features.parts import Context
+    from framework.parts import Context
     from resources.base import SYSTEM
     world = linear_world(monkeypatch, tmp_path, issues=[issue(1, "2026-10-01T10:00:00Z")])
     record, fake, linear = world.record, world.fake, world.linear

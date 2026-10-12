@@ -4,7 +4,7 @@ from controllers.stored import PAGE
 
 from features.kanban.board import build, card_of, main_agent, sources_of
 from features.kanban.shifts import shift
-from features.parts import Command, Context
+from framework.parts import Command, Context
 
 
 class ShowBoard(Command):

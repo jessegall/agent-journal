@@ -1,7 +1,7 @@
-from features.base import Feature
+from framework.base import Feature
 from features.message_buttons.details import MessageButtonsDetails
 from features.message_buttons.handlers import AnswerInWords, DropUnknownButtons
-from features.journal import Journal
+from framework.journal import Journal
 from events.resources import AnyEvent, ResourceCreated
 from expects import Given, Unchanged, Updated
 from resources.base import AGENT, USER

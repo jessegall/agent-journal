@@ -1,9 +1,9 @@
 from events.rules import RuleCreated
 from expects import Given, Nudged, Unchanged, Wrote, File
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from controllers.types import Rules
-from features.recital import register_recital
+from framework.recital import register_recital
 from features.rules.details import RulesDetails
 from features.rules.handlers import InjectRules, ReviewNewRule
 from events.rules import RuleChanged

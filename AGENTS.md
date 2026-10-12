@@ -60,7 +60,7 @@ Every dispatch prompt says the subagent never runs tests: it writes the test tha
 
 ## Controllers by reference
 
-A controller is reached by its class — `Todos(record, actor=SYSTEM)`, `Plans(...)` from `controllers.types` — never by a string key; `CONTROLLERS[event.type]` is for generic dispatch on an event's type only.
+A controller is reached by its class — `Todos(record, actor=SYSTEM)`, `Plans(...)` — never by a string key; `CONTROLLERS[event.type]` is for generic dispatch on an event's type only. A base controller comes from `controllers.types`; a controller a feature owns, such as `Tickets` or `Helpers`, comes from that feature until the sweep moves it down, which is when `controllers.types` will hold it too.
 
 ## Skills
 
@@ -68,7 +68,7 @@ A skill is read by the agent, so it exists only when it tells the agent what to 
 
 ## Tests
 
-The default commands carry no hand-written tests. Seven generated runs cover them: `tests/test_every_action.py` loops over every registered resource type and every action on its controller, `tests/test_the_gate.py` loops over every provider, `tests/test_the_expectations.py` plays every expectation every registration carries, `tests/test_the_catalogue.py` walks every resource type and every moment it has, and `test_it_boots.py`, `test_the_flows.py` and `test_the_viewer.py` play the boot, the core flows and the viewer. Between them they cover create, read, update, complete and the rest for every type, and what each registration promises it does.
+The default commands carry no hand-written tests. Eight generated runs cover them: `tests/test_every_action.py` loops over every registered resource type and every action on its controller, `tests/test_the_gate.py` loops over every provider, `tests/test_the_expectations.py` plays every expectation every registration carries, `tests/test_the_catalogue.py` walks every resource type and every moment it has, `tests/test_the_layers.py` reads what each package below features imports, and `test_it_boots.py`, `test_the_flows.py` and `test_the_viewer.py` play the boot, the core flows and the viewer. Between them they cover create, read, update, complete and the rest for every type, and what each registration promises it does.
 
 A feature is allowed one test file, `src/features/<name>/test.py`, beside its `feature.py`, with at most 10 tests (a cap on test methods, not lines) — the `check` rows scripts/checks/test_shape.py and scripts/checks/one_client.py hold both, with scripts/checks/funnels.py for bodies written twice (`journal check sweep`). It exists only when the feature does something the generated runs cannot see: a hold on writes, a nudge, a file on disk, a process. A feature that only adds commands has none.
 

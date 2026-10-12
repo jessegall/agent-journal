@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from controllers.features import MOVED
 from engine import bus
 from events import Fact, Request
-from features.parts import Context, Handler as OldStyle
+from framework.parts import Context, Handler as OldStyle
 from receiving import HANDLE, Handler, Registration, Registrations
 from serving import Adapted as TheRecord
 
@@ -125,7 +125,7 @@ def adapted_beside_the_bus(feature, handler: OldStyle, run, kind) -> None:
 
 def listing() -> str:
     """Per feature, adapted or moved: what `journal feature moved` prints."""
-    from features import FEATURES
+    from framework.loaded import FEATURES
     adapted: dict[str, list[str]] = {}
     for one in ADAPTED.of(HANDLE):
         adapted.setdefault(one.feature, []).append(one.name)

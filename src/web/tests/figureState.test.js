@@ -34,6 +34,11 @@ test("something waiting on the user is the asking state, timed from when it arri
     expect(stateAt({status: "idle", asking: {tool: "Bash"}})).toBe("asking");
 });
 
+test("while the agent works the figure shows the work, as the bar says Working, even with something waiting on the user", () => {
+    expect(stateAt({event: "PreToolUse", tool: "Grep"}, NOW - 30)).toBe("searching");
+    expect(stateAt({event: "PostToolUse", tool: "Grep"}, NOW - 30)).toBe("thinking");
+});
+
 test("a beat fires only for what reached the row after it was last seen, oldest first", () => {
     const row = agent({
         cards: [

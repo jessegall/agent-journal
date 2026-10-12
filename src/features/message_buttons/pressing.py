@@ -1,22 +1,11 @@
 from controllers.messages import Messages
 from controllers.types import CONTROLLERS, Nudges
 from engine import bus, proc
-from features.message_buttons.shaping import Button, spent
+from resources.buttons import Button, pressed_of, unspent
 from resources.base import Stale, SYSTEM, titled
 
 LONGEST = 120.0
 MOST_SAID = 2000
-
-
-def pressed_of(row) -> list[str]:
-    return list(row.data.get("pressed") or [])
-
-
-def unspent(row) -> list[Button]:
-    buttons = [Button.from_payload(given) for given in row.data.get("buttons") or []]
-    pressed = pressed_of(row)
-    answered = bool(row.data.get("answered_own"))
-    return [button for button in buttons if not spent(button, buttons, pressed) and not (answered and button.choice)]
 
 
 def press(record, row, label: str, actor: str, via: str):

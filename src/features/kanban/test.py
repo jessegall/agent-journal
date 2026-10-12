@@ -129,7 +129,7 @@ def test_a_cards_words_pass_the_formatters_like_every_other_field():
     Todos(record, actor=USER).create("[!info] tagged title")
     assert [c["title"] for lane in board(record)["lanes"] for c in lane["cards"]] == ["tagged title"], "a leftover tag is taken off the card's title"
     from controllers.types import Docs
-    from features.format import FORMATTERS, formatted, markdown
+    from framework.format import FORMATTERS, formatted, markdown
     doc = Docs(record, actor=USER).create("[!info] A guide", abstract="short", brief="Words")
     Docs(record, actor=USER).section(doc.n, "Steps", "Do it")
     assert markdown(Docs(record, actor=USER).load(doc.n), record) == "# A guide\n\n_short_\n\nWords\n\n## Steps\n\nDo it\n", \

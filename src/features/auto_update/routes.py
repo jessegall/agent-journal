@@ -1,4 +1,4 @@
-import features
+from framework.loaded import FEATURES
 import re
 import threading
 import time
@@ -11,7 +11,7 @@ from engine.upgrades import FETCHING, newer, upstream
 from engine.version import version
 from features.auto_update.countdown import cancel
 from features.auto_update.new_feature import mark_seen, unseen_announced
-from features.routing import Reply, Request, handles
+from framework.routing import Reply, Request, handles
 from resources.base import Refused
 from features.journal_laws.managed import changed_managed, changed_message
 from install import release_versions
@@ -91,7 +91,7 @@ def get_releases(req: Request) -> Reply:
 def get_upstream(req: Request) -> Reply:
     installed = version()
     latest = upstream(req.root)
-    installs = features.FEATURES["auto_update"].on(Record(req.root, runtime.env(req.root))) if "auto_update" in features.FEATURES else False
+    installs = FEATURES["auto_update"].on(Record(req.root, runtime.env(req.root))) if "auto_update" in FEATURES else False
     changed = CHANGED.get(str(req.root), int(time.time() // CHANGED_FOR), lambda: changed_managed(req.root.parent, req.root))
     return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed), "installs": installs,
                        "changed": [path.relative_to(req.root.parent).as_posix() for path in changed]})

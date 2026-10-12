@@ -3,7 +3,7 @@ from events.messages import MessageCreated
 from engine.transcript import IDLE
 from engine import triggering
 from features.messages.answering import unanswered
-from features.parts import AgentContext, Context, Handler
+from framework.parts import AgentContext, Context, Handler
 from resources.base import AGENT
 from controllers.types import Messages
 

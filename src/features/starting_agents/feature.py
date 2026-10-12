@@ -1,9 +1,9 @@
 from controllers.types import Environments
 from events.messages import MessageCreated
 from expects import Given, Refused, Unchanged
-from features.base import Feature
+from framework.base import Feature
 from providers import DRIVERS
-from features.journal import Journal
+from framework.journal import Journal
 from resources.types import Message
 from features.starting_agents.commands import Launch
 from features.starting_agents.details import StartingAgentsDetails

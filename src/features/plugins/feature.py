@@ -4,11 +4,11 @@ from pathlib import Path
 from controllers.types import Plugins as PluginRows, Todos
 from events.agents import ClockTicked
 from expects import WHEN, Answered, Formats, Given, Kept, Refused, Unchanged, Updated
-from features.base import Feature
+from framework.base import Feature
 from providers.payload import BashCall, Dispatch
 from resources.base import SYSTEM, USER
 from resources.types import AgentRow, Plugin, Todo
-from features.journal import Journal
+from framework.journal import Journal
 from features.plugins import services, updates
 from features.plugins.commands import ClearLog, Configure, Disable, Enable, Install, Preview, Purge, Raise, Settle, Upgrade
 from features.plugins.details import PluginsDetails

@@ -1,10 +1,10 @@
 from controllers.types import Agents
 from events.files import FileEdited
 from expects import Answered, Given, Refused, Remembered
-from features.base import Feature
+from framework.base import Feature
 from features.file_feed.details import FileFeedDetails
 from features.file_feed.handlers import KeepEdits
-from features.journal import Journal
+from framework.journal import Journal
 from resources.types import AgentRow
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")

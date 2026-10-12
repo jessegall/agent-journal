@@ -204,8 +204,8 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
 
     from controllers.types import Todos as Rows
     from features.work_tracking.handlers import nothing_left
-    from features.parts import AgentContext
-    from features import FEATURES
+    from framework.parts import AgentContext
+    from framework.loaded import FEATURES
     done = fresh()
     done.features = {**done.features, "work_tracking.auto": True}
     agents_here = Agents(done, actor=SYSTEM)

@@ -1,11 +1,11 @@
 from expects import Given, Kept
-from features.base import Feature
+from framework.base import Feature
 from providers.payload import BashCall
 from resources.types import AgentRow
 from features.helper_worktrees.controller import Worktrees
 from features.helper_worktrees.details import HelperWorktreesDetails
 from features.helper_worktrees.interceptors import StayInYourCheckout, TellDrift
-from features.journal import Journal
+from framework.journal import Journal
 
 __all__ = ["Worktrees"]
 

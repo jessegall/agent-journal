@@ -12,7 +12,7 @@ from controllers.described import described_types
 from engine.markers import MARKER
 from engine.record import Record
 from features.collections.files import collected_files
-from features.format import SHARED, formatted, shape
+from framework.format import SHARED, formatted, shape
 from features.plans.controller import Plans
 from features.revisions.history import count, read
 from features.sharing.views import shared_view

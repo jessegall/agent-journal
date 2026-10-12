@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 from engine import runtime
-from features import FEATURES
+from framework.loaded import FEATURES
 from features.runtime_cleanup.tidy import tidy
 from tests.kit import tick
 from tests.conftest import fresh

@@ -4,8 +4,8 @@ from pathlib import Path
 
 import features
 from engine.record import Record
-from features.chat_view import TURNS
-from features.format import catalogue
+from features.phone.chat_view import TURNS
+from framework.format import catalogue
 from declaring import groups
 from controllers.base import actions
 from controllers.base import Controller
@@ -17,7 +17,7 @@ from providers import PROVIDERS
 from engine.version import version
 from engine.package import data
 from features.open_viewer.attachments import listed_types
-from features.triggers.watched import FACTS
+from framework.watched import FACTS
 from controllers.nudges import Nudges
 from typing import TypedDict
 

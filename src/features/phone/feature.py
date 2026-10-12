@@ -1,5 +1,5 @@
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.phone.controller import phones_live, phones_paired, phones_told
 from features.phone.details import PhoneDetails
 from features.phone.routes import PhoneRoutes

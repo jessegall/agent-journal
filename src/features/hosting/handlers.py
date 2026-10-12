@@ -3,7 +3,7 @@ import time
 from events.agents import ClockTicked
 from features.hosting.apps import idle_past
 from features.hosting.files import hosting_of
-from features.parts import WHOLE_FEATURE, AgentContext, Handler
+from framework.parts import WHOLE_FEATURE, AgentContext, Handler
 from features.tickets.controller import Tickets
 from resources.base import SYSTEM
 

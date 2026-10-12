@@ -11,7 +11,7 @@ from providers.payload import HookEvent
 from providers import transcript_reader
 from providers.command_effects import background_outcome
 from providers.tested import testing_piece, tested
-from features.parts import AgentContext, Context, Handler
+from framework.parts import AgentContext, Context, Handler
 from features.checks.controller import Checks
 from controllers.types import Agents, Notifications
 from resources.base import SYSTEM, USER

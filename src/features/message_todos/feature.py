@@ -1,5 +1,5 @@
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.message_todos.details import MessageTodosDetails
 from features.message_todos.handlers import AskWhetherATodoCameFromAMessage, LinkTodosToTheirMessage
 from events.resources import ResourceCreated

@@ -6,16 +6,16 @@ import json
 from dataclasses import asdict
 
 from expects import answering, Given, Remembered, Kept, Nudged, Refused, Unchanged, Updated
-from features.base import Feature
+from framework.base import Feature
 from events.triggers import TriggerFired
 from features.sequences.resource import Sequence
 from declaring.trigger import Mark
-from features.triggers.resource import Trigger
+from resources.triggers import Trigger
 from providers.payload import BashCall
 from resources.base import USER
 from resources.types import AgentRow, Question
-from features.journal import Journal
-from features.sending import Nudge
+from framework.journal import Journal
+from framework.sending import Nudge
 from features.sequences.controller import Sequences
 from features.sequences.details import SequencesDetails
 from features.triggers.controller import STARTED_BY

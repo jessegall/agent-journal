@@ -12,7 +12,7 @@ from resources.fields import Loaded
 from engine.stored import write_text
 from engine.upgrades import fetch
 from engine.worktree import tracked_files
-from features.parts import AgentContext, Handler
+from framework.parts import AgentContext, Handler
 from features.plugins.declared import Fits, called
 from features.plugins.lifecycle import fetched
 from features.plugins.paths import home

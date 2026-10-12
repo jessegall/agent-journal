@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from features import FEATURES
+from framework.loaded import FEATURES
 from controllers.types import Agents
 from events.agents import SessionStarted
-from features.parts import AgentContext
+from framework.parts import AgentContext
 from features.worktrees.handlers import LinkWorktreeJournal
 from providers import workspace_folders
 from tests.conftest import fresh

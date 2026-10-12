@@ -2,10 +2,10 @@ from controllers.types import Works
 from events.agents import ClockTicked
 from events.todos import TodoCompleted
 from expects import WHEN, Given, Kept, Nudged, Refused, Unchanged, Updated
-from features.base import Feature
+from framework.base import Feature
 from features.plans.summary import plans_shown
 from overview.parts import SUMMARY_PARTS
-from features.journal import Journal
+from framework.journal import Journal
 from features.plans.details import PlansDetails
 from features.plans.handlers import (
     AdvancePlans,
@@ -23,7 +23,7 @@ from features.plans.handlers import (
     STILL_TIMES,
     NameStandingPlans,
 )
-from features.sending import Nudge
+from framework.sending import Nudge
 from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
 from features.plans.progress import held
 from features.work_tracking.next import ROW_HOLDS
@@ -31,7 +31,7 @@ from events.plans import PlanChanged
 from events.reports import ReportLinked
 from events.resources import RowReopened
 from events.todos import TodoUpdated
-from features.plans.resource import Plan
+from resources.plans import Plan
 from providers.payload import ToolUse
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import AgentRow, Question, Todo, Work

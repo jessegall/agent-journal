@@ -1,16 +1,5 @@
-from engine.record import Record
-
 RECALLED = {"rule": "rules", "fact": "facts", "reminder": "reminders"}
 MARKED = {"terminal": "commands", "branch": "commits", "list": "sequences", "bolt": "triggers"}
-TURNS = {"thought": "thoughts", "skill": "skills", "subagent": "subagents", "compacted": "compactions", "made": "made", "receipt": "filed", "visitor": "visitors"}
-SETTING = "chat_hidden"
-SEQUENCES = "sequences"
-SEQUENCE_STEPS = "sequence_steps"
-DEFAULT_HIDDEN = ["acknowledgements", SEQUENCE_STEPS]
-
-
-def hidden(home: Record) -> list[str]:
-    return home.viewer.get(SETTING, DEFAULT_HIDDEN)
 
 
 def card_shows(card: dict) -> str:

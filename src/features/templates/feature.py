@@ -3,11 +3,11 @@ from events.resources import ResourceCreated
 from events.works import WorkCreated
 from controllers.types import Todos
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
-from features.base import Feature
+from framework.base import Feature
 from features.templates.resource import Template
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
-from features.journal import Journal
+from framework.journal import Journal
 from features.templates.applying import ApplyTemplate, CheckTemplate
 from features.templates.instructions import PrefaceShow, TellAgainOnSessionStart, TellOnStart
 from features.templates.controller import Templates

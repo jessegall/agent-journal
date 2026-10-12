@@ -3,8 +3,8 @@ from pathlib import Path
 
 from engine.markers import marked
 from engine.project_files import matching
-from features.format import VIEWER
-from features.parts import Context, TextFormatter
+from framework.format import VIEWER
+from framework.parts import Context, TextFormatter
 from features.row_links.formatters import CODE, KEPT, outside
 
 EXT = ("py|js|mjs|cjs|ts|tsx|jsx|vue|md|json|css|scss|html|txt|log|yml|yaml|toml|ini|sh|zsh|bash|svg|png|jpg|jpeg|gif|webp|csv|lock|php|cs|"

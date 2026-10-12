@@ -26,6 +26,7 @@ from engine.wording import digest, plural
 from engine.transcript import PEER
 from providers.turns import turns
 from runner.chat_mirror import send_row_to_chat, unfinished
+from runner.relay import Relay
 from engine.stored import Growth, read_json, write_json
 from resources.fields import Loaded
 
@@ -114,7 +115,7 @@ class Engine:
         self.actors: list[Actor] = [User(record), self.agent, System(record)]
         self.report = SeatReport(record, self.agent)
         self.born = time.time()
-        self.relayed = None
+        self.relaying = Relay(record)
         self.peer_growth = Growth()
         self.failure_growth = Growth()
         self.interruption_growth = Growth()
@@ -168,10 +169,7 @@ class Engine:
         return Reading(row, provider(), Path(row.transcript))
 
     def relay(self) -> None:
-        if self.relayed is None:
-            self.relayed = self.record.event_log.last_id()
-        for e in self.record.event_log.events(self.relayed):
-            self.relayed = e.id
+        for e in self.relaying.each():
             features.passed(e, self.record)
             if not e.handled:
                 bus.emit(e, self.record)
@@ -518,7 +516,7 @@ class Engine:
         return f"typed: {line[:60]}"
 
     def waiting(self) -> bool:
-        from features.journal import waiting
+        from framework.journal import waiting
         last = self.agent.driver.last_report()
         return bool(last) and waiting(self.record, last)
 

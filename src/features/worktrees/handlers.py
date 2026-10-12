@@ -3,7 +3,7 @@ from pathlib import Path
 from events.agents import SessionStarted
 from engine.worktree import checkout, share_journal
 from providers import workspace_folders
-from features.parts import AgentContext, Handler
+from framework.parts import AgentContext, Handler
 
 
 class LinkWorktreeJournal(Handler):

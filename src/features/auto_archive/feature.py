@@ -1,7 +1,7 @@
 from events.agents import ClockTicked
 from expects import Given, Unchanged, Updated, WHEN
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.auto_archive.details import AutoArchiveDetails
 from features.auto_archive.handlers import ExpireOldRows
 from resources.types import AgentRow, Report, Todo

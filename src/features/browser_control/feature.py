@@ -1,5 +1,5 @@
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.browser_control.controller import Asks
 from features.browser_control.details import BrowserControlDetails
 from features.browser_control.routes import post_driver, post_pending, post_result

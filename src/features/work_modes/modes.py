@@ -17,7 +17,7 @@ def pick(record, mode: str, actor: str) -> str:
     if mode_of(record) == mode:
         return mode
     record.change_setting(NAME, {"mode": mode})
-    from features import running
+    from framework.loaded import running
     from features.work_modes.feature import WorkModes
     for write in CARRIED_IN.each():
         write(record.root.parent, record)
@@ -58,7 +58,7 @@ def choose_board(record, n: int, actor: str) -> int:
     if int(WorkModesDetails.values(record).board) == n:
         return n
     record.change_setting(NAME, {"board": n})
-    from features import running
+    from framework.loaded import running
     from features.work_modes.feature import WorkModes
     board = boards.load(n) if n else None
     where = f"board {n}, {board.title}" if board else "to-dos"
