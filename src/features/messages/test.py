@@ -228,12 +228,16 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     late = "Waiting on the measurement."
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": late}]}}) + "\n")
     fell_back = log_file(record.root).read_text().count(FELL_BACK)
+    monkeypatch.setattr(chat_mirror, "SETTLE", 30.0)
     threading.Timer(0.1, lambda: displayed(record.root, Chunk.from_json(
         {"session_id": "claude-1", "message_id": "h", "index": 0, "final": True, "delta": late}))).start()
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": late})
     assert (chat().count(late), log_file(record.root).read_text().count(FELL_BACK)) == (1, fell_back), \
         "the turn's last words are waited for: a display hook the stop raced past still delivers them, and the transcript is not blamed"
+    monkeypatch.setattr(chat_mirror, "SETTLE", 0.5)
     ledger = DisplayedLedger(record.root, "claude-1")
+    with ledger.changing() as kept:
+        assert fingerprint(late) not in kept.get(FAULTS, {}), "and no fault is held for them: the stop waited until they came, however long the machine took, and a hook that never delivered would leave one here"
     with ledger.changing() as kept:
         assert fingerprint("Cut short by the next prompt") in kept[FAULTS], "the held fault is kept by the fingerprint of the words"
         kept[FAULTS] = {one: 0.0 for one in kept[FAULTS]}
