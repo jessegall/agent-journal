@@ -21,7 +21,7 @@ from features.integrations.state import IntegrationState, read_state, write_stat
 from framework.journal import Journal
 from framework.routing import Reply, Request, handles
 from features.secrets.controller import Secrets
-from resources.secrets import Kind
+from features.secrets.resource import Kind
 from features.secrets.values import ValuesFile
 from features.tickets.controller import Tickets
 from providers import PROVIDERS

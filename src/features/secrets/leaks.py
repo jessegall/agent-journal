@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Callable
 
 from controllers.notifications import Notifications
-from resources.secrets import SecretField
+from features.secrets.resource import SecretField
 from features.secrets.values import ValuesFile
 from resources.base import SYSTEM
 

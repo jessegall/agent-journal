@@ -1,4 +1,4 @@
-from resources.secrets import Kind, Secret
+from features.secrets.resource import Kind, Secret
 from resources.base import SYSTEM
 
 

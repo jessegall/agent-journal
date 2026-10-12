@@ -1,5 +1,5 @@
 from features.secrets.controller import Secrets
-from resources.secrets import SecretField
+from features.secrets.resource import SecretField
 from resources.base import Refused, SYSTEM
 
 
