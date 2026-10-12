@@ -1,18 +1,11 @@
-import re
-
-from events.agents import AgentMessageSent
-from framework.parts import AgentContext, Handler
+from events import Fact
+from events.pinned_links import LinkUnpinned
 from features.pinned_links.details import UNPINNED
-from controllers.types import Notices
-
-LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
-SELF_PINNED = re.compile(r"^https?://(?:localhost|127\.0\.0\.1)[:/]|^https://github\.com/[^/]+/[^/]+/pull/\d+")
+from receiving import Handler
+from serving import Chat
 
 
-class RemindToPinLinks(Handler):
-    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        pinned = {notice.data.get("link") for notice in context.journal.get(Notices).rows.standing()}
-        for url in dict.fromkeys(match.rstrip(".,;:!?") for match in LINK.findall(event.text)):
-            if url in pinned or SELF_PINNED.match(url) or not context.once(UNPINNED, url):
-                continue
-            context.agent.nudge(UNPINNED, url=url)
+class RemindToPinTheLink(Handler[LinkUnpinned]):
+    def handle(self, event: LinkUnpinned, chat: Chat) -> list[Fact]:
+        chat.nudge(UNPINNED, url=event.url)
+        return []
