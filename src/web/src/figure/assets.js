@@ -3,7 +3,8 @@ import {api} from "../api/client.js";
 // The Cache API keeps figure files; the name a figure is stored under carries the hash of its content, so a changed figure is a new entry
 export const FIGURE_CACHE = "voice-figures";
 
-const fileName = (url) => new URL(url, location.href).pathname.split("/").pop();
+// the file a cached request is for; the cache holds its requests' urls whole
+const fileName = (url) => new URL(url).pathname.split("/").pop();
 const ofVoice = (url, voice) => fileName(url).startsWith(`${voice}.`);
 
 // The bytes of the active voice's figure and nothing else: from the cache when this version is kept, else fetched and kept,

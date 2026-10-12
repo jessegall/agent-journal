@@ -25,7 +25,6 @@ let fetched;
 
 beforeEach(() => {
     fetched = [];
-    vi.stubGlobal("location", {href: "http://journal/"});
     vi.stubGlobal("fetch", async (url) => (fetched.push(url), new Response(`bytes of ${url.split("/").pop()}`)));
 });
 
