@@ -1,5 +1,5 @@
 from events.agents import CommandRan
-from expects import Given, Unchanged
+from expects import Given, Remembered
 from resources.types import AgentRow
 from framework.base import Feature
 from framework.journal import Journal
@@ -13,6 +13,7 @@ class Terminal(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.routes.add(get_terminal)
-        journal.events.handler(KeepCommands(), expects=[
-            Given(CommandRan(agent=1, tool="Bash", command="ls", output="a.txt"), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        journal.events.handle(CommandRan, KeepCommands(), expects=[
+            Given(CommandRan(agent=1, tool="Bash", command="ls", output="a.txt", at=5.0), rows=[AgentRow(n=1, title="claude-1")])
+                >> Remembered("commands|claude-1", [{"agent": 1, "at": 5.0, "tool": "Bash", "command": "ls", "output": "a.txt", "stepped": False, "level": "commands"}]),
         ])
