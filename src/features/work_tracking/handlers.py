@@ -14,8 +14,9 @@ from declaring.trigger import MINUTE
 from payload import HookEvent
 from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
+from features.work_tracking.details import CHECK_IN
 from engine.transcript import IDLE
-from features.work_tracking.next import carried_on, helping, named_rows, questioned, ready, waiting_rows
+from features.work_tracking.next import carried_on, helping, in_sight, named_rows, questioned, ready, waiting_rows
 from providers import PROVIDERS
 from resources.types import Work
 from engine.command_runs import command_runs
@@ -272,6 +273,17 @@ def stopped_in_auto(context, agent) -> list[Sent]:
     if provider is not None and agent.transcript and provider().interrupted_by_user(Path(agent.transcript)):
         return []
     return [Sent(f"{agent.at}", {"minutes": int(after // MINUTE)})]
+
+
+def check_in_pace(context) -> int:
+    return context.settings.check_in_every
+
+
+def nothing_happening(context, agent) -> list[Sent]:
+    """The fallback: nothing has happened for the check-in interval, so the agent is asked whether anything is left, whatever this environment holds. Every other nudge here returns early on some state - no work open, no ready row, nothing blocked - which together leave a stuck agent told nothing at all."""
+    if agent.subagent or agent.paused or agent.idle_for < check_in_pace(context) * MINUTE:
+        return []
+    return [Sent(CHECK_IN, {"minutes": int(agent.idle_for // MINUTE), "seen": in_sight(context.record)})]
 
 
 def nothing_ready(context, agent) -> list[Sent]:

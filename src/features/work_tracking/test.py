@@ -58,10 +58,24 @@ def test_edits_without_a_log_entry_hold_the_writes_until_the_work_is_logged():
 
 
 def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
+    from types import SimpleNamespace
+    from framework.loaded import FEATURES
+    from framework.parts import AgentContext
+    from features.work_tracking.details import CHECK_IN_MINUTES
+    from features.work_tracking.handlers import nothing_happening
     record = fresh()
+    idle(record)
+    context = AgentContext.of(FEATURES["work_tracking"], record, Agents(record, actor=SYSTEM).by_session("claude-1"))
+    quiet = SimpleNamespace(idle_for=CHECK_IN_MINUTES * 60 + 1, subagent=False, paused=False)
+    assert [sent.values["seen"] for sent in nothing_happening(context, quiet)] == ["nothing is open at all"], \
+        "with no work open, no ready row and nothing blocked, the agent is still asked after the interval - the one state every other nudge here returns early on"
+    assert nothing_happening(context, SimpleNamespace(idle_for=60.0, subagent=False, paused=False)) == [], \
+        "and not while it has only just stopped"
     todos = Todos(record, actor=USER)
     todos.create("first")
     todos.create("second")
+    assert nothing_happening(context, quiet)[0].values["seen"] == "2 open to-dos", \
+        "and the check-in names what it can see, so a stuck agent is told where to look"
     record.set_setting("features", {"work_tracking.auto": False})
     idle(record)
     assert nudges(record) == [], "auto off: nothing offered"
