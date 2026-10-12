@@ -2,7 +2,7 @@ from pathlib import Path
 
 from controllers.types import environment_records
 from features.plans.controller import Plans
-from features.plans.resource import DONE, ENDED
+from resources.plans import DONE, ENDED
 from resources.base import SYSTEM
 
 

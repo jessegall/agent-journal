@@ -1,7 +1,7 @@
 from events.resources import ResourceCreated
 from expects import Given, Nudged, Unchanged, WHEN
 from framework.base import Feature
-from features.plans.resource import Plan
+from resources.plans import Plan
 from features.source_links.details import SourceLinksDetails
 from features.source_links.handlers import NameUncitedSource
 from framework.journal import Journal

@@ -5,7 +5,7 @@ from events.files import FileEdited
 from events.resources import AnyEvent
 from events.todos import TodoCompleted
 from events.works import WorkCreated
-from features.plans.resource import Plan
+from resources.plans import Plan
 import json
 from dataclasses import asdict
 

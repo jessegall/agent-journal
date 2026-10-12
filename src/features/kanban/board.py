@@ -8,7 +8,7 @@ from resources.shapes import position_of
 from framework.format import formatted_item
 from features.kanban.lanes import DONE, LANES, Sources, lane_of, reason_of
 from features.kanban.shifts import targets
-from features.plans.resource import ACTIVE
+from resources.plans import ACTIVE
 from declaring.trigger import DAY
 from resources.base import Ref
 from features.kanban.shapes import AgentChip, BoardLanes, Card, Lane
