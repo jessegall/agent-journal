@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import controllers.types as types_module
-import features
+from framework.loaded import FEATURES
 import resources.types as resources_module
 from controllers.base import Controller
 from agents.terminal import detached, launch_output, prompted
@@ -113,7 +113,7 @@ class Helpers(Controller):
     def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False, checkout: str = "",
                  todos: str = "", packages: bool = False) -> str:
         census, paths = kept(self.record, self.rows.standing()), named_paths(f"{job}\n{brief}")
-        limits = features.FEATURES["helpers"].values(self.record)
+        limits = FEATURES["helpers"].values(self.record)
         held_back = refusal(census, limits, HELPER_KIND, paths)
         if held_back:
             raise Refused(held_back)
@@ -351,7 +351,7 @@ class Helpers(Controller):
         named = f"; this branch has commits {', '.join(lacking)} that your branch lacks" if lacking else ""
         tests = written_tests(home, row)
         named += f"; tests it wrote, for you to run: {', '.join(tests)}" if tests else ""
-        features.FEATURES["helpers"].to_primary(home, "reported", n=row.n, name=row.name, message=message.n, branch=named, rows=[row.ref, message.ref])
+        FEATURES["helpers"].to_primary(home, "reported", n=row.n, name=row.name, message=message.n, branch=named, rows=[row.ref, message.ref])
 
     @action(network=True)
     def stop(self, n: int):

@@ -1,7 +1,7 @@
 from controllers.types import Todos
 from expects import Answered, Given, Refused, Updated
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.kanban.commands import ShiftCard, ShowBoard
 from features.kanban.details import KanbanDetails
 from features.kanban.shapes import BoardLanes, Card, Lane

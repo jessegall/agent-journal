@@ -1,7 +1,7 @@
 from controllers.types import Todos
-from features.format import VIEWER, shaped
+from framework.format import VIEWER, shaped
 from engine.record import Record
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from resources.base import SYSTEM
 
 

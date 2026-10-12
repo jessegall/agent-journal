@@ -1,8 +1,8 @@
 from controllers.types import Agents
 from events.agents import AgentReported
 from expects import Answered, Given, Remembered, Unchanged, Updated
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from resources.types import AgentRow
 from features.status_bar.details import StatusLineDetails
 from features.status_bar.handlers import RecordWhatItDoes, RefreshUsage, WriteBar

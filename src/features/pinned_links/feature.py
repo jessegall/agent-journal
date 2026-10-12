@@ -1,8 +1,8 @@
 from events.agents import AgentMessageSent
 from expects import Given, Nudged, Unchanged
-from features.base import Feature
+from framework.base import Feature
 from resources.types import AgentRow, Notice
-from features.journal import Journal
+from framework.journal import Journal
 from features.pinned_links.details import PinnedLinksDetails
 from features.pinned_links.handlers import RemindToPinLinks
 

@@ -1,8 +1,8 @@
 from events.agents import ClockTicked
 from expects import WHEN, Given, Remembered, Unchanged, Updated
 from resources.types import AgentRow, Nudge, Todo
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.nudges.details import NudgesDetails
 from features.nudges.standing import AskAgain, ClearWhenAnswered, StandUntilAnswered
 from events.nudges import NudgeCreated

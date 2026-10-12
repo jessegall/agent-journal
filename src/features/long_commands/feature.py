@@ -1,11 +1,11 @@
 from events.agents import AgentBeat, ClockTicked
 from expects import Given, Unchanged
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.long_commands.details import RUN_ENDED, RUN_OPEN, RUN_STALLED, WATCHED, LongCommandsDetails
 from features.long_commands.move import FollowMovedCommands, MoveLongCommands
 from features.long_commands.watch import ended_runs, open_runs, stalled_runs
-from features.sending import Nudge
+from framework.sending import Nudge
 from resources.types import AgentRow
 
 

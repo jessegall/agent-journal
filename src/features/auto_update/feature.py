@@ -2,8 +2,8 @@ import json
 
 from controllers.types import Features
 from expects import Answered, Given, answering
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.auto_update.new_feature import new_features
 from features.auto_update.routes import CHANGELOG
 from features.auto_update.commands import CancelUpdate, ShowNewFeatures

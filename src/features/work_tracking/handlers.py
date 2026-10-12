@@ -9,10 +9,10 @@ from events.resources import AnyEvent
 from events.todos import TodoCompleted
 from events.works import WorkCompleted, WorkCreated, WorkUpdated
 from engine import triggering
-from features.sending import Sent
+from framework.sending import Sent
 from declaring.trigger import MINUTE
 from providers.payload import HookEvent
-from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
+from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE
 from features.work_tracking.next import carried_on, helping, named_rows, questioned, ready, waiting_rows

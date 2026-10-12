@@ -11,7 +11,7 @@ from engine.heal import refused
 from engine.state import State
 from engine.package import entry
 from engine.version import version
-from features import running
+from framework.loaded import running
 from features.auto_update.countdown import cancel, wait
 from features.auto_update.feature import AutoUpdate
 from resources.base import SYSTEM

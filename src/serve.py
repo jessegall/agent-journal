@@ -27,9 +27,9 @@ import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
 from controllers.stored import DEFER, flush_indexes, renew_stamps, watch_marks  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone  # noqa: E402
-from features.routing import resolve  # noqa: E402
+from framework.routing import resolve  # noqa: E402
 from features.phone.allow_list import PhoneVisit, Reach  # noqa: E402
-from features.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
+from framework.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
 from controllers.base import SENDER, Sender  # noqa: E402
 from resources.base import OWNER_ID  # noqa: E402
 from engine import bus, runtime, waits  # noqa: E402
@@ -37,7 +37,7 @@ from engine.timing import arrived  # noqa: E402
 from engine.after_answer import AfterAnswer  # noqa: E402
 from engine.quiet_collector import QuietCollector  # noqa: E402
 from supervisor import QUICK  # noqa: E402
-from features.switches import HOME_WARMERS, WARMERS  # noqa: E402
+from framework.switches import HOME_WARMERS, WARMERS  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, pulse, remember  # noqa: E402
 from controllers.types import warm  # noqa: E402
@@ -337,7 +337,7 @@ def pruned_at_start(root: Path) -> None:
     """Removes the folders of sessions that have been quiet for long, so the first hooks after a start look at fewer of them."""
     from controllers.faults import threw
     from engine.record import Record
-    from features import FEATURES
+    from framework.loaded import FEATURES
     from features.runtime_cleanup.details import RuntimeCleanupDetails
     from features.runtime_cleanup.tidy import tidy_files
     record = Record(root, default_env(root))
@@ -490,7 +490,7 @@ def warmed(root: Path, warm: threading.Event, began: float = BEGAN) -> None:
 
 def kept_rows_on(root: Path) -> bool:
     from engine.record import Record
-    from features import FEATURES
+    from framework.loaded import FEATURES
     return "kept_rows" in FEATURES and FEATURES["kept_rows"].enabled(Record(root, default_env(root)))
 
 

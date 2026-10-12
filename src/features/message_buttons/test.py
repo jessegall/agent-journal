@@ -64,7 +64,7 @@ def test_a_document_carries_buttons_that_say_something_for_the_user():
     assert Docs(record, actor=AGENT).load(doc.n).data["buttons"] == [{"label": "Accept this proposal", "say": "I accept this proposal"}], \
         "a say button is kept on a document, and one that would not run is dropped"
     from controllers.types import Reports
-    from features.message_buttons.pressing import unspent
+    from resources.buttons import unspent
     choice = [{"label": "Reshape it", "say": "Reshape it", "choice": "answer"}, {"label": "Keep it", "say": "Keep it", "choice": "answer"}]
     report = Reports(record, actor=AGENT).create("A choice", buttons=choice)
     assert len(unspent(Reports(record, actor=AGENT).load(report.n))) == 2, "an open choice offers both of its buttons"
@@ -85,8 +85,9 @@ def test_a_document_carries_buttons_that_say_something_for_the_user():
 
 def test_a_button_can_run_a_command_the_agent_asks_for_and_it_runs_only_on_the_press():
     from engine import bus
-    from features.message_buttons.pressing import press, said, unspent
-    from features.message_buttons.shaping import Button
+    from resources.buttons import unspent
+    from features.message_buttons.pressing import press, said
+    from resources.buttons import Button
 
     record = fresh()
     rows = Messages(record, actor=AGENT)

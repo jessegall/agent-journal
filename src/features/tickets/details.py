@@ -1,6 +1,6 @@
 from resources.base import PROJECT
 from declaring.details import Behaviour, FeatureDetails, Line
-from features.base import Setting
+from framework.base import Setting
 from declaring.trigger import MINUTES, Trigger
 from declaring.groups import Group
 

@@ -1,7 +1,7 @@
 from controllers.types import Agents
 from expects import Answered, Given
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.family_tree.details import FamilyTreeDetails
 from features.family_tree.commands import ShowFamily
 from features.family_tree.routes import get_family

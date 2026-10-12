@@ -1,9 +1,9 @@
 from events.agents import ClockTicked
 from expects import Given, Nudged, Unchanged
-from features.base import Feature
+from framework.base import Feature
 from features.record_audit.details import RecordAuditDetails
 from features.record_audit.handlers import SayEvidence
-from features.journal import Journal
+from framework.journal import Journal
 from resources.types import AgentRow, Rule
 
 

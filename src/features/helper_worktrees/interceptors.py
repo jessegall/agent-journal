@@ -5,7 +5,7 @@ from engine.journal_calls import pieces
 from declaring.reach import Reach
 from engine.worktree import checkout
 from features.helper_worktrees.controller import Worktrees
-from features.parts import AgentContext, ToolInterceptor
+from framework.parts import AgentContext, ToolInterceptor
 from declaring.holds import Runs
 from providers.catalogue import workspace_folders
 from engine.runtime import DEFAULT_ENV

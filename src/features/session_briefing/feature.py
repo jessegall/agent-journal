@@ -1,8 +1,8 @@
 from events.agents import SessionStarted
 from expects import Answered, Given, Hooked, Nudged, Unchanged
 from events.resources import AnyEvent
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from resources.types import AgentRow
 from features.session_briefing.block import COMPACTED, briefing
 from features.session_briefing.details import SessionBriefingDetails

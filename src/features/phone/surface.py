@@ -10,8 +10,8 @@ from controllers.questions import Questions
 from controllers.types import CONTROLLERS, Environments, Nudges
 from engine.project_files import read_source
 from engine.sessions import Sessions
-from features import FEATURES
-from features.format import VIEWER, shaped
+from framework.loaded import FEATURES
+from framework.format import VIEWER, shaped
 from features.helpers.controller import Helpers
 from features.message_buttons.pressing import press
 from features.phone.export import Export, export

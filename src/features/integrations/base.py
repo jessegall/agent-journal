@@ -10,7 +10,7 @@ from events.agents import ClockTicked
 from expects import Answered, Given, Unchanged
 from controllers.types import Agents, Notices, Questions
 from engine import bus
-from features.base import Feature
+from framework.base import Feature
 from features.integrations.commands import SyncIntegration
 from features.integrations.details import KEEP, REFUSED, SEND, UNREACHABLE
 from features.integrations.handlers import CheckOnClock, SendApproved
@@ -18,8 +18,8 @@ from events.questions import QuestionCompleted
 from features.integrations.client import IntegrationClient
 from features.integrations.login import OPEN_BROWSER, RENEWAL_SUFFIX, revoked, signed_in
 from features.integrations.state import IntegrationState, read_state, write_state
-from features.journal import Journal
-from features.routing import Reply, Request, handles
+from framework.journal import Journal
+from framework.routing import Reply, Request, handles
 from features.secrets.controller import Secrets
 from features.secrets.resource import Kind
 from features.secrets.values import ValuesFile

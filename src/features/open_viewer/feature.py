@@ -1,8 +1,8 @@
 from controllers.types import Agents, Environments, Features
 from events.agents import AgentChanged
 from expects import Answered, Given, Refused, Unchanged
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.open_viewer.commands import (Appoint, Control, Force, Pause, Relaunch, Resume, RunShell, SaveSettings, SendKeys, ShowAttachments, ShowAttachmentsPage, ShowEvents, ShowHooks, ShowLinks,
                                           ShowManifest, ShowOnline, ShowOptions, ShowScreen, ShowSettings, ShowSummary, ShowTranscript, WireHooks)
 from features.open_viewer.details import OpenViewerDetails

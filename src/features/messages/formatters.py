@@ -1,6 +1,6 @@
 import re
 
-from features.parts import Context, TextFormatter
+from framework.parts import Context, TextFormatter
 from resources.types import TYPES
 from engine.command_line import command_line
 

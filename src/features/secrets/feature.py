@@ -2,8 +2,8 @@ from controllers.base import SAVE_REWRITES
 from controllers.features import SECRET_CHECKS
 from events.agents import ClockTicked
 from expects import WHEN, File, Given, Kept, Refused, Wrote, answering
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.secrets.announcing import updated_added
 from features.secrets.controller import Secrets
 from features.secrets.details import SecretsDetails

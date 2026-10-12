@@ -1,6 +1,6 @@
 from events.agents import SessionStarted
 from events.works import WorkCreated
-from features.parts import ActionInterceptor, AgentContext, Context, Handler
+from framework.parts import ActionInterceptor, AgentContext, Context, Handler
 from resources.base import Refused
 from features.plans.controller import Plans
 from features.templates.controller import Templates

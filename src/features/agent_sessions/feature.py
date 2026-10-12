@@ -7,8 +7,8 @@ from events.resources import ResourceCreated
 from events.agents import AgentChanged
 from events.questions import QuestionCompleted
 from expects import WHEN, Given, Nudged, Unchanged, Updated
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from resources.types import AgentRow, Question, Todo
 
 

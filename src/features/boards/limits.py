@@ -1,7 +1,7 @@
 from features.boards.controller import Boards
 from features.boards.resource import PANEL_REPLY
 from resources.base import AGENT, SYSTEM, Refused
-from features.parts import ActionInterceptor, Context
+from framework.parts import ActionInterceptor, Context
 from features.sequences.controller import Sequences
 from features.boards.exploration import FILLER
 from features.boards.drafting import BUILDING_A_BOARD, DRAFTING, DRAFTING_FROM_A_DOCUMENT, REVISING_THE_DRAFTS

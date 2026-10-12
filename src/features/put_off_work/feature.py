@@ -1,10 +1,10 @@
 from events.agents import AgentReported
 from expects import Given, Unchanged
 from resources.types import AgentRow
-from features.base import Feature
+from framework.base import Feature
 from features.put_off_work.details import PutOffWorkDetails
 from features.put_off_work.handlers import NameDeferredWork
-from features.journal import Journal
+from framework.journal import Journal
 
 
 class PutOffWork(Feature):

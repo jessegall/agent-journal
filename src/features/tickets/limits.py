@@ -1,4 +1,4 @@
-from features.parts import ActionInterceptor, Context
+from framework.parts import ActionInterceptor, Context
 from resources.base import Refused
 
 CARD_LINE = 140

@@ -3,12 +3,12 @@ from events.agents import AgentReported
 from events.resources import ResourceCreated
 from events.agents import AgentChanged
 from expects import WHEN, Answered, Given, Held, Nudged, Remembered, Unchanged, Updated
-from features.base import Feature
+from framework.base import Feature
 from features.memory_checkpoints.commands import Reread
 from features.memory_checkpoints.details import MemoryCheckpointsDetails
 from features.memory_checkpoints.handlers import DecideAtMarks, DecideAtMarksOnChange, MarkWhatWasKept, ReleaseOnceDecided, owed_reading
-from features.sending import Nudge
-from features.journal import Journal
+from framework.sending import Nudge
+from framework.journal import Journal
 from resources.types import AgentRow, Fact, Rule
 
 

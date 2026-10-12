@@ -1,7 +1,7 @@
 from dataclasses import asdict
 
 from features.file_feed.feed import NoSuchEdit, PAGE, Side, edited_file, edited_image, edits_before, edits_since, notes
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from resources.base import Missing, Refused
 
 

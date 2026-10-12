@@ -1,4 +1,4 @@
-from features.base import Feature
+from framework.base import Feature
 from features.kept_rows.details import KeptRowsDetails
 
 

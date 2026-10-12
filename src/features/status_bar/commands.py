@@ -1,4 +1,4 @@
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from features.status_bar.bar import current
 
 

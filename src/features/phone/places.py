@@ -8,7 +8,7 @@ from engine.color import identity
 from engine.record import Record
 from engine.sessions import Sessions, alive
 from engine.viewer import known, last
-from features.message_buttons.pressing import unspent
+from resources.buttons import unspent
 from features.plans.resource import READY
 from features.status_bar.bar import current
 from resources.base import SYSTEM, USER, Refused, Stale

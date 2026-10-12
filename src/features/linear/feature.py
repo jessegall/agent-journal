@@ -1,7 +1,7 @@
 from expects import Answered, Given, Refused, Unchanged, Updated, Wrote
 from features.integrations.base import IntegrationFeature
 from features.integrations.details import SEND
-from features.journal import Journal
+from framework.journal import Journal
 from features.linear.commands import ProposeComment
 from features.linear.details import LinearDetails
 from features.linear.handlers import MoveIssue
