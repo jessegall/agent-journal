@@ -76,7 +76,7 @@ def fits(wanted: dict, live: dict, kind: str, kinds: dict, binding: Binding) -> 
     return True
 
 
-def satisfied(given: Given, event, record: Record) -> Binding | None:
+def satisfied(given: Given, event, record: Record, feature: str = "") -> Binding | None:
     """The binding by which the live world is the world this Given states, or nothing when it is not that world."""
     if any(getattr(given, name) != DEFAULTS[name] for name in STAGED) or not is_dataclass(given.on):
         return None
@@ -88,6 +88,8 @@ def satisfied(given: Given, event, record: Record) -> Binding | None:
             kinds.setdefault(stated(one)["n"], set()).add(kind_of(one))
     binding = Binding()
     if not fits(stated(given.on), held(event), kind_of(given.on), kinds, binding) or not settled(given, record) or not remembered(given, record):
+        return None
+    if not given.remembered and marked(record, feature):
         return None
     return binding if all(found(row, record, kinds, binding) for row in given.rows) else None
 
@@ -111,6 +113,11 @@ def remembered(given: Given, record: Record) -> bool:
         if not contains(remembered_by(record, owner or name).get(key or name), value):
             return False
     return True
+
+
+def marked(record: Record, feature: str) -> bool:
+    """Whether the feature's own trigger has already fired for a live agent. A registration that acts once and keeps a mark saying so is right to stay quiet the second time, and a Given that names no remembered state is not a statement about that world: judging it there accuses a handler of breaking a promise it kept."""
+    return bool(feature) and any(name == feature or name.startswith(f"{feature}.") for name in remembered_by(record, feature))
 
 
 def found(row, record: Record, kinds: dict, binding: Binding) -> bool:
@@ -243,7 +250,7 @@ class Watch:
         record, found_ = ran.record, []
         for number, expectation in enumerate(ran.promise.expects):
             owed = tuple(one for one in expectation.outcomes.each if isinstance(one, OWED) and not isinstance(getattr(one, "row", None), File))
-            binding = satisfied(expectation.given, ran.event, record) if owed else None
+            binding = satisfied(expectation.given, ran.event, record, ran.promise.feature.name) if owed else None
             if binding is not None:
                 found_.append(Owed(ran, number, expectation.given, binding, tuple(renumbered(one, binding) for one in owed), ran.began + WAIT))
         return found_
