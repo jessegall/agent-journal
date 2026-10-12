@@ -13,10 +13,11 @@ from controllers.secrets.reach import servers_reaching
 from resources.secrets import Kind, Secret, SecretField
 from controllers.secrets.running import NEVER_GIVEN, checked_program, programs_named, run_masked
 from controllers.secrets.sessions import BrowserLogins
-from controllers.secrets.values import ValuesFile
+from controllers.secrets.values import ValuesFile, secrets_folder
 from resources.base import AGENT, SYSTEM, USER, Refused
 
 KEPT_DAYS = 30
+NAMED_FOLDER = ("agent-journal/secrets", "agent-journal\\secrets")
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
 
@@ -187,6 +188,12 @@ class Secrets(Controller):
         helping = bool(place and place.data.get("kind") == "helper")
         if not row.helpers and (self.agent or helping):
             raise Refused(f"secret {row.n}, {row.title}, is for the main agent only; the user can share it with helpers and subagents on the Secrets page")
+
+    def keeps_out(self, cwd: str, paths: tuple[str, ...], command: str) -> bool:
+        """Whether a tool call reads the secrets folder: a path that lands inside it, or a shell command that names it."""
+        folder = secrets_folder().resolve()
+        here = Path(cwd) if cwd else Path.cwd()
+        return any((here / path).resolve().is_relative_to(folder) for path in paths) or any(word in command for word in (*NAMED_FOLDER, str(folder)))
 
     def purge_expired(self) -> list[str]:
         gone = [row for row in self.rows.every(deleted=True) if row.deleted and time.time() - row.deleted > KEPT_DAYS * 86400]
