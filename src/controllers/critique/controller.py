@@ -1,11 +1,9 @@
-import controllers.types as types_module
 from controllers.base import Controller
-from controllers.types import Agents, Reports
-from providers import dispatch_model
+from controllers.features import settings_of
+from controllers.reports import Reports
 from engine import runtime
 from engine.proc import ran
-from features.critique.details import CritiqueDetails
-from features.critique.lenses import DEFAULT, LENSES
+from controllers.critique.lenses import DEFAULT, LENSES
 from resources.critique import Critique
 from engine.ports import answers
 from resources.base import SYSTEM, Refused
@@ -33,7 +31,7 @@ class Critiques(Controller):
     resource = Critique
 
     @action
-    def round(self, what: str, critics: int = 0, lenses: str = "", model: str = "sonnet") -> str:
+    def begin(self, what: str, model: str, critics: int = 0, lenses: str = "") -> str:
         chosen = self._lenses(lenses, critics)
         settings = self._app_ready()
         report = Reports(self.record, actor=self.actor).create(f"What the critics found about {what}"[:80], brief=f"Critique round on: {what}")
@@ -41,7 +39,6 @@ class Critiques(Controller):
         folder = runtime.folder(self.record.root) / "critiques" / str(row.n)
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "round.md").write_text(page(settings.app, settings.login, settings.browsers))
-        model = self._model(model)
         sent = self._briefed(folder, what, chosen)
         self.update(row.n, critics=sent)
         briefs = "; ".join(f"{c['name']} ({c['lens']}) with the brief in {c['brief']}" for c in sent)
@@ -57,7 +54,7 @@ class Critiques(Controller):
         return chosen[:critics] if critics else chosen
 
     def _app_ready(self):
-        settings = CritiqueDetails.values(self.record)
+        settings = settings_of(self.record, "critique")
         if not settings.app:
             raise Refused('name the app the critics open first: journal settings, critique.app "<address>"')
         if settings.seed:
@@ -65,10 +62,6 @@ class Critiques(Controller):
         if not answers(settings.app):
             raise Refused(f"the app at {settings.app} does not answer; start it, then ask for the round again")
         return settings
-
-    def _model(self, model: str) -> str:
-        caller = Agents(self.record, actor=SYSTEM).rows.by_title(self.session) if self.session else None
-        return dispatch_model(caller.provider, model) if caller else model
 
     def _briefed(self, folder, what: str, chosen: list[str]) -> list[dict]:
         sent = []
@@ -91,6 +84,3 @@ class Critiques(Controller):
     def complete(self, n: int, how: str = "", **data):
         self._unfinished(n, "finished")
         return super().complete(n, how or "the round is over", **data)
-
-
-types_module.register(Critiques)
