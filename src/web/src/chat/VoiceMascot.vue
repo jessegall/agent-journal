@@ -1,4 +1,5 @@
 <script setup>
+import "../figure/falls.css";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {
     PRESENCE_GRACE_MS,
@@ -51,7 +52,6 @@ let last = null;
 let stage = 0;
 let blinkTimer = 0;
 let actTimer = 0;
-
 
 function play(sheet) {
     turn.value += 1;
@@ -380,45 +380,6 @@ const passed = computed(() => {
 
 .voice-mascot.launched {
     animation: mascot-launch calc(var(--fall-ms) * 2) both;
-}
-
-@keyframes mascot-launch {
-    0% {
-        transform: none;
-        animation-timing-function: ease-out;
-    }
-
-    35% {
-        transform: translateY(calc(-1 * var(--size) / 5));
-        animation-timing-function: ease-in;
-    }
-
-    70% {
-        transform: scale(calc(1 + var(--squash)), calc(1 - var(--squash)));
-        animation-timing-function: ease-out;
-    }
-
-    85% {
-        transform: translateY(calc(-1 * var(--bounce)));
-    }
-
-    100% {
-        transform: none;
-    }
-}
-
-@keyframes mascot-land {
-    0% {
-        transform: scale(calc(1 + var(--squash)), calc(1 - var(--squash)));
-    }
-
-    45% {
-        transform: translateY(calc(-1 * var(--bounce)));
-    }
-
-    100% {
-        transform: none;
-    }
 }
 
 .voice-mascot.passing {

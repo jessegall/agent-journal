@@ -49,6 +49,9 @@ export const POSTURES = {
 // how long the figure takes to change from one clip, posture or facing to the next, easing out of the pose before it, in seconds
 export const CHANGE_SECONDS = 0.25;
 
+// A figure stepping out of the way sprints, at this many times its walking pace and with its steps that much quicker
+export const SPRINT = 2;
+
 // The figure walks this many pixels a second. A jump crouches this long before it leaves the ground and is in the air for this long, a
 // little longer for a higher perch, in milliseconds; a fall takes as long as a body takes to drop that far.
 const WALK_SPEED = 90;
@@ -67,11 +70,12 @@ export const STEADY = 5;
 // The trip of a picture `size` pixels tall from `from` to `to`, its left and top, or null when they are closer than STEADY: its way, -1
 // left or 1 right, and its legs, each a move of the picture taking `ms` after `lead`. Up to a perch it walks to below it and then jumps,
 // now and then turning over on a high jump; down from one it falls first and then walks, never walking on air. `straight` is for ground
-// that came or went under it: it goes straight up or down where it is, then walks. It lands after a hop unless it `hangs` there.
-export function tripBetween(from, to, size, {straight = false, hangs = false, random = Math.random} = {}) {
+// that came or went under it: it goes straight up or down where it is, then walks. It lands after a hop unless it `hangs` there. It walks
+// at `pace` times its walking speed, which the trip keeps.
+export function tripBetween(from, to, size, {straight = false, hangs = false, pace = 1, random = Math.random} = {}) {
     if (Math.hypot(to.x - from.x, to.y - from.y) < STEADY) return null;
     const across = Math.abs(to.x - from.x);
-    const walk = across < STEADY ? 0 : (across / WALK_SPEED) * 1000;
+    const walk = across < STEADY ? 0 : (across / (WALK_SPEED * pace)) * 1000;
     const height = Math.abs(to.y - from.y);
     const up = to.y < from.y;
     const flip = up && flips(height, size, random);
@@ -87,7 +91,7 @@ export function tripBetween(from, to, size, {straight = false, hangs = false, ra
     };
     const stroll = {x: to.x, y: to.y, ms: walk, lead: 0, easing: "linear"};
     const legs = up && !straight ? [{...stroll, y: from.y}, hop] : [{...hop, x: from.x}, stroll];
-    return {way: Math.sign(to.x - from.x) || 1, legs, lands: !hangs};
+    return {way: Math.sign(to.x - from.x) || 1, legs, lands: !hangs, pace};
 }
 
 // The posture a clip is drawn in at a place of `posture`: that one when the clip can be drawn in it, else the first the clip can
@@ -233,16 +237,20 @@ export function seatOf(figure, near) {
     return {...freeSpot(homeSeats(edge, figure), figure, near), view: null, on: element};
 }
 
-// Where a figure clicked out of the way goes at home, its picture clear of `box`, the one it was clicked in: a seat while it must sit,
-// else a seat or a place along the edge, whichever hides least; null when none at home is clear of it
+// Where a figure that steps out of the way goes at home, its picture clear of `box`, the one it stepped aside from: a seat while it must
+// sit, else a seat or a place along the edge. The first free one on the right of the box is taken, free being that it hides nothing,
+// else the one on either side that hides least; null when none at home is clear of the box.
 export function clearOf(box, figure, near, seated) {
     const {element, edge} = groundEdge();
-    const spots = seated ? homeSeats(edge, figure) : [...homeSeats(edge, figure), ...homeStands(edge, figure)];
-    const spot = freeSpot(
-        spots.filter((each) => !overlaps(boxAt(each, figure), box)),
+    const spots = (seated ? homeSeats(edge, figure) : [...homeSeats(edge, figure), ...homeStands(edge, figure)]).filter(
+        (each) => !overlaps(boxAt(each, figure), box)
+    );
+    const right = freeSpot(
+        spots.filter((each) => each.x > (box.left + box.right) / 2),
         figure,
         near
     );
+    const spot = right && !hiddenAt(right, figure) ? right : freeSpot(spots, figure, near);
     return spot && {...spot, view: null, on: element};
 }
 
@@ -257,33 +265,54 @@ export function groundEdge() {
     return {element, edge: {left: box.left, width: box.width, top: top ? box.top : box.bottom}};
 }
 
-// What a figure resting on a spot keeps of it: the element it rests on, the spot's place on that element, the posture it rests in there,
-// and whether that element is the ground at home; null when it rests on nothing on the page
+// What a figure resting on a spot keeps of it: the element it rests on, the spot's place from that element's edge, the posture it rests in
+// there, and whether it rests on the ground at home, which is then whatever is the ground at home, as bars dock over the compose box and go;
+// null when it rests on nothing on the page
 export function footingOn(spot) {
     const element = spot.on;
     if (!element?.isConnected) return null;
-    const box = element.getBoundingClientRect();
-    return {element, dx: spot.x - box.left, dy: spot.y - box.top, posture: spot.posture, home: element === groundEdge().element};
+    const home = element === groundEdge().element;
+    const edge = home ? groundEdge().edge : element.getBoundingClientRect();
+    return {element, dx: spot.x - edge.left, dy: spot.y - edge.top, posture: spot.posture, home};
 }
 
-// Where a footing's spot is now, carried along as its element moves, or null when the ground went from under the figure: the element left
-// the page or has no size, it was the ground at home and the ground at home is another element now, as a bar docks or is closed, or it
-// carried the figure out of its world, as a bubble scrolls out of the chat
+// Where a footing's spot is now, carried along as what it rests on moves, or null when the ground went from under the figure: the element
+// left the page or has no size, or it carried the figure out of its world, as a bubble scrolls out of the chat
 export function footingNow({element, dx, dy, posture, home}, figure) {
-    const box = element.isConnected ? element.getBoundingClientRect() : null;
-    if (!box?.width || !box.height || (home && groundEdge().element !== element)) return null;
-    const spot = {x: box.left + dx, y: box.top + dy};
+    const edge = home ? groundEdge().edge : element.isConnected && element.getBoundingClientRect();
+    if (!home && (!edge?.width || !edge.height)) return null;
+    const spot = {x: edge.left + dx, y: edge.top + dy};
     return inWorld({...spot, posture}, figure) ? spot : null;
+}
+
+// whether an element is the bars docked over the compose box
+const isBars = (element) => Boolean(element?.hasAttribute?.(DOCKED_BARS.slice(1, -1)));
+
+// Where a figure resting at `spot` by `footing` is now, with the footing it keeps and how it got there, or null once its ground has gone
+// from under it. Anywhere but home it is carried along with what it rests on. At home it stays where it stood along the ground, at its
+// height above whatever is the ground there now, and when that ground is or was the bars docked over the compose box it moves with them
+// as the flat figure did: "dropping" when they shrink or go, "launched" when they grow or come; else it is "carried", as on a compose box
+// that grows while the user types.
+export function groundUnder(footing, spot, figure) {
+    const now = footingNow(footing, figure);
+    if (!now) return null;
+    if (!footing.home) return {spot: {...spot, ...now}, footing, motion: "carried"};
+    const {element, edge} = groundEdge();
+    const there = {...spot, y: now.y};
+    const bars = isBars(element) || isBars(footing.element);
+    const motion = !bars || Math.abs(there.y - spot.y) <= 0.3 ? "carried" : there.y > spot.y ? "dropping" : "launched";
+    return {spot: there, footing: {...footing, element, dx: spot.x - edge.left}, motion};
 }
 
 // The trip of a figure resting at `place` to `spot` (tripBetween), from its picture in the posture it travels in where it is to its picture
 // in the posture it travels in there
-export function tripTo(place, spot, figure, {straight = false, random = Math.random} = {}) {
+export function tripTo(place, spot, figure, {straight = false, pace = 1, random = Math.random} = {}) {
     const from = boxAt(place, figure, POSTURES[place.posture].travels);
     const to = boxAt(spot, figure, POSTURES[spot.posture].travels);
     return tripBetween({x: from.left, y: from.top}, {x: to.left, y: to.top}, figure.size, {
         straight,
         hangs: spot.posture === "hang",
+        pace,
         random,
     });
 }

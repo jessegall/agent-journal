@@ -129,6 +129,8 @@ test("on the move the figure walks on with what its body is doing, and simply wa
     expect(clipFor(scene({trip: {...moves, way: 1}}), canDraw)).toEqual({clip: "think", facing: 90, posture: "walk"});
     expect(clipFor(scene({trip: {...moves, way: -1}, doing: "idle"}), canDraw)).toEqual({clip: "walk", facing: 270});
     expect(clipFor(scene({trip: {...moves, way: 1}, doing: "type"}), canDraw)).toEqual({clip: "walk", facing: 90});
+    // on a sprint its steps come as much quicker
+    expect(clipFor(scene({trip: {...moves, way: 1, pace: 2}, doing: "idle"}), canDraw)).toEqual({clip: "walk", facing: 90, pace: 2});
 });
 
 test("the walk is never named before the figure stands ready to go, and the leg it names then sets off with it", () => {
@@ -137,7 +139,11 @@ test("the walk is never named before the figure stands ready to go, and the leg 
     expect(clipFor(scene({trip: {way: 1}, beat: {clip: "joy", facing: 90}}), canDraw)).toEqual({clip: "joy", facing: 90, once: true});
     // ready, the clip of the leg is the one the leg sets off with, and once it moves nothing more sets off
     expect(clipFor(scene({trip: {started: true, way: 1}, doing: "idle"}), canDraw)).toEqual({clip: "walk", facing: 90, startsLeg: true});
-    expect(clipFor(scene({trip: {started: true, hopping: true, clip: "jump"}}), canDraw)).toEqual({clip: "jump", facing: 0, startsLeg: true});
+    expect(clipFor(scene({trip: {started: true, hopping: true, clip: "jump"}}), canDraw)).toEqual({
+        clip: "jump",
+        facing: 0,
+        startsLeg: true,
+    });
     expect(clipFor(scene({trip: {started: true, moves: true, way: 1}, doing: "idle"}), canDraw)).not.toHaveProperty("startsLeg");
 });
 
@@ -172,7 +178,10 @@ test("at rest it hangs by its grip, plays a beat turned to it, points while the 
     expect(clipFor(scene({beat: {clip: "joy", facing: 270}}), canDraw)).toEqual({clip: "joy", facing: 270, once: true});
     expect(clipFor(scene({place: {posture: "stand", view: "question"}, state: "asking", doing: "idle"}), canDraw).clip).toBe("point");
     expect(clipFor(scene({place: {posture: "stand", view: "question"}}), canDraw).clip).toBe("think");
-    expect(clipFor(scene({place: {posture: "sit", face: 60}, state: "running", doing: "type"}), canDraw)).toEqual({clip: "type", facing: 60});
+    expect(clipFor(scene({place: {posture: "sit", face: 60}, state: "running", doing: "type"}), canDraw)).toEqual({
+        clip: "type",
+        facing: 60,
+    });
     // the laptop cannot be drawn standing, so standing it does what the state itself does
     expect(clipFor(scene({state: "running", doing: "type"}), canDraw)).toEqual({clip: clipOf("running"), facing: 0});
 });

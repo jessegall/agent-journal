@@ -3,24 +3,28 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
+import {fallOf} from "../domain/mascots.js";
 import {beatsAfter, canSwitch, clipFor, facesAfter, figureStateOf, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
-import {clickedAway, stayAtHome, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
+import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
 import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, workMoments} from "../figure/reactions.js";
 import {
     BODY,
     CHANGE_SECONDS,
     HOME,
     POSTURES,
+    SPRINT,
     boxAt,
     drawnIn,
     facingToward,
-    footingNow,
     footingOn,
+    groundUnder,
+    hiddenAt,
     landingOn,
     spotOf,
     tripTo,
 } from "../figure/places.js";
+import "../figure/falls.css";
 import {rows} from "../sync/rows.js";
 
 // The figure plays what the figure modules decide: what it does in figureState.js and reactions.js, where it goes in perches.js, and how
@@ -129,16 +133,18 @@ function current() {
 }
 
 const keyOf = (shown) => `${shown.clip.name}/${shown.facing}`;
-const frameOf = (clip) => Math.floor(((performance.now() - playing.started) / 1000) * clip.fps);
+// the frames a second a clip on screen plays at: its own, quickened on a sprint
+const fpsOf = (shown) => shown.clip.fps * (shown.pace ?? 1);
+const frameOf = (shown) => Math.floor(((performance.now() - playing.started) / 1000) * fpsOf(shown));
 
 // A clip plays out before another starts, or gives way at once when it is interruptible (figureState.js canSwitch). It is the one rule every
 // clip goes through, so no clip needs its own check.
-const playedOut = () => !playing.shown || canSwitch(playing.shown.clip, frameOf(playing.shown.clip), playing.index);
+const playedOut = () => !playing.shown || canSwitch(playing.shown.clip, frameOf(playing.shown), playing.index);
 
-// how far through its step the walk under a clip on the move is, stepped as the walk's own frames are
-function strideNow() {
+// how far through its step the walk under a clip on the move is, stepped as the walk's own frames are, `pace` times as quick
+function strideNow(pace) {
     const {frames, fps} = clipNamed("walk");
-    return (Math.floor((performance.now() / 1000) * fps) % frames) / frames;
+    return (Math.floor((performance.now() / 1000) * fps * pace) % frames) / frames;
 }
 
 function step() {
@@ -149,7 +155,7 @@ function step() {
     const key = keyOf(shown);
     if (playing.name !== key) playing = {name: key, started: performance.now(), shown, index: 0};
     shownClip.value = shown.clip;
-    const index = frameOf(shown.clip);
+    const index = frameOf(shown);
     playing.index = index;
     if (shown.once && index >= shown.clip.frames) {
         if (shown.departure) {
@@ -169,15 +175,16 @@ function step() {
     if (!moving.value?.started) rest();
     const look = eyesAt(looking, shown.facing, performance.now() / 1000);
     looking = look.looking;
-    const stride = drawn === "walk" ? strideNow() : null;
+    const pace = shown.pace ?? 1;
+    const stride = drawn === "walk" ? strideNow(pace) : null;
     walking.value = stride !== null || shown.clip.name === "walk";
     player.show(shown.clip, shown.clip.loops ? index % shown.clip.frames : Math.min(index, shown.clip.frames - 1), shown.facing, {
         posture: drawn,
         eyes: look.eyes,
         stride,
     });
-    const strideFps = stride === null ? 0 : clipNamed("walk").fps;
-    const fps = Math.max(shown.clip.fps, look.eyes ? LOOK_FPS : 0, strideFps, player.blending() ? BLEND_FPS : 0);
+    const strideFps = stride === null ? 0 : clipNamed("walk").fps * pace;
+    const fps = Math.max(fpsOf(shown), look.eyes ? LOOK_FPS : 0, strideFps, player.blending() ? BLEND_FPS : 0);
     frameTimer = setTimeout(step, 1000 / fps);
 }
 
@@ -206,9 +213,9 @@ function slide() {
 
 // the trip to a spot, from where the figure is in the posture it travels in to that spot in the one it travels in there (places.js); the
 // clip on screen is drawn in that posture first, so the figure gets to its feet or takes its grip where it is before the first leg
-async function moveTo(spot, straight = false) {
-    if (!tripTo(place.value, spot, figureSize(), {straight})) return settle(spot);
-    moving.value = {to: spot, straight, footing: footingOn(spot)};
+async function moveTo(spot, {straight = false, pace = 1} = {}) {
+    if (!tripTo(place.value, spot, figureSize(), {straight, pace})) return settle(spot);
+    moving.value = {to: spot, straight, pace, footing: footingOn(spot)};
     step();
     if (sliding.value) await new Promise((done) => setTimeout(done, CHANGE_SECONDS * 1000));
     if (moving.value?.to === spot) setOff();
@@ -216,9 +223,9 @@ async function moveTo(spot, straight = false) {
 
 // Until it sets off the figure keeps to its ground, so the trip's legs are drawn then, from where it is now to where the spot is now
 function setOff() {
-    const {to, straight, footing: held} = moving.value;
+    const {to, straight, pace, footing: held} = moving.value;
     const there = landingOn(to, held, figureSize());
-    const trip = tripTo(place.value, there, figureSize(), {straight});
+    const trip = tripTo(place.value, there, figureSize(), {straight, pace});
     footing = null;
     if (trip) {
         moving.value = {...moving.value, ...trip};
@@ -262,18 +269,33 @@ function depart() {
 function settle(spot, held = footingOn(spot)) {
     place.value = spot;
     footing = held;
+    covering = hiddenAt(spot, figureSize());
 }
 
-// Each frame what the figure rests on carries it along as it moves (places.js footingNow); when the ground went from under it, it goes at
-// once, without waiting for its clip, as gravity does not, straight up or down to the ground at home and on to its place there
+// Each frame the figure keeps to what it rests on as that moves (places.js groundUnder), falling with the bars under it or lifted by them;
+// when the ground went from under it, it goes at once, without waiting for its clip, as gravity does not, straight up or down to the
+// ground at home and on to its place there
 function watchFooting() {
     footFrame = requestAnimationFrame(watchFooting);
     if (!footing || !here.value || document.hidden) return;
-    const to = footingNow(footing, figureSize());
-    if (!to) return uprooted();
-    if (Math.hypot(to.x - place.value.x, to.y - place.value.y) <= 0.3) return;
-    place.value = {...place.value, ...to};
+    const ground = groundUnder(footing, place.value, figureSize());
+    if (!ground) return uprooted();
+    footing = ground.footing;
+    if (Math.hypot(ground.spot.x - place.value.x, ground.spot.y - place.value.y) <= 0.3) return;
+    if (ground.motion !== "carried") groundMoved(ground.motion);
+    place.value = ground.spot;
     rest();
+}
+
+// The bars under the figure shrank, went, grew or came, and it falls with them or is lifted by them as the flat figure did, for twice the
+// voice's fall after the last change (domain/mascots.js FALLS)
+const moved = ref("");
+let movedTimer = 0;
+const fall = computed(() => fallOf(voice.value));
+function groundMoved(motion) {
+    clearTimeout(movedTimer);
+    moved.value = motion;
+    movedTimer = setTimeout(() => (moved.value = ""), fall.value.ms * 2);
 }
 
 function uprooted() {
@@ -283,7 +305,9 @@ function uprooted() {
     playing = {name: "", started: 0, shown: null, index: 0};
     beats.value = [];
     landing.value = false;
-    moveTo(stayingAt(stay, figureSize(), place.value), true);
+    const spot = stayingAt(stay, figureSize(), place.value);
+    const clear = {state: held.value.state, now: Date.now() / 1000, near: place.value, figure: figureSize(), cleared};
+    moveTo(keptClear(spot, clear), {straight: true});
 }
 
 // the scene the reactions are decided in
@@ -308,6 +332,7 @@ function look() {
     const pastime = pastimeFor(scene(), waited, pastimesDue, now.value, Math.random, hasClip);
     const after = [egg, pastime].filter(Boolean);
     if (after.length) beats.value = [...beats.value, ...after];
+    if (coveredSince()) stepOutOf(boxAt(place.value, figureSize(), drawn));
     const target = targetFor({
         state: held.value.state,
         counts: counts.value,
@@ -319,13 +344,31 @@ function look() {
         cleared,
     });
     stay = target.stay;
-    if (!moving.value && !arriving.value) moveTo(target.spot);
+    if (!moving.value && !arriving.value) {
+        moveTo(target.spot, {pace: hurried ? SPRINT : 1});
+        hurried = false;
+    }
     if (!document.hidden) lookTimer = setTimeout(look, LOOK_EVERY);
 }
 
-// a click on the figure's body sends it out of the way of what it was drawn over, on a trip like any other
+// what the figure hid where it came to rest, so something that appears under it since, as a new message, is told apart from what it
+// could not help covering there
+let covering = 0;
+// the figure sprints on its next trip, out of the way
+let hurried = false;
+
+// The figure steps out of the way of what is under `box`, its picture, and sprints there, as when it is clicked or a new message appears
+// under it (perches.js stepAside)
+function stepOutOf(box) {
+    ({stay, cleared} = stepAside(stay, box, Date.now() / 1000));
+    hurried = true;
+}
+
+// whether something has appeared under the figure since it came to rest, as a new message under its feet
+const coveredSince = () => !moving.value && footing && hiddenAt(place.value, figureSize()) > covering;
+
 function clicked(event) {
-    ({stay, cleared} = clickedAway(stay, event.currentTarget.parentElement.getBoundingClientRect(), Date.now() / 1000));
+    stepOutOf(event.currentTarget.parentElement.getBoundingClientRect());
     look();
 }
 
@@ -425,15 +468,33 @@ const chasing = computed(() => shownClip.value?.name === "squire_chase");
 const passing = computed(() => ["enter", "exit"].includes(shownClip.value?.name));
 const chaseMs = computed(() => (chasing.value ? (shownClip.value.frames / shownClip.value.fps) * 1000 : 0));
 
+// how the picture moves with the bars under it, as the flat figure's did: down over the voice's fall, falling faster as it goes, or up
+// quickly, easing out
+const GROUND_MOVES = {
+    dropping: (fall) => `transform ${fall.ms}ms cubic-bezier(0.55, 0, 1, 0.45)`,
+    launched: () => "transform 260ms cubic-bezier(0.2, 0.8, 0.3, 1)",
+};
+
+// the body squashes and bounces as the flat figure's did when the bars under it move, `moved` naming which way
+const actorStyle = computed(() => ({
+    "--size": `${SIZE}px`,
+    "--fall-ms": `${fall.value.ms}ms`,
+    "--squash": fall.value.squash,
+    "--bounce": `${fall.value.bounce}px`,
+    ...(chasing.value && {animationDuration: `${chaseMs.value}ms`}),
+}));
+
 const style = computed(() => ({
     width: `${SIZE}px`,
     height: `${SIZE}px`,
     transform: `translate(${at.value.x}px, ${at.value.y}px)`,
     transition: moving.value?.moves
         ? `transform ${leg.value.ms}ms ${leg.value.easing} ${leg.value.lead}ms`
-        : sliding.value
-          ? `transform ${CHANGE_SECONDS * 1000}ms ease-in-out`
-          : "none",
+        : moved.value
+          ? GROUND_MOVES[moved.value](fall.value)
+          : sliding.value
+            ? `transform ${CHANGE_SECONDS * 1000}ms ease-in-out`
+            : "none",
 }));
 </script>
 
@@ -447,7 +508,7 @@ const style = computed(() => ({
         :data-clip="shownClip?.name"
     >
         <div class="voice-figure-body" :style="bodyStyle" @click="clicked" />
-        <div :class="['voice-figure-actor', {chasing}]" :style="chasing ? {animationDuration: `${chaseMs}ms`} : null">
+        <div :class="['voice-figure-actor', moved, {chasing}]" :style="actorStyle">
             <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
             <template v-if="chasing">
                 <svg class="voice-figure-bug" :style="{animationDuration: `${chaseMs}ms`}" viewBox="0 0 16 12" width="16" height="12">
@@ -486,6 +547,22 @@ const style = computed(() => ({
 .voice-figure-actor {
     width: 100%;
     height: 100%;
+    transform-origin: 50% 100%;
+}
+
+.voice-figure-actor.dropping {
+    animation: mascot-land calc(var(--fall-ms) * 0.9) ease-out var(--fall-ms) both;
+}
+
+.voice-figure-actor.launched {
+    animation: mascot-launch calc(var(--fall-ms) * 2) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .voice-figure-actor.dropping,
+    .voice-figure-actor.launched {
+        animation: none;
+    }
 }
 
 /* the squire runs out across the pane after the bug and comes back */

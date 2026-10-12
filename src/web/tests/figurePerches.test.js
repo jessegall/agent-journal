@@ -1,7 +1,7 @@
 // @vitest-environment node
 import {beforeEach, expect, test} from "vitest";
 
-const {CLEARED_SECONDS, HANGS, HANG_SHARE, ROAMS, SITS, clickedAway, perchOn, perchSpot, roamNext, stayAtHome, stayForLook, targetFor} =
+const {CLEARED_SECONDS, HANGS, HANG_SHARE, ROAMS, SITS, perchOn, perchSpot, roamNext, stayAtHome, stayForLook, stepAside, targetFor} =
     await import("../src/figure/perches.js");
 const {boxAt, overlaps} = await import("../src/figure/places.js");
 const {write} = await import("./figurePage.js");
@@ -154,7 +154,7 @@ test("with something waiting on the user the figure keeps its stay rather than g
 test("a click sends the figure out of the box it was in, to a spot at home clear of it, until the box has been clear a while", () => {
     const asleep = {state: "asleep", counts: {}, now: 100, near: {x: 1200, y: 800}, figure: FIGURE, hands: HANDS};
     const seat = targetFor({...asleep, stay: {where: "seat", until: 0}}).spot;
-    const {stay, cleared} = clickedAway({where: "edge", until: 500}, boxAt(seat, FIGURE), 100);
+    const {stay, cleared} = stepAside({where: "edge", until: 500}, boxAt(seat, FIGURE), 100);
     expect(stay.until).toBe(0);
     // an agent that cannot act keeps its figure seated, on the other corner
     const away = targetFor({...asleep, stay, cleared}).spot;

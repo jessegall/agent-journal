@@ -125,12 +125,17 @@ export function stayingAt(stay, figure, near) {
 
 // Where the figure goes now and the stay it keeps: seated at home while its agent cannot act; to the tab of what waits on the user when
 // something does and that tab has a spot inside the figure's world; otherwise where its stay is, drawing the next stay when this one is
-// over or its place is gone. `near` is where it is, `counts` the views' badge counts and `state` what the agent does. While the box it
-// was clicked out of is `cleared`, a spot whose picture would cover it is traded for one at home clear of it.
+// over or its place is gone. `near` is where it is, `counts` the views' badge counts and `state` what the agent does. The spot is kept
+// clear of the box the figure stepped aside from while that box is `cleared` (keptClear).
 export function targetFor({state, counts, stay, now, near, figure, hands, cleared = {until: 0}, random = Math.random}) {
     const target = targetOf({state, counts, stay, now, near, figure, hands, random});
-    if (now >= cleared.until || !overlaps(boxAt(target.spot, figure), cleared.box)) return target;
-    return {...target, spot: clearOf(cleared.box, figure, near, RESTS.has(state)) ?? target.spot};
+    return {...target, spot: keptClear(target.spot, {state, now, near, figure, cleared})};
+}
+
+// The spot, or, while the box the figure stepped aside from is `cleared` and the spot's picture would cover it, one at home clear of it
+export function keptClear(spot, {state, now, near, figure, cleared}) {
+    if (now >= cleared.until || !overlaps(boxAt(spot, figure), cleared.box)) return spot;
+    return clearOf(cleared.box, figure, near, RESTS.has(state)) ?? spot;
 }
 
 function targetOf({state, counts, stay, now, near, figure, hands, random}) {
@@ -144,12 +149,12 @@ function targetOf({state, counts, stay, now, near, figure, hands, random}) {
     return {spot: stayingAt(next, figure, near) || seatOf(figure, near), stay: next};
 }
 
-// how long the box a figure was clicked out of stays clear of it, in seconds
+// how long the box a figure stepped aside from stays clear of it, in seconds
 export const CLEARED_SECONDS = 30;
 
-// The stay and the cleared box once the user clicks the figure out of the way: the stay is over, and `box`, the picture it was drawn in
-// when clicked, is kept clear of it for CLEARED_SECONDS
-export const clickedAway = (stay, box, now) => ({stay: {...stay, until: 0}, cleared: {box, until: now + CLEARED_SECONDS}});
+// The stay and the cleared box once the figure steps out of the way, as when the user clicks it or a message appears under it: the stay is
+// over, and `box`, the picture it was drawn in then, is kept clear of it for CLEARED_SECONDS
+export const stepAside = (stay, box, now) => ({stay: {...stay, until: 0}, cleared: {box, until: now + CLEARED_SECONDS}});
 
 // The stay once the ground went from under the figure: a stroll along the home edge or a seat there is kept, any stay away from home is
 // given up for a seat

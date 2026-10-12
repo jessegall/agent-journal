@@ -4,11 +4,14 @@ import {afterEach, expect, test} from "vitest";
 const {
     POSTURES,
     STEADY,
+    SPRINT,
     boxAt,
+    clearOf,
     facingToward,
     footingNow,
     footingOn,
     groundEdge,
+    groundUnder,
     hiddenAt,
     inWorld,
     landingOn,
@@ -31,7 +34,11 @@ const CHAT = {left: 200, top: 100, right: 900, bottom: 800};
 const page = (box, docked = null, {chat = CHAT, tabs = {}} = {}) => {
     globalThis.window = {innerWidth: 1280, innerHeight: 800};
     globalThis.CSS = {escape: (text) => text};
-    const bars = docked && {getBoundingClientRect: () => docked};
+    const bars = docked && {
+        isConnected: true,
+        hasAttribute: (name) => name === "data-figure-docked-bars",
+        getBoundingClientRect: () => docked,
+    };
     const thread = {
         getBoundingClientRect: () => chat,
         querySelector: (selector) => (selector === "[data-figure-docked-bars]" ? bars : null),
@@ -173,6 +180,10 @@ test("a trip up walks under the place and then jumps, one down falls and then wa
     expect(tripBetween({x: 100, y: 500}, {x: 100, y: 300}, 112, {random: () => 0, hangs: true})).toMatchObject({lands: false});
     expect(tripBetween({x: 100, y: 500}, {x: 100, y: 300}, 112, {random: () => 0}).legs[1].clip).toBe("backflip");
     expect(STEADY).toBeGreaterThan(0);
+    // stepping out of the way it sprints, its stroll that much shorter
+    const sprint = tripBetween({x: 100, y: 500}, {x: 400, y: 500}, 112, {pace: SPRINT});
+    expect(sprint.legs[1].ms * SPRINT).toBeCloseTo(tripBetween({x: 100, y: 500}, {x: 400, y: 500}, 112).legs[1].ms, 5);
+    expect(sprint.pace).toBe(SPRINT);
     // a few pixels across are no walk at all, so no leg walks the figure on the spot
     const above = tripBetween({x: 100, y: 500}, {x: 100 + STEADY - 1, y: 300}, 112, {random: () => 0.99});
     expect(above.legs.filter((each) => each.ms > 0).map((each) => each.clip ?? "walk")).toEqual(["jump"]);
@@ -190,9 +201,44 @@ test("a figure keeps its place on what it rests on as that moves, and loses its 
     expect(footingNow(kept, FIGURE)).toEqual({x: 330, y: 580});
     expect(footingNow({...kept, element: {isConnected: false}}, FIGURE)).toBe(null);
     expect(footingNow({...kept, element: {isConnected: true, getBoundingClientRect: () => ({...box, height: 0})}}, FIGURE)).toBe(null);
-    // on the ground at home it loses its footing when a bar docks over the compose box
+    // on the ground at home it keeps to whatever the ground there is, here a bar docked over the compose box
     page(box, {left: 300, top: 556, width: 400, height: 44});
-    expect(footingNow({element: home, dx: 10, dy: 0, posture: "stand", home: true}, FIGURE)).toBe(null);
+    expect(footingNow({element: home, dx: 10, dy: 0, posture: "stand", home: true}, FIGURE)).toEqual({x: 310, y: 556});
+});
+
+test("at home the figure falls as the bars under it shrink or go and is lifted as they grow or come, and rises with a growing box", () => {
+    const box = {left: 300, top: 600, width: 400, height: 120};
+    page(box);
+    const spot = spotOf(null, FIGURE, {x: 640, y: 600});
+    const footing = footingOn(spot);
+    // the compose box grows as the user types, and carries it up with no hop, as the flat figure sat on it
+    box.top = 580;
+    expect(groundUnder(footing, spot, FIGURE)).toMatchObject({spot: {x: spot.x, y: 580}, motion: "carried"});
+    // a bar docks over the box, and lifts it
+    page(box, {left: 300, top: 540, width: 400, height: 40});
+    const lifted = groundUnder(footing, {...spot, y: 580}, FIGURE);
+    expect(lifted).toMatchObject({spot: {x: spot.x, y: 540}, motion: "launched"});
+    // the bar folds smaller as the chat scrolls up, and it falls with it
+    page(box, {left: 300, top: 560, width: 400, height: 20});
+    const fell = groundUnder(lifted.footing, lifted.spot, FIGURE);
+    expect(fell).toMatchObject({spot: {x: spot.x, y: 560}, motion: "dropping"});
+    // the bar goes, and it falls to the compose box
+    page(box);
+    expect(groundUnder(fell.footing, fell.spot, FIGURE)).toMatchObject({spot: {x: spot.x, y: 580}, motion: "dropping"});
+    // carried out of its world, its ground is gone
+    box.top = 2000;
+    expect(groundUnder(fell.footing, fell.spot, FIGURE)).toBe(null);
+});
+
+test("a figure stepping out of the way takes the first free spot on the right of where it was, and one on its left only then", () => {
+    page({left: 300, top: 600, width: 400, height: 120});
+    const was = spotOf(null, FIGURE, {x: 440, y: 600});
+    expect(was.x).toBe(440);
+    expect(clearOf(boxAt(was, FIGURE), FIGURE, was, false)).toMatchObject({x: 640, posture: "stand"});
+    expect(clearOf(boxAt(was, FIGURE), FIGURE, was, true).x).toBeGreaterThan(640);
+    // from the right end nothing on the right is clear of it, so it goes left
+    const end = spotOf(null, FIGURE, {x: 640, y: 600});
+    expect(clearOf(boxAt(end, FIGURE), FIGURE, end, false).x).toBeLessThan(end.x);
 });
 
 test("a trip lands on the line where it is when the figure arrives, not where it was when it set off, and never sinks through it", () => {
@@ -207,7 +253,7 @@ test("a trip lands on the line where it is when the figure arrives, not where it
     expect(footingOn(spot).dy).toBe(40);
     expect(footingOn(landingOn(spot, footing, FIGURE)).dy).toBe(0);
     // with its ground gone the spot is kept as it was, and the footing that is gone uproots the figure as it rests
-    expect(landingOn(spot, {...footing, element: {isConnected: false}}, FIGURE)).toEqual(spot);
+    expect(landingOn(spot, {...footing, home: false, element: {isConnected: false}}, FIGURE)).toEqual(spot);
 });
 
 test("a trip is drawn from where the figure is as it sets off, so one getting up from a seat that moved walks level along the line", () => {

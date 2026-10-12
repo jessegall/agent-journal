@@ -82,11 +82,13 @@ export function clipFor(scene, canDraw) {
     return {clip: canDraw(doing, place.posture) ? doing : clipOf(state), facing: place.posture === "sit" ? place.face : 0};
 }
 
-// the clip of a leg: its hop, or the walk, walked on with what the body is doing where that can be drawn on the move
+// the clip of a leg: its hop, or the walk, walked on with what the body is doing where that can be drawn on the move, its steps as much
+// quicker as the trip's `pace` is above a walk
 function legClip(trip, doing, canDraw) {
     if (trip.hopping) return {clip: trip.clip, facing: 0};
     const facing = trip.way > 0 ? 90 : 270;
-    return doing !== "idle" && canDraw(doing, "walk") ? {clip: doing, facing, posture: "walk"} : {clip: "walk", facing};
+    const steps = trip.pace > 1 ? {pace: trip.pace} : {};
+    return doing !== "idle" && canDraw(doing, "walk") ? {clip: doing, facing, posture: "walk", ...steps} : {clip: "walk", facing, ...steps};
 }
 
 // Whether the clip on screen gives way to another that is wanted: at once when it is interruptible (figure.js CLIPS), else once it has played
@@ -122,7 +124,11 @@ export function testResultsAfter(agent, known) {
     const ended = (agent?.data.cards || []).filter((card) => card.key?.startsWith("tests:") && ["done", "failed"].includes(card.state));
     const fresh = ended.filter((card) => known.get(card.key) !== card.state);
     fresh.forEach((card) => known.set(card.key, card.state));
-    return fresh.map((card) => ({beat: card.state === "done" ? "tests_passed" : "tests_failed", at: Number(card.ended || card.at), card: card.key}));
+    return fresh.map((card) => ({
+        beat: card.state === "done" ? "tests_passed" : "tests_failed",
+        at: Number(card.ended || card.at),
+        card: card.key,
+    }));
 }
 
 // The beats for what reached the agent's row after `seenAt` (seconds), oldest first: its cards, and the user's own message
