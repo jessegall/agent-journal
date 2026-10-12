@@ -4,6 +4,21 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.3 — Nothing in the Developer group is on unless you ask, and a chat you scrolled up never jumps
+
+- Developer error reports, session recording and the critique rounds are off until you switch them on. All three were on in every project, because a feature is on unless it says otherwise and none of them said otherwise. Developer error reports in particular turn the journal's quiet fallbacks into refusals, which is not what a project that is merely using the journal wants.
+- A chat you have scrolled up in never scrolls itself down again. It stopped following when you scrolled away and then started again on its own as soon as the foot came near, which carried you off your place mid-read. Only the button at the foot brings it back, and only a fresh load starts at the bottom.
+
+## 2.272.2 — An agent that is plainly working is no longer called not responding
+
+- The status bar said "started, but it never reported in" for an agent that was writing in the same window. It judged by when the session STARTED rather than when it was last heard from, so any session older than half a minute whose agent row carried no event read as silent for ever. It now reads the time it was last heard.
+- Watching a feature's expectations no longer fails on an empty file. It read each trigger's marks with a raw decode, and an empty mark file left behind by an older build raised on every round; it now reads them through the same funnel as everything else, which answers an empty file with nothing.
+
+## 2.272.1 — The figure and the what's-new cards are off until you ask for them
+
+- The voice's figure is off unless you switch it on. Settings, Mascot. Nothing is drawn and nothing animates; the figure, its meshes and its clips are all still there, waiting for the switch.
+- The cards announcing what a new version brings are off unless you switch them on. Settings, Automatic updates. The announcements stay written in the changelog and simply are not shown, so turning the cards back on shows them from then on rather than all at once.
+
 ## 2.272.0 — Every part of the journal says what it will do, and your voice stands in the room
 
 <!-- new-feature {"id": "expects-declared", "title": "Every part of the journal says what it will do", "text": "Until now a feature's behaviour was written down in its tests, where only the suite could read it. Now each part of the journal declares what it expects to happen - this event arrives, that row is written, that line is said - beside the code that does it. A run plays every one of those promises against the real engine, and nothing new can be added without one. Where the journal develops itself it also watches those promises as they really run, and says so when something that was expected did not happen.", "button": "Show me", "opens": "settings", "note": "Settings, Developer error reports.", "art": "expects-declared.webp"} -->

@@ -8,6 +8,7 @@ class SessionRecordingDetails(FeatureDetails):
     group = Group.DEVELOPER
     label = "Record each session to a folder, for demos"
     has_skill = False
+    default = False
 
     title = "Session recording"
 

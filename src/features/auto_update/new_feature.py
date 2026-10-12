@@ -85,6 +85,11 @@ def unseen_announced(record, changelog: Path) -> list[NewFeature]:
     return unseen(record, changelog.read_text() if changelog.is_file() else "")
 
 
+def shown_announced(record, changelog: Path) -> list[NewFeature]:
+    """The same, as the viewer is handed them: none at all while the cards are switched off, so they stay written and go unshown."""
+    return unseen_announced(record, changelog) if record.setting("auto_update", {}).get("new_features") else []
+
+
 def mark_seen(root: Path, id: str) -> None:
     held = seen(root)
     if id not in held:

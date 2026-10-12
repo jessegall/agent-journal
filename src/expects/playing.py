@@ -4,12 +4,12 @@ The Fakes answer and remember. Nothing here knows what any one outcome word mean
 record of the play itself - so a word added to the grammar is a word added in one place.
 """
 
-import json
 import time
 from dataclasses import dataclass, field
 from typing import ClassVar
 
 from engine.record import Record
+from engine.stored import read_json
 from expects import At, Answering, Counting, Expectation, Given, NoSuchService
 from resources.base import SYSTEM
 
@@ -181,5 +181,5 @@ def remembered_by(record: Record, owner: str) -> dict:
     from engine import runtime
     agents = Agents(record, actor=SYSTEM).rows.standing()
     sessions = (record.state(owner, row.title).all() for row in agents)
-    marks = {path.stem: json.loads(path.read_text()) for row in agents for path in runtime.session_file(record.root, row.title, "marks").parent.glob("trigger-*.json")}
+    marks = {path.stem: read_json(path, dict, {}) for row in agents for path in runtime.session_file(record.root, row.title, "marks").parent.glob("trigger-*.json")}
     return {**record.state(owner).all(), **{key: value for state in sessions for key, value in state.items()}, **marks}

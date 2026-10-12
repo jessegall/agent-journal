@@ -8,6 +8,7 @@ class DevFaultsDetails(FeatureDetails):
     group = Group.DEVELOPER
     label = "Report developer errors"
     has_skill = False
+    default = False
 
     title = "Developer error reports"
 

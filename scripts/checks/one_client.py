@@ -6,14 +6,14 @@ HERE = Path(__file__).resolve().parents[2] / "src"
 SOURCE = HERE / "web" / "src"
 CLIENT = SOURCE / "api"
 ROUTER = SOURCE / "route.js"
-FETCH = re.compile(r"\bfetch\(")
+NAMED_FETCH = re.compile(r"""\bfetch\(\s*["'`](?:/|https?://)""")
 BOUND_FETCH = re.compile(r"[(\[,{]\s*fetch\s*[,)\]}=:]|\b(?:const|let|var|function)\s+fetch\b")
 ENDPOINTS = re.compile(r"""new EventSource\(|https?://(?:127\.0\.0\.1|localhost)|["'`]/api\b|["'`]/\$\{|["'`]/(?:journals|services|plugins|pages|manifest|identity|agents|agent-hooks|agent-controls|upstream|upgrade|stop|extension|summary)\b|["'`]\./(?:file|files|export|attach)/""")
 
 
 def names_endpoint(line: str, binds_fetch: bool) -> bool:
-    """A line names an endpoint by a path or an event source, or by the browser's fetch, unless the file binds a `fetch` of its own, such as a function it is handed."""
-    return bool(ENDPOINTS.search(line) or (not binds_fetch and FETCH.search(line)))
+    """A line names an endpoint: a path, an event source, or a fetch whose address is written out here. A fetch of an address it was handed names nothing, and neither does one in a file that binds a `fetch` of its own."""
+    return bool(ENDPOINTS.search(line) or (not binds_fetch and NAMED_FETCH.search(line)))
 
 
 def problems() -> list[str]:

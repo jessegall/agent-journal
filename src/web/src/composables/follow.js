@@ -57,7 +57,7 @@ export function useFollow(scroller) {
     function scrolled(event) {
         const box = event.currentTarget;
         const near = box.scrollHeight - box.scrollTop - box.clientHeight < NEAR_BOTTOM;
-        if (near && !following.value) follow(true);
+        // scrolling away stops the chat following; only the button at the foot starts it again, so a reader who has scrolled up is never carried off their place
         if (!near && !gliding && following.value) follow(false);
     }
 

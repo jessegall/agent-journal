@@ -683,6 +683,8 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     from engine.sessions import Sessions
     Sessions(record.root).write("claude-4242", environment=record.env, pid=os.getpid(), since=time.time() - 60)
     assert Agents(record, actor=SYSTEM).state(record.env) == "silent", "an agent started a minute ago that never reported in is said to be silent, not idle or offline"
+    Sessions(record.root).write("claude-4242", environment=record.env, pid=os.getpid(), since=time.time() - 3600, seen=time.time())
+    assert Agents(record, actor=SYSTEM).state(record.env) == "idle", "an agent heard from a moment ago is not silent, however long ago its session started"
     CONTROLLERS["agent"](record, actor=SYSTEM).create("d2c1c997-real", event="PostToolUse", status="working")
     Sessions(record.root).write("d2c1c997-real", environment=record.env, pid=os.getpid(), since=time.time() - 30, seen=time.time())
     assert Agents(record, actor=SYSTEM).state(record.env) == "working", "an older launch record of the same agent never hides the session that reports"

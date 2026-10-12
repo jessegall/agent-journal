@@ -52,9 +52,9 @@ class FormOfAddressDetails(FeatureDetails):
         ),
         Setting(
             name="mascot",
-            default=True,
-            title="Show the voice's mascot on the chat box",
-            abstract="While the agent waits, the voice's mascot sits on the edge of the chat's text box and plays a short idle loop",
+            default=False,
+            title="Show the voice's figure",
+            abstract="The voice stands in the room and animates what the agent is doing; off, nothing is drawn and nothing animates",
             scope=PROJECT,
         ),
         Setting(
