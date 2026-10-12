@@ -11,6 +11,7 @@ import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import Dot from "../kit/Dot.vue";
 import RunningCommand from "./RunningCommand.vue";
 import {useScrollback} from "../composables/scrollback.js";
+import {useFollowing} from "../composables/following.js";
 import Skeleton from "../kit/Skeleton.vue";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {markSeen} from "../sync/seen.js";
@@ -118,9 +119,21 @@ function unedit() {
     editing.value = null;
 }
 const busy = computed(() => !!owner.value && ["working", "compacting"].includes(owner.value.data.status));
-const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(undefined, owner, () => rows("work"));
+const {
+    waiting: waitingNow,
+    open: waitingOpen,
+    anchor: waitingAnchor,
+    toggle: toggleWaiting,
+} = useWaiting(undefined, owner, () => rows("work"));
 const planCard = computed(() => cardPlan(rows("plan")));
-const lastWrittenAt = computed(() => Math.max(0, ...rows("message").filter((m) => !m.deleted && m.seen[0] === "user").map((m) => m.created)));
+const lastWrittenAt = computed(() =>
+    Math.max(
+        0,
+        ...rows("message")
+            .filter((m) => !m.deleted && m.seen[0] === "user")
+            .map((m) => m.created)
+    )
+);
 const reportDock = computed(() => dockedReport(rows("report"), lastWrittenAt.value));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dump"))));
 const dockCount = computed(() => [dumpDock.value, reportDock.value, planCard.value].filter(Boolean).length);
@@ -129,25 +142,20 @@ const helping = computed(() => ((owner.value && owner.value.data.subagent_rows) 
 const activity = computed(() =>
     owner.value && owner.value.data.status === "compacting" ? "compacting" : helping.value ? `Waiting: ${helping.value.task}` : "working"
 );
-const away = ref(false);
 const planOpen = ref(true);
 let lastTop = 0;
 let lastScroll = 0;
 let planTimer = 0;
 const PLAN_SETTLE = 180;
 const PLAN_MOVE = 500;
-const NEWEST_AFTER = 1000;
-const NEWEST_AFTER_BOTTOM = 2000;
-const newestVisible = ref(false);
-let newestTimer = 0;
-let leftBottomAt = 0;
 const short = ref(false);
 const SHORT_CHAT = 420;
 const sizeWatch = new ResizeObserver(([entry]) => (short.value = entry.contentRect.height < SHORT_CHAT));
 const AT_BOTTOM = 2;
 const FOLD_AT = 8;
 const FOLDED_PLAN = 32;
-const missed = ref(0);
+const FAR = 40;
+const {away, missed, showNewest, follow: atTheFoot, toBottom: glideTo, left: readingUp, arrived} = useFollowing(scroller, FAR);
 const settledOnce = ref(false);
 const ready = ref(false);
 const unseen = computed(() =>
@@ -225,15 +233,8 @@ watch(turns, keep);
 let glidedAt = 0;
 
 function toBottom(smooth = false) {
-    const s = scroller.value;
-    if (s && smooth) {
-        glidedAt = Date.now();
-        s.scrollTo({top: s.scrollHeight, behavior: "smooth"});
-    } else if (s) {
-        s.scrollTop = s.scrollHeight;
-    }
-    away.value = false;
-    missed.value = 0;
+    if (smooth) glidedAt = Date.now();
+    glideTo(smooth);
 }
 
 watch(
@@ -279,7 +280,6 @@ onUnmounted(() => {
     added?.disconnect();
     sizeWatch.disconnect();
     clearTimeout(planTimer);
-    clearTimeout(newestTimer);
     cancelAnimationFrame(frame);
 });
 
@@ -295,7 +295,7 @@ function wheeled(e) {
     const s = scroller.value;
     if (e.deltaY < 0 && s && s.scrollHeight > s.clientHeight + AT_BOTTOM) {
         glidedAt = 0;
-        away.value = true;
+        readingUp();
     }
     if (e.deltaY > 0 && s && s.scrollHeight - s.scrollTop - s.clientHeight <= AT_BOTTOM) settlePlan(true);
 }
@@ -322,17 +322,6 @@ function settlePlan(open) {
 
 watch(planOpen, (open) => open && holdBottom());
 
-watch(away, (now) => {
-    clearTimeout(newestTimer);
-    if (!now) {
-        newestVisible.value = false;
-        leftBottomAt = Date.now();
-        return;
-    }
-    const wait = Date.now() - leftBottomAt < NEWEST_AFTER_BOTTOM ? NEWEST_AFTER_BOTTOM : NEWEST_AFTER;
-    newestTimer = setTimeout(() => (newestVisible.value = away.value), wait);
-});
-
 function holdBottom() {
     const s = scroller.value;
     const dock = s?.querySelector(".chat-docks");
@@ -347,7 +336,7 @@ function leftTheBottom(s) {
     lastScroll = s.scrollTop;
     if (!up || s.scrollHeight - s.scrollTop - s.clientHeight <= AT_BOTTOM) return;
     glidedAt = 0;
-    away.value = true;
+    readingUp();
     if (settledOnce.value) scrolledUp.value = true;
 }
 
@@ -357,12 +346,13 @@ function watchScroll() {
     const gap = followPlan(s);
     leftTheBottom(s);
     if (Date.now() - glidedAt < GLIDE) return;
-    const far = gap > 40;
+    const far = gap > FAR;
     if (far && !away.value && !store.focus && Date.now() - scrolledAt > BY_HAND) {
         toBottom();
         return;
     }
-    away.value = far;
+    if (far) readingUp();
+    else atTheFoot();
     if (settledOnce.value && away.value) scrolledUp.value = true;
     if (scrolledUp.value && s.scrollTop < NEAR_TOP) older();
 }
@@ -435,8 +425,8 @@ watch(
             laidOut.value += 1;
         }
         if (loadingOlder.value) return;
-        if (away.value) missed.value += Math.max(0, n - (before || 0));
-        else toBottom(settledOnce.value);
+        if (!away.value && settledOnce.value) glidedAt = Date.now();
+        arrived(n - (before || 0), settledOnce.value);
         if (n && !settledOnce.value) setTimeout(() => (settledOnce.value = true), 300);
     },
     {immediate: true}
@@ -461,7 +451,7 @@ watch(
             <div ref="write" :class="['thread-write', {hidden: feeding}]">
                 <Transition name="rise">
                     <button
-                        v-if="away && newestVisible"
+                        v-if="showNewest"
                         type="button"
                         :class="['thread-down', {'over-docks': dockCount}]"
                         :style="{'--docks': dockCount}"
@@ -544,11 +534,7 @@ watch(
                             </Transition>
                         </div>
                         <Transition name="status">
-                            <div
-                                v-if="busy && !waitingNow"
-                                class="thread-turn busy"
-                                :aria-label="`The agent is ${activity}`"
-                            >
+                            <div v-if="busy && !waitingNow" class="thread-turn busy" :aria-label="`The agent is ${activity}`">
                                 <div class="thread-meta">
                                     <Dot kind="started" solid :size="6" />
                                     <template v-if="thought">

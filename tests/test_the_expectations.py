@@ -8,7 +8,9 @@ The tests below it are the grammar's own self-check: that the words a chapter of
 words the code exports, and that the engine they are played through does what the chapter says.
 """
 
+import tempfile
 from dataclasses import fields
+from pathlib import Path
 
 import pytest
 
@@ -411,6 +413,11 @@ def test_the_engine_claims_a_fact_at_dispatch_so_the_same_turn_read_three_ways_i
     assert MessageTagged(turn="t1", tag="reply").once("t1|reply").claim == "t1|reply", \
         "the listener says which key the fact is claimed under and never claims it, which is what keeps a listener read-only"
     assert claims.take("t2|reply") and not claims.take("t2|reply"), "a key is taken once and refused after"
+
+    from engine.state import State
+    kept = Path(tempfile.mkdtemp()) / "once.json"
+    assert Claims(State(kept)).take("t3|reply") and not Claims(State(kept)).take("t3|reply"), \
+        "a claim taken in one process is refused in the next: an upgrade mid-turn must not hand the held turn out again"
 
 
 def test_a_tick_holds_what_it_remembers_until_it_ends_so_order_within_it_never_matters():

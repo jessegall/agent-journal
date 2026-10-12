@@ -1,12 +1,13 @@
 import {computed, ref, unref, watch} from "vue";
+import {useFollowing} from "./following.js";
 import {api} from "../api/client.js";
 import {pollKey, usePoll} from "./poll.js";
 import {PAGE} from "../sync/rows.js";
 
 const EVERY = 3000;
-const NEAR_BOTTOM = 60;
 
 export function useTranscript(agent, session, scroller, client = api, active = () => true) {
+    const following = useFollowing(scroller);
     const turns = ref([]);
     const total = ref(0);
     const first = ref(0);
@@ -67,11 +68,9 @@ export function useTranscript(agent, session, scroller, client = api, active = (
             total.value = got.total;
             first.value = got.first;
             if (!got.turns.length) return;
-            const box = unref(scroller);
-            const atBottom = !box || box.scrollHeight - box.scrollTop - box.clientHeight < NEAR_BOTTOM;
             foldTools(got.turns);
             turns.value = [...turns.value, ...got.turns];
-            if (atBottom) requestAnimationFrame(() => unref(scroller) && (unref(scroller).scrollTop = unref(scroller).scrollHeight));
+            requestAnimationFrame(() => following.arrived(got.turns.length));
         } catch (reason) {
             error.value = reason.message;
         } finally {
@@ -113,5 +112,25 @@ export function useTranscript(agent, session, scroller, client = api, active = (
 
     const refresh = usePoll(pollKey(), fetchTurns, EVERY, undefined, active);
 
-    return {turns, total, first, folded, bodies, opening, unread, error, loading, paging, atStart, toggle, earlier, retry, refresh};
+    return {
+        turns,
+        total,
+        first,
+        folded,
+        bodies,
+        opening,
+        unread,
+        error,
+        loading,
+        paging,
+        atStart,
+        toggle,
+        earlier,
+        retry,
+        refresh,
+        missed: following.missed,
+        showNewest: following.showNewest,
+        toNewest: following.toBottom,
+        scrolled: following.scrolled,
+    };
 }

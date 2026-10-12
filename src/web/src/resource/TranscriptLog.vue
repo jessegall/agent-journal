@@ -12,7 +12,24 @@ const props = defineProps({
     entries: {type: Array, required: true},
     env: {type: String, default: ""},
 });
-const {turns, folded, bodies, opening, unread, error, loading, paging, atStart, toggle, earlier, retry} = props.transcript;
+const {
+    turns,
+    folded,
+    bodies,
+    opening,
+    unread,
+    error,
+    loading,
+    paging,
+    atStart,
+    toggle,
+    earlier,
+    retry,
+    missed,
+    showNewest,
+    toNewest,
+    scrolled,
+} = props.transcript;
 const hasBody = (t) => Boolean(t.text || t.has_text);
 const bodyOf = (t) => t.text || bodies.value[t.line] || "";
 const scroller = ref(null);
@@ -33,7 +50,20 @@ defineExpose({scroller});
 </script>
 
 <template>
-    <div ref="scroller" class="transcript">
+    <div ref="scroller" class="transcript" @scroll="scrolled">
+        <div class="transcript-foot">
+            <Transition name="rise">
+                <button
+                    v-if="showNewest"
+                    type="button"
+                    class="transcript-newest"
+                    :title="missed ? `${missed} arrived while you were reading` : 'Back to the newest'"
+                    @click="toNewest()"
+                >
+                    {{ missed ? `${missed} new` : "Newest" }}
+                </button>
+            </Transition>
+        </div>
         <div ref="topMark" class="edge">
             {{
                 paging
@@ -221,5 +251,39 @@ defineExpose({scroller});
 
 .turn-text :deep(p + p) {
     margin-top: 0.5em;
+}
+
+.transcript-foot {
+    position: sticky;
+    bottom: 12px;
+    z-index: 2;
+    height: 0;
+}
+
+.transcript-newest {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 18%);
+    cursor: pointer;
+}
+
+.rise-enter-active,
+.rise-leave-active {
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+}
+
+.rise-enter-from,
+.rise-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 8px);
 }
 </style>
