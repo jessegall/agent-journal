@@ -44,7 +44,8 @@ export function figureStateOf(agent, works, waitingSince, now = Date.now() / 100
     const bar = stateOf(agent, works);
     const since = Number(agent?.data.at || now);
     if (BAR_STATES[bar]) return {state: BAR_STATES[bar], since};
-    if (waitingSince || agent?.data.asking) return {state: "asking", since: waitingSince || since};
+    // the pose says what the agent does, so it waits on the user only while it does nothing else; where it stands says what waits
+    if (bar === "idle" && (waitingSince || agent?.data.asking)) return {state: "asking", since: waitingSince || since};
     if (bar === "idle") return {state: now - since >= ASLEEP_AFTER ? "asleep" : "idle", since};
     const inFlight = agent?.data.event === "PreToolUse" && TOOL_STATES[agent.data.tool];
     return {state: inFlight || "thinking", since};
