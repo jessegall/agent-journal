@@ -1,6 +1,6 @@
 from engine.worktree import WorkspaceFolders
 from framework.parts import Command, Context
-from providers import workspace_folders
+from serving import SERVED, Providers
 
 
 class Cut(Command):
@@ -12,4 +12,4 @@ class Cut(Command):
 
     def folders(self) -> WorkspaceFolders:
         """Where each provider keeps its own files: provider knowledge, read here so the controller never names a provider."""
-        return workspace_folders()
+        return SERVED.given(Providers).workspaces()

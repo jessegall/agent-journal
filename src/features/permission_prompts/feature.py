@@ -9,8 +9,7 @@ from framework.journal import Journal
 from features.permission_prompts.commands import AnswerPermission
 from features.permission_prompts.details import PermissionsDetails
 from features.permission_prompts.handlers import ShowWaitingPermission
-from features.permission_prompts.skipping import launch_args, skipped
-from providers import DRIVERS
+from features.permission_prompts.skipping import Skipping, launch_args, skipped, skipping_now
 from resources.base import SYSTEM
 from resources.types import AgentRow, Notice
 
@@ -41,9 +40,8 @@ class PermissionPrompts(Feature):
         primary = Agents(record, actor=SYSTEM).primary_to_read()
         pair = live_session(record.root, primary.title) if primary else None
         seat = pair[1] if pair else None
-        driver = DRIVERS.get(seat.provider) if seat else None
         args = list(Sessions(record.root).read(seat.terminal).args) if seat else []
+        skipping = skipping_now(seat.provider, args) if seat else Skipping()
         return {"skip": skipped(record), "session": seat.session if seat else "",
-                "running": bool(driver and driver.SKIP_ARGS and set(driver.SKIP_ARGS) <= set(args)),
-                "possible": bool(driver and driver.SKIP_ARGS)}
+                "running": skipping.running, "possible": skipping.possible}
 

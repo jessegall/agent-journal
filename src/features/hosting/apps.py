@@ -6,6 +6,7 @@ from engine.record import Record
 from engine.services import status
 from controllers.types import Tickets
 from resources.base import SYSTEM
+from serving import SERVED, Providers
 
 APP = "app"
 
@@ -15,8 +16,7 @@ def service_of(ticket) -> str:
 
 
 def worktree_of(project: Path, ticket) -> Path:
-    from providers import DRIVERS
-    return project.joinpath(*DRIVERS[ticket.provider].WORKTREES, ticket.work_environment)
+    return project.joinpath(*SERVED.given(Providers).driver(ticket.provider).WORKTREES, ticket.work_environment)
 
 
 def hosted(root: Path) -> list:

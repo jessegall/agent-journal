@@ -17,7 +17,7 @@ from features.work_tracking import tracker
 from features.work_tracking.details import CHECK_IN
 from engine.transcript import IDLE
 from features.work_tracking.next import carried_on, helping, in_sight, named_rows, questioned, ready, waiting_rows
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from resources.types import Work
 from engine.command_runs import command_runs
 from controllers.types import Agents, Messages, Todos, Works
@@ -163,7 +163,7 @@ class NameRepeatedChecks(Handler):
         if len(shell) < POLLED or len(set(shell)) > 1 or any(w.awaiting for w in working(context)):
             return
         if context.once("polled", shell[-1]):
-            provider = PROVIDERS.get(context.agent.row.provider)
+            provider = SERVED.given(Providers).offers(context.agent.row.provider)
             context.agent.whisper(POLLING if provider and provider.background_wakes else POLLING_NO_WAKE, times=POLLED, command=shell[-1][:80])
 
 
@@ -269,8 +269,8 @@ def stopped_in_auto(context, agent) -> list[Sent]:
         return []
     if nothing_left(context):
         return []
-    provider = PROVIDERS.get(agent.provider)
-    if provider is not None and agent.transcript and provider().interrupted_by_user(Path(agent.transcript)):
+    provider = SERVED.given(Providers).offers(agent.provider)
+    if provider is not None and agent.transcript and provider.interrupted_by_user(Path(agent.transcript)):
         return []
     return [Sent(f"{agent.at}", {"minutes": int(after // MINUTE)})]
 

@@ -5,7 +5,7 @@ from events.messages import MessageCreated
 from engine.sessions import Sessions, live
 from framework.parts import Context, Handler
 from features.starting_agents.launch import launch
-from providers import DRIVERS
+from serving import SERVED, Providers
 from resources.base import SYSTEM, USER
 
 LAUNCHING_FOR = 60.0
@@ -13,7 +13,7 @@ LAUNCHING_FOR = 60.0
 
 def last_conversation(record):
     rows = [row for row in Agents(record, actor=SYSTEM).rows.every()
-            if row.data.get("event") and row.provider in DRIVERS and not row.subagent and not row.title.startswith(f"{row.provider}-")]
+            if row.data.get("event") and SERVED.given(Providers).knows(row.provider) and not row.subagent and not row.title.startswith(f"{row.provider}-")]
     return max(rows, key=lambda row: float(row.at), default=None)
 
 

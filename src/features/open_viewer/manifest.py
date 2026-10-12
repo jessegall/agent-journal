@@ -13,13 +13,13 @@ from controllers.described import described_types
 from resources.base import ACTIONS, ACTORS, SCOPES, SYSTEM, VIEWS, Resource
 from resources.types import priority
 from engine import runtime
-from providers import PROVIDERS
 from engine.version import version
 from engine.package import data
 from features.open_viewer.attachments import listed_types
 from framework.watched import FACTS
 from controllers.nudges import Nudges
 from typing import TypedDict
+from serving import SERVED, Providers
 
 
 def built() -> str:
@@ -52,8 +52,8 @@ class Manifest(TypedDict):
 
 
 def default_models() -> list[dict]:
-    return [{"provider": name, "model": kind.dispatch_default, "label": kind().model_labels().get(kind.dispatch_default, kind.dispatch_default)}
-            for name, kind in PROVIDERS.items()]
+    return [{"provider": agent.name, "model": agent.dispatch_default, "label": agent.model_labels().get(agent.dispatch_default, agent.dispatch_default)}
+            for agent in SERVED.given(Providers).every()]
 
 
 def built_in() -> dict:

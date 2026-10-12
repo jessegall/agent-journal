@@ -7,7 +7,7 @@ from engine.worktree import checkout
 from controllers.types import Worktrees
 from framework.parts import AgentContext, ToolInterceptor
 from declaring.holds import Runs
-from providers.catalogue import workspace_folders
+from serving import SERVED, Providers
 from engine.runtime import DEFAULT_ENV
 from resources.base import SYSTEM
 
@@ -44,11 +44,11 @@ class StayInYourCheckout(ToolInterceptor):
     @staticmethod
     def own_worktree(record) -> Path | None:
         """The worktree an environment is named for, when its row does not say where it works, as a ticket's does not: the agent in it is at home there."""
-        folder = record.root.parent.joinpath(*workspace_folders().worktree_home, record.env)
+        folder = record.root.parent.joinpath(*SERVED.given(Providers).workspaces().worktree_home, record.env)
         return folder if record.env != DEFAULT_ENV and folder.is_dir() else None
 
     def checkout_of(self, folder: Path) -> Path | None:
-        return checkout(folder.resolve(), workspace_folders())
+        return checkout(folder.resolve(), SERVED.given(Providers).workspaces())
 
     def goes_home(self, shell: str, home: Path) -> bool:
         first = pieces(shell)[0] if shell else ()

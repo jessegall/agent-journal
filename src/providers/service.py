@@ -6,7 +6,8 @@ flags a provider takes and where its conversation file is. It asks here instead,
 
 from pathlib import Path
 
-from providers import DRIVERS, PROVIDERS, workspace_folders
+from providers import DRIVERS, PROVIDERS, dispatch_model, transcript_reader, workspace_folders
+from providers.catalogue import WorkspaceFolders
 from providers.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, whole
 from serving import SERVED, Providers
 
@@ -32,15 +33,22 @@ class TheProviders:
     def offers(self, name: str):
         return PROVIDERS[name]() if name in PROVIDERS else None
 
-    def workspaces(self) -> tuple[str, ...]:
+    def workspaces(self) -> WorkspaceFolders:
         """The folders a workspace of any provider keeps beside a checkout, which a worktree carries over."""
         return workspace_folders()
+
+    def model_for(self, provider: str, chosen: str) -> str:
+        """The model a dispatch names on that provider: the one chosen, under the name that provider knows it by."""
+        return dispatch_model(provider, chosen)
+
+    def reader(self, agent):
+        """The provider that can read one agent's own transcript, or nothing when the agent has none to read."""
+        return transcript_reader(agent)
 
     def conversation(self, record, provider: str, transcript: str, since: int, before: int, last: int, entry: int) -> dict:
         """A page of an agent's own conversation, read from the file its provider recorded."""
         found = Transcript(self.of(provider), Path(transcript)) if provider in PROVIDERS and transcript and Path(transcript).is_file() else NoTranscript()
         return whole(found, record, entry) if entry else paged(found, since, before, last or TRANSCRIPT_PAGE)
-
 
     def every(self) -> tuple:
         """Every provider this journal knows, each one itself, for work that must touch all of them."""

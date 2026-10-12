@@ -3,7 +3,7 @@ from resources.text import clipped
 from framework.parts import Context
 from features.sequences.details import DISPATCH
 from resources.sequences import RunKey
-from providers import dispatch_model
+from serving import SERVED, Providers
 from controllers.types import Agents, Messages
 from resources.extension import Extension
 
@@ -50,5 +50,5 @@ def dispatched_by_line(context: Context, agent, sequence, key: str, why: str) ->
     speaking = context.speaking_to(agent)
     speaking.once(DISPATCH, f"{sequence.n}|{key}|{sequence.started(key)}|{why}", lambda: speaking.agent.say(
         DISPATCH, kind=sequence.dispatch, n=sequence.n, title=sequence.title, about=about, board=board,
-        model=dispatch_model(agent.provider, models.get(sequence.dispatch, unchosen)(context.record, agent.provider)), why=why,
+        model=SERVED.given(Providers).model_for(agent.provider, models.get(sequence.dispatch, unchosen)(context.record, agent.provider)), why=why,
         request=request_of(context, about)))

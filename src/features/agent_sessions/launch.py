@@ -10,18 +10,18 @@ from engine.record import Record
 from engine.seats import terminal_of
 from engine.sessions import Sessions, alive
 from engine.stop import ask_session
-from providers import DRIVERS
 from resources.base import DEFAULT_PROVIDER
 from controllers.features import settle_prompts
 from resources.base import SYSTEM
 from resources.types import EnvironmentKind, NewEnvironment, Running
+from serving import SERVED, Providers
 
 QUIET = ("dev_faults",)
 
 
 def start_agent_in(record, name: str, worktree: str, abstract: str, owner: str, prompt: str, kind: EnvironmentKind) -> str:
     prepared(record, NewEnvironment(name, abstract, owner, record.root.parent, kind))
-    return launched(record, name, DEFAULT_PROVIDER, prompted_by_file(record.root, name, DRIVERS[DEFAULT_PROVIDER].within([], worktree), prompt), record.root.parent)
+    return launched(record, name, DEFAULT_PROVIDER, prompted_by_file(record.root, name, SERVED.given(Providers).driver(DEFAULT_PROVIDER).within([], worktree), prompt), record.root.parent)
 
 
 def prepared(record, wanted: NewEnvironment) -> Record:
@@ -62,10 +62,9 @@ def launched_in(root: Path, environment: str) -> str:
 
 
 def driver_in(running: Running):
-    from providers import DRIVERS
     root = running.record.root
     session = running_in(running.record, running.environment)
-    return DRIVERS[running.provider](Record(root, running.environment), terminal_of(root, session) or session) if session else None
+    return SERVED.given(Providers).driver(running.provider)(Record(root, running.environment), terminal_of(root, session) or session) if session else None
 
 
 def tell_in(running: Running, text: str) -> bool:

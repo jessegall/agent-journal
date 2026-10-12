@@ -6,7 +6,7 @@ from pathlib import Path
 from framework.loaded import FEATURES
 from controllers.types import Agents
 from engine.record import Record
-from providers import PROVIDERS, transcript_reader
+from serving import SERVED, Providers
 from resources.base import SYSTEM, names
 
 SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size", "keywords", "commands")
@@ -38,7 +38,10 @@ class Catalogued:
 
 CATALOGUED: dict[str, Catalogued] = {}
 FRESH_FOR = 60.0
-HOMES = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
+@cache
+def homes() -> tuple[str, ...]:
+    """Every folder a skill can live in: the journal's own library and each provider's own home for them."""
+    return (LIBRARY, *(agent.skill_home for agent in SERVED.given(Providers).every() if agent.skill_home))
 
 
 def listed_in(field: str) -> list[str]:
@@ -63,14 +66,14 @@ def described(f: Path, root: Path) -> dict:
 
 
 def catalogue(root: Path) -> list[dict]:
-    marks = tuple(mtime(root / home) for home in HOMES)
+    marks = tuple(mtime(root / home) for home in homes())
     held = CATALOGUED.get(str(root))
     if held and held.fresh(marks):
         return held.skills
     if held and held.unchanged(marks):
         CATALOGUED[str(root)] = replace(held, at=time.monotonic())
         return held.skills
-    files = [f for home in HOMES for f in skill_files(root / home)]
+    files = [f for home in homes() for f in skill_files(root / home)]
     out = {}
     for f in files:
         try:
@@ -102,17 +105,17 @@ def available(root: Path) -> set[str]:
 
 
 def has_read_every_load(agent) -> bool:
-    provider = transcript_reader(agent)
+    provider = SERVED.given(Providers).reader(agent)
     return provider.has_read_every_load(Path(agent.transcript)) if provider else True
 
 
 def loaded_at(agent) -> dict[str, float]:
-    provider = transcript_reader(agent)
+    provider = SERVED.given(Providers).reader(agent)
     return provider.loaded_skills(Path(agent.transcript)) if provider else {}
 
 
 def loaded_before_compaction(agent) -> dict[str, float]:
-    provider = transcript_reader(agent)
+    provider = SERVED.given(Providers).reader(agent)
     return provider.prior_window(Path(agent.transcript)).prior_loads if provider else {}
 
 

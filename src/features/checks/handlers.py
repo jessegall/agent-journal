@@ -8,7 +8,6 @@ from events.agents import AgentReported
 from resources.text import digest
 from resources.check_output import summary
 from payload import HookEvent
-from providers import transcript_reader
 from providers.command_effects import background_outcome
 from providers.tested import testing_piece, tested
 from framework.parts import AgentContext, Context, Handler
@@ -16,6 +15,7 @@ from controllers.types import Checks
 from controllers.types import Agents, Notifications
 from resources.base import SYSTEM, USER
 from events.checks import CheckUpdated
+from serving import SERVED, Providers
 
 
 TESTS = "tests"
@@ -88,7 +88,7 @@ class MarkTestRuns(Handler):
 
     def finish_background(self, context: AgentContext) -> None:
         row = context.agent.row
-        reader = transcript_reader(row)
+        reader = SERVED.given(Providers).reader(row)
         if reader is None:
             return
         tasks = reader.background_tasks(Path(row.transcript))

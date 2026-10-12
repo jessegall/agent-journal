@@ -7,7 +7,7 @@ from engine.sessions import alive
 from resources.text import clipped
 from framework.sending import Sent
 from declaring.trigger import DAY, MINUTE
-from providers import PROVIDERS, transcript_reader
+from serving import SERVED, Providers
 from providers.base import BackgroundTasks
 
 RECENT = 10 * MINUTE
@@ -16,12 +16,12 @@ PS_TIMEOUT = 2
 
 
 def background_tasks_of(agent) -> BackgroundTasks:
-    reader = transcript_reader(agent)
+    reader = SERVED.given(Providers).reader(agent)
     return reader.background_tasks(Path(agent.transcript)) if reader else BackgroundTasks()
 
 
 def unwatched_runs(agent) -> BackgroundTasks:
-    provider = PROVIDERS.get(agent.provider)
+    provider = SERVED.given(Providers).offers(agent.provider)
     if provider and provider.background_wakes:
         return BackgroundTasks()
     tasks = background_tasks_of(agent)

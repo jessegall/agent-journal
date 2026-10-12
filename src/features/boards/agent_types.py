@@ -3,6 +3,7 @@ from pathlib import Path
 
 from engine.record import Record
 from features.boards.exploration import FILLER
+from serving import SERVED, Providers
 
 
 @dataclass(frozen=True)
@@ -48,7 +49,6 @@ AGENT_TYPES = (
 
 def written(project: Path, record: Record) -> list[Path]:
     from features.boards.details import BoardsDetails
-    from providers import PROVIDERS
     values = BoardsDetails.values(record)
-    return [path for name, cls in PROVIDERS.items() if cls().present(project)
-            for path in cls().agent_types(project, [(kind, getattr(values, kind.setting)[name]) for kind in AGENT_TYPES])]
+    return [path for agent in SERVED.given(Providers).every() if agent.present(project)
+            for path in agent.agent_types(project, [(kind, getattr(values, kind.setting)[agent.name]) for kind in AGENT_TYPES])]

@@ -9,7 +9,7 @@ from features.skill_loading.catalogue import SKILL, catalogue, chosen, loaded_at
 from features.skill_loading.interceptors import RefuseUntilLoaded
 from features.skill_loading.required import require_named
 from features.skill_loading.required import require, require_only
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from payload import HookEvent
 from resources.base import SYSTEM, USER
 from resources.types import AgentRow
@@ -45,7 +45,7 @@ class HoldUntilReloaded(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         row = context.agent.row
         since = triggering.last(context.record, row.title, context.feature.name).since
-        provider = PROVIDERS.get(row.provider)
+        provider = SERVED.given(Providers).offers(row.provider)
         if not since or not provider or not row.transcript:
             return
         require(context.record, row.title, {"journal": since})

@@ -8,7 +8,7 @@ from engine.stored import write_text
 from resources.text import digest
 from features.journal_laws.laws import carry, laws
 from framework.sending import Sent
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from resources.base import SYSTEM
 
 BAND = 4096
@@ -50,7 +50,7 @@ PRECEDENCE = ("The journal's lines come first on how you report, how you carry o
 
 
 def briefing_files() -> list[str]:
-    return sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file})
+    return sorted({agent.briefing_file for agent in SERVED.given(Providers).every() if agent.briefing_file})
 
 
 def block(record=None, rules: tuple[str, ...] = ()) -> str:
@@ -82,7 +82,7 @@ def brief(project: Path, record) -> Briefing:
     managed = block(record, injected(record))
     title = project.resolve().name
     written, left = [], []
-    imports = {cls.briefing_file: cls.briefing_import for cls in PROVIDERS.values() if cls.briefing_import}
+    imports = {agent.briefing_file: agent.briefing_import for agent in SERVED.given(Providers).every() if agent.briefing_import}
     for name in briefing_files():
         target = (project / name).resolve()
         try:
@@ -166,15 +166,15 @@ def importing(had: str, source: str) -> str:
 
 
 def long_briefings(context, agent) -> list[Sent]:
-    cls, project = PROVIDERS.get(agent.provider), context.record.root.parent.resolve()
-    if cls is None or not cls.briefing_limit():
+    provider, project = SERVED.given(Providers).offers(agent.provider), context.record.root.parent.resolve()
+    if provider is None or not provider.briefing_limit():
         return []
-    files = read_on_the_way(project, Path(agent.cwd) if agent.cwd else project, cls.briefing_file)
+    files = read_on_the_way(project, Path(agent.cwd) if agent.cwd else project, provider.briefing_file)
     size = sum(f.stat().st_size for f in files)
-    if size <= cls.briefing_limit():
+    if size <= provider.briefing_limit():
         return []
     names = " with ".join(str(f.relative_to(project)) for f in files)
-    return [Sent(f"{names}:{size // BAND}", {"file": names, "size": f"{size:,}", "limit": f"{cls.briefing_limit():,}", "provider": cls.name.title()})]
+    return [Sent(f"{names}:{size // BAND}", {"file": names, "size": f"{size:,}", "limit": f"{provider.briefing_limit():,}", "provider": provider.name.title()})]
 
 
 def read_on_the_way(project: Path, cwd: Path, name: str) -> list[Path]:

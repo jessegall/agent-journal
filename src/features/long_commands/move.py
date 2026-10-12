@@ -10,9 +10,9 @@ from providers.command_effects import JOURNAL_CALL
 from engine.sessions import Sessions
 from features.long_commands.watch import background_tasks_of, running_part
 from framework.parts import AgentContext, Handler
-from providers import DRIVERS, PROVIDERS, transcript_reader
 from resources.base import SYSTEM
 from controllers.types import Agents
+from serving import SERVED, Providers
 
 SETTLE = 30.0
 TOOK_WITHIN = 20.0
@@ -29,7 +29,7 @@ def matching_task(tasks, command: str, pressed: float) -> str:
 def running_call(context: AgentContext, row):
     """The shell call the agent is actually waiting on: of the calls that have not ended, those its transcript shows answered did end, though their end was lost on the way (a hook that got no answer from a busy server is dropped), so they are closed and never moved."""
     opened = open_shell_runs(row)
-    reader = transcript_reader(row)
+    reader = SERVED.given(Providers).reader(row)
     if reader is None:
         return opened[0] if opened else None
     still = [one for one in opened if reader.command_is_open(Path(row.transcript), one.id)]
@@ -60,9 +60,11 @@ class MoveLongCommands(Handler):
         if not row.live:
             return
         oldest = waiting_run(row)
-        provider = row.provider
-        driver = DRIVERS.get(provider)
-        if oldest is None or not driver or not driver.MOVE_TO_BACKGROUND or time.time() - oldest.at < wait_for(context, oldest.command):
+        provider, providers = row.provider, SERVED.given(Providers)
+        if oldest is None or not providers.knows(provider):
+            return
+        driver = providers.driver(provider)
+        if not driver.MOVE_TO_BACKGROUND or time.time() - oldest.at < wait_for(context, oldest.command):
             return
         if context.state.get("moved") == str(oldest.at):
             return
@@ -73,7 +75,7 @@ class MoveLongCommands(Handler):
         seconds = int(time.time() - float(started))
         if seconds < wait_for(context, last.command) or not context.once("asked", started):
             return
-        reason = cancelled(LONG_COMMAND, HookCall(PROVIDERS[provider]() if provider in PROVIDERS else None, context.record, None, row),
+        reason = cancelled(LONG_COMMAND, HookCall(providers.offers(provider), context.record, None, row),
                            {"command": last.command, "seconds": seconds})
         if reason:
             context.agent.say(KEPT, reason=reason)
@@ -82,7 +84,7 @@ class MoveLongCommands(Handler):
         context.state.set("task", "")
         context.state.set("pressed", time.time())
         context.agent.move_to_background(started)
-        if not PROVIDERS[provider].result_names_move:
+        if not SERVED.given(Providers).of(provider).result_names_move:
             context.agent.say(MOVED, seconds=int(time.time() - float(started)))
         context.journal.get(Agents)._moved_to_background(last, row, state="running", started=float(started))
 
