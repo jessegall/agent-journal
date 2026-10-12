@@ -3,9 +3,8 @@ from pathlib import Path
 from controllers.types import environment_records
 from engine.paths import environments
 from engine.stored import read_json, write_json
-from features.form_of_address.controller import Profiles
-from features.form_of_address.names import in_use
-from features.form_of_address.voices import BUTLER, CARTOON, SCIENTISTS
+from controllers.types import Profiles
+from resources.voices import BUTLER, CARTOON, SCIENTISTS
 from resources.base import SYSTEM
 
 LAWS, TOGGLE = "journal_laws", "cartoon_names"
@@ -23,7 +22,7 @@ def run(root: Path) -> list[str]:
     named = [own_naming(profiles, row) for row in profiles.rows.every() if not row.system and not row.naming]
     if not cartoons:
         return named
-    return [*named, cartoon_naming(root, profiles, in_use(records[0]))]
+    return [*named, cartoon_naming(root, profiles, profiles.profile_in_use())]
 
 
 def dropped_toggle(file: Path) -> bool:

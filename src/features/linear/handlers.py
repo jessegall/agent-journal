@@ -1,13 +1,6 @@
-from dataclasses import dataclass
-from typing import ClassVar
 
-from engine.events.resources import ResourceEvent
-from features.parts import Context, Handler
-
-
-@dataclass(frozen=True)
-class TicketUpdated(ResourceEvent):
-    on: ClassVar[str] = "ticket.updated"
+from framework.parts import Context, Handler
+from events.tickets import TicketUpdated
 
 
 class MoveIssue(Handler):

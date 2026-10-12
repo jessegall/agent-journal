@@ -1,5 +1,5 @@
 from features.plans.controller import Plans
-from features.plans.resource import Tally, tally_of
+from resources.plans import Tally, tally_of
 from resources.base import SYSTEM
 
 

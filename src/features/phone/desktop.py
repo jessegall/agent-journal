@@ -2,11 +2,11 @@ from collections.abc import Callable
 from http.client import HTTPConnection, HTTPException
 from urllib.parse import parse_qsl, quote, unquote, urlencode, urlsplit
 
-from features.routing import resolve
-from engine.extension import Extension
+from framework.routing import resolve
+from declaring.extension import Extension
 from engine.viewer import lately_running
 from features.phone.allow_list import Page
-from features.routing import JSON
+from framework.routing import JSON
 from features.sharing.page import disposition
 from features.sharing.server import APP_HEADERS
 

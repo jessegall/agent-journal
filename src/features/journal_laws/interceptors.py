@@ -2,13 +2,14 @@ import re
 from pathlib import Path
 
 from features.journal_laws.laws import laws, naming_of, refusal
-from engine.events.engine import AgentMessageSent
-from engine.gates import DISPATCHING, Runs
-from features.parts import AgentContext, Canceler, Handler, ToolInterceptor
-from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
-from providers.payload import ReadCall
+from events.agents import AgentMessageSent
+from declaring.holds import Runs
+from engine.gates import DISPATCHING
+from framework.parts import AgentContext, Canceler, Handler, ToolInterceptor
+from framework.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
+from payload import ReadCall
 from resources.types import TYPES
-from engine.reach import Reach
+from declaring.reach import Reach
 from controllers.types import Agents
 
 

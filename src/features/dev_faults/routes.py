@@ -1,6 +1,6 @@
 from engine.disk import last_lines
 from features.dev_faults.diagnostics import log_file
-from features.routing import Reply, Request, handles
+from framework.routing import Reply, Request, handles
 
 
 @handles("GET", "/api/{env}/diagnostics")

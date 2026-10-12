@@ -11,21 +11,20 @@ from engine.stop import ask_session
 from engine.worktree import branched, changed, current_branch, keep_own_packages, merged_into, present, tip
 from engine.sessions import Sessions, live
 from features.permission_prompts.skipping import prompted
-import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller, discarding
 from controllers.prioritised import Prioritised
 from controllers.requests import request
 from engine.outbox import Request
 from engine.given import given
 from features.boards.controller import Boards
-from features.boards.resource import DONE, REVIEW, START
-from features.checks.output import tail
+from resources.boards import DONE, REVIEW, START
+from resources.check_output import tail
 from engine.proc import streamed
 from features.tickets.cards import CardState, TicketCards
 from features.tickets.details import TicketsDetails
 from features.tickets.landing import TicketLanding
 from features.tickets.orchestration import DRAFTS, PLANS, WAITS, TicketOrchestration
-from features.tickets.resource import CONFIRMED, PROPOSED, Ticket, card_back
+from resources.tickets import CONFIRMED, PROPOSED, Ticket, card_back
 from controllers.types import Comments
 from features.plans.controller import ACTIVE, DONE as PLAN_DONE, READY, WAITING, Plans
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM, USER, titled
@@ -85,10 +84,20 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         from providers import DRIVERS
         self._kept_from_outside(r)
         if r.board and r.stage not in self._stages(r.board):
-            raise Refused(f"board {r.board} has no stage {r.stage!r}")
+            self._stage_lost(r)
         if r.provider not in DRIVERS:
             raise Refused(f"no provider {r.provider!r}; one of {', '.join(DRIVERS)}")
         return super().save(r, action, **event)
+
+    def _stage_lost(self, r: Resource) -> None:
+        """A stage being chosen must exist; a ticket left on a stage its board lost still saves, and the board is told once."""
+        stored = self._row_on_disk(r) if self.rows.exists(r.n) else None
+        if stored is None or (stored.board, stored.stage) != (r.board, r.stage):
+            raise Refused(f"board {r.board} has no stage {r.stage!r}")
+        notices = Notices(self.record, actor=SYSTEM)
+        if not any(n.data.get("stage_lost_board") == r.board for n in notices.rows.standing()):
+            notices.create(f"Board {r.board} has lost the stage {r.stage!r} of {self.type} {r.n}", tone="warn",
+                           brief="Move its tickets to a stage the board has; until then they still save.", stage_lost_board=r.board)
 
     def _limit(self) -> int:
         return max(0, int(TicketsDetails.values(self.record).running))
@@ -547,9 +556,9 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
 
     def _from_outside(self, ticket) -> bool:
         """Whether the ticket comes from an integration, such as Linear, whose words are not the journal's own."""
-        import features
-        from features.groups import Group
-        made = features.FEATURES.get(ticket.source)
+        from framework.loaded import FEATURES
+        from declaring.groups import Group
+        made = FEATURES.get(ticket.source)
         return bool(made) and made.group == Group.INTEGRATIONS
 
     def _only_you(self, ticket, doing: str, once_asked: bool = False) -> None:
@@ -757,5 +766,4 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
         return next((r for r in self.rows.standing() if r.source == source and r.source_id == source_id), None)
 
 
-resources_module.register(Ticket)
 types_module.register(Tickets)

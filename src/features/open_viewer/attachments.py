@@ -7,7 +7,7 @@ from urllib.parse import quote
 from controllers.types import CONTROLLERS
 from engine.paths import contained
 from resources.base import AGENT, USER
-from engine.memo import Memo
+from resources.memo import Memo
 
 ATTACHED = Memo()
 

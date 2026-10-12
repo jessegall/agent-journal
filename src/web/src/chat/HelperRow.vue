@@ -1,5 +1,6 @@
 <script setup>
 import {helperLine, helperName, helperReport, helperReuses, helperState, helperTag, stateAt} from "../domain/helpers.js";
+import {workMode} from "../composables/settings.js";
 import {nextTick, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {ago} from "../format/time.js";
@@ -22,7 +23,7 @@ const clipped = ref(false);
 const name = () => helperName(props.row);
 const report = () => helperReport(props.row);
 const state = () => helperState(props.row);
-const tag = () => helperTag(props.row);
+const tag = () => helperTag(props.row, workMode.value);
 const stateLabel = () => (state() === "finished" ? `Closed ${ago(stateAt(props.row))}` : tag().word);
 
 const reuseLine = () => {

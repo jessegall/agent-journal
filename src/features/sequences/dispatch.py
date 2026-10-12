@@ -1,11 +1,11 @@
 from engine.sessions import Sessions
-from engine.wording import clipped
-from features.parts import Context
+from resources.text import clipped
+from framework.parts import Context
 from features.sequences.details import DISPATCH
-from features.sequences.resource import RunKey
+from resources.sequences import RunKey
 from providers import dispatch_model
 from controllers.types import Agents, Messages
-from engine.extension import Extension
+from declaring.extension import Extension
 
 REQUEST_TEXT = 400
 DISPATCH_MODELS = Extension()

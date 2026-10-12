@@ -110,7 +110,7 @@ def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once(
     from engine import bus
     record = fresh()
     claude = PROVIDERS["claude"]()
-    call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "cat features/parts.py"}}
+    call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "cat notes.txt"}}
     handle(claude, record.root, record.env, {**call, "hook_event_name": "PreToolUse"})
     assert bus.background_finished(), "the whisper runs off the hook's answer, so the test waits for it as the agent never has to"
     assert [n.title for n in Nudges(record).all() if n.title.startswith("law L3")], "a keyword whispers its law"
@@ -122,7 +122,7 @@ def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once(
 
     import threading
     from engine.gates import AFTERWARDS
-    from engine.reach import Guard, Reach
+    from declaring.reach import Guard, Reach
     held_open, let_go = threading.Event(), threading.Event()
 
     def blocking(given):
@@ -195,7 +195,7 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     from pathlib import Path
     from agents.terminal import output_cap, session_named
     from features import load
-    from features.journal_laws.controller import Outputs
+    from controllers.journal_laws import Outputs
     from providers import PROVIDERS
     load()
     record = fresh()
@@ -233,9 +233,8 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     outputs = Outputs(record)
     direct = tmp_path / "direct.txt"
     direct.write_text("a\nb\nc\n")
-    assert "no such file" in refused(lambda: outputs.keep(str(tmp_path / "missing.txt"))), "an output that is not there cannot be kept"
-    assert "no such provider" in refused(lambda: outputs.keep(str(direct), provider="nobody")), "an output from an unknown provider cannot be kept"
-    number = int(outputs.keep(str(direct), "  cat   notes: x ", "claude", "session-1", 1).split()[0])
+    assert "no such file" in refused(lambda: outputs.store(str(tmp_path / "missing.txt"))), "an output that is not there cannot be kept"
+    number = int(outputs.store(str(direct), "  cat   notes: x ", "session-1", 1).split()[0])
     assert (outputs.load(number).title, outputs.load(number).data["lines"], direct.exists()) == ("cat notes x", 3, False), \
         "a kept output is titled by its command on one line, counts its lines and moves its file into the row"
     assert "Cut 2 of 3 lines" in Agents(record).load(agent.n).data["cards"][-1]["label"], "the agent that ran it sees how much was cut"
@@ -256,8 +255,8 @@ def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
 
 
 def test_the_naming_law_follows_the_chosen_style():
-    from features.form_of_address.controller import Profiles, ship
-    from features.form_of_address.voices import CARTOON
+    from controllers.form_of_address.controller import Profiles, ship
+    from resources.voices import CARTOON
     from features.journal_laws.laws import carry, laws
     from resources.base import SYSTEM
     record = fresh()

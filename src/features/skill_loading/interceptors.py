@@ -1,11 +1,11 @@
 
-from features import trigger
+from engine import triggering
 from engine.journal_calls import calls
-from features.parts import AgentContext, ToolInterceptor
-from engine.gates import Runs
+from framework.parts import AgentContext, ToolInterceptor
+from declaring.holds import Runs
 from features.skill_loading.catalogue import has_read_every_load, loaded_at, loaded_before_compaction, teaching_command
 from features.skill_loading.required import outstanding, require
-from engine.reach import Reach
+from declaring.reach import Reach
 
 
 
@@ -19,7 +19,7 @@ class RequireCommandSkill(ToolInterceptor):
         if not skill:
             return ""
         row = context.agent.row
-        since = trigger.last(context.record, row.title, context.feature.name).since
+        since = triggering.last(context.record, row.title, context.feature.name).since
         at = loaded_at(row).get(skill, 0.0)
         if (not at or at < since) and skill not in loaded_before_compaction(row):
             require(context.record, row.title, {skill: since})

@@ -1,14 +1,14 @@
 import io
 
-from engine.events.engine import AgentMessageSending, CommandRan
-from features.parts import AgentContext, Context, Handler
+from events.agents import BusMessageSending, CommandRan
+from framework.parts import AgentContext, Context, Handler
 from features.command_tags.reading import CARRIED, OPTIONS, kept_out_of_the_chat, named, reader, removed, runs, tag_spelling, tag_for, visible
 from resources.base import AGENT
 from engine.command_line import command_line
 
 
 class RunTagCommands(Handler):
-    def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
+    def handle(self, context: AgentContext, event: BusMessageSending) -> None:
         message = event.text
         failed = bool(CARRIED.search(message)) and self.run(context, message, event.turn)
         if kept_out_of_the_chat(message) and not failed:

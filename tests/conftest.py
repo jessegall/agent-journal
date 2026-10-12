@@ -76,7 +76,8 @@ def installed_once() -> Path:
 
 
 def holds(record: Record, session: str = "claude-1") -> dict:
-    from engine.gates import Hold, gate_file
+    from declaring.holds import Hold
+    from engine.gates import gate_file
     f = gate_file(record.root, record.env, session)
     return {key: Hold.from_json(raw).why for key, raw in json.loads(f.read_text()).items()} if f.is_file() else {}
 
@@ -188,7 +189,7 @@ def process_state_forgotten():
 
 @pytest.fixture(autouse=True)
 def forgotten_memos():
-    from engine.memo import forget_all
+    from resources.memo import forget_all
     forget_all()
     yield
 

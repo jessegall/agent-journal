@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from engine.wording import slugged
+from resources.text import slugged
 from features.secrets.values import project_id, secrets_folder
 from resources.base import Refused
 

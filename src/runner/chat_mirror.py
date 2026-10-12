@@ -13,10 +13,10 @@ from engine.after_answer import after_answered, answering
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
-from engine.wording import digest, plural
+from resources.text import digest, plural
 from features.dev_faults.diagnostics import logged
 from providers import PROVIDERS
-from providers.payload import Chunk
+from payload import Chunk
 from resources.base import SYSTEM
 
 DISPLAYED = "displayed.json"
@@ -216,7 +216,7 @@ def unfinished(root: Path, session: str, row) -> None:
         return
     traced(root, f"fallback session {session} pending {[(turn.key, fingerprint(turn.text), len(turn.text)) for turn in pending]} "
                  f"sent {len(sent)} last {sent[-5:]} matched {len(streamed)} last {streamed[-5:]} partial {partial} done {held.get(DONE, [])[-5:]}")
-    if provider.shows_what_is_said():
+    if provider.shows_what_is_said() and not provider().interrupted_by_user(Path(row.transcript)):
         fell_back(root, session, [fingerprint(turn.text) for turn in pending])
     for turn in pending:
         send_to_chat(root, session, turn.text, turn.key)

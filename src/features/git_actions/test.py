@@ -101,7 +101,7 @@ def test_a_chained_command_runs_part_by_part_and_each_part_marks_the_chat_once_i
     from engine.stepped import SteppedCall, file_of
     from engine.stored import write_json
     from providers import PROVIDERS
-    from providers.payload import Hook
+    from payload import Hook
     from providers.steps import chain_of
     from runner.stepping import report_step, rewrite
     features.load()

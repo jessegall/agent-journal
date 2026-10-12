@@ -1,27 +1,22 @@
-from dataclasses import dataclass
-from typing import ClassVar
 
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from controllers.types import Agents, Questions
-from engine.events.resources import AnyEvent, MessageCreated, QuestionAnswered, ResourceEvent
+from events.resources import AnyEvent
+from events.messages import MessageCreated
+from events.questions import QuestionCompleted, QuestionCreated
 from engine.sessions import Sessions
 from features.agent_sessions.launch import driver_in
-from features.sending import Sent
-from features.triggers import watched
-from features.trigger import DAY, MINUTE
+from framework.sending import Sent
+from framework import watched
+from declaring.trigger import DAY, MINUTE
 from providers.turns import last_text
-from features.parts import AgentContext, Context, Handler
+from framework.parts import AgentContext, Context, Handler
 from features.ask_questions.choices import offers_choices
 from resources.base import SYSTEM, USER, Ref
 
 ASKING = "asking"
 WAITED_ON = ("todo", "plan", "ticket")
 GONE = {"completed": "closed", "deleted": "deleted"}
-
-
-@dataclass(frozen=True)
-class QuestionAsked(ResourceEvent):
-    on: ClassVar[str] = "question.created"
 
 
 class AskInsteadOfProse(Handler):
@@ -40,12 +35,12 @@ class ReleaseOnceAnswered(Handler):
 
 
 class ReleaseOnceAsked(Handler):
-    def handle(self, context: Context, event: QuestionAsked) -> None:
+    def handle(self, context: Context, event: QuestionCreated) -> None:
         context.release(ASKING)
 
 
 class MarkTheAnswer(Handler):
-    def handle(self, context: Context, event: QuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionCompleted) -> None:
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         agents = Agents(context.record, actor=SYSTEM)
         row = agents.primary()
@@ -57,7 +52,7 @@ class MarkTheAnswer(Handler):
 
 
 class AnswerOnTheScreen(Handler):
-    def handle(self, context: Context, event: QuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionCompleted) -> None:
         """An answer reaches the question the agent stands at on its own screen, which no typed line can: the option is pressed, or the words are typed into the free choice."""
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         row = Agents(context.record, actor=SYSTEM).primary()

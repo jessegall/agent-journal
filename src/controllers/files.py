@@ -1,14 +1,30 @@
+import mimetypes
 import os
 import shutil
 import tempfile
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from resources.base import Refused, Resource
 from resources.pictures import dimensions
 from engine.paths import contained
+from engine.record import Record
 from engine.transaction import undoable
 from controllers.marks import action
 
 REVISIONS = "revisions"
+
+
+@dataclass(frozen=True)
+class HeldFile:
+    ref: str
+    type: str
+    n: int
+    env: str
+    title: str
+    name: str
+    description: str
+    size: int
+    image: bool
 
 
 
@@ -71,6 +87,18 @@ class Files:
 
     def _kept_beside(self) -> set[str]:
         return {f"{self.type}.md", REVISIONS} if self.resource.own_folder else set()
+
+    def listed_files(self, rows: list) -> list[dict]:
+        """The files attached to each of these rows, each with its size, read from the environment the row lives in."""
+        held = []
+        for row in rows:
+            folder = Record(self.record.root, row.home_env or self.record.env).folder(row.type, row.scope).joinpath(f"{row.n:03d}")
+            for name, description in sorted(row.files.items()):
+                file = contained(folder, name)
+                if file.is_file():
+                    held.append(asdict(HeldFile(row.ref, row.type, row.n, row.home_env, row.title, name, description, file.stat().st_size,
+                                                (mimetypes.guess_type(name)[0] or "").startswith("image/"))))
+        return held
 
     @action
     def paths(self, n: int) -> list[str]:

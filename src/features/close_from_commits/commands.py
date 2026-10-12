@@ -1,7 +1,7 @@
 from controllers.types import Todos, Works
 from engine.git import checkout_of
 from features.close_from_commits.handlers import closing, landing_commits
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from resources.base import SYSTEM, Refused
 
 

@@ -1,15 +1,13 @@
-from dataclasses import dataclass
-from typing import ClassVar
 
 from engine import runtime
 from engine.locks import project_sweep
 
-from engine.events.engine import ClockTicked
-from engine.events.resources import ResourceEvent
+from events.agents import ClockTicked
 from features.runtime_cleanup.tidy import tidy, tidy_files
-from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
+from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.auto_update.announcing import KIND
 from controllers.types import Notifications
+from events.notifications import NotificationCreated
 
 TIDYING = "tidying.lock"
 ONCE_EVERY = 50 * 60
@@ -23,11 +21,6 @@ class TidyRuntime(Handler):
         with project_sweep(runtime.folder(root) / TIDYING, ONCE_EVERY) as mine:
             if mine:
                 tidy(root, context.settings.days)
-
-
-@dataclass(frozen=True)
-class NotificationCreated(ResourceEvent):
-    on: ClassVar[str] = "notification.created"
 
 
 class TidyAfterUpdate(Handler):

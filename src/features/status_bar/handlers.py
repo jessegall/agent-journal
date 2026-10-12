@@ -1,8 +1,8 @@
 import time
 
 from engine import bus
-from engine.events.agents import AgentReported
-from features.parts import AgentContext, Handler
+from events.agents import AgentReported
+from framework.parts import AgentContext, Handler
 from features.status_bar.bar import EMPTY, bar, doing
 from features.status_bar.usage import observe
 from controllers.types import Agents

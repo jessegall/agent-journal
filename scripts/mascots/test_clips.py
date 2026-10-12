@@ -5,7 +5,6 @@ The sheets are checked as shipped. One Blender run renders a still of every clip
 import ast
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -15,16 +14,34 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from manifest import Manifest  # noqa: E402
+from test_rig import run_blender  # noqa: E402
 
 WEB = HERE.parents[1] / "src" / "web"
-BLENDER_SECONDS = 600
 NEW_CLIPS = {
     "sit_on_edge": (24, 8, True),
     "walk_in": (40, 12, False),
     "run_in": (28, 12, False),
     "pull_ups": (24, 10, True),
 }
+# each voice's own way in and out, posed and proved, with no sheets: the viewer poses them live on the real figure
+PASSAGES = {
+    "enter": (36, 12, False),
+    "exit": (28, 12, False),
+}
+# what the always-visible figure does while the agent works, and the moments it marks
+STATE_CLIPS = {
+    "search": (12, 10, True),
+    "write": (12, 12, True),
+    "work": (8, 10, True),
+    "point": (12, 8, True),
+    "hop": (8, 16, False),
+    "butler_tray_down": (16, 10, False),
+    "squire_chase": (24, 12, False),
+    "pointed": (20, 10, False),
+}
+REGISTERED = NEW_CLIPS | PASSAGES | STATE_CLIPS
 CLIPS = {"idle", "blink", "nod", "shake", "wave", "think", "celebrate", "sleep", "walk"} | set(NEW_CLIPS)
+POSED = CLIPS | set(PASSAGES) | set(STATE_CLIPS)
 VOICES = {"bare", "butler", "homie", "coach", "colleague", "squire"}
 
 needs_blender = pytest.mark.skipif(shutil.which("blender") is None, reason="needs Blender on the path")
@@ -76,14 +93,11 @@ def test_the_viewer_serves_the_page_and_its_sheets_from_its_own_build():
 
 @needs_blender
 def test_blender_poses_every_clip_of_a_voice_that_carries_something(tmp_path):
-    subprocess.run(
-        ["blender", "-b", "-P", str(HERE / "render_clips.py"), "--", "--out", str(tmp_path), "--voices", "butler", "--facings", "0", "--stills"],
-        check=True, capture_output=True, timeout=BLENDER_SECONDS,
-    )
-    assert {p.parent.name for p in (tmp_path / "butler").glob("*/0_still.png")} == CLIPS
+    run_blender("render_clips.py", tmp_path, "--voices", "butler", "--facings", "0", "--stills")
+    assert {p.parent.name for p in (tmp_path / "butler").glob("*/0_still.png")} == POSED
 
 
-@pytest.mark.parametrize("name, expected", NEW_CLIPS.items())
+@pytest.mark.parametrize("name, expected", REGISTERED.items())
 def test_new_clip_registration_contract(name, expected):
     """Read the real registration without importing Blender into pytest."""
     tree = ast.parse((HERE / "clips.py").read_text())
@@ -94,7 +108,7 @@ def test_new_clip_registration_contract(name, expected):
             assert clip_name not in found, f"duplicate clip {clip_name}"
             found[clip_name] = (frames, fps, loops)
             assert isinstance(node.args[4], ast.Name) and node.args[4].id == clip_name
-    assert set(found) == CLIPS
+    assert set(found) == POSED
     assert found[name] == expected
 
 
@@ -104,7 +118,7 @@ def test_new_clip_manifest_contract(manifest, name, expected):
     assert (clip.frames, clip.fps, clip.loops) == expected
 
 
-@pytest.mark.parametrize("name, expected", NEW_CLIPS.items())
+@pytest.mark.parametrize("name, expected", REGISTERED.items())
 def test_new_clip_browser_contract(name, expected):
     frames, fps, loops = expected
     page = (HERE / "stepped" / "figure.js").read_text()
@@ -119,12 +133,18 @@ def test_new_clip_animation_contracts_in_blender(tmp_path):
     Kept separate from rendering; the numerical contract does not certify mesh
     collision freedom or replace stepping the clip in the viewer.
     """
-    subprocess.run(
-        ["blender", "-b", "-P", str(HERE / "prove_new_clips.py"), "--", "--out", str(tmp_path)],
-        check=True, capture_output=True, timeout=BLENDER_SECONDS,
-    )
+    run_blender("prove_new_clips.py", tmp_path)
     report = json.loads((tmp_path / "new_clips.json").read_text())
     assert report["failures"] == []
     assert set(report["voices"]) == VOICES
     assert set(report["clips"]) == set(NEW_CLIPS)
     assert report["facings"] == [0, 30, 45, 60, 90, 135, 180, 200, 270, 290, 330]
+
+
+@needs_blender
+def test_every_voice_enters_onto_idle_and_exits_from_it_in_blender(tmp_path):
+    """Each voice's own entrance and exit: inside the limits on every frame, joined to idle without a jump, starting or ending out of sight."""
+    run_blender("prove_passages.py", tmp_path)
+    report = json.loads((tmp_path / "passages.json").read_text())
+    assert report["failures"] == []
+    assert (set(report["voices"]), set(report["clips"])) == (VOICES, set(PASSAGES))

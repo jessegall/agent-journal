@@ -1,7 +1,7 @@
 from features.boards.controller import Boards
 from features.plans.controller import READY, WAITING
-from features.sequences.resource import RunKey
-from features.tickets.resource import PROPOSED
+from resources.sequences import RunKey
+from resources.tickets import PROPOSED
 from resources.base import AGENT, SYSTEM
 
 PLANS, WAITS, DRAFTS = "orchestrator_approves_plans", "orchestrator_accepts_waits", "orchestrator_confirms_drafts"

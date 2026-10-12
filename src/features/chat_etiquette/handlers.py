@@ -1,11 +1,12 @@
 import re
 
-from engine.events.engine import AgentMessageSent, CommandRan
+from events.agents import AgentMessageSent, CommandRan
 from engine.ran import DELIVERED
-from features import trigger
+from engine import triggering
 from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON
-from features.form_of_address.names import called, first_name
-from features.parts import AgentContext, Handler
+from controllers.types import Profiles
+from framework.parts import AgentContext, Handler
+from resources.base import SYSTEM
 
 QUOTES = ('"', "“", "'")
 ABOUT_THEM = r"(?:asks|asked|wants|wanted|says|said|writes|wrote|would like|needs|prefers|is asking|has asked)"
@@ -34,7 +35,8 @@ class NameShopTalk(Handler):
 
 
 def third_person(record) -> re.Pattern:
-    names = sorted({name for name in (called(record), first_name(record), "the user") if name}, key=len, reverse=True)
+    profiles = Profiles(record, actor=SYSTEM)
+    names = sorted({name for name in (profiles.user_called(), profiles.user_first_name(), "the user") if name}, key=len, reverse=True)
     return re.compile(rf"\b(?:{'|'.join(map(re.escape, names))})\s+{ABOUT_THEM}\b", re.IGNORECASE)
 
 
@@ -49,6 +51,6 @@ class RemindOfEtiquette(Handler):
     def handle(self, context: AgentContext, event: CommandRan) -> None:
         if event.tool != DELIVERED or not context.agent:
             return
-        trigger.noticed(context.record, context.agent.row, context.feature.keyed(REMIND))
+        triggering.noticed(context.record, context.agent.row, context.feature.keyed(REMIND))
         if context.due(REMIND):
             context.agent.whisper(REMIND)

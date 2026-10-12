@@ -18,14 +18,15 @@ from engine.record import Record
 from controllers.faults import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
 from providers.base import Provider
-from providers.payload import HookEvent
+from payload import HookEvent
 from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, titled
 from resources.types import TYPES, priority
 from agents.seat import SeatReport
-from engine.wording import digest, plural
+from resources.text import digest, plural
 from engine.transcript import PEER
 from providers.turns import turns
-from runner.chat_mirror import send_row_to_chat
+from runner.chat_mirror import send_row_to_chat, unfinished
+from runner.relay import Relay
 from engine.stored import Growth, read_json, write_json
 from resources.fields import Loaded
 
@@ -114,9 +115,10 @@ class Engine:
         self.actors: list[Actor] = [User(record), self.agent, System(record)]
         self.report = SeatReport(record, self.agent)
         self.born = time.time()
-        self.relayed = None
+        self.relaying = Relay(record)
         self.peer_growth = Growth()
         self.failure_growth = Growth()
+        self.interruption_growth = Growth()
         self.screen_call = ""
         self.typed_at = 0.0
         self.ticked_at = 0.0
@@ -147,6 +149,7 @@ class Engine:
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
         self.screen_asks()
+        self.cut_off()
         self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.failed() or self.probe() or self.forced() or self.typing() or self.shelled()
                     or self.control() or self.deliver() or self.nudge())
         self.report.write(self.why)
@@ -166,10 +169,7 @@ class Engine:
         return Reading(row, provider(), Path(row.transcript))
 
     def relay(self) -> None:
-        if self.relayed is None:
-            self.relayed = self.record.event_log.last_id()
-        for e in self.record.event_log.events(self.relayed):
-            self.relayed = e.id
+        for e in self.relaying.each():
             features.passed(e, self.record)
             if not e.handled:
                 bus.emit(e, self.record)
@@ -229,6 +229,14 @@ class Engine:
     def elsewhere(self, e) -> bool:
         meant = event_data(self.record, e).get("session")
         return bool(meant) and meant not in self.names()
+
+    def cut_off(self) -> None:
+        """A turn the person cut off ends with no hook, so the words it had written wait for the next prompt; they are sent now, from the catch-up the next prompt would run, which sends nothing the hook already delivered."""
+        reading = self.reading()
+        if reading is None or self.agent.state() not in (BUSY, WORKING) or not self.interruption_growth.grew(reading.transcript):
+            return
+        if reading.provider.interrupted_by_user(reading.transcript):
+            unfinished(self.record.root, reading.row.title, reading.row)
 
     def failed(self) -> str:
         reading = self.reading()
@@ -508,7 +516,7 @@ class Engine:
         return f"typed: {line[:60]}"
 
     def waiting(self) -> bool:
-        from features.journal import waiting
+        from framework.journal import waiting
         last = self.agent.driver.last_report()
         return bool(last) and waiting(self.record, last)
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from engine import runtime
 from engine.package import ARCHIVE, point
 from engine.sessions import held_builds
-from engine.stored import read_json, write_json
+from engine.stored import read_promised_json, write_json
 
 
 REFUSED_FOR = 12 * 3600
@@ -16,11 +16,11 @@ def ledger(root: Path) -> Path:
 
 
 def broken(root: Path) -> list[str]:
-    return list(read_json(ledger(root), dict, {}).get("builds") or [])
+    return list(read_promised_json(ledger(root), dict, {}).get("builds") or [])
 
 
 def refused(root: Path, version: str) -> bool:
-    since = read_json(ledger(root), dict, {}).get("at") or {}
+    since = read_promised_json(ledger(root), dict, {}).get("at") or {}
     return any(name.startswith(f"journal-{version}-") and time.time() - since.get(name, 0) < REFUSED_FOR for name in broken(root))
 
 
@@ -58,7 +58,7 @@ def rolled_back(root: Path, current: Path) -> str:
     if not kept:
         return ""
     previous = max(kept, key=lambda build: build.stat().st_mtime)
-    at = {**(read_json(ledger(root), dict, {}).get("at") or {}), current.name: time.time()}
+    at = {**(read_promised_json(ledger(root), dict, {}).get("at") or {}), current.name: time.time()}
     write_json(ledger(root), {"builds": bad, "at": at})
     point(root, previous)
     return f"journal: {current.name} would not start, so the journal went back to {previous.name}"
@@ -71,9 +71,7 @@ def pruned(root: Path) -> list[str]:
         return []
     current = (root / ARCHIVE).resolve()
     held = held_builds(root)
-    removed = []
-    for build in root.glob("journal-*.pyz"):
-        if build.resolve() != current and build.name not in held:
-            build.unlink(missing_ok=True)
-            removed.append(build.name)
-    return removed
+    stale = [build for build in root.glob("journal-*.pyz") if build.resolve() != current and build.name not in held]
+    for build in stale:
+        build.unlink(missing_ok=True)
+    return [build.name for build in stale]

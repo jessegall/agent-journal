@@ -1,6 +1,6 @@
 from controllers.types import Questions
 from features.integrations.details import KEEP, SEND
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from resources.base import AGENT, titled
 
 

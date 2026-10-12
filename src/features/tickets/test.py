@@ -51,6 +51,14 @@ def test_a_board_holds_its_tickets_in_its_own_stages_and_marks_what_they_mean():
     ticket = tickets.create("Dark mode", board=board.n)
     assert (ticket.stage, tickets.move(ticket.n, "Shipped").stage) == ("Ideas", "Shipped"), "a ticket starts in its board's first stage and moves between them"
     assert "has no stage" in refused(lambda: tickets.move(ticket.n, "Nowhere")), "a stage the board does not have is refused"
+    boards.update(board.n, stages=["Ideas", "Building"], meanings={"Building": "start"})
+    tickets.update(ticket.n, told=1.0)
+    from controllers.types import Notices
+    lost = [n for n in Notices(tickets.record, actor=SYSTEM).rows.standing() if n.data.get("stage_lost_board") == board.n]
+    assert (tickets.load(ticket.n).told, len(lost)) == (1.0, 1), "a ticket on a stage its board lost still saves, and the board is told once"
+    tickets.update(ticket.n, told=2.0)
+    assert len([n for n in Notices(tickets.record, actor=SYSTEM).rows.standing() if n.data.get("stage_lost_board") == board.n]) == 1, "the drift is not told again"
+    boards.update(board.n, stages=["Ideas", "Building", "Shipped"], meanings={"Shipped": "done", "Building": "start"})
     lanes = tickets.board(board.n)["lanes"]
     assert [(lane["title"], [(card["n"], card["type"], card["targets"]) for card in lane["cards"]]) for lane in lanes] == \
         [("Ideas", []), ("Building", []), ("Shipped", [(ticket.n, "ticket", ["Ideas", "Building"])])], "the board shows its stages as lanes, each ticket movable to the others"
@@ -156,7 +164,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     assert "Draft a plan" in kickoff and ticket.ref in kickoff, "a fresh start opens with the ticket and how to plan it"
     from controllers.types import Environments
     from agents.terminal import launching
-    from features.parts import in_background
+    from framework.parts import in_background
     assert in_background(Record(record.root, f"ticket-{ticket.n}")), "the ticket's environment belongs to its ticket, so its agent works in the background"
     monkeypatch.setenv("CLAUDE_CODE_CHILD_SESSION", "1")
     monkeypatch.setenv("CLAUDECODE", "1")
@@ -603,8 +611,8 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
         working.setattr(Tickets, "_live", lambda self, found: True)
         assert [r.n for r in user._running()] == [api.n], "a ticket that waits on another holds no running slot, though its agent works"
         from controllers.types import Agents
-        from features import FEATURES
-        from features.parts import AgentContext
+        from framework.loaded import FEATURES
+        from framework.parts import AgentContext
         from features.tickets.handlers import boards_to_check
         from types import SimpleNamespace
         looking = SimpleNamespace(idle_for=3600.0)
@@ -754,7 +762,7 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
 
 
 def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
-    from features.boards.resource import PANEL_REPLY
+    from resources.boards import PANEL_REPLY
     from features.tickets.limits import CARD_LINE, CARD_TITLE
     from controllers.types import Messages
     from tests.conftest import refused
@@ -778,8 +786,8 @@ def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
 def calls_fire_once_and_repeat_on_time(monkeypatch):
     import features
     from features.tickets import calls as ticket_calls, handlers
-    from features.trigger import MINUTE
-    from features import trigger
+    from declaring.trigger import MINUTE
+    from engine import triggering
     from tests.kit import nudges, report, tick
     features.load()
     record = fresh()
@@ -791,7 +799,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     monkeypatch.setattr(handlers, "calls", lambda tickets, found: held[0])
     monkeypatch.setattr(Tickets, "raise_moment", lambda self, n, moment, **data: moments.append(moment))
     now = [time.time()]
-    monkeypatch.setattr(trigger.time, "time", lambda: now[0])
+    monkeypatch.setattr(triggering.time, "time", lambda: now[0])
     sent = lambda: [n for n in nudges(record) if "Dark mode, answered" in n]
     tick(record)
     assert [moment for moment in moments if moment == "finished"] == ["finished"] and len(sent()) == 1, \

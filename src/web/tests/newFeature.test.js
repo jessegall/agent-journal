@@ -12,8 +12,8 @@ vi.mock("../src/api/client.js", () => ({
     api: {newFeatures: () => asked(), markNewFeatureSeen: (id) => marked(id), publicUrl: (path) => `/${path}`},
 }));
 vi.mock("../src/platform/faults.js", () => ({report: (...args) => reported(...args)}));
-vi.mock("../src/route.js", () => ({go: (env, page) => went(env, page)}));
-vi.mock("../src/state/store.js", () => ({store: {env: "main"}}));
+vi.mock("../src/route.js", () => ({go: (env, page) => went(env, page), route: {value: {env: "main"}}}));
+vi.mock("../src/state/store.js", () => ({store: {}}));
 vi.mock("../src/composables/profiles.js", () => ({
     loadProfiles: vi.fn(),
     profiles: {value: [{n: 1, title: "Butler"}, {n: 6, title: "Squire"}]},

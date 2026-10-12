@@ -1,17 +1,9 @@
-from dataclasses import dataclass
-from typing import ClassVar
 
-from engine.events.resources import ResourceEvent, RuleCreated
+from events.rules import RuleChanged, RuleCreated
 from features.journal_laws.briefing import brief
-from features.parts import Context, Handler
+from framework.parts import Context, Handler
 from resources.base import AGENT
 from controllers.types import Agents, Rules
-
-
-
-@dataclass(frozen=True)
-class RuleChanged(ResourceEvent):
-    on: ClassVar[str] = "rule"
 
 
 class InjectRules(Handler):

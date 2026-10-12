@@ -12,7 +12,7 @@ from features.helper_worktrees.controller import KEPT, Worktrees
 from features.helpers.state import HelperAgent, HelperSnapshot, WorkState, helper_state
 from providers import PROVIDERS
 from resources.base import SYSTEM
-from features.settings import Settings
+from declaring.settings import Settings
 
 PATH = re.compile(r"[\w.-]+(?:/[\w.-]+)+\.\w+|\b[\w-]+\.(?:py|js|ts|vue|md|json|toml|css|sh)\b")
 FRESH = ("review", "critic", "audit", "verifier")

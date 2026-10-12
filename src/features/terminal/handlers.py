@@ -1,5 +1,5 @@
-from engine.events.engine import CommandRan
-from features.parts import AgentContext, Handler
+from events.agents import CommandRan
+from framework.parts import AgentContext, Handler
 from features.terminal.log import kept
 
 

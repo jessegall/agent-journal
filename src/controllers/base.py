@@ -9,7 +9,7 @@ from dataclasses import asdict, dataclass, field
 from functools import cache, partial
 
 from engine import bus
-from engine.extension import Extension
+from declaring.extension import Extension
 from resources.fields import Loaded
 from engine.markers import plain
 from engine.offline import queue
@@ -19,11 +19,12 @@ from engine.record import Record
 from resources.base import OWNER, PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
 from controllers.discussion import TWICE_WITHIN, Discussed
+from controllers.buttons import Buttons
 from controllers.files import Files
 from controllers.links import Links
 from controllers import marks
 from controllers.stored import IDEMPOTENCY, RowStore
-from engine.wording import noun
+from resources.text import noun
 
 WORDS = ("title", "abstract", "brief")
 FIELD_WRITES = ("create", "update", "set")
@@ -152,7 +153,7 @@ def word_parameters(controller: type, name: str) -> list[inspect.Parameter]:
     return list(inspect.signature(word_function(controller, name)).parameters.values())[1:]
 
 
-class Controller(Files, Links, Discussed):
+class Controller(Files, Links, Discussed, Buttons):
     resource = Resource
     actor = "user"
 
@@ -261,12 +262,20 @@ class Controller(Files, Links, Discussed):
     def _field_choices(self, r: Resource) -> dict:
         return {}
 
+    def _derived(self, row: Resource) -> dict:
+        """What a row says now that cannot be kept with it, because it depends on more than the row: read each time the viewer is handed the row, never saved."""
+        return {}
+
     def _shaped(self, data: dict) -> dict:
         fields = self.resource.fields
         return {k: checked_field(fields, k, v) for k, v in data.items()}
 
     def _given(self, data: dict) -> Resource:
         return self.resource(data=self._shaped(data))
+
+    def _keyed(self, key: str) -> Resource | None:
+        """The row an earlier create with this idempotency key made, or none. Named apart from _made, which a controller of the features already uses for something else, so the base cannot shadow it."""
+        return self.rows.by_idempotency(key) if key else None
 
     def _twin(self, title: str, brief: str, about, idempotency: str = "") -> Resource | None:
         if not self.resource.deduplicates:
@@ -283,7 +292,7 @@ class Controller(Files, Links, Discussed):
         if self.resource.agent_only and self.actor == USER:
             self._refuse(f"a {self.type} is made by the agent, never by you")
         key = data.get(IDEMPOTENCY, "")
-        made = self.rows.by_idempotency(key) if key else None
+        made = self._keyed(key)
         if made is not None:
             return made
         twin = self._twin(title, brief, data.get("about"), key)
@@ -296,6 +305,10 @@ class Controller(Files, Links, Discussed):
         for name in self.resource.unfilled(data):
             self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
         with self.record.locked(self.resource.scope):
+            # a send repeated while the first was still being written passed the check above beside it; under the lock it finds that row
+            made = self._keyed(key)
+            if made is not None:
+                return made
             n = self.rows.draw_number()
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
             fields = self._shaped(data)

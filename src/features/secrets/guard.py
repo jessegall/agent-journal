@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from engine.reach import Reach
-from features.parts import AgentContext, ToolInterceptor
-from engine.gates import Runs
+from declaring.reach import Reach
+from framework.parts import AgentContext, ToolInterceptor
+from declaring.holds import Runs
 from features.secrets.values import secrets_folder
 
 NAMED = ("agent-journal/secrets", "agent-journal\\secrets")

@@ -7,17 +7,17 @@ from pathlib import Path
 
 from controllers.base import row_of
 from controllers.docs import Docs
+from controllers.types import Collections
 from engine import bus
 from controllers.described import described_types
 from engine.markers import MARKER
 from engine.record import Record
-from features.collections.files import collected_files
-from features.format import SHARED, formatted, shape
+from framework.format import SHARED, formatted, shape
 from features.plans.controller import Plans
 from features.revisions.history import count, read
 from features.sharing.views import shared_view
 from features.tickets.controller import Tickets
-from features.tickets.resource import CONFIRMED
+from resources.tickets import CONFIRMED
 from resources.base import SYSTEM, Ref, Refused
 
 KEPT_FOR = 30.0
@@ -181,7 +181,7 @@ class SharePages:
             row = loaded[ref]
             rows[ref] = asdict(replace(SharedRow.of(row, record, scope), members=[m.ref for m in held[ref] if m.ref in scope]))
             if row.type == "collection":
-                rows[ref]["held_files"] = collected_files(record, [row, *(m for m in held[ref] if m.ref in scope)])
+                rows[ref]["held_files"] = Collections(record, actor=SYSTEM).listed_files([row, *(m for m in held[ref] if m.ref in scope)])
         described = described_types()
         kinds = {Ref.parse(ref).type for ref in rows}
         return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,

@@ -4,15 +4,14 @@ import time
 from pathlib import Path
 
 import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import Controller
 from controllers.marks import action
 from controllers.types import Environments, Messages
 from engine.package import entry
-from features import FEATURES
+from framework.loaded import FEATURES
 from features.secrets.keys import integration_key_variables
 from features.secrets.reach import servers_reaching
-from features.secrets.resource import Kind, Secret, SecretField
+from resources.secrets import Kind, Secret, SecretField
 from features.secrets.running import NEVER_GIVEN, checked_program, programs_named, run_masked
 from features.secrets.sessions import BrowserLogins
 from features.secrets.values import ValuesFile
@@ -200,5 +199,4 @@ class Secrets(Controller):
         return variables
 
 
-resources_module.register(Secret)
 types_module.register(Secrets)

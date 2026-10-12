@@ -4,9 +4,9 @@ import re
 from pathlib import Path
 
 from engine import runtime
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.package import SRC
-from providers.base import journal_hook
+from payload import journal_hook
 
 MANAGED = "managed-files.json"
 LEGACY_COPY_MARKER = "managed-update-copy"

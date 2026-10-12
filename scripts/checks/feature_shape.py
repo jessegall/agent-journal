@@ -15,9 +15,14 @@ def classes(path: Path) -> list[ast.ClassDef]:
 
 
 def hooks() -> set[str]:
-    """The methods features.base.Feature declares for a feature to override."""
-    base = next(node for node in classes(HERE / "features" / "base.py") if node.name == "Feature")
+    """The methods framework.base.Feature declares for a feature to override."""
+    base = next(node for node in classes(HERE / "framework" / "base.py") if node.name == "Feature")
     return {node.name for node in base.body if isinstance(node, ast.FunctionDef) and not node.name.startswith("_")}
+
+
+def based_on(part: ast.ClassDef) -> set[str]:
+    """The names this class derives from."""
+    return {getattr(base, "id", "") for base in part.bases}
 
 
 def delegates(method: ast.FunctionDef) -> bool:
@@ -29,22 +34,28 @@ def delegates(method: ast.FunctionDef) -> bool:
 def file_problems(path: Path) -> list[str]:
     found = []
     for node in ast.walk(ast.parse(path.read_text())):
-        if isinstance(node, ast.ImportFrom) and node.module == "features.base" and {a.name for a in node.names} & OLD_MARKERS:
-            found.append(f"{path.relative_to(HERE)} imports an old marker from features.base")
+        if isinstance(node, ast.ImportFrom) and node.module == "framework.base" and {a.name for a in node.names} & OLD_MARKERS:
+            found.append(f"{path.relative_to(HERE)} imports an old marker from framework.base")
     for part in classes(path):
         lines = part.end_lineno - part.lineno + 1
-        if any(getattr(base, "id", "") in PARTS for base in part.bases) and lines > PART_LINES:
+        if based_on(part) & PARTS and lines > PART_LINES:
             found.append(f"{path.relative_to(HERE)}: {part.name} is {lines} lines; split it, a part stays under {PART_LINES}")
     return found
 
 
+def strays() -> list[str]:
+    """Modules sitting directly under features/, which holds feature packages alone; plumbing belongs in framework, engine or expects."""
+    return [f"features/{path.name} is not a feature package; move it to framework, engine or expects"
+            for path in sorted((HERE / "features").glob("*.py")) if path.name != "__init__.py"]
+
+
 def problems() -> list[str]:
-    found = []
+    found = strays()
     for folder in sorted(p for p in (HERE / "features").iterdir() if (p / "feature.py").is_file()):
         name = folder.name
         if not (folder / "details.py").is_file():
             found.append(f"features/{name} has no details.py")
-        for feature in classes(folder / "feature.py"):
+        for feature in [one for one in classes(folder / "feature.py") if "Feature" in based_on(one)]:
             allowed = FEATURE_METHODS | SERVICES.get(name, set())
             extra = [f.name for f in feature.body if isinstance(f, ast.FunctionDef) and f.name not in allowed and not (f.name in hooks() and delegates(f))]
             if extra:

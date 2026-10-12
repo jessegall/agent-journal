@@ -1,5 +1,5 @@
-from features.base import Behaviour, FeatureDetails
-from features.groups import Group
+from declaring.details import Behaviour, FeatureDetails
+from declaring.groups import Group
 
 
 class StatusLineDetails(FeatureDetails):

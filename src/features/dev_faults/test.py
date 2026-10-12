@@ -9,7 +9,7 @@ import features
 from controllers.types import Features, Notifications
 from engine import runtime
 from engine.timing import measured
-from features import FEATURES
+from framework.loaded import FEATURES
 from features.dev_faults.feature import DevFaults
 from resources.base import SYSTEM
 from tests.conftest import fresh
@@ -48,7 +48,7 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
     assert notified(record) == ["request GET /api/main/message is slower than its budget"], notified(record)
     from commands.dispatch import timed
     from engine.timing import Stopwatch
-    from features.routing import Reply
+    from framework.routing import Reply
     for _ in range(2):
         timed(Reply(200, {}, after=lambda: busy(0.08)), record.root, record.env, "POST", "/api/hook/claude", Stopwatch()).after()
     assert notified(record) == ["request GET /api/main/message is slower than its budget"], \
@@ -213,7 +213,7 @@ def test_going_over_again_counts_but_tells_the_agent_once():
         "and the next breach files a fresh to-do instead of holding the writes"
     from controllers.types import Agents
     from engine.record import Record
-    from engine.wording import digest
+    from resources.text import digest
     elsewhere = Record(record.root, "elsewhere")
     Agents(elsewhere, actor=SYSTEM).create("claude-2")
     todos.delete(todos.rows.standing()[0].n, "archived again")
@@ -263,13 +263,28 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch(monkeypatch):
     assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
     assert notified(record) == ["the viewer threw agents.some is not a function"], notified(record)
     assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "took long", "request", "", "slow") is True, "a report of a slow request that was already filed is taken as filed"
-    from features.dev_faults.developing import developing
+    from engine.developing import developing
     from features.dev_faults.diagnostics import logged
     project = record.root.parent / "dev-project"
     project.mkdir()
     (project / ".env").write_text("OTHER=1\nDEVELOPMENT_MODE=true\n")
     monkeypatch.delenv("DEVELOPMENT_MODE", raising=False)
     assert developing(project) is True, "development mode is read from the project's own .env"
+    from engine.developing import AnsweredBlank
+    from engine.disk import read_json, read_promised_json
+    from providers import transcript_reader
+    from types import SimpleNamespace
+    monkeypatch.chdir(record.root.parent)
+    broken, agent = record.root.parent / "broken.json", SimpleNamespace(provider="nowhere", transcript="t.jsonl", cwd=str(record.root.parent))
+    broken.write_text("{not json")
+    assert (read_promised_json(broken, dict, {}), transcript_reader(agent)) == ({}, None), "elsewhere a file that is there but unreadable, and a provider nobody supplies, answer blank"
+    monkeypatch.setenv("DEVELOPMENT_MODE", "true")
+    assert read_json(broken, dict, {}) == {}, "the lenient read answers its default even there, for the reader for whom nothing is an answer"
+    with pytest.raises(AnsweredBlank, match="broken.json"):
+        read_promised_json(broken, dict, {})
+    with pytest.raises(AnsweredBlank, match="nowhere"):
+        transcript_reader(agent)
+    monkeypatch.delenv("DEVELOPMENT_MODE")
     blocked = record.root.parent / "not-a-folder"
     blocked.write_text("")
     assert logged(blocked, "no place to write") is None, "a log that cannot be written is left unwritten, not crashed on"
@@ -467,7 +482,7 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
         record.change_setting("open_viewer", {"watched_reads": True})
     from features.boards.controller import Boards
     from features.tickets.controller import Tickets
-    from features.tickets.resource import Ticket
+    from resources.tickets import Ticket
     new_build = Tickets(record, actor=SYSTEM)
     placed = Boards(record, actor=SYSTEM).create("Rollback", stages=["Ideas"])
     for title in ("One", "Two", "Three"):
@@ -523,7 +538,7 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
         patch.setattr(serve, "CODE", Path("/anywhere/journal-9.0.0-aaa.pyz"))
         assert not serve.drifted(builds), "a server on the installed build has not drifted"
     from commands import parser as parsing
-    from features.format import formatted
+    from framework.format import formatted
     parsing.PARSERS.clear()
     parsing.QUERIES.clear()
     assert formatted("run journal todo done and --how", record) == "run `journal todo done` and `--how`", "a command in a text is marked as code"
@@ -610,7 +625,7 @@ def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_
     assert seen.setting("delivery") == {"mode": "two"}, "the view of another process holds until the event reaches it"
     features.passed(event, seen)
     assert seen.setting("delivery") == {"mode": "three"}, "the event makes it read the file again"
-    from features import switches
+    from framework import switches
     monkeypatch.setattr(switches, "UNEVENTED", [False])
     switches.watch_change_log()
     held = switches.switches(record).get("dev_faults", False)
@@ -624,7 +639,7 @@ def test_a_setting_is_read_once_and_a_change_from_another_process_is_seen_after_
     assert warmed == [1], "what a switch clears, such as the command parser, is built again once the change is made, never by the next request"
     assert DevFaults.details.values(record) is DevFaults.details.values(record), "a feature's settings are read once until they change"
     from controllers.types import Environments, Todos
-    from features.format import shaped
+    from framework.format import shaped
     features.load(record.root)
     plain, naming = Todos(record, actor=SYSTEM).create("the header"), Todos(record, actor=SYSTEM).create("ask todo 1 in elsewhere")
     held, before = (shaped(plain, record), shaped(naming, record)), switches.generation()

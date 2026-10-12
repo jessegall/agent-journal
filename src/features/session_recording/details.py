@@ -1,5 +1,5 @@
-from features.base import FeatureDetails
-from features.groups import Group
+from declaring.details import FeatureDetails
+from declaring.groups import Group
 
 
 class SessionRecordingDetails(FeatureDetails):

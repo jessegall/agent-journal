@@ -1,9 +1,10 @@
 from resources.base import PROJECT
-from features.base import Behaviour, FeatureDetails, Line
-from features.trigger import MINUTES, Trigger
-from features.settings import ModelsSetting, Setting
-from features.boards.resource import MEANINGS
-from features.groups import Group
+from declaring.details import Behaviour, FeatureDetails, Line
+from declaring.trigger import MINUTES, Trigger
+from declaring.settings import Setting
+from providers.settings import ModelsSetting
+from resources.boards import MEANINGS
+from declaring.groups import Group
 
 
 

@@ -16,14 +16,14 @@ from engine.sessions import Sessions
 from providers import PROVIDERS
 from runner.hooks import answer
 from features.helpers.handlers import NameStoppedOrQuietHelpers
-from features.parts import AgentContext
+from framework.parts import AgentContext
 from features.helper_worktrees.controller import Worktrees
 from tests.kit import project_on, run
 from features.helpers.controller import Helpers
 from features.plans.controller import Plans
 from features.helpers.interceptors import KeepSubagentFiles, OfferKeptAgentsFirst
 from features.helpers.reuse import kept
-from providers.payload import Dispatch
+from payload import Dispatch
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import FAILED, IDLE
 from overview.summary import summarize
@@ -156,7 +156,7 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     assert [(m.brief, m.data.get("from_main")) for m in sent] == [("carry on", True)], "and is kept in the helper's chat as a message from the main agent, so its inspector can show it"
     assert typed[-1] == f"The agent that dispatched you wrote in message {sent[0].n}, which is in your own environment, where journal message read {sent[0].n} shows it:\n\ncarry on", \
         "the words reach the helper naming who wrote them and the message they were filed as, so a helper is never asked to act on a line that appeared on its screen from nobody"
-    from providers.base import said_by
+    from payload import said_by
     assert said_by("main").startswith("[journal] a message from the agent in main"), \
         "and the journal marks a line it types for somebody else with who it is from, as it marks its own"
     Helpers(record, actor=SYSTEM).update(ghost.n, report="done for now")
@@ -173,7 +173,7 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     Agents(record, actor=SYSTEM).create("claude-1")
     Helpers(record, actor=AGENT).dispatch("Rhea", "Profile the slow hooks", "codex", "gpt-5.5")
     assert [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"]] == ["Dispatched helper 1"], "dispatching a helper shows a mark in the chat"
-    from features.phone.chat_view import card_shows
+    from framework.stamping import card_shows
     assert [card_shows(c) for c in Agents(record, actor=SYSTEM).primary().data["cards"]] == ["helpers"], "a helper mark has its own kind, so hiding plugin notes never hides it"
     Features(record, actor=SYSTEM).configure("helpers", "kept", "5")
     Features(record, actor=AGENT).configure("helpers", "kept", "12")

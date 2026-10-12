@@ -16,7 +16,7 @@ from resources.base import ENVIRONMENT, SYSTEM, UNTITLED, Refused, check_title
 from resources.types import EnvironmentKind
 from engine import runtime
 from engine.paths import ROUTED, environment_home, environments
-from engine.wording import plural
+from resources.text import plural
 from controllers.facts import Facts
 from controllers.messages import Messages
 from controllers.questions import Questions

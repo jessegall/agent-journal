@@ -8,7 +8,7 @@ from typing import NoReturn
 from commands.menu import Choice, choices_of, pick
 from engine.record import Record
 from engine.version import version as package_version
-from engine.wording import plural
+from resources.text import plural
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM, Refused
 from resources.types import EnvironmentKind
@@ -98,7 +98,7 @@ def banner(agent: str, project: Path) -> str:
 
 
 def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=None) -> bool:
-    from features import FEATURES
+    from framework.loaded import FEATURES
     from features.clean_slate.slate import held, others, put_back_held, state
     answering = sys.stdin.isatty() if answering is None else answering
     hooks, aside = others(project, agent), [Path(m["from"]) for m in held(record, project, agent)]

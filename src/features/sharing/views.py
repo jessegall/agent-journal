@@ -4,7 +4,7 @@ from controllers.messages import Messages
 from controllers.types import Works
 from engine.record import Record
 from engine.seats import live
-from features.format import SHARED, formatted
+from framework.format import SHARED, formatted
 from resources.base import SYSTEM
 
 VIEWS = ("agents", "chat")

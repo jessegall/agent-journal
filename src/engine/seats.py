@@ -4,9 +4,9 @@ from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 
 from engine.sessions import Sessions
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.state import State
-from engine.stored import read_json, write_json
+from engine.stored import read_promised_json, write_json
 from engine import runtime
 from resources.fields import Loaded
 
@@ -148,7 +148,7 @@ class SeatFiles:
         held = self.kept.get(name)
         if held and held[0] == stamp:
             return stamp, held[1]
-        raw = read_json(self.folder / name / SEAT, dict, None)
+        raw = read_promised_json(self.folder / name / SEAT, dict, None)
         if raw is None:
             return stamp, None
         seat = Seat.of(raw, name)

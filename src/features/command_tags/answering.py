@@ -3,7 +3,7 @@ from itertools import dropwhile
 from controllers.types import Messages
 from features.command_tags.reading import REPLY_WITH
 from features.messages.answering import acknowledges
-from engine.wording import plural
+from resources.text import plural
 from resources.base import AGENT, SYSTEM, USER
 
 

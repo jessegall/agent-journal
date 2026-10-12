@@ -1,11 +1,10 @@
 
-from features.parts import ActionInterceptor, Context, Handler
-from engine.events.resources import ResourceCreated
+from framework.parts import ActionInterceptor, Context, Handler
+from events.resources import ResourceCreated
 from features.templates.instructions import filled
 from resources.base import SECTION, Refused
 from controllers.types import CONTROLLERS
-from features.templates.controller import Templates
-
+from controllers.types import Templates
 
 
 class CheckTemplate(ActionInterceptor):

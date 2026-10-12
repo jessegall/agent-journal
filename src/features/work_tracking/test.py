@@ -31,15 +31,16 @@ def test_edits_without_a_log_entry_hold_the_writes_until_the_work_is_logged():
     report(record, "working", "PostToolUse", wrote=True)
     assert held(record, "claude-1") == "", "and the count starts over"
     from engine.stored import write_json
-    from features import trigger
-    counted = trigger.last(record, "claude-1", "work_tracking").edits
-    marked = trigger._file(record, "claude-1", "work_tracking")
-    write_json(marked, {**trigger.asdict(trigger.last(record, "claude-1", "work_tracking")), "edits": 0})
+    from dataclasses import asdict
+    from engine import triggering
+    counted = triggering.last(record, "claude-1", "work_tracking").edits
+    marked = triggering.mark_file(record, "claude-1", "work_tracking")
+    write_json(marked, {**asdict(triggering.last(record, "claude-1", "work_tracking")), "edits": 0})
     import os, time
     os.utime(marked, ns=(time.time_ns(), time.time_ns() + 1_000_000))
-    assert (counted > 0, trigger.last(record, "claude-1", "work_tracking").edits) == (True, 0), \
+    assert (counted > 0, triggering.last(record, "claude-1", "work_tracking").edits) == (True, 0), \
         "a reset written by another process, such as the server running journal work log, is read, never an old count kept in memory"
-    from engine.events.engine import FileEdited
+    from events.files import FileEdited
     from features.work_tracking.tracker import record_edit
     agents = Agents(record, actor=SYSTEM)
     agent = agents.by_session("claude-1")
@@ -203,8 +204,8 @@ def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working
 
     from controllers.types import Todos as Rows
     from features.work_tracking.handlers import nothing_left
-    from features.parts import AgentContext
-    from features import FEATURES
+    from framework.parts import AgentContext
+    from framework.loaded import FEATURES
     done = fresh()
     done.features = {**done.features, "work_tracking.auto": True}
     agents_here = Agents(done, actor=SYSTEM)

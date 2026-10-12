@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from features.base import FeatureDetails, Line
-from features.settings import Setting
-from features.groups import Group
+from declaring.details import FeatureDetails, Line
+from declaring.settings import Setting
+from declaring.groups import Group
 
 NAME = "work_modes"
 BUILDER, ORCHESTRATOR, SOLO = "builder", "orchestrator", "solo"
@@ -99,12 +99,14 @@ class WorkModesDetails(FeatureDetails):
     lines = [
         Line(
             name=MODE_SET,
+            lead=True,
             while_waiting=True,
             title="the user set the work mode to {{mode}}",
-            brief="From now on {{meaning}}.",
+            brief="{{written}}",
         ),
         Line(
             name=BOARD_SET,
+            lead=True,
             while_waiting=True,
             title="the user set where new work goes: {{where}}",
             brief="From now on {{filing}}",

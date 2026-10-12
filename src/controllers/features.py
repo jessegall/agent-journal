@@ -2,7 +2,9 @@ import json
 from dataclasses import dataclass
 
 from controllers.base import Arguments, Controller
-from engine.extension import Extension
+from declaring.details import values_of
+from declaring.extension import Extension
+from declaring.settings import Settings
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
 from resources.base import AGENT, Refused, SYSTEM, USER
@@ -13,6 +15,11 @@ from controllers.marks import action
 SETTING_KEYS = Extension()
 SETTINGS_CHANGED = Extension()
 SECRET_CHECKS = Extension()
+MOVED = Extension()
+
+
+def settings_of(record: Record, name: str) -> Settings:
+    return values_of(name, list(SETTING_KEYS.keyed()[name]), record)
 
 
 class Features(Controller):
@@ -25,6 +32,10 @@ class Features(Controller):
             return {name: bool(on)}
         row = self.rows.by_title(name)
         return self.update(row.n, enabled=bool(on)) if row else self.create(name, enabled=bool(on))
+
+    @action
+    def moved(self) -> dict:
+        return {"out": "\n".join(listing() for listing in MOVED.each())}
 
     @action
     def on(self, name: str, default: bool = True) -> bool:

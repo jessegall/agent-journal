@@ -1,8 +1,8 @@
 import re
 
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from providers.turns import last_text
-from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
+from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from resources.base import AGENT
 
 DEFERS = re.compile(r"\b(I'?ll (do|get to|come back to|handle|look at) (that|it|this)|after this|once (the|this|that) \w+ (is|are|finishes|lands)|next,? I'?ll|later on|I'?ll come back"

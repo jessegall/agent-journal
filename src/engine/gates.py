@@ -1,11 +1,9 @@
 from dataclasses import asdict, dataclass
-from enum import StrEnum
 from pathlib import Path
 
 from engine import runtime
-from resources.fields import Loaded
-from engine.reach import Reach
-from engine.extension import Extension
+from declaring.extension import Extension
+from declaring.holds import Hold, Runs, Stops
 
 POLICIES = Extension()
 STILL_HELD: dict = {}
@@ -17,14 +15,8 @@ DISPATCHING, LONG_COMMAND = "agent.dispatching", "agent.command.long"
 CANCELABLE = (DISPATCHING, LONG_COMMAND)
 
 
-class Runs(StrEnum):
-    """Whether a hook part runs before the hook answers, because it decides the tool call, or after it, because it only tells the agent."""
-
-    SYNC = "sync"
-    ASYNC = "async"
-
-    def policies(self) -> Extension:
-        return {Runs.SYNC: POLICIES, Runs.ASYNC: AFTERWARDS}[self]
+def policies(runs: Runs) -> Extension:
+    return {Runs.SYNC: POLICIES, Runs.ASYNC: AFTERWARDS}[runs]
 
 
 @dataclass(frozen=True)
@@ -41,23 +33,6 @@ class HookCall:
     @property
     def subagent(self) -> bool:
         return self.row.subagent if self.hook is None else self.provider.is_subagent(self.hook)
-
-
-class Stops(StrEnum):
-    """How far a hold reaches into the agent's work: one on writes lets it read and search while it decides, one on everything stops the next tool call of any kind."""
-
-    WRITES = "writes"
-    EVERYTHING = "everything"
-
-    def stops(self, writing: bool) -> bool:
-        return self is Stops.EVERYTHING or writing
-
-
-@dataclass(frozen=True)
-class Hold(Loaded):
-    why: str = ""
-    reach: Reach = Reach.MAIN
-    scope: Stops = Stops.WRITES
 
 
 def cancelled(name: str, call: HookCall, data: dict) -> str:

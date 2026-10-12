@@ -10,11 +10,12 @@ from datetime import datetime
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, PeerNote, Turn
-from providers.payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
+from payload import AgentCall, AskCall, Chunk, DISPLAYED, EVENTS, LoopCall, LoopEndCall, UsageWindow
 from providers.tested import testing_piece
-from providers.base import REFUSED, BackgroundTasks, HookCommand, OpenCommands, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, journal_hook, running_and_latest
+from payload import journal_hook
+from providers.base import REFUSED, BackgroundTasks, HookCommand, OpenCommands, Provider, SubagentRow, TypedRun, TypedRuns, WorkLinks, running_and_latest
 from providers.jsonl import lines_from, parsed_row, rows, tail_lines
-from providers.payload import Dispatch, Hook, HookEvent, InputRewrite, RewrittenAnswer, ToolCall
+from payload import Dispatch, Hook, HookEvent, InputRewrite, RewrittenAnswer, ToolCall
 from providers.claude_rows import Block, Row
 from resources.fields import Loaded
 from resources.types import AgentRow
@@ -61,6 +62,10 @@ QUIET_SUBAGENT = 600
 SETTLE_BYTES = 65536
 SERVER = "journal"
 BROWSER = "playwright"
+
+
+def sends_to_a_peer(use) -> bool:
+    return use.name == SENDS and bool(use.to)
 
 
 @dataclass(frozen=True)
@@ -230,6 +235,10 @@ class Claude(Provider):
         ],
         "note": "Changes apply immediately to this Claude Code session.",
     }
+
+    @classmethod
+    def ask_argv(cls, prompt: str) -> tuple[str, ...]:
+        return ("claude", "-p", "--model", cls.dispatch_default, prompt)
 
     def inbox(self, hook: Hook) -> str:
         return hook.inbox if hook.inbox and Path(hook.inbox).is_socket() else ""
@@ -507,7 +516,7 @@ class Claude(Provider):
         if not isinstance(tool, AgentCall) or tool.name != "Agent":
             return None
         kind = tool.kind.strip().lower()
-        return Dispatch(kind=kind, model=tool.model.strip(), model_supported=kind != "fork", description=tool.task.strip(), name_supported=True,
+        return Dispatch(kind=kind, model=tool.model.strip() or None, model_supported=kind != "fork", description=tool.task.strip(), name_supported=True,
                         prompt=tool.prompt, read_only=self.reads_only(project, tool.kind.strip()))
 
     def reads_only(self, project: Path, kind: str) -> bool:
@@ -576,7 +585,7 @@ class Claude(Provider):
             named = FROM_NAME.search(cross[1])
             address = sender[1] if sender else ""
             kind, peer, text = PEER, PeerNote(PEER, address, named[1] if named else address), cross[2].strip()
-        sent = next((use for use in uses if use.name == SENDS and use.to), None)
+        sent = next((use for use in uses if sends_to_a_peer(use)), None)
         if sent:
             kind, peer, text = PEER, PeerNote(SENT, sent.to), sent.message if sent.message else text
         asked = [use.id for use in uses if use.name in self.question_tools]
@@ -638,7 +647,7 @@ class Claude(Provider):
             crew.window.clear()
         for use in self.tool_uses(row):
             crew.window.append(use)
-            if use.name == SENDS and use.to:
+            if sends_to_a_peer(use):
                 crew.sent[use.to] = use.message
             if use.name in (*DISPATCHES, "Monitor", "TaskStop") or use.name == "Bash" and use.background:
                 crew.uses.append(use)

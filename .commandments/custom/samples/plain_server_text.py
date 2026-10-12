@@ -1,4 +1,4 @@
-from features.base import FeatureDetails
+from declaring.details import FeatureDetails
 
 
 class SampleDetails(FeatureDetails):

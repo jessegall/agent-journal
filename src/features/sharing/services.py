@@ -7,10 +7,10 @@ from engine.package import entry
 from engine.record import Record
 from engine.services import BUILD, allocate, current_build, files_for, log_file
 from features.sharing.controller import ADDRESS_TAKEN, Shares
-from features.sharing.resource import ended
+from resources.sharing import ended
 from features.sharing.tunnel import SERVER, TUNNEL, refused_address, tunler, tunler_build
 from resources.base import Refused, SYSTEM
-from engine.extension import Extension
+from declaring.extension import Extension
 
 KEEP_UP = Extension()
 LISTENS = Extension()
@@ -30,7 +30,7 @@ def links_open(root: Path) -> bool:
 
 
 def why_idle(root: Path) -> str:
-    from features import running
+    from framework.loaded import running
     from features.sharing.feature import SharingFeature
     record = Record(root, runtime.env(root))
     feature = running(SharingFeature)

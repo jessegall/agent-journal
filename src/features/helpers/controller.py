@@ -3,8 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import controllers.types as types_module
-import features
-import resources.types as resources_module
+from framework.loaded import FEATURES
 from controllers.base import Controller
 from agents.terminal import detached, launch_output, prompted
 from controllers.requests import request
@@ -18,13 +17,13 @@ from features.helper_worktrees.controller import Worktrees
 from features.open_viewer.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, whole
 from providers import PROVIDERS
 from features.form_of_address.address import voice_of
-from features.helpers.resource import Helper, held_by_helper
-from features.helpers.state import Telling
+from resources.helpers import Helper, held_by_helper
+from events.helpers import Telling
 from features.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
 from controllers.marks import action
-from engine.wording import slugged
+from resources.text import slugged
 from resources.types import EnvironmentKind
 
 STOP_WAIT, STOP_POLL = 5.0, 0.1
@@ -113,7 +112,7 @@ class Helpers(Controller):
     def dispatch(self, name: str, job: str, provider: str = "", model: str = "", brief: str = "", worktree: bool = False, checkout: str = "",
                  todos: str = "", packages: bool = False) -> str:
         census, paths = kept(self.record, self.rows.standing()), named_paths(f"{job}\n{brief}")
-        limits = features.FEATURES["helpers"].values(self.record)
+        limits = FEATURES["helpers"].values(self.record)
         held_back = refusal(census, limits, HELPER_KIND, paths)
         if held_back:
             raise Refused(held_back)
@@ -351,7 +350,7 @@ class Helpers(Controller):
         named = f"; this branch has commits {', '.join(lacking)} that your branch lacks" if lacking else ""
         tests = written_tests(home, row)
         named += f"; tests it wrote, for you to run: {', '.join(tests)}" if tests else ""
-        features.FEATURES["helpers"].to_primary(home, "reported", n=row.n, name=row.name, message=message.n, branch=named, rows=[row.ref, message.ref])
+        FEATURES["helpers"].to_primary(home, "reported", n=row.n, name=row.name, message=message.n, branch=named, rows=[row.ref, message.ref])
 
     @action(network=True)
     def stop(self, n: int):
@@ -440,5 +439,4 @@ class Helpers(Controller):
             cut.complete(int(row.worktree))
 
 
-resources_module.register(Helper)
 types_module.register(Helpers)

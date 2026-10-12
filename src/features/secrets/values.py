@@ -4,8 +4,9 @@ import uuid
 from functools import cache
 from pathlib import Path
 
+from engine.paths import SECRETS_FOLDER_VARIABLE as FOLDER_VARIABLE
+
 PROJECT_ID = "project-id"
-FOLDER_VARIABLE = "AGENT_JOURNAL_SECRETS"
 HEADER = """# The values of this project's secrets, written by agent-journal.
 # One line per field: NAME="value". The journal never copies this file anywhere.
 """

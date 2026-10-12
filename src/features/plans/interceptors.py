@@ -1,8 +1,8 @@
-from features.parts import ActionInterceptor, AgentContext, Context, ToolInterceptor
-from engine.gates import Runs
+from framework.parts import ActionInterceptor, AgentContext, Context, ToolInterceptor
+from declaring.holds import Runs
 from controllers.types import Todos
 from features.plans.controller import Plans
-from engine.reach import Reach
+from declaring.reach import Reach
 from resources.base import SYSTEM
 
 

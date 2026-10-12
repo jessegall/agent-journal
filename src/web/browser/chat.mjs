@@ -11,11 +11,20 @@ const compose = (page) => page.getByPlaceholder("Message the agent");
 const sendButton = (page) => page.locator(".compose-send");
 const settle = (page) => page.waitForTimeout(SETTLE);
 
-const stored = (page, marker) =>
+// the messages holding the marker, each with who wrote it, the key it was sent with and when, so a duplicate says where it came from
+const storedRows = (page, marker) =>
     page.evaluate(async (word) => {
         const got = await (await fetch("/api/main/message?last=0&completed=true")).json();
-        return got.rows.filter((row) => row.brief.includes(word)).length;
+        return got.rows
+            .filter((row) => row.brief.includes(word))
+            .map((row) => ({
+                n: row.n,
+                author: row.author ?? row.data?.author ?? "",
+                key: row.data?.idempotency ?? "",
+                created: row.created,
+            }));
     }, marker);
+const stored = async (page, marker) => (await storedRows(page, marker)).length;
 
 async function arrived(page, marker, within = 20000) {
     const began = Date.now();
@@ -23,6 +32,21 @@ async function arrived(page, marker, within = 20000) {
         if (Date.now() - began > within) throw new Error("the kept message never reached the server");
         await page.waitForTimeout(500);
     }
+}
+
+// the messages holding the marker once they have settled: at least one has reached the server and none has arrived for a quiet spell,
+// so the count is what the sending made, not what had landed at the moment of looking
+async function settledRows(page, marker, quiet = 3000, within = 30000) {
+    await arrived(page, marker, within);
+    const began = Date.now();
+    let rows = await storedRows(page, marker);
+    let since = Date.now();
+    while (Date.now() - since < quiet && Date.now() - began < within) {
+        await page.waitForTimeout(500);
+        const now = await storedRows(page, marker);
+        if (now.length !== rows.length) [rows, since] = [now, Date.now()];
+    }
+    return rows;
 }
 
 const answeredRows = (page, kind) =>
@@ -87,7 +111,10 @@ await runScenarios(process.argv[2], {
             s.scrollTop = 0;
         });
         await compose(page).pressSequentially("hello");
-        const reached = () => { const s = document.querySelector(".thread-scroll"); return s.scrollHeight - s.clientHeight - s.scrollTop <= 40; };
+        const reached = () => {
+            const s = document.querySelector(".thread-scroll");
+            return s.scrollHeight - s.clientHeight - s.scrollTop <= 40;
+        };
         await page.waitForFunction(reached, null, {timeout: SETTLE}).catch(() => {
             throw new Error("typing did not bring the chat to the bottom");
         });
@@ -150,8 +177,8 @@ await runScenarios(process.argv[2], {
         await home(page, url);
         await compose(page).fill(marker);
         await sendButton(page).dblclick();
-        await settle(page);
-        if ((await stored(page, marker)) !== 1) throw new Error("two presses made two messages");
+        const rows = await settledRows(page, marker);
+        if (rows.length !== 1) throw new Error(`two presses made ${rows.length} messages: ${JSON.stringify(rows)}`);
     },
     async "an option picked on a question is saved as its answer"(page, url) {
         const title = `Colour ${Date.now()}`;
@@ -205,8 +232,26 @@ await runScenarios(process.argv[2], {
         await card.getByText(/You said yes\.\s+Added to-do/).waitFor();
     },
     async "a search mark names the term, and a click opens what the search found in a dialog, not the search page"(page, url) {
-        const card = {at: Date.now() / 1000, key: "search-1", label: 'Searched to-dos for "dashboard"', icon: "search", tone: "note", found: "todo 12  Dashboard cards", reads: []};
-        const agent = {n: 1, ref: "agent:1", type: "agent", title: "Main agent", completed: 0, deleted: 0, seen: [], refs: [], data: {status: "idle", at: Date.now() / 1000, cards: [card]}};
+        const card = {
+            at: Date.now() / 1000,
+            key: "search-1",
+            label: 'Searched to-dos for "dashboard"',
+            icon: "search",
+            tone: "note",
+            found: "todo 12  Dashboard cards",
+            reads: [],
+        };
+        const agent = {
+            n: 1,
+            ref: "agent:1",
+            type: "agent",
+            title: "Main agent",
+            completed: 0,
+            deleted: 0,
+            seen: [],
+            refs: [],
+            data: {status: "idle", at: Date.now() / 1000, cards: [card]},
+        };
         await page.route(/\/api\/main\/agent\?/, (route) => reply(route, {rows: [agent]}));
         await home(page, url);
         await page.getByText('Searched to-dos for "dashboard"').first().click();

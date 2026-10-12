@@ -2,14 +2,14 @@ import pytest
 
 import features
 from controllers.types import Agents
-from features.parts import AgentContext
-from providers.payload import BashCall
+from framework.parts import AgentContext
+from payload import BashCall
 from resources.base import SYSTEM
 from tests.conftest import fresh
 
 
 def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_not(tmp_path, monkeypatch):
-    from features import FEATURES
+    from framework.loaded import FEATURES
     from features.history_searches.handlers import MarkHistorySearches
     features.load()
     record = fresh()
@@ -115,7 +115,7 @@ def test_a_search_of_the_history_is_marked_in_the_chat_and_other_commands_are_no
 def test_a_search_mark_keeps_what_the_search_found_and_what_was_read_from_it_until_the_next_search_or_answer():
     from engine import bus, ran
     from engine.chat import SENT
-    from features import FEATURES
+    from framework.loaded import FEATURES
     from features.history_searches.handlers import MarkHistorySearches
     from resources.base import AGENT
     features.load()
@@ -448,7 +448,7 @@ def test_a_long_transcript_answers_its_newest_turns_at_once_and_fills_in_behind(
 
 def test_searches_made_at_the_same_time_each_keep_what_they_found():
     from engine import ran
-    from features import FEATURES
+    from framework.loaded import FEATURES
     from features.history_searches.handlers import MarkHistorySearches
     features.load()
     record = fresh()

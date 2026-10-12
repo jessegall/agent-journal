@@ -3,8 +3,8 @@ import os
 from contextlib import contextmanager
 from pathlib import Path
 
-from engine.memo import Memo
-from engine.stored import read_json, write_json
+from resources.memo import Memo
+from engine.stored import read_promised_json, write_json
 
 FILES = Memo()
 
@@ -26,7 +26,7 @@ class State:
         return FILES.get(str(self.path), self.stamp(), self.fresh)
 
     def fresh(self) -> dict:
-        found = read_json(self.path, dict, {})
+        found = read_promised_json(self.path, dict, {})
         return found if isinstance(found, dict) else {}
 
     def get(self, key: str, default=None):

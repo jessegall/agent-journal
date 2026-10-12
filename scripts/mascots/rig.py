@@ -409,11 +409,11 @@ FIGURES = (BARE, *VOICES)
 def figures(names):
     """Each named figure, built in a clean scene when the loop reaches it: the bare robot or a voice."""
     for name in names:
-        yield name, assemble(None if name == BARE else name)
+        yield name, assemble(name)
 
 
-def assemble(voice=None):
-    """The scene for one voice, or for the bare robot: its armature, the base body, and its wardrobe.
+def assemble(name):
+    """The scene for one figure, a voice or the bare robot: its armature, the base body, and the voice's wardrobe.
 
     The body parts a garment covers stay in the scene, hidden from renders, so the body under the clothes can still be measured.
     """
@@ -421,16 +421,16 @@ def assemble(voice=None):
     parts = import_glb(BASE)
     arm = build_armature()
     body = Body(parts)
-    items = MANIFEST["outfits"][voice] if voice else []
+    items = [] if name == BARE else MANIFEST["outfits"][name]
     covered = covered_parts(items)
     for part in parts:
         assign(part, Skin(part.name).weights)
         bind(part, arm)
         part.hide_render = part.name in covered
-    worn = dress(voice, body, arm) if voice else []
+    worn = [] if name == BARE else dress(name, body, arm)
     for eye in (part for part in parts if part.name.startswith("eye_")):
         recentre(eye)
-    return Figure(voice, arm, parts, worn)
+    return Figure(name, arm, parts, worn)
 
 
 class Posing:

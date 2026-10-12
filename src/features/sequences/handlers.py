@@ -1,46 +1,38 @@
 import time
 from dataclasses import asdict, dataclass
-from typing import ClassVar
 
 from controllers.types import Questions
-from engine.events.agents import AgentReported
-from engine.events.engine import AgentMessageSending, ClockTicked
-from engine.events.resources import AnyEvent, QuestionAnswered, ResourceEvent
+from events.agents import AgentReported
+from events.agents import BusMessageSending, ClockTicked
+from events.resources import AnyEvent, ResourceEvent
+from events.questions import QuestionCompleted
 from engine.journal_calls import JournalCall, calls
 from engine.transcript import IDLE
-from features.journal import waiting
-from features import trigger
-from features.sending import Sent
-from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
-from engine.gates import Runs, STILL_HELD
+from framework.journal import waiting
+from engine import triggering
+from framework.sending import Sent
+from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
+from declaring.holds import Runs
+from engine.gates import STILL_HELD
 from features.work_tracking.details import WorkDetails
 from features.sequences.details import IN_CHAT, STEP, STEP_HELD, STEP_STALLED, UNFINISHED
 from features.sequences.dispatch import board_of, dispatched_by_line, working_agent
-from features.sequences.resource import Run, RunKey
-from features.triggers.controller import Triggers
-from features.triggers.resource import FIRED, START
+from resources.sequences import Run, RunKey
+from controllers.types import Triggers
+from resources.triggers import START
 from controllers.types import CONTROLLERS
-from resources.base import SECTION, SYSTEM
+from resources.base import FIRED, SECTION, SYSTEM
 from resources.types import TYPES
-from engine.reach import Reach
-from features.trigger import MINUTE
-from providers.payload import HookEvent
+from declaring.reach import Reach
+from declaring.trigger import MINUTE
+from payload import HookEvent
 from features.sequences.controller import Sequences
+from events.sequences import SequenceMoved
+from events.triggers import TriggerFired
 
 FREE_NOUNS = ("search", "carry", "status", "user", "conversation", "upgrade", "heal", "verify", "version", "help", "stop")
 FREE_VERBS = ("show", "read", "comments", "all", "progress", "search", "unread", "board", "screen", "paths", "find", "linked_to", "members",
               "tasks", "revisions", "revision", "changes", "files", "--help")
-
-
-@dataclass(frozen=True)
-class SequenceMoved(ResourceEvent):
-    on: ClassVar[str] = "sequence"
-
-
-@dataclass(frozen=True)
-class TriggerFired(ResourceEvent):
-    on: ClassVar[str] = f"trigger.{FIRED}"
-    about: str = ""
 
 
 def about_of(key: str) -> str | None:
@@ -179,8 +171,8 @@ class HoldAStalledStep(Handler):
         if run.get("followed") != run["step"]:
             return
         name = context.feature.name
-        edits = trigger.last(context.record, context.agent.row.title, name).edits + 1
-        trigger.write(context.record, context.agent.row, name, edits=edits)
+        edits = triggering.last(context.record, context.agent.row.title, name).edits + 1
+        triggering.write(context.record, context.agent.row, name, edits=edits)
         if edits >= context.settings.step_after:
             context.hold(STEP_STALLED, n=sequence.n, title=sequence.title, step=run["step"], edits=edits, about=about_flag(key))
 
@@ -192,18 +184,18 @@ class ResetEditsOnStep(Handler):
         if event.type != "sequence":
             return
         for row in context.feature.reached(context.record, context.feature.lines[STEP_STALLED].reach):
-            trigger.write(context.record, row, context.feature.name, edits=0)
+            triggering.write(context.record, row, context.feature.name, edits=0)
         context.release()
 
 
 def step_stalled(record, session: str) -> bool:
     """Whether a step taken up has stood through more writes than the setting allows, which holds them until the sequence moves on."""
-    from features import FEATURES
+    from framework.loaded import FEATURES
     found = Sequences(record, actor=SYSTEM).in_hand()
     if not found or found[2].get("followed") != found[2]["step"]:
         return False
     feature = FEATURES["sequences"]
-    return trigger.last(record, session, feature.name).edits >= int(feature.values(record).get("step_after", 25))
+    return triggering.last(record, session, feature.name).edits >= int(feature.values(record).get("step_after", 25))
 
 
 STILL_HELD["sequences.stalled"] = step_stalled
@@ -218,7 +210,7 @@ class ReleaseStaleStep(Handler):
 
 
 class KeepOutOfTheChat(Handler):
-    def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
+    def handle(self, context: AgentContext, event: BusMessageSending) -> None:
         found = context.journal.get(Sequences).in_hand()
         if not found or not found[0].talks_in or not event.text.strip():
             return
@@ -282,7 +274,7 @@ class HoldJournalWritesForTheStep(ToolInterceptor):
 
 
 class DispatchAgainOnAnswer(Handler):
-    def handle(self, context: Context, event: QuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionCompleted) -> None:
         agent = working_agent(context)
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         boards = [ref for ref in question.refs if ref.startswith("board:")]

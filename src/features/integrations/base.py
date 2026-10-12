@@ -6,23 +6,27 @@ from dataclasses import asdict, replace
 from urllib.parse import urlsplit
 
 from controllers.features import Features
+from events.agents import ClockTicked
+from expects import Answered, Given, Unchanged
 from controllers.types import Agents, Notices, Questions
 from engine import bus
-from features.base import Feature
+from framework.base import Feature
 from features.integrations.commands import SyncIntegration
-from features.integrations.details import REFUSED, SEND, UNREACHABLE
+from features.integrations.details import KEEP, REFUSED, SEND, UNREACHABLE
 from features.integrations.handlers import CheckOnClock, SendApproved
+from events.questions import QuestionCompleted
 from features.integrations.client import IntegrationClient
 from features.integrations.login import OPEN_BROWSER, RENEWAL_SUFFIX, revoked, signed_in
 from features.integrations.state import IntegrationState, read_state, write_state
-from features.journal import Journal
-from features.routing import Reply, Request, handles
+from framework.journal import Journal
+from framework.routing import Reply, Request, handles
 from features.secrets.controller import Secrets
-from features.secrets.resource import Kind
+from resources.secrets import Kind
 from features.secrets.values import ValuesFile
 from features.tickets.controller import Tickets
 from providers import PROVIDERS
-from resources.base import Refused, SYSTEM, USER
+from resources.base import AGENT, Refused, SYSTEM, USER
+from resources.types import AgentRow, Question
 
 
 NEEDS_LOGIN = "Your agents cannot use {title}'s tools yet: press Log in on this card and approve in your browser."
@@ -43,10 +47,25 @@ class IntegrationFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         self.clients: dict[str, IntegrationClient] = {}
-        journal.events.handler(CheckOnClock())
-        journal.events.handler(SendApproved())
-        journal.commands.add("feature", SyncIntegration(self.name))
+        journal.events.handler(CheckOnClock(), expects=[
+            Given(ClockTicked(agent=1), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        ])
+        journal.events.handler(SendApproved(), expects=[
+            Given(self.closed(), rows=[self.proposal(KEEP)]) >> Unchanged(),
+            Given(self.closed(), rows=[self.proposal(SEND, by=AGENT)]) >> Unchanged(),
+            Given(self.closed(), rows=[self.proposal(SEND, service="another")]) >> Unchanged(),
+        ])
+        journal.commands.add("feature", SyncIntegration(self.name), expects=[
+            Given((Features,)) >> Answered(f"checked {self.details.title}"),
+        ])
         journal.routes.add(self.state_route(), self.login_route(), self.logout_route(), self.check_route())
+
+    @staticmethod
+    def closed() -> QuestionCompleted:
+        return QuestionCompleted(n=1, type="question", action="completed", actor=USER)
+
+    def proposal(self, outcome: str, by: str = USER, service: str = "") -> Question:
+        return Question(n=1, title="Send this answer", brief="Thanks.", outcome=outcome, refs=["ticket:1"], data={"proposal": service or self.name, "answered_by": by})
 
     def settings_changed(self, record, actor: str) -> None:
         self.clients.pop(str(record.home), None)

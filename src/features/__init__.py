@@ -7,10 +7,8 @@ from pathlib import Path
 from engine import bus
 from engine.package import modules
 from engine.stored import write_text
+from framework.loaded import FEATURES, SEATED, SWITCHED, running  # noqa: F401 - the loader fills them; the rest of the journal reads them from there
 
-FEATURES: dict[str, object] = {}
-SWITCHED: list = []
-SEATED: dict[str, int] = {}
 CHANGE_SWITCHES = ("feature", "plugin")
 SEATED_STAMP = "features-seated"
 
@@ -20,7 +18,16 @@ def names() -> list[str]:
     return [name for name, package in modules("features") if package and importlib.util.find_spec(f"features.{name}.feature")]
 
 
-def load(root: Path | None = None) -> list[str]:
+COMMANDS_ONLY: list[bool] = []
+"""Set once by a process that only runs commands: it wires the commands and the refusers and no listener or handler, since the server relays what it writes."""
+
+
+def load(root: Path | None = None, commands_only: bool = False) -> list[str]:
+    """Wires the features. A full load asked for after a commands-only one unloads first: wire() skips every feature already loaded, so without that the second load would wire nothing at all and the process would run with no handler and no listener."""
+    if commands_only:
+        COMMANDS_ONLY[:] = [True]
+    elif COMMANDS_ONLY:
+        unload()
     discover()
     if root:
         rename_aliases(root)
@@ -37,30 +44,32 @@ def discover() -> None:
 
 
 def rename_aliases(root: Path) -> None:
-    from features.base import REGISTRY
-    from features.renames import sweep
+    from framework.base import REGISTRY
+    from framework.renames import sweep
     sweep(root, {was: now for cls in REGISTRY.values() for was, now in cls.renamed_from().items()})
 
 
 def wire() -> None:
-    from features.base import REGISTRY
+    from framework.base import REGISTRY
+    from framework.promises import PROMISED
     for name, cls in REGISTRY.items():
         if name in FEATURES:
             continue
         FEATURES[name] = cls()
-        FEATURES[name].wire()
+        FEATURES[name].wire(bool(COMMANDS_ONLY))
+        PROMISED.refuse_owing(name)
 
 
 def subscribe() -> None:
-    from features.switches import environments_changed, switch_changed
-    if not SWITCHED:
+    from framework.switches import environments_changed, switch_changed
+    if not SWITCHED and not COMMANDS_ONLY:
         SWITCHED.extend([*(bus.on(kind, switch_changed) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed)])
 
 
 def sync_rows(root: Path) -> None:
     from engine.paths import environment_names
     from engine.record import Record
-    from features.switches import generation, seen_environments
+    from framework.switches import generation, seen_environments
     if SEATED.get(str(root)) == generation():
         return
     homes = environment_names(root)
@@ -96,7 +105,7 @@ def seat_new_home(root: Path, home: str) -> None:
 
 def seated_home(root: Path, home: str) -> None:
     from engine.paths import environment_names
-    from features.switches import HOME_WARMERS
+    from framework.switches import HOME_WARMERS
     held = seated_now(root)
     if not held or home in held[1:]:
         return
@@ -117,14 +126,10 @@ def unseated(held: list[str], seating: list[str]) -> tuple[str, ...]:
     return tuple(home for home in seating[1:] if home not in seated)
 
 
-def running(feature: type):
-    return FEATURES.get(feature.name)
-
-
 def seat(root: Path, homes: tuple[str, ...]) -> None:
     from controllers.types import Features
     from engine.record import Record
-    from features.switches import booted
+    from framework.switches import booted
     from resources.base import PROJECT, SYSTEM
     for home in homes:
         record = Record(root, home)
@@ -144,15 +149,16 @@ def seat(root: Path, homes: tuple[str, ...]) -> None:
 
 def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
-    from features.switches import rebooted
-    from engine.extension import clear_all
-    from engine.memo import forget_all
+    from framework.switches import rebooted
+    from declaring.extension import clear_all
+    from resources.memo import forget_all
     COMMANDS.clear()
     HANDLERS.clear()
     bus.clear()
     clear_all()
     forget_all()
     FEATURES.clear()
+    COMMANDS_ONLY.clear()
     SWITCHED.clear()
     SEATED.clear()
     rebooted()
@@ -178,7 +184,7 @@ def describe() -> dict:
 
 def passed(event, record) -> None:
     from engine.record import Record
-    from features.switches import rebooted
+    from framework.switches import rebooted
     setting = event.data.get("setting")
     if setting:
         record.reread_settings()

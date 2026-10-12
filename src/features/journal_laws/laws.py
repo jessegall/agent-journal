@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass, replace
 
 from features.form_of_address.address import voice_of
-from features.form_of_address.voices import BUTLER, Voice
+from resources.voices import BUTLER, Voice
 
 NAMING_LAW = "L5"
 
@@ -66,7 +66,7 @@ def carry(record=None) -> str:
 def refusal(dispatch, naming: str) -> str:
     if dispatch.kind in GENERIC and dispatch.task in GENERIC:
         return "Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."
-    if dispatch.model_supported and not dispatch.model:
+    if dispatch.model_supported and dispatch.model is None:
         return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
     if not dispatch.offers_model():
         return f"{dispatch.model} is not a model this account offers. Choose one of {', '.join(dispatch.models)}."

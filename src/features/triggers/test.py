@@ -1,8 +1,8 @@
 import features
 import pytest
 from controllers.types import Agents, Messages
-from features.triggers.controller import Triggers
-from providers.payload import BashCall
+from controllers.triggers.controller import Triggers
+from payload import BashCall
 from tests.conftest import fresh
 from tests.kit import nudges, report
 
@@ -12,8 +12,8 @@ def call(command: str) -> BashCall:
 
 
 def fired(record, command: str) -> str:
-    from features import FEATURES
-    from features.parts import AgentContext
+    from framework.loaded import FEATURES
+    from framework.parts import AgentContext
     from features.triggers.handlers import DenyWhatTheAgentDoes, WatchWhatTheAgentDoes
     context = AgentContext.of(FEATURES["triggers"], record, Agents(record, actor="system").by_session("claude-1"))
     denied = DenyWhatTheAgentDoes().intercept(context, call(command))
@@ -29,7 +29,7 @@ def test_a_trigger_denies_a_command_and_nudges_on_a_word():
                                           **{"words": ["--force"], "does": "deny", "words_in": "commands"})
     Triggers(record, actor="user").create("mind the migrations", text="run the migration test after touching them",
                                           **{"words": ["migration"], "does": "nudge"})
-    from engine.gates import Runs
+    from declaring.holds import Runs
     from features.triggers.handlers import DenyWhatTheAgentDoes, WatchWhatTheAgentDoes
     assert (DenyWhatTheAgentDoes.runs, WatchWhatTheAgentDoes.runs) == (Runs.SYNC, Runs.ASYNC), \
         "a deny decides the call before it is answered; a nudge or an instruction is said after the answer"
@@ -68,7 +68,7 @@ def test_a_trigger_message_does_not_fire_the_trigger_again():
 
 
 def test_a_trigger_fires_on_what_the_agent_says_in_the_chat():
-    from providers.payload import Chunk
+    from payload import Chunk
     from runner.chat_mirror import displayed
     from engine.sessions import Sessions
     features.load()
@@ -102,7 +102,7 @@ def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its
     triggers.fired(row.n)
     triggers.fired(row.n)
     assert (triggers.load(row.n).matched, bool(triggers.load(row.n).matched_at)) == (2, True), "each match is counted and dated"
-    from features.triggers.summary import EMPTY, summary, words_text
+    from controllers.triggers.summary import EMPTY, summary, words_text
     assert [words_text(words) for words in (["a"], ["a", "b"], ["a", "b", "c", "d"], list("abcde"))] == \
         ["“a”", "“a” or “b”", "“a”, “b”, “c” or 1 other phrase", "“a”, “b”, “c” or 2 other phrases"], "a sentence names the first three phrases and counts the rest"
     from types import SimpleNamespace
@@ -117,7 +117,7 @@ def test_a_trigger_made_from_the_command_line_carries_its_summary_and_counts_its
 
 def test_a_part_a_feature_leaves_unwritten_refuses_until_it_is():
     import pytest
-    from features.parts import ActionInterceptor, Canceler, Command, Handler, TextFormatter, ToolInterceptor
+    from framework.parts import ActionInterceptor, Canceler, Command, Handler, TextFormatter, ToolInterceptor
     calls = (lambda: Handler().handle(None, None), lambda: TextFormatter().format(None, ""), lambda: ToolInterceptor().intercept(None, None),
              lambda: Canceler().cancel(None, None), lambda: Command().run(None, None), lambda: ActionInterceptor().intercept(None, None))
     for call in calls:
@@ -127,8 +127,8 @@ def test_a_part_a_feature_leaves_unwritten_refuses_until_it_is():
 
 def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_setting_is_refused():
     import pytest
-    from features.sending import Nudge, send
-    from features.settings import Settings
+    from framework.sending import Nudge, send
+    from declaring.settings import Settings
     with pytest.raises(ValueError, match="needs most"):
         Nudge("line", "behaviour", lambda context, agent: [], first=True)
     with pytest.raises(AttributeError, match="no setting called nothing"):
@@ -136,7 +136,8 @@ def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_sett
     from types import SimpleNamespace
     assert send(SimpleNamespace(to_primary=lambda: None), (Nudge("line", "behaviour", lambda context, agent: [1]),)) is None, \
         "with no agent to speak to, a nudge says nothing and asks nothing"
-    from features import actions, trigger
+    from declaring import trigger
+    from framework import actions
     own = Nudge("line", "behaviour", lambda context, agent: [], timing=trigger.Trigger(unit=trigger.MINUTES, every=1), action=actions.MESSAGE)
     assert (own.action, bool(own.timing), bool(Nudge("line", "behaviour", lambda context, agent: []).timing)) == (actions.MESSAGE, True, False), \
         "a nudge keeps its own timing and action, and has neither unless given"
@@ -144,7 +145,7 @@ def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_sett
 
 def test_every_kind_of_tool_call_says_what_it_is_doing_and_which_words_a_trigger_may_read(monkeypatch):
     from providers import PROVIDERS
-    from providers.payload import call_of, response_text
+    from payload import call_of, response_text
     kinds = PROVIDERS["claude"].tool_kinds
     called = lambda name, given, response=None: call_of({"tool_name": name, "tool_input": given, "tool_response": response or {}}, kinds)
     web = called("WebSearch", {"query": "python typing"})
@@ -174,9 +175,9 @@ def test_every_kind_of_tool_call_says_what_it_is_doing_and_which_words_a_trigger
 def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_inside_the_budget_and_a_trigger_on_one_tells_or_holds(monkeypatch):
     import time as clock
     from controllers.types import Questions, Todos, Works
-    from features import FEATURES
-    from features.triggers import watched
-    from features.parts import AgentContext
+    from framework.loaded import FEATURES
+    from framework import watched
+    from framework.parts import AgentContext
     from resources.base import AGENT, SYSTEM, USER
     from tests.kit import idle
 
@@ -262,9 +263,9 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     assert "hold again" not in held(record, "claude-1"), "and the behaviour for facts is what switches it off"
     monkeypatch.undo()
 
-    from features.sending import Sent
+    from framework.sending import Sent
     from tests.conftest import refused as refusal
-    from features.triggers.watched import FACTS, ClaimedTwice, Fact, UnknownFact, Watched
+    from framework.watched import FACTS, ClaimedTwice, Fact, UnknownFact, Watched
     with pytest.raises(ClaimedTwice):
         FACTS.register(None, Fact("agent.idle", watched.MINUTES, "Idle again", "the agent has been idle again for more than {over} minutes", lambda *given: []))
     with pytest.raises(UnknownFact):
@@ -297,7 +298,22 @@ def test_each_watched_fact_names_its_rows_only_past_its_threshold_twenty_stay_in
     FACTS.register(owner, sleepy)
     try:
         sleeper = Triggers(record, actor=USER).create("sleeps", text="wake up", when="state", fact="test.sleepy", over=1, does="nudge")
+        from framework.format import shape
+        from framework.switches import rebooted
         owner.on = False
+        rebooted()
+        assert shape(Triggers(record, actor=USER).load(sleeper.n), record)["brief"].startswith("Asleep: nothing in this journal watches test.sleepy"), \
+            "a trigger reads asleep the moment its feature goes off, though nothing saved it since"
+        import io
+        from commands.cli import run
+        printed = io.StringIO()
+        run(["--root", str(record.root), "--env", record.env, "trigger", "show", str(sleeper.n)], out=printed, err=io.StringIO())
+        assert "Asleep: nothing in this journal watches test.sleepy" in printed.getvalue(), "and the command line, which the agent reads it through, says the same"
+        owner.on = True
+        rebooted()
+        assert not shape(Triggers(record, actor=USER).load(sleeper.n), record)["brief"].startswith("Asleep"), "and reads awake the moment the feature is back"
+        owner.on = False
+        rebooted()
         Triggers(record, actor=USER).update(sleeper.n, text="wake up now")
         assert Triggers(record, actor=USER).load(sleeper.n).brief.startswith("Asleep: nothing in this journal watches test.sleepy"), "a trigger whose fact has gone says on its row why it sleeps"
         tick(record)

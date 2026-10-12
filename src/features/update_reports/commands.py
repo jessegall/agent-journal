@@ -1,6 +1,6 @@
 import time
 
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from features.update_reports.gather import SECTIONS, UPDATE, clock, gathered, item, opened_until, since, updates
 from resources.base import Refused
 

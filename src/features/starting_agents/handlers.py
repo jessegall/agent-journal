@@ -1,9 +1,9 @@
 import time
 
 from controllers.types import Agents, Environments, Messages
-from engine.events.resources import MessageCreated
+from events.messages import MessageCreated
 from engine.sessions import Sessions, live
-from features.parts import Context, Handler
+from framework.parts import Context, Handler
 from features.starting_agents.launch import launch
 from providers import DRIVERS
 from resources.base import SYSTEM, USER

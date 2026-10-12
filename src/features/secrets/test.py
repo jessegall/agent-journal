@@ -252,7 +252,7 @@ def test_a_site_the_user_lets_the_agent_log_in_to_needs_no_button(tmp_path, monk
     user.revoke_login(row.n)
     agent.request("Staging", "once more", kind="browser login")
     assert (len(asked()), len(spawned)) == (2, 2), "once the user takes it back, the agent asks with the button again"
-    from features import FEATURES
+    from framework.loaded import FEATURES
     FEATURES["secrets"].choose(record, "logins", True)
     assert "a browser is opening" in agent.request("Staging", "and again", kind="browser login").preface, \
         "with Agents log in on their own switched on, any saved site needs no button, and the agent is told the browser is opening rather than that it is logged in"

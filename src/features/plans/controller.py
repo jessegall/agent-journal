@@ -7,14 +7,14 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Docs, Environments, Todos, Works
-from features.plans.resource import (
+from resources.plans import (
     ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, READY, REVIEWING, RUNNING, WAITING, Plan, standing_of, tally_of,
 )
 from features.work_tracking.auto import passes_checkpoints
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
 from resources.shapes import LEVELS
 from controllers.marks import action
-from engine.extension import Extension
+from declaring.extension import Extension
 
 LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
 CHECKPOINT = re.compile(r"\s*\(checkpoint\)\s*$", re.IGNORECASE)

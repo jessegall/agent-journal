@@ -1,7 +1,7 @@
 from resources.base import PROJECT
-from features.base import FeatureDetails
-from features.settings import Setting
-from features.groups import Group
+from declaring.details import FeatureDetails
+from declaring.settings import Setting
+from declaring.groups import Group
 
 NAME = "critique"
 

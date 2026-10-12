@@ -1,8 +1,9 @@
-from engine.events.agents import AgentReported
-from engine.events.resources import MessageUpdated, ResourceCreated
+from events.agents import AgentReported
+from events.resources import ResourceCreated
+from events.messages import MessageUpdated
 from engine.transcript import IDLE
 from features.messages.answering import answered, answers, read_and_open, theirs
-from features.parts import AgentContext, Context, Handler
+from framework.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SECTION, USER
 from controllers.types import CONTROLLERS, Messages
 

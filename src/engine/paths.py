@@ -4,6 +4,7 @@ from pathlib import Path
 from resources.base import Refused
 
 ENVIRONMENTS = "environments"
+SECRETS_FOLDER_VARIABLE = "AGENT_JOURNAL_SECRETS"
 ROUTED = frozenset({"agent-controls", "agent-hooks", "hook", "journals", "plugins", "services", "sync", "update"})
 
 

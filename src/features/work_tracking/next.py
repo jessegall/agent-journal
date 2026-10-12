@@ -3,7 +3,7 @@ from features.helpers.controller import Helpers
 from features.helpers.reuse import kept
 from resources.base import SYSTEM, WHOM
 
-from engine.extension import Extension
+from declaring.extension import Extension
 
 
 ROW_HOLDS = Extension()
@@ -22,7 +22,7 @@ def questioned(record) -> set[str]:
 
 
 def carried_on(record) -> list:
-    from features import FEATURES
+    from framework.loaded import FEATURES
     if "work_tracking" not in FEATURES or not FEATURES["work_tracking"].on(record, "carry on"):
         return []
     asked = questioned(record)
@@ -70,7 +70,12 @@ def takeable(todo) -> bool:
     return not todo.data.get(WHOM) and todo.data.get("status") not in STARTED
 
 
+def free(record, todo) -> bool:
+    """Whether nothing holds a row back: it is not blocked, does not wait on another row or on a question, and no feature holds it."""
+    return not todo.blocked and not Todos(record, actor=SYSTEM).waits(todo) and todo.ref not in questioned(record) and not held(record, todo)
+
+
 def ready(record) -> list:
-    todos, taken, asked = Todos(record, actor=SYSTEM), worked(record), questioned(record)
-    fit = [t for t in open_rows(record) if takeable(t) and not t.blocked and not t.assigned and t.n not in taken and not todos.waits(t) and t.ref not in asked and not held(record, t)]
+    taken = worked(record)
+    fit = [t for t in open_rows(record) if takeable(t) and free(record, t) and not t.assigned and t.n not in taken]
     return sorted(fit, key=lambda t: (-int(t.priority), t.creation_order()))

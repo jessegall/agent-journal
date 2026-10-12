@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 
-from features.plans.resource import Placement
+from resources.plans import Placement
 from resources.base import Ref
 from features.kanban.shapes import Lane
-from features.helpers.resource import held_by_helper
+from resources.helpers import held_by_helper
 
 TODO, HELD, DOING, ASKED, DONE = "todo", "held", "doing", "asked", "done"
 

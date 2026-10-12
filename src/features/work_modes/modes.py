@@ -1,5 +1,9 @@
 from features.work_modes.details import BOARD_SET, BUILDER, MODE_SET, MODES, NAME, NEW_WORK_TO_DOS, ORCHESTRATOR, WorkModesDetails
+from declaring.extension import Extension
 from resources.base import Refused
+
+CARRIED_IN = Extension()
+"""The writers of the files that carry the mode's words, each taking the project folder and the record; a feature that writes such a file registers here, so the mode is picked without knowing who writes them."""
 
 
 def mode_of(record) -> str:
@@ -13,11 +17,11 @@ def pick(record, mode: str, actor: str) -> str:
     if mode_of(record) == mode:
         return mode
     record.change_setting(NAME, {"mode": mode})
-    from features import running
-    from features.journal_laws.briefing import brief
+    from framework.loaded import running
     from features.work_modes.feature import WorkModes
-    brief(record.root.parent, record)
-    running(WorkModes).to_primary(record, MODE_SET, actor=actor, mode=mode, meaning=MODES[mode].meaning)
+    for write in CARRIED_IN.each():
+        write(record.root.parent, record)
+    running(WorkModes).to_running(record, MODE_SET, actor=actor, mode=mode, written=MODES[mode].written)
     return mode
 
 
@@ -54,11 +58,11 @@ def choose_board(record, n: int, actor: str) -> int:
     if int(WorkModesDetails.values(record).board) == n:
         return n
     record.change_setting(NAME, {"board": n})
-    from features import running
+    from framework.loaded import running
     from features.work_modes.feature import WorkModes
     board = boards.load(n) if n else None
     where = f"board {n}, {board.title}" if board else "to-dos"
-    running(WorkModes).to_primary(record, BOARD_SET, actor=actor, where=where, filing=filing_on(board))
+    running(WorkModes).to_running(record, BOARD_SET, actor=actor, where=where, filing=filing_on(board))
     return n
 
 

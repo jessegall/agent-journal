@@ -1,5 +1,5 @@
-from features.base import Behaviour, FeatureDetails, Line
-from features.groups import Group
+from declaring.details import Behaviour, FeatureDetails, Line
+from declaring.groups import Group
 
 
 class DevFaultsDetails(FeatureDetails):

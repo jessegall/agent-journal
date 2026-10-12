@@ -2,7 +2,7 @@ import re
 import time
 from pathlib import Path
 
-from engine.wording import digest
+from resources.text import digest
 from resources.base import Refused
 
 HOME = "plugins"

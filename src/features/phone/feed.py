@@ -14,16 +14,16 @@ from engine import runtime
 from engine.record import Record
 from engine.sessions import Sessions
 from features.ask_questions.details import AskQuestionsDetails
-from features.format import VIEWER, formatted, shaped
+from framework.format import VIEWER, formatted, shaped
 from features.helpers.controller import Helpers
 from features.helpers.state import HelperSnapshot, asked_permission, helper_reason, helper_state
 from features.phone.chat_view import TURNS, hidden
 from features.phone.members import rights_of
 from features.phone.places import WAITED, owed
-from features.suggestions.controller import Suggestions
+from controllers.types import Suggestions
 from features.suggestions.details import SuggestionsDetails
 from features.plans.controller import Plans
-from features.plans.resource import PHASE
+from resources.plans import PHASE
 from features.work_modes.modes import mode_of
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, Refused

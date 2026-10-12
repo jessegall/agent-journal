@@ -76,7 +76,7 @@ def test_take_refuses_a_branch_behind_the_working_tip_and_lands_it_once_rebased(
     commit(project, "main.txt", "meanwhile\n")
     assert "helper-rhea is missing 1 commit" in worktrees.drift(row.n) and "rebase it onto phone-connection" in worktrees.drift(row.n), \
         "drift names what the helper's branch lacks, not what the working branch gained since a cut a rebase has left behind"
-    from engine.gates import Runs
+    from declaring.holds import Runs
     from features.helper_worktrees.interceptors import TellDrift
     assert TellDrift.runs == Runs.ASYNC, "drift is told in a message after the call is answered, never by holding the call back"
     assert "rebase it onto phone-connection" in refused(lambda: worktrees.take(row.n)), "a stale branch is refused, with the rebase to do"

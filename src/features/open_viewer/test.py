@@ -93,7 +93,7 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
     import urllib.error
     import urllib.request
     import pytest
-    from features.routing import Request
+    from framework.routing import Request
     from commands.http import get_file_diff, get_file_text, get_project_files
     from engine.project_files import read_source, walk
     from resources.base import Refused
@@ -244,7 +244,7 @@ def test_the_viewer_answers_only_its_own_host_and_reads_only_the_projects_visibl
 def test_commit_and_diff_routes_only_show_visible_literal_files(tmp_path):
     import subprocess
     import pytest
-    from features.routing import Request
+    from framework.routing import Request
     from commands.http import get_commit, get_file_diff
     from resources.base import Refused
     project = tmp_path / "project"
@@ -275,7 +275,7 @@ def test_commit_and_diff_routes_only_show_visible_literal_files(tmp_path):
 def test_every_request_stays_inside_its_journal(tmp_path, monkeypatch):
     import pytest
     from commands.dispatch import static
-    from features.routing import Request
+    from framework.routing import Request
     from controllers.types import Environments, Todos
     from engine.record import Record
     from engine.ledger import applied
@@ -501,7 +501,7 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     from controllers.types import Environments, Features
     from resources.base import AGENT, Refused
     assert invoked(Features(record, actor=AGENT), "settings") == ask("GET", f"/api/{record.env}/settings").body, "the viewer reads its settings through the command the CLI runs"
-    from features.journal import their_words
+    from framework.journal import their_words
     assert ask("POST", f"/api/{record.env}/settings", body={"said": {"work_tracking.carry on": "and tell me which row you took"}}).code == 200
     assert their_words(record, "work_tracking", "carry on") == "and tell me which row you took", \
         "a sentence the user writes for one nudge is kept under that nudge's own name and read back for it"
@@ -530,7 +530,7 @@ def test_the_viewer_reads_and_changes_its_settings_hooks_services_files_and_iden
     http.unanswered(record.root)
     assert not runtime.hook_failures(record.root).exists(), "with no hook failures logged there is nothing to report"
     from features.open_viewer.manifest import built, watchable
-    from features.triggers.watched import FACTS
+    from framework.watched import FACTS
     assert [fact["value"] for fact in watchable(record)] == FACTS.names(record) and all("{over}" in fact["phrase"] and fact["label"] for fact in watchable(record)), \
         "the manifest offers the facts a trigger can watch, with the words to show for each, so the viewer keeps no list of its own"
     assert re.fullmatch(r"main-[\w-]+\.js", built()), "the manifest names the bundle the page loads, whatever the bundle is called, so an open tab sees a new build and reloads"

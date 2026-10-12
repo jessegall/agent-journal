@@ -10,9 +10,9 @@ from tests.conftest import fresh, refused
 
 
 def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_idle(monkeypatch):
-    from features import FEATURES
+    from framework.loaded import FEATURES
     from features.hosting.handlers import StopIdleApps
-    from features.parts import AgentContext
+    from framework.parts import AgentContext
     features.load()
     record = fresh()
     tickets = Tickets(record, actor=USER)
@@ -56,7 +56,7 @@ def test_a_hosted_ticket_runs_its_app_from_its_worktree_until_it_is_stopped_or_i
 def test_hosting_services_follow_the_feature_switch():
     from controllers.types import Features
     from engine.runtime import set_env
-    from features.switches import booted
+    from framework.switches import booted
 
     features.load()
     record = fresh()

@@ -348,7 +348,7 @@ def test_every_word_and_command_of_a_folded_skill_still_loads_the_skill_that_tea
         if "_" not in f.name:
             assert teaching_command(record.root.parent, f.name.removesuffix("s")) == skill, f"journal {f.name.removesuffix('s')} loads {skill}"
     import json
-    from features.renames import rename, skills_renamed
+    from framework.renames import rename, skills_renamed
     root = record.root
     home = root / "environments" / "main"
     (root / "runtime" / "sessions" / "one").mkdir(parents=True)
@@ -362,8 +362,8 @@ def test_every_word_and_command_of_a_folded_skill_still_loads_the_skill_that_tea
     assert json.loads((home / "settings.json").read_text())["new"] == {"size": 2, "mode.deep": 3} and (home / "runtime" / "cursor-new").read_text() == "5", \
         "its own settings move under its new name"
     assert rename(root, {"old": "new"}) == {"settings": 0, "gates": 0, "triggers": 0, "cursors": 0}, "renaming twice changes nothing more"
-    from features import renames
-    from features.renames import sweep
+    from framework import renames
+    from framework.renames import sweep
     walked = []
     monkeypatch.setattr(renames, "in_triggers", lambda runtime, aliases: walked.append(1) or 0)
     assert (sweep(root, {"old": "new"}) is not None, walked) == (True, [1]), "the first sweep for a set of aliases walks the sessions and the environments"

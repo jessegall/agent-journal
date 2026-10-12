@@ -6,7 +6,7 @@ from enum import Enum
 
 from resources.fields import Loaded
 from features.hosted_journal.vault import Vault
-from features.trigger import DAY, MINUTE
+from declaring.trigger import DAY, MINUTE
 from resources.base import OWNER_ID, Refused
 
 PASSWORD = "owner.json"

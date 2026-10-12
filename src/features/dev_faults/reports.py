@@ -10,8 +10,8 @@ from controllers.types import Agents, Environments, Notifications, Todos
 from engine import runtime
 from engine.record import Record
 from engine.version import version
-from engine.wording import digest, plural
-from features.dev_faults.developing import developing
+from resources.text import digest, plural
+from engine.developing import developing
 from features.dev_faults.diagnostics import logged
 from resources.base import SYSTEM
 
@@ -88,6 +88,10 @@ class FaultReports:
         brief += f" The machine's load was {load():.1f} on {os.cpu_count()} cores."
         self.file(record, title, brief, kind=kind, target=name, worst=took)
         self.answer(record, title, brief)
+
+    def broken(self, record, title: str, brief: str) -> None:
+        """A handler that ran in the world an expectation states and did not do what it says: told like a slow request, once with its count."""
+        self.file(record, title, brief, kind="expectation", target=title)
 
     def answer(self, record, title: str, brief: str) -> None:
         """A first breach files its own to-do, and one seen over and over with no to-do open holds the agent's writes until one is filed."""

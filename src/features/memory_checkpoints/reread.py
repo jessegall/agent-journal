@@ -2,7 +2,7 @@ import time
 
 from controllers.types import Facts, Rules
 from resources.base import SYSTEM
-from features.trigger import DAY
+from declaring.trigger import DAY
 
 STATE, READ_AT = "memory_checkpoints", "cleanup_read_at"
 

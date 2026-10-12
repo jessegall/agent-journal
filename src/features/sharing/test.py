@@ -12,8 +12,8 @@ import pytest
 
 from controllers.types import Agents, Comments, Docs, Messages, Nudges
 from engine.markers import marked
-from features import running
-from features.collections.controller import Collections
+from framework.loaded import running
+from controllers.collections import Collections
 from features.sharing.feature import SharingFeature
 from runner.hooks import handle
 from engine.ran import announce
@@ -159,7 +159,7 @@ def test_every_read_of_a_visitor_comment_holds_the_tools_until_the_agent_agrees(
     announce(record, agent.n, "Bash", f'journal share agree {other.n} "{AGREEMENT}"', "agreed")
     assert hook("ls").get("decision") == "block", "reading the comment's file, or running the agreement, does not lift the hold"
     Shares(record, actor=AGENT, session="claude-share").agree(other.n, AGREEMENT)
-    from engine.reach import Reach
+    from declaring.reach import Reach
     from features.sharing.guard import RefuseUntilAgreed
     assert RefuseUntilAgreed.reach is Reach.BOTH, "the hold covers subagents as well as the primary agent"
     from types import SimpleNamespace
@@ -389,7 +389,7 @@ def test_stopping_the_last_share_stops_the_server_and_its_tunnel(monkeypatch):
     started = []
     monkeypatch.setattr(module, "serve", lambda given, port: started.append((given.record.root, port)))
     monkeypatch.setattr(features, "load", lambda root=None: None)
-    monkeypatch.setattr("features.switches.watch_change_log", lambda: None)
+    monkeypatch.setattr("framework.switches.watch_change_log", lambda: None)
     module.main([str(watched.record.root), "8124"])
     assert started == [(watched.record.root, 8124)], "started with a journal and a port, it serves that journal there"
 
@@ -759,7 +759,7 @@ def test_tunler_installs_the_machines_build_from_the_server_the_user_names(tmp_p
 
 def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     from features.sharing.page import Page
-    from features.format import FORMATTERS, SHARED
+    from framework.format import FORMATTERS, SHARED
     import features
     page = Page("/s/key", {"doc:1", "todo:12"})
     linked = page.refs("See docs 1 and doc 16, to-do 12, 13 and to-do 12 in elsewhere.")
@@ -770,7 +770,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     import sys
     from engine.package import entry
     entered = subprocess.run([sys.executable, "-c", "import runpy, sys; sys.argv = sys.argv[1:]; runpy.run_path(sys.argv[0], run_name='__main__'); import features; "
-                              "from features.format import formatted; features.load(); print(formatted('run journal todo done 3'))", *entry("features.sharing.page")[1:]],
+                              "from framework.format import formatted; features.load(); print(formatted('run journal todo done 3'))", *entry("features.sharing.page")[1:]],
                              capture_output=True, text=True, timeout=60)
     assert entered.stdout.strip() == "run `journal todo done` 3", \
         "a module the journal starts in a process of its own, as the share server is, has the command line wired, so a journal command in a shared page is set as code: " \
@@ -800,7 +800,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     from types import SimpleNamespace
     members = sharing._loaded_members(here, SimpleNamespace(type="collection", home_env="", member_refs=lambda: ["nothing:1", "todo:x", "todo:99999", todo.ref]))
     assert [member.n for member in members] == [todo.n], "a collection's members that are of no type, have no number or are gone are left out of the page"
-    from features.dumps.controller import Dumps
+    from controllers.dumps import Dumps
     pile = Dumps(here, actor=USER).create("Pile", brief="pasted notes")
     group = Collections(here, actor=USER).create("Filed from a pile", source=pile.ref)
     inside = Docs(here, actor=USER).create("Filed", brief="in")

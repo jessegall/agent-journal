@@ -3,7 +3,7 @@ import {saveSettings} from "../actions/settings.js";
 import {api} from "../api/client.js";
 import {report} from "../platform/faults.js";
 import {remember, remembered} from "../platform/storage.js";
-import {go} from "../route.js";
+import {go, route} from "../route.js";
 import {store} from "../state/store.js";
 import {loadProfiles, profiles, profilesLoaded, useProfile} from "./profiles.js";
 
@@ -46,7 +46,7 @@ export async function useNewFeature() {
         const row = profiles.value.find((one) => one.title === found.profile);
         if (row) await useProfile(row);
     }
-    if (found.opens) go(store.env, found.opens);
+    if (found.opens) go(route.value.env, found.opens);
     await noted;
 }
 

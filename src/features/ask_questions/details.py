@@ -1,8 +1,8 @@
-from features.trigger import IDLE, MINUTES, Trigger
+from declaring.trigger import IDLE, MINUTES, Trigger
 from features.ask_questions.interceptors import FILED, UNPICKED
-from features.base import Behaviour, FeatureDetails, Line
-from features.settings import Setting
-from features.groups import Group
+from declaring.details import Behaviour, FeatureDetails, Line
+from declaring.settings import Setting
+from declaring.groups import Group
 
 
 class AskQuestionsDetails(FeatureDetails):

@@ -2,12 +2,12 @@ import time
 from dataclasses import dataclass
 
 from controllers.types import CONTROLLERS, Agents
-from engine.events.engine import AgentMessageSent, CommandRan
+from events.agents import AgentMessageSent, CommandRan
 from engine.journal_calls import PUNCTUATION, JournalCall, pieces
 from engine.ran import SHELL
-from engine.reach import Reach
-from features.parts import AgentContext, Handler, ToolInterceptor
-from engine.gates import Runs
+from declaring.reach import Reach
+from framework.parts import AgentContext, Handler, ToolInterceptor
+from declaring.holds import Runs
 
 TAKES_VALUE = {"--page", "--back"}
 OPEN = "open"
@@ -74,7 +74,7 @@ def marked(context: AgentContext, command: str, found: str | None = None) -> lis
     for one in searches(command):
         key = f"search-{time.time_ns()}"
         context.journal.get(Agents).card(context.agent.row.n, key=key, label=one.label, title=one.title, icon="search", tone="note",
-                                         **({} if found is None else {"found": found[:FOUND_LIMIT]}))
+                                         found=found and found[:FOUND_LIMIT])
         keys.append(key)
     if keys:
         context.state.set(OPEN, keys[-1])

@@ -1,6 +1,6 @@
 from features.gmail.sync import SOURCE
 from features.integrations.commands import proposed
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from resources.base import Refused
 
 

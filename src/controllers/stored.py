@@ -11,11 +11,12 @@ from pathlib import Path
 from typing import Callable, TypeVar, final
 from resources.base import OWNER, PART_OF, Counter, Missing, Refused, Resource
 from resources.types import TYPES
-from engine.stored import append_text, read_json, write_json, write_text
+from engine.stored import append_text, read_json, read_promised_json, write_json, write_text
 from engine import transaction
 from engine.locks import WRITING, after_writes
 from engine.disk import ROW_FILES, by_repository
-from engine.memo import MEMOS, Memo
+from engine.developing import found
+from resources.memo import MEMOS, Memo
 from engine.numbers import rows
 
 T = TypeVar("T")
@@ -657,7 +658,7 @@ class RowStore:
         stamp = mtime(index)
         if not stamp:
             return {}
-        return PACKS.get(str(index), stamp, lambda: {int(n): {**row, "stamp": stamp} for n, row in read_json(index, dict, {}).items()})
+        return PACKS.get(str(index), stamp, lambda: {int(n): {**row, "stamp": stamp} for n, row in read_promised_json(index, dict, {}).items()})
 
     def _stamps(self, folder: Path) -> dict[int, str]:
         if not self.resource.own_folder:
@@ -781,7 +782,7 @@ class RowStore:
         try:
             return self.load(n)
         except Missing:
-            return None
+            return found(self.record.root.parent, f"the {self.type} rows", n, (), None)
 
     @final
     def load(self, n: int | str) -> Resource:

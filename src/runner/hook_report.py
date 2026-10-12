@@ -1,11 +1,11 @@
 from controllers.types import Agents
 from engine import bus, files, ran
 from providers import command_effects
-from providers.base import JOURNAL
+from payload import JOURNAL
 from engine.record import Record
 from providers import skill_folders
-from providers.base import PERSON
-from providers.payload import Hook, HookEvent, HookFacts, LoopCall, LoopEndCall
+from payload import PERSON
+from payload import Hook, HookEvent, HookFacts, LoopCall, LoopEndCall
 from resources.base import AGENT, SYSTEM
 from resources.types import IDLE
 

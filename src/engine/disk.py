@@ -8,7 +8,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Callable, TypeVar
 
-from engine.memo import Memo
+from engine.developing import found, project_of
+from resources.memo import Memo
 
 T = TypeVar("T")
 LOG_BYTES = 262144
@@ -69,10 +70,19 @@ class JsonFiles:
 
 
 def read_json(path: Path, into: Callable[[Any], T], default: T) -> T:
+    """A file's content, or the default when it is not there or is not what is wanted: for the reader for whom nothing is an answer, such as an input that cannot be read and is dropped."""
     try:
         return into(json.loads(Path(path).read_text()))
     except (OSError, ValueError, TypeError, KeyError, AttributeError):
         return default
+
+
+def read_promised_json(path: Path, into: Callable[[Any], T], default: T) -> T:
+    """A file's content for the reader that is promised real state: a mark, a setting, a seat, a stored record. Where the journal develops itself a file that is there and answers the default is said, naming the path; everywhere else, and for a file that is not there, it answers the default as read_json does."""
+    answer = read_json(path, into, default)
+    if answer is default and Path(path).is_file():
+        return found(project_of(path), "a file that is there but is not what its reader promised", str(path), (), default, blank=default)
+    return answer
 
 
 class OutsideRepository(RuntimeError):

@@ -1,14 +1,13 @@
 import time
-from dataclasses import dataclass
-from typing import ClassVar
 
 from engine import runtime
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from engine.locks import own_sweep, project_sweep
-from engine.events.resources import QuestionAnswered, ResourceCreated, ResourceEvent
-from features.sending import Sent
-from features.trigger import MINUTE, MINUTES, Trigger
-from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
+from events.resources import ResourceCreated
+from events.questions import QuestionCompleted
+from framework.sending import Sent
+from declaring.trigger import MINUTE, MINUTES, Trigger
+from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Questions, Works
 from features.plans.controller import WAITING
 from features.boards.controller import Boards
@@ -16,6 +15,7 @@ from features.tickets.calls import PLAN_DONE_CALL, calls
 from features.tickets.controller import HELD, Tickets
 from features.tickets.details import TicketsDetails
 from resources.base import CHECKPOINT, FINISHED, PLAN_WAITS, STUCK, SYSTEM, Refused
+from events.tickets import TicketCompleted
 
 NUDGED = ("ticket_asks", "ticket_awaits")
 PLAN_WAITS_ONCE = "plan_waits"
@@ -109,7 +109,7 @@ class HoldTicketKnowledge(Handler):
 
 
 class WakeTheTicketAgent(Handler):
-    def handle(self, context: Context, event: QuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionCompleted) -> None:
         tickets = Tickets(context.record, actor=SYSTEM)
         n = tickets._owned_by(context.record.env, "ticket")
         if not n:
@@ -122,13 +122,8 @@ class WakeTheTicketAgent(Handler):
             return
 
 
-@dataclass(frozen=True)
-class TicketClosed(ResourceEvent):
-    on: ClassVar[str] = "ticket.completed"
-
-
 class FinishTheBoardWithItsLastTicket(Handler):
-    def handle(self, context: Context, event: TicketClosed) -> None:
+    def handle(self, context: Context, event: TicketCompleted) -> None:
         tickets = Tickets(context.record, actor=SYSTEM)
         board = tickets._board(tickets.load(event.n))
         if not board or not board.started or board.finished:

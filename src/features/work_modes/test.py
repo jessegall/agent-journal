@@ -27,6 +27,7 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     features.load()
     record = fresh()
     Agents(record, actor=SYSTEM).create("claude-1")
+    Agents(record, actor=SYSTEM).create("claude-2")
     assert mode_of(record) == "builder" and "WORK MODE" not in start_block(record), "builder is the default, and a start says nothing of it"
     assert "one of builder, orchestrator, solo" in refused(lambda: pick(record, "lazy", USER)), "only the three modes are taken"
     from commands.http import dispatch
@@ -34,7 +35,10 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     assert dispatch("POST", f"/api/{record.env}/mode", record.root, {}, {"mode": "orchestrator"}).body == {"mode": "orchestrator"}, \
         "the viewer's mode switch picks the mode"
     assert mode_of(record) == "orchestrator" and "WORK MODE: orchestrator" in start_block(record), "the mode is kept and carried after a restart or compaction"
-    assert len(mode_nudges(record, "work mode to orchestrator")) == 1, "the agent is told once when it changes"
+    told = mode_nudges(record, "work mode to orchestrator")
+    assert sorted(n.session for n in told) == ["claude-1", "claude-2"], "every agent that is running is told once when it changes, not only the first"
+    assert all(MODES["orchestrator"].written in n.brief for n in told), "and it is told the mode's own words, the ones the instructions now carry, not only its name"
+    assert all(n.data.get("lead") for n in told), "as the line that comes first in what it is handed"
     from features.sequences.shipped import shipped_sequences
     routines = {shipped.title: shipped for shipped in shipped_sequences()}
     assert [title in routines for title in ("Taking a helper's report", "Routing a user's report", "Cutting a patch release")] == [True] * 3, \
@@ -43,7 +47,7 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
         "routing a report starts by searching in a few commands, before a subagent is sent for a quick question"
     assert NAME in [e.data.get("setting") for e in record.event_log.events()], "the viewer hears the change and follows it"
     pick(record, "orchestrator", USER)
-    assert len(mode_nudges(record, "work mode to orchestrator")) == 1, "picking the same mode again tells nothing"
+    assert len(mode_nudges(record, "work mode to orchestrator")) == 2, "picking the same mode again tells nothing"
     from features.journal_laws.briefing import briefing_files
     written = lambda: [(record.root.parent / name).read_text() for name in briefing_files() if (record.root.parent / name).is_file()]
     carried = lambda: "\n".join(written())

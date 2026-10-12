@@ -1,39 +1,23 @@
 import time
-from dataclasses import dataclass
-from typing import ClassVar
 
 from agents.terminal import Launched, launch_failure, launch_output
 from controllers.types import Agents, Messages, Questions
 from engine.record import Record
 from engine.seats import terminal_of
-from engine.events.engine import ClockTicked
-from engine.events.resources import AgentChanged, MessageCreated, ResourceEvent
+from events.agents import ClockTicked
+from events.agents import AgentChanged
+from events.messages import MessageCreated
 from engine.sessions import Sessions, alive
-from features.ask_questions.handlers import QuestionAsked
+from events.questions import QuestionCreated
 from features.helpers.controller import Helpers
 from features.helpers.reuse import agent_runs, subagent_rows
-from features.helpers.state import Telling
-from features.parts import AgentContext, Context, Handler, OnAgentUpdated
-from features.trigger import MINUTE
+from events.helpers import HelperBriefed, HelperContinued, HelperTold, Telling
+from framework.parts import AgentContext, Context, Handler, OnAgentUpdated
+from declaring.trigger import MINUTE
 from providers import PROVIDERS
 from controllers.stored import IDEMPOTENCY
 from resources.base import AGENT, SYSTEM, titled
 from resources.types import FAILED
-
-
-@dataclass(frozen=True)
-class HelperTold(ResourceEvent):
-    """A helper was given more work; which of the two it was is the event's own action, and its row says what it was told."""
-
-
-@dataclass(frozen=True)
-class HelperContinued(HelperTold):
-    on: ClassVar[str] = f"helper.{Telling.CONTINUED}"
-
-
-@dataclass(frozen=True)
-class HelperBriefed(HelperTold):
-    on: ClassVar[str] = f"helper.{Telling.BRIEFED}"
 
 
 class MarkTheHelperTold(Handler):
@@ -112,7 +96,7 @@ class RelayAnswerToDispatcher(Handler):
 
 
 class TellAQuestionAskedAway(Handler):
-    def handle(self, context: Context, event: QuestionAsked) -> None:
+    def handle(self, context: Context, event: QuestionCreated) -> None:
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         helpers = Helpers(context.record, actor=SYSTEM)
         place = helpers._helping()

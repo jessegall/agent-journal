@@ -7,17 +7,17 @@ from controllers.types import Agents, Questions, Todos, Works
 from engine import bus
 from engine.record import Record
 from engine.sessions import Sessions, live
-from engine.wording import clipped
+from resources.text import clipped
 from engine.worktree import spread
 from features.boards.controller import Boards
-from features.boards.resource import REVIEW
+from resources.boards import REVIEW
 from features.kanban.shapes import BoardLanes, Card, Lane
-from features.tickets.resource import PROPOSED
+from resources.tickets import PROPOSED
 from resources.base import SYSTEM, Refused
 from resources.shapes import LEVELS, position_of
 from resources.types import IDLE
 from controllers.marks import action
-from engine.extension import Extension
+from declaring.extension import Extension
 
 SILENT_AFTER = 300.0
 CARD_EXTRAS = Extension()
@@ -76,8 +76,8 @@ class TicketCards:
         stages = self._stages(n)
         sessions = Sessions(self.record.root).all()
         running = self._running()
-        words = (query or "").strip().lower()
-        wanted = lambda stage: lambda r: int(r["board"] or 0) == int(n) and not r["draft"] and r["stage"] == stage and (not words or words in f"#{r['n']} {r['title']}".lower())
+        words = None if query is None else query.strip().lower()
+        wanted = lambda stage: lambda r: r["board"] not in (None, "") and int(r["board"]) == int(n) and not r["draft"] and r["stage"] == stage and (not words or words in f"#{r['n']} {r['title']}".lower())
         order = lambda r: (position_of(r["rank"], r["n"]), r["n"])
         pages = {stage: self.rows.page(wanted(stage), order, cursor_of(after) if stage == lane else None, int(size))
                  for stage in stages if not lane or stage == lane}

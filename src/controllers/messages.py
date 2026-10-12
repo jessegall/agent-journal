@@ -10,6 +10,13 @@ def only_emoji(text: str) -> bool:
     return bool(kept) and not any(ch.isalnum() or ch in ".,;:!?-_'\"()[]<>/@#" for ch in kept) and any(ord(ch) > 0x2000 for ch in kept)
 
 
+def references(about: str, todos: str) -> list[str]:
+    """What a reply says it is about: any row by its reference, and to-dos by their numbers alone, since a reply naming to-dos is the common case."""
+    named = [one.strip() for one in str(about).replace(",", " ").split() if one.strip()]
+    numbers = [one.strip() for one in str(todos).replace(",", " ").split() if one.strip()]
+    return list(dict.fromkeys([*named, *(f"todo:{one}" for one in numbers)]))
+
+
 class Messages(Controller):
     resource = types.Message
 
@@ -72,7 +79,7 @@ class Messages(Controller):
         return [name for name in r.pictures if not str(r.files.get(name, "")).strip()]
 
     @action
-    def reply(self, n: str, text: str, file: str = ""):
+    def reply(self, n: str, text: str, file: str = "", about: str = "", todos: str = ""):
         numbers = [int(part) for part in str(n).replace(",", " ").split()]
         if not numbers:
             self._refuse("name the message to reply to: journal message reply <n> \"<text>\", or several as 12,13")
@@ -101,7 +108,19 @@ class Messages(Controller):
             self._mark_commented(number, made)
         if file:
             Comments(self.record, actor=self.actor).attach(made.n, file)
+        self._about(numbers, references(about, todos))
         return made
+
+    def _about(self, numbers: list[int], refs: list[str]) -> None:
+        """Links the rows a reply is about to the messages it answers, so they are linked in the same act as the answer. Linking is a separate thing to remember otherwise, and anything remembered separately is lost under pressure."""
+        for ref in refs:
+            kind, _, number = ref.partition(":")
+            if kind not in CONTROLLERS or not number.isdigit():
+                self._refuse(f"{ref!r} is not a row this reply can be about: write it as <type>:<n>, such as todo:4342")
+            if not CONTROLLERS[kind](self.record, actor=SYSTEM).rows.exists(int(number)):
+                self._refuse(f"there is no {kind} {number}")
+            for message in numbers:
+                self.link(message, ref)
 
     def _unanswerable(self, numbers: list[int]) -> tuple[list[tuple[int, str]], list[int]]:
         """Splits the messages a reply names into those it cannot answer, each with the reason, and those it can: a message written in a window is answered there, and one the agent answered already is added to by comment."""

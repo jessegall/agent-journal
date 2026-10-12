@@ -2,9 +2,9 @@ import time
 
 from controllers.base import CONTROLLERS
 from controllers.types import Reports, Todos
-from engine.events.engine import ClockTicked
-from features.parts import WHOLE_FEATURE, AgentContext, Handler
-from features.trigger import DAY
+from events.agents import ClockTicked
+from framework.parts import WHOLE_FEATURE, AgentContext, Handler
+from declaring.trigger import DAY
 from resources.base import ENVIRONMENT, SYSTEM
 
 PACK_AFTER = 3

@@ -1,26 +1,19 @@
 import json
 import mimetypes
 import shutil
-from dataclasses import dataclass
-from typing import ClassVar
 
 from controllers.types import CONTROLLERS, Agents, Messages
-from engine.events.agents import SessionStarted
-from engine.memo import Memo
-from engine.events.resources import MessageUpdated, ResourceEvent
+from events.agents import SessionStarted
+from resources.memo import Memo
+from events.resources import FileAttached
+from events.messages import MessageUpdated
 from features.attachment_descriptions.video import TAGGED, VIDEO, frames_of, probe, sampled, spacing
-from features.parts import AgentContext, Context, Handler
+from framework.parts import AgentContext, Context, Handler
 from controllers.types import CONTROLLERS
 
 MEDIA = ("image/", VIDEO)
 FEW, LISTED = 3, 10
 UNTAGGED = Memo()
-
-
-@dataclass(frozen=True)
-class FileAttached(ResourceEvent):
-    on: ClassVar[str] = "updated"
-    file: str = ""
 
 
 def media(name: str, kinds: tuple[str, ...] | str = MEDIA) -> bool:

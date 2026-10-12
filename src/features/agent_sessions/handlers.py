@@ -1,20 +1,21 @@
 import time
 from pathlib import Path
-from dataclasses import dataclass
-from typing import ClassVar
 
-from engine.events.engine import ClockTicked
-from engine.events.agents import AgentReported
-from engine.events.resources import AgentChanged, QuestionAnswered, ResourceCreated, ResourceEvent
+from events.agents import ClockTicked
+from events.agents import AgentReported
+from events.resources import ResourceCreated
+from events.agents import AgentChanged
+from events.questions import QuestionCompleted
 from engine.sessions import Sessions, live
-from providers.payload import HookEvent
-from features.parts import AgentContext, Context, Handler, OnAgentUpdated
+from payload import HookEvent
+from framework.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
 from resources.base import SYSTEM
 from resources.types import COMPACTING, STOPPED, SUBAGENT
-from features.trigger import MINUTE
+from declaring.trigger import MINUTE
 from controllers.types import CONTROLLERS, Agents, Environments, Questions, Todos, environment_records
 from engine.record import Record
+from events.todos import TodoUpdated
 
 
 STOP = "stop"
@@ -24,11 +25,6 @@ REPORT_WITHIN = 1800
 
 KEPT_COMPACTIONS = 50
 ONE_COMPACTION = 120
-
-
-@dataclass(frozen=True)
-class TodoUpdated(ResourceEvent):
-    on: ClassVar[str] = "todo.updated"
 
 
 class HoldEvicted(Handler):
@@ -47,7 +43,7 @@ class HoldEvicted(Handler):
 class TakeOverOnAnswer(Handler):
     """A session that started beside another waits for the user's answer: taking the environment over unbinds the session that was there."""
 
-    def handle(self, context: Context, event: QuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionCompleted) -> None:
         sessions = Sessions(context.record.root)
         session = sessions.asking(event.n)
         if not session or Questions(context.record, actor=SYSTEM).load(event.n).chosen != TAKE_OVER:

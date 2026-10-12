@@ -57,7 +57,7 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
     from dataclasses import replace
     from providers.base import Provider
     from providers.command_effects import shell as hooked
-    from providers.payload import Hook
+    from payload import Hook
     from engine.command_runs import waiting_run
     call = lambda event, name, text, at: replace(Hook.read({"hook_event_name": event, "session_id": "x", "tool_name": "Bash", "tool_use_id": name, "tool_input": {"command": text}}, Provider.tool_kinds), at=at)
     parallel, now = SimpleNamespace(running={}, commands=[]), time.time()
@@ -151,15 +151,15 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
         more.write("".join(json.dumps(row) + "\n" for row in (asked, started, ended)))
     tasks = Claude().background_tasks(transcript)
     assert (tasks.commands["tb1"], "tb1" in tasks.ended, tasks.outputs["tb1"]) == (suite, True, str(out)), "a test run moved to the background keeps its command and the output file its end notice names"
-    outcome = background_outcome(suite, str(tmp_path), "", "completed")
+    outcome = background_outcome(suite, tmp_path, "", "completed")
     assert (outcome.passed, outcome.failed) == (7, 1), "its result is the tally read from its output, even when the exit said completed"
-    assert background_outcome("run the thing", str(tmp_path), "", "failed").ok is False, "with no output to read, the exit it ended with decides"
+    assert background_outcome("run the thing", tmp_path, "", "failed").ok is False, "with no output to read, the exit it ended with decides"
 
 
 def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the_chat(monkeypatch):
     from controllers.types import Agents
     from engine.gates import CANCELERS, LONG_COMMAND
-    from engine.reach import Guard, Reach
+    from declaring.reach import Guard, Reach
     from resources.base import SYSTEM
     record = fresh()
     moved = []

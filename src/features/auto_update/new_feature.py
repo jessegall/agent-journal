@@ -31,13 +31,15 @@ class NewFeature:
 
     @classmethod
     def declared(cls, version: str, raw: str) -> list["NewFeature"]:
-        """The new feature a changelog entry announces, none when it announces none or announces it wrong."""
-        found = DECLARATION.search(raw)
-        if found is None:
-            return []
+        """Every new feature a changelog entry announces, in the order it announces them; a release of two features announces both."""
+        return [one for found in DECLARATION.finditer(raw) for one in cls.read(version, found.group(1))]
+
+    @classmethod
+    def read(cls, version: str, given: str) -> list["NewFeature"]:
+        """The feature one declaration names, none when it is written wrong."""
         try:
-            given = json.loads(found.group(1))
-            return [cls(version=version, **{**given, "art": f"{ART_FOLDER}/{given['art']}" if given.get("art") else ""})]
+            fields = json.loads(given)
+            return [cls(version=version, **{**fields, "art": f"{ART_FOLDER}/{fields['art']}" if fields.get("art") else ""})]
         except (ValueError, TypeError):
             return []
 
@@ -47,6 +49,12 @@ def new_features(changelog: str) -> list[NewFeature]:
     marks = list(ENTRY.finditer(changelog))
     entries = [(mark.group(1), changelog[mark.end():marks[at + 1].start() if at + 1 < len(marks) else len(changelog)]) for at, mark in enumerate(marks)]
     return [one for version, raw in entries for one in NewFeature.declared(version, raw)]
+
+
+def oldest_first(features: list[NewFeature]) -> list[NewFeature]:
+    """The new features oldest release first, each release's own in the order it announces them."""
+    releases = list(dict.fromkeys(one.version for one in features))
+    return sorted(features, key=lambda one: -releases.index(one.version))
 
 
 def seen(root: Path) -> list[str]:
@@ -69,7 +77,7 @@ def already_chosen(record, one: NewFeature) -> bool:
 def unseen(record, changelog: str) -> list[NewFeature]:
     """The new features not yet seen, oldest first, so the releases an update skipped over announce themselves one after another; one offering what the user already chose is left out, since it asks for a choice that was made."""
     held = seen(record.root)
-    return [one for one in reversed(new_features(changelog)) if one.id not in held and not already_chosen(record, one)]
+    return [one for one in oldest_first(new_features(changelog)) if one.id not in held and not already_chosen(record, one)]
 
 
 def unseen_announced(record, changelog: Path) -> list[NewFeature]:

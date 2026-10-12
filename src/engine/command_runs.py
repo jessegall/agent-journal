@@ -96,6 +96,11 @@ def counted_runs(row, ran: float, delta: Delta, touched: list, made: list) -> di
     return {AgentRow.running: (replace(running, before=edited) if late else edited).to_json(), AgentRow.commands: [one.to_json() for one in runs]}
 
 
+def open_shell_runs(row) -> list[CommandRun]:
+    """The shell commands that have not ended, longest waited on first."""
+    return [one for one in command_runs(row) if one.tool == "Bash" and not one.done]
+
+
 def waiting_run(row) -> CommandRun | None:
     """The shell command the agent has waited on longest and that has not ended: the one a long wait is measured from."""
-    return next((one for one in command_runs(row) if one.tool == "Bash" and not one.done), None)
+    return next(iter(open_shell_runs(row)), None)

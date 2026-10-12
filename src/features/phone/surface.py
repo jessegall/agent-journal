@@ -10,17 +10,17 @@ from controllers.questions import Questions
 from controllers.types import CONTROLLERS, Environments, Nudges
 from engine.project_files import read_source
 from engine.sessions import Sessions
-from features import FEATURES
-from features.format import VIEWER, shaped
+from framework.loaded import FEATURES
+from framework.format import VIEWER, shaped
 from features.helpers.controller import Helpers
 from features.message_buttons.pressing import press
 from features.phone.export import Export, export
 from features.phone.feed import Feed, feed, helper, reaches
 from features.plans.controller import Plans
-from features.plans.resource import READY, WAITING
+from resources.plans import READY, WAITING
 from features.sharing.controller import Shares
 from features.status_bar.bar import current
-from features.suggestions.controller import Suggestions
+from controllers.types import Suggestions
 from features.work_modes.modes import pick
 from features.work_tracking.auto import automatic
 from resources.base import AGENT, SYSTEM, USER, Refused, Stale, titled

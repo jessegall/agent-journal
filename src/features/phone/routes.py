@@ -9,7 +9,7 @@ from http.cookies import SimpleCookie
 
 from engine.multipart import FORWARDED_LIMIT, FORWARDED_LIMIT_MB
 from engine.record import Record
-from providers import DEFAULT_PROVIDER
+from resources.base import DEFAULT_PROVIDER
 from resources.fields import Loaded
 from features.phone.controller import Phones
 from features.phone.allow_list import PhoneVisit
@@ -25,8 +25,8 @@ from features.sharing.preview import icon
 from features.sharing.origins import origins_of
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused, Stale
-from features.trigger import DAY
-from engine.wording import digest
+from declaring.trigger import DAY
+from resources.text import digest
 
 APP_PAGE = "phone.html"
 WORKER = "sw.js"

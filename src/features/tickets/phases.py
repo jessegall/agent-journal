@@ -1,4 +1,4 @@
-from features.plans.resource import PHASE
+from resources.plans import PHASE
 from features.tickets.controller import Tickets
 from features.tickets.worker import SHARED, worker_environment
 from resources.base import Refused, SYSTEM

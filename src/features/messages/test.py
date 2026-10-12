@@ -4,13 +4,13 @@ import time
 from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
-from providers.payload import Chunk
+from payload import Chunk
 from features.dev_faults.diagnostics import log_file
 from runner.chat_mirror import FELL_BACK, displayed
 from runner.hooks import handle
 from engine.gates import held
 from engine.sessions import Sessions
-from features.format import VIEWER, formatted
+from framework.format import VIEWER, formatted
 from providers import DRIVERS, PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, holds, refused
@@ -111,8 +111,8 @@ def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read
     def use(n):
         report(record, "working", "PreToolUse", uses=n)
 
-    from engine.reach import Reach
-    from features import FEATURES
+    from declaring.reach import Reach
+    from framework.loaded import FEATURES
     Agents(record, actor=AGENT).create("s-gone", status="stopped")
     titles = [agent.title for agent in FEATURES["messages"].reached(record, Reach.BOTH)]
     assert "s-gone" not in titles, "a stopped agent hears nothing, so a message that arrives does not rewrite its counters: every old session made the first message after a start slow"
@@ -228,12 +228,16 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     late = "Waiting on the measurement."
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": late}]}}) + "\n")
     fell_back = log_file(record.root).read_text().count(FELL_BACK)
+    monkeypatch.setattr(chat_mirror, "SETTLE", 30.0)
     threading.Timer(0.1, lambda: displayed(record.root, Chunk.from_json(
         {"session_id": "claude-1", "message_id": "h", "index": 0, "final": True, "delta": late}))).start()
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": late})
     assert (chat().count(late), log_file(record.root).read_text().count(FELL_BACK)) == (1, fell_back), \
         "the turn's last words are waited for: a display hook the stop raced past still delivers them, and the transcript is not blamed"
+    monkeypatch.setattr(chat_mirror, "SETTLE", 0.5)
     ledger = DisplayedLedger(record.root, "claude-1")
+    with ledger.changing() as kept:
+        assert fingerprint(late) not in kept.get(FAULTS, {}), "and no fault is held for them: the stop waited until they came, however long the machine took, and a hook that never delivered would leave one here"
     with ledger.changing() as kept:
         assert fingerprint("Cut short by the next prompt") in kept[FAULTS], "the held fault is kept by the fingerprint of the words"
         kept[FAULTS] = {one: 0.0 for one in kept[FAULTS]}
@@ -247,6 +251,22 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
         assert kept.get(FAULTS, {}) == {}, "the words arriving under another message id withdraw the held fault, by their fingerprint"
     raise_held(record.root, "claude-1")
     assert (log_file(record.root).read_text().count(FELL_BACK), chat().count("Late but not lost")) == (raised, 1), "and nothing is said about it, nor shown twice"
+    cut = lambda text: transcript.write_text(transcript.read_text() + "\n".join([
+        json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}}),
+        json.dumps({"type": "user", "timestamp": now, "message": {"content": [{"type": "text", "text": "[Request interrupted by user]"}]}})]) + "\n")
+    monkeypatch.setattr(engine.agent.driver, "alive", lambda: True)
+    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
+    blamed = log_file(record.root).read_text().count(FELL_BACK)
+    cut("Half a sentence of the turn that was cut off")
+    engine.cut_off()
+    engine.cut_off()
+    assert chat().count("Half a sentence of the turn that was cut off") == 1, "a turn the person cut off reaches the chat when the engine sees it, once, without waiting for the next prompt"
+    assert log_file(record.root).read_text().count(FELL_BACK) == blamed, "and the display hook is not blamed for it, since a turn the person cut off has no words for the hook to deliver"
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "kept", "index": 0, "final": True, "delta": "Delivered by the hook before the cut"}))
+    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
+    cut("Delivered by the hook before the cut")
+    engine.cut_off()
+    assert chat().count("Delivered by the hook before the cut") == 1, "and words the display hook already delivered are not sent again"
 
 
 def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():

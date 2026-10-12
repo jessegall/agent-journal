@@ -1,8 +1,8 @@
-from features.base import Feature
+from framework.base import Feature
 from features.facts.details import FactsDetails
-from features.journal import Journal
+from framework.journal import Journal
 from controllers.types import Facts
-from features.recital import register_recital
+from framework.recital import register_recital
 
 
 class FactsFeature(Feature):

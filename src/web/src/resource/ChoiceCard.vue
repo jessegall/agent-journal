@@ -50,6 +50,7 @@ const done = computed(() =>
         .map(outcome)
 );
 const means = (button) => (button.say ? `Sends as your message: “${button.say}”` : `Runs: ${doing(button)}`);
+const commandOf = (button) => (button.runs ? button.runs.join(" ") : "");
 
 function show() {
     card.value?.scrollIntoView({behavior: "smooth", block: "center"});

@@ -1,7 +1,8 @@
 from resources.base import PROJECT
-from features.base import Behaviour, FeatureDetails, Line, Setting
-from features.trigger import MINUTES, Trigger
-from features.groups import Group
+from declaring.details import Behaviour, FeatureDetails, Line
+from framework.base import Setting
+from declaring.trigger import MINUTES, Trigger
+from declaring.groups import Group
 
 
 class TicketsDetails(FeatureDetails):

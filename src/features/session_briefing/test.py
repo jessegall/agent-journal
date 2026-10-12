@@ -261,7 +261,7 @@ def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits_and_a_foll
     monkeypatch.setattr(follow, "_typed", lambda line, confirmed: typed.append(line) or True)
     monkeypatch.setattr(follow, "awaits_answer", lambda: False)
     assert follow.TAKES_CHANNEL and follow.send("do the next step", now=True, by="claude-1")
-    from providers.base import said_by
+    from payload import said_by
     assert (posted, typed) == ([], [f"{said_by('claude-1')}\ndo the next step"]), \
         "a follow-up is typed as an instruction, never posted on the channel, and says which agent it comes from, so the agent reading it can tell a message from a stray paste"
     assert follow.send("todo 5 next", now=True)

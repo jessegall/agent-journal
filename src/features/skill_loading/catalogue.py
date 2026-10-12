@@ -3,19 +3,19 @@ from functools import cache
 import time
 from pathlib import Path
 
-import features
+from framework.loaded import FEATURES
 from controllers.types import Agents
 from engine.record import Record
 from providers import PROVIDERS, transcript_reader
 from resources.base import SYSTEM, names
 
 SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size", "keywords", "commands")
-from providers.base import LIBRARY
+from payload import LIBRARY
 from providers.skill_homes import skill_name
 from engine.package import data
 from controllers.stored import mtime
 from engine.frontmatter import frontmatter
-from engine.memo import Memo
+from resources.memo import Memo
 
 READ = Memo()
 LISTED = Memo()
@@ -94,7 +94,7 @@ def marked_primary() -> frozenset[str]:
 
 
 def primary() -> set[str]:
-    return {"journal", *marked_primary(), *(skill_name(name) for name, f in features.FEATURES.items() if f.details and f.details.primary)}
+    return {"journal", *marked_primary(), *(skill_name(name) for name, f in FEATURES.items() if f.details and f.details.primary)}
 
 
 def available(root: Path) -> set[str]:
@@ -154,7 +154,6 @@ def set_keywords(record: Record, name: str, words: list[str]) -> list[str]:
 
 
 def always(record: Record, name: str, on: bool) -> list[str]:
-    from features import FEATURES
     record.skills = sorted(set(chosen(record)) - {name} | ({name} if on else set()))
     if "session_briefing" in FEATURES:
         from features.session_briefing.block import rebuild

@@ -261,7 +261,7 @@ def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(
     claude.wire(project, HookCommand(tmp_path / "hook.sh", "claude", project / ".journal"))
     assert claude.settings(project)["statusLine"]["command"] == "my-own-status", "a status line the user already has is kept"
     from providers.claude import STATUS_HOME
-    from providers.payload import Hook
+    from payload import Hook
     odd = tmp_path.joinpath(*STATUS_HOME)
     (odd / "s-10.json").write_text(json.dumps({"rate_limits": {"five_hour": {"used_percentage": 5, "resets_at": "2026-10-01T00:00:00Z"}, "seven_day": {"used_percentage": None}}}))
     (odd / "s-11.json").write_text(json.dumps({"rate_limits": {"five_hour": "none", "seven_day": {"used_percentage": 1, "resets_at": "31536000"}}}))
@@ -278,7 +278,7 @@ def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(
     (tmp_path / ".claude" / "projects" / "p" / "conversation-1.jsonl").write_text("")
     assert (claude.conversation_file("conversation-1").name, claude.conversation_file("nowhere")) == ("conversation-1.jsonl", None), "a conversation is found by its name among the projects' transcripts"
     from providers.claude_rows import Block
-    from providers.payload import ToolCall
+    from payload import ToolCall
     from providers.claude import Finish
     assert claude.stopped({"u1": Finish("returned", 1.0), "u2": Finish("failed", 1.0)}, [ToolCall(name="TaskStop", task="t1", at=5.0), ToolCall(name="TaskStop", task="t2", at=6.0)],
                           {"u1": "t1", "u2": "t2"}) == {"u1": Finish("stopped", 5.0), "u2": Finish("failed", 1.0)}, \
@@ -339,7 +339,7 @@ def test_the_codex_model_and_effort_picker_moves_by_arrow_keys_and_refuses_what_
 
 def test_codex_usage_comes_from_the_newest_token_count_and_its_crew_from_the_rollout(tmp_path):
     import json
-    from providers.payload import Hook
+    from payload import Hook
     from providers.codex import Codex
     codex = Codex()
     lines = lambda *rows: "".join(json.dumps({"timestamp": "2026-10-02T10:00:00Z", **row}, separators=(",", ":")) + "\n" for row in rows)

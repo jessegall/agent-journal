@@ -1,7 +1,7 @@
 from engine import bus
+from events.agents import BEAT, TICKED
 from resources.base import SYSTEM
 
-TICKED, BEAT = "ticked", "beat"
 
 
 def tick(record, agent: int) -> None:

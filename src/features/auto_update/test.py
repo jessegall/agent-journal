@@ -60,7 +60,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     check.checked_at = 0.0
     assert check.tick() == "installing 3.0.0", "a value that is not one of the choices reads as the default, always"
     from controllers.types import Notices
-    from features import FEATURES
+    from framework.loaded import FEATURES
     monkeypatch.setattr(updates, "installed", lambda root, yes, version: "package not refreshed: the network was down")
     updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
     assert sent[-1].startswith("installing journal 3.0.0 failed") and [n.title for n in Notices(record).all()][-1] == "The journal could not update to 3.0.0", \
@@ -442,6 +442,11 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     assert ([(one.id, one.version, one.profile, one.art, one.eyebrow) for one in found]
             == [("squire", "2.9.0", "Squire", "announcements/squire.png", "Hey, new feature")]), \
         "a changelog entry announces a new feature beside its notes, with the artwork file shipped with it; an entry that announces none or announces it wrong adds nothing"
+    from features.auto_update.new_feature import oldest_first
+    two = ('## 3.0.0 — Two at once\n<!-- new-feature {"id": "first", "title": "First", "text": "One.", "button": "Show me"} -->\n'
+           '<!-- new-feature {"id": "second", "title": "Second", "text": "Two.", "button": "Show me"} -->\n\n' + notes.split("\n\n", 1)[1])
+    assert [one.id for one in oldest_first(new_features(two))] == ["squire", "first", "second"], \
+        "the oldest release is announced first, and a release of two features announces them in the order it declares them"
     assert (len(notified), "user" in notified[0].seen) == (1, True), "announced once, already seen"
     assert ".journal/attic/before-update-1.0.0-123" in notified[0].brief and not copy_note.exists(), \
         "the update notice names the copy of legacy managed files once"
@@ -1028,7 +1033,7 @@ def test_automatic_updates_ship_off_and_a_journal_that_already_had_them_keeps_th
     import features
     from controllers.types import Features
     from features.auto_update.feature import AutoUpdate
-    from features.switches import booted
+    from framework.switches import booted
     from migrations.m0081_auto_update_was_chosen import run as auto_update_was_chosen
     from resources.base import SYSTEM
     from tests.conftest import fresh

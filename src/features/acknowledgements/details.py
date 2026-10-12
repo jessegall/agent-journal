@@ -1,5 +1,5 @@
-from features.base import FeatureDetails, Line
-from features.groups import Group
+from declaring.details import FeatureDetails, Line
+from declaring.groups import Group
 
 KEPT_OUT = "kept out"
 

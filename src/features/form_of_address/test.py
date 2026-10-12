@@ -2,8 +2,8 @@ from pathlib import Path
 
 import features
 from controllers.types import Messages, Nudges
-from features.form_of_address.controller import Profiles, ship
-from features.form_of_address.voices import PLAIN_WORDS, SHIPPED
+from controllers.form_of_address.controller import Profiles, ship
+from resources.voices import PLAIN_WORDS, SHIPPED
 from features.session_briefing.start import start_block
 from resources.base import SYSTEM, USER, Refused
 from features.open_viewer.settings import apply
@@ -38,7 +38,7 @@ def test_the_start_block_talks_as_the_butler_until_a_profile_is_chosen_and_only_
 
 
 def test_the_five_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrade_rewrites_their_wording():
-    from features.form_of_address.animations import shipped_animations
+    from controllers.form_of_address.animations import shipped_animations
     record = shipped_record()
     profiles = Profiles(record, actor=USER)
     assert [row["title"] for row in profiles.rows.summaries()] == [voice.title for voice in SHIPPED], "the five ship as rows"
@@ -109,7 +109,7 @@ def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three()
     assert refused(lambda: profiles.update(copy.n, calling="sir")), "to one of the three only"
     assert refused(lambda: profiles.create("Odd", brief="x", calling="sir")), "a calling outside the three is refused"
     assert profiles.callings()["none"] == "" and "{you}" not in profiles.samples()[copy.n], "a copy keeps the sample with your name filled in"
-    from features.form_of_address.voices import CARTOON, NAMINGS, SPORTING
+    from resources.voices import CARTOON, NAMINGS, SPORTING
     assert (copy.naming, [style["label"] for style in profiles.namings()]) == (SPORTING.text, [style.label for style in NAMINGS]), \
         "a copy keeps how the Coach names its agents, and the styles to choose from are offered"
     named = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).naming for row in profiles.rows.summaries()}
@@ -189,14 +189,14 @@ def test_the_upgrade_folds_every_environments_settings_into_the_project_with_the
 
 def test_the_upgrade_moves_the_cartoon_names_switch_into_the_profile_in_use():
     import json
-    from features.form_of_address.names import in_use
-    from features.form_of_address.voices import CARTOON
+    from resources.voices import CARTOON
     from migrations.m0072_naming_lives_in_the_profile import run
     record = shipped_record()
     (record.home / "settings.json").write_text(json.dumps({"journal_laws": {"cartoon_names": True, "output_lines": 400}}))
     run(record.root)
     record.reread_settings()
-    chosen = Profiles(record, actor=SYSTEM).load(in_use(record))
+    profiles = Profiles(record, actor=SYSTEM)
+    chosen = profiles.load(profiles.profile_in_use())
     assert (chosen.title, chosen.naming, json.loads((record.home / "settings.json").read_text())) == \
         ("Butler (my copy)", CARTOON.text, {"journal_laws": {"output_lines": 400}}), \
         "the switch is gone, and a copy of the profile in use, now in use, names agents after cartoon characters"
@@ -215,7 +215,7 @@ def test_the_upgrade_moves_the_cartoon_names_switch_into_the_profile_in_use():
 
 def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dropped_sheets(tmp_path):
     import zipfile
-    from features.form_of_address.animations import Animation, shipped_animations
+    from controllers.form_of_address.animations import Animation, shipped_animations
     named = ["squire_blink_sheet.png", "squire_idle_1_sheet.png", "working_left.png", "idle_wave_atlas.png"]
     assert {(a.kind, a.name) for a in (Animation.of(file, "squire") for file in named)} == {("blink", ""), ("idle", "1"), ("working", "left"), ("idle", "wave")}, \
         "a kind and a name come from the file name, with or without the voice, the sheet or the atlas ending"

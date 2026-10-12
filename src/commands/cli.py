@@ -170,6 +170,9 @@ def run(argv: list[str], out=None, err=None) -> int:
     elif got is not None:
         if getattr(got, "preface", ""):
             print(got.preface, file=out)
+        if hasattr(got, "dump"):
+            from framework.format import read_as
+            got = read_as(got, ctx["record"])
         print(got.dump() if hasattr(got, "dump") else got, file=out)
         if method == "create" and hasattr(got, "n"):
             print(f"{command} {got.n}", file=out)

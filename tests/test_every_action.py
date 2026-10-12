@@ -19,22 +19,22 @@ import controllers.files as files
 import controllers.stored as stored
 import features
 from commands.dispatch import dispatch
-from features.routing import ranked, resolve
+from framework.routing import ranked, resolve
 from controllers.invoke import invoked, spread
 from commands import cli
 from commands.parser import parser
 from controllers.base import Controller, actions
 from controllers.environments import KEPT, SWEPT
 from controllers.types import CONTROLLERS, Environments, Todos, Works
-from engine.extension import EXTENSIONS
+from declaring.extension import EXTENSIONS
 from engine.package import code
 from engine.paths import ROUTED, environment_names
 from engine.record import Record
 from engine.disk import by_repository
 from engine.stored import read_json, write_text
 from engine.transaction import snapshot, undoable
-from engine.wording import noun
-from features.triggers.watched import FACTS
+from resources.text import noun
+from framework.watched import FACTS
 from overview.summary import environment, summarize
 from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, Resource, SYSTEM, USER, overview_weight as weigh
 from resources.pictures import dimensions
@@ -47,7 +47,8 @@ from commands import http  # noqa: F401
 VIEWER = Path(__file__).resolve().parents[1] / "src" / "web" / "src"
 RECORDER = Path(__file__).with_name("viewer_calls.mjs")
 UNBOUND = ("unexpected keyword argument", "missing a required argument", "positional argument")
-BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "point", "page", "origin", "journal", "pluginUrl", "publicUrl", "voiceRig", "voiceMoves", "markdownUrl", "fileUrl",
+BUILT = {"get", "post", "here", "act", "command", "url", "at", "in", "point", "page", "origin", "journal", "pluginUrl", "publicUrl", "voiceRig", "voiceMoves", "voiceFigures", "voiceFigureUrl",
+         "figureDecoderUrl", "markdownUrl", "fileUrl",
          "extensionZip", "stream", "layoutFrom", "editedImageUrl"}
 REAL = {"checkForUpdate", "update", "upstream", "upgrade", "stop", "tunnelLogin", "tunnelLogout", "updateTunler", "installTunler",
         "tunnelAnswering", "tunnelDomains", "tunnelRelease", "tunnelReaddress", "tunnelCause", "restartTunnel", "setService", "installPlugin", "installSuggested", "upgradePlugin", "previewPlugin",
@@ -620,7 +621,7 @@ def test_an_update_check_asked_for_reads_the_newest_release_once_at_a_time(monke
 
 
 def test_rows_and_help_shaped_for_the_viewer_are_kept_only_up_to_their_limit(monkeypatch):
-    from features import format as formatting
+    from framework import format as formatting
     monkeypatch.setattr(formatting.SHAPED, "limit", 1)
     monkeypatch.setattr(formatting, "KEEP_CATALOGUES", 1)
     record, other = fresh(), fresh("other")
@@ -683,9 +684,10 @@ def test_a_feature_row_marked_missing_is_found_again_and_a_switch_relayed_from_e
     rows.update(row.n, enabled=False)
     features.passed(record.event_log.events()[-1], record)
     assert not features.FEATURES["thinking"].enabled(record), "a switch another process made is read when its event is relayed"
-    from engine.reach import Unreached
-    from features.base import Feature, FeatureDetails, Line
-    from features.groups import Group
+    from declaring.reach import Unreached
+    from declaring.details import FeatureDetails, Line
+    from framework.base import Feature
+    from declaring.groups import Group
 
     class Careless(FeatureDetails):
         name, title, group = "careless", "Careless", Group.CHAT
@@ -893,8 +895,29 @@ def test_a_row_of_every_type_made_twice_in_ten_seconds_is_one_row_unless_the_wor
             keyed = users.create("keyed", idempotency="a", **needed(type_))
             facts["same key"] = users.create("keyed", idempotency="a", **needed(type_)).n == keyed.n
             facts["other key"] = users.create("keyed", idempotency="b", **needed(type_)).n != keyed.n
+            facts["same key while the first is still writing"] = len(set(created_at_once(type_, record))) == 1
         reckon(wrong, type_, facts)
     assert wrong == {}, "the same author and words are one row for a type that deduplicates, and another author, brief, target or key is a new one"
+
+
+def created_at_once(type_: str, record) -> list[int]:
+    """Two creates with one key, the second arriving while the first is still writing, as a send retried during a slow first one: the numbers each is answered with."""
+    numbers, writing = [], threading.Event()
+    first = acting(type_, record, USER)
+    drawn = first.rows.draw_number
+
+    def drawn_slowly():
+        writing.set()
+        time.sleep(0.3)
+        return drawn()
+
+    first.rows.draw_number = drawn_slowly
+    one = threading.Thread(target=lambda: numbers.append(first.create("keyed at once", brief="first", idempotency="c", **needed(type_)).n))
+    one.start()
+    writing.wait(5)
+    numbers.append(acting(type_, record, USER).create("keyed at once", brief="second", idempotency="c", **needed(type_)).n)
+    one.join(5)
+    return numbers
 
 
 def other_than(field_, choices: dict):

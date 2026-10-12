@@ -1,7 +1,7 @@
-from features.base import Behaviour, FeatureDetails, Line
-from features.settings import Setting
-from features.trigger import MINUTES, Trigger
-from features.groups import Group
+from declaring.details import Behaviour, FeatureDetails, Line
+from declaring.settings import Setting
+from declaring.trigger import MINUTES, Trigger
+from declaring.groups import Group
 
 
 class AgentSessionsDetails(FeatureDetails):

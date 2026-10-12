@@ -2,8 +2,8 @@ import json
 import re
 from pathlib import Path
 
-from providers.payload import DISPLAYED, EVENTS
-from features.base import REGISTRY
+from payload import DISPLAYED, EVENTS
+from framework.base import REGISTRY
 from engine.upgrades import newer
 from resources.base import ACTIONS, Refused
 from resources.types import TYPES

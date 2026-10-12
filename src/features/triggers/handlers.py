@@ -1,19 +1,22 @@
 from itertools import takewhile
 
-from engine.events.agents import AgentReported
-from engine.events.engine import AgentMessageSent, ClockTicked
-from engine.events.resources import MessageCreated
+from events.agents import AgentReported
+from events.agents import AgentMessageSent, ClockTicked
+from events.messages import MessageCreated
 from engine.transcript import IDLE as AGENT_IDLE
-from features import actions, trigger
-from features.triggers import watched
-from features.sending import Nudge, Sent, send
-from features.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Context, Handler, ToolInterceptor
-from engine.gates import Runs, STILL_HELD
-from features.recital import COMMANDS, mentioned, searched
-from features.triggers.controller import Triggers, holding
-from features.triggers.resource import DENY, FROM_USER, HOLD, IDLE, INSTRUCT, MESSAGE, NUDGE, START, WORKING, Trigger
+from declaring import trigger
+from framework import actions
+from framework import watched
+from framework.sending import Nudge, Sent, send
+from framework.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Context, Handler, ToolInterceptor
+from declaring.holds import Runs
+from engine.gates import STILL_HELD
+from framework.recital import COMMANDS, mentioned, searched
+from controllers.types import Triggers
+from resources.triggers import holding
+from resources.triggers import DENY, FROM_USER, HOLD, IDLE, INSTRUCT, MESSAGE, NUDGE, START, WORKING, Trigger
 from resources.base import SYSTEM, USER
-from engine.reach import Reach
+from declaring.reach import Reach
 from controllers.types import Agents, Messages
 
 WATCHING, REMINDING = "watching", "reminding"
@@ -31,6 +34,8 @@ def firing(context, text_of, from_user: bool = False) -> list:
 
 
 def fire(context, agent, row, done: str = "", about: str = "") -> None:
+    from framework.format import read_as
+    row = read_as(row, context.record)
     if row.does != START:
         context.journal.acting(SYSTEM).get(Agents).card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
                                                    tone="danger" if row.does == DENY else "note", title=row.wording, ref=row.ref)
@@ -78,7 +83,7 @@ class SayWhatTheJournalShowsOnToolUse(Handler):
 
 def reminding(record, session: str) -> bool:
     """Whether the behaviour for facts is on, which is all that keeps a hold of a trigger standing: switching it off lets every one go."""
-    from features import FEATURES
+    from framework.loaded import FEATURES
     return FEATURES["triggers"].on(record, REMINDING)
 
 

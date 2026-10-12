@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TypedDict
 
-from engine.wording import digest
+from resources.text import digest
 
 from resources.types import IDLE
 

@@ -25,7 +25,8 @@ from typing import Callable
 
 
 PACKAGE = Path(__file__).resolve().parent
-PACKED_DIRS = ("agents", "commands", "controllers", "engine", "features", "migrations", "overview", "providers", "resources", "runner", "surfaces")
+PACKED_DIRS = ("agents", "commands", "controllers", "declaring", "engine", "events", "expects", "features", "framework", "migrations", "overview", "payload", "providers",
+                "receiving", "resources", "runner", "serving", "surfaces")
 PACKAGE_DIRS = (*PACKED_DIRS, "extension", "skills")
 VERSION = "VERSION"
 PACKAGE_FILES = ("CHANGELOG.md", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "keeper.py", "serve.py", "supervisor.py", "skills.py", "worker.py")
@@ -815,14 +816,15 @@ def loaded() -> Package:
     from engine.sessions import held_builds
     from features.journal_laws.briefing import brief
     from features.sequences.shipped import ship
-    from features.form_of_address.controller import ship as ship_profiles
+    from controllers.form_of_address.controller import ship as ship_profiles
     from features.agent_sessions.handlers import stop_ended
     from migrations import run as migrate
     from migrations import pending
     from engine.ledger import applied
     from migrations import shipped
     from providers import PROVIDERS
-    from providers.base import LIBRARY, HookCommand
+    from payload import LIBRARY
+    from providers.base import HookCommand
     from skills import LINKED, publish
     from features.boards.agent_types import written as agent_types
     from engine.record import Record

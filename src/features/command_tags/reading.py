@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-from engine.memo import Memo
+from resources.memo import Memo
 
 
 REPLY_WITH = "reply_with"
@@ -25,7 +25,9 @@ class Tag:
 
 
 TAGS = (
-    Tag(REPLY, "message reply {n} {text}", "[!reply:N] makes the turn itself the reply", said_in_chat=False),
+    Tag(REPLY, "message reply {n} {text}",
+        '[!reply:N] makes the turn itself the reply; [!reply:N, todos=(7, 8)] or [!reply:N, about=("doc:80")] links what it is about',
+        ("about", "todos"), said_in_chat=False),
     Tag(LOG, "work log {text} --n {n}", "[!log:N] makes the turn itself the log entry", said_in_chat=False),
     Tag("end", "work end {n} --how {text}", "[!end:N] makes the turn itself what landed"),
     Tag("todo", "todo create {name} --brief {text}", '[!todo="the title"] files it with the turn as its brief'),
@@ -88,8 +90,12 @@ def kept_out_of_the_chat(text: str) -> bool:
 
 
 def named(extras: str) -> dict[str, str]:
-    return {key: ",".join(re.findall(r'"([^"]*)"', value)) if value.startswith("(") else value.strip('"')
-            for key, value in NAMED.findall(extras)}
+    return {key: listed(value) if value.startswith("(") else value.strip('"') for key, value in NAMED.findall(extras)}
+
+
+def listed(value: str) -> str:
+    """The items of a list a tag carries, quoted or bare: a tag naming to-dos writes (7, 8) as readily as ("7", "8"), and reading only the quoted ones answered nothing at all."""
+    return ",".join(one.strip().strip('"') for one in value.strip("()").split(",") if one.strip().strip('"'))
 
 
 def tag_spelling(text: str) -> str:

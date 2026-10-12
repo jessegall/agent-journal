@@ -1,11 +1,11 @@
 from controllers.types import Todos
-from engine.events.resources import TodoCompleted
+from events.todos import TodoCompleted
 from engine.record import Record
 from features.agent_sessions.launch import stop_in
 from features.organization.agents import start_role_agent
 from features.organization.delegation import next_in_line, role_of
 from engine.organization import PLAN
-from features.parts import Context, Handler
+from framework.parts import Context, Handler
 from resources.base import SYSTEM
 
 

@@ -1,19 +1,9 @@
-from dataclasses import dataclass
-from typing import ClassVar
 
-from engine.events.resources import ResourceEvent
-from features.parts import Context, Handler
+from framework.parts import Context, Handler
 from features.revisions.history import revise
 from resources.base import PART_OF
 from controllers.types import Docs
-
-
-@dataclass(frozen=True)
-class DocWritten(ResourceEvent):
-    on: ClassVar[str] = "doc"
-
-    def wanted(self) -> bool:
-        return self.written
+from events.docs import DocWritten
 
 
 class KeepRevisions(Handler):

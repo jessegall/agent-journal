@@ -6,7 +6,6 @@ from enum import StrEnum
 from typing import TypedDict
 
 import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.features import Features
 from controllers.messages import Messages
@@ -16,7 +15,7 @@ from engine.record import Record
 from features.sharing.details import ALLOWED, SharingDetails
 from features.sharing.page_data import SharePages
 from features.sharing.passwords import hashed
-from features.sharing.resource import SHARED_TYPES, Share
+from resources.sharing import SHARED_TYPES, Share
 from engine.services import DOWN, FAILED, UP, log_file, status, want
 from features.sharing.address import Claim, own_address, relied_on, this_machine
 from features.sharing.tunnel import ADDRESS_REFUSED, DEFAULT_SERVER, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, last_lines, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
@@ -24,8 +23,8 @@ from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.views import VIEWS
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
-from engine.wording import plural
-from features.trigger import DAY
+from resources.text import plural
+from declaring.trigger import DAY
 from controllers.marks import action
 
 NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
@@ -392,5 +391,4 @@ class Shares(ShareVisits, SharePages, Controller):
         self.update(n, views=int(self.load(n).views) + count + 1)
 
 
-resources_module.register(Share)
 types_module.register(Shares)

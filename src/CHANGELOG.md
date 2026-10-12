@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.0 — Every part of the journal says what it will do, and your voice stands in the room
+
+<!-- new-feature {"id": "expects-declared", "title": "Every part of the journal says what it will do", "text": "Until now a feature's behaviour was written down in its tests, where only the suite could read it. Now each part of the journal declares what it expects to happen - this event arrives, that row is written, that line is said - beside the code that does it. A run plays every one of those promises against the real engine, and nothing new can be added without one. Where the journal develops itself it also watches those promises as they really run, and says so when something that was expected did not happen.", "button": "Show me", "opens": "settings", "note": "Settings, Developer error reports.", "art": "expects-declared.webp"} -->
+
+- Each registration carries its own expectations: the world it is given, and what must follow. A generated run plays all of them through the engine itself rather than through a copy of it, so a promise that stops being true fails by name - the feature, the registration and the promise, not a line number.
+- A registration that owes expectations and brings none does not boot. The journal refuses to start rather than carry a part nobody has said anything about.
+- Every event the journal knows has one place: a catalogue, a module per type, each marked as something that happened or something being asked. Putting them together showed moments that were declared twice under two names, and events declared by features that do not own them.
+- Where the journal develops itself, a promise is watched as it really runs, off the path of the thing it watches, and one that was not kept is said once.
+
+<!-- new-feature {"id": "figure-in-3d", "title": "Your voice stands in the room", "text": "The mascot is no longer a flat drawing that waits on the chat box. It is the voice you chose, in three dimensions, on screen for the whole session, and what it does is what the agent is really doing - reading, searching, committing, waiting on you. It walks the edges of the panes you have open and hops between them, and when something waits for you behind a tab you cannot see, it goes and stands on that tab and points at it until you look.", "button": "Show me", "opens": "settings", "note": "Settings, Mascot.", "art": "figure-in-3d.webp"} -->
+
+- The figure is the voice you picked, built in three dimensions, and only that one voice is ever fetched. Each voice is packed alone under the hash of its own contents and kept in the browser's cache, so a voice is downloaded once and a changed voice is never served stale.
+- What the figure does is read from the same source the status bar reads, so it cannot show the agent searching while the agent commits. Its surprises are attached to states that are truly happening and never to a timer.
+- It points at what you cannot see. A question waiting behind a tab that is not open sends the figure to that tab to stand on it and point; what waits on you outranks what merely happens, and it stops pointing the moment you open the tab, because being pointed at after you have arrived is nagging.
+- Each voice arrives and leaves in its own manner: the butler sprints in with his plate jiggling as he plants, the homie climbs up from behind the text area and jumps down off it, the squire charges in with his shield raised.
+
 ## 2.271.2 — A Codex session no longer asks to take the environment from itself
 
 - A conversation and the terminal whose process started it are one agent. Codex runs its conversation in a child of the process the journal launched and names that session after its rollout file, while the journal said two names are one agent only when they share a process. They do not, so the conversation read as a second session arriving in an occupied environment: a numbered environment of its own, a question only a person can answer, and on taking over, the agent unbound itself from the environment it was launched for - after which whatever launched it started it again. That is the agent that kept spawning new sessions and took the screen every few seconds.

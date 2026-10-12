@@ -54,6 +54,17 @@ describe("the waiting word and its line", () => {
         expect(STATE_WORDS.compacting).toBe("Compacting");
     });
 
+    test("a run in flight is a run, not something the agent waits on", () => {
+        const withRun = {data: {status: "idle", monitor_rows: [{task: "the docker build", running: true, at: NOW - 60}]}};
+        expect(wordOf(stateOf(withRun, []))).toBe("Running");
+        expect(lineOf(withRun, [])).toBe("the docker build in the background");
+        expect(waitingOn(withRun, [], [], NOW)).toBeNull();
+
+        const alsoWaiting = {...withRun};
+        expect(wordOf(stateOf(alsoWaiting, [work()]))).toBe("Waiting");
+        expect(waitingOn(alsoWaiting, [work()], [], NOW).text).toBe("the test suite");
+    });
+
     test("an idle agent with nothing to wait on is ready, never waiting", () => {
         expect(lineOf(agent(), [], false)).toBe("ready for your next message");
         expect(lineOf(agent(), [], true)).toBe("ready for the next to-do");

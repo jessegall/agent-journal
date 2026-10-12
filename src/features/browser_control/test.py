@@ -1,6 +1,6 @@
 import features
 from commands.http import dispatch
-from features.browser_control.controller import Asks
+from controllers.browser_control import Asks
 from resources.base import AGENT
 from tests.conftest import fresh, refused
 

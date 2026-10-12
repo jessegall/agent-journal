@@ -33,10 +33,16 @@ export const mascotOf = computed(() => {
     const all = animations.value[row.n] || [];
     const sheet = (animation) => ({url: urlOf(row.n, animation), edit: animation.edit, path: animation.path});
     const blink = all.find(isBlink);
-    return {voice: voiceOfArt(row.data.art), blink: blink ? sheet(blink) : null, acts: all.filter(isAct).map(sheet), schedule: scheduleOf(row.n), place: placedAt(placeOf(row.data.art), scheduleOf(row.n).place)};
+    return {
+        voice: voiceOfArt(row.data.art),
+        blink: blink ? sheet(blink) : null,
+        acts: all.filter(isAct).map(sheet),
+        schedule: scheduleOf(row.n),
+        place: placedAt(placeOf(row.data.art), scheduleOf(row.n).place),
+    };
 });
 
-export const calls =(row) => callings.value[row.data.calling] || row.data.address || "";
+export const calls = (row) => callings.value[row.data.calling] || row.data.address || "";
 
 export const sampleOf = (row) => samples.value[row.n] ?? row.data.sample;
 
@@ -51,8 +57,22 @@ export function loadProfiles() {
     return loading;
 }
 
+// how long to wait before trying the profiles again after a failed load, doubling up to the last; a server restart is normal here
+const RETRY_MS = [1000, 2000, 4000, 8000, 15000, 30000];
+
+// Loads the profiles and, when the load fails, tries again until it succeeds, so the voice's figure comes back after a restart
+export function loadProfilesUntilLoaded(tries = 0) {
+    return loadProfiles().catch(() => setTimeout(() => loadProfilesUntilLoaded(tries + 1), RETRY_MS[Math.min(tries, RETRY_MS.length - 1)]));
+}
+
 async function fetchProfiles() {
-    const [rows, names, lines, styles] = await Promise.all([api.profiles(), api.profileCallings(), api.profileSamples(), api.profileNamings(), loadAnimations()]);
+    const [rows, names, lines, styles] = await Promise.all([
+        api.profiles(),
+        api.profileCallings(),
+        api.profileSamples(),
+        api.profileNamings(),
+        loadAnimations(),
+    ]);
     profiles.value = rows.filter((row) => !row.deleted);
     profilesLoaded.value = true;
     callings.value = names;

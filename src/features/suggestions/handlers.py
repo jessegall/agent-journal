@@ -1,24 +1,11 @@
-from dataclasses import dataclass
-from typing import ClassVar
 
-from engine.events.resources import ResourceEvent
-from features.parts import Context, Handler
-from features.suggestions.controller import Decision
-from features.suggestions.controller import Suggestions
-from controllers.types import Agents, Todos
+from framework.parts import Context, Handler
+from controllers.suggestions import Decision
+from controllers.types import Agents, Suggestions, Todos
 from resources.base import SYSTEM, USER
+from events.suggestions import SuggestionCompleted, SuggestionReopened
 
 SAID = {Decision.ACCEPT: "You said yes to suggestion", Decision.ADJUST: "You changed suggestion", Decision.DECLINE: "You said no to suggestion"}
-
-
-@dataclass(frozen=True)
-class SuggestionDecided(ResourceEvent):
-    on: ClassVar[str] = "suggestion.completed"
-
-
-@dataclass(frozen=True)
-class SuggestionReopened(ResourceEvent):
-    on: ClassVar[str] = "suggestion.reopened"
 
 
 def mark_key(n: int) -> str:
@@ -26,7 +13,7 @@ def mark_key(n: int) -> str:
 
 
 class FileDecidedSuggestion(Handler):
-    def handle(self, context: Context, event: SuggestionDecided) -> None:
+    def handle(self, context: Context, event: SuggestionCompleted) -> None:
         s = context.journal.get(Suggestions).load(event.n)
         decision = Decision(s.decision)
         made = self.filed(context, s, decision) if decision.files_todo() else None

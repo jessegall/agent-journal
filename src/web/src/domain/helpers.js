@@ -1,4 +1,3 @@
-import {workMode} from "../composables/settings.js";
 import {providerName} from "./agents.js";
 import {ORCHESTRATOR} from "./modes.js";
 export const helperState = (row) => row.state || (row.completed ? "finished" : row.data?.report ? "reported" : "running");
@@ -17,7 +16,8 @@ export const HELPER_WORDS = {
 
 const ORCHESTRATED_WORDS = {...HELPER_WORDS, needs: "Waits for answer"};
 
-export const helperWords = (mode = workMode.value) => (mode === ORCHESTRATOR ? ORCHESTRATED_WORDS : HELPER_WORDS);
+// the words a helper's state is shown by in `mode`, the agent's work mode
+export const helperWords = (mode) => (mode === ORCHESTRATOR ? ORCHESTRATED_WORDS : HELPER_WORDS);
 export const helperWord = (state, mode) => helperWords(mode)[state];
 
 export const helperAsking = (row, environments = []) => {
@@ -25,7 +25,7 @@ export const helperAsking = (row, environments = []) => {
     return attention?.kind === "question" ? attention.text : "";
 };
 
-export const helperTag = (row, mode = workMode.value) => {
+export const helperTag = (row, mode) => {
     const state = row.asking ? "needs" : helperState(row);
     const word = row.asking && mode !== ORCHESTRATOR ? "Asks a question" : helperWord(state, mode);
     return {state, word};
@@ -76,7 +76,17 @@ export const helperName = (row) => row.data?.name || `Helper ${row.n}`;
 export const helperEnvironment = (row) => row.data?.environment;
 export const helperReport = (row) => row.data?.report || "";
 
-const SECTION_OF = {needs: "working", working: "working", running: "working", idle: "waiting", reported: "waiting", stopped: "closed", ended: "closed", refused: "closed", finished: "retired"};
+const SECTION_OF = {
+    needs: "working",
+    working: "working",
+    running: "working",
+    idle: "waiting",
+    reported: "waiting",
+    stopped: "closed",
+    ended: "closed",
+    refused: "closed",
+    finished: "retired",
+};
 
 export function helpersBySection(rows) {
     const ordered = [...rows].sort((a, b) => stateRank(helperState(a)) - stateRank(helperState(b)) || stateAt(b) - stateAt(a));
@@ -106,7 +116,10 @@ export const helperHolding = (todo, helpers) => helpers.find((row) => `helper:${
 const ASSIGNED_HELPER = /^helper:(\d+)$/;
 
 export function holdingHelpers(todos) {
-    const numbers = todos.map((todo) => String(todo.data?.assigned || "").match(ASSIGNED_HELPER)).filter(Boolean).map((found) => Number(found[1]));
+    const numbers = todos
+        .map((todo) => String(todo.data?.assigned || "").match(ASSIGNED_HELPER))
+        .filter(Boolean)
+        .map((found) => Number(found[1]));
     return [...new Set(numbers)];
 }
 

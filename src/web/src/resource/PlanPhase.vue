@@ -6,6 +6,7 @@ import HolderTag from "../kit/HolderTag.vue";
 import PlanRowLine from "./PlanRowLine.vue";
 import SkeletonLine from "../kit/SkeletonLine.vue";
 import {FINISHED_STATES, grouped, helperName, helperState, helperTag, helpersHolding, holdingRuns} from "../domain/helpers.js";
+import {workMode} from "../composables/settings.js";
 import {peek, peekThere} from "../route.js";
 
 const props = defineProps({
@@ -66,7 +67,7 @@ const HOLDER_BARS = [{width: "64px", height: 14}];
                         <SkeletonLine class="holders-loading" :bars="HOLDER_BARS" aria-hidden="true" />
                     </template>
                     <template v-for="h in holders" :key="h.n">
-                        <HolderTag :name="helperName(h)" :state="helperTag(h).state" :word="helperTag(h).word" :closed="closedHolder(h)" @open="emit('inspect', h)" />
+                        <HolderTag :name="helperName(h)" :state="helperTag(h, workMode).state" :word="helperTag(h, workMode).word" :closed="closedHolder(h)" @open="emit('inspect', h)" />
                     </template>
                 </div>
             </template>
@@ -85,8 +86,8 @@ const HOLDER_BARS = [{width: "64px", height: 14}];
                         <div class="held-tag">
                             <HolderTag
                                 :name="helperName(run.holder)"
-                                :state="helperTag(run.holder).state"
-                                :word="helperTag(run.holder).word"
+                                :state="helperTag(run.holder, workMode).state"
+                                :word="helperTag(run.holder, workMode).word"
                                 :closed="closedHolder(run.holder)"
                                 @open="emit('inspect', run.holder)"
                             />
@@ -101,8 +102,8 @@ const HOLDER_BARS = [{width: "64px", height: 14}];
                             <div class="held-tag">
                                 <HolderTag
                                     :name="helperName(run.holder)"
-                                    :state="helperTag(run.holder).state"
-                                    :word="helperTag(run.holder).word"
+                                    :state="helperTag(run.holder, workMode).state"
+                                    :word="helperTag(run.holder, workMode).word"
                                     :closed="closedHolder(run.holder)"
                                     @open="emit('inspect', run.holder)"
                                 />

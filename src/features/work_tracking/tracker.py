@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from controllers.types import Agents, Works
-from engine.events.engine import FileEdited
+from events.files import FileEdited
 from engine.files import KIND, line_counts
 from engine.git import commits_since
 from engine.command_runs import Delta, counted_runs, current_run

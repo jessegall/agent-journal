@@ -1,7 +1,7 @@
 import time
 
-from engine.events.agents import TurnStopped
-from features.parts import AgentContext, Handler
+from events.agents import TurnStopped
+from framework.parts import AgentContext, Handler
 from features.update_reports.gather import UPDATE
 from resources.base import USER
 from controllers.types import Reports

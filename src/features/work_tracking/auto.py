@@ -19,7 +19,7 @@ def chosen_or_steered(chosen: bool, record, key: str) -> bool:
 
 
 def automatic(record) -> bool:
-    from features import FEATURES
+    from framework.loaded import FEATURES
     return "work_tracking" in FEATURES and bool(FEATURES["work_tracking"].on(record, "auto"))
 
 

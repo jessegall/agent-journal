@@ -1,14 +1,12 @@
 import re
 import time
-from dataclasses import asdict, dataclass
-from typing import ClassVar
+from dataclasses import asdict
 
 from controllers.types import CONTROLLERS, Plugins
-from engine.events.engine import ClockTicked
-from engine.events.resources import ResourceEvent
+from events.agents import ClockTicked
 from engine.services import DOWN, want
-from features.parts import ActionInterceptor, Canceler, Context, Handler, TextFormatter, ToolInterceptor
-from engine.gates import Runs
+from framework.parts import ActionInterceptor, Canceler, Context, Handler, TextFormatter, ToolInterceptor
+from declaring.holds import Runs
 from engine.wording import fill
 from features.plugins.lifecycle import changed_on_disk, clear, reread
 from features.plugins.declared import called, declared, named
@@ -20,15 +18,11 @@ from features.plugins.run import PluginReply, call
 from features.plugins.skills import withdrawn
 from providers import command_effects
 from resources.base import OWNER, PLUGIN, SYSTEM
-from engine.reach import Reach
+from declaring.reach import Reach
+from events.plugins import PluginCompleted
 
 ALTOGETHER = 5.0
 HOOK_WAIT = 0.2
-
-
-@dataclass(frozen=True)
-class PluginRemoved(ResourceEvent):
-    on: ClassVar[str] = "plugin.completed"
 
 
 KEPT_RULES: dict[str, tuple] = {}
@@ -119,7 +113,7 @@ def forgotten(record, name: str) -> None:
 
 
 class ClearRemovedPlugin(Handler):
-    def handle(self, context: Context, event: PluginRemoved) -> None:
+    def handle(self, context: Context, event: PluginCompleted) -> None:
         rows = context.journal.get(Plugins)
         row = rows.load(event.n)
         name = called(row)

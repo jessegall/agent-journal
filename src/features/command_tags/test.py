@@ -1,11 +1,17 @@
 import pytest
 import json
 from datetime import datetime, timezone
+from pathlib import Path
+from types import SimpleNamespace
+from typing import NamedTuple
 
 
 from controllers.types import Comments, Messages, Nudges
-from resources.base import AGENT, SYSTEM, USER
-from providers.payload import Chunk
+from engine.record import Record
+from runner.engine import Engine
+from resources.base import AGENT, Refused, SYSTEM, USER
+from providers.drivers import Driver
+from payload import Chunk
 from runner.chat_mirror import displayed
 from engine.sessions import Sessions
 from features.command_tags.reading import visible
@@ -31,13 +37,26 @@ def asked_and_read(record, text, **more):
     Messages(record, actor=AGENT).read(message.n)
     return message
 
-def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
+class Watched(NamedTuple):
+    record: Record
+    transcript: Path
+    rows: list
+    now: str
+    engine: Engine
+
+
+def watched_from_the_first_prompt(tmp_path) -> Watched:
+    """A record whose agent writes into a transcript an engine watches, with the transcript's rows and the time they carry."""
     transcript = tmp_path / "s.jsonl"
     now = datetime.now(timezone.utc).isoformat()
     rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
-    transcript.write_text(json.dumps(rows[0]) + "\n")
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     record = fresh()
-    engine = watching(record, transcript)
+    return Watched(record, transcript, rows, now, watching(record, transcript))
+
+
+def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
+    record, transcript, rows, now, engine = watched_from_the_first_prompt(tmp_path)
     asked = asked_and_read(record, "are you there?")
     chat = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
 
@@ -120,7 +139,8 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
         "a reply names the message it answers and carries only what the user typed: its own words quoted above are named, never read back"
     assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"
     Messages(record, actor=AGENT).complete(asked.n, how="answered")
-    assert counted({("message", "created"): {asked.n: None}}, record) == [], "a closed message is no longer announced as new"
+    waiting = SimpleNamespace(record=record, groups={("message", "created"): {asked.n: None}})
+    assert counted(Driver.still_open(waiting), record) == [], "a closed message is no longer announced as new"
     record = fresh()
     Agents(record, actor=AGENT).by_session("claude-1")
     Messages(record, actor=AGENT).read(asked_and_read(record, "how is it going?").n)
@@ -181,12 +201,7 @@ def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transc
     from runner.hooks import handle
     from providers import PROVIDERS
     from resources.base import SYSTEM
-    record = fresh()
-    transcript = tmp_path / "s.jsonl"
-    now = datetime.now(timezone.utc).isoformat()
-    rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
-    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-    engine = watching(record, transcript)
+    record, transcript, rows, now, engine = watched_from_the_first_prompt(tmp_path)
     message = asked_and_read(record, "done yet?")
     stop = {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": f"[!reply:{message.n}] done"}
     for _ in range(2):
@@ -257,6 +272,29 @@ def test_one_reply_answers_several_messages():
     made = Comments(record, actor="system").all()
     assert len(made) == 1 and {first.ref, second.ref} <= set(made[0].refs), "one reply answers both messages"
     assert "> Remove the plan." in made[0].brief and "> And write the document." in made[0].brief, "and quotes both"
+
+    from controllers.types import Docs, Messages, Todos
+    from features.command_tags.reading import named
+    from resources.base import AGENT, Refused, SYSTEM
+
+    assert named(", todos=(7, 8)") == {"todos": "7,8"} and named(', about=("doc:1")') == {"about": "doc:1"}, \
+        "a list a tag carries is read whether its items are quoted or bare; reading only the quoted ones answered nothing at all"
+
+    asked = asked_and_read(record, "Two things please.", brief="Two things please.")
+    one = Todos(record, actor=AGENT).create("The first thing")
+    two = Todos(record, actor=AGENT).create("The second thing")
+    doc = Docs(record, actor=AGENT).create("What it is about")
+    chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"),
+              f'[!reply:{asked.n}, todos=({one.n}, {two.n}), about=("{doc.ref}")]\nFiled both, and the document says why.')
+
+    answered = Messages(record, actor=SYSTEM).peek(asked.n)
+    assert {one.ref, two.ref, doc.ref} <= set(answered.refs), \
+        f"the reply links what it is about, in the same act as the answer: {answered.refs}"
+
+    afterwards = asked_and_read(record, "One more.", brief="One more.")
+    with pytest.raises(Refused) as refusal:
+        Messages(record, actor=AGENT).reply(str(afterwards.n), "Answer.", todos="9999")
+    assert "there is no todo 9999" in str(refusal.value), "a number naming no row is refused, so a wrong one cannot pass silently"
 
 
 def test_a_command_a_tag_stands_for_shows_its_tag_once_in_a_while():

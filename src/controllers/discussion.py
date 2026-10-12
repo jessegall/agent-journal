@@ -1,5 +1,5 @@
 import time
-from engine.extension import Extension
+from declaring.extension import Extension
 from resources.base import Refused, Resource, titled
 from controllers.marks import action
 

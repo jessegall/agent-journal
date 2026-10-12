@@ -8,15 +8,15 @@ from pathlib import Path
 
 from resources.fields import Loaded
 from engine.keeper import BUILD, ServiceSpec, ServiceState, gone, teardown
-from engine.stored import read_json, write_json
+from engine.stored import read_json, read_promised_json, write_json
 from engine.locks import claim
 from engine.package import ARCHIVE, entry
 from engine.ports import free, reserve
 from engine.runtime import env, folder
 from engine.sessions import alive
 from typing import TypedDict
-from engine.extension import Extension
-from engine.memo import Memo
+from declaring.extension import Extension
+from resources.memo import Memo
 from engine.record import Record
 
 PORTS = range(8440, 8500)
@@ -75,7 +75,7 @@ class Wanted(Loaded):
 
     @classmethod
     def read(cls, root: Path, sid: str) -> "Wanted":
-        return read_json(want_file(root, sid), cls.from_json, cls.from_json({}))
+        return read_promised_json(want_file(root, sid), cls.from_json, cls.from_json({}))
 
 
 def beat_file(root: Path) -> Path:

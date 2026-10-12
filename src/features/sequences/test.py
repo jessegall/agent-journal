@@ -81,7 +81,7 @@ def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refuse
     deploying = sequences.create("After a deploy", brief="check it")
     sequences.section(deploying.n, "Check the site", "open it")
     sequences.section(deploying.n, "Watch the logs", "tail them")
-    assert "is no moment" in refused(lambda: sequences.set(deploying.n, "starts_on", "trigger.fired")), "an unknown start is refused in words"
+    assert "is no moment" in refused(lambda: sequences.set(deploying.n, "starts_on", "triggering.fired")), "an unknown start is refused in words"
     sequences.set(deploying.n, "starts_on", trigger.ref)
     call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "make deploy"}, "hook_event_name": "PreToolUse"}
     handle(PROVIDERS["claude"](), record.root, record.env, call)
@@ -244,17 +244,18 @@ def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
     assert "handed you step 1" in held(record, session), "a handed step holds the agent's writes until it answers it"
     sequences.follow(made.n)
     assert "handed you step" not in held(record, session), "taking the step up releases them, so the step's own work can be done"
-    from features import trigger
+    from declaring import trigger
+    from engine import triggering
     from features.sequences.details import SequencesDetails
     agent = Agents(record, actor="system").by_session("claude-1")
-    trigger.write(record, agent, SequencesDetails.name, edits=99)
+    triggering.write(record, agent, SequencesDetails.name, edits=99)
     report(record, "working", "PostToolUse", tool="Edit", wrote=True)
     assert "has stood on step 1" in held(record, session), \
         "a step taken up and never moved on holds the writes once they mount up, since a sequence says everything else waits until it is finished"
     sequences.next(made.n)
     assert "has stood on step" not in held(record, session), "and moving the sequence on releases them and starts the count again"
     sequences.follow(made.n)
-    assert trigger.last(record, session, SequencesDetails.name).edits == 0, "the writes a step is allowed are its own, not the ones before it"
+    assert triggering.last(record, session, SequencesDetails.name).edits == 0, "the writes a step is allowed are its own, not the ones before it"
     sequences.next(made.n)
     sequences.run(made.n)
     sequences.follow(made.n)
@@ -272,7 +273,8 @@ def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
         tick(record)
     assert "handed you step" not in held(record, session), "a hold on a step that is no longer in hand is released by the clock, never left to refuse every write"
     assert "handed you step" not in held(record, session), "an abandoned run holds nothing"
-    from engine.gates import Hold, hold
+    from declaring.holds import Hold
+    from engine.gates import hold
     CONTROLLERS["sequence"](record, actor=SYSTEM).abandon(again.n, why="it no longer applies")
     hold(record, session, "sequences.step", Hold("sequence 17, unsticking, handed you step 1 - take it up with journal sequence follow 17 --about ticket:29 before any other write"))
     assert "handed you step" not in held(record, session), "a hold left behind for a sequence that is no longer running holds no write: the writes go ahead and the hold is taken away"
@@ -287,7 +289,7 @@ def test_a_step_reaches_an_agent_whose_work_waits_on_something():
     works.create("Ship it")
     works.action("await")("the CI run on main")
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
-    from features.recital import mentioned
+    from framework.recital import mentioned
     from features.sequences.shipped import WRITING_AN_UPDATE
     assert [mentioned(WRITING_AN_UPDATE.words, text) for text in ("Can you catch me up?", "Kun je me even bijpraten?", "Geef me een update", "Ga door")] == \
         [True, True, True, False], "asking for an update starts it in Dutch as well as English"

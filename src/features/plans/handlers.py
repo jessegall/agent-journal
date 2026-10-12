@@ -1,24 +1,22 @@
-from dataclasses import dataclass
-from typing import ClassVar
+import time
 
 from controllers.types import Todos, Works
-from engine.events.engine import ClockTicked
-from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted
+from events.agents import ClockTicked
+from events.resources import AnyEvent, RowReopened
+from events.todos import TodoCompleted, TodoUpdated
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING, Plans, delegate_plans_holding
-from features.sending import Sent
-from features.trigger import MINUTE
-from features.plans.resource import PHASE, PHASE_FIELDS
+from framework.sending import Nudge, Sent, send
+from declaring.trigger import MINUTE
+from resources.plans import PHASE, PHASE_FIELDS
 from features.work_tracking.auto import passes_checkpoints
-from features.work_tracking.next import carried_on, named_rows, ready, waiting_rows
-from features.parts import AgentContext, Context, Handler
+from features.work_tracking.next import carried_on, free, named_rows, ready, waiting_rows
+from framework.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SYSTEM, USER
+from events.plans import PlanChanged
+from events.reports import ReportLinked
 
+STILL_TIMES = 3
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
-
-
-@dataclass(frozen=True)
-class TodoUpdated(ResourceEvent):
-    on: ClassVar[str] = "todo.updated"
 
 
 class DelegatePlansOfHandedRows(Handler):
@@ -26,13 +24,6 @@ class DelegatePlansOfHandedRows(Handler):
         row = Todos(context.record, actor=SYSTEM).load(event.n)
         if row.assigned.startswith("helper:") and not row.completed:
             delegate_plans_holding(context.record, row)
-
-
-@dataclass(frozen=True)
-class PlanChanged(ResourceEvent):
-    on: ClassVar[str] = "plan"
-    status: str = ""
-    parked_for: int = 0
 
 
 class StartBuilding(Handler):
@@ -105,11 +96,6 @@ class AdvancePlans(Handler):
             Plans(context.record, actor=SYSTEM)._catch_up()
 
 
-@dataclass(frozen=True)
-class RowReopened(ResourceEvent):
-    on: ClassVar[str] = "reopened"
-
-
 class ReopenPlansWithTheirRows(Handler):
     def handle(self, context: Context, event: RowReopened) -> None:
         if event.type not in PHASE_FIELDS:
@@ -158,12 +144,6 @@ def blocked_plans(context, agent) -> list[Sent]:
     return found
 
 
-@dataclass(frozen=True)
-class ReportLinked(ResourceEvent):
-    on: ClassVar[str] = "report.linked"
-    to: str = ""
-
-
 class EndReviewWithItsReport(Handler):
     def handle(self, context: Context, event: ReportLinked) -> None:
         plans = context.journal.acting(SYSTEM).get(Plans)
@@ -174,3 +154,28 @@ class EndReviewWithItsReport(Handler):
         speaking = context.to_primary()
         if speaking:
             speaking.agent.say("reviewed", n=plan.n, title=plan.title, report=event.n)
+
+
+def standing_still(context, agent) -> list[Sent]:
+    """A running plan whose current phase has open rows that nothing holds, in a while, and no work in hand on them: the plan stands still and nobody has stopped it, the shape of rows built and left open."""
+    quiet = time.time() - float(context.feature.cadence(context.record, "still").every) * MINUTE
+    plans, taken = Plans(context.record, actor=SYSTEM), {int(w.todo) for w in carried_on(context.record)}
+    found = []
+    for plan in plans._active():
+        phase = plan.current_phase
+        rows = [row for row in plans._members(phase) if not row.completed] if phase else []
+        if rows and all(row.type == "todo" and free(context.record, row) and row.n not in taken and row.updated < quiet for row in rows):
+            found.append(Sent(f"{plan.n}:{plan.current}", {"n": plan.n, "title": plan.title, "phase": phase[PHASE.title],
+                                                           "rows": ", ".join(str(row.n) for row in rows), "minutes": int((time.time() - max(row.updated for row in rows)) // MINUTE)}))
+    return found
+
+
+STANDING_STILL = Nudge("standing still", behaviour="still", about=standing_still, most=STILL_TIMES,
+                       guarantee="When a running plan's current phase has open rows that nothing blocks and nobody has touched, the agent is told to close them or say what they wait on.")
+
+
+class NameStandingPlans(Handler):
+    behaviour = "still"
+
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+        send(context, (STANDING_STILL,))

@@ -1,10 +1,10 @@
 import re
 
 from features import discover
-from features.base import REGISTRY
+from framework.base import REGISTRY
 from features.sequences.controller import Sequences
 from features.sequences.shipping import ShippedSequence
-from features.triggers.controller import Triggers
+from controllers.types import Triggers
 from resources.base import AGENT, SECTION, SYSTEM
 
 TITLED = re.compile(r"^sequence:\{(.+)\}$")
@@ -184,8 +184,28 @@ CHECKING_THE_INSTRUCTION_FILES = ShippedSequence(
                              "Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 )
+TAKING_A_TICKETS_WORK = ShippedSequence(
+    title="Taking a ticket's work",
+    brief="A ticket has finished its work and waits on the agent orchestrating its board. This is what that agent does with it, "
+          "in order, so a finished ticket is a step in hand rather than something to remember.",
+    starts_on="ticket.finished",
+    steps=[
+        ("Read what it did", "journal ticket show <n> gives the card it was given and what it says it did; its branch holds the commits. "
+                             "Read the diff against each done-when clause of the card, not against your memory of what you asked for. "
+                             "Then journal sequence next <this sequence> --about ticket:<n>."),
+        ("Run its tests, one at a time", "A ticket's agent never runs the suite, so the tests it wrote are yours to run, and only those. "
+                                         "Run each one named in its report separately, so a failure names itself. When one fails, send it "
+                                         "back with journal ticket send_back <n> \"<what failed>\" and stop here until it reports again. "
+                                         "Then journal sequence next <this sequence> --about ticket:<n>."),
+        ("Merge it, or send it back", "journal ticket merge <n> lands its branch, closes it in its board's done stage and stops its agent. "
+                                      "If the diff does not do what the card asked, send it back with what is missing rather than mending it "
+                                      "yourself: the ticket's agent has the context. Then journal sequence next <this sequence> --about ticket:<n>."),
+        ("Say what landed", "Tell the user in one line what the ticket did and that it is merged. A finished ticket nobody mentions is a "
+                            "ticket they go looking for. Finish with journal sequence next <this sequence> --about ticket:<n>."),
+    ],
+)
 SEQUENCES = (FILING_A_DUMP, BUILDING_A_PLAN, WRITING_AN_UPDATE, CHECKING_THE_INSTRUCTION_FILES, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT,
-             FILING_A_WRITTEN_DOCUMENT, WRITING_A_REPORT)
+             FILING_A_WRITTEN_DOCUMENT, WRITING_A_REPORT, TAKING_A_TICKETS_WORK)
 
 SHIPPED_FIELDS = ("brief", "starts_on", "started_by", "only_when_idle", "talks_in", "lasting", "unless", "dispatch", "finishes_when", "removes_on_abandon")
 

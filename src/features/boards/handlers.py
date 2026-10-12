@@ -1,23 +1,15 @@
 import time
-from dataclasses import dataclass, field
-from typing import ClassVar
 
-from engine.events.engine import ClockTicked
-from engine.events.resources import ResourceEvent
+from events.agents import ClockTicked
 from features.boards.controller import Boards
-from features.boards.resource import DRAFTING_PHASE
-from features.sending import Sent
-from features.parts import AgentContext, Context, Handler
+from resources.boards import DRAFTING_PHASE
+from framework.sending import Sent
+from framework.parts import AgentContext, Context, Handler
 from resources.base import SYSTEM
 from features.boards.controller import Boards
+from events.boards import BoardChanged
 
 ADDED = "added"
-
-
-@dataclass(frozen=True)
-class BoardChanged(ResourceEvent):
-    on: ClassVar[str] = "board"
-    fields: list = field(default_factory=list)
 
 
 class OfferToPlaceAddedCards(Handler):

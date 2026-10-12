@@ -129,7 +129,7 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
         log(record.root, "../outside")
     ClearLog().run(None, Plugins(record, actor=SYSTEM), guardian.n)
     assert not log(record.root, "guardian").exists(), "and the log can be emptied"
-    from features.format import formatted
+    from framework.format import formatted
     installed(record, "spelling", "true\n", chat=[{"find": "colour", "as": "color"}])
     assert formatted("the colour of it", record) == "the color of it", "a plugin's chat rule rewrites what the chat shows"
     served = alone("served")
@@ -289,7 +289,6 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
     held.close()
 
 
-
 def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.plugins.commands import Configure
     from features.plugins.declared import settings_of
@@ -312,7 +311,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     Path(queued).write_text('todo create "From the event"\ntodo create "Somewhere else" --env ' + record.env + "\n")
     done, refusals = drain(record.root, "linter", record.env)
     assert (done, [(r.env, "names no --env" in r.why) for r in refusals]) == (2, [("other", True)]), "the drain hands back what it refused, and why"
-    from features import FEATURES
+    from framework.loaded import FEATURES
     from features.plugins.host import Host
     from controllers.types import Notices
     host = Host(record.root, FEATURES["plugins"].journal)
@@ -366,7 +365,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     stamp = plugins.load(typed.n).updated
     apply(record, None, "typed", "", {"settings": {"level": "high"}})
     assert plugins.load(typed.n).updated == stamp, "a setting filled in with the value it has changes nothing"
-    from features import FEATURES
+    from framework.loaded import FEATURES
     from engine import bus
     apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "sin-found", "brief": "before any agent"}, "say": "before any agent"})
     assert Agents(record, actor=SYSTEM).all() == [], "with no agent to tell, a plugin's card and words wait for nobody"
@@ -381,7 +380,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     card = Agents(record, actor=SYSTEM).primary().data["cards"][-1]
     assert (card["label"], card["tone"], card["icon"], card["detail"]) == ("Sin found", "warn", "warn", "deep-nesting at src/A.php:12"), \
         f"an event whose declaration carries a card puts it in the chat, looking as the manifest says: {card}"
-    from features.format import VIEWER, shaped
+    from framework.format import VIEWER, shaped
     viewed = shaped(Agents(record, actor=SYSTEM).primary(), record, VIEWER)["data"]["cards"][-1]["detail"]
     assert "[[file src/A.php" in viewed, f"its words pass the formatters like any brief, so a file is a chip: {viewed}"
     from features.plugins.commands import Raise
@@ -518,7 +517,7 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten(monkeypatch):
     clock[0] += 31.0
     first.tick()
     assert len(asked) == 3 and Beat.read(record.root).token == first.token, "and manages again when the one that took over has gone quiet in its turn"
-    from features import FEATURES
+    from framework.loaded import FEATURES
     from features.plugins.services import notice_stopped
     from controllers.types import Notices
     installed(record, "server", services={"web": {"run": "serve {port} {dir}", "port": "auto", "env": {"WHERE": "{dir}"}}},
@@ -771,7 +770,7 @@ def test_stopping_a_service_stops_every_process_it_forked():
 
 def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     from features.plugins.skills import published, withdrawn
-    from providers.base import LIBRARY
+    from payload import LIBRARY
     record = alone()
     project = record.root.parent
     shipped = folder(record.root, "teacher") / "out"
@@ -853,7 +852,7 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it(monkeypatch):
     assert (wanted(record.root, "checker.web"), folder(record.root, "checker").exists()) == (DOWN, False), \
         "its service is asked to stop and its folder is gone"
     from http.server import BaseHTTPRequestHandler, HTTPServer
-    from features import FEATURES
+    from framework.loaded import FEATURES
     from features.plugins.host import Host
     from controllers.types import Notices, Todos
 
@@ -952,9 +951,9 @@ def test_a_plugin_that_fits_the_project_is_suggested_and_installs_the_commit_it_
     subprocess.run(["git", "add", "Order.cs"], cwd=spread / "shop", capture_output=True, timeout=30)
     assert fitting.written_in(tracked_files(spread)) == {"C#"}, \
         "a project that is no repository itself is read through the repositories inside it, so their languages count"
-    from engine.events.engine import ClockTicked
-    from features.parts import AgentContext
-    from features.suggestions.controller import Suggestions
+    from events.agents import ClockTicked
+    from framework.parts import AgentContext
+    from controllers.types import Suggestions
     from controllers.types import Todos
     from tests.kit import project_on
     import features

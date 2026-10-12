@@ -1,9 +1,9 @@
 from controllers.types import CONTROLLERS, Agents
-from engine.events.agents import AgentReported
-from engine.events.resources import ResourceCreated
+from events.agents import AgentReported
+from events.resources import ResourceCreated
 from features.memory_checkpoints.reread import owed
-from features.sending import Sent
-from features.parts import AgentContext, Context, Handler, OnAgentUpdated
+from framework.sending import Sent
+from framework.parts import AgentContext, Context, Handler, OnAgentUpdated
 from resources.base import AGENT, SYSTEM
 from resources.types import TYPES
 

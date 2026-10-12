@@ -7,9 +7,9 @@ from typing import NamedTuple
 from controllers.features import Features
 from controllers.agents import Agents
 from controllers.types import Docs, Environments, Facts, Messages, Questions, Todos, Works
-from features.collections.controller import Collections
+from controllers.collections import Collections
 from features.plans.controller import Plans
-from features.suggestions.controller import Suggestions
+from controllers.types import Suggestions
 from features.templates.shipped import ship
 from engine import runtime
 from engine.viewer import SERVING

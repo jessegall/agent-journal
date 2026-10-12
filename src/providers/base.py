@@ -9,26 +9,13 @@ from typing import ClassVar
 from resources.fields import Loaded
 from engine.transcript import Turn
 from providers.jsonl import WholeRead, lines_after, parsed_row, tail_lines, whole_lines
-from providers.payload import AgentCall, AskCall, AskedQuestion, Asking, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, HookFacts, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
+from payload import LEGACY, MARK, JOURNAL, PERSON, journal_hook, AgentCall, AskCall, AskedQuestion, Asking, BashCall, Chunk, Dispatch, Failure, FetchCall, Hook, HookEvent, HookFacts, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from providers.transcript_cache import CACHE, RECENT_BYTES
 from resources.base import Refused
 from resources.types import IDLE
 from engine.stored import read_json, write_text
 
-LEGACY = ".journal/hook.py"
-LIBRARY = ".agents/skills"
-MARK = "[journal]"
-JOURNAL, PERSON = "journal", "person"
 KEPT_ENDED = 20
-
-
-def said_by(who: str) -> str:
-    """The mark on a line the journal types for somebody else, so the agent reading it can tell a message from a stray paste."""
-    return f"{MARK} a message from the agent in {who}, filed in your own environment as well:"
-
-
-def journal_hook(text: str) -> bool:
-    return LEGACY in text or ("/hook.sh" in text and "/.journal" in text)
 
 
 VIEWED_FOR = 120.0
@@ -181,6 +168,11 @@ class Provider(ABC):
     applies_at_once = ()
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
     dispatch_default = ""
+
+    @classmethod
+    def ask_argv(cls, prompt: str) -> tuple[str, ...]:
+        """The command that puts one question to a standalone agent on this provider and prints its answer, or none when the CLI has no such mode."""
+        return ()
 
     @classmethod
     def refusal_in(cls, output: str) -> str | None:

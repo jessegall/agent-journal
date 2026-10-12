@@ -5,9 +5,9 @@ import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from controllers.types import Agents
-from providers.base import JOURNAL, MARK, said_by
-from providers.payload import Asking
+from controllers.types import Agents, Messages
+from payload import JOURNAL, MARK, said_by
+from payload import Asking
 from engine import typist
 from resources.base import SYSTEM, Refused
 from engine.wording import counted
@@ -286,7 +286,7 @@ class Driver(ABC):
             return ""
         self.held, self.yielding = self.held + self.yielding, []
         line = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
-                else "; ".join(dict.fromkeys(self.held + counted(self.groups, self.record))))
+                else "; ".join(dict.fromkeys(self.held + counted(self.still_open(), self.record))))
         self.held, self.groups, self.sent_at = [], {}, time.time()
         self.failed = not self._deliver(line, JOURNAL)
         return "" if self.failed else line
@@ -499,6 +499,13 @@ class Driver(ABC):
 
     def _printed_tail(self) -> bytes:
         return plain(self.printed_tail(self.PROMPT_TAIL))
+
+    def still_open(self) -> dict[tuple, dict]:
+        """What is waiting to be announced, without the new messages that are closed or deleted by now."""
+        messages = Messages(self.record) if self.record is not None else None
+        return {kind: {n: given for n, given in ns.items() if not messages.rows.exists(n) or not (messages.load(n).completed or messages.load(n).deleted)}
+                if kind == ("message", "created") and messages is not None else ns
+                for kind, ns in self.groups.items()}
 
     def awaits_answer(self) -> bool:
         report = self.last_report()

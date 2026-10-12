@@ -1,6 +1,7 @@
 <script setup>
 import {planMeter} from "../domain/journals.js";
 import {computed} from "vue";
+import Folded from "../kit/Folded.vue";
 import Meter from "../kit/Meter.vue";
 import StateDot from "../kit/StateDot.vue";
 import Tile from "../kit/Tile.vue";
@@ -38,7 +39,9 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
         </template>
         <p class="aw-title">{{ entry.title }}</p>
         <template v-if="entry.says">
-            <p class="aw-says">{{ entry.says }}</p>
+            <Folded :at="60" :keep="52">
+                <p class="aw-says">{{ entry.says }}</p>
+            </Folded>
         </template>
         <template v-if="entry.plan">
             <Meter v-bind="planMeter(entry.plan)" />
@@ -227,16 +230,11 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
 }
 
 .aw-says {
-    display: -webkit-box;
     margin: 6px 0 0;
-    overflow: hidden;
     color: var(--text-3);
     font-size: 12px;
     line-height: 1.4;
     overflow-wrap: anywhere;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
 }
 
 .aw-status {
