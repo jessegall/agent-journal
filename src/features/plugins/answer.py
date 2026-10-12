@@ -7,7 +7,7 @@ from engine.gates import hold
 from resources.fields import Loaded
 from features.plugins.paths import folder
 from features.plugins.declared import Look, declared, named, settings_of, settings_choosing
-from resources.base import PLUGIN, PROJECT, RAISED, Refused, SYSTEM, check_abstract, check_title
+from resources.base import PLUGIN, RAISED, Refused, SYSTEM, check_abstract, check_title
 
 KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "raise")
 MOST = 20
@@ -59,8 +59,8 @@ def raised(record, plugin: str, session: str, asked: Posting) -> None:
     event = declared(row).event(name) if row else None
     if not event:
         raise Refused(f"{plugin} declares no event {name}")
-    record.emit("plugin", row.n, RAISED, PLUGIN, scope=PROJECT, event=f"{plugin}.{name}", title=event.shown_title, tone=event.tone, brief=asked.brief, plugin=plugin,
-                collapsed=event.collapsed)
+    Plugins(record, actor=PLUGIN).raise_moment(row.n, RAISED, event=f"{plugin}.{name}", title=event.shown_title, tone=event.tone, brief=asked.brief, plugin=plugin,
+                                               collapsed=event.collapsed)
     if event.card:
         carded(record, session, plugin, event.look(), asked)
 
