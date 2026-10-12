@@ -1,14 +1,16 @@
 from controllers.base import SAVE_REWRITES
 from declaring.registries import SECRET_CHECKS
 from events.agents import ClockTicked
+from events.answers import Allowed, Refused
+from events.asking import ToolCallAsked
 from events.secrets import PurgeDue
-from expects import WHEN, Dispatches, File, Given, Kept, Refused, Wrote, answering, at
+from expects import WHEN, Answered, Dispatches, File, Given, Wrote, answering, at
 from framework.base import Feature
 from framework.journal import Journal
 from features.secrets.announcing import updated_added
 from controllers.secrets.controller import Secrets
 from features.secrets.details import SecretsDetails
-from features.secrets.guard import RefuseSecretsFile
+from features.secrets.answering import NEVER_READ, RefuseSecretsFile
 from features.secrets.handlers import PurgeDeletedSecrets
 from features.secrets.leaks import LeakAlarm
 from features.secrets.listeners import PURGE_EVERY, SpotThePurgeHour
@@ -16,16 +18,13 @@ from features.secrets.picking import refuse_secret_that_runs_commands
 
 from controllers.secrets.values import secrets_folder
 from resources.secrets import Secret
-from payload import BashCall, ReadCall
 
 __all__ = ["Secrets"]
 
-NEVER_READ = ("The secrets file is never read by an agent: use journal secret run <name> -- <command>, "
-              "and ask the user for what is missing with journal secret request.")
 
+def asked(tool: str, input: str) -> ToolCallAsked:
+    return ToolCallAsked(tool=tool, input=input, paths=() if tool == "Bash" else (input,), session="claude-1")
 
-def shell(command: str) -> BashCall:
-    return BashCall.from_payload("Bash", {"command": command}, {})
 
 VALUES = answering({".journal/project-id": "pid", ".secrets/pid.env": 'API_KEY="abc"\n'})
 KEY = [{"name": "key", "variable": "API_KEY"}]
@@ -47,13 +46,12 @@ class SecretsFeature(Feature):
             Given(PurgeDue(), rows=[deleted(10)], files=VALUES) >> Wrote(File(".secrets/pid.env", 'API_KEY="abc"')),
         ])
         journal.agent.append_to_line("secret.updated", updated_added)
-        journal.agent.interceptor(RefuseSecretsFile(), expects=[
-            Given(shell(f"cat {secrets_folder()}/values")) >> Refused(NEVER_READ),
-            Given(shell("cat ~/.config/agent-journal/secrets/values")) >> Refused(NEVER_READ),
-            Given(ReadCall.from_payload("Read", {"file_path": ".secrets/values"}, {})) >> Refused(NEVER_READ),
-            Given(shell("journal secret run github -- gh pr list")) >> Kept(),
-            Given(ReadCall.from_payload("Read", {"file_path": "README.md"}, {})) >> Kept(),
-            Given(ReadCall.from_payload("Read", {"file_path": ".secrets/../README.md"}, {})) >> Kept(),
+        journal.events.answer(ToolCallAsked, RefuseSecretsFile(), expects=[
+            Given(asked("Bash", f"cat {secrets_folder()}/values")) >> Answered(Refused(NEVER_READ)),
+            Given(asked("Bash", "cat ~/.config/agent-journal/secrets/values")) >> Answered(Refused(NEVER_READ)),
+            Given(asked("Bash", "journal secret run github -- gh pr list")) >> Answered(Allowed()),
+            Given(asked("Read", "README.md")) >> Answered(Allowed()),
+            Given(asked("Read", ".secrets/../README.md")) >> Answered(Allowed()),
         ])
         SAVE_REWRITES.add(self, LeakAlarm())
         SECRET_CHECKS.add(self, refuse_secret_that_runs_commands)
