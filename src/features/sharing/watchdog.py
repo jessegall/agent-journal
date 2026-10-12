@@ -1,7 +1,7 @@
 import time
 
 from controllers.types import Messages
-from controllers.stored import mtime
+from resources.files import mtime
 from engine.keeper import READY, STARTING
 from engine.services import UP, log_file, status, want
 from engine.sessions import alive

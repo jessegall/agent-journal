@@ -7,11 +7,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.record import Record  # noqa: E402
 from resources.text import digest  # noqa: E402
-from providers import workspace_folders  # noqa: E402
 
 POLL = 0.5
 PRUNED = {"runtime", "attic", "node_modules", "__pycache__", ".git"}
-LEFT_OUT = {".journal", ".git", *workspace_folders().homes}
+NEVER_RECORDED = (".journal", ".git")
 
 
 def walked(base: Path, left_out: set[str]):
@@ -22,8 +21,9 @@ def walked(base: Path, left_out: set[str]):
 
 
 class Recorder:
-    def __init__(self, root: Path, folder: Path):
+    def __init__(self, root: Path, folder: Path, agent_homes: tuple[str, ...] = ()):
         self.root = root
+        self.left_out = {*NEVER_RECORDED, *agent_homes}
         self.frames = folder / "frames.jsonl"
         self.blobs = folder / "blobs"
         self.blobs.mkdir(parents=True, exist_ok=True)
@@ -60,7 +60,7 @@ class Recorder:
         now = {}
         for where, base, left_out in (("record/environments", self.root / "environments", set()),
                                       ("record/project", self.root / "project", set()),
-                                      ("files", self.root.parent, LEFT_OUT)):
+                                      ("files", self.root.parent, self.left_out)):
             for path in walked(base, left_out) if base.is_dir() else ():
                 stored = self._stored(path)
                 if stored:
@@ -85,7 +85,8 @@ class Recorder:
 
 
 def main(argv: list[str]) -> int:
-    recorder = Recorder(Path(argv[0]), Path(argv[1]))
+    """The folders a provider keeps beside a checkout come in as an argument: nothing has seated the journal's services in this process, which is its own."""
+    recorder = Recorder(Path(argv[0]), Path(argv[1]), tuple(home for home in argv[2].split(",") if home) if len(argv) > 2 else ())
     while True:
         recorder.poll()
         time.sleep(POLL)

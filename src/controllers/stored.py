@@ -9,6 +9,7 @@ from bisect import bisect_left, bisect_right, insort
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Callable, TypeVar, final
+from resources.files import mtime
 from resources.base import OWNER, PART_OF, Counter, Missing, Refused, Resource
 from resources.types import TYPES
 from engine.stored import append_text, read_json, read_promised_json, write_json, write_text
@@ -155,13 +156,6 @@ def file_stamp(path: Path) -> list[int] | None:
 
 def summed(weigh: Callable[[dict], tuple[int, ...]], width: int, rows: list[dict]) -> tuple[int, ...]:
     return tuple(sum(column) for column in zip(*map(weigh, rows))) or (0,) * width
-
-
-def mtime(path: Path) -> int:
-    try:
-        return path.stat().st_mtime_ns
-    except OSError:
-        return 0
 
 
 WATCHED_FOR = 60.0

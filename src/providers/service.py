@@ -9,6 +9,7 @@ from pathlib import Path
 from providers import DRIVERS, PROVIDERS, dispatch_model, transcript_reader, workspace_folders
 from providers.catalogue import WorkspaceFolders
 from providers.skill_homes import LINKED, link, unlink
+from providers.transcript_cache import CacheLeftovers, stale
 from providers.turns import last_text
 from providers.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, transcript_at, whole
 from serving import SERVED, Providers
@@ -34,6 +35,10 @@ class TheProviders:
 
     def offers(self, name: str):
         return PROVIDERS[name]() if name in PROVIDERS else None
+
+    def stale_cache(self, folds_for: float, scraps_for: float) -> CacheLeftovers:
+        """What may go from the cache the providers fold their transcripts into: the caller says how long each kind is kept."""
+        return stale(folds_for, scraps_for)
 
     def offers_model(self, provider: str, model: str) -> bool:
         """Whether that provider is one this journal runs and offers that model."""

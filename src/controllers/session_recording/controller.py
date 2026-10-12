@@ -13,6 +13,7 @@ from engine.sessions import alive
 from controllers.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Refused, titled
 from controllers.marks import action
+from serving import SERVED, Providers
 
 
 class Recordings(Controller):
@@ -26,7 +27,8 @@ class Recordings(Controller):
         if self._running():
             raise Refused(f"already recording into {self._running().folder}: journal record stop")
         target.mkdir(parents=True, exist_ok=True)
-        pid = self.processes.apart_into([*entry("features.session_recording.recorder"), str(self.record.root.resolve()), str(target)],
+        homes = ",".join(SERVED.given(Providers).workspaces().homes)
+        pid = self.processes.apart_into([*entry("features.session_recording.recorder"), str(self.record.root.resolve()), str(target), homes],
                                         self.record.root / "runtime" / "recorder.log")
         row = self.create(titled(f"Recording into {target.name}"), folder=str(target), pid=pid)
         return f"recording into {target} as record {row.n}; journal record stop ends it"

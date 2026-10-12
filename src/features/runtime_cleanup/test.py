@@ -20,7 +20,7 @@ def aged(path, days: float):
 def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole(monkeypatch):
     house = FEATURES["runtime_cleanup"]
     record = fresh()
-    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", record.root.parent / "folds")
+    monkeypatch.setattr("providers.transcript_cache.FOLD_CACHE", record.root.parent / "folds")
     big = runtime.session_file(record.root, "codex-1", "printed")
     big.parent.mkdir(parents=True)
     big.write_bytes(b"old" * 100_000 + b"THE END")
@@ -62,7 +62,7 @@ def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole(mon
 
 def test_a_quiet_launch_log_goes_and_a_running_one_keeps_its_last_megabyte(monkeypatch):
     record = fresh()
-    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", record.root.parent / "folds")
+    monkeypatch.setattr("providers.transcript_cache.FOLD_CACHE", record.root.parent / "folds")
     launches = runtime.folder(record.root) / "launches"
     launches.mkdir(parents=True)
     spent, running = launches / "main-old-helper.log", launches / "main-busy-helper.log"
@@ -79,7 +79,7 @@ def test_a_quiet_launch_log_goes_and_a_running_one_keeps_its_last_megabyte(monke
 
 def test_an_ended_session_loses_its_folder_after_six_hours_and_a_live_one_keeps_it(monkeypatch):
     record = fresh()
-    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", record.root.parent / "folds")
+    monkeypatch.setattr("providers.transcript_cache.FOLD_CACHE", record.root.parent / "folds")
     sessions = {}
     for name, pid, age in (("claude-ended", 999_999_999, 0.3), ("claude-just-ended", 999_999_998, 0.1), ("claude-live", os.getpid(), 0.3)):
         folder = runtime.sessions(record.root) / name
@@ -244,7 +244,7 @@ def test_tidy_keeps_the_saved_transcript_states_and_drops_an_old_builds_folds(mo
     from providers.transcript_cache import STATES
     record = fresh()
     folds = record.root.parent / "folds"
-    monkeypatch.setattr("features.runtime_cleanup.tidy.FOLD_CACHE", folds)
+    monkeypatch.setattr("providers.transcript_cache.FOLD_CACHE", folds)
     current, old, recent = folds / STATES, folds / "old-mark", folds / "another-build"
     for place in (current, old, recent):
         place.mkdir(parents=True)

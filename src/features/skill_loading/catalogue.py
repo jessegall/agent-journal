@@ -13,7 +13,7 @@ SKILL = names("name", "description", "path", "changed", "loaded", "stale", "alwa
 from payload import LIBRARY
 from resources.text import skill_name
 from engine.package import data
-from controllers.stored import mtime
+from resources.files import mtime
 from engine.frontmatter import frontmatter
 from resources.memo import Memo
 

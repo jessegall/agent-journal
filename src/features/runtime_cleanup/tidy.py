@@ -5,10 +5,10 @@ from pathlib import Path
 
 from engine.runtime import folder, profiles, sessions
 from engine.sessions import Sessions, alive
-from providers.transcript_cache import FOLD_CACHE, STATES
+from serving import SERVED, Providers
 from engine.record import Record
 from resources.text import plural
-from controllers.stored import mtime
+from resources.files import mtime, older
 from resources.base import Refused
 from declaring.trigger import DAY
 
@@ -91,19 +91,13 @@ def ended_sessions(root: Path) -> list[str]:
     return [name for name, session in Sessions(root).all().items() if not alive(session.pid)]
 
 
-def older(paths, age: float) -> list[Path]:
-    now = time.time()
-    return [path for path in paths if mtime(path) and now - mtime(path) / 1e9 > age]
-
-
 def leftovers(root: Path) -> int:
     staged = [d for d in older((root / "plugins").glob(".staging-*"), STAGING_FOR) if d.is_dir()]
     archived = [f for f in older((root / "attic").glob("*.tar.gz"), ARCHIVES_FOR) if not f.name.startswith("before-")]
     unkept = older((folder(root) / "outputs").glob("output-*"), OUTPUTS_FOR)
     profiled = sorted(profiles(root).glob("*.txt"), key=mtime, reverse=True)[PROFILES_KEPT:]
-    marks = [d for d in older(FOLD_CACHE.glob("*"), OTHER_MARKS_FOR) if d.is_dir() and d.name != STATES]
-    folds = [*FOLD_CACHE.glob("*.pickle"), *older((FOLD_CACHE / STATES).glob("*.pickle"), FOLDS_FOR),
-             *older((FOLD_CACHE / STATES).glob("*.tmp"), OTHER_MARKS_FOR)]
+    left = SERVED.given(Providers).stale_cache(FOLDS_FOR, OTHER_MARKS_FOR)
+    marks, folds = left.folders, left.files
     for d in staged + marks:
         shutil.rmtree(d, ignore_errors=True)
     for f in archived + unkept + profiled + folds:

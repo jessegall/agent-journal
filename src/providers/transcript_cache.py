@@ -9,6 +9,9 @@ from threading import Lock, Thread, get_ident
 from pathlib import Path
 from typing import Callable
 
+from dataclasses import dataclass
+
+from resources.files import older
 from resources.text import digest
 from providers.jsonl import Read, lines_after, lines_from, read_bytes, rows, tail_lines
 
@@ -286,3 +289,18 @@ class TranscriptCache:
 
 
 CACHE = TranscriptCache(FOLD_CACHE)
+
+
+@dataclass(frozen=True)
+class CacheLeftovers:
+    """What in the fold cache has outlived its use: the mark folders to remove whole, and the files to unlink."""
+
+    folders: list = ()
+    files: list = ()
+
+
+def stale(folds_for: float, scraps_for: float) -> CacheLeftovers:
+    """What may go from the fold cache: the mark folders and the half-written files past their age, and every fold left at the top rather than under its state."""
+    return CacheLeftovers([d for d in older(FOLD_CACHE.glob("*"), scraps_for) if d.is_dir() and d.name != STATES],
+                          [*FOLD_CACHE.glob("*.pickle"), *older((FOLD_CACHE / STATES).glob("*.pickle"), folds_for),
+                           *older((FOLD_CACHE / STATES).glob("*.tmp"), scraps_for)])
