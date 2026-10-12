@@ -8,6 +8,7 @@ from resources.fields import Loaded
 
 from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, HELPER, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, WHOM, Pruned, Ref, Refused, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows
+from resources.text import unquoted
 from resources.boards import Board
 from resources.checks import Check
 from resources.collections import Collection
@@ -55,6 +56,10 @@ class Message(Shape, Resource):
     stamped_when_notified = True
     cleared_by = OPENED
     command_names = {"complete": "processed"}
+
+    def read_out(self) -> str:
+        """A message as the agent reads it, without the part of it that quotes the agent's own words back: a reply carries what it answers, which is named by its number instead."""
+        return super().read_out().replace(self.brief.strip(), unquoted(self.brief).strip()) if self.brief.strip() else super().read_out()
 
 
 @dataclass(frozen=True)

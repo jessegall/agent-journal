@@ -320,6 +320,17 @@ class Resource:
             out += [f"## {s[SECTION.title]}", s[SECTION.body].strip(), ""]
         return "\n".join(out)
 
+    def read_out(self) -> str:
+        """The row as an agent reads it: what it says, and only the facts a reader acts on. dump() is the file on disk, with timestamps, idempotency keys and a seen list that no reader has ever used - printing that back costs about 440 characters a row before a word of it is what somebody wrote."""
+        facts = [f"{self.type} {self.n}: {self.title}"]
+        facts += [line for line in (self.abstract.strip(), self.brief.strip()) if line and line != self.title.strip()]
+        facts += [f"## {s[SECTION.title]}\n{s[SECTION.body].strip()}" for s in self.sections]
+        if self.refs:
+            facts.append("links: " + ", ".join(self.refs))
+        if self.outcome:
+            facts.append(f"outcome: {self.outcome}")
+        return "\n\n".join(facts)
+
     @classmethod
     def load(cls, text: str) -> "Resource":
         _, head, body = text.split("---\n", 2)
