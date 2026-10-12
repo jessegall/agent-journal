@@ -34,5 +34,5 @@ class CommandTags(Feature):
             Formats('[!reply:12] the answer', to='the answer'),
             Formats('plain words', to='plain words'),
         ])
-        journal.agent.append_to_line("message.created", answered)
+        journal.agent.append_to_line("message.created", answered, instead=True)
         journal.agent.append_to_line("messages.answer", answered)

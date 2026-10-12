@@ -59,11 +59,22 @@ export function follow(running, step = "") {
     return true;
 }
 
-// What the server says about an update, taken the same way by the viewer and the phone; reloads once an upgrade seen running has finished.
+// The version this page came from, kept the first time the server names one so a later answer can be held against it.
+let loadedWith = "";
+
+// Whether the server is serving a journal other than the one this page was built from, which is the one thing a reload mends.
+function newVersion(version) {
+    if (!version) return false;
+    if (!loadedWith) loadedWith = version;
+    return version !== loadedWith;
+}
+
+// What the server says about an update, taken the same way by the viewer and the phone. It reloads once an upgrade it watched
+// has finished, and on a version it has not seen before whether or not it watched the update that brought it.
 export function followServer(got) {
     counting(got.countdown);
     starting(got.ready, got.step);
-    if (follow(Boolean(got.updating), got.step)) window.location.reload();
+    if (follow(Boolean(got.updating), got.step) || (!got.updating && newVersion(got.version))) window.location.reload();
 }
 
 export const updatedTo = () => remembered(UPDATED_KEY, "");

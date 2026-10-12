@@ -28,13 +28,17 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
 
     report(record, "working", "PreToolUse")
     from engine.gates import held
-    assert held(record, "claude-1", writing=False), "a message read and not answered holds the very next tool use, reading as much as writing"
+    assert not held(record, "claude-1", writing=False), \
+        "the call in hand goes through: a read message is owed an answer from the tenth tool use on, not from the next one"
     for i in range(8):
         report(record, "working", "PreToolUse")
     assert text() == [], "nothing is said while the message has waited fewer than ten tool uses"
     report(record, "working", "PreToolUse")
     assert text() == ["answer message 1 before you do anything else"], \
         "the tenth tool use names the message and says to answer it"
+    assert not held(record, "claude-1", writing=False), "ten tool uses go through while it waits"
+    report(record, "working", "PreToolUse")
+    assert held(record, "claude-1", writing=False), "and the eleventh waits, reading as much as writing"
     from controllers.types import Nudges
     from agents.actors import settled
     from resources.base import Event
@@ -211,7 +215,12 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     said = lambda: (any(FELL_BACK in line for line in nudges(record)), FELL_BACK in log_file(record.root).read_text())
     assert said() == (False, False), "the transcript fills the chat at once, but the fault is only held: the hook may be late, not lost"
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "e", "index": 0, "final": True, "delta": "second"}))
-    assert chat().count("second") == 2, "another turn with the same short answer is recorded separately"
+    assert chat().count("second") == 1, "the same words moments later are not posted a second time, whatever turn they came from"
+    branch = Messages(record, actor=USER).create("Which branch?", brief="Which branch?")
+    Messages(record, actor=AGENT).read(branch.n)
+    Messages(record, actor=AGENT).reply(str(branch.n), "Main, sir.")
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "r", "index": 0, "final": True, "delta": "Main, sir."}))
+    assert chat().count("Main, sir.") == 0, "and words already filed as a reply are not posted again as a plain message"
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "message_id": "f", "index": 0, "final": True, "delta": "👍"}))
     assert ("👍" in chat(), any("your message was only 👍, so it was not posted" in line for line in nudges(record))) == (False, True), \
         "a message that is only a face is not posted, and the agent is told to react instead"

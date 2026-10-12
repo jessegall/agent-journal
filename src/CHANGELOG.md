@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.7 — The agent is told its tag ran, and never says the same thing twice
+
+- A tag that runs says so, in one short line naming it. Nothing ever confirmed a tag, so a turn whose tool call was held afterwards read as a turn that had failed whole, and the agent wrote the same words again.
+- A message the agent has just said is not filed a second time, whether the first copy was a plain message or a reply. The chat has nothing to filter because the duplicate is never written.
+- A message is owed an answer from the tenth tool use, not the next one (`messages.answering.hold`, was 0). The line that announces a message also marks it read, so the hold used to bite before there was any chance to reply.
+- The line announcing a message is `user message 4465: …` instead of `1 new message 4465 - the user wrote: …`, and the attachment and reply hints are shorter too.
+- A check with no interval is run by hand only: `journal check sweep` skipped the interval and fired every check at once, which is not what "never, unless I ask" means.
+- `journal check stop <n>` stops a check that is running, and every check row carries a Stop button beside its Run button.
+- The Developer group — error reports, session recording and design critique — is switched off wherever an earlier version switched it on (migration m0085). The defaults changed in 2.272.3, but a switch already written keeps the value it was given.
+- The viewer reloads when it finds the server serving a version other than the one the page came from. It only ever reloaded after an update it had watched from the start, so a page that was away, asleep or simply not looking at the right moment went on running against a journal that had moved under it.
+
 ## 2.272.6 — The updating screen asks for itself, and a session is yours to start again because it exists
 
 - The screen that covers the journal while it updates now asks the server for itself, twice a second, for as long as it is up. It only ever read what the page's ordinary polling told it, so when that polling stopped the screen stayed over a journal that was perfectly alive. A request that fails is now a round that found nothing, and the next one goes out all the same.

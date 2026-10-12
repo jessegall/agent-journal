@@ -1,8 +1,21 @@
+import time
+from itertools import dropwhile
+
 from controllers.base import Controller, CONTROLLERS
 from resources import types
 from resources.base import AGENT, SYSTEM, USER, Refused, Resource, titled
 from controllers.comments import Comments
 from controllers.marks import action
+
+
+QUOTE = ">"
+SAID_JUST_NOW = 60.0
+
+
+def unquoted(text: str) -> str:
+    """What was actually typed, without the message quoted above it: a reply carries the message it answers, which is named instead, so the same words are never read back as if they were new."""
+    lines = list(dropwhile(lambda line: line.startswith(QUOTE) or not line.strip(), text.splitlines()))
+    return "\n".join(lines).strip() or text.strip()
 
 
 def only_emoji(text: str) -> bool:
@@ -136,6 +149,15 @@ class Messages(Controller):
             else:
                 answerable.append(number)
         return skipped, answerable
+
+    def said_already(self, text: str) -> Resource | None:
+        """The very words already in the chat from this author, as a plain message or as a reply made moments ago, so a turn written twice is posted once. A reply keeps the message it answers quoted above it, so both are compared on what was actually typed."""
+        words = unquoted(text.strip())
+        if not words:
+            return None
+        since = time.time() - SAID_JUST_NOW
+        mine = [*self.lately(since), *Comments(self.record, actor=self.actor).lately(since)]
+        return next((r for r in mine if r.author == self.actor and unquoted((r.brief or r.title).strip()) == words), None)
 
     def _quoted(self, n: int) -> str:
         lines = (self.load(n).brief or self.load(n).title).strip().split("\n")

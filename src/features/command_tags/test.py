@@ -104,8 +104,8 @@ def test_the_same_tag_in_two_turns_runs_twice():
 def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     from engine.wording import counted
     record = fresh()
-    assert counted({("message", "created"): {4465: None}}, record) == ["1 new message 4465 - answer by opening your turn with [!reply:4465]"], \
-        "the tags feature adds to the messages line; no second line follows"
+    assert counted({("message", "created"): {4465: None}}, record) == ["1 new message 4465"], \
+        "a message that is not in the record is left to the count; the tags feature speaks only for one it can read"
     from controllers.types import Agents, Messages
     from resources.base import AGENT, USER
     thanks, asked = asked_and_read(record, "Thank you, sir."), asked_and_read(record, "Thanks, but which branch?")
@@ -122,20 +122,21 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     assert str(writing.paths(carrying.n)[0]) in brought and f"doc:{note.n}" in brought, \
         "an arriving message carries its file by path and its linked row, so nothing the user sent waits behind a second command"
     line = counted({("message", "created"): {thanks.n: None}}, record)[0]
-    assert (line.startswith(f"1 new message {thanks.n} - the user wrote: Thank you, sir."), "[journal]" in line, '"title"' in line,
-            f'message {thanks.n} only acknowledges: react to it with journal message react {thanks.n} "👍"' in line) == (True, False, False, True), \
-        "a message that only acknowledges is answered with a reaction, and the line names who wrote it and their words once, with no tag of the journal's and none of the row's fields"
+    assert (line.startswith(f"user message {thanks.n}: Thank you, sir."), "[journal]" in line, '"title"' in line,
+            f'{thanks.n} only acknowledges: journal message react {thanks.n} "👍"' in line) == (True, False, False, True), \
+        "a message that only acknowledges is answered with a reaction, and the line names who wrote it and their words once, with no count before it, no tag of the journal's and none of the row's fields"
     line = counted({("message", "created"): {asked.n: None}}, record)[0]
     assert ("[!reply:" in line, "[journal]" in line, "Thanks, but which branch?" in line, AGENT in Messages(record, actor=AGENT).load(asked.n).seen) == (True, False, True, True), \
         "one that asks something still gets a reply, its whole text is in the line, and the agent need not read it first"
     both = counted({("message", "created"): {thanks.n: None, asked.n: None}}, record)[0]
-    assert f"the user wrote {thanks.n}: Thank you, sir." in both and f"the user wrote {asked.n}: Thanks, but which branch?" in both, \
+    assert f"user message {thanks.n}: Thank you, sir." in both and f"user message {asked.n}: Thanks, but which branch?" in both, \
         "when several come in one line each is named by its number"
-    assert counted({("message", "created"): {4465: None, 4466: None}}, record)[0].endswith("answer each by opening a turn with [!reply:<n>]")
+    assert counted({("message", "created"): {4465: None, 4466: None}}, record) == ["2 new messages 4465, 4466"], \
+        "messages that are not in the record are left to the count too"
     answering = asked_and_read(record, "Replying in the viewer", brief="> what the agent said at length\n> and the rest of it\n\nOkay, but which branch?")
     Messages(record, actor=SYSTEM).link(answering.n, f"message:{asked.n}")
     quoting = counted({("message", "created"): {answering.n: None}}, record)[0]
-    assert (f"answering message {asked.n}" in quoting, "Okay, but which branch?" in quoting, "what the agent said at length" in quoting) == (True, True, False), \
+    assert (f"on message {asked.n}" in quoting, "Okay, but which branch?" in quoting, "what the agent said at length" in quoting) == (True, True, False), \
         "a reply names the message it answers and carries only what the user typed: its own words quoted above are named, never read back"
     assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"
     Messages(record, actor=AGENT).complete(asked.n, how="answered")
@@ -145,16 +146,21 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     Agents(record, actor=AGENT).by_session("claude-1")
     Messages(record, actor=AGENT).read(asked_and_read(record, "how is it going?").n)
     report(record, "idle", "Stop")
-    assert any("answer by opening your turn with [!reply:1]" in n.brief for n in Nudges(record).all() if n.data.get("feature") == "messages"), \
+    assert any("reply by opening your turn with [!reply:1]" in n.brief for n in Nudges(record).all() if n.data.get("feature") == "messages"), \
         "the line naming a read message still to answer says how to answer it, in its brief"
-    from engine.wording import APPENDS, appended
-    addition = lambda n, **_: f"work {n} can be ended from the board"
+    from engine.wording import APPENDS, Addition, appended
+    addition = Addition(lambda n, **_: f"work {n} can be ended from the board")
+    instead = Addition(lambda n, **_: f"work {n}, still open", instead=True)
     APPENDS.add(None, addition, key="work_tracking.open")
     try:
         assert appended("work_tracking.open", {"n": 7}, "work 7 is still open") == "work 7 is still open - work 7 can be ended from the board", \
             "any registered line takes an addition by its feature and name"
+        APPENDS.add(None, instead, key="work_tracking.open")
+        assert appended("work_tracking.open", {"n": 7}, "work 7 is still open") == "work 7, still open - work 7 can be ended from the board", \
+            "an addition that names the rows itself stands instead of the count, which would say the same thing twice"
     finally:
         APPENDS.remove(addition)
+        APPENDS.remove(instead)
 
 def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
     from providers import PROVIDERS

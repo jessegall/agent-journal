@@ -9,7 +9,7 @@ from engine.developing import developing
 from events.typed import AgentEvent
 from engine.gates import CANCELERS, RESPONDERS, HookCall, policies
 from declaring.reach import Guard
-from engine.wording import APPENDS
+from engine.wording import APPENDS, Addition
 from framework.format import FORMATTERS, FORMATTING_FEATURES
 from framework.parts import ActionInterceptor, AgentContext, Canceler, Command, Context, Handler, TextFormatter, ToolInterceptor
 from resources.base import SYSTEM, USER, Refused
@@ -133,8 +133,8 @@ class AgentHooks:
         self.feature = feature
         self.guards: list[Guard] = []
 
-    def append_to_line(self, on: str, addition) -> None:
-        APPENDS.add(None, addition, key=on)
+    def append_to_line(self, on: str, addition, instead: bool = False) -> None:
+        APPENDS.add(None, Addition(addition, instead), key=on)
 
     def interceptor(self, interceptor: ToolInterceptor, expects=()) -> None:
         PROMISED.add(Promise(self.feature, "interceptor", type(interceptor).__name__, interceptor, object, tuple(expects)))

@@ -29,6 +29,8 @@ class RunTagCommands(Handler):
             if code:
                 failed = True
                 context.agent.whisper("refused", tag=name, on=n or argument, error=tag_spelling((err.getvalue() or out.getvalue()).strip()))
+                continue
+            context.agent.whisper("ran", tag=name, on=n or argument)
         return failed
 
     def settings(self, name: str, extras: str) -> list[str]:

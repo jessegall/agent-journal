@@ -55,7 +55,7 @@ class TagMissingAtStart(Handler):
                 tell(context, type_, n, name)
             return
         listed = "; ".join(f"{type_} {n} {json.dumps(name)}" for type_, n, name in untagged[:LISTED])
-        context.agent.say("many untagged", count=len(untagged), listed=listed, shown=min(len(untagged), LISTED))
+        context.agent.say("many untagged", count=len(untagged), listed=listed)
 
 
 class SampleVideoFrames(Handler):
