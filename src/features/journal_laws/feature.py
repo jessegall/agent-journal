@@ -6,7 +6,7 @@ from events.agents import AgentMessageSent
 from expects import Given, Kept, Nudged, Refused, Remembered, Unchanged
 from framework.base import Feature
 from framework.journal import Journal
-from features.journal_laws.controller import Outputs
+from controllers.types import Outputs
 from features.journal_laws.briefing import brief, long_briefings
 from features.journal_laws.details import LARGEST_RESULT, TOO_LONG, LawDetails
 from features.journal_laws.handlers import CheckChangedInstructions, NoticeLargestResult

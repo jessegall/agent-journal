@@ -15,11 +15,11 @@ from features.open_viewer.manifest import built_in
 import features
 from controllers.types import Agents, Todos
 from engine.transaction import WORK, undoable
-from features.session_recording.controller import Recordings
+from controllers.session_recording.controller import Recordings
 from features.session_recording.recorder import Recorder
 from tests.kit import demo_built
-from features.session_recording.demo import leaks
-from features.session_recording.scrub import Scrubber
+from controllers.session_recording.demo import leaks
+from controllers.session_recording.scrub import Scrubber
 from resources.base import AGENT, SYSTEM, Refused
 from tests.conftest import fresh, refused
 
@@ -67,13 +67,13 @@ def test_stop_copies_the_transcript_of_an_agent_that_ran(tmp_path, monkeypatch):
     Agents(record, actor=SYSTEM).create("claude-1", transcript=str(transcript))
     recordings = Recordings(record, actor=SYSTEM)
     row = recordings.create("Recording into demo", folder=str(tmp_path / "demo"), pid=4242)
-    monkeypatch.setattr("features.session_recording.controller.alive", lambda pid: pid == 4242)
-    monkeypatch.setattr("features.session_recording.controller.os.kill", lambda pid, signal: None)
+    monkeypatch.setattr("controllers.session_recording.controller.alive", lambda pid: pid == 4242)
+    monkeypatch.setattr("controllers.session_recording.controller.os.kill", lambda pid, signal: None)
     recordings.stop()
     assert (tmp_path / "demo" / "transcripts" / "t-claude-1.jsonl").read_text() == "{}\n"
     assert recordings.load(row.n).completed, "the recording is closed"
     from types import SimpleNamespace
-    from features.session_recording import controller
+    from controllers.session_recording import controller
     assert "full path" in refused(lambda: recordings.start("relative/demo")), "a recording goes to a folder given in full"
     monkeypatch.setattr(controller, "entry", lambda name: ["recorder"])
     monkeypatch.setattr(controller.subprocess, "Popen", lambda command, **kept: SimpleNamespace(pid=4243))
@@ -84,7 +84,8 @@ def test_stop_copies_the_transcript_of_an_agent_that_ran(tmp_path, monkeypatch):
     assert "recording stopped" in recordings.stop(), "a recorder that is already gone is not an error to stop"
     monkeypatch.setattr(controller, "alive", lambda pid: False)
     assert "nothing is being recorded" in refused(lambda: recordings.stop()), "with nothing recording there is nothing to stop"
-    from features.session_recording import recorder as recording, scrub
+    from features.session_recording import recorder as recording
+    from controllers.session_recording import scrub
     monkeypatch.setattr(scrub, "WORDS", str(tmp_path / "no-words"))
     assert scrub.dictionary() == frozenset(), "a machine with no word list has no dictionary to tell names from words"
     watching = recording.Recorder(record.root, tmp_path / "watching")
@@ -95,7 +96,7 @@ def test_stop_copies_the_transcript_of_an_agent_that_ran(tmp_path, monkeypatch):
     with pytest.raises(KeyboardInterrupt):
         recording.main([str(record.root), str(tmp_path / "watching")])
     assert polls == [1], "the recorder polls the journal, then waits, until it is stopped"
-    from features.session_recording.demo import readable
+    from controllers.session_recording.demo import readable
     (tmp_path / "picture.bin").write_bytes(b"\xff\xfe\x00")
     assert readable(tmp_path / "picture.bin") == "", "a file that is not text is read as nothing"
 
@@ -151,7 +152,7 @@ def test_a_recording_that_holds_the_machine_is_refused_until_it_is_scrubbed(tmp_
     assert not leaks(folder, Scrubber())
     assert "jesse@example.org" not in (folder / "frames.jsonl").read_text() + "".join(blob.read_text() for blob in (folder / "blobs").iterdir())
     from types import SimpleNamespace
-    import features.session_recording.scrub as scrub
+    import controllers.session_recording.scrub as scrub
     monkeypatch.setattr(scrub, "known", lambda: [SimpleNamespace(project="private-ledger", root="/projects/private-market/.journal")])
     assert set(Scrubber().leaks("private-ledger private-market")) == {"private-ledger", "private-market"}
     places = {"at": "/home/demo/project/.journal", "places": [{"project": "recorded", "root": "/home/demo/project/.journal"},
@@ -275,5 +276,5 @@ def test_upgrades_file_old_runtime_files_under_their_session_and_remove_the_loos
 
 
 def test_importing_the_scrubber_reads_no_word_list():
-    from features.session_recording import scrub
+    from controllers.session_recording import scrub
     assert not hasattr(scrub, "DICTIONARY"), "the word list is read when a name is first judged, not at import"

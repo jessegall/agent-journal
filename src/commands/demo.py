@@ -11,8 +11,8 @@ from resources.text import digest
 from features.phone.controller import CARDS, Phones
 from features.phone.resource import Phone
 from features.phone.routes import read_body
-from features.session_recording.demo import Throwaway, frames, leaks
-from features.session_recording.scrub import Scrubber
+from controllers.session_recording.demo import Throwaway, frames, leaks
+from controllers.session_recording.scrub import Scrubber
 from resources.base import SYSTEM, Event, Refused
 
 EVERYTHING = 100000
