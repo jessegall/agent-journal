@@ -2,8 +2,8 @@ from pathlib import Path
 
 import features
 from controllers.base import COMMANDS
-from controllers.types import Critiques
-from resources.base import AGENT
+from controllers.types import Features, Critiques
+from resources.base import AGENT, SYSTEM
 from tests.conftest import fresh, refused
 
 
@@ -12,6 +12,7 @@ def test_a_round_hands_out_one_read_only_critic_per_lens_and_a_report_for_their_
     up = {"answers": False}
     monkeypatch.setattr("controllers.critique.controller.answers", lambda url: up["answers"])
     record = fresh()
+    Features(record, actor=SYSTEM).switch("critique")
     critiques = Critiques(record, actor=AGENT)
     start = COMMANDS["critique"]["round"]
     assert "name the app" in refused(lambda: start(critiques, "the helper list")), "a round needs the app's address first"

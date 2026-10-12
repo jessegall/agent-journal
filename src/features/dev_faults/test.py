@@ -235,7 +235,7 @@ def test_the_budget_is_tunable_per_environment(monkeypatch):
     record = fresh()
     monkeypatch.delenv("DEVELOPMENT_MODE", raising=False)
     from features.dev_faults.details import DevFaultsDetails
-    assert DevFaultsDetails.default is True, "developer error reports and budget notices are on in every project, not only while developing"
+    assert DevFaultsDetails.default is False, "developer error reports are off until they are asked for: they turn the journal's quiet fallbacks into refusals, which is not what a project that is merely USING the journal wants"
     assert "send this notice's title and numbers to the agent-journal session" in DevFaults().reports.send(record), \
         "in any other project than the journal's own the agent is told to send the numbers of a notice to the agent-journal session"
     monkeypatch.setenv("DEVELOPMENT_MODE", "true")

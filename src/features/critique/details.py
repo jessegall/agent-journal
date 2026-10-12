@@ -9,6 +9,7 @@ NAME = "critique"
 class CritiqueDetails(FeatureDetails):
     explains = 'The agent can ask reviewers to examine a design from different angles. You can read their findings in one report.'
     name = NAME
+    default = False
     group = Group.DEVELOPER
     label = "Run design critique rounds"
     skill_of = "reports"

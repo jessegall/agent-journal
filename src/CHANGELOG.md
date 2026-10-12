@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.3 — Nothing in the Developer group is on unless you ask, and a chat you scrolled up never jumps
+
+- Developer error reports, session recording and the critique rounds are off until you switch them on. All three were on in every project, because a feature is on unless it says otherwise and none of them said otherwise. Developer error reports in particular turn the journal's quiet fallbacks into refusals, which is not what a project that is merely using the journal wants.
+- A chat you have scrolled up in never scrolls itself down again. It stopped following when you scrolled away and then started again on its own as soon as the foot came near, which carried you off your place mid-read. Only the button at the foot brings it back, and only a fresh load starts at the bottom.
+
 ## 2.272.2 — An agent that is plainly working is no longer called not responding
 
 - The status bar said "started, but it never reported in" for an agent that was writing in the same window. It judged by when the session STARTED rather than when it was last heard from, so any session older than half a minute whose agent row carried no event read as silent for ever. It now reads the time it was last heard.
