@@ -38,7 +38,7 @@ test("every clip and look the figure is ever asked for exists, so no reaction, e
         ...EGGS.map((egg) => egg.clip),
         ...AMBIENT.map((each) => each.clip),
         ...Object.values(HELD),
-        ...Object.values(WORK_VARIANTS).flatMap((variants) => variants.map(([clip]) => clip)),
+        ...WORK_VARIANTS.map(([clip]) => clip),
         "walk", "jump", "fall", "backflip", "land", "enter", "exit", "point", "hang_l", "hang_r",
     ];
     for (const clip of asked) expect(named.has(clip), clip).toBe(true);
@@ -57,13 +57,12 @@ test("a figure at rest looks about and stretches only after the state has lasted
     expect(ambientFor("idle", look.after, rolled, 0, () => 0.99)).toBe("");
 });
 
-test("only a jump of more than the figure's own height sometimes turns over, and a working state sometimes shows the laptop", () => {
+test("only a jump of more than the figure's own height sometimes turns over, and a stretch of work sometimes shows the laptop", () => {
     expect(flips(112 * FLIP_OVER, 112, () => 0)).toBe(false);
     expect(flips(112 * FLIP_OVER + 1, 112, () => FLIP_ODDS - 0.01)).toBe(true);
     expect(flips(112 * FLIP_OVER + 1, 112, () => FLIP_ODDS)).toBe(false);
-    expect(workClip("running", "work", () => 0)).toBe("type");
-    expect(workClip("running", "work", () => 0.99)).toBe("work");
-    expect(workClip("thinking", "think", () => 0)).toBe("think");
+    expect(workClip(() => 0)).toBe("type");
+    expect(workClip(() => 0.99)).toBe("");
 });
 
 test("a test card that ends is seen once, as a pass or a failure, and a card already known is not seen again", () => {

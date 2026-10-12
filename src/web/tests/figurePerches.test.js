@@ -1,7 +1,7 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {HANGS, HANG_SHARE, SITS, STAY_SECONDS, perchOn, perchSpot} = await import("../src/figure/perches.js");
+const {HANGS, HANG_SHARE, ROAMS, SITS, perchOn, perchSpot, roamNext} = await import("../src/figure/perches.js");
 
 const FIGURE = {size: 112, below: 0.05};
 const HANDS = ["l", "r"];
@@ -37,15 +37,21 @@ test("a hanging figure grips with the hand on the corner's side, or with its one
     expect([one.grip, one.side]).toEqual(["l", "left"]);
 });
 
-test("a perch lasts between the shortest and the longest stay", () => {
-    const [least, most] = STAY_SECONDS;
-    expect(perchOn([at(300), at(500)], THREAD, FIGURE, HANDS, fixed(0, 1, 0)).stay).toBe(least);
-    expect(perchOn([at(300), at(500)], THREAD, FIGURE, HANDS, fixed(0, 1, 1)).stay).toBe(most);
+test("every place the figure roams to comes up by its odds and is stayed at between its shortest and longest stay", () => {
+    const total = ROAMS.reduce((sum, each) => sum + each.odds, 0);
+    let before = 0;
+    for (const each of ROAMS) {
+        const middle = (before + each.odds / 2) / total;
+        expect(roamNext(fixed(middle, 0))).toEqual({where: each.where, stay: each.stay[0]});
+        expect(roamNext(fixed(middle, 1)).stay).toBe(each.stay[1]);
+        before += each.odds;
+    }
+    expect(new Set(ROAMS.map((each) => each.where))).toEqual(new Set(["seat", "edge", "bubble", "tab"]));
 });
 
 test("a figure sitting or hanging stands where its bubble's corner is, and is let go when the bubble leaves the thread's view or the page", () => {
     const one = at(300, 260, 500);
-    const sitting = {bubble: one, kind: SITS, side: "right", grip: "", stay: 30};
+    const sitting = {bubble: one, kind: SITS, side: "right", grip: ""};
     const hanging = {...sitting, kind: HANGS, grip: "r"};
     expect(perchSpot(sitting, THREAD, FIGURE).face).toBe(90);
     expect(perchSpot(sitting, THREAD, FIGURE).on).toBe(one);

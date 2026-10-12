@@ -16,8 +16,8 @@ export const HELD = {
     stopped: "sleep",
 };
 
-// The states in which the agent is doing nothing of its own, so the figure sits on a corner of the edge instead of standing on it
-export const SITS = new Set(["idle", "asleep", "compacting", "paused", "stopped"]);
+// The states in which the agent cannot act, so the figure stays seated on a corner of the edge at home instead of roaming
+export const RESTS = new Set(["asleep", "compacting", "paused", "stopped"]);
 
 // A tool in flight says what the agent is doing with it; the providers report their own tools under these names.
 const TOOL_STATES = {

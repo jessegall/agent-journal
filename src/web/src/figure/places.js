@@ -29,14 +29,18 @@ const CONTROLS = "button, a[href], input, select, textarea, [role=tab], [role=bu
 
 // How each posture meets the line it rests on: the share of the figure's height from that line down to the feet of its standing picture,
 // and the posture it travels in to get there. It stands with its feet on the line, sits with its hips on it and hangs by its hands from
-// it; it walks to a seat on its feet and sits down there, and leaps straight to a hang.
+// it; it walks to a seat on its feet and sits down there, and leaps straight to a hang. On the move it walks with its feet on the line.
 const SEAT_DROP = 0.26;
 const HANG_DROP = 0.8;
 export const POSTURES = {
     stand: {drop: 0, travels: "stand"},
     sit: {drop: SEAT_DROP, travels: "stand"},
     hang: {drop: HANG_DROP, travels: "hang"},
+    walk: {drop: 0, travels: "stand"},
 };
+
+// how long the figure takes to change from one clip, posture or facing to the next, easing out of the pose before it, in seconds
+export const CHANGE_SECONDS = 0.25;
 
 // The posture a clip is drawn in at a place of `posture`: that one when the clip can be drawn in it, else the first the clip can
 export const postureOf = (clip, posture) => (clip.postures.includes(posture) ? posture : clip.postures[0]);
@@ -48,9 +52,9 @@ export const boxAt = (spot, {size, below}, posture = spot.posture) => {
 };
 
 const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-// the figure is in the window when all of it above its feet is; the strip of its picture under its feet is empty
-const inWindow = (box, {size, below}) =>
-    box.left >= 0 && box.top >= 0 && box.right <= window.innerWidth && box.bottom - below * size <= window.innerHeight;
+// the figure is in the window when its picture's left, right and top are and the line it rests on is; a seated figure's legs may hang
+// past the foot of the window, as they hang past any edge it sits on
+const inWindow = (spot, box) => box.left >= 0 && box.top >= 0 && box.right <= window.innerWidth && spot.y <= window.innerHeight;
 
 // The spot whose figure stays in the window and covers the fewest controls, none where it can; of spots alike, the one nearest
 // `near`, where the figure stands now, so it does not wander between equally good places
@@ -60,7 +64,7 @@ export function freeSpot(spots, figure, near) {
         .filter((box) => box.width && box.height);
     const covered = (spot) => {
         const box = boxAt(spot, figure);
-        return (inWindow(box, figure) ? 0 : controls.length + 1) + controls.filter((control) => overlaps(box, control)).length;
+        return (inWindow(spot, box) ? 0 : controls.length + 1) + controls.filter((control) => overlaps(box, control)).length;
     };
     const away = (spot) => (near ? Math.hypot(spot.x - near.x, spot.y - near.y) : 0);
     const ranked = spots.map((spot) => ({spot, covered: covered(spot), away: away(spot)}));
@@ -84,11 +88,12 @@ function tabSpots(tab, figure) {
     return SIDEWAYS.flatMap((share) => heights.map((y) => ({x: middle + share * figure.size, y, posture: "stand"})));
 }
 
-// Where a figure sits: on a corner of a box it perches on, turned along the edge it dangles over, with its hips a little inboard of
-// the corner so the weight rests on the surface behind the edge and only the legs reach past it
+// Where a figure sits: on a corner of a box it perches on, turned along the edge it dangles over and a third of the way back toward the
+// viewer, so its eyes and what it holds on its lap are seen, with its hips a little inboard of the corner so the weight rests on the
+// surface behind the edge and only the legs reach past it
 const SEAT_SIDES = {
-    right: {along: 1, inboard: -1, face: 90},
-    left: {along: 0, inboard: 1, face: 270},
+    right: {along: 1, inboard: -1, face: 60},
+    left: {along: 0, inboard: 1, face: 300},
 };
 const SEAT_INBOARD = 0.14;
 
@@ -101,18 +106,18 @@ export function seatAt(box, side, {size}) {
 // the pixels of a seated figure above the edge it sits on
 export const seatRise = ({size, below}) => (1 - below - SEAT_DROP) * size;
 
-// A spot kept inside the window: the figure's picture within its left, right and top, and its feet on or above the foot of the window,
-// so the ground it lands on is always one it can stand on
+// A spot kept inside the window: the figure's picture within its left, right and top, and the line it rests on at or above the foot of the
+// window, so whatever it stands or sits on there is a line it can rest on in every posture
 export function insideWindow(spot, {size, below}) {
     const drop = POSTURES[spot.posture].drop * size;
     return {
         ...spot,
         x: Math.min(Math.max(spot.x, size / 2), window.innerWidth - size / 2),
-        y: Math.min(Math.max(spot.y, (1 - below) * size - drop), window.innerHeight - drop),
+        y: Math.min(Math.max(spot.y, (1 - below) * size - drop), window.innerHeight),
     };
 }
 
-// A seat on a corner of the edge the figure stands on at home; with nothing there it sits on the foot of the window, its feet at the edge
+// A seat on a corner of the edge the figure stands on at home; with nothing there it sits on the foot of the window, its legs past it
 export function seatOf(figure, near) {
     const {element, edge} = groundEdge();
     const spot = freeSpot(Object.keys(SEAT_SIDES).map((side) => seatAt(edge, side, figure)), figure, near);

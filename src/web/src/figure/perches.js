@@ -7,12 +7,29 @@ export const BUBBLE = "[data-figure-bubble]";
 export const SITS = "sit";
 export const HANGS = "hang";
 
-// seated at the compose box's edge this many seconds before it considers a bubble, then one look in ODDS takes one
-export const SETTLED_SECONDS = 30;
-export const ODDS = 10;
-// the share of perches that are a hang rather than a sit, and how many seconds a perch lasts, between the two
+// the share of perches that are a hang rather than a sit
 export const HANG_SHARE = 0.4;
-export const STAY_SECONDS = [20, 60];
+
+// Where the figure goes when nothing calls it elsewhere, and how long it stays, in seconds between the two: each time a stay is over it
+// draws the next by its odds. It sits on a corner of the compose box to take it easy, strolls along that edge, perches on a message bubble
+// or crosses to stand on one of the page's tabs, and whatever the agent is doing it does from there. A hang is short, as hanging is work.
+export const ROAMS = [
+    {where: "seat", odds: 0.45, stay: [40, 120]},
+    {where: "edge", odds: 0.15, stay: [15, 40]},
+    {where: "bubble", odds: 0.2, stay: [20, 60]},
+    {where: "tab", odds: 0.2, stay: [15, 40]},
+];
+export const HANG_STAY = [8, 20];
+
+// The next place to go and for how many seconds to stay, as {where, stay}; `random` is a function returning 0 up to 1
+export function roamNext(random) {
+    let roll = random() * ROAMS.reduce((sum, each) => sum + each.odds, 0);
+    const found = ROAMS.find((each) => (roll -= each.odds) < 0) ?? ROAMS[0];
+    return {where: found.where, stay: between(found.stay, random)};
+}
+
+// a number between the two in `range`
+export const between = ([least, most], random) => least + random() * (most - least);
 
 // the side of a bubble with more room outside it, so a figure there stays off the bubbles' text
 const sideOf = (rect, scroller) => (rect.left - scroller.left > scroller.right - rect.right ? "left" : "right");
@@ -32,11 +49,10 @@ export function perchOn(bubbles, scroller, figure, hands, random) {
     const open = shown.slice(0, -1).filter((bubble) => inView(bubble.getBoundingClientRect(), box, figure));
     if (!open.length) return null;
     const bubble = open[Math.floor(random() * open.length)];
-    const [least, most] = STAY_SECONDS;
     const side = sideOf(bubble.getBoundingClientRect(), box);
     const hangs = hands.length > 0 && random() < HANG_SHARE;
     const grip = hangs ? hands.find((hand) => HAND_CORNER[hand] === side) || hands[0] : "";
-    return {bubble, kind: hangs ? HANGS : SITS, side: hangs ? HAND_CORNER[grip] : side, grip, stay: least + random() * (most - least)};
+    return {bubble, kind: hangs ? HANGS : SITS, side: hangs ? HAND_CORNER[grip] : side, grip};
 }
 
 // Where the perch's figure stands now, with the way it faces, or null when its bubble is gone or out of the thread's view

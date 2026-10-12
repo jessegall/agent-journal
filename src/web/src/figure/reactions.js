@@ -31,11 +31,9 @@ export const REACTIONS = [
 // how long the eyes keep a look
 export const LOOK_SECONDS = 3;
 
-// While the agent works, the figure sits down with a laptop most of the time, and otherwise does what the state's own clip does
-export const WORK_VARIANTS = {
-    running: [["type", 0.7]],
-    writing: [["type", 0.7]],
-};
+// While the agent works, the figure seated works at a laptop most of the time, rolled once for each stretch of work so it keeps at it from
+// one tool to the next; on its feet, or when the roll says no, it does what each state's own clip does
+export const WORK_VARIANTS = [["type", 0.7]];
 
 // Things it does by itself while it sits at rest: once the state has lasted `after` seconds, every so often (a random number of seconds
 // between the two in `every`), and then with chance `odds`
@@ -77,8 +75,8 @@ export function ambientFor(state, held, next, now, random) {
 // whether this jump up, `height` pixels for a figure `size` pixels tall, turns over on the way
 export const flips = (height, size, random) => height > FLIP_OVER * size && random() < FLIP_ODDS;
 
-// The clip a working state shows today: the figure rolls once for each stretch of the state, so it does not change its mind mid-way
-export function workClip(state, usual, random) {
-    const found = (WORK_VARIANTS[state] || []).find(([, odds]) => random() < odds);
-    return found ? found[0] : usual;
+// The clip a stretch of work shows, or "" for each state's own: the figure rolls once for each stretch, so it does not change its mind
+export function workClip(random) {
+    const found = WORK_VARIANTS.find(([, odds]) => random() < odds);
+    return found ? found[0] : "";
 }

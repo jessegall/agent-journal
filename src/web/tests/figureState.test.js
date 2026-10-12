@@ -1,7 +1,7 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {ASLEEP_AFTER, EGGS, POINTED_AFTER, SITS, beatsAfter, clipOf, eggFor, figureStateOf} = await import("../src/domain/figureState.js");
+const {ASLEEP_AFTER, EGGS, POINTED_AFTER, RESTS, beatsAfter, clipOf, eggFor, figureStateOf} = await import("../src/domain/figureState.js");
 const {REACTIONS} = await import("../src/figure/reactions.js");
 const {pointedView} = await import("../src/figure/places.js");
 
@@ -100,7 +100,8 @@ test("the walk plays only while the figure moves: no held state is the walk", ()
     for (const state of STATES) expect(clipOf(state)).not.toBe("walk");
 });
 
-test("an idle or sleeping figure sits on the edge of a panel, and one at work or waiting on a tool stands", () => {
-    for (const state of ["idle", "asleep", "compacting", "paused", "stopped"]) expect(SITS.has(state), state).toBe(true);
-    for (const state of ["thinking", "searching", "writing", "running", "waiting", "asking"]) expect(SITS.has(state), state).toBe(false);
+test("a figure whose agent cannot act stays seated at home, and one that is idle, working or waiting roams", () => {
+    for (const state of ["asleep", "compacting", "paused", "stopped"]) expect(RESTS.has(state), state).toBe(true);
+    for (const state of ["idle", "thinking", "searching", "writing", "running", "waiting", "asking"])
+        expect(RESTS.has(state), state).toBe(false);
 });

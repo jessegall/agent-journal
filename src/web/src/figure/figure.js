@@ -79,14 +79,16 @@ function hingeAxis(base, side) {
 
 // rig.Posing, kept as each bone's move from its rest place (final @ matrix_local⁻¹) in Blender's armature space
 class Posing {
-    constructor(rig, posture = "stand") {
+    constructor(rig, posture = "stand", stride = 0) {
         this.rig = rig;
         this.final = new Map();
         this.eyes = 1;
         this.eyeTint = null;
         this.hearts = 0;
-        this.sits = posture === "sit";
+        this.laptop = false;
+        this.posture = posture;
         this.sway = 0;
+        this.stride = stride;
     }
 
     standing(name) {
@@ -193,6 +195,11 @@ class Posing {
     // hearts in place of the eyes, `size` times their own size; 0 leaves the eyes
     heartEyes(size) {
         this.hearts = size;
+    }
+
+    // a laptop open on the lap, its lid toward the face
+    holdLaptop() {
+        this.laptop = true;
     }
 
     // every bone's move, the whole figure turned `facing` degrees toward the viewer's right as rig.Posing.revolve turns it
@@ -331,16 +338,28 @@ function sleep(pose, stance, t) {
 }
 
 function walk(pose, stance, t) {
+    pose.stride = t;
     const phase = 2 * Math.PI * t;
-    pose.lift("root", {z: 0.05 * Math.cos(2 * phase)});
+    strideUnder(pose);
     pose.turn("hips", {z: 5 * Math.sin(phase)});
     trunk(pose, {lean: 3, twist: -7 * Math.sin(phase), turn: 3 * Math.sin(phase)});
     armsAtRest(pose, stance, [], {l: 22 * Math.sin(phase), r: -22 * Math.sin(phase)});
+    strideLegs(pose);
+}
+
+// The walk's lower body at `pose.stride` of its cycle: the body bobbing before a clip poses the rest, and the legs stepping after it. Every
+// clip drawn on the move walks on these, so the figure goes on thinking or working as it goes; the hips' sway is the walk's own, as a
+// clip that reaches for the chin or the lap places its hands against an upper body that does not swing
+function strideUnder(pose) {
+    pose.lift("root", {z: 0.05 * Math.cos(4 * Math.PI * pose.stride)});
+}
+
+function strideLegs(pose) {
     for (const [side, offset] of [
         ["l", 0.0],
         ["r", Math.PI],
     ]) {
-        const angle = phase + offset;
+        const angle = 2 * Math.PI * pose.stride + offset;
         const thigh = -30 * Math.sin(angle);
         const knee = 42 * Math.max(Math.cos(angle), 0);
         pose.turn(`thigh_${side}`, {x: thigh});
@@ -401,9 +420,9 @@ function seatedLegs(pose) {
     }
 }
 
-// the body lowered by `depth` on bent knees, the feet flat where they stand; seated, it has no knees under it to bend
+// the body lowered by `depth` on bent knees, the feet flat where they stand; seated or walking, the posture has the legs
 function crouch(pose, depth) {
-    if (pose.sits) return;
+    if (pose.posture !== "stand") return;
     pose.lift("root", {z: -depth});
     fold(pose, depth);
 }
@@ -445,6 +464,7 @@ function type(pose, stance, t) {
     breathe(pose, 0);
     trunk(pose, {lean: 6, nod: 20 - 4 * pause, turn: 2 * waveOf(t)});
     handsTo(pose, stance, 1, [TYPING_HANDS[0], TYPING_HANDS[1], TYPING_HANDS[2] + 0.035 * tap]);
+    pose.holdLaptop();
     eyesAs(pose, "reading");
 }
 
@@ -1072,9 +1092,16 @@ function pointed(pose, stance, t) {
     POINTED[stance.voice](pose, stance, onceTime(t, 20));
 }
 
-// The postures a clip is drawn in: a gesture standing or seated on an edge, its legs laid by the posture; a move of the whole body on its
-// feet alone; a hang from its hands alone; and the laptop only on a lap
-const GESTURE = ["stand", "sit"];
+// What a posture does to the legs of whatever clip is drawn in it: what it sets before the clip poses the body, and what it lays over the
+// legs after. Standing, the clip has the legs to itself.
+const LEGS = {
+    sit: {under: seat, over: seatedLegs},
+    walk: {under: strideUnder, over: strideLegs},
+};
+
+// The postures a clip is drawn in: a gesture standing, seated on an edge or on the move, its legs laid by the posture; a move of the whole
+// body on its feet alone; a hang from its hands alone; and the laptop only on a lap
+const GESTURE = ["stand", "sit", "walk"];
 const MOVE = ["stand"];
 const HANGING = ["hang"];
 const ON_A_LAP = ["sit"];
@@ -1301,7 +1328,60 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
         carried: handsHolding(carried, new Set([...BUSY_ITEMS, "squire_quill"])),
         free: new Set(Object.keys(SIDES).filter((side) => !busy.has(side))),
     };
-    return {scene, rig: rigOf(scene), stance, eyes};
+    const laptop = laptopOf();
+    scene.add(laptop);
+    return {scene, rig: rigOf(scene), stance, eyes, laptop};
+}
+
+// A laptop drawn in the flat colours of the chat's own: its hinge at the origin, its keyboard toward the body (-z), its lid opened a little
+// past upright with the screen toward the face and the mark on its back
+const LAPTOP = {width: 1.0, depth: 0.55, thickness: 0.09, open: 105};
+const LAPTOP_COLOURS = {base: 0x474a52, lid: 0x2b2e38, screen: 0x1b1d24, edge: 0xa9adb8, mark: 0x5e64c9};
+
+function laptopOf() {
+    const {width, depth, thickness, open} = LAPTOP;
+    const flat = (geometry, colour) => {
+        const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: colour, side: THREE.DoubleSide}));
+        mesh.frustumCulled = false;
+        return mesh;
+    };
+    const slab = (colour, w, h, d) => {
+        const mesh = flat(new THREE.BoxGeometry(w, h, d), colour);
+        mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), new THREE.LineBasicMaterial({color: LAPTOP_COLOURS.edge})));
+        return mesh;
+    };
+    const base = slab(LAPTOP_COLOURS.base, width, thickness, depth);
+    base.position.set(0, thickness / 2, -depth / 2);
+    const lid = slab(LAPTOP_COLOURS.lid, width, depth, thickness);
+    lid.position.set(0, depth / 2, thickness / 2);
+    const screen = flat(new THREE.PlaneGeometry(width * 0.88, depth * 0.82), LAPTOP_COLOURS.screen);
+    screen.position.set(0, depth / 2, -0.002);
+    const mark = flat(new THREE.CircleGeometry(depth * 0.12, 20), LAPTOP_COLOURS.mark);
+    mark.position.set(0, depth / 2, thickness + 0.002);
+    const hinge = new THREE.Group();
+    hinge.position.y = thickness;
+    hinge.rotation.x = radians(open - 90);
+    hinge.add(lid, screen, mark);
+    const laptop = new THREE.Group();
+    laptop.matrixAutoUpdate = false;
+    laptop.visible = false;
+    laptop.add(base, hinge);
+    return laptop;
+}
+
+// Where the laptop sits: level on the thighs with its hinge out past the knees, clear of the body, turned the way the thighs point, so it
+// turns with the figure
+const LAP_REACH = 1.5;
+const THIGH_TOP = 0.3;
+
+function lapOf(world) {
+    const at = (name) => new THREE.Vector3().setFromMatrixPosition(world.get(name));
+    const hips = at("thigh_l").add(at("thigh_r")).multiplyScalar(0.5);
+    const knees = at("shin_l").add(at("shin_r")).multiplyScalar(0.5);
+    const forward = knees.clone().sub(hips).setY(0).normalize();
+    const up = new THREE.Vector3(0, 1, 0);
+    const hinge = hips.lerp(knees, LAP_REACH).addScaledVector(up, THIGH_TOP);
+    return new THREE.Matrix4().makeBasis(up.clone().cross(forward), up, forward).setPosition(hinge);
 }
 
 // A heart the size of an eye, drawn flat toward the viewer, its point down
@@ -1333,8 +1413,29 @@ function heartOver(eye) {
     return heart;
 }
 
-function place(figure, pose, facing) {
-    const moves = pose.moves(facing);
+// Each bone's move `k` of the way from the moves in `from` to those in `to`: its head carried along a straight line and its turn eased the
+// short way round, so a change of clip, posture or facing flows from the last pose drawn instead of jumping to the next
+function blended(rig, from, to, k) {
+    return new Map(
+        [...to].map(([name, move]) => {
+            const rest = rig.heads.get(name);
+            const head = rest.clone().applyMatrix4(from.get(name)).lerp(rest.clone().applyMatrix4(move), k);
+            const turn = new THREE.Quaternion().setFromRotationMatrix(from.get(name));
+            turn.slerp(new THREE.Quaternion().setFromRotationMatrix(move), k);
+            return [
+                name,
+                translation(head)
+                    .multiply(new THREE.Matrix4().makeRotationFromQuaternion(turn))
+                    .multiply(translation(rest.clone().negate())),
+            ];
+        })
+    );
+}
+
+// the figure's bones placed for the pose, turned `facing` degrees, eased from `blend.from` by `blend.k` while a blend is given; the moves
+// placed are returned, so the next change can ease from them
+function place(figure, pose, facing, blend) {
+    const moves = blend ? blended(figure.rig, blend.from, pose.moves(facing), blend.k) : pose.moves(facing);
     const world = new Map();
     for (const bone of figure.rig.bones) {
         const placed = TO_GLB.clone().multiply(moves.get(bone.name)).multiply(FROM_GLB).multiply(figure.rig.rest.get(bone.name));
@@ -1346,11 +1447,17 @@ function place(figure, pose, facing) {
         material.uniforms.openness.value = pose.eyes;
         if (material.uniforms.light) material.uniforms.colour.value.set(...(pose.eyeTint ?? material.userData.colour));
     }
+    figure.laptop.visible = pose.laptop;
+    if (pose.laptop) {
+        figure.laptop.matrix.copy(lapOf(world));
+        figure.laptop.matrixWorldNeedsUpdate = true;
+    }
     for (const shape of figure.eyes.shapes) shape.visible = !pose.hearts;
     for (const heart of figure.eyes.hearts) {
         heart.visible = pose.hearts > 0;
         heart.scale.setScalar(HEART_SIZE * pose.hearts);
     }
+    return moves;
 }
 
 // A look the eyes take on over whatever the body does, `seconds` into a look that lasts `lasts` seconds: taken on at once and let go at the
@@ -1383,14 +1490,16 @@ export class Stage {
         this.renderer.setClearColor(0x000000, 0);
     }
 
-    // the clip's pose at this frame in `posture`, the figure turned `facing` degrees, with the look `eyes` takes on, drawn to fill the canvas
-    draw(figure, clip, frame, facing, canvas, {posture = "stand", eyes = null} = {}) {
-        const pose = new Posing(figure.rig, posture);
-        if (pose.sits) seat(pose);
+    // The clip's pose at this frame in `posture`, the figure turned `facing` degrees, with the look `eyes` takes on, drawn to fill the canvas;
+    // on the move, `stride` is how far through its step the walk is, and during a change `blend` eases from the moves drawn before it. It
+    // returns the moves it drew.
+    draw(figure, clip, frame, facing, canvas, {posture = "stand", eyes = null, stride = 0, blend = null} = {}) {
+        const pose = new Posing(figure.rig, posture, stride);
+        LEGS[posture]?.under(pose);
         clip.pose(pose, figure.stance, frame / clip.frames);
-        if (pose.sits) seatedLegs(pose);
+        LEGS[posture]?.over(pose);
         if (eyes) lookAs(pose, eyes, facing);
-        place(figure, pose, facing);
+        const moves = place(figure, pose, facing, blend);
         const size = canvas.width * SUPERSAMPLE;
         if (this.renderer.domElement.width !== size) {
             this.renderer.setSize(size, size, false);
@@ -1401,5 +1510,6 @@ export class Stage {
         context.imageSmoothingQuality = "high";
         context.filter = `blur(${(SOFTEN * canvas.width) / CELL}px)`;
         context.drawImage(this.renderer.domElement, 0, 0, canvas.width, canvas.height);
+        return moves;
     }
 }
