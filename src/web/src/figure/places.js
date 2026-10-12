@@ -90,9 +90,20 @@ export function seatAt(box, side, {size}) {
 // the pixels of a seated figure above the edge it sits on
 export const seatRise = ({size, below}) => (1 - below - SEAT_DROP) * size;
 
+// A spot kept inside the window: the figure's picture within its left, right and top, and its feet on or above the foot of the window,
+// so the ground it lands on is always one it can stand on
+export const insideWindow = (spot, {size, below}) => ({
+    ...spot,
+    x: Math.min(Math.max(spot.x, size / 2), window.innerWidth - size / 2),
+    y: Math.min(Math.max(spot.y, (1 - below) * size), window.innerHeight),
+});
+
 export function seatOf(figure, near) {
     const {element, edge} = groundEdge();
-    return {...freeSpot(Object.keys(SEAT_SIDES).map((side) => seatAt(edge, side, figure)), figure, near), view: null, on: element};
+    // with nothing to sit on it sits on the foot of the window, its feet hanging at the edge
+    const ledge = element ? edge : {...edge, top: edge.top - SEAT_DROP * figure.size};
+    const spot = freeSpot(Object.keys(SEAT_SIDES).map((side) => seatAt(ledge, side, figure)), figure, near);
+    return {...insideWindow(spot, figure), view: null, on: element};
 }
 
 // The edge a figure stands on at home: the main chat's compose box, else the floor of the page itself, else the foot of the window
@@ -110,5 +121,5 @@ export function spotOf(view, figure, near) {
     const tab = view && document.querySelector(`[data-tab="${view}"]`);
     if (tab) return {...freeSpot(tabSpots(tab, figure), figure, near), view, on: tab};
     const {element, edge} = groundEdge();
-    return {...freeSpot(alongTop(edge, HOME_ALONG), figure, near), view: null, on: element};
+    return {...insideWindow(freeSpot(alongTop(edge, HOME_ALONG), figure, near), figure), view: null, on: element};
 }

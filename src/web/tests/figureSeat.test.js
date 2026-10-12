@@ -39,3 +39,14 @@ test("a seated figure's hips sit on the box's edge, and the room it takes above 
     expect(spot.y).toBeGreaterThan(600);
     expect(seatRise(FIGURE)).toBeCloseTo((1 - FIGURE.below) * FIGURE.size - (spot.y - 600), 5);
 });
+
+test("with nothing to sit on the figure sits on the foot of the window, wholly inside it, never past an edge", () => {
+    globalThis.window = {innerWidth: 1280, innerHeight: 720};
+    globalThis.document = {querySelector: () => null, querySelectorAll: () => []};
+    for (const near of [{x: 0, y: 700}, {x: 1280, y: 700}]) {
+        const spot = seatOf(FIGURE, near);
+        expect(spot.y).toBeLessThanOrEqual(720);
+        expect(spot.x).toBeGreaterThanOrEqual(FIGURE.size / 2);
+        expect(spot.x).toBeLessThanOrEqual(1280 - FIGURE.size / 2);
+    }
+});
