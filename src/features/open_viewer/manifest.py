@@ -17,7 +17,7 @@ from providers import PROVIDERS
 from engine.version import version
 from engine.package import data
 from features.open_viewer.attachments import listed_types
-from features.triggers.watched import FACTS
+from framework.watched import FACTS
 from controllers.nudges import Nudges
 from typing import TypedDict
 

@@ -10,7 +10,7 @@ from framework.base import Feature
 from events.triggers import TriggerFired
 from features.sequences.resource import Sequence
 from declaring.trigger import Mark
-from features.triggers.resource import Trigger
+from resources.triggers import Trigger
 from providers.payload import BashCall
 from resources.base import USER
 from resources.types import AgentRow, Question

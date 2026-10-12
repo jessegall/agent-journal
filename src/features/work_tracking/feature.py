@@ -17,7 +17,7 @@ from providers.payload import BashCall, WriteCall
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
 from framework.base import Feature
-from features.triggers.watched import COUNT, FACTS, Fact, state_facts
+from framework.watched import COUNT, FACTS, Fact, state_facts
 from features.work_tracking.next import ready
 from framework.sending import Sent
 from features.work_tracking.auto import automatic

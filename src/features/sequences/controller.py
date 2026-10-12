@@ -9,7 +9,7 @@ from controllers.base import Controller
 from controllers.types import Agents
 from features.sequences.resource import BY_HAND, RunKey, Sequence
 from features.triggers.controller import Triggers
-from features.triggers.resource import START
+from resources.triggers import START
 from resources.base import AGENT, SECTION, SYSTEM
 from controllers.marks import action
 from features.phone.chat_view import SEQUENCES, SEQUENCE_STEPS

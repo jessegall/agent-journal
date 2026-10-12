@@ -8,7 +8,7 @@ from providers.payload import AskCall, BashCall
 from resources.base import AGENT
 from resources.types import AgentRow, Question, Todo
 from framework.base import Feature
-from features.triggers.watched import FACTS, state_facts
+from framework.watched import FACTS, state_facts
 from resources.base import SYSTEM
 from framework.journal import Journal
 from features.ask_questions.answers import answers_added

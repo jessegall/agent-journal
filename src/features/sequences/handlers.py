@@ -19,7 +19,7 @@ from features.sequences.details import IN_CHAT, STEP, STEP_HELD, STEP_STALLED, U
 from features.sequences.dispatch import board_of, dispatched_by_line, working_agent
 from features.sequences.resource import Run, RunKey
 from features.triggers.controller import Triggers
-from features.triggers.resource import START
+from resources.triggers import START
 from controllers.types import CONTROLLERS
 from resources.base import FIRED, SECTION, SYSTEM
 from resources.types import TYPES
