@@ -7,7 +7,7 @@ from http.server import ThreadingHTTPServer
 from typing import NamedTuple
 
 from controllers.types import Docs, Todos
-from features.collections.controller import Collections
+from controllers.collections import Collections
 from features.plans.controller import Plans
 from features.boards.controller import Boards
 from features.tickets.controller import Tickets

@@ -13,7 +13,7 @@ import pytest
 from controllers.types import Agents, Comments, Docs, Messages, Nudges
 from engine.markers import marked
 from framework.loaded import running
-from features.collections.controller import Collections
+from controllers.collections import Collections
 from features.sharing.feature import SharingFeature
 from runner.hooks import handle
 from engine.ran import announce

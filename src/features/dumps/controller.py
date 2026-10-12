@@ -5,7 +5,7 @@ import controllers.types as types_module
 from controllers.base import CONTROLLERS, Controller, controller_of
 from controllers.types import Messages
 from engine.given import given
-from features.collections.controller import Collections
+from controllers.types import Collections
 from resources.dumps import ENTRY, ITEM, Dump, Offer, entry
 from features.message_buttons.shaping import one
 from resources.base import AGENT, Ref, Refused, titled
