@@ -4,8 +4,8 @@ import {copyText} from "../platform/clipboard.js";
 import {ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import ReplyTool from "./ReplyTool.vue";
+import {FACES} from "../domain/faces.js";
 
-const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 const props = defineProps({
     turn: {type: Object, required: true},
     text: {type: String, required: true},

@@ -6,8 +6,8 @@ import Button from "./kit/Button.vue";
 import Cell from "./kit/Cell.vue";
 import {firstTime} from "./once.js";
 import {useTrap} from "../composables/trap.js";
+import {FACES} from "../domain/faces.js";
 
-const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠", "🎩"];
 const MARGIN = 12;
 const LOW = 0.3;
 const TOP = 56;
