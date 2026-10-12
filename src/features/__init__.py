@@ -63,7 +63,7 @@ def wire() -> None:
 def subscribe() -> None:
     from framework.switches import environments_changed, switch_changed
     if not SWITCHED and not COMMANDS_ONLY:
-        SWITCHED.extend([*(bus.on(kind, switch_changed) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed)])
+        SWITCHED.extend([*(bus.on(kind, switch_changed) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed), bus.on("environment", seat_created_home)])
 
 
 def sync_rows(root: Path) -> None:
@@ -98,9 +98,14 @@ def stamp_seated(root: Path, lines: list[str]) -> None:
     write_text(Path(root) / SEATED_STAMP, "\n".join(lines))
 
 
-def seat_new_home(root: Path, home: str) -> None:
+def seat_created_home(event, record) -> None:
     """Seats an environment as soon as it is made, after the answer that made it, so the next command finds its feature rows there instead of paying for a hundred of them inside a read or inside the making; until then its switches read as their defaults."""
-    bus.background(f"seat {root}/{home}", lambda: seated_home(root, home))
+    from controllers.types import Environments
+    from resources.base import SYSTEM
+    if event.action != "created" or record is None:
+        return
+    home = Environments(record, actor=SYSTEM).rows.peek(event.n).title
+    bus.background(f"seat {record.root}/{home}", lambda: seated_home(record.root, home))
 
 
 def seated_home(root: Path, home: str) -> None:

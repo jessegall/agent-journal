@@ -820,6 +820,22 @@ def test_feature_rows_are_seated_again_only_when_the_features_or_environments_ch
     assert seated == [("other",)], "a new environment alone is seated"
 
 
+def test_an_environment_made_after_the_load_is_seated_by_hearing_it_made_and_its_controller_names_no_feature():
+    import ast
+    import controllers.environments as environments
+    import features
+    from controllers.types import Environments, Features
+    from engine.record import Record
+    record = fresh("main")
+    features.load(record.root)
+    Environments(record, actor=SYSTEM).create("other")
+    bus.background_finished()
+    assert Features(Record(record.root, "other"), actor=SYSTEM).rows.summaries(), "an environment made after the load gets its feature rows, whatever the switches"
+    named = [node for node in ast.walk(ast.parse(Path(environments.__file__).read_text()))
+             if isinstance(node, (ast.Import, ast.ImportFrom)) and any(name.split(".")[0] == "features" for name in [getattr(node, "module", None) or "", *(alias.name for alias in node.names if isinstance(node, ast.Import))])]
+    assert named == [], "the environments controller reaches no feature, not even from inside a function"
+
+
 def test_old_feature_names_are_renamed_in_settings_gates_and_triggers_in_one_pass():
     import features
     from engine.stored import read_json, write_json
