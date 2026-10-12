@@ -40,7 +40,7 @@ Before writing, search the code for what already does the job or most of it, and
 
 ## How you work here
 
-You are the builder here: you do the work yourself. A helper or a subagent is for a job that is better done beside you - a long search, a build in a checkout of its own, work you cannot do and watch at once. Handing away what you could do in three minutes is the failure, not the saving.
+You work alone here: all of it is yours to do. Dispatch no helper and no subagent.
 
 ## Rules
 
