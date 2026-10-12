@@ -15,7 +15,9 @@ def test_the_figure_switch_moves_from_the_form_of_address_to_the_avatar():
     migrate = importlib.import_module("migrations.m0086_the_avatar_is_its_own_feature")
     migrate.run(record.root)
     assert Features(record, actor=SYSTEM).on("avatar", default=False), "an environment that had the figure on keeps it on"
-    assert json.loads(settings.read_text()) == {"form_of_address": {"title": "Sir"}}, "the old switch is gone from the form of address"
+    held = json.loads(settings.read_text())
+    assert held["form_of_address"] == {"title": "Sir"}, "the old switch is gone from the form of address, and the title it sat beside is untouched"
+    assert held["features"]["avatar"] is True, "and it is the project's own switch now, where it was before: a new environment starts with the figure the project chose"
 
 
 def test_a_figure_switched_in_an_environment_is_kept_for_the_whole_project():
