@@ -273,7 +273,12 @@ class Sessions:
         return max(ended)[1] if ended else ""
 
     def touch(self, session: str, worked_in: str) -> None:
-        self.write(session, seen=time.time(), worked_in=worked_in)
+        self.write(session, seen=time.time(), worked_in=worked_in, **self._unretired(session))
+
+    def _unretired(self, session: str) -> dict:
+        """Clears a retirement made by another name of this same agent. One process is one agent, so a record it retired and then went on reporting through was never succeeded: it took the environment from itself, which leaves the environment held by a record nobody touches while the working session sits retired out of sight."""
+        held = self.read(session)
+        return {"retired": {}} if held.retired and held.retired.get("by") in self.agent(session, held.pid) else {}
 
     def unbind(self, session: str) -> None:
         self.write(session, environment="")

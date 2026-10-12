@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.4 — An environment is held by the agent that is working in it, not by a record of itself it retired
+
+- An agent could take an environment from itself and then report through the record it had just retired, so the environment was held by a name nobody ever touched: never heard from, its row still stopped, and the status bar said "started, but it never reported in" while the agent wrote in the same window. One process is one agent, so a session that goes on reporting through a record its own other name retired was never succeeded, and the retirement is cleared the moment it reports.
+
 ## 2.272.3 — Nothing in the Developer group is on unless you ask, and a chat you scrolled up never jumps
 
 - Developer error reports, session recording and the critique rounds are off until you switch them on. All three were on in every project, because a feature is on unless it says otherwise and none of them said otherwise. Developer error reports in particular turn the journal's quiet fallbacks into refusals, which is not what a project that is merely using the journal wants.
