@@ -800,7 +800,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     from types import SimpleNamespace
     members = sharing._loaded_members(here, SimpleNamespace(type="collection", home_env="", member_refs=lambda: ["nothing:1", "todo:x", "todo:99999", todo.ref]))
     assert [member.n for member in members] == [todo.n], "a collection's members that are of no type, have no number or are gone are left out of the page"
-    from features.dumps.controller import Dumps
+    from controllers.dumps import Dumps
     pile = Dumps(here, actor=USER).create("Pile", brief="pasted notes")
     group = Collections(here, actor=USER).create("Filed from a pile", source=pile.ref)
     inside = Docs(here, actor=USER).create("Filed", brief="in")

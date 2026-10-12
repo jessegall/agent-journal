@@ -1,13 +1,11 @@
 import json
 import time
 
-import controllers.types as types_module
 from controllers.base import CONTROLLERS, Controller, controller_of
-from controllers.types import Messages
+from controllers.messages import Messages
 from engine.given import given
-from controllers.types import Collections
-from resources.dumps import ENTRY, ITEM, Dump, Offer, entry
-from features.message_buttons.shaping import one
+from controllers.collections import Collections
+from resources.dumps import ENTRY, ITEM, OWN_WORDS, Dump, Offer, entry
 from resources.base import AGENT, Ref, Refused, titled
 from resources.types import ref_named
 from controllers.marks import action
@@ -16,9 +14,6 @@ LABEL = 40
 LOG_KEPT = 20
 ANSWER = 600
 OFFERED = 4
-OWN_WORDS = -2
-
-
 def named_refs(text: str) -> list[str]:
     """Every row a comma list names, written as type:number."""
     return [str(ref_named(part.strip())) for part in text.split(",") if part.strip()]
@@ -99,7 +94,7 @@ class Dumps(Controller):
             option = Offer.from_payload(raw)
             if not option.label:
                 continue
-            action = one(self.record, option.to_json()) if option.action else {}
+            action = self.shaped_button(option.to_json()) if option.action else {}
             if option.action and not action:
                 raise Refused(f"{option.label}: {option.type} {option.action} is not a command")
             steps.append({**action, "label": option.label, **given(ask=option.ask)})
@@ -274,6 +269,3 @@ class Dumps(Controller):
     def items(self, n: int) -> list[str]:
         r = self.load(n)
         return [f"{name}: {r.item(name).standing}" for name in r.item_names]
-
-
-types_module.register(Dumps)

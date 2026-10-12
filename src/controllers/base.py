@@ -19,6 +19,7 @@ from engine.record import Record
 from resources.base import OWNER, PART_OF, PROJECT, SYSTEM, USER, Ref, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
 from controllers.discussion import TWICE_WITHIN, Discussed
+from controllers.buttons import Buttons
 from controllers.files import Files
 from controllers.links import Links
 from controllers import marks
@@ -152,7 +153,7 @@ def word_parameters(controller: type, name: str) -> list[inspect.Parameter]:
     return list(inspect.signature(word_function(controller, name)).parameters.values())[1:]
 
 
-class Controller(Files, Links, Discussed):
+class Controller(Files, Links, Discussed, Buttons):
     resource = Resource
     actor = "user"
 

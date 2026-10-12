@@ -1,7 +1,7 @@
 import pytest
 
 from controllers.types import Messages
-from features.message_buttons.shaping import MOST, shaped
+from controllers.buttons import MOST
 from resources.base import AGENT
 from tests.conftest import fresh
 
@@ -11,25 +11,25 @@ def test_a_button_names_a_type_and_action_and_what_would_not_run_is_dropped():
     rows = Messages(record, actor=AGENT)
 
     start = {"label": "Okay, approve", "type": "plan", "n": 3, "action": "approve"}
-    assert shaped(record, [start]) == [start], "a button on a row is kept as it was written"
-    assert shaped(record, [{"label": "New to-do", "type": "todo", "action": "create", "body": {"title": "one"}}]) == \
+    assert Messages(record).shaped_buttons([start]) == [start], "a button on a row is kept as it was written"
+    assert Messages(record).shaped_buttons([{"label": "New to-do", "type": "todo", "action": "create", "body": {"title": "one"}}]) == \
         [{"label": "New to-do", "type": "todo", "action": "create", "body": {"title": "one"}}], "a type-level button needs no row"
-    assert shaped(record, [{"label": "Done", "type": "todo", "n": 1, "action": "done"}]) == \
+    assert Messages(record).shaped_buttons([{"label": "Done", "type": "todo", "n": 1, "action": "done"}]) == \
         [{"label": "Done", "type": "todo", "action": "done", "n": 1}], "a word the type renames is an action too"
 
-    assert shaped(record, [{"label": "Go", "type": "nonsense", "n": 1, "action": "all"}]) == [], "a type nobody has is dropped"
-    assert shaped(record, [{"label": "Go", "type": "plan", "n": 1, "action": "detonate"}]) == [], \
+    assert Messages(record).shaped_buttons([{"label": "Go", "type": "nonsense", "n": 1, "action": "all"}]) == [], "a type nobody has is dropped"
+    assert Messages(record).shaped_buttons([{"label": "Go", "type": "plan", "n": 1, "action": "detonate"}]) == [], \
         "an action the type does not have is dropped"
-    assert shaped(record, [{"label": "  ", "type": "plan", "n": 1, "action": "approve"}]) == [], "a button with no label is dropped"
-    assert (shaped(record, "go"), shaped(record, [7])) == ([], []), "what is not a list of objects is nothing"
-    assert len(shaped(record, [start] * (MOST + 3))) == MOST, "no more than five are kept"
+    assert Messages(record).shaped_buttons([{"label": "  ", "type": "plan", "n": 1, "action": "approve"}]) == [], "a button with no label is dropped"
+    assert (Messages(record).shaped_buttons("go"), Messages(record).shaped_buttons([7])) == ([], []), "what is not a list of objects is nothing"
+    assert len(Messages(record).shaped_buttons([start] * (MOST + 3))) == MOST, "no more than five are kept"
     long = "Apply the suggestions, and give the viewer its own feature text"
-    assert shaped(record, [{**start, "label": long}])[0]["label"] == long, "a button's whole label is kept, not cut at forty characters"
-    assert shaped(record, [{**start, "again": True}]) == [{**start, "again": True}], "a button may say it can be pressed again"
+    assert Messages(record).shaped_buttons([{**start, "label": long}])[0]["label"] == long, "a button's whole label is kept, not cut at forty characters"
+    assert Messages(record).shaped_buttons([{**start, "again": True}]) == [{**start, "again": True}], "a button may say it can be pressed again"
     options = [{"label": "Accept option A", "say": "A", "choice": "option"}, {"label": "Accept option B", "say": "B", "choice": "option"}]
-    assert [b.get("choice") for b in shaped(record, options)] == ["option", "option"], "buttons that are one decision keep their shared choice"
+    assert [b.get("choice") for b in Messages(record).shaped_buttons(options)] == ["option", "option"], "buttons that are one decision keep their shared choice"
     asked = [{**options[0], "ask": " Which one? "}, options[1]]
-    assert shaped(record, asked)[0]["ask"] == "Which one?", "the first button of a choice may carry the question it answers"
+    assert Messages(record).shaped_buttons(asked)[0]["ask"] == "Which one?", "the first button of a choice may carry the question it answers"
 
     made = rows.create("Ready when you are", buttons=[start, {"label": "Go", "type": "plan", "n": 1, "action": "detonate"}])
     assert rows.load(made.n).data["buttons"] == [start], "the message keeps the button that runs and drops the one that does not"
@@ -94,12 +94,12 @@ def test_a_button_can_run_a_command_the_agent_asks_for_and_it_runs_only_on_the_p
     argv = ["journal", "plugin", "upgrade", "20", "--yes"]
     asked = {"label": "Upgrade the plugin", "runs": argv}
 
-    assert shaped(record, [asked]) == [asked], "a button that names a command is kept, with the command as its own words"
+    assert Messages(record).shaped_buttons([asked]) == [asked], "a button that names a command is kept, with the command as its own words"
     assert Button.from_payload(asked).command == "journal plugin upgrade 20 --yes", \
         "the card reads the command whole, because pressing the button is the user reading it and saying yes"
-    assert shaped(record, [{"label": "Upgrade", "runs": "journal plugin upgrade 20"}]) == [], \
+    assert Messages(record).shaped_buttons([{"label": "Upgrade", "runs": "journal plugin upgrade 20"}]) == [], \
         "a command written as one string is dropped: the words the agent named are the words that run, and nothing splits them"
-    assert shaped(record, [{"label": "", "runs": argv}]) == [], "and a button with no label is dropped, as any other is"
+    assert Messages(record).shaped_buttons([{"label": "", "runs": argv}]) == [], "and a button with no label is dropped, as any other is"
 
     ran = []
     row = rows.create("Ready when you are", buttons=[asked])

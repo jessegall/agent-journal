@@ -1,6 +1,5 @@
 from events.resources import AnyEvent, ResourceCreated
 from resources.buttons import unspent
-from features.message_buttons.shaping import shaped
 from framework.parts import Context, Handler
 from controllers.types import CONTROLLERS, Comments
 from resources.base import USER
@@ -16,7 +15,7 @@ class DropUnknownButtons(Handler):
         given = (rows.load(event.n).data or {}).get("buttons")
         if given is None:
             return
-        kept = shaped(context.record, given)
+        kept = rows.shaped_buttons(given)
         if kept != given:
             rows.update(event.n, buttons=kept)
 
