@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 from controllers.types import Agents, CONTROLLERS, Notifications, Works
 from engine.record import Record
-from resources.base import AGENT, SYSTEM, USER, Event, Refused
+from resources.base import AGENT, SYSTEM, USER, Event, Missing, Refused
 from resources.types import AgentRow, BUSY, COMPACTING, IDLE, STATES, STOPPED, TYPES, WORKING
 from engine.wording import counted
 
@@ -38,8 +38,16 @@ def grouped(events: list[Event]) -> dict[tuple, dict]:
     return groups
 
 
+def still_there(record: Record, e: Event):
+    """The row an event is about, or nothing when it has been deleted since. An event outlives its row by design, and a line about one that is gone must not stop every other line reaching the agent."""
+    try:
+        return CONTROLLERS[e.type](record, actor=AGENT).read(e.n)
+    except Missing:
+        return None
+
+
 def render(events: list[Event], record: Record) -> tuple[str, dict]:
-    rows = [CONTROLLERS[e.type](record, actor=AGENT).read(e.n) for e in events if TYPES[e.type].typed_as_title]
+    rows = [row for row in (still_there(record, e) for e in events if TYPES[e.type].typed_as_title) if row is not None]
     line = [r.agent_line() for r in sorted(rows, key=lambda r: not r.data.get("lead"))]
     return "; ".join(dict.fromkeys(line)), grouped([e for e in events if not TYPES[e.type].typed_as_title])
 

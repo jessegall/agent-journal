@@ -1,5 +1,4 @@
 import re
-import subprocess
 import time
 from pathlib import Path
 
@@ -143,9 +142,8 @@ class Secrets(Controller):
     def _login_opening(self, row: Secret) -> str:
         """Opens the browser in a process of its own and answers at once. The window stands until the user closes it, which is longer than any call may take: run here and it holds the server, every command behind it times out, and the button that asked looks dead."""
         self.update(row.n, logging_in=time.time())
-        subprocess.Popen([*entry("journal"), "--root", str(self.record.root), "--env", self.record.env, "secret", "login", str(row.n), "--wait"],
-                         cwd=self.record.root.parent, start_new_session=True,
-                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.processes.apart([*entry("journal"), "--root", str(self.record.root), "--env", self.record.env, "secret", "login", str(row.n), "--wait"],
+                             self.record.root.parent)
         return (f"a browser is opening on {row.url}: log in there and close its window, and the login is saved. "
                 f"The first time it can take a minute while the browser itself is fetched. "
                 f"Secret {row.n} says when the login is saved, and nothing else waits on it.")

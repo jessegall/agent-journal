@@ -40,6 +40,14 @@ class TheProcesses:
         from agents.terminal import launch_failure
         return launch_failure(root, environment, lines)
 
+    def apart(self, command: list[str], cwd: Path) -> None:
+        """Starts a command in a session of its own, with nothing attached to it: the journal asks for this rather than reaching for subprocess itself, so there is one place that says what a detached run looks like and one place a test can stand in for."""
+        launch.apart(command, cwd)
+
+    def apart_into(self, command: list[str], log: Path) -> int:
+        """Starts a command in a session of its own writing into a log, and says which process it is."""
+        return launch.apart_into(command, log)
+
     def running_in(self, record, environment: str) -> str:
         """The session of the agent running in that environment, empty where none does."""
         return launch.running_in(record, environment)

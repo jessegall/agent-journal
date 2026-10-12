@@ -1,7 +1,6 @@
 import os
 import shutil
 import signal
-import subprocess
 from pathlib import Path
 
 from controllers.base import Controller
@@ -27,12 +26,9 @@ class Recordings(Controller):
         if self._running():
             raise Refused(f"already recording into {self._running().folder}: journal record stop")
         target.mkdir(parents=True, exist_ok=True)
-        log = self.record.root / "runtime" / "recorder.log"
-        log.parent.mkdir(parents=True, exist_ok=True)
-        with log.open("a") as written:
-            child = subprocess.Popen([*entry("features.session_recording.recorder"), str(self.record.root.resolve()), str(target)],
-                                     start_new_session=True, stdin=subprocess.DEVNULL, stdout=written, stderr=written)
-        row = self.create(titled(f"Recording into {target.name}"), folder=str(target), pid=child.pid)
+        pid = self.processes.apart_into([*entry("features.session_recording.recorder"), str(self.record.root.resolve()), str(target)],
+                                        self.record.root / "runtime" / "recorder.log")
+        row = self.create(titled(f"Recording into {target.name}"), folder=str(target), pid=pid)
         return f"recording into {target} as record {row.n}; journal record stop ends it"
 
     @action

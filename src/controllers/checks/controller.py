@@ -1,7 +1,6 @@
 import fcntl
 import os
 import shlex
-import subprocess
 import threading
 import time
 from pathlib import Path
@@ -121,9 +120,8 @@ class Checks(Controller):
                 fcntl.flock(held, fcntl.LOCK_EX)
                 self._gated(n, message, named)
             return f"check {n} gated its commit"
-        subprocess.Popen([*entry("journal"), "--root", str(self.record.root), "--env", self.record.env, "check", "gate", str(n), message,
-                          "--paths", ",".join(named), "--wait"], cwd=self.record.root.parent, start_new_session=True,
-                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.processes.apart([*entry("journal"), "--root", str(self.record.root), "--env", self.record.env, "check", "gate", str(n), message,
+                              "--paths", ",".join(named), "--wait"], self.record.root.parent)
         return f"check {n} is running in a process of its own, after any gate before it; on a pass it commits {len(named)} paths, and you are told either way"
 
     def _gated(self, n: int, message: str, paths: list[str]) -> None:

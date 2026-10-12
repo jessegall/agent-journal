@@ -1,4 +1,5 @@
 import time
+import subprocess
 from pathlib import Path
 
 from agents.terminal import Launched, prompted as prompted_by_file
@@ -84,3 +85,16 @@ def stop_in(record, environment: str) -> None:
     session = Sessions(record.root).holder(environment)
     if session:
         ask_session(record.root, terminal_of(record.root, session))
+
+
+def apart(command: list[str], cwd: Path) -> None:
+    """Starts a command in a session of its own with nothing attached to it, so it outlives the call that asked for it."""
+    subprocess.Popen(command, cwd=cwd, start_new_session=True,
+                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def apart_into(command: list[str], log: Path) -> int:
+    """Starts a command in a session of its own writing into a log, and says which process it is, for anything that must be stopped later."""
+    log.parent.mkdir(parents=True, exist_ok=True)
+    with log.open("a") as written:
+        return subprocess.Popen(command, start_new_session=True, stdin=subprocess.DEVNULL, stdout=written, stderr=written).pid

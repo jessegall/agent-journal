@@ -22,7 +22,10 @@ WHISPER = "whisper"
 LINES = [
     Line(
         name=WHISPER,
-        title="{{type}} {{n}} — {{title}}",
+        # The row's own words are the title, and the reference goes under them: a title is capped at 80, so a line that
+        # spends eleven of those on "fact 55 — " clips the end off any title longer than sixty-nine.
+        title="{{title}}",
+        brief="{{type}} {{n}}",
         while_waiting=False,
     ),
     Line(
