@@ -16,6 +16,7 @@ import {isMain} from "../domain/environments.js";
 
 const envs = computed(() => rows("environment").filter((e) => !e.completed && isMain(e)));
 const pages = computed(() => store.pages || []);
+const release = computed(() => store.spec.branch || store.spec.version || "");
 const domains = computed(() => (store.organization && store.organization.domains) || []);
 const creating = ref(false);
 const folded = reactive({});
@@ -108,7 +109,7 @@ function point(e) {
                 <div class="side-foot side-foot-row">
                     <a class="side-foot-version" :href="href.page(route.env, 'about')" v-tip="'Version and changelog'">
                         <span class="label side-foot-name">Agent journal</span>
-                        <span class="side-foot-number">{{ store.spec.version || "" }}</span>
+                        <span class="side-foot-number">{{ release }}</span>
                     </a>
                 </div>
             </div>

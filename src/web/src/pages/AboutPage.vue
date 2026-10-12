@@ -1,5 +1,6 @@
 <script setup>
-import {onMounted} from "vue";
+import {computed, onMounted} from "vue";
+import {store} from "../state/store.js";
 import {useUpdates} from "../composables/updates.js";
 import Btn from "../kit/Btn.vue";
 import Notice from "../kit/Notice.vue";
@@ -7,6 +8,7 @@ import StateDot from "../kit/StateDot.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {locked} from "../state/updating.js";
 
+const branch = computed(() => store.spec.branch || "");
 const {about, changed, releases, error, status, loadMore, update, start} = useUpdates();
 
 onMounted(start);
@@ -19,6 +21,9 @@ onMounted(start);
         </template>
         <template v-if="about">
             <p class="version">Agent journal {{ about.version }}</p>
+            <template v-if="branch">
+                <p class="hint">This journal follows the branch {{ branch }}, so it upgrades from that branch instead of the releases.</p>
+            </template>
             <template v-if="status">
                 <div class="update-line">
                     <template v-if="status.busy">
