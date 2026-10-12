@@ -1614,6 +1614,9 @@ def test_the_chat_mirror_replays_what_was_left_unsent_and_sends_each_unfinished_
 
         def turns(self, path):
             return turns
+
+        def interrupted_by_user(self, path):
+            return False
     monkeypatch.setattr(chat_mirror, "PROVIDERS", {"fake": Provider})
     row = SimpleNamespace(provider="fake", transcript=str(tmp_path / "transcript.jsonl"))
     sent = []

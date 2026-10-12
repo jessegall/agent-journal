@@ -2,6 +2,7 @@ import pytest
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from typing import NamedTuple
 
 
@@ -9,6 +10,7 @@ from controllers.types import Comments, Messages, Nudges
 from engine.record import Record
 from runner.engine import Engine
 from resources.base import AGENT, Refused, SYSTEM, USER
+from providers.drivers import Driver
 from providers.payload import Chunk
 from runner.chat_mirror import displayed
 from engine.sessions import Sessions
@@ -137,7 +139,8 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
         "a reply names the message it answers and carries only what the user typed: its own words quoted above are named, never read back"
     assert counted({("todo", "created"): {3: None}}, record) == ["1 new todo 3"], "a line nobody appends to is left as it is"
     Messages(record, actor=AGENT).complete(asked.n, how="answered")
-    assert counted({("message", "created"): {asked.n: None}}, record) == [], "a closed message is no longer announced as new"
+    waiting = SimpleNamespace(record=record, groups={("message", "created"): {asked.n: None}})
+    assert counted(Driver.still_open(waiting), record) == [], "a closed message is no longer announced as new"
     record = fresh()
     Agents(record, actor=AGENT).by_session("claude-1")
     Messages(record, actor=AGENT).read(asked_and_read(record, "how is it going?").n)
