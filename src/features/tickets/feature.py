@@ -26,7 +26,7 @@ from features.tickets.handlers import (
     ticket_calls,
 )
 from features.tickets.limits import DraftsCarryOneLine
-from features.boards.controller import CARD_STORE
+from controllers.boards.controller import CARD_STORE
 from features.plans.controller import PHASE_ROWS, PHASE_STARTS, PLAN_STARTS
 from resources.plans import PHASE
 from features.tickets.phases import start_tickets_of_phase

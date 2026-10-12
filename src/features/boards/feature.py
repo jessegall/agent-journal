@@ -10,10 +10,11 @@ from features.boards.exploration import FILLER
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Message
 from resources.base import SYSTEM
-from features.boards.controller import Boards
+from controllers.sequences import SHIPPED
+from controllers.types import Boards
 from features.boards.details import BoardsDetails
 from features.boards.handlers import MarkQuietFillingStalled, OfferToPlaceAddedCards, boards_wanting_ideas
-from features.boards.shipped import SEQUENCES
+from features.boards.shipped import JOBS, SEQUENCES
 from features.boards.limits import BoardWorkStaysOnTheBoard, FillerKeepsToTheBoard, PanelRepliesStayShort
 from framework.journal import Journal
 from framework.sending import Nudge
@@ -77,6 +78,9 @@ class BoardsFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         START_PARTS.add(self, orchestration, key=ORCHESTRATION)
+        for job, shipped in JOBS.items():
+            for sequence in shipped:
+                SHIPPED.add(self, sequence.title, key=job)
         DISPATCH_MODELS.add(self, filler_model, key=FILLER)
         BOARD_OF_MESSAGE.add(self, board_of_message)
         journal.commands.intercept("create", BoardWorkStaysOnTheBoard(), expects=[

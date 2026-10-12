@@ -16,7 +16,7 @@ from controllers.prioritised import Prioritised
 from controllers.requests import request
 from engine.outbox import Request
 from engine.given import given
-from features.boards.controller import Boards
+from controllers.types import Boards
 from resources.boards import DONE, REVIEW, START
 from resources.check_output import tail
 from engine.proc import streamed

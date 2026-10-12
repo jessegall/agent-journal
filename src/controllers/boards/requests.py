@@ -1,6 +1,8 @@
 import time
 
-from controllers.types import Messages, Questions
+from controllers.messages import Messages
+from controllers.questions import Questions
+from controllers.sequences import Sequences, shipped_title
 from resources.boards import DRAFTING_PHASE, EXPLORING, LOST, PANEL_REPLY, STALLED, WAITING
 from resources.base import COMMISSIONED, REQUESTED, REVISED, Ref, Refused, SYSTEM, titled
 from controllers.marks import action
@@ -39,7 +41,6 @@ class DraftingBoards:
         return time.time() - self.load(n).drafting.get("cancelled", 0) < CANCEL_HOLDS
 
     def _stop_drafting(self, board) -> None:
-        from controllers.types import Sequences
         sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
         for about in board.asked:
             sequences.give_up(about, why="The request on the board was cancelled")
@@ -127,9 +128,6 @@ class DraftingBoards:
 
     @action
     def score(self, n: int, score: str, reading: str = "", goal: str = "", done: str = ""):
-        from controllers.types import Sequences
-        from features.boards.drafting import DRAFTING
-        from features.boards.exploration import EXPLORATION
         board = self._drafting(n)
         if not str(score).isdigit() or not 1 <= int(score) <= 5:
             raise Refused(f"the score is how well you understand what they want, a whole number from 1 to 5; not {score!r}")
@@ -137,11 +135,11 @@ class DraftingBoards:
             raise Refused(f"board {board.n} is past exploring: the request is {board.phase}")
         about, turns, rated = board.asked[0], int(board.drafting.get("turns", 0)) + 1, int(score)
         sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
-        exploring = sequences.rows.by_title(EXPLORATION.title)
+        exploring = sequences.rows.by_title(shipped_title(self.record, "exploring"))
         handed = 0
         if rated >= READY_AT or (rated >= KNOWS_AT and turns >= MOST_TURNS):
             sequences.finish(exploring.n, about)
-            handed = sequences.run(sequences.rows.by_title(DRAFTING.title).n, about=about).n
+            handed = sequences.run(sequences.rows.by_title(shipped_title(self.record, "drafting")).n, about=about).n
             phase = DRAFTING_PHASE
         elif turns >= MOST_TURNS:
             sequences.finish(exploring.n, about)
@@ -183,7 +181,6 @@ class DraftingBoards:
         board = self._drafting(n)
         if board.phase != STALLED:
             raise Refused(f"board {board.n} is not stalled: nothing to retry")
-        from controllers.types import Sequences
         from resources.sequences import RunKey
         asked = board.asked
         sequences = Sequences(self.record, actor=SYSTEM)

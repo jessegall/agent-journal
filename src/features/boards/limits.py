@@ -1,4 +1,4 @@
-from features.boards.controller import Boards
+from controllers.types import Boards
 from resources.boards import PANEL_REPLY
 from resources.base import AGENT, SYSTEM, Refused
 from framework.parts import ActionInterceptor, Context

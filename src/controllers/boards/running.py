@@ -1,6 +1,8 @@
 import time
 
+from controllers.sequences import Sequences, shipped_titles
 from engine.worktree import current_branch
+from resources.sequences import RunKey
 from resources.base import ORCHESTRATED, PAUSED, PROJECT, RESUMED, Refused, STARTED, SYSTEM
 from controllers.marks import action
 
@@ -27,12 +29,9 @@ class RunningBoards:
         return f"{self.record.env} {'orchestrates its boards: you only delegate' if mode == 'on' else 'does not orchestrate: you work as usual'}"
 
     def _finish_orchestration_runs(self) -> None:
-        from controllers.types import Sequences
-        from features.boards.orchestrating import ORCHESTRATING_MOMENTS, ORCHESTRATION
-        from resources.sequences import RunKey
         sequences = Sequences(self.record, actor=SYSTEM)
-        for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
-            sequence = sequences.rows.by_title(shipped.title)
+        for title in shipped_titles(self.record, "orchestrating"):
+            sequence = sequences.rows.by_title(title)
             if not sequence:
                 continue
             for run in [run for run in map(RunKey.of, sequence.runs) if run.here(self.record.env)]:

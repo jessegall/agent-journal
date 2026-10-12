@@ -32,7 +32,7 @@ def taking(record) -> str:
 
 
 def board_of(record):
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     from resources.base import SYSTEM
     n = int(WorkModesDetails.values(record).board)
     boards = Boards(record, actor=SYSTEM)
@@ -51,7 +51,7 @@ def filing_on(board) -> str:
 
 
 def choose_board(record, n: int, actor: str) -> int:
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     from resources.base import SYSTEM
     boards = Boards(record, actor=SYSTEM)
     if n and not boards.rows.exists(n):

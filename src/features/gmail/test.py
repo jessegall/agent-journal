@@ -86,7 +86,7 @@ def mail_tickets(record) -> list:
 
 @fixture
 def world(monkeypatch, tmp_path):
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     from features.gmail.mail import Mailbox
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path))
     features.load()

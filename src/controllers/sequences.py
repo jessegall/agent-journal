@@ -9,12 +9,28 @@ from controllers.base import CONTROLLERS, Controller
 from controllers.triggers.controller import Triggers
 from resources.sequences import BY_HAND, RunKey, SEQUENCES, SEQUENCE_STEPS, Sequence
 from resources.triggers import START
-from resources.base import AGENT, SECTION, SYSTEM
+from resources.base import AGENT, SECTION, SYSTEM, Refused
+from declaring.extension import Extension
 from controllers.marks import action
 
 VIOLET = "#a78bfa"
 TRIGGER = "trigger"
 INCLUDED = re.compile(r"^sequence:(\d+)(?: steps (\d+)(?:-(\d+))?)?$")
+
+
+SHIPPED = Extension()
+"""The titles of the sequences a feature ships, by the job a controller finds them for; the feature registers each one, so a controller never imports a feature's declarations."""
+
+
+def shipped_titles(record, job: str) -> list[str]:
+    return SHIPPED.each(record, job)
+
+
+def shipped_title(record, job: str) -> str:
+    found = shipped_titles(record, job)
+    if not found:
+        raise Refused(f"no sequence is shipped for {job}: the feature that ships it is off")
+    return found[0]
 
 
 class Sequences(Controller):

@@ -1,7 +1,7 @@
 import time
 from controllers.types import Comments, Environments, Todos
 from engine.record import Record
-from features.boards.controller import Boards
+from controllers.types import Boards
 from features.tickets.controller import Tickets
 from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh

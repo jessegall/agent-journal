@@ -6,7 +6,7 @@ import pytest
 import features
 
 from features.plans.controller import Plans  # noqa: E402
-from features.boards.controller import Boards
+from controllers.types import Boards
 from tests.kit import Tickets
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record

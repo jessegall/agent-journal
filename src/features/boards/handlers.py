@@ -1,12 +1,12 @@
 import time
 
 from events.agents import ClockTicked
-from features.boards.controller import Boards
+from controllers.types import Boards
 from resources.boards import DRAFTING_PHASE
 from framework.sending import Sent
 from framework.parts import AgentContext, Context, Handler
 from resources.base import SYSTEM
-from features.boards.controller import Boards
+from controllers.types import Boards
 from events.boards import BoardChanged
 
 ADDED = "added"

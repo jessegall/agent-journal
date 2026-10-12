@@ -268,7 +268,7 @@ class World:
 
 
 def linear_world(monkeypatch, tmp_path, **given) -> World:
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     from features.linear.fake import FakeLinear
     from resources.base import SYSTEM
     monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path))
@@ -317,7 +317,7 @@ def test_words_from_an_outside_source_are_wrapped_for_agents_and_plain_for_peopl
 def test_issues_become_one_ticket_each_with_their_comments_once_and_one_that_leaves_keeps_its_ticket(monkeypatch, tmp_path):
     from controllers.types import Comments, Messages, Todos
     from features.tickets.controller import Tickets
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     from features.tickets.phases import start_tickets_of_phase
     from features.linear.sync import teams_of
     from resources.base import SYSTEM

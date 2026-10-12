@@ -117,7 +117,7 @@ def test_the_board_picked_for_new_work_switches_what_the_agent_is_told_to_file()
     record = fresh()
     Agents(record, actor=SYSTEM).create("claude-1")
     from commands.http import dispatch
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     board = Boards(record, actor=USER).create("Rewrite", stages=["Doing", "Done"])
     pick(record, "orchestrator", USER)
     assert "NEW WORK" not in start_block(record) and "journal todo create" in filing(record), "with no board picked, new work is filed as to-dos as before"
@@ -174,7 +174,7 @@ def test_the_offer_of_the_next_row_is_worded_by_the_mode_the_agent_is_in():
 
 
 def test_starting_a_board_picks_orchestrator_and_rebuilds_the_start_file_after_the_moment():
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     features.load()
     record = fresh()
     start = record.root / "runtime" / f"start-{record.env}.md"

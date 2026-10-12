@@ -1,4 +1,4 @@
-from features.boards.controller import Boards
+from controllers.types import Boards
 from features.plans.controller import READY, WAITING
 from resources.sequences import RunKey
 from resources.tickets import PROPOSED
