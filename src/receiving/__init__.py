@@ -8,6 +8,7 @@ thing, so a dispatch table is never built on a registration's word alone.
 from dataclasses import dataclass
 from typing import Any, ClassVar, Generic, TypeVar, get_args, get_origin, get_type_hints
 
+from engine.kinds import ByKind
 from events import Event, Fact, Request
 from serving import writing
 
@@ -141,7 +142,7 @@ class Registration:
         return cls(kind, event, receiver, tuple(expects), feature, tuple(after))
 
 
-class Registrations:
+class Registrations(ByKind):
     """Every registration of the four kinds, in the order the features declared them, which is the order the boot walk checks and a tick runs."""
 
     def __init__(self):
@@ -149,9 +150,6 @@ class Registrations:
 
     def add(self, registration: Registration) -> None:
         self.each.append(registration)
-
-    def of(self, kind: str) -> list[Registration]:
-        return [one for one in self.each if one.kind == kind]
 
     def forget(self, kind: str, feature: str, name: str) -> None:
         """Drops one feature's registration of this name, so registering it again leaves one."""

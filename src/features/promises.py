@@ -7,6 +7,8 @@ single test file, and so the boot walk can refuse a kind that owes them and carr
 
 from dataclasses import dataclass
 
+from engine.kinds import ByKind
+
 
 THE_ENGINES_OWN = ("SendOnTheClock", "SendOnToolUse")
 """Feature.wire adds these two for every feature that declares nudges. They are the engine's own, written once, and the nudges they send are promised by the handlers that cause them."""
@@ -46,7 +48,7 @@ class Owing(LookupError):
         return cls(f"feature {feature} registers {', '.join(f'{one.kind} {one.name}' for one in owed)} without expects; every registration of these kinds says what it expects")
 
 
-class Promises:
+class Promises(ByKind):
     """Every registration the features made, in the order they made it."""
 
     def __init__(self):
@@ -56,9 +58,6 @@ class Promises:
         """Keeps one entry per registration. Loading the features again re-registers them, and a registry that appended would double every promise it holds."""
         self.each = [one for one in self.each if one.named_as != promise.named_as]
         self.each.append(promise)
-
-    def of(self, kind: str) -> list[Promise]:
-        return [one for one in self.each if one.kind == kind]
 
     def owed(self) -> list[Promise]:
         """The registrations that owe expectations and carry none, which is what the boot walk refuses."""
