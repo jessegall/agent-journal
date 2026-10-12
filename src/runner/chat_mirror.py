@@ -193,7 +193,7 @@ def unfinished(root: Path, session: str, row) -> None:
         held[MATCHED] = streamed[-KEPT_SENT:]
     if not pending:
         return
-    if provider.shows_what_is_said():
+    if provider.shows_what_is_said() and not provider().interrupted_by_user(Path(row.transcript)):
         fell_back(root, session, len(pending))
     for turn in pending:
         send_to_chat(root, session, turn.text, turn.key)
