@@ -91,18 +91,24 @@ export function seatAt(box, side, {size}) {
 export const seatRise = ({size, below}) => (1 - below - SEAT_DROP) * size;
 
 export function seatOf(figure, near) {
-    const home = document.querySelector(HOME);
-    const box = (home || document.querySelector(FLOOR)).getBoundingClientRect();
-    const edge = {left: box.left, width: box.width, top: home ? box.top : box.bottom};
-    return {...freeSpot(Object.keys(SEAT_SIDES).map((side) => seatAt(edge, side, figure)), figure, near), view: null};
+    const {element, edge} = groundEdge();
+    return {...freeSpot(Object.keys(SEAT_SIDES).map((side) => seatAt(edge, side, figure)), figure, near), view: null, on: element};
 }
 
-// Home is the main chat's compose box; a page without one gives the figure the floor of the page itself
+// The edge a figure stands on at home: the main chat's compose box, else the floor of the page itself, else the foot of the window
+function groundEdge() {
+    const home = document.querySelector(HOME);
+    const element = home || document.querySelector(FLOOR);
+    if (!element) return {element: null, edge: {left: 0, width: window.innerWidth, top: window.innerHeight}};
+    const box = element.getBoundingClientRect();
+    return {element, edge: {left: box.left, width: box.width, top: home ? box.top : box.bottom}};
+}
+
+// Home is the main chat's compose box; a page without one gives the figure the floor of the page itself. Each spot names the element
+// it rests on as `on`, so the figure can tell when that element has gone or moved.
 export function spotOf(view, figure, near) {
     const tab = view && document.querySelector(`[data-tab="${view}"]`);
-    if (tab) return {...freeSpot(tabSpots(tab, figure), figure, near), view};
-    const home = document.querySelector(HOME);
-    const box = (home || document.querySelector(FLOOR)).getBoundingClientRect();
-    const edge = {left: box.left, width: box.width, top: home ? box.top : box.bottom};
-    return {...freeSpot(alongTop(edge, HOME_ALONG), figure, near), view: null};
+    if (tab) return {...freeSpot(tabSpots(tab, figure), figure, near), view, on: tab};
+    const {element, edge} = groundEdge();
+    return {...freeSpot(alongTop(edge, HOME_ALONG), figure, near), view: null, on: element};
 }

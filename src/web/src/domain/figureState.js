@@ -1,3 +1,4 @@
+import {REACTIONS} from "../figure/reactions.js";
 import {stateOf} from "./agentState.js";
 
 // What the figure does, read from the same agent row and work rows as the status bar, so the two never disagree.
@@ -54,7 +55,7 @@ export function figureStateOf(agent, works, waitingSince, now = Date.now() / 100
 export const clipOf = (state) => HELD[state] || HELD.idle;
 
 // The clips in which the figure sits on a panel's corner instead of standing on its edge
-export const SEATED = ["sit_on_edge"];
+export const SEATED = ["sit_on_edge", "type"];
 
 // One-off beats, each fired by a card the journal wrote on the agent's row and played once before the held state resumes;
 // the first rule a card matches names its beat
@@ -65,12 +66,24 @@ const BEATS = [
     {beat: "answered", matches: (card) => card.icon === "question"},
 ];
 
-export const BEAT_CLIPS = {committed: "celebrate", failed: "shake", refused: "shake", answered: "nod", heard: "nod"};
+// the first clip each moment calls for, as the reactions name them
+export const BEAT_CLIPS = Object.fromEntries([...REACTIONS].reverse().map((each) => [each.moment, each.clip]));
+
+// A test run's card is made when it starts and changes when it ends, so its result is a change seen between two looks: the beats for each
+// test card that has ended since `known` (card key to the state it had) was last filled in, which this fills in
+export function testResultsAfter(agent, known) {
+    const ended = (agent?.data.cards || []).filter((card) => card.key?.startsWith("tests:") && ["done", "failed"].includes(card.state));
+    const fresh = ended.filter((card) => known.get(card.key) !== card.state);
+    fresh.forEach((card) => known.set(card.key, card.state));
+    return fresh.map((card) => ({beat: card.state === "done" ? "tests_passed" : "tests_failed", at: Number(card.ended || card.at), card: card.key}));
+}
 
 // The beats for what reached the agent's row after `seenAt` (seconds), oldest first: its cards, and the user's own message
 export function beatsAfter(agent, seenAt) {
     const cards = (agent?.data.cards || []).filter((card) => card.at > seenAt);
-    const fired = cards.map((card) => ({beat: BEATS.find((rule) => rule.matches(card))?.beat, at: card.at})).filter((fire) => fire.beat);
+    const fired = cards
+        .map((card) => ({beat: BEATS.find((rule) => rule.matches(card))?.beat, at: card.at, card: card.key}))
+        .filter((fire) => fire.beat);
     const heard = Number(agent?.data.person_at || 0);
     return [...fired, ...(heard > seenAt ? [{beat: "heard", at: heard}] : [])].sort((a, b) => a.at - b.at);
 }

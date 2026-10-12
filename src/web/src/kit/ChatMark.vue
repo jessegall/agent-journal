@@ -24,6 +24,7 @@ const tint = computed(() => ({
         :class="['mark', {tinted: shade, console: mark.command, nested: mark.depth > 0, [`ended-${mark.state}`]: mark.ended}]"
         :style="tint"
         :title="hover"
+        :data-figure-mark="mark.key"
     >
         <Icon :name="mark.icon || 'dot'" />
         <span class="head">

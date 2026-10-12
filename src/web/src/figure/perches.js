@@ -23,20 +23,23 @@ const sideOf = (rect, scroller) => (rect.left - scroller.left > scroller.right -
 // whether a figure perched on this bubble's top corner stays inside the thread's view
 const inView = (rect, scroller, figure) => rect.top - seatRise(figure) >= scroller.top && rect.top <= scroller.bottom - 8;
 
-// The perch a figure takes now, or null when no bubble but the newest is in view. `random` is a function returning 0 up to 1.
-export function perchOn(bubbles, scroller, figure, random) {
+// a hang is by one hand, the corner it takes the one on that hand's side; the body hangs outside the bubble so it never covers its words
+const HAND_CORNER = {l: "left", r: "right"};
+const HANG_OUT = 0.3;
+
+// The perch a figure takes now, or null when no bubble but the newest is in view. `hands` are the sides, "l" or "r", of the hands that
+// carry nothing; `random` is a function returning 0 up to 1.
+export function perchOn(bubbles, scroller, figure, hands, random) {
     const box = scroller.getBoundingClientRect();
     const shown = bubbles.filter((bubble) => bubble.getBoundingClientRect().width);
     const open = shown.slice(0, -1).filter((bubble) => inView(bubble.getBoundingClientRect(), box, figure));
     if (!open.length) return null;
     const bubble = open[Math.floor(random() * open.length)];
     const [least, most] = STAY_SECONDS;
-    return {
-        bubble,
-        kind: random() < HANG_SHARE ? HANGS : SITS,
-        side: sideOf(bubble.getBoundingClientRect(), box),
-        stay: least + random() * (most - least),
-    };
+    const side = sideOf(bubble.getBoundingClientRect(), box);
+    const hangs = hands.length > 0 && random() < HANG_SHARE;
+    const grip = hangs ? hands.find((hand) => HAND_CORNER[hand] === side) || hands[0] : "";
+    return {bubble, kind: hangs ? HANGS : SITS, side: hangs ? HAND_CORNER[grip] : side, grip, stay: least + random() * (most - least)};
 }
 
 // Where the perch's figure stands now, with the way it faces, or null when its bubble is gone or out of the thread's view
@@ -44,6 +47,7 @@ export function perchSpot(perch, scroller, figure) {
     if (!perch.bubble.isConnected) return null;
     const rect = perch.bubble.getBoundingClientRect();
     if (!inView(rect, scroller.getBoundingClientRect(), figure)) return null;
-    if (perch.kind === SITS) return seatAt(rect, perch.side, figure);
-    return {x: perch.side === "left" ? rect.left : rect.right, y: rect.top + HANG_REACH * figure.size, face: 0};
+    if (perch.kind === SITS) return {...seatAt(rect, perch.side, figure), on: perch.bubble};
+    const out = (perch.side === "left" ? -1 : 1) * HANG_OUT * figure.size;
+    return {x: (perch.side === "left" ? rect.left : rect.right) + out, y: rect.top + HANG_REACH * figure.size, face: 0, on: perch.bubble};
 }
