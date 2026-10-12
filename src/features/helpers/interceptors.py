@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 
 from controllers.types import Agents, Environments
@@ -9,18 +8,12 @@ from controllers.types import Helpers
 from resources.helpers import held_by_helper
 from controllers.helpers.reuse import kept, named_paths, refusal
 from framework.parts import ActionInterceptor, AgentContext, Canceler, Context, ToolInterceptor
+from payload import runs_tests
 from engine.record import Record
 from resources.base import AGENT, SYSTEM, Ref
 from resources.types import HELPER
 
 FILES_KEPT = 50
-TEST_RUN = re.compile(r"(?:^|[\s;&|])(?:(?:python3?\s+-m\s+)?pytest|vitest|npm\s+(?:run\s+)?test|node\s+\S*browser/\S+\.mjs|journal\s+(?:--\S+\s+\S+\s+)*check\s+(?:run|touched|gate))\b")
-
-
-def runs_tests(shell: str) -> bool:
-    return bool(TEST_RUN.search(shell))
-
-
 def may_run_tests(record) -> bool:
     place = Environments(record, actor=SYSTEM).rows.by_title(record.env)
     return bool(place and place.helping and Helpers(Record(record.root, place.launched_from), actor=SYSTEM).load(place.owned_by(HELPER)).whole_suite)

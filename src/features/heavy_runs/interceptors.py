@@ -8,7 +8,7 @@ from declaring.reach import Reach
 from engine.record import Record
 from features.heavy_runs.details import HeavyRunsDetails, WAITING
 from features.heavy_runs.queue import HeavyRuns, Run
-from features.helpers.interceptors import runs_tests
+from payload import runs_tests
 from framework.parts import AgentContext, ToolInterceptor
 from resources.base import SYSTEM
 

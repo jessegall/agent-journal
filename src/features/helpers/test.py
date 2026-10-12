@@ -188,7 +188,7 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     monkeypatch.setattr(Helpers, "_revive", lambda self, row, words: None)
     Helpers(record, actor=AGENT).say(1, "pick it up again")
     assert marks()[-1] == "Continued helper 1", "starting a helper again after its agent stopped shows it as continued, which is what the chat could not tell before"
-    from features.helpers.interceptors import runs_tests
+    from payload import runs_tests
     assert [runs_tests(c) for c in ("pytest -q -n auto", "python -m pytest", "pytest tests/a.py", "cd src/web && npx vitest run", "node src/web/browser/chat.mjs", "journal check touched 1", "ls", "git status")] == [True, True, True, True, True, True, False, False], \
         "any test run is refused to a helper or subagent, and nothing else is"
     assert not Helpers(record, actor=SYSTEM).load(1).whole_suite and Helpers(record, actor=AGENT).allow_suite(1) and Helpers(record, actor=SYSTEM).load(1).whole_suite, \
