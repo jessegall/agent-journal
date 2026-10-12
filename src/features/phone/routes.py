@@ -9,7 +9,7 @@ from http.cookies import SimpleCookie
 
 from engine.multipart import FORWARDED_LIMIT, FORWARDED_LIMIT_MB
 from engine.record import Record
-from providers import DEFAULT_PROVIDER
+from resources.base import DEFAULT_PROVIDER
 from resources.fields import Loaded
 from features.phone.controller import Phones
 from features.phone.allow_list import PhoneVisit

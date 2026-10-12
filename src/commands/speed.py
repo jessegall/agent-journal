@@ -13,7 +13,7 @@ from urllib.request import Request, urlopen
 
 from controllers.types import CONTROLLERS
 from engine.viewer import last
-from providers import DEFAULT_PROVIDER
+from resources.base import DEFAULT_PROVIDER
 from providers.drivers import Driver
 from runner.engine import Engine
 from engine.record import Record
