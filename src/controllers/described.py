@@ -2,7 +2,7 @@ import inspect
 from functools import cache
 
 from controllers.base import actions, word_names, word_parameters
-from controllers.types import CONTROLLERS
+from controllers.base import CONTROLLERS
 from resources.base import CLOSED, EVERY, OPEN, UPDATES
 from resources.types import TYPES
 

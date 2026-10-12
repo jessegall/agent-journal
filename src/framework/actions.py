@@ -1,4 +1,4 @@
-from controllers.types import Messages
+from controllers.messages import Messages
 from resources.base import USER
 
 SAY, MESSAGE = "say", "message"
