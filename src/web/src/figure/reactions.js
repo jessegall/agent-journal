@@ -28,8 +28,11 @@ export const REACTIONS = [
     {moment: "reacted:\ud83c\udfa9", look: "amused", odds: 1, cooldown: 0},
 ];
 
-// how long the eyes keep a look
+// how long the eyes keep a look, counted only while they are shown
 export const LOOK_SECONDS = 3;
+
+// whether a figure turned `facing` degrees shows its eyes: it faces no further than sideways from the viewer
+export const eyesShown = (facing) => Math.abs(((((facing + 180) % 360) + 360) % 360) - 180) <= 90;
 
 // While the agent works, the figure seated works at a laptop most of the time, rolled once for each stretch of work so it keeps at it from
 // one tool to the next; on its feet, or when the roll says no, it does what each state's own clip does

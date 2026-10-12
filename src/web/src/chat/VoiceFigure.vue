@@ -6,7 +6,7 @@ import {figureStatus} from "../composables/voiceFigure.js";
 import {RESTS, beatsAfter, clipOf, eggFor, facesAfter, figureStateOf, testResultsAfter} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {BUBBLE, HANGS, HANG_STAY, between, perchOn, perchSpot, roamNext} from "../figure/perches.js";
-import {LOOK_SECONDS, WORKED_SECONDS, ambientFor, flips, reactionTo, workClip} from "../figure/reactions.js";
+import {LOOK_SECONDS, WORKED_SECONDS, ambientFor, eyesShown, flips, reactionTo, workClip} from "../figure/reactions.js";
 import {CHANGE_SECONDS, HOME, POSTURES, boxAt, groundEdge, openTabs, pointedView, postureOf, seatOf, spotOf} from "../figure/places.js";
 import {rows} from "../sync/rows.js";
 
@@ -61,7 +61,7 @@ const leg = ref({x: 0, y: 0, ms: 0, lead: 0, easing: "linear"});
 // the one-off clips the body waits to play, oldest first, each as {clip, card}: a reaction to a moment, or the egg that belongs to it;
 // `card` is the key of the chat mark the figure turns to face while it plays, or ""
 const beats = ref([]);
-// the look the eyes wear, as its mood and when it began, in seconds of the page's clock
+// the look the eyes wear, as its mood, when it began in seconds of the page's clock, and how long it has been seen
 let looking = null;
 // when each reaction last played, when each ambient one may next play, and the state each test run's card had when last looked at
 const reacted = new Map();
@@ -165,11 +165,21 @@ function strideNow() {
     return (Math.floor((performance.now() / 1000) * fps) % frames) / frames;
 }
 
-// the look the eyes wear now, stepped as they are drawn, or null once it has lasted its time
-function eyesNow() {
-    const seconds = performance.now() / 1000 - (looking?.began ?? -Infinity);
-    if (seconds >= LOOK_SECONDS) return null;
-    return {mood: looking.mood, seconds: Math.floor(seconds * LOOK_FPS) / LOOK_FPS, lasts: LOOK_SECONDS};
+// The look the eyes wear now on a figure turned `facing` degrees, stepped as they are drawn, or null once it has been seen its time. Its
+// clock runs only while the eyes are shown, so a look that comes while the figure faces away waits for it to turn back.
+function eyesNow(facing) {
+    if (!looking) return null;
+    const now = performance.now() / 1000;
+    if (!eyesShown(facing)) {
+        looking.began = now - looking.seen;
+        return null;
+    }
+    looking.seen = now - looking.began;
+    if (looking.seen >= LOOK_SECONDS) {
+        looking = null;
+        return null;
+    }
+    return {mood: looking.mood, seconds: Math.floor(looking.seen * LOOK_FPS) / LOOK_FPS, lasts: LOOK_SECONDS};
 }
 
 function step() {
@@ -196,7 +206,7 @@ function step() {
     }
     drawn = shown.posture ?? postureOf(shown.clip, place.value.posture);
     if (!moving.value?.started) rest();
-    const eyes = eyesNow();
+    const eyes = eyesNow(shown.facing);
     const stride = drawn === "walk" ? strideNow() : null;
     player.show(shown.clip, shown.clip.loops ? index % shown.clip.frames : Math.min(index, shown.clip.frames - 1), shown.facing, {
         posture: drawn,
@@ -421,13 +431,19 @@ const onType = (event) => {
     if (event.target.closest?.(HOME)) typed = true;
 };
 
+// The eyes take on a look; a figure hanging with its back to the viewer lets go, so it turns round to show it
+function startLook(mood) {
+    looking = {mood, began: performance.now() / 1000, seen: 0};
+    if (place.value.posture === "hang" && !eyesShown(place.value.face)) stay = {...stay, until: 0};
+}
+
 // What the figure does about a moment: the egg that belongs to it, else its reaction when the roll says so, a clip the body plays once
 // or a look the eyes take on over whatever the body is doing
 function react(moment) {
     const egg = eggOf(moment);
     if (egg) return (beats.value = [...beats.value, egg]);
     const reaction = reactionTo(moment.beat, reacted, now.value, Math.random);
-    if (reaction?.look) looking = {mood: reaction.look, began: performance.now() / 1000};
+    if (reaction?.look) startLook(reaction.look);
     else if (reaction && hasClip(reaction.clip))
         beats.value = [...beats.value, {clip: reaction.clip, card: reaction.toward === "card" ? moment.card || "" : ""}];
 }

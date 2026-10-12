@@ -1,7 +1,8 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {AMBIENT, FLIP_ODDS, FLIP_OVER, REACTIONS, WORK_VARIANTS, ambientFor, flips, reactionTo, workClip} = await import("../src/figure/reactions.js");
+const {AMBIENT, FLIP_ODDS, FLIP_OVER, REACTIONS, WORK_VARIANTS, ambientFor, eyesShown, flips, reactionTo, workClip} =
+    await import("../src/figure/reactions.js");
 const {EGGS, HELD, beatsAfter, facesAfter, testResultsAfter} = await import("../src/domain/figureState.js");
 const {CLIPS, EYES} = await import("../src/figure/figure.js");
 const {FACES} = await import("../src/domain/faces.js");
@@ -105,4 +106,9 @@ test("every moment a reaction waits for is one the journal makes, from cards sha
         {beat: "work_done"},
     ].map((fire) => fire.beat));
     for (const each of REACTIONS) expect(made.has(each.moment), each.moment).toBe(true);
+});
+
+test("a look shows only while the figure faces no further than sideways, so one that comes while it hangs with its back turned waits", () => {
+    for (const facing of [0, 60, 90, 270, 300, -90, 450]) expect(eyesShown(facing), facing).toBe(true);
+    for (const facing of [180, 150, 210, -180, 540]) expect(eyesShown(facing), facing).toBe(false);
 });
