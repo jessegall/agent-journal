@@ -55,26 +55,16 @@ def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
     started = lambda: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-check"})
     checking = lambda: next(r for r in Sequences(record).all() if r.title == "Checking the instruction files")
     started()
-    first = record.state("journal_laws").get("instructions")
-    assert (bool(first), len(checking().runs)) == (True, 0), "the first start only records the files as seen"
-    brief(project, record)
-    started()
-    assert (record.state("journal_laws").get("instructions"), len(checking().runs)) == (first, 0), "a start with the files as they were starts nothing"
+    assert len(checking().runs) == 0, "a start never runs the instruction check by itself"
     from controllers.types import Rules
     from resources.base import USER
     Rules(record, actor=USER).inject(Rules(record, actor=USER).create("never deploy on Fridays", keywords="deploy").n)
     started()
-    assert len(checking().runs) == 1, "a rule injected into the block is checked at the next start"
-    from features.journal_laws.briefing import instructions_hash
-    seen = instructions_hash(project, record)
-    (project / "AGENTS.md").write_text((project / "AGENTS.md").read_text().replace("cannot be switched off", "ship with every journal"))
-    assert instructions_hash(project, record) == seen, "the block's own wording changing starts no check; its laws and injected rules do"
-    seen = record.state("journal_laws").get("instructions")
     (project / "CLAUDE.md").write_text((project / "CLAUDE.md").read_text() + "\nNever deploy on Mondays.\n")
-    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-check", "source": "compact"})
-    assert (record.state("journal_laws").get("instructions"), len(checking().runs)) == (seen, 1), "a start after a compaction checks nothing"
     started()
-    assert record.state("journal_laws").get("instructions") != seen, "and so is the project's own text changing"
+    assert len(checking().runs) == 0, \
+        "nor does the block gaining a rule or the project's own text changing: the installer rewrites both files on every upgrade, so a check that started itself ran again and again for a change nobody made"
+    assert checking().data.get("starts_on", "").startswith("trigger:"), "it is still started by asking for it, through the trigger that watches for the words"
 
 
 def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one(monkeypatch):
