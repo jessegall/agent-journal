@@ -1,8 +1,10 @@
-from expects import Given, Kept, Refused
+from events.boards import BoardStarted
+from expects import Given, Kept, Refused, Unchanged
 from framework.base import Feature
 from framework.journal import Journal
 from features.session_briefing.start import MODE, START_PARTS
 from features.work_modes.details import WorkModesDetails
+from features.work_modes.handlers import OrchestrateWhenABoardStarts
 from features.work_modes.interceptors import REFUSED, NameTheDrift, RefuseDispatchInSolo, RefuseHelperInSolo
 from features.work_modes.modes import carried
 from features.work_modes.routes import post_board, post_mode
@@ -19,6 +21,9 @@ class WorkModes(Feature):
     sequences = SEQUENCES
 
     def register(self, journal: Journal) -> None:
+        journal.events.handler(OrchestrateWhenABoardStarts(), expects=[
+            Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings={"work_modes.mode": "orchestrator"}) >> Unchanged(),
+        ])
         journal.routes.add(post_mode)
         journal.routes.add(post_board)
         START_PARTS.add(self, carried, key=MODE)
