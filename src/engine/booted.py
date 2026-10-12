@@ -20,6 +20,27 @@ def boundaries(root: Path, where: Path) -> list[str]:
     return _kept(root, "boundaries", lambda: report(where))
 
 
+def grown(root: Path, where: Path) -> list[str]:
+    """What a feature has newly reached for since the baseline was taken. The list only ever shrinks while plan 33 runs, so anything here is a boundary being crossed again."""
+    from declaring.boundaries import grew, lines_of, reached
+    path = runtime.folder(root) / BOOT_FILE
+    held = read_json(path, dict, {})
+    before = [str(line) for line in held.get("reaches", [])]
+    if not before:
+        return []
+    return grew(reached(where), before)
+
+
+def baseline(root: Path, where: Path) -> int:
+    """Writes what the features reach for today as the line the walk holds them to, and says how many."""
+    from declaring.boundaries import lines_of, reached
+    path = runtime.folder(root) / BOOT_FILE
+    held = read_json(path, dict, {})
+    lines = lines_of(reached(where))
+    write_json(path, {**held, "digest": noticed_digest(root), "reaches": lines})
+    return len(lines)
+
+
 def _kept(root: Path, name: str, walk) -> list[str]:
     path = runtime.folder(root) / BOOT_FILE
     digest = noticed_digest(root)

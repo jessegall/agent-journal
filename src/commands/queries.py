@@ -132,8 +132,11 @@ def verify(ctx) -> str:
 
 def boundaries_report(root: Path) -> list[str]:
     """What the features still reach for. Reported, not refused, until the moves of plan 33 have closed the list. Read from the package this journal runs, whichever copy that is, and kept for the build it was walked on."""
-    from engine.booted import boundaries
-    return ["", "what a feature may not name:", *boundaries(root, Path(__file__).resolve().parents[1])]
+    from engine.booted import boundaries, grown
+    where = Path(__file__).resolve().parents[1]
+    newly = grown(root, where)
+    crossed = ["", f"{len(newly)} NEW since the baseline — the list may shrink, never grow:", *(f"  {line}" for line in newly)] if newly else []
+    return ["", "what a feature may not name:", *boundaries(root, where), *crossed]
 
 def settings_text(ctx) -> str:
     record = ctx["record"]

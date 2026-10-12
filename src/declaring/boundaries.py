@@ -86,3 +86,13 @@ def report(where: Path) -> list[str]:
     files, features = len({one.module for one in found}), len({one.feature for one in found})
     return [f"{len(found)} imports a feature may not make, in {files} files of {features} features",
             *(f"  {name}: {count}" for name, count in sorted(counted.items(), key=lambda pair: -pair[1]))]
+
+
+def grew(found: list[Reach], before: list[str]) -> list[str]:
+    """The reaches a feature makes that were not there when the baseline was taken. The list is being driven to nothing by the moves of plan 33, so it may shrink freely; what it may not do is grow."""
+    held = set(before)
+    return [one.said() for one in found if one.said() not in held]
+
+
+def lines_of(found: list[Reach]) -> list[str]:
+    return [one.said() for one in found]
