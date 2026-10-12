@@ -1,4 +1,4 @@
-from controllers.features import SETTING_KEYS
+from declaring.registries import SETTING_KEYS
 
 
 def integration_key_variables(record) -> set[str]:

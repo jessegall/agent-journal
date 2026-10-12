@@ -1,7 +1,7 @@
 from framework.parts import ActionInterceptor, AgentContext, Context, ToolInterceptor
 from declaring.holds import Runs
 from controllers.types import Todos
-from features.plans.controller import Plans
+from controllers.types import Plans
 from declaring.reach import Reach
 from resources.base import SYSTEM
 

@@ -480,7 +480,7 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
         os.replace(row_file.with_suffix(".tmp"), row_file)
         assert todos.load(written.n).title == "changed once more", "and a row another process rewrote is read at once, as before the watch loop, with no look of the loop between"
         record.change_setting("open_viewer", {"watched_reads": True})
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     from features.tickets.controller import Tickets
     from resources.tickets import Ticket
     new_build = Tickets(record, actor=SYSTEM)

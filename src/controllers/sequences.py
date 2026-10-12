@@ -2,21 +2,31 @@ import json
 import re
 import time
 
-import controllers.types as types_module
 import resources.types as resources_module
 from engine.given import given
-from controllers.base import Controller
-from controllers.types import Agents
-from resources.sequences import BY_HAND, RunKey, Sequence
-from controllers.types import Triggers
+from controllers.agents import Agents
+from controllers.base import CONTROLLERS, Controller
+from controllers.triggers.controller import Triggers
+from resources.sequences import BY_HAND, RunKey, SEQUENCES, SEQUENCE_STEPS, Sequence
 from resources.triggers import START
-from resources.base import AGENT, SECTION, SYSTEM
+from resources.base import AGENT, SECTION, SYSTEM, Refused
+from declaring.registries import SHIPPED
 from controllers.marks import action
-from features.phone.chat_view import SEQUENCES, SEQUENCE_STEPS
 
 VIOLET = "#a78bfa"
 TRIGGER = "trigger"
 INCLUDED = re.compile(r"^sequence:(\d+)(?: steps (\d+)(?:-(\d+))?)?$")
+
+
+def shipped_titles(record, job: str) -> list[str]:
+    return SHIPPED.each(record, job)
+
+
+def shipped_title(record, job: str) -> str:
+    found = shipped_titles(record, job)
+    if not found:
+        raise Refused(f"no sequence is shipped for {job}: the feature that ships it is off")
+    return found[0]
 
 
 class Sequences(Controller):
@@ -236,9 +246,9 @@ class Sequences(Controller):
 
     def _about_row(self, key: str):
         kind, _, n = RunKey.of(key).about.partition(":")
-        if kind not in types_module.CONTROLLERS or not n.isdigit():
+        if kind not in CONTROLLERS or not n.isdigit():
             return None
-        about = types_module.CONTROLLERS[kind](self.record, actor=SYSTEM)
+        about = CONTROLLERS[kind](self.record, actor=SYSTEM)
         if not about.rows.exists(int(n)):
             return None
         row = about.peek(int(n))
@@ -257,7 +267,7 @@ class Sequences(Controller):
     def _remove_row(self, r, key: str, why: str) -> None:
         row = self._about_row(key) if r.removes_on_abandon else None
         if row:
-            types_module.CONTROLLERS[row.type](self.record, actor=SYSTEM).delete(row.n, why=f"sequence {r.n} was abandoned: {why}")
+            CONTROLLERS[row.type](self.record, actor=SYSTEM).delete(row.n, why=f"sequence {r.n} was abandoned: {why}")
 
     def give_up(self, about: str, why: str) -> None:
         for row in self.open_rows():
@@ -286,6 +296,3 @@ class Sequences(Controller):
     def _key(self, about: str | None) -> str:
         named = about.strip() if about is not None else ""
         return RunKey(self.record.env, named or BY_HAND).text
-
-
-types_module.register(Sequences)

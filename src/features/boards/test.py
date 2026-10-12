@@ -2,12 +2,12 @@ import json
 
 import features
 from controllers.types import CONTROLLERS, Messages, Questions
-from features.boards.controller import Boards
-from features.boards.requests import START_OVER
+from controllers.types import Boards
+from controllers.boards.requests import START_OVER
 from features.work_modes.modes import mode_of
 from engine.wording import counted
 from tests.kit import Plans
-from features.sequences.controller import Sequences
+from controllers.types import Sequences
 from features.sequences.shipped import ship
 from tests.kit import Tickets
 from resources.base import AGENT, SYSTEM, USER
@@ -335,7 +335,7 @@ def test_starting_a_board_starts_its_orchestration(monkeypatch):
     assert any("Pausing a board, step 1 of 1" in line for line in nudges(record)), "pausing hands the orchestrator the pause"
     Boards(record, actor=USER).resume(board.n)
     assert any("Resuming a board, step 1 of 1" in line for line in nudges(record)), "resuming hands it the restart of the halted tickets"
-    from features.boards.controller import CARD_STORE
+    from declaring.registries import CARD_STORE
     monkeypatch.setattr(CARD_STORE, "each", lambda: iter(()))
     assert "tickets feature is not loaded" in refused(lambda: Boards(record, actor=USER)._cards(USER)), "boards keep their cards as tickets, so without that feature there is nowhere to keep them"
     monkeypatch.undo()

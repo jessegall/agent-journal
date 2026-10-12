@@ -26,7 +26,7 @@ from resources.types import TYPES
 from declaring.reach import Reach
 from declaring.trigger import MINUTE
 from payload import HookEvent
-from features.sequences.controller import Sequences
+from controllers.types import Sequences
 from events.sequences import SequenceMoved
 from events.triggers import TriggerFired
 

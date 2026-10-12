@@ -40,7 +40,7 @@ def test_a_wait_on_a_run_and_a_helper_stands_until_both_are_back_and_then_hands_
     told = [(n, b) for n, b in nudges_with_briefs(record) if n.startswith(f"What work {work.n} waited on came back")]
     assert len(told) == 1 and "the suite completed, passed" in told[0][1] and "Rhea: hooks spend 40ms in imports" in told[0][1], \
         "the agent is told once to carry on, and what came back is in the line's brief, which is never cut to fit a title"
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     from resources.base import Refused
     Boards(record, actor=AGENT).orchestrate("on")
     try:

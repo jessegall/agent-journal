@@ -20,7 +20,7 @@ from framework.parts import AgentContext
 from features.helper_worktrees.controller import Worktrees
 from tests.kit import project_on, run
 from features.helpers.controller import Helpers
-from features.plans.controller import Plans
+from controllers.types import Plans
 from features.helpers.interceptors import KeepSubagentFiles, OfferKeptAgentsFirst
 from features.helpers.reuse import kept
 from payload import Dispatch

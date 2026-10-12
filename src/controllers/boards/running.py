@@ -1,9 +1,9 @@
 import time
 
+from controllers.sequences import Sequences, shipped_titles
 from engine.worktree import current_branch
-from features.work_modes.details import ORCHESTRATOR
-from features.work_modes.modes import pick
-from resources.base import PAUSED, PROJECT, RESUMED, Refused, STARTED, SYSTEM
+from resources.sequences import RunKey
+from resources.base import ORCHESTRATED, PAUSED, PROJECT, RESUMED, Refused, STARTED, SYSTEM
 from controllers.marks import action
 
 
@@ -15,7 +15,6 @@ class RunningBoards:
             board = self.update(board.n, branch=current_branch(self.record.root.parent))
         board = self.update(board.n, started=board.started or time.time(), orchestrator=self.record.env, orchestrator_approves_plans=True,
                             orchestrator_accepts_waits=True, orchestrator_confirms_drafts=True)
-        pick(self.record, ORCHESTRATOR, self.actor)
         self._set_orchestrating(True)
         self.record.emit("board", board.n, STARTED, self.actor, scope=PROJECT)
         return board
@@ -30,21 +29,17 @@ class RunningBoards:
         return f"{self.record.env} {'orchestrates its boards: you only delegate' if mode == 'on' else 'does not orchestrate: you work as usual'}"
 
     def _finish_orchestration_runs(self) -> None:
-        from features.sequences.controller import Sequences
-        from features.boards.orchestrating import ORCHESTRATING_MOMENTS, ORCHESTRATION
-        from resources.sequences import RunKey
         sequences = Sequences(self.record, actor=SYSTEM)
-        for shipped in (ORCHESTRATION, *ORCHESTRATING_MOMENTS):
-            sequence = sequences.rows.by_title(shipped.title)
+        for title in shipped_titles(self.record, "orchestrating"):
+            sequence = sequences.rows.by_title(title)
             if not sequence:
                 continue
             for run in [run for run in map(RunKey.of, sequence.runs) if run.here(self.record.env)]:
                 sequences.finish(sequence.n, run.about)
 
     def _set_orchestrating(self, on: bool) -> None:
-        from features.session_briefing.block import rebuild
         self.record.change_setting("boards", {"orchestrating": on})
-        rebuild(self.record)
+        self.record.emit("board", 0, ORCHESTRATED, self.actor, orchestrating=on)
 
     @action
     def pause(self, n: int):

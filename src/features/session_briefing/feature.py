@@ -1,4 +1,5 @@
 from events.agents import SessionStarted
+from events.boards import BoardOrchestrated
 from expects import Answered, Given, Hooked, Nudged, Unchanged
 from events.resources import AnyEvent
 from framework.base import Feature
@@ -7,7 +8,7 @@ from resources.types import AgentRow
 from features.session_briefing.block import COMPACTED, briefing
 from features.session_briefing.details import SessionBriefingDetails
 from payload import HookEvent
-from features.session_briefing.handlers import GreetOnce, RebuildStartBlock
+from features.session_briefing.handlers import GreetOnce, RebuildStartBlock, RebuildWhenOrchestrating
 
 
 CLAUDE = AgentRow(n=1, title="claude-1", data={"provider": "claude"})
@@ -35,6 +36,9 @@ class SessionBriefing(Feature):
         ])
         journal.events.handler(RebuildStartBlock(), expects=[
             Given(AnyEvent(n=1, type="nudge", action="created"), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
+        ])
+        journal.events.handler(RebuildWhenOrchestrating(), expects=[
+            Given(BoardOrchestrated(n=0, type="board", action="orchestrated", orchestrating=True)) >> Unchanged(),
         ])
         journal.agent.responder(HookEvent.SESSION_START, briefing, expects=[
             Given("a session starts", rows=[CLAUDE], hook=Hooked(event="SessionStart", source="startup")) >> Answered(Written()),

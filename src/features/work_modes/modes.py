@@ -17,6 +17,7 @@ def pick(record, mode: str, actor: str) -> str:
     if mode_of(record) == mode:
         return mode
     record.change_setting(NAME, {"mode": mode})
+    record.emit("feature", 0, "updated", actor, setting=NAME)
     from framework.loaded import running
     from features.work_modes.feature import WorkModes
     for write in CARRIED_IN.each():
@@ -31,7 +32,7 @@ def taking(record) -> str:
 
 
 def board_of(record):
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     from resources.base import SYSTEM
     n = int(WorkModesDetails.values(record).board)
     boards = Boards(record, actor=SYSTEM)
@@ -50,7 +51,7 @@ def filing_on(board) -> str:
 
 
 def choose_board(record, n: int, actor: str) -> int:
-    from features.boards.controller import Boards
+    from controllers.types import Boards
     from resources.base import SYSTEM
     boards = Boards(record, actor=SYSTEM)
     if n and not boards.rows.exists(n):

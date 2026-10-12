@@ -3,7 +3,8 @@ import tempfile
 from pathlib import Path
 
 from controllers.base import Controller
-from controllers.features import SETTINGS_CHANGED, settings_of
+from controllers.features import settings_of
+from declaring.registries import SETTINGS_CHANGED
 from controllers.marks import action
 from engine import runtime
 from controllers.form_of_address.anchoring import Region, anchored, silhouettes

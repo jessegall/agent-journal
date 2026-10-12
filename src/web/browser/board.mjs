@@ -1,3 +1,6 @@
+import {writeFileSync} from "node:fs";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
 import {drag, journal, numberOf, reply, runScenarios, shot} from "./harness.mjs";
 
 const card = (page, title) => page.locator(".card", {hasText: title});
@@ -15,6 +18,23 @@ async function openBoard(page, url) {
     const back = page.getByRole("button", {name: /Back to the board/});
     if (await back.waitFor({timeout: 3000}).then(() => true, () => false)) await back.click();
     await page.getByRole("tab", {name: "To-dos"}).click();
+}
+
+// PROBE_TIMINGS=1 records when the page asks the journal and when it is answered, to find what the first helpers poll waits for.
+function timings(page) {
+    const began = Date.now();
+    const lines = [];
+    const note = (what) => lines.push(`${String(Date.now() - began).padStart(6)} ms  ${what}`);
+    const path = (request) => new URL(request.url()).pathname + new URL(request.url()).search.slice(0, 40);
+    page.on("request", (request) => request.url().includes("/api/") || request.isNavigationRequest() ? note(`asked    ${request.method()} ${path(request)}`) : null);
+    page.on("response", (response) => response.url().includes("/api/") || response.request().isNavigationRequest() ? note(`answered ${response.status()} ${path(response.request())}`) : null);
+    return {
+        note,
+        report() {
+            writeFileSync(join(tmpdir(), "plan-helpers-timings.txt"), lines.join("\n") + "\n");
+            return lines.join("\n");
+        },
+    };
 }
 
 await runScenarios(process.argv[2], {
@@ -115,10 +135,18 @@ await runScenarios(process.argv[2], {
         journal("todo", "assign", String(row), "helper:8");
         const helper = {n: 8, ref: "helper:8", type: "helper", title: "Build fast", completed: 0, deleted: 0, seen: [], refs: [], state: "working",
             data: {name: "Quinn Quick", environment: "quinn-env", provider: "claude", model: "sonnet"}};
+        const probe = process.env.PROBE_TIMINGS ? timings(page) : null;
         await page.route(/\/api\/main\/helper\?/, (route) => reply(route, {rows: [helper]}));
         await page.goto(`${url}#/main`);
         await page.locator(".statusbar-text").waitFor();
+        probe?.note("status bar visible");
         await page.evaluate((n) => (window.location.hash = `#/main/plan/${n}`), plan);
-        await page.locator(".holder", {hasText: "Quinn Quick"}).first().waitFor({timeout: 1500});
+        probe?.note("hash switched to the plan");
+        await page.locator(".holder", {hasText: "Quinn Quick"}).first().waitFor({timeout: 1500}).catch((error) => {
+            probe?.note("holder never appeared");
+            throw probe ? new Error(`${error.message}\n${probe.report()}`) : error;
+        });
+        probe?.note("holder visible");
+        probe?.report();
     },
 });

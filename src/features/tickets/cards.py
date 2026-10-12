@@ -9,7 +9,7 @@ from engine.record import Record
 from engine.sessions import Sessions, live
 from resources.text import clipped
 from engine.worktree import spread
-from features.boards.controller import Boards
+from controllers.types import Boards
 from resources.boards import REVIEW
 from features.kanban.shapes import BoardLanes, Card, Lane
 from resources.tickets import PROPOSED

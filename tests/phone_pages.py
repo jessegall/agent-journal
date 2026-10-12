@@ -8,7 +8,7 @@ from controllers.features import Features
 from controllers.agents import Agents
 from controllers.types import Docs, Environments, Facts, Messages, Questions, Todos, Works
 from controllers.collections import Collections
-from features.plans.controller import Plans
+from controllers.types import Plans
 from controllers.types import Suggestions
 from features.templates.shipped import ship
 from engine import runtime

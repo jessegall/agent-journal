@@ -8,8 +8,8 @@ from typing import NamedTuple
 
 from controllers.types import Docs, Todos
 from controllers.collections import Collections
-from features.plans.controller import Plans
-from features.boards.controller import Boards
+from controllers.types import Plans
+from controllers.types import Boards
 from features.tickets.controller import Tickets
 from engine.record import Record
 from features.sharing.controller import Shares

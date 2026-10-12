@@ -16,7 +16,7 @@ from resources.base import USER
 from resources.types import AgentRow, Question
 from framework.journal import Journal
 from framework.sending import Nudge
-from features.sequences.controller import Sequences
+from controllers.types import Sequences
 from features.sequences.details import SequencesDetails
 from resources.triggers import STARTED_BY
 from features.sequences.details import UNFINISHED

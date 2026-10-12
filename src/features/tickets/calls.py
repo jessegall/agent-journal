@@ -3,7 +3,7 @@ import re
 from controllers.types import Agents, Messages, Questions, Works
 from engine.record import Record
 from engine.worktree import git
-from features.plans.controller import DONE as PLAN_DONE
+from resources.plans import DONE as PLAN_DONE
 from features.tickets.details import TicketsDetails
 from payload import HookEvent
 from resources.base import AGENT, SYSTEM

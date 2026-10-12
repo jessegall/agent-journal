@@ -64,7 +64,7 @@ def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_no
     from payload import Chunk
     from runner.chat_mirror import displayed
     from engine.sessions import Sessions
-    from features.sequences.controller import Sequences
+    from controllers.types import Sequences
     from features.sequences.shipped import ship
     from controllers.triggers.controller import Triggers
     features.load()
@@ -112,7 +112,7 @@ def test_a_commit_reminds_the_agent_it_may_write_an_update_at_most_hourly():
 
 
 def test_an_update_report_never_starts_the_sequence_for_research_reports():
-    from features.sequences.controller import Sequences
+    from controllers.types import Sequences
     from features.sequences.shipped import ship
     from resources.base import AGENT
     features.load()

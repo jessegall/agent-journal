@@ -17,8 +17,8 @@ from controllers.types import Messages, Todos
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.stored import write_text
-from features.boards.controller import Boards
-from features.plans.controller import Plans
+from controllers.types import Boards
+from controllers.types import Plans
 from features.tickets.controller import Tickets
 from providers import PROVIDERS
 from resources.base import SYSTEM

@@ -1,5 +1,5 @@
 from controllers.types import Docs, Reports
-from features.plans.controller import Plans
+from controllers.types import Plans
 from resources.base import AGENT
 from tests.conftest import fresh
 from tests.kit import nudges, report

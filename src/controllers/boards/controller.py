@@ -1,18 +1,16 @@
 import time
 
-import controllers.types as types_module
 from controllers.base import Controller, discarding
-from features.boards.building import BuildingBoards
-from features.boards.requests import DraftingBoards, numbers_in
+from controllers.boards.building import BuildingBoards
+from controllers.boards.requests import DraftingBoards, numbers_in
 from resources.boards import DONE, MEANINGS, Board
-from features.boards.running import RunningBoards
+from controllers.boards.running import RunningBoards
 from resources.base import FINISHED, PROJECT, RESUMED, Ref, Refused, Resource, SYSTEM
 from controllers.marks import action
-from declaring.extension import Extension
+from declaring.registries import CARD_STORE
 
 STAGES = ("To do", "Doing", "Review", "Done")
 BUILD_LOG = 40
-CARD_STORE = Extension()
 
 
 def with_meaning(meanings: dict, stage: str, meaning: str) -> dict:
@@ -95,6 +93,3 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
         present = {row["n"] for row in tickets.rows.summaries() if not row["deleted"]}
         kept = {int(number) for t in board.added.get("tickets") or [] if int(t) in present for number in tickets.load(t).covers if str(number).isdigit()}
         return [clause for number, clause in enumerate(board.done_when, 1) if number not in kept]
-
-
-types_module.register(Boards)

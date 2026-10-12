@@ -1,7 +1,7 @@
 import time
 from controllers.types import Comments, Environments, Todos
 from engine.record import Record
-from features.boards.controller import Boards
+from controllers.types import Boards
 from features.tickets.controller import Tickets
 from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh
@@ -195,7 +195,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
     assert card["reason"].startswith(f"waiting on its run: go test ./engine/... in ticket-{ticket.n} · "), \
         "an agent idle behind its own running command is waiting on it, never idle"
-    from features.sequences.controller import Sequences
+    from controllers.types import Sequences
     merging = Sequences(record, actor=USER).create("Merging a ticket", starts_on="ticket.finished")
     Sequences(record, actor=USER).section(merging.n, "Review its work", "Dispatch the ticket-reviewer.")
     Sequences(record, actor=SYSTEM).run(merging.n, about=ticket.ref)
@@ -487,7 +487,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
         "a note to a ticket's agent is delivered and answered with the note, never with the ticket's whole brief"
     from controllers.agents import IDLE_STATE
     from controllers.types import Agents
-    from features.plans.controller import ACTIVE
+    from resources.plans import ACTIVE
     told_to = []
     tickets.update(ticket.n, plan=7, told=0.0)
     with monkeypatch.context() as idle:
@@ -639,7 +639,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     user.move(ui.n, "Building")
     assert (launched, user.load(ui.n).queued) == ([f"ticket-{ui.n}"], False), "a ticket waiting on an open one still starts its agent, to write its plan ahead"
     assert f"waits on ticket {api.n}" in refused(lambda: user.approve_plan(ui.n)), "its plan is not approved while the ticket it waits on is open"
-    from features.plans.controller import READY
+    from resources.plans import READY
     decided = []
     with monkeypatch.context() as planned:
         planned.setattr(Tickets, "_plan_status", lambda self, found: READY)
@@ -653,7 +653,7 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     assert "has no plan waiting" in refused(lambda: user.approve_plan(ui.n)), "once its dependency closes, the wait no longer holds the plan"
     from types import SimpleNamespace
     from features.plans import progress
-    from features.plans.controller import ACTIVE
+    from resources.plans import ACTIVE
     with monkeypatch.context() as finished:
         finished.setattr(Tickets, "_plan_of", lambda self, found: SimpleNamespace(status=ACTIVE, phases=[{}]))
         finished.setattr(progress, "first_open_phase", lambda *given: 0)
@@ -669,7 +669,8 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
 
 
 def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypatch):
-    from features.plans.controller import APPROVED, Plans
+    from controllers.types import Plans
+    from resources.plans import APPROVED
     from tests.conftest import refused
     record = fresh()
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"])
@@ -720,7 +721,7 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     Plans(Record(record.root, "ticket-1"), actor=SYSTEM).update(plan.n, status="ready")
     tickets.approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "you approve the plan from its ticket's card as well"
-    from features.plans.controller import ACTIVE, WAITING
+    from resources.plans import ACTIVE, WAITING
     Plans(Record(record.root, "ticket-1"), actor=SYSTEM).update(plan.n, status=WAITING)
     drafted = tickets.create("A drafted card", board=board.n, draft=True, abstract="One more card")
     import time

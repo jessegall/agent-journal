@@ -5,11 +5,12 @@ import pytest
 
 import features
 
-from features.plans.controller import Plans  # noqa: E402
-from features.boards.controller import Boards
+from controllers.types import Plans  # noqa: E402
+from controllers.types import Boards
 from tests.kit import Tickets
 from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
+from features.work_tracking.auto import passes_checkpoints
 from features.work_tracking.next import ready
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
@@ -192,7 +193,8 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     steered_todos.complete(e, "done")
     assert gated.load(held.n).data["status"] == "waiting", \
         "a ticket's environment is always in auto, yet its plan's checkpoint waits for the orchestrator or the user"
-    from features.work_tracking.next import ready
+    from features.work_tracking.auto import passes_checkpoints
+from features.work_tracking.next import ready
     stuck, soon, later = (auto_todos.create(title).n for title in ("waits on the production rollout", "next phase work", "independent work two phases on"))
     blocked_first = quick.create("Blocked first", goal="keeps moving")
     quick.phase(blocked_first.n, "Fix first")
@@ -232,14 +234,14 @@ def test_a_plan_started_with_its_rows_already_closed_completes_itself(env, monke
         by_user.start(by_user.approve(walked.n).n)
         monkeypatch.setattr(Plans, "save", plan_save)
         todos.complete(last.n, "the last row closes")
-        Plans(record, actor=SYSTEM)._catch_up()
+        Plans(record, actor=SYSTEM)._catch_up(passes_checkpoints(record))
         monkeypatch.setattr(Plans, "save", saving)
         return by_agent.load(walked.n)
 
     def reentering(self, r, action, **event):
         saved = saving(self, r, action, **event)
         if event.get("complete"):
-            self._catch_up()
+            self._catch_up(passes_checkpoints(self.record))
         return saved
 
     def closed_elsewhere(self, r, action, **event):
@@ -467,7 +469,7 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     assert plans.load(plan.n).current == 1 and f"ticket:{first.n}" in plans.load(plan.n).refs, "a phase holds tickets and the plan links them"
     assert started == [f"plan-{plan.n}", first.n], "starting the plan starts its worker agent and the first phase's tickets"
     tickets.complete(first.n, how="merged", yes=True)
-    Plans(record, actor=SYSTEM)._catch_up()
+    Plans(record, actor=SYSTEM)._catch_up(passes_checkpoints(record))
     assert plans.load(plan.n).current == 2 and started[-1] == second.n, "once its tickets close, the next phase's tickets start"
     assert "now phase 2, Ship: 0 of 1 done" in plans.progress(plan.n) and f"ticket {second.n} Share" in plans.progress(plan.n), \
         "journal plan progress says where the plan stands, the current phase's rows included"

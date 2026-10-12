@@ -6,7 +6,7 @@ from controllers.base import COMMANDS
 from controllers.types import Questions, Todos, Works
 from features.kanban.board import sources_of
 from features.kanban.lanes import lane_of
-from features.plans.controller import Plans
+from controllers.types import Plans
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 

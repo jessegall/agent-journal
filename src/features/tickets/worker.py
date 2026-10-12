@@ -1,5 +1,5 @@
 from features.agent_sessions.launch import start_agent_in
-from features.plans.controller import Plans
+from controllers.types import Plans
 from resources.plans import PHASE
 from providers import DRIVERS
 from resources.base import DEFAULT_PROVIDER

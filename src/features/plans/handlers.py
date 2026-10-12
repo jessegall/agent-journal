@@ -4,7 +4,8 @@ from controllers.types import Todos, Works
 from events.agents import ClockTicked
 from events.resources import AnyEvent, RowReopened
 from events.todos import TodoCompleted, TodoUpdated
-from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING, Plans, delegate_plans_holding
+from controllers.types import Plans
+from resources.plans import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING
 from framework.sending import Nudge, Sent, send
 from declaring.trigger import MINUTE
 from resources.plans import PHASE, PHASE_FIELDS
@@ -17,6 +18,13 @@ from events.reports import ReportLinked
 
 STILL_TIMES = 3
 ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
+
+
+def delegate_plans_holding(record, todo) -> None:
+    plans = Plans(record, actor=SYSTEM)
+    for plan in plans.rows.every():
+        if plan.status in RUNNING and plan.has_in_phase(todo):
+            plans.delegate(plan.n)
 
 
 class DelegatePlansOfHandedRows(Handler):
@@ -93,7 +101,7 @@ class TakeStruckRowsOutOfUnapprovedPlans(Handler):
 class AdvancePlans(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
         if (event.type, event.action) in ADVANCES:
-            Plans(context.record, actor=SYSTEM)._catch_up()
+            Plans(context.record, actor=SYSTEM)._catch_up(passes_checkpoints(context.record))
 
 
 class ReopenPlansWithTheirRows(Handler):

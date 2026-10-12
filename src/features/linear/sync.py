@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass, replace
 
 from controllers.types import Comments
-from features.boards.controller import Boards
+from controllers.types import Boards
 from features.tickets.controller import Tickets
 from features.integrations.client import Answer, IntegrationClient
 from features.integrations.state import Choice, IntegrationState
