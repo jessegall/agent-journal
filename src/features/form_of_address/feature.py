@@ -3,7 +3,8 @@ from framework.base import Feature
 from controllers.types import Profiles
 from features.form_of_address.details import FormOfAddressDetails
 from framework.journal import Journal
-from features.form_of_address.address import address, announce_voice, voice_of
+from controllers.form_of_address.address import address, voice_of
+from features.form_of_address.details import VOICE_SET
 from features.session_briefing.start import ADDRESS, START_PARTS
 
 
@@ -18,4 +19,10 @@ class FormOfAddress(Feature):
         VOICE_FACES.add(self, lambda record: voice_of(record).faces())
 
     def settings_changed(self, record, actor: str) -> None:
-        announce_voice(self, record, actor)
+        self._announce_voice(record, actor)
+
+    def _announce_voice(self, record, actor: str) -> None:
+        """Tells the agent how it is called, once the profile that names it changed."""
+        line = address(record)
+        if line:
+            self.to_primary(record, VOICE_SET, actor=actor, voice=line)

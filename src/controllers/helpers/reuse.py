@@ -3,14 +3,11 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from agents.seat import SubagentRow
-from controllers.types import Agents
-from features.agent_sessions.launch import running_in
+from controllers.agents import Agents
 from engine.record import Record
 from engine.worktree import lines, present
 from controllers.helper_worktrees import KEPT, Worktrees
-from features.helpers.state import HelperAgent, HelperSnapshot, WorkState, helper_state
-from providers import PROVIDERS
+from controllers.helpers.state import HelperAgent, HelperSnapshot, WorkState, helper_state
 from resources.base import SYSTEM
 from declaring.settings import Settings
 
@@ -99,6 +96,7 @@ def unlanded(record, helper) -> tuple[str, ...]:
 
 def agent_runs(record, helper) -> bool:
     """The one answer to whether a helper's agent runs, which saying, stopping, finishing, the notices and the limit on kept helpers all go by."""
+    from features.agent_sessions.launch import running_in
     return bool(running_in(record, helper.environment))
 
 
@@ -122,7 +120,8 @@ def retire(record, subagent: str) -> None:
     record.state("helpers").set(RETIRED, [*retired(record), subagent][-RETIRED_KEPT:])
 
 
-def subagent_rows(primary) -> list[SubagentRow]:
+def subagent_rows(primary) -> list:
+    from agents.seat import SubagentRow
     return [SubagentRow.from_json(raw) for raw in primary.subagent_rows]
 
 
@@ -130,6 +129,7 @@ def subagents_kept(record, primary) -> list[Kept]:
     subagents, gone = subagent_rows(primary), set(retired(record))
     if not subagents:
         return []
+    from providers import PROVIDERS
     follow_up, agents = PROVIDERS[primary.provider].follow_up, Agents(record, actor=SYSTEM)
     kept = []
     for sub in (sub for sub in subagents if sub.address not in gone and not sub.is_refused()):

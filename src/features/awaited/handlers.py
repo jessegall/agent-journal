@@ -1,5 +1,5 @@
 from events.agents import ClockTicked
-from features.helpers.controller import Helpers
+from controllers.types import Helpers
 from framework.parts import AgentContext, Handler
 from resources.base import SYSTEM
 from controllers.types import Works

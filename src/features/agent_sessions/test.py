@@ -475,7 +475,7 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
     latest = {sub["task"]: sub["latest"] for sub in Claude().crew(transcript)["subagent_rows"]}
     assert latest == {"Ada: review": "", "Rex: research": "Also check the phone"}, "a subagent's row carries the last message the main agent sent it, and nothing before one is sent"
     from types import SimpleNamespace
-    from features.open_viewer.transcripts import transcript_at
+    from providers.transcripts import transcript_at
     from providers.base import KEPT_ENDED, running_and_latest
     from resources.base import Missing
     ended = [{"session": f"s{i}", "running": False} for i in range(KEPT_ENDED + 3)]

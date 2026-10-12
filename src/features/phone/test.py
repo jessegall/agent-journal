@@ -25,7 +25,7 @@ from features.phone import controller as phone_controller
 from features.phone.passkey import Assertion, Cbor, Enrolment, Unverified, encoded, integer, requested
 from features.phone.controller import Phones
 from features.phone.feed import POSTED
-from features.helpers.controller import Helpers
+from controllers.types import Helpers
 from controllers.types import Tickets
 from controllers.types import Shares
 from controllers.types import Suggestions

@@ -19,10 +19,10 @@ from features.helpers.handlers import NameStoppedOrQuietHelpers
 from framework.parts import AgentContext
 from controllers.types import Worktrees
 from tests.kit import project_on, run
-from features.helpers.controller import Helpers
+from controllers.types import Helpers
 from controllers.types import Plans
 from features.helpers.interceptors import KeepSubagentFiles, OfferKeptAgentsFirst
-from features.helpers.reuse import kept
+from controllers.helpers.reuse import kept
 from payload import Dispatch
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import FAILED, IDLE
@@ -139,7 +139,7 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     assert (networked("helper", "finish"), networked("helper", "retire"), networked("helper", "all")) == (True, True, False), \
         "a command is known to wait on the agent by the word it is called with, not only by its method's name"
     later = todos.create("handed but never launched").n
-    monkeypatch.setattr("features.helpers.controller.launched", lambda *given: (_ for _ in ()).throw(RuntimeError("no terminal")))
+    monkeypatch.setattr("features.agent_sessions.launch.launched", lambda *given: (_ for _ in ()).throw(RuntimeError("no terminal")))
     assert "no terminal" in refused(lambda: helpers.dispatch("Yan", "a job", "claude", "sonnet", todos=str(later))) and todos.load(later).assigned == "", \
         "a helper that cannot be launched gives back the to-dos it was handed"
     ghost = Helpers(record, actor=SYSTEM).create("Ghost job", name="Ghost", provider="claude", model="sonnet", environment="helper-env")
@@ -148,9 +148,9 @@ def test_a_dispatch_names_a_known_provider_a_model_and_a_free_name(monkeypatch):
     assert "has no environment left to stop" in refused(lambda: helpers.stop(lost.n)), "a helper whose environment is gone has nothing to stop"
     assert "say why" in refused(lambda: helpers.retire(lost.n)), "retiring a helper takes a reason"
     assert "Are you sure you can't reuse" in refused(lambda: helpers.retire(lost.n, why="its job is done")), "the reason is read back with the way to reuse the helper before it is retired"
-    monkeypatch.setattr("features.helpers.controller.tell_in", lambda *given: True)
+    monkeypatch.setattr("features.agent_sessions.launch.tell_in", lambda *given: True)
     typed = []
-    monkeypatch.setattr("features.helpers.controller.tell_soon", lambda record, environment, provider, words: typed.append(words) or True)
+    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda record, environment, provider, words: typed.append(words) or True)
     assert helpers.say(ghost.n, "carry on") == "sent to Ghost", "a follow-up reaches a helper that is running"
     sent = Messages(Record(record.root, "helper-env"), actor=SYSTEM).rows.every()
     assert [(m.brief, m.data.get("from_main")) for m in sent] == [("carry on", True)], "and is kept in the helper's chat as a message from the main agent, so its inspector can show it"
@@ -181,10 +181,10 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     assert [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"]][1:] == ["Changed helpers.kept from 5 to 12"], \
         "an agent changing a setting shows a mark once, and a person's change shows none"
     marks = lambda: [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"] if c.get("kind") == "helpers"]
-    monkeypatch.setattr("features.helpers.controller.tell_soon", lambda *given: True)
+    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda *given: True)
     Helpers(record, actor=AGENT).say(1, "the next thing")
     assert marks()[-1] == "Briefed helper 1", "telling a helper that is already working shows it as briefed"
-    monkeypatch.setattr("features.helpers.controller.tell_soon", lambda *given: False)
+    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda *given: False)
     monkeypatch.setattr(Helpers, "_revive", lambda self, row, words: None)
     Helpers(record, actor=AGENT).say(1, "pick it up again")
     assert marks()[-1] == "Continued helper 1", "starting a helper again after its agent stopped shows it as continued, which is what the chat could not tell before"
@@ -273,8 +273,8 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     rhea, mira = (Helpers(Record(record.root, f"{record.env}-{name}"), actor=AGENT) for name in ("rhea", "mira"))
     Agents(Record(record.root, f"{record.env}-mira"), actor=SYSTEM).create("claude-mira")
     pushed = []
-    monkeypatch.setattr("features.helpers.controller.tell_in", lambda home, environment, provider, text: pushed.append((provider, text)) or provider == "codex")
-    monkeypatch.setattr("features.helpers.controller.tell_soon", lambda home, environment, provider, text: pushed.append((provider, text)) or provider == "codex")
+    monkeypatch.setattr("features.agent_sessions.launch.tell_in", lambda home, environment, provider, text: pushed.append((provider, text)) or provider == "codex")
+    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda home, environment, provider, text: pushed.append((provider, text)) or provider == "codex")
     assert rhea.peers() == ["helper 2, Mira, on claude: Write the hook docs"], "a helper lists the other helpers its dispatcher started"
     assert mira.say(1, "which hook is slowest?") == "sent to Rhea" and pushed[-1][0] == "codex" and 'answer with journal helper say 2 "<text>"' in pushed[-1][1], \
         "a Claude helper's words reach a Codex helper at once, with how to answer"
@@ -308,8 +308,8 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     assert not features.FEATURES["helpers"].is_owed(record, "stopped", ("helper:1",)), "once it reported, the line that it stopped is no longer owed"
     assert relayed.ref in reported.data["rows"] and features.FEATURES["helpers"].is_owed(record, "reported", tuple(reported.data["rows"])), \
         "a report is named while it stands"
-    monkeypatch.setattr("features.helpers.controller.tell_in", lambda *given: True)
-    monkeypatch.setattr("features.helpers.controller.tell_soon", lambda *given: True)
+    monkeypatch.setattr("features.agent_sessions.launch.tell_in", lambda *given: True)
+    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda *given: True)
     Helpers(record, actor=AGENT).say(1, "Now profile the start-up too")
     assert not features.FEATURES["helpers"].is_owed(record, "reported", tuple(reported.data["rows"])), \
         "once the helper is given new work, its report is named no more"
@@ -378,7 +378,7 @@ def test_finish_packs_the_environment_away_and_drops_an_untaken_worktree(monkeyp
     helpers.complete(1)
     assert (helpers.load(1).session, helpers.load(1).transcript) == ("helper-rhea", str(conversation)), "retiring records where the helper's conversation is, before its environment is packed away"
     from engine.transcript import Turn
-    from features.open_viewer.transcripts import Transcript
+    from providers.transcripts import Transcript
     monkeypatch.setattr(Transcript, "turns", lambda self: [Turn(1, "agent", "Done and reported", kind="agent", at=1.0)])
     assert [turn["text"] for turn in helpers.transcript(1)["turns"]] == ["Done and reported"], "a retired helper's conversation is read from the provider's own file, which retiring never touches"
     assert not Environments(repo.record, actor=SYSTEM).rows.by_title(f"{repo.record.env}-rhea"), "its environment is packed away"
@@ -450,10 +450,10 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     marked = todos.load(fixed)
     assert not marked.completed and lane_of(Sources(todos), marked) == DONE, "a row the helper marks shows as done, waiting for its merge"
     commit(Path(Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree)).path), "tunnel.txt", "fixed\n")
-    from features.helpers.reuse import unlanded
+    from controllers.helpers.reuse import unlanded
     commit(Path(Worktrees(repo.record, actor=SYSTEM).load(int(row.worktree)).path), "test_tunnel.py", "def test_it(): pass\n")
     assert unlanded(repo.record, row) == ("write tunnel.txt", "write test_tunnel.py"), "a commit on a helper's branch that the project's branch lacks is named"
-    from features.helpers.reuse import written_tests
+    from controllers.helpers.reuse import written_tests
     assert written_tests(repo.record, row) == ("test_tunnel.py",), "and the tests it wrote are listed, for the agent that dispatched it to run"
     assert f"closed to-do {fixed}" in Worktrees(repo.record, actor=SYSTEM).take(int(row.worktree)) and todos.load(fixed).completed, "taking its work closes it"
     assert unlanded(repo.record, row) == (), "once its commit is taken over by cherry-pick it counts as landed, though its hash is new"
@@ -471,8 +471,8 @@ def test_to_dos_handed_to_a_helper_are_its_alone_wait_as_done_until_taken_and_co
     Todos(repo.record, actor=SYSTEM).assign(stranded, to="helper:99")
     assert todos.unassign(stranded).assigned == "", "a row held by a helper that no longer exists is the agent's to take back"
     sent_texts = []
-    monkeypatch.setattr("features.helpers.controller.tell_in", lambda record, environment, provider, text: sent_texts.append(text) or True)
-    monkeypatch.setattr("features.helpers.controller.tell_soon", lambda record, environment, provider, text: sent_texts.append(text) or True)
+    monkeypatch.setattr("features.agent_sessions.launch.tell_in", lambda record, environment, provider, text: sent_texts.append(text) or True)
+    monkeypatch.setattr("features.agent_sessions.launch.tell_soon", lambda record, environment, provider, text: sent_texts.append(text) or True)
     helpers.dispatch("Tess", "More tunnel work", "codex", "gpt-5.5")
     later = todos.create("check the certificate").n
     helpers.say(helpers.all()[-1].n, "also this one", todos=str(later))
@@ -517,7 +517,7 @@ def test_a_helper_launches_in_a_nested_checkout_named_by_its_path(monkeypatch, t
 
 def test_a_helper_is_working_idle_needing_you_reported_stopped_or_finished_by_what_its_agent_last_did():
     from types import SimpleNamespace
-    from features.helpers.state import HelperSnapshot, WorkState, helper_reason, helper_state
+    from controllers.helpers.state import HelperSnapshot, WorkState, helper_reason, helper_state
     row = lambda **given: SimpleNamespace(**{"completed": False, "report": "", "stopped_by_user": False, **given})
     snapshot = lambda **given: HelperSnapshot.from_payload(given)
     running = {"status": "working", "at": 1000.0}
@@ -562,7 +562,7 @@ def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back
     helpers.dispatch("Zed", "fix src/features/nudges/standing.py", "claude", "sonnet")
     runs(helpers.load(1))
     runs(helpers.load(2))
-    monkeypatch.setattr("features.helpers.reuse.touched", lambda record, row: ("src/features/nudges/standing.py",) if row.name == "Zed" else ())
+    monkeypatch.setattr("controllers.helpers.reuse.touched", lambda record, row: ("src/features/nudges/standing.py",) if row.name == "Zed" else ())
     Agents(Record(record.root, helpers.load(2).environment), actor=SYSTEM).create("claude-zed", status=IDLE, at=time.time() - 600)
     named = refused(lambda: helpers.dispatch("Ivy", "tidy nudges/standing.py", "claude", "sonnet"))
     assert "helper 2, Zed" in named and "helper 1" not in named and 'journal helper say 2 "<the new work>"' in named, \
@@ -589,7 +589,7 @@ def test_related_work_goes_to_an_agent_that_knows_it_and_the_kept_ones_hold_back
     gone = subprocess.Popen(["true"])
     gone.wait()
     runs(helpers.load(3), gone.pid)
-    from features.helpers.reuse import agent_runs
+    from controllers.helpers.reuse import agent_runs
     assert (agent_runs(record, helpers.load(2)), agent_runs(record, helpers.load(3))) == (True, False), "a helper whose agent process is gone is not one that runs"
     assert "helper 3, Ivy" not in [k.name for k in kept(record, helpers.rows.standing())], "and it is not one of the helpers kept for reuse, so it holds no place against the limit"
     assert "no agent running" in helpers.stop(3) and not helpers.load(3).completed, "stopping it says that its agent is gone instead of refusing"

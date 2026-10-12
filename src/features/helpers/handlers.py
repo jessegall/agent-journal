@@ -9,8 +9,8 @@ from events.agents import AgentChanged
 from events.messages import MessageCreated
 from engine.sessions import Sessions, alive
 from events.questions import QuestionCreated
-from features.helpers.controller import Helpers
-from features.helpers.reuse import agent_runs, subagent_rows
+from controllers.types import Helpers
+from controllers.helpers.reuse import agent_runs, subagent_rows
 from events.helpers import HelperBriefed, HelperContinued, HelperTold, Telling
 from framework.parts import AgentContext, Context, Handler, OnAgentUpdated
 from declaring.trigger import MINUTE

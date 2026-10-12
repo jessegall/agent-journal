@@ -28,6 +28,7 @@ from controllers.critique.controller import Critiques
 from controllers.helper_worktrees import Worktrees
 from controllers.sequences import Sequences
 from controllers.sharing.controller import Shares
+from controllers.helpers.controller import Helpers
 from controllers.tickets.controller import Tickets
 from controllers.boards.controller import Boards
 from controllers.plans import Plans
@@ -43,7 +44,7 @@ from controllers.form_of_address.controller import Profiles
 
 register(Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Questions, Comments, Agents,
          Notifications, Notices, Reactions, Tools, Features, Plugins, Environments, Nudges, Suggestions, Templates,
-         Critiques, Recordings, Outputs, Asks, Triggers, Checks, Collections, Dumps, Profiles, Sequences, Shares, Tickets, Boards, Plans, Worktrees)
+         Critiques, Recordings, Outputs, Asks, Triggers, Checks, Collections, Dumps, Profiles, Sequences, Shares, Tickets, Helpers, Boards, Plans, Worktrees)
 
 
 WARM_PAUSE = 0.02

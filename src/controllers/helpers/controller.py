@@ -2,24 +2,23 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-import controllers.types as types_module
 from framework.loaded import FEATURES
 from controllers.base import Controller
-from agents.terminal import detached, launch_output, prompted
 from controllers.requests import request
-from controllers.types import Agents, Environments, Messages, Nudges, Todos
+from controllers.agents import Agents
+from controllers.environments import Environments
+from controllers.messages import Messages
+from controllers.nudges import Nudges
+from controllers.todos import Todos
 from engine import attic, bus
 from engine.outbox import Request
 from engine.record import Record
 from engine.sessions import Sessions
-from features.agent_sessions.launch import launched, prepared, tell_in, tell_soon
-from controllers.types import Worktrees
-from features.open_viewer.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, whole
-from providers import PROVIDERS, workspace_folders
-from features.form_of_address.address import voice_of
+from controllers.helper_worktrees import Worktrees
+from controllers.form_of_address.address import voice_of
 from resources.helpers import Helper, held_by_helper
 from events.helpers import Telling
-from features.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
+from controllers.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, knowing, named_paths, refusal, unlanded, written_tests
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
 from controllers.marks import action
@@ -156,15 +155,18 @@ class Helpers(Controller):
             if earlier.n != row.n and earlier.environment == place:
                 Controller.complete(self, earlier.n, how=f"carried on by helper {row.n} in the same environment")
         if worktree:
+            from providers import workspace_folders
             given = Worktrees(self.record, actor=SYSTEM)._cut(place, workspace_folders(), helper=name, packages=packages)
             folder = Path(given.path)
             row = self.update(row.n, worktree=str(given.n))
+        from features.agent_sessions.launch import launched, prepared
         home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER)
         todo = Todos(home, actor=SYSTEM).create(job, brief=brief)
         Messages(home, actor=AGENT).create(titled(job), brief=f"{job}\n\n{brief}".strip(), from_main=True, opening=True)
         self._handed(row, home, handed)
         prompt = kickoff(row, folder, todo.n, handed, voice_of(self.record).agent_name)
         try:
+            from agents.terminal import prompted
             launched(self.record, place, provider, prompted(self.record.root, place, ["--model", model], prompt), folder)
         except Exception:
             give_back(self.record, handed)
@@ -196,6 +198,7 @@ class Helpers(Controller):
         home = Record(self.record.root, holder.environment)
         for copy in (t for t in Todos(home, actor=SYSTEM).rows.standing() if t.handed == str(given.n)):
             Todos(home, actor=SYSTEM).strike(copy.n, f"moved to helper {row.n}, {row.name}")
+        from features.agent_sessions.launch import tell_in
         tell_in(self.record, holder.environment, holder.provider,
                 f"To-do {given.n}, {given.title}, now belongs to helper {row.n}, {row.name}. Stop working on it and leave it out of your report.")
 
@@ -263,6 +266,7 @@ class Helpers(Controller):
         home = Record(self.record.root, row.environment)
         filed = Messages(home, actor=AGENT).create(titled(text), brief=text, from_main=True)
         words = wrote("The agent that dispatched you", filed.n, f"{handed_over(handed)}\n{text}" if handed else text)
+        from features.agent_sessions.launch import tell_soon
         running = tell_soon(self.record, row.environment, row.provider, words)
         if not running:
             if row.worktree:
@@ -276,6 +280,7 @@ class Helpers(Controller):
     def _revive(self, row: Helper, words: str) -> None:
         """Starts a stopped helper's agent again in its session, with the new work as its first turn."""
         from providers import DRIVERS, PROVIDERS
+        from agents.terminal import detached, launch_output, prompted
         earlier = Sessions(self.record.root).last(row.environment, row.provider) or DRIVERS[row.provider].printed_session(launch_output(self.record.root, row.environment))
         if earlier and not PROVIDERS[row.provider]().conversation_file(earlier):
             earlier = ""
@@ -316,6 +321,7 @@ class Helpers(Controller):
         there = Record(self.record.root, peer.environment)
         message = Messages(there, actor=AGENT).create(titled(text), brief=text, peer=me.name)
         answer = f'answer with journal helper say {me.n} "<text>"'
+        from features.agent_sessions.launch import tell_in
         if not tell_in(self.record, peer.environment, peer.provider, f"{wrote(f'Helper {me.n}, {me.name},', message.n, text)}\n\n{answer}"):
             Nudges(there, actor=SYSTEM).to_primary(titled(f"helper {me.n}, {me.name}, wrote in message {message.n}"), f"{text}\n\n{answer}")
         return f"sent to {peer.name}"
@@ -418,9 +424,12 @@ class Helpers(Controller):
             self.update(row.n, session=agent.title, transcript=agent.transcript)
 
     @action
-    def transcript(self, n: int, since: int = 0, before: int = 0, last: int = TRANSCRIPT_PAGE, entry: int = 0) -> dict:
+    def transcript(self, n: int, since: int = 0, before: int = 0, last: int = 0, entry: int = 0) -> dict:
         """The conversation of a retired helper, read from the provider's own file recorded when it was retired."""
+        from providers import PROVIDERS
+        from providers.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, whole
         row = self.load(n)
+        last = last or TRANSCRIPT_PAGE
         found = Transcript(PROVIDERS[row.provider](), Path(row.transcript)) if row.provider in PROVIDERS and row.transcript and Path(row.transcript).is_file() else NoTranscript()
         return whole(found, self.record, entry) if entry else paged(found, since, before, last)
 
@@ -438,5 +447,3 @@ class Helpers(Controller):
         if row.worktree and not cut.load(int(row.worktree)).completed:
             cut.complete(int(row.worktree))
 
-
-types_module.register(Helpers)

@@ -10,7 +10,7 @@ from features.open_viewer.appoint import appoint, online
 from features.open_viewer.attachments import FILES_PAGE, FileKind, attachments, attachments_page
 from features.open_viewer.manifest import manifest
 from features.open_viewer.settings import apply, settings
-from features.open_viewer.transcripts import TRANSCRIPT_PAGE, paged, transcript_at, whole
+from providers.transcripts import TRANSCRIPT_PAGE, paged, transcript_at, whole
 from framework.parts import Command, Context
 from controllers.shared import shared
 from features.permission_prompts.skipping import set_skipped

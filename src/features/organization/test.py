@@ -282,7 +282,7 @@ def test_every_environment_is_made_with_its_kind_and_only_main_ones_are_listed_t
 
 def test_the_upgrade_tags_every_environment_from_its_owner_and_a_helpers_folder_named_one_as_a_helper():
     from controllers.base import Controller
-    from features.helpers.controller import Helpers
+    from controllers.types import Helpers
     from migrations.m0068_environments_say_their_kind import run
     features.load()
     record = fresh()

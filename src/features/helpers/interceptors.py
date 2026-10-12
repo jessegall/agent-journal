@@ -5,9 +5,9 @@ from controllers.types import Agents, Environments
 from declaring.holds import Runs
 from engine.gates import DISPATCHING
 from declaring.reach import Reach
-from features.helpers.controller import Helpers
+from controllers.types import Helpers
 from resources.helpers import held_by_helper
-from features.helpers.reuse import kept, named_paths, refusal
+from controllers.helpers.reuse import kept, named_paths, refusal
 from framework.parts import ActionInterceptor, AgentContext, Canceler, Context, ToolInterceptor
 from engine.record import Record
 from resources.base import AGENT, SYSTEM, Ref

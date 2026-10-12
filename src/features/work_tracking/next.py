@@ -1,6 +1,6 @@
 from controllers.types import Questions, Todos, Works
-from features.helpers.controller import Helpers
-from features.helpers.reuse import kept
+from controllers.types import Helpers
+from controllers.helpers.reuse import kept
 from resources.base import SYSTEM, WHOM
 
 from declaring.extension import Extension

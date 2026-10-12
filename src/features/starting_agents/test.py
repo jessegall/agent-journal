@@ -196,7 +196,7 @@ def test_starting_an_agent_asks_which_environment_and_takes_over_a_busy_one_only
     import commands.launch as launch
     from commands.launch import asked_for, banner, choose, defaults
     from features.agent_sessions.launch import prepared
-    from features.helpers.controller import Helpers
+    from controllers.types import Helpers
     from resources.types import EnvironmentKind
     from engine.sessions import Sessions
     features.load()

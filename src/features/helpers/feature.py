@@ -10,7 +10,7 @@ from payload import Dispatch
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Message, Question, Todo
 from resources.helpers import Helper
-from features.helpers.controller import Helpers
+from controllers.types import Helpers
 from features.helpers.details import HelpersDetails
 from features.helpers.handlers import (HelperBriefed, HelperContinued, MarkTheHelperBriefed, MarkTheHelperContinued, NameStoppedOrQuietHelpers, RelayAnswerToDispatcher,
                                        TellAFailedTurnOnChange, TellAQuestionAskedAway)

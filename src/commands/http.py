@@ -55,7 +55,7 @@ from resources.base import Missing
 from controllers.invoke import invoked, takes_row
 from features.open_viewer.attachments import FileKind
 from framework.format import VIEWER, carded, shaped
-from features.open_viewer.transcripts import TRANSCRIPT_PAGE
+from providers.transcripts import TRANSCRIPT_PAGE
 from surfaces.everything import found
 from surfaces.listing import Listing, dashboard, listing
 from commands.dispatch import dispatch  # noqa: F401

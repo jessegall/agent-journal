@@ -2,7 +2,7 @@ from typing import TypedDict
 
 from controllers.types import Todos
 from controllers.types import Worktrees
-from features.helpers.controller import Helpers
+from controllers.types import Helpers
 from controllers.types import Plans
 from resources.base import SYSTEM
 

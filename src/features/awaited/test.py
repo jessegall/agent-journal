@@ -1,6 +1,6 @@
 import features
 from controllers.types import Agents, Works
-from features.helpers.controller import Helpers
+from controllers.types import Helpers
 from resources.base import AGENT, SYSTEM
 from tests.conftest import fresh
 from tests.kit import nudges, nudges_with_briefs, report, tick

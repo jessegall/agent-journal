@@ -1,7 +1,7 @@
 from controllers.types import Agents, Works
 from engine.command_runs import command_runs
-from features.helpers.controller import Helpers
-from features.helpers.reuse import subagent_rows
+from controllers.types import Helpers
+from controllers.helpers.reuse import subagent_rows
 from resources.base import SYSTEM
 
 

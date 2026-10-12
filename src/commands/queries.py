@@ -178,7 +178,7 @@ def halt(ctx) -> str:
     record = ctx["record"]
     root = record.root
     left = still_open(record)
-    from features.helpers.controller import stop_helpers
+    from controllers.helpers.controller import stop_helpers
     stop_helpers(record)
     ask(root)
     from features.clean_slate.slate import put_back
