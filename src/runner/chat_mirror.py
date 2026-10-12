@@ -215,7 +215,7 @@ def unfinished(root: Path, session: str, row) -> None:
         return
     traced(root, f"fallback session {session} pending {[(turn.key, fingerprint(turn.text), len(turn.text)) for turn in pending]} "
                  f"sent {len(sent)} last {sent[-5:]} matched {len(streamed)} last {streamed[-5:]} partial {partial} done {held.get(DONE, [])[-5:]}")
-    if provider.shows_what_is_said():
+    if provider.shows_what_is_said() and not provider().interrupted_by_user(Path(row.transcript)):
         fell_back(root, session, [fingerprint(turn.text) for turn in pending])
     for turn in pending:
         send_to_chat(root, session, turn.text, turn.key)

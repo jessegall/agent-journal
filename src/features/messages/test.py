@@ -252,10 +252,12 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
         json.dumps({"type": "user", "timestamp": now, "message": {"content": [{"type": "text", "text": "[Request interrupted by user]"}]}})]) + "\n")
     monkeypatch.setattr(engine.agent.driver, "alive", lambda: True)
     report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
+    blamed = log_file(record.root).read_text().count(FELL_BACK)
     cut("Half a sentence of the turn that was cut off")
     engine.cut_off()
     engine.cut_off()
     assert chat().count("Half a sentence of the turn that was cut off") == 1, "a turn the person cut off reaches the chat when the engine sees it, once, without waiting for the next prompt"
+    assert log_file(record.root).read_text().count(FELL_BACK) == blamed, "and the display hook is not blamed for it, since a turn the person cut off has no words for the hook to deliver"
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "kept", "index": 0, "final": True, "delta": "Delivered by the hook before the cut"}))
     report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
     cut("Delivered by the hook before the cut")
