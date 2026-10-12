@@ -49,7 +49,8 @@ def test_every_moment_of_a_type_is_a_class_in_its_module(kind, moments):
 
 @pytest.mark.parametrize("module", sorted(p.stem for p in CATALOGUE.glob("*.py") if p.stem not in NOT_A_TYPE))
 def test_a_catalogue_module_declares_each_string_once(module):
-    names = [c.on for c in classes_of(module) if c.on]
+    """A class is told apart by name(), not by `on`: a hook-filtered subclass of AgentReported shares its parent's `on` and is matched as hook.<name>."""
+    names = [c.name() for c in classes_of(module) if c.on]
     assert len(names) == len(set(names)), f"events/{module}.py declares {sorted({n for n in names if names.count(n) > 1})} twice"
 
 
