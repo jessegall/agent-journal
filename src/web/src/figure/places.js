@@ -57,20 +57,59 @@ export const boxAt = (spot, {size, below}, posture = spot.posture) => {
 };
 
 const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+// whether an element is drawn at all, its own and its ancestors' opacity and visibility counted, as a turn's tools are not until it is
+// hovered; where the page cannot say, it is taken as drawn
+const visible = (element) => element.checkVisibility?.({opacityProperty: true, visibilityProperty: true}) ?? true;
 // the figure is in the window when its picture's left, right and top are and the line it rests on is; a seated figure's legs may hang
 // past the foot of the window, as they hang past any edge it sits on
 const inWindow = (spot, box) => box.left >= 0 && box.top >= 0 && box.right <= window.innerWidth && spot.y <= window.innerHeight;
 
-// The spot whose figure stays in the window and covers the fewest controls, none where it can; of spots alike, the one nearest
-// `near`, where the figure stands now, so it does not wander between equally good places
-export function freeSpot(spots, figure, near) {
+// Where across a figure's picture it looks for words under its body, as shares of the picture's width and height: the middle of it,
+// where the body is drawn, from the hat to the feet
+const BODY_XS = [0.35, 0.5, 0.65];
+const BODY_YS = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9];
+
+// whether a word is drawn at this point of the page: the character the page has there holds ink, is drawn, and its box holds the point
+function onWord(x, y) {
+    const caret = document.caretRangeFromPoint?.(x, y);
+    if (!caret || caret.startContainer.nodeType !== Node.TEXT_NODE || !visible(caret.startContainer.parentElement)) return false;
+    const text = caret.startContainer;
+    const at = Math.min(caret.startOffset, text.length - 1);
+    for (const from of [at - 1, at].filter((each) => each >= 0)) {
+        if (!text.data[from].trim()) continue;
+        const glyph = document.createRange();
+        glyph.setStart(text, from);
+        glyph.setEnd(text, from + 1);
+        if ([...glyph.getClientRects()].some((box) => x >= box.left && x <= box.right && y >= box.top && y <= box.bottom)) return true;
+    }
+    return false;
+}
+
+// how many of the points the figure's body covers in this box fall on words
+const wordsUnder = (box) =>
+    BODY_YS.flatMap((down) =>
+        BODY_XS.map((across) => [box.left + across * (box.right - box.left), box.top + down * (box.bottom - box.top)])
+    ).filter(([x, y]) => onWord(x, y)).length;
+
+// How many controls and words a figure at this spot hides with its body: the part of it above the line it stands or sits on, as below
+// that line it only hangs over the thing it rests on, and all of a figure hanging from its line
+export function hiddenAt(spot, figure) {
+    const picture = boxAt(spot, figure);
+    const box = spot.posture === "hang" ? picture : {...picture, bottom: Math.min(picture.bottom, spot.y)};
     const controls = [...document.querySelectorAll(CONTROLS)]
+        .filter(visible)
         .map((control) => control.getBoundingClientRect())
-        .filter((box) => box.width && box.height);
-    const covered = (spot) => {
-        const box = boxAt(spot, figure);
-        return (inWindow(spot, box) ? 0 : controls.length + 1) + controls.filter((control) => overlaps(box, control)).length;
-    };
+        .filter((control) => control.width && control.height && overlaps(box, control));
+    return controls.length + wordsUnder(box);
+}
+
+// a spot that leaves part of the figure outside the window loses to any spot inside it
+const OUTSIDE = 1000;
+
+// The spot whose figure stays in the window and hides the fewest controls and words, none where it can; of spots alike, the one
+// nearest `near`, where the figure stands now, so it does not wander between equally good places
+export function freeSpot(spots, figure, near) {
+    const covered = (spot) => (inWindow(spot, boxAt(spot, figure)) ? 0 : OUTSIDE) + hiddenAt(spot, figure);
     const away = (spot) => (near ? Math.hypot(spot.x - near.x, spot.y - near.y) : 0);
     const ranked = spots.map((spot) => ({spot, covered: covered(spot), away: away(spot)}));
     return ranked.reduce((best, each) =>

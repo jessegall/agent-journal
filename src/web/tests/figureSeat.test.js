@@ -1,7 +1,7 @@
 // @vitest-environment node
 import {afterEach, expect, test} from "vitest";
 
-const {POSTURES, boxAt, groundEdge, postureOf, seatOf, seatRise, spotOf} = await import("../src/figure/places.js");
+const {POSTURES, boxAt, groundEdge, hiddenAt, postureOf, seatOf, seatRise, spotOf} = await import("../src/figure/places.js");
 
 const FIGURE = {size: 112, below: 0.05};
 
@@ -17,9 +17,28 @@ const page = (box, docked = null) => {
     };
 };
 
+// words drawn on the page at each of `boxes`, and the controls `controls`, each {box, shown}: the page answers where a point falls on a
+// word the way a browser's caret lookup does
+const write = (boxes, controls = []) => {
+    globalThis.Node = {TEXT_NODE: 3};
+    const inside = (box, x, y) => x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+    const text = (box) => ({nodeType: 3, data: "word", length: 4, parentElement: {checkVisibility: () => true}, box});
+    document.caretRangeFromPoint = (x, y) => {
+        const box = boxes.find((each) => inside(each, x, y));
+        return box ? {startContainer: text(box), startOffset: 1} : null;
+    };
+    document.createRange = () => {
+        const range = {setStart: (node) => (range.node = node), setEnd: () => {}, getClientRects: () => [range.node.box]};
+        return range;
+    };
+    document.querySelectorAll = () =>
+        controls.map(({box, shown}) => ({getBoundingClientRect: () => ({...box, width: 1, height: 1}), checkVisibility: () => shown}));
+};
+
 afterEach(() => {
     delete globalThis.window;
     delete globalThis.document;
+    delete globalThis.Node;
 });
 
 test("a figure sitting on the right corner of a box turns right, and on the left corner turns left, part way back to the viewer", () => {
@@ -85,4 +104,24 @@ test("a bar docked over the compose box is the ground the figure stands and sits
     page(box);
     expect(groundEdge().edge.top).toBe(600);
     expect(seatOf(FIGURE, {x: 700, y: 556}).y).toBe(600);
+});
+
+test("of the corners at home the figure takes one whose body covers no words, though another is nearer", () => {
+    page({left: 300, top: 600, width: 400, height: 120});
+    const left = seatOf(FIGURE, {x: 300, y: 600});
+    write([{left: left.x - 30, right: left.x + 30, top: 600 - 60, bottom: 600 - 40}]);
+    const chosen = seatOf(FIGURE, {x: 300, y: 600});
+    expect(chosen.x).toBeGreaterThan(600);
+    expect(hiddenAt(chosen, FIGURE)).toBe(0);
+});
+
+test("only what the body hides above its line counts, and only words and controls that are drawn", () => {
+    page({left: 300, top: 600, width: 400, height: 120});
+    const seat = seatOf(FIGURE, {x: 700, y: 600});
+    // the words its legs hang over below the edge are the box's own, and a turn's tools that show only on hover are not drawn
+    const tools = {left: seat.x - 5, right: seat.x + 5, top: 570, bottom: 580};
+    write([{left: seat.x - 30, right: seat.x + 30, top: 610, bottom: 625}], [{box: tools, shown: false}]);
+    expect(hiddenAt(seat, FIGURE)).toBe(0);
+    write([{left: seat.x - 30, right: seat.x + 30, top: 560, bottom: 580}], [{box: tools, shown: true}]);
+    expect(hiddenAt(seat, FIGURE)).toBeGreaterThan(1);
 });

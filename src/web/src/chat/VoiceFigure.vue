@@ -7,7 +7,19 @@ import {RESTS, beatsAfter, clipOf, eggFor, facesAfter, figureStateOf, testResult
 import {loadVoiceFigure} from "../figure/assets.js";
 import {BUBBLE, HANGS, HANG_STAY, between, perchOn, perchSpot, roamNext} from "../figure/perches.js";
 import {LOOK_SECONDS, WORKED_SECONDS, ambientFor, flips, reactionTo, workClip} from "../figure/reactions.js";
-import {CHANGE_SECONDS, HOME, POSTURES, boxAt, groundEdge, openTabs, pointedView, postureOf, seatOf, spotOf} from "../figure/places.js";
+import {
+    CHANGE_SECONDS,
+    HOME,
+    POSTURES,
+    boxAt,
+    groundEdge,
+    hiddenAt,
+    openTabs,
+    pointedView,
+    postureOf,
+    seatOf,
+    spotOf,
+} from "../figure/places.js";
 import {rows} from "../sync/rows.js";
 
 // The figure is this many pixels square, as the chat's flat figure is; it walks this many of them a second and hops in this many milliseconds
@@ -370,13 +382,15 @@ function nextStay() {
     return {where, until};
 }
 
-// the spot of the stay now, or null when its bubble or tab is gone; a tab it only visits is not one it points at
+// the spot of the stay now, or null when its bubble or tab is gone or a bubble's perch would hide words; a tab it only visits is not one
+// it points at
 function stayingAt(near) {
     const figure = figureSize();
     if (stay.where === "bubble") {
         const thread = threadScroll();
         const spot = stay.perch && thread && perchSpot(stay.perch, thread, figure);
-        return spot ? {...spot, view: null} : null;
+        // a perch where the figure would hide words or controls, such as those of the bubble above, is given up
+        return spot && !hiddenAt(spot, figure) ? {...spot, view: null} : null;
     }
     if (stay.where === "tab") {
         const tab = stay.view && document.querySelector(`[data-tab="${CSS.escape(stay.view)}"]`);
