@@ -1,37 +1,18 @@
-from events.resources import AnyEvent, ResourceCreated
-from resources.buttons import unspent
-from framework.parts import Context, Handler
-from controllers.types import CONTROLLERS, Comments
-from resources.base import USER
-
-BUTTONED = ("message", "doc", "report")
-
-
-class DropUnknownButtons(Handler):
-    def handle(self, context: Context, event: AnyEvent) -> None:
-        if event.type not in BUTTONED or not event.written:
-            return
-        rows = context.journal.get(CONTROLLERS[event.type])
-        given = (rows.load(event.n).data or {}).get("buttons")
-        if given is None:
-            return
-        kept = rows.shaped_buttons(given)
-        if kept != given:
-            rows.update(event.n, buttons=kept)
+from events import Fact
+from events.message_buttons import AnsweredInOwnWords, ButtonsUnrunnable
+from features.message_buttons.buttoned import of_kind
+from receiving import Handler
+from resources.types import Doc, Message, Report
+from serving import Rows
 
 
-class AnswerInWords(Handler):
-    """A comment the user writes on a row that waits on its buttons is the user's answer in their own words, so the row stops asking for one."""
+class DropUnrunnableButtons(Handler[ButtonsUnrunnable]):
+    def handle(self, event: ButtonsUnrunnable, messages: Rows[Message], docs: Rows[Doc], reports: Rows[Report]) -> list[Fact]:
+        of_kind(event.type, messages, docs, reports).update(event.n, buttons=event.kept)
+        return []
 
-    def handle(self, context: Context, event: ResourceCreated) -> None:
-        if event.type != "comment" or event.actor != USER:
-            return
-        comment = context.journal.get(Comments).load(event.n)
-        for ref in comment.refs:
-            kind, _, n = ref.partition(":")
-            if kind not in BUTTONED or not n.isdigit():
-                continue
-            rows = context.journal.get(CONTROLLERS[kind])
-            row = rows.load(int(n))
-            if unspent(row) and not row.data.get("answered_own"):
-                rows.action("set")(row.n, key="answered_own", value=comment.brief or comment.title)
+
+class AnswerInWords(Handler[AnsweredInOwnWords]):
+    def handle(self, event: AnsweredInOwnWords, messages: Rows[Message], docs: Rows[Doc], reports: Rows[Report]) -> list[Fact]:
+        of_kind(event.type, messages, docs, reports).action("set")(event.n, key="answered_own", value=event.words)
+        return []
