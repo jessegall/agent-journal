@@ -72,15 +72,18 @@ function tabSpots(tab, figure) {
 
 // Where a figure sits: on a corner of the box it perches on, its hips just inside the corner so its legs hang down over it
 const SEAT_CORNERS = [
-    {along: 1, over: -0.1},
-    {along: 0, over: 0.1},
+    {along: 1, over: 0},
+    {along: 0, over: 0},
 ];
+
+// how far below the edge the figure's feet are, as a share of its height, so its hips sit on the edge itself
+const SEAT_DROP = 0.26;
 
 export function seatOf(figure, near) {
     const home = document.querySelector(HOME);
     const box = (home || document.querySelector(FLOOR)).getBoundingClientRect();
     const top = home ? box.top : box.bottom;
-    const corners = SEAT_CORNERS.map((corner) => ({x: box.left + box.width * corner.along + corner.over * figure.size, y: top}));
+    const corners = SEAT_CORNERS.map((corner) => ({x: box.left + box.width * corner.along + corner.over * figure.size, y: top + SEAT_DROP * figure.size}));
     return {...freeSpot(corners, figure, near), view: null};
 }
 
