@@ -4,7 +4,7 @@ import time
 import traceback
 from pathlib import Path
 
-from controllers.types import Notices
+from controllers.notices import Notices
 from engine import runtime
 from engine.locks import MigrationsRunning
 from engine.record import Record

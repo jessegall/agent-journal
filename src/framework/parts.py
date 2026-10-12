@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from controllers.base import Arguments
-from controllers.types import Agents, Environments
+from controllers.agents import Agents
+from controllers.environments import Environments
 from events.agents import AgentChanged
 from declaring.holds import Runs
 from declaring.reach import Reach
