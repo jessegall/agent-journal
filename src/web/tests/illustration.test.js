@@ -1,15 +1,10 @@
-import {createApp, h, nextTick} from "vue";
 import {describe, expect, test} from "vitest";
 import Illustration from "../src/kit/Illustration.vue";
 import PickCard from "../src/kit/PickCard.vue";
 import {voiceOf} from "../src/composables/profiles.js";
+import {shown as drawn} from "./shown.js";
 
-async function shown(component, props) {
-    const host = window.document.createElement("div");
-    createApp({render: () => h(component, props, () => "a sample line")}).mount(host);
-    await nextTick();
-    return host;
-}
+const shown = (component, props) => drawn(component, props, () => "a sample line");
 
 describe("the picture of a voice", () => {
     test("is the flat artwork of the voice named by the profile, and a profile without one names none", async () => {
@@ -40,7 +35,7 @@ describe("the phone's list of voices", () => {
     test("shows a voice's picture in place of the dot, and the dot for a row without one", async () => {
         const ItemRow = (await import("../src/phone/kit/ItemRow.vue")).default;
         const withArt = await shown(ItemRow, {title: "Squire", about: "Profile 5", voice: "squire"});
-        const without = await shown(ItemRow, {title: "My own", about: "Profile 6"});
+        const without = await shown(ItemRow, {title: "Custom", about: "Profile 6"});
         expect(withArt.querySelector(".item-row").classList.contains("pictured")).toBe(true);
         expect([!!withArt.querySelector(".voice-pose"), withArt.querySelector(".item-dot"), without.querySelector(".voice-pose"), !!without.querySelector(".item-dot")]).toEqual([true, null, null, true]);
     });

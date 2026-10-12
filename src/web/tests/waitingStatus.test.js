@@ -42,7 +42,7 @@ describe("the waiting word and its line", () => {
     });
 
     test("work the agent found to do while it waits is what it is shown doing, and the wait comes back when that work ends", () => {
-        const meanwhile = {n: 2, title: "Clearing the budget rows", completed: 0, data: {}};
+        const meanwhile = {n: 2, title: "Clearing the budget entries", completed: 0, data: {}};
         expect(waitingOn(agent(), [work(), meanwhile], [], NOW)).toBe(null);
         expect(stateOf(agent(), [work(), meanwhile])).not.toBe("waiting");
         expect(waitingOn(agent(), [work(), {...meanwhile, completed: NOW}], [], NOW).line).toBe("the test suite · 4m 00s");

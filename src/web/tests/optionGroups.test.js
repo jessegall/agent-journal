@@ -1,16 +1,9 @@
-import {createApp, h, nextTick} from "vue";
 import {describe, expect, test} from "vitest";
 import PluginSetting from "../src/pages/PluginSetting.vue";
 import SettingControl from "../src/kit/SettingControl.vue";
+import {shown} from "./shown.js";
 
 const MODELS = ["gpt-5-codex-max", "gpt-5-codex-mini", "gpt-5.1-codex", "gpt-5.1-codex-mini", "gpt-5.2", "gpt-5.2-codex", "gpt-5.3-codex"];
-
-async function shown(component, props) {
-    const host = window.document.createElement("div");
-    createApp({render: () => h(component, props)}).mount(host);
-    await nextTick();
-    return host;
-}
 
 const row = {kind: "choice", label: "Model", value: MODELS[0], options: MODELS.map((key) => ({key, label: key})), hint: "", example: ""};
 

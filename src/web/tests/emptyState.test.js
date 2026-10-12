@@ -1,13 +1,8 @@
-import {createApp, h, nextTick} from "vue";
 import {describe, expect, test} from "vitest";
 import EmptyState from "../src/kit/EmptyState.vue";
+import {shown as drawn} from "./shown.js";
 
-async function shown(props) {
-    const host = window.document.createElement("div");
-    createApp({render: () => h(EmptyState, props, () => "No documents yet")}).mount(host);
-    await nextTick();
-    return host;
-}
+const shown = (props) => drawn(EmptyState, props, () => "No documents yet");
 
 describe("an empty state over a list that loads", () => {
     test("shows a skeleton while the load has not answered, never the empty words", async () => {
