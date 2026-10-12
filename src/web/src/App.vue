@@ -221,7 +221,7 @@ watch(
                 <Transition name="quick">
                     <QuickMenu v-if="quick" ref="quickMenu" :opening="quickOpening" @close="quick = false" />
                 </Transition>
-                <AppOverlays />
+                <AppOverlays :home="page === 'home'" />
             </div>
         </div>
     </template>

@@ -214,31 +214,21 @@ await runScenarios(process.argv[2], {
         await shot(page, "figure-at-the-question-tab");
     },
 
-    async "on a page with no compose box it stands on the page's own floor, off the activity rail and over no control"(page, url) {
+    async "the figure is drawn on the Home page alone, and on coming back to Home it enters again on the compose box"(page, url) {
         await working(page);
-        await page.goto(`${url}#/main/todo`);
+        await page.goto(`${url}#/main`);
         await page.locator(FIGURE).waitFor({state: "visible"});
-        await settled(page);
-        const place = await page.evaluate((figure) => {
-            const box = document.querySelector(figure).getBoundingClientRect();
-            const floor = document.querySelector("[data-figure-floor]").getBoundingClientRect();
-            return {
-                left: box.left,
-                right: box.right,
-                feet: box.bottom,
-                floorLeft: floor.left,
-                floorRight: floor.right,
-                floor: floor.bottom,
-            };
-        }, FIGURE);
-        if (place.left < place.floorLeft || place.right > place.floorRight)
-            throw new Error(
-                `the figure spans ${place.left} to ${place.right}, outside the page's ${place.floorLeft} to ${place.floorRight}`
-            );
-        if (Math.abs(place.feet - place.floor) > 12)
-            throw new Error(`the figure's feet are at ${place.feet}, the page's floor at ${place.floor}`);
-        const covered = await hidden(page);
-        if (covered.length) throw new Error(`on the to-do page the figure hides ${covered.join(", ")}`);
+        await page.goto(`${url}#/main/todo`);
+        await page.locator(FIGURE).waitFor({state: "detached"});
+        await page.goto(`${url}#/main`);
+        await page.locator(FIGURE).waitFor({state: "visible"});
+        await page.waitForFunction(
+            ([figure, home]) => {
+                const feet = document.querySelector(figure).getBoundingClientRect().bottom;
+                return Math.abs(feet - document.querySelector(home).getBoundingClientRect().top) < 12;
+            },
+            [FIGURE, HOME]
+        );
     },
 
     async "the voice's figure stands on the compose box on every load, and a reload takes its file from the cache, not the network"(

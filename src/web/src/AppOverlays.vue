@@ -16,6 +16,9 @@ import {firstChoice, loadProfilesUntilLoaded, mascotOf, profilesLoaded} from "./
 import {store} from "./state/store.js";
 import {ui} from "./state/ui.js";
 
+// the voice's figure lives on the Home page alone: it is unmounted when the user leaves Home, and enters again at home on return
+defineProps({home: {type: Boolean, required: true}});
+
 onMounted(loadNewFeatures);
 // the voice's figure is named by the profiles, so they load with the page, not with the flat figure that is only its fallback
 if (!profilesLoaded.value) loadProfilesUntilLoaded();
@@ -24,7 +27,7 @@ if (!profilesLoaded.value) loadProfilesUntilLoaded();
 <template>
     <Lightbox />
     <Tooltip />
-    <template v-if="mascotOf">
+    <template v-if="mascotOf && home">
         <VoiceFigure :voice="mascotOf.voice" />
     </template>
     <template v-if="ui.away.open">
