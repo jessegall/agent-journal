@@ -17,7 +17,7 @@ from features.ask_questions.details import AskQuestionsDetails
 from features.format import VIEWER, formatted, shaped
 from features.helpers.controller import Helpers
 from features.helpers.state import HelperSnapshot, asked_permission, helper_reason, helper_state
-from features.phone.chat_view import TURNS, hidden
+from features.chat_view import TURNS, hidden
 from features.phone.members import rights_of
 from features.phone.places import WAITED, owed
 from features.suggestions.controller import Suggestions

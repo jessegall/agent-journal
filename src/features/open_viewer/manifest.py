@@ -4,7 +4,7 @@ from pathlib import Path
 
 import features
 from engine.record import Record
-from features.phone.chat_view import TURNS
+from features.chat_view import TURNS
 from features.format import catalogue
 from declaring import groups
 from controllers.base import actions

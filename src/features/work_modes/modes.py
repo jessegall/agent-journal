@@ -1,5 +1,9 @@
 from features.work_modes.details import BOARD_SET, BUILDER, MODE_SET, MODES, NAME, NEW_WORK_TO_DOS, ORCHESTRATOR, WorkModesDetails
+from declaring.extension import Extension
 from resources.base import Refused
+
+CARRIED_IN = Extension()
+"""The writers of the files that carry the mode's words, each taking the project folder and the record; a feature that writes such a file registers here, so the mode is picked without knowing who writes them."""
 
 
 def mode_of(record) -> str:
@@ -14,9 +18,9 @@ def pick(record, mode: str, actor: str) -> str:
         return mode
     record.change_setting(NAME, {"mode": mode})
     from features import running
-    from features.journal_laws.briefing import brief
     from features.work_modes.feature import WorkModes
-    brief(record.root.parent, record)
+    for write in CARRIED_IN.each():
+        write(record.root.parent, record)
     running(WorkModes).to_running(record, MODE_SET, actor=actor, mode=mode, written=MODES[mode].written)
     return mode
 

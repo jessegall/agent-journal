@@ -2,7 +2,7 @@ import json
 
 from controllers.faults import threw
 from engine.markers import plain
-from features.phone.chat_view import stamped
+from features.chat_view import stamped
 from features.switches import generation
 from resources.base import SECTION, SYSTEM, TEXT_FIELDS, as_dict
 from declaring.extension import Extension

@@ -12,7 +12,7 @@ from features.triggers.controller import Triggers
 from features.triggers.resource import START
 from resources.base import AGENT, SECTION, SYSTEM
 from controllers.marks import action
-from features.phone.chat_view import SEQUENCES, SEQUENCE_STEPS
+from features.chat_view import SEQUENCES, SEQUENCE_STEPS
 
 VIOLET = "#a78bfa"
 TRIGGER = "trigger"

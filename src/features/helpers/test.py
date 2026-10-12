@@ -173,7 +173,7 @@ def test_a_report_comes_back_to_the_dispatcher_as_a_message_from_the_helper_and_
     Agents(record, actor=SYSTEM).create("claude-1")
     Helpers(record, actor=AGENT).dispatch("Rhea", "Profile the slow hooks", "codex", "gpt-5.5")
     assert [c["label"] for c in Agents(record, actor=SYSTEM).primary().data["cards"]] == ["Dispatched helper 1"], "dispatching a helper shows a mark in the chat"
-    from features.phone.chat_view import card_shows
+    from features.chat_view import card_shows
     assert [card_shows(c) for c in Agents(record, actor=SYSTEM).primary().data["cards"]] == ["helpers"], "a helper mark has its own kind, so hiding plugin notes never hides it"
     Features(record, actor=SYSTEM).configure("helpers", "kept", "5")
     Features(record, actor=AGENT).configure("helpers", "kept", "12")

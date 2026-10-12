@@ -7,7 +7,7 @@ from expects import Given, Kept, Nudged, Refused, Remembered, Unchanged
 from features.base import Feature
 from features.journal import Journal
 from features.journal_laws.controller import Outputs
-from features.journal_laws.briefing import long_briefings
+from features.journal_laws.briefing import brief, long_briefings
 from features.journal_laws.details import LARGEST_RESULT, TOO_LONG, LawDetails
 from features.journal_laws.handlers import CheckChangedInstructions, NoticeLargestResult
 from features.journal_laws.interceptors import EnforceDispatchLaw, RefuseWholeLongReads, WhisperLawInChat, WhisperLawOnKeyword, lines_in
@@ -15,6 +15,7 @@ from features.journal_laws.laws import carry, naming_of
 from providers.payload import BashCall, Dispatch, ReadCall
 from resources.types import AgentRow
 from features.sending import Nudge
+from features.work_modes.modes import CARRIED_IN
 from features.session_briefing.start import LAW, START_PARTS
 
 __all__ = ["Outputs"]
@@ -29,6 +30,8 @@ class JournalLaws(Feature):
 
     def register(self, journal: Journal) -> None:
         START_PARTS.add(self, carry, key=LAW)
+        if brief not in CARRIED_IN.each():
+            CARRIED_IN.add(self, brief)
         if output_lines not in OUTPUT_LINES:
             OUTPUT_LINES.append(output_lines)
         journal.agent.canceler(EnforceDispatchLaw(), expects=[
