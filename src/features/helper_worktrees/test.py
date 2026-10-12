@@ -4,12 +4,16 @@ from pathlib import Path
 import features
 from engine.worktree import tip
 from controllers.types import Environments
-from features.helper_worktrees.controller import Worktrees
+from controllers.types import Worktrees
 from providers import PROVIDERS
+from providers import workspace_folders
 from resources.base import AGENT, SYSTEM
 from runner.hooks import handle
 from tests.conftest import refused
 from tests.kit import commit, git, nudges_with_briefs, project_on
+
+
+FOLDERS = workspace_folders()
 
 
 def test_a_helper_is_not_told_about_another_environments_worktrees():
@@ -45,7 +49,7 @@ def a_cut_worktree() -> Cut:
     features.load()
     repo = project_on("phone-connection")
     worktrees = Worktrees(repo.record, actor=AGENT)
-    worktrees.cut("rhea")
+    worktrees.make("rhea", FOLDERS)
     return Cut(repo.record, repo.project, worktrees, worktrees.all()[0])
 
 
@@ -56,7 +60,7 @@ def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
     working_tip = commit(project, "later.txt", "later\n")
     (project / "deps").mkdir()
     (project / ".worktreelinks").write_text("deps\n")
-    cut_result = Worktrees(record, actor=AGENT).cut("rhea", helper="Rhea")
+    cut_result = Worktrees(record, actor=AGENT).make("rhea", FOLDERS, helper="Rhea")
     row = Worktrees(record, actor=AGENT).all()[0]
     folder = Path(row.path)
     assert (row.working, row.base, row.branch, row.helper) == ("phone-connection", working_tip, "helper-rhea", "Rhea"), \
@@ -66,7 +70,7 @@ def test_a_worktree_is_cut_from_the_tip_of_the_working_branch_not_from_main():
     assert str(folder) in cut_result and "helper-rhea" in cut_result, "the path and branch are printed for the dispatch prompt"
     assert (folder / ".journal").resolve() == record.root.resolve(), "the helper writes to the project's journal"
     assert (folder / "deps").resolve() == (project / "deps").resolve(), "a folder .worktreelinks lists, like node_modules, is linked in, not copied"
-    assert refused(lambda: Worktrees(record, actor=AGENT).cut("rhea")).startswith("the worktree rhea is taken"), "a name is cut once"
+    assert refused(lambda: Worktrees(record, actor=AGENT).make("rhea", FOLDERS)).startswith("the worktree rhea is taken"), "a name is cut once"
 
 
 def test_take_refuses_a_branch_behind_the_working_tip_and_lands_it_once_rebased():
@@ -92,7 +96,7 @@ def test_take_asks_for_a_wording_review_when_the_helper_changed_viewer_text():
     features.load()
     repo = project_on("phone-connection")
     worktrees = Worktrees(repo.record, actor=AGENT)
-    worktrees.cut("rhea")
+    worktrees.make("rhea", FOLDERS)
     row = worktrees.all()[0]
     folder = Path(row.path)
     (folder / "src" / "web" / "src").mkdir(parents=True)
@@ -114,7 +118,7 @@ def test_take_refuses_a_dirty_main_checkout_only_for_the_files_it_touches():
     assert worktrees.take(row.n).startswith("took 1 commit"), "an unrelated uncommitted file does not stop the take"
     assert (project / "unrelated.txt").read_text() == "someone else's work\n", "and it is left as it was"
     git(project, "commit", "-q", "--allow-empty", "-m", "the board moved on")
-    again = worktrees.cut("rhea")
+    again = worktrees.make("rhea", FOLDERS)
     reused = next(found for found in worktrees.all() if found.title == "rhea")
     assert (reused.n, reused.taken, git(Path(reused.path), "rev-parse", "HEAD")) == (row.n, "", git(project, "rev-parse", "phone-connection")) and Path(reused.path).is_dir() and "worktree" in again, \
         "a worktree whose work was taken and that nobody works in is cut again for the same name, at the new tip, instead of a second folder"
@@ -132,11 +136,11 @@ def test_take_refuses_a_dirty_main_checkout_only_for_the_files_it_touches():
     (project / "vendor").mkdir()
     (project / "vendor" / "autoload.php").write_text("installed\n")
     (project / "node_modules").mkdir()
-    worktrees.cut("gus")
+    worktrees.make("gus", FOLDERS)
     other = next(found for found in worktrees.all() if found.title == "gus")
     assert ((Path(other.path) / "vendor").is_symlink(), (Path(other.path) / "vendor" / "autoload.php").read_text(), (Path(other.path) / "node_modules").is_symlink()) == (True, "installed\n", True), \
         "a worktree links the project's installed packages instead of installing them again"
-    worktrees.cut("ned", packages=True)
+    worktrees.make("ned", FOLDERS, packages=True)
     own = next(found for found in worktrees.all() if found.title == "ned")
     assert not (Path(own.path) / "vendor").exists(), "a job that changes the dependencies gets none linked, and installs its own"
     assert "nothing to take" in refused(lambda: worktrees.take(other.n)), "a worktree with no commits of its own has nothing to take"
@@ -235,7 +239,7 @@ def test_a_worktree_is_not_dropped_while_an_agent_runs_in_it():
     features.load()
     repo = project_on("phone-connection")
     worktrees = Worktrees(repo.record, actor=AGENT)
-    worktrees.cut("rhea")
+    worktrees.make("rhea", FOLDERS)
     row = worktrees.all()[0]
     launched = runtime.sessions(repo.record.root) / "claude-1" / "launched.json"
     launched.parent.mkdir(parents=True, exist_ok=True)
@@ -254,16 +258,16 @@ def test_a_new_repository_a_detached_head_and_a_missing_git_identity_are_refused
     record.root.mkdir(parents=True, exist_ok=True)
     project = record.root.resolve().parent
     git(project, "init", "-q", "-b", "main")
-    cut_result = refused(lambda: Worktrees(record, actor=AGENT).cut("rhea"))
+    cut_result = refused(lambda: Worktrees(record, actor=AGENT).make("rhea", FOLDERS))
     assert "has no commits" in cut_result and "invalid reference" not in cut_result, cut_result
     from engine.worktree import branched
     assert "could not be made from main" in branched(project, "ticket-1", "main"), "a branch off a repository with no commits is refused, not skipped"
     repo = project_on("phone-connection")
     git(repo.project, "checkout", "-q", "--detach")
-    assert "is on no branch" in refused(lambda: Worktrees(repo.record, actor=AGENT).cut("rhea"))
+    assert "is on no branch" in refused(lambda: Worktrees(repo.record, actor=AGENT).make("rhea", FOLDERS))
     git(repo.project, "checkout", "-q", "phone-connection")
     worktrees = Worktrees(repo.record, actor=AGENT)
-    worktrees.cut("rhea")
+    worktrees.make("rhea", FOLDERS)
     row = worktrees.all()[0]
     commit(Path(row.path), "helper.txt", "from the helper\n")
     git(repo.project, "config", "--unset", "user.email")

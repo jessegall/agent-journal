@@ -13,9 +13,9 @@ from engine.outbox import Request
 from engine.record import Record
 from engine.sessions import Sessions
 from features.agent_sessions.launch import launched, prepared, tell_in, tell_soon
-from features.helper_worktrees.controller import Worktrees
+from controllers.types import Worktrees
 from features.open_viewer.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, whole
-from providers import PROVIDERS
+from providers import PROVIDERS, workspace_folders
 from features.form_of_address.address import voice_of
 from resources.helpers import Helper, held_by_helper
 from events.helpers import Telling
@@ -156,7 +156,7 @@ class Helpers(Controller):
             if earlier.n != row.n and earlier.environment == place:
                 Controller.complete(self, earlier.n, how=f"carried on by helper {row.n} in the same environment")
         if worktree:
-            given = Worktrees(self.record, actor=SYSTEM)._cut(place, helper=name, packages=packages)
+            given = Worktrees(self.record, actor=SYSTEM)._cut(place, workspace_folders(), helper=name, packages=packages)
             folder = Path(given.path)
             row = self.update(row.n, worktree=str(given.n))
         home = prepared(self.record, place, f"Where helper {row.name} works on {job}", row.ref, folder, EnvironmentKind.HELPER)

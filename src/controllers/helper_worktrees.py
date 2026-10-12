@@ -3,16 +3,15 @@ from dataclasses import dataclass
 from textwrap import dedent
 from pathlib import Path
 
-import controllers.types as types_module
 from controllers.base import Controller
 from engine import runtime
 from engine.state import State
 from resources.text import plural
-from features.agent_sessions.launch import running_at
-from engine.worktree import current_branch, freed, git, included, keep_own_packages, lines, link_folders, packages_linked, present, roots, scratch_cleared, share_journal, tip
-from providers import workspace_folders
+from engine.running import running_at
+from engine.worktree import WorkspaceFolders, current_branch, freed, git, included, keep_own_packages, lines, link_folders, packages_linked, present, roots, scratch_cleared, share_journal, tip
 from resources.helper_worktrees import Worktree
-from controllers.types import Agents, Todos
+from controllers.agents import Agents
+from controllers.todos import Todos
 from resources.base import Refused, SYSTEM
 from controllers.marks import action
 
@@ -54,19 +53,19 @@ class Worktrees(Controller):
     resource = Worktree
 
     @action(network=True)
-    def cut(self, name: str, helper: str = "", packages: bool = False) -> str:
-        """packages: the job changes the project's dependencies, so the worktree installs its own; otherwise it links the project's installed ones."""
-        row = self._cut(name, helper, packages)
+    def make(self, name: str, folders: WorkspaceFolders, helper: str = "", packages: bool = False) -> str:
+        """Cuts the worktree. folders says where each provider keeps its own files and is read from the providers by the caller, since a controller names no provider; packages: the job changes the project's dependencies, so the worktree installs its own."""
+        row = self._cut(name, folders, helper, packages)
         self._marked("Cut worktree", row)
         return (f"worktree {row.n}: {row.path} on branch {row.branch}, cut from {row.working} at {row.base[:10]}. "
                 f"Tell the helper to work and commit only there, and to rebase onto {row.working} before it reports.")
 
-    def _cut(self, name: str, helper: str = "", packages: bool = False):
+    def _cut(self, name: str, folders: WorkspaceFolders, helper: str = "", packages: bool = False):
         if not NAMED.match(name):
             raise Refused(f"a worktree name is lowercase letters, digits and dashes, not {name!r}")
         project = self._project()
         working = self._working(project)
-        folder, branch = project.joinpath(*workspace_folders().worktree_home, name), f"{BRANCH}{name}"
+        folder, branch = project.joinpath(*folders.worktree_home, name), f"{BRANCH}{name}"
         base = tip(project, working)
         if not base:
             raise Refused(f"{working} has no commits yet, so there is nothing to cut from: make a first commit")
@@ -84,7 +83,7 @@ class Worktrees(Controller):
         if not packages:
             for place, repository in roots(project).items():
                 packages_linked(repository, folder / place)
-        share_journal(folder, self.record.root, workspace_folders())
+        share_journal(folder, self.record.root, folders)
         return self.create(name, path=str(folder), branch=branch, working=working, base=base, helper=helper)
 
     def _reusable(self, row) -> bool:
@@ -279,5 +278,3 @@ def common_dir(where: Path) -> str | None:
     found = git(where, "rev-parse", "--path-format=absolute", "--git-common-dir")
     return found.stdout.strip() if found.returncode == 0 else None
 
-
-types_module.register(Worktrees)

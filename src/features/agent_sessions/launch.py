@@ -60,15 +60,6 @@ def launched_in(root: Path, environment: str) -> str:
     return ""
 
 
-def running_at(root: Path, folder: Path) -> bool:
-    inside = folder.resolve()
-    for path in runtime.sessions(root).glob(f"*/{LAUNCHED}"):
-        launched = Launched.read(root, path.parent.name)
-        if launched.pid and alive(launched.pid) and launched.cwd and Path(launched.cwd).resolve().is_relative_to(inside):
-            return True
-    return False
-
-
 def driver_in(record, environment: str, provider: str):
     from providers import DRIVERS
     session = running_in(record, environment)

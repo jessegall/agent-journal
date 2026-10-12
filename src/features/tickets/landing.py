@@ -68,7 +68,7 @@ class TicketLanding:
     @action
     def clear_worktrees(self) -> list[str]:
         """Removes the worktree of every closed ticket whose branch is kept and that no agent runs in, with the scratch folder of its agent; the branch stays, and starting the ticket again cuts the worktree from it."""
-        from features.agent_sessions.launch import running_at
+        from engine.running import running_at
         closed = [r for r in self.rows.every() if r.completed and r.work_environment]
         cleared = []
         for repository in self._read().values() if closed else ():

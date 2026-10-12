@@ -4,7 +4,7 @@ from controllers.types import Environments
 from engine.journal_calls import pieces
 from declaring.reach import Reach
 from engine.worktree import checkout
-from features.helper_worktrees.controller import Worktrees
+from controllers.types import Worktrees
 from framework.parts import AgentContext, ToolInterceptor
 from declaring.holds import Runs
 from providers.catalogue import workspace_folders

@@ -8,7 +8,7 @@ from controllers.types import Agents
 from features.agent_sessions.launch import running_in
 from engine.record import Record
 from engine.worktree import lines, present
-from features.helper_worktrees.controller import KEPT, Worktrees
+from controllers.helper_worktrees import KEPT, Worktrees
 from features.helpers.state import HelperAgent, HelperSnapshot, WorkState, helper_state
 from providers import PROVIDERS
 from resources.base import SYSTEM
