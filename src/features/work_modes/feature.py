@@ -1,6 +1,6 @@
 from expects import Given, Kept, Refused
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.session_briefing.start import MODE, START_PARTS
 from features.work_modes.details import WorkModesDetails
 from features.work_modes.interceptors import REFUSED, NameTheDrift, RefuseDispatchInSolo, RefuseHelperInSolo

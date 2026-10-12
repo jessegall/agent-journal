@@ -91,8 +91,8 @@ class Triggers(Controller):
     @action
     def matching(self, fact: str, over: float = 0, text: str | None = None) -> dict:
         """What a trigger on this fact matches right now, and what it would say about each. It reads the fact through the finder a tick uses, rather than counting rows another way and hoping the two agree."""
-        from features import FEATURES
-        from features.parts import Context
+        from framework.loaded import FEATURES
+        from framework.parts import Context
         agent = self._read_against()
         found = watched.found(watched.Watched.parse(fact, over), Context.of(FEATURES["triggers"], self.record, agent), agent)
         return asdict(Matching.of(fact, over, found, text))
@@ -117,7 +117,7 @@ class Triggers(Controller):
         return super().complete(n, how, **data)
 
     def _release(self, n: int) -> None:
-        from features import FEATURES
+        from framework.loaded import FEATURES
         FEATURES["triggers"].release(self.record, holding(n))
 
     def _starting(self, n: int) -> list[tuple[Controller, Resource]]:

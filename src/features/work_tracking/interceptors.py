@@ -3,7 +3,7 @@ import re
 from declaring.holds import Runs
 from engine.gates import held
 from declaring.reach import Reach
-from features.parts import AgentContext, ToolInterceptor
+from framework.parts import AgentContext, ToolInterceptor
 from providers import command_effects
 
 

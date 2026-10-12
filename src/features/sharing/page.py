@@ -4,7 +4,7 @@ import time
 from itertools import takewhile
 from urllib.parse import quote
 
-from features.format import SHARED, formatted
+from framework.format import SHARED, formatted
 from features.row_links.formatters import Mention, named
 
 CODE_SPAN = re.compile(r"`([^`]+)`")

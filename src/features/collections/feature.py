@@ -1,5 +1,5 @@
 import features.collections.controller  # noqa: F401
-from features.base import Feature
+from framework.base import Feature
 from features.collections.details import CollectionsDetails
 
 

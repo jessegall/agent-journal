@@ -16,7 +16,7 @@ from declaring.settings import Settings
 from resources.base import SYSTEM
 
 if TYPE_CHECKING:
-    from features.journal import BoundJournal
+    from framework.journal import BoundJournal
 
 ONCE_KEPT = 1000
 ANY_BUT_PRE_TOOL_USE = tuple(hook for hook in STATUS if hook != HookEvent.PRE_TOOL_USE)

@@ -30,7 +30,7 @@ def links_open(root: Path) -> bool:
 
 
 def why_idle(root: Path) -> str:
-    from features import running
+    from framework.loaded import running
     from features.sharing.feature import SharingFeature
     record = Record(root, runtime.env(root))
     feature = running(SharingFeature)

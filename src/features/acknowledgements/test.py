@@ -163,7 +163,7 @@ def test_a_held_agent_row_of_a_removed_environment_is_dropped_and_never_written(
 
 
 def test_a_handler_reads_the_agents_row_the_store_holds_and_never_a_copy_of_it(monkeypatch):
-    from features.wiring import agent_row
+    from framework.wiring import agent_row
     from resources.base import Resource
     record = fresh()
     n = Agents(record, actor=SYSTEM).by_session("claude-1").n

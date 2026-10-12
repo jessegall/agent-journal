@@ -4,7 +4,7 @@ from declaring.holds import Runs
 from engine.gates import DISPATCHING
 from engine.journal_calls import calls
 from declaring.reach import Reach
-from features.parts import AgentContext, Canceler, ToolInterceptor
+from framework.parts import AgentContext, Canceler, ToolInterceptor
 from features.work_modes.details import BUILDER, ORCHESTRATOR, SOLO
 from features.work_modes.modes import mode_of
 from features.work_modes.share import share

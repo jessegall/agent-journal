@@ -16,17 +16,17 @@ from events.works import WorkCompleted, WorkUpdated
 from providers.payload import BashCall, WriteCall
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
-from features.base import Feature
+from framework.base import Feature
 from features.triggers.watched import COUNT, FACTS, Fact, state_facts
 from features.work_tracking.next import ready
-from features.sending import Sent
+from framework.sending import Sent
 from features.work_tracking.auto import automatic
 from overview.parts import SUMMARY_PARTS
-from features.journal import Journal
+from framework.journal import Journal
 from features.work_tracking.auto import chosen_or_steered, steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
-from features.sending import Nudge
+from framework.sending import Nudge
 from features.work_tracking.handlers import (CARRY_ON_TIMES, next_row, nothing_ready, stopped_in_auto, stopped_with_work, next_while_helping, AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import WAIT_WAY, RefuseHeldCalls, RefuseWaitingInTheShell

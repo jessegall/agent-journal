@@ -15,8 +15,8 @@ def classes(path: Path) -> list[ast.ClassDef]:
 
 
 def hooks() -> set[str]:
-    """The methods features.base.Feature declares for a feature to override."""
-    base = next(node for node in classes(HERE / "features" / "base.py") if node.name == "Feature")
+    """The methods framework.base.Feature declares for a feature to override."""
+    base = next(node for node in classes(HERE / "framework" / "base.py") if node.name == "Feature")
     return {node.name for node in base.body if isinstance(node, ast.FunctionDef) and not node.name.startswith("_")}
 
 
@@ -29,8 +29,8 @@ def delegates(method: ast.FunctionDef) -> bool:
 def file_problems(path: Path) -> list[str]:
     found = []
     for node in ast.walk(ast.parse(path.read_text())):
-        if isinstance(node, ast.ImportFrom) and node.module == "features.base" and {a.name for a in node.names} & OLD_MARKERS:
-            found.append(f"{path.relative_to(HERE)} imports an old marker from features.base")
+        if isinstance(node, ast.ImportFrom) and node.module == "framework.base" and {a.name for a in node.names} & OLD_MARKERS:
+            found.append(f"{path.relative_to(HERE)} imports an old marker from framework.base")
     for part in classes(path):
         lines = part.end_lineno - part.lineno + 1
         if any(getattr(base, "id", "") in PARTS for base in part.bases) and lines > PART_LINES:

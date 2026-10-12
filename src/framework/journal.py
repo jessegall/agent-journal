@@ -5,7 +5,7 @@ from controllers.base import Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine import runtime
 from engine.wording import appended
-from features.wiring import AgentHooks, Client, Commands, Events, Routes
+from framework.wiring import AgentHooks, Client, Commands, Events, Routes
 from resources.base import SYSTEM, titled
 
 

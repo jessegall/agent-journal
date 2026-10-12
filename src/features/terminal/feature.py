@@ -1,8 +1,8 @@
 from events.agents import CommandRan
 from expects import Given, Unchanged
 from resources.types import AgentRow
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.terminal.details import TerminalDetails
 from features.terminal.handlers import KeepCommands
 from features.terminal.routes import get_terminal

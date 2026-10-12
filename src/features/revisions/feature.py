@@ -1,7 +1,7 @@
 from controllers.types import Docs
 from expects import Answered, Given, Refused, Unchanged
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.revisions.commands import Keep, Revision, Revisions
 from features.revisions.details import RevisionsDetails
 from features.revisions.handlers import KeepRevisions

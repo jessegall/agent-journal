@@ -1,9 +1,9 @@
 from events.agents import AgentMessageSent, CommandRan
 from expects import Given, Kept, Unchanged
-from features.base import Feature
+from framework.base import Feature
 from features.history_searches.details import HistorySearchesDetails
 from features.history_searches.handlers import EndSearchReads, KeepSearchResults, MarkHistorySearches
-from features.journal import Journal
+from framework.journal import Journal
 from providers.payload import BashCall
 from resources.types import AgentRow
 

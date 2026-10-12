@@ -5,8 +5,8 @@ from expects import Given, Nudged, Unchanged, Updated, answering
 from features.attachment_descriptions.video import TAGGED
 from features.attachment_descriptions.handlers import SampleVideoFrames, TagMissingAtStart, TagNewMedia
 from events.resources import FileAttached
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from resources.base import USER
 from resources.types import AgentRow, Message
 

@@ -3,11 +3,11 @@ import time
 from controllers.types import Messages
 from events.agents import AgentReported
 from expects import Answered, Given, Held
-from features.base import Feature
+from framework.base import Feature
 from features.catching_up.commands import Recent
 from features.catching_up.details import CatchingUpDetails
 from features.catching_up.handlers import HoldUntilCaughtUp
-from features.journal import Journal
+from framework.journal import Journal
 from resources.types import AgentRow, Message
 
 WRITTEN = 1_000_000.0

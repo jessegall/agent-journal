@@ -164,7 +164,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     assert "Draft a plan" in kickoff and ticket.ref in kickoff, "a fresh start opens with the ticket and how to plan it"
     from controllers.types import Environments
     from agents.terminal import launching
-    from features.parts import in_background
+    from framework.parts import in_background
     assert in_background(Record(record.root, f"ticket-{ticket.n}")), "the ticket's environment belongs to its ticket, so its agent works in the background"
     monkeypatch.setenv("CLAUDE_CODE_CHILD_SESSION", "1")
     monkeypatch.setenv("CLAUDECODE", "1")
@@ -611,8 +611,8 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
         working.setattr(Tickets, "_live", lambda self, found: True)
         assert [r.n for r in user._running()] == [api.n], "a ticket that waits on another holds no running slot, though its agent works"
         from controllers.types import Agents
-        from features import FEATURES
-        from features.parts import AgentContext
+        from framework.loaded import FEATURES
+        from framework.parts import AgentContext
         from features.tickets.handlers import boards_to_check
         from types import SimpleNamespace
         looking = SimpleNamespace(idle_for=3600.0)

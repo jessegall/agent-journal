@@ -2,13 +2,13 @@ import features.dumps.controller  # noqa: F401
 from events.agents import ClockTicked
 from events.messages import MessageUpdated
 from expects import WHEN, Given, Nudged, Unchanged, Updated, Wrote
-from features.base import Feature
+from framework.base import Feature
 from features.dumps.resource import Dump
 from features.dumps.details import DumpsDetails
 from features.dumps.controller import OWN_WORDS
 from features.dumps.handlers import CarryOnFiling, PromptFiling, TranscriptToDump
 from events.dumps import DumpWritten
-from features.journal import Journal
+from framework.journal import Journal
 from resources.base import USER
 from resources.types import AgentRow, Message
 

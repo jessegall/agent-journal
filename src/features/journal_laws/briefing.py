@@ -7,7 +7,7 @@ from controllers.types import Rules
 from engine.stored import write_text
 from engine.wording import digest
 from features.journal_laws.laws import carry, laws
-from features.sending import Sent
+from framework.sending import Sent
 from providers import PROVIDERS
 from resources.base import SYSTEM
 

@@ -1,7 +1,7 @@
 
 from events.rules import RuleChanged, RuleCreated
 from features.journal_laws.briefing import brief
-from features.parts import Context, Handler
+from framework.parts import Context, Handler
 from resources.base import AGENT
 from controllers.types import Agents, Rules
 

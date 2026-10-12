@@ -5,8 +5,8 @@ from features.journal_laws.laws import laws, naming_of, refusal
 from events.agents import AgentMessageSent
 from declaring.holds import Runs
 from engine.gates import DISPATCHING
-from features.parts import AgentContext, Canceler, Handler, ToolInterceptor
-from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
+from framework.parts import AgentContext, Canceler, Handler, ToolInterceptor
+from framework.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
 from providers.payload import ReadCall
 from resources.types import TYPES
 from declaring.reach import Reach

@@ -6,7 +6,7 @@ from declaring.extension import Extension
 from engine.memo import Memo
 from engine.record import Record
 from declaring.details import PLACEHOLDER
-from features.sending import Sent
+from framework.sending import Sent
 from declaring.trigger import MINUTE
 from resources.base import Refused
 from resources.types import TYPES

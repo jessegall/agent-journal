@@ -5,7 +5,7 @@ from typing import TypedDict
 from controllers.stored import PAGE, cursor_of, cursor_text, paged
 from controllers.todos import column_order
 from resources.shapes import position_of
-from features.format import formatted_item
+from framework.format import formatted_item
 from features.kanban.lanes import DONE, LANES, Sources, lane_of, reason_of
 from features.kanban.shifts import targets
 from features.plans.resource import ACTIVE

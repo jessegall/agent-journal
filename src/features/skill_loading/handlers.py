@@ -3,8 +3,8 @@ import time
 from events.agents import AgentReported, SessionStarted, ToolFinished
 from events.messages import MessageCreated
 from declaring import trigger
-from features.parts import AgentContext, Context, Handler
-from features.wiring import refusals
+from framework.parts import AgentContext, Context, Handler
+from framework.wiring import refusals
 from features.skill_loading.catalogue import SKILL, catalogue, chosen, loaded_at, recent_before_compaction, skills
 from features.skill_loading.interceptors import RefuseUntilLoaded
 from features.skill_loading.required import require_named

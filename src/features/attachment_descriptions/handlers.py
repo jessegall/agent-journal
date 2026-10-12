@@ -8,7 +8,7 @@ from engine.memo import Memo
 from events.resources import FileAttached
 from events.messages import MessageUpdated
 from features.attachment_descriptions.video import TAGGED, VIDEO, frames_of, probe, sampled, spacing
-from features.parts import AgentContext, Context, Handler
+from framework.parts import AgentContext, Context, Handler
 from controllers.types import CONTROLLERS
 
 MEDIA = ("image/", VIDEO)

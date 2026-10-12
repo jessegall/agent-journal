@@ -1,7 +1,7 @@
 import re
 
 from events.agents import AgentMessageSent
-from features.parts import AgentContext, Handler
+from framework.parts import AgentContext, Handler
 from features.pinned_links.details import UNPINNED
 from controllers.types import Notices
 

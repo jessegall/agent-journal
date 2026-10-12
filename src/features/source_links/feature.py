@@ -1,10 +1,10 @@
 from events.resources import ResourceCreated
 from expects import Given, Nudged, Unchanged, WHEN
-from features.base import Feature
+from framework.base import Feature
 from features.plans.resource import Plan
 from features.source_links.details import SourceLinksDetails
 from features.source_links.handlers import NameUncitedSource
-from features.journal import Journal
+from framework.journal import Journal
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Report, Todo
 

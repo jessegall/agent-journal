@@ -4,8 +4,8 @@ from functools import cache
 
 from engine.markers import MARKER, marked
 from engine.memo import Memo
-from features.format import SHARED, VIEWER
-from features.parts import Context, TextFormatter
+from framework.format import SHARED, VIEWER
+from framework.parts import Context, TextFormatter
 from resources.types import TYPES
 
 KEPT = re.compile(r"`[^`]*`|" + MARKER.pattern)

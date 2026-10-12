@@ -2,8 +2,8 @@ from events.agents import CommandRan
 from events.comments import CommentCreated
 from engine.services import SOURCES
 from expects import Given, Kept, Nudged, Refused, Unchanged
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.sharing.controller import Shares
 from features.sharing.details import SharingDetails
 from features.sharing.guard import HoldOnVisitorComment, NameVisitorComment, RefuseClaimedUser, RefuseUntilAgreed

@@ -640,7 +640,7 @@ def test_a_question_is_answered_once_and_a_changed_plan_is_not_approved(served, 
     agent = CONTROLLERS["agent"](record, actor=SYSTEM)
     agent.card(agent.by_session("codex-1").n, key="command:gone", state="done", ended=now)
     assert all("label" in card for card in agent.by_session("codex-1").data["cards"]), "an update to a mark no longer kept is dropped, so every mark keeps its label"
-    from features.format import VIEWER, shaped
+    from framework.format import VIEWER, shaped
     agent.card(agent.by_session("codex-1").n, label="A plugin note", name="cc", icon="plug", kind="plugins")
     agent.card(agent.by_session("codex-1").n, label="You answered", name="cc", icon="plug", side="user")
     agent.card(agent.by_session("codex-1").n, label="A named mark", name="Rhea", icon="bot")

@@ -8,10 +8,10 @@ from events.resources import AnyEvent, ResourceEvent
 from events.questions import QuestionCompleted
 from engine.journal_calls import JournalCall, calls
 from engine.transcript import IDLE
-from features.journal import waiting
+from framework.journal import waiting
 from declaring import trigger
-from features.sending import Sent
-from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
+from framework.sending import Sent
+from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
 from declaring.holds import Runs
 from engine.gates import STILL_HELD
 from features.work_tracking.details import WorkDetails
@@ -190,7 +190,7 @@ class ResetEditsOnStep(Handler):
 
 def step_stalled(record, session: str) -> bool:
     """Whether a step taken up has stood through more writes than the setting allows, which holds them until the sequence moves on."""
-    from features import FEATURES
+    from framework.loaded import FEATURES
     found = Sequences(record, actor=SYSTEM).in_hand()
     if not found or found[2].get("followed") != found[2]["step"]:
         return False

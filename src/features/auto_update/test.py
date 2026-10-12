@@ -60,7 +60,7 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     check.checked_at = 0.0
     assert check.tick() == "installing 3.0.0", "a value that is not one of the choices reads as the default, always"
     from controllers.types import Notices
-    from features import FEATURES
+    from framework.loaded import FEATURES
     monkeypatch.setattr(updates, "installed", lambda root, yes, version: "package not refreshed: the network was down")
     updates.UpdateCheck.install(check, FEATURES["auto_update"], "3.0.0")
     assert sent[-1].startswith("installing journal 3.0.0 failed") and [n.title for n in Notices(record).all()][-1] == "The journal could not update to 3.0.0", \
@@ -1028,7 +1028,7 @@ def test_automatic_updates_ship_off_and_a_journal_that_already_had_them_keeps_th
     import features
     from controllers.types import Features
     from features.auto_update.feature import AutoUpdate
-    from features.switches import booted
+    from framework.switches import booted
     from migrations.m0081_auto_update_was_chosen import run as auto_update_was_chosen
     from resources.base import SYSTEM
     from tests.conftest import fresh

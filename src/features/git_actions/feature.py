@@ -1,10 +1,10 @@
 from events.agents import AgentReported
 from events.agents import CommandRan
 from expects import Given, Unchanged
-from features.base import Feature
+from framework.base import Feature
 from features.git_actions.details import GitActionsDetails
 from features.git_actions.handlers import MarkBranchSwitches, MarkGitActions
-from features.journal import Journal
+from framework.journal import Journal
 from resources.types import AgentRow
 
 

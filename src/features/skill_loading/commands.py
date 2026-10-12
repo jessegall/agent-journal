@@ -1,4 +1,4 @@
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from features.skill_loading.catalogue import SKILL, catalogue, set_keywords, skills
 from features.skill_loading.required import load_now
 from resources.base import Missing

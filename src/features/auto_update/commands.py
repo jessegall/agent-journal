@@ -1,7 +1,7 @@
 from features.auto_update import routes
 from features.auto_update.countdown import cancel
 from features.auto_update.new_feature import unseen_announced
-from features.parts import Command, Context
+from framework.parts import Command, Context
 
 
 class CancelUpdate(Command):

@@ -3,7 +3,7 @@ from functools import cache
 import time
 from pathlib import Path
 
-import features
+from framework.loaded import FEATURES
 from controllers.types import Agents
 from engine.record import Record
 from providers import PROVIDERS, transcript_reader
@@ -94,7 +94,7 @@ def marked_primary() -> frozenset[str]:
 
 
 def primary() -> set[str]:
-    return {"journal", *marked_primary(), *(skill_name(name) for name, f in features.FEATURES.items() if f.details and f.details.primary)}
+    return {"journal", *marked_primary(), *(skill_name(name) for name, f in FEATURES.items() if f.details and f.details.primary)}
 
 
 def available(root: Path) -> set[str]:
@@ -154,7 +154,6 @@ def set_keywords(record: Record, name: str, words: list[str]) -> list[str]:
 
 
 def always(record: Record, name: str, on: bool) -> list[str]:
-    from features import FEATURES
     record.skills = sorted(set(chosen(record)) - {name} | ({name} if on else set()))
     if "session_briefing" in FEATURES:
         from features.session_briefing.block import rebuild

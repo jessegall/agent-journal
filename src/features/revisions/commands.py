@@ -1,6 +1,6 @@
 import time
 
-from features.parts import Command, Context
+from framework.parts import Command, Context
 from features.revisions.history import CHANGE, OPEN_UNTIL, REVISION, count, is_open, read
 from resources.base import Refused
 

@@ -1,11 +1,11 @@
 from controllers.types import Todos
 from events.todos import TodoCompleted
 from expects import Answered, Given, Kept, Refused, Unchanged
-from features.base import Feature
+from framework.base import Feature
 from features.tickets.controller import Tickets
 from resources.base import AGENT, USER
 from resources.types import Todo
-from features.journal import Journal
+from framework.journal import Journal
 from features.organization.commands import Delegate, ReportCoversOutputs, ShowOrganization
 from features.organization.details import OrganizationDetails
 from features.organization.handlers import StartNextForGlobalRole

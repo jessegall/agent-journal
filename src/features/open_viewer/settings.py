@@ -1,4 +1,5 @@
 import features
+from framework.loaded import FEATURES
 from controllers.features import check_choices, refuse_a_secret, refuse_a_secret_that_runs_commands, refuse_unmet_needs
 from controllers.types import Features, Nudges
 from engine.record import Record
@@ -10,12 +11,12 @@ from features.session_briefing.block import rebuild
 def renamed() -> dict:
     return {(alias if isinstance(alias, str) else alias[0]):
             (name if isinstance(alias, str) else f"{name}.{alias[1]}")
-            for name, f in features.FEATURES.items() for alias in f.aliases}
+            for name, f in FEATURES.items() for alias in f.aliases}
 
 
 def switches(record: Record) -> dict:
     out = {}
-    for name, f in features.FEATURES.items():
+    for name, f in FEATURES.items():
         out[name] = f.enabled(record)
         for key in f.behaviours:
             out[f.keyed(key)] = f.chosen(record, key)
@@ -26,7 +27,7 @@ def settings(record: Record) -> dict:
     return {Record.features: switches(record),
             Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery, Record.viewer: record.viewer,
             Record.said: record.said,
-            **{name: view for name, f in features.FEATURES.items() if (view := f.settings_view(record)) is not None}}
+            **{name: view for name, f in FEATURES.items() if (view := f.settings_view(record)) is not None}}
 
 
 def apply(record: Record, body: dict, actor: str) -> dict:

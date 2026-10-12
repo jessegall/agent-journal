@@ -8,8 +8,8 @@ from dataclasses import asdict
 
 from expects import Formats, Given, Nudged, Remembered, Unchanged, Updated, Wrote
 from declaring.trigger import Mark
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.messages.details import MessagesDetails
 from features.messages.formatters import CommandsAsCode
 from features.messages.closing import CloseAnswered, CloseHandled, CloseProcessed, CloseSeenByUser

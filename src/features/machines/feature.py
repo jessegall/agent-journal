@@ -1,6 +1,6 @@
 from controllers.base import SAVE_CHECKS
-from features.base import Feature
-from features.journal import Journal
+from framework.base import Feature
+from framework.journal import Journal
 from features.machines.details import MachinesDetails
 from features.machines.stale import StaleWrites
 

@@ -5,7 +5,7 @@ from engine.ran import DELIVERED
 from declaring import trigger
 from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON
 from features.form_of_address.names import called, first_name
-from features.parts import AgentContext, Handler
+from framework.parts import AgentContext, Handler
 
 QUOTES = ('"', "“", "'")
 ABOUT_THEM = r"(?:asks|asked|wants|wanted|says|said|writes|wrote|would like|needs|prefers|is asking|has asked)"
