@@ -40,6 +40,8 @@ class Seen:
     remembered: dict = field(default_factory=dict)
     files: dict = field(default_factory=dict)
     settings: dict = field(default_factory=dict)
+    whispered: list = field(default_factory=list)
+    typed: list = field(default_factory=list)
 
     @property
     def is_unchanged(self) -> bool:

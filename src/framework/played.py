@@ -283,6 +283,41 @@ def files_left(record: Record) -> dict:
     return {str(path.relative_to(project)): path.read_text(errors="replace") for path in project.rglob("*") if path.is_file()}
 
 
+class WhatTheAgentGot:
+    """A driver that only remembers what it was given, by the channel it came through: whispered beside the turn, or sent as a line the agent must answer."""
+
+    TAKES_CHANNEL = True
+
+    def __init__(self):
+        self.whispered: list[str] = []
+        self.sent: list[str] = []
+
+    def ready(self) -> bool:
+        return True
+
+    def whisper(self, text: str) -> None:
+        self.whispered.append(text)
+
+    def send(self, line: str, groups=(), yielding: str = "") -> bool:
+        self.sent.append(line)
+        return True
+
+    def last_report(self):
+        """No report: the play has no terminal to read one from, and the delivery marks only the row a report names."""
+        return None
+
+
+def reached_the_agent(record) -> WhatTheAgentGot:
+    """What the agent was really given, by driving the engine's own delivery over a driver that records. A line that says it is a whisper and is delivered as a line is caught here, where reading the message's own flag would believe it."""
+    from agents.actors import Agent
+    got = WhatTheAgentGot()
+    actor = Agent(record, got)
+    for event in record.event_log.events():
+        actor.notify(event)
+    actor.flush()
+    return got
+
+
 def settings_now(record) -> dict:
     """Every setting the record holds after the play, by the same dotted name a Given states one with."""
     return {f"{part}.{key}": value for part, held in record.settings().items() if isinstance(held, dict) for key, value in held.items()}
@@ -304,4 +339,6 @@ def played(promise, expectation, inside: Path) -> Seen:
     world.seen.held = held_against_the_agents(record)
     world.seen.files = files_left(record)
     world.seen.settings = settings_now(record)
+    got = reached_the_agent(record)
+    world.seen.whispered, world.seen.typed = got.whispered, got.sent
     return world.seen

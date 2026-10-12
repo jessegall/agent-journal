@@ -22,7 +22,7 @@ class NoSuchService(LookupError):
 
 __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
            "Dispatches", "Wrote", "Removed", "File", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
-           "Formats", "Nudged", "Held", "Answered", "Remembered", "Set",
+           "Formats", "Nudged", "Held", "Answered", "Remembered", "Set", "Whispered",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
            "NotAnOutcome", "NoSuchService")
 """The whole vocabulary, so a word in doc 80's grammar and a word here cannot drift apart."""
@@ -262,6 +262,20 @@ class Nudged(Outcome):
                 return ""
         return (f"it nudged {self.line!r}, but what it said carried none of {[str(v) for _, v in self.values]}: "
                 f"{[f'{t} {b}'.strip() for _, t, b in said]}")
+
+
+@dataclass(frozen=True)
+class Whispered(Outcome):
+    """That line reached the agent as a whisper, beside its turn, rather than as a line it must answer. Read from what the delivery really gave each channel, never from the message's own word for itself."""
+
+    words: str
+
+    def holds(self, seen) -> str:
+        if any(self.words in one for one in seen.whispered):
+            return ""
+        if any(self.words in one for one in seen.typed):
+            return f"it reached the agent as a line it must answer, not as a whisper: {seen.typed}"
+        return f"nothing it whispered carried {self.words!r}; it whispered {seen.whispered or 'nothing'}"
 
 
 @dataclass(frozen=True)

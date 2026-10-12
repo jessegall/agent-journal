@@ -7,7 +7,7 @@ from features.command_tags.answering import answered
 from features.command_tags.told import told
 from payload import HookEvent
 from events.agents import BusMessageSending, CommandRan
-from expects import Answered, Changed, Formats, Given, Hooked, Kept, Nudged, Unchanged, Updated, Wrote, answering
+from expects import Answered, Changed, Formats, Given, Hooked, Kept, Nudged, Unchanged, Updated, Wrote, answering, Whispered
 from resources.types import AgentRow, Message, Todo
 
 
@@ -31,7 +31,7 @@ class CommandTags(Feature):
             Given(BusMessageSending(agent=1, data={"text": "plain words", "turn": "t1"}), rows=[AgentRow(n=1, title="claude-1")]) >> Kept() & Unchanged(),
         ])
         journal.events.handler(TeachTheTag(), expects=[
-            Given(CommandRan(agent=1, tool="Bash", command='journal message reply 12 "the answer"'), rows=[AgentRow(n=1, title="claude-1")]) >> Nudged("hint", tag="reply"),
+            Given(CommandRan(agent=1, tool="Bash", command='journal message reply 12 "the answer"'), rows=[AgentRow(n=1, title="claude-1")]) >> Nudged("hint", tag="reply") & Whispered("the reply tag does this in one step"),
             Given(CommandRan(agent=1, tool="Bash", command='journal message reply 12 --file notes.md'), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
             Given(CommandRan(agent=1, tool="Bash", command="ls"), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
         ])
