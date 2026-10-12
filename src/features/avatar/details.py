@@ -1,11 +1,13 @@
 from declaring.details import FeatureDetails
 from declaring.groups import Group
+from resources.base import PROJECT
 
 
 class AvatarDetails(FeatureDetails):
     explains = "The chat shows a small figure of the voice you chose, which moves with what the agent is doing. It is off until you switch it on."
     name = "avatar"
     group = Group.CHAT
+    scope = PROJECT
     label = "Show a figure in the chat"
     has_skill = False
     default = False

@@ -16,3 +16,14 @@ def test_the_figure_switch_moves_from_the_form_of_address_to_the_avatar():
     migrate.run(record.root)
     assert Features(record, actor=SYSTEM).on("avatar", default=False), "an environment that had the figure on keeps it on"
     assert json.loads(settings.read_text()) == {"form_of_address": {"title": "Sir"}}, "the old switch is gone from the form of address"
+
+
+def test_a_figure_switched_in_an_environment_is_kept_for_the_whole_project():
+    features.load()
+    migrate = importlib.import_module("migrations.m0087_the_avatar_switch_is_kept_for_the_project")
+    for chosen in (True, False):
+        record = fresh()
+        Features(record, actor=SYSTEM).create("avatar", enabled=chosen)
+        migrate.run(record.root)
+        assert Features(record, actor=SYSTEM).on("avatar", default=not chosen) is chosen, "the environment's choice is the project's now"
+        assert record.features.get("avatar") is chosen, "the switch is written for the project, where the viewer reads it"
