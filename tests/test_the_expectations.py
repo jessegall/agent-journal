@@ -26,17 +26,25 @@ SERVICE_KINDS = ("rows", "chat", "files", "processes", "providers", "settings", 
 
 
 def promised():
-    """Every expectation every feature carries, each with the name its failure is reported under."""
+    """Every expectation every feature carries, of both registries, each with the name its failure is reported under.
+
+    A 2.x registration is a Promise and a 3.0 one a Registration, and neither knows about the other: receiving sits
+    below framework and may not name it. They are brought together here, which is the only place that plays either.
+    """
     import features
-    from framework.promises import PROMISED
+    from framework.loaded import FEATURES
+    from framework.promises import PROMISED, Promise
+    from receiving import REGISTERED
     features.load()
-    return [pytest.param(one, expectation, id=one.called(n)) for one, n, expectation in PROMISED.played()]
+    moved = [(Promise(FEATURES[one.feature], one.kind, one.name, one.receiver, one.event, one.expects), n, expectation)
+             for one in REGISTERED.each for n, expectation in enumerate(one.expects)]
+    return [pytest.param(one, expectation, id=one.called(n)) for one, n, expectation in [*PROMISED.played(), *moved]]
 
 
 @pytest.mark.parametrize("promise,expectation", promised())
 def test_the_registration_does_what_it_promises(promise, expectation):
-    from framework.played import played
     from expects.playing import wrong
+    from framework.played import played
     from tests import isolation
 
     assert (said := wrong(expectation, played(promise, expectation, isolation.world()))) == [], \
@@ -765,3 +773,65 @@ def test_a_write_made_inside_a_tick_is_caused_by_the_event_the_tick_is_handling(
     assert written.data.get("caused_by") == "project:71:0:OldEvent", \
         f"a write made by a handler is caused by the engine's name for the event being handled, which names the lane and the run: {written.data.get('cause')}"
     assert bus.caused_by() == "", "and the name is the tick's alone: it is given back when the tick ends"
+
+
+def test_a_3_0_registration_is_played_by_the_same_run_and_judged_by_the_same_words():
+    """The four 3.0 kinds have an entry of their own, so a feature that moves keeps its promises checked.
+
+    Without this the sweep would move a feature to listen, handle, answer or refuse and every promise it carries would
+    stop being played, silently, with the suite still green because nothing ran.
+    """
+    from dataclasses import dataclass
+
+    from events import Fact
+    from expects import Answered, Dispatches, Given, Kept, Refused as RefusedOutcome, nothing
+    from framework.loaded import FEATURES
+    from expects.playing import wrong
+    from framework.played import played
+    from framework.promises import Promise
+    from receiving import Answerer, Listener, Refuser
+    from resources.base import Refused
+    from tests import isolation
+
+    @dataclass(frozen=True, kw_only=True)
+    class TurnWritten(Fact):
+        text: str
+
+    @dataclass(frozen=True, kw_only=True)
+    class TagFound(Fact):
+        tag: str
+
+    class TagsInText(Listener[TurnWritten]):
+        def listen(self, event: TurnWritten) -> list[Fact]:
+            return [TagFound(tag="reply")] if "[!" in event.text else []
+
+    class RefuseAnEmptyTurn(Refuser[TurnWritten]):
+        def refuse(self, event: TurnWritten) -> None:
+            if not event.text.strip():
+                raise Refused("say something")
+
+    class SayItPlainly(Answerer[TurnWritten]):
+        def answer(self, event: TurnWritten) -> str:
+            return event.text.strip()
+
+    import features
+    features.load()
+    feature = next(iter(FEATURES.values()))
+    played_as = lambda kind, receiver, expectation: played(
+        Promise(feature, kind, type(receiver).__name__, receiver, TurnWritten, (expectation,)), expectation, isolation.world())
+
+    dispatching = Given(TurnWritten(text="[!reply:12] yes")) >> Dispatches(TagFound(tag="reply"))
+    assert wrong(dispatching, played_as("listen", TagsInText(), dispatching)) == [], \
+        "a listener is played through its own listen and the facts it dispatches are judged"
+    quiet = Given(TurnWritten(text="plain words")) >> Dispatches(nothing)
+    assert wrong(quiet, played_as("listen", TagsInText(), quiet)) == [], "a listener that recognises nothing dispatches nothing"
+    missed = Given(TurnWritten(text="plain words")) >> Dispatches(TagFound(tag="reply"))
+    assert wrong(missed, played_as("listen", TagsInText(), missed)) != [], "and a listener that does not keep its promise is caught"
+
+    refusing = Given(TurnWritten(text="   ")) >> RefusedOutcome("say something")
+    assert wrong(refusing, played_as("refuse", RefuseAnEmptyTurn(), refusing)) == [], "a refuser's reason is judged by the word that reads a refusal"
+    letting = Given(TurnWritten(text="a turn")) >> Kept()
+    assert wrong(letting, played_as("refuse", RefuseAnEmptyTurn(), letting)) == [], "and a write it lets through is kept"
+
+    answering_it = Given(TurnWritten(text="  a turn  ")) >> Answered("a turn")
+    assert wrong(answering_it, played_as("answer", SayItPlainly(), answering_it)) == [], "an answerer is read-only, so what it answers is the outcome"

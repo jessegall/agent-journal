@@ -21,6 +21,7 @@ from engine.paths import SECRETS_FOLDER_VARIABLE as FOLDER_VARIABLE
 from engine.project_files import walk
 from engine.record import Record
 from expects import Given, Left
+from receiving import ANSWER, HANDLE, LISTEN, REFUSE
 from expects.playing import Seen, World, remembered_by
 from framework.parts import AgentContext, Context
 from resources.base import Refused, SYSTEM
@@ -192,8 +193,33 @@ def answered_a_hook(promise, given: Given, record: Record, world: World) -> None
     world.seen.answered = promise.part(HookCall(provider_of(row), record, hooked(given, record), row))
 
 
+def listened(promise, given: Given, record: Record, world: World) -> None:
+    """A 3.0 listener, through its own listen. It writes nothing, so the facts it dispatches are the whole of what it did."""
+    world.seen.facts += promise.part.listen(given.on, **world.given_to(type(promise.part).wants()))
+
+
+def acted_on_a_fact(promise, given: Given, record: Record, world: World) -> None:
+    """A 3.0 handler, through its own handle. It never decides whether to act, so what it writes and the facts it answers with are what it did."""
+    world.seen.facts += promise.part.handle(given.on, **world.given_to(type(promise.part).wants())) or []
+
+
+def answered_a_request(promise, given: Given, record: Record, world: World) -> None:
+    """A 3.0 answerer, through its own answer. It is read-only, so what it answers is the whole of what it did."""
+    world.seen.answered = promise.part.answer(given.on, **world.given_to(type(promise.part).wants()))
+
+
+def refused_the_write(promise, given: Given, record: Record, world: World) -> None:
+    """A 3.0 refuser, through its own refuse. It either raises with its reason or lets the write through."""
+    try:
+        promise.part.refuse(given.on, **world.given_to(type(promise.part).wants()))
+        world.seen.kept = True
+    except Refused as why:
+        world.seen.refused = str(why)
+
+
 ENTRIES = {"handler": handled, "formatter": formatted, "interceptor": intercepted, "canceler": cancelled,
-           "action_interceptor": refused_before_the_write, "command": commanded, "responder": answered_a_hook}
+           "action_interceptor": refused_before_the_write, "command": commanded, "responder": answered_a_hook,
+           LISTEN: listened, HANDLE: acted_on_a_fact, ANSWER: answered_a_request, REFUSE: refused_the_write}
 """One entry per kind, and no kind with two, so the run and the engine cannot disagree about how a registration is reached. A route has none yet: it is reached through the server, which an expectation does not stand up."""
 
 
