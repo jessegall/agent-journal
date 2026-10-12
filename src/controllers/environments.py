@@ -110,13 +110,9 @@ class Environments(Controller):
         if title.strip() in ("", UNTITLED):
             self._refuse("an environment needs a name")
         name = self.unused(check_title(title), ": switch to it")
-        home = environment_home(self.record.root, name)
-        made = super().create(name, abstract, brief, **{**data, "kind": self._kind_made(data.get("kind"), data.get("owner", ""))})
-        home.mkdir(parents=True, exist_ok=True)
+        environment_home(self.record.root, name).mkdir(parents=True, exist_ok=True)
         runtime.forget_rename(self.record.root, name)
-        from features import seat_new_home
-        seat_new_home(self.record.root, name)
-        return made
+        return super().create(name, abstract, brief, **{**data, "kind": self._kind_made(data.get("kind"), data.get("owner", ""))})
 
     def _kind_made(self, kind: str | None, owner: str) -> EnvironmentKind:
         """The kind a new environment is made with: the one named, else the one its owner gives it, else main."""
