@@ -12,7 +12,7 @@ from dataclasses import dataclass, field, replace
 from engine import bus
 from events import Event, Fact
 from receiving import ANSWER, HANDLE, LISTEN, Registrations
-from receiving.ordering import ordered
+from receiving.ordering import InOrder
 from serving import Service
 
 MOST_TICKS = 32
@@ -97,6 +97,7 @@ class Lane:
     registered: Registrations
     services: Services
     claims: "Claims" = field(default_factory=lambda: Claims())
+    order: InOrder = field(default_factory=lambda: InOrder({}))
     record: object = field(default_factory=NothingHeld)
     ran: list = field(default_factory=list)
     dropped: list = field(default_factory=list)
@@ -142,10 +143,12 @@ class Lane:
         for fact in facts:
             try:
                 with bus.unit():
-                    for one in ordered(type(fact), [r for r in self.registered.of(HANDLE) if r.event is type(fact)]):
+                    for one in self.order.handlers(type(fact), self.registered):
                         for caused in one.receiver.handle(fact, **self.services.given(one.name, type(one.receiver).wants())):
                             dispatched.append(self.named(caused, fact))
             except Exception as raised:
                 dispatched = [one for one in dispatched if one.cause != fact.id]
+                if isinstance(fact, TickFailed):
+                    raise
                 dispatched.append(self.named(TickFailed(failed=type(fact).__name__, error=str(raised)), fact))
         return dispatched

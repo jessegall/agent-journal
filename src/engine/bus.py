@@ -78,15 +78,34 @@ def patterns(event) -> tuple[str, ...]:
     return (ANY, event.type, event.action, f"{event.type}.{event.action}", event.data.get("event") or "", f"hook.{event.data.get('hook')}" if event.data.get("hook") else "", "hook.*" if event.data.get("hook") else "")
 
 
+def over_the_listeners(event: Event, record=None) -> None:
+    """Every listener of this event, run here and now: the 2.x way, and what a process with no engine behind it does."""
+    for pattern in patterns(event):
+        for enabled, listener in list(_listeners.get(pattern, ())):
+            if record is None or enabled(record):
+                listener(event, record)
+
+
+class Dispatch:
+    """How a told event reaches what acts on it: the walk over the listeners until the engine is seated, and then the engine's own lane, which runs the same receivers inside a tick."""
+
+    def __init__(self, reaches: Listener):
+        self.reaches = reaches
+
+
+_dispatch = Dispatch(over_the_listeners)
+
+
+def dispatched_by(reaches: Listener) -> None:
+    _dispatch.reaches = reaches
+
+
 def run(event: Event, record=None) -> None:
     tell_watchers(event, record)
     before = cause()
     _cause.actor = event.data.get("cause") or event.actor
     try:
-        for pattern in patterns(event):
-            for enabled, listener in list(_listeners.get(pattern, ())):
-                if record is None or enabled(record):
-                    listener(event, record)
+        _dispatch.reaches(event, record)
     finally:
         _cause.actor = before
 
@@ -173,47 +192,58 @@ def _spaced_due(key: str, every: float) -> None:
             traceback.print_exc()
 
 
-_waiting: dict[str, Callable[[], None]] = {}
-_worker: threading.Thread | None = None
-_worker_lock = threading.Lock()
+class Background:
+    """The work nobody waits for, and the one thread that runs it: a job is kept under its key until the thread reaches it, so asking twice before it starts runs it once."""
+
+    def __init__(self):
+        self.waiting: dict[str, Callable[[], None]] = {}
+        self.thread = threading.Thread(target=lambda: None)
+        self.lock = threading.Lock()
+
+    def takes(self, key: str, job: Callable[[], None]) -> None:
+        with self.lock:
+            self.waiting[key] = job
+            if self.thread.is_alive():
+                return
+            self.thread = threading.Thread(target=self.work_through, daemon=True)
+            self.thread.start()
+
+    def finished(self, within: float) -> bool:
+        until = time.monotonic() + within
+        while time.monotonic() < until:
+            with self.lock:
+                if not self.waiting and not self.thread.is_alive():
+                    return True
+            time.sleep(0.005)
+        return False
+
+    def work_through(self) -> None:
+        while True:
+            with self.lock:
+                if not self.waiting:
+                    return
+                key = next(iter(self.waiting))
+                job = self.waiting.pop(key)
+            try:
+                job()
+            except Exception:
+                traceback.print_exc()
+
+
+BEHIND = Background()
 
 
 def background(key: str, job: Callable[[], None]) -> None:
     """Runs work nobody waits for on a thread of its own, once per key if it is asked for again before it started, so the request that asked for it is not held up by it; with the thread switched off it runs at once."""
-    global _worker
     if not BACKGROUND:
         job()
         return
-    with _worker_lock:
-        _waiting[key] = job
-        if _worker is not None and _worker.is_alive():
-            return
-        _worker = threading.Thread(target=_work_through, daemon=True)
-        _worker.start()
+    BEHIND.takes(key, job)
 
 
 def background_finished(within: float = 5.0) -> bool:
     """Whether the background thread has run everything asked of it, waited for up to `within` seconds; for a test or a shutdown that must see its work done."""
-    until = time.monotonic() + within
-    while time.monotonic() < until:
-        with _worker_lock:
-            if not _waiting and (_worker is None or not _worker.is_alive()):
-                return True
-        time.sleep(0.005)
-    return False
-
-
-def _work_through() -> None:
-    while True:
-        with _worker_lock:
-            if not _waiting:
-                return
-            key = next(iter(_waiting))
-            job = _waiting.pop(key)
-        try:
-            job()
-        except Exception:
-            traceback.print_exc()
+    return BEHIND.finished(within)
 
 
 def release(queue: list) -> None:
@@ -241,3 +271,4 @@ def heard(pattern: str) -> bool:
 def clear() -> None:
     _listeners.clear()
     _watchers.clear()
+    dispatched_by(over_the_listeners)

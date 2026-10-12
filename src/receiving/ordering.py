@@ -6,7 +6,7 @@ dependency, so the engine can check it: that it exists, that the names make no c
 handlers nobody ordered do not write the same kind of row.
 """
 
-from receiving import Registration
+from receiving import HANDLE, Registration
 
 
 class OrdersAnUnknown(LookupError):
@@ -54,3 +54,21 @@ def clashing(fact: type, run: list[Registration]) -> None:
                 continue
             if shared := one.writes & other.writes:
                 raise WriteTheSameUnordered.of(fact, one.name, other.name, shared)
+
+
+class InOrder:
+    """The handlers of each fact in the order they run, worked out once so a tick only looks its fact up; built empty, it works the order out each time, as a lane under test wants."""
+
+    def __init__(self, by_fact: dict[type, list[Registration]]):
+        self.by_fact = by_fact
+
+    @classmethod
+    def of(cls, registered) -> "InOrder":
+        return cls({fact: ordered(fact, handlers_of(registered, fact)) for fact in {one.event for one in registered.of(HANDLE)}})
+
+    def handlers(self, fact: type, registered) -> list[Registration]:
+        return self.by_fact[fact] if fact in self.by_fact else ordered(fact, handlers_of(registered, fact))
+
+
+def handlers_of(registered, fact: type) -> list[Registration]:
+    return [one for one in registered.of(HANDLE) if one.event is fact]

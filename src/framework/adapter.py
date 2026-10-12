@@ -11,8 +11,13 @@ from dataclasses import dataclass
 from declaring.registries import MOVED
 from engine import bus
 from events import Fact, Request
+from expects.watching import tell
 from framework.parts import Context, Handler as OldStyle
 from receiving import HANDLE, Handler, Registration, Registrations
+from receiving.ordering import InOrder
+from receiving.ticks import Lane, Services, TickFailed
+from resources.base import ACTIONS
+from resources.types import TYPES
 from serving import Adapted as TheRecord
 
 ON_THE_SENDING_PATH = {
@@ -101,9 +106,13 @@ class LoggedHandler(OldHandler):
         super().__init__(feature, handler)
         self.run, self.kind = run, kind
 
+    def patterns(self) -> tuple[str, ...]:
+        """The bus patterns this handler listened on."""
+        return tuple(self.kind.patterns(self.handler.hooks))
+
     def hears(self, logged, record) -> bool:
         """Whether the bus would have given the handler this event: a pattern it listened on, and its feature on."""
-        return bool(set(bus.patterns(logged)) & set(self.kind.patterns(self.handler.hooks))) and self.feature.enabled(record)
+        return bool(set(bus.patterns(logged)) & set(self.patterns())) and self.feature.enabled(record)
 
     def handle(self, event: OldEvent, record) -> list[Fact]:
         """Runs the bus's own run of the handler, so the adapter holds no second way to read the event or build the Context."""
@@ -121,6 +130,7 @@ def adapted_beside_the_bus(feature, handler: OldStyle, run, kind) -> None:
         return
     ADAPTED.forget(HANDLE, feature.name, receiver.called())
     ADAPTED.add(Registration.read(HANDLE, OldEvent, receiver, (), feature.name))
+    TICKING.joined()
 
 
 def listing() -> str:
@@ -136,3 +146,112 @@ def listing() -> str:
 
 
 MOVED.add(None, listing)
+
+
+SLOTS = (bus.ANY, "type", "action", "type.action", "event", "hook", "hook.*")
+"""The order bus.patterns puts an event's patterns in, which is the order the bus runs their listeners in: the widest first. A pattern belongs to one slot whatever the event, so the place a listener runs in is known once, at seating, and the lane keeps the order the bus had."""
+
+
+def slot_of(pattern: str) -> int:
+    """Which of bus.patterns' places this pattern is matched in."""
+    if pattern == bus.ANY:
+        return 0
+    if pattern == "hook.*":
+        return 6
+    if pattern.startswith("hook."):
+        return 5
+    if "." in pattern:
+        return 3
+    if pattern in ACTIONS:
+        return 2
+    if pattern in TYPES:
+        return 1
+    return 4
+
+
+class BusListener(Handler[Fact]):
+    """A listener registered straight on the bus, rather than by a feature's wiring: the engine's own, such as the switch cache. It runs on the lane like an old handler, so the lane carries everything the bus carried."""
+
+    adapted = True
+
+    def __init__(self, listener, pattern: str, name: str):
+        self.listener, self.pattern, self.name = listener, pattern, name
+
+    def called(self) -> str:
+        return self.name
+
+    @classmethod
+    def wants(cls) -> dict[str, type]:
+        return {"record": TheRecord}
+
+    def patterns(self) -> tuple[str, ...]:
+        return (self.pattern,)
+
+    def hears(self, logged, record) -> bool:
+        return self.pattern in bus.patterns(logged)
+
+    def handle(self, event: "OldEvent", record) -> list[Fact]:
+        if self.hears(event.logged, record):
+            self.listener(event.logged, record)
+        return []
+
+
+def listens_beside_the_bus(pattern: str, listener, name: str):
+    """Registers one of the engine's own listeners on the bus and on the adapter, so it runs wherever the events go."""
+    ADAPTED.forget(HANDLE, "", name)
+    ADAPTED.add(Registration.read(HANDLE, OldEvent, BusListener(listener, pattern, name), ()))
+    TICKING.joined()
+    return bus.on(pattern, listener)
+
+
+class FailedTick(Handler[Fact]):
+    """A tick that raised: the handlers' writes are rolled back and this says so, where the 2.x bus let the raise out into the write that told the event."""
+
+    adapted = True
+
+    def called(self) -> str:
+        return "FailedTick"
+
+    def patterns(self) -> tuple[str, ...]:
+        """None: it hears a fact of the engine's own, not a logged event."""
+        return ()
+
+    @classmethod
+    def wants(cls) -> dict[str, type]:
+        return {"record": TheRecord}
+
+    def handle(self, event, record) -> list[Fact]:
+        tell(record, f"A tick on {event.failed} failed", event.error)
+        return []
+
+
+class Ticking:
+    """One told event as a tick of the project lane, over the receivers the bus walked and in its order."""
+
+    def __init__(self, registered: Registrations):
+        self.registered = registered
+        self.order = InOrder({})
+
+    def joined(self) -> None:
+        """A receiver has joined, so the order is worked out again: the widest patterns first, as the bus ran them."""
+        self.registered.forget(HANDLE, "", "FailedTick")
+        self.registered.add(Registration.read(HANDLE, TickFailed, FailedTick(), ()))
+        self.registered.each.sort(key=lambda one: min((slot_of(pattern) for pattern in one.receiver.patterns()), default=4))
+        self.order = InOrder.of(self.registered)
+
+    def reaches(self, logged, record) -> None:
+        """An event with no record of its own cannot be a tick, since a handler is run against one: it keeps the walk."""
+        if record is None:
+            bus.over_the_listeners(logged, record)
+            return
+        Lane("project", self.registered, Services({TheRecord: record}), record=record, order=self.order).run(OldEvent(logged=logged))
+
+
+TICKING = Ticking(ADAPTED)
+"""The one lane the old handlers run on."""
+
+
+def dispatched_on_a_lane() -> None:
+    """From here on a told event is a tick, never a walk over the listeners. Called once, when the features are seated."""
+    TICKING.joined()
+    bus.dispatched_by(TICKING.reaches)

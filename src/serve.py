@@ -27,6 +27,7 @@ import commands.cli  # noqa: E402,F401
 from commands.http import dispatch, unanswered  # noqa: E402
 from controllers.stored import DEFER, flush_indexes, renew_stamps, watch_marks  # noqa: E402
 from commands.dispatch import hook_path, reached_by_phone  # noqa: E402
+from framework.adapter import listens_beside_the_bus  # noqa: E402
 from framework.routing import resolve  # noqa: E402
 from features.phone.allow_list import PhoneVisit, Reach  # noqa: E402
 from framework.routing import PHONE_ENVIRONMENT, PHONE_MEMBER, PHONE_UNLOCKED, Reply, sender_of  # noqa: E402
@@ -36,7 +37,6 @@ from engine import bus, runtime, waits  # noqa: E402
 from engine.timing import arrived  # noqa: E402
 from engine.after_answer import AfterAnswer  # noqa: E402
 from engine.quiet_collector import QuietCollector  # noqa: E402
-from supervisor import QUICK  # noqa: E402
 from framework.switches import HOME_WARMERS, WARMERS  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, known, pulse, remember  # noqa: E402
@@ -52,6 +52,8 @@ REQUEST_BACKLOG = 128
 THREADS = "threads.txt"
 OPEN_FILES = 65536
 WARM_WAIT = 30.0
+PRUNE_AFTER = 30.0
+"""How long after the server is up the builds it has replaced are pruned: late enough that the start is not held up by it."""
 SWITCH_INTERVAL = 0.001
 LOOPBACK = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::(\d+))?$")
 
@@ -207,8 +209,8 @@ def environmental(path: str) -> bool:
 
 
 class JournalServer(ThreadingHTTPServer):
-    request_queue_size = REQUEST_BACKLOG
     SERVING: "weakref.WeakSet[JournalServer]" = weakref.WeakSet()
+    request_queue_size = REQUEST_BACKLOG
 
     def __init__(self, address, handler):
         super().__init__(address, handler)
@@ -472,7 +474,7 @@ def warmed(root: Path, warm: threading.Event, began: float = BEGAN) -> None:
         recorded(root, "until the viewer is warm", began)
         WARMERS.append(lambda: warm_changed(root))
         HOME_WARMERS.append(warm_dashboard)
-        bus.on("*", rebuild_dashboard)
+        listens_beside_the_bus("*", rebuild_dashboard, "RebuildDashboard")
         together(timed(root, "commands warm", began, warm_commands), timed(root, "rows warm", began, lambda: warm_rows(root)),
                  timed(root, "transcripts read", began, lambda: read_transcripts(root)), timed(root, "hooks warm", began, warm_hooks),
                  timed(root, "board warm", began, lambda: warm_board(root)))
@@ -482,7 +484,7 @@ def warmed(root: Path, warm: threading.Event, began: float = BEGAN) -> None:
         os._exit(1)
     announce(root)
     settle_agents(root)
-    pruning = threading.Timer(QUICK, prune_builds, (root,))
+    pruning = threading.Timer(PRUNE_AFTER, prune_builds, (root,))
     pruning.daemon = True
     pruning.start()
     gc.freeze()

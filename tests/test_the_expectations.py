@@ -685,3 +685,51 @@ def test_an_old_handler_beside_the_bus_is_registered_on_the_adapter_and_the_list
     assert ran == [(3, "the tick's record")], "the old handler runs for the events the bus would have given it and while its feature is on, and for no other"
     with pytest.raises(CannotBeAdapted):
         LoggedHandler(feature, MindTheBoard(), None, SimpleNamespace(marked_as=Request, patterns=lambda hooks: ()))
+
+
+def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the_bus_ran_them():
+    """The cut-over: what the bus walked inline now runs inside a tick, in the order the bus walked it, and a raise is told instead of escaping into the write."""
+    from contextlib import contextmanager
+    from engine import bus
+    from expects.watching import BROKEN
+    from framework.adapter import BusListener, OldEvent, Ticking
+    from receiving import HANDLE, Registration, Registrations
+    from resources.base import SYSTEM, Event
+
+    class Held:
+        @contextmanager
+        def snapshot(self):
+            yield self
+
+    ran: list[str] = []
+    registered = Registrations()
+    for name, pattern in (("OnTheAction", "created"), ("OnTheType", "todo"), ("OnEverything", "*"), ("OnBoth", "todo.created")):
+        registered.add(Registration.read(HANDLE, OldEvent, BusListener(lambda logged, record, name=name: ran.append(name), pattern, name), ()))
+    ticking = Ticking(registered)
+    ticking.joined()
+
+    logged = Event(id=1, at=1.0, type="todo", n=1, action="created", actor=SYSTEM, data={}, pid=0, handled=False, env="main")
+    ticking.reaches(logged, Held())
+    assert ran == ["OnEverything", "OnTheType", "OnTheAction", "OnBoth"], \
+        "the lane runs the old handlers widest pattern first, which is the order bus.patterns put them in"
+
+    ran.clear()
+    ticking.reaches(Event(id=2, at=1.0, type="message", n=1, action="updated", actor=SYSTEM, data={}, pid=0, handled=False, env="main"), Held())
+    assert ran == ["OnEverything"], "a handler whose pattern the event does not name is not run, as the bus did not run it"
+
+    told: list[tuple[str, str]] = []
+    listening, BROKEN.entries = BROKEN.entries, []
+    BROKEN.add(None, lambda record, title, brief: told.append((title, brief)))
+    try:
+        registered.add(Registration.read(HANDLE, OldEvent, BusListener(lambda logged, record: 1 / 0, "*", "Raises"), ()))
+        ticking.joined()
+        ran.clear()
+        ticking.reaches(logged, Held())
+        assert told and told[0][0] == "A tick on OldEvent failed", f"a handler that raises is told as a broken tick, not left to break the write: {told}"
+    finally:
+        BROKEN.entries = listening
+
+    import features
+    assert bus._dispatch.reaches.__self__ is __import__("framework.adapter", fromlist=["TICKING"]).TICKING, \
+        "seating the features puts every told event on the lane; features.load is what wires it"
+    assert features.FEATURES, "the features are seated in this run, so the assertion above is about the real wiring"
