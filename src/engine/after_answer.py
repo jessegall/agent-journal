@@ -97,6 +97,11 @@ def answering_for(lane: str) -> None:
         pool.named(lane)
 
 
+def answering() -> bool:
+    """Whether a pool is answering this hook, so work left behind it can run on a lane with other jobs on it. Without one - a command, a test, any process that answers no hook - nothing else can arrive, so there is nothing for such work to wait for."""
+    return getattr(ANSWERING, "pool", None) is not None
+
+
 def after_answered(job: Job) -> None:
     """Queues work behind this hook's answer, on its session's lane, so it runs after what the lane already holds, such as a display event that arrived before the hook; with no pool answering it runs at once."""
     pool = getattr(ANSWERING, "pool", None)

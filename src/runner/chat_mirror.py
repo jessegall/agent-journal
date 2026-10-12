@@ -9,7 +9,7 @@ from typing import Iterator
 import features
 from controllers.types import Agents
 from engine import chat, runtime, waits
-from engine.after_answer import after_answered
+from engine.after_answer import after_answered, answering
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
@@ -131,11 +131,11 @@ def fingerprint(text: str) -> str:
 
 
 def turn_ended(root: Path, session: str, row, last_message: str, until: float = 0.0) -> None:
-    """Ends the turn once the display hook has brought its last words, or SETTLE has gone by. The words arrive as a job of this session's lane, queued behind this one, so waiting here would only hold them back: the wait is put at the back of the lane, behind whatever the hook has sent meanwhile."""
+    """Ends the turn once the display hook has brought its last words, or SETTLE has gone by. The words arrive as a job of this session's lane, queued behind this one, so waiting here would only hold them back: the wait is put at the back of the lane, behind whatever the hook has sent meanwhile. Where no pool answers, nothing can arrive while we wait, so the turn ends at once."""
     if not until:
         raise_held(root, session)
         until = time.time() + SETTLE
-    if last_message and not arrives(root, session, last_message) and time.time() < until:
+    if last_message and answering() and not arrives(root, session, last_message) and time.time() < until:
         time.sleep(SETTLE_STEP)
         after_answered(lambda: turn_ended(root, session, row, last_message, until))
         return
