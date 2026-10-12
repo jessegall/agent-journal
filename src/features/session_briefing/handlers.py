@@ -1,5 +1,5 @@
 from engine import bus
-from engine.events.agents import SessionStarted
+from events.agents import SessionStarted
 from events.resources import AnyEvent
 from features.parts import AgentContext, Context, Handler, in_background
 from features.session_briefing.block import rebuild

@@ -1,4 +1,4 @@
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from expects import Given, Nudged, Unchanged
 from features.base import Feature
 from features.record_audit.details import RecordAuditDetails

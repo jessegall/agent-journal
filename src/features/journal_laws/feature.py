@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from agents.terminal import OUTPUT_LINES
-from engine.events.agents import SessionStarted, ToolFinished
-from engine.events.engine import AgentMessageSent
+from events.agents import SessionStarted, ToolFinished
+from events.agents import AgentMessageSent
 from expects import Given, Kept, Nudged, Refused, Remembered, Unchanged
 from features.base import Feature
 from features.journal import Journal

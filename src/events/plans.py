@@ -19,3 +19,10 @@ class PlanUpdated(ResourceEvent):
 @dataclass(frozen=True)
 class PlanCompleted(ResourceEvent):
     on: ClassVar[str] = "plan.completed"
+
+
+@dataclass(frozen=True)
+class PlanChanged(ResourceEvent):
+    on: ClassVar[str] = "plan"
+    status: str = ""
+    parked_for: int = 0

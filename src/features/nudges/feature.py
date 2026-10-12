@@ -1,10 +1,12 @@
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from expects import WHEN, Given, Remembered, Unchanged, Updated
 from resources.types import AgentRow, Nudge, Todo
 from features.base import Feature
 from features.journal import Journal
 from features.nudges.details import NudgesDetails
-from features.nudges.standing import AskAgain, ClearWhenAnswered, NudgeCreated, RowChanged, StandUntilAnswered
+from features.nudges.standing import AskAgain, ClearWhenAnswered, StandUntilAnswered
+from events.nudges import NudgeCreated
+from events.resources import RowChanged
 
 
 ON_TODO_7 = {"1": {"n": 1, "asks": "todos.unfinished", "until": ["todo.completed"], "rows": ["todo:7"], "session": None, "at": WHEN}}

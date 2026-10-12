@@ -1,32 +1,19 @@
 import time
 from dataclasses import asdict, dataclass, replace
-from typing import ClassVar
 
 from controllers.types import Agents, Nudges
 from features import FEATURES
-from engine.events.engine import ClockTicked
-from events.resources import AnyEvent, ResourceEvent
+from events.agents import ClockTicked
+from events.resources import GONE, ResourceEvent, RowChanged
 from resources.fields import Loaded
 from features.journal import waiting
 from features.parts import AgentContext, Context, Handler
 from features.trigger import MINUTE
 from resources.types import Nudge
+from events.nudges import NudgeCreated
 
 STANDING = "standing"
 KEPT = 20
-GONE = ("completed", "deleted")
-CHANGES = ("created", "updated", *GONE)
-
-
-@dataclass(frozen=True)
-class NudgeCreated(ResourceEvent):
-    on: ClassVar[str] = "nudge.created"
-
-
-@dataclass(frozen=True)
-class RowChanged(AnyEvent):
-    def wanted(self) -> bool:
-        return self.action in CHANGES
 
 
 @dataclass(frozen=True)

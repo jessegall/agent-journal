@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass
 from enum import StrEnum
 
-from engine.events.engine import FileEdited
+from events.files import FileEdited
 from engine.files import KIND, blob_bytes, blob_texts, is_image
 from features.file_feed.diff import DIFFS, DiffRow, diffed
 

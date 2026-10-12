@@ -19,3 +19,8 @@ class RuleUpdated(ResourceEvent):
 @dataclass(frozen=True)
 class RuleCompleted(ResourceEvent):
     on: ClassVar[str] = "rule.completed"
+
+
+@dataclass(frozen=True)
+class RuleChanged(ResourceEvent):
+    on: ClassVar[str] = "rule"

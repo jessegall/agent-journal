@@ -1,6 +1,7 @@
 from controllers.types import Works
-from engine.events.agents import AgentReported, ToolFinished
-from engine.events.engine import ClockTicked, FileEdited
+from events.agents import AgentReported, ToolFinished
+from events.agents import ClockTicked
+from events.files import FileEdited
 from events.resources import AnyEvent
 from events.todos import TodoCompleted
 from events.works import WorkCreated
@@ -10,7 +11,8 @@ from dataclasses import asdict
 
 from expects import answering, Given, Held, Kept, Nudged, Refused, Remembered, Unchanged, Updated
 from features.trigger import Mark
-from features.work_tracking.handlers import PlanCompleted, WorkCompleted, WorkLogged
+from events.plans import PlanCompleted
+from events.works import WorkCompleted, WorkUpdated
 from providers.payload import BashCall, WriteCall
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
@@ -221,9 +223,9 @@ class WorkFeature(Feature):
             Given(AgentReported(agent=1), rows=[typing], settings={"work_tracking.name_work_every": 1}) >> Unchanged(),
         ])
         journal.events.handler(ResetEditsOnLog(), expects=[
-            Given(WorkLogged(n=3, type="work", action="updated", actor=AGENT, section="1 · now"), rows=[WORKING, AGENT_ROW], files=answering(AFTER_NINE_EDITS))
+            Given(WorkUpdated(n=3, type="work", action="updated", actor=AGENT, section="1 · now"), rows=[WORKING, AGENT_ROW], files=answering(AFTER_NINE_EDITS))
                 >> Remembered("trigger-work_tracking", asdict(Mark(edits=0))),
-            Given(WorkLogged(n=3, type="work", action="updated", actor=AGENT), rows=[WORKING, AGENT_ROW], files=answering(AFTER_NINE_EDITS))
+            Given(WorkUpdated(n=3, type="work", action="updated", actor=AGENT), rows=[WORKING, AGENT_ROW], files=answering(AFTER_NINE_EDITS))
                 >> Remembered("trigger-work_tracking", asdict(Mark(edits=9))),
         ])
         journal.agent.interceptor(RefuseHeldCalls(), expects=[

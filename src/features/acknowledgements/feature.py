@@ -2,7 +2,7 @@ from features.acknowledgements.details import AcknowledgementsDetails
 from features.acknowledgements.handlers import HideJournalOnlyTurns
 from features.base import Feature
 from features.journal import Journal
-from engine.events.engine import AgentMessageSending
+from events.agents import AgentMessageSending
 from expects import Given, Kept, Unchanged, Wrote
 from providers.base import JOURNAL
 from resources.types import AgentRow, Message, Nudge

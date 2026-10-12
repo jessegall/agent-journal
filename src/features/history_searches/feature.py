@@ -1,4 +1,4 @@
-from engine.events.engine import AgentMessageSent, CommandRan
+from events.agents import AgentMessageSent, CommandRan
 from expects import Given, Kept, Unchanged
 from features.base import Feature
 from features.history_searches.details import HistorySearchesDetails

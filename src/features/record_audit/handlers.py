@@ -1,4 +1,4 @@
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from engine.wording import plural
 from features.record_audit.audit import evidence
 from features.parts import WHOLE_FEATURE, AgentContext, Handler

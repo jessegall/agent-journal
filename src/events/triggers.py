@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from events.resources import ResourceEvent
+from resources.base import FIRED
 
 
 @dataclass(frozen=True)
@@ -19,3 +20,9 @@ class TriggerUpdated(ResourceEvent):
 @dataclass(frozen=True)
 class TriggerCompleted(ResourceEvent):
     on: ClassVar[str] = "trigger.completed"
+
+
+@dataclass(frozen=True)
+class TriggerFired(ResourceEvent):
+    on: ClassVar[str] = f"trigger.{FIRED}"
+    about: str = ""

@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from features.journal_laws.laws import laws, naming_of, refusal
-from engine.events.engine import AgentMessageSent
+from events.agents import AgentMessageSent
 from engine.gates import DISPATCHING, Runs
 from features.parts import AgentContext, Canceler, Handler, ToolInterceptor
 from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due

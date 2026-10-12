@@ -1,5 +1,5 @@
 from engine.services import SOURCES
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from expects import Answered, Given, Refused, Unchanged, Updated
 from features.base import Feature
 from features.tickets.controller import Tickets

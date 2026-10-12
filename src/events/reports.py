@@ -19,3 +19,9 @@ class ReportUpdated(ResourceEvent):
 @dataclass(frozen=True)
 class ReportCompleted(ResourceEvent):
     on: ClassVar[str] = "report.completed"
+
+
+@dataclass(frozen=True)
+class ReportLinked(ResourceEvent):
+    on: ClassVar[str] = "report.linked"
+    to: str = ""

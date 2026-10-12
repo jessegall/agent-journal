@@ -2,7 +2,7 @@ from features.awaited.details import AwaitedDetails
 from features.awaited.handlers import ReturnWhenAwaitedReport
 from features.base import Feature
 from features.journal import Journal
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from expects import Given, Nudged, Unchanged, Updated
 from features.helpers.resource import Helper
 from resources.types import AgentRow, Work

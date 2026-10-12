@@ -1,5 +1,5 @@
 from engine.markers import marked
-from engine.events.engine import AgentMessageSent
+from events.agents import AgentMessageSent
 from expects import Changed, Given, Nudged, Unchanged, answering
 from features.base import Feature
 from features.journal import Journal

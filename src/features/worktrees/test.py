@@ -2,7 +2,7 @@ from pathlib import Path
 
 from features import FEATURES
 from controllers.types import Agents
-from engine.events.agents import SessionStarted
+from events.agents import SessionStarted
 from features.parts import AgentContext
 from features.worktrees.handlers import LinkWorktreeJournal
 from providers import workspace_folders

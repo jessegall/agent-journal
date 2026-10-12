@@ -4,7 +4,8 @@ from features.suggestions.controller import waiting_suggestions
 from overview.parts import SUMMARY_COUNTS
 from features.journal import Journal
 from features.suggestions.details import SuggestionsDetails
-from features.suggestions.handlers import DropTakenBackMark, FileDecidedSuggestion, SuggestionDecided, SuggestionReopened
+from features.suggestions.handlers import DropTakenBackMark, FileDecidedSuggestion
+from events.suggestions import SuggestionCompleted, SuggestionReopened
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Suggestion, Todo
 
@@ -16,8 +17,8 @@ def proposed(how: str, outcome: str = "") -> Suggestion:
     return Suggestion(n=3, title="Run the gate in CI", brief="It catches the slow request early.", data={"decision": how}, outcome=outcome)
 
 
-def decided(actor: str = USER) -> SuggestionDecided:
-    return SuggestionDecided(n=3, type="suggestion", action="completed", actor=actor)
+def decided(actor: str = USER) -> SuggestionCompleted:
+    return SuggestionCompleted(n=3, type="suggestion", action="completed", actor=actor)
 
 
 class SuggestionsFeature(Feature):

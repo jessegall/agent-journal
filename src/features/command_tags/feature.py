@@ -4,7 +4,7 @@ from features.command_tags.details import CommandTagsDetails
 from features.command_tags.formatters import StripTags
 from features.command_tags.handlers import RunTagCommands, TeachTheTag
 from features.command_tags.answering import answered
-from engine.events.engine import AgentMessageSending, CommandRan
+from events.agents import AgentMessageSending, CommandRan
 from expects import Changed, Formats, Given, Kept, Nudged, Unchanged, Updated, Wrote
 from resources.types import AgentRow, Message, Todo
 

@@ -1,5 +1,5 @@
-from engine.events.agents import AgentReported
-from engine.events.engine import ClockTicked
+from events.agents import AgentReported
+from events.agents import ClockTicked
 from engine.wording import digest
 from expects import Given, Nudged, Unchanged, Updated, Wrote
 from features.base import Feature
@@ -8,7 +8,8 @@ from resources.base import SYSTEM
 from resources.types import AgentRow, Notification
 from features.checks.controller import Checks
 from features.checks.details import ChecksDetails
-from features.checks.handlers import CheckUpdated, MarkTestRuns, ReportCheckResult, RunDueChecks
+from features.checks.handlers import MarkTestRuns, ReportCheckResult, RunDueChecks
+from events.checks import CheckUpdated
 from features.journal import Journal
 
 __all__ = ["Checks"]

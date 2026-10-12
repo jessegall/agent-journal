@@ -1,4 +1,4 @@
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from events.messages import MessageCreated
 from engine.transcript import IDLE
 from features import trigger

@@ -1,4 +1,4 @@
-from engine.events.engine import CommandRan
+from events.agents import CommandRan
 from expects import Given, Unchanged
 from resources.types import AgentRow
 from features.base import Feature

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.events.agents import SessionStarted
+from events.agents import SessionStarted
 from engine.worktree import checkout, share_journal
 from providers import workspace_folders
 from features.parts import AgentContext, Handler

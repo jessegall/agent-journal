@@ -1,10 +1,10 @@
 from controllers.types import Agents, Todos
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from events.agents import AgentChanged
 from events.messages import MessageCreated
 from providers.payload import BashCall, WriteCall
 from expects import Answered, Given, Kept, Nudged, Refused, Unchanged, Updated
-from features.ask_questions.handlers import QuestionAsked
+from events.questions import QuestionCreated
 from features.base import Feature
 from providers.payload import Dispatch
 from resources.base import AGENT, USER
@@ -23,7 +23,7 @@ __all__ = ["Helpers"]
 
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")
-ASKED = QuestionAsked(n=1, type="question", action="asked", actor=AGENT)
+ASKED = QuestionCreated(n=1, type="question", action="asked", actor=AGENT)
 
 HANDED = Todo(n=5, title="Fix the crash", data={"assigned": "helper:3"})
 AT_WORK = Helper(n=3, title="Rhea", data={"name": "Rhea"})

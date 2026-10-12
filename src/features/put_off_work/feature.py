@@ -1,4 +1,4 @@
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from expects import Given, Unchanged
 from resources.types import AgentRow
 from features.base import Feature

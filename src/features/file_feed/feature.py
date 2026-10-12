@@ -1,5 +1,5 @@
 from controllers.types import Agents
-from engine.events.engine import FileEdited
+from events.files import FileEdited
 from expects import Answered, Given, Refused, Remembered
 from features.base import Feature
 from features.file_feed.details import FileFeedDetails

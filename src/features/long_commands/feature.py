@@ -1,4 +1,4 @@
-from engine.events.engine import AgentBeat, ClockTicked
+from events.agents import AgentBeat, ClockTicked
 from expects import Given, Unchanged
 from features.base import Feature
 from features.journal import Journal

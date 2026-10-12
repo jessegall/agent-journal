@@ -1,5 +1,5 @@
 from controllers.types import Agents
-from engine.events.agents import AgentReported, SessionStarted, ToolFinished
+from events.agents import AgentReported, SessionStarted, ToolFinished
 from events.messages import MessageCreated
 from expects import Answered, Given, Kept, Refused, Unchanged, Updated, Wrote
 from features.base import Feature

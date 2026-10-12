@@ -5,7 +5,8 @@ from features.journal import Journal
 from controllers.types import Rules
 from features.recital import register_recital
 from features.rules.details import RulesDetails
-from features.rules.handlers import InjectRules, ReviewNewRule, RuleChanged
+from features.rules.handlers import InjectRules, ReviewNewRule
+from events.rules import RuleChanged
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Rule
 

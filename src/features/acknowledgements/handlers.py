@@ -1,6 +1,6 @@
 from controllers.base import row_of
 from controllers.types import Messages, Nudges
-from engine.events.engine import AgentMessageSending
+from events.agents import AgentMessageSending
 from features.command_tags.reading import CARRIED
 from features.messages.answering import answered
 from features.parts import AgentContext, Context, Handler

@@ -19,3 +19,11 @@ class DocUpdated(ResourceEvent):
 @dataclass(frozen=True)
 class DocCompleted(ResourceEvent):
     on: ClassVar[str] = "doc.completed"
+
+
+@dataclass(frozen=True)
+class DocWritten(ResourceEvent):
+    on: ClassVar[str] = "doc"
+
+    def wanted(self) -> bool:
+        return self.written

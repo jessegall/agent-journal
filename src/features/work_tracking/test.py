@@ -39,7 +39,7 @@ def test_edits_without_a_log_entry_hold_the_writes_until_the_work_is_logged():
     os.utime(marked, ns=(time.time_ns(), time.time_ns() + 1_000_000))
     assert (counted > 0, trigger.last(record, "claude-1", "work_tracking").edits) == (True, 0), \
         "a reset written by another process, such as the server running journal work log, is read, never an old count kept in memory"
-    from engine.events.engine import FileEdited
+    from events.files import FileEdited
     from features.work_tracking.tracker import record_edit
     agents = Agents(record, actor=SYSTEM)
     agent = agents.by_session("claude-1")

@@ -1,4 +1,4 @@
-from engine.events.agents import SessionStarted
+from events.agents import SessionStarted
 from events.resources import ResourceCreated
 from events.works import WorkCreated
 from controllers.types import Todos

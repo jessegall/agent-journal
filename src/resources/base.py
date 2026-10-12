@@ -11,6 +11,7 @@ TITLE_MAX = 80
 ABSTRACT_MAX = 200
 VIEW_ONLY = ("kept",)
 REQUESTED = "requested"
+FIRED = "fired"
 REVISED = "revised"
 COMMISSIONED = "commissioned"
 STARTED = "started"

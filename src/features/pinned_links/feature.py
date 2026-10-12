@@ -1,4 +1,4 @@
-from engine.events.engine import AgentMessageSent
+from events.agents import AgentMessageSent
 from expects import Given, Nudged, Unchanged
 from features.base import Feature
 from resources.types import AgentRow, Notice

@@ -1,10 +1,9 @@
 import time
 from dataclasses import asdict, dataclass
-from typing import ClassVar
 
 from controllers.types import Questions
-from engine.events.agents import AgentReported
-from engine.events.engine import AgentMessageSending, ClockTicked
+from events.agents import AgentReported
+from events.agents import AgentMessageSending, ClockTicked
 from events.resources import AnyEvent, ResourceEvent
 from events.questions import QuestionCompleted
 from engine.journal_calls import JournalCall, calls
@@ -19,29 +18,20 @@ from features.sequences.details import IN_CHAT, STEP, STEP_HELD, STEP_STALLED, U
 from features.sequences.dispatch import board_of, dispatched_by_line, working_agent
 from features.sequences.resource import Run, RunKey
 from features.triggers.controller import Triggers
-from features.triggers.resource import FIRED, START
+from features.triggers.resource import START
 from controllers.types import CONTROLLERS
-from resources.base import SECTION, SYSTEM
+from resources.base import FIRED, SECTION, SYSTEM
 from resources.types import TYPES
 from engine.reach import Reach
 from features.trigger import MINUTE
 from providers.payload import HookEvent
 from features.sequences.controller import Sequences
+from events.sequences import SequenceMoved
+from events.triggers import TriggerFired
 
 FREE_NOUNS = ("search", "carry", "status", "user", "conversation", "upgrade", "heal", "verify", "version", "help", "stop")
 FREE_VERBS = ("show", "read", "comments", "all", "progress", "search", "unread", "board", "screen", "paths", "find", "linked_to", "members",
               "tasks", "revisions", "revision", "changes", "files", "--help")
-
-
-@dataclass(frozen=True)
-class SequenceMoved(ResourceEvent):
-    on: ClassVar[str] = "sequence"
-
-
-@dataclass(frozen=True)
-class TriggerFired(ResourceEvent):
-    on: ClassVar[str] = f"trigger.{FIRED}"
-    about: str = ""
 
 
 def about_of(key: str) -> str | None:

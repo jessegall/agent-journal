@@ -1,5 +1,5 @@
 from features.base import Feature
-from engine.events.engine import AgentMessageSent, CommandRan
+from events.agents import AgentMessageSent, CommandRan
 from engine.ran import DELIVERED
 from expects import Given, Nudged, Unchanged
 from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON, ChatEtiquetteDetails

@@ -1,6 +1,6 @@
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from features.base import Feature
-from engine.events.engine import AgentMessageSent
+from events.agents import AgentMessageSent
 from expects import Given, Unchanged, Updated
 from features.journal import Journal
 from resources.types import AgentRow

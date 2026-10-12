@@ -10,7 +10,6 @@ WHEN = (WORDS, STATE)
 STATE_DOES = (NUDGE, INSTRUCT, HOLD)
 ANY, IDLE, WORKING = "any", "idle", "working"
 ONLY_WHEN = (ANY, IDLE, WORKING)
-FIRED = "fired"
 FROM_USER = "user"
 
 

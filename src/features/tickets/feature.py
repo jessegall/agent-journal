@@ -1,11 +1,11 @@
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from events.resources import ResourceCreated
 from events.questions import QuestionCompleted
 from controllers.types import Todos
 from expects import WHEN, Answered, Given, Kept, Refused, Unchanged, Updated, Wrote
 from features.base import Feature
 from features.boards.resource import Board
-from features.tickets.handlers import TicketClosed
+from events.tickets import TicketCompleted
 from features.tickets.resource import Ticket
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Comment, Environment, Question, Rule, Todo
@@ -35,7 +35,7 @@ from features.tickets.worker import start_worker
 __all__ = ["Tickets"]
 
 
-CLOSED = TicketClosed(n=1, type="ticket", action="completed", actor=USER)
+CLOSED = TicketCompleted(n=1, type="ticket", action="completed", actor=USER)
 
 
 def made(owner: str = "ticket:3") -> Environment:

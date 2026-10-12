@@ -1,6 +1,6 @@
 import time
 
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from features.hosting.apps import idle_past
 from features.hosting.files import hosting_of
 from features.parts import WHOLE_FEATURE, AgentContext, Handler

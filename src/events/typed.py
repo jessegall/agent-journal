@@ -1,12 +1,16 @@
+"""What a handler reads of a stored row or an agent report, matched by the string `on` and marked as a fact or a request."""
+
 from dataclasses import dataclass, replace
 from typing import ClassVar
 
+from events import Event, Fact
 from resources.fields import Loaded
 
 
 @dataclass(frozen=True)
 class TypedEvent(Loaded):
     on: ClassVar[str] = ""
+    marked_as: ClassVar[type[Event]] = Fact
 
     @classmethod
     def read(cls, event) -> "TypedEvent":

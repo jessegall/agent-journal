@@ -1,5 +1,5 @@
-from engine.events.agents import AgentReported
-from engine.events.engine import CommandRan
+from events.agents import AgentReported
+from events.agents import CommandRan
 from expects import Given, Unchanged
 from features.base import Feature
 from features.git_actions.details import GitActionsDetails

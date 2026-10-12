@@ -1,4 +1,4 @@
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from features.helpers.controller import Helpers
 from features.parts import AgentContext, Handler
 from resources.base import SYSTEM

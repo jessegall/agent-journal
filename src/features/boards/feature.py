@@ -1,9 +1,9 @@
-from engine.events.engine import ClockTicked
+from events.agents import ClockTicked
 from controllers.types import Comments, Questions, Todos
 from features.plans.controller import Plans
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
 from features.base import Feature
-from features.boards.handlers import BoardChanged
+from events.boards import BoardChanged
 from features.boards.resource import PANEL_REPLY, Board
 from features.tickets.controller import Tickets
 from features.boards.exploration import FILLER

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, replace
 from typing import Callable, ClassVar
 
-from engine.events.agents import AgentReported
-from engine.events.engine import ClockTicked
+from events.agents import AgentReported
+from events.agents import ClockTicked
 from features import actions, trigger
 from features.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Handler
 

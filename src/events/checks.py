@@ -12,10 +12,11 @@ class CheckCreated(ResourceEvent):
 
 
 @dataclass(frozen=True)
-class CheckUpdated(ResourceEvent):
-    on: ClassVar[str] = "check.updated"
+class CheckCompleted(ResourceEvent):
+    on: ClassVar[str] = "check.completed"
 
 
 @dataclass(frozen=True)
-class CheckCompleted(ResourceEvent):
-    on: ClassVar[str] = "check.completed"
+class CheckUpdated(ResourceEvent):
+    on: ClassVar[str] = "check.updated"
+    ran: bool = False

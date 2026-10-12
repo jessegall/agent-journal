@@ -1,6 +1,6 @@
 import time
 
-from engine.events.agents import AgentReported, SessionStarted, ToolFinished
+from events.agents import AgentReported, SessionStarted, ToolFinished
 from events.messages import MessageCreated
 from features import trigger
 from features.parts import AgentContext, Context, Handler

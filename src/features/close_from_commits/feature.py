@@ -1,5 +1,5 @@
 from controllers.types import Todos
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from expects import Given, Refused, Unchanged
 from features.base import Feature
 from features.close_from_commits.commands import SweepLanded

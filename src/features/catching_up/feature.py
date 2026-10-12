@@ -1,7 +1,7 @@
 import time
 
 from controllers.types import Messages
-from engine.events.agents import AgentReported
+from events.agents import AgentReported
 from expects import Answered, Given, Held
 from features.base import Feature
 from features.catching_up.commands import Recent
