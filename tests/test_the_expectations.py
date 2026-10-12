@@ -608,7 +608,7 @@ def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_
             assert (watch.inbox.qsize(), watch.pending) == (1, []), "the run's own path only notes that it ran; nothing is tested there"
             watch.settle()
             assert [one.number for one in watch.pending] == [0], "the live world is the world the first expectation states, its numbers read as the live ones"
-            assert watch.pending[0].binding.numbers == {("rule", 1): 7}, "the Given's rule 1 is the live rule 7"
+            assert watch.pending[0].binding.numbers == {("environment", 1): 4, ("rule", 1): 7}, "the two rows the Given states, environment 1 and rule 1, are the live 4 and 7, each bound under its own kind"
             watch.sweep(began + WAIT - 1)
             assert told == [], "nothing is looked at before its wait is over"
             watch.sweep(began + WAIT + 1)
