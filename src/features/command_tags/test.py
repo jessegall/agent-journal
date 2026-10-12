@@ -1,9 +1,13 @@
 import pytest
 import json
 from datetime import datetime, timezone
+from pathlib import Path
+from typing import NamedTuple
 
 
 from controllers.types import Comments, Messages, Nudges
+from engine.record import Record
+from runner.engine import Engine
 from resources.base import AGENT, Refused, SYSTEM, USER
 from providers.payload import Chunk
 from runner.chat_mirror import displayed
@@ -31,14 +35,22 @@ def asked_and_read(record, text, **more):
     Messages(record, actor=AGENT).read(message.n)
     return message
 
-def watched_from_the_first_prompt(tmp_path):
+class Watched(NamedTuple):
+    record: Record
+    transcript: Path
+    rows: list
+    now: str
+    engine: Engine
+
+
+def watched_from_the_first_prompt(tmp_path) -> Watched:
     """A record whose agent writes into a transcript an engine watches, with the transcript's rows and the time they carry."""
     transcript = tmp_path / "s.jsonl"
     now = datetime.now(timezone.utc).isoformat()
     rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     record = fresh()
-    return record, transcript, rows, now, watching(record, transcript)
+    return Watched(record, transcript, rows, now, watching(record, transcript))
 
 
 def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
