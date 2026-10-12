@@ -1,6 +1,8 @@
 from controllers.types import Questions
 from engine.events.agents import AgentReported
-from engine.events.resources import AnyEvent, MessageCreated, QuestionAnswered, ResourceCreated
+from events.resources import AnyEvent, ResourceCreated
+from events.messages import MessageCreated
+from events.questions import QuestionCompleted
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote
 from providers.payload import AskCall, BashCall
 from resources.base import AGENT
@@ -37,15 +39,15 @@ class AskQuestions(Feature):
             Given(MessageCreated(n=3, type="message", actor="user"), rows=[AgentRow(n=1, title="claude-1")]) >> Unchanged(),
         ])
         journal.events.handler(MarkTheAnswer(), expects=[
-            Given(QuestionAnswered(n=3, type="question", actor="user"), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?", completed=1.0, outcome="main")])
+            Given(QuestionCompleted(n=3, type="question", actor="user"), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?", completed=1.0, outcome="main")])
                 >> Updated(AgentRow(n=1), cards=[{"label": "You answered question 3"}]) & Nudged("answered", n=3, answer="main"),
-            Given(QuestionAnswered(n=3, type="question", actor="agent"), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?", completed=1.0, outcome="main")])
+            Given(QuestionCompleted(n=3, type="question", actor="agent"), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?", completed=1.0, outcome="main")])
                 >> Unchanged(),
-            Given(QuestionAnswered(n=3, type="question", actor="user"), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?", completed=1.0, outcome="main", data={"hidden": True})])
+            Given(QuestionCompleted(n=3, type="question", actor="user"), rows=[AgentRow(n=1, title="claude-1"), Question(n=3, title="which branch?", completed=1.0, outcome="main", data={"hidden": True})])
                 >> Unchanged(),
         ])
         journal.events.handler(AnswerOnTheScreen(), expects=[
-            Given(QuestionAnswered(n=3, type="question", actor="user"), rows=[Question(n=3, title="which branch?", completed=1.0, outcome="main")]) >> Unchanged(),
+            Given(QuestionCompleted(n=3, type="question", actor="user"), rows=[Question(n=3, title="which branch?", completed=1.0, outcome="main")]) >> Unchanged(),
         ])
         journal.events.handler(DismissSettledQuestions(), expects=[
             Given(AnyEvent(n=7, type="todo", action="completed"), rows=[Todo(n=7, title="the header"), Question(n=3, title="keep the header?", refs=["todo:7"])])

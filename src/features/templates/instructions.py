@@ -1,5 +1,5 @@
 from engine.events.agents import SessionStarted
-from engine.events.resources import WorkCreated
+from events.works import WorkCreated
 from features.parts import ActionInterceptor, AgentContext, Context, Handler
 from resources.base import Refused
 from features.plans.controller import Plans

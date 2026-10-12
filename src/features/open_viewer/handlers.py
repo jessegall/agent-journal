@@ -1,5 +1,5 @@
 from engine import viewer
-from engine.events.resources import AgentChanged
+from events.agents import AgentChanged
 from features.parts import AgentContext, Handler, in_background
 from providers.payload import HookEvent
 

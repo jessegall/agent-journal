@@ -1,6 +1,6 @@
 import features.dumps.controller  # noqa: F401
 from engine.events.engine import ClockTicked
-from engine.events.resources import MessageUpdated
+from events.messages import MessageUpdated
 from expects import WHEN, Given, Nudged, Unchanged, Updated, Wrote
 from features.base import Feature
 from features.dumps.resource import Dump

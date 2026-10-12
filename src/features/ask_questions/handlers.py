@@ -3,7 +3,9 @@ from typing import ClassVar
 
 from engine.events.agents import AgentReported
 from controllers.types import Agents, Questions
-from engine.events.resources import AnyEvent, MessageCreated, QuestionAnswered, ResourceEvent
+from events.resources import AnyEvent, ResourceEvent
+from events.messages import MessageCreated
+from events.questions import QuestionCompleted
 from engine.sessions import Sessions
 from features.agent_sessions.launch import driver_in
 from features.sending import Sent
@@ -45,7 +47,7 @@ class ReleaseOnceAsked(Handler):
 
 
 class MarkTheAnswer(Handler):
-    def handle(self, context: Context, event: QuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionCompleted) -> None:
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         agents = Agents(context.record, actor=SYSTEM)
         row = agents.primary()
@@ -57,7 +59,7 @@ class MarkTheAnswer(Handler):
 
 
 class AnswerOnTheScreen(Handler):
-    def handle(self, context: Context, event: QuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionCompleted) -> None:
         """An answer reaches the question the agent stands at on its own screen, which no typed line can: the option is pressed, or the words are typed into the free choice."""
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         row = Agents(context.record, actor=SYSTEM).primary()

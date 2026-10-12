@@ -5,7 +5,7 @@ from engine import runtime
 from engine.locks import project_sweep
 
 from engine.events.engine import ClockTicked
-from engine.events.resources import ResourceEvent
+from events.resources import ResourceEvent
 from features.runtime_cleanup.tidy import tidy, tidy_files
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.auto_update.announcing import KIND

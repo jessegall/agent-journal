@@ -1,6 +1,7 @@
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSending, ClockTicked
-from engine.events.resources import AnyEvent, QuestionAnswered
+from events.resources import AnyEvent
+from events.questions import QuestionCompleted
 import json
 from dataclasses import asdict
 
@@ -86,9 +87,9 @@ class SequencesFeature(Feature):
             Given(TriggerFired(n=2, type="trigger", action="fired", actor=USER, about="message:7"), rows=[Trigger(n=2, title="Triage", data={"does": "start", "words": ["triage"]}), on_creating("trigger:3")]) >> Unchanged(),
         ])
         journal.events.handler(DispatchAgainOnAnswer(), expects=[
-            Given(QuestionAnswered(n=1, type="question", action="completed", actor=USER), rows=[Question(n=1, title="Which branch?", outcome="main"), AGENT_ROW]) >> Unchanged(),
-            Given(QuestionAnswered(n=1, type="question", action="completed", actor=USER), rows=[Question(n=1, title="Which branch?", outcome="main", refs=["board:2"]), AGENT_ROW]) >> Unchanged(),
-            Given(QuestionAnswered(n=1, type="question", action="completed", actor=USER), rows=[Question(n=1, title="Which branch?", outcome="main", refs=["board:2"])]) >> Unchanged(),
+            Given(QuestionCompleted(n=1, type="question", action="completed", actor=USER), rows=[Question(n=1, title="Which branch?", outcome="main"), AGENT_ROW]) >> Unchanged(),
+            Given(QuestionCompleted(n=1, type="question", action="completed", actor=USER), rows=[Question(n=1, title="Which branch?", outcome="main", refs=["board:2"]), AGENT_ROW]) >> Unchanged(),
+            Given(QuestionCompleted(n=1, type="question", action="completed", actor=USER), rows=[Question(n=1, title="Which branch?", outcome="main", refs=["board:2"])]) >> Unchanged(),
         ])
         journal.agent.interceptor(HoldJournalWritesForTheStep(), expects=[
             Given(shell('journal todo create "Later"'), rows=[release()]) >> Refused("sequence 4, Cutting a patch release, handed you step 1 - take it up with journal sequence follow 4 before any other write - then do what the step says and journal sequence next 4"),

@@ -1,6 +1,6 @@
 from engine.events.agents import SessionStarted
 from expects import Answered, Given, Hooked, Nudged, Unchanged
-from engine.events.resources import AnyEvent
+from events.resources import AnyEvent
 from features.base import Feature
 from features.journal import Journal
 from resources.types import AgentRow

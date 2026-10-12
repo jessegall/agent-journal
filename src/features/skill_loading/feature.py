@@ -1,6 +1,6 @@
 from controllers.types import Agents
 from engine.events.agents import AgentReported, SessionStarted, ToolFinished
-from engine.events.resources import MessageCreated
+from events.messages import MessageCreated
 from expects import Answered, Given, Kept, Refused, Unchanged, Updated, Wrote
 from features.base import Feature
 from providers.payload import BashCall

@@ -5,7 +5,8 @@ from typing import ClassVar
 from controllers.types import Questions
 from engine.events.agents import AgentReported
 from engine.events.engine import AgentMessageSending, ClockTicked
-from engine.events.resources import AnyEvent, QuestionAnswered, ResourceEvent
+from events.resources import AnyEvent, ResourceEvent
+from events.questions import QuestionCompleted
 from engine.journal_calls import JournalCall, calls
 from engine.transcript import IDLE
 from features.journal import waiting
@@ -282,7 +283,7 @@ class HoldJournalWritesForTheStep(ToolInterceptor):
 
 
 class DispatchAgainOnAnswer(Handler):
-    def handle(self, context: Context, event: QuestionAnswered) -> None:
+    def handle(self, context: Context, event: QuestionCompleted) -> None:
         agent = working_agent(context)
         question = Questions(context.record, actor=SYSTEM).load(event.n)
         boards = [ref for ref in question.refs if ref.startswith("board:")]

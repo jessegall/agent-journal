@@ -6,7 +6,9 @@ from typing import ClassVar
 from engine import bus
 from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
-from engine.events.resources import AnyEvent, ResourceEvent, TodoCompleted, WorkCreated
+from events.resources import AnyEvent, ResourceEvent
+from events.todos import TodoCompleted
+from events.works import WorkCreated
 from features import trigger
 from features.sending import Sent
 from features.trigger import MINUTE
@@ -261,8 +263,6 @@ def next_while_helping(context, agent) -> list[Sent]:
         return []
     row, work = rows[0], open_work[0]
     return [Sent(f"{row.n}:{row.updated}", {"n": row.n, "work": work.n, "who": busy[0].name, "rows": [row.ref, work.ref]})]
-
-
 
 
 def stopped_with_work(context, agent) -> list[Sent]:

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events.engine import ClockTicked
-from engine.events.resources import ResourceEvent
+from events.resources import ResourceEvent
 from features.parts import WHOLE_FEATURE, Context, Handler
 
 

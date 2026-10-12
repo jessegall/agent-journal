@@ -1,4 +1,4 @@
-from engine.events.resources import RuleCreated
+from events.rules import RuleCreated
 from expects import Given, Nudged, Unchanged, Wrote, File
 from features.base import Feature
 from features.journal import Journal

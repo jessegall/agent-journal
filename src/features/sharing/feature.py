@@ -1,5 +1,5 @@
 from engine.events.engine import CommandRan
-from engine.events.resources import CommentCreated
+from events.comments import CommentCreated
 from engine.services import SOURCES
 from expects import Given, Kept, Nudged, Refused, Unchanged
 from features.base import Feature

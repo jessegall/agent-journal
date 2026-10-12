@@ -1,4 +1,4 @@
-from engine.events.resources import AnyEvent, ResourceCreated
+from events.resources import AnyEvent, ResourceCreated
 from features.message_buttons.pressing import unspent
 from features.message_buttons.shaping import shaped
 from features.parts import Context, Handler

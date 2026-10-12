@@ -1,5 +1,5 @@
 from engine.events.engine import ClockTicked
-from engine.events.resources import ResourceCreated
+from events.resources import ResourceCreated
 from expects import WHEN, File, Given, Removed, Unchanged, Wrote, answering, at
 from features.auto_update.announcing import KIND
 from features.base import Feature

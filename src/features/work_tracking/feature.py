@@ -1,7 +1,9 @@
 from controllers.types import Works
 from engine.events.agents import AgentReported, ToolFinished
 from engine.events.engine import ClockTicked, FileEdited
-from engine.events.resources import AnyEvent, TodoCompleted, WorkCreated
+from events.resources import AnyEvent
+from events.todos import TodoCompleted
+from events.works import WorkCreated
 from features.plans.resource import Plan
 import json
 from dataclasses import asdict

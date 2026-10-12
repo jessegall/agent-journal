@@ -1,5 +1,5 @@
 from controllers.types import Todos
-from engine.events.resources import TodoCompleted
+from events.todos import TodoCompleted
 from expects import Answered, Given, Kept, Refused, Unchanged
 from features.base import Feature
 from features.tickets.controller import Tickets

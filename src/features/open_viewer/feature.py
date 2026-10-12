@@ -1,5 +1,5 @@
 from controllers.types import Agents, Environments, Features
-from engine.events.resources import AgentChanged
+from events.agents import AgentChanged
 from expects import Answered, Given, Refused, Unchanged
 from features.base import Feature
 from features.journal import Journal

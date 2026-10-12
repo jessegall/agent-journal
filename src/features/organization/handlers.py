@@ -1,5 +1,5 @@
 from controllers.types import Todos
-from engine.events.resources import TodoCompleted
+from events.todos import TodoCompleted
 from engine.record import Record
 from features.agent_sessions.launch import stop_in
 from features.organization.agents import start_role_agent

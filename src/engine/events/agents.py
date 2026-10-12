@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events.base import AgentEvent
+from events.typed import AgentEvent
 
 
 @dataclass(frozen=True)

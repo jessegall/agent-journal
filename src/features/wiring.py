@@ -6,7 +6,7 @@ from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents
 from engine import bus
 from engine.developing import developing
-from engine.events.base import AgentEvent
+from events.typed import AgentEvent
 from engine.gates import CANCELERS, RESPONDERS, HookCall
 from engine.reach import Guard
 from engine.wording import APPENDS

@@ -2,7 +2,7 @@ from features.base import Feature
 from features.message_buttons.details import MessageButtonsDetails
 from features.message_buttons.handlers import AnswerInWords, DropUnknownButtons
 from features.journal import Journal
-from engine.events.resources import AnyEvent, ResourceCreated
+from events.resources import AnyEvent, ResourceCreated
 from expects import Given, Unchanged, Updated
 from resources.base import AGENT, USER
 from resources.types import Comment, Message, Todo

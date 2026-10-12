@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from engine.chat import SENDING, SENT
 from engine.clock import BEAT, TICKED
-from engine.events.base import AgentEvent, TypedEvent
+from events.typed import AgentEvent, TypedEvent
 from engine.files import EDITED
 from engine.ran import COMMAND_RAN
 from engine.timing import EVENT

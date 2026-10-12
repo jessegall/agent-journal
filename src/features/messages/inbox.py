@@ -1,5 +1,5 @@
 from engine.events.agents import AgentReported
-from engine.events.resources import MessageCreated
+from events.messages import MessageCreated
 from engine.transcript import IDLE
 from features import trigger
 from features.messages.answering import unanswered

@@ -1,6 +1,7 @@
 from controllers.types import Agents, Todos
 from engine.events.engine import ClockTicked
-from engine.events.resources import AgentChanged, MessageCreated
+from events.agents import AgentChanged
+from events.messages import MessageCreated
 from providers.payload import BashCall, WriteCall
 from expects import Answered, Given, Kept, Nudged, Refused, Unchanged, Updated
 from features.ask_questions.handlers import QuestionAsked
