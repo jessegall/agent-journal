@@ -7,15 +7,15 @@ from resources.types import AgentRow, Suggestion
 from serving import ReadRows
 
 
-SAID = {Decision.ACCEPT: "You said yes to suggestion", Decision.ADJUST: "You changed suggestion", Decision.DECLINE: "You said no to suggestion"}
+ANSWER_LABELS = {Decision.ACCEPT: "You said yes to suggestion", Decision.ADJUST: "You changed suggestion", Decision.DECLINE: "You said no to suggestion"}
 
 
 def answered(suggestion: Suggestion, actor: str, agents, todo: int = 0) -> list[Fact]:
     """The user's answer as a mark in the chat; the agent's own answer leaves none."""
     decision = Decision(suggestion.decision)
-    if actor != USER or decision not in SAID or not agents.has_primary():
+    if actor != USER or decision not in ANSWER_LABELS or not agents.has_primary():
         return []
-    return [UserAnswered(n=suggestion.n, label=SAID[decision], detail=f"Added to-do {todo}" if todo else "")]
+    return [UserAnswered(n=suggestion.n, label=ANSWER_LABELS[decision], detail=f"Added to-do {todo}" if todo else "")]
 
 
 class SpotDecidedSuggestion(Listener[SuggestionCompleted]):
