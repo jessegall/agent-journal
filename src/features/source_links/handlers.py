@@ -1,24 +1,10 @@
-import time
-
-from events.resources import ResourceCreated
-from framework.parts import Context, Handler
-from resources.base import AGENT
-from controllers.types import CONTROLLERS, Agents, Docs, Reports
-
-BUILT_ON = ("plan", "doc", "report")
-SOURCES = (Reports, Docs)
+from events import Fact
+from events.source_links import SourceUncited
+from receiving import Handler
+from serving import Chat
 
 
-class NameUncitedSource(Handler):
-    def handle(self, context: Context, event: ResourceCreated) -> None:
-        if event.actor != AGENT or event.type not in BUILT_ON:
-            return
-        made = context.journal.get(CONTROLLERS[event.type]).load(event.n)
-        uncited = [r for r in self.lately(context) if r.ref != made.ref and r.ref not in made.refs]
-        agent = context.journal.get(Agents).primary()
-        if uncited and agent:
-            context.speaking_to(agent).agent.nudge("uncited", type=event.type, n=event.n, read=", ".join(r.ref for r in uncited[-3:]))
-
-    def lately(self, context: Context) -> list:
-        since = time.time() - context.settings.within * 60
-        return [r for kind in SOURCES for r in context.journal.get(kind).rows.every() if AGENT in r.seen and not r.deleted and r.updated >= since]
+class NameUncitedSource(Handler[SourceUncited]):
+    def handle(self, event: SourceUncited, chat: Chat) -> list[Fact]:
+        chat.nudge("uncited", type=event.type, n=event.n, read=event.read)
+        return []
