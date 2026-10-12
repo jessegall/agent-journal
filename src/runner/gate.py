@@ -1,9 +1,12 @@
+import json
 import time
 from dataclasses import dataclass
 from pathlib import Path
 
 from engine.command_line import command_line
 from engine import bus
+from events.answers import Refused
+from events.asking import ToolCallAsked
 from engine.journal_calls import JournalCall, pieces
 from engine import runtime
 from engine.gates import AFTERWARDS, DISPATCHING, POLICIES, HookCall, cancelled
@@ -57,7 +60,14 @@ def gated(call: HookCall) -> str | None:
     dispatch = call.provider.dispatch(call.hook.tool, call.record.root.parent)
     reason = cancelled(DISPATCHING, call, dispatch) if dispatch else None
     afterwards(call)
-    return reason or next((reason for policy in POLICIES.each() if serving(policy, call) and (reason := policy(call))), None)
+    return reason or refused_by_a_feature(call) or next((reason for policy in POLICIES.each() if serving(policy, call) and (reason := policy(call))), None)
+
+
+def refused_by_a_feature(call: HookCall) -> str | None:
+    """Why a swept feature's answerer refused the call, asked as the engine's request: a shell call by its command, any other by its input."""
+    tool = call.hook.tool
+    asked = bus.asked(ToolCallAsked(tool=tool.name, input=tool.shell_command or json.dumps(tool.tool_input, sort_keys=True), session=call.session), call.record)
+    return asked.why if isinstance(asked, Refused) else None
 
 
 def afterwards(call: HookCall) -> None:

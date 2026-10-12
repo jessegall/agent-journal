@@ -37,7 +37,7 @@ NAMES = {
     "migrations": {"controllers", "declaring", "engine", "features", "providers", "resources"},
     "install": {"commands", "controllers", "engine", "features", "migrations", "payload", "providers", "skills"},
     "surfaces": {"controllers", "engine", "features", "framework", "overview", "resources"},
-    "runner": {"agents", "controllers", "declaring", "engine", "features", "framework", "payload", "providers", "resources", "supervisor"},
+    "runner": {"agents", "controllers", "declaring", "engine", "events", "features", "framework", "payload", "providers", "resources", "supervisor"},
     "serve": {"commands", "controllers", "engine", "features", "framework", "providers", "resources", "runner", "surfaces"},
     "commands": {"agents", "controllers", "engine", "features", "framework", "install", "migrations", "payload", "providers", "resources", "runner", "serve", "surfaces"},
     "features": {"agents", "commands", "controllers", "declaring", "engine", "events", "expects", "framework", "install", "mcp_headers", "migrations",

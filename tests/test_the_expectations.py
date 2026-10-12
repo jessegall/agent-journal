@@ -969,6 +969,34 @@ def test_a_turn_that_only_nods_at_a_journal_line_is_kept_out_of_the_chat_live():
     assert answered("Which branch should I use for it?") == [False], "a question reaches the chat"
 
 
+def test_a_tool_call_a_swept_feature_refuses_is_refused_at_the_gate():
+    """The hook path asks the 3.0 request: an answerer of ToolCallAsked that refuses stops the call, with its own reason, before any 2.x policy is read."""
+    from dataclasses import replace
+    from events.answers import Allowed, Answer, Refused
+    from events.asking import ToolCallAsked
+    from engine import bus
+    from engine.gates import HookCall
+    from payload import BashCall
+    from runner.gate import refused_by_a_feature
+    from types import SimpleNamespace
+
+    asked: list[ToolCallAsked] = []
+
+    def answering(request, record) -> Answer:
+        asked.append(request)
+        return Refused(why="plan 4 is open") if "rm" in request.input else Allowed()
+
+    was = bus._dispatch.asks
+    bus.answered_by(answering)
+    try:
+        call = HookCall(SimpleNamespace(), SimpleNamespace(), SimpleNamespace(tool=BashCall.from_payload("Bash", {"command": "rm -rf build"}, {})), SimpleNamespace(title="claude-1"))
+        assert refused_by_a_feature(call) == "plan 4 is open", "a refusing answer is the gate's reason"
+        assert refused_by_a_feature(replace(call, hook=SimpleNamespace(tool=BashCall.from_payload("Bash", {"command": "ls"}, {})))) is None, "and an allowed one refuses nothing"
+        assert (asked[0].tool, asked[0].input, asked[0].session) == ("Bash", "rm -rf build", "claude-1"), "a shell call is asked by its command, for the session that made it"
+    finally:
+        bus.answered_by(was)
+
+
 def test_a_feature_registered_for_both_engines_is_refused_at_boot():
     """There is no skip to write: a swept feature registers no 2.x handler, so the only way to run twice is to register twice.
 
