@@ -128,7 +128,7 @@ def test_a_part_a_feature_leaves_unwritten_refuses_until_it_is():
 def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_setting_is_refused():
     import pytest
     from features.sending import Nudge, send
-    from features.settings import Settings
+    from declaring.settings import Settings
     with pytest.raises(ValueError, match="needs most"):
         Nudge("line", "behaviour", lambda context, agent: [], first=True)
     with pytest.raises(AttributeError, match="no setting called nothing"):
@@ -136,7 +136,8 @@ def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_sett
     from types import SimpleNamespace
     assert send(SimpleNamespace(to_primary=lambda: None), (Nudge("line", "behaviour", lambda context, agent: [1]),)) is None, \
         "with no agent to speak to, a nudge says nothing and asks nothing"
-    from features import actions, trigger
+    from declaring import trigger
+    from features import actions
     own = Nudge("line", "behaviour", lambda context, agent: [], timing=trigger.Trigger(unit=trigger.MINUTES, every=1), action=actions.MESSAGE)
     assert (own.action, bool(own.timing), bool(Nudge("line", "behaviour", lambda context, agent: []).timing)) == (actions.MESSAGE, True, False), \
         "a nudge keeps its own timing and action, and has neither unless given"

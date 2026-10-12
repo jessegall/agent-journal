@@ -1,6 +1,6 @@
-from features.base import Behaviour, FeatureDetails, Line
-from features.settings import Setting
-from features.groups import Group
+from declaring.details import Behaviour, FeatureDetails, Line
+from declaring.settings import Setting
+from declaring.groups import Group
 from features.work_modes.details import MODES, ORCHESTRATOR
 
 MOVED, KEPT = "moved", "kept"

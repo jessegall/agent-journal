@@ -244,7 +244,7 @@ def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
     assert "handed you step 1" in held(record, session), "a handed step holds the agent's writes until it answers it"
     sequences.follow(made.n)
     assert "handed you step" not in held(record, session), "taking the step up releases them, so the step's own work can be done"
-    from features import trigger
+    from declaring import trigger
     from features.sequences.details import SequencesDetails
     agent = Agents(record, actor="system").by_session("claude-1")
     trigger.write(record, agent, SequencesDetails.name, edits=99)

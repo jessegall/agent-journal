@@ -1,6 +1,6 @@
-from features.trigger import IDLE, Trigger
-from features.base import FeatureDetails, Line
-from features.groups import Group
+from declaring.trigger import IDLE, Trigger
+from declaring.details import FeatureDetails, Line
+from declaring.groups import Group
 
 
 class PutOffWorkDetails(FeatureDetails):

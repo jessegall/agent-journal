@@ -6,7 +6,7 @@ import features
 from engine.record import Record
 from features.phone.chat_view import TURNS
 from features.format import catalogue
-from features import groups
+from declaring import groups
 from controllers.base import actions
 from controllers.base import Controller
 from controllers.described import described_types

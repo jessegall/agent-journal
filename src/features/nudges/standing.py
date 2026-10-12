@@ -8,7 +8,7 @@ from events.resources import GONE, ResourceEvent, RowChanged
 from resources.fields import Loaded
 from features.journal import waiting
 from features.parts import AgentContext, Context, Handler
-from features.trigger import MINUTE
+from declaring.trigger import MINUTE
 from resources.types import Nudge
 from events.nudges import NudgeCreated
 

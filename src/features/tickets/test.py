@@ -786,8 +786,8 @@ def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
 def calls_fire_once_and_repeat_on_time(monkeypatch):
     import features
     from features.tickets import calls as ticket_calls, handlers
-    from features.trigger import MINUTE
-    from features import trigger
+    from declaring.trigger import MINUTE
+    from declaring import trigger
     from tests.kit import nudges, report, tick
     features.load()
     record = fresh()

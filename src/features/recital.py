@@ -3,9 +3,9 @@ import time
 
 from events.agents import AgentReported
 from events.agents import AgentMessageSent
-from features import trigger
-from features.trigger import Trigger
-from features.base import Behaviour, Line
+from declaring import trigger
+from declaring.trigger import Trigger
+from declaring.details import Behaviour, Line
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
 from expects import Given, Kept, Nudged, Unchanged
 from providers.payload import BashCall

@@ -11,8 +11,8 @@ from engine.reach import Reach
 from engine.state import State
 from engine.wording import digest
 from providers.payload import STATUS, HookEvent
-from features import trigger
-from features.settings import Settings
+from declaring import trigger
+from declaring.settings import Settings
 from resources.base import SYSTEM
 
 if TYPE_CHECKING:

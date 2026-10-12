@@ -8,7 +8,7 @@ from engine.command_line import command_line
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from engine.project_files import is_listed, matching, refresh
 from resources.base import SYSTEM
-from features.trigger import DAY
+from declaring.trigger import DAY
 
 CLAIMS = (Rules, Facts, Reminders)
 PATH = re.compile(r"(?<![\w/.~])(~/)?((?:[\w.-]+/)+[\w.-]+\.\w+|[\w-]+\.(?:py|js|vue|md|json|css|html|sh))\b")

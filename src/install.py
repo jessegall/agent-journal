@@ -25,7 +25,7 @@ from typing import Callable
 
 
 PACKAGE = Path(__file__).resolve().parent
-PACKED_DIRS = ("agents", "commands", "controllers", "engine", "events", "expects", "features", "migrations", "overview", "providers",
+PACKED_DIRS = ("agents", "commands", "controllers", "declaring", "engine", "events", "expects", "features", "migrations", "overview", "providers",
                 "receiving", "resources", "runner", "serving", "surfaces")
 PACKAGE_DIRS = (*PACKED_DIRS, "extension", "skills")
 VERSION = "VERSION"

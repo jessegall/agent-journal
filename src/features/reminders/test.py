@@ -94,8 +94,8 @@ def test_a_reminder_aimed_at_one_agent_is_said_only_to_that_session_and_stays_ou
 
 def test_a_cadence_is_due_by_percent_uses_minutes_idle_worked_start_or_notices_and_never_without_one():
     from types import SimpleNamespace
-    from features import trigger
-    from features.trigger import MINUTES, NOTICES, PERCENT, START, USES, WORKED, Trigger, due, fired
+    from declaring import trigger
+    from declaring.trigger import MINUTES, NOTICES, PERCENT, START, USES, WORKED, Trigger, due, fired
     record = fresh()
     agent = SimpleNamespace(title="claude-1", context=30.0, uses=5, status="idle", event="Stop")
     named = lambda unit, **given: due(record, agent, f"cadence-{unit}", Trigger(unit=unit, **given))

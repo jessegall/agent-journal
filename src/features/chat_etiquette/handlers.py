@@ -2,7 +2,7 @@ import re
 
 from events.agents import AgentMessageSent, CommandRan
 from engine.ran import DELIVERED
-from features import trigger
+from declaring import trigger
 from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON
 from features.form_of_address.names import called, first_name
 from features.parts import AgentContext, Handler

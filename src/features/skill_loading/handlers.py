@@ -2,7 +2,7 @@ import time
 
 from events.agents import AgentReported, SessionStarted, ToolFinished
 from events.messages import MessageCreated
-from features import trigger
+from declaring import trigger
 from features.parts import AgentContext, Context, Handler
 from features.wiring import refusals
 from features.skill_loading.catalogue import SKILL, catalogue, chosen, loaded_at, recent_before_compaction, skills

@@ -684,8 +684,9 @@ def test_a_feature_row_marked_missing_is_found_again_and_a_switch_relayed_from_e
     features.passed(record.event_log.events()[-1], record)
     assert not features.FEATURES["thinking"].enabled(record), "a switch another process made is read when its event is relayed"
     from engine.reach import Unreached
-    from features.base import Feature, FeatureDetails, Line
-    from features.groups import Group
+    from declaring.details import FeatureDetails, Line
+    from features.base import Feature
+    from declaring.groups import Group
 
     class Careless(FeatureDetails):
         name, title, group = "careless", "Careless", Group.CHAT

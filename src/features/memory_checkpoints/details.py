@@ -1,6 +1,6 @@
-from features.trigger import MINUTES, PERCENT, Trigger
-from features.base import Behaviour, FeatureDetails, Line
-from features.groups import Group
+from declaring.trigger import MINUTES, PERCENT, Trigger
+from declaring.details import Behaviour, FeatureDetails, Line
+from declaring.groups import Group
 
 
 class MemoryCheckpointsDetails(FeatureDetails):

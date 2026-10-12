@@ -1,8 +1,8 @@
 from resources.base import PROJECT
-from features.base import Behaviour, FeatureDetails, Line
-from features.trigger import MINUTES, Trigger
-from features.groups import Group
-from features.settings import Setting
+from declaring.details import Behaviour, FeatureDetails, Line
+from declaring.trigger import MINUTES, Trigger
+from declaring.groups import Group
+from declaring.settings import Setting
 
 STEP = "step"
 STEP_HELD = "step held"

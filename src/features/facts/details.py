@@ -1,7 +1,7 @@
-from features.trigger import PERCENT, Trigger
-from features.base import FeatureDetails
+from declaring.trigger import PERCENT, Trigger
+from declaring.details import FeatureDetails
 from features.recital import LINES, whispering
-from features.groups import Group
+from declaring.groups import Group
 
 
 class FactsDetails(FeatureDetails):

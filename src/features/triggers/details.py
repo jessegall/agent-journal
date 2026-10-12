@@ -1,8 +1,8 @@
 from resources.base import PROJECT
-from features.base import Behaviour, FeatureDetails, Line
+from declaring.details import Behaviour, FeatureDetails, Line
 from features.triggers.resource import DOES
 from features.triggers.watched import MOST_NAMED
-from features.groups import Group
+from declaring.groups import Group
 
 
 class TriggersDetails(FeatureDetails):

@@ -8,7 +8,7 @@ from providers.payload import BashCall
 from resources.base import USER
 from resources.types import AgentRow, Message
 from features.sending import Sent
-from features.trigger import MINUTE
+from declaring.trigger import MINUTE
 from features.triggers.watched import FACTS, MINUTES, PERCENT, Fact
 from features.journal import Journal
 from features.triggers.controller import Triggers

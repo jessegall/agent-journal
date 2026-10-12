@@ -1,5 +1,5 @@
 
-from features import trigger
+from declaring import trigger
 from engine.journal_calls import calls
 from features.parts import AgentContext, ToolInterceptor
 from engine.gates import Runs

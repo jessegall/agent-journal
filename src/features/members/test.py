@@ -28,7 +28,7 @@ from features.phone.allow_list import RUNS, TO_WEIGH, VIEWER_SETTINGS, Action, P
 from features.phone.controller import Phones
 from features.phone.members import rights_of
 from features.routing import MEMBER, ROLE, SHARED, sender_of
-from features.trigger import DAY
+from declaring.trigger import DAY
 from resources.base import AGENT, OWNER_ID, SYSTEM, USER, WRITER
 
 MEMBER_PASSWORD = "a member's own password"

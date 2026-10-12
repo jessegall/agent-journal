@@ -1,7 +1,7 @@
-from features.base import Behaviour, FeatureDetails, Line
-from features.settings import Setting
-from features.trigger import Trigger, USES
-from features.groups import Group
+from declaring.details import Behaviour, FeatureDetails, Line
+from declaring.settings import Setting
+from declaring.trigger import Trigger, USES
+from declaring.groups import Group
 
 
 class SkillLoadingDetails(FeatureDetails):

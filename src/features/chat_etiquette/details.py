@@ -1,6 +1,6 @@
-from features.base import Behaviour, FeatureDetails, Line
-from features.trigger import NOTICES, Trigger
-from features.groups import Group
+from declaring.details import Behaviour, FeatureDetails, Line
+from declaring.trigger import NOTICES, Trigger
+from declaring.groups import Group
 
 SHOP, REMIND, THIRD_PERSON = "shop", "remind", "third person"
 

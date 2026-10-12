@@ -1,9 +1,9 @@
 from engine.gates import Stops
-from features.base import Behaviour, FeatureDetails, Line
+from declaring.details import Behaviour, FeatureDetails, Line
 from features.messages.answering import still_unanswered
-from features.settings import Setting
-from features.trigger import IDLE, Trigger, USES
-from features.groups import Group
+from declaring.settings import Setting
+from declaring.trigger import IDLE, Trigger, USES
+from declaring.groups import Group
 
 
 class MessagesDetails(FeatureDetails):

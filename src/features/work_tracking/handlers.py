@@ -8,9 +8,9 @@ from events.files import FileEdited
 from events.resources import AnyEvent
 from events.todos import TodoCompleted
 from events.works import WorkCompleted, WorkCreated, WorkUpdated
-from features import trigger
+from declaring import trigger
 from features.sending import Sent
-from features.trigger import MINUTE
+from declaring.trigger import MINUTE
 from providers.payload import HookEvent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker

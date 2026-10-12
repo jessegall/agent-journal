@@ -1,7 +1,7 @@
-from features.base import Line
+from declaring.details import Line
 from features.integrations.details import REFUSED, UNREACHABLE, IntegrationDetails
-from features.settings import Setting
-from features.trigger import MINUTES, Trigger
+from declaring.settings import Setting
+from declaring.trigger import MINUTES, Trigger
 from resources.base import PROJECT
 
 

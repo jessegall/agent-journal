@@ -1,4 +1,4 @@
-from features.groups import Grouping, Section
+from declaring.groups import Grouping, Section
 
 # @sin PlainSettingsGroupTitleDetector
 THIS = Grouping("This project", "Settings for the whole project", Section.SYSTEM)

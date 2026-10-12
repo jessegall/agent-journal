@@ -35,7 +35,7 @@ from features.hosted_journal.settings import FromRecord, GatewaySettings, keep_g
 from features.hosted_journal.watch import DiskWatch
 from engine.disk import DiskFull
 from features.hosted_journal.vault import AUDIT, VAULT, RefusalLog, Vault
-from features.trigger import DAY
+from declaring.trigger import DAY
 from features.phone.controller import Phones
 from features.sharing.controller import Shares
 from features.sharing.routes import EVERY_OTHER, ROUTES

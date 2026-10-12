@@ -4,7 +4,8 @@ from events.agents import AgentReported
 from events.agents import AgentMessageSent, ClockTicked
 from events.messages import MessageCreated
 from engine.transcript import IDLE as AGENT_IDLE
-from features import actions, trigger
+from declaring import trigger
+from features import actions
 from features.triggers import watched
 from features.sending import Nudge, Sent, send
 from features.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Context, Handler, ToolInterceptor
