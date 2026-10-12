@@ -269,7 +269,7 @@ def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
     import pytest
     from tests.kit import tick
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr("features.sequences.controller.Sequences.in_hand", lambda self: None)
+        patch.setattr("controllers.sequences.Sequences.in_hand", lambda self: None)
         tick(record)
     assert "handed you step" not in held(record, session), "a hold on a step that is no longer in hand is released by the clock, never left to refuse every write"
     assert "handed you step" not in held(record, session), "an abandoned run holds nothing"

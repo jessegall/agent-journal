@@ -9,7 +9,7 @@ from controllers.environments import Environments
 from controllers.todos import Todos
 from controllers.works import Works
 from resources.plans import (
-    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, PHASES, READY, REVIEWING, RUNNING, STAGES, TODOS, WAITING, Plan, standing_of, tally_of,
+    ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, PHASES, READY, REVIEWING, RUNNING, STAGES, TODOS, WAITING, Plan, standing_of, tally_of,
 )
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
 from resources.shapes import LEVELS
