@@ -128,12 +128,12 @@ class Clock:
         return self.at.seconds
 
 
-@dataclass
 class Ids:
     """The ids the Given counts from, for the same reason."""
 
-    counting: Counting
-    drawn: int = 0
+    def __init__(self, counting: Counting):
+        self.counting = counting
+        self.drawn = 0
 
     def next(self) -> int:
         self.drawn += 1
