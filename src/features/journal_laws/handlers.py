@@ -1,10 +1,7 @@
 
-from events.agents import SessionStarted, ToolFinished
-from features.journal_laws.briefing import instructions_hash
+from events.agents import ToolFinished
 from features.journal_laws.details import LARGEST_RESULT
-from features.sequences.shipped import CHECKING_THE_INSTRUCTION_FILES
-from framework.parts import AgentContext, Handler, in_background
-from features.sequences.controller import Sequences
+from framework.parts import AgentContext, Handler
 
 
 class NoticeLargestResult(Handler):
@@ -17,20 +14,3 @@ class NoticeLargestResult(Handler):
             return
         context.state.set("largest", event.size)
         context.agent.whisper(LARGEST_RESULT, tool=event.tool or "that tool", size=f"{event.size:,}")
-
-
-class CheckChangedInstructions(Handler):
-    def handle(self, context: AgentContext, event: SessionStarted) -> None:
-        if in_background(context.record) or event.compacted:
-            return
-        state, seen = context.record.state(context.feature.name), instructions_hash(context.record.root.parent, context.record)
-        known = state.get("instructions")
-        if not seen or known == seen:
-            return
-        state.set("instructions", seen)
-        if not known:
-            return
-        sequences = context.journal.get(Sequences)
-        found = sequences.rows.by_title(CHECKING_THE_INSTRUCTION_FILES.title)
-        if found is not None:
-            sequences.run(found.n)

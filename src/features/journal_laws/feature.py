@@ -10,7 +10,7 @@ from controllers.types import Outputs
 from features.journal_laws.briefing import brief, long_briefings
 from features.journal_laws.commands import Keep
 from features.journal_laws.details import LARGEST_RESULT, TOO_LONG, LawDetails
-from features.journal_laws.handlers import CheckChangedInstructions, NoticeLargestResult
+from features.journal_laws.handlers import NoticeLargestResult
 from features.journal_laws.interceptors import EnforceDispatchLaw, RefuseWholeLongReads, WhisperLawInChat, WhisperLawOnKeyword, lines_in
 from features.journal_laws.laws import carry, naming_of
 from payload import BashCall, Dispatch, ReadCall
@@ -72,9 +72,6 @@ class JournalLaws(Feature):
         journal.events.handler(NoticeLargestResult(), expects=[
             Given(ToolFinished(agent=1, tool="Bash", size=900_000), rows=[AgentRow(n=1)]) >> Nudged(LARGEST_RESULT, tool="Bash", size="900,000") & Remembered("largest", 900_000),
             Given(ToolFinished(agent=1, tool="Bash", size=10), rows=[AgentRow(n=1)]) >> Unchanged(),
-        ])
-        journal.events.handler(CheckChangedInstructions(), expects=[
-            Given(SessionStarted(agent=1, compacted=True), rows=[AgentRow(n=1)]) >> Unchanged(),
         ])
 
 
