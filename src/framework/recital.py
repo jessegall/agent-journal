@@ -14,6 +14,7 @@ from declaring.holds import Runs
 from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
 from declaring.reach import Reach
 from resources.text import plural
+from resources.marks import Whisper
 from controllers.types import Agents
 
 WHISPER = "whisper"
@@ -69,7 +70,7 @@ def recite(context: AgentContext, controller: type, text_of) -> None:
         if not mentioned(row.data.get(KEYWORDS) or [], text_of(row.data.get(KEYWORDS_IN) or BOTH)) or not whisper_due(context, row.ref, f"{row.title}|{row.brief}"):
             continue
         context.agent.remind(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
-        context.journal.get(Agents).appended(context.agent.row, "whispers", {"at": time.time(), "ref": row.ref, "title": row.title, "words": whisper_words(row.ref)}, KEPT_WHISPERS)
+        context.journal.get(Agents).appended(context.agent.row, "whispers", Whisper(ref=row.ref, title=row.title, words=whisper_words(row.ref), at=time.time()).as_data(), KEPT_WHISPERS)
 
 
 class WhisperOnKeyword(ToolInterceptor):

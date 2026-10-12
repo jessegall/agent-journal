@@ -2,7 +2,7 @@ import json
 
 from controllers.faults import threw
 from engine.markers import plain
-from framework.stamping import stamped
+from resources.marks import Marks
 from framework.switches import generation
 from resources.base import SECTION, SYSTEM, TEXT_FIELDS, as_dict
 from resources.extension import Extension
@@ -94,7 +94,7 @@ def shape(r, record=None, surface: str = "") -> dict:
     data = {key: [{**item, **{sub: formatted_item(item[sub], record, surface) for sub in subs if item.get(sub)}} for item in row["data"].get(key) or []]
             for key, subs in getattr(r, "formatted_data", {}).items() if row.get("data", {}).get(key)}
     if r.type == "agent":
-        data = {**data, **stamped({**row["data"], **data})}
+        data = {**data, **Marks.of_data({**row["data"], **data}).as_data()}
     shaped_row = {**row, **fields}
     if parts:
         shaped_row["sections"] = parts

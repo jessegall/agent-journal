@@ -7,6 +7,7 @@ from engine.journal_calls import PUNCTUATION, JournalCall, pieces
 from engine.ran import SHELL
 from declaring.reach import Reach
 from framework.parts import AgentContext, Handler, ToolInterceptor
+from resources.marks import Card
 from declaring.holds import Runs
 
 TAKES_VALUE = {"--page", "--back"}
@@ -119,7 +120,7 @@ class KeepSearchResults(Handler):
         label = opened(event)
         card = next((kept for kept in agents.load(context.agent.row.n).data.get("cards") or [] if kept.get("key") == key), None) if key else None
         if label and card:
-            reads = [*card.get("reads", []), {"label": label, "text": event.output[:READ_LIMIT]}]
+            reads = [*Card.of_data(card).reads, {"label": label, "text": event.output[:READ_LIMIT]}]
             agents.card(context.agent.row.n, key=key, reads=reads[:KEPT_READS])
 
     def found(self, context: AgentContext, event: CommandRan) -> None:

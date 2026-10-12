@@ -10,6 +10,7 @@ from engine.sessions import Sessions
 from resources.text import clipped
 from providers.command_effects import settled
 from resources.base import SYSTEM
+from resources.marks import Card
 
 WAIT_SECONDS = 20.0
 CHECK_EVERY = 0.5
@@ -42,7 +43,7 @@ def pid_of(sessions: Sessions, row) -> int:
 def ended(record: Record, row, waited: float) -> str:
     """Marks a command the update gave up on as ended, with every card that counts it."""
     at = time.time()
-    cards = [{**card, "state": "done", "ended": at} if card.get("state") == "running" else card for card in row.data.get("cards") or []]
+    cards = [Card.of_data(card).changed(state="done", ended=at).as_data() if card.get("state") == "running" else card for card in row.data.get("cards") or []]
     Agents(record, actor=SYSTEM).update(row.n, **settled(row, at), cards=cards)
     return f"gave up waiting for `{clipped(row.running['command'], SHOWN)}` in {record.env} after {int(waited)}s and marked it ended"
 

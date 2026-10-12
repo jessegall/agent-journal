@@ -9,6 +9,7 @@ from pathlib import Path
 from controllers.base import Controller
 from engine.record import Record
 from resources.base import SYSTEM, Missing
+from resources.marks import Card
 from engine.sessions import Sessions
 from resources import types
 from controllers.marks import action
@@ -201,15 +202,15 @@ class Agents(Controller):
         return self._emit(int(n), action, **data)
 
     def card(self, n: int, **facts):
-        card = {name: value for name, value in facts.items() if value is not None}
         row = self.load(n)
         cards = row.data.get("cards") or []
-        key = card.get("key")
+        key = facts.get("key")
         if key and any(kept.get("key") == key for kept in cards):
-            return self.update(row.n, cards=[{**kept, **card} if kept.get("key") == key else kept for kept in cards])
-        if "label" not in card:
+            marked = [Card.of_data(kept).changed(**facts).as_data() if kept.get("key") == key else kept for kept in cards]
+            return self.update(row.n, cards=marked)
+        if facts.get("label") is None:
             return row
-        return self.appended(row, "cards", {"at": time.time(), **card}, KEPT_CARDS)
+        return self.appended(row, "cards", Card.named(at=time.time(), **facts).as_data(), KEPT_CARDS)
 
     def _moved_to_background(self, run, row, **card):
         """The one card for a long command that carries on in the background, whichever provider's agent runs it: it names the call that runs, and a second call for the same call adds to the same card."""
@@ -231,7 +232,8 @@ class Agents(Controller):
             waiting = [card for card in cards if card.get("plugin") == plugin and card.get("settle") == key and not card.get("settled")]
             if not waiting:
                 continue
-            self.update(row.n, cards=[{**card, "tone": "good", "settled": how, "settled_at": time.time()} if card in waiting else card for card in cards])
+            settled_now = [Card.of_data(card).changed(tone="good", settled=how, settled_at=time.time()).as_data() if card in waiting else card for card in cards]
+            self.update(row.n, cards=settled_now)
             settled += len(waiting)
         return settled
 

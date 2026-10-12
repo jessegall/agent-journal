@@ -24,6 +24,7 @@ from controllers.types import Suggestions
 from features.suggestions.details import SuggestionsDetails
 from controllers.types import Plans
 from resources.plans import PHASE
+from resources.marks import Marks
 from features.work_modes.modes import mode_of
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, Refused
@@ -65,27 +66,28 @@ class HelperTodo(TypedDict, total=False):
 class Session:
     n: int
     thoughts: list
-    cards: list
+    cards: tuple
     subagents: list
     skill_loads: list
     compactions: list
-    whispers: list
+    whispers: tuple
 
     @classmethod
     def from_view(cls, view: dict) -> "Session":
         data = view["data"]
-        return cls(view["n"], data.get("thoughts") or [], data.get("cards") or [], data.get("subagent_rows") or [], data.get("skill_loads") or [],
-                   data.get("compactions") or [], data.get("whispers") or [])
+        marks = Marks.of_data(data)
+        return cls(view["n"], data.get("thoughts") or [], marks.cards, data.get("subagent_rows") or [], data.get("skill_loads") or [],
+                   data.get("compactions") or [], marks.whispers)
 
     def mark(self, at: float, label: str, shows: str, kind: str = "card", **fields: str | None) -> Mark:
         return Mark(type=kind, n=f"{self.n}-{at}", ref=f"{kind}:{self.n}-{at}", who="agent", created=at, label=label, shows=shows,
-                    **{key: value for key, value in fields.items() if value is not None})
+                    **{key: value for key, value in fields.items() if value})
 
     def marks(self) -> list[Mark]:
         return [
             *(self.mark(t["at"], t["text"], TURNS["thought"], kind="thought") for t in self.thoughts),
-            *(self.mark(c["at"], c["label"], c["shows"], icon=c.get("icon"), name=c.get("name", c.get("plugin")), detail=c.get("detail"), tone=c.get("tone"),
-                        color=c.get("color"), state=c.get("state"), command=c.get("command")) for c in self.cards),
+            *(self.mark(c.at, c.label, c.shows(), icon=c.icon, name=c.name or c.plugin, detail=c.detail, tone=c.tone,
+                        color=c.color, state=c.state, command=c.command) for c in self.cards),
             *(self.mark(sub["at"], "Refused a subagent" if sub.get("refusal") else "Dispatched a subagent", TURNS["subagent"], icon="agents", name=sub["task"],
                         detail=sub["refusal"] if sub.get("refusal") else sub.get("model"), tone="danger" if sub.get("refusal") else None)
               for sub in self.subagents if "at" in sub),
@@ -93,7 +95,7 @@ class Session:
               for sub in self.subagents if sub.get("ended") and not sub.get("refusal")),
             *(self.mark(load["at"], "Loaded skill", TURNS["skill"], icon="book", name=load["skill"], tone="good") for load in self.skill_loads),
             *(self.mark(done["at"], "The agent compacted its context", TURNS["compacted"], icon="activity", tone="warn") for done in self.compactions),
-            *(self.mark(w["at"], w.get("words", w["title"]), w["shows"], icon="reminders") for w in self.whispers),
+            *(self.mark(w.at, w.said(), w.shows(), icon="reminders") for w in self.whispers),
         ]
 
 
