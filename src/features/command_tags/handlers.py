@@ -2,6 +2,7 @@ import io
 
 from events.agents import BusMessageSending, CommandRan
 from framework.parts import AgentContext, Context, Handler
+from features.command_tags.told import keep
 from features.command_tags.reading import CARRIED, OPTIONS, kept_out_of_the_chat, named, reader, removed, runs, tag_spelling, tag_for, visible
 from resources.base import AGENT
 from engine.command_line import command_line
@@ -30,7 +31,7 @@ class RunTagCommands(Handler):
                 failed = True
                 context.agent.whisper("refused", tag=name, on=n or argument, error=tag_spelling((err.getvalue() or out.getvalue()).strip()))
                 continue
-            context.agent.whisper("ran", tag=name, on=n or argument)
+            keep(context.record, context.agent.session, f"the {name} tag on {n or argument} ran")
         return failed
 
     def settings(self, name: str, extras: str) -> list[str]:

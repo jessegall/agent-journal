@@ -76,10 +76,6 @@ class CommandTagsDetails(FeatureDetails):
             brief="{{hint}}; it runs when it opens any text of your turn, and once per turn, so the work can carry on after it",
         ),
         Line(
-            name="ran",
-            title="the {{tag}} tag on {{on}} ran",
-        ),
-        Line(
             name="refused",
             title="the {{tag}} tag on {{on}} did not run",
             brief="{{error}} - add what is missing to the tag itself",

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.8 — The tag confirmation is for the agent alone
+
+- The line saying a tag ran now rides back on the agent's next tool call instead of going out over the session channel. A whisper is private in the record, but the channel is what the user's own terminal prints, so the quiet confirmation was arriving at them. Nothing about it was a whisper.
+
 ## 2.272.7 — The agent is told its tag ran, and never says the same thing twice
 
 - A tag that runs says so, in one short line naming it. Nothing ever confirmed a tag, so a turn whose tool call was held afterwards read as a turn that had failed whole, and the agent wrote the same words again.
