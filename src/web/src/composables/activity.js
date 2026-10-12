@@ -8,6 +8,10 @@ const SHOWN = 80;
 
 const minute = (e) => Math.floor(e.at / 60);
 
+// What set an event off, when the engine named it: the id of the event whose tick dispatched this one. A cause that names
+// no event - the actor alone, as the 2.x bus fills it - tells the list nothing, so those events fold by the minute as before.
+const causedBy = (e) => (String(e.data?.cause || "").includes(":") ? e.data.cause : "");
+
 export const counted = (events) =>
     Object.entries(Object.groupBy(events, (e) => e.type))
         .map(([type, of]) => `${of.length} ${type === "agent" ? "agent update" : type}${of.length === 1 ? "" : "s"}`)
@@ -24,8 +28,11 @@ export function useActivity(events, find) {
         const list = [];
         for (const e of [...events.value].reverse().filter((e) => e.action !== "stamped")) {
             const last = list[list.length - 1];
-            if (!BUSY.has(e.type)) list.push({key: e.id, event: e});
-            else if (last && last.events && last.minute === minute(e)) last.events.push(e);
+            const cause = causedBy(e);
+            if (cause && last && last.cause === cause) last.events.push(e);
+            else if (cause) list.push({cause, events: [e]});
+            else if (!BUSY.has(e.type)) list.push({key: e.id, event: e});
+            else if (last && last.events && !last.cause && last.minute === minute(e)) last.events.push(e);
             else list.push({minute: minute(e), events: [e]});
         }
         return list.slice(0, SHOWN).map((row) => (row.events ? {...row, key: `fold-${row.events[row.events.length - 1].id}`} : row));
