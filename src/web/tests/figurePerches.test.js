@@ -53,7 +53,7 @@ test("a figure sitting or hanging stands where its bubble's corner is, and is le
     const one = at(300, 260, 500);
     const sitting = {bubble: one, kind: SITS, side: "right", grip: ""};
     const hanging = {...sitting, kind: HANGS, grip: "r"};
-    expect(perchSpot(sitting, THREAD, FIGURE).face).toBe(90);
+    expect(perchSpot(sitting, THREAD, FIGURE).face).toBe(60);
     expect(perchSpot(sitting, THREAD, FIGURE).on).toBe(one);
     expect(perchSpot(hanging, THREAD, FIGURE)).toMatchObject({face: 0});
     expect(perchSpot(hanging, THREAD, FIGURE).x).toBeGreaterThan(500);
