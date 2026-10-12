@@ -9,7 +9,7 @@ from events.questions import QuestionCompleted
 from engine.journal_calls import JournalCall, calls
 from engine.transcript import IDLE
 from features.journal import waiting
-from declaring import trigger
+from engine import triggering
 from features.sending import Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
 from declaring.holds import Runs
@@ -171,8 +171,8 @@ class HoldAStalledStep(Handler):
         if run.get("followed") != run["step"]:
             return
         name = context.feature.name
-        edits = trigger.last(context.record, context.agent.row.title, name).edits + 1
-        trigger.write(context.record, context.agent.row, name, edits=edits)
+        edits = triggering.last(context.record, context.agent.row.title, name).edits + 1
+        triggering.write(context.record, context.agent.row, name, edits=edits)
         if edits >= context.settings.step_after:
             context.hold(STEP_STALLED, n=sequence.n, title=sequence.title, step=run["step"], edits=edits, about=about_flag(key))
 
@@ -184,7 +184,7 @@ class ResetEditsOnStep(Handler):
         if event.type != "sequence":
             return
         for row in context.feature.reached(context.record, context.feature.lines[STEP_STALLED].reach):
-            trigger.write(context.record, row, context.feature.name, edits=0)
+            triggering.write(context.record, row, context.feature.name, edits=0)
         context.release()
 
 
@@ -195,7 +195,7 @@ def step_stalled(record, session: str) -> bool:
     if not found or found[2].get("followed") != found[2]["step"]:
         return False
     feature = FEATURES["sequences"]
-    return trigger.last(record, session, feature.name).edits >= int(feature.values(record).get("step_after", 25))
+    return triggering.last(record, session, feature.name).edits >= int(feature.values(record).get("step_after", 25))
 
 
 STILL_HELD["sequences.stalled"] = step_stalled

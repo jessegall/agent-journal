@@ -20,7 +20,7 @@ from engine.color import identity, set_color
 from commands.lanes import LANES, agent_of
 from contextlib import nullcontext
 from engine.after_answer import answering_for
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.upgrades import check_now
 from agents.control import permit
 from features.permission_prompts.skipping import Relaunch

@@ -16,7 +16,7 @@ from engine import transaction
 from engine.locks import WRITING, after_writes
 from engine.disk import ROW_FILES, by_repository
 from engine.developing import found
-from engine.memo import MEMOS, Memo
+from resources.memo import MEMOS, Memo
 from engine.numbers import rows
 
 T = TypeVar("T")

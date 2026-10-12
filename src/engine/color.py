@@ -1,7 +1,7 @@
 import os
 import re
 from pathlib import Path
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.stored import read_json, write_json
 from typing import TypedDict
 

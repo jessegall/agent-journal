@@ -3,8 +3,10 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.files import EDITED
 from events.typed import AgentEvent
+
+
+EDITED = "edited"
 
 
 @dataclass(frozen=True)

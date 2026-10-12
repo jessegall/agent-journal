@@ -3,8 +3,12 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.timing import EVENT
 from events.typed import TypedEvent
+
+
+TIMING = "timing"
+MEASURED = "measured"
+EVENT = f"{TIMING}.{MEASURED}"
 
 
 @dataclass(frozen=True)

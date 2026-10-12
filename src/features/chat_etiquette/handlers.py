@@ -2,7 +2,7 @@ import re
 
 from events.agents import AgentMessageSent, CommandRan
 from engine.ran import DELIVERED
-from declaring import trigger
+from engine import triggering
 from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON
 from features.form_of_address.names import called, first_name
 from features.parts import AgentContext, Handler
@@ -49,6 +49,6 @@ class RemindOfEtiquette(Handler):
     def handle(self, context: AgentContext, event: CommandRan) -> None:
         if event.tool != DELIVERED or not context.agent:
             return
-        trigger.noticed(context.record, context.agent.row, context.feature.keyed(REMIND))
+        triggering.noticed(context.record, context.agent.row, context.feature.keyed(REMIND))
         if context.due(REMIND):
             context.agent.whisper(REMIND)

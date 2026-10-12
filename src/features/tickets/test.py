@@ -787,7 +787,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     import features
     from features.tickets import calls as ticket_calls, handlers
     from declaring.trigger import MINUTE
-    from declaring import trigger
+    from engine import triggering
     from tests.kit import nudges, report, tick
     features.load()
     record = fresh()
@@ -799,7 +799,7 @@ def calls_fire_once_and_repeat_on_time(monkeypatch):
     monkeypatch.setattr(handlers, "calls", lambda tickets, found: held[0])
     monkeypatch.setattr(Tickets, "raise_moment", lambda self, n, moment, **data: moments.append(moment))
     now = [time.time()]
-    monkeypatch.setattr(trigger.time, "time", lambda: now[0])
+    monkeypatch.setattr(triggering.time, "time", lambda: now[0])
     sent = lambda: [n for n in nudges(record) if "Dark mode, answered" in n]
     tick(record)
     assert [moment for moment in moments if moment == "finished"] == ["finished"] and len(sent()) == 1, \

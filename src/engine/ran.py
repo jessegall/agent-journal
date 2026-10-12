@@ -2,9 +2,9 @@ import time
 
 from engine import bus
 from engine.stepped import original_of
+from events.agents import COMMAND_RAN
 from resources.base import SYSTEM
 
-COMMAND_RAN = "command.ran"
 SHELL, TYPED, NOTED, DELIVERED, STEP = "Bash", "Typed", "Journal", "Delivered", "Step"
 
 

@@ -81,7 +81,7 @@ def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refuse
     deploying = sequences.create("After a deploy", brief="check it")
     sequences.section(deploying.n, "Check the site", "open it")
     sequences.section(deploying.n, "Watch the logs", "tail them")
-    assert "is no moment" in refused(lambda: sequences.set(deploying.n, "starts_on", "trigger.fired")), "an unknown start is refused in words"
+    assert "is no moment" in refused(lambda: sequences.set(deploying.n, "starts_on", "triggering.fired")), "an unknown start is refused in words"
     sequences.set(deploying.n, "starts_on", trigger.ref)
     call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "make deploy"}, "hook_event_name": "PreToolUse"}
     handle(PROVIDERS["claude"](), record.root, record.env, call)
@@ -245,16 +245,17 @@ def test_a_handed_step_holds_writes_until_the_agent_takes_it_up():
     sequences.follow(made.n)
     assert "handed you step" not in held(record, session), "taking the step up releases them, so the step's own work can be done"
     from declaring import trigger
+    from engine import triggering
     from features.sequences.details import SequencesDetails
     agent = Agents(record, actor="system").by_session("claude-1")
-    trigger.write(record, agent, SequencesDetails.name, edits=99)
+    triggering.write(record, agent, SequencesDetails.name, edits=99)
     report(record, "working", "PostToolUse", tool="Edit", wrote=True)
     assert "has stood on step 1" in held(record, session), \
         "a step taken up and never moved on holds the writes once they mount up, since a sequence says everything else waits until it is finished"
     sequences.next(made.n)
     assert "has stood on step" not in held(record, session), "and moving the sequence on releases them and starts the count again"
     sequences.follow(made.n)
-    assert trigger.last(record, session, SequencesDetails.name).edits == 0, "the writes a step is allowed are its own, not the ones before it"
+    assert triggering.last(record, session, SequencesDetails.name).edits == 0, "the writes a step is allowed are its own, not the ones before it"
     sequences.next(made.n)
     sequences.run(made.n)
     sequences.follow(made.n)

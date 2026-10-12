@@ -4,7 +4,7 @@ import threading
 import time
 from dataclasses import asdict
 from engine import runtime
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.package import data
 from engine.record import Record
 from engine.upgrades import FETCHING, newer, upstream

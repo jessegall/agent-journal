@@ -5,7 +5,7 @@ from typing import ClassVar
 
 from controllers.features import SETTING_KEYS, SETTINGS_CHANGED
 from controllers.types import Agents
-from declaring import trigger
+from engine import triggering
 from features.switches import switches
 from declaring.trigger import MINUTE, NEVER, Trigger
 from declaring.holds import Hold
@@ -135,16 +135,16 @@ class Feature(ABC):
         record.change_setting("features", {self.keyed(key): bool(on)})
 
     def cadence(self, record, key: str = "") -> Trigger:
-        return trigger.saved(record, self.keyed(key), self.behaviours[key].trigger if key else self.trigger)
+        return triggering.saved(record, self.keyed(key), self.behaviours[key].trigger if key else self.trigger)
 
     def interval(self, record, key: str = "") -> float:
         return float(self.cadence(record, key).every) * MINUTE
 
     def due(self, record, agent, key: str = "") -> bool:
         cadence = self.cadence(record, key)
-        if not self.on(record, key) or not cadence or not trigger.due(record, agent, self.keyed(key), cadence):
+        if not self.on(record, key) or not cadence or not triggering.due(record, agent, self.keyed(key), cadence):
             return False
-        trigger.fired(record, agent, self.keyed(key))
+        triggering.fired(record, agent, self.keyed(key))
         return True
 
     def settings_view(self, record) -> dict | None:

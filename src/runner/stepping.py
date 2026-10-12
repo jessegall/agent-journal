@@ -5,7 +5,7 @@ from pathlib import Path
 
 from controllers.types import Agents
 from engine import ran, runtime
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.record import Record
 from engine.stepped import SteppedCall, file_of
 from engine.stored import write_json

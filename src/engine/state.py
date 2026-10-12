@@ -3,7 +3,7 @@ import os
 from contextlib import contextmanager
 from pathlib import Path
 
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.stored import read_promised_json, write_json
 
 FILES = Memo()

@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 from engine import runtime
-from engine.memo import Memo
+from resources.memo import Memo
 from engine.package import SRC
 from providers.base import journal_hook
 
