@@ -6,7 +6,7 @@ from pathlib import Path
 import features
 from controllers.base import word_names, word_parameters
 from controllers.types import CONTROLLERS
-from providers.base import LIBRARY
+from payload import LIBRARY
 from engine.package import data
 from declaring.reach import Reach
 from providers.skill_homes import LINKED, RETIRED, library, link, pruned, skill_name

@@ -8,7 +8,7 @@ from engine.sessions import Sessions
 from resources.text import plural
 from engine.stored import read_json, write_json
 from providers import PROVIDERS
-from providers.base import journal_hook
+from payload import journal_hook
 
 KEY = "clean_slate"
 

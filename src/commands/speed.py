@@ -18,7 +18,7 @@ from providers.drivers import Driver
 from runner.engine import Engine
 from engine.record import Record
 from engine.sessions import ACTIVE_ENV
-from providers.base import JOURNAL
+from payload import JOURNAL
 from providers.transcript_cache import CACHE
 from serve import serve
 from engine.stored import write_text

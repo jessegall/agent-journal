@@ -823,7 +823,8 @@ def loaded() -> Package:
     from engine.ledger import applied
     from migrations import shipped
     from providers import PROVIDERS
-    from providers.base import LIBRARY, HookCommand
+    from payload import LIBRARY
+    from providers.base import HookCommand
     from skills import LINKED, publish
     from features.boards.agent_types import written as agent_types
     from engine.record import Record

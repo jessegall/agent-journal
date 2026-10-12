@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from controllers.types import Agents, Messages
-from providers.base import JOURNAL, MARK, said_by
+from payload import JOURNAL, MARK, said_by
 from payload import Asking
 from engine import typist
 from resources.base import SYSTEM, Refused

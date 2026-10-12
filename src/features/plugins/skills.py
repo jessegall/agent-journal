@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.worktree import ignore
 from features.plugins.paths import folder
-from providers.base import LIBRARY
+from payload import LIBRARY
 from providers.skill_homes import LINKED, link, unlink
 
 MARK = "plugin"
