@@ -2,11 +2,12 @@ import time
 
 from controllers.types import Messages
 from events.agents import AgentReported
-from expects import Answered, Given, Held
+from events.catching_up import Compacting
+from expects import Answered, Dispatches, Given, Held, nothing
 from framework.base import Feature
 from features.catching_up.commands import Recent
 from features.catching_up.details import CatchingUpDetails
-from features.catching_up.handlers import HoldUntilCaughtUp
+from features.catching_up.handlers import HoldUntilCaughtUp, SpotCompaction
 from framework.journal import Journal
 from resources.types import AgentRow, Message
 
@@ -31,7 +32,11 @@ class CatchingUp(Feature):
                   settings={"catching_up.count": 1})
                 >> Answered(f"message 6 · the user · {WHEN}\ntwo"),
         ])
-        journal.events.handler(HoldUntilCaughtUp(), expects=[
-            Given(AgentReported(agent=1, hook="PreCompact"), rows=[AgentRow(n=1)]) >> Held(read_held(50)),
-            Given(AgentReported(agent=1, hook="PreCompact"), rows=[AgentRow(n=1)], settings={"catching_up.count": 10}) >> Held(read_held(10)),
+        journal.events.listen(AgentReported, SpotCompaction(), expects=[
+            Given(AgentReported(agent=1, hook="PreCompact"), rows=[AgentRow(n=1)]) >> Dispatches(Compacting(agent=1)),
+            Given(AgentReported(agent=1, hook="PostToolUse"), rows=[AgentRow(n=1)]) >> Dispatches(nothing),
+        ])
+        journal.events.handle(Compacting, HoldUntilCaughtUp(), expects=[
+            Given(Compacting(agent=1), rows=[AgentRow(n=1)]) >> Held(read_held(50)),
+            Given(Compacting(agent=1), rows=[AgentRow(n=1)], settings={"catching_up.count": 10}) >> Held(read_held(10)),
         ])
