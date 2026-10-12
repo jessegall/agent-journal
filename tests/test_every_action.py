@@ -275,8 +275,10 @@ def run_route(record, *words, **query):
     return post(record, "/api/run", {"_raw": "\0".join(words).encode(), "_type": "text/plain"}, env=record.env, **query)
 
 
-def row_of_reply(reply) -> dict:
-    return json.loads(reply.body.split("---\n")[1])
+def row_of_reply(record, reply) -> dict:
+    """The row a reply names, read from the record. A command's answer is what it did, not the row's file, so who has seen it is asked of the row itself."""
+    type_, _, rest = reply.body.strip().partition(" ")
+    return CONTROLLERS[type_](record, actor=SYSTEM).load(int(rest.split(":")[0])).__dict__
 
 
 def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500_for_every_type():
@@ -304,11 +306,11 @@ def test_a_refusal_is_a_400_a_missing_row_a_404_and_nothing_is_ever_a_500_for_ev
             facts["an action that takes no row, posted to a row's route, is a 400 that names its route"] = post(record, f"{path}/{row.n}/search", {"term": "x"}).code == 400
         if type_ != "browser":
             users, agents = run_route(record, type_, "read", str(row.n), actor=USER), run_route(record, type_, "read", str(row.n))
-            facts["the actor is the one the query names, and the agent when it names none"] = (USER in row_of_reply(users)["seen"], AGENT in row_of_reply(agents)["seen"]) == (True, True)
+            facts["the actor is the one the query names, and the agent when it names none"] = (USER in row_of_reply(record, users)["seen"], AGENT in row_of_reply(record, agents)["seen"]) == (True, True)
         if titled(controller, make) and not resource.required and type_ not in ("work", "browser"):
             named, plugin = run_route(record, type_, make, "one"), run_route(record, type_, make, "two", plugin="clock")
             facts["a valid command is a 200"] = (named.code, plugin.code) == (200, 200)
-            facts["the plugin the query names is the one the command runs as"] = row_of_reply(plugin)["data"].get("plugin") == "clock"
+            facts["the plugin the query names is the one the command runs as"] = row_of_reply(record, plugin)["data"].get("plugin") == "clock"
         reckon(wrong, type_, facts)
     assert wrong == {}, "every type answers a missing row with 404, a refusal with 400 in words, and never a 500"
     features.load()

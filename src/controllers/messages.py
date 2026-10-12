@@ -4,18 +4,12 @@ from itertools import dropwhile
 from controllers.base import Controller, CONTROLLERS
 from resources import types
 from resources.base import AGENT, SYSTEM, USER, Refused, Resource, titled
+from resources.text import QUOTE, unquoted  # noqa: F401  its home is resources, and callers still name it here
 from controllers.comments import Comments
 from controllers.marks import action
 
 
-QUOTE = ">"
 SAID_JUST_NOW = 60.0
-
-
-def unquoted(text: str) -> str:
-    """What was actually typed, without the message quoted above it: a reply carries the message it answers, which is named instead, so the same words are never read back as if they were new."""
-    lines = list(dropwhile(lambda line: line.startswith(QUOTE) or not line.strip(), text.splitlines()))
-    return "\n".join(lines).strip() or text.strip()
 
 
 def only_emoji(text: str) -> bool:

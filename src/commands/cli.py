@@ -117,6 +117,17 @@ def lifted(argv: list[str]) -> tuple[list[str], str]:
     return argv[:at] + argv[at + 2 if why else at + 1:], why
 
 
+SHOWS = ("show", "read")
+"""The words whose answer IS the row, so they print it whole. Every other word is a change, and a change prints what it changed: reading a row back to the agent that just wrote it says nothing it does not already know, and in a long session that repetition is most of what the journal costs."""
+
+
+def answer(command: str, method: str, got, record) -> str:
+    if method in SHOWS and hasattr(got, "read_out"):
+        from framework.format import read_as
+        return read_as(got, record).read_out()
+    return f"{command} {got.n}" if hasattr(got, "n") else str(got)
+
+
 def run(argv: list[str], out=None, err=None) -> int:
     out, err = out or sys.stdout, err or sys.stderr
     PRINTED.set(out)
@@ -170,12 +181,7 @@ def run(argv: list[str], out=None, err=None) -> int:
     elif got is not None:
         if getattr(got, "preface", ""):
             print(got.preface, file=out)
-        if hasattr(got, "dump"):
-            from framework.format import read_as
-            got = read_as(got, ctx["record"])
-        print(got.dump() if hasattr(got, "dump") else got, file=out)
-        if method == "create" and hasattr(got, "n"):
-            print(f"{command} {got.n}", file=out)
+        print(answer(command, method, got, ctx["record"]), file=out)
     return 0
 
 

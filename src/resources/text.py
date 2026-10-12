@@ -28,3 +28,13 @@ def slugged(name: str, sep: str = "-", limit: int = 0) -> str:
 
 def paragraphs(text: str) -> str:
     return "\n\n".join(" ".join(line.strip() for line in part.splitlines()) for part in inspect.cleandoc(text).split("\n\n") if part.strip())
+
+
+QUOTE = ">"
+
+
+def unquoted(said: str) -> str:
+    """What was actually typed, without the message quoted above it: a reply carries the message it answers, which is named instead, so the same words are never read back as if they were new."""
+    from itertools import dropwhile
+    lines = list(dropwhile(lambda line: line.startswith(QUOTE) or not line.strip(), said.splitlines()))
+    return "\n".join(lines).strip() or said.strip()

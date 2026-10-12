@@ -25,7 +25,9 @@ class MessagesDetails(FeatureDetails):
         To hand the user a document, or any row, put its reference on a line of its own, such as doc 41: the chat shows it as a
         card they can open.
 
-        Each new message is named to you as it arrives. The inbox reminder follows only while more than five wait unread, or once
+        Each new message is named to you as it arrives, by its number and how to open it, never by its words: journal message read <n>
+        is how you take one in, and reading it is what marks it seen. The words reach you once, and only for a message you open.
+        The inbox reminder follows only while more than five wait unread, or once
         you are idle: at your next tool use and at every third one after; after five reminders your writes are held. A message you have read and not
         answered holds every tool use at once, reading as much as writing, until you reply, react or process it; only a journal command that answers it goes through.
         It is also named back to you once it has waited ten tool uses, or once you are idle, a few times.
