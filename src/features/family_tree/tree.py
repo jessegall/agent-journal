@@ -4,7 +4,7 @@ from pathlib import Path
 from controllers.types import Agents, Environments
 from engine.record import Record
 from engine.transcript import PEER, SENT
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from resources.base import SYSTEM
 from typing import TypedDict
 
@@ -93,7 +93,7 @@ MESSAGED: dict[str, tuple[int, int, list[tuple[str, str, str]]]] = {}
 
 
 def messaged(row, key: str, members: dict, named: dict) -> list[Link]:
-    provider = PROVIDERS.get(row.provider)
+    provider = SERVED.given(Providers).offers(row.provider)
     if not provider or not row.transcript:
         return []
     try:
@@ -104,7 +104,7 @@ def messaged(row, key: str, members: dict, named: dict) -> list[Link]:
     if held and held[0] == size:
         pairs = held[2]
     else:
-        turns = provider().turns(Path(row.transcript))
+        turns = provider.turns(Path(row.transcript))
         read = held[1] if held and held[1] <= len(turns) else 0
         pairs = (held[2] if read else []) + exchanged(turns[read:])
         MESSAGED[row.transcript] = (size, len(turns), pairs)

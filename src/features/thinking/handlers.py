@@ -5,7 +5,7 @@ from pathlib import Path
 from events.agents import AgentReported
 from events.agents import AgentMessageSent
 from framework.parts import AgentContext, Handler
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from payload import HookEvent
 from resources.fields import Loaded
 from controllers.types import Agents
@@ -26,14 +26,14 @@ class Read(Loaded):
 class FollowThinking(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         row = context.agent.row
-        kind, transcript = PROVIDERS.get(row.provider), Path(row.transcript)
+        kind, transcript = SERVED.given(Providers).offers(row.provider), Path(row.transcript)
         if not kind or not transcript.is_file():
             return
         held = Read.from_json(context.state.get("transcript", {}))
         if held.path != str(transcript):
             context.state.set("transcript", {"path": str(transcript), "offset": transcript.stat().st_size})
             return
-        found, offset = kind().thoughts(transcript, held.offset)
+        found, offset = kind.thoughts(transcript, held.offset)
         context.state.set("transcript", {"path": str(transcript), "offset": offset})
         thought = row.data.get(THINKING) or ""
         for what, text in found:

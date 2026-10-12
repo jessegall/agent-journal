@@ -15,7 +15,7 @@ from framework.parts import Command, Context
 from controllers.shared import shared
 from features.permission_prompts.skipping import set_skipped
 from overview.summary import lately_summarized
-from providers import PROVIDERS
+from serving import SERVED, Providers
 from resources.base import Missing, Refused
 
 
@@ -165,9 +165,10 @@ class Control(Command):
 
 
 def _provider(name: str):
-    if name not in PROVIDERS:
+    providers = SERVED.given(Providers)
+    if not providers.knows(name):
         raise Missing(f"no provider {name}")
-    return PROVIDERS[name]()
+    return providers.of(name)
 
 
 class ProviderHooks(TypedDict):

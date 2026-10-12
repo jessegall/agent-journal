@@ -35,8 +35,9 @@ def test_agents_that_wrote_to_each_other_are_linked_by_the_notes_in_their_transc
     reads = []
     turns = [Turn(1, "agent", peer=PeerNote(SENT, "ada")), Turn(2, "agent", peer=PeerNote(PEER, "uds:grace", "grace")),
              Turn(3, "agent"), Turn(4, "agent", peer=PeerNote(PEER, "hopper", "Grace H"))]
-    provider = lambda: SimpleNamespace(turns=lambda path: reads.append(path) or turns)
-    monkeypatch.setattr(tree, "PROVIDERS", {"claude": provider})
+    provider = SimpleNamespace(turns=lambda path: reads.append(path) or turns)
+    from serving import SERVED, Providers
+    monkeypatch.setattr(SERVED.given(Providers), "offers", lambda name: provider if name == "claude" else None, raising=False)
     tree.MESSAGED.clear()
     row = SimpleNamespace(provider="claude", transcript=str(transcript))
     members = {}
