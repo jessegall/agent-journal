@@ -88,13 +88,12 @@ def displayed(root: Path, chunk: Chunk) -> None:
 
 
 def traced(root: Path, line: str) -> None:
-    """One line of the evidence for to-do 4422: what the display hook brought and what the fallback found missing, kept beside the other diagnostics."""
+    """What the catch-up found the hook had not brought, kept beside the other diagnostics. It fires only when the transcript fills the chat, which is rare and is the thing worth a line forever; the per-chunk evidence that named the cause of to-do 4549 is gone, since the hook's path is hot and a line per delta grows without bound."""
     logged(root, f"display {line}")
 
 
 def shown(root: Path, chunk: Chunk) -> None:
     session, message = chunk.session, chunk.message
-    traced(root, f"chunk session {session} message {message or '-'} index {chunk.index} final {chunk.final} chars {len(chunk.delta)}")
     ledger = DisplayedLedger(root, session)
     with ledger.changing() as held:
         if message in held.get(DONE, []):
@@ -109,7 +108,6 @@ def shown(root: Path, chunk: Chunk) -> None:
     text = "".join(parts[str(i)] for i in range(last + 1))
     if not send_to_chat(root, session, text, message or None, streamed=True):
         return
-    traced(root, f"whole session {session} message {message or '-'} fingerprint {fingerprint(text)} chars {len(text)}")
     withdrawn(root, session, text)
     with ledger.changing() as held:
         held.pop(message, None)
@@ -141,7 +139,6 @@ def turn_ended(root: Path, session: str, row, last_message: str, until: float = 
             after_answered(lambda: turn_ended(root, session, row, last_message, until))
             return
     if last_message:
-        traced(root, f"turn ended session {session} last words fingerprint {fingerprint(last_message)} chars {len(last_message)}")
         stopped(root, session, last_message)
     unfinished(root, session, row)
 
@@ -174,7 +171,6 @@ def stopped(root: Path, session: str, text: str) -> None:
             del held[message]
         held[FINALS] = {key: value for key, value in held.get(FINALS, {}).items() if key not in cut}
         held[DONE] = [*held.get(DONE, []), *cut][-KEPT_DONE:]
-    traced(root, f"stopped session {session} message {cut[0] or '-'} fingerprint {fingerprint(text)} chars {len(text)}")
     send_to_chat(root, session, text, cut[0] or None, streamed=True)
     withdrawn(root, session, text)
 
