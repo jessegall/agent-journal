@@ -19,6 +19,7 @@ from resources.helpers import Helper
 from resources.journal_laws import Output
 from resources.sequences import Sequence
 from resources.session_recording import Recording
+from resources.secrets import Secret
 from resources.sharing import Share
 from resources.templates import Template
 from resources.tickets import Ticket
