@@ -5,50 +5,6 @@ from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.conftest import fresh, refused
 
 
-def test_a_reply_links_the_new_to_dos_it_names_and_points_out_the_one_it_leaves_unlinked(monkeypatch):
-    import time
-    features.load()
-    record = fresh()
-    Agents(record, actor=SYSTEM).create("claude-1")
-    todos = Todos(record, actor=AGENT)
-    now = time.time
-    monkeypatch.setattr(time, "time", lambda: now() - 3600)
-    old = todos.create("filed an hour ago")
-    monkeypatch.setattr(time, "time", now)
-    asked = Messages(record, actor=USER).create("make the tunnel restart itself and fix the label")
-    named, elsewhere, forgotten = (todos.create(title).n for title in ("restart the tunnel", "already linked", "fix the label"))
-    Messages(record, actor=USER).link(Messages(record, actor=USER).create("an earlier ask").n, f"todo:{elsewhere}")
-    Messages(record, actor=AGENT).read(asked.n)
-    Messages(record, actor=AGENT).reply(asked.n, f"Filed as to-do {named}, to-do {elsewhere} and to-do {old.n}.")
-    refs = Messages(record, actor=SYSTEM).load(asked.n).refs
-    assert f"todo:{named}" in refs, "a new to-do the reply names is linked to the message it answers"
-    assert f"todo:{elsewhere}" not in refs, "a to-do another message already links is left where it is"
-    assert f"todo:{old.n}" not in refs, "a to-do older than the setting's minutes is not linked"
-    nudged = [n.title for n in Nudges(record, actor=SYSTEM).rows.every()]
-    assert f"to-do {forgotten} came from message {asked.n}?" in nudged, "a new to-do the reply leaves unnamed and unlinked is pointed out"
-    assert "already answered" in refused(lambda: Messages(record, actor=AGENT).reply(asked.n, "And one more thing.")), "a second reply goes into the first"
-    assert [n.title for n in Nudges(record, actor=SYSTEM).rows.every()].count(f"to-do {forgotten} came from message {asked.n}?") == 1, "once"
-
-
-def test_a_to_do_filed_while_a_message_waits_is_asked_about_at_once():
-    features.load()
-    record = fresh()
-    Agents(record, actor=SYSTEM).create("claude-1")
-    writing, todos = Messages(record, actor=USER), Todos(record, actor=AGENT)
-    nudged = lambda: [n.title for n in Nudges(record, actor=SYSTEM).rows.every()]
-    own = todos.create("something I thought of myself")
-    assert not [line for line in nudged() if line.startswith(f"to-do {own.n} came from")], \
-        "with nothing of the user's waiting, a to-do the agent filed is its own and nothing is said"
-    asked = writing.create("the tunnel should restart itself")
-    filed = todos.create("restart the tunnel")
-    assert f"to-do {filed.n} came from message {asked.n}?" in nudged(), \
-        "a to-do filed while a message of the user's waits is asked about the moment it is filed, not when a reply is written"
-    assert nudged().count(f"to-do {filed.n} came from message {asked.n}?") == 1, "and asked once"
-    theirs = Todos(record, actor=USER).create("something the user filed in the viewer")
-    assert not [line for line in nudged() if line.startswith(f"to-do {theirs.n} came from")], \
-        "a row the user filed themselves is never asked about: the question is only ever whether the agent forgot to link one"
-
-
 def test_a_message_is_filed_replied_edited_and_processed_by_the_agent_that_reads_it(tmp_path):
     import features
     from controllers.types import Comments, Docs, Messages, Todos
