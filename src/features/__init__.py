@@ -20,7 +20,13 @@ def names() -> list[str]:
     return [name for name, package in modules("features") if package and importlib.util.find_spec(f"features.{name}.feature")]
 
 
-def load(root: Path | None = None) -> list[str]:
+COMMANDS_ONLY: list[bool] = []
+"""Set once by a process that only runs commands: it wires the commands and the refusers and no listener or handler, since the server relays what it writes."""
+
+
+def load(root: Path | None = None, commands_only: bool = False) -> list[str]:
+    if commands_only:
+        COMMANDS_ONLY[:] = [True]
     discover()
     if root:
         rename_aliases(root)
@@ -49,13 +55,13 @@ def wire() -> None:
         if name in FEATURES:
             continue
         FEATURES[name] = cls()
-        FEATURES[name].wire()
+        FEATURES[name].wire(bool(COMMANDS_ONLY))
         PROMISED.refuse_owing(name)
 
 
 def subscribe() -> None:
     from features.switches import environments_changed, switch_changed
-    if not SWITCHED:
+    if not SWITCHED and not COMMANDS_ONLY:
         SWITCHED.extend([*(bus.on(kind, switch_changed) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed)])
 
 
@@ -155,6 +161,7 @@ def unload() -> None:
     clear_all()
     forget_all()
     FEATURES.clear()
+    COMMANDS_ONLY.clear()
     SWITCHED.clear()
     SEATED.clear()
     rebooted()

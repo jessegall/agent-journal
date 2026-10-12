@@ -35,6 +35,7 @@ class Feature(ABC):
     label: ClassVar[str] = ""
     hint: ClassVar[str] = ""
     position: ClassVar[int] = 100
+    commands_only: bool = False
     group: ClassVar[Group] = Group.DEVELOPER
     trigger_label: ClassVar[str] = ""
     trigger: ClassVar[Trigger] = NEVER
@@ -85,7 +86,8 @@ class Feature(ABC):
     def register(self, journal: Journal) -> None:
         pass
 
-    def wire(self) -> None:
+    def wire(self, commands_only: bool = False) -> None:
+        self.commands_only = commands_only
         self.register(self.journal)
         if self.settings:
             SETTING_KEYS.add(None, tuple(self.settings), key=self.name)
