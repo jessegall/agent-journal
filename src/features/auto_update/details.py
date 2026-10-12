@@ -47,6 +47,13 @@ class AutoUpdateDetails(FeatureDetails):
 
     settings = [
         Setting(
+            name="new_features",
+            default=False,
+            scope=PROJECT,
+            title="Show what is new after an update",
+            abstract="A card for each feature the new version announces, shown once",
+        ),
+        Setting(
             name="installs",
             default="always",
             scope=PROJECT,

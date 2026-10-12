@@ -25,7 +25,7 @@ export const person = computed(() => `${form().title}|${form().first_name}`);
 
 export const voiceOf = (row) => voiceOfArt(row.data.art);
 
-export const mascotOn = computed(() => form().mascot !== false);
+export const mascotOn = computed(() => form().mascot === true);
 
 export const mascotOf = computed(() => {
     const row = standing.value;
