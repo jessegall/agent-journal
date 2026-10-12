@@ -4,11 +4,14 @@ The Fakes answer and remember. Nothing here knows what any one outcome word mean
 record of the play itself - so a word added to the grammar is a word added in one place.
 """
 
+import json
 import time
 from dataclasses import dataclass, field
 from typing import ClassVar
 
+from engine.record import Record
 from expects import At, Answering, Counting, Expectation, Given, NoSuchService
+from resources.base import SYSTEM
 
 
 class NotAnswered(LookupError):
@@ -170,3 +173,13 @@ class World:
 def wrong(expectation: Expectation, seen: Seen) -> list[str]:
     """What the play did not do that the expectation said it would. Empty when the expectation holds."""
     return [said for one in expectation.outcomes.each if (said := one.holds(seen))]
+
+
+def remembered_by(record: Record, owner: str) -> dict:
+    """What the feature left in the journal's memory: its own state, the state it keeps for each agent session, and the marks its triggers keep for each session, each under the name of its file."""
+    from controllers.types import Agents
+    from engine import runtime
+    agents = Agents(record, actor=SYSTEM).rows.standing()
+    sessions = (record.state(owner, row.title).all() for row in agents)
+    marks = {path.stem: json.loads(path.read_text()) for row in agents for path in runtime.session_file(record.root, row.title, "marks").parent.glob("trigger-*.json")}
+    return {**record.state(owner).all(), **{key: value for state in sessions for key, value in state.items()}, **marks}

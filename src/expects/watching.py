@@ -17,7 +17,7 @@ from controllers.types import CONTROLLERS, Nudges
 from declaring.extension import Extension
 from engine.record import Record
 from expects import File, Given, Nudged, Updated, Wrote, contains, held, named, stated
-from expects.playing import Seen
+from expects.playing import Seen, remembered_by
 from resources.base import SYSTEM
 
 WAIT = 60.0
@@ -105,7 +105,6 @@ def settled(given: Given, record: Record) -> bool:
 
 
 def remembered(given: Given, record: Record) -> bool:
-    from features.played import remembered_by
     for name, value in dict(given.remembered).items():
         owner, _, key = name.partition(".")
         if not contains(remembered_by(record, owner or name).get(key or name), value):
@@ -203,7 +202,7 @@ class Owed:
         promise = self.ran.promise
         return (f"{promise.feature.name}/{promise.name}: {'; '.join(whys)}. The world it ran in was the one expectation {self.number} states: "
                 f"the event {self.given.on!r} and the rows {rows}, whose numbers are the live ones {bound}. The record was read {WAIT:.0f} seconds after the run. "
-                f"If this is not a fault, a live row the expectation does not state made the handler do right: tighten the matching in src/features/watching.py.")
+                f"If this is not a fault, a live row the expectation does not state made the handler do right: tighten the matching in src/expects/watching.py.")
 
 
 class Watch:

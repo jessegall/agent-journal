@@ -17,7 +17,7 @@ from framework.routing import FEATURE_ROUTES
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE, REGISTERED, Answerer, Handler, Listener, Refuser, Registration
 from framework.adapter import adapted_beside_the_bus
 from framework.promises import PROMISED, Promise
-from features.watching import WATCH
+from expects.watching import WATCH
 
 
 def wanted(part, feature, record, row, timed: bool = True) -> bool:
@@ -74,21 +74,21 @@ class Events:
 
     def listen(self, event: type, listener: Listener, expects) -> None:
         """Reads the event and dispatches the facts it recognises; read-only, in the tick the event belongs to."""
-        if self.feature.commands_only:
-            return
-        REGISTERED.add(Registration.read(LISTEN, event, listener, expects, self.feature.name))
+        self.register(LISTEN, event, listener, expects)
 
     def handle(self, fact: type, handler: Handler, expects, after: tuple[str, ...] = ()) -> None:
         """Acts on the fact in the next tick, inside that tick's transaction; after names the handlers on this fact it must follow, by name, since importing another feature is forbidden."""
-        if self.feature.commands_only:
-            return
-        REGISTERED.add(Registration.read(HANDLE, fact, handler, expects, self.feature.name, after))
+        self.register(HANDLE, fact, handler, expects, after)
 
     def answer(self, request: type, answerer: Answerer, expects) -> None:
         """Answers the request synchronously and read-only, before anything about it writes."""
+        self.register(ANSWER, request, answerer, expects)
+
+    def register(self, kind: str, event: type, receiver, expects, after: tuple[str, ...] = ()) -> None:
+        """Holds one registration until the wiring is read; a feature loaded for its commands alone registers none."""
         if self.feature.commands_only:
             return
-        REGISTERED.add(Registration.read(ANSWER, request, answerer, expects, self.feature.name))
+        REGISTERED.add(Registration.read(kind, event, receiver, expects, self.feature.name, after))
 
 
 class Client:

@@ -2,7 +2,7 @@ from functools import cached_property
 
 from events.measured import Measured
 from expects import Given, Unchanged, Updated
-from features.watching import BROKEN
+from expects.watching import BROKEN
 from framework.base import Feature
 from framework.journal import Journal
 from features.dev_faults.details import DevFaultsDetails

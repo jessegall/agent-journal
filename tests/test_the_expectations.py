@@ -33,7 +33,7 @@ def promised():
 
 @pytest.mark.parametrize("promise,expectation", promised())
 def test_the_registration_does_what_it_promises(promise, expectation):
-    from features.played import played
+    from framework.played import played
     from expects.playing import wrong
     from tests import isolation
 
@@ -586,8 +586,8 @@ def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_
     import time
     import features
     from events.resources import ResourceCreated
-    from features.played import scratch
-    from features.watching import BROKEN, WAIT, Watch
+    from framework.played import scratch
+    from expects.watching import BROKEN, WAIT, Watch
     from framework.parts import Context
     from framework.promises import PROMISED
     from resources.base import USER
