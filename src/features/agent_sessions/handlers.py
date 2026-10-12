@@ -12,7 +12,7 @@ from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
 from resources.base import SYSTEM
 from resources.types import COMPACTING, STOPPED, SUBAGENT
-from features.trigger import MINUTE
+from declaring.trigger import MINUTE
 from controllers.types import CONTROLLERS, Agents, Environments, Questions, Todos, environment_records
 from engine.record import Record
 from events.todos import TodoUpdated

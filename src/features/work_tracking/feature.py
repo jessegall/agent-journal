@@ -10,7 +10,7 @@ import json
 from dataclasses import asdict
 
 from expects import answering, Given, Held, Kept, Nudged, Refused, Remembered, Unchanged, Updated
-from features.trigger import Mark
+from declaring.trigger import Mark
 from events.plans import PlanCompleted
 from events.works import WorkCompleted, WorkUpdated
 from providers.payload import BashCall, WriteCall

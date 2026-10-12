@@ -7,7 +7,7 @@ import json
 from dataclasses import asdict
 
 from expects import Formats, Given, Nudged, Remembered, Unchanged, Updated, Wrote
-from features.trigger import Mark
+from declaring.trigger import Mark
 from features.base import Feature
 from features.journal import Journal
 from features.messages.details import MessagesDetails

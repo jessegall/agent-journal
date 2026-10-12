@@ -1934,7 +1934,7 @@ def test_the_engines_small_helpers_give_an_empty_answer_when_a_program_a_folder_
     from engine.disk import Growth, last_lines
     from engine.inputs import take
     from engine.proc import git_objects, streamed
-    from engine.reach import Guard, Reach, Unreached
+    from declaring.reach import Guard, Reach, Unreached
     assert streamed(["no-such-program-anywhere"], tmp_path, 5, lambda text: None)[0] is None, "a program that cannot start has no exit status"
     assert (git_objects(tmp_path, []), git_objects(tmp_path / "missing", ["a" * 40]), git_objects(tmp_path, ["a" * 40])) == ({}, {}, {}), \
         "objects asked of nothing, of a folder that is not there or of a folder that is no repository are none"

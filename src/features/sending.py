@@ -3,7 +3,8 @@ from typing import Callable, ClassVar
 
 from events.agents import AgentReported
 from events.agents import ClockTicked
-from features import actions, trigger
+from declaring import trigger
+from features import actions
 from features.parts import ANY_BUT_POST_TOOL_USE, AgentContext, Handler
 
 

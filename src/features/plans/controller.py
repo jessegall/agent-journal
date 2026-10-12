@@ -14,7 +14,7 @@ from features.work_tracking.auto import passes_checkpoints
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
 from resources.shapes import LEVELS
 from controllers.marks import action
-from engine.extension import Extension
+from declaring.extension import Extension
 
 LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
 CHECKPOINT = re.compile(r"\s*\(checkpoint\)\s*$", re.IGNORECASE)

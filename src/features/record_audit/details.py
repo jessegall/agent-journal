@@ -1,6 +1,6 @@
-from features.base import FeatureDetails, Line
-from features.trigger import MINUTES, Trigger
-from features.groups import Group
+from declaring.details import FeatureDetails, Line
+from declaring.trigger import MINUTES, Trigger
+from declaring.groups import Group
 
 
 class RecordAuditDetails(FeatureDetails):

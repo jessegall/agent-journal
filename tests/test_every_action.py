@@ -26,7 +26,7 @@ from commands.parser import parser
 from controllers.base import Controller, actions
 from controllers.environments import KEPT, SWEPT
 from controllers.types import CONTROLLERS, Environments, Todos, Works
-from engine.extension import EXTENSIONS
+from declaring.extension import EXTENSIONS
 from engine.package import code
 from engine.paths import ROUTED, environment_names
 from engine.record import Record
@@ -683,9 +683,10 @@ def test_a_feature_row_marked_missing_is_found_again_and_a_switch_relayed_from_e
     rows.update(row.n, enabled=False)
     features.passed(record.event_log.events()[-1], record)
     assert not features.FEATURES["thinking"].enabled(record), "a switch another process made is read when its event is relayed"
-    from engine.reach import Unreached
-    from features.base import Feature, FeatureDetails, Line
-    from features.groups import Group
+    from declaring.reach import Unreached
+    from declaring.details import FeatureDetails, Line
+    from features.base import Feature
+    from declaring.groups import Group
 
     class Careless(FeatureDetails):
         name, title, group = "careless", "Careless", Group.CHAT

@@ -8,7 +8,7 @@ from engine.sessions import Sessions
 from features.agent_sessions.launch import driver_in
 from features.sending import Sent
 from features.triggers import watched
-from features.trigger import DAY, MINUTE
+from declaring.trigger import DAY, MINUTE
 from providers.turns import last_text
 from features.parts import AgentContext, Context, Handler
 from features.ask_questions.choices import offers_choices

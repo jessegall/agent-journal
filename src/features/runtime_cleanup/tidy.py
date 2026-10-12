@@ -10,7 +10,7 @@ from engine.record import Record
 from engine.wording import plural
 from controllers.stored import mtime
 from resources.base import Refused
-from features.trigger import DAY
+from declaring.trigger import DAY
 
 TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "launches/*.log": 1024 * 1024,
          "channels/*.jsonl": 1024 * 1024}

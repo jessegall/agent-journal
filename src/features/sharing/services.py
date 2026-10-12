@@ -10,7 +10,7 @@ from features.sharing.controller import ADDRESS_TAKEN, Shares
 from features.sharing.resource import ended
 from features.sharing.tunnel import SERVER, TUNNEL, refused_address, tunler, tunler_build
 from resources.base import Refused, SYSTEM
-from engine.extension import Extension
+from declaring.extension import Extension
 
 KEEP_UP = Extension()
 LISTENS = Extension()

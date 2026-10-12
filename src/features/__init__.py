@@ -147,7 +147,7 @@ def seat(root: Path, homes: tuple[str, ...]) -> None:
 def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
     from features.switches import rebooted
-    from engine.extension import clear_all
+    from declaring.extension import clear_all
     from engine.memo import forget_all
     COMMANDS.clear()
     HANDLERS.clear()

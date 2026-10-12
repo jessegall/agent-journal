@@ -1,4 +1,4 @@
-from engine.extension import Extension
+from declaring.extension import Extension
 
 PHONE_GUARDS = Extension()
 

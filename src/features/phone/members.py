@@ -1,4 +1,4 @@
-from engine.extension import Extension
+from declaring.extension import Extension
 from engine.record import Record
 from resources.base import OWNER_ID
 

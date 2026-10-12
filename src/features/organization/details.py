@@ -1,6 +1,6 @@
-from features.base import FeatureDetails
+from declaring.details import FeatureDetails
 from engine.organization import CARDINALITIES, FOLDER
-from features.groups import Group
+from declaring.groups import Group
 
 
 class OrganizationDetails(FeatureDetails):

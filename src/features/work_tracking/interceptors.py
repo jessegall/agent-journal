@@ -1,7 +1,8 @@
 import re
 
-from engine.gates import Runs, held
-from engine.reach import Reach
+from declaring.holds import Runs
+from engine.gates import held
+from declaring.reach import Reach
 from features.parts import AgentContext, ToolInterceptor
 from providers import command_effects
 

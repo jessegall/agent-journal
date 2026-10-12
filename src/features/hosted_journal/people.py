@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Protocol
 
-from engine.extension import Extension
+from declaring.extension import Extension
 from engine.record import Record
 from features.hosted_journal.owner import KeptLogin
 from resources.base import OWNER_ID, Resource

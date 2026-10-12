@@ -6,7 +6,7 @@ from events.resources import AnyEvent, RowReopened
 from events.todos import TodoCompleted, TodoUpdated
 from features.plans.controller import ABANDONED, ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, REVIEWING, RUNNING, WAITING, Plans, delegate_plans_holding
 from features.sending import Nudge, Sent, send
-from features.trigger import MINUTE
+from declaring.trigger import MINUTE
 from features.plans.resource import PHASE, PHASE_FIELDS
 from features.work_tracking.auto import passes_checkpoints
 from features.work_tracking.next import carried_on, free, named_rows, ready, waiting_rows

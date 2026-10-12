@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from features.base import FeatureDetails, Line
-from features.settings import Setting
-from features.groups import Group
+from declaring.details import FeatureDetails, Line
+from declaring.settings import Setting
+from declaring.groups import Group
 
 NAME = "work_modes"
 BUILDER, ORCHESTRATOR, SOLO = "builder", "orchestrator", "solo"

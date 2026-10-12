@@ -11,7 +11,7 @@ from engine import runtime
 from engine.state import State
 from engine.stored import write_json, write_text
 from engine.package import CODE, code, entry_in
-from engine.extension import Extension
+from declaring.extension import Extension
 from resources.fields import Loaded
 from engine.record import Record
 from resources.base import Refused

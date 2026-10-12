@@ -1,7 +1,7 @@
 from events.agents import AgentReported
 from events.messages import MessageCreated
 from engine.transcript import IDLE
-from features import trigger
+from declaring import trigger
 from features.messages.answering import unanswered
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT

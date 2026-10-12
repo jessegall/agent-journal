@@ -9,7 +9,7 @@ from features.format import formatted_item
 from features.kanban.lanes import DONE, LANES, Sources, lane_of, reason_of
 from features.kanban.shifts import targets
 from features.plans.resource import ACTIVE
-from features.trigger import DAY
+from declaring.trigger import DAY
 from resources.base import Ref
 from features.kanban.shapes import AgentChip, BoardLanes, Card, Lane
 from features.plans.controller import Plans

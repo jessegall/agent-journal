@@ -5,7 +5,7 @@ from engine.markers import plain
 from features.phone.chat_view import stamped
 from features.switches import generation
 from resources.base import SECTION, SYSTEM, TEXT_FIELDS, as_dict
-from engine.extension import Extension
+from declaring.extension import Extension
 from engine.memo import Memo
 
 FORMATTERS = Extension()

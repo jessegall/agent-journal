@@ -1,7 +1,7 @@
 from resources.base import PROJECT
-from features.base import FeatureDetails, Line
+from declaring.details import FeatureDetails, Line
 from features.templates.instructions import INSTRUCTIONS
-from features.groups import Group
+from declaring.groups import Group
 
 
 class TemplatesDetails(FeatureDetails):

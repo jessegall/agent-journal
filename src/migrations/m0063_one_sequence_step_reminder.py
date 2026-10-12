@@ -2,7 +2,7 @@ from pathlib import Path
 
 from controllers.types import environment_records
 from features.sequences.handlers import minutes
-from features.trigger import MINUTES
+from declaring.trigger import MINUTES
 
 FEATURE = "sequences"
 OLD = "nudge_every"

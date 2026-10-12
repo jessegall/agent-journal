@@ -25,7 +25,7 @@ from features.sharing.views import VIEWS
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from engine.wording import plural
-from features.trigger import DAY
+from declaring.trigger import DAY
 from controllers.marks import action
 
 NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."

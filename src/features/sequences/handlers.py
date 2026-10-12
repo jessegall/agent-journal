@@ -9,10 +9,11 @@ from events.questions import QuestionCompleted
 from engine.journal_calls import JournalCall, calls
 from engine.transcript import IDLE
 from features.journal import waiting
-from features import trigger
+from declaring import trigger
 from features.sending import Sent
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
-from engine.gates import Runs, STILL_HELD
+from declaring.holds import Runs
+from engine.gates import STILL_HELD
 from features.work_tracking.details import WorkDetails
 from features.sequences.details import IN_CHAT, STEP, STEP_HELD, STEP_STALLED, UNFINISHED
 from features.sequences.dispatch import board_of, dispatched_by_line, working_agent
@@ -22,8 +23,8 @@ from features.triggers.resource import START
 from controllers.types import CONTROLLERS
 from resources.base import FIRED, SECTION, SYSTEM
 from resources.types import TYPES
-from engine.reach import Reach
-from features.trigger import MINUTE
+from declaring.reach import Reach
+from declaring.trigger import MINUTE
 from providers.payload import HookEvent
 from features.sequences.controller import Sequences
 from events.sequences import SequenceMoved

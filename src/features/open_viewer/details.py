@@ -1,6 +1,6 @@
-from features.base import FeatureDetails
-from features.groups import Group
-from features.settings import Setting
+from declaring.details import FeatureDetails
+from declaring.groups import Group
+from declaring.settings import Setting
 
 
 class OpenViewerDetails(FeatureDetails):

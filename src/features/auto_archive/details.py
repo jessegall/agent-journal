@@ -1,6 +1,6 @@
-from features.trigger import MINUTES, Trigger
-from features.base import FeatureDetails
-from features.groups import Group
+from declaring.trigger import MINUTES, Trigger
+from declaring.details import FeatureDetails
+from declaring.groups import Group
 
 
 class AutoArchiveDetails(FeatureDetails):

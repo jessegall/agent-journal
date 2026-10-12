@@ -3,7 +3,7 @@ from features.helpers.controller import Helpers
 from features.helpers.reuse import kept
 from resources.base import SYSTEM, WHOM
 
-from engine.extension import Extension
+from declaring.extension import Extension
 
 
 ROW_HOLDS = Extension()

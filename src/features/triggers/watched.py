@@ -2,12 +2,12 @@ import time
 from dataclasses import dataclass
 from typing import Callable
 
-from engine.extension import Extension
+from declaring.extension import Extension
 from engine.memo import Memo
 from engine.record import Record
-from features.base import PLACEHOLDER
+from declaring.details import PLACEHOLDER
 from features.sending import Sent
-from features.trigger import MINUTE
+from declaring.trigger import MINUTE
 from resources.base import Refused
 from resources.types import TYPES
 

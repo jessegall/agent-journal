@@ -4,7 +4,7 @@ import time
 from contextlib import suppress
 from pathlib import Path
 from engine import runtime
-from engine.extension import Extension
+from declaring.extension import Extension
 from engine.proc import ran
 from engine.sessions import alive
 from engine.stored import write_text

@@ -6,7 +6,7 @@ from resources.fields import Loaded
 from features.hosted_journal.owner import KeptCode, KeptPassword
 from features.hosted_journal.vault import Vault
 from features.members.roles import Role
-from features.trigger import DAY
+from declaring.trigger import DAY
 from resources.base import OWNER_ID, Refused
 
 MEMBERS = "members.json"

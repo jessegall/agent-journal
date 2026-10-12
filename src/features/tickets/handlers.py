@@ -6,7 +6,7 @@ from engine.locks import own_sweep, project_sweep
 from events.resources import ResourceCreated
 from events.questions import QuestionCompleted
 from features.sending import Sent
-from features.trigger import MINUTE, MINUTES, Trigger
+from declaring.trigger import MINUTE, MINUTES, Trigger
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Questions, Works
 from features.plans.controller import WAITING

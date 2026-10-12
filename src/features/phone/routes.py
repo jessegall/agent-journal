@@ -25,7 +25,7 @@ from features.sharing.preview import icon
 from features.sharing.origins import origins_of
 from features.sharing.server import APP_DIR, APP_HEADERS, BODY_LIMIT
 from resources.base import SYSTEM, Refused, Stale
-from features.trigger import DAY
+from declaring.trigger import DAY
 from engine.wording import digest
 
 APP_PAGE = "phone.html"
