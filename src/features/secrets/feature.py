@@ -39,7 +39,7 @@ class SecretsFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(PurgeDeletedSecrets(), expects=[
-            Given(ClockTicked(agent=1), rows=[deleted(31), AgentRow(n=1, title="claude-1")], files=VALUES) >> Wrote(File(".secrets/pid.env", "The values of this project's secrets")),
+            Given(ClockTicked(agent=1), rows=[deleted(31), AgentRow(n=1, title="claude-1")], files=VALUES) >> Wrote(File(".secrets/pid.env", "The values of this project's secrets", mode="600")),
             Given(ClockTicked(agent=1), rows=[deleted(10), AgentRow(n=1, title="claude-1")], files=VALUES) >> Wrote(File(".secrets/pid.env", 'API_KEY="abc"')),
         ])
         journal.agent.append_to_line("secret.updated", updated_added)

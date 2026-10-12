@@ -20,7 +20,7 @@ from engine.gates import HookCall, hold
 from engine.paths import SECRETS_FOLDER_VARIABLE as FOLDER_VARIABLE
 from engine.project_files import walk
 from engine.record import Record
-from expects import Given
+from expects import Given, Left
 from expects.playing import Seen, World, remembered_by
 from framework.parts import AgentContext, Context
 from resources.base import Refused, SYSTEM
@@ -278,9 +278,10 @@ def with_the_givens_programs(given: Given):
 
 
 def files_left(record: Record) -> dict:
-    """Every file under the scratch project after the play, by path under the project folder to its text, which is what Wrote(File) and Removed read."""
+    """Every file under the scratch project after the play, by path under the project folder to what it holds and the bits it carries, which is what Wrote(File) and Removed read."""
     project = record.root.parent
-    return {str(path.relative_to(project)): path.read_text(errors="replace") for path in project.rglob("*") if path.is_file()}
+    return {str(path.relative_to(project)): Left(path.read_text(errors="replace"), oct(path.stat().st_mode & 0o7777)[2:])
+            for path in project.rglob("*") if path.is_file()}
 
 
 class WhatTheAgentGot:

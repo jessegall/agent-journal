@@ -21,7 +21,7 @@ class NoSuchService(LookupError):
 
 
 __all__ = ("Given", "Expectation", "Outcome", "Outcomes", "SERVICES",
-           "Dispatches", "Wrote", "Removed", "File", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
+           "Dispatches", "Wrote", "Removed", "File", "Left", "Hooked", "Updated", "Printed", "Ran", "Refused", "Changed", "Kept", "Unchanged",
            "Formats", "Nudged", "Held", "Answered", "Remembered", "Set", "Whispered",
            "Nothing", "nothing", "At", "at", "Counting", "counting", "Answering", "answering", "Exited", "exited",
            "NotAnOutcome", "NoSuchService")
@@ -113,10 +113,19 @@ class Dispatches(Outcome):
 
 @dataclass(frozen=True)
 class File:
-    """A file under the project folder the play ran in. As a Given states it, it is a file that exists; as an outcome states it, the text is what the file must contain, never the whole file."""
+    """A file under the project folder the play ran in. As a Given states it, it is a file that exists; as an outcome states it, the text is what the file must contain, never the whole file, and the mode is the permission bits it must carry, written as three or four digits."""
 
     path: str
     text: str = ""
+    mode: str = ""
+
+
+@dataclass(frozen=True)
+class Left:
+    """A file as the play left it: what it holds and the permission bits it carries."""
+
+    text: str = ""
+    mode: str = ""
 
 
 @dataclass(frozen=True)
@@ -130,10 +139,14 @@ class Wrote(Outcome):
             return ""
         return f"it wrote no {type(self.row).__name__} holding {wanted}; it wrote {[named(one) for one in seen.wrote]}"
 
-    def file_holds(self, found: str | None) -> str:
+    def file_holds(self, found: Left | None) -> str:
         if found is None:
             return f"it left no file {self.row.path!r}"
-        return "" if self.row.text in found else f"the file {self.row.path!r} does not hold {self.row.text!r}; it holds {found[:200]!r}"
+        if self.row.text not in found.text:
+            return f"the file {self.row.path!r} does not hold {self.row.text!r}; it holds {found.text[:200]!r}"
+        if self.row.mode and self.row.mode != found.mode:
+            return f"the file {self.row.path!r} is {found.mode}, not {self.row.mode}"
+        return ""
 
 
 @dataclass(frozen=True)
