@@ -13,7 +13,7 @@ from resources.types import AgentRow
 from declaring.holds import Runs
 from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
 from declaring.reach import Reach
-from engine.wording import plural
+from resources.text import plural
 from controllers.types import Agents
 
 WHISPER = "whisper"

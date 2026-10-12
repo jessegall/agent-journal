@@ -1,5 +1,5 @@
 from events.agents import ClockTicked
-from engine.wording import plural
+from resources.text import plural
 from features.record_audit.audit import evidence
 from framework.parts import WHOLE_FEATURE, AgentContext, Handler
 

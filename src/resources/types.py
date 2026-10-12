@@ -19,6 +19,7 @@ from resources.helpers import Helper
 from resources.journal_laws import Output
 from resources.sequences import Sequence
 from resources.session_recording import Recording
+from resources.secrets import Secret
 from resources.sharing import Share
 from resources.templates import Template
 from resources.tickets import Ticket
@@ -676,7 +677,7 @@ def register(*classes) -> None:
 
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Fact, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Plugin, Environment, Ask, Nudge, FeatureRow, Ticket, Board, Helper, Worktree, Sequence, Template, Critique, Trigger, Check, Dump, Recording, Output, Profile, Collection, Share)}
+TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Fact, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Plugin, Environment, Ask, Nudge, FeatureRow, Ticket, Board, Helper, Worktree, Sequence, Template, Critique, Trigger, Check, Dump, Recording, Output, Profile, Collection, Share, Secret)}
 LISTED = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "fact", "rule", "reminder", "notice", "reaction", "tool", "plugin", "environment", "work", "agent", "notification", "browser", "nudge", "feature")
 
 

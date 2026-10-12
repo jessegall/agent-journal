@@ -33,7 +33,7 @@ from engine.record import Record
 from engine.disk import by_repository
 from engine.stored import read_json, write_text
 from engine.transaction import snapshot, undoable
-from engine.wording import noun
+from resources.text import noun
 from framework.watched import FACTS
 from overview.summary import environment, summarize
 from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, Resource, SYSTEM, USER, overview_weight as weigh

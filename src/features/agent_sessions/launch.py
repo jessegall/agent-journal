@@ -9,7 +9,8 @@ from engine.record import Record
 from engine.seats import terminal_of
 from engine.sessions import Sessions, alive
 from engine.stop import ask_session
-from providers import DEFAULT_PROVIDER, DRIVERS
+from providers import DRIVERS
+from resources.base import DEFAULT_PROVIDER
 from features.permission_prompts.skipping import prompted
 from resources.base import SYSTEM
 from resources.types import EnvironmentKind

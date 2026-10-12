@@ -7,7 +7,7 @@ from controllers.types import Agents
 from engine.proc import process
 from engine.record import Record
 from engine.sessions import Sessions
-from engine.wording import clipped
+from resources.text import clipped
 from providers.command_effects import settled
 from resources.base import SYSTEM
 

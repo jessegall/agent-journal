@@ -22,7 +22,7 @@ from providers.payload import HookEvent
 from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, titled
 from resources.types import TYPES, priority
 from agents.seat import SeatReport
-from engine.wording import digest, plural
+from resources.text import digest, plural
 from engine.transcript import PEER
 from providers.turns import turns
 from runner.chat_mirror import send_row_to_chat, unfinished

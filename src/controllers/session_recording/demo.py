@@ -6,9 +6,9 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 from engine.proc import git
-from features.session_recording.scrub import Scrubber
+from controllers.session_recording.scrub import Scrubber
 from resources.base import Refused
-from engine.wording import digest
+from resources.text import digest
 
 RESTORED = {"record/environments/": "environments/", "record/project/": "project/"}
 

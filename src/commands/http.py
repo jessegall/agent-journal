@@ -38,7 +38,8 @@ from engine.stepped import call_of
 from runner.spool import drain, replay
 from runner.stepping import report_step
 from engine.record import Record
-from providers import DEFAULT_PROVIDER, PROVIDERS
+from providers import PROVIDERS
+from resources.base import DEFAULT_PROVIDER
 from providers.payload import Hook
 from resources.base import OPENED, PROJECT, USER, Refused, titled
 from engine.stored import last_lines

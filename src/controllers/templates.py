@@ -3,7 +3,7 @@ import resources.types as resources_module
 from controllers.base import Controller
 from resources.templates import Template, TemplateField
 from resources.base import Refused
-from engine.wording import slugged
+from resources.text import slugged
 from controllers.marks import action
 
 

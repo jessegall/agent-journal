@@ -13,7 +13,7 @@ from engine.stored import write_json
 from typing import TypedDict
 from engine.given import given
 from engine.state import State
-from engine.wording import slugged
+from resources.text import slugged
 from resources.base import Refused
 
 TUNNEL_FILE, BACKUP_FILE = "sharing.json", "sharing.backup.json"

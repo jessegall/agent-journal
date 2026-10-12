@@ -1,6 +1,6 @@
 from engine.organization import AGENT, PLAN, Role
 from features.agent_sessions.launch import start_agent_in, tell_in
-from providers import DEFAULT_PROVIDER
+from resources.base import DEFAULT_PROVIDER
 from resources.types import EnvironmentKind
 
 

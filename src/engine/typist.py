@@ -4,7 +4,7 @@ import os
 import socket
 import time
 from pathlib import Path
-from engine.wording import digest
+from resources.text import digest
 
 PACKET = 2048
 FULL_FOR = 2.0
