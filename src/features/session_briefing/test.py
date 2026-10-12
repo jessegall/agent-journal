@@ -256,25 +256,23 @@ def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits_and_a_foll
     driver.pump()
     assert sent == ["first", "second"], "the queue goes out when the window ends"
     follow = DRIVERS["claude"](fresh(), "claude-9")
-    posted, typed = [], []
-    monkeypatch.setattr(follow, "_post", lambda line, by: posted.append((line, by)) or True)
+    typed = []
     monkeypatch.setattr(follow, "_typed", lambda line, confirmed: typed.append(line) or True)
     monkeypatch.setattr(follow, "awaits_answer", lambda: False)
-    assert follow.TAKES_CHANNEL and follow.send("do the next step", now=True, by="claude-1")
+    assert follow.send("do the next step", now=True, by="claude-1")
     from payload import said_by
-    assert (posted, typed) == ([], [f"{said_by('claude-1')}\ndo the next step"]), \
-        "a follow-up is typed as an instruction, never posted on the channel, and says which agent it comes from, so the agent reading it can tell a message from a stray paste"
+    assert typed == [f"{said_by('claude-1')}\ndo the next step"], \
+        "a follow-up is typed as an instruction and says which agent it comes from, so the agent reading it can tell"
     assert follow.send("todo 5 next", now=True)
-    assert (posted, typed) == ([("todo 5 next", "journal")], [f"{said_by('claude-1')}\ndo the next step"]), "the journal's own line still goes over the channel"
+    assert typed[-1] == "[journal] todo 5 next", "and the journal's own line is typed too: there is no second road"
     import time
     twice = DRIVERS["claude"](fresh(), "claude-8")
-    channel, typing = [], []
-    monkeypatch.setattr(twice, "_post", lambda line, by: channel.append(line) or bool(len(channel) > 1))
+    typing = []
     monkeypatch.setattr(twice, "_typed", lambda line, confirmed: typing.append(line) or setattr(twice, "entered_at", time.time()) or False)
     monkeypatch.setattr(twice, "awaits_answer", lambda: False)
     assert [twice.send("1 new message 7", now=True), twice.send("1 new message 7", now=True)] == [False, True]
-    assert (channel, typing) == (["1 new message 7"], ["[journal] 1 new message 7"]), \
-        "a line typed whose landing was not confirmed is not handed over again by the channel a moment later: the agent has it once"
+    assert typing == ["[journal] 1 new message 7"], \
+        "a line typed whose landing was not confirmed is not typed again a moment later: the agent has it once"
 
 
 def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
@@ -290,58 +288,6 @@ def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
     driver._report = lambda: SimpleNamespace(at=time.time(), asking={}) if written.count(b"\r") >= 2 else None
     assert (driver.send("hello", now=True), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"
     assert b"[journal] hello" in written, "a typed line says it is the journal's, so the agent never takes it for the user"
-
-
-def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
-    from functools import partial
-    from tests.kit import appended
-    import time
-    from datetime import datetime, timezone
-    from types import SimpleNamespace
-    from engine import runtime
-    from providers import DRIVERS
-    record = fresh()
-    from engine.sessions import Sessions
-    driver = DRIVERS["claude"](record, "claude-1")
-    Sessions(record.root).write("claude-1", pid=4242)
-    alive = runtime.channel_alive(record.root, 4242)
-    alive.parent.mkdir(parents=True, exist_ok=True)
-    alive.touch()
-    transcript = tmp_path / "t.jsonl"
-    transcript.write_text("")
-    driver.last_report = lambda: SimpleNamespace(transcript=str(transcript), asking={})
-    stamp = lambda: datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    written = partial(appended, transcript)
-    assert driver._post("todo 5 next", "journal") is True, "a live channel takes the line"
-    time.sleep(0.01)
-    written({"type": "attachment", "timestamp": stamp(), "attachment": {"type": "queued_command", "prompt": '<channel source="journal" from="journal">\ntodo 5 next'}},
-            *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._post("2 new messages 7, 8", "journal") is True, "a line that reached the agent mid-turn, as a queued attachment, keeps the channel in use"
-    time.sleep(0.01)
-    tucked = 'done\nA message arrived from journal while you were working:\n<channel source="journal" from="journal">\n2 new messages 7, 8\n</channel>'
-    written({"type": "user", "timestamp": stamp(), "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "content": tucked}]}},
-            *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._post("todo 7 next", "journal") is True, "a line that reached the agent inside a tool result keeps the channel in use"
-    time.sleep(0.01)
-    written({"type": "queue-operation", "operation": "enqueue", "timestamp": stamp(), "content": '<channel source="journal" from="journal">\ntodo 7 next\n</channel>'},
-            *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._post("fact 9 \u2014 title\nits brief", "journal") is True, "a line of two lines is handed to the channel"
-    time.sleep(0.01)
-    written({"type": "queue-operation", "operation": "enqueue", "timestamp": stamp(), "content": '<channel source="journal" from="journal">\nfact 9 \u2014 title its brief\n</channel>'},
-            *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._post("todo 9 next", "journal") is True, "a line queued while the agent works, as a queue operation, keeps the channel in use"
-    time.sleep(0.01)
-    written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._post("work 1 open", "journal") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
-    assert driver._post("todo 6 next", "journal") is False, "and keeps typing them for a while rather than losing more"
-    driver.whisper("fact 9 \u2014 a whisper the channel cannot take")
-    assert driver.held == [], "a whisper the channel cannot take is dropped, never typed into the terminal"
-    assert driver._held().typed_until > time.time(), "the lost line put the agent on typed lines for a while"
-    driver.recheck_channel()
-    assert driver._held().typed_until == 0.0, "a channel that answers again ends the typed fallback at the next check, without waiting it out"
-    assert DRIVERS["codex"](record, "codex-1").recheck_channel() is None, "a provider with no channel is asked nothing"
-    alive.unlink()
-    assert driver._post("todo 8 next", "journal") is False, "a channel whose file is gone takes nothing, and the line is typed instead"
 
 
 def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):

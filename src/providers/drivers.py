@@ -287,9 +287,13 @@ class Driver(ABC):
         self.held, self.yielding = self.held + self.yielding, []
         line = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
                 else "; ".join(dict.fromkeys(self.held + counted(self.still_open(), self.record))))
-        self.held, self.groups, self.sent_at = [], {}, time.time()
+        sending, self.sent_at = list(self.held), time.time()
         self.failed = not self._deliver(line, JOURNAL)
-        return "" if self.failed else line
+        if self.failed:
+            self.held = sending
+            return ""
+        self.held, self.groups = [], {}
+        return line
 
     def _deliver(self, line: str, by: str) -> bool:
         """Hands a line to the agent by the channel when it takes it, and types it when it does not; a line that may have reached the agent by one is never handed over by the other, since an unconfirmed typed line is as likely taken as not."""
