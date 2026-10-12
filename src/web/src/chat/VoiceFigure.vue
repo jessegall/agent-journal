@@ -3,7 +3,7 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureRise, figureStatus} from "../composables/voiceFigure.js";
-import {SEATED, beatsAfter, clipOf, eggFor, figureStateOf, testResultsAfter} from "../domain/figureState.js";
+import {SEATED, beatsAfter, clipOf, eggFor, facesAfter, figureStateOf, testResultsAfter} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {BUBBLE, HANGS, ODDS, SETTLED_SECONDS, perchOn, perchSpot} from "../figure/perches.js";
 import {ambientFor, flips, reactionTo, workClip} from "../figure/reactions.js";
@@ -278,7 +278,7 @@ function look() {
     now.value = Date.now() / 1000;
     const waiting = counts.value.question + counts.value.waiting + counts.value.suggestion > 0;
     waitingSince.value = waiting ? waitingSince.value || now.value : 0;
-    const fresh = [...beatsAfter(agent.value, seenAt), ...testResultsAfter(agent.value, testStates)];
+    const fresh = [...beatsAfter(agent.value, seenAt), ...testResultsAfter(agent.value, testStates), ...facesAfter(rows("reaction"), seenAt)];
     if (fresh.length) seenAt = Math.max(seenAt, ...fresh.map((fire) => fire.at));
     const waited = {state: held.value.state, since: held.value.since, lasted: now.value - held.value.since};
     const eggs = [...fresh.map((fire) => eggOf(fire) || reactionClip(fire)), eggOf(waited), ambientClip(waited)];
@@ -377,6 +377,8 @@ onUnmounted(() => {
 const chasing = computed(() => shownClip.value?.name === "squire_chase");
 // the laptop on its lap while it types
 const typing = computed(() => shownClip.value?.name === "type");
+// the hearts that rise from its head while it answers a heart
+const hearted = computed(() => shownClip.value?.name === "hearts");
 // during an entrance or exit what is below the edge the figure stands on is hidden, as the box it climbs over or drops past would hide it
 const passing = computed(() => ["enter", "exit"].includes(shownClip.value?.name));
 const below = ref(0);
@@ -394,6 +396,13 @@ const style = computed(() => ({
     <div v-show="figureStatus === 'shown' && here" class="voice-figure" :style="style" aria-hidden="true" @transitionend="nextLeg">
         <div :class="['voice-figure-actor', {chasing}]" :style="chasing ? {animationDuration: `${chaseMs}ms`} : null">
             <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
+            <template v-if="hearted">
+                <template v-for="n in 3" :key="n">
+                    <svg :class="['voice-figure-heart', `heart-${n}`]" viewBox="0 0 16 14" width="14" height="12">
+                        <path d="M8 13C-4 5 3-2 8 3c5-5 12 2 0 10z" fill="#ff6b9a" />
+                    </svg>
+                </template>
+            </template>
             <template v-if="typing">
                 <svg class="voice-figure-laptop" viewBox="0 0 44 28" width="44" height="28">
                     <rect x="2" y="1" width="40" height="22" rx="3" fill="#2b2e38" stroke="#8b8e97" stroke-width="1.2" />
@@ -431,6 +440,45 @@ const style = computed(() => ({
 .voice-figure-actor {
     width: 100%;
     height: 100%;
+}
+
+/* three hearts float up from the figure's head, one after the other */
+.voice-figure-heart {
+    position: absolute;
+    top: 14%;
+    left: 50%;
+    opacity: 0;
+    animation: voice-figure-heart 1.4s ease-out forwards;
+}
+
+.voice-figure-heart.heart-1 {
+    margin-left: -26px;
+}
+
+.voice-figure-heart.heart-2 {
+    margin-left: 8px;
+    animation-delay: 0.3s;
+}
+
+.voice-figure-heart.heart-3 {
+    margin-left: -9px;
+    animation-delay: 0.6s;
+}
+
+@keyframes voice-figure-heart {
+    0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-34px) scale(1);
+        opacity: 0;
+    }
 }
 
 /* the laptop open on its lap, its lid towards the viewer */

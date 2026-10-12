@@ -83,6 +83,7 @@ class Posing {
         this.rig = rig;
         this.final = new Map();
         this.eyes = 1;
+        this.eyeTint = null;
     }
 
     standing(name) {
@@ -169,6 +170,11 @@ class Posing {
 
     shutEyes(open) {
         this.eyes = Math.max(open, MIN_EYE_HEIGHT);
+    }
+
+    // the eyes' colour, as red, green and blue from 0 to 1; none leaves them their own
+    tintEyes(colour) {
+        this.eyeTint = colour;
     }
 
     // every bone's move, the whole figure turned `facing` degrees toward the viewer's right as rig.Posing.revolve turns it
@@ -387,9 +393,25 @@ function handsTo(pose, stance, k, spot, elbow = THINK_ELBOW) {
     for (const side of free) handTo(pose, side, k, new THREE.Vector3(SIDES[side] * spot[0], spot[1], spot[2]), new THREE.Vector3(...elbow));
 }
 
+// the eyes' moods: how far they open, and what colour they take on; the figure's helmet hides everything else, so they carry the expression
+const EYES = {
+    hearts: {open: 1.2, tint: [1, 0.4, 0.6]},
+    amused: {open: 0.3, tint: [1, 0.85, 0.4]},
+    startled: {open: 1.5, tint: [1, 1, 1]},
+    worried: {open: 0.7, tint: [0.6, 0.75, 1]},
+    angry: {open: 0.45, tint: [1, 0.35, 0.3]},
+    reading: {open: 0.8, tint: null},
+};
+
+function eyesAs(pose, mood, strength = 1) {
+    const {open, tint} = EYES[mood];
+    pose.shutEyes(mix(1, open, strength));
+    if (tint && strength > 0.5) pose.tintEyes(tint);
+}
+
 // where the hands rest to type on a laptop on the lap, and where they cover the eyes
-const TYPING_HANDS = [0.34, -1.05, 1.05];
-const EYE_HANDS = [0.22, -1.0, 2.62];
+const TYPING_HANDS = [0.3, -0.55, 1.75];
+const EYE_HANDS = [0.34, -0.82, 2.52];
 
 // sits head down at a laptop on its lap, the hands moving, and now and then a pause
 function type(pose, stance, t) {
@@ -399,7 +421,51 @@ function type(pose, stance, t) {
     breathe(pose, 0);
     trunk(pose, {lean: 6, nod: 20 - 4 * pause, turn: 2 * waveOf(t)});
     handsTo(pose, stance, 1, [TYPING_HANDS[0], TYPING_HANDS[1], TYPING_HANDS[2] + 0.035 * tap]);
-    pose.shutEyes(blinkAt(t, 0.8, 24));
+    eyesAs(pose, "reading");
+}
+
+// hands over the heart, the eyes gone pink and wide, the body swaying: the answer to a heart
+function hearts(pose, stance, t) {
+    const u = onceTime(t, 20);
+    const warm = swell(u, 0, 1);
+    seatedBody(pose, 0, 0.04 * waveOf(t, 3) * warm);
+    breathe(pose, 0);
+    trunk(pose, {lean: 6 * warm, nod: 8 * warm, tilt: 6 * waveOf(t, 1.5) * warm});
+    handsTo(pose, stance, warm, [0.28, -0.45, 1.8]);
+    eyesAs(pose, "hearts", warm);
+}
+
+// laughs: the body shaking and the head bobbing, the eyes screwed up
+function laugh(pose, stance, t) {
+    const u = onceTime(t, 16);
+    const fit = swell(u, 0.05, 0.95);
+    seatedBody(pose, 0, 0.05 * Math.abs(waveOf(t, 4)) * fit);
+    breathe(pose, 0);
+    trunk(pose, {lean: -3 * fit, nod: 10 * waveOf(t, 4) * fit, tilt: 4 * waveOf(t, 2) * fit});
+    armsAtRest(pose, stance);
+    eyesAs(pose, "amused", fit);
+}
+
+// bows its head and body, thanks given
+function bow(pose, stance, t) {
+    const u = onceTime(t, 18);
+    const low = swell(u, 0.05, 0.95);
+    seatedBody(pose, 0);
+    breathe(pose, 0);
+    trunk(pose, {lean: 26 * low, nod: 14 * low});
+    armsAtRest(pose, stance);
+    pose.shutEyes(1 - 0.85 * low);
+}
+
+// flinches back from something unpleasant, the arms up in front and the eyes narrowed
+function flinch(pose, stance, t) {
+    const u = onceTime(t, 14);
+    const back = swell(u, 0, 0.7);
+    seatedBody(pose, 0, 0.04 * back);
+    breathe(pose, 0);
+    trunk(pose, {lean: -14 * back, nod: -6 * back, turn: 8 * back});
+    flung(pose, stance, -20 * back, 45 * back);
+    eyesAs(pose, "angry", back);
 }
 
 // jumps for joy where it sits: both arms thrown up and the whole body leaving the seat twice, the head back
@@ -409,7 +475,7 @@ function joy(pose, stance, t) {
     seatedBody(pose, 0, 0.32 * leap);
     breathe(pose, 0);
     trunk(pose, {lean: -5 * leap, nod: -14 + 4 * leap});
-    flung(pose, stance, 0, 40 + 55 * leap, 6 * waveOf(t, 4));
+    flung(pose, stance, 0, 70 + 55 * leap, 6 * waveOf(t, 4));
     tucked(pose, 0.5 * leap);
 }
 
@@ -422,7 +488,7 @@ function dismay(pose, stance, t) {
     breathe(pose, 0);
     trunk(pose, {lean: 4 * hands, nod: 10 * hands, turn: 24 * shaking * waveOf(span(u, 0.28, 0.82), 1.5)});
     handsTo(pose, stance, hands, EYE_HANDS);
-    pose.shutEyes(0.15 * hands);
+    eyesAs(pose, "worried", hands);
 }
 
 // looks about, to one side, then the other, as a creature does when nothing is going on
@@ -942,6 +1008,7 @@ function fall(pose, stance, t) {
     breathe(pose, 0);
     trunk(pose, {lean: -9 * drop - 8 * gasp, nod: -6 * drop - 10 * gasp, tilt: 4 * waveOf(t, 3) * drop});
     flung(pose, stance, 0, (70 + 8 * waveOf(t, 3)) * drop + 25 * gasp, 14 * waveOf(t, 3) * drop);
+    eyesAs(pose, "startled", Math.max(gasp, 0.6 * drop));
     tucked(pose, 0.5 * drop, 14 * waveOf(t, 3) * drop);
 }
 
@@ -1053,7 +1120,7 @@ export const CLIPS = [
     {name: "celebrate", frames: 12, fps: 10, loops: true, pose: celebrate},
     {name: "sleep", frames: 18, fps: 6, loops: true, pose: sleep},
     {name: "walk", frames: 12, fps: 12, loops: true, leaves: 6, pose: walk},
-    {name: "sit_on_edge", frames: 24, fps: 8, loops: true, pose: sit_on_edge},
+    {name: "sit_on_edge", frames: 24, fps: 8, loops: true, leaves: 8, pose: sit_on_edge},
     {name: "walk_in", frames: 40, fps: 12, loops: false, pose: walk_in},
     {name: "run_in", frames: 28, fps: 12, loops: false, pose: run_in},
     {name: "pull_ups", frames: 24, fps: 10, loops: true, pose: pull_ups},
@@ -1069,8 +1136,12 @@ export const CLIPS = [
     {name: "fall", frames: 12, fps: 12, loops: false, pose: fall},
     {name: "backflip", frames: 22, fps: 20, loops: false, pose: backflip},
     {name: "land", frames: 10, fps: 20, loops: false, pose: land},
-    {name: "type", frames: 24, fps: 8, loops: true, pose: type},
+    {name: "type", frames: 24, fps: 8, loops: true, leaves: 8, pose: type},
     {name: "joy", frames: 20, fps: 14, loops: false, pose: joy},
+    {name: "hearts", frames: 20, fps: 10, loops: false, pose: hearts},
+    {name: "laugh", frames: 16, fps: 12, loops: false, pose: laugh},
+    {name: "bow", frames: 18, fps: 10, loops: false, pose: bow},
+    {name: "flinch", frames: 14, fps: 14, loops: false, pose: flinch},
     {name: "dismay", frames: 28, fps: 10, loops: false, pose: dismay},
     {name: "look_around", frames: 24, fps: 10, loops: false, pose: look_around},
     {name: "stretch", frames: 24, fps: 8, loops: false, pose: stretch},
@@ -1252,6 +1323,7 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
         hull.quaternion.copy(mesh.quaternion);
         hull.scale.copy(mesh.scale);
         if (mesh.name.startsWith("eye_")) {
+            mesh.material.userData.colour = mesh.material.uniforms.colour.value.toArray();
             eyes.push(mesh.material, hull.material);
         }
     }
@@ -1276,6 +1348,7 @@ function place(figure, pose, facing) {
     }
     for (const material of figure.eyes) {
         material.uniforms.openness.value = pose.eyes;
+        if (material.uniforms.light) material.uniforms.colour.value.set(...(pose.eyeTint ?? material.userData.colour));
     }
 }
 

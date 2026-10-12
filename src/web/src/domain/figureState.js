@@ -69,6 +69,15 @@ const BEATS = [
 // the first clip each moment calls for, as the reactions name them
 export const BEAT_CLIPS = Object.fromEntries([...REACTIONS].reverse().map((each) => [each.moment, each.clip]));
 
+// The beats for faces the user has put on messages since `seenAt` (seconds), oldest first; `reactions` are the journal's reaction rows. The
+// card is the message the face is on.
+export function facesAfter(reactions, seenAt) {
+    return reactions
+        .filter((row) => !row.deleted && row.seen[0] === "user" && row.created > seenAt)
+        .map((row) => ({beat: `reacted:${row.data.face}`, at: row.created, card: row.refs[0]}))
+        .sort((a, b) => a.at - b.at);
+}
+
 // A test run's card is made when it starts and changes when it ends, so its result is a change seen between two looks: the beats for each
 // test card that has ended since `known` (card key to the state it had) was last filled in, which this fills in
 export function testResultsAfter(agent, known) {

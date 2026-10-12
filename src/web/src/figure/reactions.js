@@ -12,6 +12,17 @@ export const REACTIONS = [
     {moment: "answered", clip: "nod", odds: 0.6, cooldown: 15},
     {moment: "heard", clip: "wave", odds: 0.15, cooldown: 120},
     {moment: "heard", clip: "nod", odds: 0.35, cooldown: 15},
+    // a face the user puts on a message is aimed at the figure, so it always answers, and turns to the message to do it
+    {moment: "reacted:\u2764\ufe0f", clip: "hearts", odds: 1, cooldown: 0, toward: "card"},
+    {moment: "reacted:\ud83d\udc4d", clip: "nod", odds: 1, cooldown: 0, toward: "card"},
+    {moment: "reacted:\ud83c\udf89", clip: "joy", odds: 1, cooldown: 0, toward: "card"},
+    {moment: "reacted:\ud83d\ude04", clip: "laugh", odds: 1, cooldown: 0, toward: "card"},
+    {moment: "reacted:\ud83d\udc40", clip: "look_around", odds: 1, cooldown: 0, toward: "card"},
+    {moment: "reacted:\ud83d\ude4f", clip: "bow", odds: 1, cooldown: 0, toward: "card"},
+    {moment: "reacted:\ud83d\udc4e", clip: "shake", odds: 1, cooldown: 0, toward: "card"},
+    {moment: "reacted:\ud83d\udc94", clip: "dismay", odds: 1, cooldown: 0, toward: "card"},
+    {moment: "reacted:\ud83d\ude20", clip: "flinch", odds: 1, cooldown: 0, toward: "card"},
+    {moment: "reacted:\ud83c\udfa9", clip: "bow", odds: 1, cooldown: 0, toward: "card"},
 ];
 
 // While the agent works, the figure sits down with a laptop most of the time, and otherwise does what the state's own clip does
