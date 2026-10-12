@@ -15,6 +15,7 @@ from features.parts import ActionInterceptor, AgentContext, Canceler, Command, C
 from resources.base import SYSTEM, USER, Refused
 from features.routing import FEATURE_ROUTES
 from receiving import ANSWER, HANDLE, LISTEN, REFUSE, REGISTERED, Answerer, Handler, Listener, Refuser, Registration
+from features.adapter import adapted_beside_the_bus
 from features.promises import PROMISED, Promise
 from expects.watching import WATCH
 
@@ -67,6 +68,7 @@ class Events:
         self.names.append(kind.name())
         for pattern in kind.patterns(handler.hooks):
             bus.on(pattern, run, enabled=feature.enabled)
+        adapted_beside_the_bus(feature, handler, run, kind)
 
     def listen(self, event: type, listener: Listener, expects) -> None:
         """Reads the event and dispatches the facts it recognises; read-only, in the tick the event belongs to."""

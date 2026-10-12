@@ -503,7 +503,7 @@ def test_an_unswept_2x_handler_runs_on_the_adapter_and_the_sending_path_cannot()
     assert "a request and not a fact" in str(refusal.value), \
         "a handler on the sending path cannot be adapted at all, which is why those features are swept first"
 
-    assert [one.says() for one in moved(["plans", "tickets"], {"tickets": ("MindTheBoard",)})] == \
+    assert [one.says() for one in moved(["plans", "tickets"], {"tickets": ("MindTheBoard",)}, {})] == \
         ["plans: moved", "tickets: adapted (MindTheBoard)"], "the listing says, per feature, moved or adapted"
 
 
@@ -623,3 +623,57 @@ def test_a_handler_run_in_the_world_an_expectation_states_is_held_to_it_off_its_
         assert watch.inbox.qsize() == 0, "a run with no record cannot be watched: there is nothing to read what it did from"
     finally:
         BROKEN.entries = [entry for entry in BROKEN.entries if entry.owner is not None]
+
+
+def test_an_old_handler_beside_the_bus_is_registered_on_the_adapter_and_the_listing_says_where_each_feature_stands():
+    from types import SimpleNamespace
+
+    import features
+    from events import Fact, Request
+    from features.adapter import CannotBeAdapted, LoggedHandler, OldEvent, listing
+    from features.parts import Handler as OldStyle
+    from features.promises import PROMISED
+    from receiving import HANDLE, REGISTERED, Registration, Registrations
+    from receiving.ticks import Lane, Services
+    from resources.base import Event
+    from serving import Adapted as TheRecord
+
+    features.load()
+    said = dict(line.split(": ", 1) for line in listing().splitlines())
+    assert said["awaited"] == "adapted (ReturnWhenAwaitedReport)", "a feature whose handlers all run on the adapter says which"
+    assert said["command_tags"] == "adapted (TeachTheTag); cannot be adapted (RunTagCommands), swept first", \
+        "a handler on the sending path cannot run there, so its feature is not moved and the listing says it is swept first"
+    assert said["acknowledgements"] == "cannot be adapted (HideJournalOnlyTurns), swept first", "and one that has nothing else says only that"
+    handled = {one.feature.name for one in PROMISED.each if one.kind == "handler"}
+    assert all(said[name] != "moved" for name in handled) and all(said[name] == "moved" for name in said if name not in handled), \
+        "a feature reads as moved when it holds no old handler, and as adapted or stuck while it holds one"
+    adapted = [one for one in REGISTERED.of(HANDLE) if type(one.receiver).adapted]
+    assert len({(one.feature, one.name) for one in adapted}) == len(adapted) and {one.name for one in adapted} >= {"TeachTheTag", "SendOnTheClock"}, \
+        "each registers under its old handler's own name, so the ordering can tell them apart and none is registered twice"
+
+    ran = []
+
+    class MindTheBoard(OldStyle):
+        hooks = ()
+
+        def handle(self, context, event):
+            raise AssertionError("the adapter runs the bus's own run, never the handler directly")
+
+    class Switched:
+        on = True
+
+        def enabled(self, record) -> bool:
+            return self.on
+
+    kind = SimpleNamespace(marked_as=Fact, patterns=lambda hooks: ("todo.created",))
+    feature = Switched()
+    registered = Registrations()
+    registered.add(Registration.read(HANDLE, OldEvent, LoggedHandler(feature, MindTheBoard(), lambda logged, record: ran.append((logged.n, record)), kind), [], "tickets"))
+    lane = lambda: Lane("project", registered, Services({TheRecord: "the tick's record"}))
+    lane().run(OldEvent(logged=Event(1, 0.0, "todo", 3, "created", "agent")))
+    lane().run(OldEvent(logged=Event(2, 0.0, "todo", 4, "updated", "agent")))
+    feature.on = False
+    lane().run(OldEvent(logged=Event(3, 0.0, "todo", 5, "created", "agent")))
+    assert ran == [(3, "the tick's record")], "the old handler runs for the events the bus would have given it and while its feature is on, and for no other"
+    with pytest.raises(CannotBeAdapted):
+        LoggedHandler(feature, MindTheBoard(), None, SimpleNamespace(marked_as=Request, patterns=lambda hooks: ()))

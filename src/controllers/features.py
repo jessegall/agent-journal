@@ -27,6 +27,11 @@ class Features(Controller):
         return self.update(row.n, enabled=bool(on)) if row else self.create(name, enabled=bool(on))
 
     @action
+    def moved(self) -> dict:
+        from features.adapter import listing
+        return {"out": listing()}
+
+    @action
     def on(self, name: str, default: bool = True) -> bool:
         if name in PROJECT_PARTS.of(Record.features):
             return bool(self.record.features.get(name, default))
