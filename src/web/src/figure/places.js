@@ -70,18 +70,22 @@ function tabSpots(tab, figure) {
     return SIDEWAYS.flatMap((share) => heights.map((y) => ({x: middle + share * figure.size, y})));
 }
 
-// the way a figure turns to face along the edge it dangles over: right on a right corner, left on a left one; facing the viewer is 0
-const FACE_RIGHT = 90;
-const FACE_LEFT = 270;
-
-// Where a figure sits: on a corner of the box it perches on, its hips on the corner so its legs hang down over it
-const SEAT_CORNERS = [
-    {along: 1, over: 0, face: FACE_RIGHT},
-    {along: 0, over: 0, face: FACE_LEFT},
-];
+// Where a figure sits: on a corner of a box it perches on, turned along the edge it dangles over, with its hips a little inboard of
+// the corner so the weight rests on the surface behind the edge and only the legs reach past it
+const SEAT_SIDES = {
+    right: {along: 1, inboard: -1, face: 90},
+    left: {along: 0, inboard: 1, face: 270},
+};
+const SEAT_INBOARD = 0.14;
 
 // how far below the edge the figure's feet are, as a share of its height, so its hips sit on the edge itself
 const SEAT_DROP = 0.26;
+
+// The spot on one corner of a box's top edge, `side` being "left" or "right"; `face` turns the figure along the edge, 0 faces the viewer
+export function seatAt(box, side, {size}) {
+    const {along, inboard, face} = SEAT_SIDES[side];
+    return {x: box.left + box.width * along + inboard * SEAT_INBOARD * size, y: box.top + SEAT_DROP * size, face};
+}
 
 // the pixels of a seated figure above the edge it sits on
 export const seatRise = ({size, below}) => (1 - below - SEAT_DROP) * size;
@@ -89,9 +93,8 @@ export const seatRise = ({size, below}) => (1 - below - SEAT_DROP) * size;
 export function seatOf(figure, near) {
     const home = document.querySelector(HOME);
     const box = (home || document.querySelector(FLOOR)).getBoundingClientRect();
-    const top = home ? box.top : box.bottom;
-    const corners = SEAT_CORNERS.map((corner) => ({x: box.left + box.width * corner.along + corner.over * figure.size, y: top + SEAT_DROP * figure.size, face: corner.face}));
-    return {...freeSpot(corners, figure, near), view: null};
+    const edge = {left: box.left, width: box.width, top: home ? box.top : box.bottom};
+    return {...freeSpot(Object.keys(SEAT_SIDES).map((side) => seatAt(edge, side, figure)), figure, near), view: null};
 }
 
 // Home is the main chat's compose box; a page without one gives the figure the floor of the page itself

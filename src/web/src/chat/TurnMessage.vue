@@ -184,7 +184,7 @@ async function drop() {
         <template v-if="opening">
             <TurnBriefMarker :at="turn.created" />
         </template>
-        <div v-show="bubbled && !opening" ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
+        <div v-show="bubbled && !opening" ref="bubble" class="thread-bubble md" data-figure-bubble @click="resourceComment && openComment()">
             <template v-if="fromMain">
                 <TurnFromMain :at="turn.created" />
             </template>

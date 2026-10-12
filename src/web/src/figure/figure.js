@@ -330,6 +330,8 @@ const RUN_STRIDE = [1.84, 0.38, 0.2];
 const WALK_STRIDE = [1.36, 0.6, 0.16];
 const DEPART_TURN = 0.14;
 const SEAT_LIFT = 0.2;
+// how far each knee bends when sitting on an edge; under a right angle the feet reach ahead of the knees, as a person sits on a wall
+const SEAT_SHIN = 66;
 const PULL_GRIP_X = 1.51;
 const PULL_GRIP_Y = -0.0233463035019455;
 const PULL_GRIP_Z = 3.17;
@@ -365,7 +367,7 @@ function sit_on_edge(pose, stance, t) {
     armsAtRest(pose, stance);
     for (const [side, sign] of Object.entries(SIDES)) {
         pose.turn(`thigh_${side}`, {x: -88});
-        pose.bend(`shin_${side}`, 88 + sign * 9 * sway);
+        pose.bend(`shin_${side}`, SEAT_SHIN + sign * 9 * sway);
         pose.turn(`foot_${side}`, {x: -sign * 5 * sway});
     }
     pose.shutEyes(blinkAt(t, 0.625, 24));
@@ -468,10 +470,25 @@ function pull_ups(pose, stance, t) {
         idle(pose, stance, t);
         return;
     }
-    const pull = 0.5 - 0.5 * Math.cos(2 * Math.PI * t);
+    gripping(pose, stance, t, {pull: 0.5 - 0.5 * Math.cos(2 * Math.PI * t), swing: 0});
+}
+
+// hangs from a ledge by the hands that are free, one or two, with the body below and the feet loose and swinging a little; a hand that
+// carries something keeps carrying it
+function dangle(pose, stance, t) {
+    gripping(pose, stance, t, {pull: 0, swing: waveOf(t)});
+}
+
+function gripping(pose, stance, t, {pull, swing}) {
+    const free = Object.keys(SIDES).filter((side) => !stance.busy.has(side) && !stance.level.has(side));
+    armsAtRest(pose, stance, free);
     pose.lift("root", {z: 0.2 + 0.38 * pull});
-    trunk(pose, {nod: -3 * pull});
+    trunk(pose, {nod: -3 * pull, turn: 2 * swing});
     for (const [side, sign] of Object.entries(SIDES)) {
+        pose.turn(`thigh_${side}`, {x: -8 + 7 * swing * sign});
+        pose.bend(`shin_${side}`, 18 + 8 * swing * sign);
+        pose.turn(`foot_${side}`, {x: -10});
+        if (!free.includes(side)) continue;
         const shoulder = pose.head(`upper_arm_${side}`, pose.standing(`upper_arm_${side}`));
         const heads = pose.rig.heads;
         const upper = Math.abs(heads.get(`forearm_${side}`).x - heads.get(`upper_arm_${side}`).x);
@@ -484,9 +501,6 @@ function pull_ups(pose, stance, t) {
         pose.turn(`upper_arm_${side}`, {y: (-sign * raiseBy * 180) / Math.PI});
         pose.bend(`forearm_${side}`, (bend * 180) / Math.PI);
         pose.face(`hand_${side}`, {x: -90, y: -sign * 45});
-        pose.turn(`thigh_${side}`, {x: -8});
-        pose.bend(`shin_${side}`, 18);
-        pose.turn(`foot_${side}`, {x: -10});
     }
 }
 
@@ -799,15 +813,59 @@ function point(pose, stance, t) {
     armTo(pose, side, 1, {y: -50 + 4 * waveOf(t), z: -35, bend: 6});
 }
 
-// a hop from one pane's edge to another: crouch, spring, tuck, land
-function hop(pose, stance, t) {
-    const u = onceTime(t, 8);
-    const airborne = swell(u, 0.25, 0.85);
-    pose.lift("root", {z: 0.5 * airborne - 0.2 * (swell(u, 0, 0.3) + swell(u, 0.8, 1))});
+// the arms of a jump or a fall, those that carry nothing: swung back by `back` degrees and out and up by `up` degrees
+function flung(pose, stance, back, up, flail = 0) {
+    const free = Object.keys(SIDES).filter((side) => !stance.busy.has(side) && !stance.level.has(side));
+    armsAtRest(pose, stance, free);
+    for (const side of free) {
+        const sign = SIDES[side];
+        pose.turn(`upper_arm_${side}`, {x: back + flail * sign});
+        pose.turn(`upper_arm_${side}`, {y: -sign * up});
+        pose.bend(`forearm_${side}`, 10 + 0.2 * up);
+    }
+}
+
+// the legs tucked up under a body in the air, `tuck` from 0 to 1
+function tucked(pose, tuck, kick = 0) {
+    for (const [side, sign] of Object.entries(SIDES)) {
+        pose.turn(`thigh_${side}`, {x: -24 * tuck + kick * sign});
+        pose.turn(`shin_${side}`, {x: 44 * tuck});
+        pose.turn(`foot_${side}`, {x: -8 * tuck});
+    }
+}
+
+// a jump up to a perch: crouch with the arms swung back, push off with them swinging up, and leave the ground with the legs tucked
+function jump(pose, stance, t) {
+    const u = onceTime(t, 16);
+    const crouch = rise(u, 0, 0.26) * (1 - rise(u, 0.26, 0.36));
+    const air = rise(u, 0.3, 0.45);
+    pose.lift("root", {z: 0.1 * air});
     breathe(pose, 0);
-    trunk(pose, {lean: 10 * (swell(u, 0, 0.3) + swell(u, 0.8, 1))});
-    armsAtRest(pose, stance);
-    fold(pose, 0.2 * (swell(u, 0, 0.3) + swell(u, 0.8, 1)) + 0.15 * swell(u, 0.35, 0.75));
+    trunk(pose, {lean: 14 * crouch - 6 * air, nod: -4 * air});
+    flung(pose, stance, 40 * crouch, 80 * rise(u, 0.26, 0.42) * (1 - 0.4 * rise(u, 0.6, 1)));
+    fold(pose, 0.28 * crouch);
+    tucked(pose, air);
+}
+
+// a fall down to a perch: the arms thrown up and flailing, the legs kicking, the body leaning back as it drops
+function fall(pose, stance, t) {
+    const u = onceTime(t, 12);
+    const drop = rise(u, 0, 0.2);
+    pose.lift("root", {z: 0.1 * drop});
+    breathe(pose, 0);
+    trunk(pose, {lean: -9 * drop, nod: -6 * drop, tilt: 4 * waveOf(t, 3) * drop});
+    flung(pose, stance, 0, (70 + 8 * waveOf(t, 3)) * drop, 14 * waveOf(t, 3) * drop);
+    tucked(pose, 0.5 * drop, 14 * waveOf(t, 3) * drop);
+}
+
+// the landing after either: the knees take the weight, the body folds forward and the arms spread for balance, then it stands
+function land(pose, stance, t) {
+    const u = onceTime(t, 10);
+    const dip = rise(u, 0, 0.2) * (1 - rise(u, 0.2, 1));
+    breathe(pose, 0);
+    trunk(pose, {lean: 16 * dip, nod: 8 * dip});
+    flung(pose, stance, 0, 38 * dip);
+    fold(pose, 0.32 * dip);
 }
 
 // the butler sets the tray down when a commit lands, and picks it straight back up
@@ -907,18 +965,21 @@ export const CLIPS = [
     {name: "think", frames: 12, fps: 6, loops: true, pose: think},
     {name: "celebrate", frames: 12, fps: 10, loops: true, pose: celebrate},
     {name: "sleep", frames: 18, fps: 6, loops: true, pose: sleep},
-    {name: "walk", frames: 12, fps: 12, loops: true, pose: walk},
+    {name: "walk", frames: 12, fps: 12, loops: true, leaves: 6, pose: walk},
     {name: "sit_on_edge", frames: 24, fps: 8, loops: true, pose: sit_on_edge},
     {name: "walk_in", frames: 40, fps: 12, loops: false, pose: walk_in},
     {name: "run_in", frames: 28, fps: 12, loops: false, pose: run_in},
     {name: "pull_ups", frames: 24, fps: 10, loops: true, pose: pull_ups},
+    {name: "hang", frames: 24, fps: 8, loops: true, pose: dangle},
     {name: "enter", frames: 36, fps: 12, loops: false, pose: enter},
     {name: "exit", frames: 28, fps: 12, loops: false, pose: exit},
     {name: "search", frames: 12, fps: 10, loops: true, pose: search},
     {name: "write", frames: 12, fps: 12, loops: true, pose: write},
     {name: "work", frames: 8, fps: 10, loops: true, pose: work},
     {name: "point", frames: 12, fps: 8, loops: true, pose: point},
-    {name: "hop", frames: 8, fps: 16, loops: false, pose: hop},
+    {name: "jump", frames: 16, fps: 20, loops: false, pose: jump},
+    {name: "fall", frames: 12, fps: 12, loops: false, pose: fall},
+    {name: "land", frames: 10, fps: 20, loops: false, pose: land},
     {name: "butler_tray_down", frames: 16, fps: 10, loops: false, pose: butler_tray_down},
     {name: "squire_chase", frames: 24, fps: 12, loops: false, pose: squire_chase},
     {name: "pointed", frames: 20, fps: 10, loops: false, pose: pointed},
