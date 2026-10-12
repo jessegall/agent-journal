@@ -55,7 +55,8 @@ class ClaudeDriver(Driver):
     DISPLAY_HOOK = True
     SHELL = "!"
     INPUT_MARK = "❯".encode()
-    TAKES_CHANNEL = True
+    TAKES_CHANNEL = False
+    """Claude Code takes a channel, but the journal does not use it: it wraps anything an MCP server pushes in a warning that the text is untrusted and not from the user, which costs more tokens than the line it carries and is not the journal's to shorten. A typed line arrives as a turn with nothing around it."""
     rechecked = 0.0
     SUGGESTED = re.compile("(❯\u00a0)\x1b\\[2m([^\x1b\r\n]*)\x1b\\[22m".encode())
     AUTO_ARGS = ("--permission-mode", "auto")
