@@ -26,7 +26,8 @@ from features.tickets.landing import TicketLanding
 from features.tickets.orchestration import DRAFTS, PLANS, WAITS, TicketOrchestration
 from resources.tickets import CONFIRMED, PROPOSED, Ticket, card_back
 from controllers.types import Comments
-from features.plans.controller import ACTIVE, DONE as PLAN_DONE, READY, WAITING, Plans
+from controllers.types import Plans
+from resources.plans import ACTIVE, DONE as PLAN_DONE, READY, WAITING
 from resources.base import AGENT, ESCALATED, Refused, Resource, SYSTEM, USER, titled
 from resources.shapes import rank_before
 from controllers.marks import action

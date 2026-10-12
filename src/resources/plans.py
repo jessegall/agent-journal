@@ -118,3 +118,13 @@ def standing_of(row) -> str:
     if row.awaits_merge():
         return "built, waiting for the merge"
     return row.data.get("stage") or row.data.get("status") or "open"
+
+
+PHASES, TODOS = "phases", "todos"
+STAGES = (PHASES, TODOS)
+DEPTHS = {
+    "normal": "Write a good plan at the normal depth: the phases and the rows that matter, not every detail.",
+    "thorough": "The user asked for a thorough plan: research every part before you write it and file a to-do for every "
+                "small thing, down to the details, so nothing is left to the imagination.",
+}
+

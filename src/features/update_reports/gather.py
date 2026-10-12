@@ -2,7 +2,8 @@ import time
 
 from engine.git import commits_since
 from controllers.types import Docs, Questions, Reports, Todos, Works
-from features.plans.controller import READY, WAITING, Plans
+from controllers.types import Plans
+from resources.plans import READY, WAITING
 from resources.base import SYSTEM, USER
 from typing import TypedDict
 

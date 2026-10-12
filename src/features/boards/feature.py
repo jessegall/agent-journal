@@ -1,6 +1,6 @@
 from events.agents import ClockTicked
 from controllers.types import Comments, Questions, Todos
-from features.plans.controller import Plans
+from controllers.types import Plans
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated
 from framework.base import Feature
 from events.boards import BoardChanged

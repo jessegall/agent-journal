@@ -783,7 +783,7 @@ def test_a_shared_page_links_the_rows_it_names_and_leaves_the_rest_as_text():
     assert ('<p class="abstract">A short line</p>' in drawn_row, '<img src="/s/key/files/doc/' in drawn_row and 'chart.png"' in drawn_row) == (True, True), \
         "a shared row shows its one line under its title and its pictures in the page"
     from controllers.types import Todos
-    from features.plans.controller import Plans
+    from controllers.types import Plans
     here = fresh()
     plans = Plans(here, actor=AGENT)
     plan = plans.create("Rollout", goal="shipped")

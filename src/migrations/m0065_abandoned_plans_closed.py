@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from controllers.types import environment_records
-from features.plans.controller import Plans
+from controllers.types import Plans
 from resources.plans import ABANDONED
 from resources.base import SYSTEM
 

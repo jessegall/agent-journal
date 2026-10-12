@@ -9,7 +9,7 @@ from framework.sending import Sent
 from declaring.trigger import MINUTE, MINUTES, Trigger
 from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from controllers.types import Questions, Works
-from features.plans.controller import WAITING
+from resources.plans import WAITING
 from controllers.types import Boards
 from features.tickets.calls import PLAN_DONE_CALL, calls
 from features.tickets.controller import HELD, Tickets

@@ -22,7 +22,7 @@ from features.phone.members import rights_of
 from features.phone.places import WAITED, owed
 from controllers.types import Suggestions
 from features.suggestions.details import SuggestionsDetails
-from features.plans.controller import Plans
+from controllers.types import Plans
 from resources.plans import PHASE
 from features.work_modes.modes import mode_of
 from features.work_tracking.auto import automatic

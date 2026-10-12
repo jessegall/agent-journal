@@ -980,7 +980,7 @@ def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_ta
 
     from engine.record import Record
     from controllers.types import Docs, Facts, Messages, Notifications, Questions, Rules, Todos
-    from features.plans.controller import Plans
+    from controllers.types import Plans
     from migrations.m0001_the_old_record import run as read_old_record
     old = tmp_path / "old"
     home = old / "environments" / "main"

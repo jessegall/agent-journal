@@ -16,7 +16,7 @@ from features.helpers.controller import Helpers
 from features.message_buttons.pressing import press
 from features.phone.export import Export, export
 from features.phone.feed import Feed, feed, helper, reaches
-from features.plans.controller import Plans
+from controllers.types import Plans
 from resources.plans import READY, WAITING
 from features.sharing.controller import Shares
 from features.status_bar.bar import current

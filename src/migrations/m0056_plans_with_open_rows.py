@@ -1,7 +1,8 @@
 from pathlib import Path
 
 from controllers.types import environment_records
-from features.plans.controller import ACTIVE, DONE, Plans
+from controllers.types import Plans
+from resources.plans import ACTIVE, DONE
 from features.plans.progress import first_open_phase
 from resources.base import SYSTEM
 

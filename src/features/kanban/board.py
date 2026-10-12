@@ -12,7 +12,7 @@ from resources.plans import ACTIVE
 from declaring.trigger import DAY
 from resources.base import Ref
 from features.kanban.shapes import AgentChip, BoardLanes, Card, Lane
-from features.plans.controller import Plans
+from controllers.types import Plans
 from controllers.types import Agents, Questions, Todos, Works
 
 DONE_SHOWN = 50

@@ -3,14 +3,14 @@ import time
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 
-import controllers.types as types_module
-import resources.types as resources_module
 from controllers.base import Controller
-from controllers.types import Docs, Environments, Todos, Works
+from controllers.docs import Docs
+from controllers.environments import Environments
+from controllers.todos import Todos
+from controllers.works import Works
 from resources.plans import (
-    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, READY, REVIEWING, RUNNING, WAITING, Plan, standing_of, tally_of,
+    ABANDONED, ACTIVE, APPROVED, BUILDING, DONE, DRAFT, ENDED, MUST_HAVE, PARKED, PHASE, PHASE_FIELDS, PHASES, READY, REVIEWING, RUNNING, STAGES, TODOS, WAITING, Plan, standing_of, tally_of,
 )
-from features.work_tracking.auto import passes_checkpoints
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title
 from resources.shapes import LEVELS
 from controllers.marks import action
@@ -22,14 +22,6 @@ PHASE_ROWS = Extension()
 PHASE_STARTS = Extension()
 PLAN_STARTS = Extension()
 CATCHING_UP: ContextVar[frozenset[str]] = ContextVar("catching_up", default=frozenset())
-PHASES, TODOS = "phases", "todos"
-STAGES = (PHASES, TODOS)
-DEPTHS = {
-    "normal": "Write a good plan at the normal depth: the phases and the rows that matter, not every detail.",
-    "thorough": "The user asked for a thorough plan: research every part before you write it and file a to-do for every "
-                "small thing, down to the details, so nothing is left to the imagination.",
-}
-
 
 @dataclass(frozen=True)
 class Moment:
@@ -55,13 +47,6 @@ def status_after(last: bool, waits: bool) -> str:
     if waits:
         return WAITING
     return ACTIVE
-
-
-def delegate_plans_holding(record, todo) -> None:
-    plans = Plans(record, actor=SYSTEM)
-    for plan in plans.rows.every():
-        if plan.status in RUNNING and plan.has_in_phase(todo):
-            plans.delegate(plan.n)
 
 
 class Plans(Controller):
@@ -304,13 +289,13 @@ class Plans(Controller):
         for start in PHASE_STARTS.each(self.record):
             start(self.record, plan)
 
-    def _step(self, plan) -> bool:
+    def _step(self, plan, passing: bool) -> bool:
         phase = plan.current_phase
         if plan.completed or plan.status != ACTIVE or phase is None or not self._complete(phase):
             return False
         i = plan.current
         last = i == len(plan.phases)
-        waits = bool(phase[PHASE.checkpoint]) and not passes_checkpoints(self.record)
+        waits = bool(phase[PHASE.checkpoint]) and not passing
         plan.status = status_after(last, waits)
         plan.current = i if last or waits else i + 1
         self.save(plan, "updated", phase=i, complete=True, status=plan.status, passed=bool(phase[PHASE.checkpoint]) and not waits)
@@ -322,7 +307,7 @@ class Plans(Controller):
             self._start_phase(plan)
         return not (last or waits)
 
-    def _catch_up(self) -> None:
+    def _catch_up(self, passing: bool) -> None:
         """Walks every running plan on as far as its closed rows allow, one pass at a time per record."""
         home = str(self.record.home)
         walking = CATCHING_UP.get()
@@ -333,7 +318,7 @@ class Plans(Controller):
         try:
             for running in self._running():
                 plan = self.load(running.n)
-                while self._step(plan):
+                while self._step(plan, passing):
                     pass
         finally:
             CATCHING_UP.reset(entered)
@@ -349,7 +334,3 @@ class Plans(Controller):
     def _ticket_of_this_environment(self) -> int:
         place = Environments(self.record, actor=SYSTEM).rows.by_title(self.record.env)
         return place.owned_by("ticket") if place else 0
-
-
-resources_module.register(Plan)
-types_module.register(Plans)

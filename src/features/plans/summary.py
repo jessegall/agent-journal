@@ -3,7 +3,7 @@ from typing import TypedDict
 from controllers.types import Todos
 from features.helper_worktrees.controller import Worktrees
 from features.helpers.controller import Helpers
-from features.plans.controller import Plans
+from controllers.types import Plans
 from resources.base import SYSTEM
 
 SHOWN = ("building", "ready", "active", "waiting", "done")

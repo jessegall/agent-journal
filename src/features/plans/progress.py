@@ -1,4 +1,4 @@
-from features.plans.controller import Plans
+from controllers.types import Plans
 from resources.plans import Tally, tally_of
 from resources.base import SYSTEM
 
