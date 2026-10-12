@@ -10,7 +10,7 @@ from declaring.holds import Runs
 from declaring.reach import Reach
 from engine.state import State
 from resources.text import digest
-from providers.payload import STATUS, HookEvent
+from payload import STATUS, HookEvent
 from declaring import trigger
 from engine import triggering
 from declaring.settings import Settings

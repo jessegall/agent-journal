@@ -3,7 +3,7 @@ from functools import singledispatch
 from pathlib import Path
 
 from engine.shell import without_scripts
-from providers.payload import AgentCall, BashCall, FetchCall, Hook, HookEvent, ReadCall, SearchCall, SkillCall, WriteCall
+from payload import AgentCall, BashCall, FetchCall, Hook, HookEvent, ReadCall, SearchCall, SkillCall, WriteCall
 from dataclasses import replace
 
 from engine.command_runs import CommandRun, Outcome, command_runs, current_run

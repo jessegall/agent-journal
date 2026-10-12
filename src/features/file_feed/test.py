@@ -12,7 +12,7 @@ from engine.record import Record
 from providers.command_effects import inside, may_change_files, writes
 from providers.base import Provider
 from providers.codex import Codex
-from providers.payload import Hook
+from payload import Hook
 from tests.conftest import fresh
 
 

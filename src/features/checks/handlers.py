@@ -7,7 +7,7 @@ from events.agents import ClockTicked
 from events.agents import AgentReported
 from resources.text import digest
 from features.checks.output import summary
-from providers.payload import HookEvent
+from payload import HookEvent
 from providers import transcript_reader
 from providers.command_effects import background_outcome
 from providers.tested import testing_piece, tested

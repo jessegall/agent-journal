@@ -1,6 +1,6 @@
 from expects import Given, Kept
 from framework.base import Feature
-from providers.payload import BashCall
+from payload import BashCall
 from resources.types import AgentRow
 from features.helper_worktrees.controller import Worktrees
 from features.helper_worktrees.details import HelperWorktreesDetails

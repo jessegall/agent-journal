@@ -4,7 +4,7 @@ import time
 from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
-from providers.payload import Chunk
+from payload import Chunk
 from features.dev_faults.diagnostics import log_file
 from runner.chat_mirror import FELL_BACK, displayed
 from runner.hooks import handle

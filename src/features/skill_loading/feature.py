@@ -3,7 +3,7 @@ from events.agents import AgentReported, SessionStarted, ToolFinished
 from events.messages import MessageCreated
 from expects import Answered, Given, Kept, Refused, Unchanged, Updated, Wrote
 from framework.base import Feature
-from providers.payload import BashCall
+from payload import BashCall
 from resources.types import AgentRow, Message
 from framework.journal import Journal
 from features.skill_loading.details import SkillLoadingDetails

@@ -1,6 +1,6 @@
 from events.agents import AgentReported
 from framework.parts import AgentContext, Handler
-from providers.payload import HookEvent
+from payload import HookEvent
 
 
 class HoldUntilCaughtUp(Handler):

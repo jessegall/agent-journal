@@ -7,7 +7,7 @@ from declaring.holds import Runs
 from engine.gates import DISPATCHING
 from framework.parts import AgentContext, Canceler, Handler, ToolInterceptor
 from framework.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
-from providers.payload import ReadCall
+from payload import ReadCall
 from resources.types import TYPES
 from declaring.reach import Reach
 from controllers.types import Agents

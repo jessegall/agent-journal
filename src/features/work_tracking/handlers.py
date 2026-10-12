@@ -11,7 +11,7 @@ from events.works import WorkCompleted, WorkCreated, WorkUpdated
 from engine import triggering
 from framework.sending import Sent
 from declaring.trigger import MINUTE
-from providers.payload import HookEvent
+from payload import HookEvent
 from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
 from engine.transcript import IDLE

@@ -6,7 +6,7 @@ from events.agents import AgentReported
 from events.agents import AgentMessageSent
 from framework.parts import AgentContext, Handler
 from providers import PROVIDERS
-from providers.payload import HookEvent
+from payload import HookEvent
 from resources.fields import Loaded
 from controllers.types import Agents
 

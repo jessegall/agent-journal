@@ -5,7 +5,7 @@ from engine.record import Record
 from engine.worktree import git
 from features.plans.controller import DONE as PLAN_DONE
 from features.tickets.details import TicketsDetails
-from providers.payload import HookEvent
+from payload import HookEvent
 from resources.base import AGENT, SYSTEM
 from controllers.agents import WORKING_STATE
 

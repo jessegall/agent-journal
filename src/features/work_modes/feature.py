@@ -7,7 +7,7 @@ from features.work_modes.interceptors import REFUSED, NameTheDrift, RefuseDispat
 from features.work_modes.modes import carried
 from features.work_modes.routes import post_board, post_mode
 from features.work_modes.shipped import SEQUENCES
-from providers.payload import BashCall, Dispatch
+from payload import BashCall, Dispatch
 
 
 HELPER_DISPATCH = BashCall.from_payload("Bash", {"command": 'journal helper dispatch Rhea "a job" --provider codex --model gpt-6-sol'}, {})

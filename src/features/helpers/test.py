@@ -23,7 +23,7 @@ from features.helpers.controller import Helpers
 from features.plans.controller import Plans
 from features.helpers.interceptors import KeepSubagentFiles, OfferKeptAgentsFirst
 from features.helpers.reuse import kept
-from providers.payload import Dispatch
+from payload import Dispatch
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import FAILED, IDLE
 from overview.summary import summarize

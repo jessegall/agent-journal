@@ -7,7 +7,7 @@ from pathlib import Path
 
 from controllers.types import Agents, Messages
 from providers.base import JOURNAL, MARK, said_by
-from providers.payload import Asking
+from payload import Asking
 from engine import typist
 from resources.base import SYSTEM, Refused
 from engine.wording import counted

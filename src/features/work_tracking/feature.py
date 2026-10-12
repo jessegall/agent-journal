@@ -13,7 +13,7 @@ from expects import answering, Given, Held, Kept, Nudged, Refused, Remembered, U
 from declaring.trigger import Mark
 from events.plans import PlanCompleted
 from events.works import WorkCompleted, WorkUpdated
-from providers.payload import BashCall, WriteCall
+from payload import BashCall, WriteCall
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Todo, Work
 from framework.base import Feature

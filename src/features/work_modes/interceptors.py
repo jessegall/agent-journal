@@ -8,7 +8,7 @@ from framework.parts import AgentContext, Canceler, ToolInterceptor
 from features.work_modes.details import BUILDER, ORCHESTRATOR, SOLO
 from features.work_modes.modes import mode_of
 from features.work_modes.share import share
-from providers.payload import WriteCall
+from payload import WriteCall
 
 REFUSED = "the user set this environment to solo: do the writing yourself; only a subagent that reads, such as Explore or Plan, may be dispatched, and no helper"
 

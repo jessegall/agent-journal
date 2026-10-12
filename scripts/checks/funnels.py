@@ -4,7 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[2] / "src"
-PACKAGES = ("commands", "controllers", "declaring", "engine", "events", "expects", "features", "framework", "providers", "receiving", "resources", "serving",
+PACKAGES = ("commands", "controllers", "declaring", "engine", "events", "expects", "features", "framework", "payload", "providers", "receiving", "resources", "serving",
             "surfaces")
 SMALLEST = 4
 

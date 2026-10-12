@@ -5,7 +5,7 @@ from controllers.types import Plugins as PluginRows, Todos
 from events.agents import ClockTicked
 from expects import WHEN, Answered, Formats, Given, Kept, Refused, Unchanged, Updated
 from framework.base import Feature
-from providers.payload import BashCall, Dispatch
+from payload import BashCall, Dispatch
 from resources.base import SYSTEM, USER
 from resources.types import AgentRow, Plugin, Todo
 from framework.journal import Journal

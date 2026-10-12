@@ -7,7 +7,7 @@ from pathlib import Path
 from resources.memo import Memo
 from engine.stored import read_json
 from providers import PROVIDERS
-from providers.payload import Hook
+from payload import Hook
 from resources.fields import Loaded
 from runner import chat_mirror
 from runner.hooks import answer

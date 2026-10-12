@@ -40,7 +40,7 @@ from runner.stepping import report_step
 from engine.record import Record
 from providers import PROVIDERS
 from resources.base import DEFAULT_PROVIDER
-from providers.payload import Hook
+from payload import Hook
 from resources.base import OPENED, PROJECT, USER, Refused, titled
 from engine.stored import last_lines
 from engine.git_view import commit, file_diff

@@ -4,7 +4,7 @@ from events.resources import AnyEvent, ResourceCreated
 from events.messages import MessageCreated
 from events.questions import QuestionCompleted
 from expects import Given, Kept, Nudged, Refused, Unchanged, Updated, Wrote
-from providers.payload import AskCall, BashCall
+from payload import AskCall, BashCall
 from resources.base import AGENT
 from resources.types import AgentRow, Question, Todo
 from framework.base import Feature

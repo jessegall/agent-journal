@@ -9,7 +9,7 @@ from resources.memo import Memo
 from engine.record import Record
 from engine.stepped import SteppedCall, file_of
 from engine.stored import write_json
-from providers.payload import BashCall, Hook
+from payload import BashCall, Hook
 from providers.steps import chain_of
 from resources.base import SYSTEM
 

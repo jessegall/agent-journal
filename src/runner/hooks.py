@@ -7,7 +7,7 @@ from engine.after_answer import after_answered
 from engine.gates import HookCall, responded
 from engine.record import Record
 from providers.base import asking_row
-from providers.payload import PERMISSION, STATUS, Hook, HookEvent
+from payload import PERMISSION, STATUS, Hook, HookEvent
 from resources.base import SYSTEM
 from resources.types import AgentRow
 from runner import chat_mirror

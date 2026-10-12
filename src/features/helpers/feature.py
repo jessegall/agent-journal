@@ -2,11 +2,11 @@ from controllers.types import Agents, Todos
 from events.agents import ClockTicked
 from events.agents import AgentChanged
 from events.messages import MessageCreated
-from providers.payload import BashCall, WriteCall
+from payload import BashCall, WriteCall
 from expects import Answered, Given, Kept, Nudged, Refused, Unchanged, Updated
 from events.questions import QuestionCreated
 from framework.base import Feature
-from providers.payload import Dispatch
+from payload import Dispatch
 from resources.base import AGENT, USER
 from resources.types import AgentRow, Message, Question, Todo
 from resources.helpers import Helper

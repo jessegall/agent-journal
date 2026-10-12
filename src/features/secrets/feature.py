@@ -14,7 +14,7 @@ from features.secrets.picking import refuse_secret_that_runs_commands
 
 from features.secrets.values import secrets_folder
 from resources.secrets import Secret
-from providers.payload import BashCall, ReadCall
+from payload import BashCall, ReadCall
 from resources.types import AgentRow
 
 __all__ = ["Secrets"]

@@ -6,7 +6,7 @@ from framework.journal import Journal
 from resources.types import AgentRow
 from features.session_briefing.block import COMPACTED, briefing
 from features.session_briefing.details import SessionBriefingDetails
-from providers.payload import HookEvent
+from payload import HookEvent
 from features.session_briefing.handlers import GreetOnce, RebuildStartBlock
 
 

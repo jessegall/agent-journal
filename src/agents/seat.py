@@ -4,7 +4,7 @@ from pathlib import Path
 from resources.types import COMPACTING, WORKING
 from providers import PROVIDERS, workspace_folders
 from providers.base import REFUSED
-from providers.payload import HookEvent
+from payload import HookEvent
 from agents.terminal import seat_session
 from engine import runtime
 from engine.record import Record

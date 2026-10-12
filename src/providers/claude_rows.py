@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from resources.fields import Loaded
 from engine.transcript import timestamp
-from providers.payload import ToolCall
+from payload import ToolCall
 
 
 

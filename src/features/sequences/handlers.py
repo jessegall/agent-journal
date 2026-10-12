@@ -25,7 +25,7 @@ from resources.base import FIRED, SECTION, SYSTEM
 from resources.types import TYPES
 from declaring.reach import Reach
 from declaring.trigger import MINUTE
-from providers.payload import HookEvent
+from payload import HookEvent
 from features.sequences.controller import Sequences
 from events.sequences import SequenceMoved
 from events.triggers import TriggerFired

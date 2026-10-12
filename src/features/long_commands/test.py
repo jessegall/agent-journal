@@ -57,7 +57,7 @@ def test_a_command_holding_the_terminal_too_long_is_moved_to_the_background(monk
     from dataclasses import replace
     from providers.base import Provider
     from providers.command_effects import shell as hooked
-    from providers.payload import Hook
+    from payload import Hook
     from engine.command_runs import waiting_run
     call = lambda event, name, text, at: replace(Hook.read({"hook_event_name": event, "session_id": "x", "tool_name": "Bash", "tool_use_id": name, "tool_input": {"command": text}}, Provider.tool_kinds), at=at)
     parallel, now = SimpleNamespace(running={}, commands=[]), time.time()
