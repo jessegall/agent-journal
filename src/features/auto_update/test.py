@@ -442,6 +442,11 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     assert ([(one.id, one.version, one.profile, one.art, one.eyebrow) for one in found]
             == [("squire", "2.9.0", "Squire", "announcements/squire.png", "Hey, new feature")]), \
         "a changelog entry announces a new feature beside its notes, with the artwork file shipped with it; an entry that announces none or announces it wrong adds nothing"
+    from features.auto_update.new_feature import oldest_first
+    two = ('## 3.0.0 — Two at once\n<!-- new-feature {"id": "first", "title": "First", "text": "One."} -->\n'
+           '<!-- new-feature {"id": "second", "title": "Second", "text": "Two."} -->\n\n' + notes.split("\n\n", 1)[1])
+    assert [one.id for one in oldest_first(new_features(two))] == ["squire", "first", "second"], \
+        "the oldest release is announced first, and a release of two features announces them in the order it declares them"
     assert (len(notified), "user" in notified[0].seen) == (1, True), "announced once, already seen"
     assert ".journal/attic/before-update-1.0.0-123" in notified[0].brief and not copy_note.exists(), \
         "the update notice names the copy of legacy managed files once"

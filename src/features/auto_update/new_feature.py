@@ -51,6 +51,12 @@ def new_features(changelog: str) -> list[NewFeature]:
     return [one for version, raw in entries for one in NewFeature.declared(version, raw)]
 
 
+def oldest_first(features: list[NewFeature]) -> list[NewFeature]:
+    """The new features oldest release first, each release's own in the order it announces them."""
+    releases = list(dict.fromkeys(one.version for one in features))
+    return sorted(features, key=lambda one: -releases.index(one.version))
+
+
 def seen(root: Path) -> list[str]:
     return read_json(root / SEEN, list, [])
 
@@ -71,7 +77,7 @@ def already_chosen(record, one: NewFeature) -> bool:
 def unseen(record, changelog: str) -> list[NewFeature]:
     """The new features not yet seen, oldest first, so the releases an update skipped over announce themselves one after another; one offering what the user already chose is left out, since it asks for a choice that was made."""
     held = seen(record.root)
-    return [one for one in reversed(new_features(changelog)) if one.id not in held and not already_chosen(record, one)]
+    return [one for one in oldest_first(new_features(changelog)) if one.id not in held and not already_chosen(record, one)]
 
 
 def unseen_announced(record, changelog: Path) -> list[NewFeature]:
