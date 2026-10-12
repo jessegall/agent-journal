@@ -17,6 +17,7 @@ from engine.stored import write_json
 from controllers.types import Features
 from features import load
 from resources.base import SYSTEM
+from tests import isolation
 from tests.conftest import fresh
 from features.journal_laws import managed
 
@@ -539,7 +540,7 @@ def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tm
     monkeypatch.setenv("AGENT_JOURNAL_REPO", str(release))
     project = tmp_path / "project"
     project.mkdir()
-    subprocess.run([sys.executable, str(here / "install.py"), "upgrade", str(project)], env={"HOME": str(tmp_path), "PATH": "/usr/bin:/bin", "AGENT_JOURNAL_BOOTSTRAPPED": "1", "AGENT_JOURNAL_REPO": str(release)},
+    subprocess.run([sys.executable, str(here / "install.py"), "upgrade", str(project)], env=isolation.bare(HOME=str(tmp_path), AGENT_JOURNAL_BOOTSTRAPPED="1", AGENT_JOURNAL_REPO=str(release)),
                    capture_output=True, timeout=120)
     root = project / ".journal"
     shutil.copy2(here / "__main__.py", root / "src" / "__main__.py")
@@ -804,9 +805,9 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     broken = tmp_path / "broken"
     broken.mkdir()
     (broken / "install.py").write_text((Path(install.__file__)).read_text())
-    ran = subprocess.run([sys.executable, str(broken / "install.py")], env={"PATH": "/usr/bin:/bin", install.HEALED: "1"}, capture_output=True, text=True, timeout=60)
+    ran = subprocess.run([sys.executable, str(broken / "install.py")], env=isolation.bare(**{install.HEALED: "1"}), capture_output=True, text=True, timeout=60)
     assert ran.returncode != 0 and "ModuleNotFoundError" in ran.stderr, "an install that was already healed and still has no package fails loudly instead of looping"
-    ran = subprocess.run([sys.executable, str(broken / "install.py")], env={"PATH": "/usr/bin:/bin", install.REPOSITORY_ENV: str(tmp_path / "no-repository")}, capture_output=True, text=True, timeout=60)
+    ran = subprocess.run([sys.executable, str(broken / "install.py")], env=isolation.bare(**{install.REPOSITORY_ENV: str(tmp_path / "no-repository")}), capture_output=True, text=True, timeout=60)
     assert "could not be fetched" in str(ran.stderr), "an installer with no package beside it and no source to fetch from says what is missing"
 
     project = tmp_path / "legacy"

@@ -160,3 +160,9 @@ def group(path: Path) -> str:
     except ValueError:
         return ""
     return SERIAL.get(text, "")
+
+
+def bare(**more) -> dict:
+    """An environment hand-made for a child that must not inherit this session's, carrying the one thing it cannot do without: this worker's viewer ports. A journal that does not know its band falls back to 8420, which the live journal owns, and the test then waits on a server that never answers it."""
+    import engine.viewer as viewer
+    return {"PATH": "/usr/bin:/bin", "JOURNAL_VIEWER_PORTS": ",".join(str(port) for port in viewer.PORTS), **more}
