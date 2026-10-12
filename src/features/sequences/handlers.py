@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass
 
 from controllers.types import Questions
 from events.agents import AgentReported
-from events.agents import AgentMessageSending, ClockTicked
+from events.agents import BusMessageSending, ClockTicked
 from events.resources import AnyEvent, ResourceEvent
 from events.questions import QuestionCompleted
 from engine.journal_calls import JournalCall, calls
@@ -209,7 +209,7 @@ class ReleaseStaleStep(Handler):
 
 
 class KeepOutOfTheChat(Handler):
-    def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
+    def handle(self, context: AgentContext, event: BusMessageSending) -> None:
         found = context.journal.get(Sequences).in_hand()
         if not found or not found[0].talks_in or not event.text.strip():
             return

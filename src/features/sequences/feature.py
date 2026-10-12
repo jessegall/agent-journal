@@ -1,5 +1,5 @@
 from events.agents import AgentReported
-from events.agents import AgentMessageSending, ClockTicked
+from events.agents import BusMessageSending, ClockTicked
 from events.resources import AnyEvent
 from events.questions import QuestionCompleted
 import json
@@ -43,8 +43,8 @@ def talking(place: str = "the viewer") -> Sequence:
                     data={"talks_in": place, "runs": {"t|by hand": {"step": 1, "at": 1.0}}})
 
 
-def sending(text: str) -> AgentMessageSending:
-    return AgentMessageSending(agent=1, data={"text": text, "turn": "turn-1"})
+def sending(text: str) -> BusMessageSending:
+    return BusMessageSending(agent=1, data={"text": text, "turn": "turn-1"})
 
 
 def on_creating(starts_on: str, **data) -> Sequence:
