@@ -3,7 +3,6 @@ import tempfile
 import time
 from pathlib import Path
 
-import controllers.types as types_module
 from controllers.base import Controller
 from resources import types
 from resources.base import Refused, names
@@ -52,6 +51,3 @@ class Asks(Controller):
                 path.write_bytes(base64.b64decode(f[UPLOAD.data].split(",", 1)[-1]))
                 self.attach(n, str(path))
         return self.load(n)
-
-
-types_module.register(Asks)
