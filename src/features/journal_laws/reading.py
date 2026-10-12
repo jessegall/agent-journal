@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.ran import SHELL
 from events.asking import ToolCallAsked
-from serving import ReadFiles
+from serving import ReadFiles, Settings
 
 READ = "Read"
 PAGED = (".pdf", ".ipynb")
@@ -53,7 +53,7 @@ def printed_whole(event: ToolCallAsked) -> tuple[str, bool]:
     return (given.get("file_path", "") if whole else ""), whole
 
 
-def long_read(event: ToolCallAsked, limit: int, files: ReadFiles, exempt: Path) -> LongRead | None:
+def long_read(event: ToolCallAsked, settings: Settings, files: ReadFiles, exempt: Path) -> LongRead | None:
     named, whole = printed_whole(event)
     if not named:
         return None
@@ -62,4 +62,4 @@ def long_read(event: ToolCallAsked, limit: int, files: ReadFiles, exempt: Path) 
     if path.is_relative_to(exempt):
         return None
     count = lines_in(files, path)
-    return LongRead(named, path, count, whole) if count > limit else None
+    return LongRead(named, path, count, whole) if count > int(settings.whole_read_lines) else None

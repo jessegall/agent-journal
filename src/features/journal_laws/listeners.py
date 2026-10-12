@@ -21,8 +21,11 @@ def largest_key(agent: int) -> str:
 def strings_in(value) -> list[str]:
     if isinstance(value, str):
         return [value]
-    parts = value.values() if isinstance(value, dict) else value if isinstance(value, list) else []
-    return [text for part in parts for text in strings_in(part)]
+    if isinstance(value, dict):
+        value = list(value.values())
+    if not isinstance(value, list):
+        return []
+    return [text for part in value for text in strings_in(part)]
 
 
 def searched(event: ToolCallAnswered, scope: str) -> str:
@@ -53,7 +56,7 @@ class SpotLawInChat(Listener[AgentMessageSent]):
 
 class SpotLongReadRefused(Listener[ToolCallAnswered]):
     def listen(self, event: ToolCallAnswered, settings: Settings, files: ReadFiles, dumps: ReadRows[Dump]) -> list[Fact]:
-        read = None if event.subagent or not event.why else long_read(event, int(settings.whole_read_lines), files, dumps.folder())
+        read = None if event.subagent or not event.why else long_read(event, settings, files, dumps.folder())
         if read is None or read.reason != event.why:
             return []
         return [LongReadRefused(agent=event.agent, path=str(read.path), count=read.count, instead=read.instead)]
