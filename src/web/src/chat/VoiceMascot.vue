@@ -17,7 +17,7 @@ import {
     strollsIn,
 } from "../domain/mascots.js";
 import {animations, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
-import {loadProfiles, mascotOf, profiles, profilesLoaded} from "../composables/profiles.js";
+import {mascotOf, profiles} from "../composables/profiles.js";
 import {loadPictures, loadRig, rigs, voiceOfArt} from "../composables/voiceRigs.js";
 import RigPlayer from "../kit/RigPlayer.vue";
 import SpritePlayer from "../kit/SpritePlayer.vue";
@@ -52,7 +52,6 @@ let stage = 0;
 let blinkTimer = 0;
 let actTimer = 0;
 
-if (!profilesLoaded.value) loadProfiles().catch(console.error);
 
 function play(sheet) {
     turn.value += 1;
