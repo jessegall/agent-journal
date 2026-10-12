@@ -364,6 +364,11 @@ class Given:
     """The programs on the machine, by name to where they live. A Given that names none leaves the machine's own; one that names any says every other program is absent."""
     providers: Answering = Answering({})
 
+    @classmethod
+    def of(cls, on, *rows, **more) -> "Given":
+        """What an event meets when these rows are already there, the rows named as they are and not as a keyword."""
+        return cls(on, rows=rows, **more)
+
     def __rshift__(self, outcomes) -> "Expectation":
         return Expectation(self, Outcomes.of(outcomes))
 

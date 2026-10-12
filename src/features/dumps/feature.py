@@ -33,28 +33,28 @@ class DumpsFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(PromptFiling(), expects=[
-            Given(arrived(), rows=[dump(), IDLE]) >> Nudged("arrived"),
-            Given(arrived(), rows=[dump(items=NOTED), IDLE]) >> Unchanged(),
-            Given(arrived(), rows=[Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"files": {"a.png": ""}}), IDLE]) >> Unchanged(),
-            Given(arrived(), rows=[dump(), dump(n=2), IDLE]) >> Unchanged(),
-            Given(arrived(), rows=[dump(chosen={"at": 5.0, "pick": 1, "label": "Keep it"}), IDLE]) >> Nudged("chose", label="Keep it"),
-            Given(arrived(), rows=[dump(chosen={"at": 5.0, "pick": -1, "label": ""}), IDLE]) >> Nudged("decide"),
-            Given(arrived(), rows=[dump(chosen={"at": 5.0, "pick": OWN_WORDS, "label": "my own words"}), IDLE]) >> Unchanged(),
-            Given(arrived(), rows=[dump(answers=[{"answer": "Tomorrow", "question": "When should it be done?"}]), IDLE]) >> Nudged("answered", answer="Tomorrow"),
-            Given(arrived("completed"), rows=[Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, outcome="2 filed", data={"items": FILED, "files": {"a.png": ""}}), IDLE]) >> Nudged("filed"),
-            Given(arrived("completed"), rows=[Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"stopped": True, "files": {"a.png": ""}}), IDLE]) >> Unchanged(),
-            Given(arrived(), rows=[dump()]) >> Unchanged(),
+            Given.of(arrived(), dump(), IDLE) >> Nudged("arrived"),
+            Given.of(arrived(), dump(items=NOTED), IDLE) >> Unchanged(),
+            Given.of(arrived(), Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"files": {"a.png": ""}}), IDLE) >> Unchanged(),
+            Given.of(arrived(), dump(), dump(n=2), IDLE) >> Unchanged(),
+            Given.of(arrived(), dump(chosen={"at": 5.0, "pick": 1, "label": "Keep it"}), IDLE) >> Nudged("chose", label="Keep it"),
+            Given.of(arrived(), dump(chosen={"at": 5.0, "pick": -1, "label": ""}), IDLE) >> Nudged("decide"),
+            Given.of(arrived(), dump(chosen={"at": 5.0, "pick": OWN_WORDS, "label": "my own words"}), IDLE) >> Unchanged(),
+            Given.of(arrived(), dump(answers=[{"answer": "Tomorrow", "question": "When should it be done?"}]), IDLE) >> Nudged("answered", answer="Tomorrow"),
+            Given.of(arrived("completed"), Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, outcome="2 filed", data={"items": FILED, "files": {"a.png": ""}}), IDLE) >> Nudged("filed"),
+            Given.of(arrived("completed"), Dump(n=1, title="Notes", brief="Some ideas", completed=WHEN, data={"stopped": True, "files": {"a.png": ""}}), IDLE) >> Unchanged(),
+            Given.of(arrived(), dump()) >> Unchanged(),
         ])
         journal.events.handler(CarryOnFiling(), expects=[
-            Given(ClockTicked(agent=1), rows=[dump(), IDLE]) >> Nudged("carry on"),
-            Given(ClockTicked(agent=1), rows=[dump(), WORKING]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[dump(items=FILED), IDLE]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[dump(question={"text": "Which project is this for?"}), IDLE]) >> Unchanged(),
-            Given(ClockTicked(agent=1), rows=[IDLE]) >> Unchanged(),
+            Given.of(ClockTicked(agent=1), dump(), IDLE) >> Nudged("carry on"),
+            Given.of(ClockTicked(agent=1), dump(), WORKING) >> Unchanged(),
+            Given.of(ClockTicked(agent=1), dump(items=FILED), IDLE) >> Unchanged(),
+            Given.of(ClockTicked(agent=1), dump(question={"text": "Which project is this for?"}), IDLE) >> Unchanged(),
+            Given.of(ClockTicked(agent=1), IDLE) >> Unchanged(),
         ])
         journal.events.handler(TranscriptToDump(), expects=[
-            Given(TOUCHED, rows=[Message(n=5, title="A pasted conversation", brief="User: hello\nAgent: hi", data={"kind": "transcript"})])
+            Given.of(TOUCHED, Message(n=5, title="A pasted conversation", brief="User: hello\nAgent: hi", data={"kind": "transcript"}))
                 >> Wrote(Dump(brief="User: hello\nAgent: hi")) & Updated(Message(n=5), refs=["dump:1"]),
-            Given(TOUCHED, rows=[Message(n=5, title="A question", brief="Can you look?")]) >> Unchanged(),
-            Given(TOUCHED, rows=[Message(n=5, title="A pasted conversation", brief="User: hello", refs=["dump:3"], data={"kind": "transcript"})]) >> Unchanged(),
+            Given.of(TOUCHED, Message(n=5, title="A question", brief="Can you look?")) >> Unchanged(),
+            Given.of(TOUCHED, Message(n=5, title="A pasted conversation", brief="User: hello", refs=["dump:3"], data={"kind": "transcript"})) >> Unchanged(),
         ])

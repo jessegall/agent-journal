@@ -27,6 +27,7 @@ LATER = AgentRow(n=1, title="claude-1", data={"status": "idle", "uses": 3})
 WORKING = AgentRow(n=1, title="claude-1", data={"status": "working"})
 
 
+
 def wrote(title: str, seen: tuple = (USER,), **fields) -> Message:
     return Message(n=5, title=title, seen=list(seen), **fields)
 
@@ -70,61 +71,61 @@ class MessagesFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(SaveAgentMessage(), expects=[
-            Given(said("Done, it is filed."), rows=[IDLE]) >> Wrote(Message(title="Done, it is filed.", brief="Done, it is filed.")),
-            Given(said("   "), rows=[IDLE]) >> Unchanged(),
-            Given(said("👍"), rows=[IDLE]) >> Nudged("reaction"),
+            Given.of(said("Done, it is filed."), IDLE) >> Wrote(Message(title="Done, it is filed.", brief="Done, it is filed.")),
+            Given.of(said("   "), IDLE) >> Unchanged(),
+            Given.of(said("👍"), IDLE) >> Nudged("reaction"),
         ])
         journal.events.handler(ResetCountsOnArrival(), expects=[
-            Given(MessageCreated(n=7, type="message", action="created", actor=USER), rows=[AgentRow(n=1, title="claude-1", data={"uses": 10})])
+            Given.of(MessageCreated(n=7, type="message", action="created", actor=USER), AgentRow(n=1, title="claude-1", data={"uses": 10}))
                 >> Remembered("trigger-messages.unread", asdict(Mark(uses=7))) & Remembered("trigger-messages.answering", asdict(Mark(uses=10))),
             Given(MessageCreated(n=7, type="message", action="created", actor=USER)) >> Unchanged(),
         ])
         journal.events.handler(NameUnread(), expects=[
-            Given(reported(), rows=[wrote("Can you look at this?"), LATER]) >> Nudged("inbox"),
-            Given(reported(), rows=[wrote("Can you look at this?"), IDLE]) >> Unchanged(),
-            Given(reported(), rows=[wrote("Can you look at this?"), WORKING]) >> Unchanged(),
-            Given(reported(), rows=[asked("Can you look at this?"), IDLE]) >> Unchanged(),
-            Given(reported(), rows=[wrote("Here is the result", seen=(AGENT,)), IDLE]) >> Unchanged(),
-            Given(reported(), rows=[IDLE]) >> Unchanged(),
+            Given.of(reported(), wrote("Can you look at this?"), LATER) >> Nudged("inbox"),
+            Given.of(reported(), wrote("Can you look at this?"), IDLE) >> Unchanged(),
+            Given.of(reported(), wrote("Can you look at this?"), WORKING) >> Unchanged(),
+            Given.of(reported(), asked("Can you look at this?"), IDLE) >> Unchanged(),
+            Given.of(reported(), wrote("Here is the result", seen=(AGENT,)), IDLE) >> Unchanged(),
+            Given.of(reported(), IDLE) >> Unchanged(),
         ])
         journal.events.handler(NameUnanswered(), expects=[
-            Given(reported(), rows=[asked(), IDLE]) >> Nudged("answer"),
-            Given(reported(), rows=[asked(), reply(), IDLE]) >> Unchanged(),
-            Given(reported(), rows=[asked(), reaction(), IDLE]) >> Nudged("answer"),
-            Given(reported(), rows=[asked("Please file the report", refs=["todo:7"]), IDLE]) >> Unchanged(),
-            Given(reported(), rows=[asked(refs=["todo:7"]), IDLE]) >> Nudged("answer"),
-            Given(reported(), rows=[asked("Here is the result"), IDLE]) >> Nudged("answer"),
-            Given(reported(), rows=[wrote("What do you think about the plan?"), IDLE]) >> Unchanged(),
-            Given(reported(), rows=[wrote("Here is the plan", seen=(AGENT, USER)), IDLE]) >> Unchanged(),
-            Given(reported(), rows=[IDLE]) >> Unchanged(),
+            Given.of(reported(), asked(), IDLE) >> Nudged("answer"),
+            Given.of(reported(), asked(), reply(), IDLE) >> Unchanged(),
+            Given.of(reported(), asked(), reaction(), IDLE) >> Nudged("answer"),
+            Given.of(reported(), asked("Please file the report", refs=["todo:7"]), IDLE) >> Unchanged(),
+            Given.of(reported(), asked(refs=["todo:7"]), IDLE) >> Nudged("answer"),
+            Given.of(reported(), asked("Here is the result"), IDLE) >> Nudged("answer"),
+            Given.of(reported(), wrote("What do you think about the plan?"), IDLE) >> Unchanged(),
+            Given.of(reported(), wrote("Here is the plan", seen=(AGENT, USER)), IDLE) >> Unchanged(),
+            Given.of(reported(), IDLE) >> Unchanged(),
         ])
         journal.events.handler(CloseHandled(), expects=[
-            Given(reported(), rows=[asked("Please file the report", refs=["todo:7"]), IDLE]) >> Updated(Message(n=5), outcome="handled: todo:7"),
-            Given(reported(), rows=[asked("Please file the report", refs=["todo:7"]), WORKING]) >> Unchanged(),
-            Given(reported(), rows=[asked(refs=["todo:7"]), IDLE]) >> Unchanged(),
-            Given(reported(), rows=[asked(refs=["todo:7"]), reply(), IDLE]) >> Updated(Message(n=5), outcome="handled: todo:7"),
-            Given(reported(), rows=[wrote("Please file the report", refs=["todo:7"]), IDLE]) >> Unchanged(),
-            Given(reported(), rows=[asked("Please file the report"), IDLE]) >> Unchanged(),
+            Given.of(reported(), asked("Please file the report", refs=["todo:7"]), IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
+            Given.of(reported(), asked("Please file the report", refs=["todo:7"]), WORKING) >> Unchanged(),
+            Given.of(reported(), asked(refs=["todo:7"]), IDLE) >> Unchanged(),
+            Given.of(reported(), asked(refs=["todo:7"]), reply(), IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
+            Given.of(reported(), wrote("Please file the report", refs=["todo:7"]), IDLE) >> Unchanged(),
+            Given.of(reported(), asked("Please file the report"), IDLE) >> Unchanged(),
         ])
         journal.events.handler(CloseSeenByUser(), expects=[
-            Given(touched(5), rows=[wrote("Done, it is filed.", seen=(AGENT, USER)), IDLE]) >> Updated(Message(n=5), outcome="read by the user"),
-            Given(touched(5), rows=[wrote("Done, it is filed.", seen=(AGENT,)), IDLE]) >> Unchanged(),
-            Given(touched(5), rows=[wrote("Please look at this", seen=(USER, AGENT)), IDLE]) >> Unchanged(),
+            Given.of(touched(5), wrote("Done, it is filed.", seen=(AGENT, USER)), IDLE) >> Updated(Message(n=5), outcome="read by the user"),
+            Given.of(touched(5), wrote("Done, it is filed.", seen=(AGENT,)), IDLE) >> Unchanged(),
+            Given.of(touched(5), wrote("Please look at this", seen=(USER, AGENT)), IDLE) >> Unchanged(),
         ])
         journal.events.handler(CloseProcessed(), expects=[
-            Given(touched(5), rows=[asked("Please file the report", refs=["todo:7"]), IDLE]) >> Updated(Message(n=5), outcome="handled: todo:7"),
-            Given(touched(5), rows=[asked(refs=["todo:7"]), IDLE]) >> Unchanged(),
-            Given(touched(5), rows=[asked("Please file the report"), IDLE]) >> Unchanged(),
-            Given(touched(5), rows=[wrote("Please file the report", refs=["todo:7"]), IDLE]) >> Unchanged(),
-            Given(touched(5), rows=[asked("Please file the report", refs=["todo:7"], completed=1.0), IDLE]) >> Unchanged(),
+            Given.of(touched(5), asked("Please file the report", refs=["todo:7"]), IDLE) >> Updated(Message(n=5), outcome="handled: todo:7"),
+            Given.of(touched(5), asked(refs=["todo:7"]), IDLE) >> Unchanged(),
+            Given.of(touched(5), asked("Please file the report"), IDLE) >> Unchanged(),
+            Given.of(touched(5), wrote("Please file the report", refs=["todo:7"]), IDLE) >> Unchanged(),
+            Given.of(touched(5), asked("Please file the report", refs=["todo:7"], completed=1.0), IDLE) >> Unchanged(),
         ])
         journal.events.handler(CloseAnswered(), expects=[
-            Given(ResourceCreated.of("comment"), rows=[asked(), reply(), IDLE]) >> Updated(Message(n=5), outcome="answered by the agent"),
-            Given(ResourceCreated.of("reaction"), rows=[asked("Here is the result"), reaction(), IDLE]) >> Updated(Message(n=5), outcome="acknowledged by the agent"),
-            Given(ResourceCreated.of("reaction"), rows=[asked(), reaction(), IDLE]) >> Unchanged(),
-            Given(ResourceCreated.of("comment", actor=USER), rows=[asked(), reply(USER), IDLE]) >> Unchanged(),
-            Given(ResourceCreated.of("comment"), rows=[wrote("Done, it is filed.", seen=(AGENT,)), reply(), IDLE]) >> Unchanged(),
-            Given(ResourceCreated.of("todo"), rows=[asked(), Todo(n=1, title="Row"), IDLE]) >> Unchanged(),
+            Given.of(ResourceCreated.of("comment"), asked(), reply(), IDLE) >> Updated(Message(n=5), outcome="answered by the agent"),
+            Given.of(ResourceCreated.of("reaction"), asked("Here is the result"), reaction(), IDLE) >> Updated(Message(n=5), outcome="acknowledged by the agent"),
+            Given.of(ResourceCreated.of("reaction"), asked(), reaction(), IDLE) >> Unchanged(),
+            Given.of(ResourceCreated.of("comment", actor=USER), asked(), reply(USER), IDLE) >> Unchanged(),
+            Given.of(ResourceCreated.of("comment"), wrote("Done, it is filed.", seen=(AGENT,)), reply(), IDLE) >> Unchanged(),
+            Given.of(ResourceCreated.of("todo"), asked(), Todo(n=1, title="Row"), IDLE) >> Unchanged(),
         ])
         journal.events.handler(NameRunTogether(), expects=[
             Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON)) >> Nudged("paragraphs"),
@@ -132,14 +133,14 @@ class MessagesFeature(Feature):
             Given(reported(), rows=[CLAUDE], transcript=in_a_transcript(RAN_ON.replace(". ", ".\n\n", 1))) >> Unchanged(),
         ])
         journal.events.handler(NameBareNumbers(), expects=[
-            Given(said("I closed 482 for you."), rows=[SENT, Todo(n=482, title="Row"), IDLE]) >> Nudged("numbers"),
-            Given(said("I closed `482` for you."), rows=[SENT, Todo(n=482, title="Row"), IDLE]) >> Unchanged(),
-            Given(said("I closed to-do 482 for you."), rows=[SENT, Todo(n=482, title="Row"), IDLE]) >> Unchanged(),
-            Given(said("It took 482 ms to load."), rows=[SENT, Todo(n=482, title="Row"), IDLE]) >> Unchanged(),
-            Given(said("The server answered 500."), rows=[SENT, Todo(n=500, title="Row"), IDLE]) >> Unchanged(),
-            Given(said("I closed 482 for you."), rows=[SENT, IDLE]) >> Unchanged(),
-            Given(said("I closed 482 for you."), rows=[Todo(n=482, title="Row"), IDLE]) >> Unchanged(),
-            Given(said("I have nothing to add."), rows=[SENT, Todo(n=482, title="Row"), IDLE]) >> Unchanged(),
+            Given.of(said("I closed 482 for you."), SENT, Todo(n=482, title="Row"), IDLE) >> Nudged("numbers"),
+            Given.of(said("I closed `482` for you."), SENT, Todo(n=482, title="Row"), IDLE) >> Unchanged(),
+            Given.of(said("I closed to-do 482 for you."), SENT, Todo(n=482, title="Row"), IDLE) >> Unchanged(),
+            Given.of(said("It took 482 ms to load."), SENT, Todo(n=482, title="Row"), IDLE) >> Unchanged(),
+            Given.of(said("The server answered 500."), SENT, Todo(n=500, title="Row"), IDLE) >> Unchanged(),
+            Given.of(said("I closed 482 for you."), SENT, IDLE) >> Unchanged(),
+            Given.of(said("I closed 482 for you."), Todo(n=482, title="Row"), IDLE) >> Unchanged(),
+            Given.of(said("I have nothing to add."), SENT, Todo(n=482, title="Row"), IDLE) >> Unchanged(),
         ])
         journal.client.formatter(CommandsAsCode(), expects=[
             Formats("Run journal todo create to file it", to="Run `journal todo create` to file it"),
