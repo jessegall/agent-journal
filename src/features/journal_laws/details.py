@@ -1,5 +1,5 @@
 from declaring.details import Behaviour, FeatureDetails, Line
-from framework.recital import LINES, WHISPER, whispering
+from framework.recital import LINES, WHISPERED_LAW, whispering
 from declaring.settings import Setting
 from declaring.trigger import MINUTES, Trigger
 from declaring.groups import Group
@@ -40,7 +40,7 @@ class LawDetails(FeatureDetails):
     fixed = True
 
     lines = [
-        *(line for line in LINES if line.name == WHISPER),
+        *(line for line in LINES if line.name == WHISPERED_LAW),
         Line(
             name=LARGEST_RESULT,
             title="that {{tool}} call returned {{size}} characters, the largest this session",

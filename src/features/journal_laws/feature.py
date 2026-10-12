@@ -16,6 +16,7 @@ from features.journal_laws.laws import carry, naming_of
 from payload import BashCall, Dispatch, ReadCall
 from resources.types import AgentRow
 from framework.sending import Nudge
+from framework.recital import WHISPERED_LAW
 from features.work_modes.modes import CARRIED_IN
 from features.session_briefing.start import LAW, START_PARTS
 
@@ -52,7 +53,7 @@ class JournalLaws(Feature):
                 >> Kept(),
         ])
         journal.agent.interceptor(WhisperLawOnKeyword(), expects=[
-            Given(BashCall.from_payload("Bash", {"command": "cat notes.txt"}, {}), rows=[AgentRow(n=1)]) >> Kept() & Nudged("whisper"),
+            Given(BashCall.from_payload("Bash", {"command": "cat notes.txt"}, {}), rows=[AgentRow(n=1)]) >> Kept() & Nudged(WHISPERED_LAW),
             Given(BashCall.from_payload("Bash", {"command": "ls"}, {}), rows=[AgentRow(n=1)]) >> Kept() & Unchanged(),
         ])
         journal.agent.interceptor(RefuseWholeLongReads(), expects=[
@@ -66,7 +67,7 @@ class JournalLaws(Feature):
                            f"or list its headings first with grep -n '^#' {LAWS_FILE} and read only the part you need; or grep -n for the line you want."),
         ])
         journal.events.handler(WhisperLawInChat(), expects=[
-            Given(AgentMessageSent(agent=1, text="I will dispatch a subagent for the research."), rows=[AgentRow(n=1)]) >> Nudged("whisper"),
+            Given(AgentMessageSent(agent=1, text="I will dispatch a subagent for the research."), rows=[AgentRow(n=1)]) >> Nudged(WHISPERED_LAW),
             Given(AgentMessageSent(agent=1, text="The header is fixed."), rows=[AgentRow(n=1)]) >> Unchanged(),
         ])
         journal.events.handler(NoticeLargestResult(), expects=[

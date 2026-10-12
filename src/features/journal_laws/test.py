@@ -103,7 +103,12 @@ def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once(
     call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "cat notes.txt"}}
     handle(claude, record.root, record.env, {**call, "hook_event_name": "PreToolUse"})
     assert bus.background_finished(), "the whisper runs off the hook's answer, so the test waits for it as the agent never has to"
-    assert [n.title for n in Nudges(record).all() if n.title.startswith("law L3")], "a keyword whispers its law"
+    from features.journal_laws.laws import laws
+    narrow = next(law for law in laws(record) if law.name == "L3")
+    from features.journal_laws.laws import laws
+    narrow = next(law for law in laws(record) if law.name == "L3")
+    assert [n for n in Nudges(record).all() if n.title == "law L3" and n.brief == narrow.text], \
+        "a keyword whispers its law: which law it is as the title, and the whole ruling underneath, uncapped"
     for size in (30_000, 25_000, 40_000, 1_000):
         handle(claude, record.root, record.env, {**call, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "x" * size}})
     assert bus.background_finished(), "every whisper is waited for the same way"

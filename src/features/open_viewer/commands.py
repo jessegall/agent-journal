@@ -10,7 +10,6 @@ from features.open_viewer.appoint import appoint, online
 from features.open_viewer.attachments import FILES_PAGE, FileKind, attachments, attachments_page
 from features.open_viewer.manifest import manifest
 from features.open_viewer.settings import apply, settings
-from providers.transcripts import TRANSCRIPT_PAGE, paged, transcript_at, whole
 from framework.parts import Command, Context
 from controllers.shared import shared
 from features.permission_prompts.skipping import set_skipped
@@ -200,13 +199,12 @@ class WireHooks(Command):
 class ShowTranscript(Command):
     name = "transcript"
 
-    def run(self, context: Context, agents, n: int, subagent: str = "", since: int = 0, before: int = 0, last: int = TRANSCRIPT_PAGE, entry: int = 0):
-        found = transcript_at(agents.load(n), subagent)
-        return whole(found, agents.record, entry) if entry else paged(found, since, before, last)
+    def run(self, context: Context, agents, n: int, subagent: str = "", since: int = 0, before: int = 0, last: int = 0, entry: int = 0):
+        return SERVED.given(Providers).conversation_at(agents.record, agents.load(n), subagent, since, before, last, entry)
 
 
 class ShowLinks(Command):
     name = "links"
 
     def run(self, context: Context, agents, n: int, subagent: str = ""):
-        return {"links": transcript_at(agents.load(n), subagent).links()}
+        return {"links": SERVED.given(Providers).conversation_links(agents.load(n), subagent)}

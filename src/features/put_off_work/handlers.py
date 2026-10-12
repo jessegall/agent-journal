@@ -1,7 +1,7 @@
 import re
 
 from events.agents import AgentReported
-from providers.turns import last_text
+from serving import SERVED, Providers
 from framework.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from resources.base import AGENT
 
@@ -16,7 +16,7 @@ class NameDeferredWork(Handler):
     behaviour = WHOLE_FEATURE
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        text = last_text(context.agent.row)
+        text = SERVED.given(Providers).last_said(context.agent.row)
         found = DEFERS.search(text) if text else None
         if found and not self.parked_since(context, float(context.agent.row.at) - SINCE):
             from features.work_modes.modes import filing

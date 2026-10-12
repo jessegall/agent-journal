@@ -3,7 +3,7 @@ import re
 from events.agents import AgentReported
 from events.agents import AgentMessageSent
 from framework.parts import AgentContext, Handler
-from providers.turns import last_text
+from serving import SERVED, Providers
 from resources.base import AGENT, ENVIRONMENT
 from resources.types import TYPES
 from controllers.types import CONTROLLERS, Messages
@@ -15,7 +15,7 @@ class NameRunTogether(Handler):
     behaviour = "paragraphs"
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        last = last_text(context.agent.row).strip()
+        last = SERVED.given(Providers).last_said(context.agent.row).strip()
         if len(last) >= RUN_ON and "\n\n" not in last and last.count(". ") >= SENTENCES:
             context.agent.whisper("paragraphs")
 

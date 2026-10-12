@@ -287,13 +287,11 @@ def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(
         "a tool call a hook turned back is told from one that failed"
     (tmp_path / "hook.sh").write_text("")
     (project / ".journal").mkdir()
-    (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"journal": {"command": "/no/such/python"}}}))
-    assert "which is gone" in claude.wiring_trouble(project), "a channel whose Python is gone is told so"
-    (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"journal": {"command": "/bin/echo"}}}))
-    assert "not Python 3.10 or newer" in claude.wiring_trouble(project), "a channel whose Python is too old is told so"
     import sys
     (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"journal": {"command": sys.executable}}}))
-    assert claude.wiring_trouble(project) == "", "a channel whose Python runs and is new enough is no trouble"
+    assert "no longer uses" in claude.wiring_trouble(project), "a channel server still registered is the trouble, since the journal types its lines instead"
+    (project / ".mcp.json").write_text(json.dumps({"mcpServers": {"other": {"command": sys.executable}}}))
+    assert claude.wiring_trouble(project) == "", "somebody else's MCP server is no business of the journal's"
 
 
 def codex_models(*models) -> list:

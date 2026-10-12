@@ -216,8 +216,9 @@ def test_the_agent_answers_in_the_new_work_panel_with_board_say():
     made = boards.request(board.n, "I want to share")
     plain = Messages(record, actor=USER).create("Hello there")
     arrived = counted({("message", "created"): {made.n: None, plain.n: None}}, record)[0]
-    assert f'answer message {made.n} with journal board say {board.n}' in arrived and f"[!reply:{plain.n}]" in arrived, \
-        "a message from the New work panel says on arrival that it is answered in the panel; a chat message keeps its reply tag"
+    assert f'answer message {made.n} with journal board say {board.n}' in arrived and f"[!reply:{plain.n}]" not in arrived, \
+        "a message from the New work panel says on arrival that it is answered in the panel; a chat message is only named, " \
+        "since the reply tag is taught where the agent replies the long way instead"
     agent = Boards(record, actor=AGENT)
     agent.say(board.n, "Three tickets drafted. Pick the ones to keep.")
     assert [c.brief for c in Messages(record, actor=USER).comments(made.n)] == ["Three tickets drafted. Pick the ones to keep."], \
@@ -299,7 +300,7 @@ def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
         "at four it may choose the first slice first"
     agent.score(board.n, "5")
     assert boards.load(board.n).drafting["phase"] == "drafting", "at five it moves on"
-    drafting = next(s for s in Sequences(record, actor=SYSTEM).all() if s.title == "Drafting the board's cards")
+    drafting = next(s for s in Sequences(record, actor=SYSTEM).all(last=0) if s.title == "Drafting the board's cards")
     assert [run["step"] for run in drafting.runs.values()] == [1], "and the drafting sequence starts, for the board-filler to follow"
     assert "past exploring" in refused(lambda: agent.score(board.n, "3")), "no more scores once drafting"
     agent.expect(board.n, "2", fewer="a two-card test")

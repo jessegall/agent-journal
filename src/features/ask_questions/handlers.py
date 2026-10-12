@@ -10,7 +10,7 @@ from features.agent_sessions.launch import driver_in
 from framework.sending import Sent
 from framework import watched
 from declaring.trigger import DAY, MINUTE
-from providers.turns import last_text
+from serving import SERVED, Providers
 from framework.parts import AgentContext, Context, Handler
 from features.ask_questions.choices import offers_choices
 from resources.base import SYSTEM, USER, Ref
@@ -24,7 +24,7 @@ class AskInsteadOfProse(Handler):
     behaviour = ASKING
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        if offers_choices(last_text(context.agent.row)):
+        if offers_choices(SERVED.given(Providers).last_said(context.agent.row)):
             context.agent.say("prose")
             context.hold("prose held", ASKING)
 

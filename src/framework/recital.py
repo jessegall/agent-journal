@@ -18,6 +18,7 @@ from resources.marks import Whisper
 from controllers.types import Agents
 
 WHISPER = "whisper"
+WHISPERED_LAW = "whispered-law"
 
 LINES = [
     Line(
@@ -26,6 +27,14 @@ LINES = [
         # spends eleven of those on "fact 55 — " clips the end off any title longer than sixty-nine.
         title="{{title}}",
         brief="{{type}} {{n}}",
+        while_waiting=False,
+    ),
+    Line(
+        name=WHISPERED_LAW,
+        # A law's words are a sentence, not a title, and a title is capped at 80: so the words go in the brief,
+        # where nothing caps them, and the title names which law it is. No part of a ruling is ever clipped.
+        title="{{type}} {{n}}",
+        brief="{{title}}",
         while_waiting=False,
     ),
     Line(

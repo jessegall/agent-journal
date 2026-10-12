@@ -8,7 +8,8 @@ from pathlib import Path
 
 from providers import DRIVERS, PROVIDERS, dispatch_model, transcript_reader, workspace_folders
 from providers.catalogue import WorkspaceFolders
-from providers.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, whole
+from providers.turns import last_text
+from providers.transcripts import TRANSCRIPT_PAGE, NoTranscript, Transcript, paged, transcript_at, whole
 from serving import SERVED, Providers
 
 
@@ -41,6 +42,10 @@ class TheProviders:
         """The model a dispatch names on that provider: the one chosen, under the name that provider knows it by."""
         return dispatch_model(provider, chosen)
 
+    def last_said(self, agent) -> str:
+        """The words of the agent's own last turn, read from its transcript, or nothing when it has written none."""
+        return last_text(agent)
+
     def reader(self, agent):
         """The provider that can read one agent's own transcript, or nothing when the agent has none to read."""
         return transcript_reader(agent)
@@ -48,6 +53,18 @@ class TheProviders:
     def conversation(self, record, provider: str, transcript: str, since: int, before: int, last: int, entry: int) -> dict:
         """A page of an agent's own conversation, read from the file its provider recorded."""
         found = Transcript(self.of(provider), Path(transcript)) if provider in PROVIDERS and transcript and Path(transcript).is_file() else NoTranscript()
+        return self.page_of(found, record, since, before, last, entry)
+
+    def conversation_at(self, record, row, subagent: str, since: int, before: int, last: int, entry: int) -> dict:
+        """A page of one agent's conversation, found from its own row and the subagent asked for."""
+        return self.page_of(transcript_at(row, subagent), record, since, before, last, entry)
+
+    def conversation_links(self, row, subagent: str) -> dict:
+        """What one agent's conversation points at: the files, rows and runs its turns name."""
+        return transcript_at(row, subagent).links()
+
+    def page_of(self, found, record, since: int, before: int, last: int, entry: int) -> dict:
+        """One page of a conversation already found: the whole of one entry when one is named, else the page around it."""
         return whole(found, record, entry) if entry else paged(found, since, before, last or TRANSCRIPT_PAGE)
 
     def every(self) -> tuple:

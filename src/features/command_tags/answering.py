@@ -30,7 +30,7 @@ def answered(numbers: list, record, **_) -> str:
         return ""
     panel = {row.n: row.data[REPLY_WITH] for row in rows if REPLY_WITH in row.data}
     row_lines = [said(row, messages=messages) for row in rows]
-    row_lines += [f"answer {n} with {how}, never in the chat" for n, how in panel.items()]
+    row_lines += [f"answer message {n} with {how}, never in the chat" for n, how in panel.items()]
     acknowledging = [row.n for row in rows if row.n not in panel and acknowledges(row)]
     row_lines += [f'{n} only acknowledges: journal message react {n} "👍"' for n in acknowledging]
     return "; ".join(row_lines)
