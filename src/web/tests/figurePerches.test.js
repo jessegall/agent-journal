@@ -1,8 +1,9 @@
 // @vitest-environment node
 import {beforeEach, expect, test} from "vitest";
 
-const {HANGS, HANG_SHARE, ROAMS, SITS, perchOn, perchSpot, roamNext, stayAtHome, stayForLook, targetFor} =
+const {CLEARED_SECONDS, HANGS, HANG_SHARE, ROAMS, SITS, clickedAway, perchOn, perchSpot, roamNext, stayAtHome, stayForLook, targetFor} =
     await import("../src/figure/perches.js");
+const {boxAt, overlaps} = await import("../src/figure/places.js");
 const {write} = await import("./figurePage.js");
 
 // a page with nothing on it a perch could hide, until a test writes words onto it, and no chat, so the figure's world is the window
@@ -148,4 +149,21 @@ test("with something waiting on the user the figure keeps its stay rather than g
     expect(targetFor(at)).toMatchObject({stay: edge, spot: {posture: "stand", view: null, y: 800}});
     tab.getBoundingClientRect = () => ({left: 600, right: 640, width: 40, top: 400, bottom: 430});
     expect(targetFor(at)).toMatchObject({stay: edge, spot: {y: 400, view: "question", on: tab}});
+});
+
+test("a click sends the figure out of the box it was in, to a spot at home clear of it, until the box has been clear a while", () => {
+    const asleep = {state: "asleep", counts: {}, now: 100, near: {x: 1200, y: 800}, figure: FIGURE, hands: HANDS};
+    const seat = targetFor({...asleep, stay: {where: "seat", until: 0}}).spot;
+    const {stay, cleared} = clickedAway({where: "edge", until: 500}, boxAt(seat, FIGURE), 100);
+    expect(stay.until).toBe(0);
+    // an agent that cannot act keeps its figure seated, on the other corner
+    const away = targetFor({...asleep, stay, cleared}).spot;
+    expect(away.posture).toBe("sit");
+    expect(overlaps(boxAt(away, FIGURE), cleared.box)).toBe(false);
+    expect(targetFor({...asleep, stay, cleared, now: 100 + CLEARED_SECONDS}).spot).toEqual(seat);
+    // one that roams goes wherever its next stay takes it, but never back over the box it was clicked out of
+    for (const roll of [0, 0.3, 0.6, 0.99]) {
+        const roams = {...asleep, state: "idle", stay, cleared, random: () => roll};
+        expect(overlaps(boxAt(targetFor(roams).spot, FIGURE), cleared.box), `roll ${roll}`).toBe(false);
+    }
 });

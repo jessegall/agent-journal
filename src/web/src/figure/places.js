@@ -103,7 +103,7 @@ export const boxAt = (spot, {size, below}, posture = spot.posture) => {
     return {left: spot.x - size / 2, right: spot.x + size / 2, top, bottom: top + size};
 };
 
-const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+export const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 // whether an element is drawn at all, its own and its ancestors' opacity and visibility counted, as a turn's tools are not until it is
 // hovered; where the page cannot say, it is taken as drawn
 const visible = (element) => element.checkVisibility?.({opacityProperty: true, visibilityProperty: true}) ?? true;
@@ -130,6 +130,8 @@ export function inWorld(spot, figure, world = worldBox()) {
 // middle of it, where the body is drawn, from the hat to the feet
 const BODY_XS = [0.35, 0.5, 0.65];
 const BODY_YS = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9];
+// the part of the picture the body is drawn in, as shares of its width and height, which is what the user can click
+export const BODY = {left: BODY_XS[0], right: BODY_XS.at(-1), top: BODY_YS[0], bottom: BODY_YS.at(-1)};
 
 // whether a word is drawn at this point of the page: the character the page has there holds ink, is drawn, and its box holds the point
 function onWord(x, y) {
@@ -221,15 +223,27 @@ function insideWorld(spot, {size, below}) {
     };
 }
 
+// the seats on either corner of the edge at home, and the places along it to stand, each moved inside the figure's world
+const homeSeats = (edge, figure) => Object.keys(SEAT_SIDES).map((side) => insideWorld(seatAt(edge, side, figure), figure));
+const homeStands = (edge, figure) => alongTop(edge, HOME_ALONG).map((spot) => insideWorld(spot, figure));
+
 // A seat on a corner of the edge the figure stands on at home; with nothing there it sits on the foot of its world, its legs past it
 export function seatOf(figure, near) {
     const {element, edge} = groundEdge();
+    return {...freeSpot(homeSeats(edge, figure), figure, near), view: null, on: element};
+}
+
+// Where a figure clicked out of the way goes at home, its picture clear of `box`, the one it was clicked in: a seat while it must sit,
+// else a seat or a place along the edge, whichever hides least; null when none at home is clear of it
+export function clearOf(box, figure, near, seated) {
+    const {element, edge} = groundEdge();
+    const spots = seated ? homeSeats(edge, figure) : [...homeSeats(edge, figure), ...homeStands(edge, figure)];
     const spot = freeSpot(
-        Object.keys(SEAT_SIDES).map((side) => insideWorld(seatAt(edge, side, figure), figure)),
+        spots.filter((each) => !overlaps(boxAt(each, figure), box)),
         figure,
         near
     );
-    return {...spot, view: null, on: element};
+    return spot && {...spot, view: null, on: element};
 }
 
 // The edge a figure stands on at home: the bars docked over the main chat's compose box while there are any, else the compose box, else
@@ -281,13 +295,5 @@ export function spotOf(view, figure, near) {
         return spot ? {...spot, view, on: tab} : null;
     }
     const {element, edge} = groundEdge();
-    return {
-        ...freeSpot(
-            alongTop(edge, HOME_ALONG).map((spot) => insideWorld(spot, figure)),
-            figure,
-            near
-        ),
-        view: null,
-        on: element,
-    };
+    return {...freeSpot(homeStands(edge, figure), figure, near), view: null, on: element};
 }

@@ -5,9 +5,10 @@ import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
 import {beatsAfter, canSwitch, clipFor, facesAfter, figureStateOf, testResultsAfter, waitingSinceAt} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
-import {stayAtHome, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
+import {clickedAway, stayAtHome, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
 import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, workMoments} from "../figure/reactions.js";
 import {
+    BODY,
     CHANGE_SECONDS,
     HOME,
     POSTURES,
@@ -81,8 +82,9 @@ let drawn = "stand";
 const walking = ref(false);
 
 const held = computed(() => figureStateOf(agent.value, rows("work"), waitingSince.value, now.value));
-// the stay the figure keeps while nothing calls it anywhere (perches.js)
+// the stay the figure keeps while nothing calls it anywhere, and the box it was last clicked out of, kept clear of it (perches.js)
 let stay = {where: "seat", until: 0};
+let cleared = {until: 0};
 // the sides, "l" or "r", of the hands this voice carries nothing in, which it can hang by
 let hands = [];
 // what the figure rests on (places.js footingOn), watched each frame; null while it travels
@@ -298,11 +300,26 @@ function look() {
         near: place.value,
         figure: figureSize(),
         hands,
+        cleared,
     });
     stay = target.stay;
     if (!moving.value && !arriving.value) moveTo(target.spot);
     if (!document.hidden) lookTimer = setTimeout(look, LOOK_EVERY);
 }
+
+// a click on the figure's body sends it out of the way of what it was drawn over, on a trip like any other
+function clicked(event) {
+    ({stay, cleared} = clickedAway(stay, event.currentTarget.parentElement.getBoundingClientRect(), Date.now() / 1000));
+    look();
+}
+
+// the part of the picture the body is drawn in, which takes the click
+const bodyStyle = {
+    left: `${BODY.left * 100}%`,
+    width: `${(BODY.right - BODY.left) * 100}%`,
+    top: `${BODY.top * 100}%`,
+    height: `${(BODY.bottom - BODY.top) * 100}%`,
+};
 
 const onType = (event) => {
     if (event.target.closest?.(HOME)) typed = true;
@@ -406,6 +423,7 @@ const style = computed(() => ({
 
 <template>
     <div v-show="figureStatus === 'shown' && here" class="voice-figure" :style="style" aria-hidden="true" :data-walking="walking">
+        <div class="voice-figure-body" :style="bodyStyle" @click="clicked" />
         <div :class="['voice-figure-actor', {chasing}]" :style="chasing ? {animationDuration: `${chaseMs}ms`} : null">
             <canvas ref="canvas" class="voice-figure-canvas" :style="passing ? {clipPath: `inset(0 0 ${below * 100}% 0)`} : null" />
             <template v-if="chasing">
@@ -425,6 +443,13 @@ const style = computed(() => ({
     left: 0;
     z-index: 40;
     pointer-events: none;
+}
+
+.voice-figure-body {
+    position: absolute;
+    z-index: 1;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 /* one thin edge in the page's own text colour, so the figure reads on a dark page and a light one alike; a wider
