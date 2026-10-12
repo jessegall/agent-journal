@@ -232,6 +232,20 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": late})
     assert (chat().count(late), log_file(record.root).read_text().count(FELL_BACK)) == (1, fell_back), \
         "the turn's last words are waited for: a display hook the stop raced past still delivers them, and the transcript is not blamed"
+    cut = lambda text: transcript.write_text(transcript.read_text() + "\n".join([
+        json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}}),
+        json.dumps({"type": "user", "timestamp": now, "message": {"content": [{"type": "text", "text": "[Request interrupted by user]"}]}})]) + "\n")
+    monkeypatch.setattr(engine.agent.driver, "alive", lambda: True)
+    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
+    cut("Half a sentence of the turn that was cut off")
+    engine.cut_off()
+    engine.cut_off()
+    assert chat().count("Half a sentence of the turn that was cut off") == 1, "a turn the person cut off reaches the chat when the engine sees it, once, without waiting for the next prompt"
+    displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "kept", "index": 0, "final": True, "delta": "Delivered by the hook before the cut"}))
+    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
+    cut("Delivered by the hook before the cut")
+    engine.cut_off()
+    assert chat().count("Delivered by the hook before the cut") == 1, "and words the display hook already delivered are not sent again"
 
 
 def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():

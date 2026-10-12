@@ -25,7 +25,7 @@ from agents.seat import SeatReport
 from engine.wording import digest, plural
 from engine.transcript import PEER
 from providers.turns import turns
-from runner.chat_mirror import send_row_to_chat
+from runner.chat_mirror import send_row_to_chat, unfinished
 from engine.stored import Growth, read_json, write_json
 from resources.fields import Loaded
 
@@ -117,6 +117,7 @@ class Engine:
         self.relayed = None
         self.peer_growth = Growth()
         self.failure_growth = Growth()
+        self.interruption_growth = Growth()
         self.screen_call = ""
         self.typed_at = 0.0
         self.ticked_at = 0.0
@@ -147,6 +148,7 @@ class Engine:
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
         self.screen_asks()
+        self.cut_off()
         self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.failed() or self.probe() or self.forced() or self.typing() or self.shelled()
                     or self.control() or self.deliver() or self.nudge())
         self.report.write(self.why)
@@ -229,6 +231,14 @@ class Engine:
     def elsewhere(self, e) -> bool:
         meant = event_data(self.record, e).get("session")
         return bool(meant) and meant not in self.names()
+
+    def cut_off(self) -> None:
+        """A turn the person cut off ends with no hook, so the words it had written wait for the next prompt; they are sent now, from the catch-up the next prompt would run, which sends nothing the hook already delivered."""
+        reading = self.reading()
+        if reading is None or self.agent.state() not in (BUSY, WORKING) or not self.interruption_growth.grew(reading.transcript):
+            return
+        if reading.provider.interrupted_by_user(reading.transcript):
+            unfinished(self.record.root, reading.row.title, reading.row)
 
     def failed(self) -> str:
         reading = self.reading()
