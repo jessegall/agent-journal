@@ -6,7 +6,7 @@ from framework.base import Feature
 from resources.checks import Check
 from resources.base import SYSTEM
 from resources.types import AgentRow, Notification
-from features.checks.controller import Checks
+from controllers.types import Checks
 from features.checks.details import ChecksDetails
 from features.checks.handlers import MarkTestRuns, ReportCheckResult, RunDueChecks
 from events.checks import CheckUpdated
