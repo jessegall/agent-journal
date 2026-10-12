@@ -38,6 +38,13 @@ LAWS = (
     Law("L7", "Write the least code that solves the whole problem: find what already does it and reuse it, and never write the same logic twice.",
         "Before writing, search the code for what already does the job or most of it, and extend that instead of adding a second way. Every read or write of one kind of thing (a file, a record, a setting, a provider) goes through the one funnel that owns it, which is where caching and checks live. A fix lands where the fault is born, not where it shows. When you finish, say in a line what you skipped or did not check.",
         ("def", "class", "function", "refactor", "duplicate", "Edit", "Write"), "everything"),
+    Law("L8", "Answer the user in as few words as the answer needs; never a wall of text.",
+        "Lead with the answer, then only what the user must act on. Two or three short paragraphs is a long reply; a sentence is usually enough. "
+        "Do not restate what was asked, recap what the user watched you do, list what you considered and rejected, or explain your reasoning unless "
+        "it changes what they should do. A finding, a failure or a decision that waits on them is worth the words; the rest is not. "
+        "This binds what you write in the chat. Code, commit messages, briefs to other agents, to-do briefs, docs and reports are as long as they "
+        "must be to be understood later.",
+        (), "chat"),
 )
 
 GENERIC = frozenset({"", "agent", "default", "general", "general-purpose"})
