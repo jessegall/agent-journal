@@ -23,7 +23,7 @@ from controllers.files import Files
 from controllers.links import Links
 from controllers import marks
 from controllers.stored import IDEMPOTENCY, RowStore
-from engine.wording import noun
+from resources.text import noun
 
 WORDS = ("title", "abstract", "brief")
 FIELD_WRITES = ("create", "update", "set")

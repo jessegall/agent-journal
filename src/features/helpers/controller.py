@@ -23,7 +23,7 @@ from features.helpers.reuse import HELPER_KIND, agent_runs, helper_kept, kept, k
 from resources.base import AGENT, SYSTEM, USER, Ref, Refused, titled
 from resources.types import HELPER, MergeWait, Todo
 from controllers.marks import action
-from engine.wording import slugged
+from resources.text import slugged
 from resources.types import EnvironmentKind
 
 STOP_WAIT, STOP_POLL = 5.0, 0.1

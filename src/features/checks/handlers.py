@@ -5,7 +5,7 @@ from pathlib import Path
 from engine.command_runs import CommandRun, command_runs
 from events.agents import ClockTicked
 from events.agents import AgentReported
-from engine.wording import digest
+from resources.text import digest
 from features.checks.output import summary
 from providers.payload import HookEvent
 from providers import transcript_reader

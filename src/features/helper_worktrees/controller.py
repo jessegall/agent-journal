@@ -7,7 +7,7 @@ import controllers.types as types_module
 from controllers.base import Controller
 from engine import runtime
 from engine.state import State
-from engine.wording import plural
+from resources.text import plural
 from features.agent_sessions.launch import running_at
 from engine.worktree import current_branch, freed, git, included, keep_own_packages, lines, link_folders, packages_linked, present, roots, scratch_cleared, share_journal, tip
 from providers import workspace_folders

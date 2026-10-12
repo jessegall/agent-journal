@@ -9,7 +9,7 @@ from threading import Lock, Thread, get_ident
 from pathlib import Path
 from typing import Callable
 
-from engine.wording import digest
+from resources.text import digest
 from providers.jsonl import Read, lines_after, lines_from, read_bytes, rows, tail_lines
 
 FOLD_CACHE = Path.home() / ".cache" / "agent-journal" / "folds"
@@ -27,8 +27,8 @@ CURSOR = "cursor"
 @cache
 def shape_mark() -> str:
     """A digest of the code that shapes a turn, so a release that changes how turns are shaped reads them again and every other release reads nothing."""
-    from engine import transcript, wording
-    return digest(inspect.getsource(transcript) + inspect.getsource(wording.digest), 12)
+    from engine import transcript
+    return digest(inspect.getsource(transcript) + inspect.getsource(digest), 12)
 
 
 @cache

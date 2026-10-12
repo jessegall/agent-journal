@@ -4,7 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from engine.sessions import alive
-from engine.wording import clipped
+from resources.text import clipped
 from framework.sending import Sent
 from declaring.trigger import DAY, MINUTE
 from providers import PROVIDERS, transcript_reader

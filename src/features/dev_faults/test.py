@@ -213,7 +213,7 @@ def test_going_over_again_counts_but_tells_the_agent_once():
         "and the next breach files a fresh to-do instead of holding the writes"
     from controllers.types import Agents
     from engine.record import Record
-    from engine.wording import digest
+    from resources.text import digest
     elsewhere = Record(record.root, "elsewhere")
     Agents(elsewhere, actor=SYSTEM).create("claude-2")
     todos.delete(todos.rows.standing()[0].n, "archived again")

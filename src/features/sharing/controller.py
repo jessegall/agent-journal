@@ -23,7 +23,7 @@ from features.sharing.visiting import ShareVisits, sharing_feature
 from features.sharing.views import VIEWS
 from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
-from engine.wording import plural
+from resources.text import plural
 from declaring.trigger import DAY
 from controllers.marks import action
 

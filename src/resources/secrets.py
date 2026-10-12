@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 from enum import StrEnum
 from typing import ClassVar
 
-from engine.wording import slugged
+from resources.text import slugged
 from resources.base import PROJECT, UNLISTED, Refused, Resource, ResourceDetails
 from resources.shapes import Field, Shape
 

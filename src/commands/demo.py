@@ -7,7 +7,7 @@ from commands.http import dispatch
 from engine.record import Record
 from engine.stored import write_json
 from engine.transaction import apart
-from engine.wording import digest
+from resources.text import digest
 from features.phone.controller import CARDS, Phones
 from features.phone.resource import Phone
 from features.phone.routes import read_body

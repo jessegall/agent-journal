@@ -7,7 +7,7 @@ from controllers.types import Agents, Questions, Todos, Works
 from engine import bus
 from engine.record import Record
 from engine.sessions import Sessions, live
-from engine.wording import clipped
+from resources.text import clipped
 from engine.worktree import spread
 from features.boards.controller import Boards
 from resources.boards import REVIEW
