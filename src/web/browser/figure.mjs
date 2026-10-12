@@ -93,6 +93,21 @@ const hidden = (page) =>
             .map((control) => (control.innerText || control.getAttribute("aria-label") || control.tagName).trim());
     }, FIGURE);
 
+// Waits until the figure has stopped where it is going, since a box read while it walks is not where it will stand
+const settled = async (page) => {
+    let before = null;
+    for (let look = 0; look < 40; look++) {
+        const now = await page.evaluate((figure) => {
+            const box = document.querySelector(figure).getBoundingClientRect();
+            return `${Math.round(box.left)},${Math.round(box.top)}`;
+        }, FIGURE);
+        if (now === before) return;
+        before = now;
+        await page.waitForTimeout(250);
+    }
+    throw new Error("the figure never stopped moving");
+};
+
 await runScenarios(process.argv[2], {
     async "it goes to the tab where a question waits behind another, and stands where it hides no control"(page, url) {
         await working(page);
@@ -113,6 +128,7 @@ await runScenarios(process.argv[2], {
             [FIGURE, "question"],
             {timeout: 20000}
         );
+        await settled(page);
         const covered = await hidden(page);
         if (covered.length) throw new Error(`standing at the question's tab the figure hides ${covered.join(", ")}`);
         await shot(page, "figure-at-the-question-tab");
@@ -122,7 +138,7 @@ await runScenarios(process.argv[2], {
         await working(page);
         await page.goto(`${url}#/main/todo`);
         await page.locator(FIGURE).waitFor({state: "visible"});
-        await page.waitForTimeout(8000);
+        await settled(page);
         const place = await page.evaluate((figure) => {
             const box = document.querySelector(figure).getBoundingClientRect();
             const floor = document.querySelector("[data-figure-floor]").getBoundingClientRect();
