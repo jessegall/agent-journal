@@ -13,7 +13,7 @@ def open_key(agent: int) -> str:
 
 class SpotSearch(Listener[ToolCallAnswered]):
     def listen(self, event: ToolCallAnswered) -> list[Fact]:
-        if event.tool != SHELL or event.why or not searches(event.input):
+        if event.tool != SHELL or event.why or event.subagent or not searches(event.input):
             return []
         return [SearchMade(agent=event.agent, command=event.input)]
 

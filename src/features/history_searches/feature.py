@@ -17,8 +17,8 @@ OPEN = {"history_searches.open|1": "search-1"}
 WAITING = {"history_searches.waiting|1": [{"labels": [LABEL], "keys": ["search-1"]}]}
 
 
-def answered(command: str, tool: str = "Bash", why: str = "") -> ToolCallAnswered:
-    return ToolCallAnswered(agent=1, tool=tool, input=command, why=why)
+def answered(command: str, tool: str = "Bash", why: str = "", subagent: bool = False) -> ToolCallAnswered:
+    return ToolCallAnswered(agent=1, tool=tool, input=command, why=why, subagent=subagent)
 
 
 def ran(command: str, output: str = "", tool: str = "Bash") -> CommandRan:
@@ -38,6 +38,7 @@ class HistorySearches(Feature):
             Given(answered("git status"), rows=[AGENT_ROW]) >> Dispatches(nothing),
             Given(answered(SEARCH, why="plan 4 is open"), rows=[AGENT_ROW]) >> Dispatches(nothing),
             Given(answered(SEARCH, tool="Read"), rows=[AGENT_ROW]) >> Dispatches(nothing),
+            Given(answered(SEARCH, subagent=True), rows=[AGENT_ROW]) >> Dispatches(nothing),
         ])
         journal.events.handle(SearchMade, MarkHistorySearch(), expects=[
             Given(SearchMade(agent=1, command=SEARCH), rows=[AGENT_ROW])
