@@ -12,6 +12,9 @@ export const REACTIONS = [
     {moment: "answered", clip: "nod", odds: 0.6, cooldown: 15},
     {moment: "heard", clip: "wave", odds: 0.15, cooldown: 120},
     {moment: "heard", clip: "nod", odds: 0.35, cooldown: 15},
+    // the user typing in the box next to it, and the agent settling after a long stretch of work
+    {moment: "typing", clip: "peek", odds: 0.2, cooldown: 60},
+    {moment: "work_done", clip: "stretch", odds: 0.4, cooldown: 120},
     // a face the user puts on a message is aimed at the figure, so it always answers, and turns to the message to do it
     {moment: "reacted:\u2764\ufe0f", clip: "hearts", odds: 1, cooldown: 0, toward: "card"},
     {moment: "reacted:\ud83d\udc4d", clip: "nod", odds: 1, cooldown: 0, toward: "card"},
@@ -37,6 +40,9 @@ export const AMBIENT = [
     {clip: "look_around", state: "idle", after: 60, every: [25, 60], odds: 0.6},
     {clip: "stretch", state: "idle", after: 240, every: [90, 180], odds: 0.5},
 ];
+
+// the agent has worked for at least this many seconds when it settles, for "work_done" to be a moment
+export const WORKED_SECONDS = 30;
 
 // A jump of more than this many of the figure's own heights sometimes turns over backwards on the way
 export const FLIP_OVER = 1;

@@ -54,3 +54,11 @@ test("a test card that ends is seen once, as a pass or a failure, and a card alr
     expect(testResultsAfter(agent(card("tests:1", "done")), known)).toEqual([]);
     expect(testResultsAfter(agent(card("tests:2", "failed")), known)).toEqual([{beat: "tests_failed", at: 9, card: "tests:2"}]);
 });
+
+test("the user typing now and then makes it peek, and finishing a long stretch of work now and then makes it stretch", () => {
+    const memory = new Map();
+    expect(reactionTo("typing", memory, 0, () => 0).clip).toBe("peek");
+    expect(reactionTo("typing", memory, 10, () => 0)).toBe(null);
+    expect(reactionTo("typing", memory, 100, () => 0.99)).toBe(null);
+    expect(reactionTo("work_done", memory, 0, () => 0).clip).toBe("stretch");
+});

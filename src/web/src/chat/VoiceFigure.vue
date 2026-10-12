@@ -6,7 +6,7 @@ import {figureRise, figureStatus} from "../composables/voiceFigure.js";
 import {SEATED, beatsAfter, clipOf, eggFor, facesAfter, figureStateOf, testResultsAfter} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {BUBBLE, HANGS, ODDS, SETTLED_SECONDS, perchOn, perchSpot} from "../figure/perches.js";
-import {ambientFor, flips, reactionTo, workClip} from "../figure/reactions.js";
+import {WORKED_SECONDS, ambientFor, flips, reactionTo, workClip} from "../figure/reactions.js";
 import {HOME, boxAt, openTabs, pointedView, seatOf, seatRise, spotOf} from "../figure/places.js";
 import {rows} from "../sync/rows.js";
 
@@ -76,6 +76,10 @@ let destination = null;
 let footFrame = 0;
 // the working clip the figure rolled for the working state it is in, so it does not change its mind within it
 let worked = {state: "", clip: ""};
+// the user has typed in the compose box since the last look, and when the agent's work began, so that finishing it is a moment
+let typed = false;
+let workBegan = 0;
+const WORKING = new Set(["thinking", "searching", "writing", "running"]);
 
 // the first of these clips the figure has; idle when it has none of them
 const clipNamed = (...names) =>
@@ -278,8 +282,9 @@ function look() {
     now.value = Date.now() / 1000;
     const waiting = counts.value.question + counts.value.waiting + counts.value.suggestion > 0;
     waitingSince.value = waiting ? waitingSince.value || now.value : 0;
-    const fresh = [...beatsAfter(agent.value, seenAt), ...testResultsAfter(agent.value, testStates), ...facesAfter(rows("reaction"), seenAt)];
-    if (fresh.length) seenAt = Math.max(seenAt, ...fresh.map((fire) => fire.at));
+    const happened = [...beatsAfter(agent.value, seenAt), ...testResultsAfter(agent.value, testStates), ...facesAfter(rows("reaction"), seenAt)];
+    if (happened.length) seenAt = Math.max(seenAt, ...happened.map((fire) => fire.at));
+    const fresh = [...happened, ...momentsOfWork()];
     const waited = {state: held.value.state, since: held.value.since, lasted: now.value - held.value.since};
     const eggs = [...fresh.map((fire) => eggOf(fire) || reactionClip(fire)), eggOf(waited), ambientClip(waited)];
     beats.value = [...beats.value, ...eggs.filter(Boolean)];
@@ -288,6 +293,24 @@ function look() {
     if (!moving.value && !arriving.value) moveTo(target.value);
     if (!document.hidden) lookTimer = setTimeout(look, LOOK_EVERY);
 }
+
+// the moments of the agent's work and of the user at the compose box: typing, and the end of a stretch of work
+function momentsOfWork() {
+    const moments = [];
+    if (typed) moments.push({beat: "typing", at: now.value});
+    typed = false;
+    const working = WORKING.has(held.value.state);
+    if (working && !workBegan) workBegan = now.value;
+    if (!working && workBegan) {
+        if (now.value - workBegan >= WORKED_SECONDS) moments.push({beat: "work_done", at: now.value});
+        workBegan = 0;
+    }
+    return moments;
+}
+
+const onType = (event) => {
+    if (event.target.closest?.(HOME)) typed = true;
+};
 
 // the clip the figure reacts to a beat with, when it reacts to it at all, as a beat to play, facing the chat mark that caused it if it should
 function reactionClip(fire) {
@@ -361,6 +384,7 @@ watch([here, figureStatus], () => (figureRise.value = here.value && figureStatus
 watch(() => Boolean(agent.value), present);
 onMounted(() => {
     document.addEventListener("visibilitychange", seen);
+    document.addEventListener("input", onType, true);
     window.addEventListener("resize", look);
     load(voice.value);
 });
@@ -371,6 +395,7 @@ onUnmounted(() => {
     clearTimeout(frameTimer);
     clearTimeout(lookTimer);
     document.removeEventListener("visibilitychange", seen);
+    document.removeEventListener("input", onType, true);
     window.removeEventListener("resize", look);
 });
 

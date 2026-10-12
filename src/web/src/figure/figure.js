@@ -501,6 +501,17 @@ function look_around(pose, stance, t) {
     armsAtRest(pose, stance);
 }
 
+// leans toward the box the user is typing in and looks at it, then settles
+function peek(pose, stance, t) {
+    const u = onceTime(t, 12);
+    const toward = swell(u, 0, 1);
+    seatedBody(pose, 0);
+    breathe(pose, 0);
+    trunk(pose, {lean: 10 * toward, nod: 12 * toward, turn: 14 * toward});
+    armsAtRest(pose, stance);
+    eyesAs(pose, "reading", toward);
+}
+
 // stretches both arms up and leans back with a yawn, then settles
 function stretch(pose, stance, t) {
     const u = onceTime(t, 24);
@@ -916,6 +927,7 @@ function search(pose, stance, t) {
     armsAtRest(pose, stance, [side]);
     armTo(pose, side, 1, {y: 55, z: -55 + 30 * sweep, bend: 35});
     fold(pose, SEARCH_CROUCH);
+    eyesAs(pose, "reading");
 }
 
 // writes in small strokes with the free hand at chest height, head bent over it; the squire writes with his quill
@@ -947,6 +959,7 @@ function point(pose, stance, t) {
     trunk(pose, {nod: -14, lean: -3, tilt: -SIDES[side] * 5});
     armsAtRest(pose, stance, [side]);
     armTo(pose, side, 1, {y: -50 + 4 * waveOf(t), z: -35, bend: 6});
+    eyesAs(pose, "worried", 0.6);
 }
 
 // the arms of a jump or a fall, those that carry nothing: swung back by `back` degrees and out and up by `up` degrees
@@ -1145,6 +1158,7 @@ export const CLIPS = [
     {name: "dismay", frames: 28, fps: 10, loops: false, pose: dismay},
     {name: "look_around", frames: 24, fps: 10, loops: false, pose: look_around},
     {name: "stretch", frames: 24, fps: 8, loops: false, pose: stretch},
+    {name: "peek", frames: 12, fps: 10, loops: false, pose: peek},
     {name: "butler_tray_down", frames: 16, fps: 10, loops: false, pose: butler_tray_down},
     {name: "squire_chase", frames: 24, fps: 12, loops: false, pose: squire_chase},
     {name: "pointed", frames: 20, fps: 10, loops: false, pose: pointed},
