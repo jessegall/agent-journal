@@ -111,6 +111,15 @@ def agent_of(logged, record):
     return row
 
 
+def agent_of_fact(fact, record):
+    """The agent a fact run on a lane of its own is about: the one it names, else the one the environment's chat is with."""
+    agents = Agents(record, actor=SYSTEM)
+    row = agents.peek(fact.agent) if getattr(fact, "agent", 0) else agents.primary_to_read()
+    if row is None:
+        raise NobodyToSpeakTo.of(type(fact).__name__)
+    return row
+
+
 def due_now(feature, record, fact: Fact) -> bool:
     """Counts the moment against the agent the fact is about, then asks the feature's trigger whether its behaviour is due, as a 2.x handler did with noticed and due."""
     agent = Agents(record, actor=SYSTEM).peek(fact.agent)

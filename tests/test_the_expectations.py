@@ -1056,6 +1056,44 @@ def test_an_answered_tool_call_is_told_on_the_lane_after_its_answer():
     assert [(one.tool, one.input, one.why) for one in received] == [("Bash", "ls", "")], f"the call is told with what it asked, and no reason, since it may run: {received}"
 
 
+def test_a_spaced_fact_is_held_back_from_its_lane_and_runs_on_its_own_when_its_span_is_up():
+    """A fact dispatched with spaced is not run where it was dispatched: the lane hands it to whoever holds it back, which runs the newest one later, so a busy moment writes once and the last state still lands."""
+    from dataclasses import dataclass, replace
+    from events import Fact
+    from receiving import HANDLE, LISTEN, Handler, Listener, Registration, Registrations
+    from receiving.ticks import Lane, Services
+
+    @dataclass(frozen=True, kw_only=True)
+    class Reported(Fact):
+        n: int
+
+    @dataclass(frozen=True, kw_only=True)
+    class BarStale(Fact):
+        n: int
+
+    ran: list[int] = []
+
+    class SpotStaleBar(Listener[Reported]):
+        def listen(self, event: Reported) -> list[Fact]:
+            return [BarStale(n=event.n).spaced("bar", 1.0)]
+
+    class DrawTheBar(Handler[BarStale]):
+        def handle(self, event: BarStale) -> list[Fact]:
+            ran.append(event.n)
+            return []
+
+    registered = Registrations()
+    registered.add(Registration.read(LISTEN, Reported, SpotStaleBar(), ["an expectation"]))
+    registered.add(Registration.read(HANDLE, BarStale, DrawTheBar(), ["an expectation"]))
+    held: list[Fact] = []
+    lane = Lane("project", registered, Services({}), held_back=lambda fact: held.append(fact) or True)
+    for n in (1, 2, 3):
+        lane.run(Reported(n=n))
+    assert ran == [] and [one.n for one in held] == [1, 2, 3], "the lane runs none of them where they were dispatched, and hands each one over"
+    Lane("later", registered, Services({})).run(replace(held[-1], spacing=()))
+    assert ran == [3], "and the one run when the span is up is the newest, the last state landing"
+
+
 def test_a_feature_registered_for_both_engines_is_refused_at_boot():
     """There is no skip to write: a swept feature registers no 2.x handler, so the only way to run twice is to register twice.
 

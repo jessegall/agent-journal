@@ -6,16 +6,17 @@ its event like any other, and it declares itself adapted, which is what exempts 
 swept feature is held to. It asks for one thing, the tick's record, and nothing else may ask for that.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from declaring.registries import MOVED
 from engine import bus
+from engine.record import Record
 from events import Fact, Request
 from events.typed import AgentEvent, TypedEvent
 from engine.developing import developing
 from expects.watching import WATCH, tell
 from framework.loaded import FEATURES
-from framework.lanes import agent_of, answering, due_now, lane_services
+from framework.lanes import agent_of, agent_of_fact, answering, due_now, lane_services
 from framework.parts import Context, Handler as OldStyle
 from framework.promises import THE_ENGINES_OWN, Promise
 from receiving import HANDLE, LISTEN, REGISTERED, Handler, Listener, Registration, Registrations
@@ -291,10 +292,25 @@ class Ticking:
         if record is None:
             bus.over_the_listeners(logged, record)
             return
-        Lane(f"project:{logged.id}", self.running, Services(lane_services(record, lambda: agent_of(logged, record))), Claims(record.state("claims")), order=self.order, record=record,
-             switched_on=lambda feature: not feature or FEATURES[feature].enabled(record),
-             is_due=lambda feature, fact: due_now(FEATURES[feature], record, fact),
-             watch=lambda one, fact, began: watched(Promise.of(one), fact, record, began) if not type(one.receiver).adapted else None).run(OldEvent(logged=logged))
+        self.lane(f"project:{logged.id}", record, lambda: agent_of(logged, record)).run(OldEvent(logged=logged))
+
+    def lane(self, name: str, record, agent) -> Lane:
+        """A lane over this record, about this agent, with every receiver the features registered."""
+        return Lane(name, self.running, Services(lane_services(record, agent)), Claims(record.state("claims")), order=self.order, record=record,
+                    switched_on=lambda feature: not feature or FEATURES[feature].enabled(record),
+                    is_due=lambda feature, fact: due_now(FEATURES[feature], record, fact),
+                    held_back=lambda fact: self.held_back(fact, record),
+                    watch=lambda one, fact, began: watched(Promise.of(one), fact, record, began) if not type(one.receiver).adapted else None)
+
+    def held_back(self, fact: Fact, record) -> bool:
+        """Holds a spaced fact until its span is up, then runs the newest held on a lane of its own over a fresh read of the record."""
+        key, seconds = fact.spacing
+        root, env = record.root, record.env
+        bus.spaced(f"{root}|{env}|{key}", seconds, lambda: self.later(replace(fact, spacing=()), Record(root, env, memo=True)))
+        return True
+
+    def later(self, fact: Fact, record) -> None:
+        self.lane(f"spaced:{type(fact).__name__}", record, lambda: agent_of_fact(fact, record)).run(fact)
 
 
 def watched(promise, event, record, began: float) -> None:

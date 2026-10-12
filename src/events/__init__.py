@@ -33,10 +33,16 @@ class Fact(Event):
     claim: str = ""
     trigger: str = ""
     """The behaviour whose trigger says when this fact goes on, for a fact dispatched with due."""
+    spacing: tuple = ()
+    """The key and the seconds a fact dispatched with spaced is held to, at most once per span."""
 
     def once(self, key: str) -> "Fact":
         """Dispatched at most once for this key: the engine claims it at dispatch and drops the fact when the claim is lost."""
         return replace(self, claim=key)
+
+    def spaced(self, key: str, seconds: float) -> "Fact":
+        """Dispatched at most once every so many seconds for this key: one dispatched sooner is held, the newest replacing the rest, and runs when the time is up, so the last state always lands."""
+        return replace(self, spacing=(key, seconds))
 
     def due(self, behaviour: str) -> "Fact":
         """Dispatched only when the dispatching feature's trigger for this behaviour says it is due: the engine counts the moment and drops the fact until then."""

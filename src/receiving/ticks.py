@@ -116,6 +116,8 @@ class Lane:
     """Whether a feature is on for this lane's record: a receiver of a feature switched off is not run."""
     is_due: Callable[[str, Fact], bool] = lambda feature, fact: True
     """Whether a fact a listener of this feature dispatched with due is due now: the engine counts the moment and asks the feature's trigger."""
+    held_back: Callable[[Fact], bool] = lambda fact: False
+    """Holds a fact dispatched with spaced until its span is up, and says whether it took it, so the lane does not run it now."""
     watch: Callable[[object, Event, float], None] = lambda registration, fact, began: None
     """Notes a handler's run for the runtime watch of its expectations, with when it began."""
     ran: list = field(default_factory=list)
@@ -130,6 +132,8 @@ class Lane:
         for event in events:
             if getattr(event, "claim", "") and not self.claims.take(event.claim):
                 self.dropped.append(event)
+                continue
+            if getattr(event, "spacing", ()) and self.held_back(event):
                 continue
             going.append(event)
         return going
