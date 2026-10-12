@@ -1,6 +1,6 @@
 import sys
 
-from github import Thread, my_login, waiting
+from scripts.checks.github import Thread, my_login, waiting
 
 OWNER = "jessegall"
 

@@ -279,8 +279,10 @@ def test_claudes_status_line_payload_is_kept_and_read_back_as_usage_and_context(
     assert (claude.conversation_file("conversation-1").name, claude.conversation_file("nowhere")) == ("conversation-1.jsonl", None), "a conversation is found by its name among the projects' transcripts"
     from providers.claude_rows import Block
     from providers.payload import ToolCall
-    assert claude.stopped({"u1": ("returned", 1.0), "u2": ("failed", 1.0)}, [ToolCall(name="TaskStop", task="t1", at=5.0), ToolCall(name="TaskStop", task="t2", at=6.0)],
-                          {"u1": "t1", "u2": "t2"}) == {"u1": ("stopped", 5.0), "u2": ("failed", 1.0)}, "a task the agent stopped says so, unless it had already ended some other way"
+    from providers.claude import Finish
+    assert claude.stopped({"u1": Finish("returned", 1.0), "u2": Finish("failed", 1.0)}, [ToolCall(name="TaskStop", task="t1", at=5.0), ToolCall(name="TaskStop", task="t2", at=6.0)],
+                          {"u1": "t1", "u2": "t2"}) == {"u1": Finish("stopped", 5.0), "u2": Finish("failed", 1.0)}, \
+        "a task the agent stopped says so, unless it had already ended some other way"
     assert (claude.refused_by_hook(Block(is_error=True, content="PreToolUse hook error: no")), claude.refused_by_hook(Block(is_error=True, content="boom"))) == (True, False), \
         "a tool call a hook turned back is told from one that failed"
     (tmp_path / "hook.sh").write_text("")

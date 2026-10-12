@@ -87,6 +87,22 @@ def live(session: SessionRecord) -> bool:
     return time.time() - session.last_heard < RECENT
 
 
+FOREBEARS = 2
+"""How far up the journal looks for the process it launched: the process itself and the one that started it. A provider may run its conversation in a child of the process the journal spawned, which is one step; anything further up is another agent's, and merging those would take an environment from an agent that holds it."""
+
+
+def forebears(pid: int) -> list[int]:
+    """A process and the one that started it, as far as FOREBEARS allows."""
+    walked = []
+    for _ in range(FOREBEARS):
+        if not pid:
+            break
+        walked.append(pid)
+        found = process(pid)
+        pid = found.parent if found else 0
+    return walked
+
+
 def agent_pid(pid: int) -> int:
     for _ in range(4):
         found = process(pid)
@@ -200,11 +216,12 @@ SESSION = "session.json"
 
 @dataclass(frozen=True)
 class Seat:
-    """Which chair an agent takes: the environment, the name its session goes by, and the process behind it. The three travel together wherever a seat is claimed, succeeded or taken over, and the process is what says two names are one agent."""
+    """Which chair an agent takes: the environment, the name its session goes by, the process behind it and the provider running it. They travel together wherever a seat is claimed, succeeded or taken over, and the process and the provider together are what say two names are one agent."""
 
     env: str
     session: str
     pid: int = 0
+    provider: str = ""
 
 
 class Sessions:
@@ -270,7 +287,13 @@ class Sessions:
         runtime.note_rename(self.root, old, new)
 
     def terminal(self, provider: str, pid: int) -> str:
-        return next((name for name, s in self.all().items() if name.startswith(f"{provider}-") and s.pid == pid), "")
+        """The session the journal launched for this agent: the process itself, or the one that started it. Codex runs its conversation in a child of the process the journal spawned and names that session after its rollout, so without the second step the conversation and the terminal read as two agents and the newcomer asks to take the environment from the agent it IS."""
+        live = self.all()
+        for walked in forebears(pid):
+            found = next((name for name, s in live.items() if name.startswith(f"{provider}-") and s.pid == walked), "")
+            if found:
+                return found
+        return ""
 
     def environment(self, session: str) -> str:
         return self.read(session).environment
@@ -323,14 +346,19 @@ class Sessions:
     def evict(self, session: str, by: str, env: str, why: str) -> None:
         self.write(session, environment="", evicted={"by": by, "environment": env, "why": why, "at": time.time()})
 
-    def agent(self, session: str, pid: int = 0) -> set[str]:
-        """The names one agent goes by: its conversation and its terminal share a process."""
+    def agent(self, session: str, pid: int = 0, provider: str = "") -> set[str]:
+        """The names one agent goes by: its conversation and its terminal. They are one process, or the terminal's process started the conversation's. A session being seated for the first time is not in the record yet, so its provider comes from the caller that is seating it."""
         pid = pid or self.read(session).pid
-        return {name for name, s in self.all().items() if pid and s.pid == pid} | {session}
+        if not pid:
+            return {session}
+        live = self.all()
+        launched = self.terminal(provider or live.get(session, SessionFiles.NONE).provider, pid)
+        pids = {pid, live[launched].pid} if launched in live else {pid}
+        return {name for name, s in live.items() if s.pid in pids} | {session}
 
     def _others(self, seat: "Seat") -> list[str]:
         """Every other agent holding an environment: its holders but this session's own."""
-        mine = self.agent(seat.session, seat.pid)
+        mine = self.agent(seat.session, seat.pid, seat.provider)
         return [holder for holder in self.holders(seat.env) if holder not in mine]
 
     def rivals(self, seat: "Seat") -> list[str]:

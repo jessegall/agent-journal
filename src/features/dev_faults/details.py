@@ -18,11 +18,12 @@ class DevFaultsDetails(FeatureDetails):
     """
 
     help = """
-        On in every project the journal is installed in, and it can be switched off. In the
-        journal's own development project (DEVELOPMENT_MODE=true in its .env or the environment)
-        a notice stays with the agent there; in any other project the agent that meets one also
-        sends its title and numbers to the agent-journal session, which is where the journal is
-        built.
+        On only where the journal develops itself (DEVELOPMENT_MODE=true in the project's .env
+        or the environment), and off in every other project until you switch it on here. What it
+        reports is for whoever builds the journal: a request over its time limit, an error the
+        viewer threw. Where it is on, a notice stays with the agent of that project; in a project
+        that is not the journal's own, the agent that meets one also sends its title and numbers
+        to the agent-journal session, which is where the journal is built.
 
         budget: everything here runs on one machine against files, so anything over the budget
         is a bug — faults.budget.request, .hook and .command are milliseconds per environment,

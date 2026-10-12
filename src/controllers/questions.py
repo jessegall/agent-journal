@@ -30,8 +30,14 @@ class Questions(Controller):
     def dismiss(self, n: int, why: str = ""):
         return self.complete(n, how=f"{DISMISSED}: {why}" if why.strip() else DISMISSED, reason=why, dismissed=True)
 
+    def _keep_for_the_user(self, n: int) -> None:
+        """A question that names itself the user's alone is answered by the user: an agent, its own or another's, waits for the answer."""
+        if self.actor == AGENT and self.load(n).user_only:
+            self._refuse(f"question {n} is the user's alone to answer: wait for their answer")
+
     @action
     def complete(self, n: int, how: str = "", **data):
+        self._keep_for_the_user(n)
         if self.actor == AGENT and not self._given(data).reason.strip():
             raise Refused(f'you are answering question {n} yourself: say why with --set reason="<why>"')
         return super().complete(n, how=how, **{**data, "kept": False, ANSWERED_BY: self.actor, CHOSEN: self.load(n).chosen_for(how)})
@@ -41,5 +47,7 @@ class Questions(Controller):
 
     @action
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
+        if outcome is not None:
+            self._keep_for_the_user(n)
         chosen = {CHOSEN: self.load(n).chosen_for(outcome), "dismissed": False} if outcome is not None else {}
         return super().update(n, title=title, abstract=abstract, brief=brief, outcome=outcome, **data, **chosen)

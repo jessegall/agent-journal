@@ -20,6 +20,9 @@ class NewFeature:
     text: str
     button: str
     profile: str = ""
+    opens: str = ""
+    """The page the button takes the reader to, as the viewer names it: 'settings'. Without one the button only closes the card, which is what a reader reads as nothing happening."""
+
     art: str = ""
     note: str = ""
     eyebrow: str = "Hey, new feature"
@@ -28,13 +31,15 @@ class NewFeature:
 
     @classmethod
     def declared(cls, version: str, raw: str) -> list["NewFeature"]:
-        """The new feature a changelog entry announces, none when it announces none or announces it wrong."""
-        found = DECLARATION.search(raw)
-        if found is None:
-            return []
+        """Every new feature a changelog entry announces, in the order it announces them; a release of two features announces both."""
+        return [one for found in DECLARATION.finditer(raw) for one in cls.read(version, found.group(1))]
+
+    @classmethod
+    def read(cls, version: str, given: str) -> list["NewFeature"]:
+        """The feature one declaration names, none when it is written wrong."""
         try:
-            given = json.loads(found.group(1))
-            return [cls(version=version, **{**given, "art": f"{ART_FOLDER}/{given['art']}" if given.get("art") else ""})]
+            fields = json.loads(given)
+            return [cls(version=version, **{**fields, "art": f"{ART_FOLDER}/{fields['art']}" if fields.get("art") else ""})]
         except (ValueError, TypeError):
             return []
 

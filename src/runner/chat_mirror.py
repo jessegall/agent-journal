@@ -9,6 +9,7 @@ from typing import Iterator
 import features
 from controllers.types import Agents
 from engine import chat, runtime, waits
+from engine.after_answer import after_answered
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
@@ -24,6 +25,7 @@ DONE = "_done"
 SENT = "_sent"
 MATCHED = "_matched"
 FINALS = "_finals"
+FAULTS = "_faults"
 KEPT_DONE = 50
 KEPT_SENT = 500
 FELL_BACK = "the display hook did not deliver what the agent said"
@@ -31,6 +33,8 @@ COMMIT = re.compile(r"[0-9a-f]{40}")
 CATCH_UP = 600.0
 SETTLE = 3.0
 SETTLE_STEP = 0.05
+HELD_FOR = 30.0
+"""How long a fallback is only provisional: the display hook was seen delivering words three seconds after the turn that carried them ended, past the wait for them, so the fault is raised only when no chunk with the same words has come within this long, which is ten times what was seen."""
 REPLAYING = threading.Lock()
 
 
@@ -83,8 +87,14 @@ def displayed(root: Path, chunk: Chunk) -> None:
     shown(root, chunk)
 
 
+def traced(root: Path, line: str) -> None:
+    """One line of the evidence for to-do 4422: what the display hook brought and what the fallback found missing, kept beside the other diagnostics."""
+    logged(root, f"display {line}")
+
+
 def shown(root: Path, chunk: Chunk) -> None:
     session, message = chunk.session, chunk.message
+    traced(root, f"chunk session {session} message {message or '-'} index {chunk.index} final {chunk.final} chars {len(chunk.delta)}")
     ledger = DisplayedLedger(root, session)
     with ledger.changing() as held:
         if message in held.get(DONE, []):
@@ -96,8 +106,11 @@ def shown(root: Path, chunk: Chunk) -> None:
         if message not in finals or any(str(i) not in parts for i in range(finals[message] + 1)):
             return
         last = finals[message]
-    if not send_to_chat(root, session, "".join(parts[str(i)] for i in range(last + 1)), message or None, streamed=True):
+    text = "".join(parts[str(i)] for i in range(last + 1))
+    if not send_to_chat(root, session, text, message or None, streamed=True):
         return
+    traced(root, f"whole session {session} message {message or '-'} fingerprint {fingerprint(text)} chars {len(text)}")
+    withdrawn(root, session, text)
     with ledger.changing() as held:
         held.pop(message, None)
         held[FINALS] = {key: value for key, value in held.get(FINALS, {}).items() if key != message}
@@ -117,9 +130,17 @@ def fingerprint(text: str) -> str:
     return digest(" ".join(text.split()))
 
 
-def turn_ended(root: Path, session: str, row, last_message: str) -> None:
+def turn_ended(root: Path, session: str, row, last_message: str, until: float = 0.0) -> None:
+    """Ends the turn once the display hook has brought its last words, or SETTLE has gone by. The words arrive as a job of this session's lane, queued behind this one, so waiting here would only hold them back: the wait is put at the back of the lane, behind whatever the hook has sent meanwhile."""
+    if not until:
+        raise_held(root, session)
+        until = time.time() + SETTLE
+    if last_message and not arrives(root, session, last_message) and time.time() < until:
+        time.sleep(SETTLE_STEP)
+        after_answered(lambda: turn_ended(root, session, row, last_message, until))
+        return
     if last_message:
-        arrives(root, session, last_message)
+        traced(root, f"turn ended session {session} last words fingerprint {fingerprint(last_message)} chars {len(last_message)}")
         stopped(root, session, last_message)
     unfinished(root, session, row)
 
@@ -130,19 +151,15 @@ def arrived(held: dict, text: str) -> bool:
                                                              for message, parts in held.items())
 
 
-def arrives(root: Path, session: str, text: str) -> None:
-    """Waits for the display hook to bring the turn's last words. The provider sends them and the hook that ends the turn
-    at the same moment, each as its own process, and a loaded machine lets the end arrive first; without this wait the
-    catch-up then calls words that are still on their way undelivered, and fills the chat from the transcript instead."""
-    ledger = DisplayedLedger(root, session)
-    until = time.time() + SETTLE
-    while not arrived(read_json(ledger.file, dict, {}), text):
-        if time.time() >= until:
-            return
-        time.sleep(SETTLE_STEP)
+def arrives(root: Path, session: str, text: str) -> bool:
+    """Whether the display hook has brought the turn's last words. The provider sends them and the hook that ends the turn
+    at the same moment, each as its own process, and a loaded machine lets the end arrive first; without the wait for them the
+    catch-up calls words that are still on their way undelivered, and fills the chat from the transcript instead."""
+    return arrived(read_json(DisplayedLedger(root, session).file, dict, {}), text)
 
 
 def turn_began(root: Path, session: str, row) -> None:
+    raise_held(root, session)
     unfinished(root, session, row)
     next_turn(root, session)
 
@@ -156,7 +173,9 @@ def stopped(root: Path, session: str, text: str) -> None:
             del held[message]
         held[FINALS] = {key: value for key, value in held.get(FINALS, {}).items() if key not in cut}
         held[DONE] = [*held.get(DONE, []), *cut][-KEPT_DONE:]
+    traced(root, f"stopped session {session} message {cut[0] or '-'} fingerprint {fingerprint(text)} chars {len(text)}")
     send_to_chat(root, session, text, cut[0] or None, streamed=True)
+    withdrawn(root, session, text)
 
 
 def next_turn(root: Path, session: str) -> None:
@@ -191,17 +210,46 @@ def unfinished(root: Path, session: str, row) -> None:
             pending.append(turn)
         held[SENT] = sent[-KEPT_SENT:]
         held[MATCHED] = streamed[-KEPT_SENT:]
+        partial = {message: sorted(parts, key=int) for message, parts in held.items() if not message.startswith(PRIVATE) and isinstance(parts, dict)}
     if not pending:
         return
+    traced(root, f"fallback session {session} pending {[(turn.key, fingerprint(turn.text), len(turn.text)) for turn in pending]} "
+                 f"sent {len(sent)} last {sent[-5:]} matched {len(streamed)} last {streamed[-5:]} partial {partial} done {held.get(DONE, [])[-5:]}")
     if provider.shows_what_is_said():
-        fell_back(root, session, len(pending))
+        fell_back(root, session, [fingerprint(turn.text) for turn in pending])
     for turn in pending:
         send_to_chat(root, session, turn.text, turn.key)
 
 
-def fell_back(root: Path, session: str, messages: int) -> None:
-    """Says that the transcript carried agent text the display hook never delivered, so a hook that has stopped arriving is never hidden by the fallback covering for it; a provider that shows nothing as it is displayed is read from its transcript by design and is never reported."""
-    said = plural(messages, "message")
+def fell_back(root: Path, session: str, fingerprints: list[str]) -> None:
+    """Holds the fault that the transcript carried agent text the display hook never delivered, by the fingerprint of each message, so a hook that has stopped arriving is never hidden by the fallback covering for it, and a hook that was only late is never blamed: the fault is raised when nothing with the same words has come within HELD_FOR. A provider that shows nothing as it is displayed is read from its transcript by design and is never reported."""
+    due = time.time() + HELD_FOR
+    with DisplayedLedger(root, session).changing() as held:
+        held[FAULTS] = {**{one: due for one in fingerprints}, **held.get(FAULTS, {})}
+    if HELD_FOR <= 0:
+        raise_held(root, session)
+        return
+    timer = threading.Timer(HELD_FOR + SETTLE_STEP, raise_held, (root, session))
+    timer.daemon = True
+    timer.start()
+
+
+def withdrawn(root: Path, session: str, text: str) -> None:
+    """The words a held fault was about have come through the display hook after all: the fault is dropped, with no word said, since a notice that takes the first one back teaches people to wait for the second."""
+    with DisplayedLedger(root, session).changing() as held:
+        held[FAULTS] = {one: at for one, at in held.get(FAULTS, {}).items() if one != fingerprint(text)}
+
+
+def raise_held(root: Path, session: str) -> None:
+    """Raises the faults whose window has run out with nothing arriving, and no others; the timer calls it, and so does the next turn, in case the server was reloaded while the fault was held."""
+    now = time.time()
+    with DisplayedLedger(root, session).changing() as held:
+        faults = held.get(FAULTS, {})
+        over = [one for one, at in faults.items() if at <= now]
+        if not over:
+            return
+        held[FAULTS] = {one: at for one, at in faults.items() if one not in over}
+    said = plural(len(over), "message")
     logged(root, f"{FELL_BACK}: {said} in session {session} came from the transcript instead")
     faults = features.FEATURES.get("dev_faults")
     if faults is None:

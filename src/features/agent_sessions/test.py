@@ -271,7 +271,7 @@ def test_a_session_that_starts_beside_a_live_one_is_never_offered_its_environmen
     features.load()
     record = fresh()
     sessions = Sessions(record.root)
-    running = [subprocess.Popen(["sleep", "60"]) for _ in range(3)]
+    running = [subprocess.Popen(["sleep", "60"]) for _ in range(4)]
     monkeypatch.setattr("agents.seat.agent_pid", lambda pid: pid)
     try:
         provider = PROVIDERS["claude"]()
@@ -284,6 +284,14 @@ def test_a_session_that_starts_beside_a_live_one_is_never_offered_its_environmen
         asked = users.rows.standing()
         assert ([q.title for q in asked], [option["title"] for option in asked[0].options], "first" in asked[0].brief) == \
             ([f"A second session started in {record.env}"], [f"Take over {record.env}", f"Stay in {side}"], True), "the user is asked, naming the session already there"
+        answered = refused(lambda: Questions(record, actor=AGENT).complete(asked[0].n, how=f"Take over {record.env}", reason="its own environment"))
+        assert ("the user's alone" in answered, sessions.holders(record.env)) == (True, ["first"]), \
+            "an agent cannot answer the question, so taking an environment over is only ever the user's choice and the session there keeps it"
+        again = start("again", running[3])
+        assert (again, len(users.rows.standing()), sessions.read("again").takeover["question"] == asked[0].n) == (f"{record.env}-3", 1, True), \
+            "another session beside the same one waits on the same question and asks nothing more, in an environment of its own, since an environment has one live session"
+        running[3].kill()
+        running[3].wait()
         users.complete(asked[0].n, how=f"Stay in {side}")
         assert (sessions.holders(record.env), sessions.holders(side)) == (["first"], ["second"]), "staying out leaves the sitting session where it is"
         later = start("third", running[2])
@@ -292,6 +300,32 @@ def test_a_session_that_starts_beside_a_live_one_is_never_offered_its_environmen
         assert (sessions.holders(record.env), sessions.holders(side), evicted.environment, evicted.evicted["by"]) == (["third"], ["second"], "", "third"), \
             "taking over unbinds the session that was there and the new one holds the environment, so one environment has one live session"
         assert later == f"{record.env}-3", "the waiting session had an environment of its own meanwhile"
+        own = fresh()
+        parent = subprocess.Popen(["sh", "-c", "sleep 60 & wait"])
+        running.append(parent)
+        child = 0
+        for _ in range(50):
+            found = subprocess.run(["pgrep", "-P", str(parent.pid)], capture_output=True, text=True).stdout.split()
+            if found:
+                child = int(found[0])
+                break
+            time.sleep(0.05)
+        assert child, "the child process the conversation runs in started"
+        codex = PROVIDERS["codex"]()
+        theirs = Sessions(own.root)
+        assert HookBinding(own.root, codex, parent.pid).bound(f"codex-{parent.pid}", "", own.env) == own.env, \
+            "the process the journal launched holds the environment it was launched for"
+        rollout = "rollout-2026-10-12T00-29-24-01a12d15-c5a9-7923-aabb-29878049a526"
+        assert HookBinding(own.root, codex, child).bound(rollout, "", own.env) == own.env, \
+            "and the conversation it runs in a child of that process is the same agent, so it holds the same environment"
+        assert [q.title for q in Questions(own, actor=USER).rows.standing()] == [], \
+            "nobody is asked to take anything over: a provider that names its conversation after its rollout was reading as a second session arriving, and taking the environment from the agent it is"
+        from types import SimpleNamespace
+        from providers.drivers import Driver
+        terminal = SimpleNamespace(record=own, pid=lambda: parent.pid)
+        theirs.write("other", pid=running[0].pid)
+        assert (Driver.owns(terminal, SimpleNamespace(title=rollout)), Driver.owns(terminal, SimpleNamespace(title="other"))) == (True, False), \
+            "a terminal owns the conversation it runs in a child process and no other agent's, so its report is found and the conversation is pointed at it"
     finally:
         for process in running:
             process.kill()
@@ -390,7 +424,8 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
     running = {"id": "t1", "task": "audit the hooks", "type": "auditor", "model": "sonnet", "ended": 0.0}
     for subagents in ([last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], {**running, "ended": 9.0, "status": "completed"}]):
         seat.subagents_moved(last, subagents)
-    subagent_events = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.event_log.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
+    moved = lambda: [e for e in record.event_log.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
+    subagent_events = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in moved()]
     assert subagent_events == [("dispatched", "audit the hooks", "auditor", "sonnet"), ("returned", "audit the hooks", "auditor", "sonnet")], subagent_events
     from agents import seat as seats
     from types import SimpleNamespace
@@ -408,7 +443,7 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
     restarted = SeatReport(record, agent=None)
     final = Agents(record, actor=AGENT).load(row.n)
     restarted.subagents_moved(final, [final.data["subagent_rows"][0], {**running, "ended": 9.0, "status": "completed"}])
-    again = [e.action for e in record.event_log.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
+    again = [e.action for e in moved()]
     assert again == ["dispatched", "returned"], "a seat started after a restart does not announce again what the row says was announced"
     from engine.disk import Growth
     watching = Growth()

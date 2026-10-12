@@ -91,6 +91,15 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on(monkeypatch):
     while len(ran) < 2 and time.monotonic() < waited:
         time.sleep(0.01)
     assert ran == ["first", "second"], "one agent's hooks are recorded in the order they came, even with a worker free"
+    from engine.after_answer import after_answered
+    workers, ran = AfterAnswer.started(2), []
+    workers.add(lambda: (time.sleep(0.1), ran.append("stop"), after_answered(lambda: ran.append("stop again"))), "claude-1")
+    time.sleep(0.03)
+    workers.add(lambda: ran.append("late chunk"), "claude-1")
+    waited = time.monotonic() + 2
+    while len(ran) < 3 and time.monotonic() < waited:
+        time.sleep(0.01)
+    assert ran == ["stop", "late chunk", "stop again"], "work left by a job goes to the back of its lane, so what arrived while it ran goes first, which is how a job waits for words queued behind it"
     from engine.quiet_collector import WHOLE_EVERY, YOUNG_AFTER, QuietCollector
     quiet = QuietCollector(clock=lambda: 0.0)
     assert (quiet.due(1.0, YOUNG_AFTER), quiet.due(1.0, 10)) == ((1,), ()), "young garbage is collected once enough has piled up"

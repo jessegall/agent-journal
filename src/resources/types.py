@@ -254,6 +254,7 @@ class Question(Options, Resource):
         Field(FLAG, False, name="final"),
         Field(FLAG, False, name="dismissed"),
         Field(FLAG, False, name="for_user"),
+        Field(FLAG, False, name="user_only"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Question",

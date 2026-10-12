@@ -397,8 +397,11 @@ def test_stopping_the_journal_names_what_was_left_open_and_the_other_commands_an
     monkeypatch.setattr("engine.typist.live", lambda root: [])
     monkeypatch.setattr("commands.queries.kept_work", lambda cwd: None)
     assert read("ended").strip() == "", "a session that ends puts back what it set aside and stops the journal when no session is left"
+    from install import DETACHED
+    monkeypatch.setenv(DETACHED, "1")
     monkeypatch.setattr("install.upgrade", lambda project, root, yes=False, version="": [f"upgraded {project.name} {yes}"])
-    assert "upgraded" in read("upgrade", "--yes") and "True" in read("upgrade", "--yes"), "an upgrade prints what it did"
+    assert "upgraded" in read("upgrade", "--yes") and "True" in read("upgrade", "--yes"), \
+        "an upgrade prints what it did; it is read in the detached state, because an upgrade asked for from a session starts a journal process of its own, which this record has not got"
     monkeypatch.setattr("commands.demo.demo_built", lambda folder, into, environment, name: f"built {into.name}")
     assert "built shop" in read("demo", "recording", "shop"), "a demo is built into the folder asked for"
 

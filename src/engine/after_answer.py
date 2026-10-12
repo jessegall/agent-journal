@@ -73,9 +73,11 @@ class AfterAnswer:
             job, lane = queued
             with self.quiet:
                 self.quiet.wait_for(lambda: not self.held(lane), LONGEST_HOLD)
+            ANSWERING.pool, ANSWERING.lane = self, lane
             try:
                 job()
             finally:
+                ANSWERING.pool = None
                 self.next_in(lane)
 
     def next_in(self, lane: str) -> None:

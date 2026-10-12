@@ -22,6 +22,12 @@ SLOW_TITLE = f"request /api/summary {OVER}"
 
 class DevFaults(Feature):
     details = DevFaultsDetails
+    default = False
+
+    @classmethod
+    def default_for(cls, root) -> bool:
+        """On where the journal develops itself, off everywhere else. What it reports - a request over its budget, an error the viewer threw - is for whoever builds the journal; a project that merely runs on it is told none of it until its user asks to be."""
+        return developing(root.parent)
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(ReportSlow(), expects=[
