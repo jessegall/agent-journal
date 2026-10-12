@@ -270,6 +270,6 @@ class Agents(Controller):
         row = self.rows.by_title(holder)
         if row is not None and row.data.get("status") in (types.BUSY, types.WORKING):
             return WORKING_STATE
-        if (row is None or not row.data.get("event")) and time.time() - sessions.read(holder).since > REPORT_WITHIN:
+        if (row is None or not row.data.get("event")) and time.time() - sessions.read(holder).last_heard > REPORT_WITHIN:
             return SILENT
         return IDLE_STATE

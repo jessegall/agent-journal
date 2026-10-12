@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.272.2 — An agent that is plainly working is no longer called not responding
+
+- The status bar said "started, but it never reported in" for an agent that was writing in the same window. It judged by when the session STARTED rather than when it was last heard from, so any session older than half a minute whose agent row carried no event read as silent for ever. It now reads the time it was last heard.
+- Watching a feature's expectations no longer fails on an empty file. It read each trigger's marks with a raw decode, and an empty mark file left behind by an older build raised on every round; it now reads them through the same funnel as everything else, which answers an empty file with nothing.
+
 ## 2.272.1 — The figure and the what's-new cards are off until you ask for them
 
 - The voice's figure is off unless you switch it on. Settings, Mascot. Nothing is drawn and nothing animates; the figure, its meshes and its clips are all still there, waiting for the switch.
