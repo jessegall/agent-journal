@@ -894,8 +894,29 @@ def test_a_row_of_every_type_made_twice_in_ten_seconds_is_one_row_unless_the_wor
             keyed = users.create("keyed", idempotency="a", **needed(type_))
             facts["same key"] = users.create("keyed", idempotency="a", **needed(type_)).n == keyed.n
             facts["other key"] = users.create("keyed", idempotency="b", **needed(type_)).n != keyed.n
+            facts["same key while the first is still writing"] = len(set(created_at_once(type_, record))) == 1
         reckon(wrong, type_, facts)
     assert wrong == {}, "the same author and words are one row for a type that deduplicates, and another author, brief, target or key is a new one"
+
+
+def created_at_once(type_: str, record) -> list[int]:
+    """Two creates with one key, the second arriving while the first is still writing, as a send retried during a slow first one: the numbers each is answered with."""
+    numbers, writing = [], threading.Event()
+    first = acting(type_, record, USER)
+    drawn = first.rows.draw_number
+
+    def drawn_slowly():
+        writing.set()
+        time.sleep(0.3)
+        return drawn()
+
+    first.rows.draw_number = drawn_slowly
+    one = threading.Thread(target=lambda: numbers.append(first.create("keyed at once", brief="first", idempotency="c", **needed(type_)).n))
+    one.start()
+    writing.wait(5)
+    numbers.append(acting(type_, record, USER).create("keyed at once", brief="second", idempotency="c", **needed(type_)).n)
+    one.join(5)
+    return numbers
 
 
 def other_than(field_, choices: dict):
