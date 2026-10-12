@@ -16,7 +16,7 @@ from engine.stored import read_json, write_json
 from resources.text import digest, plural
 from features.dev_faults.diagnostics import logged
 from providers import PROVIDERS
-from providers.payload import Chunk
+from payload import Chunk
 from resources.base import SYSTEM
 
 DISPLAYED = "displayed.json"

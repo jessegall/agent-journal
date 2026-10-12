@@ -14,9 +14,9 @@ import ast
 from dataclasses import dataclass
 from pathlib import Path
 
-ALLOWED = ("events", "declaring", "framework", "expects", "resources", "serving", "receiving")
+ALLOWED = ("events", "declaring", "framework", "expects", "resources", "payload", "serving", "receiving")
 """The packages every feature may name: the event catalogue, the declarations, the expects grammar,
-the row types and their constants, and the two sides of the engine it is registered through."""
+the row types and their constants, the shapes of what an agent sends and what a tool call parses into, and the two sides of the engine it is registered through."""
 
 ALSO = ("engine.services", "engine.wording", "engine.version")
 """The modules named in full that a feature may also import: the services' own types, which a

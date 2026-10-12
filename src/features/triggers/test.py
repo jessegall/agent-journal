@@ -2,7 +2,7 @@ import features
 import pytest
 from controllers.types import Agents, Messages
 from controllers.triggers.controller import Triggers
-from providers.payload import BashCall
+from payload import BashCall
 from tests.conftest import fresh
 from tests.kit import nudges, report
 
@@ -68,7 +68,7 @@ def test_a_trigger_message_does_not_fire_the_trigger_again():
 
 
 def test_a_trigger_fires_on_what_the_agent_says_in_the_chat():
-    from providers.payload import Chunk
+    from payload import Chunk
     from runner.chat_mirror import displayed
     from engine.sessions import Sessions
     features.load()
@@ -145,7 +145,7 @@ def test_a_nudge_that_offers_its_first_row_must_be_capped_and_an_undeclared_sett
 
 def test_every_kind_of_tool_call_says_what_it_is_doing_and_which_words_a_trigger_may_read(monkeypatch):
     from providers import PROVIDERS
-    from providers.payload import call_of, response_text
+    from payload import call_of, response_text
     kinds = PROVIDERS["claude"].tool_kinds
     called = lambda name, given, response=None: call_of({"tool_name": name, "tool_input": given, "tool_response": response or {}}, kinds)
     web = called("WebSearch", {"query": "python typing"})

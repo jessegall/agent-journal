@@ -4,7 +4,7 @@ from framework.base import Feature
 from framework.journal import Journal
 from events.agents import BusMessageSending
 from expects import Given, Kept, Unchanged, Wrote
-from providers.base import JOURNAL
+from payload import JOURNAL
 from resources.types import AgentRow, Message, Nudge
 
 

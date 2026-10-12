@@ -11,7 +11,7 @@ from events.triggers import TriggerFired
 from resources.sequences import Sequence
 from declaring.trigger import Mark
 from resources.triggers import Trigger
-from providers.payload import BashCall
+from payload import BashCall
 from resources.base import USER
 from resources.types import AgentRow, Question
 from framework.journal import Journal

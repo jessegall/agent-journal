@@ -7,7 +7,7 @@ from events.resources import ResourceCreated
 from events.agents import AgentChanged
 from events.questions import QuestionCompleted
 from engine.sessions import Sessions, live
-from providers.payload import HookEvent
+from payload import HookEvent
 from framework.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
 from resources.base import SYSTEM

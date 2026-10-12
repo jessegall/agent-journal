@@ -1,7 +1,7 @@
 from engine import viewer
 from events.agents import AgentChanged
 from framework.parts import AgentContext, Handler, in_background
-from providers.payload import HookEvent
+from payload import HookEvent
 
 
 class ShowViewerTab(Handler):

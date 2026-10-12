@@ -18,7 +18,7 @@ from engine.record import Record
 from controllers.faults import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
 from providers.base import Provider
-from providers.payload import HookEvent
+from payload import HookEvent
 from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, titled
 from resources.types import TYPES, priority
 from agents.seat import SeatReport

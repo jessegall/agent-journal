@@ -10,7 +10,7 @@ from features.skill_loading.interceptors import RefuseUntilLoaded
 from features.skill_loading.required import require_named
 from features.skill_loading.required import require, require_only
 from providers import PROVIDERS
-from providers.payload import HookEvent
+from payload import HookEvent
 from resources.base import SYSTEM, USER
 from resources.types import AgentRow
 from controllers.types import Agents, Messages

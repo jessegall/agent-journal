@@ -4,7 +4,7 @@ from events.messages import MessageCreated
 from expects import WHEN, Given, Held, Kept, Nudged, Refused, Unchanged, Updated, Wrote
 from framework.base import Feature
 from resources.triggers import Trigger
-from providers.payload import BashCall
+from payload import BashCall
 from resources.base import USER
 from resources.types import AgentRow, Message
 from framework.sending import Sent

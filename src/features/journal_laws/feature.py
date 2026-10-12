@@ -13,7 +13,7 @@ from features.journal_laws.details import LARGEST_RESULT, TOO_LONG, LawDetails
 from features.journal_laws.handlers import CheckChangedInstructions, NoticeLargestResult
 from features.journal_laws.interceptors import EnforceDispatchLaw, RefuseWholeLongReads, WhisperLawInChat, WhisperLawOnKeyword, lines_in
 from features.journal_laws.laws import carry, naming_of
-from providers.payload import BashCall, Dispatch, ReadCall
+from payload import BashCall, Dispatch, ReadCall
 from resources.types import AgentRow
 from framework.sending import Nudge
 from features.work_modes.modes import CARRIED_IN

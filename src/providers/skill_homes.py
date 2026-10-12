@@ -4,7 +4,7 @@ from pathlib import Path
 
 from engine.worktree import untracked
 from providers import PROVIDERS
-from providers.base import LIBRARY
+from payload import LIBRARY
 
 
 def skill_name(name: str) -> str:

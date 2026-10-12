@@ -18,7 +18,7 @@ from engine.sessions import ACTIVE_ENV, Sessions
 from engine.wording import APPENDS
 from providers import PROVIDERS, claude_channel as channel
 from providers.claude_channel import Asked
-from providers.payload import Hook
+from payload import Hook
 from resources.base import AGENT, SYSTEM
 from resources.types import SUBAGENT
 from runner.gate import gated

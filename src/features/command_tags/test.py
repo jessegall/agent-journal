@@ -11,7 +11,7 @@ from engine.record import Record
 from runner.engine import Engine
 from resources.base import AGENT, Refused, SYSTEM, USER
 from providers.drivers import Driver
-from providers.payload import Chunk
+from payload import Chunk
 from runner.chat_mirror import displayed
 from engine.sessions import Sessions
 from features.command_tags.reading import visible

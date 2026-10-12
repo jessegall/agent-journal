@@ -24,7 +24,7 @@ def test_a_pull_request_the_agent_opens_is_pinned_until_it_is_merged():
 
 def test_a_commands_outcome_is_read_in_the_shape_of_each_runner():
     from providers.command_effects import outcome_of
-    from providers.payload import BashCall, Hook, ReadCall
+    from payload import BashCall, Hook, ReadCall
 
     def hook(command, stdout=""):
         return Hook(tool=BashCall.from_payload("Bash", {"command": command}, {"stdout": stdout}))

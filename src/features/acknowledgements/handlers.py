@@ -4,7 +4,7 @@ from events.agents import BusMessageSending
 from features.command_tags.reading import CARRIED
 from features.messages.answering import answered
 from framework.parts import AgentContext, Context, Handler
-from providers.base import JOURNAL
+from payload import JOURNAL
 from features.acknowledgements.details import KEPT_OUT
 from resources.base import AGENT, USER, Ref, Refused, titled
 

@@ -3,7 +3,7 @@ import pytest
 import features
 from controllers.types import Agents
 from framework.parts import AgentContext
-from providers.payload import BashCall
+from payload import BashCall
 from resources.base import SYSTEM
 from tests.conftest import fresh
 

@@ -4,7 +4,7 @@ from framework.base import Feature
 from features.history_searches.details import HistorySearchesDetails
 from features.history_searches.handlers import EndSearchReads, KeepSearchResults, MarkHistorySearches
 from framework.journal import Journal
-from providers.payload import BashCall
+from payload import BashCall
 from resources.types import AgentRow
 
 AGENT_ROW = AgentRow(n=1, title="claude-1")

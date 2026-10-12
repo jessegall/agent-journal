@@ -12,7 +12,7 @@ from features.sharing.services import links_open, share_services
 from features.sharing.routes import TICKS
 from features.sharing.visitors import AGREEMENT
 from features.sharing.watchdog import TunnelWatch
-from providers.payload import BashCall
+from payload import BashCall
 from resources.base import USER
 from resources.types import AgentRow, Comment
 
