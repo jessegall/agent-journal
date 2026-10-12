@@ -3,16 +3,10 @@ from pathlib import Path
 
 from controllers.base import CONTROLLERS
 from controllers.messages import Messages
+from controllers.nudges import Nudges
 from framework.format import SHARED, formatted
-from features.sharing.details import ANSWERED
-from features.sharing.visitors import count_sent, index_comment, visitor_name, visitor_text
+from controllers.sharing.visitors import count_sent, index_comment, visitor_name, visitor_text
 from resources.base import AGENT, SYSTEM, Refused, titled
-
-
-def sharing_feature():
-    from framework.loaded import running
-    from features.sharing.feature import SharingFeature
-    return running(SharingFeature)
 
 
 @dataclass(frozen=True)
@@ -36,7 +30,7 @@ class SharedComment:
 
 class ShareVisits:
     def _visitor_answer(self, share, n: int, name: str, choice: str):
-        from controllers.types import Comments
+        from controllers.comments import Comments
         asked = next((comment for c in self._shared_comments(share, self._scope(share)) for comment in (c, *c.replies) if comment.n == n), None)
         if asked is None or not asked.options:
             raise Refused("that question is not on this link")
@@ -49,7 +43,8 @@ class ShareVisits:
         comments = Comments(record, actor=SYSTEM)
         made = comments.update(n, answer=choice, answered_by=name)
         if share.password:
-            sharing_feature().to_primary(record, ANSWERED, name=name, n=n, choice=choice)
+            Nudges(record, actor=SYSTEM).to_primary(f"{name} answered your question in comment {n}: {choice}",
+                                                    "they picked it on the shared page; carry on with that answer")
         else:
             self._hold_visitor_comment(record, made, comments.path(n), f"{name} answered your question in comment {n} through a shared link", choice)
         return made
@@ -61,7 +56,7 @@ class ShareVisits:
             raise Refused("that is not part of this link")
         name, text = visitor_name(name), visitor_text(text)
         count_sent(share.token)
-        from controllers.types import Comments
+        from controllers.comments import Comments
         record = self._home(share)
         comments = Comments(record, actor=SYSTEM)
         made = comments.create(f"Comment from {name}", brief=text, about=ref, visitor=name, share=share.n, trusted=bool(share.password))
@@ -81,7 +76,7 @@ class ShareVisits:
         )
 
     def _shared_comments(self, share, scope: set[str]) -> list[SharedComment]:
-        from controllers.types import Comments
+        from controllers.comments import Comments
         comments = Comments(self._home(share), actor=SYSTEM)
         rows = [row for row in comments.rows.summaries() if not row["deleted"]]
 

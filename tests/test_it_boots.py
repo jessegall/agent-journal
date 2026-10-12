@@ -15,6 +15,10 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.slow
+
+import pytest
+
 import migrations
 from agents.terminal import relaunch
 from controllers.types import Todos

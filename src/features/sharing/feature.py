@@ -4,13 +4,13 @@ from engine.services import SOURCES
 from expects import Given, Kept, Nudged, Refused, Unchanged
 from framework.base import Feature
 from framework.journal import Journal
-from features.sharing.controller import Shares
+from controllers.types import Shares
 from features.sharing.details import SharingDetails
 from features.sharing.guard import HoldOnVisitorComment, NameVisitorComment, RefuseClaimedUser, RefuseUntilAgreed
-from features.sharing.address import RELIED_ON
+from engine.address import RELIED_ON
 from features.sharing.services import links_open, share_services
 from features.sharing.routes import TICKS
-from features.sharing.visitors import AGREEMENT
+from controllers.sharing.visitors import AGREEMENT
 from features.sharing.watchdog import TunnelWatch
 from payload import BashCall
 from resources.base import USER

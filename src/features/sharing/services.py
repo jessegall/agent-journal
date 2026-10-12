@@ -6,9 +6,10 @@ from engine.keeper import ServiceSpec
 from engine.package import entry
 from engine.record import Record
 from engine.services import BUILD, allocate, current_build, files_for, log_file
-from features.sharing.controller import ADDRESS_TAKEN, Shares
+from controllers.types import Shares
+from resources.sharing import ADDRESS_TAKEN
 from resources.sharing import ended
-from features.sharing.tunnel import SERVER, TUNNEL, refused_address, tunler, tunler_build
+from engine.tunnel import SERVER, TUNNEL, refused_address, tunler, tunler_build
 from resources.base import Refused, SYSTEM
 from declaring.extension import Extension
 

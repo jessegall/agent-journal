@@ -7,8 +7,8 @@ from features.linear.sync import Choices, StageState, TicketsFromLinear, issue_o
 from features.linear.webhook import event_of
 from framework.routing import Reply, Request, handles
 from features.secrets.values import ValuesFile
-from features.sharing.address import own_address
-from features.sharing.tunnel import kept_address
+from engine.address import own_address
+from engine.tunnel import kept_address
 from features.tickets.controller import Tickets
 from resources.base import Refused, SYSTEM
 

@@ -10,6 +10,10 @@ from typing import NamedTuple
 
 import pytest
 
+pytestmark = pytest.mark.slow
+
+import pytest
+
 from scripts.boot_guard import PROJECT, ended
 from tests import phone_pages, shared_pages
 from tests.conftest import installed_once

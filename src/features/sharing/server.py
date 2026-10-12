@@ -13,12 +13,12 @@ from urllib.parse import quote, unquote
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
 from framework.loaded import running
-from features.sharing.controller import HEALTH, HEALTH_MARKER, LAYOUT_FILE  # noqa: E402
+from resources.sharing import HEALTH, HEALTH_MARKER, LAYOUT_FILE # noqa: E402
 from features.sharing.origins import origins_of  # noqa: E402
-from features.sharing.page_data import forget  # noqa: E402
-from features.sharing.passwords import WrongPasswords, unlocked  # noqa: E402
+from controllers.sharing.page_data import forget  # noqa: E402
+from controllers.sharing.passwords import WrongPasswords, unlocked  # noqa: E402
 from features.sharing.services import LOOPBACK  # noqa: E402
-from features.sharing.visiting import SharedComment  # noqa: E402
+from controllers.sharing.visiting import SharedComment  # noqa: E402
 from features.sharing.page import PICTURES, Page, disposition, document, unshared  # noqa: E402
 from framework.format import SHARED, formatted
 from features.sharing.preview import card, tags  # noqa: E402
@@ -325,7 +325,7 @@ def main(argv: list[str]) -> None:
     import features
     from engine import runtime
     from engine.record import Record
-    from features.sharing.controller import Shares
+    from controllers.types import Shares
     from framework.switches import watch_change_log
     from resources.base import SYSTEM
     root = Path(argv[0])

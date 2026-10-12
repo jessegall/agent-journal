@@ -15,7 +15,7 @@ from framework.journal import Journal
 from features.phone.desktop import CLOSED
 from features.phone.guard import PHONE_GUARDS
 from features.phone.members import MEMBER_RIGHTS
-from features.sharing.address import ANSWERS_AT
+from engine.address import ANSWERS_AT
 from features.sharing.origins import ORIGINS
 from features.sharing.routes import EVERY_OTHER, ROUTES, TICKS
 from features.sharing.services import KEEP_UP, LISTENS, Listen

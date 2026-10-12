@@ -12,7 +12,7 @@ import features
 from engine import runtime
 from engine.record import Record
 from features.hosted_journal.feature import APART
-from features.sharing.controller import Shares
+from controllers.types import Shares
 from features.sharing.server import serve_on
 from framework.switches import watch_change_log
 from resources.base import SYSTEM

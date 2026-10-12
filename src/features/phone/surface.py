@@ -18,7 +18,7 @@ from features.phone.export import Export, export
 from features.phone.feed import Feed, feed, helper, reaches
 from controllers.types import Plans
 from resources.plans import READY, WAITING
-from features.sharing.controller import Shares
+from controllers.types import Shares
 from features.status_bar.bar import current
 from controllers.types import Suggestions
 from features.work_modes.modes import pick

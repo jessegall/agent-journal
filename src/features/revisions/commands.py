@@ -1,7 +1,7 @@
 import time
 
 from framework.parts import Command, Context
-from features.revisions.history import CHANGE, OPEN_UNTIL, REVISION, count, is_open, read
+from controllers.revisions import CHANGE, OPEN_UNTIL, REVISION, count, is_open, read
 from resources.base import Refused
 
 

@@ -40,7 +40,7 @@ Before writing, search the code for what already does the job or most of it, and
 
 ## How you work here
 
-You work alone here: all of it is yours to do. Dispatch no helper and no subagent.
+You are the builder here: you do the work yourself. A helper or a subagent is for a job that is better done beside you - a long search, a build in a checkout of its own, work you cannot do and watch at once. Handing away what you could do in three minutes is the failure, not the saving.
 
 ## Rules
 
@@ -68,7 +68,15 @@ A skill is read by the agent, so it exists only when it tells the agent what to 
 
 ## Tests
 
-The default commands carry no hand-written tests. Eight generated runs cover them: `tests/test_every_action.py` loops over every registered resource type and every action on its controller, `tests/test_the_gate.py` loops over every provider, `tests/test_the_expectations.py` plays every expectation every registration carries, `tests/test_the_catalogue.py` walks every resource type and every moment it has, `tests/test_the_layers.py` holds declaring and events to naming nothing above themselves (those two packages only, until to-do 4591 widens it), and `test_it_boots.py`, `test_the_flows.py` and `test_the_viewer.py` play the boot, the core flows and the viewer. Between them they cover create, read, update, complete and the rest for every type, and what each registration promises it does.
+**Do not run the slow suites unless the user asks.** `tests/test_it_boots.py` and `tests/test_the_viewer.py`
+take about ten minutes and hold the machine; running them on a development branch slows the work down for
+nothing. They are not in the default run: `pytest` without a path skips them, and they are run by name when
+the user asks or when a release is cut. What to run while working: the generated expectation runs
+(`tests/test_every_action.py`, `test_the_gate.py`, `test_the_expectations.py`, `test_the_catalogue.py`,
+`test_the_layers.py`), which are quick, and the test file of whatever was just touched.
+
+
+The default commands carry no hand-written tests. Seven generated runs cover them: `tests/test_every_action.py` loops over every registered resource type and every action on its controller, `tests/test_the_gate.py` loops over every provider, `tests/test_the_expectations.py` plays every expectation every registration carries, `tests/test_the_catalogue.py` walks every resource type and every moment it has, and `tests/test_the_layers.py` holds declaring and events to naming nothing above themselves (those two packages only, until to-do 4591 widens it). `test_it_boots.py` plays the installer and the upgrade and `test_the_viewer.py` plays the viewer; both are slow and run only when asked. Between them they cover create, read, update, complete and the rest for every type, and what each registration promises it does.
 
 A feature is allowed one test file, `src/features/<name>/test.py`, beside its `feature.py`, with at most 10 tests (a cap on test methods, not lines) — the `check` rows scripts/checks/test_shape.py and scripts/checks/one_client.py hold both, with scripts/checks/funnels.py for bodies written twice (`journal check sweep`). It exists only when the feature does something the generated runs cannot see: a hold on writes, a nudge, a file on disk, a process. A feature that only adds commands has none.
 

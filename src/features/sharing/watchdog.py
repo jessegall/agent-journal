@@ -7,11 +7,12 @@ from engine.services import UP, log_file, status, want
 from engine.sessions import alive
 from engine.state import State
 from engine.ports import reached, vouched
-from features.sharing.address import relied_on
-from features.sharing.controller import HEALTH, HEALTH_MARKER, Shares
+from engine.address import relied_on
+from controllers.types import Shares
+from resources.sharing import HEALTH, HEALTH_MARKER
 from features.sharing.details import HOST_DOWN, RESTARTED
 from features.sharing.services import SERVER, TUNNEL, wanted
-from features.sharing.tunnel import ADDRESS_REFUSED, READDRESSED, SIGNED_OUT, alerts, default_route, held_by_server, refused_address, watched_status
+from engine.tunnel import ADDRESS_REFUSED, READDRESSED, SIGNED_OUT, alerts, default_route, held_by_server, refused_address, watched_status
 from resources.base import SYSTEM, Refused
 
 

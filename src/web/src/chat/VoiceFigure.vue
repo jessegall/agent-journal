@@ -244,12 +244,12 @@ const style = computed(() => ({
     pointer-events: none;
 }
 
-/* a soft rim in the page's own text colour, so the figure reads on a dark page and a light one alike */
+/* one thin edge in the page's own text colour, so the figure reads on a dark page and a light one alike; a wider
+   second shadow reads as a halo around it rather than an edge on it */
 .voice-figure-canvas {
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 0 1px color-mix(in srgb, var(--text) 60%, transparent))
-        drop-shadow(0 0 3px color-mix(in srgb, var(--text) 22%, transparent));
+    filter: drop-shadow(0 0 1px color-mix(in srgb, var(--text) 45%, transparent));
 }
 
 .voice-figure-actor {

@@ -376,6 +376,31 @@ def repository_of(given: str | None) -> str:
     return given if given is not None else os.environ.get(REPOSITORY_ENV, REPOSITORY)
 
 
+@dataclass(frozen=True)
+class Source:
+    """Where a new build is fetched from: one repository and the one ref inside it."""
+
+    repository: str
+    ref: str
+
+    @classmethod
+    def of(cls, root: Path, branch: str, version: str) -> "Source":
+        """The release tag by default. With a branch named in the settings, that branch: from the checkout beside the journal when it has one, so a build can be tried before it is pushed, and from the remote otherwise."""
+        if not branch:
+            return cls(repository_of(None), f"refs/tags/v{version}" if version else "")
+        beside = root.parent
+        return cls(str(beside) if holds_branch(beside, branch) else repository_of(None), f"refs/heads/{branch}")
+
+
+def holds_branch(checkout: Path, branch: str) -> bool:
+    try:
+        named = subprocess.run(["git", "-C", str(checkout), "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}"],
+                               capture_output=True, text=True, timeout=LOOKUP_SECONDS, env=git_env())
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return named.returncode == 0
+
+
 def release_versions(repository: str | None = None) -> list[str]:
     try:
         listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository_of(repository), "v*"], capture_output=True, text=True, timeout=LOOKUP_SECONDS, env=git_env())
@@ -515,13 +540,16 @@ def upgrading(project: Path, root: Path, version: str | None = None) -> list[str
     reloaded = installed_here(root) and not os.environ.get(BOOTSTRAPPED)
     if reloaded:
         stepping(root, "Fetching the new version")
-        newest = version or released()
+        from features.auto_update.branch import followed_branch
+        branch = followed_branch(root)
+        newest = "" if branch else (version or released())
         if newest and newest == version_in(code(root)) and packed(root):
             return done + [f"package already at {newest}"] + finish(project, root)
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
+        taken = Source.of(root, branch, newest)
         with timed(root, "fetch the new version"):
-            _, failed = fetch(source, ref=f"refs/tags/v{newest}" if newest else "")
+            _, failed = fetch(source, repository=taken.repository, ref=taken.ref)
         if failed:
             shutil.rmtree(temporary, ignore_errors=True)
             return [f"package not refreshed: {failed}"]

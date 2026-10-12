@@ -14,7 +14,7 @@ from features.templates.shipped import ship
 from engine import runtime
 from engine.viewer import SERVING
 from features.phone.controller import Phones
-from features.sharing.controller import Shares
+from controllers.types import Shares
 from features.sharing.details import SharingDetails
 from features.sharing.server import ShareHandler
 from resources.base import AGENT, SYSTEM, USER

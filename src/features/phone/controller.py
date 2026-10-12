@@ -21,7 +21,7 @@ from features.phone.places import Place, place_at, places
 from features.phone.push import Keys, allowed, send, unpadded
 from features.phone.resource import Phone
 from features.phone.surface import CARDS
-from features.sharing.controller import Shares
+from controllers.types import Shares
 from declaring.trigger import DAY
 from resources.base import OWNER_ID, PROJECT, SYSTEM, USER, Refused, titled
 

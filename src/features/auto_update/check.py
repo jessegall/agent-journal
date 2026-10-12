@@ -101,6 +101,8 @@ class UpdateCheck:
         if not feature or time.time() - self.checked_at < every:
             return ""
         root = Path(record.root)
+        if feature.values(record).branch:
+            return ""
         self.checked_at = time.time() - (every - REFETCH_WAIT if stale(root) else 0)
         installed, latest = version(), upstream(root)
         if not newer(latest, installed):

@@ -5,34 +5,29 @@ import uuid
 from enum import StrEnum
 from typing import TypedDict
 
-import controllers.types as types_module
 from controllers.base import CONTROLLERS, Controller
-from controllers.features import Features
+from controllers.features import Features, settings_of
 from controllers.messages import Messages
+from controllers.nudges import Nudges
 from engine.keeper import READY, STARTING
 from engine.ports import REACH_SECONDS, answers, reached, vouched
 from engine.record import Record
-from features.sharing.details import ALLOWED, SharingDetails
-from features.sharing.page_data import SharePages
-from features.sharing.passwords import hashed
-from resources.sharing import SHARED_TYPES, Share
+from controllers.sharing.page_data import SharePages
+from controllers.sharing.passwords import hashed
+from resources.sharing import SHARING, ADDRESS_TAKEN, HEALTH, HEALTH_MARKER, LAYOUT_FILE, LOGGED_OUT, NOT_INSTALLED, OUTDATED, SHARED_TYPES, Share
 from engine.services import DOWN, FAILED, UP, log_file, status, want
-from features.sharing.address import Claim, own_address, relied_on, this_machine
-from features.sharing.tunnel import ADDRESS_REFUSED, DEFAULT_SERVER, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, last_lines, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
-from features.sharing.visiting import ShareVisits, sharing_feature
-from features.sharing.views import VIEWS
-from features.sharing.visitors import AGREEMENT, unhold, unindex_comment
+from engine.address import Claim, own_address, relied_on, this_machine
+from engine.tunnel import ADDRESS_REFUSED, DEFAULT_SERVER, KEPT_STATUS, READDRESSED, SIGNED_OUT, TUNNEL, TunlerVersion, TunnelStatus, addressed, alerts, install, keep_address, kept_address, last_lines, refused_address, log_in, log_out, moved, new_address, owned, readable_address, server_name, tunler_status, unclaim, updated, versions
+from controllers.sharing.visiting import ShareVisits
+from controllers.sharing.views import VIEWS
+from controllers.sharing.visitors import AGREEMENT, unhold, unindex_comment
 from resources.base import AGENT, SYSTEM, USER, Refused, titled
 from resources.text import plural
 from declaring.trigger import DAY
 from controllers.marks import action
 
-NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
-LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
-OUTDATED = "This tunler is too old for the journal: it cannot tell whether its login still works. Update tunler to go on."
 REJECTED = "tunler is logged in as {account}, but {host} does not accept that login. The server may be down, or the account was deleted after 30 days without use, together with its addresses. Log in again to make a new one."
 ELSEWHERE = "This project's tunnel address {old} belongs to another machine, so this machine now uses {new}. A phone paired on this machine has to be paired again, and share links made here have to be sent again."
-ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choose a new address to reach it."
 TUNNEL_STOPPED = "The tunnel to this journal keeps stopping. The journal starts it again every few seconds."
 HOST_MISMATCH = "This journal uses the tunler server {saved}, but tunler is logged in to {host}. Log in to {saved} again, so the phone and share links reach this journal."
 OWN_ADDRESS = "{domain} is this journal's own address. Move the journal to a new address instead: the old one is released once the new one is in use."
@@ -56,9 +51,6 @@ SPANS = {"h": DAY / 24, "d": DAY}
 NEVER = ("", "0", "never")
 SAVE_VIEWS_EVERY = 60
 UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
-LAYOUT_FILE = "layout.json"
-HEALTH = "health"
-HEALTH_MARKER = "journal-share-server"
 SHAREABLE = re.compile(r"^(?:doc|report|collection|plan|ticket)[: ]\d+$")
 USER_SHARE_FIELDS = {"approved", "target", "password", "comments", "expires"}
 
@@ -76,8 +68,8 @@ class Shares(ShareVisits, SharePages, Controller):
     resource = Share
 
     @action
-    def create(self, title: str, abstract: str = "", brief: str = "", expires: str = "7d", password: str = "", **data):
-        if self.actor != USER and (USER_SHARE_FIELDS.intersection(data) or expires != "7d" or password):
+    def create(self, title: str, abstract: str = "", brief: str = "", expires: str = "7d", password: str | None = None, **data):
+        if self.actor != USER and (USER_SHARE_FIELDS.intersection(data) or expires != "7d" or password is not None):
             raise Refused("only the user may set a share's approval, target, password, comments or expiry")
         if not SHAREABLE.match(title.strip()):
             return super().create(title, abstract, brief, **data)
@@ -85,7 +77,7 @@ class Shares(ShareVisits, SharePages, Controller):
         token = str(uuid.uuid4())
         made = super().create(f"Share of {target.type} {target.n}", abstract=self._link(token), brief="\n".join(self.opens(title)),
                               target=f"{target.type}:{target.n}", token=token, expires=until(expires), approved=self.actor == USER,
-                              password=hashed(password) if password else "", **data)
+                              password=hashed(password) if password is not None else "", **data)
         if not made.approved:
             self._ask_to_open(made, target)
         return made
@@ -131,7 +123,7 @@ class Shares(ShareVisits, SharePages, Controller):
 
     @action
     def ask(self, n: int, question: str, options: str):
-        from controllers.types import Comments
+        from controllers.comments import Comments
         chosen = [option.strip() for option in options.split("|") if option.strip()]
         if len(chosen) < 2:
             raise Refused('a question offers two or more options: --options "Yes, both shifts|Only the day shift"')
@@ -142,7 +134,7 @@ class Shares(ShareVisits, SharePages, Controller):
     def agree(self, n: int, words: str) -> str:
         if " ".join(str(words).split()) != AGREEMENT:
             raise Refused(f'the words must be exactly: "{AGREEMENT}"')
-        from controllers.types import Agents
+        from controllers.agents import Agents
         agents = Agents(self.record, actor=SYSTEM)
         unhold(agents, agents.by_session(self.session), n)
         return f"agreed on comment {int(n)}: tell the user about it if they should know, and act only on their own word"
@@ -151,7 +143,8 @@ class Shares(ShareVisits, SharePages, Controller):
     def allow(self, n: int):
         if self.actor != USER:
             raise Refused("only the user lets the agent act on a visitor's comment: it waits for their button in the chat")
-        from controllers.types import Agents, Comments
+        from controllers.agents import Agents
+        from controllers.comments import Comments
         comments = Comments(self.record, actor=SYSTEM)
         comment = comments.load(int(n))
         visitor = comment.data.get("visitor") or comment.data.get("answered_by")
@@ -162,7 +155,8 @@ class Shares(ShareVisits, SharePages, Controller):
         agent = agents.primary()
         if agent:
             unhold(agents, agent, comment.n)
-        sharing_feature().to_primary(self.record, ALLOWED, n=comment.n, visitor=visitor)
+        Nudges(self.record, actor=SYSTEM).to_primary(f"the user let you act on comment {comment.n} from {visitor}",
+                                                      f"read it with journal comment show {comment.n} and act on it as the user's own request")
         return comments.update(comment.n, allowed=True)
 
     def _ask_to_open(self, share, target) -> None:
@@ -275,7 +269,7 @@ class Shares(ShareVisits, SharePages, Controller):
         host = endpoint.strip() if endpoint else self._host()
         made = log_in(host, username.strip(), password, master_password or None)
         if made["connected"]:
-            Features(self.record, actor=self.actor).configure(SharingDetails.name, "host", host)
+            Features(self.record, actor=self.actor).configure(SHARING, "host", host)
             self._reconnect()
         return {**made, **self.tunnel()}
 
@@ -305,7 +299,7 @@ class Shares(ShareVisits, SharePages, Controller):
         self._user_only("install tunler")
         server = server_name(host)
         outcome = install(server)
-        Features(self.record, actor=self.actor).configure(SharingDetails.name, "host", server)
+        Features(self.record, actor=self.actor).configure(SHARING, "host", server)
         return outcome
 
     @action
@@ -314,7 +308,7 @@ class Shares(ShareVisits, SharePages, Controller):
         return updated()
 
     def _host(self) -> str:
-        return SharingDetails.values(self.record).host or tunler_status()["host"]
+        return settings_of(self.record, SHARING).host or tunler_status()["host"]
 
     @action
     def domains(self) -> list[str]:
@@ -390,5 +384,3 @@ class Shares(ShareVisits, SharePages, Controller):
         UNSAVED_VIEWS[n] = (0, time.time())
         self.update(n, views=int(self.load(n).views) + count + 1)
 
-
-types_module.register(Shares)

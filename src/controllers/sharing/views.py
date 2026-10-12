@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass
 
 from controllers.messages import Messages
-from controllers.types import Works
+from controllers.works import Works
 from engine.record import Record
 from engine.seats import live
 from framework.format import SHARED, formatted
@@ -42,5 +42,16 @@ def chat_lines(record: Record) -> list[dict]:
     return [asdict(line) for line in sorted(lines, key=lambda line: line.at)[-CHAT_LINES:]]
 
 
-def shared_view(record: Record, view: str) -> dict:
-    return {"kind": view, "lines": agent_lines(record) if view == "agents" else chat_lines(record)}
+@dataclass(frozen=True)
+class SharedView:
+    """One of the views a share can open on its own, with the lines it shows."""
+    kind: str
+    lines: list
+
+    @classmethod
+    def of(cls, record: Record, view: str) -> "SharedView":
+        return cls(view, agent_lines(record) if view == "agents" else chat_lines(record))
+
+
+def shared_view(record: Record, view: str) -> SharedView:
+    return SharedView.of(record, view)

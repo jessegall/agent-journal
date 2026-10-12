@@ -1,6 +1,6 @@
 from controllers.types import Messages
 from engine.disk import KEPT_FREE_BYTES, free_bytes, nearly_full
-from features.sharing.tunnel import alerts
+from engine.tunnel import alerts
 from features.sharing.watchdog import alert_once
 from resources.base import SYSTEM
 

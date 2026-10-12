@@ -87,5 +87,15 @@ class NameBareNumbers(Handler):
             context.agent.whisper("numbers", n=sent["n"], numbers=", ".join(named))
 
 
+NAMED_WITHIN = 3600.0
+"""How lately a row must have been written for a bare number to be read as naming it. An older row's number is far more likely to be a quantity the agent is reporting - a count of tests, a size, a port - than a reference to the row."""
+
+
 def numbers(context: AgentContext) -> set[int]:
-    return {row["n"] for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT for row in context.journal.get(CONTROLLERS[name]).rows.summaries()}
+    """The rows a bare number could be naming: those written within the hour before the record's newest row. Recency is read from the record rather than from the wall clock, so it answers the same in a replayed world as in a live one."""
+    written = [(row["n"], row["updated"]) for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT
+               for row in context.journal.get(CONTROLLERS[name]).rows.summaries()]
+    if not written:
+        return set()
+    since = max(at for _, at in written) - NAMED_WITHIN
+    return {n for n, at in written if at >= since}

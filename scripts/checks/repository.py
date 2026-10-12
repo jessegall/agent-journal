@@ -13,7 +13,7 @@ BUILD = re.compile(r"\bRowStore\(")
 # (file, what) pairs allowed beside the repository, each with the reason it is not a row of a type.
 ALLOWED = {
     ("engine/runtime.py", "row io"): "a marker file of the runtime folder that happens to have a path method",
-    ("features/revisions/history.py", "parse"): "a revision page of a doc, kept in the doc's revisions folder, is parsed here",
+    ("controllers/revisions.py", "parse"): "a revision page of a doc, kept in the doc's revisions folder, is parsed here",
     ("controllers/base.py", "build"): "the controller makes the one repository it holds",
 }
 

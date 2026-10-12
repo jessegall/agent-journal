@@ -5,6 +5,15 @@ from resources.base import PROJECT, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Shape
 
 SHARED_TYPES = ("doc", "report", "collection", "plan")
+SHARING = "sharing"
+
+LAYOUT_FILE = "layout.json"
+HEALTH = "health"
+HEALTH_MARKER = "journal-share-server"
+NOT_INSTALLED = "tunler is not installed on this machine, so the phone and share links cannot reach this journal."
+LOGGED_OUT = "This machine is not logged in to tunler, so the phone and share links cannot reach this journal."
+OUTDATED = "This tunler is too old for the journal: it cannot tell whether its login still works. Update tunler to go on."
+ADDRESS_TAKEN = "This journal's address belongs to another tunler account. Choose a new address to reach it."
 
 
 def ended(completed: float, expires: float) -> bool:

@@ -19,7 +19,7 @@ from features.phone.passkey import Assertion, Enrolment, Relying, requested
 from features.phone.surface import PhoneSurface
 from engine.color import identity
 from features.auto_update.countdown import update_state
-from features.sharing.controller import Shares
+from controllers.types import Shares
 from features.sharing.page import disposition, unshared
 from features.sharing.preview import icon
 from features.sharing.origins import origins_of

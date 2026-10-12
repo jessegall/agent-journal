@@ -109,6 +109,10 @@ class Reply:
         return self.body.encode() if self.kind == PLAIN else json.dumps(self.body).encode()
 
 
+NUMBERED = "n"
+"""The one parameter that is always a row number, so a path with a word there matches no route and is answered 404 rather than reaching a handler that would int() it."""
+
+
 @dataclass
 class Route:
     method: str
@@ -118,8 +122,12 @@ class Route:
     rank: tuple[bool, ...] = field(init=False)
 
     def __post_init__(self):
-        self.regex = re.compile("^" + re.sub(r"{(\w+)}", r"(?P<\1>[^/]+)", self.pattern) + "$")
+        self.regex = re.compile("^" + re.sub(r"{(\w+)}", lambda named: f"(?P<{named.group(1)}>{self.matching(named.group(1))})", self.pattern) + "$")
         self.rank = tuple(segment.startswith("{") for segment in self.pattern.split("/"))
+
+    @staticmethod
+    def matching(parameter: str) -> str:
+        return r"\d+" if parameter == NUMBERED else "[^/]+"
 
 
 def handles(method: str, pattern: str):

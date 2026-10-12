@@ -1,6 +1,6 @@
 
 from framework.parts import Context, Handler
-from features.revisions.history import revise
+from controllers.revisions import revise
 from resources.base import PART_OF
 from controllers.types import Docs
 from events.docs import DocWritten

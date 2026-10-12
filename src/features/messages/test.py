@@ -292,6 +292,16 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
     from features.messages.prose import bare
     assert bare(f"Two steps:\n{asked.n}. first\n{filed.n}) second") == [], "the numbers of a numbered list are not row numbers"
     assert bare("Opened PR 161, then pull request 162 and issue 40 on GitHub") == [], "a pull request or an issue named by its number is no row of the journal"
+    from features.messages import prose
+    old = prose.NAMED_WITHIN
+    prose.NAMED_WITHIN = 0.0
+    try:
+        before = len([n for n in nudges(record) if "without saying what they are" in n])
+        chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"Answered {asked.n}, parked {filed.n}")
+        assert len([n for n in nudges(record) if "without saying what they are" in n]) == before, \
+            "a number matching a row written long ago is a quantity, not a reference, and nothing is said"
+    finally:
+        prose.NAMED_WITHIN = old
     assert bare("The suite took 109 s, then 194 s and 23.8 s; the push got HTTP 408, a load average of 123 and the copy is 118 MB of 2 GB") == [], \
         "a measurement with its unit, an HTTP code and a load average are not row numbers"
     assert bare("the server crashed: it answered 500, the route returned 404 and the call came back with status 502 or an error 503") == [], \

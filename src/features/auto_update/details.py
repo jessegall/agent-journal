@@ -54,6 +54,13 @@ class AutoUpdateDetails(FeatureDetails):
             abstract="A card for each feature the new version announces, shown once",
         ),
         Setting(
+            name="branch",
+            default="",
+            scope=PROJECT,
+            title="Upgrade from this branch instead of the releases",
+            abstract="For working on the journal itself: journal upgrade takes that branch's head, and no release is installed or announced while it is set",
+        ),
+        Setting(
             name="installs",
             default="always",
             scope=PROJECT,

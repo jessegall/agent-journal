@@ -3,7 +3,7 @@ from framework.journal import Journal
 from features.phone.controller import phones_live, phones_paired, phones_told
 from features.phone.details import PhoneDetails
 from features.phone.routes import PhoneRoutes
-from features.sharing.address import RELIED_ON
+from engine.address import RELIED_ON
 from features.sharing.routes import ROUTES, TICKS
 from features.sharing.services import KEEP_UP
 

@@ -7,16 +7,15 @@ from pathlib import Path
 
 from controllers.base import row_of
 from controllers.docs import Docs
-from controllers.types import Collections
+from controllers.collections import Collections
 from engine import bus
 from controllers.described import described_types
 from engine.markers import MARKER
 from engine.record import Record
 from framework.format import SHARED, formatted, shape
-from controllers.types import Plans
-from features.revisions.history import count, read
-from features.sharing.views import shared_view
-from features.tickets.controller import Tickets
+from controllers.plans import Plans
+from controllers.revisions import count, read
+from controllers.sharing.views import shared_view
 from resources.tickets import CONFIRMED
 from resources.base import SYSTEM, Ref, Refused
 
@@ -75,6 +74,7 @@ def origin_of(record: Record, environment: str) -> str:
     kept = ORIGINS.get(str(record.root))
     if not fresh(kept):
         owners: dict[str, object] = {}
+        from features.tickets.controller import Tickets
         for ticket in Tickets(record, actor=SYSTEM).rows.standing():
             owners.setdefault(ticket.work_environment, ticket)
         kept = ORIGINS[str(record.root)] = (time.monotonic(), owners)
@@ -88,6 +88,7 @@ def shared_fields(row, record: Record) -> dict:
     if "dependencies" in data:
         data["dependencies"] = {ref: stance for ref, stance in data["dependencies"].items() if stance == CONFIRMED}
     if row.type == "ticket":
+        from features.tickets.controller import Tickets
         data["status"] = Tickets(Record(record.root, row.home_env or record.env), actor=SYSTEM).status(row.n)
     if row.home_env:
         data["origin"] = origin_of(record, row.home_env)
@@ -116,6 +117,7 @@ class SharePages:
 
     def _loaded_members(self, record: Record, row) -> list:
         if row.type == "board":
+            from features.tickets.controller import Tickets
             return [ticket for ticket in Tickets(record, actor=SYSTEM).rows.standing() if ticket.board == row.n]
         members = []
         for ref in self._member_refs(row):
@@ -173,7 +175,7 @@ class SharePages:
     def _shared_data(self, share) -> dict:
         if share.view:
             return {"share": {"target": f"view:{share.view}", "expires": share.expires, "comments": False}, "rows": {}, "comments": [], "timelines": {}, "types": {},
-                    "view": shared_view(self._home(share), share.view)}
+                    "view": asdict(shared_view(self._home(share), share.view))}
         scope, loaded, held = self._reach(share)
         record = self._home(share)
         rows = {}

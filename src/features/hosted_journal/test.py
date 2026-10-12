@@ -37,11 +37,11 @@ from engine.disk import DiskFull
 from features.hosted_journal.vault import AUDIT, VAULT, RefusalLog, Vault
 from declaring.trigger import DAY
 from features.phone.controller import Phones
-from features.sharing.controller import Shares
+from controllers.types import Shares
 from features.sharing.routes import EVERY_OTHER, ROUTES
 from features.sharing.server import ShareHandler
 from features.sharing.services import share_services
-from features.sharing.tunnel import SERVER
+from engine.tunnel import SERVER
 from controllers.types import Docs, Messages, Todos
 from resources.base import OWNER_ID, SYSTEM, USER
 from serve import Handler, JournalServer

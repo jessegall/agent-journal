@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 HERE = ROOT / "src"
 TESTS = 10
-GENERATED = {"test_every_action.py", "test_the_gate.py", "test_it_boots.py", "test_the_viewer.py", "test_the_flows.py",
+GENERATED = {"test_every_action.py", "test_the_gate.py", "test_it_boots.py", "test_the_viewer.py",
              "test_the_expectations.py", "test_the_catalogue.py", "test_the_layers.py"}
 """The runs that play the code rather than describe a case of it. test_the_expectations.py is the run that
 plays every expectation a registration carries; it is what the 78 feature test files become.
