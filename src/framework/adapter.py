@@ -13,7 +13,7 @@ from engine import bus
 from events import Fact, Request
 from expects.watching import tell
 from framework.parts import Context, Handler as OldStyle
-from receiving import HANDLE, Handler, Registration, Registrations
+from receiving import HANDLE, REGISTERED, Handler, Registration, Registrations
 from receiving.ordering import InOrder
 from receiving.ticks import Lane, Services, TickFailed
 from resources.base import ACTIONS
@@ -220,18 +220,29 @@ class FailedTick(Handler[Fact]):
         return []
 
 
+def patterns_of(receiver) -> tuple:
+    """The bus patterns a receiver answers to, and none for a receiver written for the 3.0 engine, which answers to a type instead."""
+    return receiver.patterns() if hasattr(receiver, "patterns") else ()
+
+
 class Ticking:
     """One told event as a tick of the project lane, over the receivers the bus walked and in its order."""
 
-    def __init__(self, registered: Registrations):
+    def __init__(self, registered: Registrations, moved: Registrations):
         self.registered = registered
+        self.moved = moved
+        """The registrations the features wrote for the 3.0 engine. They stay a registry of their own, because the adapted ones are exempt by name from the boot walk's rules and these are not."""
+        self.running = Registrations()
         self.order = InOrder({})
 
     def resolve(self) -> None:
-        """Works the order out again, after a receiver has joined or left: the widest patterns first, as the bus ran them."""
+        """Works the order out again, after a receiver has joined or left: the widest patterns first, as the bus ran them, and the moved features' own receivers after them."""
         self.registered.add(Registration.read(HANDLE, TickFailed, FailedTick(), ()))
-        self.registered.each.sort(key=lambda one: min((slot_of(pattern) for pattern in one.receiver.patterns()), default=4))
-        self.order = InOrder.of(self.registered)
+        self.registered.each.sort(key=lambda one: min((slot_of(pattern) for pattern in patterns_of(one.receiver)), default=4))
+        self.running = Registrations()
+        for one in (*self.registered.each, *self.moved.each):
+            self.running.add(one)
+        self.order = InOrder.of(self.running)
 
     def already_runs(self, listener) -> bool:
         return any(getattr(one.receiver, "listener", None) is listener for one in self.registered.of(HANDLE))
@@ -258,11 +269,16 @@ class Ticking:
         if record is None:
             bus.over_the_listeners(logged, record)
             return
-        Lane(f"project:{logged.id}", self.registered, Services({TheRecord: record}), record=record, order=self.order).run(OldEvent(logged=logged))
+        Lane(f"project:{logged.id}", self.running, Services({TheRecord: record}), record=record, order=self.order).run(OldEvent(logged=logged))
 
 
-TICKING = Ticking(ADAPTED)
-"""The one lane the old handlers run on."""
+TICKING = Ticking(ADAPTED, REGISTERED)
+"""The one lane every receiver runs on, adapted or moved."""
+
+
+def ordered_once_the_features_have_registered() -> None:
+    """Works the lane's order out again once every feature has registered, since a feature written for the 3.0 engine registers after the lane is wired and calls nothing that would resolve it."""
+    TICKING.resolve()
 
 
 def dispatched_on_a_lane() -> None:

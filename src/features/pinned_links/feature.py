@@ -24,4 +24,6 @@ class PinnedLinks(Feature):
             Given(said("Open http://localhost:8421/ to see it."), rows=[AGENT_ROW]) >> Unchanged(),
             Given(said("The pull request is https://github.com/acme/app/pull/12"), rows=[AGENT_ROW]) >> Unchanged(),
             Given(said("Nothing to link here."), rows=[AGENT_ROW]) >> Unchanged(),
+            Given(said("The design is at https://example.com/design."), earlier=(said("The design is at https://example.com/design."),),
+                  rows=[AGENT_ROW]) >> Unchanged(),
         ])

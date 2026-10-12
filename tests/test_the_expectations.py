@@ -715,7 +715,7 @@ def test_a_told_event_is_a_tick_on_a_lane_over_the_old_handlers_in_the_order_the
         listener = lambda logged, record, name=name: ran.append(name)  # noqa: E731  one listener per name, as the bus holds them
         listener.__qualname__ = name
         registered.add(Registration.read(HANDLE, OldEvent, BusListener(listener, pattern, lambda record: True), ()))
-    ticking = Ticking(registered)
+    ticking = Ticking(registered, Registrations())
     ticking.resolve()
 
     logged = Event(id=1, at=1.0, type="todo", n=1, action="created", actor=SYSTEM, data={}, pid=0, handled=False, env="main")
@@ -763,7 +763,7 @@ def test_a_write_made_inside_a_tick_is_caused_by_the_event_the_tick_is_handling(
     writes = lambda logged, record: Todos(record, actor=SYSTEM).create("written by the handler")  # noqa: E731
     writes.__qualname__ = "WritesOnce"
     registered.add(Registration.read(HANDLE, OldEvent, BusListener(writes, "*", lambda record: True), ()))
-    ticking = Ticking(registered)
+    ticking = Ticking(registered, Registrations())
     ticking.resolve()
 
     logged = Event(id=71, at=1.0, type="todo", n=1, action="created", actor=SYSTEM, data={}, pid=0, handled=False, env=scratch.env)
@@ -835,3 +835,22 @@ def test_a_3_0_registration_is_played_by_the_same_run_and_judged_by_the_same_wor
 
     answering_it = Given(TurnWritten(text="  a turn  ")) >> Answered("a turn")
     assert wrong(answering_it, played_as("answer", SayItPlainly(), answering_it)) == [], "an answerer is read-only, so what it answers is the outcome"
+
+
+def test_a_moved_feature_runs_on_the_lane_beside_an_adapted_one_and_each_runs_once():
+    """The bridge: a receiver written for the 3.0 engine runs where the adapted 2.x handlers run.
+
+    Before this the lane was built on the adapted registry alone, so a feature that moved was registered and never
+    called - and the suite stayed green because nothing ran. The two registries stay apart, because the adapted ones
+    are exempt by name from the boot walk's rules and the moved ones are not; the LANE reads both.
+    """
+    from framework.adapter import ADAPTED, TICKING, ordered_once_the_features_have_registered
+    from receiving import REGISTERED
+
+    import features
+    features.load()
+    ordered_once_the_features_have_registered()
+    running = {(one.kind, one.feature, one.name) for one in TICKING.running.each}
+    assert {(one.kind, one.feature, one.name) for one in ADAPTED.each} <= running, "every adapted handler runs on the lane"
+    assert {(one.kind, one.feature, one.name) for one in REGISTERED.each} <= running, "and so does every receiver a feature wrote for the 3.0 engine"
+    assert len(running) == len(TICKING.running.each), "each of them once, since a registration of one name replaces the one before it"
