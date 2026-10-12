@@ -4,8 +4,9 @@ from events.agents import AgentMessageSent, CommandRan
 from engine.ran import DELIVERED
 from engine import triggering
 from features.chat_etiquette.details import REMIND, SHOP, THIRD_PERSON
-from features.form_of_address.names import called, first_name
+from controllers.types import Profiles
 from framework.parts import AgentContext, Handler
+from resources.base import SYSTEM
 
 QUOTES = ('"', "“", "'")
 ABOUT_THEM = r"(?:asks|asked|wants|wanted|says|said|writes|wrote|would like|needs|prefers|is asking|has asked)"
@@ -34,7 +35,8 @@ class NameShopTalk(Handler):
 
 
 def third_person(record) -> re.Pattern:
-    names = sorted({name for name in (called(record), first_name(record), "the user") if name}, key=len, reverse=True)
+    profiles = Profiles(record, actor=SYSTEM)
+    names = sorted({name for name in (profiles.user_called(), profiles.user_first_name(), "the user") if name}, key=len, reverse=True)
     return re.compile(rf"\b(?:{'|'.join(map(re.escape, names))})\s+{ABOUT_THEM}\b", re.IGNORECASE)
 
 

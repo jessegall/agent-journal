@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass, replace
 
 from features.form_of_address.address import voice_of
-from features.form_of_address.voices import BUTLER, Voice
+from resources.voices import BUTLER, Voice
 
 NAMING_LAW = "L5"
 
