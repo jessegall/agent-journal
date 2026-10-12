@@ -240,6 +240,14 @@ def test_the_engine_pauses_permits_forces_holds_for_typing_and_delivers_only_wha
     from runner import engine as engine_module
     engine, calls = fake_engine(monkeypatch, "working")
     root = engine.record.root
+    driver = engine.agent.driver
+    driver.held, driver.sent_at = ["a line nobody can take yet"], 0.0
+    monkeypatch.setattr(driver, "_deliver", lambda line, by: False)
+    assert (driver.pump(), driver.held) == ("", ["a line nobody can take yet"]), \
+        "a line the terminal could not take is kept and sent again: it is the only road to the agent, so one dropped here is a message from the user that never arrives"
+    monkeypatch.setattr(driver, "_deliver", lambda line, by: True)
+    driver.sent_at = 0.0
+    assert (driver.pump(), driver.held) == ("a line nobody can take yet", []), "and is let go only once it has landed"
     inputs.queue(root, "claude-1", (), "Allow", action=inputs.PERMIT, value="allow")
     assert (engine.permitted(), calls) == ("permission: allow", ["permit True"]), "y for allow"
     inputs.queue(root, "claude-1", (), "Deny", action=inputs.PERMIT, value="deny")
