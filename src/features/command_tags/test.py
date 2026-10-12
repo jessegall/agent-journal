@@ -31,13 +31,18 @@ def asked_and_read(record, text, **more):
     Messages(record, actor=AGENT).read(message.n)
     return message
 
-def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
+def watched_from_the_first_prompt(tmp_path):
+    """A record whose agent writes into a transcript an engine watches, with the transcript's rows and the time they carry."""
     transcript = tmp_path / "s.jsonl"
     now = datetime.now(timezone.utc).isoformat()
     rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
-    transcript.write_text(json.dumps(rows[0]) + "\n")
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     record = fresh()
-    engine = watching(record, transcript)
+    return record, transcript, rows, now, watching(record, transcript)
+
+
+def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
+    record, transcript, rows, now, engine = watched_from_the_first_prompt(tmp_path)
     asked = asked_and_read(record, "are you there?")
     chat = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
 
@@ -181,12 +186,7 @@ def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transc
     from runner.hooks import handle
     from providers import PROVIDERS
     from resources.base import SYSTEM
-    record = fresh()
-    transcript = tmp_path / "s.jsonl"
-    now = datetime.now(timezone.utc).isoformat()
-    rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
-    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-    engine = watching(record, transcript)
+    record, transcript, rows, now, engine = watched_from_the_first_prompt(tmp_path)
     message = asked_and_read(record, "done yet?")
     stop = {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": f"[!reply:{message.n}] done"}
     for _ in range(2):
