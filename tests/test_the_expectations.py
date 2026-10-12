@@ -12,6 +12,7 @@ from dataclasses import fields
 
 import pytest
 
+import commands.cli  # noqa: F401  wires the command line a tag runs its command through, as every process that runs the journal does
 import expects
 from expects import (Answered, Changed, Dispatches, Expectation, Formats, Given, Held, Kept, NotAnOutcome, Nudged,
                      Outcome, Outcomes, Printed, Ran, Refused, Removed, Unchanged, Updated, Wrote, answering, at, counting,

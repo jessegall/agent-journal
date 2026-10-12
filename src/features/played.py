@@ -15,10 +15,10 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
-import commands.cli  # noqa: F401  wires the command line, as every process that runs the journal does
 from controllers.types import Messages, Nudges
 from declaring.holds import Hold
 from engine.gates import HookCall, hold
+from engine.paths import SECRETS_FOLDER_VARIABLE as FOLDER_VARIABLE
 from engine.project_files import walk
 from engine.record import Record
 from expects import Given
@@ -141,7 +141,6 @@ def rows_now(record: Record) -> tuple:
 
 def handled(promise, given: Given, record: Record, world: World) -> None:
     """A 2.x handler, through the entry the bus uses: its own handle, with a Context over the record. The Context carries an agent when the Given names one, since most handlers read it."""
-    import commands.cli  # noqa: F401 - wires the command line a tag runs its command through
     event, was = given.on, text_of(given.on)
     promise.part.handle(contexted(promise, given, record), event)
     world.seen.changed = text_of(event) if text_of(event) != was else None
@@ -255,7 +254,6 @@ def at_the_givens_hour(given: Given):
 @contextmanager
 def with_the_scratch_secrets(record: Record):
     """Points the secrets folder at the scratch project for the whole play, so no secret value a play writes or drops is ever the user's own."""
-    from features.secrets.values import FOLDER_VARIABLE
     was = os.environ.get(FOLDER_VARIABLE)
     os.environ[FOLDER_VARIABLE] = str(record.root.parent / ".secrets")
     try:
