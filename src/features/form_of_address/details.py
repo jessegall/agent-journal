@@ -51,13 +51,6 @@ class FormOfAddressDetails(FeatureDetails):
             scope=PROJECT,
         ),
         Setting(
-            name="mascot",
-            default=False,
-            title="Show the voice's figure",
-            abstract="The voice stands in the room and animates what the agent is doing; off, nothing is drawn and nothing animates",
-            scope=PROJECT,
-        ),
-        Setting(
             name="profile",
             default="",
             title="Profile",

@@ -70,6 +70,20 @@ function tabSpots(tab, figure) {
     return SIDEWAYS.flatMap((share) => heights.map((y) => ({x: middle + share * figure.size, y})));
 }
 
+// Where a figure sits: on a corner of the box it perches on, its hips just inside the corner so its legs hang down over it
+const SEAT_CORNERS = [
+    {along: 1, over: -0.1},
+    {along: 0, over: 0.1},
+];
+
+export function seatOf(figure, near) {
+    const home = document.querySelector(HOME);
+    const box = (home || document.querySelector(FLOOR)).getBoundingClientRect();
+    const top = home ? box.top : box.bottom;
+    const corners = SEAT_CORNERS.map((corner) => ({x: box.left + box.width * corner.along + corner.over * figure.size, y: top}));
+    return {...freeSpot(corners, figure, near), view: null};
+}
+
 // Home is the main chat's compose box; a page without one gives the figure the floor of the page itself
 export function spotOf(view, figure, near) {
     const tab = view && document.querySelector(`[data-tab="${view}"]`);

@@ -3,9 +3,9 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus} from "../composables/voiceFigure.js";
-import {BEAT_CLIPS, beatsAfter, clipOf, eggFor, figureStateOf} from "../domain/figureState.js";
+import {BEAT_CLIPS, SEATED, beatsAfter, clipOf, eggFor, figureStateOf} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
-import {boxAt, openTabs, pointedView, spotOf} from "../figure/places.js";
+import {boxAt, openTabs, pointedView, seatOf, spotOf} from "../figure/places.js";
 import {rows} from "../sync/rows.js";
 
 // The figure is this many pixels square, as the chat's flat figure is; it walks this many of them a second and hops in this many milliseconds
@@ -138,7 +138,9 @@ function look() {
     const eggs = [...fresh.map((fire) => [fire, BEAT_CLIPS[fire.beat]]), [waited, null]];
     beats.value = [...beats.value, ...eggs.map(([moment, plain]) => eggOf(moment) || plain).filter(Boolean)];
     const feet = {x: at.value.x + SIZE / 2, y: at.value.y + (1 - ground) * SIZE};
-    target.value = spotOf(pointedView(counts.value, openTabs()), figureSize(), feet);
+    target.value = SEATED.includes(clipOf(held.value.state))
+        ? seatOf(figureSize(), feet)
+        : spotOf(pointedView(counts.value, openTabs()), figureSize(), feet);
     if (!moving.value && !arriving.value) moveTo(target.value);
     if (!document.hidden) lookTimer = setTimeout(look, LOOK_EVERY);
 }

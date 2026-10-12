@@ -1,7 +1,7 @@
 // @vitest-environment node
 import {expect, test} from "vitest";
 
-const {ASLEEP_AFTER, BEAT_CLIPS, EGGS, POINTED_AFTER, beatsAfter, clipOf, eggFor, figureStateOf} =
+const {ASLEEP_AFTER, BEAT_CLIPS, EGGS, POINTED_AFTER, SEATED, beatsAfter, clipOf, eggFor, figureStateOf} =
     await import("../src/domain/figureState.js");
 const {pointedView} = await import("../src/figure/places.js");
 
@@ -21,7 +21,7 @@ test("a stopped, paused or compacting agent keeps its figure, plainly not workin
     expect(clipOf("stopped")).toBe("sleep");
     expect(stateAt({paused: true})).toBe("paused");
     expect(stateAt({status: "compacting"})).toBe("compacting");
-    expect(clipOf("a state nobody named")).toBe("idle");
+    expect(clipOf("a state nobody named")).toBe("sit_on_edge");
 });
 
 test("an idle agent's figure falls asleep only after a long while, timed from the agent's own row", () => {
@@ -95,4 +95,14 @@ test("the figure points at the most pressing thing behind a tab, never at a tab 
     expect(pointedView(counts, {question: "front", waiting: "behind"})).toBe("waiting");
     expect(pointedView(counts, {question: "front", waiting: "front", feed: "behind"})).toBe(null);
     expect(pointedView({question: 0}, {question: "behind"})).toBe(null);
+});
+
+test("the walk plays only while the figure moves: no held state is the walk", () => {
+    for (const state of STATES) expect(clipOf(state)).not.toBe("walk");
+});
+
+test("an idle figure sits on the edge of a panel, and one waiting on a tool stands", () => {
+    expect(clipOf("idle")).toBe("sit_on_edge");
+    expect(SEATED).toContain(clipOf("idle"));
+    expect(SEATED).not.toContain(clipOf("waiting"));
 });

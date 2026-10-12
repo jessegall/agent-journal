@@ -1,15 +1,15 @@
 import {stateOf} from "./agentState.js";
 
 // What the figure does, read from the same agent row and work rows as the status bar, so the two never disagree.
-// Each held state names the clip the figure loops while it is true; a state with no clip of its own shows idle.
+// Each held state names the clip the figure loops while it is true; a state with no clip of its own sits on the edge. The walk is never held: it plays only while the figure moves.
 export const HELD = {
-    idle: "idle",
+    idle: "sit_on_edge",
     asleep: "sleep",
     thinking: "think",
     searching: "search",
     writing: "write",
     running: "work",
-    waiting: "walk",
+    waiting: "idle",
     asking: "idle",
     compacting: "sit_on_edge",
     paused: "sit_on_edge",
@@ -52,6 +52,9 @@ export function figureStateOf(agent, works, waitingSince, now = Date.now() / 100
 }
 
 export const clipOf = (state) => HELD[state] || HELD.idle;
+
+// The clips in which the figure sits on a panel's corner instead of standing on its edge
+export const SEATED = ["sit_on_edge"];
 
 // One-off beats, each fired by a card the journal wrote on the agent's row and played once before the held state resumes;
 // the first rule a card matches names its beat
