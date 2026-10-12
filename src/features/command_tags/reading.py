@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass
 
 from resources.memo import Memo
+from resources.tags import ARGUMENT, CARRIED, NAMED
 
 
 REPLY_WITH = "reply_with"
@@ -38,11 +39,6 @@ TAGS = (
 RUNS = {tag.name: tag.runs for tag in TAGS}
 OPTIONS = {tag.name: tag.options for tag in TAGS}
 RETIRED = ("discovery", "correction", "blocked", "info", "internal")
-VALUE = r'(?:"[^"]*"|\([^)]*\)|[^,\]\s]+)'
-EXTRA = r'(?:\s*,\s*|\s+)[a-z_]+=' + VALUE
-ARGUMENT = r'(?::[0-9]+(?:,[0-9]+)*|="[^"]*")?(?:' + EXTRA + r')*'
-CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+(?:,[0-9]+)*)|="([^"]*)")?((?:' + EXTRA + r')*)\]', re.M)
-NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')
 SETTING = re.compile(r"--set ([a-z_]+)=")
 READERS = Memo()
 
@@ -84,7 +80,7 @@ def replies(text: str) -> bool:
 QUIET = {tag.name for tag in TAGS if not tag.said_in_chat} - {REPLY}
 
 
-def shown(text: str, settings) -> str:
+def visible_words(text: str, settings) -> str:
     """The turn's words as they reach the chat, its tags taken out."""
     return visible(text, reader(settings)).strip()
 

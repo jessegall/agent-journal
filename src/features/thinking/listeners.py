@@ -1,27 +1,15 @@
-from dataclasses import dataclass
 from pathlib import Path
 
 from events import Fact
 from events.agents import AgentMessageSent, AgentReported
 from events.thinking import ThinkingCleared, TranscriptRead
+from features.thinking.reading import THINKING, Read, reading_place
 from payload import HookEvent
 from receiving import Listener
-from resources.fields import Loaded
 from resources.types import AgentRow
 from serving import Providers, ReadRemembered, ReadRows
 
-THINKING = "thinking"
 TURN_STARTS = (HookEvent.USER_PROMPT_SUBMIT, HookEvent.SESSION_END)
-
-
-@dataclass(frozen=True)
-class Read(Loaded):
-    path: str = ""
-    offset: int = 0
-
-
-def kept_for(row) -> str:
-    return f"transcript|{row.title}"
 
 
 class FollowTheTranscript(Listener[AgentReported]):
@@ -32,7 +20,7 @@ class FollowTheTranscript(Listener[AgentReported]):
         if not kind:
             return []
         shown = row.data.get(THINKING) or ""
-        held = Read.from_json(memory.get(kept_for(row), {}))
+        held = Read.from_json(memory.get(reading_place(row), {}))
         if held.path != str(transcript):
             return [TranscriptRead(agent=event.agent, path=str(transcript), offset=transcript.stat().st_size, thinking=shown)]
         found, offset = kind.thoughts(transcript, held.offset)

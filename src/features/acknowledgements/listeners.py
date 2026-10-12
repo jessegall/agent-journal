@@ -3,7 +3,7 @@ from events.acknowledgements import FirstNodWithheld, NodWithheld
 from events.agents import AgentTurnWritten
 from events.answers import Allowed, Answer, Kept
 from events.asking import AgentMessageSending
-from features.command_tags.reading import CARRIED
+from resources.tags import CARRIED
 from payload import JOURNAL
 from receiving import Answerer, Listener
 from resources.base import USER, Ref, Refused

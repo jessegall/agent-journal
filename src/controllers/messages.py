@@ -1,10 +1,10 @@
-import re
 import time
 from itertools import dropwhile
 
 from controllers.base import Controller, CONTROLLERS
 from resources import types
 from resources.base import AGENT, SYSTEM, USER, Refused, Resource, titled
+from resources.replies import ACKNOWLEDGING, ASKING
 from resources.text import QUOTE, unquoted  # noqa: F401  its home is resources, and callers still name it here
 from controllers.comments import Comments
 from controllers.reactions import Reactions
@@ -25,15 +25,6 @@ def references(about: str, todos: str) -> list[str]:
     numbers = [one.strip() for one in str(todos).replace(",", " ").split() if one.strip()]
     return list(dict.fromkeys([*named, *(f"todo:{one}" for one in numbers)]))
 
-
-ASKING = re.compile(r"\?|\b(?:relay|reply|answer me|tell me|let me know|what do you think|do you (?:think|agree|understand)|your (?:opinion|view|take)"
-                    r"|geef (?:het |dit |dat )?door|reageer|antwoord (?:me|mij)|vertel (?:me|mij)|laat (?:het )?(?:me|mij) weten|wat (?:denk|vind) je"
-                    r"|denk je|ben je het (?:ermee )?eens|begrijp je|snap je|jouw (?:mening|kijk|idee))\b", re.I)
-
-
-NODS = r"ok(?:ay|é)?|thanks?(?: you)?|got it"
-ACKNOWLEDGING = re.compile(rf"^\W*(?:{NODS}|thx|cool|nice|great|perfect|splendid|sure|sounds good|good|top|prima|mooi"
-                           r"|dank(?:je|jewel| je| u)?|bedankt|helemaal goed|lekker)\b[\W\s]*(?:sir|jesse|man)?[\W\s]*$", re.I)
 
 
 class Messages(Controller):

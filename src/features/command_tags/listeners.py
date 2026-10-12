@@ -5,7 +5,7 @@ from events.agents import AgentTurnWritten, CommandRan
 from events.answers import Allowed, Answer, Kept, Rewritten
 from events.asking import AgentMessageSending
 from events.command_tags import MessageTagged, TagHintDue
-from features.command_tags.reading import CARRIED, OPTIONS, kept_out_of_the_chat, named, reader, removed, runs, shown, tag_for
+from features.command_tags.reading import CARRIED, OPTIONS, kept_out_of_the_chat, named, reader, removed, runs, visible_words, tag_for
 from receiving import Answerer, Listener
 from serving import Settings
 
@@ -14,14 +14,14 @@ class KeepTaggedTurnsOutOfTheChat(Answerer[AgentMessageSending]):
     def answer(self, event: AgentMessageSending, settings: Settings) -> Answer:
         if kept_out_of_the_chat(event.text):
             return Kept()
-        words = shown(event.text, settings)
+        words = visible_words(event.text, settings)
         return Rewritten(text=words) if words != event.text else Allowed()
 
 
 class TagsInText(Listener[AgentTurnWritten]):
     def listen(self, event: AgentTurnWritten, settings: Settings) -> list[Fact]:
         commands, text = runs(settings), removed(event.text, reader(settings)).strip()
-        words = shown(event.text, settings)
+        words = visible_words(event.text, settings)
         withheld = kept_out_of_the_chat(event.text) and bool(words)
         return [MessageTagged(agent=event.agent, turn=event.turn, tag=name, about=n or argument, words=words, withheld=withheld,
                               command=shlex.join([*argv(commands[name], n, argument, text), *options(name, extras)]))
