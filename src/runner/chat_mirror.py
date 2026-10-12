@@ -9,6 +9,7 @@ from typing import Iterator
 import features
 from controllers.types import Agents
 from engine import chat, runtime, waits
+from engine.after_answer import after_answered
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.stored import read_json, write_json
@@ -129,11 +130,17 @@ def fingerprint(text: str) -> str:
     return digest(" ".join(text.split()))
 
 
-def turn_ended(root: Path, session: str, row, last_message: str) -> None:
-    raise_held(root, session)
+def turn_ended(root: Path, session: str, row, last_message: str, until: float = 0.0) -> None:
+    """Ends the turn once the display hook has brought its last words, or SETTLE has gone by. The words arrive as a job of this session's lane, queued behind this one, so waiting here would only hold them back: the wait is put at the back of the lane, behind whatever the hook has sent meanwhile."""
+    if not until:
+        raise_held(root, session)
+        until = time.time() + SETTLE
+    if last_message and not arrives(root, session, last_message) and time.time() < until:
+        time.sleep(SETTLE_STEP)
+        after_answered(lambda: turn_ended(root, session, row, last_message, until))
+        return
     if last_message:
         traced(root, f"turn ended session {session} last words fingerprint {fingerprint(last_message)} chars {len(last_message)}")
-        arrives(root, session, last_message)
         stopped(root, session, last_message)
     unfinished(root, session, row)
 
@@ -144,16 +151,11 @@ def arrived(held: dict, text: str) -> bool:
                                                              for message, parts in held.items())
 
 
-def arrives(root: Path, session: str, text: str) -> None:
-    """Waits for the display hook to bring the turn's last words. The provider sends them and the hook that ends the turn
-    at the same moment, each as its own process, and a loaded machine lets the end arrive first; without this wait the
-    catch-up then calls words that are still on their way undelivered, and fills the chat from the transcript instead."""
-    ledger = DisplayedLedger(root, session)
-    until = time.time() + SETTLE
-    while not arrived(read_json(ledger.file, dict, {}), text):
-        if time.time() >= until:
-            return
-        time.sleep(SETTLE_STEP)
+def arrives(root: Path, session: str, text: str) -> bool:
+    """Whether the display hook has brought the turn's last words. The provider sends them and the hook that ends the turn
+    at the same moment, each as its own process, and a loaded machine lets the end arrive first; without the wait for them the
+    catch-up calls words that are still on their way undelivered, and fills the chat from the transcript instead."""
+    return arrived(read_json(DisplayedLedger(root, session).file, dict, {}), text)
 
 
 def turn_began(root: Path, session: str, row) -> None:
