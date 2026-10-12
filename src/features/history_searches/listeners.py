@@ -1,14 +1,10 @@
 from events import Fact
 from events.agents import CommandRan, ToolCallAnswered
 from events.history_searches import SearchMade, SearchResultOpened, SearchResultReturned
-from features.history_searches.searching import OPEN, READ_LIMIT, SHELL, opened, searches
+from features.history_searches.searching import READ_LIMIT, SHELL, Marks, opened, searches
 from receiving import Listener
 from resources.types import AgentRow
 from serving import ReadRemembered, ReadRows
-
-
-def open_key(agent: int) -> str:
-    return f"{OPEN}|{agent}"
 
 
 class SpotSearch(Listener[ToolCallAnswered]):
@@ -22,7 +18,7 @@ class SpotSearchOutcome(Listener[CommandRan]):
     def listen(self, event: CommandRan, remembered: ReadRemembered, agents: ReadRows[AgentRow]) -> list[Fact]:
         if event.tool == SHELL and searches(event.command):
             return [SearchResultReturned(agent=event.agent, command=event.command, output=event.output)]
-        key, label = remembered.get(open_key(event.agent)), opened(event)
+        key, label = Marks(remembered, event.agent).open, opened(event)
         if not key or not label or not any(card.get("key") == key for card in agents.peek(event.agent).data.get("cards") or []):
             return []
         return [SearchResultOpened(agent=event.agent, key=key, label=label, text=event.output[:READ_LIMIT])]

@@ -22,7 +22,7 @@ class SpotUnrunnableButtons(Listener[AnyEvent]):
 
 
 class SpotAnswerInOwnWords(Listener[ResourceCreated]):
-    """A comment the user writes on a row that waits on its buttons is the user's answer in their own words, so the row stops asking for one."""
+    """The user answers a row that waits on its buttons by commenting on it in their own words."""
 
     def listen(self, event: ResourceCreated, comments: ReadRows[Comment], messages: ReadRows[Message], docs: ReadRows[Doc], reports: ReadRows[Report]) -> list[Fact]:
         if event.type != "comment" or event.actor != USER:

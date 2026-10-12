@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from controllers.base import CONTROLLERS
 from events.agents import CommandRan
 from engine.journal_calls import PUNCTUATION, JournalCall, pieces
 from engine.ran import SHELL
+from resources.types import TYPES
 
 TAKES_VALUE = {"--page", "--back"}
 OPEN = "open"
@@ -45,8 +45,8 @@ def mark(call: JournalCall) -> SearchMark | None:
     noun, terms = (words[0], words[1:]) if words else ("", [])
     if noun == "search" and terms:
         return SearchMark(f'Searched the conversation for "{" ".join(terms)}"')
-    if noun in CONTROLLERS and terms[:1] == ["search"] and terms[1:]:
-        return SearchMark(f'Searched {CONTROLLERS[noun].resource.details.title.lower()}s for "{" ".join(terms[1:])}"')
+    if noun in TYPES and terms[:1] == ["search"] and terms[1:]:
+        return SearchMark(f'Searched {TYPES[noun].details.title.lower()}s for "{" ".join(terms[1:])}"')
     if noun == "conversation":
         return SearchMark("Read the conversation history", {0: "", 1: "before the last compaction"}.get(back(call), f"{back(call)} compactions back"))
     if noun == "user":
@@ -79,3 +79,26 @@ def opened(event: CommandRan) -> str:
         if len(words) > 2 and words[1] in OPENING:
             return f"Opened {words[0]} {words[2]}"
     return ""
+
+
+class Marks:
+    """What the feature remembers of one agent's searches: the card whose result is open, and the searches whose result has not come back."""
+
+    def __init__(self, remembered, agent: int) -> None:
+        self.remembered, self.agent = remembered, agent
+
+    @property
+    def open(self) -> str:
+        return self.remembered.get(f"{OPEN}|{self.agent}") or ""
+
+    @open.setter
+    def open(self, key: str) -> None:
+        self.remembered.set(f"{OPEN}|{self.agent}", key)
+
+    @property
+    def waiting(self) -> list[dict]:
+        return self.remembered.get(f"{WAITING}|{self.agent}") or []
+
+    @waiting.setter
+    def waiting(self, entries: list[dict]) -> None:
+        self.remembered.set(f"{WAITING}|{self.agent}", entries)
