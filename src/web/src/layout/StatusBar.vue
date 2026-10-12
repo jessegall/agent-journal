@@ -100,11 +100,14 @@ const line = computed(() => {
 const inspect = () => peek("work", current.value.n);
 const roll = (event) => (waitingNow.value && !paused.value ? toggleWaiting(event) : current.value && inspect());
 const was = ref("");
+// What the line keeps from the line before it stands still while the rest rolls in. The kept part must be long enough to be a
+// phrase on its own: a shorter one leaves the bar reading "to-do" by itself for the length of the roll, which says the wrong thing.
+const KEEPS_STILL_FROM = 16;
 const sentence = computed(() => {
     const now = line.value;
     let i = 0;
     while (i < now.length && i < was.value.length && now[i] === was.value[i]) i += 1;
-    const cut = i >= 6 && i < now.length ? now.lastIndexOf(" ", i) + 1 : 0;
+    const cut = i >= KEEPS_STILL_FROM && i < now.length ? now.lastIndexOf(" ", i) + 1 : 0;
     return {head: now.slice(0, cut), tail: now.slice(cut)};
 });
 watch(line, (now, before) => (was.value = before || ""));
