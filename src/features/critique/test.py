@@ -1,7 +1,8 @@
 from pathlib import Path
 
 import features
-from features.critique.controller import Critiques
+from controllers.base import COMMANDS
+from controllers.types import Critiques
 from resources.base import AGENT
 from tests.conftest import fresh, refused
 
@@ -9,15 +10,16 @@ from tests.conftest import fresh, refused
 def test_a_round_hands_out_one_read_only_critic_per_lens_and_a_report_for_their_findings(tmp_path, monkeypatch):
     features.load()
     up = {"answers": False}
-    monkeypatch.setattr("features.critique.controller.answers", lambda url: up["answers"])
+    monkeypatch.setattr("controllers.critique.controller.answers", lambda url: up["answers"])
     record = fresh()
     critiques = Critiques(record, actor=AGENT)
-    assert "name the app" in refused(lambda: critiques.round("the helper list")), "a round needs the app's address first"
+    start = COMMANDS["critique"]["round"]
+    assert "name the app" in refused(lambda: start(critiques, "the helper list")), "a round needs the app's address first"
     record.set_setting("critique", {"app": "http://127.0.0.1:8611/p/", "login": "/tmp/state.json", "browsers": "/tmp/pw"})
-    assert "does not answer" in refused(lambda: critiques.round("the helper list")), "an app that does not answer is refused in words"
+    assert "does not answer" in refused(lambda: start(critiques, "the helper list")), "an app that does not answer is refused in words"
     up["answers"] = True
-    assert "no lens colour" in refused(lambda: critiques.round("the helper list", lenses="words,colour")), "an unknown lens is named with the list"
-    round_result = critiques.round("the helper list", lenses="first-time,words")
+    assert "no lens colour" in refused(lambda: start(critiques, "the helper list", lenses="words,colour")), "an unknown lens is named with the list"
+    round_result = start(critiques, "the helper list", lenses="first-time,words")
     row = critiques.all()[0]
     assert ([c["lens"] for c in row.critics], "read-only subagent per lens" in round_result, f"journal report section {row.report}" in round_result) == \
         (["first-time", "words"], True, True), "one critic per lens, dispatched by the agent as a subagent, its findings filed in the round's report"
@@ -30,7 +32,7 @@ def test_a_round_hands_out_one_read_only_critic_per_lens_and_a_report_for_their_
     (tmp_path / ".codex").mkdir()
     (tmp_path / ".codex" / "config.toml").write_text('model = "gpt-6-sol"\n')
     report(record, "working", "PreToolUse", session="codex-1", provider="codex")
-    by_codex = Critiques(record, actor=AGENT, session="codex-1").round("the helper list", lenses="words")
+    by_codex = start(Critiques(record, actor=AGENT, session="codex-1"), "the helper list", lenses="words")
     assert "model gpt-6-sol" in by_codex, "a Codex agent is told the model Codex is set to, not Claude's"
     critiques.complete(row.n)
     assert critiques.load(row.n).completed > 0, "finishing closes the round"

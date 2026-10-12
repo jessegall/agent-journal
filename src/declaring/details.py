@@ -13,6 +13,10 @@ from resources.text import paragraphs
 VALUES = Memo()
 
 
+def values_of(name: str, declared: list[Setting], record) -> Settings:
+    return VALUES.get((name, str(record.home)), record.settings_file.held()[0], lambda: Settings(declared, record.setting(name, {})))
+
+
 class Behaviour:
     def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: Trigger = NEVER, name: str = "",
                  prefix: str = "", scope: str = PROJECT):
@@ -84,4 +88,4 @@ class FeatureDetails:
 
     @classmethod
     def values(cls, record) -> Settings:
-        return VALUES.get((cls.name, str(record.home)), record.settings_file.held()[0], lambda: Settings(cls.settings, record.setting(cls.name, {})))
+        return values_of(cls.name, cls.settings, record)

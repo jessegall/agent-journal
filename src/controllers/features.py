@@ -2,7 +2,9 @@ import json
 from dataclasses import dataclass
 
 from controllers.base import Arguments, Controller
+from declaring.details import values_of
 from declaring.extension import Extension
+from declaring.settings import Settings
 from engine.record import Record
 from engine.settings_file import PROJECT_PARTS
 from resources.base import AGENT, Refused, SYSTEM, USER
@@ -14,6 +16,10 @@ SETTING_KEYS = Extension()
 SETTINGS_CHANGED = Extension()
 SECRET_CHECKS = Extension()
 MOVED = Extension()
+
+
+def settings_of(record: Record, name: str) -> Settings:
+    return values_of(name, list(SETTING_KEYS.keyed()[name]), record)
 
 
 class Features(Controller):
