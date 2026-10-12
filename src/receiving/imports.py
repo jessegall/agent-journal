@@ -24,6 +24,9 @@ registration names to ask for one."""
 
 OWN = "features"
 
+DOOR = ("controllers.types",)
+"""The one old way in that is allowed and counted apart: a feature writes through a controller reached by its class, Todos(record, actor=SYSTEM). It closes when the sweep replaces those writes with the services a feature asks for, so its size is how much of that sweep is left, and it is said beside the boundary rather than folded into what is allowed."""
+
 
 @dataclass(frozen=True)
 class Reach:
@@ -33,6 +36,7 @@ class Reach:
     module: str
     imports: str
     line: int
+    door: bool = False
 
     def said(self) -> str:
         return f"{self.feature} reaches {self.imports} in {self.module}, line {self.line}"
@@ -83,14 +87,26 @@ class Boundary:
                 if module.name == "test.py":
                     continue
                 tree = ast.parse(module.read_text(), str(module))
-                found.extend(Reach(folder.name, str(module.relative_to(features.parent)), name, line)
+                found.extend(Reach(folder.name, str(module.relative_to(features.parent)), name, line, name in DOOR)
                              for name, line in named(tree) if not self.allows(name, folder.name))
         return found
 
 
-def walked(src: Path, refusing: bool = False) -> list[Reach]:
-    """Walks every feature and answers what it reaches for. Raises instead when refusing, which it does once the moves that close the list are done."""
+@dataclass(frozen=True)
+class Walk:
+    """What the features reach for: past the boundary, and through the controllers door that closes with the sweep."""
+
+    outside: list[Reach]
+    through_the_door: list[Reach]
+
+    def said(self) -> str:
+        return f"{len(self.outside)} outside, {len(self.through_the_door)} through the controllers door, which closes with the sweep"
+
+
+def walked(src: Path, refusing: bool = False) -> Walk:
+    """Walks every feature and answers what it reaches for, the boundary and the door counted apart. Raises instead when refusing and anything is outside, which it does once the moves that close the list are done; the door never refuses."""
     found = Boundary.of(src).reaches(src / OWN)
-    if refusing and found:
-        raise ReachesOutside.of(found)
-    return found
+    walk = Walk([one for one in found if not one.door], [one for one in found if one.door])
+    if refusing and walk.outside:
+        raise ReachesOutside.of(walk.outside)
+    return walk
