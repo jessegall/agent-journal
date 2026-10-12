@@ -195,7 +195,7 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     from pathlib import Path
     from agents.terminal import output_cap, session_named
     from features import load
-    from controllers.journal_laws import Outputs
+    from features.journal_laws.controller import Outputs
     from providers import PROVIDERS
     load()
     record = fresh()
