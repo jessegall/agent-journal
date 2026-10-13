@@ -44,8 +44,8 @@ watch(runningLine, (now) => {
 </script>
 
 <template>
-    <span :class="['running', {ending: !runningLine}]">
-        <Transition name="roll">
+    <span class="running">
+        <Transition name="roll" mode="out-in">
             <span v-if="runningLine" :key="runningLine.key" :class="['running-line', {done: runningLine.done}]">
                 <TransitionGroup tag="span" name="token" class="running-text" :title="runningLine.text">
                     <span v-for="(part, i) in runningLine.parts" :key="`${i}-${part.value}`" :class="['running-token', part.color]">
@@ -59,10 +59,8 @@ watch(runningLine, (now) => {
                     </Transition>
                 </span>
             </span>
+            <span v-else key="idle" class="running-idle">{{ idle }}</span>
         </Transition>
-        <template v-if="!runningLine">
-            <span class="running-idle">{{ idle }}</span>
-        </template>
     </span>
 </template>
 
@@ -175,17 +173,9 @@ watch(runningLine, (now) => {
 }
 
 .roll-leave-active {
-    position: absolute;
-    left: 0;
     transition:
         opacity var(--command-out) ease,
         transform var(--command-out) cubic-bezier(0.22, 0.7, 0.3, 1);
-}
-
-.running.ending .roll-leave-active {
-    transition:
-        opacity var(--command-out) ease 90ms,
-        transform var(--command-out) cubic-bezier(0.22, 0.7, 0.3, 1) 90ms;
 }
 
 .roll-enter-from {
