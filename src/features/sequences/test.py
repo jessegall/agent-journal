@@ -14,18 +14,18 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
     filing = next(r for r in sequences.rows.summaries() if r.title == "Sort dumped files")
     dump = CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
-    steps = lambda: [n for n in nudges(record) if n.startswith(f"sequence {filing['n']}")]
-    assert steps() == [f"sequence {filing['n']}, Sort dumped files, step 1 of 3 - Read each file"], "a dump starts the sequence about it"
-    handed = next(n.brief for n in Nudges(record).all() if n.title.startswith(f"sequence {filing['n']}"))
+    steps = lambda: [n for n in nudges(record) if n.startswith(f"sequence {filing.n}")]
+    assert steps() == [f"sequence {filing.n}, Sort dumped files, step 1 of 3 - Read each file"], "a dump starts the sequence about it"
+    handed = next(n.brief for n in Nudges(record).all() if n.title.startswith(f"sequence {filing.n}"))
     assert f"journal dump items {dump.n}" in handed and "<dump n>" not in handed, "the step names the dump it is about"
-    sequences.follow(filing["n"], about=dump.ref)
-    sequences.next(filing["n"], about=dump.ref)
-    assert steps()[-1] == f"sequence {filing['n']}, Sort dumped files, step 2 of 3 - File each subject", "done hands the next step"
-    sequences.follow(filing["n"], about=dump.ref)
-    sequences.next(filing["n"], about=dump.ref)
-    sequences.follow(filing["n"], about=dump.ref)
-    sequences.next(filing["n"], about=dump.ref)
-    assert sequences.load(filing["n"]).runs == {}, "the last step ends it"
+    sequences.follow(filing.n, about=dump.ref)
+    sequences.next(filing.n, about=dump.ref)
+    assert steps()[-1] == f"sequence {filing.n}, Sort dumped files, step 2 of 3 - File each subject", "done hands the next step"
+    sequences.follow(filing.n, about=dump.ref)
+    sequences.next(filing.n, about=dump.ref)
+    sequences.follow(filing.n, about=dump.ref)
+    sequences.next(filing.n, about=dump.ref)
+    assert sequences.load(filing.n).runs == {}, "the last step ends it"
     cards = CONTROLLERS["agent"](record).primary().data["cards"]
     marks = [(c["label"], c["color"]) for c in cards]
     assert [label for label, _ in marks] == ["Sequence started", "Sequence moved on", "Sequence moved on", "Sequence finished"] \
@@ -33,41 +33,41 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
         f"the chat shows a violet mark for a shipped sequence as it starts, moves on and finishes, its name under it: {marks}"
     first = CONTROLLERS["dump"](record, actor=USER).create("Planning", brief="notes")
     second = CONTROLLERS["dump"](record, actor=USER).create("Review", brief="notes")
-    assert steps()[-1] == f"sequence {filing['n']}, Sort dumped files, step 1 of 3 - Read each file" and len(steps()) == 5, \
+    assert steps()[-1] == f"sequence {filing.n}, Sort dumped files, step 1 of 3 - Read each file" and len(steps()) == 5, \
         "a run started while another runs is handed at once, like a call"
-    assert "was handed to you first" in refused(lambda: sequences.next(filing["n"], about=first.ref)), \
+    assert "was handed to you first" in refused(lambda: sequences.next(filing.n, about=first.ref)), \
         "the run another run interrupted cannot be moved on while the newer run is in hand, so a refused action never closes it"
-    assert sequences.load(filing["n"]).runs[f"{record.env}|{first.ref}"]["step"] == 1, "and it stays at its step"
+    assert sequences.load(filing.n).runs[f"{record.env}|{first.ref}"]["step"] == 1, "and it stays at its step"
     for _ in range(3):
-        sequences.follow(filing["n"], about=second.ref)
-        sequences.next(filing["n"], about=second.ref)
+        sequences.follow(filing.n, about=second.ref)
+        sequences.next(filing.n, about=second.ref)
     assert len(steps()) == 8 and steps()[-1].endswith("step 1 of 3 - Read each file"), "when the inner run ends, the one it interrupted is handed its step again"
     report(record, "idle", "Stop")
-    assert [n for n in nudges(record) if "is still at step" in n] == [f"sequence {filing['n']}, Sort dumped files, is still at step 1 of 3 - carry on with it"], \
+    assert [n for n in nudges(record) if "is still at step" in n] == [f"sequence {filing.n}, Sort dumped files, is still at step 1 of 3 - carry on with it"], \
         "stopping with a run unfinished earns a reminder"
-    review = next(key for key in sequences.load(filing["n"]).runs).split("|", 1)[1]
-    assert "never taken up" in refused(lambda: sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")), \
+    review = next(key for key in sequences.load(filing.n).runs).split("|", 1)[1]
+    assert "never taken up" in refused(lambda: sequences.abandon(filing.n, about=review, why="the dump was a duplicate")), \
         "a step never taken up cannot be given up"
-    sequences.follow(filing["n"], about=review)
-    assert "skips Read each file; File each subject" in refused(lambda: sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")), \
+    sequences.follow(filing.n, about=review)
+    assert "skips Read each file; File each subject" in refused(lambda: sequences.abandon(filing.n, about=review, why="the dump was a duplicate")), \
         "abandoning names the steps it would skip"
-    sequences.abandon(filing["n"], about=review, why="the dump was a duplicate", sure=True)
-    assert (sequences.load(filing["n"]).runs, sequences.load(filing["n"]).data["abandoned"][-1]["why"]) == ({}, "the dump was a duplicate"), \
+    sequences.abandon(filing.n, about=review, why="the dump was a duplicate", sure=True)
+    assert (sequences.load(filing.n).runs, sequences.load(filing.n).data["abandoned"][-1]["why"]) == ({}, "the dump was a duplicate"), \
         "an abandoned run is dropped with its reason kept"
     other = CONTROLLERS["dump"](record, actor=USER).create("Retro", brief="notes")
     CONTROLLERS["dump"](record, actor=USER).delete(other.n, why="dropped by mistake")
-    assert all(not key.endswith(f"dump:{other.n}") for key in sequences.load(filing["n"]).runs), "a run ends with the row it was about"
-    assert refused(lambda: CONTROLLERS["sequence"](record, actor=USER).delete(filing["n"], why="tidy")) == \
-        f"sequence {filing['n']} ships with the journal and cannot be changed or removed", "a system sequence stays"
-    assert refused(lambda: CONTROLLERS["sequence"](record, actor=USER).update(filing["n"], title="Mine now")) == \
-        f"sequence {filing['n']} ships with the journal and cannot be changed or removed", "and stays as it shipped"
+    assert all(not key.endswith(f"dump:{other.n}") for key in sequences.load(filing.n).runs), "a run ends with the row it was about"
+    assert refused(lambda: CONTROLLERS["sequence"](record, actor=USER).delete(filing.n, why="tidy")) == \
+        f"sequence {filing.n} ships with the journal and cannot be changed or removed", "a system sequence stays"
+    assert refused(lambda: CONTROLLERS["sequence"](record, actor=USER).update(filing.n, title="Mine now")) == \
+        f"sequence {filing.n} ships with the journal and cannot be changed or removed", "and stays as it shipped"
     collection = CONTROLLERS["collection"](record, actor=USER).create("Keep")
-    assert refused(lambda: CONTROLLERS["collection"](record, actor=USER).add(collection.n, [f"sequence:{filing['n']}"])) == \
-        f"sequence:{filing['n']} ships with the journal and cannot be put in a collection", "nor collected"
+    assert refused(lambda: CONTROLLERS["collection"](record, actor=USER).add(collection.n, [f"sequence:{filing.n}"])) == \
+        f"sequence:{filing.n} ships with the journal and cannot be put in a collection", "nor collected"
     from features.sequences.shipped import retire
     from resources.base import SYSTEM
     retire(CONTROLLERS["sequence"](record, actor=SYSTEM), {shipped.title for shipped in shipped_sequences()} - {"Sort dumped files"})
-    assert sequences.load(filing["n"]).deleted, "a sequence the journal no longer ships is taken away on upgrade, and the ones it still ships stay"
+    assert sequences.load(filing.n).deleted, "a sequence the journal no longer ships is taken away on upgrade, and the ones it still ships stay"
 
 
 def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refused():
@@ -116,7 +116,7 @@ def test_a_step_goes_to_the_agent_holding_the_environment_not_the_newest():
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
     filing = next(r for r in sequences.rows.summaries() if r.title == "Sort dumped files")
     CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
-    handed = [n.data.get("session") for n in CONTROLLERS["nudge"](record).all() if n.title.startswith(f"sequence {filing['n']}")]
+    handed = [n.data.get("session") for n in CONTROLLERS["nudge"](record).all() if n.title.startswith(f"sequence {filing.n}")]
     assert handed and set(handed) == {"holder"}, f"the step goes to the agent holding the environment, not the newest agent row: {handed}"
 
 

@@ -11,7 +11,7 @@ def test_a_functional_design_is_a_doc_whose_approval_makes_the_plan():
     record = fresh()
     assert (ship(record), ship(record)) == (["Functional design", "Find what is wrong", "Find what is missing", "Challenge the approach"], []), "shipped once, never twice"
     functional = next(r for r in Templates(record, actor=USER).rows.summaries() if r.title == "Functional design")
-    design = Docs(record, actor=AGENT).create("Queue autoscaler", abstract="Scale workers from queue depth", template=functional["n"])
+    design = Docs(record, actor=AGENT).create("Queue autoscaler", abstract="Scale workers from queue depth", template=functional.n)
     assert [s["title"] for s in Docs(record, actor=AGENT).load(design.n).sections][:3] == ["What it is for", "What the user sees and does", "Must have"], \
         "a design starts from the parts anyone can read"
     plan = Plans(record, actor=USER).from_doc(design.n)

@@ -43,7 +43,8 @@ def filled(messages, record, n: int, key: str, body: str) -> str:
 
 
 def matches(found, values: dict) -> bool:
-    return all(found.data.get(key) == value for key, value in values.items())
+    """Whether the row holds these values, a declared field counting with its default."""
+    return all(getattr(found, key, None) == value for key, value in values.items())
 
 
 @dataclass(frozen=True)

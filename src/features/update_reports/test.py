@@ -75,14 +75,14 @@ def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_no
     sequences = Sequences(record, actor=SYSTEM)
     writing = next(s for s in sequences.rows.summaries() if s.title == "Writing an update")
     trigger = next(t for t in Triggers(record, actor=SYSTEM).rows.every() if t.title == "Writing an update")
-    assert (trigger.words_in, sequences.load(writing["n"]).starts_on) == ("user", f"trigger:{trigger.n}"), \
+    assert (trigger.words_in, sequences.load(writing.n).starts_on) == ("user", f"trigger:{trigger.n}"), \
         "the sequence starts on its own trigger, which watches only what the user writes"
 
     displayed(record.root, Chunk.from_json({"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True,
                             "delta": "TL;DR: the tests pass."}))
-    assert sequences.load(writing["n"]).runs == {}, "the agent saying it starts nothing"
+    assert sequences.load(writing.n).runs == {}, "the agent saying it starts nothing"
     Messages(record, actor=USER).create("tldr?")
-    assert len(sequences.load(writing["n"]).runs) == 1, "the user asking starts writing an update"
+    assert len(sequences.load(writing.n).runs) == 1, "the user asking starts writing an update"
 
 
 def test_a_commit_reminds_the_agent_it_may_write_an_update_at_most_hourly():
