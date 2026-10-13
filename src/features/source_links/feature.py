@@ -32,6 +32,10 @@ class SourceLinks(Feature):
             Given(ResourceCreated.of("todo"), rows=[Todo(n=1, title="Row"), READ_JUST_NOW, AGENT_ROW]) >> Dispatches(nothing),
             Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it"), READ_JUST_NOW]) >> Dispatches(nothing),
             Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it"), AGENT_ROW]) >> Dispatches(nothing),
+            Given(ResourceCreated.of("doc"), rows=[Doc(n=1, title="New"), READ_JUST_NOW, AGENT_ROW]) >> Dispatches(SourceUncited(type="doc", n=1, read="report:2")),
+            Given(ResourceCreated.of("report"), rows=[Report(n=1, title="New"), DOC_READ_JUST_NOW, AGENT_ROW]) >> Dispatches(SourceUncited(type="report", n=1, read="doc:3")),
+            Given(ResourceCreated.of("doc"), rows=[Doc(n=1, title="What stays true", seen=[AGENT], updated=WHEN - 60), AGENT_ROW]) >> Dispatches(nothing),
+            Given(ResourceCreated.of("plan"), rows=[Plan(n=1, title="Ship it"), READ_LONG_AGO, AGENT_ROW], settings={"source_links.within": 120}) >> Dispatches(SourceUncited(type="plan", n=1, read="report:2")),
         ])
         journal.events.handle(SourceUncited, NameUncitedSource(), expects=[
             Given(SourceUncited(type="plan", n=1, read="report:2"), rows=[AGENT_ROW]) >> Nudged("uncited", type="plan", n=1, read="report:2"),
