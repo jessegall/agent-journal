@@ -62,8 +62,8 @@ FILE_THE_REPORT = replace(ABOUT_A_TODO, title="Please file the report")
 FILE_THE_REPORT_WRITTEN = replace(FILE_THE_REPORT, seen=[USER])
 
 
-def after_report(*rows) -> Given:
-    return Given.of(reported(), *rows)
+def after_report(*rows, **more) -> Given:
+    return Given.of(reported(), *rows, **more)
 
 
 def after_touch(*rows) -> Given:
