@@ -100,6 +100,20 @@ await runScenarios(process.argv[2], {
         if ((await page.getByText(marker).count()) !== 1 || (await stored(page, marker)) !== 1)
             throw new Error("the message was doubled by a reload");
     },
+    async "words typed quickly are all kept while messages arrive and the page updates"(page, url) {
+        await home(page, url);
+        const typed = [];
+        for (let burst = 0; burst < 6; burst++) {
+            const words = `burst ${burst} of quick typing `;
+            await compose(page).pressSequentially(words, {delay: 4});
+            typed.push(words);
+            journal("message", "create", `A note while the user types, number ${burst}`);
+        }
+        await settle(page);
+        const kept = await compose(page).inputValue();
+        if (kept !== typed.join("")) throw new Error(`the compose box lost what was typed: kept "${kept}", typed "${typed.join("")}"`);
+    },
+
     async "typing the first words brings the chat to the newest message"(page, url) {
         await home(page, url);
         await page.evaluate(() => {
