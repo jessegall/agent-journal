@@ -49,8 +49,9 @@ def asking(tool: str, input: str, subagent: bool = False) -> ToolCallAsked:
     return ToolCallAsked(tool=tool, input=input, command=input if tool == "Bash" else "", session="claude-1", subagent=subagent)
 
 
-def writing(actor: str = "system", **fields) -> RowWriting:
-    return RowWriting(type="question", action="create", actor=actor, fields=tuple(fields.items()))
+def writing(actor: str = "system", title: str = "", abstract: str = "", brief: str = "", **data) -> RowWriting:
+    """A question about to be created, as the controller's create hands it on: its title, abstract and brief always, and what else was set."""
+    return RowWriting(type="question", action="create", actor=actor, fields=(("title", title), ("abstract", abstract), ("brief", brief), *data.items()))
 
 
 def blocking(actor: str, why: str) -> RowWriting:
