@@ -5,7 +5,7 @@ from events.message_todos import TodoLeftUnlinked, TodoNamedInReply
 from events.resources import ResourceCreated
 from events.todos import TodoCreated
 from features.message_todos.details import UNLINKED
-from features.row_links.formatters import Mention, named
+from resources.mentions import Mention, named
 from receiving import Listener
 from resources.base import AGENT
 from resources.types import AgentRow, Comment, Message, Todo
