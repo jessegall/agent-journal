@@ -51,6 +51,12 @@ class TicketsDetails(FeatureDetails):
 
     lines = [
         Line(
+            name="waited long",
+            title="ticket {{n}}, {{title}}, has waited {{minutes}} minutes for its review",
+            brief="its work is finished and waits for the agent orchestrating its board to review, test and merge it",
+            label="Ticket waiting",
+        ),
+        Line(
             name="ticket_restarted",
             title="ticket {{ticket}}, {{title}}, had lost its agent and was started again",
             brief="it carries on in its conversation; if it stops again you are told instead",

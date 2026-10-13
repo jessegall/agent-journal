@@ -6,7 +6,7 @@ from events.tickets import (BoardOutOfTickets, KnowledgeProposed, PlanWaitsForOr
 from receiving import Handler
 from resources.base import FINISHED, STUCK, Refused
 from resources.types import Board, Ticket
-from serving import Chat, Clock, Rows
+from serving import Chat, Clock, Elsewhere, ReadRows, Rows
 
 
 class HoldTicketKnowledge(Handler[KnowledgeProposed]):
@@ -69,6 +69,13 @@ class TellTicketRestarted(Handler[TicketRestarted]):
 class RaiseStuckTicket(Handler[TicketNeedsLook]):
     def handle(self, event: TicketNeedsLook, tickets: Rows[Ticket]) -> list[Fact]:
         tickets.raise_moment(event.ticket, STUCK, reason=event.text)
+        return []
+
+
+class TellTheUserOfLongWait(Handler[TicketWaitedLong]):
+    def handle(self, event: TicketWaitedLong, tickets: ReadRows[Ticket], elsewhere: Elsewhere) -> list[Fact]:
+        ticket = tickets.peek(event.ticket)
+        elsewhere.here().notify("waited long", n=ticket.n, title=ticket.title, minutes=event.minutes, about=ticket.ref)
         return []
 
 

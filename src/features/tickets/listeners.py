@@ -79,5 +79,10 @@ class SpotStuckTickets(Listener[TicketsDue]):
 class SpotLongWaits(Listener[TicketsDue]):
     def listen(self, event: TicketsDue, tickets: ReadRows[Ticket], settings: Settings, clock: Clock) -> list[Fact]:
         now, limit = clock.now(), int(settings.tell_the_user_after)
-        return [TicketWaitedLong(ticket=ticket.n, minutes=waited(ticket, now)).once(f"ticket_long_wait|{ticket.ref}|{ticket.handed_in_at}")
+        return [TicketWaitedLong(ticket=ticket.n, minutes=waited(ticket, now)).once(f"ticket_long_wait|{ticket.ref}|{ticket.handed_in_at}|{doublings(waited(ticket, now), limit)}")
                 for ticket in watched(tickets) if ticket.handed_in_at and waited(ticket, now) >= limit]
+
+
+def doublings(minutes: int, limit: int) -> int:
+    """How many times the wait has doubled past the limit, so the user is told at the limit and again each time it doubles, never every tick."""
+    return (minutes // limit).bit_length() - 1

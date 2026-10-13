@@ -10,14 +10,14 @@ from framework.due import DueOnClock
 from resources.boards import Board
 from resources.tickets import Ticket
 from resources.base import AGENT, PLAN_WAITS, USER
-from resources.types import AgentRow, Comment, Environment, Question, Rule, Todo
+from resources.types import Notification, AgentRow, Comment, Environment, Question, Rule, Todo
 from framework.journal import Journal
 from features.tickets.commands import ShowTicketTodos
 from controllers.types import Tickets
 from features.tickets.details import TicketsDetails
 from framework.sending import Nudge
 from resources.tickets import DRAFTS, WAITS
-from features.tickets.handlers import (CommentOnLongWait, FinishTheBoardWithItsLastTicket, HoldTicketKnowledge, LookAfterTickets, PassOnCall, RaiseStuckTicket,
+from features.tickets.handlers import (TellTheUserOfLongWait, CommentOnLongWait, FinishTheBoardWithItsLastTicket, HoldTicketKnowledge, LookAfterTickets, PassOnCall, RaiseStuckTicket,
                                        RaiseWaitingPlan, RecordHandedIn, ReviveTicket, TellTicketRestarted, WakeTheTicketAgent)
 from features.tickets.listeners import (SpotAnsweredQuestionOfATicket, SpotBoardOutOfTickets, SpotKnowledgeInATicket, SpotLongWaits, SpotStuckTickets,
                                         SpotTicketCalls, SpotWaitingPlans)
@@ -140,11 +140,16 @@ class TicketsFeature(Feature):
         ])
         journal.events.listen(TicketsDue, SpotLongWaits(), expects=[
             Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(60), AgentRow(n=1, title="claude-1")])
-                >> Dispatches(TicketWaitedLong(ticket=1, minutes=60).once(f"ticket_long_wait|ticket:1|{WHEN - 3600}")),
+                >> Dispatches(TicketWaitedLong(ticket=1, minutes=60).once(f"ticket_long_wait|ticket:1|{WHEN - 3600}|1")),
+            Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(150), AgentRow(n=1, title="claude-1")])
+                >> Dispatches(TicketWaitedLong(ticket=1, minutes=150).once(f"ticket_long_wait|ticket:1|{WHEN - 9000}|2")),
             Given(TicketsDue(agent=1), rows=[run_here(), waiting_for(5), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
             Given(TicketsDue(agent=1), rows=[run_here(paused=WHEN), waiting_for(60), AgentRow(n=1, title="claude-1")]) >> Dispatches(nothing),
             Given(TicketsDue(agent=1), rows=[Board(n=1, title="Features", data={"orchestrator": "another-environment", "stages": ["Doing"]}), waiting_for(60), AgentRow(n=1, title="claude-1")])
                 >> Dispatches(nothing),
+        ])
+        journal.events.handle(TicketWaitedLong, TellTheUserOfLongWait(), expects=[
+            Given(TicketWaitedLong(ticket=1, minutes=60), rows=[run_here(), waiting_for(60)]) >> Wrote(Notification(title="ticket 1, Dark mode, has waited 60 minutes for its review", data={"label": "Ticket waiting"})),
         ])
         journal.events.handle(TicketWaitedLong, CommentOnLongWait(), expects=[
             Given(TicketWaitedLong(ticket=1, minutes=60), rows=[run_here(), waiting_for(60)]) >> Wrote(Comment(brief=LONG_WAIT)),
