@@ -368,10 +368,6 @@ def git_env() -> dict:
     return {**{name: value for name, value in os.environ.items() if name not in repository_variables()}, "GIT_TERMINAL_PROMPT": "0"}
 
 
-def version_key(version: str) -> tuple:
-    return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
-
-
 def repository_of(given: str | None) -> str:
     return given if given is not None else os.environ.get(REPOSITORY_ENV, REPOSITORY)
 
@@ -407,6 +403,7 @@ def release_versions(repository: str | None = None) -> list[str]:
     except (OSError, subprocess.TimeoutExpired):
         return []
     versions = [line.rsplit("/v", 1)[1] for line in listed.stdout.splitlines() if "/v" in line] if not listed.returncode else []
+    from resources.versions import version_key
     return sorted(versions, key=version_key, reverse=True)
 
 

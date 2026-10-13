@@ -1,4 +1,5 @@
-from install import version_key
+def version_key(version: str) -> tuple:
+    return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
 
 
 def newer(version: str, than: str) -> bool:
