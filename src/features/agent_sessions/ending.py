@@ -6,12 +6,12 @@ from resources.base import SYSTEM
 from resources.types import STOPPED
 
 
-def has_ended(row, sessions: Sessions, agents) -> bool:
+def has_ended(row, sessions, agents) -> bool:
     """Whether a row still counted as running belongs to a session that is gone, and is not being taken over by a newer process of the same conversation."""
     return row.live and not still_live(sessions.read(row.title)) and not relaunching(row, sessions, agents)
 
 
-def relaunching(row, sessions: Sessions, agents) -> bool:
+def relaunching(row, sessions, agents) -> bool:
     """A conversation started again in a new process keeps its old session record, with the dead process in it, until the first hook of the new process takes it over; until then the newer live process of the same provider in its environment, which has no row of its own yet, is its successor, and the row is not ended."""
     held = sessions.read(row.title)
     reported = {sessions.read(other.title).pid for other in agents.rows.every() if other.event and other.n != row.n}
