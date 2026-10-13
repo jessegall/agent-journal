@@ -45,10 +45,10 @@ def test_two_machines_leasing_from_one_record_never_hand_out_the_same_number(tmp
     other.numbers = Numbers(tmp_path / "other", Leases(record.root))
     first, second, third = alone.create("made here"), Todos(other, actor=AGENT).create("made there"), alone.create("made here again")
     assert second.n > third.n, "the other machine's block lies above this one's"
-    assert [row["n"] for row in alone.rows.summaries()][-3:] == [first.n, second.n, third.n], "lists follow the order rows were made, not their numbers"
+    assert [row.n for row in alone.rows.summaries()][-3:] == [first.n, second.n, third.n], "lists follow the order rows were made, not their numbers"
     stored.SUMMARIES.clear()
     stored.INDEXED.clear()
-    assert [row["n"] for row in alone.rows.summaries()][-3:] == [first.n, second.n, third.n], "a list read afresh keeps that order"
+    assert [row.n for row in alone.rows.summaries()][-3:] == [first.n, second.n, third.n], "a list read afresh keeps that order"
 
 
 def test_an_existing_record_upgrades_with_its_numbers_continuing():

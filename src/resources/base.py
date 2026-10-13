@@ -1,7 +1,6 @@
 import json
 import re
 from dataclasses import dataclass, field, asdict, fields, is_dataclass, replace
-from collections.abc import Mapping
 from enum import Enum
 from types import SimpleNamespace
 from typing import Callable, ClassVar
@@ -158,8 +157,8 @@ class Pruned(Enum):
         return {Pruned.ANY: True, Pruned.SEEN: USER in r.seen, Pruned.CLOSED: bool(r.completed)}[self]
 
 
-@dataclass(frozen=True, slots=True, eq=False)
-class Summary(Mapping):
+@dataclass(frozen=True, slots=True)
+class Summary:
     """What a store keeps of one row to list, order and count it without loading it: the fixed fields every row has, and `extras`, the fields its type indexes besides. It is what the index file holds, one entry per row."""
 
     n: int
@@ -187,7 +186,7 @@ class Summary(Mapping):
             return cls(n=raw["n"], damaged=True, stamp=raw.get("stamp", ""))
         if stamp is None:
             stamp = raw.get("stamp", "") if SUMMARY_KEYS.union(indexed) <= raw.keys() else ""
-        extras = {key: value for key, value in raw.items() if key not in KEYED}
+        extras = {key: value for key, value in raw.items() if key not in SUMMARY_COLUMNS}
         return cls(n=raw["n"], created=raw.get("created", 0.0), idempotency=raw.get("idempotency", ""), title=raw.get("title", ""), deleted=raw.get("deleted", False),
                    completed=raw.get("completed", 0.0), seen=raw.get("seen") or [], refs=raw.get("refs") or [], updated=raw.get("updated", 0.0), files=raw.get("files", 0),
                    part_of=raw.get("part_of", ""), draft_of=raw.get("draft_of", ""), plugin=raw.get("plugin", ""), zip=raw.get("zip", ""), extras=extras,
@@ -205,25 +204,8 @@ class Summary(Mapping):
             packed["zip"] = archive or self.zip
         return packed
 
-    def __getitem__(self, key: str):
-        if key in KEYED:
-            return getattr(self, key)
-        return self.extras[key]
 
-    def get(self, key: str, default=None):
-        if key in KEYED:
-            return getattr(self, key)
-        return self.extras.get(key, default)
-
-    def __iter__(self):
-        return iter((*SUMMARY_FIELDS, "stamp", *self.extras))
-
-    def __len__(self) -> int:
-        return len(SUMMARY_FIELDS) + 1 + len(self.extras)
-
-
-SUMMARY_FIELDS = tuple(name for name in Summary.__dataclass_fields__ if name not in ("extras", "damaged", "zip", "stamp"))
-KEYED = frozenset((*SUMMARY_FIELDS, "stamp", "zip", "damaged"))
+SUMMARY_COLUMNS = frozenset(name for name in Summary.__dataclass_fields__ if name != "extras")
 SUMMARY_KEYS = frozenset(("created", "idempotency", "files", "part_of", "draft_of", "plugin"))
 
 

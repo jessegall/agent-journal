@@ -393,7 +393,7 @@ class Shares(ShareVisits, SharePages, Controller):
     def _by_token(self, token: str):
         if not TOKEN.match(token):
             return None
-        found = next((row["n"] for row in self.rows.summaries() if row.get("token") == token), None)
+        found = next((row.n for row in self.rows.summaries() if row.extras.get("token") == token), None)
         return self.load(found) if found else None
 
     def _home(self, share) -> Record:

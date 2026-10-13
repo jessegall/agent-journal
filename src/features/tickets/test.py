@@ -1,4 +1,5 @@
 import time
+from dataclasses import replace
 from controllers.types import Comments, Environments, Todos
 from engine.record import Record
 from controllers.types import Boards
@@ -473,7 +474,7 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     assert (tickets._into_at(wide, "autoscaling", nested), tickets._started_at(wide)["autoscaling"]) == ("feature/activities", ahead), \
         "a nested repository checked out on a feature branch starts the ticket at that checkout's head, never at another branch it also has"
     environments = Environments(record, actor=SYSTEM)
-    stale = [*environments.rows.summaries(), {**environments.rows.summaries()[0], "n": 999, "deleted": 0}]
+    stale = [*environments.rows.summaries(), replace(environments.rows.summaries()[0], n=999, deleted=0)]
     monkeypatch.setattr(environments.rows, "summaries", lambda: stale)
     assert 999 not in [env.n for env in environments.rows.every()], "an environment removed between the listing and the read is left out of the list, never raised as Missing"
 

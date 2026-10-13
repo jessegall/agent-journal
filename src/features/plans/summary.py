@@ -59,5 +59,5 @@ def plan(record, p, todos: dict) -> PlanSummary:
 
 
 def plans_shown(record) -> list[PlanSummary]:
-    todos = {row["n"]: bool(row["completed"]) for row in Todos(record, actor=SYSTEM).rows.summaries() if not row["deleted"]}
+    todos = {row.n: bool(row.completed) for row in Todos(record, actor=SYSTEM).rows.summaries() if not row.deleted}
     return [plan(record, p, todos) for p in Plans(record, actor=SYSTEM).rows.standing() if p.status in SHOWN]

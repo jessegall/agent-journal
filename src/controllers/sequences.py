@@ -9,7 +9,7 @@ from controllers.base import CONTROLLERS, Controller
 from controllers.triggers.controller import Triggers
 from resources.sequences import BY_HAND, RunKey, SEQUENCES, SEQUENCE_STEPS, Sequence
 from resources.triggers import START
-from resources.base import AGENT, SECTION, SYSTEM, Refused
+from resources.base import AGENT, SECTION, SYSTEM, Refused, Summary
 from declaring.registries import SHIPPED
 from controllers.marks import action
 
@@ -201,14 +201,14 @@ class Sequences(Controller):
         handed = {k: v for k, v in run.items() if k != "followed"}
         self.update_run(sequence, key, {**handed, "stepped": time.time()})
 
-    def open_rows(self) -> list[dict]:
+    def open_rows(self) -> list[Summary]:
         return self.rows.standing_summaries()
 
     def _here(self, keys) -> list[str]:
         return [key for key in keys or {} if RunKey.of(key).here(self.record.env)]
 
     def _running_here(self) -> list:
-        return [self.peek(row["n"]) for row in self.open_rows() if self._here(row.get("runs"))]
+        return [self.peek(row.n) for row in self.open_rows() if self._here(row.extras.get("runs"))]
 
     def in_hand(self):
         mine = [(sequence.lasting, sequence.started(key), sequence, key, sequence.runs[key]) for sequence in self._running_here()
@@ -271,8 +271,8 @@ class Sequences(Controller):
 
     def give_up(self, about: str, why: str) -> None:
         for row in self.open_rows():
-            if self._key(about) in (row.get("runs") or {}):
-                self.abandon(row["n"], about=about, why=why)
+            if self._key(about) in (row.extras.get("runs") or {}):
+                self.abandon(row.n, about=about, why=why)
 
     def _mark(self, r, label: str, step: int, why: str = "", about: str | None = None, kind: str = SEQUENCES) -> None:
         if r.dispatch:
@@ -286,7 +286,7 @@ class Sequences(Controller):
         agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p), ref=r.ref, depth=depth, kind=kind)
 
     def _open(self) -> int:
-        return sum(len(self._here(row.get("runs"))) for row in self.open_rows())
+        return sum(len(self._here(row.extras.get("runs"))) for row in self.open_rows())
 
     @staticmethod
     def _flag(key: str) -> str:

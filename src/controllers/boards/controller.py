@@ -90,6 +90,6 @@ class Boards(DraftingBoards, BuildingBoards, RunningBoards, Controller):
 
     def uncovered(self, board) -> list[str]:
         tickets = self._cards(SYSTEM)
-        present = {row["n"] for row in tickets.rows.summaries() if not row["deleted"]}
+        present = {row.n for row in tickets.rows.summaries() if not row.deleted}
         kept = {int(number) for t in board.added.get("tickets") or [] if int(t) in present for number in tickets.load(t).covers if str(number).isdigit()}
         return [clause for number, clause in enumerate(board.done_when, 1) if number not in kept]

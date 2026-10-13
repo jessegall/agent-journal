@@ -137,7 +137,7 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
     INDEXED.clear()
     SUMMARIES.clear()
     from engine.record import Record
-    listed = [row["n"] for row in Todos(Record(record.root, record.env), actor=SYSTEM).rows.summaries()]
+    listed = [row.n for row in Todos(Record(record.root, record.env), actor=SYSTEM).rows.summaries()]
     assert hurt.n not in listed and listed, "a row file that cannot be read is left out of the list, and the rest still list"
     from controllers.stored import DEFER, UNSAVED, WRITTEN, flush_indexes, index_file
     shelf = Todos(Record(record.root, record.env), actor=SYSTEM)
@@ -198,7 +198,7 @@ def test_a_tool_runs_a_face_is_given_once_and_a_to_do_waits_on_another():
             todos.update(kept.n, title="rolled back")
             assert todos.load(kept.n).title == "rolled back", "inside the transaction the change is read"
             raise RuntimeError("the transaction fails")
-    assert (todos.load(kept.n).title, [row["title"] for row in todos.rows.summaries() if row["n"] == kept.n]) == ("kept as it was", ["kept as it was"]), \
+    assert (todos.load(kept.n).title, [row.title for row in todos.rows.summaries() if row.n == kept.n]) == ("kept as it was", ["kept as it was"]), \
         "a transaction that is rolled back leaves nothing of what it wrote in memory, neither the row nor the list of rows"
     mine = Messages(record, actor=USER).create("written by the user", brief="their words")
     agent_messages = Messages(record, actor=AGENT)
@@ -225,17 +225,17 @@ def test_a_row_another_process_changed_or_removed_is_patched_into_the_held_list_
     record = fresh()
     todos = Todos(record, actor=AGENT)
     first, second, third = (todos.create(title) for title in ("one", "two", "three"))
-    assert [row["title"] for row in todos.rows.summaries()] == ["one", "two", "three"], "the list is held once read"
+    assert [row.title for row in todos.rows.summaries()] == ["one", "two", "three"], "the list is held once read"
     kept = todos.rows.summaries()[0]
     changed = todos.load(second.n)
     changed.title = "two, reworded"
     todos.rows.write_file(changed)
     todos.rows._note(second.n)
-    assert [row["title"] for row in todos.rows.summaries()] == ["one", "two, reworded", "three"], "a row written by another process shows its new title"
+    assert [row.title for row in todos.rows.summaries()] == ["one", "two, reworded", "three"], "a row written by another process shows its new title"
     assert todos.rows.summaries()[0] is kept, "a row nobody touched is the very row that was held"
     todos.rows.path(third.n).unlink()
     todos.rows._note(third.n)
-    assert [row["n"] for row in Todos(record, actor=SYSTEM).rows.summaries()] == [first.n, second.n], "a row whose file is gone leaves the list"
+    assert [row.n for row in Todos(record, actor=SYSTEM).rows.summaries()] == [first.n, second.n], "a row whose file is gone leaves the list"
 
 
 def test_a_type_keeps_its_counts_in_step_with_every_row_a_change_touches():

@@ -73,7 +73,7 @@ def test_asking_for_an_update_starts_writing_one_and_the_agent_saying_it_does_no
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
     ship(record)
     sequences = Sequences(record, actor=SYSTEM)
-    writing = next(s for s in sequences.rows.summaries() if s["title"] == "Writing an update")
+    writing = next(s for s in sequences.rows.summaries() if s.title == "Writing an update")
     trigger = next(t for t in Triggers(record, actor=SYSTEM).rows.every() if t.title == "Writing an update")
     assert (trigger.words_in, sequences.load(writing["n"]).starts_on) == ("user", f"trigger:{trigger.n}"), \
         "the sequence starts on its own trigger, which watches only what the user writes"

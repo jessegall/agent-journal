@@ -44,7 +44,7 @@ def counted(record, type_: str) -> int:
     own = COUNTERS.get(type_)
     if own:
         return own(record)
-    return sum(1 for row in CONTROLLERS[type_](record, actor=SYSTEM).rows.standing_summaries() if not row["hidden"] and waiting(type_, row.get("status"), row.get(WHOM)))
+    return sum(1 for row in CONTROLLERS[type_](record, actor=SYSTEM).rows.standing_summaries() if not row.extras["hidden"] and waiting(type_, row.extras.get("status"), row.extras.get(WHOM)))
 
 
 def handed(record, type_: str) -> list:

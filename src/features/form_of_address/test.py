@@ -25,7 +25,7 @@ def choose(record, n: int) -> None:
 
 
 def number_of(record, title: str) -> int:
-    return next(row["n"] for row in Profiles(record, actor=SYSTEM).rows.summaries() if row["title"] == title)
+    return next(row.n for row in Profiles(record, actor=SYSTEM).rows.summaries() if row.title == title)
 
 
 def test_the_start_block_talks_as_the_butler_until_a_profile_is_chosen_and_only_while_the_feature_is_on():
@@ -41,19 +41,19 @@ def test_the_five_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrad
     from controllers.form_of_address.animations import shipped_animations
     record = shipped_record()
     profiles = Profiles(record, actor=USER)
-    assert [row["title"] for row in profiles.rows.summaries()] == [voice.title for voice in SHIPPED], "the five ship as rows"
+    assert [row.title for row in profiles.rows.summaries()] == [voice.title for voice in SHIPPED], "the five ship as rows"
     n = number_of(record, "Homie")
     assert refused(lambda: profiles.update(n, brief="my own")) and refused(lambda: profiles.delete(n)), "a shipped profile cannot be changed or deleted"
     row = Profiles(record, actor=SYSTEM).load(n)
     row.brief = "stale wording"
     Profiles(record, actor=SYSTEM).save(row, "updated")
     assert ship(record) == ["Homie"] and ship(record) == [], "an upgrade puts the shipped wording back, and only that"
-    shipped_art = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).art for row in profiles.rows.summaries()}
+    shipped_art = {row.title: Profiles(record, actor=SYSTEM).load(row.n).art for row in profiles.rows.summaries()}
     assert shipped_art == {"Butler": "butler.webp", "Homie": "homie.webp", "Colleague": "colleague.webp", "Coach": "coach.webp", "Squire": "squire.webp"}, \
         "each shipped profile carries its illustration"
     folder = Path(__file__).resolve().parents[2] / "web" / "public" / "voices"
     assert all(shipped_animations(folder, art) for art in shipped_art.values()), "and the pictures of the voice it names ship with the viewer"
-    held = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).introduction for row in profiles.rows.summaries()}
+    held = {row.title: Profiles(record, actor=SYSTEM).load(row.n).introduction for row in profiles.rows.summaries()}
     assert held == {voice.title: voice.introduction for voice in SHIPPED} and all(held.values()), "each shipped profile introduces itself in its own voice, kept on its row"
     assert profiles.load(profiles.duplicate(n).n).introduction == held["Homie"], "a copy keeps the introduction, which its owner can then rewrite"
     assert all(len(voice.faces()) == 3 for voice in SHIPPED) and Profiles(record, actor=SYSTEM).load(n).emoji == "🤙 😎 🔥", "each voice carries a few emoji of its own on its row"
@@ -112,11 +112,11 @@ def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three()
     from resources.voices import CARTOON, NAMINGS, SPORTING
     assert (copy.naming, [style["label"] for style in profiles.namings()]) == (SPORTING.text, [style.label for style in NAMINGS]), \
         "a copy keeps how the Coach names its agents, and the styles to choose from are offered"
-    named = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).naming for row in profiles.rows.summaries()}
+    named = {row.title: Profiles(record, actor=SYSTEM).load(row.n).naming for row in profiles.rows.summaries()}
     assert ("Dr. Einstein" in named["Butler"], "Big Mike" in named["Homie"], "Ada, reviewer" in named["Colleague"], "Coach Bolt" in named["Coach"]) == \
         (True, True, True, True), "each shipped profile names agents in its own style"
     assert profiles.update(copy.n, naming=CARTOON.text).naming == CARTOON.text, "and a profile of your own names them as you write"
-    agents = {row["title"]: Profiles(record, actor=SYSTEM).load(row["n"]).agent_name for row in profiles.rows.summaries()}
+    agents = {row.title: Profiles(record, actor=SYSTEM).load(row.n).agent_name for row in profiles.rows.summaries()}
     assert ({title: agents[title] for title in ("Butler", "Homie", "Colleague", "Coach")}, copy.agent_name) == \
         ({"Butler": "Alfred", "Homie": "Lil Agent", "Colleague": "Sam", "Coach": "Coach"}, "Coach"), "each profile names the agent its helpers address"
     butler = number_of(record, "Butler")

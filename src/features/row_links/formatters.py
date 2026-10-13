@@ -21,7 +21,7 @@ def environments(record) -> tuple:
     from controllers.types import Environments
     from resources.base import SYSTEM
     rows = Environments(record, actor=SYSTEM).rows.summaries()
-    return ENVIRONMENT_NAMES.get(str(record.home), rows, lambda: tuple(row["title"] for row in rows if not row["deleted"] and row["title"] != record.env))
+    return ENVIRONMENT_NAMES.get(str(record.home), rows, lambda: tuple(row.title for row in rows if not row.deleted and row.title != record.env))
 
 
 def exists(record, env: str | None, name: str, n: int) -> bool:

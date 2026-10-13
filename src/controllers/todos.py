@@ -45,7 +45,7 @@ class Todos(Prioritised, Controller):
         found = []
         for record in Record.every(self.record.root):
             todos = type(self)(record, actor=SYSTEM)
-            found += [(record.env, todos.peek(row["n"])) for row in todos.rows.standing_summaries()]
+            found += [(record.env, todos.peek(row.n)) for row in todos.rows.standing_summaries()]
         return [(env, r) for env, r in found if r.data.get("domain") == domain and r.data.get("role") == role]
 
     def next_in_line(self, domain: str, role: str, n: int) -> list[tuple[str, "types.Todo"]]:
@@ -80,7 +80,7 @@ class Todos(Prioritised, Controller):
     def tasks(self, agent: str) -> list[dict]:
         from controllers.works import Works
         works = {int(w.todo): w for w in Works(self.record, actor=SYSTEM).rows.standing() if w.todo}
-        rows = [self.peek(row["n"]) for row in self.rows.summaries() if row.get("assigned") == agent and not row["deleted"]]
+        rows = [self.peek(row.n) for row in self.rows.summaries() if row.extras.get("assigned") == agent and not row.deleted]
         return [{"n": r.n, "title": r.title, "hidden": bool(r.hidden), "state": task_state(r, works)} for r in rows]
 
     @action
@@ -88,7 +88,7 @@ class Todos(Prioritised, Controller):
         """The files the to-do's work changed and the commits made while it ran, newest work last."""
         from controllers.works import Works
         works = Works(self.record, actor=SYSTEM)
-        own = sorted((works.peek(row["n"]) for row in works.rows.summaries() if row.get("todo") == n and not row["deleted"]), key=lambda w: w.created)
+        own = sorted((works.peek(row.n) for row in works.rows.summaries() if row.extras.get("todo") == n and not row.deleted), key=lambda w: w.created)
         changed = {f[CHANGE.path]: f for w in own for f in w.changed}
         commits = {c[COMMIT.sha]: c for w in own for c in w.commits}
         return Touched(changed=list(changed.values()), commits=list(commits.values()))

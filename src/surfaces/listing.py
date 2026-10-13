@@ -9,7 +9,7 @@ from controllers.types import CONTROLLERS, Environments
 from engine.record import Record
 from resources.fields import Loaded
 from framework.format import KEEP_SHAPED, VIEWER, settled, shaped, worded
-from resources.base import SYSTEM, USER, Refused
+from resources.base import SYSTEM, USER, Refused, Summary
 from overview.counts import counts
 
 LISTED = worded(KEEP_SHAPED)
@@ -130,7 +130,7 @@ class Beneath:
     name: str
     record: Record
     controller: object
-    summaries: list
+    summaries: list[Summary]
 
 
 def beneath(controller, record) -> list[Beneath]:
@@ -149,7 +149,7 @@ def beneath_views(below: list[Beneath]) -> list[dict]:
     views = []
     for one in below:
         for row in one.controller.rows.standing_summaries():
-            view = None if row.get("hidden") else readable(one.controller, one.record, row["n"], row.get("stamp"), settled(one.record))
+            view = None if row.extras.get("hidden") else readable(one.controller, one.record, row.n, row.stamp, settled(one.record))
             if view:
                 views.append({**view, "env": one.name, "ref": f"{one.name}/{view['ref']}"})
     return views
@@ -165,7 +165,7 @@ def listing(controller, record, wanted: Listing, summaries: list | None = None, 
     return {**own, "rows": [*own["rows"], *beneath_views(below)]} if below else own
 
 
-def newest_among(summaries: list, last: int, wanted_row) -> list[dict]:
+def newest_among(summaries: list[Summary], last: int, wanted_row) -> list[Summary]:
     """The newest `last` rows that pass, oldest first, found from the newest end so a long history is never walked through."""
     found, at = [], len(summaries)
     while at and len(found) < last:
@@ -176,17 +176,17 @@ def newest_among(summaries: list, last: int, wanted_row) -> list[dict]:
     return found
 
 
-def newest_listed(controller, wanted: Listing, summaries: list) -> tuple[list[dict], bool]:
+def newest_listed(controller, wanted: Listing, summaries: list[Summary]) -> tuple[list[Summary], bool]:
     """The rows of the usual listing, the newest page and the open rows with it, and whether older rows are left out."""
     last, hidden_listed = wanted.last, controller.resource.hidden_listed
-    listable = lambda row: (hidden_listed or not row.get("hidden")) and row["updated"] > 0
-    is_listed = lambda row: not row["deleted"] and (wanted.completed or not row["completed"]) and listable(row)
+    listable = lambda row: (hidden_listed or not row.extras.get("hidden")) and row.updated > 0
+    is_listed = lambda row: not row.deleted and (wanted.completed or not row.completed) and listable(row)
     standing = controller.rows.standing_summaries()
     open_newest = newest_among(standing, last, listable)
     kept = open_newest
     if wanted.completed:
         open_rows = [row for row in standing if listable(row)] if controller.resource.listed_open else open_newest
-        kept = sorted({row["n"]: row for row in (*open_rows, *newest_among(summaries, last, is_listed))}.values(), key=lambda row: row["n"])
+        kept = sorted({row.n: row for row in (*open_rows, *newest_among(summaries, last, is_listed))}.values(), key=lambda row: row.n)
     every, open_only = controller.rows.counts("listable", summaries)
     return kept, (every if wanted.completed else open_only) > len(kept)
 
@@ -195,17 +195,17 @@ def _listed(controller, record, wanted: Listing, summaries: list, stamp: tuple) 
     since, only, last = wanted.since, wanted.only, wanted.last
     if last and not (since or only or wanted.before or wanted.by_updated or wanted.closed):
         kept, more = newest_listed(controller, wanted, summaries)
-        return {"rows": [view for row in kept if (view := readable(controller, record, row["n"], row.get("stamp"), stamp))], "more": more}
-    rows = [row for row in summaries if (since or only or not row["deleted"]) and (wanted.completed or not row["completed"]) and (not wanted.closed or row["completed"])
-            and (only or controller.resource.hidden_listed or not row.get("hidden"))
-            and (not wanted.before or row["n"] < wanted.before) and row["updated"] > since and (not only or row["n"] in only)]
+        return {"rows": [view for row in kept if (view := readable(controller, record, row.n, row.stamp, stamp))], "more": more}
+    rows = [row for row in summaries if (since or only or not row.deleted) and (wanted.completed or not row.completed) and (not wanted.closed or row.completed)
+            and (only or controller.resource.hidden_listed or not row.extras.get("hidden"))
+            and (not wanted.before or row.n < wanted.before) and row.updated > since and (not only or row.n in only)]
     if wanted.by_updated:
-        rows.sort(key=lambda row: row["updated"])
+        rows.sort(key=lambda row: row.updated)
     kept = rows[-last:] if last else rows
     if wanted.completed and last:
-        standing = [row for row in rows if not row["completed"]][None if controller.resource.listed_open else -last:]
-        kept = sorted({row["n"]: row for row in (*standing, *kept)}.values(), key=lambda row: row["n"])
-    return {"rows": [view for row in kept if (view := readable(controller, record, row["n"], row.get("stamp"), stamp))], "more": len(rows) > len(kept)}
+        standing = [row for row in rows if not row.completed][None if controller.resource.listed_open else -last:]
+        kept = sorted({row.n: row for row in (*standing, *kept)}.values(), key=lambda row: row.n)
+    return {"rows": [view for row in kept if (view := readable(controller, record, row.n, row.stamp, stamp))], "more": len(rows) > len(kept)}
 
 
 def readable(controller, record, n: int, row_stamp, settings: tuple) -> dict | None:

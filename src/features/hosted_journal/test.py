@@ -438,7 +438,7 @@ def test_a_full_disk_refuses_the_write_and_leaves_the_kept_file_whole(hosted, mo
     assert len(rows()) == kept and not [path for path in hosted.record.root.rglob(".*") if path.name.endswith(f".{os.getpid()}.{threading.get_ident()}")]
     low = hosted.call("GET", "/ready")
     assert low.status == 503 and "nearly full" in low.text
-    titles = lambda: [row["title"] for row in Messages(hosted.record, actor=SYSTEM).rows.summaries()]
+    titles = lambda: [row.title for row in Messages(hosted.record, actor=SYSTEM).rows.summaries()]
     monkeypatch.setattr(disk.shutil, "disk_usage", lambda _: shutil._ntuple_diskusage(10**9, 10**9 - 100 * 1024 * 1024, 100 * 1024 * 1024))
     disk.FREE.clear()
     for _ in range(2):

@@ -258,7 +258,7 @@ def post_update_check(req: Request) -> Reply:
 @route("GET", "/api/identity")
 def get_identity(req: Request) -> Reply:
     summaries = Environments(Record(req.root, runtime.env(req.root)), actor=USER).rows.summaries()
-    names = NAMED.get(str(req.root), summaries, lambda: [row["title"] for row in summaries if not row["deleted"]])
+    names = NAMED.get(str(req.root), summaries, lambda: [row.title for row in summaries if not row.deleted])
     return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "build": CODE.name, "pid": os.getpid(), "environments": names})
 
 

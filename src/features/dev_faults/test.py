@@ -451,7 +451,7 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget(caps
         rows_looked_at = [path for path in work.stats if str(record.root) in path and path.endswith((".md", "environments", "index.json"))]
         assert not rows_looked_at, f"a warm dashboard in a watched server reads its folders' and rows' marks from memory; it looked at {rows_looked_at}"
         written = Todos(record, actor=SYSTEM).create("written while watched")
-        assert written.n in [row["n"] for row in Todos(record, actor=SYSTEM).rows.summaries()], "a write of the server's own is read at once, before the next look of the watch loop"
+        assert written.n in [row.n for row in Todos(record, actor=SYSTEM).rows.summaries()], "a write of the server's own is read at once, before the next look of the watch loop"
         todos = Todos(record, actor=SYSTEM)
         elsewhere = todos.load(written.n)
         before = todos.rows.path(written.n).read_text()

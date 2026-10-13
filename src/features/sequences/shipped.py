@@ -218,7 +218,7 @@ def shipped_sequences() -> list[ShippedSequence]:
 def ship(record) -> list[str]:
     sequences = Sequences(record, actor=SYSTEM)
     shipping = shipped_sequences()
-    numbers = {row["title"]: row["n"] for row in sequences.rows.summaries() if not row["deleted"]}
+    numbers = {row.title: row.n for row in sequences.rows.summaries() if not row.deleted}
     retire(sequences, {shipped.title for shipped in shipping})
     for shipped in shipping:
         if shipped.title not in numbers:

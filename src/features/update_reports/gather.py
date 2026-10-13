@@ -28,11 +28,11 @@ def item(section: str, ref: str, title: str, note: str = "") -> Item:
 
 
 def updates(reports: Reports) -> list[dict]:
-    return sorted((s for s in reports.rows.summaries() if s.get("kind") == UPDATE and not s["deleted"]), key=lambda s: s.get("number") or 0)
+    return sorted((s for s in reports.rows.summaries() if s.extras.get("kind") == UPDATE and not s.deleted), key=lambda s: s.extras.get("number") or 0)
 
 
 def opened_until(reports: Reports) -> float:
-    opened = [s for s in updates(reports) if USER in s["seen"] and s["until"] is not None]
+    opened = [s for s in updates(reports) if USER in s.seen and s.extras["until"] is not None]
     return float(opened[-1]["until"]) if opened else 0.0
 
 
@@ -41,20 +41,20 @@ def since(reports: Reports, now: float) -> float:
 
 
 def waiting(record) -> list[dict]:
-    asked = [item(NEED, f"question:{q['n']}", q["title"]) for q in Questions(record, actor=SYSTEM).rows.summaries()
-             if not q["completed"] and not q["deleted"] and not q.get("hidden")]
+    asked = [item(NEED, f"question:{q.n}", q.title) for q in Questions(record, actor=SYSTEM).rows.summaries()
+             if not q.completed and not q.deleted and not q.extras.get("hidden")]
     held = [item(NEED, f"plan:{p.n}", p.title, "Waiting for your approval" if p.status == READY else "Waiting at a checkpoint")
             for p in Plans(record, actor=SYSTEM).rows.standing() if p.status in (READY, WAITING)]
     return asked + held
 
 
 def closed(record, start: float) -> list[dict]:
-    return [item(DONE, f"todo:{t['n']}", t["title"]) for t in Todos(record, actor=SYSTEM).rows.summaries()
-            if t["completed"] >= start and not t["deleted"]]
+    return [item(DONE, f"todo:{t.n}", t.title) for t in Todos(record, actor=SYSTEM).rows.summaries()
+            if t.completed >= start and not t.deleted]
 
 
 def working(record) -> list[dict]:
-    titles = {t["n"]: t["title"] for t in Todos(record, actor=SYSTEM).rows.summaries()}
+    titles = {t.n: t.title for t in Todos(record, actor=SYSTEM).rows.summaries()}
     found = {}
     for w in Works(record, actor=SYSTEM).rows.standing():
         ref = f"todo:{w.todo}" if w.todo in titles else f"work:{w.n}"
@@ -72,9 +72,9 @@ def commits(record, start: float) -> list[dict]:
 
 
 def written(record, start: float) -> list[dict]:
-    docs = [item(ALSO, f"doc:{d['n']}", d["title"]) for d in Docs(record, actor=SYSTEM).rows.summaries() if d["updated"] >= start and not d["deleted"]]
-    reports = [item(ALSO, f"report:{r['n']}", r["title"]) for r in Reports(record, actor=SYSTEM).rows.summaries()
-               if r["updated"] >= start and not r["deleted"] and r.get("kind") != UPDATE]
+    docs = [item(ALSO, f"doc:{d.n}", d.title) for d in Docs(record, actor=SYSTEM).rows.summaries() if d.updated >= start and not d.deleted]
+    reports = [item(ALSO, f"report:{r.n}", r.title) for r in Reports(record, actor=SYSTEM).rows.summaries()
+               if r.updated >= start and not r.deleted and r.extras.get("kind") != UPDATE]
     return docs + reports
 
 

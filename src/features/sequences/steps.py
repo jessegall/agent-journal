@@ -105,7 +105,7 @@ def minutes(value) -> int:
 
 
 def asked_since(context: AgentContext, at: float, about: set) -> bool:
-    return any(not row["completed"] and not row["deleted"] and row["updated"] >= at and about & set(row["refs"])
+    return any(not row.completed and not row.deleted and row.updated >= at and about & set(row.refs)
                for row in context.journal.get(Questions).rows.summaries())
 
 

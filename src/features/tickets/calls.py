@@ -58,7 +58,7 @@ def calls(tickets, ticket) -> list[tuple[str, str, dict, int]]:
     awaits = [("ticket_awaits", f"{w.n}|{w.awaiting}", {"text": w.awaiting}, soon)
               for w in Works(place, actor=SYSTEM).rows.standing() if w.awaiting and waits_on_people(tickets.record.root, w.awaiting)]
     messages = Messages(place, actor=SYSTEM)
-    written = [messages.peek(row["n"]) for row in messages.rows.summaries() if ticket.told and row["seen"][:1] == [AGENT] and row["updated"] > ticket.told and not row["deleted"]]
+    written = [messages.peek(row.n) for row in messages.rows.summaries() if ticket.told and row.seen[:1] == [AGENT] and row.updated > ticket.told and not row.deleted]
     replies = [("ticket_replied", message.ref, {"text": message.title}, 0) for message in written if message.created > ticket.told]
     replies += ended_turns(place, ticket)
     done = [(PLAN_DONE_CALL, f"plan:{ticket.plan}", {}, soon)] if handed_in(tickets, ticket) else []

@@ -416,7 +416,7 @@ class RowStore:
         return self._scanned(lambda folder: sorted(set(self._stamps(folder)) | set(self.packed())))
 
     @final
-    def page(self, where: Callable[[dict], bool], order: Callable[[dict], tuple], after: tuple | None = None, size: int = PAGE) -> Page:
+    def page(self, where: Callable[[Summary], bool], order: Callable[[Summary], tuple], after: tuple | None = None, size: int = PAGE) -> Page:
         """The next `size` rows that pass `where` in `order`, after the key a page before it ended at; the cursor is a key, not a position, so rows written, moved or deleted between two pages shift nothing that was already shown."""
         return paged([row for row in self.summaries() if not row.deleted and where(row)], order, after, size)
 
@@ -448,7 +448,7 @@ class RowStore:
                 return self._patched(folder, moved, held[1], loose, touched)
         return self._summarised(folder, moved, [loose[n] for n in sorted(loose) if not loose[n].damaged])
 
-    def derived(self, name: str, keys_of: Callable[[dict], list]) -> dict:
+    def derived(self, name: str, keys_of: Callable[[Summary], list]) -> dict:
         """The summaries grouped by the keys `keys_of` names for each, kept in step with them: a change takes a row out of its groups and puts it in its new ones, so asking never walks the rows."""
         rows = self.summaries()
         key = (str(self.folder()), name)
@@ -477,7 +477,7 @@ class RowStore:
     @final
     def by(self, field: str, value) -> list[Summary]:
         """The summaries whose field is the value, oldest first; the field is one the summaries carry."""
-        return sorted(self.derived(f"by:{field}", lambda row: [row.get(field)]).get(value, {}).values(), key=listed_order)
+        return sorted(self.derived(f"by:{field}", lambda row: [row.extras.get(field)]).get(value, {}).values(), key=listed_order)
 
     @final
     def unread(self, actor: str) -> list[Summary]:

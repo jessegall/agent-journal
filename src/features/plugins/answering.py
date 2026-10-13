@@ -12,7 +12,7 @@ KEPT_RULES: dict[str, tuple] = {}
 
 def chat_rules(plugins: ReadRows[Plugin]) -> list:
     """The find-and-replace rules the enabled plugins declare for the chat, kept until a plugin row changes."""
-    stamp = tuple((row["n"], row["stamp"]) for row in plugins.rows.summaries())
+    stamp = tuple((row.n, row.stamp) for row in plugins.rows.summaries())
     kept = KEPT_RULES.get(str(plugins.record.home))
     if kept and kept[0] == stamp:
         return kept[1]

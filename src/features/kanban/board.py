@@ -45,8 +45,8 @@ class OpenTodo:
     @classmethod
     def of(cls, row: dict) -> "OpenTodo":
         """A card's to-do from its summary: the board asks only whether a row is held, reported or struck, so those arrive as answers rather than as the fields they are read from."""
-        return cls(row["n"], row["title"], int(row["priority"]), position_of(row["rank"], row["n"]), row["assigned"], row["updated"], row["completed"],
-                   bool(row["pending"]), row["blocked"], bool(row["reported"]), bool(row["struck"]), tuple(row["after"]))
+        return cls(row.n, row.title, int(row.extras["priority"]), position_of(row.extras["rank"], row.n), row.extras["assigned"], row.updated, row.completed,
+                   bool(row.extras["pending"]), row.extras["blocked"], bool(row.extras["reported"]), bool(row.extras["struck"]), tuple(row.extras["after"]))
 
     @property
     def ref(self) -> str:
@@ -89,7 +89,7 @@ def build(journal, done_days: float, plan: int, agent: str, lane: str | None = N
     sources = sources_of(journal)
     works, plans = sources.works, sources.plans
     since = time.time() - float(done_days) * DAY
-    rows = [OpenTodo.of(row) for row in journal.get(Todos).rows.kept_summaries(since, DONE_SHOWN) if not row["hidden"] and (not row["completed"] or not row["struck"])]
+    rows = [OpenTodo.of(row) for row in journal.get(Todos).rows.kept_summaries(since, DONE_SHOWN) if not row.extras["hidden"] and (not row.completed or not row.extras["struck"])]
     if plan:
         placed = next((p for p in plans if p.n == int(plan)), None)
         rows = [t for t in rows if placed and t.ref in placed.refs]

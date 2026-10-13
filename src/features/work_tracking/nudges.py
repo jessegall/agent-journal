@@ -51,7 +51,7 @@ def stopped_with_work(context, agent) -> list[Sent]:
 
 def last_heard_from_the_user(context, agent) -> float:
     """When the person last spoke to this agent: a message they wrote in the viewer or a prompt they typed themselves, never a line the journal typed."""
-    written = [row["created"] for row in Messages(context.record, actor=SYSTEM).rows.summaries() if row["seen"][:1] == [USER] and not row["deleted"]]
+    written = [row.created for row in Messages(context.record, actor=SYSTEM).rows.summaries() if row.seen[:1] == [USER] and not row.deleted]
     return max([float(agent.person_at), *written])
 
 

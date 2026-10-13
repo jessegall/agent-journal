@@ -182,7 +182,7 @@ def waiting(home: Record, phone) -> list[Waiting]:
     found = []
     for kind in WAITED:
         controller = CONTROLLERS[kind](home, actor=SYSTEM)
-        for n in [row["n"] for row in controller.rows.summaries() if not row["deleted"] and not row["completed"]]:
+        for n in [row.n for row in controller.rows.summaries() if not row.deleted and not row.completed]:
             row = controller.load(n)
             if reaches(home, phone, row) and owed(row):
                 found.append(Waiting(ref=row.ref, type=kind, n=row.n, title=row.title, created=row.created))
@@ -222,7 +222,7 @@ def plan_strip(home: Record, plans: Plans, plan) -> PlanStrip:
 
 def marks(home: Record, since: float) -> list[Mark]:
     agents = Agents(home, actor=SYSTEM)
-    rows = [shaped(agents.peek(row["n"]), home, VIEWER) for row in agents.rows.summaries() if not row["deleted"] and row["updated"] >= since]
+    rows = [shaped(agents.peek(row.n), home, VIEWER) for row in agents.rows.summaries() if not row.deleted and row.updated >= since]
     found = [made for row in rows if not row["data"].get("parent") for made in Session.from_view(row).marks()]
     return [made for made in found if made["created"] >= since]
 
@@ -230,7 +230,7 @@ def marks(home: Record, since: float) -> list[Mark]:
 def faces(home: Record, refs: set[str]) -> dict[str, list[dict]]:
     reactions = Reactions(home, actor=SYSTEM)
     found: dict[str, list[dict]] = {}
-    for n in [row["n"] for row in reactions.rows.summaries() if not row["deleted"] and set(row.get("refs", [])) & refs]:
+    for n in [row.n for row in reactions.rows.summaries() if not row.deleted and set(row.refs) & refs]:
         made = reactions.load(n)
         for ref in set(made.refs) & refs:
             found.setdefault(ref, []).append({"face": made.face, "who": made.author})
@@ -239,7 +239,7 @@ def faces(home: Record, refs: set[str]) -> dict[str, list[dict]]:
 
 def latest(home: Record, kind: str, before: float, away: list[str]) -> list:
     rows = POSTED[kind](home, actor=SYSTEM)
-    loaded = (rows.peek(row["n"]) for row in reversed(rows.rows.summaries()) if not row["deleted"])
+    loaded = (rows.peek(row.n) for row in reversed(rows.rows.summaries()) if not row.deleted)
     return list(islice((row for row in loaded if row.created < before and in_feed(kind, row, away)), FEED))[::-1]
 
 

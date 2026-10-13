@@ -21,8 +21,8 @@ SWITCHED_OFF = "Sharing is switched off, so the tunnel stays off."
 
 def open_shares(root: Path) -> list:
     shares = Shares(Record(root, runtime.env(root)), actor=SYSTEM)
-    return [row for row in shares.rows.summaries() if row.get("token") and row.get("approved") and not row["deleted"]
-            and not ended(row["completed"], row.get("expires"))]
+    return [row for row in shares.rows.summaries() if row.extras.get("token") and row.extras.get("approved") and not row.deleted
+            and not ended(row.completed, row.extras.get("expires"))]
 
 
 def links_open(root: Path) -> bool:

@@ -42,8 +42,8 @@ class TicketOrchestration:
 
     def reviewing(self, ticket) -> str:
         from controllers.sequences import Sequences
-        return next((row["title"] for row in Sequences(self.record, actor=SYSTEM).open_rows() if row.get("starts_on") in REVIEW_MOMENTS
-                     and any(RunKey.of(key).about == ticket.ref for key in row.get("runs") or {})), "")
+        return next((row.title for row in Sequences(self.record, actor=SYSTEM).open_rows() if row.extras.get("starts_on") in REVIEW_MOMENTS
+                     and any(RunKey.of(key).about == ticket.ref for key in row.extras.get("runs") or {})), "")
 
     def _as_orchestrator(self, ticket, permission: str, what: str, done: str, why: str) -> None:
         if self.actor != AGENT:

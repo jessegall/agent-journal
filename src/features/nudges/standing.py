@@ -63,7 +63,7 @@ def keep(memory, kept: list[Standing]) -> None:
 
 
 def still_open(nudges) -> set[int]:
-    return {row["n"] for row in nudges.rows.summaries() if not row["completed"] and not row["deleted"]}
+    return {row.n for row in nudges.rows.summaries() if not row.completed and not row.deleted}
 
 
 def close(nudges, closed: list[Standing], how: str) -> None:

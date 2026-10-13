@@ -1,15 +1,15 @@
 from controllers.types import CONTROLLERS, Plugins
 from features.plugins.declared import named
 from framework.parts import ActionInterceptor, Context
-from resources.base import OWNER, PLUGIN, SYSTEM
+from resources.base import PLUGIN, SYSTEM
 
 
 def forgotten(record, name: str) -> None:
     for controller in CONTROLLERS.values():
         rows = controller(record, actor=SYSTEM)
         for row in rows.rows.summaries():
-            if row.get(OWNER) == name and controller.resource.type != "plugin":
-                rows.force_delete(row["n"])
+            if row.plugin == name and controller.resource.type != "plugin":
+                rows.force_delete(row.n)
 
 
 def installed(record, name: str) -> bool:

@@ -78,10 +78,10 @@ class ShareVisits:
     def _shared_comments(self, share, scope: set[str]) -> list[SharedComment]:
         from controllers.comments import Comments
         comments = Comments(self._home(share), actor=SYSTEM)
-        rows = [row for row in comments.rows.summaries() if not row["deleted"]]
+        rows = [row for row in comments.rows.summaries() if not row.deleted]
 
         def about(refs: set[str]) -> list:
-            return [comments.peek(row["n"]) for row in rows if refs.intersection(row["refs"])]
+            return [comments.peek(row.n) for row in rows if refs.intersection(row.refs)]
 
         visitors = [c for c in about(scope) if c.data.get("share") == share.n]
         asked = {c.ref for c in visitors}

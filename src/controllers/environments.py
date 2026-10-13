@@ -184,8 +184,8 @@ class Environments(Controller):
     def sweep(self, n: int, yes: bool = False):
         env = self.load(n)
         record = self._record_of(env)
-        chosen = [(rows, row["n"]) for rows in self._sweepable(record) for row in rows.rows.summaries()
-                  if rows.type in SWEPT or row["completed"] or row["deleted"]]
+        chosen = [(rows, row.n) for rows in self._sweepable(record) for row in rows.rows.summaries()
+                  if rows.type in SWEPT or row.completed or row.deleted]
         counted = Counter(rows.type for rows, _ in chosen)
         summary = ", ".join(plural(count, kind) for kind, count in sorted(counted.items())) or "nothing"
         if not yes:

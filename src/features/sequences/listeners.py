@@ -28,14 +28,14 @@ def starting(sequences: ReadRows[Sequence], elsewhere: ReadElsewhere, moment: st
     """The sequences whose start rule the moment meets."""
     facts = []
     for row in sequences.open_rows():
-        if row.get("starts_on") != moment or (row.get("started_by") and row["started_by"] != event.actor):
+        if row.extras.get("starts_on") != moment or (row.extras.get("started_by") and row.extras["started_by"] != event.actor):
             continue
-        if row.get("only_when_idle") and sequences.in_hand():
+        if row.extras.get("only_when_idle") and sequences.in_hand():
             continue
-        unless = sequences.peek(row["n"]).unless
+        unless = sequences.peek(row.n).unless
         if unless and event.type in CONTROLLERS and matches(elsewhere.here().rows_named(event.type).peek(event.n), unless):
             continue
-        facts.append(SequenceStarts(sequence=row["n"], about=about))
+        facts.append(SequenceStarts(sequence=row.n, about=about))
     return facts
 
 
@@ -58,7 +58,7 @@ class SpotRunOfADeletedRow(Listener[AnyEvent]):
         if event.action != "deleted" or event.type == "sequence":
             return []
         key = RunKey(elsewhere.here().record.env, f"{event.type}:{event.n}").text
-        return [RunEnded(sequence=row["n"], key=key) for row in sequences.open_rows() if key in sequences.peek(row["n"]).runs]
+        return [RunEnded(sequence=row.n, key=key) for row in sequences.open_rows() if key in sequences.peek(row.n).runs]
 
 
 class SpotSequenceChange(Listener[AnyEvent]):
@@ -146,7 +146,7 @@ class SpotQuestionToDispatchAgain(Listener[QuestionCompleted]):
             return []
         facts = []
         for row in sequences.open_rows():
-            sequence = sequences.peek(row["n"])
+            sequence = sequences.peek(row.n)
             if not sequence.dispatch:
                 continue
             for key in sequence.runs:

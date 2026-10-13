@@ -413,8 +413,8 @@ class Tickets(TicketCards, TicketLanding, TicketOrchestration, Prioritised, Cont
                 self.build_approved_plans()
 
     def _proposals(self, ticket) -> list:
-        return [(rows, rows.peek(row["n"])) for rows in (CONTROLLERS[t](self.record, actor=self.actor) for t in HELD)
-                for row in rows.rows.by("proposed_for", ticket.ref) if not row["deleted"]]
+        return [(rows, rows.peek(row.n)) for rows in (CONTROLLERS[t](self.record, actor=self.actor) for t in HELD)
+                for row in rows.rows.by("proposed_for", ticket.ref) if not row.deleted]
 
     def stop_orphaned(self) -> list[str]:
         kept = {row.ref for row in self.rows.every() if not row.deleted}

@@ -257,7 +257,7 @@ class Controller(Files, Links, Discussed, Buttons):
         name = data.get(OWNER)
         if not name:
             return None
-        return next((row for row in self.rows.summaries() if row.get(OWNER) == name and row["title"] == title and not row["deleted"]), None)
+        return next((row for row in self.rows.summaries() if row.plugin == name and row.title == title and not row.deleted), None)
 
     def _field_choices(self, r: Resource) -> dict:
         return {}
@@ -279,7 +279,7 @@ class Controller(Files, Links, Discussed, Buttons):
 
     def lately(self, since: float) -> list[Resource]:
         """The rows written since a moment, newest first and read without copying. A row written lately is near the end of the summaries, so only their tail is walked."""
-        numbers = [row["n"] for row in self.rows.summaries()[-TWIN_WINDOW:] if not row["deleted"] and row["updated"] >= since]
+        numbers = [row.n for row in self.rows.summaries()[-TWIN_WINDOW:] if not row.deleted and row.updated >= since]
         return [self.peek(n) for n in reversed(numbers[-20:])]
 
     def _twin(self, title: str, brief: str, about, idempotency: str = "") -> Resource | None:
@@ -544,12 +544,12 @@ class Controller(Files, Links, Discussed, Buttons):
     @marks.action
     def unread(self, actor: str | None = None) -> list[Resource]:
         who = actor or self.actor
-        return [self.load(row["n"]) for row in self.rows.unread(who)]
+        return [self.load(row.n) for row in self.rows.unread(who)]
 
     @marks.action
     def all(self, deleted: bool = False, completed: bool = False, last: int = LAST) -> list[Resource]:
         if not deleted and int(last) and type(self)._ordered is Controller._ordered:
-            listed = [row["n"] for row in self.rows.summaries() if not row["deleted"] and (not row["completed"] or completed and not row.get(PART_OF))]
+            listed = [row.n for row in self.rows.summaries() if not row.deleted and (not row.completed or completed and not row.part_of)]
             return [self.rows.peek(n) for n in listed[-int(last):]]
         rows = self.rows.every(deleted) if completed or deleted else self.rows.standing()
         rows = rows if completed else [r for r in rows if not r.completed]
@@ -563,7 +563,7 @@ class Controller(Files, Links, Discussed, Buttons):
         want, rows = term.lower(), self.rows.summaries()
         texts = self._texts(archived, rows)
         if not want:
-            hits = (row["n"] for row in reversed(rows) if (archived or not row["deleted"]) and row["n"] in texts)
+            hits = (row.n for row in reversed(rows) if (archived or not row.deleted) and row.n in texts)
             return [self.rows.peek(n) for n, _ in zip(hits, range(LAST))]
         corpus, starts, numbers = self._corpus(texts)
         gone = self._put_away(rows)
@@ -596,7 +596,7 @@ class Controller(Files, Links, Discussed, Buttons):
         held = PUT_AWAY.get(folder)
         if held and held[0] is rows:
             return held[1]
-        PUT_AWAY[folder] = (rows, {row["n"]: row["deleted"] for row in rows})
+        PUT_AWAY[folder] = (rows, {row.n: row.deleted for row in rows})
         return PUT_AWAY[folder][1]
 
     def load(self, n: int | str) -> Resource:
@@ -629,10 +629,10 @@ class Controller(Files, Links, Discussed, Buttons):
         if seen and seen[0] is rows and (seen[1] or not archived):
             return kept
         for row in rows:
-            version = row["stamp"]
-            if row["deleted"] and not archived or kept.get(row["n"], (None,))[0] == version:
+            version = row.stamp
+            if row.deleted and not archived or kept.get(row.n, (None,))[0] == version:
                 continue
-            kept[row["n"]] = (version, searchable(self.rows.reparsed(row["n"])))
+            kept[row.n] = (version, searchable(self.rows.reparsed(row.n)))
             REREAD[folder] = REREAD.get(folder, 0) + 1
         SEARCHED[folder] = (rows, archived or bool(seen and seen[0] is rows and seen[1]))
         return kept
@@ -641,7 +641,7 @@ class Controller(Files, Links, Discussed, Buttons):
     def find(self, name: str) -> Resource:
         if str(name).isdigit():
             return self.load(name)
-        hits = [row["n"] for row in self.rows.summaries() if not row["deleted"] and name.lower() in row["title"].lower()]
+        hits = [row.n for row in self.rows.summaries() if not row.deleted and name.lower() in row.title.lower()]
         if len(hits) != 1:
             raise Refused(f"{'no' if not hits else len(hits)} {noun(len(hits), self.type)} match {name!r}" + ("; say more of the title" if len(hits) > 1 else ""))
         return self.load(hits[0])

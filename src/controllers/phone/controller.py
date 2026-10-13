@@ -65,7 +65,7 @@ class Phones(Controller):
 
     def _summaries(self) -> list[dict]:
         guard = self._guard()
-        return [{**row, **guard.read(row["n"])} for row in self.rows.summaries()]
+        return [{**row.to_disk(), **guard.read(row.n)} for row in self.rows.summaries()]
 
     def _kept(self, n: int, **fields) -> Phone:
         super().update(n, **self._guard().kept(n, fields))
@@ -310,7 +310,7 @@ class Phones(Controller):
     def _live(self) -> list[dict]:
         now = time.time()
         guard = self._guard()
-        return [row for row in ({**row, **guard.read(row["n"])} for row in self.rows.standing_summaries())
+        return [row for row in ({**row.to_disk(), **guard.read(row.n)} for row in self.rows.standing_summaries())
                 if ((row.get("key") and row.get("expires", 0) > now) or row.get("code_until", 0) > now)]
 
 

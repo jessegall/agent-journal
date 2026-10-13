@@ -65,7 +65,7 @@ NAMED_WITHIN = 3600.0
 
 def numbers(here) -> set[int]:
     """The rows a bare number could be naming: those written within the hour before the record's newest row. Recency is read from the record rather than from the wall clock, so it answers the same in a replayed world as in a live one."""
-    written = [(row["n"], row["updated"]) for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT
+    written = [(row.n, row.updated) for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT
                for row in here.rows_named(name).rows.summaries()]
     if not written:
         return set()

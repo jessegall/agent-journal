@@ -33,7 +33,7 @@ def detail(root: Path, name: str) -> Detail:
     waiting = {kind: sum(map(owed, CONTROLLERS[kind](record, actor=SYSTEM).rows.standing())) for kind in WAITED}
     agents = Agents(record, actor=SYSTEM).rows.summaries()
     return Detail(agent=Agents(record, actor=SYSTEM).state(name), doing=queue[-1]["key"] if queue else "", waiting=waiting,
-                  inHand=len(Works(record, actor=SYSTEM).rows.standing()), lastActive=max((row["updated"] for row in agents), default=0.0))
+                  inHand=len(Works(record, actor=SYSTEM).rows.standing()), lastActive=max((row.updated for row in agents), default=0.0))
 
 
 @dataclass(frozen=True)

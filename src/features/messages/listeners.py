@@ -119,5 +119,5 @@ class SpotBareNumbers(Listener[AgentMessageSent]):
             return []
         known = numbers(elsewhere.here())
         named = [str(n) for n in found if n in known]
-        sent = next((m for m in reversed(messages.rows.summaries()) if m["seen"][:1] == [AGENT]), None)
+        sent = next((m for m in reversed(messages.rows.summaries()) if m.seen[:1] == [AGENT]), None)
         return [BareNumbersNamed(agent=event.agent, n=sent["n"], numbers=", ".join(named))] if named and sent else []

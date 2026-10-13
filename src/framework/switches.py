@@ -91,7 +91,7 @@ def environments_moved(record, changed: set[str]) -> None:
 
 
 def standing_environments(record) -> tuple[str, ...]:
-    return tuple(sorted(row["title"] for row in Environments(record, actor=SYSTEM).rows.standing_summaries()))
+    return tuple(sorted(row.title for row in Environments(record, actor=SYSTEM).rows.standing_summaries()))
 
 
 def seen_environments(record) -> None:

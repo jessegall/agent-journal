@@ -21,7 +21,7 @@ class Links:
 
     @action
     def linked_to(self, ref: str) -> list[Resource]:
-        return [self.load(row["n"]) for row in self.rows.linked_to(ref) if not row["deleted"]]
+        return [self.load(row.n) for row in self.rows.linked_to(ref) if not row.deleted]
 
     def is_linked(self, ref: str) -> bool:
         return bool(self.rows.linking().get(ref))

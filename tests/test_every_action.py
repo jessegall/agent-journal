@@ -36,7 +36,7 @@ from engine.transaction import snapshot, undoable
 from resources.text import noun
 from framework.watched import FACTS
 from overview.summary import environment, summarize
-from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, Resource, SYSTEM, USER, overview_weight as weigh
+from resources.base import AGENT, ENVIRONMENT, PROJECT, Refused, Resource, SYSTEM, Summary, USER, overview_weight as weigh
 from resources.pictures import dimensions
 from resources.shapes import normalize_options
 from resources.types import TYPES, EnvironmentKind
@@ -483,10 +483,10 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     rows = shelf.rows.summaries()
     for last, completed in ((2, False), (3, True), (100, True), (100, False)):
         wanted = Listing(only=frozenset(), last=last, completed=completed, closed=False, before=0, since=0.0, by_updated=False)
-        shown = [row for row in rows if not row["deleted"] and (completed or not row["completed"]) and row["updated"] > 0]
-        every = sorted({row["n"]: row for row in (*[r for r in shown if not r["completed"]], *shown[-last:])}.values(), key=lambda row: row["n"]) if completed else shown[-last:]
+        shown = [row for row in rows if not row.deleted and (completed or not row.completed) and row.updated > 0]
+        every = sorted({row.n: row for row in (*[r for r in shown if not r.completed], *shown[-last:])}.values(), key=lambda row: row.n) if completed else shown[-last:]
         kept, more = newest_listed(shelf, wanted, rows)
-        assert ([row["n"] for row in kept], more) == ([row["n"] for row in every], len(shown) > len(every)), \
+        assert ([row.n for row in kept], more) == ([row.n for row in every], len(shown) > len(every)), \
             f"the newest page and the open rows of a listing of {last} rows (completed: {completed}) are what filtering the whole history gives, found from its newest end"
     haystack = docs.create("Haystack", brief="A brief that mentions needleword in passing")
     docs.section(haystack.n, "Details", "Body text with needleword inside")
@@ -700,8 +700,7 @@ def test_a_feature_row_marked_missing_is_found_again_and_a_switch_relayed_from_e
 
 def test_the_overview_counts_only_live_rows_and_splits_a_helper_environment_out():
     features.load()
-    rows = [{"deleted": 0, "completed": 0, "seen": []}, {"deleted": 0, "completed": 0, "seen": [USER]}, {"deleted": 0, "completed": 5, "seen": []},
-            {"deleted": 5, "completed": 0, "seen": []}, {"deleted": 0, "completed": 0, "seen": [], "hidden": True}]
+    rows = [Summary(n=1), Summary(n=2, seen=[USER]), Summary(n=3, completed=5), Summary(n=4, deleted=5), Summary(n=5, extras={"hidden": True})]
     assert tuple(sum(column) for column in zip(*map(weigh, rows))) == (3, 2, 1), "deleted and hidden rows are not counted, closed rows are all but not open, and a seen row is not unread"
     record = fresh()
     todos, messages = (CONTROLLERS[type_](record, actor=SYSTEM) for type_ in ("todo", "message"))
@@ -1082,7 +1081,7 @@ def test_a_field_given_the_wrong_type_is_refused_in_words_and_nothing_is_stored(
 
 def environment_rows(root, env: str) -> dict:
     there = Record(root, env)
-    held = {controller.resource.type: [row["n"] for row in controller(there, actor=SYSTEM).rows.summaries()]
+    held = {controller.resource.type: [row.n for row in controller(there, actor=SYSTEM).rows.summaries()]
             for controller in CONTROLLERS.values() if controller.resource.scope == ENVIRONMENT}
     return {type_: numbers for type_, numbers in held.items() if numbers}
 
@@ -1306,7 +1305,7 @@ def test_every_type_runs_through_its_repository_as_its_contract_says():
                 edited.title = "a title the next read sees"
                 controller.save(edited, "updated")
                 facts["a write is seen by the next read of the row"] = rows.peek(row.n).title == "a title the next read sees"
-                facts["a write is seen by the next read of the summaries"] = [one["title"] for one in rows.summaries() if one["n"] == row.n] == ["a title the next read sees"]
+                facts["a write is seen by the next read of the summaries"] = [one.title for one in rows.summaries() if one.n == row.n] == ["a title the next read sees"]
                 facts["the totals kept equal a sum made from the rows"] = all(rows.counts(counter.name) == stored.summed(counter.weigh, counter.width, rows.summaries()) for counter in resource.counters())
         finally:
             stored.RowStore._parsed = original

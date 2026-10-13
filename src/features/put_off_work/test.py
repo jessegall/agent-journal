@@ -55,7 +55,7 @@ def test_the_totals_of_a_type_are_saved_with_its_index_and_equal_a_fresh_sum_aft
     foreign = Todos(record, actor=SYSTEM)
     foreign.rows.summaries()
     assert (str(folder), "overview") not in stored.COUNTED and kept(foreign) == fresh_sum(foreign), "totals saved with another index than the one standing are not believed, and are made from the rows"
-    assert ([row["n"] for row in foreign.rows.unread("agent")], [row["n"] for row in foreign.rows.by("title", "row 4")]) == ([made[4], made[5]], [made[4]]), "unread and by answer from the indexes"
+    assert ([row.n for row in foreign.rows.unread("agent")], [row.n for row in foreign.rows.by("title", "row 4")]) == ([made[4], made[5]], [made[4]]), "unread and by answer from the indexes"
     stored.forget_folder(folder.parent)
     assert not [key for key in stored.COUNTED if key[0].startswith(str(folder.parent))] and str(folder) not in stored.SUMMARIES, "a folder that is removed lets go of what was held for it"
 
@@ -89,7 +89,7 @@ def test_a_rollback_to_the_previous_build_reads_the_index_this_build_wrote_and_t
     (folder / ".index" / "index.json").write_text(json.dumps(index))
     stored.forget_held()
     returned = Todos(record, actor=SYSTEM)
-    titles = {row["n"]: row["title"] for row in returned.rows.summaries()}
+    titles = {row.n: row.title for row in returned.rows.summaries()}
     assert (titles[made[0]], titles[9]) == ("row 0 by the previous build", "row 9 by the previous build"), \
         "this build, back after the rollback, reads the row the previous build changed and the one it added, whatever index it left"
     fresh_sum = tuple(stored.summed(returned.rows.counter("overview").weigh, 3, returned.rows.summaries()))

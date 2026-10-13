@@ -222,7 +222,7 @@ def test_an_environment_is_named_taken_left_swept_removed_and_brought_back_by_th
     assert "no archived environment 'gone'" in refused(lambda: envs().unarchive("gone")), "bringing back an environment that was never archived is refused"
     Todos(Record(record.root, "beta"), actor=AGENT).create("the ledger bug")
     envs().complete(second.n, yes=True)
-    assert [r["title"] for r in envs().rows.summaries() if not r["deleted"]].count("beta") == 0, "a removed environment is gone from the list"
+    assert [r.title for r in envs().rows.summaries() if not r.deleted].count("beta") == 0, "a removed environment is gone from the list"
     from engine.attic import searched
     assert [(hit.environment, hit.title) for hit in searched(record.root, "LEDGER bug")] == [("beta", "the ledger bug")], \
         "a removed environment's rows are found in the attic, named with the environment that brings them back"

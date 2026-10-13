@@ -76,13 +76,13 @@ class Profiles(Controller):
     @action
     def animations(self) -> dict:
         """Every voice's animations by profile number, found by file name: the sheets it ships with and the ones dropped on it."""
-        return {row.n: self._animations_of(row) for row in (self.peek(row["n"]) for row in self.rows.summaries() if not row["deleted"])}
+        return {row.n: self._animations_of(row) for row in (self.peek(row.n) for row in self.rows.summaries() if not row.deleted)}
 
     @action
     def schedules(self) -> dict:
         """When each voice's mascot plays what, by profile number, with the defaults filled in."""
         return {row.n: Schedule.from_payload(row.animation_schedule, {a["path"] for a in self._animations_of(row)}).view()
-                for row in (self.peek(row["n"]) for row in self.rows.summaries() if not row["deleted"])}
+                for row in (self.peek(row.n) for row in self.rows.summaries() if not row.deleted)}
 
     @action
     def schedule(self, n: int, plan: dict | None = None):
@@ -167,7 +167,7 @@ class Profiles(Controller):
 
     @action
     def samples(self) -> dict:
-        return {r.n: self._sample(r) for r in (self.peek(row["n"]) for row in self.rows.summaries() if not row["deleted"])}
+        return {r.n: self._sample(r) for r in (self.peek(row.n) for row in self.rows.summaries() if not row.deleted)}
 
     def _called(self, calling: Calling, address: str = "") -> str:
         return calling.called(self.user_title(), self.user_first_name(), address)
@@ -188,7 +188,7 @@ class Profiles(Controller):
 
 def ship(record) -> list[str]:
     profiles = Profiles(record, actor=SYSTEM)
-    held = {r.title: r for r in (profiles.load(row["n"]) for row in profiles.rows.summaries() if not row["deleted"]) if r.system}
+    held = {r.title: r for r in (profiles.load(row.n) for row in profiles.rows.summaries() if not row.deleted) if r.system}
     made = []
     for voice in SHIPPED:
         shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample, "introduction": voice.introduction, "humour": voice.humour, "naming": voice.naming, "address": voice.address, "art": voice.art, "emoji": voice.emoji}
