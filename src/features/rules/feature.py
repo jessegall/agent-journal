@@ -25,7 +25,7 @@ class RulesFeature(Feature):
     def register(self, journal: Journal) -> None:
         register_recital(journal, Rules, RuleMentioned, RulesStanding)
         journal.events.handle(RuleCreated, ReviewNewRule(), expects=[
-            Given(made(AGENT), rows=[NEW, AGENT_ROW]) >> Nudged("review"),
+            Given(made(AGENT), rows=[NEW, AGENT_ROW]) >> Nudged("review", n=3, title=NEW.title),
             Given(made(USER), rows=[NEW, AGENT_ROW]) >> Unchanged(),
             Given(made(AGENT), rows=[NEW]) >> Unchanged(),
         ])
