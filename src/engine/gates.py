@@ -3,12 +3,11 @@ from pathlib import Path
 
 from engine import runtime
 from declaring.holds import Hold, Stops
+from resources.cancels import CANCELABLE, DISPATCHING, LONG_COMMAND  # noqa: F401
 from resources.files import start_name
 
 from declaring.registries import STILL_HELD  # noqa: F401
 """Whether a feature still stands by a hold, by the key of the hold or the key every hold of a kind starts with before its own number."""
-DISPATCHING, LONG_COMMAND = "agent.dispatching", "agent.command.long"
-CANCELABLE = (DISPATCHING, LONG_COMMAND)
 
 
 @dataclass(frozen=True)

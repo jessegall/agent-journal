@@ -36,6 +36,6 @@ class Terminal(Feature):
                 >> Remembered("commands", [logged("commands", "Bash", "seq 100", "\n".join([*map(str, range(1, 61)), "… 40 more lines were not kept"]))]),
             Given(CommandRan(agent=1, tool="Bash", command="pwd", output="", at=300.0), rows=[AGENT], remembered={"terminal@claude-1.commands": [logged("commands", "Bash", "ls", "a")]})
                 >> Remembered("commands", [logged("commands", "Bash", "ls", "a"), logged("commands", "Bash", "pwd", "", 300.0)]),
-            Given(CommandRan(agent=1, tool="Bash", command="pwd", output="", at=300.0), rows=[AGENT], remembered={"terminal.commands": EARLIER})
+            Given(CommandRan(agent=1, tool="Bash", command="pwd", output="", at=300.0), rows=[AGENT], remembered={"terminal@claude-1.commands": EARLIER})
                 >> Remembered("commands", [*EARLIER[1:], logged("commands", "Bash", "pwd", "", 300.0)]),
         ])

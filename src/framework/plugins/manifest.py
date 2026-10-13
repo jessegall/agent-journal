@@ -7,7 +7,7 @@ from framework.base import REGISTRY
 from engine.upgrades import newer
 from resources.base import ACTIONS, Refused
 from resources.types import TYPES
-from engine.gates import CANCELABLE
+from resources.cancels import CANCELABLE
 from events.catalogue import CATALOGUE
 from framework.plugins.declared import ASYNC, SYNC, Manifest
 

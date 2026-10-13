@@ -1,6 +1,6 @@
 import re
 
-from engine.gates import DISPATCHING, LONG_COMMAND
+from resources.cancels import DISPATCHING, LONG_COMMAND
 from events.answers import Allowed, Answer, Refused, Rewritten
 from events.asking import AgentDispatching, LongCommandMoving, TextFormatting, ToolCallAsked
 from framework.plugins.declared import declared
