@@ -1,28 +1,14 @@
-import time
-
 import features
-from controllers.types import Agents, Nudges, Works
+from controllers.types import Agents, Nudges
 from features.session_briefing.start import start_block
 from features.work_modes.details import MODES, NAME
 from features.work_modes.modes import choose_board, filing, mode_of, pick, taking
-from features.work_modes.share import share
-from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
-from runner.hooks import handle
 from tests.conftest import fresh, refused
-
-DISPATCH = {"subagent_type": "Explore", "model": "haiku", "description": "Dr. Einstein: find the slow hook"}
-
-
-def called(record, tool: str, given: dict) -> dict:
-    return handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": tool,
-                                                                  "tool_input": given, "cwd": str(record.root.parent)})
 
 
 def mode_nudges(record, words: str) -> list:
     return [n for n in Nudges(record, actor=SYSTEM).all() if words in n.title]
-
-
 def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     features.load()
     record = fresh()
@@ -56,45 +42,6 @@ def test_a_picked_mode_is_kept_told_to_the_agent_and_carried_into_every_start():
     pick(record, "builder", USER)
     assert "You are the builder here" in carried() and "orchestrator here" not in carried(), \
         "and changing the mode rewrites it, so the files never carry the mode before last"
-
-
-def test_solo_refuses_a_subagent_and_a_helper_and_hands_on_lets_both_through():
-    features.load()
-    record = fresh()
-    helper = {"command": 'journal helper dispatch Rhea "a job" --provider codex --model gpt-5.5'}
-    assert called(record, "Agent", DISPATCH) == {}, "builder lets a subagent through"
-    assert "solo" not in called(record, "Bash", helper).get("reason", ""), "builder lets a helper through"
-    pick(record, "solo", USER)
-    agents = record.root.parent / ".claude" / "agents"
-    agents.mkdir(parents=True, exist_ok=True)
-    (agents / "auditor.md").write_text("---\nname: auditor\ntools: Bash, Read, Grep, Glob\n---\n")
-    (agents / "fixer.md").write_text("---\nname: fixer\ntools: Bash, Read, Edit, Write\n---\n")
-
-    def solo_refuses(kind: str) -> bool:
-        return "set this environment to solo" in called(record, "Agent", {**DISPATCH, "subagent_type": kind}).get("reason", "")
-
-    assert (solo_refuses("Explore"), solo_refuses("Plan"), solo_refuses("auditor")) == (False, False, False), \
-        "solo lets a subagent that only reads through: a built-in reader, or an agent file whose tools cannot edit"
-    assert (solo_refuses("general-purpose"), solo_refuses("fixer"), solo_refuses("nobody-knows")) == (True, True, True), \
-        "solo refuses a subagent that can write, and one whose tools it cannot read"
-    assert "set this environment to solo" in called(record, "Bash", helper).get("reason", ""), "solo refuses a helper"
-
-
-def test_orchestrator_reminds_the_agent_after_its_own_edits_and_hands_on_never(monkeypatch):
-    features.load()
-    record = fresh()
-    Agents(record, actor=SYSTEM).create("claude-1")
-    Works(record, actor=AGENT).create("a piece of work")
-    edit = {"file_path": str(record.root.parent / "code.py"), "old_string": "a", "new_string": "b"}
-    for _ in range(9):
-        called(record, "Edit", edit)
-    assert not mode_nudges(record, "orchestrator here"), "builder is never reminded"
-    pick(record, "orchestrator", USER)
-    for _ in range(7):
-        called(record, "Edit", edit)
-    assert not mode_nudges(record, "orchestrator here"), "a few edits of its own are fine"
-    called(record, "Edit", edit)
-    assert mode_nudges(record, "orchestrator here and have made 8 edits"), "the eighth edit brings a gentle reminder"
 
 
 def test_an_upgrade_turns_auto_mode_on_and_renames_the_hands_on_mode():
@@ -136,31 +83,6 @@ def test_the_board_picked_for_new_work_switches_what_the_agent_is_told_to_file()
 
 def ran(at: float, edits: int) -> dict:
     return {"id": f"r{at}", "command": "Edit", "tool": "Edit", "at": at, "done": at, "changed": {"edited": edits}}
-
-
-def test_the_builder_is_told_when_most_of_a_stretch_was_edited_by_its_helpers():
-    features.load()
-    record = fresh()
-    agents = Agents(record, actor=SYSTEM)
-    Works(record, actor=AGENT).create("a piece of work")
-    then = time.time()
-    main = agents.create("claude-1", provider="claude",
-                         subagent_rows=[{"id": "t1", "session": "sub-1", "task": "Lady Lovelace: the sweep", "type": "claude", "running": False}])
-    sub = agents.create("sub-1", provider="claude", parent="claude-1")
-    agents.update(main.n, commands=[ran(then, 3)])
-    agents.update(sub.n, commands=[ran(then + 1, 9)])
-    assert share(record) == (3, 9), "the agent's own edits and its subagents' are counted over the one stretch"
-    edit = {"file_path": str(record.root.parent / "code.py"), "old_string": "a", "new_string": "b"}
-    for _ in range(7):
-        called(record, "Edit", edit)
-    assert not mode_nudges(record, "of the edits in this stretch"), "the share is read every eighth edit of its own, not sooner"
-    called(record, "Edit", edit)
-    assert mode_nudges(record, "25% of the edits in this stretch were your own"), "a quarter of its own is below the share a builder keeps"
-    agents.update(sub.n, commands=[ran(then + 1, 1)])
-    edit_nudge_count = len(mode_nudges(record, "of the edits in this stretch"))
-    for _ in range(8):
-        called(record, "Edit", edit)
-    assert len(mode_nudges(record, "of the edits in this stretch")) == edit_nudge_count, "three of its own against one of theirs is a builder working"
 
 
 def test_the_offer_of_the_next_row_is_worded_by_the_mode_the_agent_is_in():

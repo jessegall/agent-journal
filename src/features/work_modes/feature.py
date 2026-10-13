@@ -1,19 +1,40 @@
+from events.agents import ToolCallAnswered
+from events.answers import Allowed, Refused as Declined
+from events.asking import AgentDispatching, ToolCallAsked
 from events.boards import BoardStarted
-from expects import Given, Kept, Refused, Unchanged, Set
+from events.work_modes import BuilderHandedAway, DriftChecked, EditCounted, OrchestratorDrifted
+from expects import Answered, Dispatches, Given, Nudged, Remembered, Set, Unchanged, nothing
 from framework.base import Feature
 from framework.journal import Journal
 from features.session_briefing.start import MODE, START_PARTS
+from features.work_modes.answering import REFUSED, RefuseDispatchInSolo, RefuseHelperInSolo
 from features.work_modes.details import WorkModesDetails
-from features.work_modes.handlers import OrchestrateWhenABoardStarts
-from features.work_modes.interceptors import REFUSED, NameTheDrift, RefuseDispatchInSolo, RefuseHelperInSolo
+from features.work_modes.handlers import ClearTheCount, CountTheEdit, NameTheBuildersHandingAway, NameTheOrchestratorsDrift, OrchestrateWhenABoardStarts
+from features.work_modes.listeners import SpotEditOutsideTheJournal
 from features.work_modes.modes import carried
 from features.work_modes.routes import post_board, post_mode
 from features.work_modes.shipped import SEQUENCES
-from payload import BashCall, Dispatch
+from resources.types import AgentRow
+
+SOLO = {"work_modes.mode": "solo"}
+BUILDER = {"work_modes.mode": "builder"}
+ORCHESTRATOR = {"work_modes.mode": "orchestrator"}
+HELPER_DISPATCH = 'journal helper dispatch Rhea "a job" --provider codex --model gpt-6-sol'
+EDITED = ToolCallAnswered(agent=1, tool="Edit", input="{}", paths=("/work/a.py",))
+CHANGED = {"edited": 0, "created": 0, "deleted": 0, "added": 0, "removed": 0}
 
 
-HELPER_DISPATCH = BashCall.from_payload("Bash", {"command": 'journal helper dispatch Rhea "a job" --provider codex --model gpt-6-sol'}, {})
-GIT_STATUS = BashCall.from_payload("Bash", {"command": "git status"}, {})
+def shell(command: str, subagent: bool = False) -> ToolCallAsked:
+    return ToolCallAsked(tool="Bash", input=command, command=command, session="claude-1", subagent=subagent)
+
+
+def dispatch(kind: str = "general-purpose", **more) -> AgentDispatching:
+    return AgentDispatching(kind=kind, model="sonnet", model_supported=True, session="claude-1", **more)
+
+
+def editing(*made: int, name: str = "claude-1", **more) -> AgentRow:
+    commands = [{"command": "edit", "tool": "Edit", "at": 100.0 + at, "changed": {**CHANGED, "edited": edited}} for at, edited in enumerate(made)]
+    return AgentRow(n=1 if name == "claude-1" else 2, title=name, data={"commands": commands, **more})
 
 
 class WorkModes(Feature):
@@ -21,24 +42,51 @@ class WorkModes(Feature):
     sequences = SEQUENCES
 
     def register(self, journal: Journal) -> None:
-        journal.events.handler(OrchestrateWhenABoardStarts(), expects=[
-            Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings={"work_modes.mode": "builder"}) >> Set("work_modes.mode", "orchestrator"),
-            Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings={"work_modes.mode": "orchestrator"}) >> Unchanged(),
+        journal.events.handle(BoardStarted, OrchestrateWhenABoardStarts(), expects=[
+            Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings=BUILDER) >> Set("work_modes.mode", "orchestrator"),
+            Given(BoardStarted(n=1, type="board", action="started", actor="agent"), settings=ORCHESTRATOR) >> Unchanged(),
         ])
         journal.routes.add(post_mode)
         journal.routes.add(post_board)
         START_PARTS.add(self, carried, key=MODE)
-        journal.agent.canceler(RefuseDispatchInSolo(), expects=[
-            Given(Dispatch("general-purpose", "sonnet", True), settings={"work_modes.mode": "solo"}) >> Refused(REFUSED),
-            Given(Dispatch("Explore", "haiku", True, read_only=True), settings={"work_modes.mode": "solo"}) >> Kept(),
-            Given(Dispatch("general-purpose", "sonnet", True), settings={"work_modes.mode": "builder"}) >> Kept(),
+        journal.events.answer(AgentDispatching, RefuseDispatchInSolo(), expects=[
+            Given(dispatch(), settings=SOLO) >> Answered(Declined(REFUSED)),
+            Given(dispatch("Explore", read_only=True), settings=SOLO) >> Answered(Allowed()),
+            Given(dispatch(), settings=BUILDER) >> Answered(Allowed()),
+            Given(dispatch(subagent=True), settings=SOLO) >> Answered(Allowed()),
         ])
-        journal.agent.interceptor(RefuseHelperInSolo(), expects=[
-            Given(HELPER_DISPATCH, settings={"work_modes.mode": "solo"}) >> Refused(REFUSED),
-            Given(HELPER_DISPATCH, settings={"work_modes.mode": "builder"}) >> Kept(),
-            Given(GIT_STATUS, settings={"work_modes.mode": "solo"}) >> Kept(),
+        journal.events.answer(ToolCallAsked, RefuseHelperInSolo(), expects=[
+            Given(shell(HELPER_DISPATCH), settings=SOLO) >> Answered(Declined(REFUSED)),
+            Given(shell(HELPER_DISPATCH), settings=BUILDER) >> Answered(Allowed()),
+            Given(shell("git status"), settings=SOLO) >> Answered(Allowed()),
+            Given(shell(HELPER_DISPATCH, subagent=True), settings=SOLO) >> Answered(Allowed()),
+            Given(ToolCallAsked(tool="Edit", input="{}", session="claude-1"), settings=SOLO) >> Answered(Allowed()),
         ])
-        journal.agent.interceptor(NameTheDrift(), expects=[
-            Given(GIT_STATUS, settings={"work_modes.mode": "orchestrator"}) >> Kept(),
-            Given(GIT_STATUS, settings={"work_modes.mode": "solo"}) >> Kept(),
+        journal.events.listen(ToolCallAnswered, SpotEditOutsideTheJournal(), expects=[
+            Given(EDITED, settings=ORCHESTRATOR) >> Dispatches(EditCounted(agent=1, mode="orchestrator", edits=1)),
+            Given(EDITED, settings=ORCHESTRATOR, remembered={"work_modes.edits.orchestrator|1": 6}) >> Dispatches(EditCounted(agent=1, mode="orchestrator", edits=7)),
+            Given(EDITED, settings=ORCHESTRATOR, remembered={"work_modes.edits.orchestrator|1": 7}) >> Dispatches(OrchestratorDrifted(agent=1, mode="orchestrator", edits=8)),
+            Given(EDITED, settings={**BUILDER, "work_modes.drift_after": 2}, rows=[editing(5)], remembered={"work_modes.edits.builder|1": 1})
+                >> Dispatches(DriftChecked(agent=1, mode="builder")),
+            Given(EDITED, settings={**BUILDER, "work_modes.drift_after": 2}, rows=[editing(1, subagent_rows=[{"session": "claude-2"}]), editing(4, name="claude-2", parent="claude-1")],
+                  remembered={"work_modes.edits.builder|1": 1})
+                >> Dispatches(BuilderHandedAway(agent=1, mode="builder", share=20, own=1, theirs=4)),
+            Given(EDITED, settings=SOLO) >> Dispatches(nothing),
+            Given(ToolCallAnswered(agent=1, tool="Read", input="{}", paths=("/work/a.py",)), settings=ORCHESTRATOR) >> Dispatches(nothing),
+            Given(ToolCallAnswered(agent=1, tool="Edit", input="{}", paths=("/work/a.py",), why="held"), settings=ORCHESTRATOR) >> Dispatches(nothing),
+            Given(ToolCallAnswered(agent=1, tool="Edit", input="{}", paths=("/work/a.py",), subagent=True), settings=ORCHESTRATOR) >> Dispatches(nothing),
+        ])
+        journal.events.handle(EditCounted, CountTheEdit(), expects=[
+            Given(EditCounted(agent=1, mode="orchestrator", edits=3), rows=[AgentRow(n=1, title="claude-1")]) >> Remembered("edits.orchestrator|1", 3),
+        ])
+        journal.events.handle(DriftChecked, ClearTheCount(), expects=[
+            Given(DriftChecked(agent=1, mode="builder"), rows=[AgentRow(n=1, title="claude-1")], remembered={"work_modes.edits.builder|1": 8}) >> Remembered("edits.builder|1", 0),
+        ])
+        journal.events.handle(OrchestratorDrifted, NameTheOrchestratorsDrift(), expects=[
+            Given(OrchestratorDrifted(agent=1, mode="orchestrator", edits=8), rows=[AgentRow(n=1, title="claude-1")])
+                >> Nudged("drifted", edits=8) & Remembered("edits.orchestrator|1", 0),
+        ])
+        journal.events.handle(BuilderHandedAway, NameTheBuildersHandingAway(), expects=[
+            Given(BuilderHandedAway(agent=1, mode="builder", share=20, own=1, theirs=4), rows=[AgentRow(n=1, title="claude-1")])
+                >> Nudged("handed away", share=20, own=1, theirs=4) & Remembered("edits.builder|1", 0),
         ])
