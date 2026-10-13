@@ -149,7 +149,7 @@ class SequencesFeature(Feature):
             Given(MOVED, rows=[DISPATCHING, CLAUDE]) >> Dispatches(DISPATCHED.once("1|4|t|board:2|1.0|a new request")) & Dispatches(StepTakenUp(agent=1)),
         ])
         journal.events.handle(StepHeld, HoldTheAgentToTheStep(), expects=[
-            Given(StepHeld(agent=1, sequence=4, title="Cutting a patch release", step=1, about=""), rows=[CLAUDE]) >> Held(HELD_TITLE),
+            Given(StepHeld(agent=1, sequence=4, title="Cutting a patch release", step=1, about=""), rows=[release(), CLAUDE]) >> Held(HELD_TITLE),
         ])
         journal.events.handle(StepToSay, TellTheStep(), expects=[
             Given(StepToSay(agent=1, values=STEP_VALUES), rows=[CLAUDE]) >> Nudged("step", **STEP_VALUES),
