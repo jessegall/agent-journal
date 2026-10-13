@@ -19,3 +19,10 @@ def sessions(root: Path) -> Path:
 
 def session_file(root: Path, session: str, name: str) -> Path:
     return sessions(root) / session / name
+
+
+UPGRADE_MARK = "upgrading"
+
+
+def upgrade_mark(root: Path) -> Path:
+    return folder(root) / UPGRADE_MARK

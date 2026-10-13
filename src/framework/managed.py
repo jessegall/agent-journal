@@ -3,9 +3,9 @@ import json
 import re
 from pathlib import Path
 
-from engine import runtime
 from resources.memo import Memo
-from engine.package import SRC
+from resources.code import SRC
+from resources.places import upgrade_mark
 from payload import journal_hook
 
 MANAGED = "managed-files.json"
@@ -97,7 +97,7 @@ def remember_rewritten(project: Path, root: Path, path: Path) -> None:
 
 def changed_managed(project: Path, root: Path) -> list[Path]:
     target = root / MANAGED
-    if not target.is_file() or runtime.upgrading(root):
+    if not target.is_file() or upgrade_mark(root).is_file():
         return []
     remembered = json.loads(target.read_text())
     changed = {project / name for name, digest in remembered.items()

@@ -1,6 +1,6 @@
 import json
 
-from agents.terminal import OUTPUT_LINES
+from declaring.registries import OUTPUT_LINES
 from controllers.types import Outputs
 from resources.runs import SHELL
 from events.agents import AgentMessageSent, ToolCallAnswered, ToolFinished

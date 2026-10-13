@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from controllers.types import Rules
-from engine.stored import write_text
+from framework.lanes import ProjectFiles
 from resources.text import digest
 from features.journal_laws.laws import carry, laws
 from framework.sending import Sent
@@ -99,7 +99,7 @@ def brief(project: Path, record) -> Briefing:
         want = wanted(had, managed, title, "" if (project / source).resolve() == target else source)
         if want != had:
             held = remembered_unchanged(project, record.root, project / name) if target.is_file() else False
-            write_text(target, mark + want)
+            ProjectFiles(record).write(str(target), mark + want)
             if held:
                 remember_rewritten(project, record.root, project / name)
             written.append(project / name)

@@ -14,6 +14,7 @@ from controllers.environments import Environments
 from controllers.base import CONTROLLERS
 from declaring.trigger import NOTICES
 from engine import triggering
+from engine.stored import write_text
 from engine import project_files, runtime, seats, viewer, worktree
 from engine.developing import developing
 from engine.disk import last_lines
@@ -389,7 +390,7 @@ class ProjectFiles:
     def write(self, path: str, text: str) -> None:
         written = self.record.root.parent / path
         written.parent.mkdir(parents=True, exist_ok=True)
-        written.write_text(text)
+        write_text(written, text)
 
 
 class JournalCommands:

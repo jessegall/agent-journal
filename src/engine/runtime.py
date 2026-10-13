@@ -8,7 +8,7 @@ from pathlib import Path
 
 from engine.git import config_changed_at, git_user_name
 from engine.locks import RUNTIME  # noqa: F401
-from resources.places import folder, profiles, session_file, sessions  # noqa: F401
+from resources.places import UPGRADE_MARK, folder, profiles, session_file, sessions, upgrade_mark  # noqa: F401
 from engine.proc import run
 from engine.stored import read_json, write_json, write_text
 
@@ -311,7 +311,6 @@ def warming(root: Path) -> bool:
     return time.time() - server_started(root) < WARM_UP
 
 
-UPGRADE_MARK = "upgrading"
 UPGRADE_LONGEST = 300
 
 
@@ -356,10 +355,6 @@ class Upgrading:
         if self.is_nobodys:
             return True
         return alive(self.pid) and started_at(self.pid) == self.born
-
-
-def upgrade_mark(root: Path) -> Path:
-    return folder(root) / UPGRADE_MARK
 
 
 def started_at(pid: int) -> float:

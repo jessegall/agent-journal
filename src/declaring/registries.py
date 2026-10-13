@@ -78,3 +78,7 @@ DISPATCH_MODELS = Extension()
 
 BOARD_OF_MESSAGE = Extension()
 """How a message finds the board it belongs to, by the feature that knows boards."""
+
+
+OUTPUT_LINES: list = []
+"""Each a function of the record giving the most lines a command's output keeps for the agent, the largest of them wins."""

@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.ran import SHELL
+from resources.runs import SHELL
 from events.asking import ToolCallAsked
 from controllers.types import Dumps
 from serving import ReadFiles, Settings

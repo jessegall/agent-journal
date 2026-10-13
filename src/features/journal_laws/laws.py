@@ -1,8 +1,9 @@
 import re
 from dataclasses import dataclass, replace
 
-from controllers.form_of_address.address import voice_of
+from controllers.types import Profiles
 from events.asking import AgentDispatching
+from resources.base import SYSTEM
 from resources.voices import BUTLER, Voice
 
 NAMING_LAW = "L5"
@@ -63,7 +64,7 @@ def laws_for(voice: Voice) -> tuple[Law, ...]:
 
 
 def voice_in_use(record=None) -> Voice:
-    return BUTLER if record is None else voice_of(record)
+    return BUTLER if record is None else Profiles(record, actor=SYSTEM).standing()
 
 
 def carry(record=None) -> str:

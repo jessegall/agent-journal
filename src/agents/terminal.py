@@ -27,7 +27,7 @@ LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
 BRIEFED = "Your instructions are in {path}. Read that file first, then carry them out."
 LAUNCH_ARGS: list = []
-OUTPUT_LINES: list = []
+from declaring.registries import OUTPUT_LINES  # noqa: F401
 
 
 @dataclass(frozen=True)
