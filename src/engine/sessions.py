@@ -311,6 +311,10 @@ class Sessions:
     def all(self) -> dict[str, SessionRecord]:
         return self.files.all()
 
+    def is_live(self, session: str) -> bool:
+        """Whether a session still stands as its environment's own: running, and not succeeded by another."""
+        return live(self.read(session))
+
     def ended(self) -> set[str]:
         """The sessions whose process is no longer there."""
         return {name for name, session in self.files.all().items() if not alive(session.pid)}

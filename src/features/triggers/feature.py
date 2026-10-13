@@ -1,4 +1,4 @@
-from engine.gates import STILL_HELD
+from declaring.registries import STILL_HELD
 from events.agents import AgentMessageSent, AgentReported, ClockTicked, ToolCallAnswered
 from events.answers import Allowed, Refused
 from events.asking import ToolCallAsked

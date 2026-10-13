@@ -1,4 +1,3 @@
-from engine.sessions import live
 from events import Fact
 from events.messages import MessageCreated
 from events.starting_agents import WakeRequested
@@ -26,6 +25,6 @@ class SpotMessageToWake(Listener[MessageCreated]):
         if sessions.holder(here.record.env) or place is None or clock.now() - float(place.launched) < LAUNCHING_FOR:
             return []
         last = last_conversation(agents, providers)
-        if last is None or live(sessions.read(last.title)):
+        if last is None or sessions.is_live(last.title):
             return []
         return [WakeRequested(environment=place.title, n=place.n, provider=last.provider, conversation=last.title)]

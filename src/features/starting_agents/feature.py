@@ -8,12 +8,15 @@ from features.starting_agents.handlers import CarryOnTheConversation
 from features.starting_agents.listeners import SpotMessageToWake
 from framework.base import Feature
 from framework.journal import Journal
-from providers import DRIVERS
 from resources.types import AgentRow, Environment, Message
+from serving import SERVED, Providers
 
 NOW = at(1_000.0)
 ON = {"starting_agents.wake_on_message": True}
-START = ("start detached", "t", "codex", tuple(DRIVERS["codex"].AUTO_ARGS), "bea86f27-last")
+
+
+def started() -> tuple:
+    return ("start detached", "t", "codex", tuple(SERVED.given(Providers).driver("codex").AUTO_ARGS), "bea86f27-last")
 
 
 def ended(n: int, title: str, provider: str, when: float, **more) -> AgentRow:
@@ -48,6 +51,6 @@ class StartingAgents(Feature):
                 >> Dispatches(nothing),
         ])
         journal.events.handle(WakeRequested, CarryOnTheConversation(), expects=[
-            Given(WakeRequested(environment="t", n=1, provider="codex", conversation="bea86f27-last"), rows=[Environment(n=1, title="t")], clock=NOW, processes=answering({START: 4242}))
-                >> Ran(START) & Updated(Environment(n=1), launched=1_000.0, launched_agent="codex"),
+            Given(WakeRequested(environment="t", n=1, provider="codex", conversation="bea86f27-last"), rows=[Environment(n=1, title="t")], clock=NOW, processes=answering({started(): 4242}))
+                >> Ran(started()) & Updated(Environment(n=1), launched=1_000.0, launched_agent="codex"),
         ])
