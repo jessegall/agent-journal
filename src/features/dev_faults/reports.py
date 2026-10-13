@@ -21,7 +21,9 @@ SAID = 300
 TOLD_EVERY = 25
 HOLD_AFTER = 20
 RETIRED = "slow"
-BUDGET = {"request": 50, "hook": 50, "command": 50}
+BUDGET = {"request": 50, "write": 150, "hook": 50, "command": 50}
+# a request that changes something takes a lock, writes a row and tells its events, which no read does; it is judged by the write budget
+WRITES = ("POST", "PUT", "PATCH", "DELETE")
 FIRST_RUN_COLD = ("request", "hook")
 WARMED = (*FIRST_RUN_COLD, "command")
 SERVED: set[str] = set()
@@ -54,8 +56,10 @@ class FaultReports:
     def here(self, env: str):
         return self.elsewhere.named(env)
 
-    def milliseconds(self, env: str, kind: str) -> int:
-        return int(self.here(env).settings("dev_faults").get(f"budget.{kind}", BUDGET[kind]))
+    def milliseconds(self, env: str, kind: str, name: str = "") -> int:
+        """The budget of a kind of call; a request that writes has the write budget."""
+        judged = "write" if kind == "request" and name.split(" ", 1)[0] in WRITES else kind
+        return int(self.here(env).settings("dev_faults").get(f"budget.{judged}", BUDGET[judged]))
 
     def file(self, env: str, title: str, brief: str, **data) -> None:
         here = self.here(env)
@@ -85,15 +89,16 @@ class FaultReports:
         return bool(agent) and (agent_uses is None or agent.uses - int(agent_uses) >= TOLD_EVERY)
 
     def slow(self, env: str, kind: str, name: str, took: float, working: float | None = None, garbage: float = 0.0, waiting: float = 0.0,
-             after: float = 0.0, whole_reads: tuple[str, ...] = (), by: str = "", request: int = 0, within: int = 0) -> None:
-        if working is not None and working <= self.milliseconds(env, kind) and waiting <= self.milliseconds(env, kind):
+             after: float = 0.0, whole_reads: tuple[str, ...] = (), *, by: str, request: int = 0, within: int = 0) -> None:
+        budget = self.milliseconds(env, kind, name)
+        if working is not None and working <= budget and (waiting <= budget or load() >= (os.cpu_count() or 1)):
             return
         parts = [f"{working:.0f}ms of it working" if working is not None else "", f"{garbage:.0f}ms collecting garbage" if garbage >= 1 else "",
                  f"{waiting:.0f}ms waiting on locks" if waiting >= 1 else "", f"then {after:.0f}ms more after it answered" if after >= 1 else "",
                  f"it read a whole transcript for {'; '.join(whole_reads)}" if whole_reads else ""]
         spent = ", ".join(part for part in parts if part)
         title = f"{kind} {name} {OVER}"[:80]
-        brief = f"{took:.0f}ms last{f' ({spent})' if spent else ''}, against a budget of {self.milliseconds(env, kind)}ms."
+        brief = f"{took:.0f}ms last{f' ({spent})' if spent else ''}, against a budget of {budget}ms."
         brief += f" Run by the helper in environment {by}." if by else ""
         brief += span_of(request, within)
         brief += f" The machine's load was {load():.1f} on {os.cpu_count()} cores."
@@ -172,7 +177,7 @@ class FaultReports:
             return
         try:
             seen = self.dispatcher(env)
-            budget = self.milliseconds(seen, kind)
+            budget = self.milliseconds(seen, kind, name)
             by = env if seen != env else ""
             here = self.here(seen)
             if here.is_on("dev_faults", "log") and 0 < budget < took:
@@ -206,7 +211,7 @@ class FaultReports:
             return
         STARTED_AT[root] = now
         worked = f", {working:.0f}ms of it working" if working is not None else ""
-        brief = (f"{kind} {name} took {took:.0f}ms{worked}, against a budget of {self.milliseconds(env, kind)}ms of working time. "
+        brief = (f"{kind} {name} took {took:.0f}ms{worked}, against a budget of {self.milliseconds(env, kind, name)}ms of working time. "
                  f"The machine's load was {load():.1f} on {os.cpu_count()} cores: the time went on waiting for the machine, not on the journal's code.")
         self.file(env, STARVED, brief, kind="starved", target=name, worst=took)
 
@@ -248,8 +253,8 @@ class Reporting:
     def send(self, record) -> str:
         return self.over(record).send()
 
-    def milliseconds(self, record, kind: str) -> int:
-        return self.over(record).milliseconds(record.env, kind)
+    def milliseconds(self, record, kind: str, name: str = "") -> int:
+        return self.over(record).milliseconds(record.env, kind, name)
 
     def broken(self, record, title: str, brief: str) -> None:
         self.over(record).broken(record.env, title, brief)

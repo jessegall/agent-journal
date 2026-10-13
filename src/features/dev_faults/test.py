@@ -206,13 +206,13 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     assert [t.title for t in todos.rows.standing()] == [title], "the first breach of a command files a to-do of its own"
     todos.delete(todos.rows.standing()[0].n, "archived while the breach goes on")
     for _ in range(25):
-        reports.slow(record, "command", "message all", 500.0, working=500.0)
+        reports.slow(record, "command", "message all", 500.0, working=500.0, by="")
     assert "before any other write" in held(record, main.title), "a breach seen over and over with no to-do open holds the agent's writes"
     todos.create(title)
     assert "before any other write" not in held(record, main.title), "filing the to-do lifts the hold"
     todos.complete(todos.rows.standing()[0].n, "measured under the budget")
     assert Notifications(record, actor=SYSTEM).rows.by_title(title).data["times"] == 0, "closing the to-do starts the count of that title again"
-    reports.slow(record, "command", "message all", 500.0, working=500.0)
+    reports.slow(record, "command", "message all", 500.0, working=500.0, by="")
     assert [t.title for t in todos.rows.standing()] == [title] and "before any other write" not in held(record, main.title), \
         "and the next breach files a fresh to-do instead of holding the writes"
     from controllers.types import Agents
@@ -250,6 +250,9 @@ def test_the_budget_is_tunable_per_environment(monkeypatch):
         busy(0.08)
     assert notified(record) == [], "a budget of 0 drops that budget"
     assert DevFaults().reports.milliseconds(record, "command") == 50
+    assert (DevFaults().reports.milliseconds(record, "request", "GET /api/main/todo"), DevFaults().reports.milliseconds(record, "request", "POST /api/run (todo create)")) == \
+        (DevFaults().reports.milliseconds(record, "request"), 150), \
+        "a request that writes is judged by the write budget, a read by the request budget"
 
 
 def test_what_the_viewer_throws_is_filed_under_the_same_switch(monkeypatch):

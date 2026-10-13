@@ -28,8 +28,10 @@ class DevFaultsDetails(FeatureDetails):
         to the agent-journal session, which is where the journal is built.
 
         budget: everything here runs on one machine against files, so anything over the budget
-        is a bug — faults.budget.request, .hook and .command are milliseconds per environment,
-        50 by default, and 0 drops that budget. console: the viewer posts what it throws and it
+        is a bug — faults.budget.request, .write, .hook and .command are milliseconds per
+        environment, 50 by default and 150 for a request that writes, and 0 drops that budget. A
+        request that worked within its budget on a machine busier than it has cores is not filed:
+        the load explains the wait. console: the viewer posts what it throws and it
         is filed the same way. One notification per target, carrying the worst time or the last
         words and how many times it happened.
     """
