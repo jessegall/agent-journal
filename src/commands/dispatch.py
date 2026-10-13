@@ -8,14 +8,13 @@ from engine.timing import EVENT, Sampler, Stopwatch, profiler, request_began, re
 from controllers.faults import threw
 from engine.disk import DiskFull
 from resources.base import Missing, Refused
-from engine.package import data
+from resources.code import WEB
 from framework.phone.allow_list import PhoneVisit, Reach, reached
 from framework.format import rendered
 from framework.routing import Reply, Request, resolve
 from engine.paths import contained, known_environment
 
 
-WEB = data("web", "dist")
 HOOK_PATH = "/api/hook/"
 
 def reached_by_phone(root: Path, method: str, path: str, query: dict, body: dict, visit: PhoneVisit) -> Reach:

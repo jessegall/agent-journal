@@ -4,7 +4,6 @@ import {api} from "../api/client.js";
 import {isAct, isBlink, placeOf, placedAt} from "../domain/mascots.js";
 import {store} from "../state/store.js";
 import {animations, loadAnimations, scheduleOf, urlOf} from "./voiceAnimations.js";
-import {voiceOfArt} from "./voiceRigs.js";
 
 export const profiles = ref([]);
 export const profilesLoaded = ref(false);
@@ -23,22 +22,22 @@ export const standing = computed(() => profiles.value.find((row) => row.n === pr
 
 export const person = computed(() => `${form().title}|${form().first_name}`);
 
-export const voiceOf = (row) => voiceOfArt(row.data.art);
+export const voiceOf = (row) => row.data.voice;
 
 export const mascotOn = computed(() => Boolean(store.settings?.features?.avatar));
 
 export const mascotOf = computed(() => {
     const row = standing.value;
-    if (!mascotOn.value || !row?.data.art) return null;
+    if (!mascotOn.value || !row?.data.voice) return null;
     const all = animations.value[row.n] || [];
     const sheet = (animation) => ({url: urlOf(row.n, animation), edit: animation.edit, path: animation.path});
     const blink = all.find(isBlink);
     return {
-        voice: voiceOfArt(row.data.art),
+        voice: row.data.voice,
         blink: blink ? sheet(blink) : null,
         acts: all.filter(isAct).map(sheet),
         schedule: scheduleOf(row.n),
-        place: placedAt(placeOf(row.data.art), scheduleOf(row.n).place),
+        place: placedAt(placeOf(row.data.voice), scheduleOf(row.n).place),
     };
 });
 

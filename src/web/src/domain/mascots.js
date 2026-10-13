@@ -73,7 +73,7 @@ export function strollOf({boxWidth, at, ms, random = Math.random}) {
     return {to, toward: to > at ? "left" : "right"};
 }
 
-export const placeOf = (art) => PLACES[art.replace(/\.\w+$/, "")] ?? STILL;
+export const placeOf = (voice) => PLACES[voice] ?? STILL;
 
 // A place moved right and down by the spot a voice saved, in pixels of its 256 px cell.
 export const placedAt = (place, spot) => ({...place, edge: place.edge - (spot?.x || 0), line: place.line - (spot?.y || 0)});

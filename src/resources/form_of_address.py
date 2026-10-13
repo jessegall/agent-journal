@@ -13,7 +13,7 @@ class Profile(Shape, Resource):
         Field(default="", name="naming"),
         Field(default="", name="agent_name"),
         Field(default="", name="address"),
-        Field(default="", name="art"),
+        Field(default="", name="voice"),
         Field(default="", name="emoji"),
         Field(FLAG, False, name="system"),
         Field(default=dict, name="animation_schedule"),

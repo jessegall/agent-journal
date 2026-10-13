@@ -8,14 +8,15 @@ from declaring.registries import SETTINGS_CHANGED
 from controllers.marks import action
 from engine import runtime
 from controllers.form_of_address.anchoring import Region, anchored, silhouettes
-from controllers.form_of_address.animations import FRAME, OFFSETS, Animation, Schedule, Tuning, offsets_document, offsets_name, shipped_animations, tuning_of, unpacked, voice_of
+from resources.code import WEB
+from controllers.form_of_address.animations import FRAME, OFFSETS, Animation, Schedule, Tuning, offsets_document, offsets_name, shipped_animations, tuning_of, unpacked
 from resources.form_of_address import Profile
 from resources.voices import PLAIN_WORDS, BUTLER, NAMINGS, SCIENTISTS, SHIPPED, Calling, Voice, filled
 from resources.base import SYSTEM, Refused
 from resources.pictures import dimensions
 
 COPY = " (my copy)"
-SHAPE = ("brief", "calling", "sample", "introduction", "humour", "naming", "address", "art", "emoji")
+SHAPE = ("brief", "calling", "sample", "introduction", "humour", "naming", "address", "voice", "emoji")
 
 
 class Profiles(Controller):
@@ -37,7 +38,7 @@ class Profiles(Controller):
     def voice(self, n: int) -> Voice:
         r = self.rows.peek(n)
         return Voice(title=r.title, text=r.brief, calling=Calling(r.calling), sample=r.sample, introduction=r.introduction, humour=r.humour, naming=r.naming,
-                     agent_name=r.agent_name, address=r.address, art=r.art, emoji=r.emoji)
+                     agent_name=r.agent_name, address=r.address, voice=r.voice, emoji=r.emoji)
 
     def how_to_talk(self) -> str:
         """The line that tells an agent how the user wants it to talk, in their own words."""
@@ -78,7 +79,7 @@ class Profiles(Controller):
     def duplicate(self, n: int):
         row = self.load(n)
         return self.create(f"{row.title}{COPY}", brief=row.brief, calling=row.calling, sample=self._sample(row), introduction=row.introduction, humour=row.humour, naming=row.naming,
-                           agent_name=row.agent_name, address=row.address, art=row.art, emoji=row.emoji)
+                           agent_name=row.agent_name, address=row.address, voice=row.voice, emoji=row.emoji)
 
     @action
     def animations(self) -> dict:
@@ -99,15 +100,13 @@ class Profiles(Controller):
         return self.update(n, animation_schedule=Schedule.from_payload(plan, known).view() if plan else {})
 
     def _animations_of(self, row) -> list[dict]:
-        from commands.dispatch import WEB
-        shipped = shipped_animations(WEB / "voices", row.art)
-        dropped = [a for a in (Animation.of(name, voice_of(row.art)) for name in row.files) if a]
+        shipped = shipped_animations(WEB / "voices", row.voice)
+        dropped = [a for a in (Animation.of(name, row.voice) for name in row.files) if a]
         return [{**animation.view(), "edit": tuning_of(self._offsets_of(row, animation) or {}), "edited": offsets_name(animation.file) in row.files}
                 for animation in [*shipped, *dropped]]
 
     def _offsets_of(self, row, animation: Animation) -> dict | None:
         """The offsets file of an animation: the one saved with the voice, else the one it was delivered with."""
-        from commands.dispatch import WEB
         name = offsets_name(animation.file)
         kept = self.folder(row.n) / name if name in row.files else None
         delivered = WEB / "voices" / Path(animation.file).parent / name if animation.shipped else None
@@ -115,13 +114,12 @@ class Profiles(Controller):
         return json.loads(found.read_text()) if found else None
 
     def _animation_at(self, row, path: str) -> Animation:
-        found = next((a for a in (Animation.of(item["file"], voice_of(row.art), item["shipped"]) for item in self._animations_of(row)) if a and a.file == path), None)
+        found = next((a for a in (Animation.of(item["file"], row.voice, item["shipped"]) for item in self._animations_of(row)) if a and a.file == path), None)
         if found is None:
             raise Refused(f"{row.title} has no animation {path}")
         return found
 
     def _sheet_of(self, row, animation: Animation) -> Path:
-        from commands.dispatch import WEB
         return WEB / "voices" / animation.file if animation.shipped else self.folder(row.n) / animation.file
 
     @action
@@ -135,14 +133,13 @@ class Profiles(Controller):
     @action
     def tune(self, n: int, path: str, edit: dict | None = None):
         """Saves how one animation of a voice is shown as its offsets file, offset_x and offset_y per frame and the optional frame_ms and duration_ms, beside the voice; with no edit it goes back to the delivered file."""
-        from commands.dispatch import WEB
         row = self.load(n)
         animation = self._animation_at(row, path)
         name = offsets_name(animation.file)
         if not edit:
             return self.detach(n, name, "back to the delivered offsets") if name in row.files else row
         size = dimensions(self._sheet_of(row, animation)) or (FRAME, FRAME)
-        document = offsets_document(animation, Tuning.from_payload(edit), self._offsets_of(row, animation), size, voice_of(row.art))
+        document = offsets_document(animation, Tuning.from_payload(edit), self._offsets_of(row, animation), size, row.voice)
         with tempfile.TemporaryDirectory() as folder:
             written = Path(folder) / name
             written.write_text(json.dumps(document, indent=2) + "\n")
@@ -160,7 +157,7 @@ class Profiles(Controller):
             if not isinstance(json.loads(source.read_text()).get("frames"), list):
                 raise Refused(f"{source.name} is not an offsets file: it lists its frames with offset_x and offset_y")
             return super().attach(n, path, description)
-        if not Animation.of(source.name, voice_of(self.load(n).art)):
+        if not Animation.of(source.name, self.load(n).voice):
             raise Refused(f"{source.name} is not an animation: name it <kind>_<name>.png, such as idle_wave.png, or drop a ZIP of them")
         return super().attach(n, path, description)
 
@@ -198,7 +195,7 @@ def ship(record) -> list[str]:
     held = {r.title: r for r in (profiles.load(row.n) for row in profiles.rows.summaries() if not row.deleted) if r.system}
     made = []
     for voice in SHIPPED:
-        shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample, "introduction": voice.introduction, "humour": voice.humour, "naming": voice.naming, "address": voice.address, "art": voice.art, "emoji": voice.emoji}
+        shape = {"brief": voice.text, "calling": voice.calling.value, "sample": voice.sample, "introduction": voice.introduction, "humour": voice.humour, "naming": voice.naming, "address": voice.address, "voice": voice.voice, "emoji": voice.emoji}
         if voice.title not in held:
             profiles.create(voice.title, **shape, agent_name=voice.agent_name, system=True)
         elif {name: getattr(held[voice.title], name) for name in SHAPE} != shape:

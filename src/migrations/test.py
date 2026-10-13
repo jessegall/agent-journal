@@ -60,3 +60,18 @@ def test_a_new_record_is_taken_whole():
     features.load()
     record = fresh()
     assert run(record.root) == "the record is in version 3's shape already"
+
+
+def test_a_profile_that_named_a_picture_names_its_voice():
+    from controllers.types import Profiles
+    from resources.base import SYSTEM
+    features.load()
+    record = fresh()
+    profiles = Profiles(record, actor=SYSTEM)
+    made = profiles.create("Old coach", brief="x", sample="y")
+    profile = profiles.load(made.n)
+    profile.data.pop("voice", None)
+    profile.data["art"] = "coach.webp"
+    profiles.save(profile, "updated", fields=["art"])
+    assert run(record.root) == "1 profile now named by voice"
+    assert (profiles.load(made.n).voice, "art" in profiles.load(made.n).data) == ("coach", False), "the picture's file becomes the voice it was read for"

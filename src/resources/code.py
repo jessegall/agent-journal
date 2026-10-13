@@ -14,5 +14,9 @@ def data(*parts: str) -> Path:
     return DATA.joinpath(*parts)
 
 
+WEB = data("web", "dist")
+"""The built viewer, which the server serves and the voices' pictures ship in."""
+
+
 def entry(module: str) -> list[str]:
     return [sys.executable, str(CODE.with_name(ARCHIVE) if ZIPPED else CODE), "-m", module]

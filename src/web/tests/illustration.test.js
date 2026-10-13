@@ -8,7 +8,7 @@ const shown = (component, props) => drawn(component, props, () => "a sample line
 
 describe("the picture of a voice", () => {
     test("is the flat artwork of the voice named by the profile, and a profile without one names none", async () => {
-        expect([voiceOf({data: {art: "squire.webp"}}), voiceOf({data: {art: ""}})]).toEqual(["squire", ""]);
+        expect([voiceOf({data: {voice: "squire"}}), voiceOf({data: {voice: ""}})]).toEqual(["squire", ""]);
         const picture = await shown(Illustration, {src: "/voices/squire.webp", size: 56});
         const none = await shown(Illustration, {src: ""});
         expect([picture.querySelector("img").getAttribute("src"), picture.querySelector("img").getAttribute("width"), none.querySelector("img")]).toEqual(["/voices/squire.webp", "56", null]);

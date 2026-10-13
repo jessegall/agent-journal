@@ -19,7 +19,7 @@ import {
 } from "../domain/mascots.js";
 import {animations, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
 import {mascotOf, profiles} from "../composables/profiles.js";
-import {loadPictures, loadRig, rigs, voiceOfArt} from "../composables/voiceRigs.js";
+import {loadPictures, loadRig, rigs} from "../composables/voiceRigs.js";
 import RigPlayer from "../kit/RigPlayer.vue";
 import SpritePlayer from "../kit/SpritePlayer.vue";
 
@@ -76,7 +76,7 @@ const steps = computed(() =>
         (animations.value[row.n] || []).map((animation) => ({
             url: urlOf(row.n, animation),
             edit: animation.edit,
-            place: placedAt(placeOf(row.data.art || ""), scheduleOf(row.n).place),
+            place: placedAt(placeOf(row.data.voice), scheduleOf(row.n).place),
             label: `${row.title.toLowerCase()} \u00b7 ${animationLabel(animation)}`,
         }))
     )
@@ -150,10 +150,10 @@ const passageOf = (name) => rigged.value?.moves.find((each) => each.name === nam
 
 const rigSteps = computed(() =>
     profiles.value.flatMap((row) => {
-        const voice = voiceOfArt(row.data.art);
+        const voice = row.data.voice;
         const found = rigs.value[voice];
         if (!found) return [];
-        const place = placedAt(placeOf(row.data.art || ""), scheduleOf(row.n).place);
+        const place = placedAt(placeOf(row.data.voice), scheduleOf(row.n).place);
         return found.moves.map((each) => ({
             voice,
             rig: found.rig,
@@ -275,7 +275,7 @@ watch(
     {immediate: true}
 );
 if (showcase) {
-    watch(profiles, (rows) => rows.forEach((row) => loadRig(voiceOfArt(row.data.art))), {immediate: true});
+    watch(profiles, (rows) => rows.forEach((row) => loadRig(row.data.voice)), {immediate: true});
     watch(rigSteps, () => rigStaged.value || showNextMove(), {immediate: true});
 }
 onUnmounted(rest);

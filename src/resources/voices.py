@@ -61,12 +61,13 @@ class Voice:
     text: str
     calling: Calling
     sample: str
+    voice: str
+    """The name the voice's pictures and rig are filed under."""
     introduction: str = ""
     humour: str = ""
     naming: str = SCIENTISTS.text
     agent_name: str = "Sam"
     address: str = ""
-    art: str = ""
     emoji: str = ""
 
     def faces(self) -> tuple[str, ...]:
@@ -90,7 +91,7 @@ BUTLER = Voice(
             "who has seen it all, then put the matter right."),
     naming=HISTORICAL.text,
     agent_name="Alfred",
-    art="butler.webp",
+    voice="butler",
     emoji="🎩 🧐 🥂",
 )
 
@@ -105,7 +106,7 @@ HOMIE = Voice(
             "talk, like a homie would, then fix it."),
     naming=STREET.text,
     agent_name="Lil Agent",
-    art="homie.webp",
+    voice="homie",
     emoji="🤙 😎 🔥",
 )
 
@@ -120,7 +121,7 @@ COLLEAGUE = Voice(
             "then get back to the work."),
     naming=PLAIN.text,
     agent_name="Sam",
-    art="colleague.webp",
+    voice="colleague",
     emoji="👍 👀 🙏",
 )
 
@@ -136,7 +137,7 @@ COACH = Voice(
             "answer with one calm line that says what you will fix, then fix it."),
     naming=SPORTING.text,
     agent_name="Coach",
-    art="coach.webp",
+    voice="coach",
     emoji="🎉 💪 🏆",
 )
 
@@ -154,7 +155,7 @@ SQUIRE = Voice(
             "on the chin and vows to do better, then set it right."),
     naming=KNIGHTLY.text,
     agent_name="Squire",
-    art="squire.webp",
+    voice="squire",
     emoji="⚔️ 🛡️ 🏰",
 )
 

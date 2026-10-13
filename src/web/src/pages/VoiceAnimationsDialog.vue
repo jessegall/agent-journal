@@ -2,7 +2,7 @@
 import {computed, ref, watch} from "vue";
 import {groupedByKind, isAct, placeOf, placedAt} from "../domain/mascots.js";
 import {anchorOf, animations, dropAnimations, saveEdit, saveSchedule, scheduleOf, urlOf} from "../composables/voiceAnimations.js";
-import {loadRig, rigs, voiceOfArt} from "../composables/voiceRigs.js";
+import {loadRig, rigs} from "../composables/voiceRigs.js";
 import RigPlayer from "../kit/RigPlayer.vue";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
@@ -20,7 +20,7 @@ defineEmits(["close"]);
 const EMPTY = {ms: 0, frames: []};
 const copy = (value) => JSON.parse(JSON.stringify(value));
 
-const voice = voiceOfArt(props.row.data.art);
+const voice = props.row.data.voice;
 const rigged = computed(() => rigs.value[voice] || null);
 const rigMoves = computed(() => (rigged.value ? [...rigged.value.moves, ...(rigged.value.blink ? [rigged.value.blink] : [])] : []));
 const moveName = ref("");
@@ -45,7 +45,7 @@ const anchorNote = ref("");
 const saved = computed(() => chosen.value?.edit || EMPTY);
 const edited = computed(() => JSON.stringify(draft.value) !== JSON.stringify(saved.value));
 const planned = computed(() => JSON.stringify(plan.value) !== JSON.stringify(scheduleOf(props.row.n)));
-const place = computed(() => placedAt(placeOf(props.row.data.art || ""), plan.value.place));
+const place = computed(() => placedAt(placeOf(props.row.data.voice), plan.value.place));
 
 function pick(animation) {
     path.value = animation.path;
@@ -76,7 +76,7 @@ async function run(work) {
     }
 }
 
-const anchoring = computed(() => placeOf(props.row.data.art || ""));
+const anchoring = computed(() => placeOf(props.row.data.voice));
 const anchorFrames = () =>
     run(async () => {
         const found = await anchorOf(props.row, chosen.value, anchoring.value);

@@ -84,7 +84,7 @@ class Gap:
 
 @dataclass(frozen=True)
 class Spot:
-    """How far a voice's mascot is moved from where its art puts it on the chat box, in pixels of its 256 px cell: right and down."""
+    """How far a voice's mascot is moved from where its picture puts it on the chat box, in pixels of its 256 px cell: right and down."""
     x: int = 0
     y: int = 0
 
@@ -152,13 +152,8 @@ def offsets_document(animation: Animation, tuning: Tuning, base: dict | None, si
     return {**document, **({"frame_ms": tuning.ms} if tuning.ms else {}), "frames": frames}
 
 
-def voice_of(art: str) -> str:
-    return Path(art).stem.lower()
-
-
-def shipped_animations(voices: Path, art: str) -> list[Animation]:
+def shipped_animations(voices: Path, voice: str) -> list[Animation]:
     """The animations a voice ships with, found by file name in the newest folder that holds any: a subfolder before the voices folder itself."""
-    voice = voice_of(art)
     if not voice or not voices.is_dir():
         return []
     sheets = (p for p in voices.rglob("*") if p.is_dir() and RIGS not in p.relative_to(voices).parts)

@@ -22,11 +22,6 @@ export const picturesOf = (rig) => [...new Set(rig.layers.flatMap((layer) => [la
 // Each voice's cut-out rig and its keyframed moves, by voice name, loaded once.
 export const rigs = ref({});
 
-export const voiceOfArt = (art) =>
-    (art || "")
-        .split("/")
-        .pop()
-        .replace(/\.[^.]+$/, "");
 
 export async function loadRig(voice) {
     if (!voice || rigs.value[voice]) return rigs.value[voice];

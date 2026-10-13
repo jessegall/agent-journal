@@ -48,11 +48,11 @@ def test_the_five_shipped_profiles_are_rows_that_cannot_be_changed_and_an_upgrad
     row.brief = "stale wording"
     Profiles(record, actor=SYSTEM).save(row, "updated")
     assert ship(record) == ["Homie"] and ship(record) == [], "an upgrade puts the shipped wording back, and only that"
-    shipped_art = {row.title: Profiles(record, actor=SYSTEM).load(row.n).art for row in profiles.rows.summaries()}
-    assert shipped_art == {"Butler": "butler.webp", "Homie": "homie.webp", "Colleague": "colleague.webp", "Coach": "coach.webp", "Squire": "squire.webp"}, \
+    shipped_voices = {row.title: Profiles(record, actor=SYSTEM).load(row.n).voice for row in profiles.rows.summaries()}
+    assert shipped_voices == {"Butler": "butler", "Homie": "homie", "Colleague": "colleague", "Coach": "coach", "Squire": "squire"}, \
         "each shipped profile carries its illustration"
     folder = Path(__file__).resolve().parents[2] / "web" / "public" / "voices"
-    assert all(shipped_animations(folder, art) for art in shipped_art.values()), "and the pictures of the voice it names ship with the viewer"
+    assert all(shipped_animations(folder, voice) for voice in shipped_voices.values()), "and the pictures of the voice it names ship with the viewer"
     held = {row.title: Profiles(record, actor=SYSTEM).load(row.n).introduction for row in profiles.rows.summaries()}
     assert held == {voice.title: voice.introduction for voice in SHIPPED} and all(held.values()), "each shipped profile introduces itself in its own voice, kept on its row"
     assert profiles.load(profiles.duplicate(n).n).introduction == held["Homie"], "a copy keeps the introduction, which its owner can then rewrite"
@@ -103,7 +103,7 @@ def test_duplicating_makes_an_editable_copy_and_a_calling_must_be_one_of_three()
     profiles = Profiles(record, actor=USER)
     copy = profiles.duplicate(number_of(record, "Coach"))
     assert copy.title == "Coach (my copy)" and not copy.system and copy.brief == SHIPPED[3].text, "a copy carries the voice and is yours to change"
-    assert (copy.art, profiles.create("Plain", brief="x", sample="y").art) == ("coach.webp", ""), "a copy keeps its picture and a profile made without one shows none"
+    assert (copy.voice, profiles.create("Plain", brief="x", sample="y").voice) == ("coach", ""), "a copy keeps its picture and a profile made without one shows none"
     assert profiles.update(copy.n, brief="Cheer less.").brief == "Cheer less.", "a copy can be edited"
     assert profiles.update(copy.n, calling="none").calling == "none", "and how it calls you can be changed"
     assert refused(lambda: profiles.update(copy.n, calling="sir")), "to one of the three only"
@@ -168,7 +168,7 @@ def test_a_voices_animations_are_found_by_file_name_grouped_by_kind_and_take_dro
     (voices / "flat").mkdir(parents=True)
     for file in ("squire_idle_1_sheet.png", "squire_blink_sheet.png", "flat/squire_idle_1_atlas.png"):
         (voices / file).write_bytes(b"x")
-    assert [a.file for a in shipped_animations(voices, "squire.webp")] == ["flat/squire_idle_1_atlas.png"], "the newest folder holding a voice's animations is the one it plays; older sheets stay aside"
+    assert [a.file for a in shipped_animations(voices, "squire")] == ["flat/squire_idle_1_atlas.png"], "the newest folder holding a voice's animations is the one it plays; older sheets stay aside"
     record = shipped_record()
     profiles = Profiles(record, actor=USER)
     squire = profiles.rows.by_title("Squire")
