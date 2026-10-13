@@ -1,6 +1,7 @@
 import json
 import re
 import subprocess
+import tempfile
 import threading
 from dataclasses import dataclass
 
@@ -114,7 +115,8 @@ Which option lets the agent carry on its work? Reply with the option number only
 
 
 class Asking:
-    """One standalone agent per unknown menu, asked off the thread that answers the terminal; its answer waits here until the menu is looked at again."""
+    """One standalone agent per unknown menu, asked off the thread that answers the terminal and outside the project, whose hooks would take it for
+    a session; its answer waits here until the menu is looked at again."""
 
     def __init__(self, driver):
         self.driver = driver
@@ -133,7 +135,7 @@ class Asking:
 
     def ask(self, menu: Menu, argv) -> None:
         try:
-            done = subprocess.run(argv, capture_output=True, text=True, timeout=ASK_TIMEOUT, stdin=subprocess.DEVNULL)
+            done = subprocess.run(argv, capture_output=True, text=True, timeout=ASK_TIMEOUT, stdin=subprocess.DEVNULL, cwd=tempfile.gettempdir())
             taken = menu.numbered(done.stdout)
         except (OSError, subprocess.SubprocessError):
             taken = None

@@ -1,4 +1,5 @@
 import os
+import tempfile
 import time
 
 from controllers.types import Agents, Environments, Notices, Nudges
@@ -31,7 +32,7 @@ def test_a_permission_the_agent_waits_on_is_shown_in_the_chat_until_it_is_answer
     assert waiting() == [], "the call ran: the notice goes"
 
 
-def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeypatch):
+def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeypatch, tmp_path):
     claude = DRIVERS["claude"]
     assert claude.resumed(claude.skipping(["-c", "--model", "opus"], True), "abc") == \
         ["--dangerously-skip-permissions", "--model", "opus", "--resume", "abc"], "skip on, resumed in place of continue"
@@ -148,8 +149,9 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
     assert pressed == [], "a menu that came up just after a key you pressed is left to you, however quiet the terminal is"
     colour = "Pick a colour\r\n❯ 1. Red\r\n  2. Blue\r\nEnter to select"
     asked = []
+    where = tmp_path / "asked-in"
     unknown = SimpleNamespace(**{**vars(stub), "screen": lambda size: colour, "press_raw": pressed.append,
-                                 "ask_argv": lambda prompt: asked.append(prompt) or ("echo", "2")})
+                                 "ask_argv": lambda prompt: asked.append(prompt) or ("sh", "-c", f"pwd > {where}; echo 2")})
     pressed.clear()
     curious = Dialogs(unknown)
     curious.tick()
@@ -161,6 +163,8 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag(monkeyp
     curious.at = 0.0
     curious.tick()
     assert pressed == [b"\x1b[B\r"], "the agent's pick, option 2, is pressed once it has answered"
+    assert Path(where.read_text().strip()).resolve() == Path(tempfile.gettempdir()).resolve(), \
+        "the agent is asked outside the project, whose hooks would take it for a session"
     again = Dialogs(unknown)
     pressed.clear()
     again.tick()

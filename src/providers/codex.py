@@ -163,6 +163,12 @@ class SpawnedAgent:
     agent_path: str = ""
     refused: bool = False
 
+    def refused_row(self) -> SubagentRow:
+        return SubagentRow.refused(self.task, self.type, self.model, self.at, REFUSED)
+
+    def unstarted_row(self) -> SubagentRow:
+        return SubagentRow.unstarted(self.task, self.type, self.model, self.at)
+
 
 @dataclass(frozen=True)
 class CellShellRow:
@@ -236,7 +242,7 @@ class Codex(Provider):
 
     @classmethod
     def ask_argv(cls, prompt: str) -> tuple[str, ...]:
-        return ("codex", "exec", "-m", cls.dispatch_default, prompt)
+        return ("codex", "exec", "--ephemeral", "--skip-git-repo-check", "-m", cls.dispatch_default, prompt)
 
     def skill_load(self, name: str) -> str:
         return f"read {self.skill_home}/{name}/SKILL.md"
@@ -553,10 +559,10 @@ class Codex(Provider):
 
     def subagent_row(self, path: Path, spawn: SpawnedAgent) -> dict:
         if spawn.refused:
-            return SubagentRow.refused(spawn.task, spawn.type, spawn.model, spawn.at, REFUSED).to_json()
+            return spawn.refused_row().to_json()
         session = spawn.session if spawn.session is not None else self.spawned_session(path, spawn)
         if session is None:
-            return SubagentRow.unstarted(spawn.task, spawn.type, spawn.model, spawn.at).to_json()
+            return spawn.unstarted_row().to_json()
         running, ended = self.subagent_state(path, session)
         return SubagentRow(session, spawn.task, spawn.type, spawn.model, running, spawn.at, ended, "" if running else "finished", session).to_json()
 
