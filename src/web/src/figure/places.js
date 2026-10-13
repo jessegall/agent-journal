@@ -161,9 +161,9 @@ export function hiddenAt(spot, figure) {
     const picture = boxAt(spot, figure);
     const box = spot.posture === "hang" ? picture : {...picture, bottom: Math.min(picture.bottom, spot.y)};
     const controls = [...document.querySelectorAll(CONTROLS)]
-        .filter(visible)
-        .map((control) => control.getBoundingClientRect())
-        .filter((control) => control.width && control.height && overlaps(box, control));
+        .map((control) => ({control, rect: control.getBoundingClientRect()}))
+        .filter(({control, rect}) => rect.width && rect.height && overlaps(box, rect) && visible(control))
+        .map(({rect}) => rect);
     const onControl = (x, y) =>
         controls.some((control) => x >= control.left && x <= control.right && y >= control.top && y <= control.bottom);
     return bodyPoints(box).filter(([x, y]) => onControl(x, y) || onWord(x, y)).length;
